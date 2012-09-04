@@ -1,0 +1,72 @@
+This file contains some topics that is in progress and things that may or may not be implemented.
+
+The main TODO list is on SourceForge https://sourceforge.net/tracker/?group_id=224170&atid=1142307
+
+General
+=======
+- Add filter description to CANAL spec
+- Common username/password pair to use for autoclients.
+
+
+VSCP Works
+==========
+- Better status information when connecting.
+- No date gives garage in data field (scroll) or date???
+- Edit receive events
+- Add note to receive events
+- Detect Connetion Lost.
+- Center RX Fields.
+- Hide transmit windows in receive mode.
+- Connection is not lost when server restarts.
+- Dialog needed for "test connection"
+- Test confiuration over server interface.
+- Add manufacturer etc info. to configuration status window.
+
+Daemon
+======
+- Debug levels for the daeon in runtime version.
+- syslog logging under Linux.
+- Fix filter
+- Variable defines
+- Scheduler.
+- Routines for driver load/unload.
+- Check m_maxItemsInReceiveQueue when writing
+- Max message count in configuration file. 
+- writeConfiguration
+- UDP injterface. Switch: Only Incoming.
+- UPnP support
+- Collect new added devices with timestamp.
+- Windows daemon have leaks when quited by closing console in windows.
+- 
+
+vscpdll
+=======
+- test functionality
+
+canaldll
+========
+- test functionality
+
+cancmd
+======
+- test functionality
+
+linuxvscpl1
+===========
+- test functionality
+
+linuxvscpl2
+===========
+build & test
+
+mkpasswd
+========
+Find a way to add user to config file. (TCP/IF???)
+
+canalsuperwrapper
+=================
+SetInterface does nothing!!???
+
+canallogger
+===========
+Add VSCP output mode.

@@ -1,0 +1,15 @@
+#
+# Makefile : Builds wxWindows samples for Unix.
+#
+
+PROJ_SUBDIRS=@PROJ_SUBDIRS@
+
+all:
+	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE)); done
+
+clean:
+	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) clean); done
+
+install:
+	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) install); done
+

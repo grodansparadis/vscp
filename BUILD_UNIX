@@ -1,0 +1,168 @@
+To build VSCP and friends type 
+
+".configure --enable-unicode" 
+
+(You can add "--enable-debug" to build a debug version.)
+
+followed by 
+
+"make" 
+
+and "make install" as root user.
+
+You can use ./configure --help to get help about available switches. Use --enable-debug to use the debug 
+version of wxWidgets and use --enable-unicode to use the unicode version. The use of the unicode version 
+is recommended.
+
+
+To compile the package you need the wxWidgets libraries (GTK2). The toolkit can be found at 
+http://www.wxwidgets.org. At the moment use the graphical version of the library (not base) even if you 
+only will use the nongraphic components.
+
+configure this package with --with-odbc so ODBC support is added. 
+See http://docs.wxwidgets.org/stable/wx_odbcoverview.html#wxodbccompiling
+
+If you want the VSCP Works application to compile the wxWidgets library has to be configured with the 
+--enable-richtext otherwise it will not compile.
+
+Configuration files should be located in /etc/vscp and there are samples of configuration files here in the root. 
+The names should be vscpd.conf for the daemon and vscpworks.conf for VSCP works. The daemon can be started with 
+a path to a configuration file in anoter location using the -c switch.
+
+Notes on making your own applications
+-------------------------------------
+If you build GUI applicatin that use the vscp helper dll the wxUSE_GUI=1 should be in your preprocessor directives. 
+If you build non-guid components define wxUSE_GUI=0
+
+Have Fun!
+/Ake <akhe@eurosource.se>
+
+
+
+Common Problems and notes
+=========================
+
+
+
+vscpworks does not compile
+==========================
+Check that you configured the wxWidgets package with --enable-richtext. If you issue "wx-config --libs" you should see the richtext library. 
+
+
+
+
+Problems with missing libcrypto 
+===============================
+
+Compile complains that it can't find openssl/md5.h
+
+Solution: On Ubuntu at least install libssl-dev. libcurl2-opemssl-dev also works on debian etch.
+
+
+
+Complains ‘class wxXmlNode’ has no member named ‘GetNodeContent’
+================================================================
+You need wxWidgets 2.8.0 or newer.
+
+
+
+---------------------------------------------------------------------
+
+Compile errors when issuing Make. This can be due to many things. One cause is that the wxBase version of the 
+wxWidgets library is used instead of the full library (wxGTK2 library). You can check if this is the cause of 
+the failure by looking in src/canal/cancmd/Makefile. The 
+Makefile should have a CXXFLAGS entry that looks something like below. if it have 
+-I/usr/local/lib/wx/include/base... the base library of the wxWidgets toolkit is installed and you should 
+install the full version instead.
+
+CXXFLAGS = -g -O2 -I/usr/local/lib/wx/include/gtk2-ansi-debug-2.6 -I/usr/local/include/wx-2.6 -D__WXDEBUG__ -D__WXGTK__ -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -DNO_GCC_PRAGMA
+
+
+Use "wx-config" to check wxWidgets configurations 
+
+
+Debian etch
+===========
+make sure libopenssl-debv and libgtk2.0-dev is installed. Fet wxWidgets-1.8.7 or later from the wxWidgets site 
+and configure with
+
+./configure --enable-unicode
+
+Unsure if --enable-richtext really is needed. If you get compiants about it add the switch.
+
+Make the library with "make" and install it with "make install" if it compiled OK.
+  
+tiff, gif, and librarues are needed for wxWidgets to compile install them. You can seach the package names with
+
+apt-cache search libxxx | grep libxx | less
+
+Remember to add the path to /usr/local/lib to /etc/ld.so.conf.d/i486-linux-gnu.conf and then issue "ldconfig" 
+after installing the libs.
+
+After this just build and install VSCP & Friends. 
+
+
+Fedora Core 4
+=============
+libwx_gtk2_xrc-2.6.so.0 is missing when you try to start cw. This means that the path to it cant be found. Add the path to /etc/ld.conf.d (new entry with /usr/local/lib) and the problem will be resolved.
+
+Known configuration that compiles out of the box on Fedora Core 4 is 2.6, ansi, debug. Release build should also work.
+
+The wx libraries was built with the following swithes
+
+./configure --enable-debug --disable-unicode
+
+"wx-config" gives the following output 
+
+wx-config --prefix
+/usr/local
+
+wx-config --exec-prefix
+/usr/local
+
+wx-config --release
+2.6
+
+wx-config --list
+
+    Default config is gtk2-ansi-debug-2.6
+
+  Default config will be used for output
+
+  Alternate matches:
+    base-ansi-debug-2.6
+    base-ansi-release-2.6
+    gtk2-ansi-release-2.6
+
+wx-config --version
+2.6.3
+
+wx-config --basename
+wx_gtk2d
+
+wx-config --cc
+gcc
+
+wx-config --cppflags
+-I/usr/local/lib/wx/include/gtk2-ansi-debug-2.6 -I/usr/local/include/wx-2.6 -D__WXDEBUG__ -D__WXGTK__ -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -DNO_GCC_PRAGMA
+
+wx-config --cxxflags
+-I/usr/local/lib/wx/include/gtk2-ansi-debug-2.6 -I/usr/local/include/wx-2.6 -D__WXDEBUG__ -D__WXGTK__ -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -DNO_GCC_PRAGMA
+
+wx-config --libs
+-L/usr/local/lib -pthread   -L/usr/X11R6/lib  -lwx_gtk2d_xrc-2.6 -lwx_gtk2d_qa-2.6 -lwx_gtk2d_html-2.6 -lwx_gtk2d_adv-2.6 -lwx_gtk2d_core-2.6 -lwx_based_xml-2.6 -lwx_based_net-2.6 -lwx_based-2.6
+
+wx-config --cxx
+g++
+
+wx-config --ld
+g++ -shared -fPIC -o
+
+wx-config --linkdeps
+
+
+
+
+
+
+

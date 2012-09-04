@@ -1,0 +1,29 @@
+
+
+ * Update the release file
+ * update version in configure.in
+ * update version.h in canal/common
+ * Make source zip
+ * Make tar zip
+ * upload canl install, vscp install, zip, tar to sourceforge and local ftp
+ *      VSCP: name ver ver0.1.7 on sourceforge
+        CANAL:  WIN32 setup for CANAL ver 0.1.6
+
+   Naming conventions
+   ==================
+  
+  * vscp-0.2.7-win32.exe
+  * vscp_src_0.2.7.tgz   
+  * vscp_src_0.2.7.zip    
+
+
+
+TAGS
+
+svn copy -m "release 0.2.7" https://m2m.svn.sourceforge.net/svnroot/m2m/trunk  https://m2m.svn.sourceforge.net/svnroot/m2m/tags/0.2.7
+ 
+- copy m2m folder to a working folder
+-  clean up. Remember to take away .svn folders.
+- create tar: tar -czf vscp_src_0.2.7.tgz m2m
+- create zip: zip -r vscp_src_0.2.7.zip m2m
+- upload files to sf (frs.sourceforge.net uploads folder) using sftp

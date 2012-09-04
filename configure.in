@@ -1,0 +1,224 @@
+dnl Autoconf settings for VSCP
+dnl $Id: configure.in,v 1.5 2005/10/03 16:30:06 akhe Exp $
+
+AC_INIT(vscp, [0.3.3], [can-vscp@lists.sf.net])
+
+CONFIGURE_LINE="$0 $*"
+CODENAME="Ant"
+
+AC_CONFIG_MACRO_DIR(m4)
+
+AC_PREREQ(2.57)
+AC_CONFIG_SRCDIR([src/vscp/common/canalsuperwrapper.cpp])
+AC_CONFIG_AUX_DIR(autotools)
+AC_CONFIG_HEADERS([config.h])
+
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_AWK
+AC_PROG_YACC
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_LEX
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+
+# Checks for libraries.
+AC_CHECK_LIB([curses], [initscr])
+AC_CHECK_LIB([dl], [dlsym])
+AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_LIB([crypto], [MD5_Init])
+AC_CHECK_LIB([m],[sin])
+AC_CHECK_LIB([z], [gzopen])
+
+# Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS([OS.h arpa/inet.h fcntl.h inttypes.h limits.h locale.h netdb.h netinet/in.h sgtty.h stddef.h stdint.h stdlib.h string.h strings.h sys/file.h sys/ioctl.h sys/socket.h sys/time.h sys/timeb.h syslog.h termios.h unistd.h openssl/md5.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_CONST
+AC_C_INLINE
+AC_TYPE_MODE_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+AC_STRUCT_TM
+AC_C_VOLATILE
+
+# Checks for library functions.
+AC_FUNC_FORK
+AC_PROG_GCC_TRADITIONAL
+AC_FUNC_MALLOC
+AC_FUNC_MEMCMP
+AC_FUNC_REALLOC
+AC_FUNC_SELECT_ARGTYPES
+AC_FUNC_SETVBUF_REVERSED
+AC_TYPE_SIGNAL
+AC_FUNC_STAT
+AC_FUNC_STRFTIME
+AC_FUNC_STRTOD
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS([alarm bzero dup2 floor gethostbyname gethostname gethrtime gettimeofday inet_ntoa memchr memmove memset mkfifo pow select setlocale socket sqrt strcasecmp strchr strcspn strdup strerror strncasecmp strpbrk strrchr strspn strstr strtol strtoul])
+
+
+AC_SUBST(WXLIBS)
+AC_SUBST(EXTRALIBS)
+
+
+dnl
+dnl Project Sub directories
+dnl
+
+PROJ_SUBDIRS="src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/linuxvscpl1 src/vscp/daemon/linux src/vscp/mkpasswd"  
+AC_SUBST(PROJ_SUBDIRS)
+PROJ_SUBDIRS_GUI="src/vscp/samples/cw src/vscp/vscpworks src/vscp/vscpcmd"
+AC_SUBST(PROJ_SUBDIRS_GUI)
+
+dnl
+dnl  Debugging mode
+dnl
+
+dnl No debug build is default
+vscp_debug=no
+AC_ARG_ENABLE(debug,
+[  --enable-debug          debug mode (default disabled)],
+[vscp_debug=yes])
+dnl test "${enable_debug}" != "yes" && enable_debug="no"
+
+
+dnl
+dnl  Unicode mode
+dnl
+
+dnl no unicode build is default
+vscp_unicode=no
+
+AC_ARG_ENABLE(unicode,
+[  --enable-unicode        UNICODE build (default ANSI build)],
+[vscp_unicode=yes])
+dnl test "${enable_unicode}" != "yes" && enable_unicode="no"
+
+
+dnl
+dnl  wxWindows module
+dnl
+
+AM_OPTIONS_WXCONFIG
+reqwx=2.8.0
+
+if test "${vscp_debug}" = yes ; then
+    if test "${vscp_unicode}" = yes ; then
+        echo 'checking for debug unicode wx-libs ...'
+        AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=yes)
+    else
+        echo 'checking for debug wx-libs ...'
+        AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=no --debug=yes)
+    fi
+else
+    if test "${vscp_unicode}" = yes ; then
+        echo 'checking for unicode wx-libs ...'
+        AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=yes --debug=no)
+    else
+        echo 'checking for wx-libs ...'
+        AM_PATH_WXCONFIG($reqwx, [wxWin=1], [wxWin=0], --unicode=no --debug=no)
+    fi
+fi
+if test "$wxWin" != 1; then
+    AC_MSG_ERROR([
+        wxWidgets must be installed on your system.
+
+        Please check that wx-config is in path, the directory
+        where wxWidgets libraries are installed (returned by
+        'wx-config --libs' or 'wx-config --static --libs' command)
+        is in LD_LIBRARY_PATH or equivalent variable and
+        wxWidgets version is $reqwx or above.
+    ])
+fi
+ 
+CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
+CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
+CFLAGS="$CFLAGS $WX_CFLAGS_ONLY"
+LIBS="$LIBS $WX_LIBS"
+
+WX_BASENAME=`$WX_CONFIG_WITH_ARGS --basename`
+vscp_gui=no
+AC_MSG_CHECKING([for wx_gtk2* wxWidgets libs])
+if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep wx_gtk2 >/dev/null; then
+    dnl wxGTK is installed, build the GUI applications also
+    PROJ_SUBDIRS="$PROJ_SUBDIRS $PROJ_SUBDIRS_GUI"
+    vscp_gui=yes
+    AC_MSG_RESULT([Found; building GUI apps])
+fi
+
+EXTRALIBS="${EXTRALIBS} ${LIBS} -W1,--version-script"
+
+
+dnl 
+dnl Construct Makefiles
+dnl 
+
+AC_CONFIG_FILES([Makefile
+		 m4/Makefile
+		 src/vscp/drivers/level1/logger/linux/Makefile
+		 src/vscp/drivers/level1/can232/linux/Makefile
+                 src/vscp/drivers/level1/xap/linux/Makefile
+                 src/vscp/vscpcmd/Makefile
+                 src/vscp/vscpworks/Makefile
+                 src/vscp/daemon/linux/Makefile
+                 src/vscp/mkpasswd/Makefile
+		 src/vscp/linuxvscpl1/Makefile
+])
+
+dnl Generate makefiles
+AC_OUTPUT
+
+dnl Output some debugging information
+echo   "LIBS         : ${LIBS}"
+echo   "WXLIBS       : ${WXLIBS}"
+echo   "EXTRALIBS    : ${EXTRALIBS}"
+echo   "CPPFLAGS     : ${CPPFLAGS}"
+echo   "CXXFLAGS     : ${CXXFLAGS}"
+echo   "CFLAGS       : ${CFLAGS}"
+echo   "PROJ_SUBDIRS : ${PROJ_SUBDIRS}"
+
+dnl Give user some feedback
+echo
+echo   "           VSCP configuration"
+echo   "--------------------------------------------"
+echo   "VSCP version          : ${PACKAGE_VERSION}"
+echo   "System                : ${host}"
+echo   "Architecture          : ${ARCH}"
+echo   "VSCP GUI Build        : ${vscp_gui}"
+
+if test "${vscp_debug}" = "yes" 
+then
+   printf "build flavour         : debug "
+else
+   printf "build flavour         : release "
+fi
+
+if test "${vscp_unicode}" = "yes" 
+then
+   printf "UNICODE 
+"
+else
+   printf "ANSI 
+"
+fi
+
+printf " 
+You can tune the compiler flags in vscp-config.
+To build VSCP and friends, type \'make\' followed by \'make install\'
+
+ use --enable-debug to build a debug version; release is default.
+ use --enable-unicode to build a unicode version; ANSI is default.
+
+"
+dnl vi: set et sts=4 sw=4 com=\:dnl
+

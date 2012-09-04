@@ -1,0 +1,69 @@
+#!/bin/sh
+
+echo Remove special files
+rm -rf release_reminders.txt*
+rm -rf HISTORY~
+rm -rf README~
+rm -rf CHANGELOG~
+rm -rf COPYRIGHT~
+rm -rf INSTALL~
+rm -rf TODO~
+rm -rf BUILD~
+rm -rf BUILD_UNIX~
+rm -rf BUILD_WIN32.txt~
+
+echo Removing Work directories...
+rm -rf src/vscp/Build
+find . -type d -name Debug -print -exec rm -rf {} +;
+find . -type d -name Release -print -exec rm -rf {} +;
+find . -type d -name .svn -print -exec rm -rf {} +;
+
+
+echo Removing work files...
+find . -name *.aps -print -exec rm {} +;
+find . -name *.clw -print -exec rm {} +;
+find . -name *.s#? -print -exec rm {} +;
+find . -name *.b#? -print -exec rm {} +;
+find . -name *.eep -print -exec rm {} +;
+find . -name *.elf -print -exec rm {} +;
+find . -name *.map -print -exec rm {} +;
+find . -name *.lst -print -exec rm {} +;
+find . -name *.bck -print -exec rm {} +;
+find . -name *.hex -print -exec rm {} +;
+find . -name *.rom -print -exec rm {} +;
+find . -name *.cod -print -exec rm {} +;
+find . -name *.err -print -exec rm {} +;
+find . -name *.xrf -print -exec rm {} +;
+find . -name *.apr -print -exec rm {} +;
+find . -name *.opt -print -exec rm {} +;
+find . -name *.plg -print -exec rm {} +;
+find . -name *.dep -print -exec rm -rf {} +;
+find . -name *.scc -print -exec rm {} +;
+find . -name *.avd -print -exec rm {} +;
+find . -name *.erc -print -exec rm {} +;
+find . -name *.pro -print -exec rm {} +;
+find . -name *.log -print -exec rm {} +;
+find . -name *.aux -print -exec rm {} +;
+find . -name *.c_sym -print -exec rm {} +;
+find . -name *.asm_sym -print -exec rm {} +;
+find . -name *.?~ -print -exec rm {} +;
+find . -name *.*~ -print -exec rm -rf {} +;
+find . -name *\~ -print -exec rm -rf {} +;
+find . -name *.bkx -print -exec rm {} +;
+find . -name *.save -print -exec rm {} +;
+find . -name *.ctl -print -exec rm {} +;
+find . -name *.ncb -print -exec rm {} +;
+find . -name GCC* -print -exec rm -rf {} +;
+find . -name *.o -print -exec rm -rf {} +;
+find . -name *.obj -print -exec rm -rf {} +;
+find . -name *.pcs -print -exec rm -rf {} +;
+find . -name *.pdb -print -exec rm -rf {} +;
+find . -name *.bak -print -exec rm -rf {} +;
+find . -name *.so -print -exec rm -rf {} +;
+
+echo Removing unneeded folders...
+rm -rf ./src/vscp/install_win32
+rm -rf ./src/vscp/install_deb
+rm -rf firmware
+rm -rf docs
+

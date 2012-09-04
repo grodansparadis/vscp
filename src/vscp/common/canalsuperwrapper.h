@@ -144,7 +144,7 @@ public:
     /*!
         Close communication channel
 
-        @return true if the close was successfull
+        @return true if the close was successful
     */
     int doCmdClose( void );
 
@@ -296,7 +296,7 @@ public:
 
     /*!
         Check if interface is open
-        @return Return tru if if open, false if closed.
+        @return Return true if if open, false if closed.
     */
     bool isOpen( void ) { return ( m_devid ? true : false ); };  
 
