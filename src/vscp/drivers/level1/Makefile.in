@@ -1,0 +1,11 @@
+#
+# Makefile : Builds Drivers for Unix.
+#
+
+SAMPLES_SUBDIRS=@DRIVERS_SUBDIRS@
+
+all:
+	@for d in $(SAMPLES_SUBDIRS); do (cd $$d && $(MAKE)); done
+
+clean:
+	@for d in $(SAMPLES_SUBDIRS); do (cd $$d && $(MAKE) clean); done

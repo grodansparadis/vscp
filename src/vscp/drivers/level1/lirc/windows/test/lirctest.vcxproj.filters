@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="resources">
+      <UniqueIdentifier>{09b861b8-08d4-4b5b-9336-2c0721478fe4}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\common\lircobj.cpp" />
+    <ClCompile Include="lirctest.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\common\lircobj.h" />
+    <ClInclude Include="lirctest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="lirctest.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="wx\msw\blank.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\bullseye.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\cdrom.ico">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\computer.ico">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\drive.ico">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\file1.ico">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\floppy.ico">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\folder1.ico">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\folder2.ico">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\hand.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\magnif1.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\noentry.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\pbrush.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\pencil.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\pntleft.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\pntright.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\query.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\removble.ico">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\rightarr.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\roller.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\size.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="wx\msw\watch1.cur">
+      <Filter>resources</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

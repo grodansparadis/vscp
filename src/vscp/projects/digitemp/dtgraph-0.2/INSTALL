@@ -1,0 +1,304 @@
+Installation instructions for dtgraph
+==========================================
+
+FILES:
+_________
+* Web Interface  (www/):
+    - index.php 
+        This is the main graph displayer page. All controls, and look and feel are here
+    - graph.php
+        index.php will refer to this to show the actual image.
+    - conf.php
+        All PHP files use this for configuration values. You will find graphics,
+        html, database, data, alarms, etc configuration in here
+    - mobile.php
+        A very simple script for accessing with a limited capability device,
+        such as cell phone browser, etc. Try it with a normal browser first
+        See below for caveats on using this
+    - Driver.php and Driver/*
+        Files here are the core of the app - they perform low level data access
+        operations like read and write. Currently only an sql driver is available
+        but other drivers can be written and used transparently.
+        (This design is borrowed from the horde architecture - www.horde.org)
+        Nothing here is intended to be accessed directly
+    - utils.php
+        Utilities used by the code. Not intended to be used directly
+    - admin/ directory:
+        The scripts here are not meant to be exposed to casual users
+        but rather to the administrator only.  
+        Protecting this with an .htaccess file or some other means is advisable,
+        naturally SSL is the way to log in.
+        A sample .htaccess file is provided, setup to require a 
+        /var/www/.htpasswd with a password for username "dt"
+        See below for files in here and what they can do.
+    - admin/admin.php
+        A convenient Metadata admin tool. This helps you name and describe the 
+        sensors as well as any alarms for temperature problems.
+        Note if you move this, you'll need to edit it to make sure it can find 
+        the required php files in "require_once" method calls
+    - admin/alarms.php
+        This script is designed to update alarms.  It should be run periodically
+        for the alarms table to get updated.  
+
+* Offline command line scripts (bin/):
+    - mydigitemp.pl
+        This is a convenience wrapper around digitemp binary which makes use of the
+        added digitemp_metadata table to display sensor names with their readings.
+        This is a command line tool and must be configured separately (edit it)
+    OLD: (retired and replaced with PHP):
+        - digitempWatcher.pl
+            This script is designed to check against alarm configurations and notify
+            of any alarm conditions
+        - alarmNotify.sh
+            Simple script used by digitempWatcher.pl to make sure that alarms are 
+            only raised once
+
+        NOTE: Unlike the php's the command line tools don't use a shared config file
+        to make them more portable. You may want to throw some or all of them into
+        some place in your path, such as /usr/local/bin .  Since they don't share 
+        configuration, edit each one and change the DB user/pass, etc
+        Note also that you will need some Perl modules like DB to use this stuff.
+        See http://search.cpan.org
+
+* Database Initialization Files (SQL/):
+    - *.sql
+        The individual schema files help you create necessary tables if you don't already
+        have them.  Use the one(s) for which you don't have tables created.
+        See the Database section below for instructions
+        
+
+
+REQUIREMENTS:
+----------------------------------------------
+-Web server with
+-PHP support with PEAR DB modules installed
+-MySQL (or other database with slight modifications)
+-Some means of logging temperature to MySQL (eg digitemp_mysql.pl)
+-JPGRAPH (version 1.4 or later may be needed) - to produce temperature graphs
+-Perl to log and to optionally run command line tools and alarm watch (OLD)
+    -Perl Modules for these: DB
+
+**********************************************************
+************ INSTALLATION PROCEDURE **********************
+
+Step 0:  Get your temperature readings working
+-----------------------------------------------
+This installation assumes that you have something 
+working which reads temperatures.  If you have a 
+1-wire interface with one or more temp sensors, then I 
+hope that you got it working and you can read temps with some application.
+
+If you are using digitemp, in perl/ directory of digitemp distribution
+you will find a "digitemp_mysql.pl" script, follow instructions 
+in it to setup.  
+
+If you are using a data logging system of your own, you'll need to
+write a tiny perlscript (or whatever) to insert data into the readings 
+table (record temps). See below for database info
+
+
+
+Step 1:  Get your database setup
+-------------------------------------
+DTGraph currently uses two tables: digitemp and digitemp_metadata
+
+ -digitemp is the readings table (as described by digitemp_mysql.pl)
+ -digitemp_metadata is a table which describes each unique sensor
+ -digitemp_alarms contains raised alarms when alarms occur. 
+
+You will find the structure in the *.sql files in the SQL/ directory.
+You can paste the contents to mysql or run something like:
+
+mysql databasename < mysql_create_digitemp_metadata.sql 
+mysql databasename < mysql_create_digitemp.sql
+mysql databasename < mysql_create_digitemp_alarms.sql
+
+In order for that to work you will need to first create a database if 
+it doesn't already exist with:
+
+mysqladmin create databasename
+
+and you should make sure to grant access to all tables to a username of your 
+choosing: (From digitemp_mysql.pl):
+
+GRANT SELECT,INSERT ON digitemp.* TO dt_logger@localhost
+IDENTIFIED BY 'ChangeThisPassword';
+
+Now that you tables are setup, don't forget to modify conf.php to reflect your
+choice of names for database, user/pass, host, etc
+
+
+Step 2: Get your logging setup
+-----------------------------------
+Naturally you need to log data to display it.
+
+If you are already logging stuff to a table with the correct structure,
+then you probably skipped the above section.  
+This is good and bad.
+You probably have only one of the above tables. Go back and create the
+digitemp_metadata and digitemp_alarms tables as well
+
+Now to log...
+For the time being you should use the digitemp_mysql.pl which comes
+with digitemp (if you're using digitemp at all), see instructions in it.
+
+If you're not using digitemp... well you'll need to either modify that script
+or write your own for logging something of your particular preference.
+
+So now that you've gotten your working script into your crontab and you see that
+entries are happily showing up in the tables, it's time to move on.
+
+(Note: if you don't already have an interactive DB management tool, phpMyAdmin
+is highly recommended - find it on freshmeat)
+
+
+Step 3: Setting up DTGraph
+---------------------------------------------
+Copy the contents of the web (www) folder into a directory accesible by your webserver
+(ie something under /var/www/html/ or maybe even your user's ~/public_html)
+don't forget directories, ie:
+
+    dtgraph/> mkdir /var/www/html/dtgraph
+    dtgraph/> cp -r www/* /var/www/html/dtgraph
+
+Set permissions to allow read, and edit the conf.php file.
+To get off the ground you will need to make sure that your db settings are 
+correct, including host, user/pass, db/table names, etc.
+
+Once that's done, try to hit the url of the directory 
+(this of course assumes that your webserver has index.php oon the list of 
+default filenames)
+
+If you have problems here then most likely you don't have something setup
+quite right for accessing the DB (see error message). 
+
+Note that you should password protect the admin/ subdirectory as the script
+there allows the user to modify contents of the digitemp_metadata table
+
+If it's working then proceed to
+
+Step 4: Setting up Metadata (optional but very useful)
+----------------------------------------
+I wrote a convenient script for setting up data about data (metadata)
+for each sensor quickly.
+Such data includes:
+Name, description, color, alarms, etc
+
+The php script is called admin.php and you can access it in your browser to 
+view/update the metadata.  You can set it as well with a DB visualizing tool,
+but this is a bit more targeted.  admin.php will allow one to describe any 
+sensors for which there are readings stored in the digitemp table.
+See warnings about protecting this script at top of this file
+
+Note that each sensor is assumed to have a unique serial number or id.
+If your hardware lacks such id, then you should fake it in your logging 
+software to make sure each separate sensor is uniquely identified and each 
+data record is stored with that id.
+Everything is tied to this id in both tables and in dtgraph and all utilities.
+
+Use of the script (admin.php) should be self explanatory but the data may not be:
+alarm/min/max - those are criteria for raising alarms when temperature is out 
+of bounds.  If you don't care about bounds, leave alarm off (alarm = 0) for the
+sensors that don't need it.
+
+maxchange/maxchange_alarm/maxchange_interval
+these are values for raising alarms when a temperature has been too unstable,
+as in it has exceeded a range of maxchage in the number of seconds equal to
+maxchange_interval.  If you do not need this, keep maxchange_alarm at 0.
+
+If you're asking yourelf "Who's using these values?", read on.
+
+Step 5: Setting up alarm watch (optional) 
+---------------------------------------
+Plan A: <--- OLD Perl scripts (Not Recommended)
+    If you choose to go this way, the alarms table will not be updated.
+    You will receive email notification though.....
+
+    If you care to be notified when temperatures meet alarm criteria that you setup
+    in the previous step,
+    then you should configure the digitempWatcher.pl script.
+
+    It's actually rather similar to the digitemp_mysql.pl in some ways so I plan 
+    on eventually integrating them so only one thing gets run on a cron job.
+
+    Edit this file and make sure the username/pass/database are correct. 
+    This is perl and not PHP and so doesn't use the conf.php file
+    Also set the email address to alert to problems.  I don't recommend using a 
+    mobile account yet as you might get a flurry of emails if you screw up.
+
+    Run the script and see if it's working. To check it, change your alarm criteria to 
+    cause an alarm.
+
+    Note that the script requires the use of alarmNotify.sh which is a supporting script
+    This script makes sure that each alarm is raised only once per incident, so
+    if you get a warning twice that means that the condition has gone away and 
+    reocurred.
+
+    Once you have this working, the values in the metadata fields will determine
+    what happens.  
+
+Plan B: <--- New, Pure PHP way, recommended
+    If you choose to go this way, alarms table will be updated
+    and dtgraph will be able to show you the current alarms in progress.
+    Email notification can happen as well.
+
+    What do you have to do? Make sure that alarms.php runs on a regular basis.
+
+    Go into the admin/ subdirectory in your web tree, and run:
+    php alarms.php
+    Did it work? If there are no errors but you see HTML output which looks normal,
+    then you have PHP-commandline and you should setup a cronjob to update alarms.
+    Simply add something like:
+    */15 * * * * cd /your/web/tree/dtgraph/admin ; php alarms.php
+    to your crontab.
+
+    Didn't work? Well if you don't want to recompile you php with command line,
+    then you'll have to hit the script via the webserver...
+    something like:
+    lynx --source http://localhost/dtgraph/admin/alarms.php 
+    can go into cron?  I guess you will need your login/pass in there too,
+    see man lynx for how to pass those in.  Note that linx, wget, etc can be used instead,
+    it's only important to get the php script to run. 
+
+    This script updates the digitemp_alarms table with any alarms that are in progress,
+    and dtgraph can make use of that.  
+
+    Now, when the script runs, and a new alarm is raised, it can email you with the 
+    happy news.  See conf.php for settings to turn this on and email address to send to.
+    
+
+Step 6: Mobile access
+-------------------------------
+If you wish to use mobile.php, note that 
+this is a very simple script
+intended to be used from cell phones, etc
+
+Caveats: My phone (StarTac 7868w on Verizon service) refused to 
+work with anything php generated
+until I shut off the encoding header part of Content-type...
+that switch is in php.ini and I set it like so:
+
+default_charset = ""
+
+After that (and restarting apache) it was working
+
+What the display means:
+It either shows 
+    name=temp 
+on each line or
+    name:min-max=avg 
+lines (Link at bottom of page)
+You can enter then number of hours to show stats for
+
+Remember that mobiles devices like to cache things, so keep an eye on the date
+printed at the top of the page (in the title) and reload as necessary.
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++
+I guess you're done if you made it this far :)
+++++++++++++++++++++++++++++++++++++++++++++++
+
+If you find inaccuracies or lack of clarity in these instructions,
+do tell the author.
+

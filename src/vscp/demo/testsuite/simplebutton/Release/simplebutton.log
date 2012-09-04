@@ -1,0 +1,30 @@
+﻿Build started 2012-09-03 11:49:44.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\demo\testsuite\simplebutton\simplebutton.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "C:\Users\akhe\Documents\development\m2m\src\vscp\demo\testsuite\simplebutton\Release\simplebutton.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+         All outputs are up-to-date.
+       ResourceCompile:
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         simplebutton.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\demo\testsuite\simplebutton\Release\simplebutton.exe
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\demo\testsuite\simplebutton\Release\simplebutton.exe"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release already exists.
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file "C:\Users\akhe\Documents\development\m2m\src\vscp\demo\testsuite\simplebutton\Release\simplebutton.unsuccessfulbuild".
+         Touching "C:\Users\akhe\Documents\development\m2m\src\vscp\demo\testsuite\simplebutton\Release\simplebutton.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\demo\testsuite\simplebutton\simplebutton.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.14

@@ -1,0 +1,21 @@
+; can232drv.def : Declares the module parameters for the DLL.
+
+LIBRARY      "can232drv"
+DESCRIPTION  'can232drv Windows Dynamic Link Library'
+
+EXPORTS
+    ; Explicit exports can go here
+	CanalOpen @1
+	CanalClose @2
+	CanalGetLevel @3
+	CanalSend @4
+	CanalReceive @5
+	CanalDataAvailable @6
+	CanalGetStatus @7
+	CanalGetStatistics @8
+	CanalSetFilter @9
+	CanalSetMask @10
+	CanalSetBaudrate @11
+	CanalGetVersion @12
+	CanalGetDllVersion @13
+	CanalGetVendorString @14

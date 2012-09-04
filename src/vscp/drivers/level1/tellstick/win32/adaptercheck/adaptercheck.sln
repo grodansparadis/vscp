@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "adaptercheck", "adaptercheck.vcxproj", "{D65CCCA8-F14B-4E43-A5BC-9F1146867BAC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Release|Win32 = Release|Win32
+		Template|Win32 = Template|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D65CCCA8-F14B-4E43-A5BC-9F1146867BAC}.Release|Win32.ActiveCfg = Release|Win32
+		{D65CCCA8-F14B-4E43-A5BC-9F1146867BAC}.Release|Win32.Build.0 = Release|Win32
+		{D65CCCA8-F14B-4E43-A5BC-9F1146867BAC}.Template|Win32.ActiveCfg = Template|Win32
+		{D65CCCA8-F14B-4E43-A5BC-9F1146867BAC}.Template|Win32.Build.0 = Template|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

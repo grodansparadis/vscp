@@ -1,0 +1,165 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="classCXapdllApp" kind="class" prot="public">
+    <compoundname>CXapdllApp</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classCXapdllApp_1372d863ad9e2a6829f4691b5e3defe13" prot="public" static="no" mutable="no">
+        <type>CXAPObj *</type>
+        <definition>CXAPObj* CXapdllApp::m_xapArray[CANAL_XAP_DRIVER_MAX_OPEN]</definition>
+        <argsstring>[CANAL_XAP_DRIVER_MAX_OPEN]</argsstring>
+        <name>m_xapArray</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>The log file object This is the array with driver objects (max 256 objects </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="86" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" bodystart="86" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCXapdllApp_115fa65254eef192500d203242679f169" prot="public" static="no" mutable="no">
+        <type>pthread_mutex_t</type>
+        <definition>pthread_mutex_t CXapdllApp::m_objMutex</definition>
+        <argsstring></argsstring>
+        <name>m_objMutex</name>
+        <briefdescription>
+<para>Mutex for open/close. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="89" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" bodystart="89" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCXapdllApp_1201b9290fdac6a40c7e85ab564b91b4d" prot="public" static="no" mutable="no">
+        <type>unsigned long</type>
+        <definition>unsigned long CXapdllApp::m_instanceCounter</definition>
+        <argsstring></argsstring>
+        <name>m_instanceCounter</name>
+        <briefdescription>
+<para>Counter for users of the interface. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="92" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" bodystart="92" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classCXapdllApp_1abcaf39d601eabd9e0f10c01cb33933d" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>CXapdllApp::CXapdllApp</definition>
+        <argsstring>()</argsstring>
+        <name>CXapdllApp</name>
+        <briefdescription>
+<para>Constructor. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="53" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.cpp" bodystart="53" bodyend="64"/>
+      </memberdef>
+      <memberdef kind="function" id="classCXapdllApp_1559f0a010e6f32da0855d7686d0807ea" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>CXapdllApp::~CXapdllApp</definition>
+        <argsstring>()</argsstring>
+        <name>~CXapdllApp</name>
+        <briefdescription>
+<para>Destructor. </para>        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="56" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.cpp" bodystart="67" bodyend="86"/>
+      </memberdef>
+      <memberdef kind="function" id="classCXapdllApp_1823316ae1c54d028887acea1052df8c1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>long</type>
+        <definition>long CXapdllApp::addDriverObject</definition>
+        <argsstring>(CXAPObj *pxapobj)</argsstring>
+        <name>addDriverObject</name>
+        <param>
+          <type>CXAPObj *</type>
+          <declname>pxapobj</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Add a driver object</para><para>plog Object to add <simplesect kind="return"><para>handle or 0 for error </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="64" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.cpp" bodystart="108" bodyend="128"/>
+      </memberdef>
+      <memberdef kind="function" id="classCXapdllApp_1ce9676639d41988af6e9c88c87d11d8f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>CXAPObj *</type>
+        <definition>CXAPObj * CXapdllApp::getDriverObject</definition>
+        <argsstring>(long h)</argsstring>
+        <name>getDriverObject</name>
+        <param>
+          <type>long</type>
+          <declname>h</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get a driver object from its handle</para><para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>handle</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>for object </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>pointer to object or NULL if invalid handle. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="73" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.cpp" bodystart="135" bodyend="143"/>
+      </memberdef>
+      <memberdef kind="function" id="classCXapdllApp_16cf2a5295f78f9216567547fd047ad49" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CXapdllApp::removeDriverObject</definition>
+        <argsstring>(long h)</argsstring>
+        <name>removeDriverObject</name>
+        <param>
+          <type>long</type>
+          <declname>h</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Remove a driver object</para><para>handle for object. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="80" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.cpp" bodystart="150" bodyend="162"/>
+      </memberdef>
+      <memberdef kind="function" id="classCXapdllApp_1571da65ebbef787f00602b4c317b20eb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>BOOL</type>
+        <definition>BOOL CXapdllApp::InitInstance</definition>
+        <argsstring>()</argsstring>
+        <name>InitInstance</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="95" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.cpp" bodystart="167" bodyend="171"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" line="48" bodyfile="/home/akhe/vscp/src/vscp/drivers/xap/linux/xapdrv.h" bodystart="47" bodyend="97"/>
+    <listofallmembers>
+      <member refid="classCXapdllApp_1823316ae1c54d028887acea1052df8c1" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>addDriverObject</name></member>
+      <member refid="classCXapdllApp_1abcaf39d601eabd9e0f10c01cb33933d" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>CXapdllApp</name></member>
+      <member refid="classCXapdllApp_1ce9676639d41988af6e9c88c87d11d8f" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>getDriverObject</name></member>
+      <member refid="classCXapdllApp_1571da65ebbef787f00602b4c317b20eb" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>InitInstance</name></member>
+      <member refid="classCXapdllApp_1201b9290fdac6a40c7e85ab564b91b4d" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>m_instanceCounter</name></member>
+      <member refid="classCXapdllApp_115fa65254eef192500d203242679f169" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>m_objMutex</name></member>
+      <member refid="classCXapdllApp_1372d863ad9e2a6829f4691b5e3defe13" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>m_xapArray</name></member>
+      <member refid="classCXapdllApp_16cf2a5295f78f9216567547fd047ad49" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>removeDriverObject</name></member>
+      <member refid="classCXapdllApp_1559f0a010e6f32da0855d7686d0807ea" prot="public" virt="non-virtual"><scope>CXapdllApp</scope><name>~CXapdllApp</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

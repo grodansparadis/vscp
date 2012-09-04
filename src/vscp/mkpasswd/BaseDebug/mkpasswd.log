@@ -1,0 +1,49 @@
+﻿Build started 2012-03-30 10:40:44.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\mkpasswd.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file ".\BaseDebug\mkpasswd.lastbuildstate".
+       InitializeBuildStatus:
+         Touching ".\BaseDebug\mkpasswd.unsuccessfulbuild".
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /Zi /nologo /W3 /WX- /Od /Oy- /D _DEBUG /D WIN32 /D _CONSOLE /D WINVER=0x400 /D _WIN32_WINNT=0x0400 /D _MT /D wxUSE_GUI=0 /D __WXDEBUG__ /D WXDEBUG=1 /D _VC80_UPGRADE=0x0600 /D _UNICODE /D UNICODE /Gm- /EHsc /MDd /GS /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\BaseDebug\\" /Fd".\BaseDebug\vc100.pdb" /FR".\BaseDebug\\" /Gd /TP /analyze- /errorReport:prompt ..\..\common\md5.cpp mkpasswd.cpp
+         md5.cpp
+         mkpasswd.cpp
+         Generating Code...
+       ManifestResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo".\BaseDebug\mkpasswd.exe.embed.manifest.res" .\BaseDebug\mkpasswd_manifest.rc 
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(990,5): warning MSB8012: TargetPath(C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\.\BaseDebug\mkpasswd.exe) does not match the Linker's OutputFile property value (C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\Debug\mkpasswd.exe). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Debug/mkpasswd.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" comctl32.lib wsock32.lib netapi32.lib rpcrt4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:".\BaseDebug\mkpasswd.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\BaseDebug\mkpasswd.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\BaseDebug\mkpasswd.lib" /MACHINE:X86 .\BaseDebug\mkpasswd.exe.embed.manifest.res
+         .\BaseDebug\md5.obj
+         .\BaseDebug\mkpasswd.obj
+       Manifest:
+         Deleting file ".\BaseDebug\mkpasswd.exe.embed.manifest".
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:".\BaseDebug\mkpasswd.exe.embed.manifest" /manifest .\BaseDebug\mkpasswd.exe.intermediate.manifest
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo".\BaseDebug\mkpasswd.exe.embed.manifest.res" .\BaseDebug\mkpasswd_manifest.rc 
+       LinkEmbedManifest:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Debug/mkpasswd.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" comctl32.lib wsock32.lib netapi32.lib rpcrt4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:".\BaseDebug\mkpasswd.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\BaseDebug\mkpasswd.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\BaseDebug\mkpasswd.lib" /MACHINE:X86 .\BaseDebug\mkpasswd.exe.embed.manifest.res
+         .\BaseDebug\md5.obj
+         .\BaseDebug\mkpasswd.obj
+         mkpasswd.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\.\BaseDebug\mkpasswd.exe
+       BscMake:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\bscmake.exe /nologo /o".\BaseDebug\mkpasswd.bsc" .\BaseDebug\md5.sbr .\BaseDebug\mkpasswd.sbr
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\.\BaseDebug\mkpasswd.exe"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         :VCEnd
+         The system cannot find the file specified.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug already exists.
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(183,5): error MSB3073: The command "echo on
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(183,5): error MSB3073: mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(183,5): error MSB3073: mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(183,5): error MSB3073: if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\.\BaseDebug\mkpasswd.exe"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppCommon.targets(183,5): error MSB3073: :VCEnd" exited with code 1.
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\mkpasswd\mkpasswd.vcxproj" (rebuild target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:08.62

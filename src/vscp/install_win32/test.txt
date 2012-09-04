@@ -1,0 +1,12 @@
+This is a file that is located in the installation of your VSCP & Friends installation. 
+It is opended every ten seconds in notepad by the an internal event in the
+decison matrix of the VSCP daemon.
+
+We understand that you dont want this. To remove it edit the dm.xml file 
+(normally at C:\ProgramData\vscp or similar ) and remove the entry (or delete the dm.xml). 
+
+Read more about the powerful internal decison matrix of the VSCP daemon in
+part 15.7 of the documentation.
+
+Cheers
+The VSCP Team

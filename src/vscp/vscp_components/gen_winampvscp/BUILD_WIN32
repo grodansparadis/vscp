@@ -1,0 +1,7 @@
+Must add include file for winamp SDK (the winamp folder in the SDK
+
+
+WINHELP is needed.
+http://msdn.microsoft.com/library/default.asp?url=/library/en-us/htmlhelp/html/hwMicrosoftHTMLHelpDownloads.asp
+
+Add lib amd include to respective winhelp folders.

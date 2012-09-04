@@ -1,0 +1,299 @@
+
+<!doctype linuxdoc system>
+<article>
+<title>An open source can driver for Linux
+<author>Ake Hedman <tt>akhe@users.sourceforge.net</tt>
+<date>Version 0.0.1
+<abstract>
+</abstract>
+
+<toc>
+  
+<sect>Introduction<p>
+
+<sect1>Changes<p>
+<itemize>
+<item> 02-06-20 Transfered for LaTeX format to sgml. akhe@users.sf.net
+<item> 02-04-11 Original document. akhe@users.sf.net
+</itemize>
+
+<sect1>References<p>
+-  http://home.wanadoo.nl/arnaud/  (Driver info) 
+-  http://home.wanadoo.nl/arnaud/howto.html (Linux CAN howto)
+
+<sect>Installation<p>
+TODO... 
+
+<sect1>How to obtain the can driver <p>
+
+You can download the driver from http:/can.sourceforge.net.
+
+<sect1>Requirements<p>
+TODO...
+
+<sect1>Compilation and installation<p>
+
+In order to compile the driver some preparations has to be made to the 
+system:
+ 
+Step1
+The source for the kernel has to be installed. 
+ 
+Step2 
+Make sure that the symbolic link
+ 
+        /lib/modules/`uname ?r`/build
+ 
+exists and that it points to the kernel source directory e.g.
+ 
+        /usr/src/linux
+ 
+if not create the link with
+ 
+        ln ?s /usr/src/linux /lib/modules/`uname -r`/build
+ 
+Step3
+Copy the file
+        
+        /boot/vmlinuz.version.h
+ 
+to
+ 
+        /lib/modules/`uname ?r`/build/include/linux/version.h      
+ 
+When compiling make sure the following compiler option is used to point at 
+include files
+ 
+        -I/lib/modules/`uname ?r`/build/include
+ 
+instead of
+ 
+        -I/usr/include/linux 
+ 
+                               Compilation
+Just type 'make' at the command line and it should compile without errors. 
+The result can.o is located in the top directory.
+ 
+                               Installation
+Currently there's no installation procedure, just compile and load the driver. 
+Copy the driver (can.o) to
+ 
+/lib/modules/`uname ?r`/misc
+ 
+Update the module dependencies with 
+ 
+        depmod -a
+ 
+                               Loading the driver
+To load the driver type:
+ 
+    insmod can.o hw='your hardware' irq='irq number' io='io 
+address' 
+ 
+Example: # insmod can.o hw=ccscan irq=4 io=0xd0000
+ 
+In our case use
+ 
+        hw=ccscan
+   irq=5 or irq=9
+   io=0xd0000 or io=0xd0800
+ 
+and the line above should have the following 
+content
+ 
+insmod can.o hw=ccscan,ccscan irq=5,9 
+io=0xd0000,0xd0800
+ 
+ 
+ 
+For other cards and combinations of cards the hw argument can be one 
+of:
+ 
+pip5, for the pip5 computer by MPL
+pip6, for the pip6 computer by MPL
+pccan-q, for the PCcan-Q ISA card by KVASER
+pccan-f, for the PCcan-F ISA card by KVASER
+pccan-s, for the PCcan-S ISA card by KVASER
+pccan-d, for the PCcan-D ISA card by KVASER
+nsican, for the CAN104 PC/104 card by NSI
+cc104, for the CAN104 PC/104 card by Contemporary Controls
+aim104, for the AIM104CAN PC/104 card by Arcom Control Systems
+pc-i03, for the PC-I03 ISA card by IXXAT
+pcm3680, for the PCM-3680 PC/104 card by Advantech
+m437, for the M436 PC/104 card by SECO
+ccscan, for 82527 based ISA can cards by CC Systems AB
+ccspcican for 82527 based PCI can cards by CC Systems AB
+template, for yet unsupported hardware (you need to edit src/template.c)
+ 
+options can be one of:
+ 
+major=, major specifies the major number of the driver.
+ 
+minor=, you can specify which minor numbers the driver should use for 
+your hardware.
+ 
+ 
+extended=[1|0], configures the driver to use extended message format.
+ 
+pelican=[1|0], configures the driver to set the CAN chips into pelican 
+mode.
+ 
+baudrate=, sets the baudrate of the device(s). This is the baudrate divided 
+with 1000 so 500000 bps should be set as ?500?
+ 
+stdmask=, sets the standard mask of the device
+ 
+extmask=, sets the extended mask of the device
+ 
+mo15mask=, sets the mask for message object 15 (i82527 only)
+ 
+ 
+If you put
+ 
+        options can io=0x300 irq=5
+ 
+or whatever your settings is in /etc/modules.conf (or /etc/conf.modules) its 
+possible to load your driver with the command
+ 
+        modprobe can
+ 
+or
+ 
+        insmod can
+ 
+To load the driver automagically during a boot you can put one of the 
+above commands last in the file
+ 
+ 
+        /etc/rc.d/boot.local
+ 
+ 
+                               Creating devices
+To create devices you must know the major number for the driver. The 
+default is 91 but if you set a number when you loaded the driver use that 
+instead.
+ 
+Issue the commands
+ 
+mknod /dev/can0 c [the major number] 0
+mknod /dev/can1 c [the major number] 1
+... 
+mknod /dev/can14 c [the major number] 14
+ 
+The next device thus starts at 15 an onwards.
+ 
+Now you should have a working driver.
+ 
+Remember to set the correct permissions on the device files otherwise it is 
+possible that you are unable to access (open) the device.
+ 
+                               Troubleshooting the driver
+Debug messages from the driver is written to 
+ 
+   /var/log/messages
+ 
+and can be a valuable help in troubleshooting.
+ 
+
+
+<sect> Usage <p>
+
+                               Testing the driver
+ 
+The can device can be tested with the sample programs sendburst, 
+readburst  and rxtx located in the utils directory. Notice that the device is 
+hardcoded to /dev/can0 in these samples and should be altered to 
+/dev/can15 to test the second of the two chips.
+ 
+ USING THE CAN DRIVER
+                           OPEN THE INTERFACE
+ 
+You can open the desiered can interface with something similar to the 
+following code
+ 
+   fd = open("/dev/can0",O_RDWR);
+   if ( fd<0 ) {
+printf("An error occurred opening the CAN 
+device\n");
+        exit(-1);
+   }
+ 
+                           CLOSE THE INTERFACE
+ 
+You can close the desiered can interface with something similar to the 
+following code
+        
+        close( fd );
+ 
+                           DUMPING REGISTERS OF THE DEVICE
+It is possible to dump the registers of the hardware device (to 
+/var/log/messages). This can be done with the ioctl STAT as in
+ 
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include "can.h"
+?.
+ioctl( fd, STAT );
+ 
+                           STARTING, STOPING THE HARDWARE
+ 
+Two ioctl commands are available for stoping/starting the hardware.
+ 
+CMD_START          Command to start the hardware.
+CMD_STOP            Command to stop the hardware.
+ 
+Example code:
+ 
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdio.h>
+#include "can.h"
+ 
+int main( void ) 
+{ 
+   int fd;
+ 
+   fd = open( "/dev/can0", O_RDWR );
+   if ( fd < 0 ) 
+   {
+printf("An error occurred opening the CAN 
+device\n");
+        exit(-1);
+   }
+   
+   ioctl( fd, CMD_RESET );
+ 
+   close( fd );
+ 
+   return 0;
+}
+ 
+                           SET BAUD RATE FOR A CHANNEL.
+The CONF_BAUD ioctl command is used to set the baudrate for a 
+channel. The ioctl argument is coded as follows (unsigned long)
+ 
+LSB byte    Byte 0            Channel (chip) to set baudrate for
+                    Byte 1            btr0
+                    Byte 2            btr1
+MSB byte   Byte 3            unused.
+ 
+ 
+Note that the baudrate also can be set on module load.
+
+
+ 
+                           SET A MESSAGE FILTER
+The CONF_FILTER ioctl command is used to set a filter range. The arg is 
+coded as follows
+ 
+id1   is set to arg <<5
+id0   is set to arg >> 3
+ 
+ 
+
+
+
+
+
+

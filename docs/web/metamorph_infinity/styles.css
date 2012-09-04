@@ -1,0 +1,295 @@
+/*
+Design by Metamorphosis Design
+http://www.metamorphozis.com
+Released for free under a Creative Commons Attribution 2.5 License
+*/
+
+*
+{
+margin: 0px;
+padding: 0px;
+}
+
+a:link {
+	color: #03a4c2;
+	font-weight:bold;
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: none;
+	color: #000000;
+	font-weight:bold;
+}
+
+a:visited {
+	color: #03a4c2;
+	font-weight:bold;
+	text-decoration: none;
+}
+
+body {	
+	background: url(images/bg.jpg);
+	font: 13px Arial, Helvetica, sans-serif;
+	color: #383838;
+}
+
+#content{
+	margin: 0 auto;
+	width: 918px;
+	text-align: left;
+	background: #ffffff url(images/mainbg.gif) repeat-x top;
+	padding-top: 10px;
+}
+
+#main{
+	width: 918px;
+	margin: 0 auto;
+	clear:both;
+	background:url(images/conbg.gif) repeat-y left;
+}
+
+#headbg{ 
+	background: url(images/headbg.jpg) repeat-x top;
+	height: 150px;
+}
+
+#header {
+	height: 300px;
+	width: 1000px;
+	background: url(images/newheader.jpg) no-repeat top;	
+	margin: 0 auto;	
+}
+
+#logo {
+height: 100px;
+text-align: left;
+width: 900px;
+padding-left: 100px;
+padding-top: 30px;
+}
+
+
+#logo a {
+	text-decoration: none;
+	text-transform: lowercase;
+	font-style: italic;
+	font-size: 18px;
+	color: #ffffff;
+}
+#logo H2 a
+{
+font-size: 12px;
+}
+
+
+#menu
+{
+width: 1000px;
+height: 90px;
+margin: 0 auto;
+}
+
+#menu ul {
+	list-style: none;	
+	padding-left: 170px;
+}
+
+#menu li {
+	
+	display: inline; 
+	
+}
+
+#menu a {
+	font-family:Georgia, "Times New Roman", Times, serif;
+	font-size: 20px;
+	float: left;
+	width: 129px;
+	height: 57px;
+    display: block;
+	text-align: center;
+	text-decoration: none;
+	color: #ffffff;
+	font-weight: normal;
+	padding-top: 33px;
+
+}
+
+#menu a:hover{
+	width: 129px;
+    height: 57px;
+	color: #03a4c2;
+	background:url(images/menuhover.jpg) repeat-x;
+}
+
+#left
+{
+width: 617px;
+padding-left: 10px;
+}
+
+.text{
+	padding-left: 10px;
+	padding-right: 10px;
+	padding-bottom: 10px;
+	padding-top: 5px;
+}
+
+#left H1{
+	font-family:Georgia, "Times New Roman", Times, serif;
+	font-size: 23px;
+	font-weight:normal;
+	height: 33px;
+	margin: 0;
+	color: #ffffff;
+	padding-left: 20px;
+	padding-top: 5px;
+	width:617px;
+	background: url(images/title_left.gif) no-repeat;
+}
+
+.date {
+	margin: 0 auto;
+	color: #01b4d5;
+	font-size: 11px;
+	padding-top: 10px;
+	border-top: 2px dotted #000000;
+	font-weight:bold;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+
+.date a {
+	text-decoration:none;
+}
+
+.dateleft{
+	background:url(images/timeicon.gif) no-repeat left;
+	padding-left: 20px;
+	height: 16px;
+	padding-top:2px;
+	width:200px;
+}
+
+.dateright{
+	margin-top: 2px;
+	float:right;
+	background:url(images/comment.gif) left no-repeat;
+	padding-right: 5px;
+	text-align:right;
+	height: 16px;
+	padding-left: 17px;
+}
+
+.h2botleft{
+	background:url(images/h2botleft.gif) top no-repeat;
+	padding-top: 20px;
+}
+
+#right{
+	width: 267px;
+	float:right;
+	margin-right: 12px;
+}
+
+#right a{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight:bold;
+}
+
+#righttop{
+	background:url(images/righttop.gif);
+	height: 2px;
+}
+
+.h2bot{
+	background:url(images/h2bot.gif) top no-repeat;
+	padding-top: 20px;
+}
+
+#right ul 
+{
+	list-style: none;
+	padding-left: 30px;
+	margin: 0px;
+	display:block;
+	
+}
+
+#right ul li{
+	margin-bottom: 20px;
+}
+
+#categories ul li {
+	margin-bottom: 5px;
+	background: url(images/list.gif) no-repeat;	
+	padding-left: 5px;
+}
+
+#partners ul li {
+	margin-bottom: 5px;
+	background: url(images/list2.gif) no-repeat;	
+	padding-left: 5px;
+}
+
+#right h2 {
+	font-family:Georgia, "Times New Roman", Times, serif;
+	font-size: 23px;
+	font-weight:normal;
+	height: 33px;
+	margin: 0;
+	background: url(images/title_right.gif) no-repeat;
+	color: #ffffff;
+	padding-left: 20px;
+	padding-top: 5px;
+}
+
+.noend{
+	height: 20px;	
+}
+
+.end{
+	height: 19px;
+}
+
+#right li a {
+	padding-left: 10px;
+}
+
+#pad{
+	padding: 7px;
+}
+
+#conbot{
+	background:url(images/conbot.gif);
+	clear:both;
+	height: 13px;
+}
+
+#last{
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+#footer {
+	height: 36px;
+	width: 1000px;
+	clear: both;
+	padding-top: 10px;
+	margin: 0 auto;
+}
+
+#footer p {
+	margin: 0;
+	font-size: 10px;
+	text-align: center;
+	color: #ffffff;
+}
+
+#footer a:hover {
+	text-decoration: none;
+	color: #ffffff;
+	font-weight:bold;
+}

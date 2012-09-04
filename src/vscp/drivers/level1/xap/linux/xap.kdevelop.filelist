@@ -1,0 +1,6 @@
+# KDevelop Custom Project File List
+Makefile
+Makefile.in
+test.cpp
+xapdrv.cpp
+xapdrv.h

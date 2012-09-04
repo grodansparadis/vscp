@@ -1,0 +1,12 @@
+; tcpdrv.def : Declares the module parameters for the DLL.
+
+LIBRARY      "tcpdrv"
+
+EXPORTS
+    ; Explicit exports can go here
+	VSCPOpen @1
+	VSCPClose @2
+	VSCPGetLevel @3
+	VSCPGetDllVersion @4
+	VSCPGetVendorString @5
+	VSCPGetDriverInfo @6

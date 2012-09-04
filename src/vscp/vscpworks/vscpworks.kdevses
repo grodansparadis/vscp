@@ -1,0 +1,84 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE KDevPrjSession>
+<KDevPrjSession>
+ <DocsAndViews NumberOfDocuments="7" >
+  <Doc0 NumberOfViews="1" URL="file:///home/akhe/development/m2m/src/vscp/vscpworks/vscpworks.cpp" >
+   <View0 Encoding="UTF-8" Type="Source" />
+  </Doc0>
+  <Doc1 NumberOfViews="1" URL="file:///home/akhe/development/m2m/src/vscp/common/version.h" >
+   <View0 Encoding="UTF-8" Type="Source" />
+  </Doc1>
+  <Doc2 NumberOfViews="1" URL="file:///home/akhe/development/m2m/src/vscp/common/vscphelper.cpp" >
+   <View0 Encoding="UTF-8" Type="Source" />
+  </Doc2>
+  <Doc3 NumberOfViews="1" URL="file:///home/akhe/development/m2m/src/vscp/common/vscphelper.h" >
+   <View0 Encoding="UTF-8" Type="Source" />
+  </Doc3>
+  <Doc4 NumberOfViews="1" URL="file:///home/akhe/development/m2m/src/vscp/vscpworks/dlgvscpinterfacesettings.cpp" >
+   <View0 Encoding="UTF-8" Type="Source" />
+  </Doc4>
+  <Doc5 NumberOfViews="1" URL="file:///home/akhe/development/m2m/src/vscp/vscpworks/dlgnewvscpsession.cpp" >
+   <View0 Encoding="UTF-8" Type="Source" />
+  </Doc5>
+  <Doc6 NumberOfViews="1" URL="file:///home/akhe/development/m2m/src/vscp/vscpworks/frmmain.cpp" >
+   <View0 Encoding="" line="10" Type="Source" />
+  </Doc6>
+ </DocsAndViews>
+ <pluginList>
+  <kdevdebugger>
+   <breakpointList>
+    <breakpoint0 location="/home/akhe/development/m2m/src/vscp/vscpworks/frmmain.cpp:201" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint0>
+    <breakpoint1 location="/home/akhe/development/m2m/src/vscp/vscpworks/frmmain.cpp:206" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint1>
+    <breakpoint2 location="/home/akhe/development/m2m/src/vscp/vscpworks/dlgnewvscpsession.cpp:327" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint2>
+    <breakpoint3 location="/home/akhe/development/m2m/src/vscp/vscpworks/dlgnewvscpsession.cpp:119" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint3>
+    <breakpoint4 location="/home/akhe/development/m2m/src/vscp/vscpworks/dlgnewvscpsession.cpp:124" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint4>
+    <breakpoint5 location="" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint5>
+    <breakpoint6 location="/home/akhe/development/m2m/src/vscp/vscpworks/dlgnewvscpsession.cpp:321" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint6>
+    <breakpoint7 location="/home/akhe/development/m2m/src/vscp/vscpworks/vscpworks.cpp:2207" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint7>
+    <breakpoint8 location="/home/akhe/development/m2m/src/vscp/vscpworks/vscpworks.cpp:1491" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint8>
+    <breakpoint9 location="/home/akhe/development/m2m/src/vscp/vscpworks/vscpworks.cpp:2582" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint9>
+    <breakpoint10 location="/home/akhe/development/m2m/src/vscp/vscpworks/vscpworks.cpp:139" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint10>
+   </breakpointList>
+   <showInternalCommands value="0" />
+  </kdevdebugger>
+  <kdevastyle>
+   <Extensions ext="*.cpp *.h,*.c *.h,*.cxx *.hxx,*.c++ *.h++,*.cc *.hh,*.C *.H,*.diff,*.inl,*.java,*.moc,*.patch,*.tlh,*.xpm" />
+   <AStyle IndentPreprocessors="0" FillCount="4" PadParenthesesOut="0" IndentNamespaces="1" IndentLabels="0" Fill="Tabs" MaxStatement="40" Brackets="Linux" MinConditional="-1" IndentBrackets="0" PadParenthesesUn="1" BlockBreak="1" KeepStatements="0" KeepBlocks="0" BlockIfElse="1" IndentSwitches="1" PadOperators="1" FStyle="UserDefined" IndentCases="1" FillEmptyLines="0" BracketsCloseHeaders="1" BlockBreakAll="0" PadParenthesesIn="1" IndentClasses="1" IndentBlocks="0" FillForce="0" />
+  </kdevastyle>
+  <kdevbookmarks>
+   <bookmarks>
+    <bookmark url="/home/akhe/development/vscp/src/vscp/common/mdf.h" >
+     <mark line="485" />
+    </bookmark>
+   </bookmarks>
+  </kdevbookmarks>
+  <kdevvalgrind>
+   <executable path="" params="" />
+   <valgrind path="" params="" />
+   <calltree path="" params="" />
+   <kcachegrind path="" />
+  </kdevvalgrind>
+ </pluginList>
+</KDevPrjSession>

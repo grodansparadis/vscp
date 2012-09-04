@@ -1,0 +1,46 @@
+﻿Build started 2012-09-03 11:49:53.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level2\logger\win32\vscplogger.vcxproj" on node 3 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating ".\Release\vscplogger.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+         All outputs are up-to-date.
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         vscplogger.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level2\logger\win32\.\Release\vscplogger.dll
+       BscMake:
+         All outputs are up-to-date.
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level2\logger\win32\.\Release\vscplogger.dll"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y ".\Release\/vscplogger.lib"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release already exists.
+                 1 file(s) copied.
+                 1 file(s) copied.
+       PostBuildEvent:
+         copy release\*.dll "C:\Windows"\system32
+         copy release\*.dll ..\..\..\delivery
+         copy release\*.lib ..\..\..\delivery
+         
+         :VCEnd
+         release\vscplogger.dll
+         Access is denied.
+                 0 file(s) copied.
+         release\vscplogger.dll
+                 1 file(s) copied.
+         release\vscplogger.lib
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file ".\Release\vscplogger.unsuccessfulbuild".
+         Touching ".\Release\vscplogger.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level2\logger\win32\vscplogger.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.36

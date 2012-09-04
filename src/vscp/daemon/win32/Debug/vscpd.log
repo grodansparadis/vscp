@@ -1,0 +1,30 @@
+﻿Build started 2012-09-03 13:40:37.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\vscpd.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating ".\Debug\vscpd.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         vscpd.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\.\Debug\vscpd.exe
+       BscMake:
+         All outputs are up-to-date.
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\.\Debug\vscpd.exe"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+                 1 file(s) copied.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug already exists.
+       FinalizeBuildStatus:
+         Deleting file ".\Debug\vscpd.unsuccessfulbuild".
+         Touching ".\Debug\vscpd.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\vscpd.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.37

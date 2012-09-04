@@ -1,0 +1,10 @@
+CanalDiagnostic 
+===============
+This was the first general message hadnling app for CANAL and was written using MFC. 
+It has now been ported to wxWidgets and is called cw (CanalWorks)
+
+
+loggerWindow
+============
+A simple logger application window written using MFC. CanalLogWnd is a simular 
+application using wxWidgets.

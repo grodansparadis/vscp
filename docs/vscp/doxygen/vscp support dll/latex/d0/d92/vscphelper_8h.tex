@@ -1,0 +1,897 @@
+\hypertarget{vscphelper_8h}{
+\section{D:/development/m2m/src/vscp/common/vscphelper.h File Reference}
+\label{d0/d92/vscphelper_8h}\index{D:/development/m2m/src/vscp/common/vscphelper.h@{D:/development/m2m/src/vscp/common/vscphelper.h}}
+}
+
+
+The vscphelper file contains often used functionality when working with VSCP.  
+
+
+{\ttfamily \#include $<$wx/wx.h$>$}\par
+{\ttfamily \#include $<$wx/hashmap.h$>$}\par
+{\ttfamily \#include $<$sys/times.h$>$}\par
+{\ttfamily \#include \char`\"{}vscp.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}vscp\_\-class.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}vscp\_\-type.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}canal.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}../../common/crc.h\char`\"{}}\par
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+union \hyperlink{unionvscp__value}{vscp\_\-value}
+\begin{DoxyCompactList}\small\item\em VSCP Data coding declaration. \end{DoxyCompactList}\item 
+class \hyperlink{class_v_s_c_p_information}{VSCPInformation}
+\begin{DoxyCompactList}\small\item\em This class holds nformation about VSCP events. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{vscphelper_8h_a77f04e6f16ea34607dd7d780cfc38654}{
+\hyperlink{vscphelper_8h_a77f04e6f16ea34607dd7d780cfc38654}{WX\_\-DECLARE\_\-HASH\_\-MAP} (unsigned long, wxString, wxIntegerHash, wxIntegerEqual, VSCPHashClass)}
+\label{d0/d92/vscphelper_8h_a77f04e6f16ea34607dd7d780cfc38654}
+
+\begin{DoxyCompactList}\small\item\em Hashtable for known event VSCP classes. \end{DoxyCompactList}\item 
+\hypertarget{vscphelper_8h_a0d45b7eeb47a2da34e0aaae1ace7748d}{
+\hyperlink{vscphelper_8h_a0d45b7eeb47a2da34e0aaae1ace7748d}{WX\_\-DECLARE\_\-HASH\_\-MAP} (unsigned long, wxString, wxIntegerHash, wxIntegerEqual, VSCPHashType)}
+\label{d0/d92/vscphelper_8h_a0d45b7eeb47a2da34e0aaae1ace7748d}
+
+\begin{DoxyCompactList}\small\item\em Hashtable for known event VSCP types. \end{DoxyCompactList}\item 
+uint32\_\-t \hyperlink{vscphelper_8h_ac73d730ea461cbf5e59d80c1fc9571c1}{getDataCodingBitArray} (const uint8\_\-t $\ast$pNorm, const uint8\_\-t length)
+\item 
+double \hyperlink{vscphelper_8h_af419b2b131dac2ba1b5819fd9e887f6d}{getDataCodingNormalizedInteger} (const uint8\_\-t $\ast$pNorm, const uint8\_\-t length)
+\item 
+wxString \& \hyperlink{vscphelper_8h_a6fd803e70df9051259e4cd34d5a8d3ca}{getDataCodingString} (const uint8\_\-t $\ast$pString, const uint8\_\-t length)
+\item 
+bool \hyperlink{vscphelper_8h_a3cc60f8f31b7c6be23747c0d036df43d}{getVSCPDataCodingAsString} (const vscpEvent $\ast$pEvent, wxString \&str)
+\item 
+float \hyperlink{vscphelper_8h_aa4f02bfdfc0932d2b467b172d818a0b6}{getDataCodingFloat} (const uint8\_\-t $\ast$pNorm, const uint8\_\-t length)
+\item 
+wxString \& \hyperlink{vscphelper_8h_a47e362262c74d827407007bad1e33584}{replaceBackslash} (wxString \&wxstr)
+\item 
+uint32\_\-t \hyperlink{vscphelper_8h_a37518e8308fdca1ba3881ba97beb1450}{readStringValue} (const wxString \&strval)
+\item 
+unsigned char \hyperlink{vscphelper_8h_abbb7f518542239312629e55a093f3edd}{getVscpPriority} (const vscpEvent $\ast$pEvent)
+\item 
+void \hyperlink{vscphelper_8h_afc9df683a4370fbb3ed522c99245547d}{setVscpPriority} (vscpEvent $\ast$pEvent, unsigned char priority)
+\item 
+uint8\_\-t \hyperlink{vscphelper_8h_ab2fcacc35f75f14ad52a575e4102d710}{getVSCPheadFromCANid} (const uint32\_\-t id)
+\item 
+uint16\_\-t \hyperlink{vscphelper_8h_a4cb932a3f60ecbe8254b8f42df3a8e48}{getVSCPclassFromCANid} (const uint32\_\-t id)
+\item 
+uint16\_\-t \hyperlink{vscphelper_8h_aad21b05f0e27221ee42d4e6f083f05d5}{getVSCPtypeFromCANid} (const uint32\_\-t id)
+\item 
+uint16\_\-t \hyperlink{vscphelper_8h_af69b2dc71e5e4e17573ef0d80d8863d5}{getVSCPnicknameFromCANid} (const uint32\_\-t id)
+\item 
+uint32\_\-t \hyperlink{vscphelper_8h_a4e9c0b7295c3c37b182c66a824d50909}{getCANidFromVSCPdata} (const uint8\_\-t priority, const uint16\_\-t vscp\_\-class, const uint16\_\-t vscp\_\-type)
+\item 
+uint32\_\-t \hyperlink{vscphelper_8h_a6d694fe4acd37acb81d7248f7ede92cd}{getCANidFromVSCPevent} (const vscpEvent $\ast$pEvent)
+\item 
+unsigned short \hyperlink{vscphelper_8h_a5d9b45538821e69880c9f0b6dc05a284}{vscp\_\-calc\_\-crc} (vscpEvent $\ast$pEvent, short bSet)
+\item 
+bool \hyperlink{vscphelper_8h_a61f12973ef46f145596ff5b226033f12}{getGuidFromString} (vscpEvent $\ast$pEvent, const wxString \&strGUID)
+\item 
+bool \hyperlink{vscphelper_8h_aa338b4dc174f2e357938a3934ed662ac}{getGuidFromStringToArray} (uint8\_\-t $\ast$pGUID, const wxString \&strGUID)
+\item 
+bool \hyperlink{vscphelper_8h_aacc134916207d471111575578361d17b}{writeGuidToString} (const vscpEvent $\ast$pEvent, wxString \&strGUID)
+\item 
+bool \hyperlink{vscphelper_8h_a2837b816f21d8cad9d21fd33cdc44241}{writeGuidToString4Rows} (const vscpEvent $\ast$pEvent, wxString \&strGUID)
+\item 
+bool \hyperlink{vscphelper_8h_a9123c12e459b6df26a5a3068e324e59b}{writeGuidArrayToString} (const unsigned char $\ast$pGUID, wxString \&strGUID)
+\item 
+bool \hyperlink{vscphelper_8h_a8948a207bc4c5c36501b99909d13b517}{isGUIDEmpty} (unsigned char $\ast$pGUID)
+\item 
+bool \hyperlink{vscphelper_8h_a2d34fd37a622c86215591bbf7b579dc6}{isSameGUID} (const unsigned char $\ast$pGUID1, const unsigned char $\ast$pGUID2)
+\item 
+bool \hyperlink{vscphelper_8h_a0a34b644139c9d9bb8843ce34c0ffa92}{convertVSCPtoEx} (vscpEventEx $\ast$pEventEx, const vscpEvent $\ast$pEvent)
+\item 
+bool \hyperlink{vscphelper_8h_a75759fcfcf413ef8dfebb3588728ad4b}{convertVSCPfromEx} (vscpEvent $\ast$pEvent, const vscpEventEx $\ast$pEventEx)
+\item 
+void \hyperlink{vscphelper_8h_a97238220c410b0651f484e911e9c214e}{deleteVSCPevent} (vscpEvent $\ast$pEvent)
+\item 
+void \hyperlink{vscphelper_8h_a73afbb757bb092e4d719a2c9efd369af}{deleteVSCPeventEx} (vscpEventEx $\ast$pEventEx)
+\item 
+void \hyperlink{vscphelper_8h_aae2d126daf6597b03d1d7f75e01925b6}{clearVSCPFilter} (vscpEventFilter $\ast$pFilter)
+\item 
+bool \hyperlink{vscphelper_8h_ab54d5c1a6b5c68971776bfe81324970f}{doLevel2Filter} (const vscpEvent $\ast$pEvent, const vscpEventFilter $\ast$pFilter)
+\item 
+bool \hyperlink{vscphelper_8h_aad5d6139dfb80732bf29815f51d086c6}{convertCanalToEvent} (vscpEvent $\ast$pvscpEvent, const canalMsg $\ast$pcanalMsg, unsigned char $\ast$pGUID, bool bCAN=false)
+\item 
+bool \hyperlink{vscphelper_8h_ae9fff5c3ba69d793abb2d0f5126803ca}{convertEventToCanal} (canalMsg $\ast$pcanalMsg, const vscpEvent $\ast$pvscpEvent)
+\item 
+bool \hyperlink{vscphelper_8h_ae09931c2bff94dbf152688d97bd0b557}{convertEventExToCanal} (canalMsg $\ast$pcanalMsg, const vscpEventEx $\ast$pvscpEventEx)
+\item 
+unsigned long \hyperlink{vscphelper_8h_ad38b22510c3adc42ae0dc180a3f11e6a}{makeTimeStamp} (void)
+\item 
+bool \hyperlink{vscphelper_8h_a795c7716688fab17179857be42fd8fc0}{copyVSCPEvent} (vscpEvent $\ast$pEventTo, const vscpEvent $\ast$pEventFrom)
+\item 
+bool \hyperlink{vscphelper_8h_a18c48b62a454d13429fe778fdfebc856}{writeVscpDataToString} (const vscpEvent $\ast$pEvent, wxString \&str, bool bUseHtmlBreak=false)
+\item 
+bool \hyperlink{vscphelper_8h_aae664f9d3ffe4b547fe5234ce1197e10}{writeVscpDataWithSizeToString} (const uint16\_\-t sizeData, const uint8\_\-t $\ast$pData, wxString \&str, bool bUseHtmlBreak=false)
+\item 
+bool \hyperlink{vscphelper_8h_a62a4391ffde89f5d6a0189de2efead85}{getVscpDataFromString} (vscpEvent $\ast$pEvent, const wxString \&str)
+\item 
+bool \hyperlink{vscphelper_8h_a59f944c8543defeaee4e78149e5f38d0}{getVscpDataArrayFromString} (uint8\_\-t $\ast$pData, uint16\_\-t $\ast$psizeData, const wxString \&str)
+\item 
+bool \hyperlink{vscphelper_8h_aadcd26f753c474c89d40047e8dd9fe68}{writeVscpEventToString} (vscpEvent $\ast$pEvent, wxString \&str)
+\item 
+bool \hyperlink{vscphelper_8h_a5f39708fc1d0ab62a8f7071260656c2a}{writeVscpEventToStringEx} (vscpEventEx $\ast$pEvent, wxString \&str)
+\item 
+bool \hyperlink{vscphelper_8h_a39878c2664b7151fc023c717479a65f7}{getVscpEventFromString} (vscpEvent $\ast$pEvent, const wxString \&str)
+\item 
+bool \hyperlink{vscphelper_8h_a976e8bf030ae7ac304e3e1faffccc33c}{getVscpEventExFromString} (vscpEventEx $\ast$pEventEx, const wxString \&str)
+\item 
+wxString \& \hyperlink{vscphelper_8h_a8d213e1c09e5c8d13129708b6624b57b}{getRealTextData} (vscpEvent $\ast$pEvent)
+\item 
+void \hyperlink{vscphelper_8h_acdcbbb1426efa48706721d43c7f745a2}{makeHtml} (wxString \&str)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The vscphelper file contains often used functionality when working with VSCP. vscphealper have common used functionality to do things in the VSCP world. It can be seens as the main toolbox for the VSCP programmer. 
+
+\subsection{Function Documentation}
+\hypertarget{vscphelper_8h_aae2d126daf6597b03d1d7f75e01925b6}{
+\index{vscphelper.h@{vscphelper.h}!clearVSCPFilter@{clearVSCPFilter}}
+\index{clearVSCPFilter@{clearVSCPFilter}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{clearVSCPFilter}]{\setlength{\rightskip}{0pt plus 5cm}void clearVSCPFilter (
+\begin{DoxyParamCaption}
+\item[{vscpEventFilter $\ast$}]{pFilter}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_aae2d126daf6597b03d1d7f75e01925b6}
+Clear VSCP filter so it will allow all events to go through 
+\begin{DoxyParams}{Parameters}
+{\em pFilter} & Pointer to VSCP filter. \\
+\hline
+\end{DoxyParams}
+\hypertarget{vscphelper_8h_aad5d6139dfb80732bf29815f51d086c6}{
+\index{vscphelper.h@{vscphelper.h}!convertCanalToEvent@{convertCanalToEvent}}
+\index{convertCanalToEvent@{convertCanalToEvent}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{convertCanalToEvent}]{\setlength{\rightskip}{0pt plus 5cm}bool convertCanalToEvent (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pvscpEvent, }
+\item[{const canalMsg $\ast$}]{pcanalMsg, }
+\item[{unsigned char $\ast$}]{pGUID, }
+\item[{bool}]{bCAN = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_aad5d6139dfb80732bf29815f51d086c6}
+Convert an Event from a CANAL message \hypertarget{vscphelper_8h_ae09931c2bff94dbf152688d97bd0b557}{
+\index{vscphelper.h@{vscphelper.h}!convertEventExToCanal@{convertEventExToCanal}}
+\index{convertEventExToCanal@{convertEventExToCanal}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{convertEventExToCanal}]{\setlength{\rightskip}{0pt plus 5cm}bool convertEventExToCanal (
+\begin{DoxyParamCaption}
+\item[{canalMsg $\ast$}]{pcanalMsg, }
+\item[{const vscpEventEx $\ast$}]{pvscpEventEx}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_ae09931c2bff94dbf152688d97bd0b557}
+Covert VSCP event ex to CANAL message \hypertarget{vscphelper_8h_ae9fff5c3ba69d793abb2d0f5126803ca}{
+\index{vscphelper.h@{vscphelper.h}!convertEventToCanal@{convertEventToCanal}}
+\index{convertEventToCanal@{convertEventToCanal}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{convertEventToCanal}]{\setlength{\rightskip}{0pt plus 5cm}bool convertEventToCanal (
+\begin{DoxyParamCaption}
+\item[{canalMsg $\ast$}]{pcanalMsg, }
+\item[{const vscpEvent $\ast$}]{pvscpEvent}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_ae9fff5c3ba69d793abb2d0f5126803ca}
+Covert VSCP event to CANAL message \hypertarget{vscphelper_8h_a75759fcfcf413ef8dfebb3588728ad4b}{
+\index{vscphelper.h@{vscphelper.h}!convertVSCPfromEx@{convertVSCPfromEx}}
+\index{convertVSCPfromEx@{convertVSCPfromEx}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{convertVSCPfromEx}]{\setlength{\rightskip}{0pt plus 5cm}bool convertVSCPfromEx (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent, }
+\item[{const vscpEventEx $\ast$}]{pEventEx}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a75759fcfcf413ef8dfebb3588728ad4b}
+Convert an Ex event to a standard VSCP event \hypertarget{vscphelper_8h_a0a34b644139c9d9bb8843ce34c0ffa92}{
+\index{vscphelper.h@{vscphelper.h}!convertVSCPtoEx@{convertVSCPtoEx}}
+\index{convertVSCPtoEx@{convertVSCPtoEx}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{convertVSCPtoEx}]{\setlength{\rightskip}{0pt plus 5cm}bool convertVSCPtoEx (
+\begin{DoxyParamCaption}
+\item[{vscpEventEx $\ast$}]{pEventEx, }
+\item[{const vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a0a34b644139c9d9bb8843ce34c0ffa92}
+Convert a standard VSCP event to the Ex version \hypertarget{vscphelper_8h_a795c7716688fab17179857be42fd8fc0}{
+\index{vscphelper.h@{vscphelper.h}!copyVSCPEvent@{copyVSCPEvent}}
+\index{copyVSCPEvent@{copyVSCPEvent}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{copyVSCPEvent}]{\setlength{\rightskip}{0pt plus 5cm}bool copyVSCPEvent (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEventTo, }
+\item[{const vscpEvent $\ast$}]{pEventFrom}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a795c7716688fab17179857be42fd8fc0}
+Copy a VSCP event to another
+
+
+\begin{DoxyParams}{Parameters}
+{\em pEventTo} & Pointer to event to copy to. \\
+\hline
+{\em pEventFrom} & Pointer to event to copy from. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True on success. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a97238220c410b0651f484e911e9c214e}{
+\index{vscphelper.h@{vscphelper.h}!deleteVSCPevent@{deleteVSCPevent}}
+\index{deleteVSCPevent@{deleteVSCPevent}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{deleteVSCPevent}]{\setlength{\rightskip}{0pt plus 5cm}void deleteVSCPevent (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a97238220c410b0651f484e911e9c214e}
+Delete a standard VSCP event \hypertarget{vscphelper_8h_a73afbb757bb092e4d719a2c9efd369af}{
+\index{vscphelper.h@{vscphelper.h}!deleteVSCPeventEx@{deleteVSCPeventEx}}
+\index{deleteVSCPeventEx@{deleteVSCPeventEx}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{deleteVSCPeventEx}]{\setlength{\rightskip}{0pt plus 5cm}void deleteVSCPeventEx (
+\begin{DoxyParamCaption}
+\item[{vscpEventEx $\ast$}]{pEventEx}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a73afbb757bb092e4d719a2c9efd369af}
+Delete an Ex event \hypertarget{vscphelper_8h_ab54d5c1a6b5c68971776bfe81324970f}{
+\index{vscphelper.h@{vscphelper.h}!doLevel2Filter@{doLevel2Filter}}
+\index{doLevel2Filter@{doLevel2Filter}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{doLevel2Filter}]{\setlength{\rightskip}{0pt plus 5cm}bool doLevel2Filter (
+\begin{DoxyParamCaption}
+\item[{const vscpEvent $\ast$}]{pEvent, }
+\item[{const vscpEventFilter $\ast$}]{pFilter}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_ab54d5c1a6b5c68971776bfe81324970f}
+Check filter/mask to check if filter should be delivered
+
+filter $^\wedge$ bit mask out ============================ 0 0 1 filter == bit, mask = don't care result = true 0 1 1 filter == bit, mask = valid, result = true 1 0 1 filter != bit, mask = don't care, result = true 1 1 0 filter != bit, mask = valid, result = false
+
+Mask tells $\ast$which$\ast$ bits that are of interest means it always returns true if bit set to zero (0=don't care).
+
+Filter tells the value fo valid bits. If filter bit is == 1 the bits must be equal to get a true filter return.
+
+So a nill mask will let everything through \begin{DoxyReturn}{Returns}
+true if message should be delivered false if not. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a4e9c0b7295c3c37b182c66a824d50909}{
+\index{vscphelper.h@{vscphelper.h}!getCANidFromVSCPdata@{getCANidFromVSCPdata}}
+\index{getCANidFromVSCPdata@{getCANidFromVSCPdata}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getCANidFromVSCPdata}]{\setlength{\rightskip}{0pt plus 5cm}uint32\_\-t getCANidFromVSCPdata (
+\begin{DoxyParamCaption}
+\item[{const uint8\_\-t}]{priority, }
+\item[{const uint16\_\-t}]{vscp\_\-class, }
+\item[{const uint16\_\-t}]{vscp\_\-type}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a4e9c0b7295c3c37b182c66a824d50909}
+Get CAN id from VSCP info 
+\begin{DoxyParams}{Parameters}
+{\em priority} & VSCP priority \\
+\hline
+{\em vscp\_\-class} & VSCP class \\
+\hline
+{\em vscp\_\-type} & VSCP type \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+CAN id with nickname == 0 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a6d694fe4acd37acb81d7248f7ede92cd}{
+\index{vscphelper.h@{vscphelper.h}!getCANidFromVSCPevent@{getCANidFromVSCPevent}}
+\index{getCANidFromVSCPevent@{getCANidFromVSCPevent}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getCANidFromVSCPevent}]{\setlength{\rightskip}{0pt plus 5cm}uint32\_\-t getCANidFromVSCPevent (
+\begin{DoxyParamCaption}
+\item[{const vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a6d694fe4acd37acb81d7248f7ede92cd}
+Get CAN id from VSCP event 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Pointer to VSCP event \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+CAN id with nickname == 0 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_ac73d730ea461cbf5e59d80c1fc9571c1}{
+\index{vscphelper.h@{vscphelper.h}!getDataCodingBitArray@{getDataCodingBitArray}}
+\index{getDataCodingBitArray@{getDataCodingBitArray}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getDataCodingBitArray}]{\setlength{\rightskip}{0pt plus 5cm}uint32\_\-t getDataCodingBitArray (
+\begin{DoxyParamCaption}
+\item[{const uint8\_\-t $\ast$}]{pNorm, }
+\item[{const uint8\_\-t}]{length}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_ac73d730ea461cbf5e59d80c1fc9571c1}
+Get bitarray from coded event data 
+\begin{DoxyParams}{Parameters}
+{\em pNorm} & Pointer to normalized integer. \\
+\hline
+{\em length} & Number of bytes it consist of including the first normalize byte. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Bitarray as a unsigned 64-\/bit integer. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_aa4f02bfdfc0932d2b467b172d818a0b6}{
+\index{vscphelper.h@{vscphelper.h}!getDataCodingFloat@{getDataCodingFloat}}
+\index{getDataCodingFloat@{getDataCodingFloat}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getDataCodingFloat}]{\setlength{\rightskip}{0pt plus 5cm}float getDataCodingFloat (
+\begin{DoxyParamCaption}
+\item[{const uint8\_\-t $\ast$}]{pNorm, }
+\item[{const uint8\_\-t}]{length}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_aa4f02bfdfc0932d2b467b172d818a0b6}
+Get data in the VSCP data coding format to a float 
+\begin{DoxyParams}{Parameters}
+{\em pNorm} & Pointer to VSCP event. \\
+\hline
+{\em length} & Number of bytes it consist of including datacoding byte \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+value as float 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_af419b2b131dac2ba1b5819fd9e887f6d}{
+\index{vscphelper.h@{vscphelper.h}!getDataCodingNormalizedInteger@{getDataCodingNormalizedInteger}}
+\index{getDataCodingNormalizedInteger@{getDataCodingNormalizedInteger}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getDataCodingNormalizedInteger}]{\setlength{\rightskip}{0pt plus 5cm}double getDataCodingNormalizedInteger (
+\begin{DoxyParamCaption}
+\item[{const uint8\_\-t $\ast$}]{pNorm, }
+\item[{const uint8\_\-t}]{length}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_af419b2b131dac2ba1b5819fd9e887f6d}
+Get normalized integer from coded event data 
+\begin{DoxyParams}{Parameters}
+{\em pNorm} & Pointer to normalized integer. \\
+\hline
+{\em length} & Number of bytes it consist of including the first normalize byte. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+returns value as a double. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a6fd803e70df9051259e4cd34d5a8d3ca}{
+\index{vscphelper.h@{vscphelper.h}!getDataCodingString@{getDataCodingString}}
+\index{getDataCodingString@{getDataCodingString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getDataCodingString}]{\setlength{\rightskip}{0pt plus 5cm}wxString\& getDataCodingString (
+\begin{DoxyParamCaption}
+\item[{const uint8\_\-t $\ast$}]{pString, }
+\item[{const uint8\_\-t}]{length}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a6fd803e70df9051259e4cd34d5a8d3ca}
+Get the string from coded event data 
+\begin{DoxyParams}{Parameters}
+{\em pString} & Pointer to normalized integer. \\
+\hline
+{\em length} & Number of bytes it consist of including the first normalize byte. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns unicode UTF-\/8 string of event data 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a61f12973ef46f145596ff5b226033f12}{
+\index{vscphelper.h@{vscphelper.h}!getGuidFromString@{getGuidFromString}}
+\index{getGuidFromString@{getGuidFromString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getGuidFromString}]{\setlength{\rightskip}{0pt plus 5cm}bool getGuidFromString (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent, }
+\item[{const wxString \&}]{strGUID}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a61f12973ef46f145596ff5b226033f12}
+Get GUID from string
+
+
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Pointer to VSCP event \\
+\hline
+{\em strGUID} & String with GUID (xx:yy:zz....) \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_aa338b4dc174f2e357938a3934ed662ac}{
+\index{vscphelper.h@{vscphelper.h}!getGuidFromStringToArray@{getGuidFromStringToArray}}
+\index{getGuidFromStringToArray@{getGuidFromStringToArray}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getGuidFromStringToArray}]{\setlength{\rightskip}{0pt plus 5cm}bool getGuidFromStringToArray (
+\begin{DoxyParamCaption}
+\item[{uint8\_\-t $\ast$}]{pGUID, }
+\item[{const wxString \&}]{strGUID}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_aa338b4dc174f2e357938a3934ed662ac}
+Fill event GUID from a string \hypertarget{vscphelper_8h_a8d213e1c09e5c8d13129708b6624b57b}{
+\index{vscphelper.h@{vscphelper.h}!getRealTextData@{getRealTextData}}
+\index{getRealTextData@{getRealTextData}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getRealTextData}]{\setlength{\rightskip}{0pt plus 5cm}wxString\& getRealTextData (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a8d213e1c09e5c8d13129708b6624b57b}
+Get Data in real text. This for meaurement class events that can be describes in real text in a deterministic way. Temperature event is typical which can be returned in clear text as \char`\"{}Temperature = 22.5 C\char`\"{}. 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Event that should be presented \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Text data representation of the event data or an empty string if the class/type pair is not supported.. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a4cb932a3f60ecbe8254b8f42df3a8e48}{
+\index{vscphelper.h@{vscphelper.h}!getVSCPclassFromCANid@{getVSCPclassFromCANid}}
+\index{getVSCPclassFromCANid@{getVSCPclassFromCANid}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVSCPclassFromCANid}]{\setlength{\rightskip}{0pt plus 5cm}uint16\_\-t getVSCPclassFromCANid (
+\begin{DoxyParamCaption}
+\item[{const uint32\_\-t}]{id}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a4cb932a3f60ecbe8254b8f42df3a8e48}
+Get VSCP class from CAN id 
+\begin{DoxyParams}{Parameters}
+{\em id} & CAN id \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+VSCP class 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a59f944c8543defeaee4e78149e5f38d0}{
+\index{vscphelper.h@{vscphelper.h}!getVscpDataArrayFromString@{getVscpDataArrayFromString}}
+\index{getVscpDataArrayFromString@{getVscpDataArrayFromString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVscpDataArrayFromString}]{\setlength{\rightskip}{0pt plus 5cm}bool getVscpDataArrayFromString (
+\begin{DoxyParamCaption}
+\item[{uint8\_\-t $\ast$}]{pData, }
+\item[{uint16\_\-t $\ast$}]{psizeData, }
+\item[{const wxString \&}]{str}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a59f944c8543defeaee4e78149e5f38d0}
+Get VSCP data from a string 
+\begin{DoxyParams}{Parameters}
+{\em pData} & Ponter to a unsigned byte array to write parsed data to. \\
+\hline
+{\em psizeData} & Number of databytes. \\
+\hline
+{\em str} & A string with comma or whitespace separated data in decimal or hexadecimal form. Data can span multiple lines. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a3cc60f8f31b7c6be23747c0d036df43d}{
+\index{vscphelper.h@{vscphelper.h}!getVSCPDataCodingAsString@{getVSCPDataCodingAsString}}
+\index{getVSCPDataCodingAsString@{getVSCPDataCodingAsString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVSCPDataCodingAsString}]{\setlength{\rightskip}{0pt plus 5cm}bool getVSCPDataCodingAsString (
+\begin{DoxyParamCaption}
+\item[{const vscpEvent $\ast$}]{pEvent, }
+\item[{wxString \&}]{str}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a3cc60f8f31b7c6be23747c0d036df43d}
+Get data in the VSCP data coding format to a string 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Pointer to VSCP event. \\
+\hline
+{\em str} & String that holds the result \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a62a4391ffde89f5d6a0189de2efead85}{
+\index{vscphelper.h@{vscphelper.h}!getVscpDataFromString@{getVscpDataFromString}}
+\index{getVscpDataFromString@{getVscpDataFromString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVscpDataFromString}]{\setlength{\rightskip}{0pt plus 5cm}bool getVscpDataFromString (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent, }
+\item[{const wxString \&}]{str}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a62a4391ffde89f5d6a0189de2efead85}
+Get VSCP data from a string 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Ponter to a VSCP event to write parsed data to. \\
+\hline
+{\em str} & A string with comma or whitespace separated data in decimal or hexadecimal form. Data can span multiple lines. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a976e8bf030ae7ac304e3e1faffccc33c}{
+\index{vscphelper.h@{vscphelper.h}!getVscpEventExFromString@{getVscpEventExFromString}}
+\index{getVscpEventExFromString@{getVscpEventExFromString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVscpEventExFromString}]{\setlength{\rightskip}{0pt plus 5cm}bool getVscpEventExFromString (
+\begin{DoxyParamCaption}
+\item[{vscpEventEx $\ast$}]{pEventEx, }
+\item[{const wxString \&}]{str}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a976e8bf030ae7ac304e3e1faffccc33c}
+Get event data from string format Format: head,class,type,obid,timestamp,GUID,data1,data2,data3.... 
+\begin{DoxyParams}{Parameters}
+{\em pEventEx} & Pointer to VSCP event that will get the parsed data \\
+\hline
+{\em str} & String that contain the event on string form \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a39878c2664b7151fc023c717479a65f7}{
+\index{vscphelper.h@{vscphelper.h}!getVscpEventFromString@{getVscpEventFromString}}
+\index{getVscpEventFromString@{getVscpEventFromString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVscpEventFromString}]{\setlength{\rightskip}{0pt plus 5cm}bool getVscpEventFromString (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent, }
+\item[{const wxString \&}]{str}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a39878c2664b7151fc023c717479a65f7}
+Get event data from string format Format: head,class,type,obid,timestamp,GUID,data1,data2,data3.... 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Event that will get data \\
+\hline
+{\em str} & String that contain the event on string form \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_ab2fcacc35f75f14ad52a575e4102d710}{
+\index{vscphelper.h@{vscphelper.h}!getVSCPheadFromCANid@{getVSCPheadFromCANid}}
+\index{getVSCPheadFromCANid@{getVSCPheadFromCANid}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVSCPheadFromCANid}]{\setlength{\rightskip}{0pt plus 5cm}uint8\_\-t getVSCPheadFromCANid (
+\begin{DoxyParamCaption}
+\item[{const uint32\_\-t}]{id}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_ab2fcacc35f75f14ad52a575e4102d710}
+Get VSCP head from CAN id 
+\begin{DoxyParams}{Parameters}
+{\em id} & CAN id \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+VSCP head 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_af69b2dc71e5e4e17573ef0d80d8863d5}{
+\index{vscphelper.h@{vscphelper.h}!getVSCPnicknameFromCANid@{getVSCPnicknameFromCANid}}
+\index{getVSCPnicknameFromCANid@{getVSCPnicknameFromCANid}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVSCPnicknameFromCANid}]{\setlength{\rightskip}{0pt plus 5cm}uint16\_\-t getVSCPnicknameFromCANid (
+\begin{DoxyParamCaption}
+\item[{const uint32\_\-t}]{id}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_af69b2dc71e5e4e17573ef0d80d8863d5}
+Get VSCP nide nickname from CAN id 
+\begin{DoxyParams}{Parameters}
+{\em id} & CAN id \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+VSCP node nickname 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_abbb7f518542239312629e55a093f3edd}{
+\index{vscphelper.h@{vscphelper.h}!getVscpPriority@{getVscpPriority}}
+\index{getVscpPriority@{getVscpPriority}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVscpPriority}]{\setlength{\rightskip}{0pt plus 5cm}unsigned char getVscpPriority (
+\begin{DoxyParamCaption}
+\item[{const vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_abbb7f518542239312629e55a093f3edd}
+Get VSCP priority 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Pointer to VSCP event to set priority for. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Priority (0-\/7) for event. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_aad21b05f0e27221ee42d4e6f083f05d5}{
+\index{vscphelper.h@{vscphelper.h}!getVSCPtypeFromCANid@{getVSCPtypeFromCANid}}
+\index{getVSCPtypeFromCANid@{getVSCPtypeFromCANid}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{getVSCPtypeFromCANid}]{\setlength{\rightskip}{0pt plus 5cm}uint16\_\-t getVSCPtypeFromCANid (
+\begin{DoxyParamCaption}
+\item[{const uint32\_\-t}]{id}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_aad21b05f0e27221ee42d4e6f083f05d5}
+Get VSCP type from CAN id 
+\begin{DoxyParams}{Parameters}
+{\em id} & CAN id \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+VSCP type 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a8948a207bc4c5c36501b99909d13b517}{
+\index{vscphelper.h@{vscphelper.h}!isGUIDEmpty@{isGUIDEmpty}}
+\index{isGUIDEmpty@{isGUIDEmpty}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{isGUIDEmpty}]{\setlength{\rightskip}{0pt plus 5cm}bool isGUIDEmpty (
+\begin{DoxyParamCaption}
+\item[{unsigned char $\ast$}]{pGUID}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a8948a207bc4c5c36501b99909d13b517}
+Check if GUID is all null 
+\begin{DoxyParams}{Parameters}
+{\em pGUID} & pointer to GUID to check \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+tru of empty, false if not. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a2d34fd37a622c86215591bbf7b579dc6}{
+\index{vscphelper.h@{vscphelper.h}!isSameGUID@{isSameGUID}}
+\index{isSameGUID@{isSameGUID}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{isSameGUID}]{\setlength{\rightskip}{0pt plus 5cm}bool isSameGUID (
+\begin{DoxyParamCaption}
+\item[{const unsigned char $\ast$}]{pGUID1, }
+\item[{const unsigned char $\ast$}]{pGUID2}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a2d34fd37a622c86215591bbf7b579dc6}
+Compare two GUID's 
+\begin{DoxyParams}{Parameters}
+{\em pGUID1} & First GUID to compare \\
+\hline
+{\em pGUID2} & Second GUID to compare \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if the two GUID's are equal. False otherwise. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_acdcbbb1426efa48706721d43c7f745a2}{
+\index{vscphelper.h@{vscphelper.h}!makeHtml@{makeHtml}}
+\index{makeHtml@{makeHtml}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{makeHtml}]{\setlength{\rightskip}{0pt plus 5cm}void makeHtml (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{str}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_acdcbbb1426efa48706721d43c7f745a2}
+This function makes a HTML string from a standard string. LF is replaced with a '\par
+'. 
+\begin{DoxyParams}{Parameters}
+{\em str} & String that should be HTML coded. \\
+\hline
+\end{DoxyParams}
+\hypertarget{vscphelper_8h_ad38b22510c3adc42ae0dc180a3f11e6a}{
+\index{vscphelper.h@{vscphelper.h}!makeTimeStamp@{makeTimeStamp}}
+\index{makeTimeStamp@{makeTimeStamp}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{makeTimeStamp}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long makeTimeStamp (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_ad38b22510c3adc42ae0dc180a3f11e6a}
+Make a timestamp for events etc \begin{DoxyReturn}{Returns}
+Event timestamp as an unigned long 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a37518e8308fdca1ba3881ba97beb1450}{
+\index{vscphelper.h@{vscphelper.h}!readStringValue@{readStringValue}}
+\index{readStringValue@{readStringValue}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{readStringValue}]{\setlength{\rightskip}{0pt plus 5cm}uint32\_\-t readStringValue (
+\begin{DoxyParamCaption}
+\item[{const wxString \&}]{strval}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a37518e8308fdca1ba3881ba97beb1450}
+Read a numerical value from a string The string value can be set as a hex or a decimal value. 
+\begin{DoxyParams}{Parameters}
+{\em strval} & wxString containing value to be converted \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Unsigned long containing value 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a47e362262c74d827407007bad1e33584}{
+\index{vscphelper.h@{vscphelper.h}!replaceBackslash@{replaceBackslash}}
+\index{replaceBackslash@{replaceBackslash}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{replaceBackslash}]{\setlength{\rightskip}{0pt plus 5cm}wxString\& replaceBackslash (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{wxstr}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a47e362262c74d827407007bad1e33584}
+Replace backshlashes in a string with forward slashes 
+\begin{DoxyParams}{Parameters}
+{\em wxstr} & String that should be handled. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Fixed string. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_afc9df683a4370fbb3ed522c99245547d}{
+\index{vscphelper.h@{vscphelper.h}!setVscpPriority@{setVscpPriority}}
+\index{setVscpPriority@{setVscpPriority}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{setVscpPriority}]{\setlength{\rightskip}{0pt plus 5cm}void setVscpPriority (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent, }
+\item[{unsigned char}]{priority}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_afc9df683a4370fbb3ed522c99245547d}
+Set VSCP priority 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Pointer to VSCP event to set priority for. \\
+\hline
+{\em priority} & Priority (0-\/7) to set. \\
+\hline
+\end{DoxyParams}
+\hypertarget{vscphelper_8h_a5d9b45538821e69880c9f0b6dc05a284}{
+\index{vscphelper.h@{vscphelper.h}!vscp\_\-calc\_\-crc@{vscp\_\-calc\_\-crc}}
+\index{vscp\_\-calc\_\-crc@{vscp\_\-calc\_\-crc}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{vscp\_\-calc\_\-crc}]{\setlength{\rightskip}{0pt plus 5cm}unsigned short vscp\_\-calc\_\-crc (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent, }
+\item[{short}]{bSet}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a5d9b45538821e69880c9f0b6dc05a284}
+Calculate CRC for VSCP event \hypertarget{vscphelper_8h_a9123c12e459b6df26a5a3068e324e59b}{
+\index{vscphelper.h@{vscphelper.h}!writeGuidArrayToString@{writeGuidArrayToString}}
+\index{writeGuidArrayToString@{writeGuidArrayToString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{writeGuidArrayToString}]{\setlength{\rightskip}{0pt plus 5cm}bool writeGuidArrayToString (
+\begin{DoxyParamCaption}
+\item[{const unsigned char $\ast$}]{pGUID, }
+\item[{wxString \&}]{strGUID}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a9123c12e459b6df26a5a3068e324e59b}
+Write out GUID to string
+
+
+\begin{DoxyParams}{Parameters}
+{\em pGUID} & Pointer to VSCP GUID array. \\
+\hline
+{\em strGUID} & Reference to string for written GUID \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_aacc134916207d471111575578361d17b}{
+\index{vscphelper.h@{vscphelper.h}!writeGuidToString@{writeGuidToString}}
+\index{writeGuidToString@{writeGuidToString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{writeGuidToString}]{\setlength{\rightskip}{0pt plus 5cm}bool writeGuidToString (
+\begin{DoxyParamCaption}
+\item[{const vscpEvent $\ast$}]{pEvent, }
+\item[{wxString \&}]{strGUID}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_aacc134916207d471111575578361d17b}
+Write out GUID to string
+
+
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Pointer to VSCP event \\
+\hline
+{\em strGUID} & Reference to string for written GUID \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a2837b816f21d8cad9d21fd33cdc44241}{
+\index{vscphelper.h@{vscphelper.h}!writeGuidToString4Rows@{writeGuidToString4Rows}}
+\index{writeGuidToString4Rows@{writeGuidToString4Rows}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{writeGuidToString4Rows}]{\setlength{\rightskip}{0pt plus 5cm}bool writeGuidToString4Rows (
+\begin{DoxyParamCaption}
+\item[{const vscpEvent $\ast$}]{pEvent, }
+\item[{wxString \&}]{strGUID}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a2837b816f21d8cad9d21fd33cdc44241}
+Write out GUID to string as four rows
+
+
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Pointer to VSCP event \\
+\hline
+{\em strGUID} & Reference to string for written GUID \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a18c48b62a454d13429fe778fdfebc856}{
+\index{vscphelper.h@{vscphelper.h}!writeVscpDataToString@{writeVscpDataToString}}
+\index{writeVscpDataToString@{writeVscpDataToString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{writeVscpDataToString}]{\setlength{\rightskip}{0pt plus 5cm}bool writeVscpDataToString (
+\begin{DoxyParamCaption}
+\item[{const vscpEvent $\ast$}]{pEvent, }
+\item[{wxString \&}]{str, }
+\item[{bool}]{bUseHtmlBreak = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a18c48b62a454d13429fe778fdfebc856}
+Write VSCP data to string 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Pointer to event where data is fetched from \\
+\hline
+{\em str} & String that receive result. \\
+\hline
+{\em bUseHtmlBreak} & Set to true to use \par
+ instead of $\backslash$n as line break \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True on success false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_aae664f9d3ffe4b547fe5234ce1197e10}{
+\index{vscphelper.h@{vscphelper.h}!writeVscpDataWithSizeToString@{writeVscpDataWithSizeToString}}
+\index{writeVscpDataWithSizeToString@{writeVscpDataWithSizeToString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{writeVscpDataWithSizeToString}]{\setlength{\rightskip}{0pt plus 5cm}bool writeVscpDataWithSizeToString (
+\begin{DoxyParamCaption}
+\item[{const uint16\_\-t}]{sizeData, }
+\item[{const uint8\_\-t $\ast$}]{pData, }
+\item[{wxString \&}]{str, }
+\item[{bool}]{bUseHtmlBreak = {\ttfamily false}}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_aae664f9d3ffe4b547fe5234ce1197e10}
+Write VSCP data to string 
+\begin{DoxyParams}{Parameters}
+{\em sizeData} & Number of databytes. \\
+\hline
+{\em pData} & Pointer to datastructure. \\
+\hline
+{\em str} & String that receive result. \\
+\hline
+{\em bUseHtmlBreak} & Set to true to use \par
+ instead of $\backslash$n as line break \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True on success false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_aadcd26f753c474c89d40047e8dd9fe68}{
+\index{vscphelper.h@{vscphelper.h}!writeVscpEventToString@{writeVscpEventToString}}
+\index{writeVscpEventToString@{writeVscpEventToString}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{writeVscpEventToString}]{\setlength{\rightskip}{0pt plus 5cm}bool writeVscpEventToString (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent, }
+\item[{wxString \&}]{str}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_aadcd26f753c474c89d40047e8dd9fe68}
+Write event to string. priority,class,type,guid,data 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Event that should be presented \\
+\hline
+{\em str} & String that receive the result \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true on success, false on failure. 
+\end{DoxyReturn}
+\hypertarget{vscphelper_8h_a5f39708fc1d0ab62a8f7071260656c2a}{
+\index{vscphelper.h@{vscphelper.h}!writeVscpEventToStringEx@{writeVscpEventToStringEx}}
+\index{writeVscpEventToStringEx@{writeVscpEventToStringEx}!vscphelper.h@{vscphelper.h}}
+\subsubsection[{writeVscpEventToStringEx}]{\setlength{\rightskip}{0pt plus 5cm}bool writeVscpEventToStringEx (
+\begin{DoxyParamCaption}
+\item[{vscpEventEx $\ast$}]{pEvent, }
+\item[{wxString \&}]{str}
+\end{DoxyParamCaption}
+)}}
+\label{d0/d92/vscphelper_8h_a5f39708fc1d0ab62a8f7071260656c2a}
+Write event to string. priority,class,type,guid,data 
+\begin{DoxyParams}{Parameters}
+{\em pEvent} & Event that should be presented \\
+\hline
+{\em str} & String that receive the result \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true on success, false on failure. 
+\end{DoxyReturn}

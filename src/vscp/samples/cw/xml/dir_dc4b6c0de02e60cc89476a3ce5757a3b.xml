@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="dir_dc4b6c0de02e60cc89476a3ce5757a3b" kind="dir">
+    <compoundname>/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/</compoundname>
+    <innerfile refid="caninterfaceframe_8cpp">caninterfaceframe.cpp</innerfile>
+    <innerfile refid="caninterfaceframe_8h">caninterfaceframe.h</innerfile>
+    <innerfile refid="t2_8cpp">t2.cpp</innerfile>
+    <innerfile refid="t2_8h">t2.h</innerfile>
+    <innerfile refid="t3_8cpp">t3.cpp</innerfile>
+    <innerfile refid="t3_8h">t3.h</innerfile>
+    <innerfile refid="ts_8cpp">ts.cpp</innerfile>
+    <innerfile refid="ts_8h">ts.h</innerfile>
+    <innerfile refid="vscpdaemoninterface_8cpp">vscpdaemoninterface.cpp</innerfile>
+    <innerfile refid="vscpdaemoninterface_8h">vscpdaemoninterface.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/"/>
+  </compounddef>
+</doxygen>

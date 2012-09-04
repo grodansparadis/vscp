@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="preview_8xpm" kind="file">
+    <compoundname>preview.xpm</compoundname>
+      <sectiondef kind="">
+      <memberdef kind="variable" id="preview_8xpm_1198f33f16f37e1c381bfb6437481de48" prot="public" static="yes" mutable="no">
+        <type>char *</type>
+        <definition>char* preview_xpm[]</definition>
+        <argsstring>[]</argsstring>
+        <name>preview_xpm</name>
+        <initializer> {
+
+&quot;16 15 5 1&quot;,
+&quot;  c Black&quot;,
+&quot;. c None&quot;,
+&quot;X c Gray100&quot;,
+&quot;o c #808080&quot;,
+&quot;O c Cyan&quot;,
+
+&quot;         .......&quot;,
+&quot; XXXXXXX  ......&quot;,
+&quot; XXXXXXX . .....&quot;,
+&quot; XXXXXXX    ....&quot;,
+&quot; XXXXXXXXXX ....&quot;,
+&quot; XXXXXXX    ....&quot;,
+&quot; XXXXXX o..o ...&quot;,
+&quot; XXXXX oOO.oo ..&quot;,
+&quot; XXXXX .O..o. ..&quot;,
+&quot; XXXXX ....o. ..&quot;,
+&quot; XXXXX o..Ooo ..&quot;,
+&quot; XXXXXX o..o o..&quot;,
+&quot; XXXXXXX    o  .&quot;,
+&quot; XXXXXXXXXX .   &quot;,
+&quot;            ..  &quot;
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/bitmaps/preview.xpm" line="26" bodyfile="/home/akhe/vscp/src/vscp/cw/bitmaps/preview.xpm" bodystart="2" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="">
+      <memberdef kind="variable" id="preview_8xpm_1198f33f16f37e1c381bfb6437481de48" prot="public" static="yes" mutable="no">
+        <type>char *</type>
+        <definition>char* preview_xpm[]</definition>
+        <argsstring>[]</argsstring>
+        <name>preview_xpm</name>
+        <initializer> {
+
+&quot;16 15 5 1&quot;,
+&quot;  c Black&quot;,
+&quot;. c None&quot;,
+&quot;X c Gray100&quot;,
+&quot;o c #808080&quot;,
+&quot;O c Cyan&quot;,
+
+&quot;         .......&quot;,
+&quot; XXXXXXX  ......&quot;,
+&quot; XXXXXXX . .....&quot;,
+&quot; XXXXXXX    ....&quot;,
+&quot; XXXXXXXXXX ....&quot;,
+&quot; XXXXXXX    ....&quot;,
+&quot; XXXXXX o..o ...&quot;,
+&quot; XXXXX oOO.oo ..&quot;,
+&quot; XXXXX .O..o. ..&quot;,
+&quot; XXXXX ....o. ..&quot;,
+&quot; XXXXX o..Ooo ..&quot;,
+&quot; XXXXXX o..o o..&quot;,
+&quot; XXXXXXX    o  .&quot;,
+&quot; XXXXXXXXXX .   &quot;,
+&quot;            ..  &quot;
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/bitmaps/preview.xpm" line="26" bodyfile="/home/akhe/vscp/src/vscp/cw/bitmaps/preview.xpm" bodystart="2" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*<sp/>XPM<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*preview_xpm[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="comment">/*<sp/>columns<sp/>rows<sp/>colors<sp/>chars-per-pixel<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;16<sp/>15<sp/>5<sp/>1&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/>c<sp/>Black&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;.<sp/>c<sp/>None&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;X<sp/>c<sp/>Gray100&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;o<sp/>c<sp/>#808080&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;O<sp/>c<sp/>Cyan&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="comment">/*<sp/>pixels<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>.......&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXXX<sp/><sp/>......&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXXX<sp/>.<sp/>.....&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXXX<sp/><sp/><sp/><sp/>....&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXXXXXX<sp/>....&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXXX<sp/><sp/><sp/><sp/>....&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXX<sp/>o..o<sp/>...&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXX<sp/>oOO.oo<sp/>..&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXX<sp/>.O..o.<sp/>..&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXX<sp/>....o.<sp/>..&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXX<sp/>o..Ooo<sp/>..&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXX<sp/>o..o<sp/>o..&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXXX<sp/><sp/><sp/><sp/>o<sp/><sp/>.&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>XXXXXXXXXX<sp/>.<sp/><sp/><sp/>&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>..<sp/><sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal">};</highlight></codeline>
+    </programlisting>
+    <location file="/home/akhe/vscp/src/vscp/cw/bitmaps/preview.xpm"/>
+  </compounddef>
+</doxygen>

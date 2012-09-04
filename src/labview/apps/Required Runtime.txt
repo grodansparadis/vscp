@@ -1,0 +1,10 @@
+Direct download englisch Labview 6.0.2 runtime:
+
+http://ftp.ni.com/support/softlib/labview/labview_runtime/6.0.2/Windows/LVRTE602WinEnglish.zip
+
+
+
+
+Info Page with further information:
+
+http://joule.ni.com/nidu/cds/view/p/id/697/lang/en

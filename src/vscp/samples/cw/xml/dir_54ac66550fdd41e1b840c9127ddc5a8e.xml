@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="dir_54ac66550fdd41e1b840c9127ddc5a8e" kind="dir">
+    <compoundname>/home/akhe/vscp/src/vscp/cw/dialogblocks/</compoundname>
+    <innerdir refid="dir_dc4b6c0de02e60cc89476a3ce5757a3b">/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/</innerdir>
+    <innerfile refid="dialogblocks_2cw_8cpp">cw.cpp</innerfile>
+    <innerfile refid="dialogblocks_2cw_8h">cw.h</innerfile>
+    <innerfile refid="frmvscpcfg_8cpp">frmvscpcfg.cpp</innerfile>
+    <innerfile refid="frmvscpcfg_8h">frmvscpcfg.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,316 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Neutral resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NEU)
+#ifdef _WIN32
+LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDC_TRAY_STATE0         ICON    DISCARDABLE     "RES\\NET10A.ICO"
+IDC_TRAY_STATE1         ICON    DISCARDABLE     "RES\\NET10B.ICO"
+#endif    // Neutral resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\testPipeIf.ico"
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\testPipeIf.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 55
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About testPipeIf"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "testPipeIf Version 1.0",IDC_STATIC,40,10,119,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright (C) 2003-2005 eurosource",IDC_STATIC,40,25,
+                    119,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
+END
+
+IDD_TESTPIPEIF_DIALOG DIALOGEX 0, 0, 450, 205
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Test app. for CANAL interface."
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_COMBO_MSG_SELECT,162,27,177,122,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_EDIT_OPTION,162,56,176,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_OPTION2,341,56,96,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_MSGID,16,52,54,14,ES_AUTOHSCROLL
+    CONTROL         "Extended",IDC_CHECK_EXTENDED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,90,46,10
+    CONTROL         "RTR",IDC_CHECK_RTR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,15,100,31,10
+    CONTROL         "Error",IDC_CHECK_ERROR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,75,90,31,10
+    EDITTEXT        IDC_EDIT_DATABYTE0,17,140,25,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATABYTE1,45,140,25,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATABYTE2,73,140,25,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATABYTE3,101,140,25,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATABYTE4,129,140,25,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATABYTE5,157,140,25,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATABYTE6,185,140,25,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATABYTE7,213,140,25,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_STATUS,249,94,194,84,ES_MULTILINE | 
+                    ES_WANTRETURN | WS_VSCROLL
+    PUSHBUTTON      "Send Message",IDC_BUTTON_SEND_MSG,347,19,90,20
+    PUSHBUTTON      "Open",IDC_BUTTON_OPEN,7,184,50,14
+    PUSHBUTTON      "E&xit",IDCANCEL,393,184,50,14
+    CTEXT           "Interface messages",IDC_STATIC,162,17,157,8
+    ICON            IDC_TRAY_STATE1,IDC_CONECTION_STATE,7,7,21,20
+    GROUPBOX        " Data ",IDC_STATIC,7,126,236,35
+    GROUPBOX        "Msg id",IDC_STATIC,7,34,72,44
+    GROUPBOX        " Flags ",IDC_STATIC,7,79,135,44
+    LTEXT           "Devicename",IDC_STATIC_OPTION1_LABEL,162,47,115,9
+    CTEXT           "Status",IDC_STATIC,250,85,193,8
+    GROUPBOX        " Message ",IDC_STATIC,154,7,289,72
+    LTEXT           "Flags",IDC_STATIC_OPTION2_LABEL,341,48,85,8
+    PUSHBUTTON      "Clear Data",IDC_BUTTON_CLEAR_DATA,173,114,44,14
+    PUSHBUTTON      "<",IDC_BUTTON_PREV,178,94,16,14
+    PUSHBUTTON      ">",IDC_BUTTON_PREV2,194,94,16,14
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,1,1,0
+ PRODUCTVERSION 0,1,1,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "http://www.vscp.org\0"
+            VALUE "FileDescription", "testPipeIf MFC Application\0"
+            VALUE "FileVersion", "0, 1, 1, 0\0"
+            VALUE "InternalName", "testPipeIf\0"
+            VALUE "LegalCopyright", "Copyright (C) 2005 Ake Hedman, eurosource\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "testPipeIf.EXE\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "testPipeIf Application\0"
+            VALUE "ProductVersion", "0, 1, 1, 0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_TESTPIPEIF_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 443
+        VERTGUIDE, 93
+        VERTGUIDE, 154
+        VERTGUIDE, 237
+        VERTGUIDE, 277
+        VERTGUIDE, 281
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 198
+        HORZGUIDE, 56
+        HORZGUIDE, 67
+        HORZGUIDE, 79
+        HORZGUIDE, 101
+        HORZGUIDE, 108
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_TESTPIPEIF_DIALOG DLGINIT
+BEGIN
+    IDC_COMBO_MSG_SELECT, 0x403, 5, 0
+0x4f4e, 0x504f, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 5, 0
+0x704f, 0x6e65, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 6, 0
+0x6c43, 0x736f, 0x0065, 
+    IDC_COMBO_MSG_SELECT, 0x403, 5, 0
+0x6553, 0x646e, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 8, 0
+0x6552, 0x6563, 0x7669, 0x0065, 
+    IDC_COMBO_MSG_SELECT, 0x403, 14, 0
+0x6144, 0x6174, 0x7641, 0x6961, 0x616c, 0x6c62, 0x0065, 
+    IDC_COMBO_MSG_SELECT, 0x403, 7, 0
+0x7453, 0x7461, 0x7375, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 11, 0
+0x7453, 0x7461, 0x7369, 0x6974, 0x7363, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 7, 0
+0x6946, 0x746c, 0x7265, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 5, 0
+0x614d, 0x6b73, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 9, 0
+0x6142, 0x6475, 0x6172, 0x6574, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 8, 0
+0x6556, 0x7372, 0x6f69, 0x006e, 
+    IDC_COMBO_MSG_SELECT, 0x403, 12, 0
+0x4c44, 0x204c, 0x6556, 0x7372, 0x6f69, 0x006e, 
+    IDC_COMBO_MSG_SELECT, 0x403, 13, 0
+0x6556, 0x646e, 0x726f, 0x7453, 0x6972, 0x676e, "\000" 
+    IDC_COMBO_MSG_SELECT, 0x403, 9, 0
+0x6547, 0x4c74, 0x7665, 0x6c65, "\000" 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_ABOUTBOX            "&About testPipeIf..."
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\testPipeIf.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

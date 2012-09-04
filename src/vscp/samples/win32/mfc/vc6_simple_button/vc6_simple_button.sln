@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vc6_simple_button", "vc6_simple_button.vcproj", "{C44DC00B-7B9A-4CB3-9CE3-88AB791D09FB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C44DC00B-7B9A-4CB3-9CE3-88AB791D09FB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C44DC00B-7B9A-4CB3-9CE3-88AB791D09FB}.Debug|Win32.Build.0 = Debug|Win32
+		{C44DC00B-7B9A-4CB3-9CE3-88AB791D09FB}.Release|Win32.ActiveCfg = Release|Win32
+		{C44DC00B-7B9A-4CB3-9CE3-88AB791D09FB}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

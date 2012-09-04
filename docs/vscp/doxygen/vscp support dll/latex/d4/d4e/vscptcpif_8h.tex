@@ -1,0 +1,113 @@
+\hypertarget{vscptcpif_8h}{
+\section{D:/development/m2m/src/vscp/common/vscptcpif.h File Reference}
+\label{d4/d4e/vscptcpif_8h}\index{D:/development/m2m/src/vscp/common/vscptcpif.h@{D:/development/m2m/src/vscp/common/vscptcpif.h}}
+}
+
+
+The \hyperlink{class_vscp_tcp_if}{VscpTcpIf} class encapuslate sthe VSCP tcp/ip interface.  
+
+
+{\ttfamily \#include \char`\"{}canal.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}vscp.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}guid.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}vscphelper.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}wx/socket.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}wx/datetime.h\char`\"{}}\par
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_vscp_tcp_if}{VscpTcpIf}
+\begin{DoxyCompactList}\small\item\em Class for VSCP daemon tcp/ip interface. \end{DoxyCompactList}\item 
+class \hyperlink{classctrl_obj_vscp_tcp_if}{ctrlObjVscpTcpIf}
+\begin{DoxyCompactList}\small\item\em Shared VSCP tcp/ip object among worker threads. \end{DoxyCompactList}\item 
+class \hyperlink{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread}{VSCPTCPIP\_\-RX\_\-WorkerThread}
+\begin{DoxyCompactList}\small\item\em This class implement a thread that handles receive events for a link to the VSCP daemon. \end{DoxyCompactList}\item 
+class \hyperlink{class_v_s_c_p_t_c_p_i_p___t_x___worker_thread}{VSCPTCPIP\_\-TX\_\-WorkerThread}
+\begin{DoxyCompactList}\small\item\em This class implement a thread that handles transmit events for a link to the VSCP daemon. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Defines}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{vscptcpif_8h_a362dfda3360cda37b521b5aa01a63173}{DEFAULT\_\-RESPONSE\_\-TIMEOUT}~2
+\item 
+\#define \hyperlink{vscptcpif_8h_af027b9911d3a82d31dad2355070b3983}{TCPIP\_\-DLL\_\-VERSION}~0x00000001
+\item 
+\#define \hyperlink{vscptcpif_8h_a00cbd021883eea59e419aa2cf5af7ade}{TCPIP\_\-VENDOR\_\-STRING}~(\_\-(\char`\"{}eurosource, Sweden\char`\"{}))
+\item 
+\#define \hyperlink{vscptcpif_8h_a713ae79f0580d8ccb594083f234acdf9}{RX\_\-TREAD\_\-STATE\_\-NONE}~0
+\item 
+\#define \hyperlink{vscptcpif_8h_a5d385794893430da5bc97b048f4b1c5a}{RX\_\-TREAD\_\-STATE\_\-CONNECTED}~1
+\item 
+\#define \hyperlink{vscptcpif_8h_a327383e0805fdb8fa89d6b749d2b8843}{RX\_\-TREAD\_\-STATE\_\-FAIL\_\-DISCONNECTED}~2
+\item 
+\#define \hyperlink{vscptcpif_8h_a751fff5158652338a097e3ff3537e929}{RX\_\-TREAD\_\-STATE\_\-DISCONNECTED}~3
+\item 
+\hypertarget{vscptcpif_8h_a1af71634e839616165aa10e6b5f49d80}{
+\#define \hyperlink{vscptcpif_8h_a1af71634e839616165aa10e6b5f49d80}{MAX\_\-TREAD\_\-RECEIVE\_\-EVENTS}~8192}
+\label{d4/d4e/vscptcpif_8h_a1af71634e839616165aa10e6b5f49d80}
+
+\begin{DoxyCompactList}\small\item\em Maximum number of events isn receive queue. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{vscptcpif_8h_a373a1660d0522166e03a3d9df268785c}{
+\hyperlink{vscptcpif_8h_a373a1660d0522166e03a3d9df268785c}{WX\_\-DECLARE\_\-LIST} (vscpEvent, EVENT\_\-RX\_\-QUEUE)}
+\label{d4/d4e/vscptcpif_8h_a373a1660d0522166e03a3d9df268785c}
+
+\begin{DoxyCompactList}\small\item\em Receive queue. \end{DoxyCompactList}\item 
+\hypertarget{vscptcpif_8h_af6fac85959f4975091bca9da3d0efd84}{
+\hyperlink{vscptcpif_8h_af6fac85959f4975091bca9da3d0efd84}{WX\_\-DECLARE\_\-LIST} (vscpEvent, EVENT\_\-TX\_\-QUEUE)}
+\label{d4/d4e/vscptcpif_8h_af6fac85959f4975091bca9da3d0efd84}
+
+\begin{DoxyCompactList}\small\item\em Transmit queue. \end{DoxyCompactList}\item 
+\hypertarget{vscptcpif_8h_a55b26a29ceecc5fa14fdde31f6b69a75}{
+\hyperlink{vscptcpif_8h_a55b26a29ceecc5fa14fdde31f6b69a75}{DECLARE\_\-EVENT\_\-TYPE} (wxVSCPTCPIF\_\-RX\_\-EVENT, wxID\_\-ANY)}
+\label{d4/d4e/vscptcpif_8h_a55b26a29ceecc5fa14fdde31f6b69a75}
+
+\begin{DoxyCompactList}\small\item\em Custom wx event Receive. \end{DoxyCompactList}\item 
+\hypertarget{vscptcpif_8h_af4dac7e5feccf69f59f40d2eb32815d6}{
+\hyperlink{vscptcpif_8h_af4dac7e5feccf69f59f40d2eb32815d6}{DECLARE\_\-EVENT\_\-TYPE} (wxVSCPTCPIF\_\-CONNECTION\_\-LOST\_\-EVENT, wxID\_\-ANY)}
+\label{d4/d4e/vscptcpif_8h_af4dac7e5feccf69f59f40d2eb32815d6}
+
+\begin{DoxyCompactList}\small\item\em Custom event connection lost. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The \hyperlink{class_vscp_tcp_if}{VscpTcpIf} class encapuslate sthe VSCP tcp/ip interface. The \hyperlink{class_vscp_tcp_if}{VscpTcpIf} class holds functionality to talk toi the tcp/ip of the VSCP daemon and on client that implement the interface. All api's of the interface are supported by the class. 
+
+\subsection{Define Documentation}
+\hypertarget{vscptcpif_8h_a362dfda3360cda37b521b5aa01a63173}{
+\index{vscptcpif.h@{vscptcpif.h}!DEFAULT\_\-RESPONSE\_\-TIMEOUT@{DEFAULT\_\-RESPONSE\_\-TIMEOUT}}
+\index{DEFAULT\_\-RESPONSE\_\-TIMEOUT@{DEFAULT\_\-RESPONSE\_\-TIMEOUT}!vscptcpif.h@{vscptcpif.h}}
+\subsubsection[{DEFAULT\_\-RESPONSE\_\-TIMEOUT}]{\setlength{\rightskip}{0pt plus 5cm}\#define DEFAULT\_\-RESPONSE\_\-TIMEOUT~2}}
+\label{d4/d4e/vscptcpif_8h_a362dfda3360cda37b521b5aa01a63173}
+Default response timeout for communication with the tcp/ip interface \hypertarget{vscptcpif_8h_a5d385794893430da5bc97b048f4b1c5a}{
+\index{vscptcpif.h@{vscptcpif.h}!RX\_\-TREAD\_\-STATE\_\-CONNECTED@{RX\_\-TREAD\_\-STATE\_\-CONNECTED}}
+\index{RX\_\-TREAD\_\-STATE\_\-CONNECTED@{RX\_\-TREAD\_\-STATE\_\-CONNECTED}!vscptcpif.h@{vscptcpif.h}}
+\subsubsection[{RX\_\-TREAD\_\-STATE\_\-CONNECTED}]{\setlength{\rightskip}{0pt plus 5cm}\#define RX\_\-TREAD\_\-STATE\_\-CONNECTED~1}}
+\label{d4/d4e/vscptcpif_8h_a5d385794893430da5bc97b048f4b1c5a}
+Connected state \hypertarget{vscptcpif_8h_a751fff5158652338a097e3ff3537e929}{
+\index{vscptcpif.h@{vscptcpif.h}!RX\_\-TREAD\_\-STATE\_\-DISCONNECTED@{RX\_\-TREAD\_\-STATE\_\-DISCONNECTED}}
+\index{RX\_\-TREAD\_\-STATE\_\-DISCONNECTED@{RX\_\-TREAD\_\-STATE\_\-DISCONNECTED}!vscptcpif.h@{vscptcpif.h}}
+\subsubsection[{RX\_\-TREAD\_\-STATE\_\-DISCONNECTED}]{\setlength{\rightskip}{0pt plus 5cm}\#define RX\_\-TREAD\_\-STATE\_\-DISCONNECTED~3}}
+\label{d4/d4e/vscptcpif_8h_a751fff5158652338a097e3ff3537e929}
+Disconnected state \hypertarget{vscptcpif_8h_a327383e0805fdb8fa89d6b749d2b8843}{
+\index{vscptcpif.h@{vscptcpif.h}!RX\_\-TREAD\_\-STATE\_\-FAIL\_\-DISCONNECTED@{RX\_\-TREAD\_\-STATE\_\-FAIL\_\-DISCONNECTED}}
+\index{RX\_\-TREAD\_\-STATE\_\-FAIL\_\-DISCONNECTED@{RX\_\-TREAD\_\-STATE\_\-FAIL\_\-DISCONNECTED}!vscptcpif.h@{vscptcpif.h}}
+\subsubsection[{RX\_\-TREAD\_\-STATE\_\-FAIL\_\-DISCONNECTED}]{\setlength{\rightskip}{0pt plus 5cm}\#define RX\_\-TREAD\_\-STATE\_\-FAIL\_\-DISCONNECTED~2}}
+\label{d4/d4e/vscptcpif_8h_a327383e0805fdb8fa89d6b749d2b8843}
+Fail state \hypertarget{vscptcpif_8h_a713ae79f0580d8ccb594083f234acdf9}{
+\index{vscptcpif.h@{vscptcpif.h}!RX\_\-TREAD\_\-STATE\_\-NONE@{RX\_\-TREAD\_\-STATE\_\-NONE}}
+\index{RX\_\-TREAD\_\-STATE\_\-NONE@{RX\_\-TREAD\_\-STATE\_\-NONE}!vscptcpif.h@{vscptcpif.h}}
+\subsubsection[{RX\_\-TREAD\_\-STATE\_\-NONE}]{\setlength{\rightskip}{0pt plus 5cm}\#define RX\_\-TREAD\_\-STATE\_\-NONE~0}}
+\label{d4/d4e/vscptcpif_8h_a713ae79f0580d8ccb594083f234acdf9}
+Idle state \hypertarget{vscptcpif_8h_af027b9911d3a82d31dad2355070b3983}{
+\index{vscptcpif.h@{vscptcpif.h}!TCPIP\_\-DLL\_\-VERSION@{TCPIP\_\-DLL\_\-VERSION}}
+\index{TCPIP\_\-DLL\_\-VERSION@{TCPIP\_\-DLL\_\-VERSION}!vscptcpif.h@{vscptcpif.h}}
+\subsubsection[{TCPIP\_\-DLL\_\-VERSION}]{\setlength{\rightskip}{0pt plus 5cm}\#define TCPIP\_\-DLL\_\-VERSION~0x00000001}}
+\label{d4/d4e/vscptcpif_8h_af027b9911d3a82d31dad2355070b3983}
+Pseudo version string \hypertarget{vscptcpif_8h_a00cbd021883eea59e419aa2cf5af7ade}{
+\index{vscptcpif.h@{vscptcpif.h}!TCPIP\_\-VENDOR\_\-STRING@{TCPIP\_\-VENDOR\_\-STRING}}
+\index{TCPIP\_\-VENDOR\_\-STRING@{TCPIP\_\-VENDOR\_\-STRING}!vscptcpif.h@{vscptcpif.h}}
+\subsubsection[{TCPIP\_\-VENDOR\_\-STRING}]{\setlength{\rightskip}{0pt plus 5cm}\#define TCPIP\_\-VENDOR\_\-STRING~(\_\-(\char`\"{}eurosource, Sweden\char`\"{}))}}
+\label{d4/d4e/vscptcpif_8h_a00cbd021883eea59e419aa2cf5af7ade}
+Pseudo vendor string 

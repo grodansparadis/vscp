@@ -1,0 +1,6549 @@
+#LyX 1.6.4 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+The VSCP Daemon
+\end_layout
+
+\begin_layout Author
+Ake Hedman, eurosource
+\end_layout
+
+\begin_layout Date
+2009-10-12
+\end_layout
+
+\begin_layout Abstract
+This document explains the functionality of the VSCP daemon software for
+ both the Linux and Windows versions.
+ It show how the software is used.
+ How configuration files are set up and contains detailed information on
+ it's functionality.
+\end_layout
+
+\begin_layout Abstract
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage pagebreak
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+The VSCP daemon is a server program that collects information from many
+ drivers and lets clients collect this information over a TCP/IP interface.
+ The daemon also has an internal scheduler that makes it possible to control
+ different scenarios such as simple tasks automatically turn on a group
+ of lamps at a special time of the day to complex industrial control situations.
+\end_layout
+
+\begin_layout Standard
+On Unix systems the daemon is a standard server application that is started
+ in the background.
+ It is possible also to compile it to start as a standard application if
+ that is needed.
+\end_layout
+
+\begin_layout Standard
+On Windows the daemon is available as a standard Windows service and as
+ a standard application.
+ Normally the stadard application is not used, but for debugging and testing
+ the application can be useful.
+\end_layout
+
+\begin_layout Standard
+The daemon uses the CANAL interface to talk to drivers.
+ This means that a driver normally is at VSCP Level I.
+ However, a special driver can be implemented that just needs to implement
+ three methods of the CANAL API (Open,Close and CanalGetLevel).
+ If the CanalGetLevel call returns CANAL_LEVEL_USES_TCPIP the daemon will
+ assume this is a Level II driver that will use the TCP/IP interface of
+ the daemon for all of its communication and therefore not communicate any
+ further with it until it is time to close it down.
+\end_layout
+
+\begin_layout Standard
+On Unix if you start vscpd from your shell prompt you will usually get back
+ immediately to the prompt.
+ Often people think that the program has died.
+ But this is not an error.
+ vscpd is a daemon.
+ Daemons always run in background.
+\end_layout
+
+\begin_layout Standard
+There is a video on youtube that takes you through some of the essentials
+ of the VSCP Daemon.
+ 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://www.youtube.com/watch?v=9HY2br8ASvo"
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Section
+Setting up the system
+\end_layout
+
+\begin_layout Subsection
+VSCPD for Windows - run as service
+\end_layout
+
+\begin_layout Subsubsection
+About
+\end_layout
+
+\begin_layout Standard
+The vscpservice is a WIN32 program that runs the VSCP daemon as a WIN32
+ service.
+ This service is installed as a service by the setup program.
+\end_layout
+
+\begin_layout Standard
+The VSCP Service works exactly the same as the daemon but runs as a standard
+ service.
+ This means the tha control panel applet to handle windows services can
+ be used to control how it behaves.
+ The executable is called vscpservice.exe.
+\end_layout
+
+\begin_layout Standard
+The service can be installed manually or with its own installation mechanism
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Command line switches available are 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace medskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Switch
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+no switch
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Start the service
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-i
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Install the service
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-u
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Uninstall the service
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-v
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Display service information
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-? or -h
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Display information
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+After installing the service the obvious location to control it is the control
+ panel applet designed for this.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Manually installing the services
+\end_layout
+
+\begin_layout Standard
+If you want to install(de-install the service manually follow the steps
+ below
+\end_layout
+
+\begin_layout Standard
+The service can be installed with (this is done automatically by the WIN32
+ setup program)
+\end_layout
+
+\begin_layout Standard
+vscpservice -i
+\end_layout
+
+\begin_layout Standard
+Uninstalled with
+\end_layout
+
+\begin_layout Standard
+vscpservice -u
+\end_layout
+
+\begin_layout Standard
+More info about different switches and the available options can be retrieved
+ by
+\end_layout
+
+\begin_layout Standard
+vscpservice -? or vscpservice -h
+\end_layout
+
+\begin_layout Standard
+The service has a variable called start at HKEY_LOCAL_MACHINE
+\backslash
+SYSTEM
+\backslash
+CurrentControlSet
+\backslash
+Services
+\backslash
+vscpservice that should be set to 2 (autostart).
+ It is set to 3 (manual) after installation so that you have the option
+ to select which server/service to use.
+\end_layout
+
+\begin_layout Standard
+This can also be done in the service applet 
+\end_layout
+
+\begin_layout Subsubsection
+Configure the service to run on your machine
+\end_layout
+
+\begin_layout Standard
+This can also be done in the service applet 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename service_dialog.jpg
+	width 5cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Where you select automatic if you want the service to start automatically.
+\end_layout
+
+\begin_layout Standard
+The installation program installs the service and marks it to be run automatical
+ly.
+ You have to add the user the service runs under manually.
+\end_layout
+
+\begin_layout Standard
+vscpservice needs to be run as a user belonging to the administrator group.
+ Therefore you should add a user “canald” and add this user to the administrator
+s group.
+\end_layout
+
+\begin_layout Standard
+You do this by selecting the Users and Passwords applet in the control panel
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename service_controlpanel.jpg
+	width 3cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and adding the user.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename service_adduser.jpg
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+After hitting next and entering a password (recommended) this window is
+ shown 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename service_adduser2.jpg
+	width 5cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Select others and “Administrators”
+\end_layout
+
+\begin_layout Standard
+After doing that you should open the service applet under the Administrative
+ Tools in the control panel 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename service_controlpanel.jpg
+	width 3cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+You select the services applet here 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename service_adduser3b.jpg
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+and this window will show up 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename service_adduser4b.jpg
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Right click the vscpservice item and select properties.
+ Select the 
+\series bold
+Logon tab
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename service_adduser5b.jpg
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Mark “This account” and select the user you added above.
+\end_layout
+
+\begin_layout Standard
+Now you can start the service in the service control applet.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Enabling VSCP ports on the XP firewall
+\end_layout
+
+\begin_layout Standard
+Normally the firewall is (and should be) enabled on Windows XP.
+ This means that the port used by VSCP (9598) is blocked for both TCP and
+ UDP traffic.
+ You must enable this port in the firewall to make everything working.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename xp_cp_firewall_en.jpg
+	width 10cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The firewall settings is found in the control panel 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename xp_fw_add_en.jpg
+	width 5cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Add the ports in the exceptions tab and select add port…
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename xp_add_vscp_tcp_port_en.jpg
+	width 5cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Allow the TCP port.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename xp_add_vscp_udp_port_en.jpg
+	width 5cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Allow the UDP port.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename xp_allow_vscp_ports_en.jpg
+	width 5cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+This is how it should look like when both the ports has been enabled.
+ 
+\end_layout
+
+\begin_layout Section
+VSCPD for Windows setup & configuration
+\end_layout
+
+\begin_layout Standard
+The VSCP daemon (vscpd.exe in the installation folder) is run as an ordinary
+ application (console application).
+ The application will normally open a console window when run, in this window
+ information is printed about what the daemon is working on and what command
+ users issue.
+\end_layout
+
+\begin_layout Standard
+To close the application just click on the close window icon in the top
+ right corner of the console window.
+\end_layout
+
+\begin_layout Standard
+The daemon needs a configuration file just as the service does.
+ This configuration file should be in the file folder
+\end_layout
+
+\begin_layout Standard
+
+\backslash
+Documents and Settings
+\backslash
+All users
+\backslash
+Application Data
+\backslash
+vscp
+\end_layout
+
+\begin_layout Standard
+and it is called
+\end_layout
+
+\begin_layout Standard
+vscpd.conf
+\end_layout
+
+\begin_layout Standard
+normally the installation program will create a default file.
+ The file is described here 40_vscpd_config_file.
+\end_layout
+
+\begin_layout Standard
+Some switches are available that control how the daemon is started.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="7" columns="3">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="top" width="8cm">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Short switch 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Long switch 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-h
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+–help
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Give information about available switches and what they do 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-g
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+–gnu
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Gives copyright information.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-v
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+–verbose
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Give extra information useful for debuging 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-c
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+–configpath
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Tell where the program should look for the configuration file.
+ Default is to look for this information in the general “application data”
+ folder in a folder called vscp.
+ Typically this is c:/documents and settings/all users/application data/vscp/vsc
+pd.conf
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-d
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+–debuglevel
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set the debug level (0-9).
+ Higher value more output.
+ Default=0 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-w
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+–hide
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Hide the console window.
+ Can be useful if running the app.
+ in a “service way”.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+VSCPD for Linux setup & configuration
+\end_layout
+
+\begin_layout Standard
+The daemon is the central program that do VSCP work on your box.
+ It loads drivers for different devices and it present a TCP/IP interface
+ from which it is possible to control the daemon and read/write events to
+ devices.
+\end_layout
+
+\begin_layout Standard
+On Linux the vscp daemon is started as any other daemon.
+ Example startup scripts is available in the root folder.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="5" columns="2">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="top" width="10cm">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Switch
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-c 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Path to configuration file.
+ Default is /etc/vscp/vscpd.conf
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-d 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Debug level 0-9.
+ Higher value means more information.
+ Default is 0, no debug information.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-g
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Displays copyright information.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+-h
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Displays help information.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+There are two configuration files that the daemon will load upon startup.
+ /etc/vscp/vscpd.conf for general configuration parameters and /etc/vscp/variable
+s.xml that hold persistent variable declarations.
+ variables.xml should be writeable by the daemon.
+\end_layout
+
+\begin_layout Standard
+When you type
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace medskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+make install
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace medskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+(or install one of the binary distributions) the daemon executable will
+ be copies to /usr/local/bin and the configuration file will be copied to
+ /etc/vscp and a default configuration file vscpd.conf will be copied to
+ this folder.
+ You should edit this file to fit your needs as it is described here 40_vscpd_co
+nfig_file.
+\end_layout
+
+\begin_layout Standard
+To actually install the daemon as a self starting server you need to create
+ a startup script for it in /etc/init.d.
+ Sample scripts are available in the root of the source tree.
+\end_layout
+
+\begin_layout Standard
+If you want to debug the daemon there is wxTrace enablers in the controlbject.cpp
+ file.
+ Just uncomment any of the wxLog::AddTraceMask in the CControlObject::init
+ method to get the debug messages you want.
+ 
+\end_layout
+
+\begin_layout Section
+VSCP configuration file walk through
+\end_layout
+
+\begin_layout Standard
+The full configuration file format is described here 40_vscpd_config_file.
+ 
+\end_layout
+
+\begin_layout Subsection
+General settings
+\end_layout
+
+\begin_layout Standard
+In the <general> tab area settings that affect the behavior of the server
+ in general is located.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+udpport
+\end_layout
+
+\begin_layout Standard
+Use to set the port for the daemon UDP broadcasts.
+ Default is 9598.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+tcpport
+\end_layout
+
+\begin_layout Standard
+Use to set the port for the daemon TCP/IP interface.
+ Default is 9598.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+loglevel
+\end_layout
+
+\begin_layout Standard
+Loglevel 0-10 where 0 is no logging and 10 is debug mode.
+ Default is 1.
+ 
+\end_layout
+
+\begin_layout Subsection
+tcpif
+\end_layout
+
+\begin_layout Standard
+Enable/disable daemon TCP/IP interface.
+ Default is enabled.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+udpif
+\end_layout
+
+\begin_layout Standard
+Enable/disable daemon UDP interface.
+ Default is enabled.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+canaldriver
+\end_layout
+
+\begin_layout Standard
+Enable/disable daemon driver interface.
+ If diabled no drivers will be loaded.
+ Default is enabled.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+vscp
+\end_layout
+
+\begin_layout Standard
+Enable/disable daemon internal VSCP functionality.
+ If disbled the server will no longer react on events like the High end
+ server probe etc.
+ Default is enabled.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+dm
+\end_layout
+
+\begin_layout Standard
+Enable/disable the internal decision matrix of the daemon.
+ Default is enabled.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+guid
+\end_layout
+
+\begin_layout Standard
+Set the server GUID for the daemon.
+ If not set here a GUID will be formed from the (first) MAC address of the
+ machine the daemon runs on (on Linux needs to be run as root to get this)
+ or if this fails the local IP address is used to form the GUID.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+clientbuffersize
+\end_layout
+
+\begin_layout Standard
+This is the default buffer size (number of events) for all clients in the
+ system.
+ Everything from a driver to a TCP/IP user is regarded as a client.
+ Default is 1024.
+ 
+\end_layout
+
+\begin_layout Subsection
+Remote user settings
+\end_layout
+
+\begin_layout Standard
+In the <remoteuser» tab area settings that affect users on that can access
+ the daemon through the TCP/IP interface is located.
+ Each user is defined between a <user>…</user> pair.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+name
+\end_layout
+
+\begin_layout Standard
+Username for this user.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+password
+\end_layout
+
+\begin_layout Standard
+Password ad an md5 checksum for this user.
+ The mkvscppw can be user to generate passwords.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+privilege
+\end_layout
+
+\begin_layout Standard
+Users can have privileges from 0-15 that allow them to do command that are
+ equal to or less then the set privilege level.
+ Enter a privilege level as 0-15 here or in symbolic form as admin (==15)
+ or user (==4).
+ Default is 4.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+allowfrom
+\end_layout
+
+\begin_layout Standard
+This is a comma separated list with host addresses this user is allowed
+ to log in to the server from.
+ Whildcards can be used to indicate “all”.
+ This mean that
+\end_layout
+
+\begin_layout Standard
+* .*.*.*”
+\end_layout
+
+\begin_layout Standard
+means a user can log in from all remote machines.
+\end_layout
+
+\begin_layout Standard
+194.*.*.*
+\end_layout
+
+\begin_layout Standard
+that he/she can log on from all ip addresses that starts with 194 and son
+ on.
+ Default is all.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+allowevent
+\end_layout
+
+\begin_layout Standard
+This is a comma seperated list of evenets this user is allowed to send.
+ The form is
+\end_layout
+
+\begin_layout Standard
+class:type,class:type
+\end_layout
+
+\begin_layout Standard
+wildcards (*)can be used for both.
+ This means that 20:*,30:* means that the user is allowed to send all evenst
+ in class=20 and class=30.
+ Default allows user to send all evenst.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+mask
+\end_layout
+
+\begin_layout Standard
+Set the mask for incoming events to a client.
+ The form is
+\end_layout
+
+\begin_layout Standard
+priority="xxx" class="xxx" type="xxx" GUID="xxx">
+\end_layout
+
+\begin_layout Standard
+The mask has a bit set for a binary digit that is of interest.
+ Default is all is null == disabled.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+filter 
+\end_layout
+
+\begin_layout Standard
+priority="xxx" class="xxx" type="xxx" GUID="xxx">This is the event filter</filte
+r>
+\end_layout
+
+\begin_layout Standard
+Set the filter for incoming events to a client.
+ The form is
+\end_layout
+
+\begin_layout Standard
+class="xxx" type="xxx" GUID="xxx"
+\end_layout
+
+\begin_layout Standard
+If a mask bit is set to one for a position then the filter bit must be equal
+ to the bit of the incoming event for the client to get it.
+ 
+\end_layout
+
+\begin_layout Subsection
+automation
+\end_layout
+
+\begin_layout Standard
+In the <automation> tab area settings that affect the internal VSCP functionalit
+y behavior of the server is located.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+daemon
+\end_layout
+
+\begin_layout Standard
+This is the zone for the server 0-154.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+subzone
+\end_layout
+
+\begin_layout Standard
+This is the sub-zone for the server 0-154.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+longitude
+\end_layout
+
+\begin_layout Standard
+Longitude for place where daemon is located.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+latitude
+\end_layout
+
+\begin_layout Standard
+Latitude for place where daemon is located.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+time
+\end_layout
+
+\begin_layout Standard
+Enable/disable the periodic CLASS1.PROTOCOL, Type=1 (Segment Status Heartbeat)
+ event to be sent from the daemon.
+ The interval between events is set in seconds.
+\end_layout
+
+\begin_layout Standard
+<time enable="true|false" interval="seconds" /> 
+\end_layout
+
+\begin_layout Subsubsection
+sunrise
+\end_layout
+
+\begin_layout Standard
+Enable/disable the CLASS1.INFORMATION, Type=44 (Sunrise) to be sent.
+ Longitude and latitude must be set for this to work correctly.
+\end_layout
+
+\begin_layout Standard
+<sunrise enable="true|false" />
+\end_layout
+
+\begin_layout Subsubsection
+sunset
+\end_layout
+
+\begin_layout Standard
+Enable/disable the CLASS1.INFORMATION, Type=45 (Sunset) to be sent.
+ Longitude and latitude must be set for this to work correctly.
+\end_layout
+
+\begin_layout Standard
+<sunset enable="true|false" />
+\end_layout
+
+\begin_layout Subsubsection
+heartbeat
+\end_layout
+
+\begin_layout Standard
+Enable/disable the CLASS1.INFORMATION, Type=9 (Node Heartbeat) to be sent.
+ The interval between events is set in seconds.
+\end_layout
+
+\begin_layout Standard
+<heartbeat enable="true|false" interval="seconds" />
+\end_layout
+
+\begin_layout Subsection
+canaldriver
+\end_layout
+
+\begin_layout Standard
+In the <canaldriver> tab area settings for loadable drivers is located.
+ Each driver is located between <driver>…</driver> pairs.
+ name
+\end_layout
+
+\begin_layout Standard
+This is the name of the driver.
+ parameter
+\end_layout
+
+\begin_layout Standard
+This is the driver option string.
+ path
+\end_layout
+
+\begin_layout Standard
+This is the path to the driver dll/dl.
+ flags
+\end_layout
+
+\begin_layout Standard
+This is the driver flags.
+ A 32-bit numerical value.
+ guid
+\end_layout
+
+\begin_layout Standard
+This is the GUID for the driver.
+ If not set, the client GUID which is generated from the daemon GUID, is
+ used.
+ 
+\end_layout
+
+\begin_layout Subsection
+interface
+\end_layout
+
+\begin_layout Standard
+This section holds information about each TCP/IP interface the daemon service.
+ Normally no need to enter this information.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+port
+\end_layout
+
+\begin_layout Standard
+The TCP/IP port to use for the interface.
+ Default is 9598.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+ipaddress
+\end_layout
+
+\begin_layout Standard
+IP address to use for interface.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+macaddress
+\end_layout
+
+\begin_layout Standard
+MAC address for thernet card where interface is.
+ Entered as a six digit hex number on the form
+\end_layout
+
+\begin_layout Standard
+aa:bb:cc:dd:ee:ff
+\end_layout
+
+\begin_layout Subsubsection
+guid
+\end_layout
+
+\begin_layout Standard
+GUID for the interface.
+ 
+\end_layout
+
+\begin_layout Part
+VSCP Daemon Control Interface
+\end_layout
+
+\begin_layout Standard
+This is documentation for the TCP interface of the daemon.
+ The TCP/IP interface is a very powerful tool for users that allow for full
+ control of the functionality of the daemon.
+\end_layout
+
+\begin_layout Standard
+Originally the TCP/IP interface was added to allow for a more secure way
+ to send events over TCP/IP links.
+ This interface will have a fair better chance to work over wireless and
+ other links that are hard to get to work reliable with UDP.
+ Again it is not fully secure but just as we from time to time miss a character
+ in our e-mails this can also happen here.
+ *Secure enough* is the design criteria.
+ 
+\end_layout
+
+\begin_layout Section
+GUID assigned to the i/f
+\end_layout
+
+\begin_layout Standard
+Just as with all clients that connect to the daemon each TCP client interface
+ gets a GUID assigned to it.
+ This GUID is assigned by setting it to the GUID the server was assigned
+ at start up (in it's configuration file 40_vscpd_config_file).
+ This means that a client GUID has the following general form
+\end_layout
+
+\begin_layout Standard
+yy yy yy yy yy yy yy yy yy yy yy yy client_id_MSB client_id_LSB 0 0
+\end_layout
+
+\begin_layout Standard
+where the the assigned GUID is represented by yy and client_id is a system
+ unique id for this client interface.
+\end_layout
+
+\begin_layout Standard
+If no GUID is assigned in the configuration file the ethernet MAC address
+ of the computer vscpd is running on using the VSCP Ethernet assignment
+ method ( see Assigned GUIDs ).
+ This results in a GUID of the following form
+\end_layout
+
+\begin_layout Standard
+FF FF FF FF FF FF FF FE yy yy yy yy client_id_MSB client_id_LSB 0 0 
+\end_layout
+
+\begin_layout Standard
+where yy is the four most significant bytes of the Ethernet address and
+ FF is decimal 255.
+ Note that as the two least significant bytes of the MAC address is dropped
+ there is a chance for duplicated GUID's in a network with more then one
+ machine with a network card from the same manufacturer.
+ In this case set a unique GUID in the configuration file.
+\end_layout
+
+\begin_layout Standard
+Another possibility is to use the IP address of the computer
+\end_layout
+
+\begin_layout Standard
+FF FF FF FF FF FF FF FD yy yy yy yy client_id_MSB client_id_LSB 0 0 
+\end_layout
+
+\begin_layout Standard
+where yy is the IP address and FF is decimal 255.
+\end_layout
+
+\begin_layout Standard
+The client_id is present in each VSCP event data structure and if a client
+ uses more then one connection to the daemon this client_id can be used
+ to detect events that it has sent itself when they arrive on the other
+ open interfaces.
+ This is typical used when the RCVLOOP command is issued where typically
+ one interface is used to send events and another is used to receive events.
+ By saving the client_id for the transmitting channel events that is sent
+ on this channel can be detected on the receive channel.
+\end_layout
+
+\begin_layout Standard
+When an event is sent from the driver interface ( a CANAL event ) the nickname
+ id is stored in the LSB GUID byte (GUID[0]).
+ 
+\end_layout
+
+\begin_layout Section
+Server discovery
+\end_layout
+
+\begin_layout Standard
+A node that needs a TCP connection to a server broadcasts High end server
+ probe Class=0, Type = 27 (0x1B) on the segment and waits for High end server
+ response Class=0, Type = 28 (0x1C) from one or more servers that serve
+ the segment.
+ If a suitable server has responded it can decide to connect to that server.
+\end_layout
+
+\begin_layout Standard
+A daemon like the VSCP daemon can span multiple segments and a reply can
+ therefore be received from a remote segment as well.
+ This can be an advantage in some cases and unwanted in other cases.
+ The server configuration should have control on how it is handled.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Graphics
+	filename highenddiscovery.jpg
+	width 12cm
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+As an example: In this picture VSCP Works has been used to broadcast a High
+ end server probe from the machine with IP address 192.168.1.8 - Data is 0,192,168,
+1,8 - The initial zero indicates that this is a TCP/IP based device.
+\end_layout
+
+\begin_layout Standard
+The server that in this case is on the same machine have answered with a
+ High end server response with data set to
+\end_layout
+
+\begin_layout Standard
+80 00 08 01 A8 C0 25 7E 
+\end_layout
+
+\begin_layout Standard
+The first two bytes is the bitfiled that tells the Code for server capabilities.
+ After that follows the server IP address (192.168.1.8) followed by the VSCP
+ default port 9598.
+\end_layout
+
+\begin_layout Standard
+In clear text, this server has a VSCP TCP/IP interface available at the
+ standard port.
+\end_layout
+
+\begin_layout Standard
+Other scenarios could be possible of course such as several servers responding
+ and each of the servers supporting different capabilities.
+\end_layout
+
+\begin_layout Standard
+The High end server probe and High end server response is described here
+ Class=0 (0x00) VSCP Protocol Functionality - CLASS1.PROTOCOL
+\end_layout
+
+\begin_layout Standard
+A node can react in its own manner on the response.
+ It can connect to the server itself or wait for the server to connect to
+ the node.
+ 
+\end_layout
+
+\begin_layout Section
+Secure the TCP link
+\end_layout
+
+\begin_layout Standard
+From version two a very flexible security schema has been introduced.
+ Each user is defined with a list of parameters 
+\end_layout
+
+\begin_layout Subsection
+username
+\end_layout
+
+\begin_layout Standard
+A name that this user is refered to and known by.
+ Always required for all users.
+ 
+\end_layout
+
+\begin_layout Subsection
+password
+\end_layout
+
+\begin_layout Standard
+A password this user must give to sign in.
+ Always required for all users.
+ Stored in configuration files as MD5 of password.
+\end_layout
+
+\begin_layout Subsection
+host-list
+\end_layout
+
+\begin_layout Standard
+A list with locations/comuters/networks this user can access the daemon.
+ Wildcard can be used so access from a single computer can be set as “192.168.1.8”
+ but access for the hole subclass can be set as “192.168.1.*”.
+\end_layout
+
+\begin_layout Subsection
+access-rights
+\end_layout
+
+\begin_layout Standard
+This is the access level this user have.
+ This is a 32-bit value where the lower four bits define a value 0-15 that
+ defines a privilege value which gives access to different levels of commands.
+ The upper part of the 32-bit value is a bit field with specific rights.
+\end_layout
+
+\begin_layout Section
+Username/password pairs for TCP/IP drivers
+\end_layout
+
+\begin_layout Standard
+This is a driver that is started through the normal driver interface, but
+ after the start it does all it's communication through the TCP/IP interface.
+ This is therefore actually a Level II driver as it does all it's communication
+ on the higher level.
+ It can also use the variables the daemon gives access to through the TCP/IP
+ interface for its own configuration and state.
+\end_layout
+
+\begin_layout Standard
+A driver of this type needs a username/password pair and it should always
+ be defined for every setup.
+\end_layout
+
+\begin_layout Standard
+The Host-list for the user drivers to be used, should always be the Localhost
+ to increase security, 
+\end_layout
+
+\begin_layout Section
+VSCP TCP/IP Protocol Description
+\end_layout
+
+\begin_layout Subsection
+Port
+\end_layout
+
+\begin_layout Standard
+Default Port: 
+\series bold
+9598
+\end_layout
+
+\begin_layout Subsection
+Command and response format
+\end_layout
+
+\begin_layout Standard
+The VSCP TCP protocol is very much like the POP3 protocol.
+\end_layout
+
+\begin_layout Standard
+* A command is sent (ending with CRLF)
+\end_layout
+
+\begin_layout Standard
+* A response line is received starting with either ”+OK” for success or
+ ”-OK” for failure.
+ The initial “token” is followed by some descriptive text.
+\end_layout
+
+\begin_layout Standard
+For some commands there can be data in between the two lines.
+ For instance the “VERS” sommand looks like this
+\end_layout
+
+\begin_layout Standard
+send: 'VERS<CR><LF>' received line 1: '1,0,0<CR><LF>' received line 2: '+OK
+ - <CR><LF>'
+\end_layout
+
+\begin_layout Standard
+An additional mode will be added to the control interface of the VSCP daemon.
+ This interface will make it possible to start stop drivers, get information
+ about drivers, add/delete daemon decision matrix elements etc.
+ This thus makes it possible to remotely control many aspects of the daemon
+ and it's control functionality.
+\end_layout
+
+\begin_layout Standard
+The interface can also be used from applications such as a control panel
+ widget under windows or a home automation server such as the Open Home
+ Automation Server.
+\end_layout
+
+\begin_layout Subsection
+Available commands
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="33" columns="4">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="top" width="6cm">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Command
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Privilege
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+From version
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
++
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Repeat the last command
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+NOOP
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+No operation.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+QUIT
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Close the connection.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+USER
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Username for login.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+PASS
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Password for login.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SEND
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Send an event.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+RETR
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Retrive one or several event(s).
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+RCVLOOP
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Will retrive events in an endless loop until the connection is closed by
+ the client.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CDTA
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Check if there are events to retrieve.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CLRA
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Clear all events in in-queue.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+STAT
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Get statistics information.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+INFO
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Get status information.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CHID
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Get channel ID.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SGID
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set GUID for channel.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+GGID
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Get GUID for channel.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+VERS
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Get CANAL/VSCP daemon version.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SFLT
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set incoming event filter.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SMSK
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set incoming event mask.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+BIN1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Enter binary mode 1.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+BIN2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Enter binary mode 2.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+HELP
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Give command help.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+TEST
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Do test sequence.
+ Only used for debugging.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+SHUTDOWN
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Shutdown the daemon.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+RESTART
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Restart the daemon.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DRIVER
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Driver manipulation.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+FILE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+File handling
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+UDP
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+UDP
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+REMOTE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+User manipulation 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+INTERFACE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Interface manipulation.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+DM
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Decision Matrix manipulation.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CANMODE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set CAN Mode.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+VARIABLE
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.2.9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Variable handling.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+NOOP - No operation.
+\end_layout
+
+\begin_layout Standard
+This operation does nothing.
+ It just replies with ”+OK”.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+QUIT - Close the connection.
+\end_layout
+
+\begin_layout Standard
+Close the connection to the host.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+USER - Username for login.
+\end_layout
+
+\begin_layout Standard
+Used to enter username for a password protected server.
+\end_layout
+
+\begin_layout Standard
+Used on the folowing form:
+\end_layout
+
+\begin_layout Standard
+USER username<CR><LF>
+\end_layout
+
+\begin_layout Subsubsection
+PASS - Password for login.
+\end_layout
+
+\begin_layout Standard
+Used to enter username for a password protected server.
+\end_layout
+
+\begin_layout Standard
+Used on the following form:
+\end_layout
+
+\begin_layout Standard
+PASS password<cr><lf>
+\end_layout
+
+\begin_layout Subsubsection
+RESTART
+\end_layout
+
+\begin_layout Standard
+Restart the daemon.
+ Must have highest privilege to be able to do this.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+SHUTDOWN
+\end_layout
+
+\begin_layout Standard
+shutdown the daemon.
+ Must have highest privilege to be able to do this.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+DRIVER
+\end_layout
+
+\begin_layout Standard
+With this command drivers can be handled.
+ The argument defines which operation is performed.
+ 
+\end_layout
+
+\begin_layout Paragraph
+
+\series bold
+driver install
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Install a new driver.
+ Full format is DRIVER install “path to driver package”.
+ It's possible to just install a driver temporarily or make it persistent
+ to the system so it is loaded when the daemon starts.
+ The driver package is a zip'ed file with a manifest file in XML format
+ that tells where different components should go.
+ The package system is also aware of the OHAS web framework.
+ 
+\end_layout
+
+\begin_layout Paragraph
+
+\series bold
+driver uninstall
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Uninstall a driver that is currently installed.
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Full format is DRIVER uninstall “drivername”/id.
+ 
+\end_layout
+
+\begin_layout Paragraph
+d
+\series bold
+river upgrade
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Upgrade a driver that is currently installed.
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Full format is DRIVER upgrade “drivername”/id.
+\end_layout
+
+\begin_layout Paragraph*
+
+\series bold
+driver start
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Start an installed driver.
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Full format is DRIVER start “drivername”/id.
+ 
+\end_layout
+
+\begin_layout Paragraph
+
+\series bold
+driver stop
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Stop an installed driver.
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Full format is DRIVER stop “drivername”/id.
+
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+
+\series bold
+driver reload
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Relod an installed driver.
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Full format is DRIVER relode “drivername”/id.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+FILE
+\end_layout
+
+\begin_layout Standard
+With this command files can be handled.
+ It is implemented to enable an administrator to handle driver and configuration
+ files from a remote location and for client applications so they can dump
+ collected data.
+ 
+\end_layout
+
+\begin_layout Paragraph
+dir 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Show a directory listing for a folder given by the argument.
+
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+copy 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Copy a file from one location to another.
+
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+move 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Move a file from one location to another.
+ 
+\end_layout
+
+\begin_layout Paragraph
+delete 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Delete a file.
+ 
+\end_layout
+
+\begin_layout Paragraph
+list
+\series medium
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+List content of file.
+
+\series default
+ 
+\end_layout
+
+\begin_layout Subsubsection
+UDP 
+\end_layout
+
+\begin_layout Paragraph
+enable 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Enable the udp interface.
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Full format UDP ENABLE
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+disable 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Disable the udp interface.
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Full format UDP DISABLE
+\end_layout
+
+\begin_layout Subsubsection
+REMOTE
+\end_layout
+
+\begin_layout Standard
+Remote user manipulation.
+ 
+\end_layout
+
+\begin_layout Paragraph
+list 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+List user(s).
+ Full format is REMOTE list wildcard 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The list user command has the following format
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+user1<CR><LF> 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+user2<CR><LF>
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+...
+ 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+usern<CR><LF> 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
++OK<CR><LF>
+\end_layout
+
+\begin_layout Paragraph
+add 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Add a user.
+ Full format is REMOTE add “username”,”MD5 password”,”from-host(s)”,”access-righ
+t-list”,”event-list”,”filter”,”mask” 
+\end_layout
+
+\begin_layout Standard
+The add user parts of the arguments can be left out after password.
+ All arguments below the one that is left out must be present.
+ No argument in the middle can be taken away.
+\end_layout
+
+\begin_layout Paragraph
+remove 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Remove a user.
+ Full format is REMOTE remove “username”
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+privilege 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Set new privilege for a user.
+ Full format is REMOTE privilege “username”,”access-right-list”
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+password 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Set new privilege for a user.
+ Full format is REMOTE password “username”,”MD5 for password”
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+host-list 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Set locations usercan connect from.
+ Full format is REMOTE password “username”,”host-list” 
+\end_layout
+
+\begin_layout Paragraph
+event-list 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Set list of events user can send.
+ Full format is REMOTE password “username”,”event-list”
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+filter 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Set user filter.
+ Full format is REMOTE password “username”,”filter”
+\series default
+ 
+\end_layout
+
+\begin_layout Paragraph
+mask 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Set user mask.
+ Full format is REMOTE password “username”,”mask”
+\end_layout
+
+\begin_layout Subsubsection
+INTERFACE 
+\end_layout
+
+\begin_layout Paragraph
+list 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+List interfaces.
+
+\series default
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+For the list interfaces command the daemon respond with
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series medium
+\shape italic
+interface_id1, type, interface_GUID1, interface_realname1<CR><LF> 
+\end_layout
+
+\begin_layout Standard
+
+\series medium
+\shape italic
+interface_id2, type, interface_GUID2, interface_realname2<CR><LF> 
+\end_layout
+
+\begin_layout Standard
+
+\series medium
+\shape italic
+...
+ 
+\end_layout
+
+\begin_layout Standard
+
+\series medium
+\shape italic
+interface_idn, type, interface_GUIDn, interface_realnamen<CR><LF> 
+\end_layout
+
+\begin_layout Standard
+
+\series medium
+\shape italic
++OK<CR><LF>
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+type is 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace medskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="2">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Type
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+unknown (should not see this)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Internal daemon client 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+CANAL Driver 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+TCP/IP Driver 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+TCP/IP Client 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Paragraph
+close 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Close interfaces.
+ 
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Full format is 
+\series default
+interface close interface_GUID
+\end_layout
+
+\begin_layout Subparagraph
+
+\series medium
+Unique access to an interface can only be quired once for one interface.
+ So two unique operations after each other de selects the first chosen interface
+ before acquire the second.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+DM
+\end_layout
+
+\begin_layout Description
+enable 
+\end_layout
+
+\begin_layout Standard
+Enable a decision matrix row.
+ Argument is a comma seperated list with DM row number(s) or “ALL” for all
+ rows.
+ 
+\end_layout
+
+\begin_layout Description
+disable 
+\end_layout
+
+\begin_layout Standard
+Disable a decision matrix row.
+ Argument is a comma seperated list with DM row number(s) or “ALL” for all
+ rows.
+ 
+\end_layout
+
+\begin_layout Description
+list 
+\end_layout
+
+\begin_layout Standard
+Show a decision matrix row number.
+ Argument is DM row number(s) or “ALL” for all rows.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The list command gives a list of the following format
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+enabled,priority-mask,priority-filter,class-mask,class-filter,type-mask,type-fil
+ter,guid-filter,guid-mask, index,zone,subzone,control-code,action-code,action-pa
+ram,trig-counter,error-counter<CR><LF> 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+....
+ 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
++OK<CR><LF>
+\end_layout
+
+\begin_layout Itemize
+First parameter is enabled if the row is active else disabled (
+\begin_inset Quotes eld
+\end_inset
+
+true
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+false
+\begin_inset Quotes erd
+\end_inset
+
+).
+ 
+\end_layout
+
+\begin_layout Itemize
+After the first parameter a standard VSCP filter follows with mask/filter
+ pairs.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+index
+\series default
+: Is also part of the filter but is an absolute value from databyte 0.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+zone
+\series default
+: Is also part of the filter but is an absolute value from databyte 1.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+subzone
+\series default
+: Is also part of the filter but is an absolute value from databyte 1.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+control-code
+\series default
+: Then the 32-bit control code follows.
+ Note that enable/disable is part of this code.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+action-code
+\series default
+: The action code follows next.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+action-param
+\series default
+: A string consisting of action parameters.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+trig-counter
+\series default
+: This is a counter for how many time the action for the row has been executed.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+error-counter
+\series default
+: This is a counter for action execution errors for the row.
+\end_layout
+
+\begin_layout Standard
+See the DM description in the VSCP specification for information about the
+ content of the control code etc.
+ 
+\end_layout
+
+\begin_layout Description
+add 
+\end_layout
+
+\begin_layout Standard
+Add a decision matrix row.
+ 
+\end_layout
+
+\begin_layout Standard
+The add-command needs a parameter of the following format
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+priority-mask,priority-filter,class-mask,class-filter,type-mask,type-filter,guid
+-filter,guid-mask, index,zone,subzone,control-code,action-code,action-param
+\end_layout
+
+\begin_layout Description
+delete 
+\end_layout
+
+\begin_layout Standard
+Delete a decision matrix row.
+ 
+\end_layout
+
+\begin_layout Standard
+Argument is a comma seperated list with DM row number(s).
+ 
+\end_layout
+
+\begin_layout Description
+reset 
+\end_layout
+
+\begin_layout Standard
+Resets all variables and read in persistent values.
+ 
+\end_layout
+
+\begin_layout Description
+clrtrig 
+\end_layout
+
+\begin_layout Standard
+Clear trig counter fro a decision matrix row.
+\end_layout
+
+\begin_layout Standard
+Argument is a comma seperated list with DM row number(s) or “ALL” for all
+ rows.
+ 
+\end_layout
+
+\begin_layout Description
+clrerr 
+\end_layout
+
+\begin_layout Standard
+Clear error counter for a decision matrix row.
+ 
+\end_layout
+
+\begin_layout Standard
+Argument is a comma seperated list with DM row number(s) or “ALL” for all
+ rows.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+VARIABLE
+\end_layout
+
+\begin_layout Description
+list 
+\end_layout
+
+\begin_layout Standard
+List all defined internal variables and there values or use a wildcard to
+ list specific variables.
+ all, *, *aaaa*, aaaa* or *aaaa 
+\end_layout
+
+\begin_layout Description
+write 
+\end_layout
+
+\begin_layout Standard
+Set an internal variable value.
+ If the variable is not already defined it is created.
+ Argument is “name of variable”,”value”, type, “persistence”.
+ Type is variable type and is optional.
+ Last argument can be “true” or “false” for variable persistence and is
+ optional.
+ It is possible to proceed the variable with a '$'to indicate persistent
+ and '@' for an array.
+ 
+\end_layout
+
+\begin_layout Description
+read 
+\end_layout
+
+\begin_layout Standard
+Read a variables value.
+ Arguments is “name of variable” 
+\end_layout
+
+\begin_layout Description
+reset 
+\end_layout
+
+\begin_layout Standard
+If the variable value is persistent the persistent value is reloaded.
+ If not the value is deleted.
+ 
+\end_layout
+
+\begin_layout Description
+readreset 
+\end_layout
+
+\begin_layout Standard
+This is a combination of read + reset doing them together in an atomic way.
+ 
+\end_layout
+
+\begin_layout Description
+remove 
+\end_layout
+
+\begin_layout Standard
+Removes a variable.
+ Argument is name of variable.
+ 
+\end_layout
+
+\begin_layout Description
+length 
+\end_layout
+
+\begin_layout Standard
+Get the length for a string variable.
+ No effect for other variable types (returns 0 ).
+ 
+\end_layout
+
+\begin_layout Description
+save 
+\end_layout
+
+\begin_layout Standard
+Save persistent variables.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace bigskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Output format from daemon for variable list/read commands is
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+"variable name",type,"persistence","value"<CR><LF> 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
+...
+ 
+\end_layout
+
+\begin_layout Standard
+
+\shape italic
++OK<CR><LF>
+\end_layout
+
+\begin_layout Standard
+Persistance is presented as “true” or “false”.
+ 
+\end_layout
+
+\begin_layout Standard
+Defined Types
+\end_layout
+
+\begin_layout Description
+\begin_inset Tabular
+<lyxtabular version="3" rows="14" columns="2">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Code
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Unassigned (variable has not been used).
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+String format
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Boolean e.g.
+ true,false or 0,1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Integer format
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Long integer format
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Floating point value (double) 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+VSCP measurement data see Data Coding.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+7
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+VSCP Event e.g.
+ priority=5 class=10,type=40,data=0×12,1,2,3,4,5 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+GUID e.g.
+ 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+9
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Data e.g.
+ 1,2,3,4,5… 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Class e.g.
+ 10 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Type e.g.
+ 22 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+12
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Timestamp 2008-11-07 20:10.00 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Itemize
+All numerical variables can be given as decimal values or as hexadecimal
+ values (preceded with 0x).
+\end_layout
+
+\begin_layout Itemize
+All variable beginning with “VSCP_” is reserved.
+\end_layout
+
+\begin_layout Itemize
+New variables with names starting with $ will be persistent.
+\end_layout
+
+\begin_layout Itemize
+New variables with names starting with @ will be arrays.
+\end_layout
+
+\begin_layout Itemize
+Variable are read in by the daemon at start up from the variable file 
+\end_layout
+
+\begin_layout Subsubsection
+SEND - Send an event.
+\end_layout
+
+\begin_layout Standard
+Used on the following form:
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+\shape italic
+send head,class,type,obid,timestamp,GUID,data1,data2,data3....
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The GUID is given on the form MSB-byte:MSB-byte-1:MSB-byte-2…….
+ The GUID can also be given as ”-” in which case the GUID of the interface
+ is used for the event.
+ This GUID is constructed from the Ethernet MAC address and some other parameter
+s to be globaly unique.
+\end_layout
+
+\begin_layout Standard
+If timestamp is set to zero a timestamp will be provided by the daemon.
+ This timestamp will be set as soon as the the line is parsed.
+\end_layout
+
+\begin_layout Standard
+Note: obid is just a place holder here to have a similar line as the receive
+ command and is used internally by the daemon as an interface index.
+ The value you use will always be overwritten by the daemon.
+\end_layout
+
+\begin_layout Description
+Example:
+\end_layout
+
+\begin_layout Standard
+Send a full GUID event
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+\shape italic
+send 0,20,3,0,0,0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15,0,1,35<CR><LF>
+\end_layout
+
+\begin_layout Standard
+Send Event.
+ The example is the same as above but the GUID of the interface will be
+ used.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+\shape italic
+send 0,20,3,0,0,-,0,1,35<CR><LF> 
+\end_layout
+
+\begin_layout Standard
+Both send the CLASS1.INFORMATION TYPE=3 ON event, for zone=1, subzone=35
+\end_layout
+
+\begin_layout Standard
+It is possible to send Level I events to a specific interface.
+ To do this use the Level II mirror Level I events ( Class=512-1023 VSCP
+ Level II Level I events - CLASS2.LEVELI).
+ This is events with class equal to 512 - 1023 which mirrors the Level I
+ events but have the destination GUID in data bytes 0-15.
+ Thees databytes is set to the interface (14 upper bits) and the nodeid
+ for the node one wants to communicate with is in GUID[0].
+ This event will be sent to the correct interface.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+RETR - Retrive one or several event(s).
+\end_layout
+
+\begin_layout Standard
+This command can be used to retreive one or several events from the input
+ queue.
+ Events are returned as
+\end_layout
+
+\begin_layout Standard
+head,class,type,obid,timestamp,GUID,data0,data1,data2,...........
+\end_layout
+
+\begin_layout Standard
+GUID with MSB first.
+\end_layout
+
+\begin_layout Standard
+Used on the following form:
+\end_layout
+
+\begin_layout Standard
+RETR 2<CR><LF> 0,20,3,0,0,255:255:255:255:255:255:255:254:0:5:93:140:2:32:0:1
+ 0,20,4,0,0,255:255:255:255:255:255:255:254:0:5:93:140:2:32:0:1 +OK - 
+\end_layout
+
+\begin_layout Standard
+If no events are available in the queue
+\end_layout
+
+\begin_layout Standard
+"-OK - No event(s) available."
+\end_layout
+
+\begin_layout Standard
+is received by the client.
+\end_layout
+
+\begin_layout Standard
+VSCP Event originating from a CANAL driver have the nickname of the node
+ in the LSB of the GUID ( GUID[0] ).
+ The rest of the GUID is the GUID for the interface.
+\end_layout
+
+\begin_layout Standard
+If no argument is given one event is fetched even if there are more in the
+ queue.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+RCVLOOP - Send events to client as soon as they arrive.
+\end_layout
+
+\begin_layout Standard
+This command set the channel in a closed loop that only can be interrupted
+ by a client closing the connection.
+ The server will now send out an event as soon as it is reserved.
+ This is done in a very effective way with high throughput.
+ This means the client does not have to poll for new events.
+ It just open one channel where it sends events and do control tasks and
+ one channel where it receive evens.
+\end_layout
+
+\begin_layout Standard
+To help in determining that the line is alive
+\end_layout
+
+\begin_layout Standard
++OK
+\end_layout
+
+\begin_layout Standard
+is sent with a two second interval.
+ The format for the event data is the same as for RETR command.
+\end_layout
+
+\begin_layout Standard
+Some applications may not implement this fetaure and should output
+\end_layout
+
+\begin_layout Standard
+[-OK - Command not implemented<CR><LF>]
+\end_layout
+
+\begin_layout Standard
+to indicate this.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+CDTA - Check if there are events to retrive.
+\end_layout
+
+\begin_layout Standard
+This command are used to check how many events are in the input queue waiting
+ for retrival.
+\end_layout
+
+\begin_layout Standard
+Used on the following form:
+\end_layout
+
+\begin_layout Standard
+CDTA<CR><LF> 8 +OK -
+\end_layout
+
+\begin_layout Subsubsection
+CLRA - Clear all events in inqueue
+\end_layout
+
+\begin_layout Standard
+This command are used to clear all events in the input queue.
+\end_layout
+
+\begin_layout Standard
+Used on the following form:
+\end_layout
+
+\begin_layout Standard
+CLRA<CR><LF> +OK - All events cleared.
+\end_layout
+
+\begin_layout Subsubsection
+STAT - Get statistics information.
+\end_layout
+
+\begin_layout Standard
+Get interface statistics information.
+ The returned format is
+\end_layout
+
+\begin_layout Standard
+cntBusOff,cntBusWarnings,cntOverruns,cntReceiveData,cntReceiveFrames,cntTransmit
+Data,cntTransmitFrames
+\end_layout
+
+\begin_layout Standard
+Example:
+\end_layout
+
+\begin_layout Standard
+STAT<CR><LF> 0,0,0,12356,56,9182,20<CR><LF> +OK - <CR><LF>
+\end_layout
+
+\begin_layout Subsubsection
+INFO - Get status information.
+\end_layout
+
+\begin_layout Standard
+This command fetch the status information for the interface.
+ Returned format is
+\end_layout
+
+\begin_layout Standard
+channel_status,lasterrorcode,lasterrorsubcode,lasterrorstr
+\end_layout
+
+\begin_layout Standard
+Example:
+\end_layout
+
+\begin_layout Standard
+INFO<CR><LF> 7812,12,0,"Overrun"<CR><LF> +OK - <CR><LF>
+\end_layout
+
+\begin_layout Subsubsection
+CHID - Get channel ID.
+\end_layout
+
+\begin_layout Standard
+Get the channel id for the communication channel.
+ This is the same parameter as the obid which is present in events.
+\end_layout
+
+\begin_layout Standard
+Example:
+\end_layout
+
+\begin_layout Standard
+CHID<CR><LF> 1234<CR><LF> +OK - <CR><LF>
+\end_layout
+
+\begin_layout Subsubsection
+SGID - Set GUID for channel.
+\end_layout
+
+\begin_layout Standard
+Set the GUID for this channel.
+ The GUID is givven on the form
+\end_layout
+
+\begin_layout Standard
+The format is:
+\end_layout
+
+\begin_layout Standard
+SGID 0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15<CR><LF> +OK - <CR><LF>
+\end_layout
+
+\begin_layout Subsubsection
+GGID - Get GUID for channel.
+\end_layout
+
+\begin_layout Standard
+Get the GUID for this channel.
+ The GUID is received on the form
+\end_layout
+
+\begin_layout Standard
+0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15<CR><LF> +OK - <CR><LF>
+\end_layout
+
+\begin_layout Subsubsection
+VERS - Get VSCP daemon version.
+\end_layout
+
+\begin_layout Standard
+Get the current version for the daemon.
+ The returned format is
+\end_layout
+
+\begin_layout Standard
+major-version,minor-version,sub-minor-version
+\end_layout
+
+\begin_layout Subsubsection
+SFLT - Set incoming event filter.
+\end_layout
+
+\begin_layout Standard
+Set the incoming filter.
+ The format is
+\end_layout
+
+\begin_layout Standard
+filter-priority, filter-class, filter-type, filter-GUID
+\end_layout
+
+\begin_layout Standard
+example
+\end_layout
+
+\begin_layout Standard
+1,0×0000,0×0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00,0,0,0
+\end_layout
+
+\begin_layout Standard
+Note: The GUID values always is given as hexadecimal values without a preceding
+ “0x”.
+\end_layout
+
+\begin_layout Standard
+Note: If you want to filter on nickname-id you should filter on GUID LSB
+ byte.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+SMSK - Set incoming event mask.
+\end_layout
+
+\begin_layout Standard
+Set the incoming mask.
+ The format is
+\end_layout
+
+\begin_layout Standard
+mask-priority, mask-class, mask-type, mask-GUID
+\end_layout
+
+\begin_layout Standard
+example
+\end_layout
+
+\begin_layout Standard
+1,0×0000,0×0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00,0,0,0
+\end_layout
+
+\begin_layout Standard
+Note: that the GUID values always is given as hexadecimal values without
+ a preceding “0x”.
+\end_layout
+
+\begin_layout Standard
+Note: If you want to mask on nickname-id you should mask on GUID LSB byte.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+CANMODE - Set CAN Mode.
+\end_layout
+
+\begin_layout Standard
+Set the interface in CAN mode.
+\end_layout
+
+\begin_layout Standard
+The only way to leave this mode is to terminate the session an start a new
+ one.
+ In CAN mode the daemon will not try to interepret VSCP control events and
+ route them to the correct interface.
+\end_layout
+
+\begin_layout Subsubsection
+BIN1 and BIN2 - Enter binary mode.
+\end_layout
+
+\begin_layout Standard
+Enter binary mode.
+\end_layout
+
+\begin_layout Standard
+Note the two versions.
+ BIN1 is a version that require the slave to request frames.
+ The BIN2 version send outgoing frames to the slave directly when they arrive.
+\end_layout
+
+\begin_layout Standard
+Constant for this mode is defined in canal.h and have “BINARY_” as prefix.
+ VSCP frame
+\end_layout
+
+\begin_layout Standard
+Send this frame to the sever to send an event.
+ The server will respond with an error frame but the error indication will
+ be positive for a success.
+ This is also the frame that will be returned after a read request if one
+ or more events are available on the server.
+\end_layout
+
+\begin_layout Standard
+0x55 0xaa frame type: == 0 for VSCP frame MSB of packet len (counted from
+ packet type to last data byte) LSB of packet len VSCP head VSCP class MSB
+ VSCP class LSB VSCP type MSB VSCP type LSB VSCP GUID MSB ...
+ VSCP GUID LSB data 0 data 1 ....
+ data n
+\end_layout
+
+\begin_layout Standard
+Error frame
+\end_layout
+
+\begin_layout Standard
+0x55 0xaa Frame type: == 1 for Error Frame 0x00 0x01 error code, 0 is OK.
+ Error codes defined in canal.h
+\end_layout
+
+\begin_layout Standard
+CAN frame
+\end_layout
+
+\begin_layout Standard
+0x55 0xaa Frame type: == 3 for CAN Frame 0x00 5 + number of data bytes.
+ flag (bit 0 - Extended id, bit 1 - RTR frame) 32 bit id msb 32 bit id 32
+ bit id 32 bit id lsb data byte 0 ..
+ 7
+\end_layout
+
+\begin_layout Standard
+Command frames
+\end_layout
+
+\begin_layout Standard
+Currently three commands are available
+\end_layout
+
+\begin_layout Standard
+* 0 - No operation, NOOP.
+ * 1 - Read request * 2 - Close
+\end_layout
+
+\begin_layout Standard
+NOOP command frame
+\end_layout
+
+\begin_layout Standard
+The noop command do nothing.
+ The server will return a positive error frame.
+\end_layout
+
+\begin_layout Standard
+0x55 0xaa Frame type.
+ == 2 for Command frame 0x00 0x01 0 for NOOP command
+\end_layout
+
+\begin_layout Standard
+Read Request
+\end_layout
+
+\begin_layout Standard
+A read request will get a VSCP frame in return or an erro frame.
+ Typically indicating that there is no event(s) available.
+\end_layout
+
+\begin_layout Standard
+0x55 0xaa Frame type.
+ == 2 for Command frame 0x00 0x01 1 for Read Request command
+\end_layout
+
+\begin_layout Standard
+Close Request
+\end_layout
+
+\begin_layout Standard
+The close request will return to the standard TCP/IP interface and if the
+ intention is to close the TCP/IP interface a “QUIT” also have to be issued
+ after this command.
+\end_layout
+
+\begin_layout Standard
+0x55 0xaa Frame type.
+ == 2 for Command frame 0x00 0x01 3 for Close Request command
+\end_layout
+
+\begin_layout Section
+Decision Matrix
+\end_layout
+
+\begin_layout Standard
+This is decision matrix definitions for high level nodes like PC based or
+ higher end embedded devices.
+ The VSCP daemon is an example of this.
+ No thoughts has been wasted on trying to minimize the use of resources
+ like memory.
+ Somthing that is of great importance for other parts of the VSCP protocol.
+\end_layout
+
+\begin_layout Standard
+Events described here are internal to the high-end node and is therefore
+ not visible for the nodes on the bus.
+ On the other hand all events on the bus are also feed to the DM and events
+ can also be sent from an element in the DM.
+ 
+\end_layout
+
+\begin_layout Subsection
+Level I
+\end_layout
+
+\begin_layout Standard
+Action parameter is one byte with user specified content
+\end_layout
+
+\begin_layout Standard
+For a high end node level I events are handled by the Level II matrix below
+ by the Level I events being mirrored to Level II equivalents.
+ 
+\end_layout
+
+\begin_layout Subsection
+Level II
+\end_layout
+
+\begin_layout Standard
+Action parameter is defined to be max 242 bytes (max level II actionparameter
+ size (256-14)) with user specified content.
+\end_layout
+
+\begin_layout Standard
+There is no limit in the number of DM rows available but there is naturally
+ a practical system limit.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+If an implementor wants to make the action parameter string longer this
+ is OK.
+ This has been done for the VSCP daemon where it can be as long as needed.
+ 
+\end_layout
+
+\begin_layout Subsection
+Scheduler
+\end_layout
+
+\begin_layout Standard
+Each event that is received by the high end node is feed through the decision
+ matrix.
+ When the event is received it is placed on the DM input queue after passing
+ an initial set of filter that removes events that are of no interest to
+ the specific implemention.
+\end_layout
+
+\begin_layout Standard
+The first event in the DM queue is then run through the matrix and each
+ DM row is compared and if there is a match the action for that row is executed.
+\end_layout
+
+\begin_layout Standard
+The daemon itself place some events on the DM queue.
+ See Internal DM events below.
+ For example the internal LOOP event is run through the matrix between every
+ external event feed to the queue.
+ The LOOP event will also be seen in the matrix when no other events are
+ present.
+ In this case a configuration value is used to set the time between two
+ LOOP events (sleep time) if no other events arrive.
+ 
+\end_layout
+
+\begin_layout Subsection
+Actions
+\end_layout
+
+\begin_layout Standard
+Actions can have long argument lists.
+ If you are an end user don't be scared by this.
+ The setup of DM rows is done with program support and you fill in the values
+ in a nice GUI.
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+\shape italic
+Note that the ampersand character ';' is used internally as a separator
+ for arguments and if needed in an argumnt ”%;” should be used.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+NOOP.
+\end_layout
+
+\begin_layout Standard
+No operation.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Run external program.
+\end_layout
+
+\begin_layout Standard
+Run an external program.
+ The daemon must have execute access rights to be able to launch the program.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* Full path to program + arguments to program.
+ ( possibly with with substitution elements %event.class %event.type %date
+ etc).
+ * Optional variable assignment.
+\end_layout
+
+\begin_layout Standard
+Note that the semicolon symbol (';') is used internally and if it is part
+ of a program argument %; should be written.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Run external program at specific time.
+\end_layout
+
+\begin_layout Standard
+Run an external program at a specific time.
+ The daemon must have execute access rights to be able to launch the program.
+ When triggered it checks the time
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* Timing data as parameter 1-4 see definition below.
+ * Full path to program as argument 5.
+ * Argument to program as argument 6.
+ (with substitution elements %event.class %event.type %date etc).
+ * Optional variable assignment
+\end_layout
+
+\begin_layout Subsubsection
+Call DLL n method
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* The DLL is loaded at startup where the dll ordinal n is assigned.
+ * Argument 1 is the name of the method.
+ * Optional variable assignment
+\end_layout
+
+\begin_layout Standard
+Dll's are loaded when the DM matrix is loaded.
+ Each method that is named gets a method assigned This method should accept
+ a single utf8 string as an argument and return an int16_t value which if
+ positive or zero indicates a positive execution or if less then zero a
+ negative result of the execution.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Call DLL n method at specific time
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* The DLL is loaded at startup where the dll ordinal n is assigned.
+ * Argument 1 is the name of the method.
+ * Optional variable assignment
+\end_layout
+
+\begin_layout Subsubsection
+Store in variable
+\end_layout
+
+\begin_layout Standard
+Store the data in a variable.
+ The variable is named in the argument.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* Variablename with assignment
+\end_layout
+
+\begin_layout Standard
+Example parameter data
+\end_layout
+
+\begin_layout Standard
+$Running=false // set a boolean variable to false.
+ $Name="Mike Hood" // set variable name to a string.
+ $Level=%event.data.1 // Set variable level to value of data byte 1.
+\end_layout
+
+\begin_layout Subsubsection
+Add to a variable
+\end_layout
+
+\begin_layout Standard
+Add the data to a variable.
+ The variable is named in the argument.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+$variable,value to add
+\end_layout
+
+\begin_layout Standard
+If the variable does not exist it is created.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Subtract from a variable
+\end_layout
+
+\begin_layout Standard
+Subtract the data from a variable.
+ The variable is named in the argument.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+$variable, value to subtract
+\end_layout
+
+\begin_layout Subsubsection
+Multiply with a variable
+\end_layout
+
+\begin_layout Standard
+Multiply the data with a variable.
+ The variable is named in the argument.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+$variable, Value to multiply variable with
+\end_layout
+
+\begin_layout Subsubsection
+Divide the data with a variable
+\end_layout
+
+\begin_layout Standard
+Divide the data with a variable.
+ The variable is named in the argument.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+$value, value to divide variable with
+\end_layout
+
+\begin_layout Subsubsection
+Send event
+\end_layout
+
+\begin_layout Standard
+Send event when another event is received.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* Event to send.
+ * Optional variable that will be set to false.
+\end_layout
+
+\begin_layout Subsubsection
+Send event conditional
+\end_layout
+
+\begin_layout Standard
+Send an event until a timeout occurs and when a specified variable is set
+ to false.
+\end_layout
+
+\begin_layout Standard
+This action is specified to make it possible to define DM enteries that
+ wait for a response form a node and resend a specified event a number of
+ times until this response is received or a timeout occured.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* Control variable name.
+ * Event to send before giving up..
+ * Timeout in milliseconds.
+ * Custom event to send on timeout.
+\end_layout
+
+\begin_layout Standard
+This is done by use of a variable.
+ The variable is set to false by the action that initially sent the event
+ that needs a reply.
+ When the variable is false this event get triggered and will start to send
+ periodic events until the wanted event is actually is received and at which
+ point the variable is set to true again.
+\end_layout
+
+\begin_layout Standard
+A timeout event is sent if a timeout occurs.
+ Variable is set to true.
+\end_layout
+
+\begin_layout Standard
+Note that the filter/mask should not be set for some of the internal time
+ events (loop, second, minute etc).
+ This choice determines the interval between events.
+\end_layout
+
+\begin_layout Standard
+To get all this to work three DM rows are required
+\end_layout
+
+\begin_layout Standard
+1.
+ A row that send the original event and flag the above event.
+ 2.
+ The above event which resends until response received.
+ 3.
+ A row that reset the flag when the reply is received (Store in variable).
+\end_layout
+
+\begin_layout Subsubsection
+Send event(s) from file, timed
+\end_layout
+
+\begin_layout Standard
+This action sends event(s) from a named file.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* path to file * timing data
+\end_layout
+
+\begin_layout Subsubsection
+Run internal script
+\end_layout
+
+\begin_layout Standard
+This is a future action that runs an internal script given as a parameter.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* script
+\end_layout
+
+\begin_layout Subsubsection
+Run internal script at a specific time
+\end_layout
+
+\begin_layout Standard
+This is a future action that runs an internal script at a specific time
+ given as a parameter.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* Timing data as parameter 1-4 see definition below.
+ * script
+\end_layout
+
+\begin_layout Subsubsection
+Start a timer
+\end_layout
+
+\begin_layout Standard
+This action starts a timer identified by a 32-bit id that will count down
+ from a specified time set as HH:MM.SS:ms.
+ If the timer is already define it will be reused and if active it will
+ be reinitialized.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* timer id.
+ * Start time as HH:MM:SS:ms
+\end_layout
+
+\begin_layout Subsubsection
+Pause a timer
+\end_layout
+
+\begin_layout Standard
+This action pause an active timer identified by a 32-bit id.
+ If the timer does not exist the action does nothing.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* timer id.
+\end_layout
+
+\begin_layout Subsubsection
+Resume a timer
+\end_layout
+
+\begin_layout Standard
+This action resume a paused timer identified by a 32-bit id.
+ If the timer does not exist or is active the action does nothing.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* timer id.
+\end_layout
+
+\begin_layout Subsubsection
+Stop a timer
+\end_layout
+
+\begin_layout Standard
+This action stops an active timer identified by a 32-bit id.
+ If the timer does not exist or is inactive the action does nothing.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* timer id.
+\end_layout
+
+\begin_layout Subsubsection
+Write event to file
+\end_layout
+
+\begin_layout Standard
+This action writes (appends) the trigger event to a file.
+ The written format is XML.
+\end_layout
+
+\begin_layout Standard
+Parameters
+\end_layout
+
+\begin_layout Standard
+* path to file * user specified string (substitutions below can be used
+ in the string).
+\end_layout
+
+\begin_layout Subsection
+Internal DM Events
+\end_layout
+
+\begin_layout Standard
+DM events is a special type of events that just are available in the DM
+ loop and is generated internally by the daemon.
+\end_layout
+
+\begin_layout Standard
+The available events is defined here .
+ 
+\end_layout
+
+\begin_layout Subsection
+Timing parameter data format
+\end_layout
+
+\begin_layout Standard
+1.
+ String with days the action can occur in as mtwtfss- use '-' for day when
+ action should not be performed.
+ 2.
+ Start Data/time for when the action can occur in ISO format as YYYY-MM-DD
+ HH:MM:SS Use a wildcard character '*' if any of them is don't care.
+ 3.
+ End Data/time for when the action can occur in ISO format as YYYY-MM-DD
+ HH:MM:SS Use a wildcard character '*' if any of them is don't care.
+ 4.
+ Action date/time when action should occur in ISO format as YYYY:MM:DD HH:MM:SS
+\end_layout
+
+\begin_layout Standard
+The start and the end Date/time fields set the date/time range when the
+ action is allowed to occur.
+\end_layout
+
+\begin_layout Standard
+The action date set the date/time when the action should occur.
+ This can be a one shot in which case the full date/time is filled in as
+ in 2009-11-02 14:30:00 which will perform action at this time once if the
+ start/end dates allow for that.
+ To get repeats it is possible to use wildcards.
+ For example *-*-* 14:30:* (can also be written as * 14:30:*) will perform
+ the operation every seconds from 14:30 to (but not including) 14:31 in
+ the time range set by the start/end date/time range.
+\end_layout
+
+\begin_layout Standard
+For repeating operation that is just dependent on time filter on the SECOND
+ event so that this is the only event that trigger the row.
+\end_layout
+
+\begin_layout Standard
+It is also possible to specify more then one of each element in the date/time
+ by separating them with a slash.
+ For example * 14:0/10/20/30/40/50:00 will do the action every ten minutes
+ between two a clock and three a clock in the afternoon.
+ 
+\end_layout
+
+\begin_layout Subsection
+External standard functionality
+\end_layout
+
+\begin_layout Standard
+This functionality is provided as dll/dl with the package.
+ It is not built into the daemon itself because of portability of the daemon
+ itself.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Log to OHAS database
+\end_layout
+
+\begin_layout Standard
+TBD
+\end_layout
+
+\begin_layout Subsubsection
+Log to syslog/eventlog
+\end_layout
+
+\begin_layout Standard
+TBD
+\end_layout
+
+\begin_layout Subsection
+Send email
+\end_layout
+
+\begin_layout Standard
+First argument is receiver, second argument is subject, third argument is
+ content.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Send SMS
+\end_layout
+
+\begin_layout Standard
+First argument is receiver, second argument is subject, third argument is
+ content.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Access URL
+\end_layout
+
+\begin_layout Standard
+Only argument is URL.
+ 
+\end_layout
+
+\begin_layout Subsection
+String substitution keywords
+\end_layout
+
+\begin_layout Standard
+All string substitution keyworkds are precided with a % 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Tabular
+<lyxtabular version="3" rows="26" columns="2">
+<features>
+<column alignment="center" valignment="top" width="0">
+<column alignment="left" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Substitution
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%%
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The character '%' 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%;
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The character ';'.
+ Semicolon normally separates arguments of an action.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%cr
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+A carriage return.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%lf
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+A line feed.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%crlf 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+A carriage return + a line feed.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%tab
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+A tab.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%bell 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+A bell.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%event
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+A full event in the standard form.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%event.class
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The class for the event 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%event.type
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The type for the event.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%event.head 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+head of the event.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%event.priority
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+The priority for the event.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%event.data
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+All databytes as a comma separated list.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%event.data.n
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Data byte n 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%date
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Date in ISO format YY-MM-DD 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%time
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Time in ISO form HH:MM:SS.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%hour
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Current hour.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%minute
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Current minute.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%second
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Current second.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%week
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Current week number (1-52).
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%month
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Current month number (1-12).
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%year 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Current year.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%quarter
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Current quarter(1-4).
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%uptime 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Machine uptime.
+ 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+%$xxxx 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+value of varible 'xxxxx'.
+ Use '%$$' to represent '%$'.
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Can perfectly be used as arguments for triggered external program execution.
+ 
+\end_layout
+
+\begin_layout Subsection
+Examples
+\end_layout
+
+\begin_layout Subsubsection
+Execute a program with argument when the ON event is received
+\end_layout
+
+\begin_layout Standard
+1.
+ Set filter to see only the TURN-ON command and possibly zone (second data
+ byte) and subzone (third data byte) if only interested in a specific location.
+ 2.
+ The Action code is set to Run external program.
+ 3.
+ First parameter is path to program 4.
+ Second parameter is argument to program.
+\end_layout
+
+\begin_layout Standard
+use substitutions as of above for the arguments if event data should be
+ transfered to the external program.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Execute heyu with argument at a specific time with constraints
+\end_layout
+
+\begin_layout Standard
+The external program heyu is used to control X10 devices.
+ Here we want to turn on a group of lamps at 18:00 each night except during
+ the summer.
+ But never do this on saturdays.
+\end_layout
+
+\begin_layout Standard
+1.
+ Set filter/Mask so only the SECOND internal daemon event is interesting.
+ 2.
+ The Action code is set to Run external program at specific time.
+ 3.
+ First parameter is set to mtswtf-s to allow the action to take place all
+ days except saturday.
+ 4.
+ Second parameter is 10-01;04-01 to allow the action to occur from October
+ first to April first our summer definition.
+ 5.
+ Third parameter is *:*;*:* as we have no timing constraints.
+ 6.
+ Fourth paremeter is *-*-* 18:00:00 the time we want the lamp to turn on.
+ 7.
+ Fifth parameter is path to heyu 8.
+ Sixth parameter is argument to heyu.
+ In this case “on A13” to turn on switches set to A13.
+\end_layout
+
+\end_body
+\end_document

@@ -1,0 +1,386 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="classCSelectIfDlg" kind="class" prot="public">
+    <compoundname>CSelectIfDlg</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classCSelectIfDlg_1ace6c7c151b2cee114665b0989b1390e" prot="public" static="no" mutable="no">
+        <type>wxListBox *</type>
+        <definition>wxListBox* CSelectIfDlg::m_pinterfaceList</definition>
+        <argsstring></argsstring>
+        <name>m_pinterfaceList</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Interface Listbox </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="141" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="141" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCSelectIfDlg_13f4ef82dc880e5674af70af0c528dfed" prot="public" static="no" mutable="no">
+        <type>devItem *</type>
+        <definition>devItem* CSelectIfDlg::m_sel_pdev</definition>
+        <argsstring></argsstring>
+        <name>m_sel_pdev</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Selected device or NULL if shared memory </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="147" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="147" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classCSelectIfDlg_1a99631b251c6a0999f709e46cfbea1a0" prot="private" static="no" mutable="no">
+        <type>wxButton *</type>
+        <definition>wxButton* CSelectIfDlg::m_pOKButton</definition>
+        <argsstring></argsstring>
+        <name>m_pOKButton</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="152" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="152" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCSelectIfDlg_109057d3e542d0402a71959d564d25546" prot="private" static="no" mutable="no">
+        <type>wxButton *</type>
+        <definition>wxButton* CSelectIfDlg::m_pCancelButton</definition>
+        <argsstring></argsstring>
+        <name>m_pCancelButton</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="153" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="153" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCSelectIfDlg_151ab7fd91d111f4bb426db4de83d61aa" prot="private" static="no" mutable="no">
+        <type>wxButton *</type>
+        <definition>wxButton* CSelectIfDlg::m_pButtonAddIf</definition>
+        <argsstring></argsstring>
+        <name>m_pButtonAddIf</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="156" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="156" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCSelectIfDlg_12dd3e85e46dd461fac18ec329dc004c7" prot="private" static="no" mutable="no">
+        <type>wxButton *</type>
+        <definition>wxButton* CSelectIfDlg::m_pButtonEditIf</definition>
+        <argsstring></argsstring>
+        <name>m_pButtonEditIf</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="157" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="157" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCSelectIfDlg_1d6139aebda4046704efafd966794e721" prot="private" static="no" mutable="no">
+        <type>wxButton *</type>
+        <definition>wxButton* CSelectIfDlg::m_pButtonRemoveIf</definition>
+        <argsstring></argsstring>
+        <name>m_pButtonRemoveIf</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="158" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="158" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCSelectIfDlg_19f75122d79862e7eeaa735fec2fb1376" prot="private" static="no" mutable="no">
+        <type>devItem *</type>
+        <definition>devItem* CSelectIfDlg::m_deviceList[256]</definition>
+        <argsstring>[256]</argsstring>
+        <name>m_deviceList</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>List with device profiles from the registry </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="164" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="164" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classCSelectIfDlg_1ae37ddd9e6b5303fb444dcc0c228c7d7" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>CSelectIfDlg::CSelectIfDlg</definition>
+        <argsstring>(wxWindow *parent)</argsstring>
+        <name>CSelectIfDlg</name>
+        <param>
+          <type>wxWindow *</type>
+          <declname>parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Constructor </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="52" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="121" bodyend="153"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_125739eee67dadd16af030d3cd821a0dd" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>virtual</type>
+        <definition>CSelectIfDlg::~CSelectIfDlg</definition>
+        <argsstring>()</argsstring>
+        <name>~CSelectIfDlg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Destructor </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="58" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="159" bodyend="165"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_11d2f25b787521249af69162b28543be2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CSelectIfDlg::OnOK</definition>
+        <argsstring>(wxCommandEvent &amp;event)</argsstring>
+        <name>OnOK</name>
+        <param>
+          <type>wxCommandEvent &amp;</type>
+          <declname>event</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Save settings </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="64" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="171" bodyend="189"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_1ee4ef2f5a2e15039a7948cd1801bcbd1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CSelectIfDlg::OnCancel</definition>
+        <argsstring>(wxCommandEvent &amp;event)</argsstring>
+        <name>OnCancel</name>
+        <param>
+          <type>wxCommandEvent &amp;</type>
+          <declname>event</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Cancel </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="70" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="195" bodyend="202"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_167fdd046cc68a25a981abd43c845a65c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CSelectIfDlg::OnAddIf</definition>
+        <argsstring>(wxCommandEvent &amp;event)</argsstring>
+        <name>OnAddIf</name>
+        <param>
+          <type>wxCommandEvent &amp;</type>
+          <declname>event</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Add a new interface </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="76" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="209" bodyend="327"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_15d4361dacdc5dfc74f8fc6cfbaf06620" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CSelectIfDlg::OnEditIf</definition>
+        <argsstring>(wxCommandEvent &amp;event)</argsstring>
+        <name>OnEditIf</name>
+        <param>
+          <type>wxCommandEvent &amp;</type>
+          <declname>event</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Edit an interface </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="82" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="333" bodyend="434"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_17fcd76b03370a155c0f42e5a4d9f2d39" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CSelectIfDlg::OnRemoveIf</definition>
+        <argsstring>(wxCommandEvent &amp;event)</argsstring>
+        <name>OnRemoveIf</name>
+        <param>
+          <type>wxCommandEvent &amp;</type>
+          <declname>event</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Remove ab interface </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="88" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="440" bodyend="501"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_18207732470c9596e47259d7fc02660b3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CSelectIfDlg::fillIfListBox</definition>
+        <argsstring>(void)</argsstring>
+        <name>fillIfListBox</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Fill the device listbox with availabe devices </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="95" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="507" bodyend="526"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_13d0eb16709e06fe75b7a816777b7ab3a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CSelectIfDlg::loadDeviceConfigurationData</definition>
+        <argsstring>(void)</argsstring>
+        <name>loadDeviceConfigurationData</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Load device data from the configuration file </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="101" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="534" bodyend="638"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_169fb3efd93bc9b65f2e276638877c529" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>devItem *</type>
+        <definition>devItem * CSelectIfDlg::getSelectedDevice</definition>
+        <argsstring>(void)</argsstring>
+        <name>getSelectedDevice</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get selected device or NULL if no device is delected or the CANAL daemon interface should be used,</para><para><simplesect kind="return"><para>Pointer to selcted device Item </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="109" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="646" bodyend="657"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_1476094d833e5cd21393ee2f47b79b102" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool CSelectIfDlg::getDeviceProfile</definition>
+        <argsstring>(devItem *pDev)</argsstring>
+        <name>getDeviceProfile</name>
+        <param>
+          <type>devItem *</type>
+          <declname>pDev</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get device profile</para><para><parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>pDev</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Device item structure </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>true on success. </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="117" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="662" bodyend="683"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_17ad0c174e748ad350fb0fd796142204a" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>uint32_t</type>
+        <definition>uint32_t CSelectIfDlg::getDataValue</definition>
+        <argsstring>(const char *szData)</argsstring>
+        <name>getDataValue</name>
+        <param>
+          <type>const char *</type>
+          <declname>szData</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Get a numerical data value (hex or decimal) from a string <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>szData</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>Strng containing value in string form </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>The converted number </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="125" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="690" bodyend="704"/>
+      </memberdef>
+      <memberdef kind="function" id="classCSelectIfDlg_1c309766404ce176237fb9cb945879675" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>wxString</type>
+        <definition>wxString CSelectIfDlg::replaceBackslash</definition>
+        <argsstring>(wxString &amp;wxstr)</argsstring>
+        <name>replaceBackslash</name>
+        <param>
+          <type>wxString &amp;</type>
+          <declname>wxstr</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Replaces backslahes in a string with standard slashes <parameterlist kind="param"><parameteritem>
+<parameternamelist>
+<parametername>wxstr</parametername>
+</parameternamelist>
+<parameterdescription>
+<para>wxString with data to work on </para></parameterdescription>
+</parameteritem>
+</parameterlist>
+<simplesect kind="return"><para>Clean string </para></simplesect>
+</para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="133" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp" bodystart="710" bodyend="717"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" line="45" bodyfile="/home/akhe/vscp/src/vscp/cw/selectifdlg.h" bodystart="44" bodyend="170"/>
+    <listofallmembers>
+      <member refid="classCSelectIfDlg_1ae37ddd9e6b5303fb444dcc0c228c7d7" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>CSelectIfDlg</name></member>
+      <member refid="classCSelectIfDlg_18207732470c9596e47259d7fc02660b3" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>fillIfListBox</name></member>
+      <member refid="classCSelectIfDlg_17ad0c174e748ad350fb0fd796142204a" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>getDataValue</name></member>
+      <member refid="classCSelectIfDlg_1476094d833e5cd21393ee2f47b79b102" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>getDeviceProfile</name></member>
+      <member refid="classCSelectIfDlg_169fb3efd93bc9b65f2e276638877c529" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>getSelectedDevice</name></member>
+      <member refid="classCSelectIfDlg_13d0eb16709e06fe75b7a816777b7ab3a" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>loadDeviceConfigurationData</name></member>
+      <member refid="classCSelectIfDlg_19f75122d79862e7eeaa735fec2fb1376" prot="private" virt="non-virtual"><scope>CSelectIfDlg</scope><name>m_deviceList</name></member>
+      <member refid="classCSelectIfDlg_151ab7fd91d111f4bb426db4de83d61aa" prot="private" virt="non-virtual"><scope>CSelectIfDlg</scope><name>m_pButtonAddIf</name></member>
+      <member refid="classCSelectIfDlg_12dd3e85e46dd461fac18ec329dc004c7" prot="private" virt="non-virtual"><scope>CSelectIfDlg</scope><name>m_pButtonEditIf</name></member>
+      <member refid="classCSelectIfDlg_1d6139aebda4046704efafd966794e721" prot="private" virt="non-virtual"><scope>CSelectIfDlg</scope><name>m_pButtonRemoveIf</name></member>
+      <member refid="classCSelectIfDlg_109057d3e542d0402a71959d564d25546" prot="private" virt="non-virtual"><scope>CSelectIfDlg</scope><name>m_pCancelButton</name></member>
+      <member refid="classCSelectIfDlg_1ace6c7c151b2cee114665b0989b1390e" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>m_pinterfaceList</name></member>
+      <member refid="classCSelectIfDlg_1a99631b251c6a0999f709e46cfbea1a0" prot="private" virt="non-virtual"><scope>CSelectIfDlg</scope><name>m_pOKButton</name></member>
+      <member refid="classCSelectIfDlg_13f4ef82dc880e5674af70af0c528dfed" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>m_sel_pdev</name></member>
+      <member refid="classCSelectIfDlg_167fdd046cc68a25a981abd43c845a65c" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>OnAddIf</name></member>
+      <member refid="classCSelectIfDlg_1ee4ef2f5a2e15039a7948cd1801bcbd1" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>OnCancel</name></member>
+      <member refid="classCSelectIfDlg_15d4361dacdc5dfc74f8fc6cfbaf06620" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>OnEditIf</name></member>
+      <member refid="classCSelectIfDlg_11d2f25b787521249af69162b28543be2" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>OnOK</name></member>
+      <member refid="classCSelectIfDlg_17fcd76b03370a155c0f42e5a4d9f2d39" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>OnRemoveIf</name></member>
+      <member refid="classCSelectIfDlg_1c309766404ce176237fb9cb945879675" prot="public" virt="non-virtual"><scope>CSelectIfDlg</scope><name>replaceBackslash</name></member>
+      <member refid="classCSelectIfDlg_125739eee67dadd16af030d3cd821a0dd" prot="public" virt="virtual"><scope>CSelectIfDlg</scope><name>~CSelectIfDlg</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

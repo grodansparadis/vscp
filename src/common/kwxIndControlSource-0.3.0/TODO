@@ -1,0 +1,9 @@
+Koan wxIndustrialControls - KWIC
+
+Current TODO list
+=======================
+ * manage as dynamic library linkable to an EXE
+ * migration to wxWidgets-2.6.2
+ * test under Linux
+ * test under WinCE
+ 

@@ -1,0 +1,40 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<tellstick>
+
+    <!-- Turn on A1,A2 and A3 from ON-Event -->	
+    <event type="on"
+            zone="0" 
+            subzone="0" >
+        <device
+            protocol="NEXA" 
+            housecode="A" 
+            channelcode="1" 
+            state="1" 
+            usenodeid="1" />
+	<device
+            protocol="NEXA" 
+            housecode="A" 
+            channelcode="2" 
+            state="1" 
+            usenodeid="2" />
+	<device
+            protocol="NEXA" 
+            housecode="A" 
+            channelcode="3" 
+            state="1" 
+            usenodeid="3" />
+    </event>
+
+    <!-- Trun off A1 from OFF-Event -->	
+    <event type="off"
+            zone="0" 
+            subzone="0" >
+        <device
+            protocol="NEXA" 
+            housecode="A" 
+            channelcode="1" 
+            state="0"  
+            usenodeid="1" />
+    </event>
+	
+</tellstick>

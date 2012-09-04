@@ -1,0 +1,151 @@
+#!/usr/bin/perl -W
+
+# Version: 0.0.1 2006-03-13
+#
+# VSCP Digitemp log to VSCP database
+# Copyright 2006, Ake Hedman, <akhe@eurosource.se>
+# http://www.vscp.org 
+#
+# This scripts sends out correctly formated VSCP events for all types
+# that are handled by digitemp (http://www.digitemp.com). That is temperature,
+# 32-bit counter values, and humidity.
+# Digitemp must be installed and working on your system for the scripts to work. 
+# Note also that a special type of configuration file is needed for the scripts
+# documented in the beginning of the script below.
+#
+# Built on DigiTemp MySQL logging script
+# Copyright 2002 by Brian C. Lane <bcl@brianlane.com>
+# All Rights Reserved
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+#
+# -------------------------[ HISTORY ]-------------------------------------
+# 2006-03-08 AH Changed so that data is written on the VSCP format and to
+#               the ODIN database for general measurement access. Info 
+#               about VSCP is available at http://www.vscp.org
+#
+# 08/18/2002  Putting together this MySQL logging script for the new 
+# bcl         release of DigiTemp.
+# -------------------------------------------------------------------------
+use DBI;
+
+# Database info
+my $db_name     = "odin";
+my $db_user     = "dttemp";
+my $db_pass     = "nestor";
+
+# The DigiTemp Configuration file to use
+# ======================================
+# Should have the following format specifiers.
+# Measurement type = 0, 1-wire id, sensor 0, temp in celsius
+# LOG_FORMAT "0 %R 0 %.2C"
+# Measurement type = 1, 1-wire id, sensor idx, temp in celsius
+# CNT_FORMAT "1 %R %n %C"
+# Measurement type = 2, 1-wire id, sensor 0, temp in celsius
+# HUM_FORMAT "2 %R 0 %h%%"
+my $digitemp_rcfile = "/usr/local/digitemp/etc/vscp_digitemp.conf";
+my $digitemp_binary = "/usr/local/digitemp/bin/digitemp_DS9097";
+
+my $debug = 0;
+
+#======================================================================================
+
+# ODIN database table measurement value interpretion
+# The value is unique for a record that holds the unit/format we write data in.
+# Relevant values here are:
+#     0x18 - Kelvin.
+#     0x19 - Degrees Celsius
+#     0x1A - Degrees Fahrenheit
+my $datacoding = 0x19;
+
+# Connect to the database
+my $dbh = DBI->connect("dbi:mysql:$db_name","$db_user","$db_pass")
+          or die "I cannot connect to dbi:mysql:$db_name as $db_user - $DBI::errstr\n";
+
+my $sth1 = $dbh->prepare('SELECT id from seco WHERE seco.guid = ? AND seco.index = ?');
+my $sth2 = $dbh->prepare('SELECT id from unit WHERE unit.datacoding = ?');
+
+# Gather information from DigiTemp
+# Read the output from digitemp
+# Output in form SerialNumber<SPACE>Temperature in Fahrenheit
+#open( DIGITEMP, "$digitemp_binary -q -a -o\"%R %.2C\" -c $digitemp_rcfile |" );
+open( DIGITEMP, "$digitemp_binary -q -a -c $digitemp_rcfile |" );
+
+while( <DIGITEMP> )
+{
+  print "$_\n" if($debug);
+  chomp;
+
+  #($serialnumber,$temperature) = split(/ /);
+  # type = 0 ==> temperature reading.
+  # type = 1 ==> Counter reading.
+  # type = 2 ==> Humidity reading.
+  ($type,$serialnumber,$sensoridx,$measurement) = split(/ /);
+
+  $guid = "FFFFFFFFFFFFFFFF" . $serialnumber;  # 1-wire GUID prefix 
+  print "GUID=$guid\n" if($debug);
+  print "temp=$measurement\n" if($debug);
+
+  $sth1->execute($guid,$sensoridx)          # Execute the query
+      or die "Couldn't execute statement: " . $sth1->errstr;
+
+  if ( 0 == $type ) {
+      # Temperature
+      $sth2->execute(0x19) # Execute the query - 0x19 = Temperature, Celsius
+	  or die "Couldn't execute statement: " . $sth1->errstr;
+      
+      if ( ( @data1 = $sth1->fetchrow_array() ) && 
+	   ( @data2 = $sth2->fetchrow_array() ) ) {
+	  print "--------id = $data2[0]\n" if($debug);
+	  my $sql="INSERT INTO measurement(linkto_seco,linkto_unit, date, value)\
+                  VALUES($data1[0],$data2[0],NOW(),$measurement)";
+	  $dbh->do($sql) or die "Can't execute statement $sql because: $DBI::errstr";
+	  print "SQL: $sql\n" if($debug);
+      }
+  }
+  elsif ( 1 == $type ){
+      # Counter
+      $sth2->execute(0x04) # Execute the query - 0x04 = Count
+	  or die "Couldn't execute statement: " . $sth1->errstr;
+      
+      if ( ( @data1 = $sth1->fetchrow_array() ) && 
+	   ( @data2 = $sth2->fetchrow_array() ) ) {
+	  print "--------id = $data2[0]\n" if($debug);
+	  my $sql="INSERT INTO measurement(linkto_seco,linkto_unit, date, value)\
+                  VALUES( $data1[0], $data2[0], NOW(), $measurement )";
+	  $dbh->do($sql) or die "Can't execute statement $sql because: $DBI::errstr";
+	  print "SQL: $sql\n" if($debug);
+      }
+  }
+  elsif ( 2 == $type ){
+      # Humidity
+      $sth2->execute(0x8C) # Execute the query - 0x8C = Humidity
+	  or die "Couldn't execute statement: " . $sth1->errstr;
+      
+      if ( ( @data1 = $sth1->fetchrow_array() ) && 
+	   ( @data2 = $sth2->fetchrow_array() ) ) {
+	  print "--------id = $data2[0]\n" if($debug);
+	  my $sql="INSERT INTO measurement(linkto_seco,linkto_unit, date, value)\
+                  VALUES( $data1[0], $data2[0], NOW(), $measurement )";
+	  $dbh->do($sql) or die "Can't execute statement $sql because: $DBI::errstr";
+	  print "SQL: $sql\n" if($debug);
+      }
+  }
+}
+
+close( DIGITEMP );
+$sth1->finish();
+$sth2->finish();
+$dbh->disconnect;

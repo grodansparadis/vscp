@@ -1,0 +1,306 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG DIALOG DISCARDABLE  0, 0, 231, 145
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
+CAPTION "WinLIRC"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "&Hide Window",IDC_HIDEME,174,23,50,14
+    PUSHBUTTON      "E&xit WinLIRC",IDCANCEL,174,39,50,14
+    COMBOBOX        IDC_REMOTE_EDIT,40,78,118,66,CBS_DROPDOWN | 
+                    CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_IRCODE_EDIT,40,99,117,125,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_REPS_EDIT,194,76,30,112,CBS_DROPDOWN | WS_TABSTOP
+    PUSHBUTTON      "&Send Code",IDC_SENDCODE,174,99,50,14
+    PUSHBUTTON      "&Reconfigure",IDC_CONFIG,174,7,50,14
+    ICON            IDI_LIRC,IDC_STATIC,7,7,20,20,SS_SUNKEN
+    CONTROL         "by Jim Paris <jim@jtan.com>,\nScott Baily <baily@users.sourceforge.net>,\nJörgen Birkler <jorgen@birkler.com>,",
+                    IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,33,31,
+                    138,26
+    LTEXT           "This program is distributed under the GNU Public\nLicense and comes with absolutely NO WARRANTY.",
+                    IDC_STATIC,30,124,173,17
+    GROUPBOX        "",IDC_STATIC,7,118,217,23
+    LTEXT           "WinLIRC version",IDC_STATIC,35,12,55,8
+    LTEXT           "(version)",IDC_VERSION,91,12,35,8
+    LTEXT           "code",IDC_STATIC,19,102,17,8
+    LTEXT           "remote",IDC_STATIC,14,81,22,8
+    LTEXT           "repeats",IDC_STATIC,163,78,24,8
+    LTEXT           "Alexander Nesterovsky <nsky@users.sourceforge.net>\nBased on LIRC 0.6.5.",
+                    IDC_STATIC,33,56,184,17
+END
+
+IDD_CONFIG DIALOG DISCARDABLE  0, 0, 287, 137
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "WinLIRC Configuration"
+FONT 8, "MS Sans Serif"
+BEGIN
+    RTEXT           "Port",IDC_STATIC,10,5,14,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_PORT,30,5,51,51,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | 
+                    WS_TABSTOP
+    RTEXT           "Speed",IDC_STATIC,3,20,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_SPEED,30,20,51,51,CBS_DROPDOWN | WS_VSCROLL | 
+                    WS_TABSTOP
+    RTEXT           "Sense",IDC_STATIC,3,35,22,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_SENSE,30,35,51,51,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    GROUPBOX        "Receiver type",IDC_STATIC,85,5,135,25
+    CONTROL         "RX device",IDC_RADIORX,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,90,15,49,10
+    CONTROL         "DCD device",IDC_RADIODCD,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,155,15,55,10
+    LTEXT           "Virtual pulse",IDC_STATIC,145,35,39,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_VIRTPULSE,190,35,30,12,ES_AUTOHSCROLL
+    LTEXT           "Usually, speed should be 115200. Sometimes other values are better",
+                    IDC_STATIC,5,50,222,10
+    CONTROL         "animax (enable DTR)",IDC_CHECKANIMAX,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,61,83,10
+    CONTROL         "No tray icon. (Main window is available by starting program again)",
+                    IDC_CHECKTRAY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,72,
+                    220,10
+    GROUPBOX        "Transmitter settings",IDC_STATIC,24,84,202,24
+    CONTROL         "hardware carrier",IDC_CHECKHARDCARRIER,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,83,95,67,10
+    CONTROL         "DTR",IDC_RADIODTR,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,153,95,31,10
+    CONTROL         "TX",IDC_RADIOTX,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,187,95,25,10
+    RTEXT           "Config",IDC_STATIC,0,115,24,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_FILE,30,115,207,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "&Browse...",IDC_BROWSE,242,115,43,12
+    PUSHBUTTON      "&Learn",IDC_LEARN,230,5,55,12
+    PUSHBUTTON      "&Analyze",IDC_ANALYZE,230,20,55,12
+    PUSHBUTTON      "&Raw Codes",IDC_RAW,230,35,55,12
+    DEFPUSHBUTTON   "OK",IDOK,230,50,55,12
+    PUSHBUTTON      "Cancel",IDCANCEL,230,65,55,12
+    CONTROL         "Inverted",IDC_INVERTED,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,36,94,42,10
+END
+
+IDD_LEARN DIALOG DISCARDABLE  0, 0, 286, 150
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Learn Remote"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_OUT,7,15,272,100,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_READONLY | WS_VSCROLL
+    EDITTEXT        IDC_IN,7,130,225,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "Enter",IDC_ENTER,234,130,45,12,WS_DISABLED
+    LTEXT           "Output",IDC_STATIC,7,7,22,8
+    LTEXT           "Input",IDC_STATIC,7,122,22,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 224
+        TOPMARGIN, 7
+    END
+
+    IDD_CONFIG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 280
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 130
+    END
+
+    IDD_LEARN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 279
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 143
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_LIRC                ICON    DISCARDABLE     "lirc.ico"
+IDI_LIRC_INIT           ICON    DISCARDABLE     "l_init.ico"
+IDI_LIRC_ERROR          ICON    DISCARDABLE     "l_error.ico"
+IDI_LIRC_OK             ICON    DISCARDABLE     "l_ok.ico"
+IDI_LIRC_RECV           ICON    DISCARDABLE     "l_recv.ico"
+IDI_LIRC_SEND           ICON    DISCARDABLE     "l_send.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_TRAYMENU MENU DISCARDABLE 
+BEGIN
+    POPUP "Tray"
+    BEGIN
+        MENUITEM "Toggle Window",               ID_TOGGLEWINDOW
+        MENUITEM "Exit WinLIRC",                ID_EXITLIRC
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_CONFIG DLGINIT
+BEGIN
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x314d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x324d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x334d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x344d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x354d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x364d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x374d, "\000" 
+    IDC_PORT, 0x403, 5, 0
+0x4f43, 0x384d, "\000" 
+    IDC_SPEED, 0x403, 5, 0
+0x3231, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 5, 0
+0x3432, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 5, 0
+0x3834, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 5, 0
+0x3639, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 6, 0
+0x3431, 0x3034, 0x0030, 
+    IDC_SPEED, 0x403, 6, 0
+0x3931, 0x3032, 0x0030, 
+    IDC_SPEED, 0x403, 6, 0
+0x3833, 0x3034, 0x0030, 
+    IDC_SPEED, 0x403, 6, 0
+0x3635, 0x3030, 0x0030, 
+    IDC_SPEED, 0x403, 6, 0
+0x3735, 0x3036, 0x0030, 
+    IDC_SPEED, 0x403, 7, 0
+0x3131, 0x3235, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 7, 0
+0x3231, 0x3038, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 7, 0
+0x3532, 0x3036, 0x3030, "\000" 
+    IDC_SPEED, 0x403, 1, 0
+"\000" 
+    IDC_SENSE, 0x403, 11, 0
+0x7541, 0x6f74, 0x6564, 0x6574, 0x7463, "\000" 
+    IDC_SENSE, 0x403, 8, 0
+0x2030, 0x4c28, 0x776f, 0x0029, 
+    IDC_SENSE, 0x403, 9, 0
+0x2031, 0x4828, 0x6769, 0x2968, "\000" 
+    0
+END
+
+IDD_DIALOG DLGINIT
+BEGIN
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0030, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0031, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0032, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0033, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0034, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0035, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0036, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0037, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0038, 
+    IDC_REPS_EDIT, 0x403, 2, 0
+0x0039, 
+    0
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

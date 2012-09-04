@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="dir_e3a3cd95d908554383e058b46d1c63ec" kind="dir">
+    <compoundname>/home/akhe/vscp/src/vscp/</compoundname>
+    <innerdir refid="dir_fa1ae58ed1adb9d49307919780bd5898">/home/akhe/vscp/src/vscp/cw/</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="classT2App" kind="class" prot="public">
+    <compoundname>T2App</compoundname>
+    <includes refid="t2_8h" local="no">t2.h</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classT2App_1b01da2a17a7d63d0c275dec4da802d9b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>T2App::T2App</definition>
+        <argsstring>()</argsstring>
+        <name>T2App</name>
+        <briefdescription>
+<para>Constructor. </para>        </briefdescription>
+        <detaileddescription>
+<para>Constructor for <ref refid="classT2App" kindref="compound">T2App</ref> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/t2.h" line="52" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/t2.cpp" bodystart="65" bodyend="69"/>
+      </memberdef>
+      <memberdef kind="function" id="classT2App_1b0c839c686473317886564aad2a44c0f" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool T2App::OnInit</definition>
+        <argsstring>()</argsstring>
+        <name>OnInit</name>
+        <briefdescription>
+<para>Initialises the application. </para>        </briefdescription>
+        <detaileddescription>
+<para>Initialisation for <ref refid="classT2App" kindref="compound">T2App</ref> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/t2.h" line="55" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/t2.cpp" bodystart="75" bodyend="96"/>
+      </memberdef>
+      <memberdef kind="function" id="classT2App_1d8c13c731aa876792dad97f5328518ff" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int T2App::OnExit</definition>
+        <argsstring>()</argsstring>
+        <name>OnExit</name>
+        <briefdescription>
+<para>Called on exit. </para>        </briefdescription>
+        <detaileddescription>
+<para>Cleanup for <ref refid="classT2App" kindref="compound">T2App</ref> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/t2.h" line="58" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/t2.cpp" bodystart="101" bodyend="106"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><ref refid="classT2App" kindref="compound">T2App</ref> class declaration </para>    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/t2.h" line="46" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/t2.h" bodystart="45" bodyend="68"/>
+    <listofallmembers>
+      <member refid="classT2App_1d8c13c731aa876792dad97f5328518ff" prot="public" virt="virtual"><scope>T2App</scope><name>OnExit</name></member>
+      <member refid="classT2App_1b0c839c686473317886564aad2a44c0f" prot="public" virt="virtual"><scope>T2App</scope><name>OnInit</name></member>
+      <member refid="classT2App_1b01da2a17a7d63d0c275dec4da802d9b" prot="public" virt="non-virtual"><scope>T2App</scope><name>T2App</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

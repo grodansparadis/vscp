@@ -1,0 +1,84 @@
+new in version 0.6.5
+--------------------
+Added support for all documented aspects of the LIRC TCP/IP protocol,
+except that SEND_START and SEND_STOP are not supported.  For full
+compatibility, set the transmit password to "SEND_ONCE".  The password
+is no longer case sensitive.  Clients are now notified about 
+reconfiguration, etc.
+
+Bugfixes:
+  Fixed LONG_IR_CODE
+  Fixed gap length for transmitting remotes with CONST_LENGTH
+  Transmitter type is now set correctly for the last remote in the config file
+
+new in version 0.6.4
+--------------------
+advanced power management support
+
+The TCP port for the server is now configurable via a registry key.
+ -use regedit to add a new DWORD value to software\LIRC
+   - name it "tcp_port"  set the value to whatever port you want.
+   - winlirc will use this new value the next time it is restarted.
+
+added an inverted option for the transmitters (not used for TX softcarrier)
+  -this swaps the definition of on and off states.
+  -this makes it possible to support pioneer SR control by wire
+   (and possibly sony S-Link)
+
+the number of pre and post data bits now break evenly into hexidecimal
+  (so the config files will be easier to read).
+
+buttons can now be named "begin" or "end"
+  (this will be allowed in future versions of lirc as well)
+
+config files support a "transmitter" field for the remote
+if the SPECIAL_TRANSMITTER flag is specified, then the transmitter type
+will override the default settings (but only for that remote).
+  -LIRC does not support these settings, and winlirc will not write this data to
+   the config files it creates
+  -this means you can have a different type of transmitter for each remote.
+  -to use add |SPECIAL_TRANSMITTER to the flags section then add the line
+    transmitter <type>
+    where <type> is the same value used in software\LIRC\transmittertype when
+    configured for the transmitter you want.
+    e.g., transmitter 0x05 uses INVERTED HARDWARE_CARRIER DTR
+
+bugfixes:
+        fixed all known crashing bugs in windows NT/2000/XP.
+        possible lockup when exiting raw codes mode is eliminated.
+        restored the yellow light on initialization.
+        closes some file handles that were previously left open.
+        the tx transmitter supports longer pulses
+        toggle_bits are now transmitted correctly
+	scrolling output windows now remove about 100 lines at a time when filling up
+
+new in version 0.6.3
+--------------------
+RX device support
+No tray icon option
+tx transmitter support
+hard carrier transmitter support
+RC-6 support
+RC-MM support (receive only)
+bugfixes:
+	detects RC-5 codes that start with 1
+	lets codes from raw remotes be sent from other applications
+
+new in version 0.6.2
+--------------------
+fixed bug where server expects the LIRC key to exist and fails to start.
+
+new in version 0.6.1pre3
+-------------------------------
+The "animax" serial port receiver is now supported.  This receiver uses DTR and RTS pin for power. If you have an animax receiver, check the animax box at the configuration screen. Note that animax receivers are incompatible with the current winlirc transmitter.
+
+You can now tell WinLIRC to transmit codes from the TCP/IP port
+The format is:
+password remotename codename reps
+(just like transmit.exe, but with a password in front). To enable this, you need to use regedit to add a key software\LIRC\password  it should be a string that contains no spaces or tabs.  If the password key is not set, or the password is wrong WinLIRC won't accept commands from the TCP interface
+
+WinLIRC can now transmit codes from raw (unanalyzed) remotes.
+
+Hopefully, the win2k/xp crashes are gone.
+
+Some user interface improvements.

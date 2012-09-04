@@ -1,0 +1,54 @@
+#!/bin/sh
+
+# * * * Directories * * *
+mkdir -p package
+mkdir -p package/DEBIAN
+chmod 0755 package/DEBIAN
+mkdir -p package/etc
+mkdir -p package/etc/vscp
+mkdir -p package/etc/init.d
+mkdir -p package/usr
+mkdir -p package/usr/bin
+mkdir -p package/usr/share
+mkdir -p package/usr/share/doc
+mkdir -p package/usr/share/vscp
+
+# * * * Control files
+cp control package/DEBIAN
+cp postinst package/DEBIAN
+cp prerm package/DEBIAN
+
+# * * * Configuration files * * *
+cp ../../../vscpd.conf.linux.example package/etc/vscp/vscpd.conf
+cp ../../../dm.xml.example package/etc/vscp/dm.xml
+cp ../../../variable.xml.example package/etc/vscp/variable.xml
+cp ../../../vscpworks.conf.example package/etc/vscp/vscpworks.conf
+cp ../../../vscpd.startup_script_debian package/etc/init.d/vscpd
+
+# * * * Binaries * * *
+cp ../daemon/linux/vscpd package/usr/bin/
+cp ../vscpworks/vscpworks package/usr/bin/
+cp ../mkpasswd/mkpasswd package/usr/bin
+cp ../vscpcmd/vscpcmd package/usr/bin/
+
+# * * * Generate checksums
+cd package/usr/bin
+md5sum vscpd >../../DEBIAN/md5sums
+md5sum vscpworks >>../..//DEBIAN/md5sums 
+md5sum mkpasswd >>../..//DEBIAN/md5sums
+md5sum vscpcmd >>../..//DEBIAN/md5sums
+cd ../../..
+
+# * * * VSCP & Friends files
+cp ../../../README package/usr/share/vscp
+cp ../../../dm.* package/usr/share/vscp
+cp ../../../variable.* package/usr/share/vscp
+cp ../../../vscpd.conf.linux* package/usr/share/vscp
+cp ../../../CHANGELOG package/usr/share/vscp
+cp ../../../HISTORY package/usr/share/vscp
+
+
+# * * * Buidl the package
+dpkg --build package vscp-0.3.3pre-i386.deb
+#dpkg -c vscp-0.2.9-i386.deb
+

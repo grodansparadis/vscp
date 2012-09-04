@@ -1,0 +1,7 @@
+This is a driver for the lincan kernel driver by  Pavel Pisa which support a 
+lot of CAN cards. This driver as well our own CAN kernel driver is based on 
+the terrific work done by  Arnaud Westenberg and have much the same interface 
+with come differences. The lincan driver is built for realtime usage.
+
+The driver itself is available here 
+http://www.ocera.org/download/components/WP7/lincan-0.2.html

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<ItemGroup Label="ProjectConfigurations">
+		<ProjectConfiguration Include="Release|Win32">
+			<Configuration>Release</Configuration>
+			<Platform>Win32</Platform>
+		</ProjectConfiguration>
+		<ProjectConfiguration Include="Debug|Win32">
+			<Configuration>Debug</Configuration>
+			<Platform>Win32</Platform>
+		</ProjectConfiguration>
+	</ItemGroup>
+	<PropertyGroup Label="Globals">
+		<ProjectGuid>{FAE29035-75E4-4F76-BF2D-B3537B0BF9CC}</ProjectGuid>
+		<Keyword>Win32Proj</Keyword>
+	</PropertyGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+		<Configuration>Release</Configuration>
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>false</UseDebugLibraries>
+		<WholeProgramOptimization>true</WholeProgramOptimization>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+		<Configuration>Debug</Configuration>
+		<ConfigurationType>Application</ConfigurationType>
+		<UseDebugLibraries>true</UseDebugLibraries>
+		<CharacterSet>Unicode</CharacterSet>
+	</PropertyGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+	<ImportGroup Label="ExtensionSettings">
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	</ImportGroup>
+	<ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+		<Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+	</ImportGroup>
+	<PropertyGroup Label="UserMacros" />
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+		<LinkIncremental>false</LinkIncremental>
+		<EmbedManifest>false</EmbedManifest>
+		<OutDir>$(SolutionDir)VCProjectRelease\</OutDir>
+		<IntDir>$(SolutionDir)VCProjectRelease\</IntDir>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+		<LinkIncremental>true</LinkIncremental>
+		<EmbedManifest>false</EmbedManifest>
+		<OutDir>$(SolutionDir)VCProjectDebug\</OutDir>
+		<IntDir>$(SolutionDir)VCProjectDebug\</IntDir>
+	</PropertyGroup>
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+		<ClCompile>
+			<PrecompiledHeader>NotUsing</PrecompiledHeader>
+			<WarningLevel>Level3</WarningLevel>
+			<Optimization>MaxSpeed</Optimization>
+			<FunctionLevelLinking>true</FunctionLevelLinking>
+			<IntrinsicFunctions>true</IntrinsicFunctions>
+			<PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
+			<AdditionalIncludeDirectories>C:\wxWidgets-2.8.12/include;C:\wxWidgets-2.8.12/contrib/include;C:\wxWidgets-2.8.12/lib/vc_lib/mswu;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+			<RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+		</ClCompile>
+		<Link>
+			<SubSystem>Windows</SubSystem>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+			<EnableCOMDATFolding>true</EnableCOMDATFolding>
+			<OptimizeReferences>true</OptimizeReferences>
+			<AdditionalLibraryDirectories>C:\wxWidgets-2.8.12/lib/vc_lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
+			<AdditionalDependencies>;wxmsw28u_richtext.lib;wxmsw28u_aui.lib;wxmsw28u_html.lib;wxmsw28u_xrc.lib;wxmsw28u_core.lib;wxbase28u.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxmsw28u_adv.lib;wxmsw28u_html.lib;wxmsw28u_xrc.lib;wxbase28u_net.lib;wxbase28u_xml.lib;wxexpat.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<TargetMachine>MachineX86</TargetMachine>
+		</Link>
+		<ResourceCompile>
+			<AdditionalIncludeDirectories>C:\wxWidgets-2.8.12/include;C:\wxWidgets-2.8.12/contrib/include;C:\wxWidgets-2.8.12/lib/vc_lib/mswu;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+			<PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+		</ResourceCompile>
+	</ItemDefinitionGroup>
+	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+		<ClCompile>
+			<PrecompiledHeader>NotUsing</PrecompiledHeader>
+			<WarningLevel>Level3</WarningLevel>
+			<Optimization>Disabled</Optimization>
+			<PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+			<AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
+			<AdditionalIncludeDirectories>C:\wxWidgets-2.8.12/include;C:\wxWidgets-2.8.12/contrib/include;C:\wxWidgets-2.8.12/lib/vc_lib/mswud;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+			<RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+		</ClCompile>
+		<Link>
+			<SubSystem>Windows</SubSystem>
+			<GenerateDebugInformation>true</GenerateDebugInformation>
+			<AdditionalLibraryDirectories>C:\wxWidgets-2.8.12/lib/vc_lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
+			<AdditionalDependencies>;wxmsw28ud_richtext.lib;wxmsw28ud_aui.lib;wxmsw28ud_html.lib;wxmsw28ud_xrc.lib;wxmsw28ud_core.lib;wxbase28ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxmsw28ud_adv.lib;wxmsw28ud_html.lib;wxmsw28ud_xrc.lib;wxbase28ud_net.lib;wxbase28ud_xml.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+			<TargetMachine>MachineX86</TargetMachine>
+		</Link>
+		<ResourceCompile>
+			<AdditionalIncludeDirectories>C:\wxWidgets-2.8.12/include;C:\wxWidgets-2.8.12/contrib/include;C:\wxWidgets-2.8.12/lib/vc_lib/mswud;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+			<PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+		</ResourceCompile>
+	</ItemDefinitionGroup>
+	<ItemGroup>
+		<ClInclude Include="..\..\common\crc.h" />
+		<ClInclude Include="..\common\canal.h" />
+		<ClInclude Include="..\common\canaldlldef.h" />
+		<ClInclude Include="..\common\canalsuperwrapper.h" />
+		<ClInclude Include="..\common\devicelist.h" />
+		<ClInclude Include="..\common\devitem.h" />
+		<ClInclude Include="..\common\dllwrapper.h" />
+		<ClInclude Include="..\common\guid.h" />
+		<ClInclude Include="..\common\mdf.h" />
+		<ClInclude Include="..\common\version.h" />
+		<ClInclude Include="..\common\vscp.h" />
+		<ClInclude Include="..\common\vscp_class.h" />
+		<ClInclude Include="..\common\vscp_type.h" />
+		<ClInclude Include="..\common\vscphelper.h" />
+		<ClInclude Include="..\common\vscptcpif.h" />
+		<ClInclude Include="bootdevice.h" />
+		<ClInclude Include="bootdevice_pic1.h" />
+		<ClInclude Include="bootdevice_vscp.h" />
+		<ClInclude Include="devicebootloaderwizard.h" />
+		<ClInclude Include="dialogabstractionedit.h" />
+		<ClInclude Include="dialogeditlevelidmrow.h" />
+		<ClInclude Include="dialogsetfiltermask.h" />
+		<ClInclude Include="dlgabout.h" />
+		<ClInclude Include="dlgabout_symbols.h" />
+		<ClInclude Include="dlgconfiguration.h" />
+		<ClInclude Include="dlgnewvscpsession.h" />
+		<ClInclude Include="dlgselectdaemoninterface.h" />
+		<ClInclude Include="dlgvscpfilter.h" />
+		<ClInclude Include="dlgvscpinterfacesettings.h" />
+		<ClInclude Include="dlgvscpmsg.h" />
+		<ClInclude Include="dlgvscptrmit.h" />
+		<ClInclude Include="frmdeviceconfig.h" />
+		<ClInclude Include="frmmain.h" />
+		<ClInclude Include="frmmdfeditor.h" />
+		<ClInclude Include="frmscanfordevices.h" />
+		<ClInclude Include="frmvscpsession.h" />
+		<ClInclude Include="gridtable.h" />
+		<ClInclude Include="merlin.h" />
+		<ClInclude Include="platform.h" />
+		<ClInclude Include="readguid.h" />
+		<ClInclude Include="readmdffile.h" />
+		<ClInclude Include="readmsfurl.h" />
+		<ClInclude Include="readregiister.h" />
+		<ClInclude Include="threadvscpwork.h" />
+		<ClInclude Include="vscptxobj.h" />
+		<ClInclude Include="vscpworks.h" />
+		<ClInclude Include="writeregister.h" />
+	</ItemGroup>
+	<ItemGroup>
+		<ClCompile Include="..\..\common\crc.c" />
+		<ClCompile Include="..\common\canalsuperwrapper.cpp" />
+		<ClCompile Include="..\common\dllwrapper.cpp" />
+		<ClCompile Include="..\common\guid.cpp" />
+		<ClCompile Include="..\common\mdf.cpp" />
+		<ClCompile Include="..\common\vscphelper.cpp" />
+		<ClCompile Include="..\common\vscptcpif.cpp" />
+		<ClCompile Include="bootdevice.cpp" />
+		<ClCompile Include="bootdevice_pic1.cpp" />
+		<ClCompile Include="bootdevice_vscp.cpp" />
+		<ClCompile Include="devicebootloaderwizard.cpp" />
+		<ClCompile Include="dialogabstractionedit.cpp" />
+		<ClCompile Include="dialogeditlevelidmrow.cpp" />
+		<ClCompile Include="dialogsetfiltermask.cpp" />
+		<ClCompile Include="dlgabout.cpp" />
+		<ClCompile Include="dlgconfiguration.cpp" />
+		<ClCompile Include="dlgnewvscpsession.cpp" />
+		<ClCompile Include="dlgselectdaemoninterface.cpp" />
+		<ClCompile Include="dlgvscpfilter.cpp" />
+		<ClCompile Include="dlgvscpinterfacesettings.cpp" />
+		<ClCompile Include="dlgvscpmsg.cpp" />
+		<ClCompile Include="dlgvscptrmit.cpp" />
+		<ClCompile Include="frmdeviceconfig.cpp" />
+		<ClCompile Include="frmmain.cpp" />
+		<ClCompile Include="frmmdfeditor.cpp" />
+		<ClCompile Include="frmscanfordevices.cpp" />
+		<ClCompile Include="frmvscpsession.cpp" />
+		<ClCompile Include="gridtable.cpp" />
+		<ClCompile Include="merlin.cpp" />
+		<ClCompile Include="readguid.cpp" />
+		<ClCompile Include="readmdffile.cpp" />
+		<ClCompile Include="readmsfurl.cpp" />
+		<ClCompile Include="readregister.cpp" />
+		<ClCompile Include="threadvscpwork.cpp" />
+		<ClCompile Include="vscptxobj.cpp" />
+		<ClCompile Include="vscpworks.cpp" />
+		<ClCompile Include="writeregister.cpp" />
+	</ItemGroup>
+	<ItemGroup>
+		<ResourceCompile Include="vscpworks.rc" />
+	</ItemGroup>
+	<Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+	<ImportGroup Label="ExtensionTargets">
+	</ImportGroup>
+</Project>

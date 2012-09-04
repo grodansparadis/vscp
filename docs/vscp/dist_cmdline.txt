@@ -1,0 +1,16 @@
+mkdir "$(VSCP_HOME)\src\vscp\Build"/r/n;mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"/r/n;if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"/r/n"
+
+mkdir "$(VSCP_HOME)\src\vscp\Build"; mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"; if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"; copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
+
+
+mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" 
+if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"; copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\tellstick\win32\.\Release\tellstickdrv.dll"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+
+
+mkdir "$(VSCP_HOME)\src\vscp\Build"; mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"; if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"; copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
+
+
+copy release\*.dll "$(VSCP_HOME)/src/vscp/install_win32/files/canal/drivers" & copy release\*.lib "$(VSCP_HOME)/src/vscp/install_win32/files/canal/lib"
+
+copy release\*.dll "..\..\..\..\install_win32\files\canal\drivers" & copy release\*.lib "..\..\..\..\install_win32\files\canal\lib"

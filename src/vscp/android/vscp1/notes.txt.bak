@@ -1,0 +1,23 @@
+	public DefaultHttpClient getClient() {
+02	        DefaultHttpClient ret = null;
+03	 
+04	        //sets up parameters
+05	        HttpParams params = new BasicHttpParams();
+06	        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+07	        HttpProtocolParams.setContentCharset(params, "utf-8");
+08	        params.setBooleanParameter("http.protocol.expect-continue", false);
+09	 
+10	        //registers schemes for both http and https
+11	        SchemeRegistry registry = new SchemeRegistry();
+12	        registry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+13	        final SSLSocketFactory sslSocketFactory = SSLSocketFactory.getSocketFactory();
+14	        sslSocketFactory.setHostnameVerifier(SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+15	        registry.register(new Scheme("https", sslSocketFactory, 443));
+16	 
+17	        ThreadSafeClientConnManager manager = new ThreadSafeClientConnManager(params, registry);
+18	        ret = new DefaultHttpClient(manager, params);
+19	        return ret;
+20	    }
+
+
+http://www.anddev.org/socket_programming-t325-s30.html

@@ -1,0 +1,1437 @@
+<html><head></head>
+<body>
+<pre>// Change the following to change the clock frequency
+#define CRYSTAL_FREQ    16000000
+// Change the following to change between 16 or 20 column display
+#define DISPLAY_COLS    20
+// Speed units are "1" (nautical knots), "2" (metric kph), or "3" (statute mph)
+#define SPEED_UNITS     1
+
+/****************************************************************************
+GPS18.c
+
+This program receives NMEA-0183 data from a GPS and displays it.
+Meant for large display version still in 16F876.
+Three buttons
+Automicaly resets if main loop stops (not the best solution, still don't know why it's stopping)
+
+Next: don't display GPS screens unless GPS is active
+      detect display needing reset
+      preset data eeprom for first-time operation
+      don't display init stuff if reseting from main loop
+
+
+
+                 +5                       +5+5
+                  |                        | |
+                  20                      15 2
+                ----------             ----------
+~SerIn -----18-|          |-24-----11-|DB4 A Vdd |
+               |          |-25-----12-|DB5       |
+  ADC0 ------2-|          |-26-----13-|DB6       |
+  ADC1 ------3-|  16F876  |-27-----14-|DB7     Vo| 3--
+  ADC2 ------5-|          |           |    LCD   |    |
+               |          |-14------6-|EN        |    |
+       XTAL--9-|          |-15------4-|R/S       |    |
+       XTAL-10-|          |-28-FET-16-|K         |    |
+               |          |           |  RW  Vss |    |
+ BUTTON 1---21-|          |            ----------     |
+ BUTTON 2---22-|          |              1   5        |
+ BUTTON 3---23-|          |              |   |        |
+               |          |             Gnd Gnd       |
+               |          |                           |
+               |          |-11----------R/C-----------
+               |          |
+               |          |
+                ----------
+                  8    19
+                  |     |
+                 Gnd   Gnd
+
+***************************************************************************/
+#case
+#include &lt;16F876.h&gt;
+#include &lt;jonsinc.h&gt;
+#device = *=16 ADC=10                /* allow RAM addresses over 255 */
+
+#if ( ( CRYSTAL_FREQ &lt; 4000000) || ( CRYSTAL_FREQ &gt; 20000000 ) )
+#error "CRYSTAL FREQ" not defined to between 8000000 and 20000000
+#endif
+#if ( ( DISPLAY_COLS != 16 ) &amp;&amp; ( DISPLAY_COLS != 20 ) )
+#error "DISPLAY COLS" not defined to 16 or 20
+#endif
+
+// RMC_TIME = 1 per clock megahertz, rounded
+#define RMC_TIME        CRYSTAL_FREQ/1000000
+
+#define LCD_D0          PIN_B3
+#define LCD_D1          PIN_B4
+#define LCD_D2          PIN_B5
+#define LCD_D3          PIN_B6
+#define LCD_EN          PIN_C3
+#define LCD_RS          PIN_C4
+#define RX_IN           PIN_C7
+#define BUTTON_1        PIN_B0
+#define BUTTON_2        PIN_B1
+#define BUTTON_3        PIN_B2
+#define LCD_BACKLITE    PIN_B7
+#define LINE_1          0x00
+#define LINE_2          0x40
+#if DISPLAY_COLS == 20
+#define LINE_3          0x14
+#define LINE_4          0x54
+#endif
+#if DISPLAY_COLS == 16
+#define LINE_3          0x10
+#define LINE_4          0x50
+#endif
+#define CLEAR_DISP      0x01
+#define EOF             0x00
+#define COMMA           ','
+#define CR              13
+#define SPACE           ' '
+#define PERIOD          '.'
+#define DEGREE          0xdf
+#define DOLLAR          '$'
+#define NULL            0
+#define GPRMC_CODE      75
+#define GPRMB_CODE      74
+#define RX_BUFFER_SIZE  70
+#define POSITION_SCREEN 1
+#define WAYPOINT_SCREEN 2
+#define BATTERY_SCREEN  3
+#define HIDDEN_RMC      5
+#define WARNING_MSG     0
+#define NODATA_MSG      1
+#define ACTIVITY_SYMBOL 0xFF
+#define MAX_VOLTS       15
+#define EEPROM_CONTRAST 0
+#define EEPROM_INITIAL  1
+
+/* Set the following define to "YES" to display XOR'ed GPS sentence code */
+/* such as GPRMC and the display will read out the value of 74. */
+#define GET_GPS_CODE    NO
+
+#separate void Display ( void );
+#separate void LCD_Init ( void );
+#separate void LCD_SetPosition ( unsigned int cX );
+#separate void LCD_PutChar ( unsigned int cX );
+#separate void LCD_PutCmd ( unsigned int cX );
+#separate void LCD_PulseEnable ( void );
+#separate void LCD_SetData ( unsigned int cX );
+#separate void SkipField ( char cCnt );
+#separate char GetField ( void );
+#separate void InitRxBuffer ( char cCode );
+#separate char GetRxChar ( void );
+#separate void DisplayLatLon ( void );
+#separate void DisplayWaypoint ( void );
+#separate void DisplayLatitude ( char cLine );
+#separate void DisplayLongitude ( char cLine );
+#separate void DisplayHeading ( char cLine );
+#separate void DisplaySpeed ( char cLine );
+#separate void DisplaySteer ( char cLine, char cX );
+#separate void DisplayWaypointName ( char cLine, char cX );
+#separate void DisplayDistance ( char cLine, char cX );
+#separate void DisplayBearing ( char cLine, char cX );
+#separate void GetUtcAndMagVar ( void );
+#separate long TrueToMag ( long iH );
+#separate long FieldFiveToLong ( void );
+#separate void DisplayAnalog ( void );
+#separate void DisplayScaledVoltage ( long iV, char cScale );
+#separate void DisplayArrival ( char cLine );
+#separate void DisplayMessage ( char cMsgNum );
+#separate void DisplayTemplateLatLon ( void );
+#separate void DisplayTemplateWaypoint ( void );
+#separate void DisplayTemplateAnalog ( void );
+#separate void Delay5mS ( char cCnt );
+
+#fuses HS, NOPROTECT, PUT, NOWDT, BROWNOUT, NOLVP, NOCPD
+#use standard_io ( A )
+#use standard_io ( B )
+#use standard_io ( C )
+#use delay ( clock = CRYSTAL_FREQ )
+#use rs232 ( baud=4800, xmit=PIN_C6, rcv=PIN_C7, ERRORS )    // XMIT must be assigned to enable hardward USART
+#priority RDA, RTCC, EXT
+
+static char cC [ 10 ];      // local buffer
+static char cTimeOut;
+static char cRxBuffer [ RX_BUFFER_SIZE ];    // Fifo
+static char cRxByteCnt;         // Number of bytes in the recv fifo
+static char *cRxBufferWritePtr;    // Pointers for the Rx buffer
+static char *cRxBufferReadPtr;
+static char cRxIsrState, cRxMsgTypeReceived, cRxMsgTypeDesired;
+static char cRxMsgReady, cReceiveFlag;
+static long iVar, iLastRange, iTimeOut;
+static char cVarDir, cScreenChanged, cAdcDone;
+static char cButtonPressed, cSkip, cButtonCount;
+static char cScreen, cSavedScreen, cRmcTimer1, cRmcTimer2;
+static char cToFrom [ 5 ], cIndicator, cIllumination, cRxErrorFlag;
+static char cDone, cContrast;
+
+/*******************************************************************/
+#int_ad
+void AdcInterrupt ( void )
+    {
+    /* Gets here when ADC is done conversion, sets flag */
+    cAdcDone = YES;
+    }
+
+#int_timer1
+void Timer1Interrupt ( void )
+    {
+    /* Periodic RMC data timer, gets here every 204mS */
+    /* This routine forces RMC to run every 10 minutes to update */
+    /* magnetic variation */
+    if ( cRmcTimer1-- == 0 )
+        {
+        cRmcTimer1 = 255;               // 52 seconds @ 10.240MHz
+        if ( cRmcTimer2-- == 0 )
+            {
+            cRmcTimer2 = RMC_TIME;      // triggers every 10 minutes
+            cSavedScreen = cScreen;     // save current screen type
+            cScreen = HIDDEN_RMC;       // force RMC to run
+            }
+        }
+    }
+
+#int_rtcc
+void Timer0Interrupt ( void )
+    {
+    // Gets here every 16.4mS at 8MHz, 8.2mS at 16MHz
+    // Handles data timeout and switch debounce.
+
+    // DATA TIMEOUT TIMER
+    if ( cTimeOut != 0 )
+        {
+        cTimeOut--;
+        }
+
+    // This timer is preset by the normal operating loop, unless the operating
+    // loop stops looping, at which point iTimeOut finally decrements to zero
+    // and resets CPU.
+    if ( iTimeOut != 0 )
+        {
+        iTimeOut--;
+        }
+    else
+        {
+        reset_cpu();                // force reset
+        }
+
+    if ( input ( BUTTON_2 ) == LOW )  // if button still pressed
+        {
+        cScreen = WAYPOINT_SCREEN;
+        cSkip = YES;                // skip out of anything in process
+        cScreenChanged = YES;       // repaint complete screen
+        }
+
+    if ( input ( BUTTON_3 ) == LOW )  // if button still pressed
+        {
+        cScreen = BATTERY_SCREEN;
+        cSkip = YES;                // skip out of anything in process
+        cScreenChanged = YES;       // repaint complete screen
+        }
+
+    // SWITCH DEBOUNCE
+    if ( input ( BUTTON_1 ) == LOW )  // if button still pressed
+        {
+        if ( cButtonCount &lt; 255 )   // hold at 255
+            {
+            cButtonCount++;         // otherwise increment
+            }
+        }
+    else            // if button is unpressed
+        {
+        if ( cButtonCount &gt; 2 )     // filter out glitches
+            {
+            //If button press is greater than 3.3 seconds, cold reset
+            if ( cButtonCount == 255 )
+                {
+                reset_cpu();
+                }
+            if ( ( cButtonCount &gt; 57 ) &amp;&amp; ( cButtonCount &lt; 255 ) )
+                {
+                if ( cScreen != HIDDEN_RMC )       // if not in the middle of getting magnetic variation
+                    {
+                    // cIllumination ^= ON;
+                    output_bit ( LCD_BACKLITE, cIllumination ^= ON );
+                    }
+                }
+            // If button press is less than 0.5 second
+            if ( cButtonCount &lt;= 57 )
+                {
+                if ( cScreen != HIDDEN_RMC )       // if not in the middle of getting magnetic variation
+                    {
+                    //if ( cScreen++ &gt;= BATTERY_SCREEN )   // increment to next screen
+                        {
+                        cScreen = POSITION_SCREEN;                    // wrap
+                        }
+                    cSkip = YES;                // skip out of anything in process
+                    cScreenChanged = YES;       // repaint complete screen
+                    }
+                }
+            }
+        cButtonCount = 0;       // restart
+        }
+    }
+
+#int_rda
+void SerialInterrupt ( void )
+    {
+    /*
+    Reads incoming data from the USART and puts in in a rolling buffer
+    ( but in this application, it should never roll.)
+    If the buffer is full, this routine just discards the received byte.
+    Not checking the LRC byte at the end of the NMEA-0183 sentence.
+    */
+    char cChar;
+
+    if ( rs232_errors &amp; 0x04 )  // get framing error bit from Rx status reg
+        {
+        cRxErrorFlag = ON;
+        }
+    cChar = getchar();       // get char from UART, clear any errors
+
+    if ( cRxByteCnt == RX_BUFFER_SIZE ) // is recv fifo full ???
+        {
+        goto done;
+        }
+    switch ( cRxIsrState )
+        {
+        case 0:
+            {
+            if ( cChar == DOLLAR )  // if start of NMEA0183 message
+                {
+                cRxByteCnt = 0;     // reset byte count
+                cReceiveFlag = OFF;     // default to off
+                cRxMsgTypeReceived = NULL;  // set hashed value to null
+                cRxIsrState++;                 // next state
+                }
+            break;
+            }
+        case 1:                           // five type characters to obtain
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            {
+            cRxMsgTypeReceived ^= cChar;      // hash in msg type
+            if ( cRxIsrState++ == 5 )        // if time to check message type
+                {
+                if ( cRxMsgTypeReceived == cRxMsgTypeDesired )  // if good
+                    {
+                    cReceiveFlag = YES;            // enable receiving
+                    cRxBufferWritePtr = cRxBuffer;    // reset to beginning of buffer
+                    }
+                else                    // don't want this message
+                    {
+                    cRxIsrState = 0;    // reset to look for next msg
+                    }
+                }
+            break;
+            }
+        case 6:
+            {
+            /* Case 6 skips the comma character following msg type */
+            cRxIsrState++;
+            break;
+            }
+        default:                          // remainder of characters
+            {
+            if ( cReceiveFlag == YES )        // if this message is wanted
+                {
+                *cRxBufferWritePtr = cChar;     // put char in fifo
+                cRxBufferWritePtr++;            // increment pointer
+                if ( cRxBufferWritePtr == ( cRxBuffer + RX_BUFFER_SIZE ) ) // pointer past end ?
+                    {
+                    cRxBufferWritePtr = cRxBuffer;      // set pointer to start of fifo
+                    }
+                cRxByteCnt++;              // Increment byte count
+                if ( cChar == CR )
+                    {
+                    cRxMsgReady = YES;         // signal that message is ready
+                    cReceiveFlag = NO;      // no more receive
+                    }
+                }
+            }
+        }
+    done:;
+    }
+
+/*******************************************************************/
+
+void main ( void )
+    {
+    char cX;
+
+    iTimeOut = 65535;                       // default to very long to get by init
+    /* INITIALIZE */
+    output_float ( RX_IN );             // ensure Rx input is HiZ
+    output_float ( BUTTON_1 );          // ensure switch input is HiZ
+    output_float ( BUTTON_2 );          // ensure switch input is HiZ
+    output_float ( BUTTON_3 );          // ensure switch input is HiZ
+    output_low ( LCD_BACKLITE );        // turn off backlighting
+    port_b_pullups ( ON );              // enable pullups on switches
+
+    // GET SAVED SETTINGS
+    cContrast = read_eeprom ( EEPROM_CONTRAST );        // get stored value
+
+    // PWM is for display contrast
+    setup_ccp2 ( CCP_PWM );                     // set for PWM mode
+    //The cycle time will be (1/clock)*4*t2div*(period+1)
+    // 1/8000000 * 4 * 1 * 128 = 51.2uS = 19.5KHz
+    setup_timer_2 ( T2_DIV_BY_1, 255, 1 );      // set PWM period
+    // duty cycle = value*(1/clock)*t2div
+    // 10 * 1/8000000 * 1 = 1.2uS
+    set_pwm2_duty ( cContrast );                // set contrast duty cycle
+
+    // SETUP TIMER 0
+    // Need 8-bit Timer0 to roll over every 13mS, approximately.
+    // Roll time = 256 * 1 / ( clock_freq / prescaler setting / 4 )
+    #if CRYSTAL_FREQ &gt;= 15000000
+    setup_counters ( RTCC_INTERNAL, RTCC_DIV_256 );   // ~13mS timer wrap
+    #elif CRYSTAL_FREQ &gt;= 8000000
+    setup_counters ( RTCC_INTERNAL, RTCC_DIV_128 );   // ~13mS timer wrap
+    #elif CRYSTAL_FREQ &lt; 8000000
+    setup_counters ( RTCC_INTERNAL, RTCC_DIV_64 );    // ~13mS timer wrap
+    #endif
+
+    // Timer 1 roll time = 65536 * 1 / ( clock_freq / prescaler setting / 4 )
+    setup_timer_1 ( T1_INTERNAL | T1_DIV_BY_8 );    // 16-bit timer
+
+    setup_adc_ports ( RA0_RA1_RA3_ANALOG );  /* these three statements set up the ADC */
+    setup_adc ( ADC_CLOCK_INTERNAL );
+    cIllumination = OFF;
+
+    LCD_Init();                        // set up LCD for 4-wire bus, etc.
+
+    /* INIT MESSAGE */
+    #if ( DISPLAY_COLS == 20 )
+    LCD_SetPosition ( LINE_1 + 0 );
+    printf ( LCD_PutChar, "   Northern Light   " );   // welcome screen
+    LCD_SetPosition ( LINE_2 + 2 );
+    printf ( LCD_PutChar, "Monitor/Repeater" );
+    LCD_SetPosition ( LINE_3 + 3 );
+    printf ( LCD_PutChar, "v18   06/21/03" );
+    LCD_SetPosition ( LINE_4 + 5 );
+    printf ( LCD_PutChar, "c Jon Fick" );
+    #elif ( DISPLAY_COLS == 16 )
+    LCD_SetPosition ( LINE_1 + 0);
+    printf ( LCD_PutChar, " Northern Light " );       // welcome screen
+    LCD_SetPosition ( LINE_2 + 2 );
+    printf ( LCD_PutChar, "GPS Repeater" );
+    LCD_SetPosition ( LINE_3 + 1 );
+    printf ( LCD_PutChar, "v18   06/21/03" );
+    LCD_SetPosition ( LINE_4 + 3 );
+    printf ( LCD_PutChar, "c Jon Fick" );
+    #endif
+    delay_ms ( 1000 );
+
+    /* INSTRUCTION MESSAGE */
+    LCD_PutCmd ( CLEAR_DISP );
+    LCD_SetPosition ( LINE_1 + 0 );
+    printf ( LCD_PutChar, "BUTTONS:" );
+    LCD_SetPosition ( LINE_2 + 0 );
+    printf ( LCD_PutChar, "&lt;-- Lat/Lon" );
+    LCD_SetPosition ( LINE_3 + 0 );
+    printf ( LCD_PutChar, "&lt;-- Waypoint" );
+    LCD_SetPosition ( LINE_4 + 0 );
+    printf ( LCD_PutChar, "&lt;-- Battery" );
+    delay_ms ( 2000 );
+
+    /* SETUP MODE */
+    if ( input ( BUTTON_1 ) == LOW )  // if button is pressed
+        {
+        LCD_PutCmd ( CLEAR_DISP );
+        LCD_SetPosition ( LINE_1 + 0 );
+        printf ( LCD_PutChar, "Set contrast:" );
+        LCD_SetPosition ( LINE_2 + 0 );
+        printf ( LCD_PutChar, "&lt;-- More" );
+        LCD_SetPosition ( LINE_3 + 0 );
+        printf ( LCD_PutChar, "&lt;-- DONE" );
+        LCD_SetPosition ( LINE_4 + 0 );
+        printf ( LCD_PutChar, "&lt;-- Less" );
+        while ( input ( BUTTON_1 ) == LOW );    // wait for switch to be released after entering SETUP mode
+        cContrast = 120;          // start at full contrast
+        cDone = NO;
+        while ( cDone == NO )
+            {
+            set_pwm2_duty ( cContrast );        // update contrast
+            if ( input ( BUTTON_1 ) == LOW )
+                {
+                if ( cContrast &gt; 0 )
+                    {
+                    cContrast--;            // more
+                    }
+                }
+            if ( input ( BUTTON_2 ) == LOW )
+                {
+                cDone = YES;                // done
+                }
+            if ( input ( BUTTON_3 ) == LOW )
+                {
+                if ( cContrast &lt; 255 )
+                    {
+                    cContrast++;        // less
+                    }
+                }
+            delay_ms ( 30 );                   // autorepeat
+            }
+        write_eeprom ( EEPROM_CONTRAST, cContrast );    // save CONTRAST to EEPROM
+
+        LCD_PutCmd ( CLEAR_DISP );
+        LCD_SetPosition ( LINE_2 + 0 );
+        printf ( LCD_PutChar, "&lt;- Press initial" );
+        LCD_SetPosition ( LINE_3 + 0 );
+        printf ( LCD_PutChar, "   bootup screen" );
+        while ( input ( BUTTON_1 ) == LOW );  // wait until button not pressed
+        cX = POSITION_SCREEN;
+        while ( TRUE )
+            {
+            LCD_SetPosition ( LINE_4 + 3 );
+            switch ( cX )
+                {
+                case POSITION_SCREEN:
+                    {
+                    printf ( LCD_PutChar, "POSITION " );
+                    break;
+                    }
+                case WAYPOINT_SCREEN:
+                    {
+                    printf ( LCD_PutChar, "WAYPOINT " );
+                    break;
+                    }
+                case BATTERY_SCREEN:
+                    {
+                    printf ( LCD_PutChar, "BATTERY  " );
+                    break;
+                    }
+                }
+            delay_ms ( 750 );
+            if ( input ( BUTTON_1 ) == LOW )  // if button is pressed
+                {
+                write_eeprom ( EEPROM_INITIAL, cX );   // save screen number to EEPROM
+                break;
+                }
+            if ( cX++ == BATTERY_SCREEN )
+                {
+                cX = POSITION_SCREEN;
+                }
+            }
+        LCD_PutCmd ( CLEAR_DISP );
+        }
+
+    /* This IF/ENDIF is a tool for getting the $GP... codes */
+    /* that are used in the switch/case in the main loop. */
+    #if ( GET_GPS_CODE == YES )
+    printf ( LCD_PutChar, "%u", 'G'^'P'^'R'^'M'^'B');
+    while ( TRUE );
+    #endif
+
+    /* INTERRUPTS */
+    ext_int_edge ( H_TO_L );            // set falling edge ext interrupt
+    enable_interrupts ( INT_TIMER1 );   // enable Timer1 interrupt
+    enable_interrupts ( INT_RDA );      // enable serial interrupt
+    enable_interrupts ( INT_RTCC );     // enable Timer0 interrupt
+    enable_interrupts ( INT_AD );       // enable ADC interrupt
+    enable_interrupts ( GLOBAL );       // enable all interrupts
+
+    /* VARIABLES */
+    iVar = NULL;                        // default, no variation yet
+    cVarDir = SPACE;                    // default, no variation yet
+    cRmcTimer1 = 255;                   // initialize to 52 seconds
+    cRmcTimer2 = RMC_TIME;              // trigger forced RMC after 10 minutes
+    cScreen = HIDDEN_RMC;               // default screen, get magnetic variation first
+    cSavedScreen = read_eeprom ( EEPROM_INITIAL ); // restore initial screen
+    iLastRange = 65535;                 // make max by default
+    strcpy ( cToFrom, "  " );           // blank by default
+    cScreenChanged = YES;
+    cIndicator = 0;
+    cButtonCount = 0;
+    cButtonPressed = NO;
+    cRxErrorFlag = OFF;
+
+    /* MAIN LOOP */
+    while ( TRUE )
+        {
+        cTimeOut = 188;        // 231 * 0.013mS = 3 seconds
+        switch ( cScreen )
+            {
+            case HIDDEN_RMC:
+                {
+                InitRxBuffer( GPRMC_CODE );     // set code and turn on serial interrupt
+                while ( ( cRxMsgReady == NO ) &amp;&amp; ( cTimeOut != 0 ) );
+                disable_interrupts ( INT_RDA );         // ignore rest of messages
+                if ( cTimeOut != 0 )            // if not timed out
+                    {
+                    GetUtcAndMagVar();             // get and store the magnetic variation
+                    }
+                cScreen = cSavedScreen;         // revert to previous screen
+                break;
+                }
+            case POSITION_SCREEN:
+                {
+                if ( cScreenChanged == YES )
+                    {
+                    disable_interrupts ( INT_RDA );
+                    cScreenChanged = NO;
+                    cSkip = NO;
+                    LCD_PutCmd ( CLEAR_DISP );
+                    DisplayTemplateLatLon();
+                    enable_interrupts ( INT_RDA );
+                    }
+                InitRxBuffer( GPRMC_CODE );     // set code and turn on serial interrupt
+                while ( ( cRxMsgReady == NO ) &amp;&amp; ( cTimeOut != 0 ) &amp;&amp; ( cScreenChanged != YES ) );
+                disable_interrupts ( INT_RDA );         // ignore rest of messages
+                if ( cScreenChanged == NO )
+                    {
+                    if ( cTimeOut != 0 )
+                        {
+                        DisplayLatLon();
+                        }
+                    else
+                        {
+                        DisplayMessage ( NODATA_MSG );
+                        }
+                    }
+                cRxErrorFlag = OFF;
+                break;
+                }
+            case WAYPOINT_SCREEN:
+                {
+                if ( cScreenChanged == YES )
+                    {
+                    disable_interrupts ( INT_RDA );
+                    cScreenChanged = NO;
+                    cSkip = NO;
+                    LCD_PutCmd ( CLEAR_DISP );
+                    DisplayTemplateWaypoint();
+                    enable_interrupts ( INT_RDA );
+                    }
+                cSkip = NO;
+                InitRxBuffer( GPRMB_CODE );     // set code and turn on serial interrupt
+                while ( ( cRxMsgReady == NO ) &amp;&amp; ( cTimeOut != 0 ) &amp;&amp; ( cScreenChanged != YES ) );
+                disable_interrupts ( INT_RDA );         // ignore rest of messages
+                if ( cScreenChanged == NO )
+                    {
+                    if ( cTimeOut != 0 )
+                        {
+                        DisplayWaypoint();
+                        }
+                    else
+                        {
+                        DisplayMessage ( NODATA_MSG );
+                        }
+                    }
+                break;
+                }
+            case BATTERY_SCREEN:
+                {
+                if ( cScreenChanged == YES )
+                    {
+                    disable_interrupts ( INT_RDA );
+                    cScreenChanged = NO;
+                    cSkip = NO;
+                    LCD_PutCmd ( CLEAR_DISP );
+                    DisplayTemplateAnalog();
+                    }
+                DisplayAnalog();
+                break;
+                }
+            }
+
+        // Preset timeout counter each loop; RTCC interrupt decrements, resets if zero is reached
+        iTimeOut = 2000;     // ~ 30 seconds
+
+        /* Flashing activity indicator in lower right of screen. */
+        cIndicator ^= 1;
+        #if ( DISPLAY_COLS == 20 )
+        LCD_SetPosition ( LINE_4 + 19 );
+        #elif ( DISPLAY_COLS == 16 )
+        LCD_SetPosition ( LINE_4 + 15 );
+        #endif
+        if ( cIndicator == 1 )
+            {
+            printf ( LCD_PutChar, "%c", ACTIVITY_SYMBOL );
+            }
+        else
+            {
+            printf ( LCD_PutChar, " " );
+            }
+        }
+    }
+
+#separate void DisplayTemplateLatLon ( void )
+    {
+    LCD_SetPosition ( LINE_1 );
+    printf ( LCD_PutChar, "LAT" );
+    LCD_SetPosition ( LINE_2 );
+    printf ( LCD_PutChar, "LON" );
+    LCD_SetPosition ( LINE_3 );
+    #if ( DISPLAY_COLS == 20 )
+    printf ( LCD_PutChar, "SPEED" );
+    LCD_SetPosition ( LINE_4 );
+    printf ( LCD_PutChar, "HEADING" );
+    #elif ( DISPLAY_COLS == 16 )
+    printf ( LCD_PutChar, "SPD" );
+    LCD_SetPosition ( LINE_4 );
+    printf ( LCD_PutChar, "HDG" );
+    #endif
+    }
+
+#separate void DisplayTemplateWaypoint ( void )
+    {
+    LCD_SetPosition ( LINE_1 );
+    #if ( DISPLAY_COLS == 20 )
+    printf ( LCD_PutChar, "WAYPOINT" );
+    #elif ( DISPLAY_COLS == 16 )
+    printf ( LCD_PutChar, "WAYPT" );
+    #endif
+    LCD_SetPosition ( LINE_2 );
+    printf ( LCD_PutChar, "STEER" );
+    LCD_SetPosition ( LINE_3 );
+    printf ( LCD_PutChar, "DIST" );
+    LCD_SetPosition ( LINE_4 );
+    printf ( LCD_PutChar, "BEARING" );
+    }
+
+#separate void DisplayTemplateAnalog ( void )
+    {
+    #if ( DISPLAY_COLS == 20 )
+    LCD_SetPosition ( LINE_1 + 3 );
+    #elif ( DISPLAY_COLS == 16 )
+    LCD_SetPosition ( LINE_1 + 1 );
+    #endif
+    printf ( LCD_PutChar, "BATTERY STATUS" );
+    #if ( DISPLAY_COLS == 20 )
+    LCD_SetPosition ( LINE_2 );
+    printf ( LCD_PutChar, "Primary" );
+    LCD_SetPosition ( LINE_3 );
+    printf ( LCD_PutChar, "Secondary" );
+    LCD_SetPosition ( LINE_4 );
+    printf ( LCD_PutChar, "Refrigerator" );
+    #elif ( DISPLAY_COLS == 16 )
+    LCD_SetPosition ( LINE_2 );
+    printf ( LCD_PutChar, "Main#1 " );
+    LCD_SetPosition ( LINE_3 );
+    printf ( LCD_PutChar, "Main#2 " );
+    LCD_SetPosition ( LINE_4 );
+    printf ( LCD_PutChar, "Refrig " );
+    #endif
+    }
+
+#separate void DisplayLatLon ( void )
+    {
+    SkipField ( 1 );   // skip UTC
+    GetField();        // A = OK, V = warning
+    if ( ( cC [ 0 ] == 'A' ) &amp;&amp; ( !cSkip ) )
+        {
+        GetField();                   // LAT
+        if ( !cSkip )
+            {
+            DisplayLatitude ( LINE_1 );
+            }
+        GetField();                   // LON
+        if ( !cSkip )
+            {
+            DisplayLongitude ( LINE_2 );
+            }
+        GetField();                   // SPEED
+        if ( !cSkip )
+            {
+            DisplaySpeed ( LINE_3 );
+            }
+        GetField();                   // HEADING
+        if ( !cSkip )
+            {
+            DisplayHeading ( LINE_4 );
+            }
+        }
+    else
+        {
+        DisplayMessage( WARNING_MSG );
+        }
+    }
+
+#separate void DisplayWaypoint ( void )
+    {
+    char cX;
+
+    GetField();        // A = OK, V = warning
+    if ( ( cC [ 0 ] == 'A' ) &amp;&amp; ( !cSkip ) )
+        {
+        cX = GetField();        // XTE
+        if ( !cSkip )
+            {
+            DisplaySteer ( LINE_2, cX );
+            }
+        SkipField ( 1 );        // skip origin WP ID
+        GetField();                     // DEST WP ID
+        if ( !cSkip )
+            {
+            DisplayWaypointName ( LINE_1, cX );
+            }
+        SkipField ( 4 );        // skip LAT, NS, LON, EW
+        cX = GetField();                     // RANGE
+        if ( !cSkip )
+            {
+            DisplayDistance ( LINE_3, cX );
+            }
+        cX = GetField();                     // BEARING
+        if ( !cSkip )
+            {
+            DisplayBearing ( LINE_4, cX );
+            }
+        SkipField ( 1 );        // skip SPEED TO DEST
+        GetField();                     // ARRIVAL FLAG
+        if ( !cSkip )
+            {
+            DisplayArrival ( LINE_1 );    // overwrite RANGE if arrived
+            }
+        }
+    else
+        {
+        DisplayMessage( WARNING_MSG );
+        }
+    }
+
+#separate void DisplayAnalog ( void )
+    {
+    long iX;
+    char cCnt;
+
+    set_adc_channel ( 0 );                      // set channel
+    delay_us ( 100 );                           // wait aquisition time
+    cAdcDone = NO;
+    if ( !cSkip )
+        {
+        #if ( DISPLAY_COLS == 20 )
+        LCD_SetPosition ( LINE_2 + 13 );
+        #elif ( DISPLAY_COLS == 16 )
+        LCD_SetPosition ( LINE_2 + 8 );
+        #endif
+        DisplayScaledVoltage ( read_adc(), MAX_VOLTS );
+        printf ( LCD_PutChar, " V " );
+        }
+    set_adc_channel ( 1 );
+    delay_us ( 100 );
+    cAdcDone = NO;
+    if ( !cSkip )
+        {
+        #if ( DISPLAY_COLS == 20 )
+        LCD_SetPosition ( LINE_3 + 13 );
+        #elif ( DISPLAY_COLS == 16 )
+        LCD_SetPosition ( LINE_3 + 8 );
+        #endif
+        DisplayScaledVoltage ( read_adc(), MAX_VOLTS );
+        printf ( LCD_PutChar, " V " );
+        }
+    set_adc_channel ( 3 );
+    delay_us ( 100 );
+    cAdcDone = NO;
+    if ( !cSkip )
+        {
+        #if ( DISPLAY_COLS == 20 )
+        LCD_SetPosition ( LINE_4 + 13 );
+        #elif ( DISPLAY_COLS == 16 )
+        LCD_SetPosition ( LINE_4 + 8 );
+        #endif
+        DisplayScaledVoltage ( read_adc(), MAX_VOLTS );
+        printf ( LCD_PutChar, " V " );
+        }
+    Delay5mS ( 100 );         // slow loop down a bit
+    }
+
+#separate void GetUtcAndMagVar ( void )
+    {
+    /*
+    This is a non-display version of the RMC sentence
+    to get the A/V warning, the magnetic variation, and the
+    magnetic direction.
+    */
+
+    GetField();              // get UTC
+    GetField();        // A = OK, V = warning
+    if ( cC [ 0 ] == 'A' )
+        {
+        SkipField ( 7 );   // skip fields
+        GetField();             // MAGNETIC VARIATION
+        iVar = FieldFiveToLong();     // save to global variable, used in other sentences
+        GetField();     // EW
+        cVarDir = cC [ 0 ];     // save direction
+        }
+    else
+        {
+        iVar = NULL;              // invalid
+        cVarDir = SPACE;
+        }
+    }
+
+/******************************************************************/
+
+#separate void DisplayScaledVoltage ( long iV, char cScale )
+    {
+    float fX;
+
+    /*
+    0 to 5V input at pin 2 results in 0 - 1023.  This routine
+    scales it to something else.
+    */
+    while ( cAdcDone == NO );         // wait for completion by ADC interrupt
+    if ( iV == 1023 )
+        {
+        printf ( LCD_PutChar, "O/L" );  /* print it to the screen */
+        }
+    else
+        {
+        fX = ( ( float ) iV ) / 1023 * ( float ) cScale;   // scale to proper range, 1023 leaves room for out-of-range
+        printf ( LCD_PutChar, "%2.1f", fX );  /* print it to the screen */
+        }
+    }
+
+#separate void DisplayArrival ( char cLine )
+    {
+    #if ( DISPLAY_COLS == 20 )
+    LCD_SetPosition ( cLine + 11 );
+    #elif ( DISPLAY_COLS == 16 )
+    LCD_SetPosition ( cLine + 9 );
+    #endif
+    if ( cC [ 0 ] == 'A' )
+        {
+        printf ( LCD_PutChar, "Arrived" );
+        }
+    else
+        {
+        printf ( LCD_PutChar, "       " );
+        }
+    }
+
+#separate void DisplayWaypointName ( char cLine, char cX )
+    {
+    /* Displays waypoint name, pads field with blanks */
+    char cChar, cI;
+
+    LCD_SetPosition ( cLine );
+    if ( cX != 0 )
+        {
+        printf ( LCD_PutChar, "\"" );
+        for ( cI = 0; cI &lt; 6; cI++ )
+            {
+            cChar = cC [ cI ];
+            if ( cChar == EOF )
+                {
+                break;
+                }
+            printf ( LCD_PutChar, "%c", cChar );
+            }
+        printf ( LCD_PutChar, "\"" );
+        // Blank remainder of field
+        cChar = SPACE;
+        for ( ; cI &lt; 6; cI++ )
+            {
+            printf ( LCD_PutChar, "%c", cChar );
+            }
+        }
+    else
+        {
+        printf ( LCD_PutChar, "- none -" );
+        }
+    }
+
+#separate void DisplaySteer ( char cLine, char cX )
+    {
+    /*
+    Displays A.BC literals, appends 'L' or 'R'.
+    If less than 1.0, displays feet rather than nm.
+    Doesn't display distance if on track.
+    */
+    long iX;
+    char cCnt;
+
+    if ( cX != 0 )
+        {
+        if ( ( cC [ 0 ] != '0' ) || ( cC [ 2 ] != '0' ) || ( cC [ 3 ] != '0' ) )   // if not 0.00
+            {
+            LCD_SetPosition ( cLine + 14 );
+            #if ( DISPLAY_COLS == 20 )
+            printf ( LCD_PutChar, "      " );         // blank possible characters
+            LCD_SetPosition ( cLine + 11 );
+            #elif ( DISPLAY_COLS == 16 )
+            printf ( LCD_PutChar, "  " );         // blank possible characters
+            LCD_SetPosition ( cLine + 8);
+            #endif
+            if ( cC [ 0 ] == '0' )          // if less than 1.0 nm, display as feet
+                {
+                iX = ( 528 * ( long ) ( cC [ 2 ] - 0x30 ) ) + ( 52 * ( long ) ( cC [ 3 ] - 0x30 ) );
+                printf ( LCD_PutChar, "%luft  ", iX );
+                }
+            else                             // if 1.0 nm or greater, display as nautical miles
+                {
+                printf ( LCD_PutChar, "%c%c%c%cmi  ", cC [ 0 ], cC [ 1 ], cC [ 2 ] , cC [ 3 ] );
+                }
+            GetField();              // L or R
+            LCD_SetPosition ( cLine + 6 );
+            if ( cC [ 0 ] == 'L' )
+                {
+                #if ( DISPLAY_COLS == 20 )
+                printf ( LCD_PutChar, "PORT " );
+                #elif ( DISPLAY_COLS == 16 )
+                printf ( LCD_PutChar, "L" );
+                #endif
+                }
+            else
+                {
+                #if ( DISPLAY_COLS == 20 )
+                printf ( LCD_PutChar, "STBD " );
+                #elif ( DISPLAY_COLS == 16 )
+                printf ( LCD_PutChar, "R" );
+                #endif
+                }
+            }
+        else           // if 0.00
+            {
+            #if ( DISPLAY_COLS == 20 )
+            LCD_SetPosition ( cLine + 11 );
+            printf ( LCD_PutChar, "On track " );
+            #elif ( DISPLAY_COLS == 16 )
+            LCD_SetPosition ( cLine + 6 );
+            printf ( LCD_PutChar, "  On track" );
+            #endif
+            GetField();              // dummy L or R
+            }
+        }
+    else
+        {
+        LCD_SetPosition ( cLine + 6 );
+        printf ( LCD_PutChar, "              " );
+        }
+    }
+
+#separate void DisplayDistance ( char cLine, char cX )
+    {
+    /* Format: ABC.D nautical miles */
+    char cChar, cI;
+    long iThisRange;
+
+    if ( cX != 0 )           // if waypoint data to display
+        {
+        #if ( DISPLAY_COLS == 20 )
+        LCD_SetPosition ( cLine + 11 );
+        #elif ( DISPLAY_COLS == 16 )
+        LCD_SetPosition ( cLine + 8 );
+        #endif
+        cI = 0;
+        for ( cI = 0; cI &lt; 2; cI++ )    // find first non-zero
+            {
+            cChar = cC [ cI ];
+            if ( cChar != '0' )
+                {
+                break;
+                }
+            }
+        for ( ; cI &lt; 5; cI++ )    // display from there on
+            {
+            printf ( LCD_PutChar, "%c", cC [ cI ] );
+            }
+        printf ( LCD_PutChar, "nm  " );     // pad with blanks
+
+        /*
+        The least significant character from the GPS is 0.1 nm.
+        Multiply whole thing by 10 and make it type long.
+        Discern if increasing (FROM) or decreasing (TO).
+        */
+        iThisRange = 1000 * ( long ) ( cC [ 0 ] - 0x30 );
+        iThisRange += 100 * ( long ) ( cC [ 1 ] - 0x30 );
+        iThisRange += 10 * ( long ) ( cC [ 2 ] - 0x30 );
+        iThisRange += ( long ) ( cC [ 4 ] - 0x30 );
+        if ( iThisRange &lt; iLastRange )
+            {
+            #if ( DISPLAY_COLS == 20 )
+            strcpy ( cToFrom, "TO  " );
+            #elif ( DISPLAY_COLS == 16 )
+            strcpy ( cToFrom, "TO" );
+            #endif
+            }
+        if ( iThisRange &gt; iLastRange )
+            {
+            #if ( DISPLAY_COLS == 20 )
+            strcpy ( cToFrom, "FROM" );
+            #elif ( DISPLAY_COLS == 16 )
+            strcpy ( cToFrom, "FM" );
+            #endif
+            }
+        iLastRange = iThisRange;    // save this range to compare next time
+        LCD_SetPosition ( cLine + 5 );
+        printf ( LCD_PutChar, cToFrom );
+        }
+    else
+        {
+        LCD_SetPosition ( cLine + 5 );
+        #if ( DISPLAY_COLS == 20 )
+        printf ( LCD_PutChar, "               " );
+        #elif ( DISPLAY_COLS == 16 )
+        printf ( LCD_PutChar, "          " );
+        #endif
+        }
+    }
+
+#separate void DisplayBearing ( char cLine, char cX )
+    {
+    /*
+    Compass variation comes from RMC sentence.  If RMC has not run yet
+    then "T" is displayed after bearing.
+    */
+    long iHdg;
+    char cTrueIndicator;
+
+    if ( cX != 0 )           // if waypoint data to display
+        {
+        #if ( DISPLAY_COLS == 20 )
+        LCD_SetPosition ( cLine + 11 );
+        #elif ( DISPLAY_COLS == 16 )
+        LCD_SetPosition ( cLine + 8 );
+        #endif
+        iHdg = FieldFiveToLong();
+        iHdg = TrueToMag ( iHdg );    // factor variation into heading
+        if ( ( iVar == NULL ) || ( cVarDir == SPACE ) )
+            {
+            cTrueIndicator = 'T';
+            }
+        else
+            {
+            cTrueIndicator = ' ';
+            }
+        printf ( LCD_PutChar, "%lu%c%c  ", iHdg, DEGREE, cTrueIndicator );   // pad with blanks
+        }
+    else
+        {
+        #if ( DISPLAY_COLS == 20 )
+        LCD_SetPosition ( cLine + 11 );
+        printf ( LCD_PutChar, "         " );
+        #elif ( DISPLAY_COLS == 16 )
+        LCD_SetPosition ( cLine + 8 );
+        printf ( LCD_PutChar, "        " );
+        #endif
+        }
+    }
+
+#separate void DisplayLatitude ( char cLine )
+    {
+    /* Displays latitude ABCD.EF as AB CD.EF, appends 'N' or 'S' */
+    #if ( DISPLAY_COLS == 20 )
+    LCD_SetPosition ( cLine + 8 );
+    #elif ( DISPLAY_COLS == 16 )
+    LCD_SetPosition ( cLine + 5 );
+    #endif
+    if ( cC [ 0 ] == '0' )
+        {
+        cC [ 0 ] = SPACE;
+        }
+    printf ( LCD_PutChar, "%c%c%c", cC [ 0 ], cC [ 1 ], DEGREE );
+    printf ( LCD_PutChar, "%c%c%c%c%c%c", cC [ 2 ], cC [ 3 ], cC [ 4 ], cC [ 5 ], cC [ 6 ], cC [ 7 ] );
+    GetField();              // NS
+    printf ( LCD_PutChar, " %c", cC [ 0 ] );
+    }
+
+#separate void DisplayLongitude ( char cLine )
+    {
+    /* Displays longitude ABCDE.FG as ABC DE.FG, appends 'E' or 'W' */
+    #if ( DISPLAY_COLS == 20 )
+    LCD_SetPosition ( cLine + 7 );
+    #elif ( DISPLAY_COLS == 16 )
+    LCD_SetPosition ( cLine + 4 );
+    #endif
+    if ( cC [ 0 ] == '0' )
+        {
+        cC [ 0 ] = SPACE;
+        }
+    if ( cC [ 1 ] == '0' )
+        {
+        cC [ 1 ] = SPACE;
+        }
+    printf ( LCD_PutChar, "%c%c%c%c", cC [ 0 ], cC [ 1 ], cC [ 2 ], DEGREE );
+    printf ( LCD_PutChar, "%c%c%c%c%c%c", cC [ 3 ], cC [ 4 ], cC [ 5 ], cC [ 6 ], cC [ 7 ], cC [ 8 ] );
+    GetField();              // EW
+    printf ( LCD_PutChar, " %c", cC [ 0 ] );
+    }
+
+#separate void DisplaySpeed ( char cLine )
+    {
+    float fX;
+
+    // Format ABC.D
+    #if ( DISPLAY_COLS == 20 )
+    LCD_SetPosition ( cLine + 8 );
+    #elif ( DISPLAY_COLS == 16 )
+    LCD_SetPosition ( cLine + 5 );
+    #endif
+    fX = 100 * ( cC [ 0 ] - 0x30 );
+    fX += 10 * ( cC [ 1 ] - 0x30 );
+    fX += 1 * ( cC [ 2 ] - 0x30 );
+    fX += 0.1 * ( cC [ 4 ] - 0x30 );
+    #if SPEED_UNITS == 2
+    fX *= 1.852;        // convert knots to km/h
+    #endif
+    #if SPEED_UNITS == 3
+    fX *= 1.151;        // convert knots to mi/h
+    #endif
+    printf ( LCD_PutChar, "%3.1f ", fX );  // print it to the screen
+    #if SPEED_UNITS == 1
+    printf ( LCD_PutChar, "kts    " );     // print it to the screen
+    #endif
+    #if SPEED_UNITS == 2
+    printf ( LCD_PutChar, "kph    " );     // print it to the screen
+    #endif
+    #if SPEED_UNITS == 3
+    printf ( LCD_PutChar, "mph    " );     // print it to the screen
+    #endif
+    }
+
+#separate void DisplayHeading ( char cLine )
+    {
+    long iHdg;
+
+    #if ( DISPLAY_COLS == 20 )
+    LCD_SetPosition ( cLine + 8 );
+    #elif ( DISPLAY_COLS == 16 )
+    LCD_SetPosition ( cLine + 5 );
+    #endif
+    iHdg = FieldFiveToLong();
+    SkipField ( 1 );     // skip fix date
+    GetField();             // MAGNETIC VARIATION
+    iVar = FieldFiveToLong();     // save to global variable, used in other sentences
+    GetField();     // EW
+    cVarDir = cC [ 0 ];     // save direction
+    iHdg = TrueToMag ( iHdg );    // factor variation into heading
+    printf ( LCD_PutChar, "%lu%c  ", iHdg, DEGREE );    // pad with blanks
+    }
+
+#separate long FieldFiveToLong ( void )
+    {
+    /* Converts ABC.D to long, rounds decimal up or down */
+    long iX;
+
+    iX = 100 * ( long ) ( cC [ 0 ] - 0x30 );
+    iX += 10 * ( long ) ( cC [ 1 ] - 0x30 );
+    iX += ( long ) ( cC [ 2 ] - 0x30 );
+    if ( ( cC [ 3 ] == PERIOD ) &amp;&amp; ( cC [ 4 ] &gt;= '5' ) )
+        {
+        iX++;           // round up
+        }
+    return ( iX );
+    }
+
+#separate long TrueToMag ( long iH )
+    {
+    /* Magnetic variation information comes from the RMC sentence */
+
+    if ( cVarDir == 'W' )
+        {
+        iH += iVar;
+        }
+    else
+        {
+        if ( iH &gt;= iVar )
+            {
+            iH -= iVar;     // OK as-is
+            }
+        else
+            {
+            iH = iH + 360 - iVar;   // correct for below zero
+            }
+        }
+    if ( iH &gt;= 360 )
+        {
+        iH -= 360;
+        }
+    return ( iH );
+    }
+
+#separate void DisplayMessage ( char cMsgNum )
+    {
+    LCD_PutCmd ( CLEAR_DISP );
+    LCD_SetPosition ( LINE_2 );
+    switch ( cMsgNum )
+        {
+        case WARNING_MSG:
+            {
+            #if ( DISPLAY_COLS == 20 )
+            printf ( LCD_PutChar,     "    GPS warning   " );
+            #elif ( DISPLAY_COLS == 16 )
+            printf ( LCD_PutChar, "  GPS warning" );
+            #endif
+            break;
+            }
+        case NODATA_MSG:
+            {
+            if ( cRxErrorFlag == OFF )    // is it a framing error problem ?
+                {
+                #if ( DISPLAY_COLS == 20 )
+                printf ( LCD_PutChar, "  No data from GPS" );
+                #elif ( DISPLAY_COLS == 16 )
+                printf ( LCD_PutChar, "No data from GPS" );
+                #endif
+                }
+            else
+                {
+                #if ( DISPLAY_COLS == 20 )
+                printf ( LCD_PutChar, "     Baud error" );
+                #elif ( DISPLAY_COLS == 16 )
+                printf ( LCD_PutChar, "   Baud error" );
+                #endif
+                cRxErrorFlag = OFF;
+                }
+            break;
+            }
+        }
+    Delay5mS ( 255 );                   // delay 1.25 seconds
+    iVar = NULL;
+    cVarDir = SPACE;                     // signal "no magnetic variation" yet
+    cScreenChanged = YES;
+    }
+
+#separate void Delay5mS ( char cCnt )
+    {
+    char cX;
+
+    /* This variable-count 5mS delay is interruptable by a button press */
+    for ( cX = 0; cX &lt; cCnt; cX++ )
+        {
+        if ( cScreenChanged == YES )
+            {
+            break;
+            }
+        delay_ms ( 5 );
+        }
+    }
+
+#separate char GetField ( void )
+    {
+    char cX, cIndex;
+
+    cX = NULL;
+    cIndex = 0;
+    while ( !cSkip )
+        {
+        cX = GetRxChar();
+        if ( ( cX == COMMA ) || ( cX == CR ) )
+            {
+            break;
+            }
+        cC [ cIndex++ ] = cX;
+        }
+    cC [ cIndex ] = EOF;
+    return ( cIndex );         // return number of characters in field
+    }
+
+#separate void SkipField ( char cCnt )
+    {
+    char cX;
+
+    for ( cX = 0; cX &lt; cCnt; cX++ )
+        {
+        while ( GetRxChar() != COMMA );
+        }
+    }
+
+/* RS232 FUNCTIONS ================================================== */
+
+#separate void InitRxBuffer ( char cCode )
+    {
+    disable_interrupts ( INT_RDA );
+    cRxBufferWritePtr = cRxBuffer;      // point to beginning of buffer
+    cRxBufferReadPtr = cRxBuffer;
+    cRxByteCnt = 0;
+    cRxIsrState = 0;
+    cRxMsgReady = NO;
+    cRxMsgTypeDesired = cCode;
+    enable_interrupts ( INT_RDA );
+    }
+
+#separate char GetRxChar ( void )
+    {
+    // Get the next available byte in the recv fifo.
+    // Call this function ONLY if the recv fifo contains data.
+    char cValue;
+
+    cValue = 0;
+    if ( cRxByteCnt &gt; 0 )       // For safety, check if there is any data
+        {
+        cValue = *cRxBufferReadPtr++;     // Read byte from fifo
+        if ( cRxBufferReadPtr == ( cRxBuffer + RX_BUFFER_SIZE ) ) // Did tail ptr wrap ?
+            {
+            cRxBufferReadPtr = cRxBuffer;    // If so, reset it to start of buffer
+            }
+        cRxByteCnt--; // Decrement byte count
+        }
+    return ( cValue );
+    }
+
+/* LCD FUNCTIONS ================================= */
+
+#separate void LCD_Init ( void )
+    {
+    LCD_SetData ( 0x00 );
+    delay_ms ( 200 );       /* wait enough time after Vdd rise */
+    output_low ( LCD_RS );
+    LCD_SetData ( 0x03 );   /* init with specific nibbles to start 4-bit mode */
+    LCD_PulseEnable();
+    LCD_PulseEnable();
+    LCD_PulseEnable();
+    LCD_SetData ( 0x02 );   /* set 4-bit interface */
+    LCD_PulseEnable();      /* send dual nibbles hereafter, MSN first */
+    LCD_PutCmd ( 0x2C );    /* function set (all lines, 5x7 characters) */
+    LCD_PutCmd ( 0x0C );    /* display ON, cursor off, no blink */
+    LCD_PutCmd ( 0x01 );    /* clear display */
+    LCD_PutCmd ( 0x06 );    /* entry mode set, increment &amp; scroll left */
+    }
+
+#separate void LCD_SetPosition ( unsigned int cX )
+    {
+    /* this subroutine works specifically for 4-bit Port A */
+    LCD_SetData ( swap ( cX ) | 0x08 );
+    LCD_PulseEnable();
+    LCD_SetData ( swap ( cX ) );
+    LCD_PulseEnable();
+    }
+
+#separate void LCD_PutChar ( unsigned int cX )
+    {
+    /* this subroutine works specifically for 4-bit Port A */
+    if ( !cSkip )
+        {
+        output_high ( LCD_RS );
+        LCD_SetData ( swap ( cX ) );     /* send high nibble */
+        LCD_PulseEnable();
+        LCD_SetData ( swap ( cX ) );     /* send low nibble */
+        LCD_PulseEnable();
+        output_low ( LCD_RS );
+        }
+    }
+
+#separate void LCD_PutCmd ( unsigned int cX )
+    {
+    /* this subroutine works specifically for 4-bit Port A */
+    LCD_SetData ( swap ( cX ) );     /* send high nibble */
+    LCD_PulseEnable();
+    LCD_SetData ( swap ( cX ) );     /* send low nibble */
+    LCD_PulseEnable();
+    }
+
+#separate void LCD_PulseEnable ( void )
+    {
+    output_high ( LCD_EN );
+    delay_us ( 3 );         // was 10
+    output_low ( LCD_EN );
+    delay_ms ( 3 );         // was 5
+    }
+
+#separate void LCD_SetData ( unsigned int cX )
+    {
+    output_bit ( LCD_D0, cX &amp; 0x01 );
+    output_bit ( LCD_D1, cX &amp; 0x02 );
+    output_bit ( LCD_D2, cX &amp; 0x04 );
+    output_bit ( LCD_D3, cX &amp; 0x08 );
+    }
+</pre>
+</body></html>

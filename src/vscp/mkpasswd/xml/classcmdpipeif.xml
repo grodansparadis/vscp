@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="classcmdpipeif" kind="class" prot="public">
+    <compoundname>cmdpipeif</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classcmdpipeif_167bb1eab96cb296881006c33fd7a1c6d" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool cmdpipeif::m_bIsRunning</definition>
+        <argsstring></argsstring>
+        <name>m_bIsRunning</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/mkpasswd/mkpasswd.h" line="36" bodyfile="/home/akhe/vscp/src/vscp/mkpasswd/mkpasswd.h" bodystart="36" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/mkpasswd/mkpasswd.h" line="29" bodyfile="/home/akhe/vscp/src/vscp/mkpasswd/mkpasswd.h" bodystart="28" bodyend="42"/>
+    <listofallmembers>
+      <member refid="classcmdpipeif_167bb1eab96cb296881006c33fd7a1c6d" prot="public" virt="non-virtual"><scope>cmdpipeif</scope><name>m_bIsRunning</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

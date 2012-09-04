@@ -1,0 +1,48 @@
+
+#define		ALLOW_GET_CMD
+;#define		MODE_SELF_VERIFY
+
+#define		NEAR_JUMP
+#define		HIGH_INT_VECT	0x208
+#define		LOW_INT_VECT	0x218
+#define		RESET_VECT		0x200
+
+#define		CAN_CD_BIT		RXB0EIDH,0		; AKHE changed *all* to EIDH from EIDL
+#define		CAN_PG_BIT		RXB0EIDH,1
+#define		CANTX_CD_BIT	TXB0EIDH,0
+
+;
+; Response messages are 0x14 (20) and 0x15 (21)
+;
+;
+#define		CAN_TXB0SIDH	0x00			; TX buffer 0 ID
+#define		CAN_TXB0SIDL	0x08
+#define		CAN_TXB0EIDH	0x14
+#define		CAN_TXB0EIDL	0x00
+
+;
+; accept only class=0, type=16,17,18,19, origin=all
+; all priorities, hardcoded or not.
+;
+#define		CAN_RXF0SIDH	0x00			; RX filter 0
+#define		CAN_RXF0SIDL	0x08
+#define		CAN_RXF0EIDH	0x10
+#define		CAN_RXF0EIDL	0x00
+
+#define		CAN_RXM0SIDH	0x0f			; RX mask 0
+#define		CAN_RXM0SIDL	0xff
+#define		CAN_RXM0EIDH	0xfc
+#define		CAN_RXM0EIDL	0x00
+
+
+; 125 kbps, 32MHz XTAL, HL PLL
+#define		CAN_BRGCON1		0x07			; Data rate control
+#define		CAN_BRGCON2		0xb8
+#define		CAN_BRGCON3		0x05
+
+; 125 kbps, 40MHz XTAL, HL PLL
+;#define		CAN_BRGCON1		0x09		; Data rate control
+;#define		CAN_BRGCON2		0xb8
+;#define		CAN_BRGCON3		0x05
+
+#define		CAN_CIOCON		b'00100000'		; CAN IO control

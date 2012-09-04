@@ -1,0 +1,15 @@
+Package: vscp
+Version: 0.3.3-1
+Priority: optional
+Architecture: i386
+Depends: libc6 (>= 2.3.6-6), libexpat1 (>= 1.95.8), libgcc1 (>= 1:4.1.0), libstdc++6 (>= 4.1.0), zlib1g (>= 1:1.2.1)
+Section: unknown
+Maintainer: Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+Description: VSCP is a set of toolsfor (home) automation.
+  The Very Simple Control Protocol can be used to automate 
+  most equipment and the package VSCP & Friends contain tools
+  to make this easy. The VSCP daemon can be used to set up
+  automation environments. The VSCP Works graphical application 
+  can configure, investigate and update firmware for remote nodes.
+  More info at http://www.vscp.org
+

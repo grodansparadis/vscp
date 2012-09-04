@@ -1,0 +1,7 @@
+#!/bin/sh
+sgml2latex --papersize=a4 --output=ps --language=en eda.sgml
+sgml2latex --papersize=a4 --output=tex --language=en eda.sgml
+sgml2rtf --papersize=a4  --language=en eda.sgml
+ps2pdf index.ps eda.pdf
+sgml2latex --papersize=a4 --output=dvi --language=en eda.sgml
+

@@ -1,0 +1,59 @@
+﻿Build started 2012-09-03 12:16:53.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\vscpd.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Touching ".\Release\vscpd.unsuccessfulbuild".
+       ClCompile:
+         All outputs are up-to-date.
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /Zi /nologo /W3 /WX- /O2 /Ob1 /Oy- /D _CRT_NONSTDC_NO_DEPRECATE /D _CRT_SECURE_NO_DEPRECATE /D NDEBUG /D WIN32 /D _CONSOLE /D _WIN32_WINNT=0x0500 /D _MT /D wxUSE_GUI=0 /D _VC80_UPGRADE=0x0600 /D _UNICODE /D UNICODE /GF /Gm /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Release\\" /Fd".\Release\vc100.pdb" /FR".\Release\\" /Gd /TP /analyze- /errorReport:prompt ..\..\common\controlobject.cpp
+         controlobject.cpp
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:".\Release\vscpd.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" libexpatMT.lib Ws2_32.lib wsock32.lib netapi32.lib comctl32.lib libwebsocketswin32.lib zlib32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:".\Release\vscpd.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /PDB:"C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\Release\vscpd.pdb" /ASSEMBLYDEBUG:DISABLE /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\Release\vscpd.lib" /MACHINE:X86 .\Release\gettimeofday.obj
+         .\Release\randPassword.obj
+         ".\Release\sha-1.obj"
+         .\Release\clientlist.obj
+         .\Release\controlobject.obj
+         .\Release\crc.obj
+         .\Release\daemonvscp.obj
+         .\Release\devicelist.obj
+         .\Release\devicethread.obj
+         .\Release\dllist.obj
+         .\Release\dm.obj
+         .\Release\guid.obj
+         .\Release\interfacelist.obj
+         .\Release\md5.obj
+         .\Release\tcpipclientthread.obj
+         .\Release\udpthread.obj
+         .\Release\userlist.obj
+         .\Release\vscptcpif.obj
+         .\Release\vscpd.obj
+         .\Release\vscphelper.obj
+         .\Release\vscpvariable.obj
+     1>MSVCRT.lib(cinitexe.obj) : warning LNK4098: defaultlib 'libcmt.lib' conflicts with use of other libs; use /NODEFAULTLIB:library
+         vscpd.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\.\Release\vscpd.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:".\Release\vscpd.exe;#1" /manifest .\Release\vscpd.exe.intermediate.manifest
+       BscMake:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\bscmake.exe /nologo /o".\Release\vscpd.bsc" .\Release\gettimeofday.sbr .\Release\randPassword.sbr ".\Release\sha-1.sbr" .\Release\clientlist.sbr .\Release\controlobject.sbr .\Release\crc.sbr .\Release\daemonvscp.sbr .\Release\devicelist.sbr .\Release\devicethread.sbr .\Release\dllist.sbr .\Release\dm.sbr .\Release\guid.sbr .\Release\interfacelist.sbr .\Release\md5.sbr .\Release\tcpipclientthread.sbr .\Release\udpthread.sbr .\Release\userlist.sbr .\Release\vscptcpif.sbr .\Release\vscpd.sbr .\Release\vscphelper.sbr .\Release\vscpvariable.sbr
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\.\Release\vscpd.exe"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release already exists.
+                 1 file(s) copied.
+       PostBuildEvent:
+         copy release\*.exe ..\..\delivery
+         :VCEnd
+         release\vscpd.exe
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file ".\Release\vscpd.unsuccessfulbuild".
+         Touching ".\Release\vscpd.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\vscpd.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:07.84

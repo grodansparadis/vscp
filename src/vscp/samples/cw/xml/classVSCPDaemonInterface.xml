@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="classVSCPDaemonInterface" kind="class" prot="public">
+    <compoundname>VSCPDaemonInterface</compoundname>
+    <includes refid="vscpdaemoninterface_8h" local="no">vscpdaemoninterface.h</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classVSCPDaemonInterface_1301b2f72a67c09f8030a1a534a632689" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>VSCPDaemonInterface::VSCPDaemonInterface</definition>
+        <argsstring>()</argsstring>
+        <name>VSCPDaemonInterface</name>
+        <briefdescription>
+<para>Constructors. </para>        </briefdescription>
+        <detaileddescription>
+<para><ref refid="classVSCPDaemonInterface" kindref="compound">VSCPDaemonInterface</ref> constructors </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" line="68" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.cpp" bodystart="58" bodyend="60"/>
+      </memberdef>
+      <memberdef kind="function" id="classVSCPDaemonInterface_1018435b54bc5caa2d61fc5fa4f155c7b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>VSCPDaemonInterface::VSCPDaemonInterface</definition>
+        <argsstring>(wxMDIParentFrame *parent, wxWindowID id=SYMBOL_VSCPDAEMONINTERFACE_IDNAME, const wxString &amp;caption=SYMBOL_VSCPDAEMONINTERFACE_TITLE, const wxPoint &amp;pos=SYMBOL_VSCPDAEMONINTERFACE_POSITION, const wxSize &amp;size=SYMBOL_VSCPDAEMONINTERFACE_SIZE, long style=SYMBOL_VSCPDAEMONINTERFACE_STYLE)</argsstring>
+        <name>VSCPDaemonInterface</name>
+        <param>
+          <type>wxMDIParentFrame *</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>wxWindowID</type>
+          <declname>id</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_IDNAME</defval>
+        </param>
+        <param>
+          <type>const wxString &amp;</type>
+          <declname>caption</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_TITLE</defval>
+        </param>
+        <param>
+          <type>const wxPoint &amp;</type>
+          <declname>pos</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_POSITION</defval>
+        </param>
+        <param>
+          <type>const wxSize &amp;</type>
+          <declname>size</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_SIZE</defval>
+        </param>
+        <param>
+          <type>long</type>
+          <declname>style</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_STYLE</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" line="69" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.cpp" bodystart="62" bodyend="65"/>
+      </memberdef>
+      <memberdef kind="function" id="classVSCPDaemonInterface_1e95f8a7655c36d318fe1c820a52eeec5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool VSCPDaemonInterface::Create</definition>
+        <argsstring>(wxMDIParentFrame *parent, wxWindowID id=SYMBOL_VSCPDAEMONINTERFACE_IDNAME, const wxString &amp;caption=SYMBOL_VSCPDAEMONINTERFACE_TITLE, const wxPoint &amp;pos=SYMBOL_VSCPDAEMONINTERFACE_POSITION, const wxSize &amp;size=SYMBOL_VSCPDAEMONINTERFACE_SIZE, long style=SYMBOL_VSCPDAEMONINTERFACE_STYLE)</argsstring>
+        <name>Create</name>
+        <param>
+          <type>wxMDIParentFrame *</type>
+          <declname>parent</declname>
+        </param>
+        <param>
+          <type>wxWindowID</type>
+          <declname>id</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_IDNAME</defval>
+        </param>
+        <param>
+          <type>const wxString &amp;</type>
+          <declname>caption</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_TITLE</defval>
+        </param>
+        <param>
+          <type>const wxPoint &amp;</type>
+          <declname>pos</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_POSITION</defval>
+        </param>
+        <param>
+          <type>const wxSize &amp;</type>
+          <declname>size</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_SIZE</defval>
+        </param>
+        <param>
+          <type>long</type>
+          <declname>style</declname>
+          <defval>SYMBOL_VSCPDAEMONINTERFACE_STYLE</defval>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para><ref refid="classVSCPDaemonInterface" kindref="compound">VSCPDaemonInterface</ref> creator </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" line="71" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.cpp" bodystart="71" bodyend="83"/>
+      </memberdef>
+      <memberdef kind="function" id="classVSCPDaemonInterface_175a450c0a977eff755429480f1df3a98" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void VSCPDaemonInterface::CreateControls</definition>
+        <argsstring>()</argsstring>
+        <name>CreateControls</name>
+        <briefdescription>
+<para>Creates the controls and sizers. </para>        </briefdescription>
+        <detaileddescription>
+<para>Control creation for <ref refid="classVSCPDaemonInterface" kindref="compound">VSCPDaemonInterface</ref> </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" line="74" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.cpp" bodystart="89" bodyend="97"/>
+      </memberdef>
+      <memberdef kind="function" id="classVSCPDaemonInterface_1e27c3ba1c190c552665743ff52ab20a3" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>wxBitmap</type>
+        <definition>wxBitmap VSCPDaemonInterface::GetBitmapResource</definition>
+        <argsstring>(const wxString &amp;name)</argsstring>
+        <name>GetBitmapResource</name>
+        <param>
+          <type>const wxString &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+<para>Retrieves bitmap resources. </para>        </briefdescription>
+        <detaileddescription>
+<para>Get bitmap resources </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" line="83" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.cpp" bodystart="112" bodyend="119"/>
+      </memberdef>
+      <memberdef kind="function" id="classVSCPDaemonInterface_121aad94396e0c0291eb06a91f211ae62" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>wxIcon</type>
+        <definition>wxIcon VSCPDaemonInterface::GetIconResource</definition>
+        <argsstring>(const wxString &amp;name)</argsstring>
+        <name>GetIconResource</name>
+        <param>
+          <type>const wxString &amp;</type>
+          <declname>name</declname>
+        </param>
+        <briefdescription>
+<para>Retrieves icon resources. </para>        </briefdescription>
+        <detaileddescription>
+<para>Get icon resources </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" line="86" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.cpp" bodystart="125" bodyend="132"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classVSCPDaemonInterface_1d54395020a46b107985e51c993f394ee" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool VSCPDaemonInterface::ShowToolTips</definition>
+        <argsstring>()</argsstring>
+        <name>ShowToolTips</name>
+        <briefdescription>
+<para>Should we show tooltips? </para>        </briefdescription>
+        <detaileddescription>
+<para>Should we show tooltips? </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" line="90" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.cpp" bodystart="103" bodyend="106"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para><ref refid="classVSCPDaemonInterface" kindref="compound">VSCPDaemonInterface</ref> class declaration </para>    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" line="62" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/canmsgdlg/vscpdaemoninterface.h" bodystart="61" bodyend="94"/>
+    <listofallmembers>
+      <member refid="classVSCPDaemonInterface_1e95f8a7655c36d318fe1c820a52eeec5" prot="public" virt="non-virtual"><scope>VSCPDaemonInterface</scope><name>Create</name></member>
+      <member refid="classVSCPDaemonInterface_175a450c0a977eff755429480f1df3a98" prot="public" virt="non-virtual"><scope>VSCPDaemonInterface</scope><name>CreateControls</name></member>
+      <member refid="classVSCPDaemonInterface_1e27c3ba1c190c552665743ff52ab20a3" prot="public" virt="non-virtual"><scope>VSCPDaemonInterface</scope><name>GetBitmapResource</name></member>
+      <member refid="classVSCPDaemonInterface_121aad94396e0c0291eb06a91f211ae62" prot="public" virt="non-virtual"><scope>VSCPDaemonInterface</scope><name>GetIconResource</name></member>
+      <member refid="classVSCPDaemonInterface_1d54395020a46b107985e51c993f394ee" prot="public" virt="non-virtual"><scope>VSCPDaemonInterface</scope><name>ShowToolTips</name></member>
+      <member refid="classVSCPDaemonInterface_1301b2f72a67c09f8030a1a534a632689" prot="public" virt="non-virtual"><scope>VSCPDaemonInterface</scope><name>VSCPDaemonInterface</name></member>
+      <member refid="classVSCPDaemonInterface_1018435b54bc5caa2d61fc5fa4f155c7b" prot="public" virt="non-virtual"><scope>VSCPDaemonInterface</scope><name>VSCPDaemonInterface</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,145 @@
+\hypertarget{classctrl_obj_vscp_tcp_if}{
+\section{ctrlObjVscpTcpIf Class Reference}
+\label{d8/dde/classctrl_obj_vscp_tcp_if}\index{ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}}
+}
+
+
+Shared VSCP tcp/ip object among worker threads.  
+
+
+
+
+{\ttfamily \#include $<$vscptcpif.h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a98c2e7564dbd19f155cfa374bcaf559f}{
+wxString \hyperlink{classctrl_obj_vscp_tcp_if_a98c2e7564dbd19f155cfa374bcaf559f}{m\_\-strUsername}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a98c2e7564dbd19f155cfa374bcaf559f}
+
+\begin{DoxyCompactList}\small\item\em Username for VSCP serer. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_abf247fc70d31ff92c4cfc886c889b085}{
+wxString \hyperlink{classctrl_obj_vscp_tcp_if_abf247fc70d31ff92c4cfc886c889b085}{m\_\-strPassword}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_abf247fc70d31ff92c4cfc886c889b085}
+
+\begin{DoxyCompactList}\small\item\em Password for VSCP server. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_ac1e738de460e3f3fc52231c1fa2ea8fb}{
+wxString \hyperlink{classctrl_obj_vscp_tcp_if_ac1e738de460e3f3fc52231c1fa2ea8fb}{m\_\-strHost}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_ac1e738de460e3f3fc52231c1fa2ea8fb}
+
+\begin{DoxyCompactList}\small\item\em Host address for VSCP server. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a664f68281fb64c5687e8f160fd6e4372}{
+int \hyperlink{classctrl_obj_vscp_tcp_if_a664f68281fb64c5687e8f160fd6e4372}{m\_\-port}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a664f68281fb64c5687e8f160fd6e4372}
+
+\begin{DoxyCompactList}\small\item\em Port for VSCP server. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a182ab29b5260b36237cb4ea50dbf51fe}{
+bool \hyperlink{classctrl_obj_vscp_tcp_if_a182ab29b5260b36237cb4ea50dbf51fe}{m\_\-bQuit}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a182ab29b5260b36237cb4ea50dbf51fe}
+
+\begin{DoxyCompactList}\small\item\em Thread run control (set to true to terminate thread) \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_ac45448d145560bba8083202c19778cde}{
+long \hyperlink{classctrl_obj_vscp_tcp_if_ac45448d145560bba8083202c19778cde}{m\_\-error}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_ac45448d145560bba8083202c19778cde}
+
+\begin{DoxyCompactList}\small\item\em Thread error return code. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a5e35a1bcb620c5545b9aca9134972c01}{
+uint8\_\-t \hyperlink{classctrl_obj_vscp_tcp_if_a5e35a1bcb620c5545b9aca9134972c01}{m\_\-rxState}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a5e35a1bcb620c5545b9aca9134972c01}
+
+\begin{DoxyCompactList}\small\item\em RX Thread run state. \end{DoxyCompactList}\item 
+uint32\_\-t \hyperlink{classctrl_obj_vscp_tcp_if_a22384f365f0617f660bed9330bb637d7}{m\_\-rxChannelID}
+\item 
+uint32\_\-t \hyperlink{classctrl_obj_vscp_tcp_if_a1c2e68222d7d935dbcbf2efefa33d46f}{m\_\-txChannelID}
+\item 
+bool \hyperlink{classctrl_obj_vscp_tcp_if_a8a4453efbfba68f89494ccdb9cb77929}{m\_\-bFilterOwnTx}
+\item 
+bool \hyperlink{classctrl_obj_vscp_tcp_if_ae60bd1fba10f822b4076223b6468fb13}{m\_\-bUseRXTXEvents}
+\item 
+wxWindow $\ast$ \hyperlink{classctrl_obj_vscp_tcp_if_ad48e93cc32b5c4bc1c741c2bc0615b1a}{m\_\-pWnd}
+\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a0667263bdc6a051fcff1e2e919005da8}{
+uint32\_\-t \hyperlink{classctrl_obj_vscp_tcp_if_a0667263bdc6a051fcff1e2e919005da8}{m\_\-wndID}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a0667263bdc6a051fcff1e2e919005da8}
+
+\begin{DoxyCompactList}\small\item\em Id for owner window (0 if not used). \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a65a3a10ff302a035666d83ab299cf893}{
+EVENT\_\-RX\_\-QUEUE \hyperlink{classctrl_obj_vscp_tcp_if_a65a3a10ff302a035666d83ab299cf893}{m\_\-rxQueue}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a65a3a10ff302a035666d83ab299cf893}
+
+\begin{DoxyCompactList}\small\item\em Event Input queue. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_aea53842331a09358ad92eea5e2ab9d83}{
+uint32\_\-t \hyperlink{classctrl_obj_vscp_tcp_if_aea53842331a09358ad92eea5e2ab9d83}{m\_\-maxRXqueue}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_aea53842331a09358ad92eea5e2ab9d83}
+
+\begin{DoxyCompactList}\small\item\em Max events in queue. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a7b2a56b35d87dfbfcd98e2b53048ddf2}{
+EVENT\_\-TX\_\-QUEUE \hyperlink{classctrl_obj_vscp_tcp_if_a7b2a56b35d87dfbfcd98e2b53048ddf2}{m\_\-txQueue}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a7b2a56b35d87dfbfcd98e2b53048ddf2}
+
+\begin{DoxyCompactList}\small\item\em Event output queue. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\paragraph*{}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_af33fbc7c35cb4a33472fe3c50f1b341e}{
+wxMutex \hyperlink{classctrl_obj_vscp_tcp_if_af33fbc7c35cb4a33472fe3c50f1b341e}{m\_\-mutexRxQueue}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_af33fbc7c35cb4a33472fe3c50f1b341e}
+
+\begin{DoxyCompactList}\small\item\em Protection for input queue. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a284d03bb1c182a8a2b53aa881280c076}{
+wxSemaphore {\bfseries m\_\-semRxQueue}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a284d03bb1c182a8a2b53aa881280c076}
+
+\end{DoxyCompactItemize}
+
+\paragraph*{}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_a2055fb53e00b5e4b79c01d0ab2f1f2da}{
+wxMutex \hyperlink{classctrl_obj_vscp_tcp_if_a2055fb53e00b5e4b79c01d0ab2f1f2da}{m\_\-mutexTxQueue}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a2055fb53e00b5e4b79c01d0ab2f1f2da}
+
+\begin{DoxyCompactList}\small\item\em Protection for output queue. \end{DoxyCompactList}\item 
+\hypertarget{classctrl_obj_vscp_tcp_if_afaa4ee8d3e416087e7bc193cf8260f4e}{
+wxSemaphore {\bfseries m\_\-semTxQueue}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_afaa4ee8d3e416087e7bc193cf8260f4e}
+
+\end{DoxyCompactItemize}
+
+
+
+\subsection{Detailed Description}
+Shared VSCP tcp/ip object among worker threads. 
+
+\subsection{Field Documentation}
+\hypertarget{classctrl_obj_vscp_tcp_if_a8a4453efbfba68f89494ccdb9cb77929}{
+\index{ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}!m\_\-bFilterOwnTx@{m\_\-bFilterOwnTx}}
+\index{m\_\-bFilterOwnTx@{m\_\-bFilterOwnTx}!ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}}
+\subsubsection[{m\_\-bFilterOwnTx}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf m\_\-bFilterOwnTx}}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a8a4453efbfba68f89494ccdb9cb77929}
+Filter our own tx events identified by obid set in m\_\-txChannelID \hypertarget{classctrl_obj_vscp_tcp_if_ae60bd1fba10f822b4076223b6468fb13}{
+\index{ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}!m\_\-bUseRXTXEvents@{m\_\-bUseRXTXEvents}}
+\index{m\_\-bUseRXTXEvents@{m\_\-bUseRXTXEvents}!ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}}
+\subsubsection[{m\_\-bUseRXTXEvents}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf m\_\-bUseRXTXEvents}}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_ae60bd1fba10f822b4076223b6468fb13}
+Send wxWidgets receive event instead of writing event to RX queue. m\_\-pWnd must point to a valid window and the id for that window must be in m\_\-wndID Also TX events will be activated if thread is started. \hypertarget{classctrl_obj_vscp_tcp_if_ad48e93cc32b5c4bc1c741c2bc0615b1a}{
+\index{ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}!m\_\-pWnd@{m\_\-pWnd}}
+\index{m\_\-pWnd@{m\_\-pWnd}!ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}}
+\subsubsection[{m\_\-pWnd}]{\setlength{\rightskip}{0pt plus 5cm}wxWindow$\ast$ {\bf m\_\-pWnd}}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_ad48e93cc32b5c4bc1c741c2bc0615b1a}
+Pointer to window that receive events. NULL if not used. \hypertarget{classctrl_obj_vscp_tcp_if_a22384f365f0617f660bed9330bb637d7}{
+\index{ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}!m\_\-rxChannelID@{m\_\-rxChannelID}}
+\index{m\_\-rxChannelID@{m\_\-rxChannelID}!ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}}
+\subsubsection[{m\_\-rxChannelID}]{\setlength{\rightskip}{0pt plus 5cm}uint32\_\-t {\bf m\_\-rxChannelID}}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a22384f365f0617f660bed9330bb637d7}
+Channel id for receive channel \hypertarget{classctrl_obj_vscp_tcp_if_a1c2e68222d7d935dbcbf2efefa33d46f}{
+\index{ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}!m\_\-txChannelID@{m\_\-txChannelID}}
+\index{m\_\-txChannelID@{m\_\-txChannelID}!ctrlObjVscpTcpIf@{ctrlObjVscpTcpIf}}
+\subsubsection[{m\_\-txChannelID}]{\setlength{\rightskip}{0pt plus 5cm}uint32\_\-t {\bf m\_\-txChannelID}}}
+\label{d8/dde/classctrl_obj_vscp_tcp_if_a1c2e68222d7d935dbcbf2efefa33d46f}
+Channel id for transmit channel If bFilterOwnTx is true events with this obid will not be added to the queue. 
+
+The documentation for this class was generated from the following file:\begin{DoxyCompactItemize}
+\item 
+D:/development/m2m/src/vscp/common/\hyperlink{vscptcpif_8h}{vscptcpif.h}\end{DoxyCompactItemize}

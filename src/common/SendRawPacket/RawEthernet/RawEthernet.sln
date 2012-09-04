@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RawEthernet", "RawEthernet.csproj", "{432C59D8-B82E-45FA-940C-E7876AC10EE4}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Release = Release
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{432C59D8-B82E-45FA-940C-E7876AC10EE4}.Debug.ActiveCfg = Release|.NET
+		{432C59D8-B82E-45FA-940C-E7876AC10EE4}.Debug.Build.0 = Release|.NET
+		{432C59D8-B82E-45FA-940C-E7876AC10EE4}.Release.ActiveCfg = Release|.NET
+		{432C59D8-B82E-45FA-940C-E7876AC10EE4}.Release.Build.0 = Release|.NET
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

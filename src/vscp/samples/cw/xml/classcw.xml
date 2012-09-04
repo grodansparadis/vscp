@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="classcw" kind="class" prot="public">
+    <compoundname>cw</compoundname>
+    <includes refid="dialogblocks_2cw_8h" local="no">cw.h</includes>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classcw_153c15b5bc58b21a3135edc55074d393c" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>cw::cw</definition>
+        <argsstring>()</argsstring>
+        <name>cw</name>
+        <briefdescription>
+<para>Constructor. </para>        </briefdescription>
+        <detaileddescription>
+<para>Constructor for cw </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.h" line="52" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.cpp" bodystart="65" bodyend="68"/>
+      </memberdef>
+      <memberdef kind="function" id="classcw_16b2ed42dedbbef29b3a280b60696c7b5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void cw::Init</definition>
+        <argsstring>()</argsstring>
+        <name>Init</name>
+        <briefdescription>
+<para>Initialises member variables. </para>        </briefdescription>
+        <detaileddescription>
+<para>Member initialisation </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.h" line="55" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.cpp" bodystart="74" bodyend="78"/>
+      </memberdef>
+      <memberdef kind="function" id="classcw_1e33c6d197d89dffbd1eed3f6a9d7b467" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>bool</type>
+        <definition>bool cw::OnInit</definition>
+        <argsstring>()</argsstring>
+        <name>OnInit</name>
+        <briefdescription>
+<para>Initialises the application. </para>        </briefdescription>
+        <detaileddescription>
+<para>Initialisation for cw </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.h" line="58" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.cpp" bodystart="83" bodyend="104"/>
+      </memberdef>
+      <memberdef kind="function" id="classcw_1ac7f2e07c134bd9eb78a674c8525c598" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>int</type>
+        <definition>int cw::OnExit</definition>
+        <argsstring>()</argsstring>
+        <name>OnExit</name>
+        <briefdescription>
+<para>Called on exit. </para>        </briefdescription>
+        <detaileddescription>
+<para>Cleanup for cw </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.h" line="61" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.cpp" bodystart="109" bodyend="114"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+<para>cw class declaration </para>    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.h" line="46" bodyfile="/home/akhe/vscp/src/vscp/cw/dialogblocks/cw.h" bodystart="45" bodyend="71"/>
+    <listofallmembers>
+      <member refid="classcw_153c15b5bc58b21a3135edc55074d393c" prot="public" virt="non-virtual"><scope>cw</scope><name>cw</name></member>
+      <member refid="classcw_16b2ed42dedbbef29b3a280b60696c7b5" prot="public" virt="non-virtual"><scope>cw</scope><name>Init</name></member>
+      <member refid="classcw_1ac7f2e07c134bd9eb78a674c8525c598" prot="public" virt="virtual"><scope>cw</scope><name>OnExit</name></member>
+      <member refid="classcw_1e33c6d197d89dffbd1eed3f6a9d7b467" prot="public" virt="virtual"><scope>cw</scope><name>OnInit</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

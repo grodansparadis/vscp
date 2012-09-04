@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygenindex xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="index.xsd" version="1.5.1">
+  <compound refid="classCXapdllApp" kind="class"><name>CXapdllApp</name>
+    <member refid="classCXapdllApp_1372d863ad9e2a6829f4691b5e3defe13" kind="variable"><name>m_xapArray</name></member>
+    <member refid="classCXapdllApp_115fa65254eef192500d203242679f169" kind="variable"><name>m_objMutex</name></member>
+    <member refid="classCXapdllApp_1201b9290fdac6a40c7e85ab564b91b4d" kind="variable"><name>m_instanceCounter</name></member>
+    <member refid="classCXapdllApp_1abcaf39d601eabd9e0f10c01cb33933d" kind="function"><name>CXapdllApp</name></member>
+    <member refid="classCXapdllApp_1559f0a010e6f32da0855d7686d0807ea" kind="function"><name>~CXapdllApp</name></member>
+    <member refid="classCXapdllApp_1823316ae1c54d028887acea1052df8c1" kind="function"><name>addDriverObject</name></member>
+    <member refid="classCXapdllApp_1ce9676639d41988af6e9c88c87d11d8f" kind="function"><name>getDriverObject</name></member>
+    <member refid="classCXapdllApp_16cf2a5295f78f9216567547fd047ad49" kind="function"><name>removeDriverObject</name></member>
+    <member refid="classCXapdllApp_1571da65ebbef787f00602b4c317b20eb" kind="function"><name>InitInstance</name></member>
+  </compound>
+  <compound refid="test_8cpp" kind="file"><name>test.cpp</name>
+    <member refid="test_8cpp_113521bb0f1dfd16021b5638c96c48572" kind="define"><name>NUMBER_OF_THREADS</name></member>
+    <member refid="test_8cpp_19e48489835f9d347a5c76a0eafbc47b5" kind="function"><name>workThread</name></member>
+    <member refid="test_8cpp_1840291bc02cba5474a4cb46a9b9566fe" kind="function"><name>main</name></member>
+    <member refid="test_8cpp_113521bb0f1dfd16021b5638c96c48572" kind="define"><name>NUMBER_OF_THREADS</name></member>
+    <member refid="test_8cpp_1840291bc02cba5474a4cb46a9b9566fe" kind="function"><name>main</name></member>
+    <member refid="test_8cpp_19e48489835f9d347a5c76a0eafbc47b5" kind="function"><name>workThread</name></member>
+  </compound>
+  <compound refid="xapdrv_8cpp" kind="file"><name>xapdrv.cpp</name>
+    <member refid="xapdrv_8cpp_1d4a1ea2c7d706a2ac0b45d68105f91f5" kind="variable"><name>theApp</name></member>
+    <member refid="xapdrv_8cpp_15150df2fc1e1cab697c4257fcd8842d5" kind="function"><name>_init</name></member>
+    <member refid="xapdrv_8cpp_10b6c6051b555b49cc1d2b2935bd01396" kind="function"><name>_fini</name></member>
+    <member refid="xapdrv_8cpp_1069d352ace0459f8c89b153c95ae82ce" kind="function"><name>CanalOpen</name></member>
+    <member refid="xapdrv_8cpp_14f48d4624170f0da8fb8fbcb4dd0f028" kind="function"><name>CanalClose</name></member>
+    <member refid="xapdrv_8cpp_1f995704c405d897ecff9f013f7da5a08" kind="function"><name>CanalGetLevel</name></member>
+    <member refid="xapdrv_8cpp_17412e9698d8135c2fb220d5715598152" kind="function"><name>CanalSend</name></member>
+    <member refid="xapdrv_8cpp_186c5d60f49fcc3f4b697720fe07838fd" kind="function"><name>CanalReceive</name></member>
+    <member refid="xapdrv_8cpp_194bc65fd439087fb3e829ce38fa65732" kind="function"><name>CanalDataAvailable</name></member>
+    <member refid="xapdrv_8cpp_150fa18407f13624b3c103b9ed5a497b5" kind="function"><name>CanalGetStatus</name></member>
+    <member refid="xapdrv_8cpp_1b3852976935a11ef8e8b0ee7eeb99fb0" kind="function"><name>CanalGetStatistics</name></member>
+    <member refid="xapdrv_8cpp_17b0b29ced9c0d4af7761987f52efbb38" kind="function"><name>CanalSetFilter</name></member>
+    <member refid="xapdrv_8cpp_1f80a6b73530ae54d2ab5ba46645932a0" kind="function"><name>CanalSetMask</name></member>
+    <member refid="xapdrv_8cpp_198468bb25cf70ddcaa209c85440d0fbe" kind="function"><name>CanalSetBaudrate</name></member>
+    <member refid="xapdrv_8cpp_1891581604021c85dfd66bd2008818462" kind="function"><name>CanalGetVersion</name></member>
+    <member refid="xapdrv_8cpp_1a522d3791c7a8ecb0a68f14d371c180a" kind="function"><name>CanalGetDllVersion</name></member>
+    <member refid="xapdrv_8cpp_1cec86e53533313a0528f8aa0f594401e" kind="function"><name>CanalGetVendorString</name></member>
+    <member refid="xapdrv_8cpp_1d4a1ea2c7d706a2ac0b45d68105f91f5" kind="variable"><name>theApp</name></member>
+    <member refid="xapdrv_8cpp_10b6c6051b555b49cc1d2b2935bd01396" kind="function"><name>_fini</name></member>
+    <member refid="xapdrv_8cpp_15150df2fc1e1cab697c4257fcd8842d5" kind="function"><name>_init</name></member>
+    <member refid="xapdrv_8cpp_14f48d4624170f0da8fb8fbcb4dd0f028" kind="function"><name>CanalClose</name></member>
+    <member refid="xapdrv_8cpp_194bc65fd439087fb3e829ce38fa65732" kind="function"><name>CanalDataAvailable</name></member>
+    <member refid="xapdrv_8cpp_1a522d3791c7a8ecb0a68f14d371c180a" kind="function"><name>CanalGetDllVersion</name></member>
+    <member refid="xapdrv_8cpp_1f995704c405d897ecff9f013f7da5a08" kind="function"><name>CanalGetLevel</name></member>
+    <member refid="xapdrv_8cpp_1b3852976935a11ef8e8b0ee7eeb99fb0" kind="function"><name>CanalGetStatistics</name></member>
+    <member refid="xapdrv_8cpp_150fa18407f13624b3c103b9ed5a497b5" kind="function"><name>CanalGetStatus</name></member>
+    <member refid="xapdrv_8cpp_1cec86e53533313a0528f8aa0f594401e" kind="function"><name>CanalGetVendorString</name></member>
+    <member refid="xapdrv_8cpp_1891581604021c85dfd66bd2008818462" kind="function"><name>CanalGetVersion</name></member>
+    <member refid="xapdrv_8cpp_1069d352ace0459f8c89b153c95ae82ce" kind="function"><name>CanalOpen</name></member>
+    <member refid="xapdrv_8cpp_186c5d60f49fcc3f4b697720fe07838fd" kind="function"><name>CanalReceive</name></member>
+    <member refid="xapdrv_8cpp_17412e9698d8135c2fb220d5715598152" kind="function"><name>CanalSend</name></member>
+    <member refid="xapdrv_8cpp_198468bb25cf70ddcaa209c85440d0fbe" kind="function"><name>CanalSetBaudrate</name></member>
+    <member refid="xapdrv_8cpp_17b0b29ced9c0d4af7761987f52efbb38" kind="function"><name>CanalSetFilter</name></member>
+    <member refid="xapdrv_8cpp_1f80a6b73530ae54d2ab5ba46645932a0" kind="function"><name>CanalSetMask</name></member>
+  </compound>
+  <compound refid="xapdrv_8h" kind="file"><name>xapdrv.h</name>
+    <member refid="xapdrv_8h_1bad97c5bccd896a8616367f69da6f03a" kind="define"><name>AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_</name></member>
+    <member refid="xapdrv_8h_17b9ca0cb41e9b74a121efd7935b97f8c" kind="define"><name>DLL_VERSION</name></member>
+    <member refid="xapdrv_8h_148608e030ecea90b640f4cbc70f0e024" kind="define"><name>CANAL_DLL_VENDOR</name></member>
+    <member refid="xapdrv_8h_169b6f41c5c3358595d7a15cbb3f4483f" kind="define"><name>CANAL_XAP_DRIVER_MAX_OPEN</name></member>
+    <member refid="xapdrv_8h_1ccb5af777d163035bf7d65b278465386" kind="function"><name>CreateObject</name></member>
+    <member refid="xapdrv_8h_1bad97c5bccd896a8616367f69da6f03a" kind="define"><name>AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_</name></member>
+    <member refid="xapdrv_8h_148608e030ecea90b640f4cbc70f0e024" kind="define"><name>CANAL_DLL_VENDOR</name></member>
+    <member refid="xapdrv_8h_169b6f41c5c3358595d7a15cbb3f4483f" kind="define"><name>CANAL_XAP_DRIVER_MAX_OPEN</name></member>
+    <member refid="xapdrv_8h_17b9ca0cb41e9b74a121efd7935b97f8c" kind="define"><name>DLL_VERSION</name></member>
+    <member refid="xapdrv_8h_1ccb5af777d163035bf7d65b278465386" kind="function"><name>CreateObject</name></member>
+  </compound>
+  <compound refid="dir_0a2bfcdfd39593d3b430a1b9478026c8" kind="dir"><name>/home/akhe/vscp/src/vscp/drivers/xap/linux/</name>
+  </compound>
+  <compound refid="dir_968ad43fbfc16503c7c351a60862bf76" kind="dir"><name>/home/akhe/vscp/src/vscp/drivers/xap/</name>
+  </compound>
+</doxygenindex>

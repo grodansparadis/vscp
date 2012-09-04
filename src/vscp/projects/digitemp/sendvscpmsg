@@ -1,0 +1,210 @@
+#!/usr/bin/perl -W
+#
+# Version: 0.0.1 2006-03-13
+#
+# VSCP Digitemp message sender
+# Copyright 2006-2007, Ake Hedman, <akhe@eurosource.se>
+# http://www.vscp.org 
+#
+# This scripts sends out correctly formated VSCP events for all types
+# that are handled by digitemp (http://www.digitemp.com). That is temperature,
+# 32-bit counter values, and humidity.
+# Digitemp must be installed and working on your system for the scripts to work. 
+# Note also that a special type of configuration file is needed for the scripts
+# documented in the beginning of the script below.
+#
+# Built on DigiTemp MySQL logging script
+# Copyright 2002 by Brian C. Lane <bcl@brianlane.com>
+# All Rights Reserved
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the Free
+# Software Foundation; either version 2 of the License, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+#
+# -------------------------[ HISTORY ]-------------------------------------
+# 2006-03-11 AH Changed so that data is sent to a VSCP daemon of choice.
+#               Info about VSCP is available at http://www.vscp.org
+#
+# 08/18/2002  Putting together this MySQL logging script for the new 
+# bcl         release of DigiTemp.
+# -------------------------------------------------------------------------
+use IO::Socket;
+
+# VSCP info
+my $vscp_host   = "localhost";    # Set your address for VSCP server here (canald) 
+my $vscp_port   = "9598";         # Set port used by VSCP server 
+my $vscp_user   = "admin";        # Set username for TCP/IP i/f of VSCP daemon
+my $vscp_pass   = "secret";       # Set password for TCP/IP i/f of VSCP daemon
+
+# The DigiTemp Configuration file to use
+# ======================================
+# Should have the following format specifiers.
+# Measurement type = 0, 1-wire id, sensor 0, temp in celsius
+# LOG_FORMAT "0 %R 0 %.2C"
+# Measurement type = 1, 1-wire id, sensor idx, temp in celsius
+# CNT_FORMAT "1 %R %n %C"
+# Measurement type = 2, 1-wire id, sensor 0, temp in celsius
+# HUM_FORMAT "2 %R 0 %h%%"
+my $digitemp_rcfile = "/usr/local/digitemp/etc/vscp_digitemp.conf";
+my $digitemp_binary = "/usr/local/digitemp/bin/digitemp_DS9097";
+
+my $debug = 0;
+
+# ==============================================================================
+# Usually no need to change any data below
+# ==============================================================================
+
+my $vscp_class = 10;           # Measurement
+my $vscp_type_counter = 1;     # Counter
+my $vscp_type_temperature = 6; # Temperture
+my $vscp_type_humidity = 35;   # Humidity
+
+my $vscp_head = 0;    # 
+my $vscp_obid = 0;    # obid not used here so set to zero
+
+# VSCP Datacoding - Full info here 
+#    http://www.vscp.org/wiki/doku.php?id=vscp_specification_data_coding
+#
+# 10001000b = 
+# 100 - Normalized Integer - Next byte holds sign in bit 7 and decimal points which in 
+#       our case is 2
+#    01 - Degrees centrigrade
+#      000 - Sensor with index 0
+my $vscp_datacoding = 0x88;  
+
+# Bit 7 of the normalizer byteshould be set for a negative value
+# the rest of the bits indicate # decimals.
+my $normbyte = 0;
+
+my $sock = new IO::Socket::INET ( PeerAddr => $vscp_host,
+				    PeerPort => $vscp_port,
+				    Proto => 'tcp' );
+die "Could not create socket: $!\n" unless $sock;
+
+recv( $sock, $buffer, 200, 0);
+print $buffer if($debug);;
+
+print $sock "user $vscp_user\n";
+print "user $vscp_user\n" if($debug);
+recv( $sock, $buffer, 200, 0);
+print $buffer if($debug);
+ 
+print $sock "pass $vscp_pass\n";
+print "pass $vscp_pass\n" if($debug);
+recv( $sock, $buffer, 200, 0);
+print $buffer if($debug);
+
+# Gather information from DigiTemp
+# Read the output from digitemp
+# Output in form SerialNumber<SPACE>Temperature in Fahrenheit
+#open( DIGITEMP, "$digitemp_binary -q -a -o\"%R %.2C\" -c $digitemp_rcfile |" );
+open( DIGITEMP, "$digitemp_binary -q -a -c $digitemp_rcfile |" );
+
+while( <DIGITEMP> )
+{
+    print "$_\n" if($debug);
+    chomp;
+    
+    # type = 0 ==> temperature reading.
+    # type = 1 ==> Counter reading.
+    # type = 2 ==> Humidity reading.
+    ($type,$serialnumber,$sensoridx,$measurement) = split(/ /);
+    
+    # Construct VSCP GUID
+    my $dtguid = "FFFFFFFFFFFFFFFF" . $serialnumber;  # 1-wire GUID prefix 
+    print "GUID = $dtguid\n" if($debug);
+    print "temp = $measurement\n" if($debug);
+    
+    my @guid_chars = split("",$dtguid);
+    
+    my $guid = "";
+    for ($idx=0; $idx<32; $idx += 2 ) {
+	$guid = $guid . "0x" . "$guid_chars[$idx]";
+	$guid = $guid . "$guid_chars[$idx+1]";
+	if ( $idx < 30 ) {
+	    $guid = $guid . ":";
+	} 
+    }
+    
+    if ( 0 == $type ) {
+	
+	# Handle temperature measurement
+	
+	if ( $measurement < 0 ) {
+	    $normbyte = 0x80 + 2; # Negative, two decimals  
+	    $measurement = -100 * $measurement;
+	}
+	else {
+	    $normbyte = 0x00 + 2; # Positive, two decimals
+	    $measurement = 100 * $measurement;
+	} 
+      
+	my $timestamp = time();
+	
+	# Send temperature event
+	print "GUID=$guid\n" if($debug);
+	my $high = $measurement/256;
+	my $low = $measurement & 0xff;
+	
+	print $sock "SEND $vscp_head,$vscp_class,$vscp_type_temperature,$vscp_obid,$timestamp,$guid,$vscp_datacoding,$normbyte,$high,$low\n";
+	recv( $sock, $buffer, 200, 0);
+	print $buffer if($debug);
+	
+    }
+    elsif ( 1 == $type ) {
+	
+	# Handle counter measurement - 32 bit integer value
+	$normbyte = 0x00; # Positive, no decimals
+	
+	my $timestamp = time();
+	
+	# Send counter event
+	print "GUID=$guid\n" if($debug);
+	my $b3 = ( $measurement >> 24 ) & 0xff;
+	my $b2 = ( $measurement >> 16 ) & 0xff;
+	my $b1 = ( $measurement >> 8 ) & 0xff;
+	my $b0 = $measurement & 0xff;
+
+	my $cnt_datacoding = $vscp_datacoding + $sensoridx;
+	
+	print $sock "SEND $vscp_head,$vscp_class,$vscp_type_counter,$vscp_obid,$timestamp,$guid,$cnt_datacoding,$normbyte,$b3,$b2,$b1,$b0\n";
+	recv( $sock, $buffer, 200, 0);
+	print $buffer if($debug);
+    }
+    elsif ( 2 == $type ) {
+	
+	# Handle humidity measurement - byte 0-100
+	# Handle counter measurement - 32 bit integer value
+	$normbyte = 0x00; # Positive, no decimals
+	
+	my $timestamp = time();
+	
+	# Send counter event
+	print "GUID=$guid\n" if($debug);
+	
+	print $sock "SEND $vscp_head,$vscp_class,$vscp_type_humidity,$vscp_obid,$timestamp,$guid,$vscp_datacoding,$normbyte,$measurement\n";
+	recv( $sock, $buffer, 200, 0);
+	print $buffer if($debug);
+    }
+    
+}
+
+close( DIGITEMP );
+
+print $sock "quit\n";
+recv( $sock, $buffer, 200, 0);
+print $buffer if($debug);
+
+# Close connection to host
+close($sock);
+

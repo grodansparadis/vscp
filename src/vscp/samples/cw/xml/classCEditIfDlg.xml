@@ -1,0 +1,371 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="classCEditIfDlg" kind="class" prot="public">
+    <compoundname>CEditIfDlg</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classCEditIfDlg_19ca991c69ab85dd51800a7ea7a45a7fe" prot="public" static="no" mutable="no">
+        <type>wxString</type>
+        <definition>wxString CEditIfDlg::m_wxStrDriverName</definition>
+        <argsstring></argsstring>
+        <name>m_wxStrDriverName</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Driver name edit field </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="74" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="74" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_19cabaec868cdd0f4433aa7b00c22d5c0" prot="public" static="no" mutable="no">
+        <type>wxString</type>
+        <definition>wxString CEditIfDlg::m_wxStrDriverPath</definition>
+        <argsstring></argsstring>
+        <name>m_wxStrDriverPath</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Driver path edit field </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="79" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="79" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_14c7229322c0fb963a63053c8560f833f" prot="public" static="no" mutable="no">
+        <type>wxString</type>
+        <definition>wxString CEditIfDlg::m_wxStrDriverDeviceString</definition>
+        <argsstring></argsstring>
+        <name>m_wxStrDriverDeviceString</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Device string </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="84" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="84" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_1da1f45e63027c99c54362c4f18e87a52" prot="public" static="no" mutable="no">
+        <type>wxString</type>
+        <definition>wxString CEditIfDlg::m_wxStrDriverFlags</definition>
+        <argsstring></argsstring>
+        <name>m_wxStrDriverFlags</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Device Flags </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="89" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="89" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_12ca5e86700a49ac9c90041a3a5b1eecd" prot="public" static="no" mutable="no">
+        <type>wxString</type>
+        <definition>wxString CEditIfDlg::m_wxStrDriverInBufSize</definition>
+        <argsstring></argsstring>
+        <name>m_wxStrDriverInBufSize</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Device In Buffer Size </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="94" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="94" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_1ce321fb28095273c317407467b5d46eb" prot="public" static="no" mutable="no">
+        <type>wxString</type>
+        <definition>wxString CEditIfDlg::m_wxStrDriverOutBufSize</definition>
+        <argsstring></argsstring>
+        <name>m_wxStrDriverOutBufSize</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Device Out Buffer Size </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="99" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="99" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_16166787ffcfd3dc13833e58c5179ae77" prot="public" static="no" mutable="no">
+        <type>wxString</type>
+        <definition>wxString CEditIfDlg::m_wxStrDriverFilter</definition>
+        <argsstring></argsstring>
+        <name>m_wxStrDriverFilter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Device Filter </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="104" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="104" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_1ce39b412c0809fd69d18eba87f5d285d" prot="public" static="no" mutable="no">
+        <type>wxString</type>
+        <definition>wxString CEditIfDlg::m_wxStrDriverMask</definition>
+        <argsstring></argsstring>
+        <name>m_wxStrDriverMask</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Device Mask </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="109" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="109" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classCEditIfDlg_1dfdacb005d556c1ebe9735fa5d77cea1" prot="private" static="no" mutable="no">
+        <type>wxButton *</type>
+        <definition>wxButton* CEditIfDlg::m_pOKButton</definition>
+        <argsstring></argsstring>
+        <name>m_pOKButton</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="115" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="115" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_136858ee41dcb1cdfe9289f4c9642e363" prot="private" static="no" mutable="no">
+        <type>wxButton *</type>
+        <definition>wxButton* CEditIfDlg::m_pCancelButton</definition>
+        <argsstring></argsstring>
+        <name>m_pCancelButton</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="116" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="116" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_183eec9f8221cdf7cf79d74b49c9b5ae3" prot="private" static="no" mutable="no">
+        <type>wxButton *</type>
+        <definition>wxButton* CEditIfDlg::m_pButtonBrowsePath</definition>
+        <argsstring></argsstring>
+        <name>m_pButtonBrowsePath</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="119" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="119" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_1e1c578452cb8adc5f1f60089942c3545" prot="private" static="no" mutable="no">
+        <type>wxTextCtrl *</type>
+        <definition>wxTextCtrl* CEditIfDlg::m_pEditCtrlName</definition>
+        <argsstring></argsstring>
+        <name>m_pEditCtrlName</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="122" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="122" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_1353a4be02b89c809c8b02cdfc3fce336" prot="private" static="no" mutable="no">
+        <type>wxTextCtrl *</type>
+        <definition>wxTextCtrl* CEditIfDlg::m_pEditCtrlPath</definition>
+        <argsstring></argsstring>
+        <name>m_pEditCtrlPath</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="123" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="123" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_10bcd16da3f3f00cafac0107e953449de" prot="private" static="no" mutable="no">
+        <type>wxTextCtrl *</type>
+        <definition>wxTextCtrl* CEditIfDlg::m_pEditCtrlDeviceString</definition>
+        <argsstring></argsstring>
+        <name>m_pEditCtrlDeviceString</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="124" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="124" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_1b778a73d2c21eff4f0abb6b0930f8008" prot="private" static="no" mutable="no">
+        <type>wxTextCtrl *</type>
+        <definition>wxTextCtrl* CEditIfDlg::m_pEditCtrlFlags</definition>
+        <argsstring></argsstring>
+        <name>m_pEditCtrlFlags</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="125" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="125" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_11e55d6844e81d9ebc8188ba1ae3efba8" prot="private" static="no" mutable="no">
+        <type>wxTextCtrl *</type>
+        <definition>wxTextCtrl* CEditIfDlg::m_pEditCtrlInBufSize</definition>
+        <argsstring></argsstring>
+        <name>m_pEditCtrlInBufSize</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="126" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="126" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_1d07ce556cb4fa668dbdfb59df6f9a6fb" prot="private" static="no" mutable="no">
+        <type>wxTextCtrl *</type>
+        <definition>wxTextCtrl* CEditIfDlg::m_pEditCtrlOutBufSize</definition>
+        <argsstring></argsstring>
+        <name>m_pEditCtrlOutBufSize</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="127" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="127" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_18d5bbf3ee03acc2f9da2bf5fefcee67e" prot="private" static="no" mutable="no">
+        <type>wxTextCtrl *</type>
+        <definition>wxTextCtrl* CEditIfDlg::m_pEditCtrlFilter</definition>
+        <argsstring></argsstring>
+        <name>m_pEditCtrlFilter</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="128" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="128" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCEditIfDlg_1f6fbb4b89eb9589ea7dbfbccb3b79979" prot="private" static="no" mutable="no">
+        <type>wxTextCtrl *</type>
+        <definition>wxTextCtrl* CEditIfDlg::m_pEditCtrlMask</definition>
+        <argsstring></argsstring>
+        <name>m_pEditCtrlMask</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="129" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="129" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classCEditIfDlg_125b6a77619a63171ff46c77bdbd078a1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>CEditIfDlg::CEditIfDlg</definition>
+        <argsstring>(wxWindow *parent)</argsstring>
+        <name>CEditIfDlg</name>
+        <param>
+          <type>wxWindow *</type>
+          <declname>parent</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Constructor </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="45" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.cpp" bodystart="91" bodyend="228"/>
+      </memberdef>
+      <memberdef kind="function" id="classCEditIfDlg_1175ff82fd84ca56c2116eb5e71c27424" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type>virtual</type>
+        <definition>CEditIfDlg::~CEditIfDlg</definition>
+        <argsstring>()</argsstring>
+        <name>~CEditIfDlg</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Destructor </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="50" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.cpp" bodystart="234" bodyend="237"/>
+      </memberdef>
+      <memberdef kind="function" id="classCEditIfDlg_1e8e931e621184c79cbef026546e43cdd" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CEditIfDlg::OnOK</definition>
+        <argsstring>(wxCommandEvent &amp;event)</argsstring>
+        <name>OnOK</name>
+        <param>
+          <type>wxCommandEvent &amp;</type>
+          <declname>event</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Save settings </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="55" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.cpp" bodystart="243" bodyend="248"/>
+      </memberdef>
+      <memberdef kind="function" id="classCEditIfDlg_10ea902a5ecd4247c73c7322a6f76154f" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CEditIfDlg::OnCancel</definition>
+        <argsstring>(wxCommandEvent &amp;event)</argsstring>
+        <name>OnCancel</name>
+        <param>
+          <type>wxCommandEvent &amp;</type>
+          <declname>event</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Cancel </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="60" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.cpp" bodystart="254" bodyend="259"/>
+      </memberdef>
+      <memberdef kind="function" id="classCEditIfDlg_16e0f68dca807d1c13b0cfd272e2dbacb" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CEditIfDlg::OnButtonDriverPath</definition>
+        <argsstring>(wxCommandEvent &amp;event)</argsstring>
+        <name>OnButtonDriverPath</name>
+        <param>
+          <type>wxCommandEvent &amp;</type>
+          <declname>event</declname>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Driver path </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="66" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.cpp" bodystart="266" bodyend="280"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="38" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="37" bodyend="135"/>
+    <listofallmembers>
+      <member refid="classCEditIfDlg_125b6a77619a63171ff46c77bdbd078a1" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>CEditIfDlg</name></member>
+      <member refid="classCEditIfDlg_183eec9f8221cdf7cf79d74b49c9b5ae3" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pButtonBrowsePath</name></member>
+      <member refid="classCEditIfDlg_136858ee41dcb1cdfe9289f4c9642e363" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pCancelButton</name></member>
+      <member refid="classCEditIfDlg_10bcd16da3f3f00cafac0107e953449de" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pEditCtrlDeviceString</name></member>
+      <member refid="classCEditIfDlg_18d5bbf3ee03acc2f9da2bf5fefcee67e" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pEditCtrlFilter</name></member>
+      <member refid="classCEditIfDlg_1b778a73d2c21eff4f0abb6b0930f8008" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pEditCtrlFlags</name></member>
+      <member refid="classCEditIfDlg_11e55d6844e81d9ebc8188ba1ae3efba8" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pEditCtrlInBufSize</name></member>
+      <member refid="classCEditIfDlg_1f6fbb4b89eb9589ea7dbfbccb3b79979" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pEditCtrlMask</name></member>
+      <member refid="classCEditIfDlg_1e1c578452cb8adc5f1f60089942c3545" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pEditCtrlName</name></member>
+      <member refid="classCEditIfDlg_1d07ce556cb4fa668dbdfb59df6f9a6fb" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pEditCtrlOutBufSize</name></member>
+      <member refid="classCEditIfDlg_1353a4be02b89c809c8b02cdfc3fce336" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pEditCtrlPath</name></member>
+      <member refid="classCEditIfDlg_1dfdacb005d556c1ebe9735fa5d77cea1" prot="private" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_pOKButton</name></member>
+      <member refid="classCEditIfDlg_14c7229322c0fb963a63053c8560f833f" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_wxStrDriverDeviceString</name></member>
+      <member refid="classCEditIfDlg_16166787ffcfd3dc13833e58c5179ae77" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_wxStrDriverFilter</name></member>
+      <member refid="classCEditIfDlg_1da1f45e63027c99c54362c4f18e87a52" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_wxStrDriverFlags</name></member>
+      <member refid="classCEditIfDlg_12ca5e86700a49ac9c90041a3a5b1eecd" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_wxStrDriverInBufSize</name></member>
+      <member refid="classCEditIfDlg_1ce39b412c0809fd69d18eba87f5d285d" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_wxStrDriverMask</name></member>
+      <member refid="classCEditIfDlg_19ca991c69ab85dd51800a7ea7a45a7fe" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_wxStrDriverName</name></member>
+      <member refid="classCEditIfDlg_1ce321fb28095273c317407467b5d46eb" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_wxStrDriverOutBufSize</name></member>
+      <member refid="classCEditIfDlg_19cabaec868cdd0f4433aa7b00c22d5c0" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>m_wxStrDriverPath</name></member>
+      <member refid="classCEditIfDlg_16e0f68dca807d1c13b0cfd272e2dbacb" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>OnButtonDriverPath</name></member>
+      <member refid="classCEditIfDlg_10ea902a5ecd4247c73c7322a6f76154f" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>OnCancel</name></member>
+      <member refid="classCEditIfDlg_1e8e931e621184c79cbef026546e43cdd" prot="public" virt="non-virtual"><scope>CEditIfDlg</scope><name>OnOK</name></member>
+      <member refid="classCEditIfDlg_1175ff82fd84ca56c2116eb5e71c27424" prot="public" virt="virtual"><scope>CEditIfDlg</scope><name>~CEditIfDlg</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

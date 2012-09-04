@@ -1,0 +1,68 @@
+<?xml version = '1.0' encoding = 'UTF-8'?>
+<!DOCTYPE KDevPrjSession>
+<KDevPrjSession>
+ <DocsAndViews NumberOfDocuments="7" >
+  <Doc0 NumberOfViews="1" URL="file:///home/akhe/development/vscp/src/vscp/common/canalsuperwrapper.h" >
+   <View0 Encoding="UTF-8" line="0" Type="Source" />
+  </Doc0>
+  <Doc1 NumberOfViews="1" URL="file:///home/akhe/development/vscp/src/vscp/common/canalsuperwrapper.cpp" >
+   <View0 Encoding="" line="305" Type="Source" />
+  </Doc1>
+  <Doc2 NumberOfViews="1" URL="file:///home/akhe/development/vscp/src/vscp/common/vscp.h" >
+   <View0 Encoding="UTF-8" line="141" Type="Source" />
+  </Doc2>
+  <Doc3 NumberOfViews="1" URL="file:///home/akhe/development/vscp/src/vscp/daemon/linux/vscpd.h" >
+   <View0 Encoding="UTF-8" line="0" Type="Source" />
+  </Doc3>
+  <Doc4 NumberOfViews="1" URL="file:///home/akhe/development/vscp/src/vscp/common/vscptcpif.cpp" >
+   <View0 Encoding="UTF-8" line="698" Type="Source" />
+  </Doc4>
+  <Doc5 NumberOfViews="1" URL="file:///home/akhe/development/vscp/src/vscp/common/vscphelper.cpp" >
+   <View0 Encoding="UTF-8" line="276" Type="Source" />
+  </Doc5>
+  <Doc6 NumberOfViews="1" URL="file:///home/akhe/development/vscp/src/vscp/common/vscphelper.h" >
+   <View0 Encoding="UTF-8" line="47" Type="Source" />
+  </Doc6>
+ </DocsAndViews>
+ <pluginList>
+  <kdevdebugger>
+   <breakpointList>
+    <breakpoint0 location="/home/akhe/development/vscp/src/vscp/old/cw/msglistwnd.cpp:136" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint0>
+    <breakpoint1 location="/home/akhe/development/vscp/src/vscp/old/cw/msglistwnd.cpp:682" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint1>
+    <breakpoint2 location="/home/akhe/development/vscp/src/vscp/old/cw/msglistwnd.cpp:676" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint2>
+    <breakpoint3 location="/home/akhe/development/vscp/src/vscp/old/cw/msglistwnd.cpp:683" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint3>
+    <breakpoint4 location="/home/akhe/development/vscp/src/vscp/old/cw/msglistwnd.cpp:677" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint4>
+    <breakpoint5 location="/home/akhe/development/vscp/src/vscp/old/cw/msglistwnd.cpp:681" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint5>
+    <breakpoint6 location="/home/akhe/development/vscp/src/vscp/old/cw/msglistwnd.cpp:675" type="1" tracingFormatString="" traceFormatStringEnabled="0" condition="" tracingEnabled="0" enabled="1" >
+     <tracedExpressions/>
+    </breakpoint6>
+   </breakpointList>
+   <showInternalCommands value="0" />
+  </kdevdebugger>
+  <kdevastyle>
+   <Extensions ext="*.cpp *.h,*.c *.h,*.cxx *.hxx,*.c++ *.h++,*.cc *.hh,*.C *.H,*.diff,*.inl,*.java,*.moc,*.patch,*.tlh,*.xpm" />
+   <AStyle IndentPreprocessors="0" FillCount="4" PadParenthesesOut="0" IndentNamespaces="1" IndentLabels="0" Fill="Tabs" MaxStatement="40" Brackets="Linux" MinConditional="-1" IndentBrackets="0" PadParenthesesUn="1" BlockBreak="1" KeepStatements="0" KeepBlocks="0" BlockIfElse="1" IndentSwitches="1" PadOperators="1" FStyle="UserDefined" IndentCases="1" FillEmptyLines="0" BracketsCloseHeaders="1" BlockBreakAll="0" PadParenthesesIn="1" IndentClasses="1" IndentBlocks="0" FillForce="0" />
+  </kdevastyle>
+  <kdevbookmarks>
+   <bookmarks/>
+  </kdevbookmarks>
+  <kdevvalgrind>
+   <executable path="" params="" />
+   <valgrind path="valgrind" params=" --tool=memcheck --leak-check=yes" />
+   <calltree path="" params="" />
+   <kcachegrind path="" />
+  </kdevvalgrind>
+ </pluginList>
+</KDevPrjSession>

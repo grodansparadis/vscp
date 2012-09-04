@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="dir_968ad43fbfc16503c7c351a60862bf76" kind="dir">
+    <compoundname>/home/akhe/vscp/src/vscp/drivers/xap/</compoundname>
+    <innerdir refid="dir_0a2bfcdfd39593d3b430a1b9478026c8">/home/akhe/vscp/src/vscp/drivers/xap/linux/</innerdir>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/drivers/xap/"/>
+  </compounddef>
+</doxygen>

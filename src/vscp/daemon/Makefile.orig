@@ -1,0 +1,95 @@
+#
+# Makefile for canald 
+#
+# Copyright 2004 by Ake Hedman <akhe@eurosource.se>
+# See COPYING for GNU Public License
+#
+# Linux/Solaris/FreeBSD/AIX/Other makefile
+#
+
+VERSION = 0.1.1
+
+CC	= g++ 
+CFLAGS	= -g -Wall
+LIBS	= -lpthread -ldl -lm -lz
+
+CANALOBJS	=	../common/listenthread.o ../common/clientthread.o ../common/devicethread.o \
+				../common/terminationthread.o \
+				 ../common/clientlist.o ../common/controlobject.o ../common/devicelist.o
+CANALHDRS	=	../common/clientlist.h ../common/controlobject.h ../common/devicelist.h \
+				../common/canal.h ../common/canaldlldef.h ../common/canalpipe.h \
+				../common/version.h
+PROJOBJS	=	../../common/dllist.o ../../common/configfile.o
+PROJHDRS	=	../../common/dllist.h ../../common/configfile.h
+OBJS		=	canald.o
+HDRS		= 	canald.h
+
+
+# !!!!!!!
+# To enable Linux support uncomment the following line (default)
+# !!!!!!!
+CFLAGS	+= -DLINUX
+
+# !!!!!!!
+# To enable Solaris support uncomment the following line
+# This does not yet work in v2.0, anyone with Solaris want to port it??
+# !!!!!!!
+#CFLAGS	+= -DSOLARIS
+#LIBS += -lposix4
+
+# !!!!!!!
+# To enable AIX support uncomment the following line
+# !!!!!!!
+#CFLAGS += -DAIX
+
+# !!!!!!!
+# To enable FreeBSD support uncomment the following line
+# !!!!!!!
+#CFLAGS += -DFREEBSD
+  
+# !!!!!!!
+# If you don't use one of the above, uncomment this line and much with
+# the settings in src/digitemp.c and send back your changes.
+# !!!!!!!
+#CFLAGS += -DOTHER
+
+
+all:		canald
+
+# Build the Linux executable
+canald:		$(OBJS) $(HDRS) $(CANALOBJS) $(CANALHDR) $(PROJOBJS) $(PROJHDRS)
+		$(CC) $(OBJS) $(CANALOBJS) $(PROJOBJS) -o canald $(LIBS)
+
+# Clean up the object files and the sub-directory for distributions
+clean:
+		rm -f *~ $(OBJS) $(CANALOBJS) $(PROJOBJS) core *.asc 
+		rm -f perl/*~ rrdb/*~ .canalrc canal-$(VERSION)-1.spec
+		rm -rf canal-$(VERSION)
+
+# Sign the binaries using gpg (www.gnupg.org)
+# My key is available from www.vscp.org
+sign:
+		gpg -ba canald
+
+
+# Install canald into /usr/local/bin
+install:	canald
+		install -b -o root -g bin canald /usr/local/bin
+
+# Build the archive of everything
+archive:	canald clean sign
+		cd .. ; tar cvzf delivery/canald-$(VERSION).tar.gz * --exclude *.o --exclude *.exe 
+
+# Build the source distribution
+
+source:		archive
+
+dist:		archive
+
+# Build RedHat binary and source RPMs
+rpm:	dist
+	su -c "cp ../deliver/canald-$(VERSION).tar.gz /usr/src/redhat/SOURCES"
+	rm -f canald-$(VERSION)-1.spec
+	ln -s canald.spec canald-$(VERSION)-1.spec
+	su -c "rpm -ba -vv canald-$(VERSION)-1.spec"
+

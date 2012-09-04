@@ -1,0 +1,72 @@
+\hypertarget{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread}{
+\section{VSCPTCPIP\_\-RX\_\-WorkerThread Class Reference}
+\label{d2/d23/class_v_s_c_p_t_c_p_i_p___r_x___worker_thread}\index{VSCPTCPIP\_\-RX\_\-WorkerThread@{VSCPTCPIP\_\-RX\_\-WorkerThread}}
+}
+
+
+This class implement a thread that handles receive events for a link to the VSCP daemon.  
+
+
+
+
+{\ttfamily \#include $<$vscptcpif.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_ae65f8e68f3aee5fa51bdbcf0a9a78a32}{
+\hyperlink{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_ae65f8e68f3aee5fa51bdbcf0a9a78a32}{VSCPTCPIP\_\-RX\_\-WorkerThread} ()}
+\label{d2/d23/class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_ae65f8e68f3aee5fa51bdbcf0a9a78a32}
+
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\hypertarget{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a34823b6b2e375de5f45d049bb38e8afd}{
+virtual \hyperlink{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a34823b6b2e375de5f45d049bb38e8afd}{$\sim$VSCPTCPIP\_\-RX\_\-WorkerThread} ()}
+\label{d2/d23/class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a34823b6b2e375de5f45d049bb38e8afd}
+
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+virtual void $\ast$ \hyperlink{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_ab58e6b94a57d07d55a445f204a5d2f23}{Entry} ()
+\item 
+virtual void \hyperlink{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a432ba960371cce80994cf4e44a3f66b1}{OnExit} ()
+\end{DoxyCompactItemize}
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classctrl_obj_vscp_tcp_if}{ctrlObjVscpTcpIf} $\ast$ \hyperlink{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a987f7672856a7f61372c995773c3e63d}{m\_\-pCtrlObject}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class implement a thread that handles receive events for a link to the VSCP daemon. 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_ab58e6b94a57d07d55a445f204a5d2f23}{
+\index{VSCPTCPIP\_\-RX\_\-WorkerThread@{VSCPTCPIP\_\-RX\_\-WorkerThread}!Entry@{Entry}}
+\index{Entry@{Entry}!VSCPTCPIP_RX_WorkerThread@{VSCPTCPIP\_\-RX\_\-WorkerThread}}
+\subsubsection[{Entry}]{\setlength{\rightskip}{0pt plus 5cm}virtual void$\ast$ Entry (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{d2/d23/class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_ab58e6b94a57d07d55a445f204a5d2f23}
+Thread code entry point \hypertarget{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a432ba960371cce80994cf4e44a3f66b1}{
+\index{VSCPTCPIP\_\-RX\_\-WorkerThread@{VSCPTCPIP\_\-RX\_\-WorkerThread}!OnExit@{OnExit}}
+\index{OnExit@{OnExit}!VSCPTCPIP_RX_WorkerThread@{VSCPTCPIP\_\-RX\_\-WorkerThread}}
+\subsubsection[{OnExit}]{\setlength{\rightskip}{0pt plus 5cm}virtual void OnExit (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}virtual\mbox{]}}}}
+\label{d2/d23/class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a432ba960371cce80994cf4e44a3f66b1}
+called when the thread exits -\/ whether it terminates normally or is stopped with Delete() (but not when it is Kill()ed!) 
+
+\subsection{Field Documentation}
+\hypertarget{class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a987f7672856a7f61372c995773c3e63d}{
+\index{VSCPTCPIP\_\-RX\_\-WorkerThread@{VSCPTCPIP\_\-RX\_\-WorkerThread}!m\_\-pCtrlObject@{m\_\-pCtrlObject}}
+\index{m\_\-pCtrlObject@{m\_\-pCtrlObject}!VSCPTCPIP_RX_WorkerThread@{VSCPTCPIP\_\-RX\_\-WorkerThread}}
+\subsubsection[{m\_\-pCtrlObject}]{\setlength{\rightskip}{0pt plus 5cm}{\bf ctrlObjVscpTcpIf}$\ast$ {\bf m\_\-pCtrlObject}}}
+\label{d2/d23/class_v_s_c_p_t_c_p_i_p___r_x___worker_thread_a987f7672856a7f61372c995773c3e63d}
+Pointer to control object. 
+
+The documentation for this class was generated from the following file:\begin{DoxyCompactItemize}
+\item 
+D:/development/m2m/src/vscp/common/\hyperlink{vscptcpif_8h}{vscptcpif.h}\end{DoxyCompactItemize}

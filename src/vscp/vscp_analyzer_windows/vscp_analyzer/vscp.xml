@@ -1,0 +1,594 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+
+<VSCP>
+  <utils>
+    <priority>
+      <high>7</high>
+      <mid>3</mid>
+      <low>0</low>
+      <priority0>7</priority0>
+      <priority1>6</priority1>
+      <priority2>5</priority2>
+      <priority3>4</priority3>
+      <priority4>3</priority4>
+      <priority5>2</priority5>
+      <priority6>1</priority6>
+      <priority7>0</priority7>
+    </priority>
+
+    <hardmask>
+      <on>1</on>
+      <off>0</off>
+    </hardmask>
+  </utils>
+
+  <class>
+    <protocol>
+      <value>0</value>
+      <type>
+        <segctrl_heartbeat>1</segctrl_heartbeat>
+        <new_node_online>2</new_node_online>
+        <probe_ack>3</probe_ack>
+        <set_nickname>3</set_nickname>
+        <nickname_accepted>7</nickname_accepted>
+        <drop_nickname>8</drop_nickname>
+        <read_register>9</read_register>
+        <rw_response>10</rw_response>
+        <write_register>11</write_register>
+        <enter_boot_loader>12</enter_boot_loader>
+        <ack_boot_loader>13</ack_boot_loader>
+        <nack_boot_loader>14</nack_boot_loader>
+        <start_block>15</start_block>
+        <block_data>16</block_data>
+        <block_data_ack>17</block_data_ack>
+        <block_data_nack>18</block_data_nack>
+        <program_block_data>19</program_block_data>
+        <program_block_data_ack>20</program_block_data_ack>
+        <program_block_data_nack>21</program_block_data_nack>
+        <activate_new_image>22</activate_new_image>
+        <reset_device>23</reset_device>
+        <page_read>24</page_read>
+        <page_write>25</page_write>
+        <rw_page_response>26</rw_page_response>
+        <high_end_server_probe>27</high_end_server_probe>
+        <high_end_server_response>28</high_end_server_response>
+        <increment_register>29</increment_register>
+        <decrement_register>30</decrement_register>
+        <who_is_there>31</who_is_there>
+        <who_is_there_response>32</who_is_there_response>
+        <get_matrix_info>33</get_matrix_info>
+        <get_matrix_info_response>34</get_matrix_info_response>
+        <get_embedded_mdf>35</get_embedded_mdf>
+        <get_embedded_mdf_response>36</get_embedded_mdf_response>
+        <extended_page_read>37</extended_page_read>
+        <extended_page_write>38</extended_page_write>
+        <extended_page_response>39</extended_page_response>
+        <get_event_interest>40</get_event_interest>
+        <get_event_interest_response>41</get_event_interest_response>
+        <activate_new_image_ack>48</activate_new_image_ack>
+        <activate_new_image_nack>49</activate_new_image_nack>
+        <start_block_ack>50</start_block_ack>
+        <start_block_nack>51</start_block_nack>
+      </type>
+    </protocol>
+
+
+
+
+    <alarm>
+      <value>1</value>
+      <type>
+        <general>0</general>
+        <warning>1</warning>
+        <alarm>2</alarm>
+        <sound>3</sound>
+        <light>4</light>
+        <power>5</power>
+        <emergency_stop>6</emergency_stop>
+        <emergency_pause>7</emergency_pause>
+        <emergency_reset>8</emergency_reset>
+        <emergency_resume>9</emergency_resume>
+      </type>
+    </alarm>
+
+
+    <security>
+      <value>2</value>
+      <type>
+        <general>0</general>
+        <motion>1</motion>
+      </type>
+    </security>
+
+    <measurement>
+      <value>10</value>
+      <type>
+        <general>0</general>
+        <count>1</count>
+        <length>2</length>
+        <mass>3</mass>
+        <time>4</time>
+        <electric_current>5</electric_current>
+        <temperature>6</temperature>
+        <amount_of_substance>7</amount_of_substance>
+        <intensity_of_light>8</intensity_of_light>
+        <frequency>9</frequency>
+        <radioactivity>10</radioactivity>
+        <force>11</force>
+        <pressure>12</pressure>
+        <energy>13</energy>
+        <power>14</power>
+        <electrical_charge> 15 </electrical_charge>
+        <electrical_potential> 16 </electrical_potential>
+        <electrical_capacitance> 17 </electrical_capacitance>
+        <electrical_recistance> 18 </electrical_recistance>
+        <electrical_conductance> 19 </electrical_conductance>
+        <magnetic_field_strength> 20 </magnetic_field_strength>
+        <magnetic_flux> 21 </magnetic_flux>
+        <magnetic_flux_density> 22 </magnetic_flux_density>
+        <inductance> 23 </inductance>
+        <flux_of_light> 24 </flux_of_light>
+        <illuminance> 25 </illuminance>
+        <radiation_dose> 26 </radiation_dose>
+        <catalytic_acitivity> 27 </catalytic_acitivity>
+        <volume> 28 </volume>
+        <sound_intensity> 29 </sound_intensity>
+        <angle> 30 </angle>
+        <position> 31 </position>
+        <speed> 32 </speed>
+        <acceleration> 33 </acceleration>
+        <tension> 34 </tension>
+        <humidity> 35	 </humidity>
+        <flow> 36 </flow>
+        <thermal_resistance> 37 </thermal_resistance>
+        <refractive_power> 38 </refractive_power>
+        <dynamic_viscosity> 39 </dynamic_viscosity>
+        <sound_impedance> 40 </sound_impedance>
+        <sound_resistance> 41 </sound_resistance>
+        <electric_elastance> 42 </electric_elastance>
+        <luminous_energy> 43 </luminous_energy>
+        <luminance> 44 </luminance>
+        <chemical_concentration> 45 </chemical_concentration>
+        <absorbed_dose> 46 </absorbed_dose>
+        <dose_eqvivalent> 47 </dose_eqvivalent>
+        <dewpoint> 49 </dewpoint>
+        <relative_level> 50 </relative_level>
+        <altitude> 51 </altitude>
+        <area> 52 </area>
+        <radiant_intensity> 53 </radiant_intensity>
+        <radiance> 54 </radiance>
+        <irradiance> 55 </irradiance>
+        <spectral_radiance> 56 </spectral_radiance>
+        <spectral_irradiance> 57 </spectral_irradiance>
+      </type>
+    </measurement>
+
+
+    <information>
+      <value>20</value>
+      <type>
+        <general>0</general>
+        <button>1</button>
+        <mouse>2</mouse>
+        <on>3</on>
+        <off>4</off>
+        <alive>5</alive>
+        <terminating>6</terminating>
+        <opened>7</opened>
+        <closed>8</closed>
+        <node_heartbeat>9</node_heartbeat>
+        <below_limit>10</below_limit>
+        <above_limit>11</above_limit>
+        <pulse>12</pulse>
+        <error>13</error>
+        <resumed>14</resumed>
+        <paused>15</paused>
+        <good_morning>17</good_morning>
+        <good_day>18</good_day>
+        <good_afternoon>19</good_afternoon>
+        <good_evening>20</good_evening>
+        <good_night>21</good_night>
+        <see_you_soon>22</see_you_soon>
+        <goodbye>23</goodbye>
+        <stop>24</stop>
+        <start>25</start>
+        <reset_completed>26</reset_completed>
+        <interrupted>27</interrupted>
+        <preparing_to_sleep>28</preparing_to_sleep>
+        <woken_up>29</woken_up>
+        <dusk>30</dusk>
+        <dawn>31</dawn>
+        <active>32</active>
+        <inactive>33</inactive>
+        <busy>34</busy>
+        <idle>35</idle>
+        <stream_data>36</stream_data>
+        <token_activity>37</token_activity>
+        <stream_data_with_zone>38</stream_data_with_zone>
+        <confirm>39</confirm>
+        <level_changed>40</level_changed>
+        <warning>41</warning>
+        <state>42</state>
+        <action_trigger>43</action_trigger>
+        <sunrise>44</sunrise>
+        <sunset>45</sunset>
+        <start_of_record>46</start_of_record>
+        <end_of_record>47</end_of_record>
+        <preset_active>48</preset_active>
+        <detect>49</detect>
+        <overflow>50</overflow>
+      </type>
+    </information>
+
+
+
+    <control>
+      <value>30</value>
+      <type>
+        <control_general>0</control_general>
+        <control_mute>1</control_mute>
+        <control_all_lamps>2</control_all_lamps>
+        <control_open>3</control_open>
+        <control_close>4</control_close>
+        <control_turnon>5</control_turnon>
+        <control_turnoff>6</control_turnoff>
+        <control_start>7</control_start>
+        <control_stop>8</control_stop>
+        <control_reset>9</control_reset>
+        <control_interrupt>10</control_interrupt>
+        <control_sleep>11</control_sleep>
+        <control_wakeup>12</control_wakeup>
+        <control_resume>13</control_resume>
+        <control_pause>14</control_pause>
+        <control_activate>15</control_activate>
+        <control_deactivate>16</control_deactivate>
+        <control_dim_lamps>20</control_dim_lamps>
+        <control_change_channel>21</control_change_channel>
+        <control_change_level>22</control_change_level>
+        <control_relative_change_level>23</control_relative_change_level>
+        <control_measurement_request>24</control_measurement_request>
+        <control_stream_data>25</control_stream_data>
+        <control_sync>26</control_sync>
+        <control_zoned_stream_data>27</control_zoned_stream_data>
+        <control_set_preset>28</control_set_preset>
+      </type>
+    </control>
+
+    <data>
+      <value>15</value>
+      <type>
+        <class>15</class>
+        <general>0</general>
+        <io>1</io>
+        <ad>2</ad>
+        <da>3</da>
+        <relative_strength>4</relative_strength>
+        <signal_level>5</signal_level>
+        <signal_quality>6</signal_quality>
+      </type>
+    </data>
+
+    <multimedia>
+      <value>40</value>
+      <type>
+        <general>0</general>
+        <playback>1</playback>
+        <navigator_key_eng>2</navigator_key_eng>
+        <adjust_contrast>3</adjust_contrast>
+        <adjust_focus>4</adjust_focus>
+        <adjust_tint>5</adjust_tint>
+        <adjust_colour_balance>6</adjust_colour_balance>
+        <adjust_brightness>7</adjust_brightness>
+        <adjust_hue>8</adjust_hue>
+        <adjust_bass>9</adjust_bass>
+        <adjust_treble>10</adjust_treble>
+        <adjust_master_volume>11</adjust_master_volume>
+        <adjust_front_volume>12</adjust_front_volume>
+        <adjust_centre_volume>13</adjust_centre_volume>
+        <adjust_rear_volume>14</adjust_rear_volume>
+        <adjust_side_volume>15</adjust_side_volume>
+        <adjust_select_disk>20</adjust_select_disk>
+        <adjust_select_track>21</adjust_select_track>
+        <adjust_select_album>22</adjust_select_album>
+        <adjust_select_channel>23</adjust_select_channel>
+        <adjust_select_page>24</adjust_select_page>
+        <adjust_select_chapter>25</adjust_select_chapter>
+        <adjust_select_screen_format>26</adjust_select_screen_format>
+        <adjust_select_input_source>27</adjust_select_input_source>
+        <adjust_select_output>28</adjust_select_output>
+        <record>29</record>
+        <set_recording_volume>30</set_recording_volume>
+        <tivo_function>40</tivo_function>
+        <get_current_title>50</get_current_title>
+        <set_position>51</set_position>
+        <get_media_info>52</get_media_info>
+        <remove_item>53</remove_item>
+        <remove_all_items>54</remove_all_items>
+        <save_album>55</save_album>
+        <control>60</control>
+        <control_response>61</control_response>
+      </type>
+    </multimedia>
+
+
+
+    <aol>
+      <value>50</value>
+      <type>
+        <general>0</general>
+        <unplugged_power>1</unplugged_power>
+        <unplugged_lan>2</unplugged_lan>
+        <chassis_intrusion>3</chassis_intrusion>
+        <processor_removal>4</processor_removal>
+        <environment_error>5</environment_error>
+        <high_temperature>6</high_temperature>
+        <fan_speed>7</fan_speed>
+        <voltage_fluctuations>8</voltage_fluctuations>
+        <os_error>9</os_error>
+        <power_on_error>10</power_on_error>
+        <system_hung>11</system_hung>
+        <component_failure>12</component_failure>
+        <reboot_upon_failure>13</reboot_upon_failure>
+        <repair_operating_system>14</repair_operating_system>
+        <update_bios_image>15</update_bios_image>
+        <update_diagnostic_procedure>16</update_diagnostic_procedure>
+      </type>
+    </aol>
+
+    <phone>
+      <value>100</value>
+      <type>
+        <general>0</general>
+        <incoming_call>1</incoming_call>
+        <outgoing_call>2</outgoing_call>
+        <ring>3</ring>
+        <answere>4</answere>
+        <hangup>5</hangup>
+        <giveup>6</giveup>
+        <transfer>7</transfer>
+        <database_info>8</database_info>
+      </type>
+    </phone>
+
+
+    <display>
+      <value>102</value>
+      <type>
+        <general>0</general>
+        <diplay_clear_display>1</diplay_clear_display>
+        <diplay_position_cursor>2</diplay_position_cursor>
+        <diplay_write_display>3</diplay_write_display>
+        <diplay_write_buffer>4</diplay_write_buffer>
+        <diplay_show_buffer>5</diplay_show_buffer>
+        <diplay_set_buffer_param>6</diplay_set_buffer_param>
+        <diplay_show_text>32</diplay_show_text>
+        <diplay_show_led>48</diplay_show_led>
+        <diplay_show_led_color>49</diplay_show_led_color>
+      </type>
+    </display>
+
+
+    <remote>
+      <value>110</value>
+      <type>
+        <general>0</general>
+        <rc5>1</rc5>
+        <sony12>2</sony12>
+        <lirc>32</lirc>
+        <vscp>48</vscp>
+      </type>
+    </remote>
+
+
+    <onewire>
+      <value>200</value>
+      <type>
+        <general>0</general>
+        <new_id>1</new_id>
+        <convert>2</convert>
+        <read_rom>3</read_rom>
+        <match_rom>4</match_rom>
+        <skip_rom>5</skip_rom>
+        <search_rom>6</search_rom>
+        <conditional_search_rom>7</conditional_search_rom>
+        <program>8</program>
+        <overdrive_skip_rom>9</overdrive_skip_rom>
+        <overdrive_match_rom>10</overdrive_match_rom>
+        <overdrive_read_memory>11</overdrive_read_memory>
+        <overdrive_write_memory>12</overdrive_write_memory>
+      </type>
+    </onewire>
+
+    <X10>
+      <value>201</value>
+      <type>
+        <general>0</general>
+        <standard_message_receive>1</standard_message_receive>
+        <extended_message_receive>2</extended_message_receive>
+        <standard_message_send>3</standard_message_send>
+        <extended_message_send>4</extended_message_send>
+        <simple_message>5</simple_message>
+      </type>
+    </X10>
+
+    <LON>
+      <value>202</value>
+      <type>
+        <general>0</general>
+      </type>
+    </LON>
+
+    <KNX>
+      <value>203</value>
+      <type>
+        <general>0</general>
+      </type>
+    </KNX>
+
+<!--
+    <todo>
+      <value>xx</value>
+      <type>
+        <general>0</general>
+      </type>
+    </todo>
+
+
+    <todo>
+      <value>xx</value>
+      <type>
+        <general>0</general>
+      </type>
+    </todo>
+
+    <todo>
+      <value>xx</value>
+      <type>
+        <general>0</general>
+      </type>
+    </todo>
+
+-->
+
+  </class>
+</VSCP>
+
+
+<!--
+class vscp_class_KNX
+{
+
+
+class vscp_class_SNAP
+{
+public int CLASS = 204;
+// class 204 (0xCC) - SNAP
+public int GENERAL = 0;
+}
+
+class vscp_class_CBUS
+{
+public int CLASS = 205;
+// class 205 (0xCD) - CBUS
+public int GENERAL = 0;
+}
+
+class vscp_class_GPS
+{
+public int CLASS = 206;
+// class 206 (0xCE) - GPS
+public int GENERAL = 0;
+public int POSITION = 1;
+public int SATELLITES = 2;
+}
+
+
+class vscp_class_wirless
+{
+public int CLASS = 212;
+// class 212 (0xD4) - WIRELESS
+public int GENERAL = 0;
+public int GSM_CELL = 1;
+}
+
+class vscp_class_log
+{
+public int CLASS = 509;
+// class 509 (0x1FD) - LOG
+public int GENERAL = 0;
+public int MESSAGE = 1;
+public int START = 2;
+public int STOP = 3;
+public int LEVEL = 4;
+}
+
+class vscp_class_laboratory
+{
+public int CLASS = 510;
+// class 510 (0x1FE) - LABORATORY
+public int GENERAL = 0;
+
+}
+
+class vscp_class_local
+{
+public int CLASS = 511;
+// class 511 (0x1FF) - LOCAL
+public int GENERAL = 0;
+
+}
+
+
+
+class vscp_other
+{
+
+public int UNDEFINED = 0;
+
+// VSCP Protocol Functionality
+
+/////////////////////////////////////////////////////////////////////////////////
+////				Level II
+/////////////////////////////////////////////////////////////////////////////////
+
+//// Level II Protocol functionality Class=1024 (0x400)
+//public  int VSCP2_TYPE_PROTOCOL_GENERAL = 0;
+//public  int VSCP2_TYPE_PROTOCOL_READ_REGISTER = 1;
+//public  int VSCP2_TYPE_PROTOCOL_WRITE_REGISTER = 2;
+//public  int VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE = 3;
+//public  int VSCP2_TYPE_PROTOCOL_CONFIG_READ_REQUEST = 4;
+//public  int VSCP2_TYPE_PROTOCOL_CONFIG_READ_RESPONSE = 5;
+//public  int VSCP2_TYPE_PROTOCOL_CONFIG_CHANGED = 6;
+//public  int VSCP2_TYPE_PROTOCOL_CONFIG_UPDATE_REQUEST = 7;
+//public  int VSCP2_TYPE_PROTOCOL_CONFIG_UPDATE_RESPONSE = 8 ;
+//public  int VSCP2_TYPE_PROTOCOL_CONFIG_PARAM_REQUEST = 9;
+//public  int VSCP2_TYPE_PROTOCOL_CONFIG_PARAM_RESPONSE = 10;
+
+//// Level II Control functionality Class=1025 (0x401)
+//public  int VSCP2_TYPE_CONTROL_GENERAL = 0;
+
+//// Level II Information functionality Class=1026 (0x402)
+//public  int VSCP2_TYPE_INFORMATION_GENERAL = 0;
+//public  int VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY = 1;
+
+//// Level II Text to speech functionality Class=1028 (0x404)
+//public  int VSCP2_TYPE_TEXT2SPEECH_GENERAL = 0;
+//public  int VSCP2_TYPE_TEXT2SPEECH_TALK = 1;
+
+//// Level II Custom functionality Class=1029 (0x405)
+//public  int VSCP2_TYPE_CUSTOM_GENERAL = 0;
+
+//// Level II Display functionality Class=1030 (0x406)
+//public  int VSCP2_TYPE_DISPLAY_GENERAL = 0;
+
+//// Level II VSCPD daemon functionality Class=65535 (0xFFFF)
+//public  int VSCP2_TYPE_VSCPD_GENERAL = 0;
+//public  int VSCP2_TYPE_VSCPD_LOOP = 1;
+//public  int VSCP2_TYPE_VSCPD_PAUSE = 3;
+//public  int VSCP2_TYPE_VSCPD_ACTIVATE = 4;
+//public  int VSCP2_TYPE_VSCPD_SECOND = 5;
+//public  int VSCP2_TYPE_VSCPD_MINUTE = 6;
+//public  int VSCP2_TYPE_VSCPD_HOUR = 7;
+//public  int VSCP2_TYPE_VSCPD_NOON = 8;
+//public  int VSCP2_TYPE_VSCPD_MIDNIGHT = 9;
+//public  int VSCP2_TYPE_VSCPD_WEEK = 11;
+//public  int VSCP2_TYPE_VSCPD_MONTH = 12;
+//public  int VSCP2_TYPE_VSCPD_QUARTER = 13;
+//public  int VSCP2_TYPE_VSCPD_YEAR = 14;
+//public  int VSCP2_TYPE_VSCPD_RANDOM_MINUTE = 15;
+//public  int VSCP2_TYPE_VSCPD_RANDOM_HOUR = 16;
+//public  int VSCP2_TYPE_VSCPD_RANDOM_DAY = 17;
+//public  int VSCP2_TYPE_VSCPD_RANDOM_WEEK = 18;
+//public  int VSCP2_TYPE_VSCPD_RANDOM_MONTH = 19;
+//public  int VSCP2_TYPE_VSCPD_RANDOM_YEAR = 20;
+//public  int VSCP2_TYPE_VSCPD_DUSK = 21;
+//public  int VSCP2_TYPE_VSCPD_DAWN = 22;
+//public  int VSCP2_TYPE_VSCPD_STARTING_UP = 23;
+//public  int VSCP2_TYPE_VSCPD_SHUTTING_DOWN = 24;
+//public  int VSCP2_TYPE_VSCPD_TIMER_STARTED = 25;
+//public  int VSCP2_TYPE_VSCPD_TIMER_PAUSED = 26;
+//public  int VSCP2_TYPE_VSCPD_TIMER_RESUMED = 27;
+//public  int VSCP2_TYPE_VSCPD_TIMER_STOPPED = 28;
+//public  int VSCP2_TYPE_VSCPD_TIMER_ELLAPSED = 29;->-->
+

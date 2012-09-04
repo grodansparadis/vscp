@@ -1,0 +1,55 @@
+\hypertarget{canalsuperwrapper_8h}{
+\section{D:/development/m2m/src/vscp/common/canalsuperwrapper.h File Reference}
+\label{d5/dee/canalsuperwrapper_8h}\index{D:/development/m2m/src/vscp/common/canalsuperwrapper.h@{D:/development/m2m/src/vscp/common/canalsuperwrapper.h}}
+}
+
+
+Wrapping class for VSCP interfaces.  
+
+
+{\ttfamily \#include $<$string.h$>$}\par
+{\ttfamily \#include \char`\"{}devitem.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}dllwrapper.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}vscptcpif.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}guid.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}../../common/dllist.h\char`\"{}}\par
+{\ttfamily \#include \char`\"{}canal.h\char`\"{}}\par
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+class \hyperlink{class_c_canal_super_wrapper}{CCanalSuperWrapper}
+\begin{DoxyCompactList}\small\item\em Encapsulates the CANAL interface and the VSCP tcp/ip interface. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Defines}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{canalsuperwrapper_8h_ab84c2b7e2bbd7f2dfb502765f78cc1a1}{
+\#define {\bfseries AFX\_\-CANALSUPERWRAPPER\_\-H\_\-\_\-A908F21A\_\-317D\_\-4E74\_\-9308\_\-18D7DD6B7D49\_\-\_\-INCLUDED\_\-}}
+\label{d5/dee/canalsuperwrapper_8h_ab84c2b7e2bbd7f2dfb502765f78cc1a1}
+
+\item 
+\hypertarget{canalsuperwrapper_8h_aa29ad1f2d37c1b6cc7bc05bf0a29502e}{
+\#define \hyperlink{canalsuperwrapper_8h_aa29ad1f2d37c1b6cc7bc05bf0a29502e}{BUILD\_\-SWIG}}
+\label{d5/dee/canalsuperwrapper_8h_aa29ad1f2d37c1b6cc7bc05bf0a29502e}
+
+\begin{DoxyCompactList}\small\item\em Build swig code if defined. \end{DoxyCompactList}\item 
+\hypertarget{canalsuperwrapper_8h_a9585f0c0e9ec30b134c1c37b1c847d29}{
+\#define \hyperlink{canalsuperwrapper_8h_a9585f0c0e9ec30b134c1c37b1c847d29}{USE\_\-DLL\_\-INTERFACE}~0}
+\label{d5/dee/canalsuperwrapper_8h_a9585f0c0e9ec30b134c1c37b1c847d29}
+
+\begin{DoxyCompactList}\small\item\em Cnstant that defines the CANAL interface. \end{DoxyCompactList}\item 
+\hypertarget{canalsuperwrapper_8h_adbd2387ded57d35675c74c3a6df594d8}{
+\#define \hyperlink{canalsuperwrapper_8h_adbd2387ded57d35675c74c3a6df594d8}{USE\_\-TCPIP\_\-INTERFACE}~1}
+\label{d5/dee/canalsuperwrapper_8h_adbd2387ded57d35675c74c3a6df594d8}
+
+\begin{DoxyCompactList}\small\item\em Constat that defines the TCP/IP interface. \end{DoxyCompactList}\item 
+\hypertarget{canalsuperwrapper_8h_ab99ded389af74001a6298fc9e44e74e5}{
+\#define \hyperlink{canalsuperwrapper_8h_ab99ded389af74001a6298fc9e44e74e5}{MAX\_\-PATH}~255}
+\label{d5/dee/canalsuperwrapper_8h_ab99ded389af74001a6298fc9e44e74e5}
+
+\begin{DoxyCompactList}\small\item\em Maximum path length (if nit defined by the OS if any. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Wrapping class for VSCP interfaces. This class ecapsulates both the CANAL dll and the VSCP TCP/IP interface and makes it possible to use the same code to read/write both CANAL messages and VSCP events. \begin{DoxyAuthor}{Author}
+Ake Hedman $<$\href{mailto:akhe@eurosource.se}{\tt akhe@eurosource.se}$>$, eurosource, Sweden 
+\end{DoxyAuthor}

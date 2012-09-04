@@ -1,0 +1,1040 @@
+Archive member included because of file (symbol)
+
+c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+                              ./src/uart.o (__udivsi3)
+c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+                              ./src/i2c.o (__modsi3)
+c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+                              c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o) (__div0)
+c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+                              ./src/flash.o (memcpy)
+
+Allocating common symbols
+Common symbol       size              file
+
+vscp_omsg           0x10              ./src/vscp.o
+vscp_node_substate  0x1               ./src/vscp.o
+vscp_probe_address  0x1               ./src/vscp.o
+ENUMXOVERTYPE       0x4               ./src/buff.o
+vscp_initbtncnt     0x1               ./src/vscp.o
+vscp_statuscnt      0x1               ./src/vscp.o
+ENUMDELATUNIT       0x4               ./src/buff.o
+UART1Buffer         0x100             ./src/uart.o
+data_buf            0x200             ./src/upload.o
+vscp_initledfunc    0x1               ./src/vscp.o
+eeprom_segmentCRC   0x1               ./src/vscp_main.o
+UART0Buffer         0x100             ./src/uart.o
+vscp_errorcnt       0x1               ./src/vscp.o
+ENUMPAREQTYPE       0x4               ./src/buff.o
+UART1Status         0x4               ./src/uart.o
+verify_buf          0x200             ./src/upload.o
+ENUMDYNEQTYPE       0x4               ./src/buff.o
+vscp_imsg           0x10              ./src/vscp.o
+MsgBuf_RX2          0x80              ./src/can.o
+vscp_node_state     0x1               ./src/vscp.o
+vscp_alarmstatus    0x1               ./src/vscp.o
+seconds             0x1               ./src/vscp_main.o
+vscp_nickname       0x1               ./src/vscp.o
+CAN1RxDone          0x4               ./src/can.o
+vscp_page_select    0x2               ./src/vscp.o
+crcTable            0x200             ./src/crc.o
+measurement_clock   0x4               ./src/vscp_main.o
+CAN2RxDone          0x4               ./src/can.o
+minutes             0x1               ./src/vscp_main.o
+LOCKLEVEL           0x4               ./src/buff.o
+MsgBuf_RX1          0x80              ./src/can.o
+UART0Status         0x4               ./src/uart.o
+vscp_timer          0x2               ./src/vscp.o
+hours               0x1               ./src/vscp_main.o
+TmrTbl              0xc               ./src/tmr.o
+CANStatus           0x4               ./src/can.o
+vscp_probe_cnt      0x1               ./src/vscp.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+flash            0x00000000         0x00020000         xr
+ram              0x40000000         0x00002000         rw
+ramstack         0x7fe00000         0x00000800         rw
+usbram           0x7fd00000         0x00002000         rw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+LOAD ./src/main.o
+LOAD ./src/handlers.o
+LOAD ./src/init_cpu.o
+LOAD ./src/led.o
+LOAD ./src/vic.o
+LOAD ./src/utils.o
+LOAD ./src/uart.o
+LOAD ./src/key.o
+LOAD ./src/evt.o
+LOAD ./src/buff.o
+LOAD ./src/tmr.o
+LOAD ./src/flash.o
+LOAD ./src/upload.o
+LOAD ./src/ssp.o
+LOAD ./src/spiflash.o
+LOAD ./src/can.o
+LOAD ./src/vscp.o
+LOAD ./src/vscp_main.o
+LOAD ./src/vscp_events.o
+LOAD ./src/i2c.o
+LOAD ./src/emem.o
+LOAD ./src/crc.o
+LOAD C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+START GROUP
+LOAD c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a
+LOAD c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a
+LOAD c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libc.a
+END GROUP
+                0x00000000                . = 0x0
+
+startup         0x00000000       0xf4
+ *(.startup)
+ .startup       0x00000000       0xf4 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+                0x00000034                _reset_handler
+                0x000000f4                . = ALIGN (0x4)
+
+prog            0x000000f4     0x5214
+ *(.text)
+ .text          0x000000f4      0x214 ./src/main.o
+                0x000000f4                IRQ_Timer1
+                0x00000198                open_timer1
+                0x00000284                main
+                0x00000188                GetFreeRunning
+                0x000001e8                open_tasks
+ .text          0x00000308       0x14 ./src/handlers.o
+                0x0000030c                SWI_Handler
+                0x00000308                Undef_Handler
+                0x00000314                DAbt_Handler
+                0x00000318                FIQ_Handler
+                0x00000310                PAbt_Handler
+ .text          0x0000031c      0x1b4 ./src/init_cpu.o
+                0x0000031c                init_wait
+                0x00000388                init_clocks
+                0x0000045c                init_mam
+                0x000004cc                exit_main
+                0x0000048c                init_pins
+                0x00000488                init_cpu
+                0x000004c8                init_modules
+ .text          0x000004d0      0x434 ./src/led.o
+                0x000004d0                init_led
+                0x000007a4                led_blinkoffall
+                0x000007d4                led_blinkonall
+                0x000007fc                exec_led
+                0x00000508                led_on
+                0x0000068c                open_led
+                0x00000704                led_blinkon
+                0x0000074c                led_onall
+                0x000008f4                test_led
+                0x0000052c                led_off
+                0x00000724                led_blinkoff
+                0x00000778                led_offall
+ .text          0x00000904       0xac ./src/vic.o
+                0x00000984                restoreIRQ
+                0x00000940                install_irq
+                0x00000904                init_vic
+                0x00000974                enableIRQ
+                0x000009a0                disableIRQ
+ .text          0x000009b0       0x80 ./src/utils.o
+                0x000009ec                print_welcomemessage
+                0x000009b0                delay
+ .text          0x00000a30      0x6b8 ./src/uart.o
+                0x00000ccc                uart_send
+                0x00000b8c                IRQ_Uart1
+                0x00000fd8                init_uart
+                0x00000d80                get_char
+                0x00000d9c                PrintString
+                0x00000f50                exec_uart
+                0x000010d4                open_uart
+                0x00000dd4                send_4bit_to_uart0
+                0x00000ee8                PrintInt
+                0x00000a30                IRQ_Uart0
+                0x00000d64                put_char
+ .text          0x000010e8      0x368 ./src/key.o
+                0x000012a0                ReadKey
+                0x000011f8                ResetKeyPrescaler
+                0x00001268                GetRelAfterHold
+                0x0000120c                ClearKey
+                0x000011b8                exec_key
+                0x00001284                SetRelAfterHold
+                0x00001160                read_sw
+                0x000010e8                open_key
+                0x00001264                test_key
+                0x000011e8                GetKey
+ .text          0x00001450        0xc ./src/evt.o
+                0x00001450                EventKeyProcess
+                0x00001458                EventProcess
+                0x00001454                EventPotProcess
+ .text          0x0000145c      0x17c ./src/buff.o
+                0x000015a0                open_rdwr
+                0x000015c4                open_io
+                0x00001590                exec_rdwr
+                0x0000145c                open_wr_buff
+                0x00001560                exec_wr_buff
+                0x000014e0                exec_rd_buff
+                0x000015b4                exec_io
+                0x000014b4                store_event
+ .text          0x000015d8       0xe4 ./src/tmr.o
+                0x00001674                exec_tmr
+                0x00001630                TmrStop
+                0x000015d8                open_tmr
+                0x00001618                TmrStart
+                0x0000165c                TmrChk
+                0x00001644                TmrReset
+                0x00001600                TmrSetT
+ .text          0x000016bc      0x4cc ./src/flash.o
+                0x0000187c                flashErase
+                0x00001844                execute_reset
+                0x000017f8                save_nickname_upgrade
+                0x00001b54                write_flash_signature
+                0x000016f4                flashInit
+                0x00001824                execute_user_code
+                0x000017a8                user_code_present
+                0x00001900                flashWrite
+                0x000016d0                flashBlank
+ .text          0x00001b88      0x68c ./src/upload.o
+                0x00001ed0                HandleProgramBlock
+                0x00001e70                HandleActivateNewImage
+                0x00002204                open_upload
+                0x00002044                HandleBlockData
+                0x00001ba8                SpiFlashBlockProgram
+                0x00001dc0                InternalFlashBlockProgram
+                0x00001b8c                ResetChecksum
+                0x00002104                HandleStartBlock
+                0x00001b88                exec_upload
+ .text          0x00002214      0x2b8 ./src/ssp.o
+                0x00002214                SSP0Send
+                0x000022b8                SSP0ClrCS
+                0x000023d8                SSP0Handler
+                0x000022fc                SSP0Init
+                0x000022a4                SSP0SetCS
+                0x00002264                SSP0Receive
+                0x000022cc                SSP0ClrFIFO
+ .text          0x000024cc      0x304 ./src/spiflash.o
+                0x000026b4                spiflash_erase
+                0x000025e8                spiflash_read
+                0x000024dc                write_enable
+                0x00002514                write_in_progress
+                0x00002754                spiflash_identify
+                0x000024d0                clear_fifo
+                0x00002574                spiflash_write
+                0x00002710                spiflash_chiperase
+                0x000024cc                open_spiflash
+ .text          0x000027d0      0x8dc ./src/can.o
+                0x00002cbc                can_outmsg
+                0x00002b74                can_isr_rx2
+                0x00002b04                can_isr_rx1
+                0x0000304c                open_can
+                0x00002fc0                irq_can
+                0x00002ec4                can_sendmessage
+                0x00002864                can_setafcmode
+                0x00002be4                can_receivemessage
+                0x000028f0                can_setmode
+                0x000029a4                can_loadacf
+                0x000027d0                init_can
+ .text          0x000030ac      0xa14 ./src/vscp.o
+                0x000030ac                vscp_error
+                0x000030c0                vscp_rcv_set_nickname
+                0x00003244                vscp_sendEvent
+                0x00003690                vscp_probe
+                0x0000316c                vscp_getEvent
+                0x00003598                vscp_rcv_new_node_online
+                0x000039fc                vscp_rcv_preactive
+                0x000031ec                getVSCPFrame
+                0x000038e8                vscp_init
+                0x000032b0                vscp_rcv_writereg
+                0x000038b0                vscp_check_pstorage
+                0x000033a8                vscp_rcv_readreg
+                0x000039b0                vscp_rcv_drop_nickname
+                0x0000310c                vscp_rcv_heartbeat
+                0x00003654                sendVSCPFrame
+                0x00003604                vscp_active
+ .text          0x00003ac0      0x7e4 ./src/vscp_main.o
+                0x00003c18                vscp_resetBootLoaderMode
+                0x00003b20                vscp_getUserID
+                0x00003d20                exec_vscp
+                0x00003b84                vscp_getSegmentCRC
+                0x00003b34                vscp_setUserID
+                0x00003d08                open_vscp
+                0x00003ae0                vscp_getMajorVersion
+                0x00003be0                vscp_setNickname
+                0x00003ac0                init_app_ram
+                0x00003ba4                vscp_setControlByte
+                0x00003ad8                wait
+                0x00003ae8                vscp_getMinorVersion
+                0x00003b38                vscp_getManufacturerId
+                0x00003ba8                vscp_getControlByte
+                0x00003b7c                vscp_getBufferSize
+                0x00003b0c                vscp_getMDF_URL
+                0x00003adc                doWork
+                0x00003b4c                vscp_setManufacturerId
+                0x00003b6c                vscp_getBootLoaderMode
+                0x00003ad4                init_app_eeprom
+                0x00003b58                vscp_setBootLoaderMode
+                0x00003cb0                sendCANFrame
+                0x00003bb0                vscp_getPageSelect
+                0x00003b94                vscp_setSegmentCRC
+                0x00003bbc                vscp_getNickname
+                0x00003c3c                getCANFrame
+                0x00003af0                vscp_getSubMinorVersion
+                0x00003bb8                vscp_setPageSelect
+                0x00003af8                vscp_getGUID
+                0x00003b50                vscp_getBootLoaderAlgorithm
+ .text          0x000042a4       0xd8 ./src/vscp_events.o
+                0x000042a4                doMeasurement
+                0x000042e0                readControlState
+                0x00004310                sendHeartBeat
+ .text          0x0000437c      0x6b8 ./src/i2c.o
+                0x00004a24                open_i2c
+                0x00004844                E2BlockWrite
+                0x00004738                E2Write
+                0x000047ac                E2Read
+                0x0000455c                m24xx_set_addr
+                0x000044c0                i2c_lpc_init
+                0x000048fc                E2BlockRead
+ .text          0x00004a34      0x1e8 ./src/emem.o
+                0x00004a34                EditWriteOpCode
+                0x00004ac0                EditReadConfig
+                0x00004a5c                EditCheckMagic
+                0x00004ad8                EditWriteMagic
+                0x00004b04                test_emem
+                0x00004a48                EditReadOpCode
+                0x00004a98                EditReadMagic
+                0x00004bbc                EditWriteConfig
+                0x00004bec                EditMemoryInit
+ .text          0x00004c1c      0x12c ./src/crc.o
+                0x00004c1c                crcSlow
+                0x00004c90                crcInit
+                0x00004cec                crcFast
+ .text          0x00004d48        0x0 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .text          0x00004d48      0x110 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+                0x00004d48                __udivsi3
+                0x00004d48                __aeabi_uidiv
+                0x00004e40                __aeabi_uidivmod
+ .text          0x00004e58       0xe4 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+                0x00004e58                __modsi3
+ .text          0x00004f3c        0x4 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+                0x00004f3c                __aeabi_ldiv0
+                0x00004f3c                __div0
+                0x00004f3c                __aeabi_idiv0
+ .text          0x00004f40       0xa8 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+                0x00004f40                memcpy
+ *(.rodata)
+ .rodata        0x00004fe8       0x34 ./src/utils.o
+                0x00004fe8                WelcomeString
+ .rodata        0x0000501c       0x48 ./src/can.o
+                0x00005044                gkCAN_ExtGroupSection
+                0x0000501c                gkCAN_ExtIndividualSection
+ .rodata        0x00005064       0x44 ./src/vscp_main.o
+                0x0000508b                vscp_deviceGUID
+                0x00005064                vscp_deviceURL
+                0x0000509b                vscp_userID
+                0x000050a0                vscp_ManufacturerDeviceID
+ *(.rodata*)
+ .rodata.str1.4
+                0x000050a8        0x3 ./src/utils.o
+                                  0x4 (size before relaxing)
+ *fill*         0x000050ab        0x1 00000000
+ .rodata.str1.4
+                0x000050ac       0x79 ./src/upload.o
+                                 0x7c (size before relaxing)
+ *fill*         0x00005125        0x3 00000000
+ .rodata.str1.4
+                0x00005128       0x60 ./src/can.o
+ .rodata.str1.4
+                0x00005188       0x5c ./src/vscp.o
+ .rodata.str1.4
+                0x000051e4       0xb5 ./src/vscp_main.o
+                                 0xd4 (size before relaxing)
+ *fill*         0x00005299        0x3 00000000
+ .rodata.str1.4
+                0x0000529c       0x6c ./src/emem.o
+ *(glue_7)
+ *(glue_7t)
+
+.glue_7         0x00005308        0x0
+ .glue_7        0x00005308        0x0 ./src/main.o
+ .glue_7        0x00005308        0x0 ./src/handlers.o
+ .glue_7        0x00005308        0x0 ./src/init_cpu.o
+ .glue_7        0x00005308        0x0 ./src/led.o
+ .glue_7        0x00005308        0x0 ./src/vic.o
+ .glue_7        0x00005308        0x0 ./src/utils.o
+ .glue_7        0x00005308        0x0 ./src/uart.o
+ .glue_7        0x00005308        0x0 ./src/key.o
+ .glue_7        0x00005308        0x0 ./src/evt.o
+ .glue_7        0x00005308        0x0 ./src/buff.o
+ .glue_7        0x00005308        0x0 ./src/tmr.o
+ .glue_7        0x00005308        0x0 ./src/flash.o
+ .glue_7        0x00005308        0x0 ./src/upload.o
+ .glue_7        0x00005308        0x0 ./src/ssp.o
+ .glue_7        0x00005308        0x0 ./src/spiflash.o
+ .glue_7        0x00005308        0x0 ./src/can.o
+ .glue_7        0x00005308        0x0 ./src/vscp.o
+ .glue_7        0x00005308        0x0 ./src/vscp_main.o
+ .glue_7        0x00005308        0x0 ./src/vscp_events.o
+ .glue_7        0x00005308        0x0 ./src/i2c.o
+ .glue_7        0x00005308        0x0 ./src/emem.o
+ .glue_7        0x00005308        0x0 ./src/crc.o
+ .glue_7        0x00005308        0x0 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .glue_7        0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .glue_7        0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .glue_7        0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .glue_7        0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.glue_7t        0x00005308        0x0
+ .glue_7t       0x00005308        0x0 ./src/main.o
+ .glue_7t       0x00005308        0x0 ./src/handlers.o
+ .glue_7t       0x00005308        0x0 ./src/init_cpu.o
+ .glue_7t       0x00005308        0x0 ./src/led.o
+ .glue_7t       0x00005308        0x0 ./src/vic.o
+ .glue_7t       0x00005308        0x0 ./src/utils.o
+ .glue_7t       0x00005308        0x0 ./src/uart.o
+ .glue_7t       0x00005308        0x0 ./src/key.o
+ .glue_7t       0x00005308        0x0 ./src/evt.o
+ .glue_7t       0x00005308        0x0 ./src/buff.o
+ .glue_7t       0x00005308        0x0 ./src/tmr.o
+ .glue_7t       0x00005308        0x0 ./src/flash.o
+ .glue_7t       0x00005308        0x0 ./src/upload.o
+ .glue_7t       0x00005308        0x0 ./src/ssp.o
+ .glue_7t       0x00005308        0x0 ./src/spiflash.o
+ .glue_7t       0x00005308        0x0 ./src/can.o
+ .glue_7t       0x00005308        0x0 ./src/vscp.o
+ .glue_7t       0x00005308        0x0 ./src/vscp_main.o
+ .glue_7t       0x00005308        0x0 ./src/vscp_events.o
+ .glue_7t       0x00005308        0x0 ./src/i2c.o
+ .glue_7t       0x00005308        0x0 ./src/emem.o
+ .glue_7t       0x00005308        0x0 ./src/crc.o
+ .glue_7t       0x00005308        0x0 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .glue_7t       0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .glue_7t       0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .glue_7t       0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .glue_7t       0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.vfp11_veneer   0x00005308        0x0
+ .vfp11_veneer  0x00005308        0x0 ./src/main.o
+ .vfp11_veneer  0x00005308        0x0 ./src/handlers.o
+ .vfp11_veneer  0x00005308        0x0 ./src/init_cpu.o
+ .vfp11_veneer  0x00005308        0x0 ./src/led.o
+ .vfp11_veneer  0x00005308        0x0 ./src/vic.o
+ .vfp11_veneer  0x00005308        0x0 ./src/utils.o
+ .vfp11_veneer  0x00005308        0x0 ./src/uart.o
+ .vfp11_veneer  0x00005308        0x0 ./src/key.o
+ .vfp11_veneer  0x00005308        0x0 ./src/evt.o
+ .vfp11_veneer  0x00005308        0x0 ./src/buff.o
+ .vfp11_veneer  0x00005308        0x0 ./src/tmr.o
+ .vfp11_veneer  0x00005308        0x0 ./src/flash.o
+ .vfp11_veneer  0x00005308        0x0 ./src/upload.o
+ .vfp11_veneer  0x00005308        0x0 ./src/ssp.o
+ .vfp11_veneer  0x00005308        0x0 ./src/spiflash.o
+ .vfp11_veneer  0x00005308        0x0 ./src/can.o
+ .vfp11_veneer  0x00005308        0x0 ./src/vscp.o
+ .vfp11_veneer  0x00005308        0x0 ./src/vscp_main.o
+ .vfp11_veneer  0x00005308        0x0 ./src/vscp_events.o
+ .vfp11_veneer  0x00005308        0x0 ./src/i2c.o
+ .vfp11_veneer  0x00005308        0x0 ./src/emem.o
+ .vfp11_veneer  0x00005308        0x0 ./src/crc.o
+ .vfp11_veneer  0x00005308        0x0 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .vfp11_veneer  0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .vfp11_veneer  0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .vfp11_veneer  0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .vfp11_veneer  0x00005308        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+                0x00005308                . = ALIGN (0x4)
+                0x00005308                __end_of_text__ = .
+                0x00005308                __data_beg_src__ = .
+                0x00005308                PROVIDE (etext, .)
+
+.data           0x40000000       0x34 load address 0x00005308
+                0x40000000                __data_beg__ = .
+ *(.data)
+ .data          0x40000000        0x0 ./src/main.o
+ .data          0x40000000        0x0 ./src/handlers.o
+ .data          0x40000000        0x0 ./src/init_cpu.o
+ .data          0x40000000        0x0 ./src/led.o
+ .data          0x40000000        0x0 ./src/vic.o
+ .data          0x40000000       0x22 ./src/utils.o
+ *fill*         0x40000022        0x2 00
+ .data          0x40000024        0x8 ./src/uart.o
+                0x40000024                UART0TxEmpty
+                0x40000025                UART1TxEmpty
+ .data          0x4000002c        0x0 ./src/key.o
+ .data          0x4000002c        0x0 ./src/evt.o
+ .data          0x4000002c        0x0 ./src/buff.o
+ .data          0x4000002c        0x0 ./src/tmr.o
+ .data          0x4000002c        0x0 ./src/flash.o
+ .data          0x4000002c        0x0 ./src/upload.o
+ .data          0x4000002c        0x4 ./src/ssp.o
+                0x4000002c                int_cnt_last_fifo
+ .data          0x40000030        0x0 ./src/spiflash.o
+ .data          0x40000030        0x0 ./src/can.o
+ .data          0x40000030        0x0 ./src/vscp.o
+ .data          0x40000030        0x0 ./src/vscp_main.o
+ .data          0x40000030        0x4 ./src/vscp_events.o
+ .data          0x40000034        0x0 ./src/i2c.o
+ .data          0x40000034        0x0 ./src/emem.o
+ .data          0x40000034        0x0 ./src/crc.o
+ .data          0x40000034        0x0 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .data          0x40000034        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .data          0x40000034        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .data          0x40000034        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .data          0x40000034        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+                0x40000034                . = ALIGN (0x4)
+                0x40000034                __data_end__ = .
+                0x40000034                PROVIDE (edata, .)
+
+.bss            0x40000034      0xd42 load address 0x0000533c
+                0x40000034                __bss_beg__ = .
+ *(.bss)
+ .bss           0x40000034       0x34 ./src/main.o
+ .bss           0x40000068        0x0 ./src/handlers.o
+ .bss           0x40000068        0x0 ./src/init_cpu.o
+ .bss           0x40000068       0x7c ./src/led.o
+ .bss           0x400000e4        0x0 ./src/vic.o
+ .bss           0x400000e4        0x0 ./src/utils.o
+ .bss           0x400000e4       0x10 ./src/uart.o
+                0x400000ec                ptr_uart0_rd
+                0x400000e8                ptr_uart1_wr
+                0x400000e4                ptr_uart0_wr
+                0x400000f0                ptr_uart1_rd
+ .bss           0x400000f4       0x3c ./src/key.o
+ .bss           0x40000130        0x0 ./src/evt.o
+ .bss           0x40000130       0x50 ./src/buff.o
+ .bss           0x40000180        0x4 ./src/tmr.o
+ .bss           0x40000184      0x218 ./src/flash.o
+ .bss           0x4000039c       0x18 ./src/upload.o
+ .bss           0x400003b4        0xc ./src/ssp.o
+                0x400003b4                interruptRxStat
+                0x400003bc                interruptRxTimeoutStat
+                0x400003b8                interruptOverRunStat
+ .bss           0x400003c0       0x10 ./src/spiflash.o
+ .bss           0x400003d0       0x24 ./src/can.o
+                0x400003d4                p_rx1_wr
+                0x400003e4                CAN2RxCount
+                0x400003e0                CAN1RxCount
+                0x400003f0                CAN1TxWaitCount
+                0x400003dc                p_rx2_wr
+                0x400003d8                p_rx2_rd
+                0x400003e8                CAN1ErrCount
+                0x400003ec                CAN2ErrCount
+                0x400003d0                p_rx1_rd
+ .bss           0x400003f4        0x0 ./src/vscp.o
+ .bss           0x400003f4        0x1 ./src/vscp_main.o
+                0x400003f4                boot_mode
+ *fill*         0x400003f5        0x3 00
+ .bss           0x400003f8        0x4 ./src/vscp_events.o
+ .bss           0x400003fc        0x8 ./src/i2c.o
+ .bss           0x40000404        0x0 ./src/emem.o
+ .bss           0x40000404        0x0 ./src/crc.o
+ .bss           0x40000404        0x0 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .bss           0x40000404        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .bss           0x40000404        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .bss           0x40000404        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .bss           0x40000404        0x0 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+ COMMON         0x40000404      0x208 ./src/uart.o
+                0x40000404                UART1Buffer
+                0x40000504                UART0Buffer
+                0x40000604                UART1Status
+                0x40000608                UART0Status
+ COMMON         0x4000060c       0x14 ./src/buff.o
+                0x4000060c                ENUMXOVERTYPE
+                0x40000610                ENUMDELATUNIT
+                0x40000614                ENUMPAREQTYPE
+                0x40000618                ENUMDYNEQTYPE
+                0x4000061c                LOCKLEVEL
+ COMMON         0x40000620        0xc ./src/tmr.o
+                0x40000620                TmrTbl
+ COMMON         0x4000062c      0x400 ./src/upload.o
+                0x4000062c                data_buf
+                0x4000082c                verify_buf
+ COMMON         0x40000a2c      0x10c ./src/can.o
+                0x40000a2c                MsgBuf_RX2
+                0x40000aac                CAN1RxDone
+                0x40000ab0                CAN2RxDone
+                0x40000ab4                MsgBuf_RX1
+                0x40000b34                CANStatus
+ COMMON         0x40000b38       0x31 ./src/vscp.o
+                0x40000b38                vscp_omsg
+                0x40000b48                vscp_node_substate
+                0x40000b49                vscp_probe_address
+                0x40000b4a                vscp_initbtncnt
+                0x40000b4b                vscp_statuscnt
+                0x40000b4c                vscp_initledfunc
+                0x40000b4d                vscp_errorcnt
+                0x40000b50                vscp_imsg
+                0x40000b60                vscp_node_state
+                0x40000b61                vscp_alarmstatus
+                0x40000b62                vscp_nickname
+                0x40000b64                vscp_page_select
+                0x40000b66                vscp_timer
+                0x40000b68                vscp_probe_cnt
+ *fill*         0x40000b69        0x3 00
+ COMMON         0x40000b6c        0xa ./src/vscp_main.o
+                0x40000b6c                eeprom_segmentCRC
+                0x40000b6d                seconds
+                0x40000b70                measurement_clock
+                0x40000b74                minutes
+                0x40000b75                hours
+ COMMON         0x40000b76      0x200 ./src/crc.o
+                0x40000b76                crcTable
+                0x40000d78                . = ALIGN (0x4)
+                0x40000d78                . = ALIGN (0x4)
+                0x40000d78                _end = .
+                0x40000d78                _bss_end__ = .
+                0x40000d78                __bss_end__ = .
+                0x40000d78                __end__ = .
+                0x40000d78                PROVIDE (end, .)
+
+stacklayout     0x7fe00000      0x700
+                0x7fe00000                __stack_scv_bottom__ = .
+                0x7fe00400                . = (. + 0x400)
+ *fill*         0x7fe00000      0x400 00
+                0x7fe00400                __stack_scv_top__ = .
+                0x7fe00400                __stack_irq_bottom__ = .
+                0x7fe00500                . = (. + 0x100)
+ *fill*         0x7fe00400      0x100 00
+                0x7fe00500                __stack_irq_top__ = .
+                0x7fe00500                __stack_fiq_bottom__ = .
+                0x7fe00600                . = (. + 0x100)
+ *fill*         0x7fe00500      0x100 00
+                0x7fe00600                __stack_fiq_top__ = .
+                0x7fe00600                __stack_und_bottom__ = .
+                0x7fe00700                . = (. + 0x100)
+ *fill*         0x7fe00600      0x100 00
+                0x7fe00700                __stack_und_top__ = .
+                0x7fe00700                __stack_iap_bottom__ = .
+
+usbramlayout    0x7fd00000        0x0
+                0x7fd00000                __usbram_start__ = .
+                0x7fd02000                __usbram_end__ = 0x2000
+
+.stab
+ *(.stab)
+
+.stabstr
+ *(.stabstr)
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment        0x00000000      0x19e
+ *(.comment)
+ .comment       0x00000000       0x12 ./src/main.o
+ .comment       0x00000012       0x12 ./src/handlers.o
+ .comment       0x00000024       0x12 ./src/init_cpu.o
+ .comment       0x00000036       0x12 ./src/led.o
+ .comment       0x00000048       0x12 ./src/vic.o
+ .comment       0x0000005a       0x12 ./src/utils.o
+ .comment       0x0000006c       0x12 ./src/uart.o
+ .comment       0x0000007e       0x12 ./src/key.o
+ .comment       0x00000090       0x12 ./src/evt.o
+ .comment       0x000000a2       0x12 ./src/buff.o
+ .comment       0x000000b4       0x12 ./src/tmr.o
+ .comment       0x000000c6       0x12 ./src/flash.o
+ .comment       0x000000d8       0x12 ./src/upload.o
+ .comment       0x000000ea       0x12 ./src/ssp.o
+ .comment       0x000000fc       0x12 ./src/spiflash.o
+ .comment       0x0000010e       0x12 ./src/can.o
+ .comment       0x00000120       0x12 ./src/vscp.o
+ .comment       0x00000132       0x12 ./src/vscp_main.o
+ .comment       0x00000144       0x12 ./src/vscp_events.o
+ .comment       0x00000156       0x12 ./src/i2c.o
+ .comment       0x00000168       0x12 ./src/emem.o
+ .comment       0x0000017a       0x12 ./src/crc.o
+ .comment       0x0000018c       0x12 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x00000000      0x360
+ *(.debug_aranges)
+ .debug_aranges
+                0x00000000       0x20 ./src/main.o
+ .debug_aranges
+                0x00000020       0x20 ./src/handlers.o
+ .debug_aranges
+                0x00000040       0x20 ./src/init_cpu.o
+ .debug_aranges
+                0x00000060       0x20 ./src/led.o
+ .debug_aranges
+                0x00000080       0x20 ./src/vic.o
+ .debug_aranges
+                0x000000a0       0x20 ./src/utils.o
+ .debug_aranges
+                0x000000c0       0x20 ./src/uart.o
+ .debug_aranges
+                0x000000e0       0x20 ./src/key.o
+ .debug_aranges
+                0x00000100       0x20 ./src/evt.o
+ .debug_aranges
+                0x00000120       0x20 ./src/buff.o
+ .debug_aranges
+                0x00000140       0x20 ./src/tmr.o
+ .debug_aranges
+                0x00000160       0x20 ./src/flash.o
+ .debug_aranges
+                0x00000180       0x20 ./src/upload.o
+ .debug_aranges
+                0x000001a0       0x20 ./src/ssp.o
+ .debug_aranges
+                0x000001c0       0x20 ./src/spiflash.o
+ .debug_aranges
+                0x000001e0       0x20 ./src/can.o
+ .debug_aranges
+                0x00000200       0x20 ./src/vscp.o
+ .debug_aranges
+                0x00000220       0x20 ./src/vscp_main.o
+ .debug_aranges
+                0x00000240       0x20 ./src/vscp_events.o
+ .debug_aranges
+                0x00000260       0x20 ./src/i2c.o
+ .debug_aranges
+                0x00000280       0x20 ./src/emem.o
+ .debug_aranges
+                0x000002a0       0x20 ./src/crc.o
+ .debug_aranges
+                0x000002c0       0x20 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .debug_aranges
+                0x000002e0       0x20 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .debug_aranges
+                0x00000300       0x20 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .debug_aranges
+                0x00000320       0x20 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .debug_aranges
+                0x00000340       0x20 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug_pubnames
+                0x00000000     0x13e0
+ *(.debug_pubnames)
+ .debug_pubnames
+                0x00000000       0x5c ./src/main.o
+ .debug_pubnames
+                0x0000005c       0x66 ./src/handlers.o
+ .debug_pubnames
+                0x000000c2       0x77 ./src/init_cpu.o
+ .debug_pubnames
+                0x00000139       0xc2 ./src/led.o
+ .debug_pubnames
+                0x000001fb       0x5b ./src/vic.o
+ .debug_pubnames
+                0x00000256       0x47 ./src/utils.o
+ .debug_pubnames
+                0x0000029d      0x15a ./src/uart.o
+ .debug_pubnames
+                0x000003f7       0xa7 ./src/key.o
+ .debug_pubnames
+                0x0000049e       0x4b ./src/evt.o
+ .debug_pubnames
+                0x000004e9       0xdf ./src/buff.o
+ .debug_pubnames
+                0x000005c8       0x74 ./src/tmr.o
+ .debug_pubnames
+                0x0000063c       0xbf ./src/flash.o
+ .debug_pubnames
+                0x000006fb       0xf2 ./src/upload.o
+ .debug_pubnames
+                0x000007ed       0xd6 ./src/ssp.o
+ .debug_pubnames
+                0x000008c3       0xbf ./src/spiflash.o
+ .debug_pubnames
+                0x00000982      0x1d2 ./src/can.o
+ .debug_pubnames
+                0x00000b54      0x263 ./src/vscp.o
+ .debug_pubnames
+                0x00000db7      0x39e ./src/vscp_main.o
+ .debug_pubnames
+                0x00001155       0xa1 ./src/vscp_events.o
+ .debug_pubnames
+                0x000011f6       0x7b ./src/i2c.o
+ .debug_pubnames
+                0x00001271      0x10f ./src/emem.o
+ .debug_pubnames
+                0x00001380       0x43 ./src/crc.o
+ .debug_pubnames
+                0x000013c3       0x1d c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug_info     0x00000000     0x4ef4
+ *(.debug_info .gnu.linkonce.wi.*)
+ .debug_info    0x00000000      0x1c6 ./src/main.o
+ .debug_info    0x000001c6       0x93 ./src/handlers.o
+ .debug_info    0x00000259       0xed ./src/init_cpu.o
+ .debug_info    0x00000346      0x2fe ./src/led.o
+ .debug_info    0x00000644      0x275 ./src/vic.o
+ .debug_info    0x000008b9      0x122 ./src/utils.o
+ .debug_info    0x000009db      0x395 ./src/uart.o
+ .debug_info    0x00000d70      0x2d5 ./src/key.o
+ .debug_info    0x00001045       0xae ./src/evt.o
+ .debug_info    0x000010f3      0x42b ./src/buff.o
+ .debug_info    0x0000151e      0x202 ./src/tmr.o
+ .debug_info    0x00001720      0x2e7 ./src/flash.o
+ .debug_info    0x00001a07      0x3fd ./src/upload.o
+ .debug_info    0x00001e04      0x1fb ./src/ssp.o
+ .debug_info    0x00001fff      0x23a ./src/spiflash.o
+ .debug_info    0x00002239      0x535 ./src/can.o
+ .debug_info    0x0000276e      0x4ce ./src/vscp.o
+ .debug_info    0x00002c3c      0xc22 ./src/vscp_main.o
+ .debug_info    0x0000385e      0x4fc ./src/vscp_events.o
+ .debug_info    0x00003d5a      0x661 ./src/i2c.o
+ .debug_info    0x000043bb      0x6ed ./src/emem.o
+ .debug_info    0x00004aa8      0x17b ./src/crc.o
+ .debug_info    0x00004c23       0x55 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .debug_info    0x00004c78       0x7a c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .debug_info    0x00004cf2       0x7a c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .debug_info    0x00004d6c       0x7a c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .debug_info    0x00004de6      0x10e c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug_abbrev   0x00000000     0x1c5c
+ *(.debug_abbrev)
+ .debug_abbrev  0x00000000      0x11a ./src/main.o
+ .debug_abbrev  0x0000011a       0x34 ./src/handlers.o
+ .debug_abbrev  0x0000014e       0x70 ./src/init_cpu.o
+ .debug_abbrev  0x000001be      0x13a ./src/led.o
+ .debug_abbrev  0x000002f8      0x12c ./src/vic.o
+ .debug_abbrev  0x00000424       0xbf ./src/utils.o
+ .debug_abbrev  0x000004e3      0x1ac ./src/uart.o
+ .debug_abbrev  0x0000068f      0x1b0 ./src/key.o
+ .debug_abbrev  0x0000083f       0x5d ./src/evt.o
+ .debug_abbrev  0x0000089c      0x11d ./src/buff.o
+ .debug_abbrev  0x000009b9      0x133 ./src/tmr.o
+ .debug_abbrev  0x00000aec      0x18b ./src/flash.o
+ .debug_abbrev  0x00000c77      0x18b ./src/upload.o
+ .debug_abbrev  0x00000e02      0x101 ./src/ssp.o
+ .debug_abbrev  0x00000f03      0x106 ./src/spiflash.o
+ .debug_abbrev  0x00001009      0x178 ./src/can.o
+ .debug_abbrev  0x00001181      0x160 ./src/vscp.o
+ .debug_abbrev  0x000012e1      0x258 ./src/vscp_main.o
+ .debug_abbrev  0x00001539      0x161 ./src/vscp_events.o
+ .debug_abbrev  0x0000169a      0x274 ./src/i2c.o
+ .debug_abbrev  0x0000190e      0x15b ./src/emem.o
+ .debug_abbrev  0x00001a69      0x10a ./src/crc.o
+ .debug_abbrev  0x00001b73       0x14 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .debug_abbrev  0x00001b87       0x14 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .debug_abbrev  0x00001b9b       0x14 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .debug_abbrev  0x00001baf       0x14 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .debug_abbrev  0x00001bc3       0x99 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug_line     0x00000000     0x12ad
+ *(.debug_line)
+ .debug_line    0x00000000       0xa7 ./src/main.o
+ .debug_line    0x000000a7       0x42 ./src/handlers.o
+ .debug_line    0x000000e9       0x71 ./src/init_cpu.o
+ .debug_line    0x0000015a       0xb7 ./src/led.o
+ .debug_line    0x00000211       0x5d ./src/vic.o
+ .debug_line    0x0000026e       0x5b ./src/utils.o
+ .debug_line    0x000002c9       0xfa ./src/uart.o
+ .debug_line    0x000003c3       0xd0 ./src/key.o
+ .debug_line    0x00000493       0x40 ./src/evt.o
+ .debug_line    0x000004d3       0x88 ./src/buff.o
+ .debug_line    0x0000055b       0x69 ./src/tmr.o
+ .debug_line    0x000005c4       0xf1 ./src/flash.o
+ .debug_line    0x000006b5       0xf4 ./src/upload.o
+ .debug_line    0x000007a9       0x99 ./src/ssp.o
+ .debug_line    0x00000842       0xb9 ./src/spiflash.o
+ .debug_line    0x000008fb      0x147 ./src/can.o
+ .debug_line    0x00000a42      0x16c ./src/vscp.o
+ .debug_line    0x00000bae      0x17f ./src/vscp_main.o
+ .debug_line    0x00000d2d       0x83 ./src/vscp_events.o
+ .debug_line    0x00000db0      0x132 ./src/i2c.o
+ .debug_line    0x00000ee2       0x96 ./src/emem.o
+ .debug_line    0x00000f78       0x7c ./src/crc.o
+ .debug_line    0x00000ff4       0x75 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .debug_line    0x00001069       0x89 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .debug_line    0x000010f2       0x78 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .debug_line    0x0000116a       0x5d c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .debug_line    0x000011c7       0xe6 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug_frame    0x00000000     0x11e8
+ *(.debug_frame)
+ .debug_frame   0x00000000       0x88 ./src/main.o
+ .debug_frame   0x00000088       0x60 ./src/handlers.o
+ .debug_frame   0x000000e8       0x84 ./src/init_cpu.o
+ .debug_frame   0x0000016c       0xf8 ./src/led.o
+ .debug_frame   0x00000264       0x60 ./src/vic.o
+ .debug_frame   0x000002c4       0x40 ./src/utils.o
+ .debug_frame   0x00000304      0x100 ./src/uart.o
+ .debug_frame   0x00000404       0xc8 ./src/key.o
+ .debug_frame   0x000004cc       0x40 ./src/evt.o
+ .debug_frame   0x0000050c       0xc0 ./src/buff.o
+ .debug_frame   0x000005cc       0x80 ./src/tmr.o
+ .debug_frame   0x0000064c      0x100 ./src/flash.o
+ .debug_frame   0x0000074c       0xfc ./src/upload.o
+ .debug_frame   0x00000848       0xa8 ./src/ssp.o
+ .debug_frame   0x000008f0       0xf8 ./src/spiflash.o
+ .debug_frame   0x000009e8       0xf8 ./src/can.o
+ .debug_frame   0x00000ae0      0x19c ./src/vscp.o
+ .debug_frame   0x00000c7c      0x234 ./src/vscp_main.o
+ .debug_frame   0x00000eb0       0x48 ./src/vscp_events.o
+ .debug_frame   0x00000ef8      0x13c ./src/i2c.o
+ .debug_frame   0x00001034       0xec ./src/emem.o
+ .debug_frame   0x00001120       0x50 ./src/crc.o
+ .debug_frame   0x00001170       0x28 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .debug_frame   0x00001198       0x28 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .debug_frame   0x000011c0       0x28 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug_str      0x00000000     0x1c44
+ *(.debug_str)
+ .debug_str     0x00000000      0x144 ./src/main.o
+                                0x18a (size before relaxing)
+ .debug_str     0x00000144       0x4f ./src/handlers.o
+                                 0x99 (size before relaxing)
+ .debug_str     0x00000193       0x58 ./src/init_cpu.o
+                                 0xb4 (size before relaxing)
+ .debug_str     0x000001eb      0x11f ./src/led.o
+                                0x1d2 (size before relaxing)
+ .debug_str     0x0000030a       0x9b ./src/vic.o
+                                0x13c (size before relaxing)
+ .debug_str     0x000003a5       0x53 ./src/utils.o
+                                 0xf5 (size before relaxing)
+ .debug_str     0x000003f8      0x173 ./src/uart.o
+                                0x221 (size before relaxing)
+ .debug_str     0x0000056b      0x107 ./src/key.o
+                                0x1ae (size before relaxing)
+ .debug_str     0x00000672       0x3e ./src/evt.o
+                                 0x7b (size before relaxing)
+ .debug_str     0x000006b0      0x4dc ./src/buff.o
+                                0x59c (size before relaxing)
+ .debug_str     0x00000b8c       0x90 ./src/tmr.o
+                                 0xcd (size before relaxing)
+ .debug_str     0x00000c1c      0x10d ./src/flash.o
+                                0x1e2 (size before relaxing)
+ .debug_str     0x00000d29      0x169 ./src/upload.o
+                                0x26d (size before relaxing)
+ .debug_str     0x00000e92       0xab ./src/ssp.o
+                                0x165 (size before relaxing)
+ .debug_str     0x00000f3d       0xa9 ./src/spiflash.o
+                                0x171 (size before relaxing)
+ .debug_str     0x00000fe6      0x20b ./src/can.o
+                                0x2ca (size before relaxing)
+ .debug_str     0x000011f1      0x211 ./src/vscp.o
+                                0x33c (size before relaxing)
+ .debug_str     0x00001402      0x3f9 ./src/vscp_main.o
+                                0x9e3 (size before relaxing)
+ .debug_str     0x000017fb      0x116 ./src/vscp_events.o
+                                0x677 (size before relaxing)
+ .debug_str     0x00001911      0x170 ./src/i2c.o
+                                0x236 (size before relaxing)
+ .debug_str     0x00001a81       0xcf ./src/emem.o
+                                0x769 (size before relaxing)
+ .debug_str     0x00001b50       0x45 ./src/crc.o
+                                 0xa2 (size before relaxing)
+ .debug_str     0x00001b95       0xaf c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+                                 0xdb (size before relaxing)
+
+.debug_loc      0x00000000     0x2185
+ *(.debug_loc)
+ .debug_loc     0x00000000       0x7c ./src/main.o
+ .debug_loc     0x0000007c       0x1f ./src/init_cpu.o
+ .debug_loc     0x0000009b       0x5d ./src/led.o
+ .debug_loc     0x000000f8       0x57 ./src/vic.o
+ .debug_loc     0x0000014f       0x51 ./src/utils.o
+ .debug_loc     0x000001a0      0x24c ./src/uart.o
+ .debug_loc     0x000003ec       0xe3 ./src/key.o
+ .debug_loc     0x000004cf       0xcd ./src/buff.o
+ .debug_loc     0x0000059c       0x26 ./src/tmr.o
+ .debug_loc     0x000005c2      0x1ec ./src/flash.o
+ .debug_loc     0x000007ae      0x2eb ./src/upload.o
+ .debug_loc     0x00000a99       0xad ./src/ssp.o
+ .debug_loc     0x00000b46      0x206 ./src/spiflash.o
+ .debug_loc     0x00000d4c      0x396 ./src/can.o
+ .debug_loc     0x000010e2      0x30d ./src/vscp.o
+ .debug_loc     0x000013ef      0x22f ./src/vscp_main.o
+ .debug_loc     0x0000161e       0x2b ./src/vscp_events.o
+ .debug_loc     0x00001649      0x76d ./src/i2c.o
+ .debug_loc     0x00001db6      0x218 ./src/emem.o
+ .debug_loc     0x00001fce       0xb3 ./src/crc.o
+ .debug_loc     0x00002081      0x104 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug_macinfo
+ *(.debug_macinfo)
+
+.debug_weaknames
+ *(.debug_weaknames)
+
+.debug_funcnames
+ *(.debug_funcnames)
+
+.debug_typenames
+ *(.debug_typenames)
+
+.debug_varnames
+ *(.debug_varnames)
+OUTPUT(.//bootloader.elf elf32-littlearm)
+
+.ARM.attributes
+                0x00000000       0x10
+ .ARM.attributes
+                0x00000000       0x10 ./src/main.o
+ .ARM.attributes
+                0x00000010       0x10 ./src/handlers.o
+ .ARM.attributes
+                0x00000020       0x10 ./src/init_cpu.o
+ .ARM.attributes
+                0x00000030       0x10 ./src/led.o
+ .ARM.attributes
+                0x00000040       0x10 ./src/vic.o
+ .ARM.attributes
+                0x00000050       0x10 ./src/utils.o
+ .ARM.attributes
+                0x00000060       0x10 ./src/uart.o
+ .ARM.attributes
+                0x00000070       0x10 ./src/key.o
+ .ARM.attributes
+                0x00000080       0x10 ./src/evt.o
+ .ARM.attributes
+                0x00000090       0x10 ./src/buff.o
+ .ARM.attributes
+                0x000000a0       0x10 ./src/tmr.o
+ .ARM.attributes
+                0x000000b0       0x10 ./src/flash.o
+ .ARM.attributes
+                0x000000c0       0x10 ./src/upload.o
+ .ARM.attributes
+                0x000000d0       0x10 ./src/ssp.o
+ .ARM.attributes
+                0x000000e0       0x10 ./src/spiflash.o
+ .ARM.attributes
+                0x000000f0       0x10 ./src/can.o
+ .ARM.attributes
+                0x00000100       0x10 ./src/vscp.o
+ .ARM.attributes
+                0x00000110       0x10 ./src/vscp_main.o
+ .ARM.attributes
+                0x00000120       0x10 ./src/vscp_events.o
+ .ARM.attributes
+                0x00000130       0x10 ./src/i2c.o
+ .ARM.attributes
+                0x00000140       0x10 ./src/emem.o
+ .ARM.attributes
+                0x00000150       0x10 ./src/crc.o
+ .ARM.attributes
+                0x00000160       0x10 C:\DOCUME~1\usr148\IMPOST~1\Temp/ccqqxtHW.o
+ .ARM.attributes
+                0x00000170       0x10 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_udivsi3.o)
+ .ARM.attributes
+                0x00000180       0x10 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_modsi3.o)
+ .ARM.attributes
+                0x00000190       0x10 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2\libgcc.a(_dvmd_tls.o)
+ .ARM.attributes
+                0x000001a0       0x10 c:/programmi/yagarto/bin/../lib/gcc/arm-elf/4.2.2/../../../../arm-elf/lib\libg.a(lib_a-memcpy.o)
+
+.debug_ranges   0x00000000       0x70
+ .debug_ranges  0x00000000       0x70 ./src/i2c.o

@@ -1,0 +1,35 @@
+# Purpose: makefile for vscpboot example (TWIN)
+# Created: 2000-03-15
+
+WXDIR = ../..
+
+# All common UNIX compiler flags and options are now in
+# this central makefile.
+include $(WXDIR)/src/maketwin.env
+
+OBJECTS = $(OBJDIR)/vscpboot.$(OBJSUFF) $(OBJDIR)/vscpboot.$(OBJSUFF)
+
+all:    $(OBJDIR) vscpboot$(GUISUFFIX)$(EXESUFF)
+
+wx:
+
+$(OBJDIR):
+	mkdir $(OBJDIR)
+
+vscpboot$(GUISUFFIX)$(EXESUFF):	$(OBJECTS) $(WXLIB)
+	$(CC) $(LDFLAGS) -o vscpboot$(GUISUFFIX)$(EXESUFF) $(OBJECTS) $(LDLIBS)
+
+$(OBJDIR)/vscpboot.$(OBJSUFF):	vscpboot.$(SRCSUFF)
+	$(CC) -c $(CPPFLAGS) -o $@ vscpboot.$(SRCSUFF)
+
+vscpboot.c:  vscpboot.rc
+	$(RESCOMP) $(RCINPUTSWITCH) vscpboot.rc $(RCOUTPUTSWITCH) vscpboot.c $(RESFLAGS)
+
+$(OBJDIR)/vscpboot.$(OBJSUFF):	vscpboot.c
+	$(CC) -c $(CPPFLAGS) -o $@ vscpboot.c
+
+#$(OBJDIR)/vscpboot.o:  vscpboot.rc
+#	$(RESCOMP) $(RCINPUTSWITCH) vscpboot.rc $(RCOUTPUTSWITCH) $(OBJDIR)/vscpboot.o $(RESFLAGS)
+
+clean:
+	rm -f $(OBJECTS) vscpboot$(GUISUFFIX).exe core *.rsc *.res

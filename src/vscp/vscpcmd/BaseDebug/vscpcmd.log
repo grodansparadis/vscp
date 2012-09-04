@@ -1,0 +1,51 @@
+﻿Build started 2012-03-29 23:19:58.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\vscpcmd.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file ".\BaseDebug\vscpcmd.lastbuildstate".
+       InitializeBuildStatus:
+         Creating ".\BaseDebug\vscpcmd.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /Zi /nologo /W3 /WX- /Od /Oy- /D _DEBUG /D WIN32 /D _CONSOLE /D WINVER=0x400 /D _WIN32_WINNT=0x0400 /D _MT /D wxUSE_GUI=0 /D __WXDEBUG__ /D WXDEBUG=1 /D _VC80_UPGRADE=0x0600 /D _UNICODE /D UNICODE /Gm- /EHsc /MDd /GS /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo".\BaseDebug\\" /Fd".\BaseDebug\vc100.pdb" /FR".\BaseDebug\\" /Gd /TC /analyze- /errorReport:prompt ..\..\common\crc.c
+         crc.c
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /Zi /nologo /W3 /WX- /Od /Oy- /D _DEBUG /D WIN32 /D _CONSOLE /D WINVER=0x400 /D _WIN32_WINNT=0x0400 /D _MT /D wxUSE_GUI=0 /D __WXDEBUG__ /D WXDEBUG=1 /D _VC80_UPGRADE=0x0600 /D _UNICODE /D UNICODE /Gm- /EHsc /MDd /GS /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo".\BaseDebug\\" /Fd".\BaseDebug\vc100.pdb" /FR".\BaseDebug\\" /Gd /TP /analyze- /errorReport:prompt ..\common\guid.cpp vscpcmd.cpp ..\common\vscphelper.cpp ..\common\vscptcpif.cpp
+         guid.cpp
+         vscpcmd.cpp
+         vscphelper.cpp
+         vscptcpif.cpp
+         Generating Code...
+       ManifestResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo".\BaseDebug\vscpcmd.exe.embed.manifest.res" .\BaseDebug\vscpcmd_manifest.rc 
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(990,5): warning MSB8012: TargetPath(C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\.\BaseDebug\vscpcmd.exe) does not match the Linker's OutputFile property value (C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\Debug\vscpcmd.exe). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Debug/vscpcmd.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" comctl32.lib wsock32.lib netapi32.lib rpcrt4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:".\BaseDebug\vscpcmd.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\BaseDebug\vscpcmd.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\BaseDebug\vscpcmd.lib" /MACHINE:X86 .\BaseDebug\vscpcmd.exe.embed.manifest.res
+         .\BaseDebug\crc.obj
+         .\BaseDebug\guid.obj
+         .\BaseDebug\vscpcmd.obj
+         .\BaseDebug\vscphelper.obj
+         .\BaseDebug\vscptcpif.obj
+       Manifest:
+         Deleting file ".\BaseDebug\vscpcmd.exe.embed.manifest".
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:".\BaseDebug\vscpcmd.exe.embed.manifest" /manifest .\BaseDebug\vscpcmd.exe.intermediate.manifest
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /nologo /fo".\BaseDebug\vscpcmd.exe.embed.manifest.res" .\BaseDebug\vscpcmd_manifest.rc 
+       LinkEmbedManifest:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"Debug/vscpcmd.exe" /INCREMENTAL /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" comctl32.lib wsock32.lib netapi32.lib rpcrt4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:".\BaseDebug\vscpcmd.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\BaseDebug\vscpcmd.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\BaseDebug\vscpcmd.lib" /MACHINE:X86 .\BaseDebug\vscpcmd.exe.embed.manifest.res
+         .\BaseDebug\crc.obj
+         .\BaseDebug\guid.obj
+         .\BaseDebug\vscpcmd.obj
+         .\BaseDebug\vscphelper.obj
+         .\BaseDebug\vscptcpif.obj
+         vscpcmd.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\.\BaseDebug\vscpcmd.exe
+       BscMake:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\bscmake.exe /nologo /o".\BaseDebug\vscpcmd.bsc" .\BaseDebug\crc.sbr .\BaseDebug\guid.sbr .\BaseDebug\vscpcmd.sbr .\BaseDebug\vscphelper.sbr .\BaseDebug\vscptcpif.sbr
+       CustomBuildStep:
+       Skipping target "CustomBuildStep" because it has no outputs.
+       CustomBuildStep:
+       Skipping target "CustomBuildStep" because it has no outputs.
+       FinalizeBuildStatus:
+         Deleting file ".\BaseDebug\vscpcmd.unsuccessfulbuild".
+         Touching ".\BaseDebug\vscpcmd.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\vscpcmd.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:15.14

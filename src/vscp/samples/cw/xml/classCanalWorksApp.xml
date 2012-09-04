@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="classCanalWorksApp" kind="class" prot="public">
+    <compoundname>CanalWorksApp</compoundname>
+      <sectiondef kind="public-attrib">
+      <memberdef kind="variable" id="classCanalWorksApp_153f57df7f39e51a4d2f599e06281790b" prot="public" static="no" mutable="no">
+        <type>bool</type>
+        <definition>bool CanalWorksApp::m_bDisplayDeleteWarning</definition>
+        <argsstring></argsstring>
+        <name>m_bDisplayDeleteWarning</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Flag for list delete warings Default is true. </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/cw.h" line="54" bodyfile="/home/akhe/vscp/src/vscp/cw/cw.h" bodystart="54" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCanalWorksApp_109458bd46001dd217af910da419cfdcd" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CanalWorksApp::m_sizeWidth</definition>
+        <argsstring></argsstring>
+        <name>m_sizeWidth</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Saved main window width </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/cw.h" line="59" bodyfile="/home/akhe/vscp/src/vscp/cw/cw.h" bodystart="59" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="variable" id="classCanalWorksApp_14684245e5c62ba57481bd9fb4d5ed04c" prot="public" static="no" mutable="no">
+        <type>int</type>
+        <definition>int CanalWorksApp::m_sizeHeight</definition>
+        <argsstring></argsstring>
+        <name>m_sizeHeight</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Saved main window height </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/cw.h" line="64" bodyfile="/home/akhe/vscp/src/vscp/cw/cw.h" bodystart="64" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="public-func">
+      <memberdef kind="function" id="classCanalWorksApp_1641eeaa0c93bdf35d2bf59a0e16e20b5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool CanalWorksApp::OnInit</definition>
+        <argsstring>()</argsstring>
+        <name>OnInit</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/cw.h" line="36" bodyfile="/home/akhe/vscp/src/vscp/cw/cw.cpp" bodystart="117" bodyend="188"/>
+      </memberdef>
+      <memberdef kind="function" id="classCanalWorksApp_18601b21f3f85d9a820c51a729d0e163b" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>int</type>
+        <definition>int CanalWorksApp::OnExit</definition>
+        <argsstring>()</argsstring>
+        <name>OnExit</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/cw.h" line="38" bodyfile="/home/akhe/vscp/src/vscp/cw/cw.cpp" bodystart="194" bodyend="198"/>
+      </memberdef>
+      <memberdef kind="function" id="classCanalWorksApp_1758cf9133de842bca89f2a667ba7bfe5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool CanalWorksApp::loadRegistryData</definition>
+        <argsstring>(void)</argsstring>
+        <name>loadRegistryData</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Load persistent data </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/cw.h" line="43" bodyfile="/home/akhe/vscp/src/vscp/cw/cw.cpp" bodystart="209" bodyend="269"/>
+      </memberdef>
+      <memberdef kind="function" id="classCanalWorksApp_16c4bea722686ab37b3ca9414390716a5" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void CanalWorksApp::saveRegistryData</definition>
+        <argsstring>(void)</argsstring>
+        <name>saveRegistryData</name>
+        <param>
+          <type>void</type>
+        </param>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+<para>Save persistent data </para>        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/cw.h" line="48" bodyfile="/home/akhe/vscp/src/vscp/cw/cw.cpp" bodystart="279" bodyend="322"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/cw/cw.h" line="33" bodyfile="/home/akhe/vscp/src/vscp/cw/cw.h" bodystart="32" bodyend="65"/>
+    <listofallmembers>
+      <member refid="classCanalWorksApp_1758cf9133de842bca89f2a667ba7bfe5" prot="public" virt="non-virtual"><scope>CanalWorksApp</scope><name>loadRegistryData</name></member>
+      <member refid="classCanalWorksApp_153f57df7f39e51a4d2f599e06281790b" prot="public" virt="non-virtual"><scope>CanalWorksApp</scope><name>m_bDisplayDeleteWarning</name></member>
+      <member refid="classCanalWorksApp_14684245e5c62ba57481bd9fb4d5ed04c" prot="public" virt="non-virtual"><scope>CanalWorksApp</scope><name>m_sizeHeight</name></member>
+      <member refid="classCanalWorksApp_109458bd46001dd217af910da419cfdcd" prot="public" virt="non-virtual"><scope>CanalWorksApp</scope><name>m_sizeWidth</name></member>
+      <member refid="classCanalWorksApp_18601b21f3f85d9a820c51a729d0e163b" prot="public" virt="non-virtual"><scope>CanalWorksApp</scope><name>OnExit</name></member>
+      <member refid="classCanalWorksApp_1641eeaa0c93bdf35d2bf59a0e16e20b5" prot="public" virt="non-virtual"><scope>CanalWorksApp</scope><name>OnInit</name></member>
+      <member refid="classCanalWorksApp_16c4bea722686ab37b3ca9414390716a5" prot="public" virt="non-virtual"><scope>CanalWorksApp</scope><name>saveRegistryData</name></member>
+    </listofallmembers>
+  </compounddef>
+</doxygen>

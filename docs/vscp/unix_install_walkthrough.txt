@@ -1,0 +1,17 @@
+1.) Dowload wxBase package from wxWidgets site. http://wxwidgets.org/downloads/
+
+2.) Install gcc    	apt-get install gcc
+
+3.) Install make	apt-het install make
+
+4.) Install gtl		apt-get install libgtk2.0-0
+
+libglib2.0-0
+libglib2.0-dev
+
+checking for GTK+ - version >= 2.0.0... no
+
+./configure --disable-gui --enable-unicode --enable-debug --enable-odbc
+
+
+EXTRALIBS =  -lz -lm -lcrypto -lpthread -ldl  -L/usr/local/lib -pthread   -lwx_gtk2u_richtext-2.8 -lwx_gtk2u_aui-2.8 -lwx_gtk2u_xrc-2.8 -lwx_gtk2u_qa-2.8 -lwx_gtk2u_html-2.8 -lwx_gtk2u_adv-2.8 -lwx_gtk2u_core-2.8 -lwx_baseu_xml-2.8 -lwx_baseu_net-2.8 -lwx_baseu-2.8  -W1,--version-script

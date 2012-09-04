@@ -1,0 +1,18 @@
+﻿Build started 2012-06-08 16:00:46.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpworks\vscpworks.vcxproj" on node 2 (rebuild target(s)).
+     1>InitializeBuildStatus:
+         Creating "C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectDebug\vscpworks.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12/include" /I"C:\wxWidgets-2.8.12/contrib/include" /I"C:\wxWidgets-2.8.12/lib/vc_lib/mswud" /I"c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include" /ZI /nologo /W3 /WX- /Od /Oy- /D NOPCH /D WIN32 /D __WXMSW__ /D _WINDOWS /D __WXDEBUG__ /D _DEBUG /D _UNICODE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectDebug\\" /Fd"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectDebug\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\common\crc.c  
+         crc.c
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12/include" /I"C:\wxWidgets-2.8.12/contrib/include" /I"C:\wxWidgets-2.8.12/lib/vc_lib/mswud" /I"c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include" /ZI /nologo /W3 /WX- /Od /Oy- /D NOPCH /D WIN32 /D __WXMSW__ /D _WINDOWS /D __WXDEBUG__ /D _DEBUG /D _UNICODE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectDebug\\" /Fd"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectDebug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\common\canalsuperwrapper.cpp ..\common\dllwrapper.cpp ..\common\guid.cpp ..\common\mdf.cpp ..\common\vscphelper.cpp ..\common\vscptcpif.cpp bootdevice.cpp bootdevice_pic1.cpp bootdevice_vscp.cpp devicebootloaderwizard.cpp dialogabstractionedit.cpp dialogeditlevelidmrow.cpp dialogsetfiltermask.cpp dlgabout.cpp dlgconfiguration.cpp dlgnewvscpsession.cpp dlgselectdaemoninterface.cpp dlgvscpfilter.cpp dlgvscpinterfacesettings.cpp dlgvscpmsg.cpp dlgvscptrmit.cpp frmdeviceconfig.cpp frmmain.cpp frmmdfeditor.cpp frmscanfordevices.cpp frmvscpsession.cpp gridtable.cpp merlin.cpp readguid.cpp readmdffile.cpp readmsfurl.cpp readregister.cpp threadvscpwork.cpp vscptxobj.cpp vscpworks.cpp writeregister.cpp  
+         writeregister.cpp
+         vscpworks.cpp
+         vscptxobj.cpp
+         threadvscpwork.cpp
+         readregister.cpp
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpworks\vscpworks.vcxproj" (rebuild target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:24.14

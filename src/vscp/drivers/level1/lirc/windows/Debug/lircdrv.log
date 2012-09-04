@@ -1,0 +1,43 @@
+﻿Build started 2012-06-08 15:58:41.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\lirc\windows\lircdrv.vcxproj" on node 3 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file ".\Debug\lircdrv.lastbuildstate".
+       InitializeBuildStatus:
+         Creating ".\Debug\lircdrv.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D LIRCDRV_EXPORTS /D _VC80_UPGRADE=0x0600 /D _WINDLL /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug\\" /Fd".\Debug\vc100.pdb" /FR".\Debug\\" /Gd /TP /analyze- /errorReport:prompt ..\common\dlldrvobj.cpp lircdrv.cpp ..\common\lircobj.cpp
+         lircobj.cpp
+         lircdrv.cpp
+         dlldrvobj.cpp
+         Generating Code...
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:".\Debug\lircdrv.dll" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" libexpat.lib comctl32.lib wsock32.lib netapi32.lib rpcrt4.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /DEF:".\lircdrv.def" /MANIFEST /ManifestFile:".\Debug\lircdrv.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\lirc\windows\Debug\lircdrv.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\Debug\lircdrv.lib" /MACHINE:X86 /DLL .\Debug\dlldrvobj.obj
+         .\Debug\lircdrv.obj
+         .\Debug\lircobj.obj
+     1>dlldrvobj.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+            Creating library .\Debug\lircdrv.lib and object .\Debug\lircdrv.exp
+         lircdrv.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\lirc\windows\.\Debug\lircdrv.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:".\Debug\lircdrv.dll;#2" /manifest .\Debug\lircdrv.dll.intermediate.manifest
+       BscMake:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\bscmake.exe /nologo /o".\Debug\lircdrv.bsc" .\Debug\dlldrvobj.sbr .\Debug\lircdrv.sbr .\Debug\lircobj.sbr
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\lirc\windows\.\Debug\lircdrv.dll"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y ".\Debug\/lircdrv.lib"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug already exists.
+                 1 file(s) copied.
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file ".\Debug\lircdrv.unsuccessfulbuild".
+         Touching ".\Debug\lircdrv.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\lirc\windows\lircdrv.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:47.58

@@ -1,0 +1,55 @@
+﻿Build started 2012-06-08 15:59:29.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level2\btdetect\win32\vscpbtdetect.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file ".\Debug\vscpbtdetect.lastbuildstate".
+       InitializeBuildStatus:
+         Creating ".\Debug\vscpbtdetect.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /ZI /nologo /W3 /WX- /Od /Oy- /D wxUSE_GUI=0 /D WIN32 /D __WXMSW__ /D _DEBUG /D _WINDOWS /D _USRDLL /D vscpbtdetect_EXPORTS /D wxUSE_GUI=0 /D _AFXDLL /D _VC80_UPGRADE=0x0710 /D _WINDLL /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug/" /Fd".\Debug/vc100.pdb" /FR".\Debug\\" /Gd /TC /analyze- /errorReport:prompt ..\..\..\..\..\common\crc.c ..\..\..\..\..\common\dllist.c
+         crc.c
+         dllist.c
+         Generating Code...
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /ZI /nologo /W3 /WX- /Od /Oy- /D wxUSE_GUI=0 /D WIN32 /D __WXMSW__ /D _DEBUG /D _WINDOWS /D _USRDLL /D vscpbtdetect_EXPORTS /D wxUSE_GUI=0 /D _AFXDLL /D _VC80_UPGRADE=0x0710 /D _WINDLL /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug/" /Fd".\Debug/vc100.pdb" /FR".\Debug\\" /Gd /TP /analyze- /errorReport:prompt ..\..\..\..\common\guid.cpp ..\..\..\..\common\vscphelper.cpp ..\..\..\..\common\vscptcpif.cpp
+         guid.cpp
+         vscphelper.cpp
+         vscptcpif.cpp
+         Generating Code...
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _WINDOWS /D _MBCS /D _USRDLL /D vscpbtdetect_EXPORTS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug/" /Fd".\Debug/vc100.pdb" /FR".\Debug\\" /Gd /TP /analyze- /errorReport:prompt vscpbtdetect.cpp ..\common\dlldrvobj.cpp
+         vscpbtdetect.cpp
+         dlldrvobj.cpp
+         Generating Code...
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:".\Debug/vscpbtdetect.dll" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /DEF:".\vscpbtdetect.def" /MANIFEST /ManifestFile:".\Debug\vscpbtdetect.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:".\Debug/vscpbtdetect.pdb" /TLBID:1 /DYNAMICBASE:NO /IMPLIB:".\Debug/vscpbtdetect.lib" /MACHINE:X86 /DLL .\Debug/crc.obj
+         .\Debug/dllist.obj
+         .\Debug/guid.obj
+         .\Debug/vscphelper.obj
+         .\Debug/vscptcpif.obj
+         .\Debug/vscpbtdetect.obj
+         .\Debug/dlldrvobj.obj
+     1>crc.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+            Creating library .\Debug/vscpbtdetect.lib and object .\Debug/vscpbtdetect.exp
+         vscpbtdetect.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level2\btdetect\win32\.\Debug\vscpbtdetect.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:".\Debug/vscpbtdetect.dll;#2" /manifest .\Debug\vscpbtdetect.dll.intermediate.manifest
+       BscMake:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\bscmake.exe /nologo /o".\Debug\vscpbtdetect.bsc" .\Debug\crc.sbr .\Debug\dllist.sbr .\Debug\guid.sbr .\Debug\vscphelper.sbr .\Debug\vscptcpif.sbr .\Debug\vscpbtdetect.sbr .\Debug\dlldrvobj.sbr
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level2\btdetect\win32\.\Debug\vscpbtdetect.dll"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y ".\Debug\/vscpbtdetect.lib"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug already exists.
+                 1 file(s) copied.
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file ".\Debug\vscpbtdetect.unsuccessfulbuild".
+         Touching ".\Debug\vscpbtdetect.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level2\btdetect\win32\vscpbtdetect.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:47.46

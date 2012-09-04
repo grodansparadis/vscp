@@ -1,0 +1,489 @@
+\hypertarget{class_c_dll_wrapper}{
+\section{CDllWrapper Class Reference}
+\label{de/d52/class_c_dll_wrapper}\index{CDllWrapper@{CDllWrapper}}
+}
+
+
+Encapsulates the CANAL dll/dl(so) interface.  
+
+
+
+
+{\ttfamily \#include $<$dllwrapper.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_c_dll_wrapper_a760cc99e5ae00306d80e15373ea3b1a0}{
+\hyperlink{class_c_dll_wrapper_a760cc99e5ae00306d80e15373ea3b1a0}{CDllWrapper} ()}
+\label{de/d52/class_c_dll_wrapper_a760cc99e5ae00306d80e15373ea3b1a0}
+
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\hypertarget{class_c_dll_wrapper_aa25bb4ca1bd947cdf65cf2bfba32ac22}{
+virtual \hyperlink{class_c_dll_wrapper_aa25bb4ca1bd947cdf65cf2bfba32ac22}{$\sim$CDllWrapper} ()}
+\label{de/d52/class_c_dll_wrapper_aa25bb4ca1bd947cdf65cf2bfba32ac22}
+
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+int \hyperlink{class_c_dll_wrapper_ab23fffe0581a1bc430bcd60fffd81645}{initialize} (wxString \&strPath)
+\item 
+long \hyperlink{class_c_dll_wrapper_ab4c5118b9ee0d02399a0faa12a3c1556}{doCmdOpen} (const wxString \&strConfiguration=(\_\-(\char`\"{}\char`\"{})), unsigned long flags=0L)
+\item 
+int \hyperlink{class_c_dll_wrapper_a8508e6c901500c0a96dffd627a58127f}{doCmdClose} (void)
+\item 
+bool \hyperlink{class_c_dll_wrapper_a2972e1797460d3c2eeb3cabd66f5842c}{doCmdNOOP} (void)
+\item 
+unsigned long \hyperlink{class_c_dll_wrapper_a8273a1037a6ede0a2e7ea71cd0b1d30f}{doCmdGetLevel} (void)
+\item 
+int \hyperlink{class_c_dll_wrapper_a2fcdc5f6fdb9089dfb34a94914eb513c}{doCmdSend} (canalMsg $\ast$pMsg)
+\item 
+int \hyperlink{class_c_dll_wrapper_a3119649c7c8eff493f2a84cdfd87c3b2}{doCmdBlockingSend} (canalMsg $\ast$pMsg, unsigned long timeout)
+\item 
+int \hyperlink{class_c_dll_wrapper_ab9ecc6001b864f751ac4cdce8f02bf08}{doCmdReceive} (canalMsg $\ast$pMsg)
+\item 
+int \hyperlink{class_c_dll_wrapper_aa05b4abb7a676fa453285ee9ecb9cb0e}{doCmdBlockingReceive} (canalMsg $\ast$pMsg, unsigned long timeout)
+\item 
+int \hyperlink{class_c_dll_wrapper_ae68f837b448c3b2b2d906a476952033e}{doCmdDataAvailable} (void)
+\item 
+int \hyperlink{class_c_dll_wrapper_afc54763410f122eb1a57f593325449aa}{doCmdStatus} (canalStatus $\ast$pStatus)
+\item 
+int \hyperlink{class_c_dll_wrapper_ac1106b4d474d0185387e3f37d71362ad}{doCmdStatistics} (canalStatistics $\ast$pStatistics)
+\item 
+int \hyperlink{class_c_dll_wrapper_a2ed6ae4f31b4c6b9fe234e275b9c1e11}{doCmdFilter} (const unsigned long filter)
+\item 
+int \hyperlink{class_c_dll_wrapper_abc8460a4e3708c54c1cd18bd672b41be}{doCmdMask} (const unsigned long mask)
+\item 
+int \hyperlink{class_c_dll_wrapper_afd53734e642b770e4b5f29df69dab5db}{doCmdBaudrate} (const unsigned long baudrate)
+\item 
+unsigned long \hyperlink{class_c_dll_wrapper_a23f350d95cd15e82cd60cdddb90c3361}{doCmdVersion} (void)
+\item 
+unsigned long \hyperlink{class_c_dll_wrapper_ab2f4f9d4d403ee847442826234caf9d6}{doCmdDLLVersion} (void)
+\item 
+const char $\ast$ \hyperlink{class_c_dll_wrapper_a1d4f5113557b340ab21680376e76205e}{doCmdVendorString} (void)
+\item 
+const char $\ast$ \hyperlink{class_c_dll_wrapper_a74cef360f4a9e071260cd28f6dc92c69}{doCmdGetDriverInfo} (void)
+\item 
+bool \hyperlink{class_c_dll_wrapper_a504043dc80bfb6163cecbe0e2a0c48e1}{isBlockingSupported} (bool bRead=true, bool bWrite=true)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+wxString \hyperlink{class_c_dll_wrapper_a07a318919ee7a2b0d6332bea947e4576}{m\_\-strPath}
+\item 
+\hypertarget{class_c_dll_wrapper_a07171bd633843c72899987d1e6a54ee3}{
+wxDynamicLibrary \hyperlink{class_c_dll_wrapper_a07171bd633843c72899987d1e6a54ee3}{m\_\-wxdll}}
+\label{de/d52/class_c_dll_wrapper_a07171bd633843c72899987d1e6a54ee3}
+
+\begin{DoxyCompactList}\small\item\em dl/dll handler \end{DoxyCompactList}\item 
+\hypertarget{class_c_dll_wrapper_a6f16be93eed366b6e545ccf469972f29}{
+long \hyperlink{class_c_dll_wrapper_a6f16be93eed366b6e545ccf469972f29}{m\_\-devid}}
+\label{de/d52/class_c_dll_wrapper_a6f16be93eed366b6e545ccf469972f29}
+
+\begin{DoxyCompactList}\small\item\em device id from open call \end{DoxyCompactList}\item 
+bool \hyperlink{class_c_dll_wrapper_a87469da2159181b270bf220a62f60d9d}{m\_\-bInit}
+\end{DoxyCompactItemize}
+\paragraph*{}
+\begin{DoxyCompactItemize}
+\item 
+\hypertarget{class_c_dll_wrapper_a047d3f12fabdb4fc036ebd613b980e95}{
+LPFNDLL\_\-CANALOPEN \hyperlink{class_c_dll_wrapper_a047d3f12fabdb4fc036ebd613b980e95}{m\_\-proc\_\-CanalOpen}}
+\label{de/d52/class_c_dll_wrapper_a047d3f12fabdb4fc036ebd613b980e95}
+
+\begin{DoxyCompactList}\small\item\em CANAL methods. \end{DoxyCompactList}\item 
+\hypertarget{class_c_dll_wrapper_ab02b5ffea57c2c87952737b3b4b4440c}{
+LPFNDLL\_\-CANALCLOSE {\bfseries m\_\-proc\_\-CanalClose}}
+\label{de/d52/class_c_dll_wrapper_ab02b5ffea57c2c87952737b3b4b4440c}
+
+\item 
+\hypertarget{class_c_dll_wrapper_a2b8db1e09e7bfb5995d5fd5d1bc251a3}{
+LPFNDLL\_\-CANALGETLEVEL {\bfseries m\_\-proc\_\-CanalGetLevel}}
+\label{de/d52/class_c_dll_wrapper_a2b8db1e09e7bfb5995d5fd5d1bc251a3}
+
+\item 
+\hypertarget{class_c_dll_wrapper_a68dc9e1dcec6726147c7fa18ed3783d4}{
+LPFNDLL\_\-CANALSEND {\bfseries m\_\-proc\_\-CanalSend}}
+\label{de/d52/class_c_dll_wrapper_a68dc9e1dcec6726147c7fa18ed3783d4}
+
+\item 
+\hypertarget{class_c_dll_wrapper_aceb0b5e04b78b32f2d21ee85eb8427c9}{
+LPFNDLL\_\-CANALRECEIVE {\bfseries m\_\-proc\_\-CanalReceive}}
+\label{de/d52/class_c_dll_wrapper_aceb0b5e04b78b32f2d21ee85eb8427c9}
+
+\item 
+\hypertarget{class_c_dll_wrapper_ac8b520a8f1ecf67ce1cbdd901da07ed6}{
+LPFNDLL\_\-CANALDATAAVAILABLE {\bfseries m\_\-proc\_\-CanalDataAvailable}}
+\label{de/d52/class_c_dll_wrapper_ac8b520a8f1ecf67ce1cbdd901da07ed6}
+
+\item 
+\hypertarget{class_c_dll_wrapper_afa48b0082fdfbef5d5a013489a849aec}{
+LPFNDLL\_\-CANALGETSTATUS {\bfseries m\_\-proc\_\-CanalGetStatus}}
+\label{de/d52/class_c_dll_wrapper_afa48b0082fdfbef5d5a013489a849aec}
+
+\item 
+\hypertarget{class_c_dll_wrapper_a25bcd62739447424ab227ebbfa05f813}{
+LPFNDLL\_\-CANALGETSTATISTICS {\bfseries m\_\-proc\_\-CanalGetStatistics}}
+\label{de/d52/class_c_dll_wrapper_a25bcd62739447424ab227ebbfa05f813}
+
+\item 
+\hypertarget{class_c_dll_wrapper_a37351efe4a1e546a2eda41cc477478c7}{
+LPFNDLL\_\-CANALSETFILTER {\bfseries m\_\-proc\_\-CanalSetFilter}}
+\label{de/d52/class_c_dll_wrapper_a37351efe4a1e546a2eda41cc477478c7}
+
+\item 
+\hypertarget{class_c_dll_wrapper_a6ce406d144a2d929e56f6917cee8de1d}{
+LPFNDLL\_\-CANALSETMASK {\bfseries m\_\-proc\_\-CanalSetMask}}
+\label{de/d52/class_c_dll_wrapper_a6ce406d144a2d929e56f6917cee8de1d}
+
+\item 
+\hypertarget{class_c_dll_wrapper_acc86a1be3981ab413326ad3afa159ecf}{
+LPFNDLL\_\-CANALSETBAUDRATE {\bfseries m\_\-proc\_\-CanalSetBaudrate}}
+\label{de/d52/class_c_dll_wrapper_acc86a1be3981ab413326ad3afa159ecf}
+
+\item 
+\hypertarget{class_c_dll_wrapper_ac3fd58c15cd91c286968c7a6fa5ee670}{
+LPFNDLL\_\-CANALGETVERSION {\bfseries m\_\-proc\_\-CanalGetVersion}}
+\label{de/d52/class_c_dll_wrapper_ac3fd58c15cd91c286968c7a6fa5ee670}
+
+\item 
+\hypertarget{class_c_dll_wrapper_af69ad4b54d18f9d90e9fb2d1c5efdf4b}{
+LPFNDLL\_\-CANALGETDLLVERSION {\bfseries m\_\-proc\_\-CanalGetDllVersion}}
+\label{de/d52/class_c_dll_wrapper_af69ad4b54d18f9d90e9fb2d1c5efdf4b}
+
+\item 
+\hypertarget{class_c_dll_wrapper_aca87ccf948accba2ea5cced7c9b50561}{
+LPFNDLL\_\-CANALGETVENDORSTRING {\bfseries m\_\-proc\_\-CanalGetVendorString}}
+\label{de/d52/class_c_dll_wrapper_aca87ccf948accba2ea5cced7c9b50561}
+
+\item 
+\hypertarget{class_c_dll_wrapper_a8a0dd4377ae830a9f98c88dfeec7ebf5}{
+LPFNDLL\_\-CANALBLOCKINGSEND {\bfseries m\_\-proc\_\-CanalBlockingSend}}
+\label{de/d52/class_c_dll_wrapper_a8a0dd4377ae830a9f98c88dfeec7ebf5}
+
+\item 
+\hypertarget{class_c_dll_wrapper_a6eb7c36a4c00ef71f2fe5a044825cb6e}{
+LPFNDLL\_\-CANALBLOCKINGRECEIVE {\bfseries m\_\-proc\_\-CanalBlockingReceive}}
+\label{de/d52/class_c_dll_wrapper_a6eb7c36a4c00ef71f2fe5a044825cb6e}
+
+\item 
+\hypertarget{class_c_dll_wrapper_ab42e9615db545bd1283fb07fc19ca0e0}{
+LPFNDLL\_\-CANALGETDRIVERINFO {\bfseries m\_\-proc\_\-CanalGetdriverInfo}}
+\label{de/d52/class_c_dll_wrapper_ab42e9615db545bd1283fb07fc19ca0e0}
+
+\end{DoxyCompactItemize}
+
+
+
+\subsection{Detailed Description}
+Encapsulates the CANAL dll/dl(so) interface. 
+
+The class have all methods of the CANAL interface specification implemented in an easy to handle form. Use the class if you want to talk directly to CANAL dll/dl(so) drivers. A better choice may be to use CanalSuperWrapper wich can talk to both a dll/dl(so) and to a tvp/ip interface. 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_c_dll_wrapper_afd53734e642b770e4b5f29df69dab5db}{
+\index{CDllWrapper@{CDllWrapper}!doCmdBaudrate@{doCmdBaudrate}}
+\index{doCmdBaudrate@{doCmdBaudrate}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdBaudrate}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdBaudrate (
+\begin{DoxyParamCaption}
+\item[{const unsigned long}]{baudrate}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_afd53734e642b770e4b5f29df69dab5db}
+Set baudrate. \begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_aa05b4abb7a676fa453285ee9ecb9cb0e}{
+\index{CDllWrapper@{CDllWrapper}!doCmdBlockingReceive@{doCmdBlockingReceive}}
+\index{doCmdBlockingReceive@{doCmdBlockingReceive}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdBlockingReceive}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdBlockingReceive (
+\begin{DoxyParamCaption}
+\item[{canalMsg $\ast$}]{pMsg, }
+\item[{unsigned long}]{timeout}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_aa05b4abb7a676fa453285ee9ecb9cb0e}
+Receive a CAN message 
+\begin{DoxyParams}{Parameters}
+{\em pMsg} & Poniter to CAN message that receive received message. \\
+\hline
+{\em timeout} & Time to wait in milliseconds or zero to wait forever. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. Return CANAL\_\-ERROR\_\-NOT\_\-SUPPORTED if blocking operations is not supported. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a3119649c7c8eff493f2a84cdfd87c3b2}{
+\index{CDllWrapper@{CDllWrapper}!doCmdBlockingSend@{doCmdBlockingSend}}
+\index{doCmdBlockingSend@{doCmdBlockingSend}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdBlockingSend}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdBlockingSend (
+\begin{DoxyParamCaption}
+\item[{canalMsg $\ast$}]{pMsg, }
+\item[{unsigned long}]{timeout}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a3119649c7c8eff493f2a84cdfd87c3b2}
+Send a CAN message and block if it can't be sent right away. 
+\begin{DoxyParams}{Parameters}
+{\em pMsg} & Ponter to CAN message to send \\
+\hline
+{\em timeout} & Time to wait in milliseconds or zero to wait forever. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. Return CANAL\_\-ERROR\_\-NOT\_\-SUPPORTED if blocking operations is not supported. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a8508e6c901500c0a96dffd627a58127f}{
+\index{CDllWrapper@{CDllWrapper}!doCmdClose@{doCmdClose}}
+\index{doCmdClose@{doCmdClose}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdClose}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdClose (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a8508e6c901500c0a96dffd627a58127f}
+Close communication channel \begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_ae68f837b448c3b2b2d906a476952033e}{
+\index{CDllWrapper@{CDllWrapper}!doCmdDataAvailable@{doCmdDataAvailable}}
+\index{doCmdDataAvailable@{doCmdDataAvailable}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdDataAvailable}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdDataAvailable (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_ae68f837b448c3b2b2d906a476952033e}
+Get the number of messages in the input queue \begin{DoxyReturn}{Returns}
+the number of messages available or if negative an error code. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_ab2f4f9d4d403ee847442826234caf9d6}{
+\index{CDllWrapper@{CDllWrapper}!doCmdDLLVersion@{doCmdDLLVersion}}
+\index{doCmdDLLVersion@{doCmdDLLVersion}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdDLLVersion}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long doCmdDLLVersion (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_ab2f4f9d4d403ee847442826234caf9d6}
+Get dll version. \begin{DoxyReturn}{Returns}
+DLL version. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a2ed6ae4f31b4c6b9fe234e275b9c1e11}{
+\index{CDllWrapper@{CDllWrapper}!doCmdFilter@{doCmdFilter}}
+\index{doCmdFilter@{doCmdFilter}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdFilter}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdFilter (
+\begin{DoxyParamCaption}
+\item[{const unsigned long}]{filter}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a2ed6ae4f31b4c6b9fe234e275b9c1e11}
+Set/Reset a filter. \begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a74cef360f4a9e071260cd28f6dc92c69}{
+\index{CDllWrapper@{CDllWrapper}!doCmdGetDriverInfo@{doCmdGetDriverInfo}}
+\index{doCmdGetDriverInfo@{doCmdGetDriverInfo}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdGetDriverInfo}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ doCmdGetDriverInfo (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a74cef360f4a9e071260cd28f6dc92c69}
+Get driver information \begin{DoxyReturn}{Returns}
+Pointer to driver information string or NULL if no driver info is available. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a8273a1037a6ede0a2e7ea71cd0b1d30f}{
+\index{CDllWrapper@{CDllWrapper}!doCmdGetLevel@{doCmdGetLevel}}
+\index{doCmdGetLevel@{doCmdGetLevel}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdGetLevel}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long doCmdGetLevel (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a8273a1037a6ede0a2e7ea71cd0b1d30f}
+Get the Canal protocol level \begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_abc8460a4e3708c54c1cd18bd672b41be}{
+\index{CDllWrapper@{CDllWrapper}!doCmdMask@{doCmdMask}}
+\index{doCmdMask@{doCmdMask}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdMask}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdMask (
+\begin{DoxyParamCaption}
+\item[{const unsigned long}]{mask}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_abc8460a4e3708c54c1cd18bd672b41be}
+Set/Reset a mask. \begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a2972e1797460d3c2eeb3cabd66f5842c}{
+\index{CDllWrapper@{CDllWrapper}!doCmdNOOP@{doCmdNOOP}}
+\index{doCmdNOOP@{doCmdNOOP}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdNOOP}]{\setlength{\rightskip}{0pt plus 5cm}bool doCmdNOOP (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{de/d52/class_c_dll_wrapper_a2972e1797460d3c2eeb3cabd66f5842c}
+Do a no operation test command. \begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_ab4c5118b9ee0d02399a0faa12a3c1556}{
+\index{CDllWrapper@{CDllWrapper}!doCmdOpen@{doCmdOpen}}
+\index{doCmdOpen@{doCmdOpen}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdOpen}]{\setlength{\rightskip}{0pt plus 5cm}long doCmdOpen (
+\begin{DoxyParamCaption}
+\item[{const wxString \&}]{strConfiguration = {\ttfamily (\_\-(\char`\"{}\char`\"{}))}, }
+\item[{unsigned long}]{flags = {\ttfamily 0L}}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_ab4c5118b9ee0d02399a0faa12a3c1556}
+Open communication channel.
+
+
+\begin{DoxyParams}{Parameters}
+{\em strConfiguration} & is name of channel. \\
+\hline
+{\em flags} & CANAL flags for the channel. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Channel handler on success. -\/1 on error. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_ab9ecc6001b864f751ac4cdce8f02bf08}{
+\index{CDllWrapper@{CDllWrapper}!doCmdReceive@{doCmdReceive}}
+\index{doCmdReceive@{doCmdReceive}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdReceive}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdReceive (
+\begin{DoxyParamCaption}
+\item[{canalMsg $\ast$}]{pMsg}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_ab9ecc6001b864f751ac4cdce8f02bf08}
+Receive a CAN message. 
+\begin{DoxyParams}{Parameters}
+{\em pMsg} & Poniter to CAN message that receive received message. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a2fcdc5f6fdb9089dfb34a94914eb513c}{
+\index{CDllWrapper@{CDllWrapper}!doCmdSend@{doCmdSend}}
+\index{doCmdSend@{doCmdSend}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdSend}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdSend (
+\begin{DoxyParamCaption}
+\item[{canalMsg $\ast$}]{pMsg}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a2fcdc5f6fdb9089dfb34a94914eb513c}
+Send a CAN message 
+\begin{DoxyParams}{Parameters}
+{\em pMsg} & Ponter to CAN message to send \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_ac1106b4d474d0185387e3f37d71362ad}{
+\index{CDllWrapper@{CDllWrapper}!doCmdStatistics@{doCmdStatistics}}
+\index{doCmdStatistics@{doCmdStatistics}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdStatistics}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdStatistics (
+\begin{DoxyParamCaption}
+\item[{canalStatistics $\ast$}]{pStatistics}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_ac1106b4d474d0185387e3f37d71362ad}
+Receive CAN statistics. \begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS on success or CANAL error if failure. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_afc54763410f122eb1a57f593325449aa}{
+\index{CDllWrapper@{CDllWrapper}!doCmdStatus@{doCmdStatus}}
+\index{doCmdStatus@{doCmdStatus}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdStatus}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdStatus (
+\begin{DoxyParamCaption}
+\item[{canalStatus $\ast$}]{pStatus}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_afc54763410f122eb1a57f593325449aa}
+Receive CAN status. \begin{DoxyReturn}{Returns}
+Return number of messages in inqueue. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a1d4f5113557b340ab21680376e76205e}{
+\index{CDllWrapper@{CDllWrapper}!doCmdVendorString@{doCmdVendorString}}
+\index{doCmdVendorString@{doCmdVendorString}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdVendorString}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ doCmdVendorString (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a1d4f5113557b340ab21680376e76205e}
+Get vendorstring. \begin{DoxyReturn}{Returns}
+Pointer to vendor string.. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a23f350d95cd15e82cd60cdddb90c3361}{
+\index{CDllWrapper@{CDllWrapper}!doCmdVersion@{doCmdVersion}}
+\index{doCmdVersion@{doCmdVersion}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{doCmdVersion}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long doCmdVersion (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a23f350d95cd15e82cd60cdddb90c3361}
+Get interface version. \begin{DoxyReturn}{Returns}
+Driver version. 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_ab23fffe0581a1bc430bcd60fffd81645}{
+\index{CDllWrapper@{CDllWrapper}!initialize@{initialize}}
+\index{initialize@{initialize}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{initialize}]{\setlength{\rightskip}{0pt plus 5cm}int initialize (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{strPath}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_ab23fffe0581a1bc430bcd60fffd81645}
+initialize the dll wrapper
+
+
+\begin{DoxyParams}{Parameters}
+{\em strPath} & to the canal dll \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true on success 
+\end{DoxyReturn}
+\hypertarget{class_c_dll_wrapper_a504043dc80bfb6163cecbe0e2a0c48e1}{
+\index{CDllWrapper@{CDllWrapper}!isBlockingSupported@{isBlockingSupported}}
+\index{isBlockingSupported@{isBlockingSupported}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{isBlockingSupported}]{\setlength{\rightskip}{0pt plus 5cm}bool isBlockingSupported (
+\begin{DoxyParamCaption}
+\item[{bool}]{bRead = {\ttfamily true}, }
+\item[{bool}]{bWrite = {\ttfamily true}}
+\end{DoxyParamCaption}
+)}}
+\label{de/d52/class_c_dll_wrapper_a504043dc80bfb6163cecbe0e2a0c48e1}
+Check if blocking is supported 
+\begin{DoxyParams}{Parameters}
+{\em bRead} & Set to true to check receive blcoking \\
+\hline
+{\em bWrite} & Set to trur to check send blocking \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns true if blocking is supported. 
+\end{DoxyReturn}
+
+
+\subsection{Field Documentation}
+\hypertarget{class_c_dll_wrapper_a87469da2159181b270bf220a62f60d9d}{
+\index{CDllWrapper@{CDllWrapper}!m\_\-bInit@{m\_\-bInit}}
+\index{m\_\-bInit@{m\_\-bInit}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{m\_\-bInit}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf m\_\-bInit}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{de/d52/class_c_dll_wrapper_a87469da2159181b270bf220a62f60d9d}
+Flag that indicates that a sucessfull initialization has been performed. \hypertarget{class_c_dll_wrapper_a07a318919ee7a2b0d6332bea947e4576}{
+\index{CDllWrapper@{CDllWrapper}!m\_\-strPath@{m\_\-strPath}}
+\index{m\_\-strPath@{m\_\-strPath}!CDllWrapper@{CDllWrapper}}
+\subsubsection[{m\_\-strPath}]{\setlength{\rightskip}{0pt plus 5cm}wxString {\bf m\_\-strPath}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{de/d52/class_c_dll_wrapper_a07a318919ee7a2b0d6332bea947e4576}
+Path to CANAL driver 
+
+The documentation for this class was generated from the following file:\begin{DoxyCompactItemize}
+\item 
+D:/development/m2m/src/vscp/common/\hyperlink{dllwrapper_8h}{dllwrapper.h}\end{DoxyCompactItemize}

@@ -1,0 +1,210 @@
+#!/bin/sh
+
+# Install icons for the simple interface
+installeeepc_simpleui()
+{
+  XMLFOLDER=/opt/xandros/share/launcherxml
+  LAUNCHERDIR=/opt/xandros/share/AsusLauncher
+  NEWLAUNCHERDIR=/var/lib/AsusLauncher
+  LAUNCHERCONF=/etc/AsusLauncher/AsusLauncher.conf
+
+  SIMPLEUI=$LAUNCHERDIR/simpleui.rc
+  NEWSIMPLEUI=$NEWLAUNCHERDIR/simpleui.rc
+
+  # Test for differing icon size by looking at the file size of a PNG.
+  # On early Eee PC systems (120x120 icon size) it is 11871, on later systems
+  # (130x130 icon size) it is 15445.
+  WEBNORMSIZE=`stat /opt/xandros/share/AsusLauncher/web_norm.png --printf "%s\n"`
+
+  if [ "$WEBNORMSIZE" = "11871" ]; then
+    ICONSIZE=120
+  else
+    ICONSIZE=130
+  fi
+
+  # Copy the icons
+  cp -f "$INSTALLDIR/appicons/asus${ICONSIZE}x${ICONSIZE}/"*.png "$LAUNCHERDIR"
+
+  if [ -f "$LAUNCHERCONF" ]; then
+    # NEW METHOD
+
+    # Check that /opt/xandros/share/launcherxml is in AsusLauncher.conf
+
+    grep "launcherxml" "$LAUNCHERCONF" > /tmp/dbtest
+
+    if [ ! -s /tmp/dbtest ]; then
+      echo "/opt/xandros/share/launcherxml" >> "$LAUNCHERCONF"
+    fi
+
+    rm -f /tmp/dbtest
+
+    mkdir -p "$XMLFOLDER"
+
+    cp "$INSTALLDIR/vscpworks_eeepc.xml" "$XMLFOLDER"
+
+    if [ -f /opt/xandros/sbin/update-launcher ]; then
+        /opt/xandros/sbin/update-launcher
+    fi
+
+  else
+    
+    # OLD METHOD
+
+    if [ -f $SIMPLEUI ]; then
+
+      # Check if we've already added the parcel
+      grep "DialogBlocks" $SIMPLEUI > /tmp/dbtest
+
+      if [ ! -s /tmp/dbtest ]; then
+        cp "$SIMPLEUI" "$SIMPLEUI.prevscpworksinstall"
+        sed "s/<\/simpleui>//g" < "$SIMPLEUI.prevscpworksinstall" > "$SIMPLEUI.tmp"
+        cat "$SIMPLEUI.tmp" "$INSTALLDIR/vscpworks_eeepc.xml" > "$SIMPLEUI"
+        echo "</simpleui>" >> $SIMPLEUI
+        rm -f "$SIMPLEUI.tmp"
+
+      fi
+
+      rm -f /tmp/dbtest
+    fi  
+  fi
+
+}
+
+
+case "$1" in
+    configure)
+
+      INSTALLDIR=/usr/share/vscp
+
+      rm -f /usr/bin/vscpd
+      chmod +x /usr/bin/vscpd
+
+      rm -f /usr/bin/mkpasswd
+      chmod +x /usr/bin/mkpasswd
+
+      rm -f /usr/bin/vscpcmd
+      chmod +x /usr/bin/vscpcmd
+
+      rm -f /usr/bin/vscpworks
+      chmod +x /usr/bin/vscpworks	
+
+	DESKTOPFILE="$INSTALLDIR/vscpworks.desktop"
+      	MIMEFILE="$INSTALLDIR/vscpworks.xml"
+        GNOMEMIMEFILE="$INSTALLDIR/vscpworks.mime"
+	KEYSFILE="$INSTALLDIR/vscpworks.keys"
+
+
+      # where our desktop file goes
+      for DESKTOPPATH in "/usr/share/applications" "/opt/gnome/share/applications" ; do
+        if [ -d "$DESKTOPPATH" ] ; then
+  	      break
+        fi
+      done
+
+      DATADIR=/usr/share
+    
+      # try to find mime folder
+      # Do we also search "$XDG_DATA_HOME" "$XDG_DATA_DIRS" ?
+      for MIME in "/usr/share/mime/packages" ; do
+	    if [ -d "$MIME" ] ; then
+	       break
+	    fi
+      done
+
+      for GNOMEMIME in "/usr/share/mime-info" "/opt/gnome/share/mime-info" ; do
+	    if [ -d "$GNOMEMIME" ] ; then
+	       break
+	    fi
+      done
+
+      # configure desktop
+      if [ -n "$DESKTOPPATH" -a -d "$DESKTOPPATH" ] ; then
+        cp "$DESKTOPFILE" "$DESKTOPPATH/vscpworks.desktop"
+        chmod 644 "$DESKTOPFILE" "$DESKTOPPATH/vscpworks.desktop"
+      fi
+
+      # For Mime types configuration information see:
+      # http://www.redhat.com/magazine/012oct05/features/freedesktop/
+      # http://www.gnome.org/learn/admin-guide/latest/mimetypes-registering.html
+      # http://developer.gnome.org/doc/whitepapers/SystemConfig/mime-info.html
+      # http://www.freedesktop.org/wiki/
+
+      if [ -n "$GNOMEMIME" -a -d "$GNOMEMIME" ] ; then
+        echo "configuring GNOME mime types..."
+
+        cp "$KEYSFILE" "$GNOMEMIME"
+        chmod 644 "$GNOMEMIME/vscpworks.keys"
+
+        cp "$GNOMEMIMEFILE" "$GNOMEMIME"
+        chmod 644 "$GNOMEMIME/vscpworks.mime"
+      fi
+
+      if [ -n "$MIME" -a -d "$MIME" ] ; then
+        echo "configuring mime types..."
+
+        cp "$MIMEFILE" "$MIME"
+        chmod 644 "$MIME/vscpworks.xml"
+
+        update-mime-database "$DATADIR/mime"
+      fi
+
+      cp -f "$INSTALLDIR/appicons/vscpworks128x128.png" "$DATADIR/icons/hicolor/128x128/apps/vscpworks.png"
+
+      for EACHSIZE in 32 48 ; do
+        SIZEDIR="$DATADIR/icons/hicolor/${EACHSIZE}x${EACHSIZE}/apps"
+        MIMESIZEDIR="$DATADIR/icons/hicolor/${EACHSIZE}x${EACHSIZE}/mimetypes"
+
+        mkdir -p "$SIZEDIR"
+        mkdir -p "$MIMESIZEDIR"
+
+        if [ -d "$SIZEDIR" ] ; then
+
+          cp -f "$INSTALLDIR/appicons/vscpworks${EACHSIZE}x${EACHSIZE}.png" $SIZEDIR/vscpworks.png
+
+          cp -f "$INSTALLDIR/appicons/vscpworks${EACHSIZE}x${EACHSIZE}.png" "$MIMESIZEDIR/application-x-vscpworks.png"
+          cp -f "$INSTALLDIR/appicons/vscpwrks${EACHSIZE}x${EACHSIZE}.png" "$MIMESIZEDIR/gnome-mime-application-x-vscpworks.png"
+
+        fi
+      done
+
+      touch --no-create $DATADIR/icons/hicolor
+      gtk-update-icon-cache $DATADIR/icons/hicolor
+
+      if [ -d "/usr/share/pixmaps" ] ; then    
+        cp -f "$INSTALLDIR/appicons/vscpworks48x48.png" "/usr/share/pixmaps/vscpworks.png"
+      fi
+
+      if [ -d "/usr/share/application-registry" ] ; then    
+        cp -f "$INSTALLDIR/vscpworks.applications" "/usr/share/application-registry/vscpworks.applications"
+      fi
+
+      # Install a desktop icon if we have a Desktop directory
+      if [ -d "${HOME}/Desktop" ]; then
+        FILEOWNER=`stat -c %U ${HOME}/Desktop`
+        # cp -f $INSTALLDIR/vscpworks.desktop "${HOME}/Desktop"
+        sed "s#vscpworks.png#$INSTALLDIR/appicons/vscpworks48x48.png#g" < "$INSTALLDIR/vscpworks.desktop" > "${HOME}/Desktop/vscpworks.desktop"
+        chown $FILEOWNER:$FILEOWNER "${HOME}/Desktop/vscpworks.desktop"
+      fi
+
+      # Fix permissions
+      find "$INSTALLDIR/Samples" -type d -exec chmod a=wrx {} \;
+      find "$INSTALLDIR/Samples" -type f -exec chmod a=wr {} \;
+
+      if [ -f /opt/xandros/share/AsusLauncher/simpleui.rc ] || [ -f /var/lib/AsusLauncher/simpleui.rc ] ; then
+          echo Installing icon on Eee PC...
+          # installeeepc_startmenu
+          installeeepc_simpleui
+      fi
+
+      echo Done.
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 0
+    ;;
+esac

@@ -1,0 +1,34 @@
+/* XPM */
+static char *PAINT_xpm[] = {
+/* columns rows colors chars-per-pixel */
+"24 23 5 1",
+". c Black",
+"O c #FFFFFF",
+"X c #000080",
+"o c #FFFF00",
+"  c #C0C0C0",
+/* pixels */
+"                     .. ",
+"                    .XX.",
+"                   .XXX.",
+"            ...   .XXXX.",
+"           .   . .XXXX. ",
+"          .     .XXXX.  ",
+"         .o.     .XX.   ",
+"        .oOo.     ..    ",
+"     ...oOoOo.     .    ",
+".....O  .oOoOo.     .   ",
+" .OO.OO  .oOoOo.    .   ",
+"  .OO.OO  .oOoOo.   .   ",
+"   .OO.OO  .oOoOo. .    ",
+"    .OO.OO  .oOoOo.     ",
+"     .OO.OO  .oOo.      ",
+"      .OO.OOOoOo.       ",
+"       .OO.OoOo.        ",
+"        .OOoOo.         ",
+"         .oOo.          ",
+"          ...           ",
+"          o             ",
+"        Oo              ",
+"oOoOoOoO                "
+};

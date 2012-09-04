@@ -1,0 +1,371 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<!-- Version 0.0.2 	2005-08-01 
+"string" - Text string  
+ "bool" - 1 bit number specified as true or false   
+"char" - 8  bit number. Hexadecimal if it starts with "0x" else decimal  
+"uchar" - Unsigned 8  bit number. Hexadecimal if it starts with "0x" else decimal  
+"short" - 16 bit signed numbr. Hexadecimal if it starts with "0x" else decimal  
+"ushort" - 16 bit unsigned number. Hexadecimal if it starts with "0x" else decimal  
+"int" - 32 bit signed numbr. Hexadecimal if it starts with "0x" else decimal  
+"uint" - 32 bit unsigned number. Hexadecimal if it starts with "0x" else decimal  
+"long" - 64 bit signed number. Hexadecimal if it starts with "0x" else decimal  
+"ulong" - 64 bit unsigned number. Hexadecimal if it starts with "0x" else decimal  
+"decimal" - 128 bit number. Hexadecimal if it starts with "0x" else decimal 
+"date" - Must be passed in the format dd-mmm-yyyy   
+"time" - Must be passed in the format hh:mm:ss where hh is 24 hour clock 
+-->
+
+<!-- General section -->
+
+
+<vscp>
+	<name>aaaaaaaa</name>
+ 	<model>bbbbb</model>
+   <description lang = "en">yyyyyyyyyyyyyyyyyyyyyyyyyyyy</description>
+   <!-- Site with info about the product -->
+  	<infourl>http://www.somewhere.com</infourl>	
+  	<!-- Max package size a node can receive -->
+  	<buffersize></buffersize> 							
+   <manufacturer>	
+   	<name>tttttttttttttttttttt</name>
+      <address>
+      	<street>ttttttttttttt</street>
+         <town>llllllllll</town>
+         <city>London</city>
+         <postcode>HH1234</postcode>
+         <!-- Use region or state -->
+         <state></state>								
+         <region></region>
+         <country>ttttt</country>
+     	</address>
+     	<!-- One or many -->
+      <telephone>											
+      	<number>123456789</number>
+        	<description lang="en" >Main Reception</description>
+   	</telephone>
+   	<!-- One or many -->
+      <fax>													
+      	<number>1234567879</number>
+         <description lang="en">Main Fax Number</description>
+      </fax>
+      <!-- One or many -->
+   	<email>someone@somwhere.com</email>		
+   	<!-- One or many -->	
+      <web>www.somewhere.com</web>					
+	</manufacturer>        
+
+
+<!-- Settings Section 
+ 	Types are defined here. An abstraction is something that maps to a register which is 
+ 	specified by page/offset and is of a predefined type   
+ 	The id is the tag that can be used in Level II configuration events. 
+-->
+
+<settings>
+
+	<abstraction id="somename" 
+					type="bool" 
+					default="false" page = "0" offset = "1" bit="0" >
+   		<name lang="en">tttt</name>
+		<description lang="en">yyy</description>
+		<access>rw</access>
+   </abstraction>
+   
+   <abstraction id="alsoaname" 
+   					type="short" 
+   					default="false" page = "0" offset = "15" >
+   		<name lang="en">tttt</name>
+		<description lang="en">yyy</description>
+		<access>rw</access>
+   </abstraction>
+   
+   <abstraction id="adescriptivename" 
+   					type="string"
+   					width="12" 
+   					default="" page = "0" offset = "20" >
+   		<name lang="en">tttt</name>
+		<description lang="en">yyy</description>
+		<access>rw</access>
+   </abstraction>
+   
+   <abstraction id="namedlist" 
+   					type="integer"
+   					default="" page = "0" offset = "100" >
+   		<name lang="en">tttt</name>
+		<description lang="en">yyy</description>
+		<access>r</access>
+		<valuelist>
+      		<item value = "0x0">
+          		<name lang="en">item0</name>
+            	<description lang="en">item0_description</description>
+       		</item>
+       		<item value = "0x1">
+            	<name lang="en">item1</name>
+            	<description lang="en">item1_description</description>
+       		</item>
+       		<item value = "0x2">
+         		<name lang="en">item2</name>
+           		<description lang="en">item2_description</description>
+       		</item>
+       		<item value = "0x3">
+         		<name lang="en">item3</name>
+            	<description lang="en">item3_description</description>
+       		</item>
+       		<item value = "0x4">
+         		<name lang="en">"item4</name>
+            	<description lang="en">item4_description</description>
+       		</item>
+       		<item value = "0x5">
+         		<name lang="en">item5</name>
+            	<description lang="en">item5_description</description>
+       		</item>
+       		<item value = "0x6">
+         		<name lang="en">item6</name>
+            	<description lang="en">item6_description</description>
+       		</item>
+       		<item value = "0x7">
+         		<name lang="en">item7</name>
+            	<description lang="en">item7_description</description>
+       		</item>
+       		<item  value = "0x8">
+         		<name lang="en">item8</name>
+            	<description lang="en">item8_description</description>
+       		</item>
+    	</valuelist>
+   </abstraction>
+   
+</settings>     
+
+
+<!-- Register section -->
+
+<registers>        
+	<!-- The following is abstraction "alsoaname"  
+	described in register space -->
+	<reg page="0" offset="15" >
+		<name lang="en">alsoaname_msb</name>
+      <description lang="en">MSB of alsoaname</description>
+      <access>rw</access>
+	</reg>
+	<reg page="0" offset="16" >
+		<name lang="en">alsoaname_lsb</name>
+      <description lang="en">LSB of alsoaname</description>
+      <access>rw</access>
+	</reg>
+	
+	
+	<!-- The following is abstraction "adescriptivename"  
+	escribed in register space. Note the use of "width" 
+	which can be used to tell how many registers an abstraction  
+	ses instead of having many register defines. Default width 
+	is one if its note given. -->
+	<reg page="0" offset="15" width="12" >
+		<name lang="en">abcdefghih</name>
+      <description lang="en">The string adescriptivename</description>
+      <access>rw</access>
+	</reg>
+	
+	<reg page="0" offset="1" >
+   	<name lang="en">tttt</name>
+      <description lang="en">yyy</description>
+      <access>rw</access>
+      
+      <bit pos="0">
+      	<name lang="en">tttt</name>
+      	<description lang="en">yyy</description> 
+      </bit>
+      
+      <bit pos="1">
+        	<name lang="en">tttt</name>
+         <description lang="en">yyy</description>
+      </bit>
+      
+      <bit pos="2">
+        	<name lang="en">tttt</name>
+         <description lang="en">yyy</description>
+      </bit>
+      
+      <bit pos="4" width="4">						<!-- example for bit groups -->
+    		<name lang="en">tttt</name>
+    		<description lang="en">yyy</description>
+		</bit>
+ 	</reg>
+ 	
+ 	<reg>
+ 		<bit pos="4" width="4">
+    		<name lang="en">tttt</name>
+    		<description lang="en">yyy</description>
+    		<valuelist>
+      		<item value = "0x0">
+          		<name lang="en">undefined</name>
+            	<description lang="en">yyy</description>
+       		</item>
+       		<item value = "0x1">
+            	<name lang="en">Normal</name>
+            	<description lang="en">yyy</description>
+       		</item>
+       		<item value = "0x2">
+         		<name lang="en">Error</name>
+           		<description lang="en">yyy</description>
+       		</item>
+       		<item value = "0x3">
+         		<name lang="en">Disabled</name>
+            	<description lang="en">yyy</description>
+       		</item>
+       		<item value = "0x4">
+         		<name lang="en">"Test</name>
+            	<description lang="en">yyy</description>
+       		</item>
+       		<item value = "0x5">
+         		<name lang="en">Disposed</name>
+            	<description lang="en">yyy</description>
+       		</item>
+       		<item value = "0x6">
+         		<name lang="en">PowerSaving</name>
+            	<description lang="en">yyy</description>
+       		</item>
+       		<item value = "0x7">
+         		<name lang="en">Stopped</name>
+            	<description lang="en">yyy</description>
+       		</item>
+       		<item  value = "0x8">
+         		<name lang="en">Paused</name>
+            	<description lang="en">yyy</description>
+       		</item>
+    		</valuelist>
+		</bit>
+ 	</reg>
+ 	
+ 	<reg page = "0" offset = "88">
+   	<name lang="en">tttt</name>
+    	<description lang="en">yyy</description>
+    	<valuelist>
+      	<item value = "0x0">
+        		<name lang="en">undefined</name>
+         	<description lang="en">yyy</description>
+       	</item>
+       	<item value = "0x1">
+         	<name lang="en">Normal</name>
+            <description lang="en">yyy</description>
+       	</item>
+       	<item value = "0x2">
+           	<name lang="en">Error</name>
+            <description lang="en">yyy</description>
+       	</item>
+       	<item value = "0x3">
+          	<name lang="en">Disabled</name>
+            <description lang="en">yyy</description>
+       	</item>
+       	<item value = "0x4">
+           	<name lang="en">"Test</name>
+            <description lang="en">yyy</description>
+       	</item>
+       	<item value = "0x5">
+          	<name lang="en">Disposed</name>
+            <description lang="en">yyy</description>
+       	</item>
+       	<item value = "0x6">
+          	<name lang="en">PowerSaving</name>
+          	<description lang="en">yyy</description>
+       	</item>
+       	<item value = "0x7">
+          	<name lang="en">Stopped</name>
+            <description lang="en">yyy</description>
+       	</item>
+       	<item  value = "0x8">
+           	<name lang="en">Paused</name>
+            <description lang="en">yyy</description>
+       	</item>
+    	</valuelist>
+	</reg>
+	
+	<!-- Example where min/max is used -->
+	<reg page = "0" offset = "88" min="8" max="32">
+		<name lang="en">Paused</name>
+      <description lang="en">yyy</description>
+	</reg>
+	
+</registers>
+
+
+
+
+<!-- Decison matrix -->
+<dmatrix>
+	<!-- Can durrently be 1 or 2 -->
+	<level>1</level>			
+	<!-- Where is matrix located -->		
+	<start page="0" offset="1"/> 	
+	<!-- # of rows in matrix -->
+	<rowcnt>10</rowcnt>			
+	<!-- Size in bytes for one row - only for level II -->	
+	<rowsize></rowsize>  
+	<!-- Code for action !-->			
+	<Action code="0x0">				
+   	<name lang="en"></name>
+      <description lang="en"></description>
+      <!-- Descriptions of parameters - one or many -->
+      <param>							
+      	<name lang="en"></name> 
+      	<description lang="en"></description>
+      	<!-- Just one pos for Level I -->
+      	<data offset="1" >		
+   			<name lang="en">tttt</name>
+      		<description lang="en">yyy</description>
+      		<bit pos="0">
+      			<name lang="en">tttt</name>
+      			<description lang="en">yyy</description> 
+      		</bit>  
+      		<!-- valuelist could also be used in bit groups and for hole byte -->    	
+			</data>
+      </param>
+ 	</Action> 
+</dmatrix>
+
+
+<!-- Events this module can generate -->
+<events>
+	<event class="0" type="10" >
+		<!-- Optional: user event name -->
+		<name lang="en"></name> 				
+		<!-- Why and when event is sent -->		
+		<description lang="en"></description> 	
+		<!-- Optional: What priority it will be sent as -->
+		<priority>3</priority>	
+		<!-- Information about evenet data -->					
+		<data offset="1" >							
+   		<name lang="en">tttt</name>
+      	<description lang="en">yyy</description>
+      	<bit pos="0">
+      		<name lang="en">tttt</name>
+      		<description lang="en">yyy</description> 
+      	</bit>      	
+		</data>
+	</event>
+</events>
+
+<!-- A valuelist can be used here as well -->
+
+
+
+<!-- Description/specification for alarm bits -->
+<alarm>
+	<bit pos="1">
+   	<name lang="en">tttt</name>
+      <description lang="en">yyy</description>
+   </bit>
+</alarm>
+
+
+<!-- bootlader information -->
+<boot>
+	<!-- bootloader algorithm tha can be used on this module -->
+	<algorithm>1</algorithm>		
+	<!-- Size of boot blocks -->
+	<blocksize>20</blocksize>	
+	<!-- Number of available boot blocks -->	
+	<blockcount>66</blockcount>	
+</boot>
+
+</vscp>

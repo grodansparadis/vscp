@@ -1,0 +1,30 @@
+DTGraph Changelog
+=============================
+0.2 09/09/2003
+--------------
+-Added alarms table
+-Added alarms update/notify script
+-Added alarms display to dtgraph main
+-Many new configuration checkboxes
+-Made compliant with W3C HTML/4.01
+-Made graph image a submit
+-popups onclick for all options
+
+0.1a 04/23/2003
+--------------
+Found a bug with the celcius mode, my bad
+
+0.1 04/22/2003
+--------------
+Initial Release.
+I've been working for some time prior to any release, 
+and the following features are present:
+    -Showing graphs with JPGraph
+    -Showing stats such as min/max/avg/current temp
+    -Configuration options, such as:
+        -stats, repeats, legend, margin, negative scale, OK range, Units
+    -Auto query generation to trim graphed data when excessive
+    -Adjustable displayed data interval
+    -Scripts to notify of alarm conditions, etc
+
+    There is more, I can't remember now 

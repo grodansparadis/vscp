@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="copy_8xpm" kind="file">
+    <compoundname>copy.xpm</compoundname>
+    <includedby refid="cw_8cpp" local="yes">/home/akhe/vscp/src/vscp/cw/cw.cpp</includedby>
+    <includedby refid="msglistwnd_8cpp" local="yes">/home/akhe/vscp/src/vscp/cw/msglistwnd.cpp</includedby>
+    <includedby refid="msglistwnd__level2_8cpp" local="yes">/home/akhe/vscp/src/vscp/cw/msglistwnd_level2.cpp</includedby>
+    <includedby refid="vscpconfigwnd_8cpp" local="yes">/home/akhe/vscp/src/vscp/cw/vscpconfigwnd.cpp</includedby>
+      <sectiondef kind="">
+      <memberdef kind="variable" id="copy_8xpm_1a147f89a146a317c4395b3db9224684f" prot="public" static="yes" mutable="no">
+        <type>char *</type>
+        <definition>char* copy_xpm[]</definition>
+        <argsstring>[]</argsstring>
+        <name>copy_xpm</name>
+        <initializer> {
+
+&quot;16 15 4 1&quot;,
+&quot;  c None&quot;,
+&quot;. c Black&quot;,
+&quot;X c Gray100&quot;,
+&quot;o c #000080&quot;,
+
+&quot;                &quot;,
+&quot; ......         &quot;,
+&quot; .XXXX..        &quot;,
+&quot; .XXXX.X.       &quot;,
+&quot; .X..X.oooooo   &quot;,
+&quot; .XXXXXoXXXXoo  &quot;,
+&quot; .X....oXXXXoXo &quot;,
+&quot; .XXXXXoX..Xoooo&quot;,
+&quot; .X....oXXXXXXXo&quot;,
+&quot; .XXXXXoX.....Xo&quot;,
+&quot; ......oXXXXXXXo&quot;,
+&quot;       oX.....Xo&quot;,
+&quot;       oXXXXXXXo&quot;,
+&quot;       ooooooooo&quot;,
+&quot;                &quot;
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/bitmaps/copy.xpm" line="25" bodyfile="/home/akhe/vscp/src/vscp/cw/bitmaps/copy.xpm" bodystart="2" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="">
+      <memberdef kind="variable" id="copy_8xpm_1a147f89a146a317c4395b3db9224684f" prot="public" static="yes" mutable="no">
+        <type>char *</type>
+        <definition>char* copy_xpm[]</definition>
+        <argsstring>[]</argsstring>
+        <name>copy_xpm</name>
+        <initializer> {
+
+&quot;16 15 4 1&quot;,
+&quot;  c None&quot;,
+&quot;. c Black&quot;,
+&quot;X c Gray100&quot;,
+&quot;o c #000080&quot;,
+
+&quot;                &quot;,
+&quot; ......         &quot;,
+&quot; .XXXX..        &quot;,
+&quot; .XXXX.X.       &quot;,
+&quot; .X..X.oooooo   &quot;,
+&quot; .XXXXXoXXXXoo  &quot;,
+&quot; .X....oXXXXoXo &quot;,
+&quot; .XXXXXoX..Xoooo&quot;,
+&quot; .X....oXXXXXXXo&quot;,
+&quot; .XXXXXoX.....Xo&quot;,
+&quot; ......oXXXXXXXo&quot;,
+&quot;       oX.....Xo&quot;,
+&quot;       oXXXXXXXo&quot;,
+&quot;       ooooooooo&quot;,
+&quot;                &quot;
+}</initializer>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/bitmaps/copy.xpm" line="25" bodyfile="/home/akhe/vscp/src/vscp/cw/bitmaps/copy.xpm" bodystart="2" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">/*<sp/>XPM<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="keyword">static</highlight><highlight class="normal"><sp/></highlight><highlight class="keywordtype">char</highlight><highlight class="normal"><sp/>*copy_xpm[]<sp/>=<sp/>{</highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="comment">/*<sp/>columns<sp/>rows<sp/>colors<sp/>chars-per-pixel<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;16<sp/>15<sp/>4<sp/>1&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/>c<sp/>None&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;.<sp/>c<sp/>Black&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;X<sp/>c<sp/>Gray100&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;o<sp/>c<sp/>#000080&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="comment">/*<sp/>pixels<sp/>*/</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>......<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>.XXXX..<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>.XXXX.X.<sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>.X..X.oooooo<sp/><sp/><sp/>&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>.XXXXXoXXXXoo<sp/><sp/>&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>.X....oXXXXoXo<sp/>&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>.XXXXXoX..Xoooo&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>.X....oXXXXXXXo&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>.XXXXXoX.....Xo&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/>......oXXXXXXXo&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>oX.....Xo&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>oXXXXXXXo&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/>ooooooooo&quot;</highlight><highlight class="normal">,</highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="stringliteral">&quot;<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>&quot;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal">};</highlight></codeline>
+    </programlisting>
+    <location file="/home/akhe/vscp/src/vscp/cw/bitmaps/copy.xpm"/>
+  </compounddef>
+</doxygen>

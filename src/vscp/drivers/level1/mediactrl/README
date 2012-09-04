@@ -1,0 +1,24 @@
+This is a driver for a media control
+
+WIN32
+=====
+If the driver is selected for install during the installation it is installed in the system32 folder. 
+
+
+LINUX/UNIX
+==========
+The driver should be installed in the system search path. Default installation directory is /usr/local/lib
+
+In the configuration file (/etc/canal.conf) there should be a line as
+
+device1 = "mediactrl,/etc/media.conf,/usr/local/lib/mediactrl.so,64,64,0"
+
+to enable the driver
+
+"mediactrl" - is the driver name(arbitary).
+"/etc/media.conf" - configuration file for driver.
+"/usr/local/lib/mediactrl.so" - The path to the driver.
+"64,64" - Is Driver input/output buffer size.
+"0" - Not used at the moment.
+
+

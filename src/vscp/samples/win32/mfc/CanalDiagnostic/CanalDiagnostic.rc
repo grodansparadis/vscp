@@ -1,0 +1,539 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_CANALDTYPE          ICON    DISCARDABLE     "res\\CanalDiagnosticDoc.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    SEPARATOR
+    BUTTON      ID_FILE_PRINT
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About CanalDiagnostic...",   ID_APP_ABOUT
+    END
+END
+
+IDR_CANALDTYPE MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "&New\tCtrl+N",                ID_FILE_NEW
+        MENUITEM "&Open...\tCtrl+O",            ID_FILE_OPEN
+        MENUITEM "&Close",                      ID_FILE_CLOSE
+        MENUITEM "&Save\tCtrl+S",               ID_FILE_SAVE
+        MENUITEM "Save &As...",                 ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Enable Logging",              ID_MENU_FILE_LOG_ENABLE
+        , CHECKED
+        MENUITEM "Clear log",                   ID_MENU_FILTER_CLEAR_LOG
+        MENUITEM SEPARATOR
+        MENUITEM "&Print...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Print Pre&view",              ID_FILE_PRINT_PREVIEW
+        MENUITEM "P&rint Setup...",             ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "E&xit",                       ID_APP_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "Cu&t\tCtrl+X",                ID_EDIT_CUT
+        MENUITEM "&Copy\tCtrl+C",               ID_EDIT_COPY
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Clear List",                  ID_VIEW_CLEAR2
+        MENUITEM SEPARATOR
+        MENUITEM "All numbers in Hex",          ID_MENU_DISPLAY_HEX, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Received frames",             ID_MENU_DISPLAY_RECEIVED
+        , CHECKED
+        MENUITEM "Transmitted frames",          ID_MENU_DISPLAY_TRANSMITTED
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Standard ID frames",          ID_MENU_DISPLAY_STANDARD_ID
+        , CHECKED
+        MENUITEM "Extend3d ID Frames",          ID_MENU_DISPLAY_EXTENDED_ID
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
+        MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+    END
+    POPUP "Filter"
+    BEGIN
+        MENUITEM "Enable filter",               ID_MENU_FILTER_ENABLE
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Filter settings...",          ID_MENU_FILTER_SETTINGS
+    END
+    POPUP "Autoreply"
+    BEGIN
+        MENUITEM "Enable Autoreply",            ID_MENU_AUTOREPLY_ENABLE
+        , CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Auto reply settings...",      ID_MENU_AUTOREPLY_SETTINGS
+    END
+    POPUP "&Window"
+    BEGIN
+        MENUITEM "&New Window",                 ID_WINDOW_NEW
+        MENUITEM "&Cascade",                    ID_WINDOW_CASCADE
+        MENUITEM "&Tile",                       ID_WINDOW_TILE_HORZ
+        MENUITEM "&Arrange Icons",              ID_WINDOW_ARRANGE
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "&About CanalDiagnostic...",   ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY 
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 55
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About CanalDiagnostic"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            128,IDC_STATIC,11,17,20,20
+    LTEXT           "CanalDiagnostic Version 0.0.1",IDC_STATIC,40,10,119,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright (C) 2004,2005 eurosource",IDC_STATIC,40,25,119,8
+    DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,1,1,0
+ PRODUCTVERSION 0,1,1,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "\0"
+            VALUE "CompanyName", "http://www.vscp.org\0"
+            VALUE "FileDescription", "canaldll DLL\0"
+            VALUE "FileVersion", "0, 1, 1, 0\0"
+            VALUE "InternalName", "canaldll\0"
+            VALUE "LegalCopyright", "Copyright (C) 2004,2005 Ake Hedman, eurosource\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "canaldll.DLL\0"
+            VALUE "PrivateBuild", "\0"
+            VALUE "ProductName", "canaldll Dynamic Link Library\0"
+            VALUE "ProductVersion", "0, 1, 1, 0\0"
+            VALUE "SpecialBuild", "\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+#endif    // !_MAC
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Swedish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_SVE)
+#ifdef _WIN32
+LANGUAGE LANG_SWEDISH, SUBLANG_DEFAULT
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SPLASH              BITMAP  DISCARDABLE     "Splsh16.bmp"
+IDB_EARTH               BITMAP  DISCARDABLE     "res\\earth3.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+CG_IDD_CANALCONTROL DIALOG DISCARDABLE  0, 0, 392, 43
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    RTEXT           "canal daemon available",
+                    IDC_STATIC_CANAL_DAEMON_AVAILABLE,309,7,76,8
+    RTEXT           "Version: 0.0.1",IDC_STATIC_CANAL_DAEMON_VERSION,330,14,
+                    55,8
+    CONTROL         "Active",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,7,36,10
+    CONTROL         "Debug",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    7,17,37,10
+    LTEXT           "This application is udner development and is not yet a released application.!!!!",
+                    IDC_STATIC,66,22,265,8
+END
+
+CG_IDD_CANALCHANNELCONTROL DIALOG DISCARDABLE  0, 0, 411, 43
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "RTR",IDC_CHECK_RTR,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,309,7,31,10
+    CONTROL         "Standard",IDC_RADIO_STANDARD,"Button",
+                    BS_AUTORADIOBUTTON,7,7,45,10
+    CONTROL         "Extended",IDC_RADIO_EXTENDED,"Button",
+                    BS_AUTORADIOBUTTON,7,16,46,10
+    EDITTEXT        IDC_EDIT_ID,71,7,40,14,ES_AUTOHSCROLL
+    RTEXT           "Id :",IDC_STATIC,57,9,11,8
+    EDITTEXT        IDC_EDIT_DATA0,137,7,19,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATA1,158,7,19,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATA2,179,7,19,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATA3,200,7,19,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATA4,221,7,19,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATA5,242,7,19,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATA6,263,7,19,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DATA7,284,7,19,14,ES_AUTOHSCROLL
+    RTEXT           "Data :",IDC_STATIC,115,9,20,8
+    PUSHBUTTON      "&Send",IDC_BUTTON_SEND,354,7,50,15
+    PUSHBUTTON      "&clr",IDC_BUTTON_CLEAR_DATA,285,22,20,14
+    PUSHBUTTON      "<",IDC_BUTTON_PREV,70,22,20,14
+    PUSHBUTTON      ">",IDC_BUTTON_NEXT,92,22,20,14
+    PUSHBUTTON      "Send &Burst",IDC_BUTTON_SENDBURST,354,23,50,13
+END
+
+IDD_DIALOG_SEND_BURST DIALOG DISCARDABLE  0, 0, 211, 111
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Send Burts"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,154,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,154,24,50,14
+    EDITTEXT        IDC_EDIT_BURST_PACKETS,74,7,40,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN1,"msctls_updown32",UDS_ARROWKEYS,115,7,
+                    11,14
+    LTEXT           "Number of packets :",IDC_STATIC,8,9,65,8
+    EDITTEXT        IDC_EDIT_INTER_PACKET_DELAY,73,23,40,14,ES_AUTOHSCROLL
+    CONTROL         "Spin1",IDC_SPIN2,"msctls_updown32",UDS_ARROWKEYS,115,23,
+                    11,14
+    LTEXT           "Interpacket delay :",IDC_STATIC,13,25,60,8
+    GROUPBOX        "Auto increase",IDC_STATIC,54,50,143,54
+    CONTROL         "Id",IDC_CHECK_AUTOINC_ID,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,62,61,22,10
+    CONTROL         "Data 0",IDC_CHECK_AUTOINC_DATA0,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,101,61,37,10
+    CONTROL         "Data 1",IDC_CHECK_AUTOINC_DATA1,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,101,71,37,10
+    CONTROL         "Data 2",IDC_CHECK_AUTOINC_DATA2,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,101,81,37,10
+    CONTROL         "Data 3",IDC_CHECK_AUTOINC_DATA3,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,101,90,37,10
+    CONTROL         "Data 4",IDC_CHECK_AUTOINC_DATA4,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,140,61,37,10
+    CONTROL         "Data 5",IDC_CHECK_AUTOINC_DATA5,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,140,71,37,10
+    CONTROL         "Data 6",IDC_CHECK_AUTOINC_DATA6,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,140,81,37,10
+    CONTROL         "Data 7",IDC_CHECK_AUTOINC_DATA7,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,140,90,37,10
+END
+
+IDD_DIALOG_NEW_DOCUMENT DIALOG DISCARDABLE  0, 0, 259, 113
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "CANAL Diagnostic Session"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,202,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,202,24,50,14
+    LISTBOX         IDC_LIST1,7,7,187,99,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
+                    WS_TABSTOP
+    PUSHBUTTON      "Add...",IDC_BUTTON_ADD_DEVICE,202,57,50,14
+    PUSHBUTTON      "Edit...",IDC_BUTTON_EDIT_DEVICE,202,73,50,14
+    PUSHBUTTON      "Remove",IDC_BUTTON_REMOVE_DEVICE,202,89,50,14
+END
+
+IDD_DIALOG_DOC_PROPERTIES DIALOG DISCARDABLE  0, 0, 307, 141
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Properties"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT_NAME,7,15,239,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_PATH,7,42,239,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DEVICE_STRING,7,68,239,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_DEVICE_FLAGS,7,95,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_INBUF_SIZE,160,95,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_OUTBUF_SIZE,206,95,40,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Browse...",IDC_BUTTON_BROWSE,250,42,50,14
+    DEFPUSHBUTTON   "OK",IDOK,95,120,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,151,120,50,14
+    LTEXT           "Path",IDC_STATIC,7,34,16,8
+    LTEXT           "DeviceString",IDC_STATIC,7,58,42,8
+    LTEXT           "DeviceFlags",IDC_STATIC,7,86,40,8
+    LTEXT           "Inbuffer size",IDC_STATIC,160,86,39,8
+    LTEXT           "Outbuffer size",IDC_STATIC,206,86,44,8
+    LTEXT           "Name",IDC_STATIC,7,7,20,8
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    CG_IDD_CANALCONTROL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 385
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 36
+    END
+
+    CG_IDD_CANALCHANNELCONTROL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 404
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 36
+    END
+
+    IDD_DIALOG_SEND_BURST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 204
+        VERTGUIDE, 15
+        VERTGUIDE, 54
+        VERTGUIDE, 93
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 104
+        HORZGUIDE, 52
+    END
+
+    IDD_DIALOG_NEW_DOCUMENT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 252
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 106
+    END
+
+    IDD_DIALOG_DOC_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 300
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 134
+        HORZGUIDE, 88
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\CanalDiagnostic.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#include ""afxdb.rc""          // Database resources\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Swedish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif //_WIN32
+#include "res\CanalDiagnostic.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#include "afxdb.rc"          // Database resources
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

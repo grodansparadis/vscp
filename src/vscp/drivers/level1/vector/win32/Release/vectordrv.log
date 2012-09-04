@@ -1,0 +1,30 @@
+﻿Build started 2012-09-03 11:49:44.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\vector\win32\vectordrv.vcxproj" on node 3 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating ".\Release\vectordrv.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         vectordrv.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\vector\win32\.\Release\vectordrv.dll
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\vector\win32\.\Release\vectordrv.dll"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y ".\Release\/vectordrv.lib"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release already exists.
+                 1 file(s) copied.
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file ".\Release\vectordrv.unsuccessfulbuild".
+         Touching ".\Release\vectordrv.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\vector\win32\vectordrv.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.42

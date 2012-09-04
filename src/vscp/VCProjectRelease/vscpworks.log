@@ -1,0 +1,101 @@
+﻿Build started 2012-09-03 11:38:28.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpworks\vscpworks.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file "C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.lastbuildstate".
+       InitializeBuildStatus:
+         Creating "C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12/include" /I"C:\wxWidgets-2.8.12/contrib/include" /I"C:\wxWidgets-2.8.12/lib/vc_lib/mswu" /I"c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D NOPCH /D WIN32 /D __WXMSW__ /D _WINDOWS /D _UNICODE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\\" /Fd"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vc100.pdb" /Gd /TC /analyze- /errorReport:prompt ..\..\common\crc.c  
+         crc.c
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12/include" /I"C:\wxWidgets-2.8.12/contrib/include" /I"C:\wxWidgets-2.8.12/lib/vc_lib/mswu" /I"c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include" /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D NOPCH /D WIN32 /D __WXMSW__ /D _WINDOWS /D _UNICODE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\\" /Fd"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\common\canalsuperwrapper.cpp ..\common\dllwrapper.cpp ..\common\guid.cpp ..\common\mdf.cpp ..\common\vscphelper.cpp ..\common\vscptcpif.cpp bootdevice.cpp bootdevice_pic1.cpp bootdevice_vscp.cpp devicebootloaderwizard.cpp dialogabstractionedit.cpp dialogeditlevelidmrow.cpp dialogsetfiltermask.cpp dlgabout.cpp dlgconfiguration.cpp dlgnewvscpsession.cpp dlgselectdaemoninterface.cpp dlgvscpfilter.cpp dlgvscpinterfacesettings.cpp dlgvscpmsg.cpp dlgvscptrmit.cpp frmdeviceconfig.cpp frmmain.cpp frmmdfeditor.cpp frmscanfordevices.cpp frmvscpsession.cpp gridtable.cpp merlin.cpp readguid.cpp readmdffile.cpp readmsfurl.cpp readregister.cpp threadvscpwork.cpp vscptxobj.cpp vscpworks.cpp writeregister.cpp  
+         canalsuperwrapper.cpp
+         dllwrapper.cpp
+         guid.cpp
+         mdf.cpp
+         vscphelper.cpp
+         vscptcpif.cpp
+         bootdevice.cpp
+         bootdevice_pic1.cpp
+         bootdevice_vscp.cpp
+         devicebootloaderwizard.cpp
+         dialogabstractionedit.cpp
+         dialogeditlevelidmrow.cpp
+         dialogsetfiltermask.cpp
+         dlgabout.cpp
+         dlgconfiguration.cpp
+         dlgnewvscpsession.cpp
+         dlgselectdaemoninterface.cpp
+         dlgvscpfilter.cpp
+         dlgvscpinterfacesettings.cpp
+         dlgvscpmsg.cpp
+         Compiling...
+         dlgvscptrmit.cpp
+         frmdeviceconfig.cpp
+         frmmain.cpp
+         frmmdfeditor.cpp
+         frmscanfordevices.cpp
+         frmvscpsession.cpp
+         gridtable.cpp
+         merlin.cpp
+         readguid.cpp
+         readmdffile.cpp
+         readmsfurl.cpp
+         readregister.cpp
+         threadvscpwork.cpp
+         vscptxobj.cpp
+         vscpworks.cpp
+         writeregister.cpp
+       ResourceCompile:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\rc.exe /D NOPCH /D WIN32 /D __WXMSW__ /D _WINDOWS /D _UNICODE /D _UNICODE /D UNICODE /l"0x0409" /I"C:\wxWidgets-2.8.12/include" /I"C:\wxWidgets-2.8.12/contrib/include" /I"C:\wxWidgets-2.8.12/lib/vc_lib/mswu" /I"c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include" /nologo /fo"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.res" vscpworks.rc 
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12/lib/vc_lib" /LIBPATH:"c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib" wxmsw28u_richtext.lib wxmsw28u_aui.lib wxmsw28u_html.lib wxmsw28u_xrc.lib wxmsw28u_core.lib wxbase28u.lib wxtiff.lib wxjpeg.lib wxpng.lib wxzlib.lib wxregexu.lib wxmsw28u_adv.lib wxmsw28u_html.lib wxmsw28u_xrc.lib wxbase28u_net.lib wxbase28u_xml.lib wxexpat.lib kernel32.lib user32.lib gdi32.lib comdlg32.lib winspool.lib winmm.lib shell32.lib comctl32.lib ole32.lib oleaut32.lib uuid.lib rpcrt4.lib advapi32.lib wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.lib" /MACHINE:X86 C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.res
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\crc.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\canalsuperwrapper.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dllwrapper.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\guid.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\mdf.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscphelper.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscptcpif.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\bootdevice.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\bootdevice_pic1.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\bootdevice_vscp.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\devicebootloaderwizard.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dialogabstractionedit.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dialogeditlevelidmrow.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dialogsetfiltermask.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dlgabout.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dlgconfiguration.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dlgnewvscpsession.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dlgselectdaemoninterface.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dlgvscpfilter.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dlgvscpinterfacesettings.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dlgvscpmsg.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\dlgvscptrmit.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\frmdeviceconfig.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\frmmain.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\frmmdfeditor.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\frmscanfordevices.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\frmvscpsession.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\gridtable.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\merlin.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\readguid.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\readmdffile.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\readmsfurl.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\readregister.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\threadvscpwork.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscptxobj.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.obj
+         C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\writeregister.obj
+         Generating code
+         Finished generating code
+         vscpworks.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /out:"C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.exe.manifest" /manifest C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Deleting file "C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.unsuccessfulbuild".
+         Touching "C:\Users\akhe\Documents\development\m2m\src\vscp\VCProjectRelease\vscpworks.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpworks\vscpworks.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:03:21.44

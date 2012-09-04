@@ -1,0 +1,121 @@
+#!/bin/sh
+
+uninstalleeepc_simpleui()
+{
+  XMLFOLDER=/opt/xandros/share/launcherxml
+  LAUNCHERDIR=/opt/xandros/share/AsusLauncher
+  NEWLAUNCHERDIR=/var/lib/AsusLauncher
+  LAUNCHERCONF=/etc/AsusLauncher/AsusLauncher.conf
+
+  SIMPLEUI=$LAUNCHERDIR/simpleui.rc
+  NEWSIMPLEUI=$NEWLAUNCHERDIR/simpleui.rc
+
+  rm -f "$LAUNCHERDIR/vscpworks_norm.png" "$LAUNCHERDIR/business_vscpworks_hi.png"
+
+  if [ -f $LAUNCHERCONF ]; then
+    # NEW METHOD
+
+    rm -f "$XMLFOLDER/vscpworks_eeepc.xml"
+
+    if [ -f /opt/xandros/sbin/update-launcher ]; then
+        /opt/xandros/sbin/update-launcher
+    fi
+  else
+    # OLD METHOD
+
+    if [ -f "$LAUNCHERDIR/simpleui.rc.prevscpworksinstall" ] ; then
+      cp "$LAUNCHERDIR/simpleui.rc" "$LAUNCHERDIR/simpleui.rc.prevscpworksuninstall"
+      cp "$LAUNCHERDIR/simpleui.rc.prevscpworksinstall" "$LAUNCHERDIR/simpleui.rc"
+    fi
+  fi
+}
+
+case "$1" in
+    remove|purge)
+      rm -f /usr/bin/vscpd
+      rm -f /usr/bin/mkpasswd
+      rm -f /usr/bin/vscpcmd
+      rm -f /usr/bin/vscpworks
+
+      INSTALLDIR=/usr/share/vscp
+      DESKTOPFILE=$INSTALLDIR/vscpworks.desktop
+      DATADIR=/usr/share
+
+      # where our desktop file goes
+      for DESKTOPPATH in "/usr/share/applications" "/opt/gnome/share/applications" ; do
+        if [ -d "$DESKTOPPATH" ] ; then
+          break
+        fi
+      done
+
+      # remove old application entry
+      if [ -n "$DESKTOPPATH" -a -d "$DESKTOPPATH" ] ; then
+         rm -f "$DESKTOPPATH/vscpworks.desktop"
+      fi
+
+      # Remove the desktop icon if we have a Desktop directory
+      if [ -d "${HOME}/Desktop" ]; then
+        rm -f "${HOME}/Desktop/vscpworks.desktop"
+      fi
+
+      # try to find mime folder
+      # Do we also search "$XDG_DATA_HOME" "$XDG_DATA_DIRS"?
+      for MIME in "/usr/share/mime/packages" ; do
+	    if [ -d "$MIME" ] ; then
+	       break
+	    fi
+      done
+
+      for GNOMEMIME in "/usr/share/mime-info" "/opt/gnome/share/mime-info" ; do
+	    if [ -d "$GNOMEMIME" ] ; then
+	       break
+	    fi
+      done
+
+      if [ -n "$GNOMEMIME" -a -d "$GNOMEMIME" ] ; then
+        echo "configuring GNOME mime types..."
+
+        rm -f "$GNOMEMIME/vscpworks.keys"
+        rm -f "$GNOMEMIME/vscpworks.mime"
+      fi
+
+      if [ -n "$MIME" -a -d "$MIME" ] ; then
+        echo "configuring mime types..."
+        rm -f "$MIME/vscpworks.xml"
+        update-mime-database "$DATADIR/mime"
+      fi
+
+      if [ -d "$DATADIR/pixmaps" ] ; then    
+        rm -f "$DATADIR/pixmaps/vscpworks.png"
+      fi
+
+      rm -f "$DATADIR/icons/hicolor/128x128/apps/vscpworks.png"
+
+      for EACHSIZE in 32 48 ; do
+        SIZEDIR="$DATADIR/icons/hicolor/${EACHSIZE}x${EACHSIZE}/apps"
+        MIMESIZEDIR="$DATADIR/icons/hicolor/${EACHSIZE}x${EACHSIZE}/mimetypes"
+
+        if [ -d "$SIZEDIR" ] ; then
+
+          rm -f "$SIZEDIR/vscpworks.png"
+
+          rm -f "$MIMESIZEDIR/application-x-vscpworks.png"
+          rm -f "$MIMESIZEDIR/gnome-mime-application-x-vscpworks.png"
+        fi
+      done
+
+      if [ -d "$DATADIR/application-registry" ] ; then    
+        rm "$DATADIR/application-registry/vscpworks.applications"
+      fi
+
+      if [ -f /opt/xandros/share/AsusLauncher/simpleui.rc ] || [ -f /var/lib/AsusLauncher/simpleui.rc ] ; then
+          echo Uninstalling icon on Eee PC...
+          uninstalleeepc_simpleui
+      fi
+
+      echo Done.
+	;;
+    *)
+    	;;
+esac
+

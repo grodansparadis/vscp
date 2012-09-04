@@ -1,0 +1,48 @@
+﻿Build started 2012-06-08 15:59:17.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\can4vscp\win32\can4vscpdrv.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file ".\Debug\can4vscpdrv.lastbuildstate".
+       InitializeBuildStatus:
+         Creating ".\Debug\can4vscpdrv.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /ZI /nologo /W3 /WX- /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D CAN4VSCPDRV_EXPORTS /D _VC80_UPGRADE=0x0600 /D _WINDLL /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug\\" /Fd".\Debug\vc100.pdb" /FR".\Debug\\" /Gd /TP /analyze- /errorReport:prompt ..\..\..\..\..\common\com_win32.cpp can4vscpdrv.cpp ..\common\can4vscpobj.cpp ..\common\dlldrvobj.cpp
+         dlldrvobj.cpp
+         can4vscpobj.cpp
+         can4vscpdrv.cpp
+         com_win32.cpp
+         Generating Code...
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /ZI /nologo /W3 /WX- /Od /Oy- /D _CRT_SECURE_NO_WARNINGS /D WIN32 /D _DEBUG /D _WINDOWS /D _USRDLL /D CAN4VSCPDRV_EXPORTS /D _VC80_UPGRADE=0x0600 /D _WINDLL /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug\\" /Fd".\Debug\vc100.pdb" /FR".\Debug\\" /Gd /TC /analyze- /errorReport:prompt ..\..\..\..\..\common\dllist.c
+         dllist.c
+       Link:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:".\Debug\can4vscpdrv.dll" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /DEF:".\can4vscpdrv.def" /MANIFEST /ManifestFile:".\Debug\can4vscpdrv.dll.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\can4vscp\win32\Debug\can4vscpdrv.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\Debug\can4vscpdrv.lib" /MACHINE:X86 /DLL .\Debug\com_win32.obj
+         .\Debug\dllist.obj
+         .\Debug\can4vscpdrv.obj
+         .\Debug\can4vscpobj.obj
+         .\Debug\dlldrvobj.obj
+     1>com_win32.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+            Creating library .\Debug\can4vscpdrv.lib and object .\Debug\can4vscpdrv.exp
+         can4vscpdrv.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\can4vscp\win32\.\Debug\can4vscpdrv.dll
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:".\Debug\can4vscpdrv.dll;#2" /manifest .\Debug\can4vscpdrv.dll.intermediate.manifest
+       BscMake:
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\bscmake.exe /nologo /o".\Debug\can4vscpdrv.bsc" .\Debug\com_win32.sbr .\Debug\dllist.sbr .\Debug\can4vscpdrv.sbr .\Debug\can4vscpobj.sbr .\Debug\dlldrvobj.sbr
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\can4vscp\win32\.\Debug\can4vscpdrv.dll"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y ".\Debug\/can4vscpdrv.lib"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+                 1 file(s) copied.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug already exists.
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file ".\Debug\can4vscpdrv.unsuccessfulbuild".
+         Touching ".\Debug\can4vscpdrv.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\can4vscp\win32\can4vscpdrv.vcxproj" (rebuild target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:11.35

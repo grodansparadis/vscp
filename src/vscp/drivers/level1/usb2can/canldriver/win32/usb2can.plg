@@ -1,0 +1,46 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: usb2can - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\GEDIMI~1\LOCALS~1\Temp\RSP2.tmp" with contents
+[
+/nologo /MTd /W3 /GX /O2 /I "C:\WINDDK\6001.18001\inc\api" /D "WIN32" /D "_DEBUG__WINDOWS" /D "_MBCS" /D "_USRDLL" /D "USB2CAN_EXPORTS" /Fp"Debug/usb2can.pch" /YX /Fo"Debug/" /Fd"Debug/" /FD /c 
+"D:\Work\VSCP_SVN\VSCP\src\vscp\drivers\usb2can\common\dlldrvobj.cpp"
+"D:\Work\VSCP_SVN\VSCP\src\vscp\drivers\usb2can\common\enum.cpp"
+"D:\Work\VSCP_SVN\VSCP\src\vscp\drivers\usb2can\win32\usb2candrv.cpp"
+"D:\Work\VSCP_SVN\VSCP\src\vscp\drivers\usb2can\common\usb2canobj.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\GEDIMI~1\LOCALS~1\Temp\RSP2.tmp" 
+Creating temporary file "C:\DOCUME~1\GEDIMI~1\LOCALS~1\Temp\RSP3.tmp" with contents
+[
+setupapi.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /incremental:yes /pdb:"Debug/usb2can.pdb" /machine:I386 /def:".\usb2can.def" /out:"../testDriver/Debug/usb2can.dll" /implib:"Debug/usb2can.lib" /pdbtype:sept 
+.\Debug\dlldrvobj.obj
+.\Debug\dllist.obj
+.\Debug\enum.obj
+.\Debug\usb2candrv.obj
+.\Debug\usb2canobj.obj
+]
+Creating command line "link.exe @C:\DOCUME~1\GEDIMI~1\LOCALS~1\Temp\RSP3.tmp"
+<h3>Output Window</h3>
+Compiling...
+dlldrvobj.cpp
+D:\Work\VSCP_SVN\VSCP\src\vscp\drivers\usb2can\common\../common/enum.h(23) : fatal error C1083: Cannot open include file: 'strsafe.h': No such file or directory
+enum.cpp
+D:\Work\VSCP_SVN\VSCP\src\vscp\drivers\usb2can\common\Enum.h(23) : fatal error C1083: Cannot open include file: 'strsafe.h': No such file or directory
+usb2candrv.cpp
+D:\Work\VSCP_SVN\VSCP\src\vscp\drivers\usb2can\win32\../common/../common/enum.h(23) : fatal error C1083: Cannot open include file: 'strsafe.h': No such file or directory
+usb2canobj.cpp
+D:\Work\VSCP_SVN\VSCP\src\vscp\drivers\usb2can\common\enum.h(23) : fatal error C1083: Cannot open include file: 'strsafe.h': No such file or directory
+Error executing cl.exe.
+
+
+
+<h3>Results</h3>
+usb2can.dll - 4 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

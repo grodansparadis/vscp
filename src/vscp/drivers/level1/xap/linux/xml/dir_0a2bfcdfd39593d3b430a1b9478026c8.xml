@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="dir_0a2bfcdfd39593d3b430a1b9478026c8" kind="dir">
+    <compoundname>/home/akhe/vscp/src/vscp/drivers/xap/linux/</compoundname>
+    <innerfile refid="test_8cpp">test.cpp</innerfile>
+    <innerfile refid="xapdrv_8cpp">xapdrv.cpp</innerfile>
+    <innerfile refid="xapdrv_8h">xapdrv.h</innerfile>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <location file="/home/akhe/vscp/src/vscp/drivers/xap/linux/"/>
+  </compounddef>
+</doxygen>

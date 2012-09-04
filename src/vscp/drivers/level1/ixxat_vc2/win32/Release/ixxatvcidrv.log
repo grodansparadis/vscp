@@ -1,0 +1,30 @@
+﻿Build started 2012-09-03 11:49:46.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\ixxat_vc2\win32\ixxatvcidrv.vcxproj" on node 3 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating ".\Release\ixxatvcidrv.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         ixxatvcidrv.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\ixxat_vc2\win32\.\Release\ixxatvcidrv.dll
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\ixxat_vc2\win32\.\Release\ixxatvcidrv.dll"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y ".\Release\/ixxatvcidrv.lib"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release already exists.
+                 1 file(s) copied.
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file ".\Release\ixxatvcidrv.unsuccessfulbuild".
+         Touching ".\Release\ixxatvcidrv.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\drivers\level1\ixxat_vc2\win32\ixxatvcidrv.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.64

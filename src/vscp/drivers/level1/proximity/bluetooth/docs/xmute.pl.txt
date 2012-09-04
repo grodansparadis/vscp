@@ -1,0 +1,15 @@
+#!/usr/bin/perl
+
+my $blanked = 0;
+open (IN, "xscreensaver-command -watch |");
+while (<IN>) {
+  if (m/^(BLANK|LOCK)/) {
+    if (!$blanked) {
+      system "amixer sset PCM mute > /dev/null";
+      $blanked = 1;
+    }
+  } elsif (m/^UNBLANK/) {
+    system "amixer sset PCM unmute > /dev/null";
+    $blanked = 0;
+  }
+}

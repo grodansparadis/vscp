@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "serialdrv", "serialdrv.vcproj", "{28DD424A-364D-479F-9EF2-B58A5653C802}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{28DD424A-364D-479F-9EF2-B58A5653C802}.Debug|Win32.ActiveCfg = Debug|Win32
+		{28DD424A-364D-479F-9EF2-B58A5653C802}.Debug|Win32.Build.0 = Debug|Win32
+		{28DD424A-364D-479F-9EF2-B58A5653C802}.Release|Win32.ActiveCfg = Release|Win32
+		{28DD424A-364D-479F-9EF2-B58A5653C802}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

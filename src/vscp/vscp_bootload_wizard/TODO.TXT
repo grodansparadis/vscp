@@ -1,0 +1,6 @@
+This is the TODO list for the CANAL PIC Bootloader wizard
+
+- Allow selection between deamon config file and canalworks config file.
+- Merge several types of  HEX files.
+- Edit Window for hex data.
+- Edit / Remove Device

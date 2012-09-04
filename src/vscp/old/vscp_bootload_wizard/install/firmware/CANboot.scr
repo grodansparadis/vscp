@@ -1,0 +1,79 @@
+This is a script example for Configurable Library
+
+Very first command in a file must be "Info" command.
+**********************************************************************************
+* Info(Module Name, Description, Module Version, Language, Output file name)
+*       Language = ASM, C, MIX
+**********************************************************************************
+$Info(CANBoot, Simple CAN Bootloader, 1.00, ASM, CANIOtst.def)
+
+
+**********************************************************************************
+* Source(SourceFile1, SourceFile2, ...)
+* Destination path is selected by user when generating the code.
+**********************************************************************************
+$Source(*.*)
+
+Use "Set" when a parameter can have values from a given set.
+Content of this function will be displayed in a drop-down list box format.
+
+**********************************************************************************
+* Global(Generated Code, Global variable)
+* GlobakVariable must be %CLOCK_FREQ%, 
+**********************************************************************************
+$Global(#define CLOCK_FREQ	 %s, %CLOCK_FREQ%)
+
+
+
+
+
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Set(Input Register, Select the register containing the RX control bits., #define CAN_BUFFER %s, RXB0SIDL, RXB0SIDL, RXB0SIDH, RXB0SIDH, RXB0EIDL, RXB0EIDL, RXB0EIDH, RXB0EIDH)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Set(RX C/D Bit, Select the Control/Data bit, #define CAN_CD_BIT %s, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Set(RX P/G Bit, Select the Put/Get bit, #define CAN_PG_BIT %s, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Set(Output Register, Select the register containing the TX control bits., #define CAN_BUFFER %s, TXB0SIDL, TXB0SIDL, TXB0SIDH, TXB0SIDH, TXB0EIDL, TXB0EIDL, TXB0EIDH, TXB0EIDH)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Set(TX P/G Bit, Select the Put/Get bit, #define CANTX_PG_BIT %s, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7)
+
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Set(Standard/Extended, Select standard or extended CAN ID, #define CAN_ST_EXT %s, Standard, 0, Extended, 1)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Range(TX ID, Enter TX ID (PG mode only), #define CAN_TXB0 %s, INT, 0, 0, 536870911)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Range(RX ID Filter, Enter RX ID Filter, #define CAN_RXF0 %s, INT, 0, 0, 536870911)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Range(RX ID Mask, Enter RX ID Mask, #define CAN_RXM0 %s, INT, 0, 0, 536870912)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Range(Bit Rate Control 1, Set the baud rate control register, #define CAN_BRGCON1 %s, INT, 193, 0, 255)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Range(Bit Rate Control 2, Set the baud rate control register, #define CAN_BRGCON2 %s, INT, 186, 0, 255)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Range(Bit Rate Control 3, Set the baud rate control register, #define CAN_BRGCON3 %s, INT, 7, 0, 255)
+
+$Write(/* You can use this function to enter any text or code you want. */)
+$Range(CAN IO Control, Set the IO control register, #define CAN_CIOCON %s, 32, INT, 0, 255)
+
+
+
+
+
+
+**********************************************************************************
+* Resource(Resource Name, Help Message)
+**********************************************************************************
+$Resource(USART_0200, Enhanced USART (Type 2.0.0))

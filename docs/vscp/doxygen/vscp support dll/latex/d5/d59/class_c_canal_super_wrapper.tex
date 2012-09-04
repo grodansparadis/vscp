@@ -1,0 +1,1108 @@
+\hypertarget{class_c_canal_super_wrapper}{
+\section{CCanalSuperWrapper Class Reference}
+\label{d5/d59/class_c_canal_super_wrapper}\index{CCanalSuperWrapper@{CCanalSuperWrapper}}
+}
+
+
+Encapsulates the CANAL interface and the VSCP tcp/ip interface.  
+
+
+
+
+{\ttfamily \#include $<$canalsuperwrapper.h$>$}
+
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{class_c_canal_super_wrapper_a7e4b1c85063ca59cbc854fe1b02860f4}{CCanalSuperWrapper} (void)
+\item 
+\hyperlink{class_c_canal_super_wrapper_a58243f0ceaab30291182028ce6e5db5f}{CCanalSuperWrapper} (devItem $\ast$pItem)
+\item 
+\hypertarget{class_c_canal_super_wrapper_ab230d6be3f203beb24d22b5dfbfe2c7a}{
+virtual \hyperlink{class_c_canal_super_wrapper_ab230d6be3f203beb24d22b5dfbfe2c7a}{$\sim$CCanalSuperWrapper} ()}
+\label{d5/d59/class_c_canal_super_wrapper_ab230d6be3f203beb24d22b5dfbfe2c7a}
+
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+void \hyperlink{class_c_canal_super_wrapper_a5c4800e754bd287ac286d3bef7060ffd}{setInterface} (const wxString \&host, const short port, const wxString \&username, const wxString \&password)
+\item 
+void \hyperlink{class_c_canal_super_wrapper_ae4fabb9b3cb33e5d950357f7dbab1a73}{setInterface} (const wxString \&name, const wxString \&path, const wxString \&parameters, const unsigned long flags, const unsigned long filter, const unsigned long mask)
+\item 
+long \hyperlink{class_c_canal_super_wrapper_a35b4f3182ff337cb59e4de5ff8f86b8c}{doCmdOpen} (const wxString \&strInterface=(\_\-T(\char`\"{}\char`\"{})), unsigned long flags=0L)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a8508e6c901500c0a96dffd627a58127f}{doCmdClose} (void)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a602c55791afdc8db3598d06a858bd07d}{doCmdNOOP} (void)
+\item 
+unsigned long \hyperlink{class_c_canal_super_wrapper_a8273a1037a6ede0a2e7ea71cd0b1d30f}{doCmdGetLevel} (void)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a2fcdc5f6fdb9089dfb34a94914eb513c}{doCmdSend} (canalMsg $\ast$pMsg)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a01be8e33fc4b6ec9ff0cc192e116b70d}{doCmdSend} (const vscpEvent $\ast$pEvent)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a1e7eeba2b6c9063db4adab2221b90d94}{doCmdSend} (const vscpEventEx $\ast$pEventEx)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_ab9ecc6001b864f751ac4cdce8f02bf08}{doCmdReceive} (canalMsg $\ast$pMsg)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a9041d94956f75f19f9889bd78809a930}{doCmdReceive} (vscpEvent $\ast$pEvent)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a010bce95ad7e230aafdc4fcc73b90478}{doCmdReceive} (vscpEventEx $\ast$pEventEx)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_ae68f837b448c3b2b2d906a476952033e}{doCmdDataAvailable} (void)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_afc54763410f122eb1a57f593325449aa}{doCmdStatus} (canalStatus $\ast$pStatus)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_ac1106b4d474d0185387e3f37d71362ad}{doCmdStatistics} (canalStatistics $\ast$pStatistics)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_af9822e6e92bdd72666b00db63d0f99b3}{doCmdFilter} (unsigned long filter)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_acb5fdef3c720a5fb178aa7612a3a2798}{doCmdMask} (unsigned long mask)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_aa48fdd09f182765442eb0d3460f8a644}{doCmdVscpFilter} (const vscpEventFilter $\ast$pFilter)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a4603a1c6ff301e76324c706982af1c08}{doCmdBaudrate} (unsigned long baudrate)
+\item 
+unsigned long \hyperlink{class_c_canal_super_wrapper_a23f350d95cd15e82cd60cdddb90c3361}{doCmdVersion} (void)
+\item 
+unsigned long \hyperlink{class_c_canal_super_wrapper_ab2f4f9d4d403ee847442826234caf9d6}{doCmdDLLVersion} (void)
+\item 
+const char $\ast$ \hyperlink{class_c_canal_super_wrapper_a1d4f5113557b340ab21680376e76205e}{doCmdVendorString} (void)
+\item 
+const char $\ast$ \hyperlink{class_c_canal_super_wrapper_a74cef360f4a9e071260cd28f6dc92c69}{doCmdGetDriverInfo} (void)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_a8049a37b09cbd4b17a5353df21e56b17}{getDeviceType} (void)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a7a8f153459b77aaa1c4486a9f378927b}{isOpen} (void)
+\item 
+int \hyperlink{class_c_canal_super_wrapper_af26c3cf24df471a80bdb79cac8ca0a11}{doCmdShutDown} (void)
+\item 
+\hyperlink{class_vscp_tcp_if}{VscpTcpIf} $\ast$ \hyperlink{class_c_canal_super_wrapper_ab70677c1376bcee4a9fa1085e742a69b}{getTcpIpInterface} (void)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_ae224ef66329d897aba5b721e8433ea55}{getVariableString} (wxString \&name, wxString $\ast$strValue)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_ae4477d51833265468a9fb40df4104529}{setVariableString} (wxString \&name, wxString \&strValue)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a3bbd36dff45b9a2443e344a4419e1dd4}{getVariableBool} (wxString \&name, bool $\ast$bValue)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a1649d2946ad99bfe9853da88a662ed3e}{setVariableBool} (wxString \&name, bool bValue)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a0276413297a2fcf5615a7bf83da28a51}{getVariableInt} (wxString \&name, int $\ast$value)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a58d037aed6012c23e1aa2c69b359b268}{setVariableInt} (wxString \&name, int value)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_ab1c15254e579066ca4f5004597a097fc}{getVariableLong} (wxString \&name, long $\ast$value)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a0940b618effec6c702d7218360f13837}{setVariableLong} (wxString \&name, long value)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a0fa37c7b941ecaad227177841a24300e}{getVariableDouble} (wxString \&name, double $\ast$value)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a288de864c2ac98c811cf0a212b151c85}{setVariableDouble} (wxString \&name, double value)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_ad0c4803857de3a2d259a96ebe6317192}{getVariableMeasurement} (wxString \&name, wxString \&strValue)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a0341db7880611ddc8c4194fa3460fbb9}{setVariableMeasurement} (wxString \&name, wxString \&strValue)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a0dc4e23ff4782e9e6ae152119c6baf24}{getVariableEvent} (wxString \&name, vscpEvent $\ast$pEvent)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_af534e277da408ae2bd482c6c2614ff3f}{setVariableEvent} (wxString \&name, vscpEvent $\ast$pEvent)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_ad8f799c4767da6c56009d14ac3dad75b}{getVariableEventEx} (wxString \&name, vscpEventEx $\ast$pEvent)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a3010d9a88088f08ba69b8cdae8b1f108}{setVariableEventEx} (wxString \&name, vscpEventEx $\ast$pEvent)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a4522bd480acea25177d4038d4e95a9e8}{getVariableGUID} (wxString \&name, cguid \&GUID)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_ab5863946dbd7318df658a2cc7740776f}{setVariableGUID} (wxString \&name, cguid \&GUID)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a3db06b705a2278bbb5d8cabe152e229d}{getVariableVSCPdata} (wxString \&name, uint16\_\-t $\ast$psizeData, uint8\_\-t $\ast$pData)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a08fa8b964c1cac1f766a2071ea139086}{setVariableVSCPdata} (wxString \&name, uint16\_\-t sizeData, uint8\_\-t $\ast$pData)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a369353e14f8cc21834d72353e083a992}{getVariableVSCPclass} (wxString \&name, uint16\_\-t $\ast$vscp\_\-class)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a23c9289d5a9f579e5954d53bd788ae63}{setVariableVSCPclass} (wxString \&name, uint16\_\-t vscp\_\-class)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_aec99ac2810aa51e17e7ab3d345b48957}{getVariableVSCPtype} (wxString \&name, uint8\_\-t $\ast$vscp\_\-type)
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_a97f97b04d5bbe9b4bd5b78cab5921f29}{setVariableVSCPtype} (wxString \&name, uint8\_\-t vscp\_\-type)
+\end{DoxyCompactItemize}
+\subsection*{Protected Attributes}
+\begin{DoxyCompactItemize}
+\item 
+long \hyperlink{class_c_canal_super_wrapper_a6f16be93eed366b6e545ccf469972f29}{m\_\-devid}
+\item 
+unsigned int \hyperlink{class_c_canal_super_wrapper_a448eaae6cdc17ac73a2fdde17b196c41}{m\_\-uTimerID}
+\item 
+devItem \hyperlink{class_c_canal_super_wrapper_a93e40611475c114e967b598efb1cf237}{m\_\-itemDevice}
+\item 
+\hyperlink{class_vscp_tcp_if}{VscpTcpIf} \hyperlink{class_c_canal_super_wrapper_a424c1402464eb1cc2a94605a76cede4d}{m\_\-vscptcpif}
+\item 
+cguid \hyperlink{class_c_canal_super_wrapper_a74162ac667cb8ce2f851fe90917d1d60}{m\_\-GUID}
+\item 
+\hyperlink{class_c_dll_wrapper}{CDllWrapper} \hyperlink{class_c_canal_super_wrapper_a517088dbd5f8e695a336127ce68ba057}{m\_\-canalDll}
+\item 
+bool \hyperlink{class_c_canal_super_wrapper_aebec341755124a76eb58ca99e0e25a26}{m\_\-bOpen}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Encapsulates the CANAL interface and the VSCP tcp/ip interface. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{class_c_canal_super_wrapper_a7e4b1c85063ca59cbc854fe1b02860f4}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{CCanalSuperWrapper}]{\setlength{\rightskip}{0pt plus 5cm}{\bf CCanalSuperWrapper} (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a7e4b1c85063ca59cbc854fe1b02860f4}
+Default Constructor Use one of the SetInterface methods to specify device/host data. \hypertarget{class_c_canal_super_wrapper_a58243f0ceaab30291182028ce6e5db5f}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{CCanalSuperWrapper}]{\setlength{\rightskip}{0pt plus 5cm}{\bf CCanalSuperWrapper} (
+\begin{DoxyParamCaption}
+\item[{devItem $\ast$}]{pItem}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a58243f0ceaab30291182028ce6e5db5f}
+Set Interface CANAL Use this method if the default constructor is used to construct the object pItem-\/$>$name is the user name for the driver. pItem-\/$>$path is the location of the driver on the disc. Path can be set to \char`\"{}TCPIP\char`\"{} in which case the config string holds connect information. pItem-\/$>$config is the configuration string for the driver. If path = \char`\"{}TCPIP\char`\"{} the this string is searched for host connect information on the form \char`\"{}username;password;host;port\char`\"{} pItem-\/$>$flags is the configuration flags for the driver. Not used for TCP/IP interface. 
+
+\subsection{Member Function Documentation}
+\hypertarget{class_c_canal_super_wrapper_a4603a1c6ff301e76324c706982af1c08}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdBaudrate@{doCmdBaudrate}}
+\index{doCmdBaudrate@{doCmdBaudrate}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdBaudrate}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdBaudrate (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{baudrate}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a4603a1c6ff301e76324c706982af1c08}
+Set baudrate.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a8508e6c901500c0a96dffd627a58127f}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdClose@{doCmdClose}}
+\index{doCmdClose@{doCmdClose}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdClose}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdClose (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a8508e6c901500c0a96dffd627a58127f}
+Close communication channel
+
+\begin{DoxyReturn}{Returns}
+true if the close was successfull 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ae68f837b448c3b2b2d906a476952033e}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdDataAvailable@{doCmdDataAvailable}}
+\index{doCmdDataAvailable@{doCmdDataAvailable}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdDataAvailable}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdDataAvailable (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_ae68f837b448c3b2b2d906a476952033e}
+Get the number of messages in the input queue
+
+\begin{DoxyReturn}{Returns}
+the number of messages available or if negative an error code. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ab2f4f9d4d403ee847442826234caf9d6}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdDLLVersion@{doCmdDLLVersion}}
+\index{doCmdDLLVersion@{doCmdDLLVersion}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdDLLVersion}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long doCmdDLLVersion (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_ab2f4f9d4d403ee847442826234caf9d6}
+Get dll version.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_af9822e6e92bdd72666b00db63d0f99b3}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdFilter@{doCmdFilter}}
+\index{doCmdFilter@{doCmdFilter}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdFilter}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdFilter (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{filter}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_af9822e6e92bdd72666b00db63d0f99b3}
+Set/Reset a filter through the pipe.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a74cef360f4a9e071260cd28f6dc92c69}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdGetDriverInfo@{doCmdGetDriverInfo}}
+\index{doCmdGetDriverInfo@{doCmdGetDriverInfo}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdGetDriverInfo}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ doCmdGetDriverInfo (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a74cef360f4a9e071260cd28f6dc92c69}
+Get device information string.
+
+\begin{DoxyReturn}{Returns}
+pointer to driver information string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a8273a1037a6ede0a2e7ea71cd0b1d30f}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdGetLevel@{doCmdGetLevel}}
+\index{doCmdGetLevel@{doCmdGetLevel}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdGetLevel}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long doCmdGetLevel (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a8273a1037a6ede0a2e7ea71cd0b1d30f}
+Get the CANAL protocol level
+
+\begin{DoxyReturn}{Returns}
+true on success 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_acb5fdef3c720a5fb178aa7612a3a2798}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdMask@{doCmdMask}}
+\index{doCmdMask@{doCmdMask}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdMask}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdMask (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{mask}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_acb5fdef3c720a5fb178aa7612a3a2798}
+Set/Reset a mask through the pipe.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a602c55791afdc8db3598d06a858bd07d}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdNOOP@{doCmdNOOP}}
+\index{doCmdNOOP@{doCmdNOOP}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdNOOP}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdNOOP (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a602c55791afdc8db3598d06a858bd07d}
+Do a no operation test command.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a35b4f3182ff337cb59e4de5ff8f86b8c}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdOpen@{doCmdOpen}}
+\index{doCmdOpen@{doCmdOpen}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdOpen}]{\setlength{\rightskip}{0pt plus 5cm}long doCmdOpen (
+\begin{DoxyParamCaption}
+\item[{const wxString \&}]{strInterface = {\ttfamily (\_\-T(\char`\"{}\char`\"{}))}, }
+\item[{unsigned long}]{flags = {\ttfamily 0L}}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a35b4f3182ff337cb59e4de5ff8f86b8c}
+Open communication channel.
+
+Data can be supplied to override the pdev structure information that was given on construction.
+
+
+\begin{DoxyParams}{Parameters}
+{\em strInterface} & is name of channel. \\
+\hline
+{\em flags} & Interface flags \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if channel is open or false if error or the channel is already opened. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ab9ecc6001b864f751ac4cdce8f02bf08}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdReceive@{doCmdReceive}}
+\index{doCmdReceive@{doCmdReceive}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdReceive}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdReceive (
+\begin{DoxyParamCaption}
+\item[{canalMsg $\ast$}]{pMsg}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_ab9ecc6001b864f751ac4cdce8f02bf08}
+Receive a CANAL message.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a9041d94956f75f19f9889bd78809a930}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdReceive@{doCmdReceive}}
+\index{doCmdReceive@{doCmdReceive}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdReceive}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdReceive (
+\begin{DoxyParamCaption}
+\item[{vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a9041d94956f75f19f9889bd78809a930}
+Receive a VSCP event.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a010bce95ad7e230aafdc4fcc73b90478}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdReceive@{doCmdReceive}}
+\index{doCmdReceive@{doCmdReceive}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdReceive}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdReceive (
+\begin{DoxyParamCaption}
+\item[{vscpEventEx $\ast$}]{pEventEx}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a010bce95ad7e230aafdc4fcc73b90478}
+Receive a VSCP Ex event.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a01be8e33fc4b6ec9ff0cc192e116b70d}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdSend@{doCmdSend}}
+\index{doCmdSend@{doCmdSend}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdSend}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdSend (
+\begin{DoxyParamCaption}
+\item[{const vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a01be8e33fc4b6ec9ff0cc192e116b70d}
+Send a VSCP event.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a1e7eeba2b6c9063db4adab2221b90d94}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdSend@{doCmdSend}}
+\index{doCmdSend@{doCmdSend}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdSend}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdSend (
+\begin{DoxyParamCaption}
+\item[{const vscpEventEx $\ast$}]{pEventEx}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a1e7eeba2b6c9063db4adab2221b90d94}
+Send a VSCP Ex event.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a2fcdc5f6fdb9089dfb34a94914eb513c}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdSend@{doCmdSend}}
+\index{doCmdSend@{doCmdSend}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdSend}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdSend (
+\begin{DoxyParamCaption}
+\item[{canalMsg $\ast$}]{pMsg}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a2fcdc5f6fdb9089dfb34a94914eb513c}
+Send a CANAL message.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_af26c3cf24df471a80bdb79cac8ca0a11}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdShutDown@{doCmdShutDown}}
+\index{doCmdShutDown@{doCmdShutDown}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdShutDown}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdShutDown (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_af26c3cf24df471a80bdb79cac8ca0a11}
+Shutdown the VSCP daemon
+
+\begin{DoxyReturn}{Returns}
+CANAL\_\-ERROR\_\-SUCCESS if success CANAL\_\-ERROR\_\-GENERIC on falure. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ac1106b4d474d0185387e3f37d71362ad}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdStatistics@{doCmdStatistics}}
+\index{doCmdStatistics@{doCmdStatistics}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdStatistics}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdStatistics (
+\begin{DoxyParamCaption}
+\item[{canalStatistics $\ast$}]{pStatistics}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_ac1106b4d474d0185387e3f37d71362ad}
+Receive CANAL statistics through the pipe.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_afc54763410f122eb1a57f593325449aa}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdStatus@{doCmdStatus}}
+\index{doCmdStatus@{doCmdStatus}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdStatus}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdStatus (
+\begin{DoxyParamCaption}
+\item[{canalStatus $\ast$}]{pStatus}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_afc54763410f122eb1a57f593325449aa}
+Receive CANAL status.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a1d4f5113557b340ab21680376e76205e}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdVendorString@{doCmdVendorString}}
+\index{doCmdVendorString@{doCmdVendorString}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdVendorString}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ doCmdVendorString (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a1d4f5113557b340ab21680376e76205e}
+Get vendorstring.
+
+\begin{DoxyReturn}{Returns}
+Pointer to vendor string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a23f350d95cd15e82cd60cdddb90c3361}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdVersion@{doCmdVersion}}
+\index{doCmdVersion@{doCmdVersion}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdVersion}]{\setlength{\rightskip}{0pt plus 5cm}unsigned long doCmdVersion (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a23f350d95cd15e82cd60cdddb90c3361}
+Get i/f version.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_aa48fdd09f182765442eb0d3460f8a644}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!doCmdVscpFilter@{doCmdVscpFilter}}
+\index{doCmdVscpFilter@{doCmdVscpFilter}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{doCmdVscpFilter}]{\setlength{\rightskip}{0pt plus 5cm}int doCmdVscpFilter (
+\begin{DoxyParamCaption}
+\item[{const vscpEventFilter $\ast$}]{pFilter}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_aa48fdd09f182765442eb0d3460f8a644}
+Set/Reset the VSCP filter for a channel.
+
+\begin{DoxyReturn}{Returns}
+true if success false if not. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a8049a37b09cbd4b17a5353df21e56b17}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getDeviceType@{getDeviceType}}
+\index{getDeviceType@{getDeviceType}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getDeviceType}]{\setlength{\rightskip}{0pt plus 5cm}int getDeviceType (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a8049a37b09cbd4b17a5353df21e56b17}
+Get the type of interface that is active. \begin{DoxyReturn}{Returns}
+USE\_\-DLL\_\-INTERFACE if direct DLL interface active. 
+
+USE\_\-TCPIP\_\-INTERFACE if TCP/IP interface active. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ab70677c1376bcee4a9fa1085e742a69b}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getTcpIpInterface@{getTcpIpInterface}}
+\index{getTcpIpInterface@{getTcpIpInterface}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getTcpIpInterface}]{\setlength{\rightskip}{0pt plus 5cm}{\bf VscpTcpIf}$\ast$ getTcpIpInterface (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_ab70677c1376bcee4a9fa1085e742a69b}
+Get a pointer to the TCP/IP interface \begin{DoxyReturn}{Returns}
+A pointer to the TCP/IP interface 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a3bbd36dff45b9a2443e344a4419e1dd4}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableBool@{getVariableBool}}
+\index{getVariableBool@{getVariableBool}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableBool}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableBool (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{bool $\ast$}]{bValue}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a3bbd36dff45b9a2443e344a4419e1dd4}
+Get variable value from boolean variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em bValue} & pointer to boolean variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a0fa37c7b941ecaad227177841a24300e}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableDouble@{getVariableDouble}}
+\index{getVariableDouble@{getVariableDouble}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableDouble}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableDouble (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{double $\ast$}]{value}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a0fa37c7b941ecaad227177841a24300e}
+Get variable value from double variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em value} & pointer to double variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a0dc4e23ff4782e9e6ae152119c6baf24}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableEvent@{getVariableEvent}}
+\index{getVariableEvent@{getVariableEvent}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableEvent}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableEvent (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a0dc4e23ff4782e9e6ae152119c6baf24}
+Get variable value from event variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em pEvent} & pointer to event variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ad8f799c4767da6c56009d14ac3dad75b}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableEventEx@{getVariableEventEx}}
+\index{getVariableEventEx@{getVariableEventEx}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableEventEx}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableEventEx (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{vscpEventEx $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_ad8f799c4767da6c56009d14ac3dad75b}
+Get variable value from event variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em pEvent} & pointer to event variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a4522bd480acea25177d4038d4e95a9e8}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableGUID@{getVariableGUID}}
+\index{getVariableGUID@{getVariableGUID}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableGUID}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableGUID (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{cguid \&}]{GUID}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a4522bd480acea25177d4038d4e95a9e8}
+Get variable value from GUID variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em GUID} & variable that get the value of the GUID variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a0276413297a2fcf5615a7bf83da28a51}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableInt@{getVariableInt}}
+\index{getVariableInt@{getVariableInt}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableInt}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableInt (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{int $\ast$}]{value}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a0276413297a2fcf5615a7bf83da28a51}
+Get variable value from integer variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em value} & pointer to integer variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ab1c15254e579066ca4f5004597a097fc}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableLong@{getVariableLong}}
+\index{getVariableLong@{getVariableLong}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableLong}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableLong (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{long $\ast$}]{value}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_ab1c15254e579066ca4f5004597a097fc}
+Get variable value from long variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em value} & pointer to long variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ad0c4803857de3a2d259a96ebe6317192}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableMeasurement@{getVariableMeasurement}}
+\index{getVariableMeasurement@{getVariableMeasurement}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableMeasurement}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableMeasurement (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{wxString \&}]{strValue}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_ad0c4803857de3a2d259a96ebe6317192}
+Get variable value from measurement variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em strValue} & String that get that get the value of the measurement. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ae224ef66329d897aba5b721e8433ea55}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableString@{getVariableString}}
+\index{getVariableString@{getVariableString}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableString}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableString (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{wxString $\ast$}]{strValue}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_ae224ef66329d897aba5b721e8433ea55}
+Get variable value from string variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em strValue} & pointer to string that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a369353e14f8cc21834d72353e083a992}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableVSCPclass@{getVariableVSCPclass}}
+\index{getVariableVSCPclass@{getVariableVSCPclass}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableVSCPclass}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableVSCPclass (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{uint16\_\-t $\ast$}]{vscp\_\-class}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a369353e14f8cc21834d72353e083a992}
+Get variable value from class variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em vscp\_\-class} & pointer to int that get the value of the class variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a3db06b705a2278bbb5d8cabe152e229d}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableVSCPdata@{getVariableVSCPdata}}
+\index{getVariableVSCPdata@{getVariableVSCPdata}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableVSCPdata}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableVSCPdata (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{uint16\_\-t $\ast$}]{psizeData, }
+\item[{uint8\_\-t $\ast$}]{pData}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a3db06b705a2278bbb5d8cabe152e229d}
+Get variable value from VSCP data variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em psizeData} & Pointer to variable that will hold the size of the data array \\
+\hline
+{\em pData} & pointer to VSCP data array variable (unsigned char \mbox{[}8\mbox{]} ) that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_aec99ac2810aa51e17e7ab3d345b48957}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!getVariableVSCPtype@{getVariableVSCPtype}}
+\index{getVariableVSCPtype@{getVariableVSCPtype}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{getVariableVSCPtype}]{\setlength{\rightskip}{0pt plus 5cm}bool getVariableVSCPtype (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{uint8\_\-t $\ast$}]{vscp\_\-type}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_aec99ac2810aa51e17e7ab3d345b48957}
+Get variable value from type variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em vscp\_\-type} & pointer to int that get the value of the type variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a7a8f153459b77aaa1c4486a9f378927b}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!isOpen@{isOpen}}
+\index{isOpen@{isOpen}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{isOpen}]{\setlength{\rightskip}{0pt plus 5cm}bool isOpen (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a7a8f153459b77aaa1c4486a9f378927b}
+Check if interface is open \begin{DoxyReturn}{Returns}
+Return tru if if open, false if closed. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ae4fabb9b3cb33e5d950357f7dbab1a73}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setInterface@{setInterface}}
+\index{setInterface@{setInterface}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setInterface}]{\setlength{\rightskip}{0pt plus 5cm}void setInterface (
+\begin{DoxyParamCaption}
+\item[{const wxString \&}]{name, }
+\item[{const wxString \&}]{path, }
+\item[{const wxString \&}]{parameters, }
+\item[{const unsigned long}]{flags, }
+\item[{const unsigned long}]{filter, }
+\item[{const unsigned long}]{mask}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_ae4fabb9b3cb33e5d950357f7dbab1a73}
+Set Interface CANAL Use this method if the default constructor is used to construct the object 
+\begin{DoxyParams}{Parameters}
+{\em name} & is the user name for the driver. \\
+\hline
+{\em path} & is the location of the driver on the disc. \\
+\hline
+{\em parameters} & is the configuration string for the driver. \\
+\hline
+{\em flags} & is the configuration flags for the driver. \\
+\hline
+{\em filter} & Filer to set. \\
+\hline
+{\em mask} & Mask to set. \\
+\hline
+\end{DoxyParams}
+\hypertarget{class_c_canal_super_wrapper_a5c4800e754bd287ac286d3bef7060ffd}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setInterface@{setInterface}}
+\index{setInterface@{setInterface}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setInterface}]{\setlength{\rightskip}{0pt plus 5cm}void setInterface (
+\begin{DoxyParamCaption}
+\item[{const wxString \&}]{host, }
+\item[{const short}]{port, }
+\item[{const wxString \&}]{username, }
+\item[{const wxString \&}]{password}
+\end{DoxyParamCaption}
+)}}
+\label{d5/d59/class_c_canal_super_wrapper_a5c4800e754bd287ac286d3bef7060ffd}
+Set Interface TCP/IP Use this method if the default constructor is used to construct the object 
+\begin{DoxyParams}{Parameters}
+{\em host} & to connect to (defaults to localhost if not given). \\
+\hline
+{\em port} & on host to connect to. Default to 9598 if not given. \\
+\hline
+{\em username} & Username to login to service. \\
+\hline
+{\em password} & to login to service. \\
+\hline
+\end{DoxyParams}
+\hypertarget{class_c_canal_super_wrapper_a1649d2946ad99bfe9853da88a662ed3e}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableBool@{setVariableBool}}
+\index{setVariableBool@{setVariableBool}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableBool}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableBool (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{bool}]{bValue}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a1649d2946ad99bfe9853da88a662ed3e}
+Set variable value from boolean variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em bValue} & boolean variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a288de864c2ac98c811cf0a212b151c85}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableDouble@{setVariableDouble}}
+\index{setVariableDouble@{setVariableDouble}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableDouble}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableDouble (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{double}]{value}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a288de864c2ac98c811cf0a212b151c85}
+Set variable value from double variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em value} & pointer to double variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_af534e277da408ae2bd482c6c2614ff3f}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableEvent@{setVariableEvent}}
+\index{setVariableEvent@{setVariableEvent}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableEvent}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableEvent (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{vscpEvent $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_af534e277da408ae2bd482c6c2614ff3f}
+Set variable value from event variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em pEvent} & pointer to event variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a3010d9a88088f08ba69b8cdae8b1f108}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableEventEx@{setVariableEventEx}}
+\index{setVariableEventEx@{setVariableEventEx}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableEventEx}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableEventEx (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{vscpEventEx $\ast$}]{pEvent}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a3010d9a88088f08ba69b8cdae8b1f108}
+Set variable value from event variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em pEvent} & pointer to event variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ab5863946dbd7318df658a2cc7740776f}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableGUID@{setVariableGUID}}
+\index{setVariableGUID@{setVariableGUID}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableGUID}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableGUID (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{cguid \&}]{GUID}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_ab5863946dbd7318df658a2cc7740776f}
+Set variable value from GUID variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em GUID} & variable that get the value of the GUID variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a58d037aed6012c23e1aa2c69b359b268}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableInt@{setVariableInt}}
+\index{setVariableInt@{setVariableInt}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableInt}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableInt (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{int}]{value}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a58d037aed6012c23e1aa2c69b359b268}
+set variable value from integer variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em value} & integer variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a0940b618effec6c702d7218360f13837}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableLong@{setVariableLong}}
+\index{setVariableLong@{setVariableLong}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableLong}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableLong (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{long}]{value}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a0940b618effec6c702d7218360f13837}
+Set variable value from long variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em value} & long variable that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a0341db7880611ddc8c4194fa3460fbb9}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableMeasurement@{setVariableMeasurement}}
+\index{setVariableMeasurement@{setVariableMeasurement}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableMeasurement}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableMeasurement (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{wxString \&}]{strValue}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a0341db7880611ddc8c4194fa3460fbb9}
+Set variable value from measurement variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em strValue} & String that get that get the value of the measurement. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_ae4477d51833265468a9fb40df4104529}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableString@{setVariableString}}
+\index{setVariableString@{setVariableString}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableString}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableString (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{wxString \&}]{strValue}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_ae4477d51833265468a9fb40df4104529}
+Set variable value from string variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em strValue} & to string that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a23c9289d5a9f579e5954d53bd788ae63}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableVSCPclass@{setVariableVSCPclass}}
+\index{setVariableVSCPclass@{setVariableVSCPclass}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableVSCPclass}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableVSCPclass (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{uint16\_\-t}]{vscp\_\-class}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a23c9289d5a9f579e5954d53bd788ae63}
+Set variable value from class variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em vscp\_\-class} & int that get the value of the class variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a08fa8b964c1cac1f766a2071ea139086}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableVSCPdata@{setVariableVSCPdata}}
+\index{setVariableVSCPdata@{setVariableVSCPdata}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableVSCPdata}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableVSCPdata (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{uint16\_\-t}]{sizeData, }
+\item[{uint8\_\-t $\ast$}]{pData}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a08fa8b964c1cac1f766a2071ea139086}
+Set variable value from VSCP data variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em sizeData} & to variable that will hold the size of the data array \\
+\hline
+{\em pData} & pointer to VSCP data array variable (unsigned char \mbox{[}8\mbox{]} ) that get the value of the string variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+\hypertarget{class_c_canal_super_wrapper_a97f97b04d5bbe9b4bd5b78cab5921f29}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!setVariableVSCPtype@{setVariableVSCPtype}}
+\index{setVariableVSCPtype@{setVariableVSCPtype}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{setVariableVSCPtype}]{\setlength{\rightskip}{0pt plus 5cm}bool setVariableVSCPtype (
+\begin{DoxyParamCaption}
+\item[{wxString \&}]{name, }
+\item[{uint8\_\-t}]{vscp\_\-type}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily  \mbox{[}inline\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a97f97b04d5bbe9b4bd5b78cab5921f29}
+Set variable value from type variable 
+\begin{DoxyParams}{Parameters}
+{\em name} & of variable \\
+\hline
+{\em vscp\_\-type} & to int that get the value of the type variable. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+true if the variable is of type string. 
+\end{DoxyReturn}
+
+
+\subsection{Field Documentation}
+\hypertarget{class_c_canal_super_wrapper_aebec341755124a76eb58ca99e0e25a26}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!m\_\-bOpen@{m\_\-bOpen}}
+\index{m\_\-bOpen@{m\_\-bOpen}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{m\_\-bOpen}]{\setlength{\rightskip}{0pt plus 5cm}bool {\bf m\_\-bOpen}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_aebec341755124a76eb58ca99e0e25a26}
+Flag for open device \hypertarget{class_c_canal_super_wrapper_a517088dbd5f8e695a336127ce68ba057}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!m\_\-canalDll@{m\_\-canalDll}}
+\index{m\_\-canalDll@{m\_\-canalDll}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{m\_\-canalDll}]{\setlength{\rightskip}{0pt plus 5cm}{\bf CDllWrapper} {\bf m\_\-canalDll}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a517088dbd5f8e695a336127ce68ba057}
+The CANAL dll wrapper \hypertarget{class_c_canal_super_wrapper_a6f16be93eed366b6e545ccf469972f29}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!m\_\-devid@{m\_\-devid}}
+\index{m\_\-devid@{m\_\-devid}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{m\_\-devid}]{\setlength{\rightskip}{0pt plus 5cm}long {\bf m\_\-devid}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a6f16be93eed366b6e545ccf469972f29}
+ID for open device \hypertarget{class_c_canal_super_wrapper_a74162ac667cb8ce2f851fe90917d1d60}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!m\_\-GUID@{m\_\-GUID}}
+\index{m\_\-GUID@{m\_\-GUID}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{m\_\-GUID}]{\setlength{\rightskip}{0pt plus 5cm}cguid {\bf m\_\-GUID}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a74162ac667cb8ce2f851fe90917d1d60}
+GUID \hypertarget{class_c_canal_super_wrapper_a93e40611475c114e967b598efb1cf237}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!m\_\-itemDevice@{m\_\-itemDevice}}
+\index{m\_\-itemDevice@{m\_\-itemDevice}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{m\_\-itemDevice}]{\setlength{\rightskip}{0pt plus 5cm}devItem {\bf m\_\-itemDevice}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a93e40611475c114e967b598efb1cf237}
+Data for the selected device id holds type of i/f (DLL, TCP/IP \hypertarget{class_c_canal_super_wrapper_a448eaae6cdc17ac73a2fdde17b196c41}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!m\_\-uTimerID@{m\_\-uTimerID}}
+\index{m\_\-uTimerID@{m\_\-uTimerID}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{m\_\-uTimerID}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int {\bf m\_\-uTimerID}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a448eaae6cdc17ac73a2fdde17b196c41}
+Timer for canal interaction \hypertarget{class_c_canal_super_wrapper_a424c1402464eb1cc2a94605a76cede4d}{
+\index{CCanalSuperWrapper@{CCanalSuperWrapper}!m\_\-vscptcpif@{m\_\-vscptcpif}}
+\index{m\_\-vscptcpif@{m\_\-vscptcpif}!CCanalSuperWrapper@{CCanalSuperWrapper}}
+\subsubsection[{m\_\-vscptcpif}]{\setlength{\rightskip}{0pt plus 5cm}{\bf VscpTcpIf} {\bf m\_\-vscptcpif}\hspace{0.3cm}{\ttfamily  \mbox{[}protected\mbox{]}}}}
+\label{d5/d59/class_c_canal_super_wrapper_a424c1402464eb1cc2a94605a76cede4d}
+CANAL TCP/IP interface 
+
+The documentation for this class was generated from the following file:\begin{DoxyCompactItemize}
+\item 
+D:/development/m2m/src/vscp/common/\hyperlink{canalsuperwrapper_8h}{canalsuperwrapper.h}\end{DoxyCompactItemize}

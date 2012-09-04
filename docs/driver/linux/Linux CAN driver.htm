@@ -1,0 +1,1599 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 10">
+<meta name=Originator content="Microsoft Word 10">
+<link rel=File-List href="Linux%20CAN%20driver-filer/filelist.xml">
+<title>Vetec Linux CAN Driver</title>
+<!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:HyphenationZone>21</w:HyphenationZone>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]-->
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Helvetica;
+	panose-1:2 11 6 4 2 2 2 2 2 4;
+	mso-font-charset:0;
+	mso-generic-font-family:swiss;
+	mso-font-pitch:variable;
+	mso-font-signature:536902279 -2147483648 8 0 511 0;}
+@font-face
+	{font-family:"Arial Unicode MS";
+	panose-1:2 11 6 4 2 2 2 2 2 4;
+	mso-font-charset:128;
+	mso-generic-font-family:swiss;
+	mso-font-pitch:variable;
+	mso-font-signature:-1 -369098753 63 0 4129279 0;}
+@font-face
+	{font-family:"\@Arial Unicode MS";
+	panose-1:2 11 6 4 2 2 2 2 2 4;
+	mso-font-charset:0;
+	mso-generic-font-family:auto;
+	mso-font-pitch:auto;
+	mso-font-signature:0 0 0 0 0 0;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";}
+h1
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:181.45pt;
+	text-indent:-65.2pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	font-size:14.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	text-transform:uppercase;
+	font-weight:bold;}
+h2
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:181.45pt;
+	text-indent:-65.2pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:2;
+	font-size:14.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;}
+h3
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:181.45pt;
+	text-indent:-65.2pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:3;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	text-transform:uppercase;
+	font-weight:bold;}
+h4
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:181.45pt;
+	text-indent:-65.2pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:4;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;}
+h5
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:181.45pt;
+	text-indent:-65.2pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:5;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;
+	font-style:italic;}
+h6
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:181.45pt;
+	text-indent:-65.2pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:6;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Times New Roman";
+	font-weight:bold;
+	font-style:italic;}
+p.MsoHeading7, li.MsoHeading7, div.MsoHeading7
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:64.8pt;
+	text-indent:-64.8pt;
+	mso-pagination:widow-orphan;
+	mso-outline-level:7;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoHeading8, li.MsoHeading8, div.MsoHeading8
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:72.0pt;
+	text-indent:-72.0pt;
+	mso-pagination:widow-orphan;
+	mso-outline-level:8;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";
+	font-style:italic;}
+p.MsoHeading9, li.MsoHeading9, div.MsoHeading9
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:79.2pt;
+	text-indent:-79.2pt;
+	mso-pagination:widow-orphan;
+	mso-outline-level:9;
+	font-size:9.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";
+	font-weight:bold;
+	font-style:italic;}
+p.MsoToc1, li.MsoToc1, div.MsoToc1
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:24.1pt;
+	margin-bottom:.0001pt;
+	text-indent:-24.1pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";
+	font-weight:bold;}
+p.MsoToc2, li.MsoToc2, div.MsoToc2
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:47.9pt;
+	margin-bottom:.0001pt;
+	text-indent:-36.0pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoToc3, li.MsoToc3, div.MsoToc3
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:70.9pt;
+	margin-bottom:.0001pt;
+	text-indent:-46.8pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoToc4, li.MsoToc4, div.MsoToc4
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:3.0cm;
+	margin-bottom:.0001pt;
+	text-indent:-49.05pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoToc5, li.MsoToc5, div.MsoToc5
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:106.3pt;
+	margin-bottom:.0001pt;
+	text-indent:-58.4pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoToc6, li.MsoToc6, div.MsoToc6
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:127.55pt;
+	margin-bottom:.0001pt;
+	text-indent:-67.45pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoToc7, li.MsoToc7, div.MsoToc7
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:72.0pt;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoToc8, li.MsoToc8, div.MsoToc8
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:84.0pt;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoToc9, li.MsoToc9, div.MsoToc9
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:96.0pt;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoNormalIndent, li.MsoNormalIndent, div.MsoNormalIndent
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:35.4pt;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoHeader, li.MsoHeader, div.MsoHeader
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoFooter, li.MsoFooter, div.MsoFooter
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoCaption, li.MsoCaption, div.MsoCaption
+	{margin-top:6.0pt;
+	margin-right:0cm;
+	margin-bottom:6.0pt;
+	margin-left:116.25pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";
+	font-style:italic;}
+p.MsoMacroText, li.MsoMacroText, div.MsoMacroText
+	{margin-top:0cm;
+	margin-right:-70.9pt;
+	margin-bottom:0cm;
+	margin-left:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:9.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoListBullet, li.MsoListBullet, div.MsoListBullet
+	{margin-top:4.0pt;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:130.45pt;
+	margin-bottom:.0001pt;
+	text-indent:-14.2pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoListBullet2, li.MsoListBullet2, div.MsoListBullet2
+	{margin-top:4.0pt;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:148.25pt;
+	margin-bottom:.0001pt;
+	text-indent:-17.85pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoBodyText, li.MsoBodyText, div.MsoBodyText
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:116.25pt;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoListContinue2, li.MsoListContinue2, div.MsoListContinue2
+	{margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:6.0pt;
+	margin-left:28.3pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoBodyText2, li.MsoBodyText2, div.MsoBodyText2
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.MsoBodyText3, li.MsoBodyText3, div.MsoBodyText3
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;
+	text-underline:single;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;
+	text-underline:single;}
+p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Arial Unicode MS";}
+p
+	{mso-style-name:"Normal\, webb";
+	mso-margin-top-alt:auto;
+	margin-right:0cm;
+	mso-margin-bottom-alt:auto;
+	margin-left:0cm;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Arial Unicode MS";}
+code
+	{font-family:"Arial Unicode MS";
+	mso-ascii-font-family:"Arial Unicode MS";
+	mso-fareast-font-family:"Arial Unicode MS";
+	mso-hansi-font-family:"Arial Unicode MS";
+	mso-bidi-font-family:"Arial Unicode MS";}
+pre
+	{mso-style-name:"HTML\, förformaterad";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	tab-stops:45.8pt 91.6pt 137.4pt 183.2pt 229.0pt 274.8pt 320.6pt 366.4pt 412.2pt 458.0pt 503.8pt 549.6pt 595.4pt 641.2pt 687.0pt 732.8pt;
+	font-size:10.0pt;
+	font-family:"Arial Unicode MS";}
+tt
+	{mso-style-name:"HTML\, skrivmaskin";
+	font-family:"Arial Unicode MS";
+	mso-ascii-font-family:"Arial Unicode MS";
+	mso-fareast-font-family:"Arial Unicode MS";
+	mso-hansi-font-family:"Arial Unicode MS";
+	mso-bidi-font-family:"Arial Unicode MS";}
+p.hgerstlld, li.hgerstlld, div.hgerstlld
+	{mso-style-name:hgerstlld;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:116.25pt;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.formatmall1, li.formatmall1, div.formatmall1
+	{mso-style-name:formatmall1;
+	margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:46.3pt;
+	text-indent:-18.0pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";
+	font-weight:bold;}
+p.rubrik0, li.rubrik0, div.rubrik0
+	{mso-style-name:rubrik0;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:12.0pt;
+	margin-left:116.25pt;
+	mso-pagination:widow-orphan;
+	font-size:14.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";
+	text-transform:uppercase;
+	font-weight:bold;}
+p.comment, li.comment, div.comment
+	{mso-style-name:comment;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:116.25pt;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:9.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Arial Unicode MS";
+	color:blue;
+	font-style:italic;}
+p.titel, li.titel, div.titel
+	{mso-style-name:titel;
+	margin-top:90.0pt;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:0cm;
+	margin-bottom:.0001pt;
+	text-align:center;
+	mso-pagination:widow-orphan;
+	font-size:18.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";
+	font-weight:bold;}
+p.referens, li.referens, div.referens
+	{mso-style-name:referens;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:0cm;
+	margin-left:18.0pt;
+	margin-bottom:.0001pt;
+	text-indent:-18.0pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.normalfet, li.normalfet, div.normalfet
+	{mso-style-name:normalfet;
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";
+	font-weight:bold;}
+p.normalsrccode, li.normalsrccode, div.normalsrccode
+	{mso-style-name:normalsrccode;
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.normalsrcpar, li.normalsrcpar, div.normalsrcpar
+	{mso-style-name:normalsrcpar;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:6.0pt;
+	margin-left:99.25pt;
+	text-indent:-99.25pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.normalsrccodepar, li.normalsrccodepar, div.normalsrccodepar
+	{mso-style-name:normalsrccodepar;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:6.0pt;
+	margin-left:99.25pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	mso-fareast-font-family:"Arial Unicode MS";}
+p.normalsrcparident, li.normalsrcparident, div.normalsrcparident
+	{mso-style-name:normalsrcparident;
+	margin-top:0cm;
+	margin-right:0cm;
+	margin-bottom:6.0pt;
+	margin-left:99.25pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:Arial;
+	mso-fareast-font-family:"Arial Unicode MS";}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+span.GramE
+	{mso-style-name:"";
+	mso-gram-e:yes;}
+@page Section1
+	{size:595.05pt 842.0pt;
+	margin:3.0cm 1.0cm 70.9pt 65.2pt;
+	mso-header-margin:35.4pt;
+	mso-footer-margin:35.4pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+ /* List Definitions */
+ @list l0
+	{mso-list-id:-125;
+	mso-list-type:simple;
+	mso-list-template-ids:-1469945798;}
+@list l0:level1
+	{mso-level-number-format:bullet;
+	mso-level-style-link:"Punktlista 2";
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:32.15pt;
+	mso-level-number-position:left;
+	margin-left:32.15pt;
+	text-indent:-18.0pt;
+	font-family:Symbol;}
+@list l1
+	{mso-list-id:-119;
+	mso-list-type:simple;
+	mso-list-template-ids:959620246;}
+@list l1:level1
+	{mso-level-number-format:bullet;
+	mso-level-style-link:Punktlista;
+	mso-level-text:\F0B7;
+	mso-level-tab-stop:18.0pt;
+	mso-level-number-position:left;
+	margin-left:18.0pt;
+	text-indent:-18.0pt;
+	font-family:Symbol;}
+ol
+	{margin-bottom:0cm;}
+ul
+	{margin-bottom:0cm;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Normal tabell";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";}
+</style>
+<![endif]-->
+</head>
+
+<body lang=SV link=blue vlink=purple style='tab-interval:65.2pt'>
+
+<div class=Section1>
+
+<p class=rubrik0><span class=SpellE><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>Vetec</span></span><span lang=EN-GB style='mso-ansi-language:EN-GB'>
+Linux CAN Driver<o:p></o:p></span></p>
+
+<p class=rubrik0><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p>&nbsp;</o:p></span></p>
+
+<h2><a name="_Toc3029492"><span lang=EN-GB style='mso-ansi-language:EN-GB'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029492'><span
+lang=EN-GB style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029492'><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>References</span></span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></h2>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>-&nbsp; <a
+href="http://home.wanadoo.nl/arnaud/">http://home.wanadoo.nl/arnaud/</a>&nbsp;
+(Driver info<span class=GramE>)</span><br>
+-&nbsp; </span><span lang=EN-GB style='mso-ansi-language:EN-GB'><a
+href="http://home.wanadoo.nl/arnaud/howto.html"><span lang=EN-US
+style='mso-ansi-language:EN-US'>http://home.wanadoo.nl/arnaud/howto.html</span></a></span><span
+lang=EN-US style='mso-ansi-language:EN-US'> (Linux CAN <span class=SpellE>howto</span>)</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<h1><a name="_Toc3029494"><span lang=EN-GB style='mso-ansi-language:EN-GB'><span
+style='mso-spacerun:yes'> </span>Building the Driver</span></a><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></h1>
+
+<h2><a name="_Toc3029495"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029495'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029495'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Initial system preparations</span></span><span
+style='mso-bookmark:_Toc3029495'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h2>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>In order to
+compile the driver some preparations has to be made to the system:<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><b><span lang=EN-GB style='mso-ansi-language:EN-GB'>Step1</span></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>The source
+for the kernel has to be installed.<br>
+<br>
+<b>Step2<br>
+</b>Make sure that the symbolic link<o:p></o:p></span></p>
+
+<p class=hgerstlld><b><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;</span></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span lang=EN-GB style='font-family:"Courier New";mso-ansi-language:
+EN-GB'>/lib/modules/`<span class=SpellE>uname</span> –r`/build</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>exists</span></span><span lang=EN-GB style='mso-ansi-language:EN-GB'>
+and that it points to the kernel source directory e.g.<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span lang=EN-GB style='font-family:"Courier New";mso-ansi-language:
+EN-GB'>/<span class=SpellE>usr/src/linux</span></span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>if</span></span><span lang=EN-GB style='mso-ansi-language:EN-GB'> not
+create the link with<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span class=SpellE><span class=GramE><span lang=EN-GB style='font-size:
+10.0pt;font-family:"Courier New";mso-ansi-language:EN-GB'>ln</span></span></span><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";mso-ansi-language:
+EN-GB'> –s /<span class=SpellE>usr/src/linux</span> /lib/modules/`<span
+class=SpellE>uname</span> -r`/build</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><b><span lang=EN-US style='mso-ansi-language:EN-US'>Step3</span></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:Helvetica;mso-ansi-language:
+EN-GB'>Copy the file</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:Helvetica;mso-ansi-language:
+EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:Helvetica;mso-ansi-language:
+EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /boot/<span class=SpellE>vmlinuz.version.h</span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:Helvetica;mso-ansi-language:
+EN-GB'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><span lang=EN-US style='font-family:Helvetica;
+mso-ansi-language:EN-US'>to</span></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:Helvetica;mso-ansi-language:
+EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:Helvetica;mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>/lib/modules/`<span class=SpellE>uname</span>
+–r`/build/include/<span class=SpellE>linux/version.h</span></span><span
+lang=EN-GB style='font-family:Helvetica;mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:Helvetica;mso-ansi-language:
+EN-GB'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:Helvetica;mso-ansi-language:
+EN-GB'>When compiling make sure the following compiler option is used to point
+at include files</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:Helvetica;mso-ansi-language:
+EN-GB'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:Helvetica;mso-ansi-language:
+EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>-I/lib/modules/`<span class=SpellE>uname</span>
+–r`/build/include<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>instead</span></span><span lang=EN-GB style='mso-ansi-language:EN-GB'>
+of<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-I/<span class=SpellE>usr/include/linux</span></span><span lang=EN-US
+style='mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<h2><a name="_Toc3029497"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029497'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029497'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Compilation</span></span><span
+style='mso-bookmark:_Toc3029497'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h2>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>Just type
+'make' at the command line and it should compile without errors. The result <span
+class=SpellE><b>can.o</b></span> is located in the top directory.<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<h2><a name="_Toc3029498"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029498'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029498'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Installation</span></span><span
+style='mso-bookmark:_Toc3029498'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h2>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>Currently
+there's no installation procedure, just compile and load the driver. Copy the
+driver (<span class=SpellE>can.o</span>) to<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><tt><span lang=EN-GB style='font-size:10.0pt;font-family:
+"Courier New";mso-ansi-language:EN-GB'>/lib/modules/`<span class=SpellE>uname</span>
+–r`/<span class=SpellE>misc</span></span></tt><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><tt><span lang=EN-GB style='font-size:10.0pt;mso-ansi-language:
+EN-GB'>&nbsp;</span></tt><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>Update the
+module dependencies with <o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span class=SpellE><span class=GramE><span lang=EN-GB style='font-family:
+"Courier New";mso-ansi-language:EN-GB'>depmod</span></span></span><span
+lang=EN-GB style='font-family:"Courier New";mso-ansi-language:EN-GB'> -a</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<h2><a name="_Toc3029499"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029499'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029499'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Loading the driver</span></span><span
+style='mso-bookmark:_Toc3029499'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h2>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>To load the
+driver type:<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld style='margin-left:4.5pt'><span lang=EN-GB style='font-family:
+"Courier New";mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp; <span class=SpellE><span
+class=GramE>insmod</span></span> <span class=SpellE>can.o</span> hw='your
+hardware' <span class=SpellE>irq</span>='<span class=SpellE>irq</span> number' <span
+class=SpellE>io</span>='<span class=SpellE>io</span> address' </span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><b><span lang=EN-GB style='mso-ansi-language:EN-GB'>Example:</span></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'> <i># <span class=SpellE>insmod</span>
+<span class=SpellE>can.o</span> <span class=GramE>hw=</span><span class=SpellE>ccscan</span>
+<span class=SpellE>irq</span>=4 <span class=SpellE>io</span>=0xd0000</i><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>In our case
+use<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span class=GramE><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>hw=</span></span><span class=SpellE><span lang=EN-GB
+style='font-family:"Courier New";mso-ansi-language:EN-GB'>ccscan</span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>&nbsp;&nbsp; <span class=SpellE><span class=GramE>irq</span></span><span
+class=GramE>=</span>5 </span><span lang=EN-GB style='mso-ansi-language:EN-GB'>or</span><span
+lang=EN-GB style='font-family:"Courier New";mso-ansi-language:EN-GB'> <span
+class=SpellE>irq</span>=9</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>&nbsp;&nbsp; <span class=SpellE><span class=GramE>io</span></span><span
+class=GramE>=</span>0xd0000 </span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>or</span><span lang=EN-GB style='font-family:"Courier New";mso-ansi-language:
+EN-GB'> <span class=SpellE>io</span>=0xd0800</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>and</span></span><span lang=EN-GB style='font-family:
+"Courier New";mso-ansi-language:EN-GB'> the line above should have the
+following content</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><span lang=EN-GB
+style='font-family:"Courier New";mso-ansi-language:EN-GB'>insmod</span></b></span></span><b><span
+lang=EN-GB style='font-family:"Courier New";mso-ansi-language:EN-GB'> <span
+class=SpellE>can.o</span> hw=<span class=SpellE>ccscan,ccscan</span> <span
+class=SpellE>irq</span>=5,9 <span class=SpellE>io</span>=0xd0000,0xd0800</span></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>For other
+cards and combinations of cards the <span class=GramE><b>hw</b></span> argument
+can be one of:<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>pip5</span></i></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the pip5 computer by <span
+class=SpellE>MPL</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>pip6</span></i></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the pip6 computer by <span
+class=SpellE>MPL</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>pccan</span></i></b></span></span><span
+class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>-q</span></i></b></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the <span class=SpellE>PCcan</span>-Q
+ISA card by <span class=SpellE>KVASER</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>pccan</span></i></b></span></span><span
+class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>-f</span></i></b></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the <span class=SpellE>PCcan</span>-F
+ISA card by <span class=SpellE>KVASER</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>pccan</span></i></b></span></span><span
+class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>-s</span></i></b></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the <span class=SpellE>PCcan</span>-S
+ISA card by <span class=SpellE>KVASER</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>pccan</span></i></b></span></span><span
+class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>-d</span></i></b></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the <span class=SpellE>PCcan</span>-D
+ISA card by <span class=SpellE>KVASER</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>nsican</span></i></b></span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the CAN104 PC/104 card by <span
+class=SpellE>NSI</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>cc104</span></i></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the CAN104 PC/104 card by Contemporary
+Controls<o:p></o:p></span></p>
+
+<p class=hgerstlld><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>aim104</span></i></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the AIM104CAN PC/104 card by <span
+class=SpellE>Arcom</span> Control Systems<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>pc-i03</span></i></b></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>, for the PC-I03 ISA card by <span class=SpellE>IXXAT</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>pcm3680</span></i></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the PCM-3680 PC/104 card by <span
+class=SpellE>Advantech</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>m437</span></i></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for the M436 PC/104 card by <span
+class=SpellE>SECO</span><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>ccscan</span></i></b></span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>, for 82527 based can cards by CC Systems
+AB<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>template</span></i></b></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>, for yet unsupported hardware (you need to edit <span class=SpellE>src/template.c</span>)<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>options</span></b></span><span lang=EN-GB style='mso-ansi-language:EN-GB'>
+can be one of:<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>major</span></i></b></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>=, major specifies the major number of the driver.<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>minor</span></i></b></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>=, you can specify which minor numbers the driver should use for your
+hardware.<o:p></o:p></span></p>
+
+<p class=hgerstlld style='margin-left:0cm'><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>extended</span></i></b></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>=[1|0], configures the driver to use extended message format.<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><i><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>pelican</span></i></b></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>=[1|0], configures the driver to set the CAN chips into pelican mode.<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>baudrate</span></i></b></span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>=, sets the <span class=SpellE>baudrate</span>
+of the device(s). This is the <span class=SpellE>baudrate</span> divided with
+1000 so 500000 bps should be set as <i>‘500’</i><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>stdmask</span></i></b></span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>=, sets the standard mask of the
+device<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><b><i><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>extmask</span></i></b></span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>=, sets the extended mask of the
+device<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><b><i><span lang=EN-GB style='mso-ansi-language:EN-GB'>mo15mask</span></i></b><span
+lang=EN-GB style='mso-ansi-language:EN-GB'>=, sets the mask for message object
+15 (i82527 only)<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>If you put<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span class=GramE><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>options</span></span><span lang=EN-GB
+style='font-family:"Courier New";mso-ansi-language:EN-GB'> can <span
+class=SpellE>io</span>=0x300 <span class=SpellE>irq</span>=5</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>or</span></span><span lang=EN-GB style='mso-ansi-language:EN-GB'>
+whatever your settings is in </span><tt><span lang=EN-GB style='font-size:10.0pt;
+font-family:"Courier New";mso-ansi-language:EN-GB'>/etc/<span class=SpellE>modules.conf</span></span></tt><span
+lang=EN-GB style='mso-ansi-language:EN-GB'> (or </span><tt><span lang=EN-GB
+style='font-size:10.0pt;font-family:Arial;mso-ansi-language:EN-GB'>/etc/<span
+class=SpellE>conf.modules</span>) its possible to load your driver with the
+command</span></tt><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=MsoFooter><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span class=SpellE><span class=GramE><span lang=EN-GB style='font-family:
+"Courier New";mso-ansi-language:EN-GB'>modprobe</span></span></span><span
+lang=EN-GB style='font-family:"Courier New";mso-ansi-language:EN-GB'> can</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><span lang=EN-GB style='mso-ansi-language:
+EN-GB'>or</span></span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span class=SpellE><span class=GramE><span lang=EN-GB style='font-family:
+"Courier New";mso-ansi-language:EN-GB'>insmod</span></span></span><span
+lang=EN-GB style='font-family:"Courier New";mso-ansi-language:EN-GB'> can</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>To load the
+driver <span class=SpellE>automagically</span> during a boot you can put one of
+the above commands last in the file</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span lang=EN-US style='font-family:"Courier New";mso-ansi-language:
+EN-US'>/etc/<span class=SpellE>rc.d/boot.local</span></span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<h2><a name="_Toc3029500"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029500'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029500'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Creating devices</span></span><span
+style='mso-bookmark:_Toc3029500'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h2>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>To create
+devices you must know the major number for the driver. The <b><u>default is 91</u></b>
+but if you set a number when you loaded the driver use that instead.</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>Issue the
+commands</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><span lang=EN-GB
+style='font-family:"Courier New";mso-ansi-language:EN-GB'>mknod</span></span></span><span
+lang=EN-GB style='font-family:"Courier New";mso-ansi-language:EN-GB'> /dev/can0
+c [the major number] 0</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><span lang=EN-GB
+style='font-family:"Courier New";mso-ansi-language:EN-GB'>mknod</span></span></span><span
+lang=EN-GB style='font-family:"Courier New";mso-ansi-language:EN-GB'> /dev/can1
+c [the major number] 1</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>... </span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><span lang=EN-GB
+style='font-family:"Courier New";mso-ansi-language:EN-GB'>mknod</span></span></span><span
+lang=EN-GB style='font-family:"Courier New";mso-ansi-language:EN-GB'>
+/dev/can14 c [the major number] 14</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>The next
+device thus starts at 15 an onwards.</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>Now you
+should have a working driver.</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>Remember to
+set the correct permissions on the device files otherwise it is possible that
+you are unable to access (open) the device.</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=MsoHeader><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<h2><a name="_Toc3029501"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029501'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029501'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Troubleshooting the driver</span></span><span
+style='mso-bookmark:_Toc3029501'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h2>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>Debug
+messages from the driver is written to </span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; /<span class=SpellE>var</span>/log/messages</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><span lang=EN-US style='mso-ansi-language:
+EN-US'>and</span></span><span lang=EN-US style='mso-ansi-language:EN-US'> can
+be a valuable help in troubleshooting.</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<h2><a name="_Toc3029502"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029502'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029502'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Testing the driver</span></span><span
+style='mso-bookmark:_Toc3029502'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h2>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>The can
+device can be tested with the sample programs <span class=SpellE><b>sendburst</b></span>,
+<span class=SpellE><b>readburst</b></span><span class=GramE>&nbsp; and</span> <span
+class=SpellE><b>rxtx</b></span> located in the <span class=SpellE>utils</span>
+directory. Notice that the device is <span class=SpellE>hardcoded</span> to
+/dev/can0 in these samples and should be altered to /dev/can15 to test the
+second of the two chips.</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<h1><a name="_Toc3029503"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029503'><span
+lang=EN-US style='mso-ansi-language:EN-US'>Using the can driver</span></span><span
+style='mso-bookmark:_Toc3029503'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h1>
+
+<h3><a name="_Toc3029504"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029504'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029504'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Open the interface</span></span><span
+style='mso-bookmark:_Toc3029504'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h3>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>You can
+open the <span class=SpellE>desiered</span> can interface with something
+similar to the following code</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; <span class=SpellE><span class=GramE>fd</span></span>
+= open(&quot;/dev/can0&quot;,O_RDWR);</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; <span class=GramE>if</span> ( <span
+class=SpellE>fd</span>&lt;0 ) {</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld style='margin-left:177.25pt'><span class=SpellE><span
+class=GramE><span lang=EN-US style='font-family:"Courier New";mso-ansi-language:
+EN-US'>printf</span></span></span><span class=GramE><span lang=EN-US
+style='font-family:"Courier New";mso-ansi-language:EN-US'>(</span></span><span
+lang=EN-US style='font-family:"Courier New";mso-ansi-language:EN-US'>&quot;An
+error occurred opening the CAN device\n&quot;);</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+class=GramE>exit(</span>-1);</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; }</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<h3><a name="_Toc3029505"><span lang=EN-GB style='mso-ansi-language:EN-GB'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029505'><span
+lang=EN-GB style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029505'><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>Close the interface</span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></h3>
+
+<p class=normalsrccode><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>You can
+close the <span class=SpellE>desiered</span> can interface with something
+similar to the following code</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><span class=GramE><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>close(</span></span><span lang=EN-US style='font-family:
+"Courier New";mso-ansi-language:EN-US'> <span class=SpellE>fd</span> );</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=normalsrccode><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<h3><a name="_Toc3029506"><span lang=EN-GB style='mso-ansi-language:EN-GB'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029506'><span
+lang=EN-GB style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-GB'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029506'><span lang=EN-GB
+style='mso-ansi-language:EN-GB'>Dumping registers of the device</span></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></h3>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>It is
+possible to dump the registers of the hardware device (to /<span class=SpellE>var</span>/log/messages).
+This can be done with the <span class=SpellE>ioctl</span> <b>STAT </b>as in</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>#include &lt;<span class=SpellE>fcntl.h</span>&gt;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>#include &lt;<span class=SpellE>unistd.h</span>&gt;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>#include &lt;<span class=SpellE>stdio.h</span>&gt;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>#include &quot;<span class=SpellE>can.h</span>&quot;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>….</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><span lang=EN-US
+style='font-family:"Courier New";mso-ansi-language:EN-US'>ioctl</span></span></span><span
+class=GramE><span lang=EN-US style='font-family:"Courier New";mso-ansi-language:
+EN-US'>(</span></span><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'> <span class=SpellE>fd</span>, STAT );</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<h3><a name="_Toc3029507"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029507'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029507'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Starting, <span class=SpellE>stoping</span> the
+hardware</span></span><span style='mso-bookmark:_Toc3029507'></span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></h3>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>Two <span
+class=SpellE>ioctl</span> commands are available for <span class=SpellE>stoping</span>/starting
+the hardware.</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><tt><b><span lang=EN-US style='font-size:
+10.0pt;mso-ansi-language:EN-US'>CMD_START</span></b></tt></span><span
+lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Command to start the hardware.</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><tt><b><span lang=EN-US style='font-size:
+10.0pt;mso-ansi-language:EN-US'>CMD_STOP</span></b></tt></span><span
+lang=EN-US style='mso-ansi-language:EN-US'>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Command to stop
+the hardware.</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>Example
+code:</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>#include &lt;<span class=SpellE>fcntl.h</span>&gt;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>#include &lt;<span class=SpellE>unistd.h</span>&gt;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>#include &lt;<span class=SpellE>stdio.h</span>&gt;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>#include &quot;<span class=SpellE>can.h</span>&quot;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><span class=GramE><span lang=EN-US
+style='font-family:"Courier New";mso-ansi-language:EN-US'>int</span></span></span><span
+lang=EN-US style='font-family:"Courier New";mso-ansi-language:EN-US'> main(
+void ) </span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>{&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; <span class=SpellE><span class=GramE>int</span></span>
+<span class=SpellE>fd</span>;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; <span class=SpellE><span class=GramE>fd</span></span>
+= open( &quot;/dev/can0&quot;, <span class=SpellE>O_RDWR</span> );</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; <span class=GramE>if</span> ( <span
+class=SpellE>fd</span> &lt; 0 ) </span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; {</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld style='margin-left:177.0pt'><span class=SpellE><span
+class=GramE><span lang=EN-US style='font-family:"Courier New";mso-ansi-language:
+EN-US'>printf</span></span></span><span class=GramE><span lang=EN-US
+style='font-family:"Courier New";mso-ansi-language:EN-US'>(</span></span><span
+lang=EN-US style='font-family:"Courier New";mso-ansi-language:EN-US'>&quot;An
+error occurred opening the CAN device\n&quot;);</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
+class=GramE><span lang=EN-GB style='font-family:"Courier New";mso-ansi-language:
+EN-GB'>exit(</span></span><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>-1);</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='font-family:"Courier New";
+mso-ansi-language:EN-GB'>&nbsp;&nbsp; </span><span lang=EN-US style='font-family:
+"Courier New";mso-ansi-language:EN-US'>}</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; </span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; <span class=SpellE><span class=GramE>ioctl</span></span><span
+class=GramE>(</span> <span class=SpellE>fd</span>, <span class=SpellE>CMD_RESET</span>
+);</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; <span class=GramE>close(</span> <span
+class=SpellE>fd</span> );</span><span lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>&nbsp;&nbsp; <span class=GramE>return</span> 0;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='font-family:"Courier New";
+mso-ansi-language:EN-US'>}</span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<h3><a name="_Toc3029508"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029508'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029508'><span class=GramE><span
+lang=EN-US style='mso-ansi-language:EN-US'>Set baud rate for a channel.</span></span></span><span
+style='mso-bookmark:_Toc3029508'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h3>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>The <span
+class=SpellE><b>CONF_BAUD</b></span> <span class=SpellE>ioctl</span> command is
+used to set the <span class=SpellE>baudrate</span> for a channel. The <span
+class=SpellE>ioctl</span> argument is coded as follows (unsigned long)</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><i><span lang=EN-US style='mso-ansi-language:
+EN-US'>LSB</span></i></span><i><span lang=EN-US style='mso-ansi-language:EN-US'>
+byte</span></i><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;
+<b>Byte 0</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Channel (chip) to set <span class=SpellE>baudrate</span> for</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b>Byte 1</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+btr0<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<b>Byte 2</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+btr1<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=SpellE><i><span lang=EN-US style='mso-ansi-language:
+EN-US'>MSB</span></i></span><i><span lang=EN-US style='mso-ansi-language:EN-US'>
+byte</span></i><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp; <b>Byte
+3</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; unused.<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;</span><span
+lang=EN-US style='mso-ansi-language:EN-US'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;</span><span
+lang=EN-US style='mso-ansi-language:EN-US'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>Note that
+the <span class=SpellE>baudrate</span> also can be set on module load.</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<span lang=EN-GB style='font-size:12.0pt;font-family:Arial;mso-fareast-font-family:
+"Arial Unicode MS";mso-ansi-language:EN-GB;mso-fareast-language:SV;mso-bidi-language:
+AR-SA'><br clear=all style='page-break-before:always'>
+</span>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<h3><a name="_Toc3029509"><span lang=EN-GB style='mso-ansi-language:EN-US'><span
+style='mso-spacerun:yes'> </span></span></a><span style='mso-bookmark:_Toc3029509'><span
+lang=EN-US style='font-size:7.0pt;font-family:"Times New Roman";mso-ansi-language:
+EN-US'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></span><span style='mso-bookmark:_Toc3029509'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Set a message filter</span></span><span
+style='mso-bookmark:_Toc3029509'></span><span lang=EN-GB style='mso-ansi-language:
+EN-GB'><o:p></o:p></span></h3>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>The <span
+class=SpellE><b>CONF_FILTER</b></span> <span class=SpellE>ioctl</span> command
+is used to set a filter range. The <span class=SpellE>arg</span> is coded as
+follows<o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-GB style='mso-ansi-language:EN-GB'>&nbsp;<o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><span lang=EN-US style='mso-ansi-language:
+EN-US'>id1</span></b></span><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;
+is set to <span class=SpellE>arg</span> &lt;&lt;5</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span class=GramE><b><span lang=EN-US style='mso-ansi-language:
+EN-US'>id0</span></b></span><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;&nbsp;
+is set to <span class=SpellE>arg</span> &gt;&gt; 3</span><span lang=EN-GB
+style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+<p class=hgerstlld><span lang=EN-US style='mso-ansi-language:EN-US'>&nbsp;</span><span
+lang=EN-GB style='mso-ansi-language:EN-GB'><o:p></o:p></span></p>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,344 @@
+<?xml version='1.0' encoding='iso-8859-1' standalone='no'?>
+<doxygen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="compound.xsd" version="1.5.1">
+  <compounddef id="editifdlg_8h" kind="file">
+    <compoundname>editifdlg.h</compoundname>
+    <includes local="no">wx/spinctrl.h</includes>
+    <includedby refid="editifdlg_8cpp" local="yes">/home/akhe/vscp/src/vscp/cw/editifdlg.cpp</includedby>
+    <includedby refid="selectifdlg_8cpp" local="yes">/home/akhe/vscp/src/vscp/cw/selectifdlg.cpp</includedby>
+    <incdepgraph>
+      <node id="139">
+        <label>/home/akhe/vscp/src/vscp/cw/editifdlg.h</label>
+        <link refid="editifdlg.h"/>
+        <childnode refid="140" relation="include">
+        </childnode>
+      </node>
+      <node id="140">
+        <label>wx/spinctrl.h</label>
+      </node>
+    </incdepgraph>
+    <innerclass refid="classCEditIfDlg" prot="public">CEditIfDlg</innerclass>
+      <sectiondef kind="">
+      <memberdef kind="define" id="editifdlg_8h_130c3618cbaab7643d6168b8d30faccf7" prot="public" static="no">
+        <name>AFX_EDITIFDIALOG_H__2A4A7FC3_C572_4C69_994D_9750357A3527__INCLUDED_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="29" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      <memberdef kind="enum" id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7" prot="public" static="no">
+        <name>@1</name>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b74fb24b3ab89324594f9a74d7fd7953de" prot="public">
+          <name>EditIfBtnSave</name>
+          <initializer> 300</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7915505f201c08f7e280b36c335efb187" prot="public">
+          <name>EditIfBtnCancel</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b708b7cc7a1405e36fc7bcd77ebbcfffdc" prot="public">
+          <name>EditIfBtnBrowsePath</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7ff67188a8a6d9278e0505b475fc87c07" prot="public">
+          <name>EditIfDeviceName</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b75e618bfe8ed5b4b0be718b6b04df9943" prot="public">
+          <name>EditIfDevicePath</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7d7b0e43283310b7a5f52c2b37c36d8fb" prot="public">
+          <name>EditIfDeviceString</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7ff1c8239fefb5708efaa9b5e4103b7d7" prot="public">
+          <name>EditIfDeviceFlags</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7bc42dd4230729bae1aa3e85ecf0c152f" prot="public">
+          <name>EditIfDeviceFilter</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b735a1726ebfb5b7c54e88dc1a52bcda79" prot="public">
+          <name>EditIfDeviceMask</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b785f7cbee92a46ba6ba0d087b7f6e75c4" prot="public">
+          <name>EditIfDeviceInBufSize</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b74d86434337b019d18dfb0c5792e9b3e0" prot="public">
+          <name>EditIfDeviceOutBufSize</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="139" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="138" bodyend="151"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="">
+      <memberdef kind="define" id="editifdlg_8h_130c3618cbaab7643d6168b8d30faccf7" prot="public" static="no">
+        <name>AFX_EDITIFDIALOG_H__2A4A7FC3_C572_4C69_994D_9750357A3527__INCLUDED_</name>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="29" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="29" bodyend="-1"/>
+      </memberdef>
+      </sectiondef>
+      <sectiondef kind="">
+      <memberdef kind="enum" id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7" prot="public" static="no">
+        <name>@1</name>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b74fb24b3ab89324594f9a74d7fd7953de" prot="public">
+          <name>EditIfBtnSave</name>
+          <initializer> 300</initializer>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7915505f201c08f7e280b36c335efb187" prot="public">
+          <name>EditIfBtnCancel</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b708b7cc7a1405e36fc7bcd77ebbcfffdc" prot="public">
+          <name>EditIfBtnBrowsePath</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7ff67188a8a6d9278e0505b475fc87c07" prot="public">
+          <name>EditIfDeviceName</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b75e618bfe8ed5b4b0be718b6b04df9943" prot="public">
+          <name>EditIfDevicePath</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7d7b0e43283310b7a5f52c2b37c36d8fb" prot="public">
+          <name>EditIfDeviceString</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7ff1c8239fefb5708efaa9b5e4103b7d7" prot="public">
+          <name>EditIfDeviceFlags</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b7bc42dd4230729bae1aa3e85ecf0c152f" prot="public">
+          <name>EditIfDeviceFilter</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b735a1726ebfb5b7c54e88dc1a52bcda79" prot="public">
+          <name>EditIfDeviceMask</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b785f7cbee92a46ba6ba0d087b7f6e75c4" prot="public">
+          <name>EditIfDeviceInBufSize</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <enumvalue id="editifdlg_8h_1df764cbdea00d65edcd07bb9953ad2b74d86434337b019d18dfb0c5792e9b3e0" prot="public">
+          <name>EditIfDeviceOutBufSize</name>
+          <briefdescription>
+          </briefdescription>
+          <detaileddescription>
+          </detaileddescription>
+        </enumvalue>
+        <briefdescription>
+        </briefdescription>
+        <detaileddescription>
+        </detaileddescription>
+        <inbodydescription>
+        </inbodydescription>
+        <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h" line="139" bodyfile="/home/akhe/vscp/src/vscp/cw/editifdlg.h" bodystart="138" bodyend="151"/>
+      </memberdef>
+      </sectiondef>
+    <briefdescription>
+    </briefdescription>
+    <detaileddescription>
+    </detaileddescription>
+    <programlisting>
+<codeline lineno="1"><highlight class="comment">//<sp/>EditIfDlg.cpp</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="2"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="3"><highlight class="normal"></highlight><highlight class="comment">//<sp/>This<sp/>program<sp/>is<sp/>free<sp/>software;<sp/>you<sp/>can<sp/>redistribute<sp/>it<sp/>and/or</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="4"><highlight class="normal"></highlight><highlight class="comment">//<sp/>modify<sp/>it<sp/>under<sp/>the<sp/>terms<sp/>of<sp/>the<sp/>GNU<sp/>General<sp/>Public<sp/>License</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="5"><highlight class="normal"></highlight><highlight class="comment">//<sp/>as<sp/>published<sp/>by<sp/>the<sp/>Free<sp/>Software<sp/>Foundation;<sp/>either<sp/>version</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="6"><highlight class="normal"></highlight><highlight class="comment">//<sp/>2<sp/>of<sp/>the<sp/>License,<sp/>or<sp/>(at<sp/>your<sp/>option)<sp/>any<sp/>later<sp/>version.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="7"><highlight class="normal"></highlight><highlight class="comment">//<sp/>canald.cpp<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="8"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="9"><highlight class="normal"></highlight><highlight class="comment">//<sp/>This<sp/>file<sp/>is<sp/>part<sp/>of<sp/>the<sp/>CANAL<sp/>(http://www.vscp.org)<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="10"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="11"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Copyright<sp/>(C)<sp/>2000-2007<sp/>Ake<sp/>Hedman,<sp/>Eurosource,<sp/>&lt;akhe@eurosource.se&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="12"><highlight class="normal"></highlight><highlight class="comment">//<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="13"><highlight class="normal"></highlight><highlight class="comment">//<sp/>This<sp/>file<sp/>is<sp/>distributed<sp/>in<sp/>the<sp/>hope<sp/>that<sp/>it<sp/>will<sp/>be<sp/>useful,</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="14"><highlight class="normal"></highlight><highlight class="comment">//<sp/>but<sp/>WITHOUT<sp/>ANY<sp/>WARRANTY;<sp/>without<sp/>even<sp/>the<sp/>implied<sp/>warranty<sp/>of</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="15"><highlight class="normal"></highlight><highlight class="comment">//<sp/>MERCHANTABILITY<sp/>or<sp/>FITNESS<sp/>FOR<sp/>A<sp/>PARTICULAR<sp/>PURPOSE.<sp/><sp/>See<sp/>the</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="16"><highlight class="normal"></highlight><highlight class="comment">//<sp/>GNU<sp/>General<sp/>Public<sp/>License<sp/>for<sp/>more<sp/>details.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="17"><highlight class="normal"></highlight><highlight class="comment">//<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="18"><highlight class="normal"></highlight><highlight class="comment">//<sp/>You<sp/>should<sp/>have<sp/>received<sp/>a<sp/>copy<sp/>of<sp/>the<sp/>GNU<sp/>General<sp/>Public<sp/>License</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="19"><highlight class="normal"></highlight><highlight class="comment">//<sp/>along<sp/>with<sp/>this<sp/>file<sp/>see<sp/>the<sp/>file<sp/>COPYING.<sp/><sp/>If<sp/>not,<sp/>write<sp/>to</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="20"><highlight class="normal"></highlight><highlight class="comment">//<sp/>the<sp/>Free<sp/>Software<sp/>Foundation,<sp/>59<sp/>Temple<sp/>Place<sp/>-<sp/>Suite<sp/>330,</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="21"><highlight class="normal"></highlight><highlight class="comment">//<sp/>Boston,<sp/>MA<sp/>02111-1307,<sp/>USA.</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="22"><highlight class="normal"></highlight><highlight class="comment">//</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="23"><highlight class="normal"></highlight><highlight class="comment">//<sp/>$RCSfile:<sp/>editifdlg.h,v<sp/>$<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="24"><highlight class="normal"></highlight><highlight class="comment">//<sp/>$Date:<sp/>2005/03/10<sp/>23:01:29<sp/>$<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="25"><highlight class="normal"></highlight><highlight class="comment">//<sp/>$Author:<sp/>akhe<sp/>$<sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="26"><highlight class="normal"></highlight><highlight class="comment">//<sp/>$Revision:<sp/>1.2<sp/>$<sp/></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="27"><highlight class="normal"></highlight></codeline>
+<codeline lineno="28"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>!defined(AFX_EDITIFDIALOG_H__2A4A7FC3_C572_4C69_994D_9750357A3527__INCLUDED_)</highlight></codeline>
+<codeline lineno="29"><highlight class="preprocessor"></highlight><highlight class="preprocessor">#define<sp/>AFX_EDITIFDIALOG_H__2A4A7FC3_C572_4C69_994D_9750357A3527__INCLUDED_</highlight></codeline>
+<codeline lineno="30"><highlight class="preprocessor"></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="31"><highlight class="normal"></highlight><highlight class="preprocessor">#if<sp/>_MSC_VER<sp/>&gt;<sp/>1000</highlight></codeline>
+<codeline lineno="32"><highlight class="preprocessor"></highlight><highlight class="preprocessor">#pragma<sp/>once</highlight></codeline>
+<codeline lineno="33"><highlight class="preprocessor"></highlight><highlight class="preprocessor">#endif<sp/>//<sp/>_MSC_VER<sp/>&gt;<sp/>1000</highlight></codeline>
+<codeline lineno="34"><highlight class="preprocessor"></highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="35"><highlight class="normal"></highlight><highlight class="preprocessor">#include<sp/>&lt;wx/spinctrl.h&gt;</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="36"><highlight class="normal"></highlight></codeline>
+<codeline lineno="37"><highlight class="normal"></highlight><highlight class="keyword">class<sp/></highlight><highlight class="normal">CEditIfDlg<sp/><sp/>:<sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal"><sp/>wxDialog</highlight></codeline>
+<codeline lineno="38"><highlight class="normal">{</highlight></codeline>
+<codeline lineno="39"><highlight class="normal"></highlight></codeline>
+<codeline lineno="40"><highlight class="normal"><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="41"><highlight class="normal"></highlight></codeline>
+<codeline lineno="45"><highlight class="normal"><sp/><sp/>CEditIfDlg(<sp/>wxWindow<sp/>*parent<sp/>);</highlight></codeline>
+<codeline lineno="46"><highlight class="normal"></highlight></codeline>
+<codeline lineno="50"><highlight class="normal"><sp/><sp/></highlight><highlight class="keyword">virtual</highlight><highlight class="normal"><sp/>~CEditIfDlg();</highlight></codeline>
+<codeline lineno="51"><highlight class="normal"></highlight></codeline>
+<codeline lineno="55"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>OnOK(<sp/>wxCommandEvent&amp;<sp/>event<sp/>);</highlight></codeline>
+<codeline lineno="56"><highlight class="normal"></highlight></codeline>
+<codeline lineno="60"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>OnCancel(<sp/>wxCommandEvent&amp;<sp/>event<sp/>);</highlight></codeline>
+<codeline lineno="61"><highlight class="normal"></highlight></codeline>
+<codeline lineno="62"><highlight class="normal"></highlight></codeline>
+<codeline lineno="66"><highlight class="normal"><sp/><sp/></highlight><highlight class="keywordtype">void</highlight><highlight class="normal"><sp/>OnButtonDriverPath(<sp/>wxCommandEvent&amp;<sp/>event<sp/>);</highlight></codeline>
+<codeline lineno="67"><highlight class="normal"></highlight></codeline>
+<codeline lineno="68"><highlight class="normal"></highlight></codeline>
+<codeline lineno="69"><highlight class="normal"><sp/></highlight><highlight class="keyword">public</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="70"><highlight class="normal"></highlight></codeline>
+<codeline lineno="74"><highlight class="normal"><sp/><sp/>wxString<sp/>m_wxStrDriverName;</highlight></codeline>
+<codeline lineno="75"><highlight class="normal"></highlight></codeline>
+<codeline lineno="79"><highlight class="normal"><sp/><sp/>wxString<sp/>m_wxStrDriverPath;</highlight></codeline>
+<codeline lineno="80"><highlight class="normal"></highlight></codeline>
+<codeline lineno="84"><highlight class="normal"><sp/><sp/>wxString<sp/>m_wxStrDriverDeviceString;</highlight></codeline>
+<codeline lineno="85"><highlight class="normal"></highlight></codeline>
+<codeline lineno="89"><highlight class="normal"><sp/><sp/>wxString<sp/>m_wxStrDriverFlags;</highlight></codeline>
+<codeline lineno="90"><highlight class="normal"></highlight></codeline>
+<codeline lineno="94"><highlight class="normal"><sp/><sp/>wxString<sp/>m_wxStrDriverInBufSize;</highlight></codeline>
+<codeline lineno="95"><highlight class="normal"></highlight></codeline>
+<codeline lineno="99"><highlight class="normal"><sp/><sp/>wxString<sp/>m_wxStrDriverOutBufSize;</highlight></codeline>
+<codeline lineno="100"><highlight class="normal"></highlight></codeline>
+<codeline lineno="104"><highlight class="normal"><sp/><sp/>wxString<sp/>m_wxStrDriverFilter;</highlight></codeline>
+<codeline lineno="105"><highlight class="normal"></highlight></codeline>
+<codeline lineno="109"><highlight class="normal"><sp/><sp/>wxString<sp/>m_wxStrDriverMask;</highlight></codeline>
+<codeline lineno="110"><highlight class="normal"><sp/></highlight></codeline>
+<codeline lineno="111"><highlight class="normal"></highlight></codeline>
+<codeline lineno="112"><highlight class="normal"><sp/></highlight><highlight class="keyword">private</highlight><highlight class="normal">:</highlight></codeline>
+<codeline lineno="113"><highlight class="normal"></highlight></codeline>
+<codeline lineno="114"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Standard<sp/>buttons</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="115"><highlight class="normal"><sp/><sp/>wxButton<sp/>*m_pOKButton;</highlight></codeline>
+<codeline lineno="116"><highlight class="normal"><sp/><sp/>wxButton<sp/>*m_pCancelButton;</highlight></codeline>
+<codeline lineno="117"><highlight class="normal"></highlight></codeline>
+<codeline lineno="118"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Buttons</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="119"><highlight class="normal"><sp/><sp/>wxButton<sp/>*m_pButtonBrowsePath;</highlight></codeline>
+<codeline lineno="120"><highlight class="normal"></highlight></codeline>
+<codeline lineno="121"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>Edit<sp/>Controls</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="122"><highlight class="normal"><sp/><sp/>wxTextCtrl<sp/>*m_pEditCtrlName;</highlight></codeline>
+<codeline lineno="123"><highlight class="normal"><sp/><sp/>wxTextCtrl<sp/>*m_pEditCtrlPath;</highlight></codeline>
+<codeline lineno="124"><highlight class="normal"><sp/><sp/>wxTextCtrl<sp/>*m_pEditCtrlDeviceString;</highlight></codeline>
+<codeline lineno="125"><highlight class="normal"><sp/><sp/>wxTextCtrl<sp/>*m_pEditCtrlFlags;</highlight></codeline>
+<codeline lineno="126"><highlight class="normal"><sp/><sp/>wxTextCtrl<sp/>*m_pEditCtrlInBufSize;</highlight></codeline>
+<codeline lineno="127"><highlight class="normal"><sp/><sp/>wxTextCtrl<sp/>*m_pEditCtrlOutBufSize;</highlight></codeline>
+<codeline lineno="128"><highlight class="normal"><sp/><sp/>wxTextCtrl<sp/>*m_pEditCtrlFilter;</highlight></codeline>
+<codeline lineno="129"><highlight class="normal"><sp/><sp/>wxTextCtrl<sp/>*m_pEditCtrlMask;</highlight></codeline>
+<codeline lineno="130"><highlight class="normal"></highlight></codeline>
+<codeline lineno="131"><highlight class="normal"></highlight></codeline>
+<codeline lineno="132"><highlight class="normal"><sp/><sp/></highlight><highlight class="comment">//<sp/>any<sp/>class<sp/>wishing<sp/>to<sp/>process<sp/>wxWidgets<sp/>events<sp/>must<sp/>use<sp/>this<sp/>macro</highlight><highlight class="normal"></highlight></codeline>
+<codeline lineno="133"><highlight class="normal"><sp/><sp/>DECLARE_EVENT_TABLE()</highlight></codeline>
+<codeline lineno="134"><highlight class="normal"></highlight></codeline>
+<codeline lineno="135"><highlight class="normal"><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="136"><highlight class="normal"></highlight></codeline>
+<codeline lineno="137"><highlight class="normal"></highlight></codeline>
+<codeline lineno="138"><highlight class="normal"><sp/><sp/><sp/><sp/></highlight><highlight class="keyword">enum</highlight><highlight class="normal"><sp/></highlight></codeline>
+<codeline lineno="139"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>{</highlight></codeline>
+<codeline lineno="140"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfBtnSave<sp/>=<sp/>300,</highlight></codeline>
+<codeline lineno="141"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfBtnCancel,</highlight></codeline>
+<codeline lineno="142"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfBtnBrowsePath,</highlight></codeline>
+<codeline lineno="143"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfDeviceName,</highlight></codeline>
+<codeline lineno="144"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfDevicePath,</highlight></codeline>
+<codeline lineno="145"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfDeviceString,</highlight></codeline>
+<codeline lineno="146"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfDeviceFlags,</highlight></codeline>
+<codeline lineno="147"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfDeviceFilter,</highlight></codeline>
+<codeline lineno="148"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfDeviceMask,</highlight></codeline>
+<codeline lineno="149"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfDeviceInBufSize,</highlight></codeline>
+<codeline lineno="150"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/><sp/><sp/>EditIfDeviceOutBufSize</highlight></codeline>
+<codeline lineno="151"><highlight class="normal"><sp/><sp/><sp/><sp/><sp/><sp/>};</highlight></codeline>
+<codeline lineno="152"><highlight class="normal"></highlight></codeline>
+<codeline lineno="153"><highlight class="normal"></highlight><highlight class="preprocessor">#endif<sp/>//<sp/>!defined(AFX_EDITIFDIALOG_H__2A4A7FC3_C572_4C69_994D_9750357A3527__INCLUDED_)</highlight></codeline>
+    </programlisting>
+    <location file="/home/akhe/vscp/src/vscp/cw/editifdlg.h"/>
+  </compounddef>
+</doxygen>

@@ -1,0 +1,226 @@
+/*
+Template Design by ZhengDesign.com
+http://www.zhengdesign.com
+Released for free under a Creative Commons Attribution-Share Alike 3.0 Philippines
+*/
+
+* {
+	margin: 0;
+	padding: 0;
+}
+
+
+html, body {
+	height: 100%;
+}
+
+body {
+	margin: 0;
+	background: #1B2430 url(images/image01.jpg) repeat left top;
+	line-height: 20px;
+	text-align: justify;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	color: #FFFFFF;
+}
+
+h1, h2, h3 {
+	margin-top: 1.5em;
+}
+
+h1 {
+	font-size: 2em;
+}
+
+h2 {
+	font-size: 1.4em;
+}
+
+h3 {
+	font-size: 1em;
+}
+
+p, ul, ol {
+	margin-top: 1.5em;
+}
+
+ul, ol {
+	margin-left: 3em;
+}
+
+blockquote {
+	margin-left: 3em;
+	margin-right: 3em;
+}
+
+a {
+	color: #B6D434;
+}
+
+#wrapper {
+	width: 920px;
+	height: 100%;
+	min-height: 100%;
+	margin: 0 auto;
+	padding: 0px;
+	background: url(images/image02.jpg) repeat-y left top;
+}
+
+html>body #wrapper {
+	height: auto;
+}
+
+#logo {
+	width: 920px;
+	height: 70px;
+	margin: 0 auto;
+	padding-top: 50px;
+	padding-left: 50px;
+	background: url(images/image03.jpg) repeat-y left top;
+}
+
+#logo h1 {
+	margin: 0px;
+	padding: 0px;
+	letter-spacing: -3px;
+	text-transform: uppercase;
+	font-weight: normal;
+	font-size: 36px;
+	color: #DCECFB
+}
+
+#logo p {
+	margin: 0px;
+	padding: 5px 0px 0px 2px;
+	text-transform: uppercase;
+	font-size: 12px;
+	font-weight: normal;
+	color: #000000;
+}
+
+#logo span {
+	margin: 0px;
+	padding: 0px;
+	font-size: 16px;
+}
+
+#header {
+	width: 920px;
+	height: 270px;
+	margin: 0 auto;
+	background: url(images/image05.jpg) no-repeat left top;
+}
+
+#menu {
+	width: 920px;
+	height: 90px;
+	margin: 0 auto;
+	background: url(images/image04.jpg) no-repeat left top;
+	color: #FFFFFF;
+}
+
+#menu ul {
+	margin: 0px;
+	padding: 20px 55px;
+	list-style: none;
+}
+
+#menu li {
+	display: inline;
+}
+
+#menu a {
+	display: block;
+	float: left;
+	margin-right: 3px;
+	padding: 6px 30px 6px 30px;
+	text-decoration: none;
+	color: #FFFFFF;
+}
+
+#menu .active {
+	background: #B6D434;
+	color: #000000;
+}
+
+#menu a:hover {
+	background: #B6D434;
+	color: #000000;
+}
+
+#page {
+	width: 920px;
+	margin: 0 auto;
+	padding: 20px 0px;
+	background: url(images/image06.jpg) repeat-y left top;
+}
+
+#content {
+	float: left;
+	width: 476px;
+	padding: 0px 40px 0px 70px;
+	background: url(images/image08.jpg) repeat-y right top;
+}
+
+#content h2 {
+	letter-spacing: -1px;
+	text-transform: uppercase;
+	font-weight: normal;
+	font-size: 24px;
+	color: #B6D434;
+}
+
+#content .byline {
+	margin: 0px;
+	padding: 0px;
+	letter-spacing: -1px;
+	text-transform: uppercase;
+	font-size: 24px;
+}
+
+#sidebar {
+	float: right;
+	width: 224px;
+	padding: 0px 70px 0px 40px;
+}
+
+#sidebar a {
+}
+
+#sidebar .more {
+	display: block;
+	width: 70px;
+	height: 22px;
+	padding: 0px 0px 0px 16px;
+	background: url(images/image09.jpg) no-repeat left top;
+	text-decoration: none;
+	font-size: 10px;
+	color: #000000;
+} 
+
+#sidebar h2 {
+	text-transform: uppercase;
+	font-size: 20px;
+	font-weight: normal;
+}
+
+#footer {
+	clear: both;
+	width: 920px;
+	margin: 0 auto;
+	padding: 20px;
+	background: url(images/image07.jpg) no-repeat left top;
+}
+
+#footer p {
+	margin: 0px;
+	padding: 0px;
+	text-align: center;
+	text-transform: uppercase;
+	font-size: 10px;
+	color: #FFFFFF;
+}
+
+#footer a {
+	color: #FFFFFF;
+}

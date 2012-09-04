@@ -1,0 +1,246 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>C:\Users\akhe\Documents\development\expat-2.0.1\win32\bin\Debug;$(VSCP_HOME)\src\vscp\contrib\libwebsocket\dll\win32;$(LibraryPath)</LibraryPath>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+    <LibraryPath>C:\Users\akhe\Documents\development\expat-2.0.1\win32\bin\Release;$(VSCP_HOME)\src\vscp\contrib\libwebsocket\dll\win32;$(LibraryPath)</LibraryPath>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;$(VSCP_HOME)\src\common\zlib;$(IncludePath)</IncludePath>
+    <IgnoreImportLibrary>false</IgnoreImportLibrary>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;_DEBUG;WIN32;_CONSOLE;_WIN32_WINNT=0x0500;_MT _DEBUG;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Debug\vscpd.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Debug\vscpd.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <RedirectOutputAndErrors>NUL</RedirectOutputAndErrors>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug\vscpd.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <IgnoreSpecificDefaultLibraries>libcd.lib MSVCRTD.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <OutputFile>.\Debug\vscpd.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libexpatMT.lib;Ws2_32.lib;wsock32.lib;netapi32.lib;libwebsocketswin32.lib;zlib32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <CustomBuildStep>
+      <Command>echo on
+mkdir "$(VSCP_HOME)\src\vscp\Build"
+mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
+if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
+      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE;NDEBUG;WIN32;_CONSOLE;_WIN32_WINNT=0x0500;_MT;wxUSE_GUI=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Release\vscpd.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <MinimalRebuild>true</MinimalRebuild>
+    </ClCompile>
+    <PostBuildEvent>
+      <Command>copy release\*.exe ..\..\delivery</Command>
+    </PostBuildEvent>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Release\vscpd.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <RedirectOutputAndErrors>NUL</RedirectOutputAndErrors>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <AdditionalIncludeDirectories>../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release\vscpd.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>.\Release\vscpd.exe</OutputFile>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>libexpatMT.lib;Ws2_32.lib;wsock32.lib;netapi32.lib;comctl32.lib;libwebsocketswin32.lib;zlib32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <AssemblyDebug>false</AssemblyDebug>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+      <ShowProgress>NotSet</ShowProgress>
+    </Link>
+    <CustomBuildStep>
+      <Command>echo on
+mkdir "$(VSCP_HOME)\src\vscp\Build"
+mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
+if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
+      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+    </CustomBuildStep>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="wx\msw\blank.cur" />
+    <CustomBuild Include="wx\msw\bullseye.cur" />
+    <CustomBuild Include="wx\msw\cdrom.ico" />
+    <CustomBuild Include="wx\msw\colours.bmp" />
+    <CustomBuild Include="wx\msw\computer.ico" />
+    <CustomBuild Include="wx\msw\csquery.bmp" />
+    <CustomBuild Include="wx\msw\disable.bmp" />
+    <CustomBuild Include="wx\msw\drive.ico" />
+    <CustomBuild Include="wx\msw\file1.ico" />
+    <CustomBuild Include="wx\msw\floppy.ico" />
+    <CustomBuild Include="wx\msw\folder1.ico" />
+    <CustomBuild Include="wx\msw\folder2.ico" />
+    <CustomBuild Include="wx\msw\hand.cur" />
+    <CustomBuild Include="wx\msw\magnif1.cur" />
+    <CustomBuild Include="wx\msw\noentry.cur" />
+    <CustomBuild Include="wx\msw\pbrush.cur" />
+    <CustomBuild Include="wx\msw\pencil.cur" />
+    <CustomBuild Include="wx\msw\pntleft.cur" />
+    <CustomBuild Include="wx\msw\pntright.cur" />
+    <CustomBuild Include="wx\msw\query.cur" />
+    <CustomBuild Include="wx\msw\removble.ico" />
+    <CustomBuild Include="wx\msw\rightarr.cur" />
+    <CustomBuild Include="wx\msw\roller.cur" />
+    <CustomBuild Include="wx\msw\size.cur" />
+    <CustomBuild Include="wx\msw\watch1.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\common\canal.h" />
+    <ClInclude Include="..\..\common\canal_macro.h" />
+    <ClInclude Include="..\..\common\canal_win32_ipc.h" />
+    <ClInclude Include="..\..\common\canaldlldef.h" />
+    <ClInclude Include="..\..\common\clientlist.h" />
+    <ClInclude Include="..\..\common\controlobject.h" />
+    <ClInclude Include="..\..\..\common\crc.h" />
+    <ClInclude Include="..\..\common\daemonvscp.h" />
+    <ClInclude Include="..\..\common\devicelist.h" />
+    <ClInclude Include="..\..\common\devicethread.h" />
+    <ClInclude Include="..\..\..\common\dllist.h" />
+    <ClInclude Include="..\..\common\dm.h" />
+    <ClInclude Include="..\..\common\interfacelist.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="..\..\common\tcpipclientthread.h" />
+    <ClInclude Include="..\..\common\udpthread.h" />
+    <ClInclude Include="..\..\common\userlist.h" />
+    <ClInclude Include="..\..\common\version.h" />
+    <ClInclude Include="..\..\common\vscp.h" />
+    <ClInclude Include="..\..\common\vscp_classes.h" />
+    <ClInclude Include="..\..\common\vscp_types.h" />
+    <ClInclude Include="vscpd.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\common\gettimeofday.c" />
+    <ClCompile Include="..\..\..\common\randPassword.cpp" />
+    <ClCompile Include="..\..\..\common\sha-1.c" />
+    <ClCompile Include="..\..\common\clientlist.cpp" />
+    <ClCompile Include="..\..\common\controlobject.cpp" />
+    <ClCompile Include="..\..\..\common\crc.c" />
+    <ClCompile Include="..\..\common\daemonvscp.cpp" />
+    <ClCompile Include="..\..\common\devicelist.cpp" />
+    <ClCompile Include="..\..\common\devicethread.cpp" />
+    <ClCompile Include="..\..\..\common\dllist.c" />
+    <ClCompile Include="..\..\common\dm.cpp" />
+    <ClCompile Include="..\..\common\guid.cpp" />
+    <ClCompile Include="..\..\common\interfacelist.cpp" />
+    <ClCompile Include="..\..\..\common\md5.cpp" />
+    <ClCompile Include="..\..\common\tcpipclientthread.cpp" />
+    <ClCompile Include="..\..\common\udpthread.cpp" />
+    <ClCompile Include="..\..\common\userlist.cpp" />
+    <ClCompile Include="..\..\common\vscptcpif.cpp" />
+    <ClCompile Include="vscpd.cpp" />
+    <ClCompile Include="..\..\common\vscphelper.cpp" />
+    <ClCompile Include="..\..\common\vscpvariable.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

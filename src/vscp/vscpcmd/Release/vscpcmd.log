@@ -1,0 +1,35 @@
+﻿Build started 2012-09-03 11:49:58.
+     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\vscpcmd.vcxproj" on node 3 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating ".\Release\vscpcmd.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       ClCompile:
+         All outputs are up-to-date.
+         All outputs are up-to-date.
+       Link:
+         All outputs are up-to-date.
+         vscpcmd.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\.\Release\vscpcmd.exe
+       BscMake:
+         All outputs are up-to-date.
+       CustomBuildStep:
+         Description: Performing Custom Build Step
+         echo on
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\.\Release\vscpcmd.exe"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release"
+         :VCEnd
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Release already exists.
+                 1 file(s) copied.
+       PostBuildEvent:
+         copy release\*.exe ..\delivery
+         :VCEnd
+         release\vscpcmd.exe
+                 1 file(s) copied.
+       FinalizeBuildStatus:
+         Deleting file ".\Release\vscpcmd.unsuccessfulbuild".
+         Touching ".\Release\vscpcmd.lastbuildstate".
+     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\vscpcmd\vscpcmd.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.44

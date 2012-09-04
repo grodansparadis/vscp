@@ -1,0 +1,64 @@
+#
+# this config file was automatically generated
+# using lirc-WinLIRC 0.1 (LIRC 0.5.4pre9) on Tue Feb 23 17:42:02 1999
+#
+# contributed by jim
+#
+# brand:             
+# model:             
+# supported devices: 
+#
+
+begin remote
+
+  name  VCR
+  bits           22
+  flags SPACE_ENC
+  eps            25
+  aeps          100
+
+  header       3528  3391
+  one           916   793
+  zero          916  2533
+  ptrail        916
+  pre_data_bits   2
+  pre_data       0x3
+  gap          33323
+  repeat_bit      0
+
+      begin codes
+          power                    0x00000000002BE141
+          vcr/tv                   0x00000000002BF140
+          eject                    0x000000000029016F
+          1                        0x000000000028117E
+          2                        0x000000000029E161
+          3                        0x00000000002AE151
+          4                        0x000000000028E171
+          5                        0x00000000002B6149
+          6                        0x0000000000296169
+          7                        0x00000000002A6159
+          8                        0x0000000000286179
+          9                        0x00000000002BA145
+          0                        0x000000000029A165
+          +100                     0x000000000009036F
+          menu                     0x000000000029516A
+          display                  0x00000000002A7158
+          exit                     0x000000000028317C
+          counter                  0x00000000002B514A
+          play                     0x00000000002AB154
+          stop                     0x00000000002B114E
+          rewind                   0x00000000002B314C
+          fastforward              0x00000000002B7148
+          record                   0x00000000002A9156
+          slow                     0x000000000029316C
+          pause                    0x000000000028B174
+          quickfind                0x0000000000298167
+          time                     0x00000000002A315C
+          index                    0x0000000000287178
+          chan_up                  0x00000000002BD142
+          chan_down                0x00000000002BB144
+      end codes
+
+end remote
+
+
