@@ -177,11 +177,7 @@ extern "C" {
 
 // This structure is for VSCP Level II
 // 
-// If bit 2 in the head byte is set this is a CAN message
-// which is the same as a VSCP Level I event. Bits 0,1 will
-// have useage only for CAN in this case and GUID[15] is part 
-// of the CAN id. Max data size is eight bytes in this case.
-//
+
 typedef struct  {	
 	uint16_t crc;           // crc checksum - currently only used for UDP and RF
 	uint8_t  *pdata;        // Pointer to data. Max 487 (512- 25) bytes
@@ -209,13 +205,8 @@ typedef vscpEvent *PVSCPEVENT;
 
 
 // This structure is for VSCP Level II with data embedded which is used
-// for the TCP interface.
-// 
-// If bit 2 in the head byte is set this is a CAN message
-// which is the same as a VSCP Level I event. Bits 0,1 will
-// have useage only for CAN in this case and GUID[15] is part 
-// of the CAN id. Max data size is eight bytes in this case.
-//
+// for the TCP interface.// 
+
 typedef struct {	
 	uint16_t crc;                   // crc checksum
 	
