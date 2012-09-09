@@ -155,29 +155,45 @@ WSADATA wsaData;                             // WSA functions
 
 #if WIN32 && (_WIN32_WINNT>=0x0500) // Windows XP 
 
-static int close_testing;
+static int gbClose;
 
 struct per_session_data__dumb_increment {
 	int number;
 };
 
-/* lws-mirror_protocol */
+// lws-mirror_protocol 
 
-#define MAX_MESSAGE_QUEUE 64
+#define MAX_MIRROR_MESSAGE_QUEUE 64
 
 struct per_session_data__lws_mirror {
 	struct libwebsocket *wsi;
 	int ringbuffer_tail;
 };
 
-struct a_message {
+struct mirrorws_message {
 	void *payload;
 	size_t len;
 };
 
-static struct a_message ringbuffer[ MAX_MESSAGE_QUEUE ];
-static int ringbuffer_head;
+static struct mirrorws_message mirrorws_ringbuffer[ MAX_MIRROR_MESSAGE_QUEUE ];
+static int mirrorws_ringbuffer_head;
 
+// vscp websocket_protocol
+
+#define MAX_VSCPWS_MESSAGE_QUEUE 512
+
+struct per_session_data__lws_vscp {
+	struct libwebsocket *wsi;
+	int ringbuffer_tail;
+};
+
+struct vscpws_message {
+	void *payload;
+	size_t len;
+};
+
+static struct vscpws_message vscpws_ringbuffer[ MAX_MIRROR_MESSAGE_QUEUE ];
+static int vscpws_ringbuffer_head;
 
 // list of supported websocket protocols and callbacks 
 
@@ -199,6 +215,11 @@ static struct libwebsocket_protocols protocols[] = {
 		"lws-mirror-protocol",
 		CControlObject::callback_lws_mirror,
 		sizeof( struct per_session_data__lws_mirror )
+	},
+	{
+		"very-simple-control-protocol",
+		CControlObject::callback_lws_vscp,
+		sizeof( struct per_session_data__lws_vscp )
 	},
 	{
 		NULL, NULL, 0		// End of list 
@@ -575,10 +596,11 @@ bool CControlObject::run ( void )
     m_dm.feed( &EventStartUp );
 
 #if WIN32 && (_WIN32_WINNT>=0x0500)  // Windows XP
+
 	// Initialize websockets
 	int opts = 0;
 	unsigned int oldus = 0;
-	char interface_name[128] = "";
+	//char interface_name[ 128 ] = "";
 	const char *websockif = NULL;
 	struct libwebsocket_context *context;
 	unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
@@ -1151,6 +1173,7 @@ void CControlObject::sendEventAllClients ( vscpEvent *pEvent, uint32_t excludeID
 // Interfaces can be fetched by investigating the map. 
 //
 // Not used at the moment.
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1959,6 +1982,7 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
 // callback_http
 //
 // this protocol server (always the first one) just knows how to do HTTP 
+//
 
 int 
 CControlObject::callback_http( struct libwebsocket_context *context,
@@ -2121,7 +2145,7 @@ CControlObject::callback_dumb_increment( struct libwebsocket_context *context,
 			return 1;
 		}
 
-		if ( close_testing && pss->number == 50 ) {
+		if ( gbClose && pss->number == 50 ) {
 			fprintf(stderr, "close testing limit, closing\n");
 			libwebsocket_close_and_free_session( context, 
 													wsi,
@@ -2179,69 +2203,75 @@ CControlObject::callback_lws_mirror( struct libwebsocket_context *context,
 	switch ( reason ) {
 
 	case LWS_CALLBACK_ESTABLISHED:
+
 		fprintf(stderr, "callback_lws_mirror: "
 						 "LWS_CALLBACK_ESTABLISHED\n");
-		pss->ringbuffer_tail = ringbuffer_head;
+		pss->ringbuffer_tail = mirrorws_ringbuffer_head;
 		pss->wsi = wsi;
 		break;
 
 	case LWS_CALLBACK_SERVER_WRITEABLE:
-		if (close_testing)
-			break;
-		if (pss->ringbuffer_tail != ringbuffer_head) {
 
-			n = libwebsocket_write(wsi, (unsigned char *)
-				   ringbuffer[pss->ringbuffer_tail].payload +
+		if ( gbClose )
+			break;
+
+		// If there is data in the ringbuffer
+		if ( pss->ringbuffer_tail != mirrorws_ringbuffer_head ) {
+
+			// Write it out
+			n = libwebsocket_write( wsi, (unsigned char * )
+				   vscpws_ringbuffer[ pss->ringbuffer_tail ].payload +
 				   LWS_SEND_BUFFER_PRE_PADDING,
-				   ringbuffer[pss->ringbuffer_tail].len,
-								LWS_WRITE_TEXT);
-			if (n < 0) {
+				   vscpws_ringbuffer[ pss->ringbuffer_tail ].len,
+								LWS_WRITE_TEXT );
+			if ( n < 0 ) {
 				fprintf(stderr, "ERROR writing to socket");
 				exit(1);
 			}
 
-			if (pss->ringbuffer_tail == (MAX_MESSAGE_QUEUE - 1))
+			if ( pss->ringbuffer_tail == ( MAX_MIRROR_MESSAGE_QUEUE - 1 ) )
 				pss->ringbuffer_tail = 0;
 			else
 				pss->ringbuffer_tail++;
 
-			if (((ringbuffer_head - pss->ringbuffer_tail) %
-				  MAX_MESSAGE_QUEUE) < (MAX_MESSAGE_QUEUE - 15))
-				libwebsocket_rx_flow_control(wsi, 1);
+			if ( ( ( mirrorws_ringbuffer_head - pss->ringbuffer_tail) %
+				  MAX_MIRROR_MESSAGE_QUEUE) < (MAX_MIRROR_MESSAGE_QUEUE - 15))
+				libwebsocket_rx_flow_control( wsi, 1 );
 
-			libwebsocket_callback_on_writable(context, wsi);
+			libwebsocket_callback_on_writable( context, wsi );
 
 		}
 		break;
 
 	case LWS_CALLBACK_BROADCAST:
-		n = libwebsocket_write(wsi, (unsigned char *)in, len, LWS_WRITE_TEXT);
-		if (n < 0)
+
+		n = libwebsocket_write( wsi, (unsigned char *)in, len, LWS_WRITE_TEXT );
+		if ( n < 0 )
 			fprintf(stderr, "mirror write failed\n");
 		break;
 
 	case LWS_CALLBACK_RECEIVE:
 
-		if (ringbuffer[ringbuffer_head].payload)
-			free(ringbuffer[ringbuffer_head].payload);
+		if ( vscpws_ringbuffer[mirrorws_ringbuffer_head].payload )
+			free( vscpws_ringbuffer[ mirrorws_ringbuffer_head ].payload );
 
-		ringbuffer[ringbuffer_head].payload =
-				malloc(LWS_SEND_BUFFER_PRE_PADDING + len +
-						  LWS_SEND_BUFFER_POST_PADDING);
-		ringbuffer[ringbuffer_head].len = len;
-		memcpy((char *)ringbuffer[ringbuffer_head].payload +
-					  LWS_SEND_BUFFER_PRE_PADDING, in, len);
-		if (ringbuffer_head == (MAX_MESSAGE_QUEUE - 1))
-			ringbuffer_head = 0;
+		vscpws_ringbuffer[ mirrorws_ringbuffer_head ].payload =
+				malloc( LWS_SEND_BUFFER_PRE_PADDING + len +
+						  LWS_SEND_BUFFER_POST_PADDING );
+		vscpws_ringbuffer[ mirrorws_ringbuffer_head ].len = len;
+		memcpy( (char *)vscpws_ringbuffer[ mirrorws_ringbuffer_head ].payload +
+					  LWS_SEND_BUFFER_PRE_PADDING, in, len );
+		if ( mirrorws_ringbuffer_head == ( MAX_MIRROR_MESSAGE_QUEUE - 1 ) )
+			mirrorws_ringbuffer_head = 0;
 		else
-			ringbuffer_head++;
+			mirrorws_ringbuffer_head++;
 
-		if (((ringbuffer_head - pss->ringbuffer_tail) %
-				  MAX_MESSAGE_QUEUE) > (MAX_MESSAGE_QUEUE - 10))
-			libwebsocket_rx_flow_control(wsi, 0);
+		if ( ( ( mirrorws_ringbuffer_head - pss->ringbuffer_tail) %
+				  MAX_MIRROR_MESSAGE_QUEUE ) > ( MAX_MIRROR_MESSAGE_QUEUE - 10 ) )
+			libwebsocket_rx_flow_control( wsi, 0 );
 
 		libwebsocket_callback_on_writable_all_protocol(
-					       libwebsockets_get_protocol(wsi));
+					       libwebsockets_get_protocol(wsi ) );
 		break;
 	/*
 	 * this just demonstrates how to use the protocol filter. If you won't
@@ -2250,7 +2280,7 @@ CControlObject::callback_lws_mirror( struct libwebsocket_context *context,
 	 */
 
 	case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
-		dump_handshake_info((struct lws_tokens *)(long)user);
+		dump_handshake_info( (struct lws_tokens *)(long)user );
 		/* you could return non-zero here and kill the connection */
 		break;
 
@@ -2261,6 +2291,38 @@ CControlObject::callback_lws_mirror( struct libwebsocket_context *context,
 	return 0;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// callback_lws_vscp
+//
+
+int
+CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
+										struct libwebsocket *wsi,
+										enum libwebsocket_callback_reasons reason,
+										void *user, 
+										void *in, 
+										size_t len )
+{
+	int n;
+	struct per_session_data__lws_vscp *pss = (per_session_data__lws_vscp *)user;
+
+	switch ( reason ) {
+
+	case LWS_CALLBACK_ESTABLISHED:
+
+		fprintf(stderr, "callback_lws_vscp: "
+						 "LWS_CALLBACK_ESTABLISHED\n");
+		pss->ringbuffer_tail = mirrorws_ringbuffer_head;
+		pss->wsi = wsi;
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
