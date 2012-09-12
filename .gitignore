@@ -10,3 +10,17 @@
 *.lai
 *.la
 *.a
+/src/vscp/drivers/level1/lirc/windows/Release
+/src/vscp/drivers/level1/lirc/windows/Debug
+Release
+Debug
+Release
+Debug
+/src/vscp/drivers/level1/vector/win32/Release
+/src/vscp/drivers/level1/vector/win32/Debug
+/src/vscp/drivers/level1/xap/win32/Debug
+/src/vscp/drivers/level1/xap/win32/Release
+/src/vscp/drivers/level1/zanthic/win32/Debug
+/src/vscp/drivers/level1/zanthic/win32/Release
+VCProjectDebug
+VCProjectRelease

@@ -1,0 +1,60 @@
+Very Simple Control Protocol websocket interface
+================================================
+
+Message prefixes
+----------------
+C - Command. Payload is command.
++ - Positive Reply. 
+- - Negative reply. Payload is errorcode followed by error message in english.
+E - Event. 	
+I - Information.
+
+Commands
+--------
+NOOP 		- No command. Positive response is returned.
+OPEN 		- Start receive events. Positive response is returned.
+CLOSE 		- Stop receiving events. Positive response is returned.
+SELECTIF	- Select interface.
+CLRQUE 		- Clear events in input queue.
+SETFILTER 	- Set filter/mask for incomming data.
+SETREQOK 	- Set required event. A number of event can be specified that 
+				triggers an information event when they are all is received.
+				Timeout if not received within specified time.
+SERREQERR	- Set event(s) that should be received for an error to occur.
+RESETREQ	- Reset required events status. All events must be received again.
+
+Error Messages
+--------------
+1	Syntax error.
+2	Unknown command.
+3	Transmitt buffer full.
+
+Packet formats
+--------------
+
+command
+|'C';command mnenomic;data|
+
+Positive reply
+|'+'|
+
+Negative reply
+|'-'|Error code(unsigned short)|Error in real text|
+
+Information
+|'I'|Information message|
+
+Event
+|'E'|head(byte)|vscp_class(unsigned short)|vscp_type(unsigned short)|GUID(16*byte)|data(0-487 bytes)|
+send 0,20,3,0,0,0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15,0,1,35
+send 0,20,3,0,0,-,0,1,35
+Allways full GUID on receive.
+
+
+Command Set filter format
+filter-priority, filter-class, filter-type, filter-GUID, mask-priority, 
+mask-class, mask-type, mask-GUID
+1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00,0,0,0
+Note: The GUID values always is given as hexadecimal values without a preceding “0x”.
+
+Note: If you want to filter on nickname-ID you should filter on GUID LSB byte. 
