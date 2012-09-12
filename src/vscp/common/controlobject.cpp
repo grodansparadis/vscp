@@ -126,7 +126,7 @@
 
 //#define DEBUGPRINT
 
-// For MAC address
+static CControlObject *gpctrlObj;
 
 #ifdef WIN32
 
@@ -184,16 +184,10 @@ static int mirrorws_ringbuffer_head;
 
 struct per_session_data__lws_vscp {
 	struct libwebsocket *wsi;
-	int ringbuffer_tail;
+	wxArrayString *pMessageList;
+	CClientItem *pClientItem;
 };
 
-struct vscpws_message {
-	void *payload;
-	size_t len;
-};
-
-static struct vscpws_message vscpws_ringbuffer[ MAX_MIRROR_MESSAGE_QUEUE ];
-static int vscpws_ringbuffer_head;
 
 // list of supported websocket protocols and callbacks 
 
@@ -254,6 +248,8 @@ CControlObject::CControlObject()
 {
     int i;
     m_bQuit = false;						// true if we should quit
+
+	gpctrlObj = this; // needed by websocket static callbacks
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
@@ -2165,17 +2161,6 @@ CControlObject::callback_dumb_increment( struct libwebsocket_context *context,
 
 		break;
 
-	/*
-	 * this just demonstrates how to use the protocol filter. If you won't
-	 * study and reject connections based on header content, you don't need
-	 * to handle this callback
-	 */
-
-	case LWS_CALLBACK_FILTER_PROTOCOL_CONNECTION:
-
-		dump_handshake_info((struct lws_tokens *)(long)user);
-		/* you could return non-zero here and kill the connection */
-		break;
 
 	default:
 		break;
@@ -2220,13 +2205,12 @@ CControlObject::callback_lws_mirror( struct libwebsocket_context *context,
 
 			// Write it out
 			n = libwebsocket_write( wsi, (unsigned char * )
-				   vscpws_ringbuffer[ pss->ringbuffer_tail ].payload +
+				   mirrorws_ringbuffer[ pss->ringbuffer_tail ].payload +
 				   LWS_SEND_BUFFER_PRE_PADDING,
-				   vscpws_ringbuffer[ pss->ringbuffer_tail ].len,
+				   mirrorws_ringbuffer[ pss->ringbuffer_tail ].len,
 								LWS_WRITE_TEXT );
 			if ( n < 0 ) {
 				fprintf(stderr, "ERROR writing to socket");
-				exit(1);
 			}
 
 			if ( pss->ringbuffer_tail == ( MAX_MIRROR_MESSAGE_QUEUE - 1 ) )
@@ -2234,8 +2218,8 @@ CControlObject::callback_lws_mirror( struct libwebsocket_context *context,
 			else
 				pss->ringbuffer_tail++;
 
-			if ( ( ( mirrorws_ringbuffer_head - pss->ringbuffer_tail) %
-				  MAX_MIRROR_MESSAGE_QUEUE) < (MAX_MIRROR_MESSAGE_QUEUE - 15))
+			if ( ( ( mirrorws_ringbuffer_head - pss->ringbuffer_tail ) %
+				  MAX_MIRROR_MESSAGE_QUEUE ) < ( MAX_MIRROR_MESSAGE_QUEUE - 15 ) )
 				libwebsocket_rx_flow_control( wsi, 1 );
 
 			libwebsocket_callback_on_writable( context, wsi );
@@ -2252,15 +2236,17 @@ CControlObject::callback_lws_mirror( struct libwebsocket_context *context,
 
 	case LWS_CALLBACK_RECEIVE:
 
-		if ( vscpws_ringbuffer[mirrorws_ringbuffer_head].payload )
-			free( vscpws_ringbuffer[ mirrorws_ringbuffer_head ].payload );
+		if ( mirrorws_ringbuffer[ mirrorws_ringbuffer_head ].payload )
+			free( mirrorws_ringbuffer[ mirrorws_ringbuffer_head ].payload );
 
-		vscpws_ringbuffer[ mirrorws_ringbuffer_head ].payload =
-				malloc( LWS_SEND_BUFFER_PRE_PADDING + len +
-						  LWS_SEND_BUFFER_POST_PADDING );
-		vscpws_ringbuffer[ mirrorws_ringbuffer_head ].len = len;
-		memcpy( (char *)vscpws_ringbuffer[ mirrorws_ringbuffer_head ].payload +
+		mirrorws_ringbuffer[ mirrorws_ringbuffer_head ].payload =
+								malloc( LWS_SEND_BUFFER_PRE_PADDING + len +
+								LWS_SEND_BUFFER_POST_PADDING );
+		mirrorws_ringbuffer[ mirrorws_ringbuffer_head ].len = len;
+
+		memcpy( (char *)mirrorws_ringbuffer[ mirrorws_ringbuffer_head ].payload +
 					  LWS_SEND_BUFFER_PRE_PADDING, in, len );
+
 		if ( mirrorws_ringbuffer_head == ( MAX_MIRROR_MESSAGE_QUEUE - 1 ) )
 			mirrorws_ringbuffer_head = 0;
 		else
@@ -2271,7 +2257,7 @@ CControlObject::callback_lws_mirror( struct libwebsocket_context *context,
 			libwebsocket_rx_flow_control( wsi, 0 );
 
 		libwebsocket_callback_on_writable_all_protocol(
-					       libwebsockets_get_protocol(wsi ) );
+										libwebsockets_get_protocol( wsi ) );
 		break;
 	/*
 	 * this just demonstrates how to use the protocol filter. If you won't
@@ -2304,17 +2290,142 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 										void *in, 
 										size_t len )
 {
-	int n;
+	wxString str;
 	struct per_session_data__lws_vscp *pss = (per_session_data__lws_vscp *)user;
 
 	switch ( reason ) {
 
+	// after the server completes a handshake with
+	// an incoming client
 	case LWS_CALLBACK_ESTABLISHED:
+		{
+			fprintf(stderr, "callback_lws_vscp: "
+							 "LWS_CALLBACK_ESTABLISHED\n");
 
-		fprintf(stderr, "callback_lws_vscp: "
-						 "LWS_CALLBACK_ESTABLISHED\n");
-		pss->ringbuffer_tail = mirrorws_ringbuffer_head;
-		pss->wsi = wsi;
+			pss->wsi = wsi;
+			// Create receive message list
+			pss->pMessageList = new wxArrayString();
+			// Create client
+			pss->pClientItem = new CClientItem();
+			// Clear filter
+			clearVSCPFilter( &pss->pClientItem->m_filterVSCP );
+
+			// This is an active client
+			pss->pClientItem->m_bOpen = false;
+			pss->pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
+			pss->pClientItem->m_strDeviceName = _("Internal daemon websocket client. Started at ");
+			wxDateTime now = wxDateTime::Now(); 
+			pss->pClientItem->m_strDeviceName += now.FormatISODate();
+			pss->pClientItem->m_strDeviceName += _(" ");
+			pss->pClientItem->m_strDeviceName += now.FormatISOTime();
+
+			// Add the client to the Client List
+			gpctrlObj->m_wxClientMutex.Lock();
+			gpctrlObj->addClient( pss->pClientItem );
+			gpctrlObj->m_wxClientMutex.Unlock();
+		}
+		break;
+
+	// when the websocket session ends
+	case LWS_CALLBACK_CLOSED:
+		
+		// Remove the receive message list
+		if ( NULL == pss->pMessageList ) {
+			pss->pMessageList->Clear();
+			delete pss->pMessageList;
+		}
+
+		// Remove the client
+		gpctrlObj->m_wxClientMutex.Lock();
+		gpctrlObj->removeClient( pss->pClientItem );
+		gpctrlObj->m_wxClientMutex.Unlock();
+		delete pss->pClientItem;
+		pss->pClientItem = NULL;
+		break;
+
+	// data has appeared for this server endpoint from a
+	// remote client, it can be found at *in and is
+	// len bytes long
+	case LWS_CALLBACK_RECEIVE:
+		gpctrlObj->handleWebSocketReceive( context, wsi, pss, in, len );
+		break;
+
+	// signal to send to client (you would use
+	// libwebsocket_write() taking care about the
+	// special buffer requirements
+	case LWS_CALLBACK_BROADCAST:
+		
+		break;
+
+	// If you call
+	// libwebsocket_callback_on_writable() on a connection, you will
+	// get one of these callbacks coming when the connection socket
+	// is able to accept another write packet without blocking.
+	// If it already was able to take another packet without blocking,
+	// you'll get this callback at the next call to the service loop
+	// function. 
+	case LWS_CALLBACK_SERVER_WRITEABLE:
+		{
+			// If there is data to write
+			if ( pss->pMessageList->GetCount() ) {
+
+				str = pss->pMessageList->Item( 0 );
+				pss->pMessageList->RemoveAt( 0 );
+
+				// Write it out
+				int n = libwebsocket_write( wsi, (unsigned char * )
+													str.c_str() +
+													LWS_SEND_BUFFER_PRE_PADDING,
+													str.Length(),
+													LWS_WRITE_TEXT );
+				if ( n < 0 ) {
+					fprintf(stderr, "ERROR writing to socket");
+				}
+
+				libwebsocket_callback_on_writable( context, wsi );
+
+			}
+
+			// Check if there is something to send out from 
+			// the event list.
+			else if ( pss->pClientItem->m_bOpen && 
+						pss->pClientItem->m_clientInputQueue.GetCount() ) {
+				
+				CLIENTEVENTLIST::compatibility_iterator nodeClient;				
+				vscpEvent *pEvent;
+
+				pss->pClientItem->m_mutexClientInputQueue.Lock();
+				nodeClient = pss->pClientItem->m_clientInputQueue.GetFirst();
+				pEvent = nodeClient->GetData();
+				pss->pClientItem->m_clientInputQueue.DeleteNode ( nodeClient );
+				pss->pClientItem->m_mutexClientInputQueue.Unlock();
+
+				if ( NULL != pEvent ) {
+                
+					if ( doLevel2Filter( pEvent, &pss->pClientItem->m_filterVSCP ) ) {
+					
+						if ( writeVscpEventToString( pEvent, str ) ) {
+
+							// Write it out
+							int n = libwebsocket_write( wsi, (unsigned char * )
+													str.c_str() +
+													LWS_SEND_BUFFER_PRE_PADDING,
+													str.Length(),
+													LWS_WRITE_TEXT );
+							if ( n < 0 ) {
+								fprintf(stderr, "ERROR writing to socket");
+							}	
+						}
+					}
+
+					// Remove the event
+					deleteVSCPevent( pEvent );
+
+				} // Valid pEvent pointer
+
+				libwebsocket_callback_on_writable( context, wsi );
+			}
+		}
 		break;
 
 	default:
@@ -2322,6 +2433,379 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 	}
 
 	return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleWebSocketReceive
+//
+
+void 
+CControlObject::handleWebSocketReceive( struct libwebsocket_context *context, 
+											struct libwebsocket *wsi, 
+											struct per_session_data__lws_vscp *pss, 
+											void *in, 
+											size_t len )
+{
+	wxString str;
+	char *p = (char *)malloc( len + 1);
+	if ( NULL == p ) return;
+
+	memset( p, 0, len );
+	memcpy( p, (char *)in, len );
+
+	switch ( *p++ ) {
+	
+	// Command - | 'C' | command type (byte) | data |
+	case 'C':
+		handleWebSocketCommand( context, 
+									wsi, 
+									pss, 
+									p  );
+		break;
+
+	// Event | 'E' | head(byte) | vscp_class(unsigned short) | vscp_type(unsigned
+	//					short) | GUID(16*byte) | data(0-487 bytes) |
+	case 'E':
+		{
+			vscpEvent vscp_event;
+			str = wxString::FromAscii( p );
+			if ( getVscpEventFromString( &vscp_event, str ) ) {
+
+				if ( handleWebSocketSendEvent( &vscp_event ) ) {
+					libwebsocket_write( wsi, (unsigned char *)"+" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									1,
+									LWS_WRITE_TEXT );
+				}
+				else {
+					libwebsocket_write( wsi, (unsigned char *)"-;3;Transmitt buffer full" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									25,
+									LWS_WRITE_TEXT );
+				}
+				//sendEventAllClients ( &vscp_event, pss->pClientItem->m_clientID );
+				//sendEventToClient ( CClientItem *pClientItem, 
+                //                            vscpEvent *pEvent )
+			}
+		}
+		break;
+
+	// Unknow command
+	default:
+		break;
+
+	}
+
+	delete p;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleWebSocketSendEvent
+//
+
+bool
+CControlObject::handleWebSocketSendEvent( vscpEvent *pEvent )
+{
+	bool bSent = false;
+	bool rv = true;
+
+	// Level II events betwen 512-1023 is recognized by the daemon and 
+	// sent to the correct interface as Level I events if the interface  
+	// is addressed by the client.
+	if (( pEvent->vscp_class <= 1023 ) && 
+		( pEvent->vscp_class >= 512 ) && 
+		( pEvent->sizeData >= 16 )	) {
+
+		// This event shold be sent to the correct interface if it is
+		// available on this machine. If not it should be sent to 
+		// the rest of the network as normal
+
+		unsigned char destGUID[16];
+		memcpy( destGUID, pEvent->pdata, 16 );	// get destination GUID
+		destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
+		destGUID[1] = 0;
+
+		m_wxClientMutex.Lock();
+
+		// Find client
+		CClientItem *pDestClientItem = NULL;
+		VSCPCLIENTLIST::iterator iter;
+		for (iter = m_clientList.m_clientItemList.begin(); 
+			iter != m_clientList.m_clientItemList.end(); 
+			++iter) {
+
+			CClientItem *pItem = *iter;
+			if ( isSameGUID( pItem->m_GUID, destGUID ) ) {
+				// Found
+				pDestClientItem = pItem;
+				break;	
+			}
+
+		}				
+
+		if ( NULL != pDestClientItem ) {
+   
+			// Check if filtered out
+			if ( doLevel2Filter( pEvent, &pDestClientItem->m_filterVSCP ) ) {
+
+				// If the client queue is full for this client then the
+				// client will not receive the message
+				if ( pDestClientItem->m_clientInputQueue.GetCount() <=		
+					m_maxItemsInClientReceiveQueue ) {
+
+					// Add the new event to the inputqueue
+					pDestClientItem->m_mutexClientInputQueue.Lock();
+					pDestClientItem->m_clientInputQueue.Append ( pEvent );
+					pDestClientItem->m_semClientInputQueue.Post();
+					pDestClientItem->m_mutexClientInputQueue.Unlock();
+
+					bSent = true;
+
+				}
+				else {
+					// Overun - No room for event
+					deleteVSCPevent( pEvent );
+					bSent = true;
+					rv = false;
+				}
+
+			} // filter
+
+		} // Client found
+
+		m_wxClientMutex.Unlock();
+
+	}
+
+	if ( !bSent ) {
+
+		// There must be room in the send queue
+		if ( m_maxItemsInClientReceiveQueue >
+			m_clientOutputQueue.GetCount() ) {
+
+			m_mutexClientOutputQueue.Lock();
+			m_clientOutputQueue.Append ( pEvent );
+			m_semClientOutputQueue.Post();
+			m_mutexClientOutputQueue.Unlock();
+
+
+		}
+		else {
+			deleteVSCPevent( pEvent );
+			rv = false;
+		}
+	}
+
+	return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// handleWebSocketCommand
+//
+
+void
+CControlObject::handleWebSocketCommand( struct libwebsocket_context *context, 
+												struct libwebsocket *wsi, 
+												struct per_session_data__lws_vscp *pss, 
+												char *pCommand  )
+{
+	wxString strTok;
+	wxString str = wxString::FromAscii( pCommand );
+
+	// Check pointer
+	if ( NULL == pCommand ) return;
+
+	wxStringTokenizer tkz( str, _(";") );
+	
+	// Get command
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		strTok.MakeUpper();
+		//pEvent->head = readStringValue( str );
+	}
+	else {
+		libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+		return;
+	}
+
+	if ( 0 == strTok.Find ( _( "NOOP" ) ) ) {
+		libwebsocket_write( wsi, (unsigned char *)"+" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									1,
+									LWS_WRITE_TEXT );
+	}
+	else if ( 0 == strTok.Find ( _( "OPEN" ) ) ) {
+		pss->pClientItem->m_bOpen = true;
+		libwebsocket_write( wsi, (unsigned char *)"+" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									1,
+									LWS_WRITE_TEXT );
+	}
+	else if ( 0 == strTok.Find ( _( "CLOSE" ) ) ) {
+		pss->pClientItem->m_bOpen = false;
+		libwebsocket_write( wsi, (unsigned char *)"+" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									1,
+									LWS_WRITE_TEXT );
+	}
+	else if ( 0 == strTok.Find ( _( "SETFILTER" ) ) ) {
+
+		unsigned char ifGUID[ 16 ];
+		memset( ifGUID, 0, 16 );
+
+		// Get filter priority
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			pss->pClientItem->m_filterVSCP.filter_priority = readStringValue( strTok );
+		}
+		else {
+			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+			return;
+		}
+
+		// Get filter class
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			pss->pClientItem->m_filterVSCP.filter_class = readStringValue( strTok );
+		}
+		else {
+			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+			return;
+		}
+
+		// Get filter type
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			pss->pClientItem->m_filterVSCP.filter_type = readStringValue( strTok );
+		}
+		else {
+			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+			return;
+		}
+
+		// Get filter GUID
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			getGuidFromStringToArray( pss->pClientItem->m_filterVSCP.filter_GUID, 
+										strTok );
+		}
+		else {
+			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+			return;
+		}
+
+		// Get mask priority
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			pss->pClientItem->m_filterVSCP.mask_priority = readStringValue( strTok );
+			//getGuidFromStringToArray( ifGUID, strTok );
+		}
+		else {
+			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+			return;
+		}
+
+		// Get mask class
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			pss->pClientItem->m_filterVSCP.mask_class = readStringValue( strTok );
+		}
+		else {
+			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+			return;
+		}
+
+		// Get mask type
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			pss->pClientItem->m_filterVSCP.mask_type = readStringValue( strTok );
+		}
+		else {
+			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+			return;
+		}
+
+		// Get mask GUID
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			getGuidFromStringToArray( pss->pClientItem->m_filterVSCP.filter_GUID, 
+										strTok );
+		}
+		else {
+			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									16,
+									LWS_WRITE_TEXT );
+			return;
+		}
+
+		// Positive response
+		libwebsocket_write( wsi, (unsigned char *)"+" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									1,
+									LWS_WRITE_TEXT );
+		
+	}
+	// Clear the event queue
+	else if ( 0 == strTok.Find ( _( "CLRQUE" ) ) ) {
+		
+		CLIENTEVENTLIST::iterator iterVSCP;
+
+		pss->pClientItem->m_mutexClientInputQueue.Lock();
+		for ( iterVSCP = pss->pClientItem->m_clientInputQueue.begin(); 
+            iterVSCP != pss->pClientItem->m_clientInputQueue.end(); ++iterVSCP ) {
+			vscpEvent *pEvent = *iterVSCP;
+			deleteVSCPevent( pEvent );
+		}
+  
+		pss->pClientItem->m_clientInputQueue.Clear();
+		pss->pClientItem->m_mutexClientInputQueue.Unlock();
+
+		libwebsocket_write( wsi, (unsigned char *)"+" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									1,
+									LWS_WRITE_TEXT );
+	}
+	else if ( 0 == strTok.Find ( _( "SETREQOK" ) ) ) {
+	
+	}
+	else if ( 0 == strTok.Find ( _( "SERREQERR" ) ) ) {
+	
+	}
+	else if ( 0 == strTok.Find ( _( "RESETREQ" ) ) ) {
+	
+	}
+	else {
+		libwebsocket_write( wsi, (unsigned char *)"-;2;Unknown command" +
+									LWS_SEND_BUFFER_PRE_PADDING,
+									18,
+									LWS_WRITE_TEXT );
+	}
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

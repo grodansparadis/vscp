@@ -276,7 +276,7 @@ public:
 
     /*!
         Set GUID for this interface.  
-        \param pGUID Array with uint8_t GUID's. (Note not a string).
+        \param pGUID Array with uint8_t GUID's. (Note! Not a string).
         \return CANAL_ERROR_SUCCESS on success and error code if failure.
     */
     int doCmdSetGUID( const char *pGUID );

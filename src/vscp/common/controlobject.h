@@ -351,6 +351,22 @@ public:
 								void *user, 
 								void *in, 
 								size_t len );
+
+	void 
+	handleWebSocketReceive( struct libwebsocket_context *context, 
+								struct libwebsocket *wsi, 
+								struct per_session_data__lws_vscp *pss, 
+								void *in, 
+								size_t len );
+
+	bool
+	handleWebSocketSendEvent( vscpEvent *pEvent );
+
+	void
+	handleWebSocketCommand( struct libwebsocket_context *context, 
+								struct libwebsocket *wsi, 
+								struct per_session_data__lws_vscp *pss, 
+								char *pCommand  );
 #endif								
 
 public:

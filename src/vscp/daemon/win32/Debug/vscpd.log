@@ -1,30 +1,79 @@
-﻿Build started 2012-09-03 13:40:37.
-     1>Project "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\vscpd.vcxproj" on node 2 (build target(s)).
-     1>InitializeBuildStatus:
+﻿Build started 2012-09-12 11:02:25.
+     1>Project "C:\Users\akhe\Documents\development\vscp_software\src\vscp\daemon\win32\vscpd.vcxproj" on node 2 (rebuild target(s)).
+     1>_PrepareForClean:
+         Deleting file ".\Debug\vscpd.lastbuildstate".
+       InitializeBuildStatus:
          Creating ".\Debug\vscpd.unsuccessfulbuild" because "AlwaysCreate" was specified.
        ClCompile:
-         All outputs are up-to-date.
-         All outputs are up-to-date.
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /Zi /nologo /W3 /WX- /Od /Oy- /D _CRT_NONSTDC_NO_DEPRECATE /D _CRT_SECURE_NO_DEPRECATE /D _DEBUG /D WIN32 /D _CONSOLE /D _WIN32_WINNT=0x0500 /D "_MT _DEBUG" /D wxUSE_GUI=0 /D __WXDEBUG__ /D WXDEBUG=1 /D _VC80_UPGRADE=0x0600 /D _UNICODE /D UNICODE /Gm- /EHsc /MDd /GS /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug\\" /Fd".\Debug\vc100.pdb" /FR".\Debug\\" /Gd /TC /analyze- /errorReport:prompt ..\..\..\common\gettimeofday.c "..\..\..\common\sha-1.c" ..\..\..\common\crc.c ..\..\..\common\dllist.c
+         gettimeofday.c
+         sha-1.c
+         crc.c
+         dllist.c
+         Generating Code...
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /I"C:\wxWidgets-2.8.12\include\msvc" /I"C:\wxWidgets-2.8.12\include\\" /Zi /nologo /W3 /WX- /Od /Oy- /D _CRT_NONSTDC_NO_DEPRECATE /D _CRT_SECURE_NO_DEPRECATE /D _DEBUG /D WIN32 /D _CONSOLE /D _WIN32_WINNT=0x0500 /D "_MT _DEBUG" /D wxUSE_GUI=0 /D __WXDEBUG__ /D WXDEBUG=1 /D _VC80_UPGRADE=0x0600 /D _UNICODE /D UNICODE /Gm- /EHsc /MDd /GS /Gy- /fp:precise /Zc:wchar_t /Zc:forScope /Fo".\Debug\\" /Fd".\Debug\vc100.pdb" /FR".\Debug\\" /Gd /TP /analyze- /errorReport:prompt ..\..\..\common\randPassword.cpp ..\..\common\clientlist.cpp ..\..\common\controlobject.cpp ..\..\common\daemonvscp.cpp ..\..\common\devicelist.cpp ..\..\common\devicethread.cpp ..\..\common\dm.cpp ..\..\common\guid.cpp ..\..\common\interfacelist.cpp ..\..\..\common\md5.cpp ..\..\common\tcpipclientthread.cpp ..\..\common\udpthread.cpp ..\..\common\userlist.cpp ..\..\common\vscptcpif.cpp vscpd.cpp ..\..\common\vscphelper.cpp ..\..\common\vscpvariable.cpp
+         randPassword.cpp
+         clientlist.cpp
+         controlobject.cpp
+         daemonvscp.cpp
+         devicelist.cpp
+         devicethread.cpp
+         dm.cpp
+         guid.cpp
+         interfacelist.cpp
+         md5.cpp
+         tcpipclientthread.cpp
+         udpthread.cpp
+         userlist.cpp
+         vscptcpif.cpp
+         vscpd.cpp
+         vscphelper.cpp
+         vscpvariable.cpp
+         Generating Code...
        Link:
-         All outputs are up-to-date.
-         vscpd.vcxproj -> C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\.\Debug\vscpd.exe
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:".\Debug\vscpd.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:"C:\wxWidgets-2.8.12\lib\vc_lib" libexpatMT.lib Ws2_32.lib wsock32.lib netapi32.lib libwebsocketswin32.lib zlib32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /NODEFAULTLIB:"libcd.lib MSVCRTD.lib" /MANIFEST /ManifestFile:".\Debug\vscpd.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"C:\Users\akhe\Documents\development\vscp_software\src\vscp\daemon\win32\Debug\vscpd.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:".\Debug\vscpd.lib" /MACHINE:X86 .\Debug\gettimeofday.obj
+         .\Debug\randPassword.obj
+         ".\Debug\sha-1.obj"
+         .\Debug\clientlist.obj
+         .\Debug\controlobject.obj
+         .\Debug\crc.obj
+         .\Debug\daemonvscp.obj
+         .\Debug\devicelist.obj
+         .\Debug\devicethread.obj
+         .\Debug\dllist.obj
+         .\Debug\dm.obj
+         .\Debug\guid.obj
+         .\Debug\interfacelist.obj
+         .\Debug\md5.obj
+         .\Debug\tcpipclientthread.obj
+         .\Debug\udpthread.obj
+         .\Debug\userlist.obj
+         .\Debug\vscptcpif.obj
+         .\Debug\vscpd.obj
+         .\Debug\vscphelper.obj
+         .\Debug\vscpvariable.obj
+     1>libexpatMT.lib(xmlparse.obj) : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+     1>MSVCRTD.lib(cinitexe.obj) : warning LNK4098: defaultlib 'libcmtd.lib' conflicts with use of other libs; use /NODEFAULTLIB:library
+         vscpd.vcxproj -> C:\Users\akhe\Documents\development\vscp_software\src\vscp\daemon\win32\.\Debug\vscpd.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:".\Debug\vscpd.exe;#1" /manifest .\Debug\vscpd.exe.intermediate.manifest
        BscMake:
-         All outputs are up-to-date.
+         c:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\bscmake.exe /nologo /o".\Debug\vscpd.bsc" .\Debug\gettimeofday.sbr .\Debug\randPassword.sbr ".\Debug\sha-1.sbr" .\Debug\clientlist.sbr .\Debug\controlobject.sbr .\Debug\crc.sbr .\Debug\daemonvscp.sbr .\Debug\devicelist.sbr .\Debug\devicethread.sbr .\Debug\dllist.sbr .\Debug\dm.sbr .\Debug\guid.sbr .\Debug\interfacelist.sbr .\Debug\md5.sbr .\Debug\tcpipclientthread.sbr .\Debug\udpthread.sbr .\Debug\userlist.sbr .\Debug\vscptcpif.sbr .\Debug\vscpd.sbr .\Debug\vscphelper.sbr .\Debug\vscpvariable.sbr
        CustomBuildStep:
          Description: Performing Custom Build Step
          echo on
-         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build"
-         mkdir "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
-         if exist "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug" copy /Y "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\.\Debug\vscpd.exe"  "C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug"
+         mkdir "C:\Users\akhe\Documents\development\vscp_software\src\vscp\Build"
+         mkdir "C:\Users\akhe\Documents\development\vscp_software\src\vscp\Build\Debug"
+         if exist "C:\Users\akhe\Documents\development\vscp_software\src\vscp\Build\Debug" copy /Y "C:\Users\akhe\Documents\development\vscp_software\src\vscp\daemon\win32\.\Debug\vscpd.exe"  "C:\Users\akhe\Documents\development\vscp_software\src\vscp\Build\Debug"
          :VCEnd
-         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\vscp_software\src\vscp\Build already exists.
+         A subdirectory or file C:\Users\akhe\Documents\development\vscp_software\src\vscp\Build\Debug already exists.
                  1 file(s) copied.
-         A subdirectory or file C:\Users\akhe\Documents\development\m2m\src\vscp\Build\Debug already exists.
        FinalizeBuildStatus:
          Deleting file ".\Debug\vscpd.unsuccessfulbuild".
          Touching ".\Debug\vscpd.lastbuildstate".
-     1>Done Building Project "C:\Users\akhe\Documents\development\m2m\src\vscp\daemon\win32\vscpd.vcxproj" (build target(s)).
+     1>Done Building Project "C:\Users\akhe\Documents\development\vscp_software\src\vscp\daemon\win32\vscpd.vcxproj" (rebuild target(s)).
 
 Build succeeded.
 
-Time Elapsed 00:00:00.37
+Time Elapsed 00:00:42.26

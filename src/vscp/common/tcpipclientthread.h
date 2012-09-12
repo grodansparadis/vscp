@@ -453,11 +453,6 @@ public:
 
 
 	/*!
-		This flag is set if client works in CAN mode
-	*/
-	bool m_bCANMode;
-
-	/*!
 		Internal error code
 	*/
 	int m_err;

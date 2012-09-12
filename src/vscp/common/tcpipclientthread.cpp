@@ -206,7 +206,6 @@ TcpClientThread::TcpClientThread( wxThreadKind kind )
     m_bUsername = false;            // No username entered
     m_bRun = true;                  // Yes run to the hills
     m_bBinaryMode = false;          // Standard ,mode
-    m_bCANMode = false;             // Not CAN Mode
 }
 
 
@@ -594,15 +593,6 @@ void *TcpClientThread::Entry()
                 if ( checkPrivilege( 15 ) ) handleClientShutdown();
             }
 
-            //*********************************************************************
-            //                               canmode
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "CANMODE" ) ) ) {
-                m_bCANMode = true;
-                m_pClientSocket->Write ( MSG_CAN_MODE,
-                    strlen ( MSG_CAN_MODE ) );
-            }
-
 
             //*********************************************************************
             //                               Que?
@@ -791,8 +781,8 @@ void TcpClientThread::handleClientSend ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
-            strlen ( MSG_PARAMETER_ERROR ) );
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
+								strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -862,7 +852,7 @@ void TcpClientThread::handleClientSend ( void )
         // Level II events betwen 512-1023 is recognized by the daemon and 
         // sent to the correct interface as Level I events if the interface  
         // is addressed by the client.
-        if ( !m_bCANMode && ( pEvent->vscp_class <= 1023 ) && 
+        if (( pEvent->vscp_class <= 1023 ) && 
             ( pEvent->vscp_class >= 512 ) && 
             ( pEvent->sizeData >= 16 )	) {
 
