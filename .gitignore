@@ -24,3 +24,5 @@ Debug
 /src/vscp/drivers/level1/zanthic/win32/Release
 VCProjectDebug
 VCProjectRelease
+/src/vscp/*.opensdf
+/src/vscp/ipch/vscp helper dll-7f0a27e1/*.ipch

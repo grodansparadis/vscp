@@ -123,6 +123,8 @@
 #include "dm.h"
 #include "controlobject.h"
 
+// List for websocket triggers
+WX_DEFINE_LIST(TRIGGERLIST);
 
 //#define DEBUGPRINT
 
@@ -183,9 +185,13 @@ static int mirrorws_ringbuffer_head;
 #define MAX_VSCPWS_MESSAGE_QUEUE 512
 
 struct per_session_data__lws_vscp {
-	struct libwebsocket *wsi;
-	wxArrayString *pMessageList;
-	CClientItem *pClientItem;
+	struct libwebsocket *wsi;	// The websocket.
+	wxArrayString *pMessageList;// Messages (not events) to client.
+	CClientItem *pClientItem;	// Client structure for websocket in VSCP world
+	bool bTrigger;				// True to activate trigger functionality.
+	uint32_t triggerTimeout;	// Time out before trigg (or errror) must occur.
+	TRIGGERLIST listTriggerOK;	// List with positive triggers.
+	TRIGGERLIST listTriggerERR;	// List with negative triggers.
 };
 
 
@@ -663,6 +669,9 @@ bool CControlObject::run ( void )
 			libwebsockets_broadcast( &protocols[ PROTOCOL_DUMB_INCREMENT ],
 										&buf[ LWS_SEND_BUFFER_PRE_PADDING ], 
 										1 );
+			libwebsockets_broadcast( &protocols[ PROTOCOL_VSCP ],
+										&buf[ LWS_SEND_BUFFER_PRE_PADDING ], 
+										1 );
 			oldus = tv.tv_usec;
 		}
 
@@ -1093,11 +1102,7 @@ void CControlObject::sendEventToClient ( CClientItem *pClientItem,
         pClientItem->m_statistics.cntOverruns++;
         return;
     }
-
-    // Statistics 1 received frame,+ received data
-    pClientItem->m_statistics.cntReceiveFrames++;
-    pClientItem->m_statistics.cntReceiveData += pEvent->sizeData;
-
+	
     // Create an event
     vscpEvent *pnewvscpEvent = new vscpEvent;
     if ( NULL != pnewvscpEvent ) {
@@ -1108,13 +1113,13 @@ void CControlObject::sendEventToClient ( CClientItem *pClientItem,
         if ( ( pEvent->sizeData > 0 ) && ( NULL != pEvent->pdata ) ) {
             // Copy in data
             pnewvscpEvent->pdata = new uint8_t[ pEvent->sizeData ];
-            memcpy ( pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData );
+            memcpy( pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData );
         }
         else {
             // No data
             pnewvscpEvent->pdata = NULL;
         }
-
+		
         // Add the new event to the inputqueue
         pClientItem->m_mutexClientInputQueue.Lock();
         pClientItem->m_clientInputQueue.Append ( pnewvscpEvent );
@@ -2310,6 +2315,10 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 			// Clear filter
 			clearVSCPFilter( &pss->pClientItem->m_filterVSCP );
 
+			// Initialize session variables
+			pss->bTrigger = false;
+			pss->triggerTimeout = 0;
+
 			// This is an active client
 			pss->pClientItem->m_bOpen = false;
 			pss->pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
@@ -2339,7 +2348,7 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 		gpctrlObj->m_wxClientMutex.Lock();
 		gpctrlObj->removeClient( pss->pClientItem );
 		gpctrlObj->m_wxClientMutex.Unlock();
-		delete pss->pClientItem;
+		//delete pss->pClientItem;
 		pss->pClientItem = NULL;
 		break;
 
@@ -2354,7 +2363,7 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 	// libwebsocket_write() taking care about the
 	// special buffer requirements
 	case LWS_CALLBACK_BROADCAST:
-		
+		libwebsocket_callback_on_writable( context, wsi );
 		break;
 
 	// If you call
@@ -2373,11 +2382,13 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 				pss->pMessageList->RemoveAt( 0 );
 
 				// Write it out
-				int n = libwebsocket_write( wsi, (unsigned char * )
-													str.c_str() +
-													LWS_SEND_BUFFER_PRE_PADDING,
-													str.Length(),
-													LWS_WRITE_TEXT );
+				unsigned char buf[ 512 ];
+				memset( (char *)buf, 0, sizeof( buf ) );
+				strcpy( (char *)buf, (const char*)str.mb_str( wxConvUTF8 ) );
+				int n = libwebsocket_write( wsi, 
+												buf,
+												strlen( (char *)buf ),
+												LWS_WRITE_TEXT );
 				if ( n < 0 ) {
 					fprintf(stderr, "ERROR writing to socket");
 				}
@@ -2407,14 +2418,16 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 						if ( writeVscpEventToString( pEvent, str ) ) {
 
 							// Write it out
+							char buf[ 512 ];
+							memset( (char *)buf, 0, sizeof( buf ) );
+							strcpy( (char *)buf, (const char*)str.mb_str( wxConvUTF8 ) );
 							int n = libwebsocket_write( wsi, (unsigned char * )
-													str.c_str() +
-													LWS_SEND_BUFFER_PRE_PADDING,
-													str.Length(),
+													buf,
+													strlen( (char *)buf ),
 													LWS_WRITE_TEXT );
 							if ( n < 0 ) {
 								fprintf(stderr, "ERROR writing to socket");
-							}	
+							}
 						}
 					}
 
@@ -2447,45 +2460,39 @@ CControlObject::handleWebSocketReceive( struct libwebsocket_context *context,
 											size_t len )
 {
 	wxString str;
-	char *p = (char *)malloc( len + 1);
-	if ( NULL == p ) return;
+	char buf[ 512 ];
+	const char *p = buf;
 
-	memset( p, 0, len );
-	memcpy( p, (char *)in, len );
+	memset( buf, 0, sizeof( buf ) );
+	memcpy( buf, (char *)in, len );
 
-	switch ( *p++ ) {
+	switch ( *p ) {
 	
 	// Command - | 'C' | command type (byte) | data |
 	case 'C':
+		p++; p++;	// Point beyond initial info "C;"
 		handleWebSocketCommand( context, 
 									wsi, 
 									pss, 
 									p  );
 		break;
 
-	// Event | 'E' | head(byte) | vscp_class(unsigned short) | vscp_type(unsigned
-	//					short) | GUID(16*byte) | data(0-487 bytes) |
+	// Event | 'E' ; head(byte) , vscp_class(unsigned short) , vscp_type(unsigned
+	//					short) , GUID(16*byte), data(0-487 bytes) |
 	case 'E':
-		{
+		{	
+			p++; p++;	// Point beyond initial info "E;"
 			vscpEvent vscp_event;
 			str = wxString::FromAscii( p );
 			if ( getVscpEventFromString( &vscp_event, str ) ) {
 
+				vscp_event.obid = pss->pClientItem->m_clientID;
 				if ( handleWebSocketSendEvent( &vscp_event ) ) {
-					libwebsocket_write( wsi, (unsigned char *)"+" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									1,
-									LWS_WRITE_TEXT );
+					pss->pMessageList->Add( _("+;EVENT") );
 				}
 				else {
-					libwebsocket_write( wsi, (unsigned char *)"-;3;Transmitt buffer full" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									25,
-									LWS_WRITE_TEXT );
+					pss->pMessageList->Add( _("-;3;Transmitt buffer full") );
 				}
-				//sendEventAllClients ( &vscp_event, pss->pClientItem->m_clientID );
-				//sendEventToClient ( CClientItem *pClientItem, 
-                //                            vscpEvent *pEvent )
 			}
 		}
 		break;
@@ -2496,7 +2503,6 @@ CControlObject::handleWebSocketReceive( struct libwebsocket_context *context,
 
 	}
 
-	delete p;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2551,13 +2557,20 @@ CControlObject::handleWebSocketSendEvent( vscpEvent *pEvent )
 				// If the client queue is full for this client then the
 				// client will not receive the message
 				if ( pDestClientItem->m_clientInputQueue.GetCount() <=		
-					m_maxItemsInClientReceiveQueue ) {
+						m_maxItemsInClientReceiveQueue ) {
 
-					// Add the new event to the inputqueue
-					pDestClientItem->m_mutexClientInputQueue.Lock();
-					pDestClientItem->m_clientInputQueue.Append ( pEvent );
-					pDestClientItem->m_semClientInputQueue.Post();
-					pDestClientItem->m_mutexClientInputQueue.Unlock();
+					// Create copy of event
+					vscpEvent *pnewEvent  = new vscpEvent;
+					if ( NULL != pnewEvent ) {
+
+						copyVSCPEvent( pnewEvent, pEvent );
+
+						// Add the new event to the inputqueue
+						pDestClientItem->m_mutexClientInputQueue.Lock();
+						pDestClientItem->m_clientInputQueue.Append( pEvent );
+						pDestClientItem->m_semClientInputQueue.Post();
+						pDestClientItem->m_mutexClientInputQueue.Unlock();
+					}
 
 					bSent = true;
 
@@ -2583,11 +2596,17 @@ CControlObject::handleWebSocketSendEvent( vscpEvent *pEvent )
 		if ( m_maxItemsInClientReceiveQueue >
 			m_clientOutputQueue.GetCount() ) {
 
-			m_mutexClientOutputQueue.Lock();
-			m_clientOutputQueue.Append ( pEvent );
-			m_semClientOutputQueue.Post();
-			m_mutexClientOutputQueue.Unlock();
+			// Create copy of event
+			vscpEvent *pnewEvent  = new vscpEvent;
+			if ( NULL != pnewEvent ) {
 
+				copyVSCPEvent( pnewEvent, pEvent );
+
+				m_mutexClientOutputQueue.Lock();
+				m_clientOutputQueue.Append ( pnewEvent );
+				m_semClientOutputQueue.Post();
+				m_mutexClientOutputQueue.Unlock();
+			}
 
 		}
 		else {
@@ -2607,7 +2626,7 @@ void
 CControlObject::handleWebSocketCommand( struct libwebsocket_context *context, 
 												struct libwebsocket *wsi, 
 												struct per_session_data__lws_vscp *pss, 
-												char *pCommand  )
+												const char *pCommand  )
 {
 	wxString strTok;
 	wxString str = wxString::FromAscii( pCommand );
@@ -2624,32 +2643,20 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 		//pEvent->head = readStringValue( str );
 	}
 	else {
-		libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+		pss->pMessageList->Add( _("-;1;Syntax error") );
 		return;
 	}
 
 	if ( 0 == strTok.Find ( _( "NOOP" ) ) ) {
-		libwebsocket_write( wsi, (unsigned char *)"+" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									1,
-									LWS_WRITE_TEXT );
+		pss->pMessageList->Add( _("+;NOOP") );
 	}
 	else if ( 0 == strTok.Find ( _( "OPEN" ) ) ) {
 		pss->pClientItem->m_bOpen = true;
-		libwebsocket_write( wsi, (unsigned char *)"+" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									1,
-									LWS_WRITE_TEXT );
+		pss->pMessageList->Add( _("+;OPEN") );
 	}
 	else if ( 0 == strTok.Find ( _( "CLOSE" ) ) ) {
 		pss->pClientItem->m_bOpen = false;
-		libwebsocket_write( wsi, (unsigned char *)"+" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									1,
-									LWS_WRITE_TEXT );
+		pss->pMessageList->Add( _("+;CLOSE") );
 	}
 	else if ( 0 == strTok.Find ( _( "SETFILTER" ) ) ) {
 
@@ -2662,10 +2669,7 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 			pss->pClientItem->m_filterVSCP.filter_priority = readStringValue( strTok );
 		}
 		else {
-			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
@@ -2675,10 +2679,7 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 			pss->pClientItem->m_filterVSCP.filter_class = readStringValue( strTok );
 		}
 		else {
-			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
@@ -2688,10 +2689,7 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 			pss->pClientItem->m_filterVSCP.filter_type = readStringValue( strTok );
 		}
 		else {
-			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
@@ -2702,10 +2700,7 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 										strTok );
 		}
 		else {
-			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
@@ -2716,10 +2711,7 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 			//getGuidFromStringToArray( ifGUID, strTok );
 		}
 		else {
-			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
@@ -2729,10 +2721,7 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 			pss->pClientItem->m_filterVSCP.mask_class = readStringValue( strTok );
 		}
 		else {
-			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
@@ -2742,10 +2731,7 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 			pss->pClientItem->m_filterVSCP.mask_type = readStringValue( strTok );
 		}
 		else {
-			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
@@ -2756,18 +2742,12 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 										strTok );
 		}
 		else {
-			libwebsocket_write( wsi, (unsigned char *)"-;1;Syntax error" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									16,
-									LWS_WRITE_TEXT );
+			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
 		// Positive response
-		libwebsocket_write( wsi, (unsigned char *)"+" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									1,
-									LWS_WRITE_TEXT );
+		pss->pMessageList->Add( _("+;SETFILTER") );
 		
 	}
 	// Clear the event queue
@@ -2785,25 +2765,43 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 		pss->pClientItem->m_clientInputQueue.Clear();
 		pss->pClientItem->m_mutexClientInputQueue.Unlock();
 
-		libwebsocket_write( wsi, (unsigned char *)"+" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									1,
-									LWS_WRITE_TEXT );
+		pss->pMessageList->Add( _("+;CLRQUE") );
 	}
-	else if ( 0 == strTok.Find ( _( "SETREQOK" ) ) ) {
-	
+	else if ( 0 == strTok.Find ( _( "TRIGGGO" ) ) ) {
+		pss->bTrigger = true;
+		pss->pMessageList->Add( _("+;TRIGGGO") );
 	}
-	else if ( 0 == strTok.Find ( _( "SERREQERR" ) ) ) {
-	
+	else if ( 0 == strTok.Find ( _( "TRIGGTIMEOUT" ) ) ) {
+		// Set trigger timeout
+		if ( tkz.HasMoreTokens() ) {
+			strTok = tkz.GetNextToken();
+			pss->triggerTimeout = readStringValue( strTok );
+		}
+		else {
+			pss->pMessageList->Add( _("-;1;Syntax error") );
+			return;
+		}
+
+		pss->pMessageList->Add( _("+;TRIGGTIMEOUT") );
 	}
-	else if ( 0 == strTok.Find ( _( "RESETREQ" ) ) ) {
-	
+	else if ( 0 == strTok.Find ( _( "TRIGGOK" ) ) ) {
+		// Format 
+		// filter-priority, filter-class, filter-type, filter-GUID;
+		// mask-priority, mask-class, mask-type, mask-GUID
+		pss->pMessageList->Add( _("+;TRIGGOK") );
+	}
+	else if ( 0 == strTok.Find ( _( "TRIGGERR" ) ) ) {
+		// Format 
+		// filter-priority, filter-class, filter-type, filter-GUID;
+		// mask-priority, mask-class, mask-type, mask-GUID
+		pss->pMessageList->Add( _("+;TRIGGERR") );
+	}
+	else if ( 0 == strTok.Find ( _( "TRIGGCLR" ) ) ) {
+		pss->bTrigger = false;
+		pss->pMessageList->Add( _("+;TRIGGCLR") );
 	}
 	else {
-		libwebsocket_write( wsi, (unsigned char *)"-;2;Unknown command" +
-									LWS_SEND_BUFFER_PRE_PADDING,
-									18,
-									LWS_WRITE_TEXT );
+		pss->pMessageList->Add( _("-;2;Unknown command") );
 	}
 
 }

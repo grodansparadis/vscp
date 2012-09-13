@@ -396,6 +396,24 @@ extern "C"
     bool doLevel2Filter( const vscpEvent *pEvent,
                             const vscpEventFilter *pFilter );
 
+	/*!
+		Read a filter from a string
+		@param pFilter Filter structure to write filter to.
+		@param strFilter Filter in string form 
+				filter-priority, filter-class, filter-type, filter-GUID
+		@return true on success, fals eon failure.
+	*/
+	bool readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter );  
+
+	/*!
+		Read a mask from a string
+		@param pFilter Filter structure to write mask to.
+		@param strMask Mask in string form 
+				mask-priority, mask-class, mask-type, mask-GUID
+		@return true on success, fals eon failure.
+	*/
+	bool readMaskFromString( vscpEventFilter *pFilter, wxString& strMask );
+
     /*!
       Convert an Event from a CANAL message
     */

@@ -1614,21 +1614,25 @@ unsigned short vscp_calc_crc ( vscpEvent *pEvent, short bSet )
 
 bool getGuidFromString ( vscpEvent *pEvent, const wxString& strGUID )
 {
-  unsigned long val;
+	unsigned long val;
 
-  // Check pointer
-  if ( NULL == pEvent ) return false;
+	// Check pointer
+	if ( NULL == pEvent ) return false;
 
-  wxStringTokenizer tkz ( strGUID, wxT ( ":" ) );
-  for ( int i=0; i<16; i++ )
-  {
-    tkz.GetNextToken().ToULong ( &val, 16 );
-    pEvent->GUID[ 15-i ] = ( uint8_t ) val;
-    // If no tokens left no use to continue
-    if ( !tkz.HasMoreTokens() ) break;
-  }
+	if ( 0 == strGUID.Find(_("-")) ) {
+		memset( pEvent->GUID, 0, 16 );
+	}
+	else {
+		wxStringTokenizer tkz ( strGUID, wxT ( ":" ) );
+		for ( int i=0; i<16; i++ ) {
+			tkz.GetNextToken().ToULong ( &val, 16 );
+			pEvent->GUID[ 15-i ] = ( uint8_t ) val;
+			// If no tokens left no use to continue
+			if ( !tkz.HasMoreTokens() ) break;
+		}
+	}
 
-  return true;
+	return true;
 
 }
 
@@ -1930,6 +1934,112 @@ void clearVSCPFilter( vscpEventFilter *pFilter )
   pFilter->mask_type = 0x00;
   memset ( pFilter->filter_GUID, 0x00, 16 );
   memset ( pFilter->mask_GUID, 0x00, 16 );
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// readFilterFromString
+//
+
+bool readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
+{
+	wxString strTok;
+
+	// Check pointer
+	if ( NULL == pFilter ) return false;
+
+	wxStringTokenizer tkz( strFilter, _(",") );
+
+	// Get filter priority
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		pFilter->filter_priority = readStringValue( strTok );
+	}
+	else {
+		return false;
+	}
+
+	// Get filter class
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		pFilter->filter_class = readStringValue( strTok );
+	}
+	else {
+		return false;
+	}
+
+	// Get filter type
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		pFilter->filter_type = readStringValue( strTok );
+	}
+	else {
+		return false;
+	}
+
+	// Get filter GUID
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		getGuidFromStringToArray( pFilter->filter_GUID, 
+									strTok );
+	}
+	else {
+		return false;
+	}
+
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// readMaskFromString
+//
+
+bool readMaskFromString( vscpEventFilter *pFilter, wxString& strFilter )
+{
+	wxString strTok;
+
+	// Check pointer
+	if ( NULL == pFilter ) return false;
+
+	wxStringTokenizer tkz( strFilter, _(",") );
+
+	// Get filter priority
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		pFilter->mask_priority = readStringValue( strTok );
+	}
+	else {
+		return false;
+	}
+
+	// Get filter class
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		pFilter->mask_class = readStringValue( strTok );
+	}
+	else {
+		return false;
+	}
+
+	// Get filter type
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		pFilter->mask_type = readStringValue( strTok );
+	}
+	else {
+		return false;
+	}
+
+	// Get filter GUID
+	if ( tkz.HasMoreTokens() ) {
+		strTok = tkz.GetNextToken();
+		getGuidFromStringToArray( pFilter->mask_GUID, 
+									strTok );
+	}
+	else {
+		return false;
+	}
+
+	return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////

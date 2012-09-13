@@ -50,6 +50,9 @@ extern "C" {
 }
 #endif
 
+// List used for websocket triggers
+WX_DECLARE_LIST ( vscpEventFilter, TRIGGERLIST );
+
 #define DAEMON_LOGMSG_NONE                      0
 #define DAEMON_LOGMSG_INFO                      1		
 #define DAEMON_LOGMSG_NOTICE                    2
@@ -86,6 +89,7 @@ enum websocket_protocols {
 
 	PROTOCOL_DUMB_INCREMENT,
 	PROTOCOL_LWS_MIRROR,
+	PROTOCOL_VSCP,
 
 	/* always last */
 	DEMO_PROTOCOL_COUNT
@@ -366,7 +370,7 @@ public:
 	handleWebSocketCommand( struct libwebsocket_context *context, 
 								struct libwebsocket *wsi, 
 								struct per_session_data__lws_vscp *pss, 
-								char *pCommand  );
+								const char *pCommand  );
 #endif								
 
 public:

@@ -14,14 +14,16 @@ Commands
 NOOP 		- No command. Positive response is returned.
 OPEN 		- Start receive events. Positive response is returned.
 CLOSE 		- Stop receiving events. Positive response is returned.
-SELECTIF	- Select interface.
 CLRQUE 		- Clear events in input queue.
 SETFILTER 	- Set filter/mask for incomming data.
-SETREQOK 	- Set required event. A number of event can be specified that 
+Trigger
+TRGO		- Activate trigger. Active until TRIGGEROK, TRIGGERERR or timeout.
+TRTIMEOUT	- Set trigger timeout.
+TRREQOK 	- Set required event. A number of event can be specified that 
 				triggers an information event when they are all is received.
 				Timeout if not received within specified time.
-SERREQERR	- Set event(s) that should be received for an error to occur.
-RESETREQ	- Reset required events status. All events must be received again.
+TRREQERR	- Set event(s) that should be received for an error to occur.
+TRCLR		- Reset required events status. All events must be received again.
 
 Error Messages
 --------------
@@ -39,11 +41,13 @@ Positive reply
 |'+'|
 
 Negative reply
-|'-'|Error code(unsigned short)|Error in real text|
+|'-';Error code(unsigned short);Error in real text|
 
 Information
-|'I'|Information message|
-
+|'I';Information message|
+	"TIMEOUT"
+	"TRIGG"
+	
 Event
 |'E'|head(byte)|vscp_class(unsigned short)|vscp_type(unsigned short)|GUID(16*byte)|data(0-487 bytes)|
 send 0,20,3,0,0,0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15,0,1,35

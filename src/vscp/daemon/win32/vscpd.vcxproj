@@ -207,6 +207,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
     <ClInclude Include="..\..\..\common\dllist.h" />
     <ClInclude Include="..\..\common\dm.h" />
     <ClInclude Include="..\..\common\interfacelist.h" />
+    <ClInclude Include="..\..\common\vscphelper.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\common\tcpipclientthread.h" />
     <ClInclude Include="..\..\common\udpthread.h" />
