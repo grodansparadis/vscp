@@ -163,8 +163,8 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="vscphelper.h" />
     <ClInclude Include="..\..\common\vscphelper.h" />
+    <ClInclude Include="vscphelperdll.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vscphelper.rc" />

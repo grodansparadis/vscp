@@ -680,6 +680,34 @@ extern "C" void WINAPI EXPORT vscp_clearVSCPFilter( vscpEventFilter *pFilter )
 }
 
 /*!
+    \fn bool readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
+    \brief Read a filter from a string
+	\param pFilter Filter structure to write filter to.
+	\param strFilter Filter in string form 
+				filter-priority, filter-class, filter-type, filter-GUID
+	\return true on success, fals eon failure.
+*/
+
+extern "C" bool WINAPI EXPORT vscp_readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
+{
+	return readFilterFromString( pFilter, strFilter );
+}
+
+/*!
+    \fn bool readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
+    \brief Read a mask from a string
+	\param pFilter Filter structure to write mask to.
+	\param strMask Mask in string form 
+				mask-priority, mask-class, mask-type, mask-GUID
+	\return true on success, fals eon failure.
+*/
+
+extern "C" bool WINAPI EXPORT vscp_readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
+{
+	return readMaskFromString( pFilter, strMask );
+}
+
+/*!
     \fn bool vscp_doLevel2Filter( const vscpEvent *pEvent,
                                     const vscpEventFilter *pFilter )
     \brief Check VSCP filter condition.
