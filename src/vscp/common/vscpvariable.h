@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2011 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2012 Ake Hedman, eurosource, <akhe@eurosource.se>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -126,6 +126,7 @@ public:
   example 1: test_int,3,true,24000
   example 2: test_string,1,true,"This is a string"
   example 3: test_event,7,false,0,20,1,2,3,4,5,6
+
   @param str String that will get string represenation of variable with all info.
   */
   bool getVariableFromString( const wxString& strVariable );
@@ -321,6 +322,12 @@ public:
   @return Returns true on success false on failure.
   */
   bool load( void );
+
+  /*!
+  Write persistent variables to configured storage
+  @return Returns true on success false on failure.
+  */
+  bool save( void );
 
   /*!
   Write persistent variables to file

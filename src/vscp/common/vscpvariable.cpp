@@ -803,6 +803,19 @@ bool CVariableStorage::load( void )
 // Write persistent variables to file 
 //
 
+bool CVariableStorage::save()
+{
+#ifdef BUILD_VSCPD_SERVICE
+    wxStandardPaths stdPath;
+
+    // Set the default dm configuration path
+    m_configPath = stdPath.GetConfigDir();
+    m_configPath += _("/vscp/variable.xml");
+#endif
+	return save( m_configPath );
+}
+
+
 bool CVariableStorage::save( wxString& path )
 {
     CVSCPVariable *pVariable;

@@ -2663,83 +2663,28 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 		unsigned char ifGUID[ 16 ];
 		memset( ifGUID, 0, 16 );
 
-		// Get filter priority
+		// Get filter
 		if ( tkz.HasMoreTokens() ) {
 			strTok = tkz.GetNextToken();
-			pss->pClientItem->m_filterVSCP.filter_priority = readStringValue( strTok );
+			if ( !readFilterFromString( &pss->pClientItem->m_filterVSCP, 
+											strTok ) ) {
+				pss->pMessageList->Add( _("-;1;Syntax error") );
+				return;
+			}
 		}
 		else {
 			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
-		// Get filter class
+		// Get mask
 		if ( tkz.HasMoreTokens() ) {
 			strTok = tkz.GetNextToken();
-			pss->pClientItem->m_filterVSCP.filter_class = readStringValue( strTok );
-		}
-		else {
-			pss->pMessageList->Add( _("-;1;Syntax error") );
-			return;
-		}
-
-		// Get filter type
-		if ( tkz.HasMoreTokens() ) {
-			strTok = tkz.GetNextToken();
-			pss->pClientItem->m_filterVSCP.filter_type = readStringValue( strTok );
-		}
-		else {
-			pss->pMessageList->Add( _("-;1;Syntax error") );
-			return;
-		}
-
-		// Get filter GUID
-		if ( tkz.HasMoreTokens() ) {
-			strTok = tkz.GetNextToken();
-			getGuidFromStringToArray( pss->pClientItem->m_filterVSCP.filter_GUID, 
-										strTok );
-		}
-		else {
-			pss->pMessageList->Add( _("-;1;Syntax error") );
-			return;
-		}
-
-		// Get mask priority
-		if ( tkz.HasMoreTokens() ) {
-			strTok = tkz.GetNextToken();
-			pss->pClientItem->m_filterVSCP.mask_priority = readStringValue( strTok );
-			//getGuidFromStringToArray( ifGUID, strTok );
-		}
-		else {
-			pss->pMessageList->Add( _("-;1;Syntax error") );
-			return;
-		}
-
-		// Get mask class
-		if ( tkz.HasMoreTokens() ) {
-			strTok = tkz.GetNextToken();
-			pss->pClientItem->m_filterVSCP.mask_class = readStringValue( strTok );
-		}
-		else {
-			pss->pMessageList->Add( _("-;1;Syntax error") );
-			return;
-		}
-
-		// Get mask type
-		if ( tkz.HasMoreTokens() ) {
-			strTok = tkz.GetNextToken();
-			pss->pClientItem->m_filterVSCP.mask_type = readStringValue( strTok );
-		}
-		else {
-			pss->pMessageList->Add( _("-;1;Syntax error") );
-			return;
-		}
-
-		// Get mask GUID
-		if ( tkz.HasMoreTokens() ) {
-			strTok = tkz.GetNextToken();
-			getGuidFromStringToArray( pss->pClientItem->m_filterVSCP.filter_GUID, 
-										strTok );
+			if ( !readMaskFromString( &pss->pClientItem->m_filterVSCP, 
+											strTok ) ) {
+				pss->pMessageList->Add( _("-;1;Syntax error") );
+				return;
+			}
 		}
 		else {
 			pss->pMessageList->Add( _("-;1;Syntax error") );
@@ -2767,38 +2712,117 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 
 		pss->pMessageList->Add( _("+;CLRQUE") );
 	}
-	else if ( 0 == strTok.Find ( _( "TRIGGGO" ) ) ) {
-		pss->bTrigger = true;
-		pss->pMessageList->Add( _("+;TRIGGGO") );
-	}
-	else if ( 0 == strTok.Find ( _( "TRIGGTIMEOUT" ) ) ) {
-		// Set trigger timeout
+	else if ( 0 == strTok.Find ( _( "WRITEVAR" ) ) ) {
+		
+		// Get variablename
 		if ( tkz.HasMoreTokens() ) {
+
+			CVSCPVariable *pvar;
 			strTok = tkz.GetNextToken();
-			pss->triggerTimeout = readStringValue( strTok );
+			if ( NULL == ( pvar = m_VSCP_Variables.find( strTok ) ) ) {
+				pss->pMessageList->Add( _("-;5;Unable to find variable") );
+				return;
+			}
+
+			// Get variable value
+			if ( tkz.HasMoreTokens() ) {
+				strTok = tkz.GetNextToken(); 
+				if ( !pvar->setValueFromString( pvar->getType(), strTok ) ) {
+					pss->pMessageList->Add( _("-;1;Syntax error") );
+					return;
+				}
+			}
+			else {
+				pss->pMessageList->Add( _("-;1;Syntax error") );
+				return;
+			}
 		}
 		else {
 			pss->pMessageList->Add( _("-;1;Syntax error") );
 			return;
 		}
 
-		pss->pMessageList->Add( _("+;TRIGGTIMEOUT") );
+		// Positive reply
+		pss->pMessageList->Add( _("+;WRITEVAR") );
+
 	}
-	else if ( 0 == strTok.Find ( _( "TRIGGOK" ) ) ) {
-		// Format 
-		// filter-priority, filter-class, filter-type, filter-GUID;
-		// mask-priority, mask-class, mask-type, mask-GUID
-		pss->pMessageList->Add( _("+;TRIGGOK") );
+	else if ( 0 == strTok.Find ( _( "ADDVAR" ) ) ) {
+
+		wxString name;
+		wxString value;
+		uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING;
+		bool bPersistent = false;
+
+		// Get variable name
+		if ( tkz.HasMoreTokens() ) {
+			name = tkz.GetNextToken();
+		}
+		else {
+			pss->pMessageList->Add( _("-;1;Syntax error") );
+			return;
+		}
+
+		// Get variable value
+		if ( tkz.HasMoreTokens() ) {
+			value = tkz.GetNextToken();
+		}
+		else {
+			pss->pMessageList->Add( _("-;1;Syntax error") );
+			return;
+		}
+
+		// Get variable type
+		if ( tkz.HasMoreTokens() ) {
+			type = readStringValue( tkz.GetNextToken() );
+		}
+
+		// Get variable Persistent
+		if ( tkz.HasMoreTokens() ) {
+			int val = readStringValue( tkz.GetNextToken() );
+		}
+
+		// Add the variable
+		if ( !m_VSCP_Variables.add( name, value, type, bPersistent ) ) {
+			pss->pMessageList->Add( _("-;1;Syntax error") );
+			return;
+		}
+		else {
+			pss->pMessageList->Add( _("-;1;Syntax error") );
+			return;
+		}
+		
+		pss->pMessageList->Add( _("+;ADDVAR") );
 	}
-	else if ( 0 == strTok.Find ( _( "TRIGGERR" ) ) ) {
-		// Format 
-		// filter-priority, filter-class, filter-type, filter-GUID;
-		// mask-priority, mask-class, mask-type, mask-GUID
-		pss->pMessageList->Add( _("+;TRIGGERR") );
+	else if ( 0 == strTok.Find ( _( "READVAR" ) ) ) {
+		
+		CVSCPVariable *pvar;
+		uint8_t type;
+		wxString strvalue;
+		
+		strTok = tkz.GetNextToken();
+		if ( NULL == ( pvar = m_VSCP_Variables.find( strTok ) ) ) {
+			pss->pMessageList->Add( _("-;5;Unable to find variable") );
+			return;
+		}
+
+		pvar->writeVariableToString( strvalue );
+		type = pvar->getType();
+
+		wxString resultstr = _("+;READVAR;");
+		resultstr += wxString::Format( _("%d"), type ); 
+		resultstr += _(";");
+		resultstr += strvalue;
+		pss->pMessageList->Add( resultstr );
+
 	}
-	else if ( 0 == strTok.Find ( _( "TRIGGCLR" ) ) ) {
-		pss->bTrigger = false;
-		pss->pMessageList->Add( _("+;TRIGGCLR") );
+	else if ( 0 == strTok.Find ( _( "SAVEVAR" ) ) ) {
+		
+		if ( !m_VSCP_Variables.save() ) {
+			pss->pMessageList->Add( _("-;1;Syntax error") );
+			return;
+		}
+
+		pss->pMessageList->Add( _("+;SAVEVAR") );
 	}
 	else {
 		pss->pMessageList->Add( _("-;2;Unknown command") );

@@ -163,7 +163,7 @@ public:
 };
 
 // List with clientitems
-WX_DECLARE_LIST ( CClientItem, VSCPCLIENTLIST );
+WX_DECLARE_LIST( CClientItem, VSCPCLIENTLIST );
 
 
 class CClientList  
