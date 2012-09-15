@@ -122,6 +122,7 @@
 #include "devicethread.h"
 #include "dm.h"
 #include "controlobject.h"
+#include "libwebsockets.h"
 
 // List for websocket triggers
 WX_DEFINE_LIST(TRIGGERLIST);
@@ -155,7 +156,7 @@ WSADATA wsaData;                             // WSA functions
 //					WEBSOCKETS
 ///////////////////////////////////////////////////
 
-#if WIN32 && (_WIN32_WINNT>=0x0500) // Windows XP 
+#if ( WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32  // Windows XP 
 
 static int gbClose;
 
@@ -597,7 +598,7 @@ bool CControlObject::run ( void )
     // Feed startup event
     m_dm.feed( &EventStartUp );
 
-#if WIN32 && (_WIN32_WINNT>=0x0500)  // Windows XP
+#if (WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32  // Windows XP
 
 	// Initialize websockets
 	int opts = 0;
@@ -651,7 +652,7 @@ bool CControlObject::run ( void )
 			}
 		}
 
-#if WIN32 && (_WIN32_WINNT>=0x0500)  // Windows XP
+#if (WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32  // Windows XP
 		/*
 		 * This broadcasts to all dumb-increment-protocol connections
 		 * at 20Hz.
@@ -736,7 +737,7 @@ bool CControlObject::run ( void )
     removeClient ( pClientItem );
     m_wxClientMutex.Unlock();
 
-#if WIN32 && (_WIN32_WINNT>=0x0500)  // Windows XP
+#if (WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32   // Windows XP
 	libwebsocket_context_destroy( context );
 #endif	
 
@@ -1971,7 +1972,7 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
 
 }
 
-#if WIN32 && (_WIN32_WINNT>=0x0500) // Windows XP
+#if (WIN32 && (_WIN32_WINNT>=0x0500) || !WIN32 ) // Windows XP
 
 
 ////////////////////////

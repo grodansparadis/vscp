@@ -44,11 +44,11 @@
 #include "dm.h"
 #include "vscp.h"
 
-#ifdef WIN32
+//#ifdef WIN32
 extern "C" {
 #include <libwebsockets.h>
 }
-#endif
+//#endif
 
 // List used for websocket triggers
 WX_DECLARE_LIST ( vscpEventFilter, TRIGGERLIST );
@@ -313,8 +313,9 @@ public:
         Remove a client id to the clientmap
     */
     bool removeIdFromClientMap ( uint32_t clid );
-   
-#ifdef WIN32   
+  
+#if ( WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32 
+ 
 
 	/////////////////////////////////////////////////
 	//               WEBSOCKET STATICS

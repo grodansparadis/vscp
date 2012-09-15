@@ -48,7 +48,7 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the `curses' library (-lcurses). */
-/* #undef HAVE_LIBCURSES */
+#define HAVE_LIBCURSES 1
 
 /* Define to 1 if you have the `dl' library (-ldl). */
 #define HAVE_LIBDL 1
@@ -261,7 +261,7 @@
 #define PACKAGE_VERSION "0.3.3"
 
 /* Define to 1 if the C compiler supports function prototypes. */
-#define PROTOTYPES 1
+/* #undef PROTOTYPES */
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
@@ -291,10 +291,10 @@
 
 /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
    `char[]'. */
-/* #undef YYTEXT_POINTER */
+#define YYTEXT_POINTER 1
 
 /* Define like PROTOTYPES; this can be used by system headers. */
-#define __PROTOTYPES 1
+/* #undef __PROTOTYPES */
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
