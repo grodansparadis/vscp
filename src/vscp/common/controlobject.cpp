@@ -107,6 +107,8 @@
 #include <wx/tokenzr.h>
 #include <wx/listimpl.cpp>
 #include <wx/xml/xml.h>
+#include <wx/mimetype.h>
+#include <wx/filename.h>
 
 #include "canal_macro.h"
 #include "../common/vscp.h"
@@ -1662,7 +1664,7 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                     {
                         if ( subsubchild->GetName() == wxT ( "name" ) )
                         {
-                            name = subsubchild->GetNodeContent();
+							name = subsubchild->GetNodeContent();
                             bUser = true;
                         }
                         else if ( subsubchild->GetName() == wxT ( "password" ) )
@@ -1673,7 +1675,7 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                         {
                             privilege = subsubchild->GetNodeContent();
                         }
-                            else if ( subsubchild->GetName() == wxT ( "filter" ) )
+                        else if ( subsubchild->GetName() == wxT ( "filter" ) )
                         {
                             bFilterPresent = true;
                             wxString str_vscp_priority = subchild->GetPropVal ( wxT ( "priority" ), wxT ( "0" ) );
@@ -1994,33 +1996,102 @@ CControlObject::callback_http( struct libwebsocket_context *context,
 								void *in, 
 								size_t len )
 {
-	char client_name[128];
-	char client_ip[128];
+	char client_name[ 128 ];
+	char client_ip[ 128 ];
 	wxString path;
 
 	switch (reason) {
 	
 	case LWS_CALLBACK_HTTP:
+		{
+			wxString mime;
+			wxString args;
+			wxString str( (char *)in, wxConvUTF8 );
 
-		fprintf( stderr, "serving HTTP URI %s\n", (char *)in);
-
-		if ( in && strcmp( (char *)in, "/favicon.ico") == 0) {
-
-			path = CControlObject::m_pathRoot + _("/favicon.ico");
-			if (libwebsockets_serve_http_file( wsi,
-												path.ToAscii(), 
-												"image/x-icon" ) ) {
-				fprintf(stderr, "Failed to send favicon\n");
+			// If we have a '?' in the URI  we have arguments that should be removed.
+			int n;
+			if ( wxNOT_FOUND != ( n = str.Find( _("?") ) ) ) {
+				args = str.Right( str.Length() - n );
+				str = str.Left( n );	
 			}
-			break;
-		}
 
-		// send the script... when it runs it'll start websockets 
-		path = CControlObject::m_pathRoot + _("/test.html");
-		if ( libwebsockets_serve_http_file( wsi,
-											path.ToAscii(), 
-											"text/html" ) )  {
-			fprintf( stderr, "Failed to send HTTP file\n" );
+			path = _("C:/Users/akhe/Documents/development/sencha-touch-2.0.1.1"); 
+			//path = CControlObject::m_pathRoot;
+			str.Trim();
+			if ( ( '\\' == str.Last() ) || ( '/' == str.Last() ) ) {
+				str += _("index.html");
+			}
+			path += str;
+			wxFileName fname( path );
+			//wxFileType *ptype = wxTheMimeTypesManager->GetFileTypeFromExtension( fname.GetExt() );
+		
+			// Add some extra common mime types if non found
+			if ( fname.GetExt() == _("") ) { 
+				mime = _("text/plain");
+			}
+			else if ( fname.GetExt() == _("txt") ) { 
+				mime = _("text/plain");
+			}
+			else if ( fname.GetExt() == _("cfg") ) { 
+				mime = _("text/plain");
+			}
+			else if ( fname.GetExt() == _("conf") ) { 
+				mime = _("text/plain");
+			}
+			else if ( fname.GetExt() == _("js") ) { 
+				mime = _("application/javascript");
+			}
+			else if ( fname.GetExt() == _("json") ) { 
+				mime = _("application/json");
+			}
+			else if ( fname.GetExt() == _("xml") ) { 
+				mime = _("application/xml");
+			}
+			else if ( fname.GetExt() == _("htm") ) { 
+				mime = _("text/html");
+			}
+			else if ( fname.GetExt() == _("html") ) { 
+				mime = _("text/html");
+			}
+			else if ( fname.GetExt() == _("css") ) { 
+				mime = _("text/css");
+			}
+			else if ( fname.GetExt() == _("ico") ) { 
+				mime = _("image/x-icon");
+			}
+			else if ( fname.GetExt() == _("gif") ) { 
+				mime = _("image/x-gif");
+			}
+			else if ( fname.GetExt() == _("png") ) { 
+				mime = _("image/x-png");
+			}
+			else if ( fname.GetExt() == _("bmp") ) { 
+				mime = _("image/x-bmp");
+			}
+			else if ( fname.GetExt() == _("jpg") ) { 
+				mime = _("image/x-jpeg");
+			}
+			else if ( fname.GetExt() == _("jpeg") ) { 
+				mime = _("image/x-jpeg");
+			}
+			else if ( fname.GetExt() == _("jpe") ) { 
+				mime = _("image/x-jpeg");
+			}
+			else {
+				mime = _("text/plain");
+			}
+
+			//path += args;
+			fprintf( stderr, 
+						"serving HTTP URI %s mine %s\n", 
+						path.ToAscii(),
+						mime.ToAscii() );
+			if ( libwebsockets_serve_http_file( wsi,
+												path.ToAscii(), 
+												mime.ToAscii() ) ) {
+				fprintf(stderr, "* * *  Failed to send file * * * \n ");
+			}
+
 		}
 		break;
 

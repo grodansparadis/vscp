@@ -20,6 +20,7 @@ Variables
 ~~~~~~~~~~
 READVAR		- Read a variable. Argument: Name of variable
 WRITEVAR	- Argument: Name of variable;new value
+ADDVAR		- Add a new variable.
 SAVEVAR		- Save variables.
 
 Error Messages
