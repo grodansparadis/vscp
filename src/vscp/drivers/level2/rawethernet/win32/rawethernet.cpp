@@ -262,6 +262,7 @@ CRawEthernet::CRawEthernet()
     m_localGUIDtx.setAt( 14, 0x00 );
     m_localGUIDtx.setAt( 15, 0x00 );
 
+	// Initialize rx channel GUID
     m_localGUIDrx.clear();
     m_localGUIDrx.setAt( 0, 0xff );
     m_localGUIDrx.setAt( 1, 0xff );
