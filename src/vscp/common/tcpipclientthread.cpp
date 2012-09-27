@@ -856,12 +856,17 @@ void TcpClientThread::handleClientSend ( void )
             ( pEvent->vscp_class >= 512 ) && 
             ( pEvent->sizeData >= 16 )	) {
 
-                // This event shold be sent to the correct interface if it is
+                // This event should be sent to the correct interface if it is
                 // available on this machine. If not it should be sent to 
                 // the rest of the network as normal
 
                 unsigned char destGUID[16];
-                memcpy( destGUID, pEvent->pdata, 16 );	// get destination GUID
+                //memcpy( destGUID, pEvent->pdata, 16 );	// get destination GUID
+				// External GUID's are always stored MSB first
+				for ( int i=0; i<16; i++ ) {
+					destGUID[ i ] = pEvent->pdata[ 15 - i ];		
+				}
+
                 destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
                 destGUID[1] = 0;
 
@@ -878,20 +883,24 @@ void TcpClientThread::handleClientSend ( void )
                         if ( isSameGUID( pItem->m_GUID, destGUID ) ) {
                             // Found
                             pDestClientItem = pItem;
-                            break;	
+							bSent = true;
+							m_pCtrlObject->sendEventToClient( pItem, pEvent );
+                            break;
                         }
 
-                }				
+                }	
 
+				m_pCtrlObject->m_wxClientMutex.Unlock();
 
+/*
                 if ( NULL != pDestClientItem ) {
-                    /*
+                    
                     // We must translate the data part of the event to standard format
-                    pEvent->sizeData = pEvent->sizeData - 16;
-                    memcpy( pEvent->pdata, pEvent->pdata + 16, pEvent->sizeData ); 
-
-                    pEvent->vscp_class = pEvent->vscp_class - 512;
-                    */     
+                    //pEvent->sizeData = pEvent->sizeData - 16;
+                    //memcpy( pEvent->pdata, pEvent->pdata + 16, pEvent->sizeData ); 
+					//
+                    //pEvent->vscp_class = pEvent->vscp_class - 512;
+                         
                     // Check if filtered out
                     if ( doLevel2Filter( pEvent, &pDestClientItem->m_filterVSCP ) ) {
 
@@ -930,7 +939,9 @@ void TcpClientThread::handleClientSend ( void )
 
                 m_pCtrlObject->m_wxClientMutex.Unlock();
 
+*/
         }
+
 
         if ( !bSent ) {
 
@@ -1055,6 +1066,7 @@ bool TcpClientThread::sendOneEventFromQueue( bool bStatusMsg )
 
         // Handle data
         if ( NULL != pEvent->pdata ) {
+
             strOut += _(",");
             for ( int i=0; i<pEvent->sizeData; i++ ) {
                 wxString wrk;
@@ -1577,6 +1589,7 @@ void TcpClientThread::handleClientRcvLoop()
 
     // Loop until the connection is lost
     while ( !TestDestroy() && m_bRun && !m_pCtrlObject->m_bQuit ) {
+
         if ( m_pClientSocket->Error() &&
             ( wxSOCKET_NOERROR != ( m_err = m_pClientSocket->LastError() ) ) ) {
             if ( wxSOCKET_TIMEDOUT != m_err ) m_bRun = false;
@@ -1586,7 +1599,7 @@ void TcpClientThread::handleClientRcvLoop()
 
         // Wait for event
         if ( wxSEMA_TIMEOUT == 
-            m_pClientItem->m_semClientInputQueue.WaitTimeout( 2000 ) ) {
+            m_pClientItem->m_semClientInputQueue.WaitTimeout( 1000 ) ) {
                 m_pClientSocket->Write ( "+OK\r\n", 5 );
                 continue;
         }

@@ -4757,6 +4757,9 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                     if ( INTERFACE_CANAL == pBoth->m_type ) {
 
+						// Hide the Level II checkbox
+						subframe->m_bLevel2->Show( false );
+
                         // Init node id combo
                         wxRect rc = subframe->m_comboNodeID->GetRect();
                         rc.SetWidth( 60 );	
@@ -4787,18 +4790,26 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                     else if ( INTERFACE_VSCP == pBoth->m_type ) {
 
                         wxString str;
-                        unsigned char GUID[16];
-                        memcpy( GUID, pBoth->m_pvscpif->m_GUID, 16 );
+                        memcpy( subframe->m_interfaceGUID, pBoth->m_pvscpif->m_GUID, 16 );
+
+						// Check if a specific interface is used
+						bool bInterface= false;
+						for ( int i=0; i<16; i++ ) {
+							if ( subframe->m_interfaceGUID[ i ] ) {
+								bInterface= true;
+								break;
+							}
+						}
 
                         // Fill the combo
                         for ( int i=1; i<256; i++ ) {
-                            GUID[0] = i;
-                            writeGuidArrayToString( GUID, str );
+                            if ( bInterface ) subframe->m_interfaceGUID[ 0 ] = i;
+                            writeGuidArrayToString( subframe->m_interfaceGUID, str );
                             subframe->m_comboNodeID->Append( str );
                         }
 
-                        GUID[0] = 0x01;
-                        writeGuidArrayToString( GUID, str );
+                        if ( bInterface ) subframe->m_interfaceGUID[ 0 ] = 0x01;
+                        writeGuidArrayToString( subframe->m_interfaceGUID, str );
                         subframe->m_comboNodeID->SetValue( str );
 
                         subframe->SetTitle(_("VSCP Registers (TCP/IP)- ") +  

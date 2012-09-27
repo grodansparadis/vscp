@@ -127,6 +127,14 @@ void *deviceThread::Entry()
 
         // Now find methods in library
 
+		{
+			wxString str;
+			str = _("Loading level I driver: ");
+			str += m_pDeviceItem->m_strName;
+			m_pCtrlObject->logMsg ( str, DAEMON_LOGMSG_INFO );
+			wxLogDebug ( str );
+		}
+
         // * * * * CANAL OPEN * * * *
         if ( NULL == ( m_pDeviceItem->m_proc_CanalOpen =
                 ( LPFNDLL_CANALOPEN ) m_wxdll.GetSymbol ( _T( "CanalOpen" ) ) ) ) {
@@ -470,6 +478,14 @@ void *deviceThread::Entry()
     else if ( VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel ) {
     
         // Now find methods in library
+	
+		{
+			wxString str;
+			str = _("Loading level II driver: ");
+			str += m_pDeviceItem->m_strName;
+			m_pCtrlObject->logMsg ( str, DAEMON_LOGMSG_INFO );
+			wxLogDebug ( str );
+		}
 
         // * * * * VSCP OPEN * * * *
         if ( NULL == ( m_pDeviceItem->m_proc_VSCPOpen =
@@ -676,7 +692,7 @@ void *deviceReceiveThread::Entry()
 											&msg,
         									m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_GUID );
 
-          pvscpEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
+					pvscpEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
 
 					m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
 					m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append ( pvscpEvent );
@@ -742,7 +758,7 @@ void *deviceWriteThread::Entry()
 	{
 		// Wait until there is something to send
 		if ( wxSEMA_TIMEOUT == 
-      								m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue.WaitTimeout( 500 ) ) {
+      		m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue.WaitTimeout( 500 ) ) {
 			continue;
 		}
 
@@ -753,7 +769,6 @@ void *deviceWriteThread::Entry()
 			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Lock();
 			nodeClient = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetFirst();
 			vscpEvent *pqueueEvent = nodeClient->GetData();
-
 			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Unlock();
 				
 			canalMsg canalMsg;

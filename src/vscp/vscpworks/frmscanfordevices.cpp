@@ -1274,6 +1274,9 @@ void frmScanforDevices::openConfiguration( wxCommandEvent& event )
 	
 	if ( INTERFACE_CANAL == m_interfaceType ) {
 
+		// Hide the Level II checkbox
+		subframe->m_bLevel2->Show( false );
+
 		// Init node id combo
 		wxRect rc = subframe->m_comboNodeID->GetRect();
 		rc.SetWidth( 60 );

@@ -536,9 +536,7 @@ bool CControlObject::init( wxString& strcfgfile )
 
     if ( m_bTCPInterface ) startTcpWorkerThread();
 
-    if ( m_bUDPInterface ) {
-        startUdpWorkerThreads();
-    }
+    if ( m_bUDPInterface ) startUdpWorkerThreads();
  
     startDaemonWorkerThread();
     
@@ -1087,7 +1085,7 @@ bool CControlObject::stopDeviceWorkerThreads( void )
 // sendEventToClient
 //
 
-void CControlObject::sendEventToClient ( CClientItem *pClientItem, 
+void CControlObject::sendEventToClient( CClientItem *pClientItem, 
                                             vscpEvent *pEvent )
 {
     // Must be valid pointers
@@ -1559,6 +1557,9 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                     {
                         m_bCanalDrivers = false;
                     }
+					else {
+						m_bCanalDrivers = true;
+					}
                 }
                 else if ( subchild->GetName() == wxT ( "dm" ) )
                 {
@@ -1826,10 +1827,12 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                         else if ( subsubchild->GetName() == wxT ( "parameter" ) )
                         {
                             strParameter = subsubchild->GetNodeContent();
+							strParameter.Trim();
                         }
                         else if ( subsubchild->GetName() == wxT ( "path" ) )
                         {
                             strPath = subsubchild->GetNodeContent();
+							strPath.Trim();
                         }
                         else if ( subsubchild->GetName() == wxT ( "flags" ) )
                         {
@@ -1839,6 +1842,7 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                         else if ( subsubchild->GetName() == wxT ( "guid" ) )
                         {
                             strGUID = subsubchild->GetNodeContent();
+							strGUID.Trim();
                         }
 
                         // Next driver item
@@ -1868,7 +1872,8 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                                                     GUID ) ) {
                         wxString errMsg = _("Driver not added. Path does not exist. - \n\t[ ") + 
                         strPath + _(" ]\n");
-                        logMsg( errMsg, DAEMON_LOGMSG_INFO );
+                        logMsg( errMsg, DAEMON_LOGMSG_ERROR );
+						wxLogDebug ( errMsg );
                     }
 
                     bCanalDriver = false;
@@ -1908,10 +1913,12 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                         else if ( subsubchild->GetName() == wxT ( "parameter" ) )
                         {
                             strParameter = subsubchild->GetNodeContent();
+							strParameter.Trim();
                         }
                         else if ( subsubchild->GetName() == wxT ( "path" ) )
                         {
                             strPath = subsubchild->GetNodeContent();
+							strPath.Trim();
                         }
                         else if ( subsubchild->GetName() == wxT ( "flags" ) )
                         {
@@ -1921,6 +1928,7 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                         else if ( subsubchild->GetName() == wxT ( "guid" ) )
                         {
                             strGUID = subsubchild->GetNodeContent();
+							strGUID.Trim();
                         }
 
                         // Next driver item
@@ -1952,6 +1960,7 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
                         wxString errMsg = _("Driver not added. Path does not exist. - \n\t[ ") + 
                         strPath + _(" ]\n");
                         logMsg( errMsg, DAEMON_LOGMSG_INFO );
+						wxLogDebug ( errMsg );
                     }
 
                     bCanalDriver = false;

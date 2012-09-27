@@ -48,8 +48,11 @@
 #include "canal.h"
 #include "devitem.h"
 
-/// Build swig code if defined
-#define BUILD_SWIG              // Must be here for SWIG builds, Can be commented out for C/C++
+// Default values for read/write register functions
+// used in device config and scan.
+#define VSCP_REGISTER_READ_RESEND_TIMEOUT       1000
+#define VSCP_REGISTER_READ_ERROR_TIMEOUT        2000
+#define VSCP_REGISTER_READ_MAX_TRIES            2
 
 /*!@{
     Constants for possible interfaces
@@ -97,6 +100,12 @@ public:
 
     /// Destructor
     virtual ~CCanalSuperWrapper();
+
+	/*!
+		Init common paramaters
+	*/
+	void init( void );
+
 
     /*!
         Set Interface TCP/IP
@@ -154,6 +163,13 @@ public:
         @return true if success false if not.
     */
     int doCmdNOOP( void );
+
+	/*!
+        Clear input queue. 
+
+        @return true if success false if not.
+    */
+    int doCmdClear( void );
 
  
     /*!
@@ -536,6 +552,181 @@ public:
     bool setVariableVSCPtype( wxString& name, uint8_t vscp_type )
             { return m_vscptcpif.setVariableVSCPtype( name, vscp_type ); };
 
+	/*!
+		Set read timeout
+		@param to Read timeout in milliseconds
+	*/
+	void setReadTimeout( uint32_t to ) { m_registerReadErrorTimeout = to; };
+
+	
+	/*!
+		Set read resend timeout
+		@param to Read resend timeout in milliseconds
+	*/
+	void setReadResendTimeout( uint32_t to ) { m_registerReadResendTimeout = to; };
+
+	
+	/*!
+		Set max read retries
+		@param n Number of retries before giving up
+	*/
+	void setMaxRetries( uint32_t n ) { m_registerReadMaxRetries = n; };
+
+
+// We don't want the graphcal UI on apps that don't use it 
+#if ( wxUSE_GUI != 0 )
+
+
+	/*!
+		Read level I register
+		@param nodeid Nickname for node to read register on
+		@param reg Register to read.
+		@param pval Pointer to value read
+		@return True on success false on failure.
+	*/
+	bool readLevel1Register( uint8_t nodeid, 
+								uint8_t reg, 
+								uint8_t *pval );
+
+	/*!
+		Write level I register
+		@param nodeid Nickname for node to write register on
+		@param reg Register to write to.
+		@param val Register value to write
+		@return True on success false on failure.
+	*/
+	bool writeLevel1Register( uint8_t nodeid, 
+								uint8_t reg, 
+								uint8_t *pval );
+
+	/*!
+		Read a level 2 register
+		@param interfaceGUID GUID for interface where devices sits whos register
+				should be read with byte 0 set to nickname id for the device.
+		@param reg Register to read.
+		@param pcontent Pointer to read value.
+		@return True on success. False otherwise.
+	*/    
+	bool readLevel2Register( uint8_t *interfaceGUID, 
+								uint32_t reg = 0xd0, 
+								uint8_t *pcontent = NULL,
+								uint8_t *pdestGUID = NULL,
+								bool bLevel2 = false );
+
+	/*!
+		Write a level 2 register
+   
+		@param interfaceGUID GUID for interface where devices sits whos register
+				should be read with byte 0 set to nickname id for the device.
+		@param reg Register to write.
+		@param pcontent Pointer to data to write. Return read data.
+		@return True on success. False otherwise.
+	*/    
+	bool writeLevel2Register( uint8_t *interfaceGUID, 
+								uint32_t reg, 
+								uint8_t *pcontent,
+								uint8_t *pdestGUID = NULL,
+								bool bLevel2 = false );
+
+	/*!
+		Get MDf file from device registers
+
+		@param pid Pointer to id. Either a one byte nickname if bLevel = false
+				or a 16 byte GUID if bLevel2 = true.
+		@return true on success, false on failure.
+	*/
+	wxString getMDFfromDevice1( uint8_t id,
+								bool bSilent = false );
+
+	/*!
+		Get MDf file from device registers
+
+		@param pguid Pointer to guid of node.
+		@param pinterface 
+		@return true on success, false on failure.
+	*/
+	wxString getMDFfromDevice2( uint8_t *pguid,
+								bool bLevel2 = false,
+								bool bSilent = false );
+
+
+	/*!
+		Get Decision Matrix info for a Level I Node
+
+		@param nodeid id for node whos info should be fetched.
+		@param pdata Pointer to returned data. Array of eight bytes.
+		@return true on success, false on failure.
+	*/
+	bool getLevel1DmInfo( const uint8_t nodeid, 
+							uint8_t *pdata );
+             
+	/*!
+		Get Decision Matrix info for a Level II Node
+
+		@param interfaceGUID GUID + nodeid for node whos info should be 
+		       fetched.
+		@param pdata Pointer to returned data. Array of eight bytes.
+		@return true on success, false on failure.
+	*/
+	bool getLevel2DmInfo( uint8_t *interfaceGUID, 
+							uint8_t *pdata,
+							bool bLevel2 = false );
+
+
+	 /*!
+		Load level I register content into an array
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param pregisters Pointer to an array of 256 8-bit registers.
+		@param nodeid nodeid The node whos registers should be read.
+		@param bQuite No progress information if sett to true. (default is false)
+		@param startreg First register to read. Default is 0.
+		@param count Number of registers to read. Default is 256.
+		@return true on success, false on failure.
+	*/
+
+	bool readLevel1Registers( wxWindow *pwnd,
+									uint8_t *pregisters,
+									uint8_t nodeid,
+									uint8_t startreg = 0,
+									uint16_t count = 256 );
+
+
+	/*!
+		Load level II register content into an array
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param pregisters Pointer to an array of 256 8-bit registers.
+		@param nodeid nodeid The node whos registers should be read.
+		@param bQuite No progress information if sett to true. (default is false)
+		@return true on success, false on failure.
+	*/
+	
+	bool readLevel2Registers( wxWindow *pwnd,
+									uint8_t *pregisters,
+									uint8_t *pinterfaceGUID,
+									uint32_t startreg = 0,
+									uint32_t count = 256 );
+
+	/*!
+		Set register page for level 1 node
+		@param nodeid Nickname for node to set register page for
+		@param page Page to set.
+		@Param Pointer to interface GUID if the interface should be set 
+				over the daemon interface.
+		@return True on success, false on failure. 
+	*/
+
+	bool setRegisterPage( uint8_t nodeid, uint16_t page, uint8_t *interfaceGUID = NULL );
+
+	/*!
+		Get current register page
+		@param nodeid Nickname for node to set register page for
+		@Param Pointer to interface GUID if the interface should be set 
+				over the daemon interface.
+		@return Current register page.				
+	*/
+	uint32_t getRegisterPage( wxWindow *pwnd, uint8_t nodeid, uint8_t *interfaceGUID = NULL );
+
+#endif
 
 protected:
 
@@ -577,6 +768,20 @@ protected:
     */
     bool m_bOpen;
 
+	/*!
+		Register read timeout in milliseconds
+	*/
+	uint32_t m_registerReadErrorTimeout;
+
+	/*!
+		Register read resend timout.
+	*/
+	uint32_t m_registerReadResendTimeout;
+
+	/*!
+		Number of retries before giving up
+	*/
+	uint32_t m_registerReadMaxRetries;
 };
 
 #endif // !defined(AFX_CANALSUPERWRAPPER_H__A908F21A_317D_4E74_9308_18D7DD6B7D49__INCLUDED_)

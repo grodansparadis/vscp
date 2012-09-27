@@ -55,6 +55,13 @@ public:
     */
     void getFromString( char *pszGUID );
 
+	/*!
+		Set GUID from array
+		@param pguid Pointer to array that holds 16 GUID bytes on
+						MSB->LSB form.
+	*/
+	void getFromArray( uint8_t *pguid );
+
     /*!
         GUID to string
         @param pszGUID Zero terminated ASCII string pointing at GUID
@@ -65,7 +72,7 @@ public:
         Return pointer to GUID
         \return pointer to GUID.
     */
-    uint8_t* getGUID( void ) { return m_id; };
+    const uint8_t* getGUID( void ) { return m_id; };
 
     /*!
         Get GUID for specific position
@@ -92,7 +99,7 @@ public:
     bool isSameGUID( const unsigned char *pguid );
             
 
-// private:
+//private:
   
     // GUID id
 	uint8_t m_id[16];

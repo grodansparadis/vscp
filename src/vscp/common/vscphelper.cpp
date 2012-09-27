@@ -1741,10 +1741,30 @@ bool isSameGUID( const unsigned char *pGUID1, const unsigned char *pGUID2 )
   if ( NULL == pGUID1 ) return false;
   if ( NULL == pGUID2 ) return false;
 
-  if ( 0 != memcmp ( pGUID1, pGUID2, 16 ) ) return false;
+  if ( 0 != memcmp( pGUID1, pGUID2, 16 ) ) return false;
 
   return true;
 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// reverseGUID
+//
+
+bool reverseGUID( unsigned char *pGUID )
+{
+	uint8_t copyGUID[ 16 ];
+
+	// First check pointers
+	if ( NULL == pGUID ) return false; 
+
+	for ( int i=0; i<16; i++ ) {
+		copyGUID[ i ] = pGUID[ 15-i ];	
+	}
+
+	memcpy( pGUID, copyGUID, 16 );
+
+	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -2116,7 +2136,7 @@ bool convertEventToCanal( canalMsg *pcanalMsg, const vscpEvent *pvscpEvent )
   // is addressed by the client.
   if ( ( 512 == pvscpEvent->vscp_class ) && ( pvscpEvent->sizeData >= 16 ) ) {
 
-    nodeid = pvscpEvent->pdata[ 0 ]; // Save the nodeid
+    nodeid = pvscpEvent->pdata[ 15 ]; // Save the nodeid
 
     // We must translate the data part of the event to standard format
     sizeData = pvscpEvent->sizeData - 16;
@@ -2143,9 +2163,9 @@ bool convertEventToCanal( canalMsg *pcanalMsg, const vscpEvent *pvscpEvent )
   pcanalMsg->id = ( ( unsigned long ) priority << 26 ) |
                     ( ( unsigned long ) vscp_class << 16 ) |
                     ( ( unsigned long ) pvscpEvent->vscp_type << 8 ) |
-    nodeid;   // Normally we are the host of hosts
-  // but for class=512 events nodeid
-  // is present in GUID LSB
+					nodeid;		// Normally we are the host of hosts
+								// but for class=512 events nodeid
+								// is present in GUID LSB
 
   if ( pvscpEvent->head & VSCP_HEADER_HARD_CODED ) {
     pcanalMsg->id |= VSCP_CAN_ID_HARD_CODED;
@@ -2449,8 +2469,6 @@ bool getVscpEventFromString( vscpEvent *pEvent, const wxString& strEvent )
   else {
     return false;	
   }
-
-
 
   // Get GUID
   wxString strGUID;

@@ -91,6 +91,8 @@
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
 #include "../common/mdf.h"
+#include "../common/vscp_class.h"
+#include "../common/vscp_type.h"
 #include "vscpworks.h"
 
 canal_nodeinfo g_nodesCANAL[ MAX_NUMBER_OF_NODES ];
@@ -134,9 +136,6 @@ BEGIN_EVENT_TABLE( VscpworksApp, wxApp )
 ////@end VscpworksApp event table entries
 
 END_EVENT_TABLE()
-
-
-
 
 /*!
 * Constructor for VscpworksApp
@@ -286,6 +285,8 @@ void VscpworksApp::Init()
     g_Config.m_VscpRegisterReadResendTimeout = VSCP_REGISTER_READ_RESEND_TIMEOUT;
     g_Config.m_VscpRegisterReadErrorTimeout = VSCP_REGISTER_READ_ERROR_TIMEOUT;
     g_Config.m_VscpRegisterReadMaxRetries = VSCP_REGISTER_READ_MAX_TRIES;
+
+	g_Config.m_deviceconfigNumberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
 }
 
 /*!
@@ -2697,11 +2698,15 @@ bool VscpworksApp::writeLevel1Register( CCanalSuperWrapper *pcsw,
 //
 
 bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
-                                      unsigned char *interfaceGUID, 
-                                      unsigned char reg, 
-                                      unsigned char *pcontent )
+										uint8_t *interfaceGUID, 
+										uint32_t reg, 
+										uint8_t *pcontent,
+										uint8_t *pdestGUID,
+										bool bLevel2 )
 {
+	int i;
     bool rv = true;
+	bool bInterface = false;  // No specific interface set
     int errors = 0;
     bool bResend;
     wxString strBuf;
@@ -2710,19 +2715,94 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
     // Check pointer
     if ( NULL == pcsw ) return false;
 
-    event.head = 0;
-    event.vscp_class = 512;                     // CLASS2.PROTOCOL1
-    event.vscp_type = 9;                        // Read register
-    memset( event.GUID, 0, 16 );                // We use interface GUID
-    event.sizeData = 16 + 2;                    // Interface GUID + nodeid + register to read
-    memcpy( event.data, interfaceGUID, 16 );    // Address node
-    event.data[16] = interfaceGUID[0];          // nodeid
-    event.data[17] = reg;                       // Register to read
+	// Check if a specific interface is used
+	for ( i=0; i<16; i++ ) {
+		if ( interfaceGUID[ i ] ) {
+			bInterface= true;
+			break;
+		}
+	}
+
+	if ( bInterface ) {
+
+		// Event should be sent to a specific interface
+
+		event.head = VSCP_PRIORITY_NORMAL;
+		event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+		event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+		
+		memset( event.GUID, 0, 16 );                // We use GUID for interface 
+		
+		event.sizeData = 16 + 2;                    // Interface GUID + nodeid + register to read
+		
+		for ( i=0; i<16; i++ ) {
+			event.data[ i ] = interfaceGUID[ 15 - i ];	
+		}
+			
+		event.data[16] = interfaceGUID[0];          // nodeid
+		event.data[17] = reg;                       // Register to read
+	
+	}
+
+	else {
+
+		// Event should be sent to all interfaces
+	
+		// Must have a destination GUID
+		if ( NULL == pdestGUID ) return false;
+
+		if ( bLevel2 ) {
+
+			// True real Level II event
+
+			event.head = VSCP_PRIORITY_NORMAL;
+			event.vscp_class = VSCP_CLASS2_PROTOCOL;
+			event.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
+		
+			memset( event.GUID, 0, 16 );		// We use GUID for interface 
+
+			event.sizeData = 22;				// nodeid + register to read
+		
+			for ( i=0; i<16; i++ ) {			// Destination GUID
+				event.data[ i ] = pdestGUID[ 15 - i ];	
+			}	
+			event.data[ 16 ] = 0x00;			// Register to read
+			event.data[ 17 ] = 0x00;
+			event.data[ 18 ] = 0x00;
+			event.data[ 19 ] = reg;
+			event.data[ 20 ] = 0x00;			// Read one register
+			event.data[ 21 ] = 0x01;
+		
+		}
+		else {
+
+			// Level I over CLASS2 to all interfaces 
+
+			event.head = VSCP_PRIORITY_NORMAL;
+			event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+			event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+		
+			memset( event.GUID, 0, 16 );				// We use GUID for interface 
+
+			event.sizeData = 16 + 2;					// nodeid + register to read
+
+			for ( i=0; i<16; i++ ) {
+				event.data[ i ] = pdestGUID[ 15 - i ];	
+			}
+			
+			event.data[16] = 0x00;						// nodeid
+			event.data[17] = reg;                       // Register to read
+			
+		}
+	}
 
     bResend = false;
 
     // Send the event
+	pcsw->doCmdClear();
+	event.timestamp = 0;
     pcsw->doCmdSend( &event );
+	
 
     //wxDateTime start = wxDateTime::Now();
     wxLongLong startTime = ::wxGetLocalTimeMillis();
@@ -2731,21 +2811,67 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
 
         if ( pcsw->doCmdDataAvailable() ) {                                     // Message available
             if ( CANAL_ERROR_SUCCESS == pcsw->doCmdReceive( &event ) ) {        // Valid event
-                if ( ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
-                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   // Read reply?
+                
+				// Check for correct reply event
+				
+				// Level I Read reply?
+				if ( bInterface && ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
+                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   
                         if ( event.data[ 0 ] == reg ) {                         // Requested register?
                             if ( event.GUID[0] == interfaceGUID[0] ) {          // Correct node?
                                 if ( NULL != pcontent ) {
                                     *pcontent = event.data[ 1 ];
+									break;
                                 }
                                 break;
                             }
                         } // Check for correct node
-                } // Check for correct reply event
+                }
+				// Level II 512 Read reply?
+				else if ( !bInterface && !bLevel2 && 
+					( VSCP_CLASS2_LEVEL1_PROTOCOL == event.vscp_class ) && 
+                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
+
+					if ( isSameGUID( pdestGUID, event.GUID ) ) {
+						// Reg we requested?
+						if ( event.data[ 0 ] == reg ) {
+							// OK get the data
+							if ( NULL != pcontent ) {
+								*pcontent = event.data[ 18 ];
+								break;
+							}
+						}
+					}
+
+				}
+				// Level II Read reply?
+				else if ( !bInterface && bLevel2 && 
+					( VSCP_CLASS2_PROTOCOL == event.vscp_class ) && 
+                    ( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == event.vscp_type ) ) { 
+					
+					// from us
+					if ( isSameGUID( pdestGUID, event.GUID ) ) {	
+						
+						uint32_t retreg = ( event.data[ 0 ]  << 24 ) +
+										  (	event.data[ 1 ]  << 16 ) +
+										  (	event.data[ 2 ]  << 8 ) +
+											event.data[ 3 ];
+						
+						// Reg we requested?
+						if ( retreg == reg ) {
+							// OK get the data
+							if ( NULL != pcontent ) {
+								*pcontent = event.data[ 18 ];
+								break;
+							}
+						}
+					}
+
+				}
             } // valid event
         }
         else {
-            wxMilliSleep( 1 );
+            //wxMilliSleep( 1 );
         }
 
         if ( ( ::wxGetLocalTimeMillis() - startTime ) >   
@@ -2756,6 +2882,8 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
             g_Config.m_VscpRegisterReadResendTimeout ) {
                 // Send again
                 if ( !bResend) {
+					pcsw->doCmdClear();
+					event.timestamp = 0;
                     pcsw->doCmdSend( &event );
                 }
                 bResend = true;
@@ -2776,11 +2904,15 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
 //
 
 bool VscpworksApp::writeLevel2Register( CCanalSuperWrapper *pcsw,
-                                       unsigned char *interfaceGUID, 
-                                       unsigned char reg, 
-                                       unsigned char *pcontent )
+											uint8_t *interfaceGUID, 
+											uint32_t reg, 
+											uint8_t *pcontent,
+											uint8_t *pdestGUID,
+											bool bLevel2 )
 {
-    bool rv = true;
+    int i;
+	bool rv = true;
+	bool bInterface = false;  // No specific interface set
     int errors = 0;
     bool bResend;
     wxString strBuf;
@@ -2789,20 +2921,86 @@ bool VscpworksApp::writeLevel2Register( CCanalSuperWrapper *pcsw,
     // Check pointers
     if ( NULL == pcsw ) return false;
     if ( NULL == pcontent ) return false;
-    event.head = 0;
-    event.vscp_class = 512;                   // CLASS2.PROTOCOL1
-    event.vscp_type = 0x0B;                   // Write register
-    memset( event.GUID, 0, 16 );              // We use interface GUID
-    event.sizeData = 16 + 3;                  // Interface GUID + nodeid + register to read + valie
-    memcpy( event.data, interfaceGUID, 16 );  // Address node
-    event.data[16] = interfaceGUID[0];        // nodeid
-    event.data[17] = reg;                     // Register to write
-    event.data[18] = *pcontent;	              // value to write
+
+	// Check if a specific interface is used
+	for ( i=0; i<16; i++ ) {
+		if ( interfaceGUID[ i ] ) {
+			bInterface= true;
+			break;
+		}
+	}
+
+	if ( bInterface ) {
+
+		event.head = VSCP_PRIORITY_NORMAL;
+		event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+		event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
+		
+		memset( event.GUID, 0, 16 );              // We use interface GUID
+		
+		event.sizeData = 16 + 3;                  // Interface GUID + nodeid + register to read + valied
+		
+		for ( i=0; i<16; i++ ) {
+			event.data[ i ] = interfaceGUID[ 15 - i ];	
+		}
+		event.data[16] = interfaceGUID[ 0 ];      // nodeid
+		event.data[17] = reg;                     // Register to write
+		event.data[18] = *pcontent;	              // value to write
+	
+	}
+	else {
+
+		if ( bLevel2 ) {
+
+			// Must have a destination GUID
+			if ( NULL == pdestGUID ) return false;
+
+			event.head = VSCP_PRIORITY_NORMAL;
+			event.vscp_class = VSCP_CLASS2_PROTOCOL;
+			event.vscp_type = VSCP2_TYPE_PROTOCOL_WRITE_REGISTER;
+
+			memset( event.GUID, 0, 16 );		// We use interface GUID
+		
+			event.sizeData = 21;				// nodeid + register to read
+		
+			for ( i=0; i<16; i++ ) {			// Destination GUID
+				event.data[ i ] = pdestGUID[ 15 - i ];	
+			}
+				
+			event.data[ 16 ] = 0x00;			// Register to write
+			event.data[ 17 ] = 0x00;
+			event.data[ 18 ] = 0x00;
+			event.data[ 19 ] = reg;
+			event.data[ 20 ] = *pcontent;		// Data to write
+		
+		}
+		else {
+
+			// Level I over CLASS2 to all interfaces 
+
+			event.head = VSCP_PRIORITY_NORMAL;
+			event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+			event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
+
+			memset( event.GUID, 0, 16 );			// We use interface GUID
+		
+			event.sizeData = 16 + 3;				
+
+			for ( i=0; i<16; i++ ) {		
+				event.data[ i ] = interfaceGUID[ 15 - i ];	
+			}
+
+			event.data[16] = interfaceGUID[0];        // nodeid
+			event.data[17] = reg;                     // Register to write
+			event.data[18] = *pcontent;	              // value to write
+			
+		}
+
+	}
 
     bResend = false;
     pcsw->doCmdSend( &event );
 
-    //wxDateTime start = wxDateTime::Now();
     wxLongLong startTime = ::wxGetLocalTimeMillis();
 
     while ( true ) {
@@ -2849,6 +3047,60 @@ bool VscpworksApp::writeLevel2Register( CCanalSuperWrapper *pcsw,
     } // while
 
     return rv;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getMDFfromDevice
+//
+
+wxString VscpworksApp::getMDFfromDevice( CCanalSuperWrapper *pcsw, 
+											uint8_t *pid, 
+											bool bLevel2,
+											bool bSilent )
+{
+	wxString strWrk;
+	char url[ 33 ];
+
+	memset( url, 0, sizeof( url ) );
+
+	if ( bLevel2 ) {
+		
+		// Level 2 device
+		uint8_t *p = (uint8_t *)url;
+		for ( int i=0; i<32; i++ ) {
+			 if ( !readLevel1Register( pcsw,
+										*pid, 
+										0xE0 + i, 
+										p++ ) ) {
+				if ( !bSilent ) {												
+					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
+				}
+				break;
+			 }
+			
+		}
+
+	}
+	else {
+	
+		// Level 1 device
+		uint8_t *p = (uint8_t *)url;
+		for ( int i=0; i<32; i++ ) {
+			 if ( !readLevel2Register( pcsw,
+										pid, 
+										0xFFFFFFE0 + i, 
+										p++ ) ) {
+				if ( !bSilent ) {
+					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
+				}
+				break;
+			 }
+			
+		}
+
+	}
+
+	return strWrk;
 }
 
 
@@ -2977,7 +3229,8 @@ bool VscpworksApp::getLevel1DmInfo( CCanalSuperWrapper *pcsw,
 
 bool VscpworksApp::getLevel2DmInfo( CCanalSuperWrapper *pcsw,
                                    unsigned char *interfaceGUID, 
-                                   unsigned char *pdata )
+                                   unsigned char *pdata,
+								   bool bLevel2 )
 {
     bool rv = true;
     bool bResend;

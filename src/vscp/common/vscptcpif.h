@@ -136,6 +136,12 @@ public:
     */
     int doCmdNOOP( void );
 
+	/*!
+		Clear input queue
+		\return CANAL_ERROR_SUCCESS on success and error code if failure.
+	*/
+	int VscpTcpIf::doCmdClear( void );
+
 
     /*!
         Get the Canal protocol level
@@ -320,15 +326,17 @@ public:
     int doCmdMask( uint32_t mask )
                         { mask = mask; return CANAL_ERROR_SUCCESS; };
 
+	/*!
+        Shutdown the VSCP daemon  
+    */
+    int doCmdShutDown( void );
+
 
     // ------------------------------------------------------------------------
     //                    V A R I A B L E  H A N D L I N G
     // ------------------------------------------------------------------------
 
-    /*!
-        Shutdown the VSCP daemon  
-    */
-    int doCmdShutDown( void );
+
 
     /*!
         Get variable value from string variable

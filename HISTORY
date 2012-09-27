@@ -1,9 +1,9 @@
 release notes for release 0.4.0 Fluorine
 ========================================
-2012-09-15 - AKHE Websocket interface in place.
-2012-09-16 - AKHE Websocket interface now works on Linux/Unix to.
-2012-09-17 - AKHE Deamon local webserver added.
 2012-09-18 - AKHE Dinesh Guleria contributed VSCP bootloader support for VSCP Works.
+2012-09-17 - AKHE Deamon local webserver added.
+2012-09-16 - AKHE Websocket interface now works on Linux/Unix to.
+2012-09-15 - AKHE Websocket interface in place.
 
 release notes for release 0.3.3 Oxygen
 ======================================

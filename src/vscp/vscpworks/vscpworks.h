@@ -132,9 +132,12 @@
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define VSCP_REGISTER_READ_RESEND_TIMEOUT       300
-#define VSCP_REGISTER_READ_ERROR_TIMEOUT        1000
+#define VSCP_REGISTER_READ_RESEND_TIMEOUT       1000
+#define VSCP_REGISTER_READ_ERROR_TIMEOUT        2000
 #define VSCP_REGISTER_READ_MAX_TRIES            2
+
+#define VSCP_DEVCONFIG_NUMBERBASE_HEX			0
+#define VSCP_DEVCONFIG_NUMBERBASE_DECIMAL		1
 
 // Structure for CANAL nodes
 typedef struct {
@@ -262,7 +265,10 @@ typedef struct {
 
     uint32_t m_VscpRegisterReadResendTimeout;	// Timeout before register read retries
     uint32_t m_VscpRegisterReadErrorTimeout;	// Timeout before register read is considered and error
-    uint8_t	m_VscpRegisterReadMaxRetries;			// Max number of retries to read a register.
+    uint8_t	m_VscpRegisterReadMaxRetries;		// Max number of retries to read a register.
+
+	// device vonfiguration
+	uint8_t m_deviceconfigNumberbase;			// Number base for register values
     
 } appConfiguration;	
 
@@ -357,9 +363,11 @@ public:
     @return True on success. False otherwise.
   */    
   bool readLevel2Register( CCanalSuperWrapper *pcsw, 
-                            unsigned char *interfaceGUID, 
-                            unsigned char reg = 0xd0, 
-                            unsigned char *pcontent = NULL );  
+                            uint8_t *interfaceGUID, 
+                            uint32_t reg = 0xd0, 
+                            uint8_t *pcontent = NULL,
+							uint8_t *pdestGUID = NULL,
+							bool bLevel2 = false );  
                             
   /*!
     Write a level 2 register
@@ -371,9 +379,11 @@ public:
     @return True on success. False otherwise.
   */    
   bool writeLevel2Register( CCanalSuperWrapper *pcsw,
-                              unsigned char *interfaceGUID, 
-                              unsigned char reg, 
-                              unsigned char *pcontent );   
+                              uint8_t *interfaceGUID, 
+                              uint32_t reg, 
+                              uint8_t *pcontent,
+							  uint8_t *pdestGUID = NULL,
+							  bool bLevel2 = false );   
 
 	/*!
 		Make a string look nicer with linebreaks etc
@@ -402,7 +412,8 @@ public:
   */
   bool getLevel2DmInfo( CCanalSuperWrapper *pcsw,
                           unsigned char *interfaceGUID, 
-                          unsigned char *pdata );
+                          unsigned char *pdata,
+						  bool bLevel2 = false );
   
   /*!
     Get a HTML string with clear text register information
@@ -453,6 +464,19 @@ public:
 									CCanalSuperWrapper *pcsw,
 									uint8_t *pregisters,
 									uint8_t *pinterfaceGUID );
+
+  /*!
+		Get MDf file from device registers
+		@param pcsw Pointer to CANAL super wrapper
+		@param pid Pointer to id. Either a one byte nickname if bLevel = false
+				or a 16 byte GUID if bLevel2 = true.
+		@param bLevel2 True if pid points to a full  GUID false if pid points to one 
+				byte nickname.
+  */
+  wxString getMDFfromDevice( CCanalSuperWrapper *pcsw, 
+								uint8_t *pid, 
+								bool bLevel2 = false,
+								bool bSilent = false );
 
   /*!
 	Get MDF info.

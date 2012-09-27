@@ -52,7 +52,6 @@
  */
 
 ////@begin includes
-#include "dlgnewvscpsession_symbols.h"
 ////@end includes
 
 /*!

@@ -630,7 +630,7 @@ void *CRawEthernetRxTread::Entry()
 	while ( !TestDestroy() && !m_pobj->m_bQuit ) {
 
         if ( CANAL_ERROR_SUCCESS == 
-            ( rv = m_srv.doCmdBlockReceive( &event, 1000 ) ) ) {
+            ( rv = m_srv.doCmdBlockReceive( &event, 10 ) ) ) {
 
             // As we are on a different VSCP interface we need to filter the events we sent out 
             // ourselves.
@@ -667,40 +667,38 @@ void *CRawEthernetRxTread::Entry()
             packet[ 20 ] = 0x00;
 
             // Timestamp
-            uint32_t timestamp = wxINT32_SWAP_ON_LE( event.timestamp );
+            uint32_t timestamp = event.timestamp;
             packet[ 21 ] = ( timestamp & 0xff000000 ) >> 24;
             packet[ 22 ] = ( timestamp & 0x00ff0000 ) >> 16;
             packet[ 23 ] = ( timestamp & 0x0000ff00 ) >> 8;
             packet[ 24 ] = ( timestamp & 0x000000ff );
 
             // obid
-            uint32_t obid = wxINT32_SWAP_ON_LE( event.obid );
+            uint32_t obid = event.obid;
             packet[ 25 ] = ( obid & 0xff000000 ) >> 24;
             packet[ 26 ] = ( obid & 0x00ff0000 ) >> 16;
             packet[ 27 ] = ( obid & 0x0000ff00 ) >> 8;
             packet[ 28 ] = ( obid & 0x000000ff );
 
             // VSCP Class
-            uint16_t vscp_class = wxINT16_SWAP_ON_LE( event.vscp_class );
+            uint16_t vscp_class = event.vscp_class;
             packet[ 29 ] = ( vscp_class & 0xff00 ) >> 8;
             packet[ 30 ] = ( vscp_class & 0xff );
 
             // VSCP Type
-            uint16_t vscp_type = wxINT16_SWAP_ON_LE( event.vscp_type );
+            uint16_t vscp_type = event.vscp_type;
             packet[ 31 ] = ( vscp_type & 0xff00 ) >> 8;
-            packet[ 32 ] = ( vscp_class & 0xff );
+            packet[ 32 ] = ( vscp_type & 0xff );
 
             // Size
             packet[ 33 ] = event.sizeData >> 8;
             packet[ 34 ] = event.sizeData & 0xff; 
 
             // VSCP Data
-            for ( int idx=0; idx < event.sizeData; idx++ ) {
-                packet[ 35 + idx  ] = event.pdata[ idx ];
-            }
+			memcpy( packet + 35, event.pdata, event.sizeData );
 
             // Send the packet
-	        if ( 0 != pcap_sendpacket( fp, packet, 32 + 1  + event.sizeData ) ) {
+	        if ( 0 != pcap_sendpacket( fp, packet, 35 + event.sizeData ) ) {
 		        //fprintf(stderr,"\nError sending the packet: %s\n", pcap_geterr(fp));
 		        // An error sending the frame - we do nothing
                 // TODO: Send error frame back to daemon????

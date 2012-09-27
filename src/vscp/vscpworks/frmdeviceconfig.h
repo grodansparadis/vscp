@@ -14,7 +14,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -52,8 +52,8 @@
 #endif
 
 /*!
- * Includes
- */
+* Includes
+*/
 
 ////@begin includes
 #include "wx/frame.h"
@@ -65,13 +65,14 @@
 ////@end includes
 
 #include "../common/canalsuperwrapper.h"
+#include "../common/register.h"
 #include "../common/mdf.h"
 
 #define MAX_CONFIG_REGISTER_PAGE	22
 
 /*!
- * Forward declarations
- */
+* Forward declarations
+*/
 
 ////@begin forward declarations
 class wxToggleButton;
@@ -81,8 +82,8 @@ class wxHtmlWindow;
 ////@end forward declarations
 
 /*!
- * Control identifiers
- */
+* Control identifiers
+*/
 
 ////@begin control identifiers
 #define SYMBOL_FRMDEVICECONFIG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
@@ -96,164 +97,188 @@ class wxHtmlWindow;
 
 
 enum {
-  Menu_Popup_Read_Value = 2000,
-  Menu_Popup_Write_Value,
-  Menu_Popup_Update,
-  Menu_Popup_Load_MDF,
-  Menu_Popup_Undo,
-  Menu_Popup_dm_enable_row,
-  Menu_Popup_dm_disable_row,
-  Menu_Popup_dm_row_wizard
+	Menu_Popup_Read_Value = 2000,
+	Menu_Popup_Write_Value,
+	Menu_Popup_Update,
+	Menu_Popup_Load_MDF,
+	Menu_Popup_Undo,
+	Menu_Popup_dm_enable_row,
+	Menu_Popup_dm_disable_row,
+	Menu_Popup_dm_row_wizard
 };
 
 
 /*!
- * frmDeviceConfig class declaration
- */
+* frmDeviceConfig class declaration
+*/
 
 class frmDeviceConfig: public wxFrame
 {    
-  DECLARE_CLASS( frmDeviceConfig )
-  DECLARE_EVENT_TABLE()
+	DECLARE_CLASS( frmDeviceConfig )
+	DECLARE_EVENT_TABLE()
 
 public:
-  /// Constructors
-  frmDeviceConfig();
-  frmDeviceConfig( wxWindow* parent, wxWindowID id = SYMBOL_FRMDEVICECONFIG_IDNAME, const wxString& caption = SYMBOL_FRMDEVICECONFIG_TITLE, const wxPoint& pos = SYMBOL_FRMDEVICECONFIG_POSITION, const wxSize& size = SYMBOL_FRMDEVICECONFIG_SIZE, long style = SYMBOL_FRMDEVICECONFIG_STYLE );
+	/// Constructors
+	frmDeviceConfig();
+	frmDeviceConfig( wxWindow* parent, wxWindowID id = SYMBOL_FRMDEVICECONFIG_IDNAME, const wxString& caption = SYMBOL_FRMDEVICECONFIG_TITLE, const wxPoint& pos = SYMBOL_FRMDEVICECONFIG_POSITION, const wxSize& size = SYMBOL_FRMDEVICECONFIG_SIZE, long style = SYMBOL_FRMDEVICECONFIG_STYLE );
 
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_FRMDEVICECONFIG_IDNAME, const wxString& caption = SYMBOL_FRMDEVICECONFIG_TITLE, const wxPoint& pos = SYMBOL_FRMDEVICECONFIG_POSITION, const wxSize& size = SYMBOL_FRMDEVICECONFIG_SIZE, long style = SYMBOL_FRMDEVICECONFIG_STYLE );
+	bool Create( wxWindow* parent, wxWindowID id = SYMBOL_FRMDEVICECONFIG_IDNAME, const wxString& caption = SYMBOL_FRMDEVICECONFIG_TITLE, const wxPoint& pos = SYMBOL_FRMDEVICECONFIG_POSITION, const wxSize& size = SYMBOL_FRMDEVICECONFIG_SIZE, long style = SYMBOL_FRMDEVICECONFIG_STYLE );
 
-  /// Destructor
-  ~frmDeviceConfig();
+	/// Destructor
+	~frmDeviceConfig();
 
-  /// Initialises member variables
-  void Init();
+	/// Initialises member variables
+	void Init();
 
-  /// Creates the controls and sizers
-  void CreateControls();
+	/// Creates the controls and sizers
+	void CreateControls();
 
 	/*!
-		Enable communication interface
-		@return true on success
+	Enable communication interface
+	@return true on success
 	*/
 	bool enableInterface( void );
-	
+
 	/*!
 		Disable communication interface
 		@return true on success
 	*/	
 	bool disableInterface( void );
 
-  /*!
-    Fill registers with standard VSCP 
-    register information
-  */
-  void initStandardRegInfo( void );
+	/*!
+	Fill registers with standard VSCP 
+	register information
+	*/
+	//void initStandardRegInfo( void );
 
-  /*!
-    Write status infiormation
-  */
-  void writeStatusInfo( void );
+	/*!
+		Write status infiormation
+	*/
+	void writeStatusInfo( void );
 
-  /*!
-    Read all Level 1 registers for anode
-    @param nodeid Node whos registers should be read.
-    @return True on success, false on failure.
-  */
-  bool readAllLevel1Registers( unsigned char nodeid );
-  
-  /*!
-    Read all Level 1 registers for anode
-    @param interfaceGUID GUID for node whos registers should be read.
-    @return True on success, false on failure.
-  */
-  bool readAllLevel2Registers( unsigned char *interfaceGUID );
-  
-  bool writeChangedLevel1Registers( unsigned char nodeid );
+	/*!
+	Read all Level 1 registers for anode
+	@param nodeid Node whos registers should be read.
+	@return True on success, false on failure.
+	*/
+	//bool readAllLevel1Registers( unsigned char nodeid );
 
-  bool writeChangedLevel2Registers( unsigned char *interfaceGUID );
-  
-  /*!
-    Get DM info
-    @param nodeid Nickname for node whos DM should be read.
-    @param Pointer to byte array of eight bytes that receive
-            DM information as of CLASS1.PROTOCOL type=33
-    @return True on success.
-  */
-  bool getLevel1DmInfo( unsigned char nodeid, unsigned char *pdata );
+	/*!
+	Read all Level 1 registers for anode
+	@return True on success, false on failure.
+	*/
+	//bool readAllLevel2Registers( void );
 
-  /*!
-    Get DM info ober Level II interface
-    @param interfaceGUID Interface GUID with LSB byte set to nodeid for node 
-           whos registers should be read.
-    @param Pointer to byte array of eight bytes that receive
-            DM information as of CLASS1.PROTOCOL type=33
-    @return True on success.
-  */
-  bool getLevel2DmInfo( unsigned char *interfaceGUID, unsigned char *pdata );
+	bool writeChangedLevel1Registers( unsigned char nodeid );
 
-                
-  /*!
-    Check if a level 1 device with a specific nodeid is available
-    @patam nodeid Nickname id for rthe device.
-    @return True on success.
-  */
-  bool checkLevel1Device( unsigned char nodeid ); 
-  
-  /*!
-    Check if a level 2 device with a specific nodeGUID is available
-    @patam interfaceGUID GUID for interface where devices sits with 
-          byte 0 set to nickname id for the device.
-    @return True on success. False otherwise.
-  */
-  bool checkLevel2Device( unsigned char *interfaceGUID );  
-  
-  /*!
-    Clear grid and other data content
-  */
-  void clearAllContent( void );
-  
-  /*!
-    Read value for selected row
-  */
-  void readValueSelectedRow( wxCommandEvent& event );
-  
-  /*!
-    Write value for selected row
-  */
-  void writeValueSelectedRow( wxCommandEvent& event );
-  
-  /*!
-    Undo value for selected row
-  */
-  void undoValueSelectedRow( wxCommandEvent& event );
+	bool writeChangedLevel2Registers( void );
 
-    /*! 
-        Update the DM grid
-    */
-    void updateDmGrid( void );
+	/*!
+	Get DM info
+	@param nodeid Nickname for node whos DM should be read.
+	@param Pointer to byte array of eight bytes that receive
+	DM information as of CLASS1.PROTOCOL type=33
+	@return True on success.
+	*/
+	//bool getLevel1DmInfo( unsigned char nodeid, unsigned char *pdata );
 
-    /*!
-        Update the abstraction grid
-    */
-    void updateAbstractionGrid( void );
+	/*!
+	Get DM info ober Level II interface
+	@param interfaceGUID Interface GUID with LSB byte set to nodeid for node 
+	whos registers should be read.
+	@param Pointer to byte array of eight bytes that receive
+	DM information as of CLASS1.PROTOCOL type=33
+	@return True on success.
+	*/
+	//bool getLevel2DmInfo( unsigned char *interfaceGUID, unsigned char *pdata );
 
-    /*!
-        Enable selected DM row
-    */
-    void dmEnableSelectedRow( wxCommandEvent& event );
 
-    /*!
-        Disable selected DM row
-    */
-    void dmDisableSelectedRow( wxCommandEvent& event );
+	/*!
+	Check if a level 1 device with a specific nodeid is available
+	@patam nodeid Nickname id for rthe device.
+	@return True on success.
+	*/
+	//bool checkLevel1Device( unsigned char nodeid ); 
 
-    /*!
-        Start wizard that help users to set up a DM row
-    */
-    void dmRowWizard( wxCommandEvent& event );
+	/*!
+	Check if a level 2 device with a specific nodeGUID is available
+	@patam interfaceGUID GUID for interface where devices sits with 
+	byte 0 set to nickname id for the device.
+	@return True on success. False otherwise.
+	*/
+	//bool checkLevel2Device( unsigned char *interfaceGUID );  
 
-////@begin frmDeviceConfig event handler declarations
+	/*!
+	Clear grid and other data content
+	*/
+	void clearAllContent( void );
+
+	/*!
+	Read value for selected row
+	*/
+	void readValueSelectedRow( wxCommandEvent& event );
+
+	/*!
+	Write value for selected row
+	*/
+	void writeValueSelectedRow( wxCommandEvent& event );
+
+	/*!
+	Undo value for selected row
+	*/
+	void undoValueSelectedRow( wxCommandEvent& event );
+
+	/*! 
+	Update the DM grid
+	*/
+	void updateDmGrid( void );
+
+	/*!
+	Update the abstraction grid
+	*/
+	void updateAbstractionGrid( void );
+
+	/*!
+	Enable selected DM row
+	*/
+	void dmEnableSelectedRow( wxCommandEvent& event );
+
+	/*!
+	Disable selected DM row
+	*/
+	void dmDisableSelectedRow( wxCommandEvent& event );
+
+	/*!
+	Start wizard that help users to set up a DM row
+	*/
+	void dmRowWizard( wxCommandEvent& event );
+
+	/*!
+	Get register from cell
+	@return Register
+	*/
+	uint32_t getRegFromCell( int row );
+
+	/*!
+	Get page from cell
+	@return Page
+	*/
+	uint16_t getPageFromCell( int row );
+
+	/*!
+	Fill grid with standard registers
+	*/
+	void fillStandardRegisters( void );
+
+	/*!
+	Get formatted value according to set configuration
+
+	@param val Value to format
+	@return Formatted value.
+	*/
+	wxString getFormattedValue( uint8_t val );
+
+	////@begin frmDeviceConfig event handler declarations
 
   /// wxEVT_CLOSE_WINDOW event handler for ID_FRMDEVICECONFIG
   void OnCloseWindow( wxCloseEvent& event );
@@ -297,7 +322,7 @@ public:
   /// wxEVT_COMMAND_TEXT_UPDATED event handler for ID_COMBOBOX4
   void OnComboNodeIDUpdated( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON29
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CHECK_LEVEL2
   void OnBitmapbuttonTestDeviceClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON1
@@ -319,55 +344,58 @@ public:
   void OnButtonUpdateClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON17
-  void OnButtonLoadMdfClick( wxCommandEvent& event );
-
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON18
-  void OnButtonUndoClick( wxCommandEvent& event );
+  void OnButtonLoadDefaultsClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON19
   void OnButtonWizardClick( wxCommandEvent& event );
 
-////@end frmDeviceConfig event handler declarations
+	////@end frmDeviceConfig event handler declarations
 
-////@begin frmDeviceConfig member function declarations
+	////@begin frmDeviceConfig member function declarations
 
   /// Retrieves bitmap resources
   wxBitmap GetBitmapResource( const wxString& name );
 
   /// Retrieves icon resources
   wxIcon GetIconResource( const wxString& name );
-////@end frmDeviceConfig member function declarations
+	////@end frmDeviceConfig member function declarations
 
-  /// Flag for first read
-  bool m_bFirstRead;
-	
+	/// Flag for first read
+	bool m_bFirstRead;
+
 	/// Interface type
-  int m_interfaceType;
+	int m_interfaceType;
+
+	// GUID for interface or all
+	// zero if no interface selected
+	uint8_t m_interfaceGUID[ 16 ];
 
 	/*!
-		CANAL driver level
+	CANAL driver level
 	*/
 	unsigned char m_driverLevel;
-  
+
 	/*!
-		The wrapper for the CANAL 
-		functionality.
+	The wrapper for the CANAL 
+	functionality.
 	*/
 	CCanalSuperWrapper m_csw;
 
 	/*!
-		Registers
+	Registers
 	*/
 	unsigned char m_registers[256][ 256 ];  
 
 	/*!
-		Saved registers (from first read)
+	Saved registers (from first read)
 	*/
-	unsigned char m_saved_registers[256][ 256 ];
+	//unsigned char m_saved_registers[256][ 256 ];
+
+	CStandardRegisters m_stdRegisters;
 
 	/// Module description file functionality
 	CMDF m_mdf;
-	
+
 	//static const int m_constGridRegisterWidth = 70;
 	enum { m_constGridRegisterDefaultWidth = 70 };
 	enum { m_constGridAccessRightDefaultWidth = 20 };
@@ -379,24 +407,25 @@ public:
 	enum { m_constGridAbstractionAccessDefaultWidth = 50 };
 	enum { m_constGridAbstractionContentdefaultWidth = 200 };
 	enum { m_constGridAbstractionDescriptionDefaultWidth = 550 };
-	
+
 	enum { m_constGridDMOrigAddressDefaultWidth = 70 };
 	enum { m_constGridDMFlagsDefaultWidth = 70 };
 	enum { m_constGridDMMasksDefaultWidth = 100 };	
 	enum { m_constGridDMActionDefaultWidth = 250 }; 
 	enum { m_constGridDMActionParamDefaultWidth = 500 };
 
-  /// Last left click column
-  int m_lastLeftClickCol;
-  
-  /// Last left click row
-  int m_lastLeftClickRow;
-  
-  /// Should we show tooltips?
-  static bool ShowToolTips();
+	/// Last left click column
+	int m_lastLeftClickCol;
 
-////@begin frmDeviceConfig member variables
+	/// Last left click row
+	int m_lastLeftClickRow;
+
+	/// Should we show tooltips?
+	static bool ShowToolTips();
+
+	////@begin frmDeviceConfig member variables
   wxComboBox* m_comboNodeID;
+  wxCheckBox* m_bLevel2;
   wxToggleButton* m_BtnActivateInterface;
   wxToolbook* m_choiceBook;
   wxPanel* m_panel0;
@@ -407,7 +436,6 @@ public:
   wxCheckBox* m_chkFullUppdate;
   wxCheckBox* m_chkMdfFromFile;
   wxButton* m_ctrlButtonLoadMDF;
-  wxButton* m_ctrlButtonUndo;
   wxButton* m_ctrlButtonWizard;
   /// Control identifiers
   enum {
@@ -444,7 +472,8 @@ public:
     ID_TOOL10 = 19035,
     ID_TOOL11 = 19036,
     ID_COMBOBOX4 = 19037,
-    ID_BITMAPBUTTON29 = 19038,
+    ID_CHECK_LEVEL2 = 19038,
+    ID_CHECKBOX_LEVEL22 = 10144,
     ID_TOGGLEBUTTON1 = 19039,
     ID_PANEL_DEVICE_CONFIG = 19117,
     ID_CHOICEBOOK = 19040,
@@ -455,15 +484,14 @@ public:
     ID_PANEL_DM = 19109,
     ID_GRID_DM = 19110,
     ID_HTMLWINDOW1 = 19111,
-    ID_CHECKBOX = 19112,
+    ID_CHECKBOX_FULL_UPDATE = 19112,
     ID_CHECKBOX_MDF_FROM_FILE = 10000,
     ID_BUTTON16 = 19113,
     ID_BUTTON17 = 19114,
-    ID_BUTTON18 = 19115,
     ID_BUTTON19 = 19116
   };
-////@end frmDeviceConfig member variables
+	////@end frmDeviceConfig member variables
 };
 
 #endif
-  // _FRMDEVICECONFIG_H_
+// _FRMDEVICECONFIG_H_

@@ -346,7 +346,12 @@ extern "C"
     */
     bool isSameGUID( const unsigned char *pGUID1, const unsigned char *pGUID2 );
 
-
+	/*!
+		Recerse GUID
+		@param pGUID Pointer to GUID to reverse.
+		@return true if OK.
+	*/
+	bool reverseGUID( unsigned char *pGUID );
 
     /*!
       Convert a standard VSCP event to the Ex version
@@ -547,6 +552,8 @@ extern "C"
       @param str String that should be HTML coded.
     */
     void makeHtml( wxString& str );
+
+	
 
 
 #ifdef __cplusplus

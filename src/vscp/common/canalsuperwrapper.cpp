@@ -20,14 +20,11 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// $RCSfile: canalsuperwrapper.cpp,v $                                       
-// $Date: 2005/08/30 11:00:04 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.6 $ 
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "wx/wx.h"
 #include "wx/defs.h"
+#include <wx/progdlg.h>
 
 #include "vscp.h"
 #include "canalsuperwrapper.h"
@@ -39,19 +36,23 @@
 
 CCanalSuperWrapper::CCanalSuperWrapper( void )
 {	
-  m_itemDevice.id = USE_TCPIP_INTERFACE;
-  m_itemDevice.strName = _("Locahost");
-  m_itemDevice.strPath = _("TCPIP");
-  m_itemDevice.strParameters = _("admin;secret;localhost;9598");
-  m_itemDevice.flags = 0; 
-  m_itemDevice.filter = 0;
-  m_itemDevice.mask = 0;
-  m_devid = 0;
+	init();
+
+	m_itemDevice.id = USE_TCPIP_INTERFACE;
+	m_itemDevice.strName = _("Locahost");
+	m_itemDevice.strPath = _("TCPIP");
+	m_itemDevice.strParameters = _("admin;secret;localhost;9598");
+	m_itemDevice.flags = 0; 
+	m_itemDevice.filter = 0;
+	m_itemDevice.mask = 0;
+	m_devid = 0;
 }
 
 CCanalSuperWrapper::CCanalSuperWrapper( devItem *pItem )
 {	
 	if ( NULL == pItem ) return;
+
+	init();
 
 	if ( pItem->strPath.Length() && pItem->strPath.IsSameAs(_("TCPIP") ) ) {
 	
@@ -110,6 +111,18 @@ CCanalSuperWrapper::CCanalSuperWrapper( devItem *pItem )
 CCanalSuperWrapper::~CCanalSuperWrapper()
 {
 	doCmdClose();	
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// init
+//  
+
+void CCanalSuperWrapper::init( void )
+{
+	// Init. register read parameters
+	m_registerReadErrorTimeout = VSCP_REGISTER_READ_ERROR_TIMEOUT;
+	m_registerReadResendTimeout = VSCP_REGISTER_READ_RESEND_TIMEOUT;
+	m_registerReadMaxRetries = VSCP_REGISTER_READ_MAX_TRIES;
 }
  
 ///////////////////////////////////////////////////////////////////////////////
@@ -246,6 +259,28 @@ int CCanalSuperWrapper::doCmdNOOP( void )
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdNOOP();
+	}
+  
+	return CANAL_ERROR_NOT_SUPPORTED;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// doCmdClear
+//
+
+int CCanalSuperWrapper::doCmdClear( void )
+{
+	if ( USE_DLL_INTERFACE == m_itemDevice.id) {
+		canalMsg *pMsg = NULL;
+		while ( doCmdDataAvailable() ) {
+			m_canalDll.doCmdReceive( pMsg );
+			delete pMsg;
+			pMsg = NULL;
+		}
+		return CANAL_RESPONSE_SUCCESS;
+	}
+	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
+		return m_vscptcpif.doCmdClear();
 	}
   
 	return CANAL_ERROR_NOT_SUPPORTED;
@@ -566,3 +601,927 @@ const char * CCanalSuperWrapper::doCmdGetDriverInfo( void )
   return NULL;
 }
 
+
+
+
+//****************************************************************************
+//					   R e g i s t e r  r o u t i n e s
+//****************************************************************************
+
+
+// We don't want the graphcal UI on apps that don't use it 
+#if ( wxUSE_GUI != 0 )
+
+
+//////////////////////////////////////////////////////////////////////////////
+// readLevel1Register
+//
+
+bool CCanalSuperWrapper::readLevel1Register( uint8_t nodeid, 
+												uint8_t reg, 
+												uint8_t *pcontent )
+{
+    bool rv = true;
+    uint32_t errors = 0;
+    bool bResend;
+    wxString strBuf;
+    canalMsg canalEvent;
+
+    // Check pointer
+    if ( NULL == pcontent ) return false;
+
+    canalEvent.flags = CANAL_IDFLAG_EXTENDED;
+    canalEvent.obid = 0;
+    canalEvent.id = 0x0900;             // CLASS1.PROTOCOL Read register
+    canalEvent.sizeData = 2;
+    canalEvent.data[ 0 ] = nodeid;      // Node to read from
+    canalEvent.data[ 1 ] = reg;         // Register to read
+
+    bResend = false;
+    doCmdSend( &canalEvent );
+
+    //wxDateTime start = wxDateTime::Now();
+    wxLongLong startTime = ::wxGetLocalTimeMillis();
+
+    while ( true ) {
+
+        if ( doCmdDataAvailable() ) {									// Message available
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) {	// Valid event
+                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+                    ( 0x0a00 + nodeid ) ) {                 // Read reply?
+                        if ( canalEvent.data[ 0 ] == reg ) {// Requested register?
+
+                            if ( NULL != pcontent ) {
+                                *pcontent = canalEvent.data[ 1 ];
+                            }
+                            break;
+
+                        }	// Check for correct node
+                }			// Check for correct reply event 
+            }
+        }
+        else {
+            wxMilliSleep( 1 );
+        }
+
+        // Check for read error timeout
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadErrorTimeout ) {
+			errors++;
+        }
+        // Should we resend?
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadResendTimeout ) {
+                // Send again
+                if ( !bResend) {
+                    doCmdSend( &canalEvent );
+                }
+                bResend = true;
+        }
+
+        if ( errors > m_registerReadMaxRetries ) {
+            rv = false;
+            break;
+        }
+
+    } // while
+
+    return rv;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// writeLevel1Register
+//
+
+bool CCanalSuperWrapper::writeLevel1Register( uint8_t nodeid, 
+												uint8_t reg, 
+												uint8_t *pval )
+{
+    bool rv = true;
+    uint32_t errors = 0;
+    bool bResend;
+    wxString strBuf;
+    canalMsg canalEvent;
+
+    canalEvent.flags = CANAL_IDFLAG_EXTENDED;
+    canalEvent.obid = 0;
+    canalEvent.id = 0x0B00;             // CLASS1.PROTOCOL Write register
+    canalEvent.sizeData = 3;
+    canalEvent.data[ 0 ] = nodeid;      // Node to read from
+    canalEvent.data[ 1 ] = reg;         // Register to write
+    canalEvent.data[ 2 ] = *pval;			// value to write
+
+    bResend = false;
+    doCmdSend( &canalEvent );
+
+    wxLongLong startTime = ::wxGetLocalTimeMillis();
+
+    while ( true ) {
+
+        if ( doCmdDataAvailable() ) {									// Message available
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) { // Valid event
+                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+                    ( 0x0a00 + nodeid ) ) {         // Read reply?
+                        if ( canalEvent.data[ 0 ] == reg ) {			// Requested register?
+
+                            if ( *pval != canalEvent.data[ 1 ] ) rv = false;
+                            // Save read value
+                            *pval = canalEvent.data[ 1 ];
+                            break;
+                        } // Check for correct node
+
+                        // Save read value
+                        *pval = canalEvent.data[ 1 ];
+
+                } // Check for correct reply event 
+            }
+        }
+        else {
+            wxMilliSleep( 1 );
+        }
+
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+            m_registerReadErrorTimeout ) {
+			errors++;
+        }
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+					m_registerReadResendTimeout ) {
+			// Send again
+            if ( !bResend) {
+				doCmdSend( &canalEvent );
+            }
+            bResend = true;
+        }
+
+        if ( errors > m_registerReadMaxRetries ) {
+            rv = false;
+            break;
+        }
+
+    } // while
+
+    return rv;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// readLevel2Register
+//
+
+bool CCanalSuperWrapper::readLevel2Register( uint8_t *interfaceGUID, 
+												uint32_t reg, 
+												uint8_t *pcontent,
+												uint8_t *pdestGUID,
+												bool bLevel2 )
+{
+	int i;
+    bool rv = true;
+	bool bInterface = false;  // No specific interface set
+    uint32_t errors = 0;
+    bool bResend;
+    wxString strBuf;
+    vscpEventEx event;
+
+	// Check if a specific interface is used
+	for ( i=0; i<16; i++ ) {
+		if ( interfaceGUID[ i ] ) {
+			bInterface= true;
+			break;
+		}
+	}
+
+	if ( bInterface ) {
+
+		// Event should be sent to a specific interface
+
+		event.head = VSCP_PRIORITY_NORMAL;
+		event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+		event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+		
+		memset( event.GUID, 0, 16 );                // We use GUID for interface 
+		
+		event.sizeData = 16 + 2;                    // Interface GUID + nodeid + register to read
+		
+		for ( i=0; i<16; i++ ) {
+			event.data[ i ] = interfaceGUID[ 15 - i ];	
+		}
+			
+		event.data[16] = interfaceGUID[0];          // nodeid
+		event.data[17] = reg;                       // Register to read
+	
+	}
+
+	else {
+
+		// Event should be sent to all interfaces
+	
+		// Must have a destination GUID
+		if ( NULL == pdestGUID ) return false;
+
+		if ( bLevel2 ) {
+
+			// True real Level II event
+
+			event.head = VSCP_PRIORITY_NORMAL;
+			event.vscp_class = VSCP_CLASS2_PROTOCOL;
+			event.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
+		
+			memset( event.GUID, 0, 16 );		// We use GUID for interface 
+
+			event.sizeData = 22;				// nodeid + register to read
+		
+			for ( i=0; i<16; i++ ) {			// Destination GUID
+				event.data[ i ] = pdestGUID[ 15 - i ];	
+			}	
+			event.data[ 16 ] = 0x00;			// Register to read
+			event.data[ 17 ] = 0x00;
+			event.data[ 18 ] = 0x00;
+			event.data[ 19 ] = reg;
+			event.data[ 20 ] = 0x00;			// Read one register
+			event.data[ 21 ] = 0x01;
+		
+		}
+		else {
+
+			// Level I over CLASS2 to all interfaces 
+
+			event.head = VSCP_PRIORITY_NORMAL;
+			event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+			event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+		
+			memset( event.GUID, 0, 16 );				// We use GUID for interface 
+
+			event.sizeData = 16 + 2;					// nodeid + register to read
+
+			for ( i=0; i<16; i++ ) {
+				event.data[ i ] = pdestGUID[ 15 - i ];	
+			}
+			
+			event.data[16] = 0x00;						// nodeid
+			event.data[17] = reg;                       // Register to read
+			
+		}
+	}
+
+    bResend = false;
+
+    // Send the event
+	doCmdClear();
+	event.timestamp = 0;
+    doCmdSend( &event );
+	
+
+    //wxDateTime start = wxDateTime::Now();
+    wxLongLong startTime = ::wxGetLocalTimeMillis();
+
+    while ( true ) {
+
+        if ( doCmdDataAvailable() ) {								// Message available
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {	// Valid event
+                
+				// Check for correct reply event
+				
+				// Level I Read reply?
+				if ( bInterface && ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
+                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   
+                        if ( event.data[ 0 ] == reg ) {                         // Requested register?
+                            if ( event.GUID[0] == interfaceGUID[0] ) {          // Correct node?
+                                if ( NULL != pcontent ) {
+                                    *pcontent = event.data[ 1 ];
+									break;
+                                }
+                                break;
+                            }
+                        } // Check for correct node
+                }
+				// Level II 512 Read reply?
+				else if ( !bInterface && !bLevel2 && 
+					( VSCP_CLASS2_LEVEL1_PROTOCOL == event.vscp_class ) && 
+                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
+
+					if ( isSameGUID( pdestGUID, event.GUID ) ) {
+						// Reg we requested?
+						if ( event.data[ 0 ] == reg ) {
+							// OK get the data
+							if ( NULL != pcontent ) {
+								*pcontent = event.data[ 18 ];
+								break;
+							}
+						}
+					}
+
+				}
+				// Level II Read reply?
+				else if ( !bInterface && bLevel2 && 
+					( VSCP_CLASS2_PROTOCOL == event.vscp_class ) && 
+                    ( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == event.vscp_type ) ) { 
+					
+					// from us
+					if ( isSameGUID( pdestGUID, event.GUID ) ) {	
+						
+						uint32_t retreg = ( event.data[ 0 ]  << 24 ) +
+										  (	event.data[ 1 ]  << 16 ) +
+										  (	event.data[ 2 ]  << 8 ) +
+											event.data[ 3 ];
+						
+						// Reg we requested?
+						if ( retreg == reg ) {
+							// OK get the data
+							if ( NULL != pcontent ) {
+								*pcontent = event.data[ 18 ];
+								break;
+							}
+						}
+					}
+
+				}
+            } // valid event
+        }
+        else {
+            //wxMilliSleep( 1 );
+        }
+
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) >   
+                    m_registerReadErrorTimeout ) {
+            errors++;
+        }
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+            m_registerReadResendTimeout ) {
+                // Send again
+                if ( !bResend) {
+					doCmdClear();
+					event.timestamp = 0;
+                    doCmdSend( &event );
+                }
+                bResend = true;
+        }   
+
+        if ( errors > m_registerReadMaxRetries ) {
+            rv = false;
+            break;
+        }
+
+    } // while
+
+    return rv;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// writeLevel2Register
+//
+
+bool CCanalSuperWrapper::writeLevel2Register( uint8_t *interfaceGUID, 
+												uint32_t reg, 
+												uint8_t *pcontent,
+												uint8_t *pdestGUID,
+												bool bLevel2 )
+{
+    int i;
+	bool rv = true;
+	bool bInterface = false;  // No specific interface set
+    uint32_t errors = 0;
+    bool bResend;
+    wxString strBuf;
+    vscpEventEx event;
+
+    // Check pointers
+    if ( NULL == pcontent ) return false;
+
+	// Check if a specific interface is used
+	for ( i=0; i<16; i++ ) {
+		if ( interfaceGUID[ i ] ) {
+			bInterface= true;
+			break;
+		}
+	}
+
+	if ( bInterface ) {
+
+		event.head = VSCP_PRIORITY_NORMAL;
+		event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+		event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
+		
+		memset( event.GUID, 0, 16 );              // We use interface GUID
+		
+		event.sizeData = 16 + 3;                  // Interface GUID + nodeid + register to read + valied
+		
+		for ( i=0; i<16; i++ ) {
+			event.data[ i ] = interfaceGUID[ 15 - i ];	
+		}
+		event.data[16] = interfaceGUID[ 0 ];      // nodeid
+		event.data[17] = reg;                     // Register to write
+		event.data[18] = *pcontent;	              // value to write
+	
+	}
+	else {
+
+		if ( bLevel2 ) {
+
+			// Must have a destination GUID
+			if ( NULL == pdestGUID ) return false;
+
+			event.head = VSCP_PRIORITY_NORMAL;
+			event.vscp_class = VSCP_CLASS2_PROTOCOL;
+			event.vscp_type = VSCP2_TYPE_PROTOCOL_WRITE_REGISTER;
+
+			memset( event.GUID, 0, 16 );		// We use interface GUID
+		
+			event.sizeData = 21;				// nodeid + register to read
+		
+			for ( i=0; i<16; i++ ) {			// Destination GUID
+				event.data[ i ] = pdestGUID[ 15 - i ];	
+			}
+				
+			event.data[ 16 ] = 0x00;			// Register to write
+			event.data[ 17 ] = 0x00;
+			event.data[ 18 ] = 0x00;
+			event.data[ 19 ] = reg;
+			event.data[ 20 ] = *pcontent;		// Data to write
+		
+		}
+		else {
+
+			// Level I over CLASS2 to all interfaces 
+
+			event.head = VSCP_PRIORITY_NORMAL;
+			event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+			event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
+
+			memset( event.GUID, 0, 16 );			// We use interface GUID
+		
+			event.sizeData = 16 + 3;				
+
+			for ( i=0; i<16; i++ ) {		
+				event.data[ i ] = interfaceGUID[ 15 - i ];	
+			}
+
+			event.data[16] = interfaceGUID[0];        // nodeid
+			event.data[17] = reg;                     // Register to write
+			event.data[18] = *pcontent;	              // value to write
+			
+		}
+
+	}
+
+    bResend = false;
+    doCmdSend( &event );
+
+    wxLongLong startTime = ::wxGetLocalTimeMillis();
+
+    while ( true ) {
+
+        if ( doCmdDataAvailable() ) {                                 // Message available
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {    // Valid event
+                if ( ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
+                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   // Read reply?
+                        if ( event.data[ 0 ] == reg ) {                         // Requested register?
+                            if ( event.GUID[0] == interfaceGUID[0] ) {          // Correct node?
+
+                                // We go a rw reply from the correct node is
+                                // the written data same as we expect.
+                                if ( *pcontent != event.data[ 1 ] ) rv = false;
+                                break;
+
+                            }
+                        }   // Check for correct node
+                }       // Check for correct reply event 
+            }
+        }
+        else {
+            wxMilliSleep( 1 );
+        }
+
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+            m_registerReadErrorTimeout ) {
+                errors++;
+        }
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+            m_registerReadResendTimeout ) {
+                // Send again
+                if ( !bResend) {
+                    doCmdSend( &event );
+                }
+                bResend = true;
+        }
+
+        if ( errors > m_registerReadMaxRetries ) {
+            rv = false;
+            break;
+        }
+
+    } // while
+
+    return rv;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// getMDFfromDevice1
+//
+
+wxString CCanalSuperWrapper::getMDFfromDevice1( uint8_t id, bool bSilent )
+{
+	wxString strWrk;
+	char url[ 33 ];
+
+	uint8_t *p = (uint8_t *)url;
+	for ( int i=0; i<32; i++ ) {
+		if ( !readLevel1Register( id, 
+									0xE0 + i, 
+									p++ ) ) {
+			if ( !bSilent ) {												
+				::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
+			}
+			break;
+		}
+	}
+
+	strWrk = strWrk.From8BitData( url );
+	if ( wxNOT_FOUND == strWrk.Find( _("http://") ) ) {
+		wxString str;
+		str = _("http://");
+		str += strWrk;
+		strWrk = str;
+	}
+			
+	return strWrk;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getMDFfromDevice2
+//
+
+wxString CCanalSuperWrapper::getMDFfromDevice2( uint8_t *pguid, 
+												bool bLevel2, 
+												bool bSilent )
+{
+	wxString strWrk;
+	char url[ 33 ];
+
+	memset( url, 0, sizeof( url ) );
+
+	if ( bLevel2 ) {
+		
+		// Level 2 device
+		uint8_t *p = (uint8_t *)url;
+		for ( int i=0; i<32; i++ ) {
+			 if ( !readLevel1Register( *pguid, 
+										0xE0 + i, 
+										p++ ) ) {
+				if ( !bSilent ) {												
+					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
+				}
+				break;
+			 }
+			
+		}
+
+	}
+	else {
+	
+		// Level 1 device
+		uint8_t *p = (uint8_t *)url;
+		for ( int i=0; i<32; i++ ) {
+			 if ( !readLevel2Register( pguid, 
+										0xFFFFFFE0 + i, 
+										p++ ) ) {
+				if ( !bSilent ) {
+					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
+				}
+				break;
+			 }
+			
+		}
+
+	}
+
+	return strWrk;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getLevel1DmInfo
+//
+
+bool CCanalSuperWrapper::getLevel1DmInfo( const unsigned char nodeid, 
+											unsigned char *pdata )
+{
+    bool rv = true;
+    bool bResend;
+    wxString strBuf;
+    canalMsg canalEvent;
+
+    // Check pointer
+    if ( NULL == pdata ) return false;
+
+    canalEvent.flags = CANAL_IDFLAG_EXTENDED;
+    canalEvent.obid = 0;
+    canalEvent.id = 0x2000;             // CLASS1.PROTOCOL Get decision matrix info
+    canalEvent.sizeData = 1;
+    canalEvent.data[ 0 ] = nodeid;      // Node to read from
+
+    bResend = false;
+    doCmdSend( &canalEvent );
+
+    wxDateTime start = wxDateTime::Now();
+
+    while ( true ) {
+
+        if ( doCmdDataAvailable() ) {                         // Message available
+            if ( doCmdReceive( &canalEvent ) ) {              // Valid message
+                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+                    ( 0x2100 + nodeid ) ) {                     // DM info reply?
+                        // Copy in response data
+                        memcpy( pdata, canalEvent.data, 8 );
+                        break;
+                }
+            }
+        }
+
+        if ( (wxDateTime::Now() - start).GetSeconds() > 2 ) {
+            rv = false;
+            break;
+        }
+        else if ( (wxDateTime::Now() - start).GetSeconds() > 1 ) {
+            // Send again
+            if ( !bResend) {
+                doCmdSend( &canalEvent );
+            }
+            bResend = true;
+        }
+    } // while
+
+    return rv;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// getLevel2DmInfo
+//
+
+bool CCanalSuperWrapper::getLevel2DmInfo( unsigned char *interfaceGUID, 
+											unsigned char *pdata,
+											bool bLevel2 )
+{
+    bool rv = true;
+    bool bResend;
+    wxString strBuf;
+    vscpEventEx event;
+
+    // Check pointer
+    if ( NULL == pdata ) return false;
+
+    event.head = 0;
+    event.vscp_class = 512;                   // CLASS2.PROTOCOL1
+    event.vscp_type = 9;                      // Get decision matrix info
+    memset( event.GUID, 0, 16 );              // We use interface GUID
+    event.sizeData = 16 + 1;                  // Interface GUID + nodeid 
+    memcpy( event.data, interfaceGUID, 16 );  // Address node
+    event.data[16] = interfaceGUID[0];        // nodeid
+
+    bResend = false;
+    doCmdSend( &event );
+
+    wxDateTime start = wxDateTime::Now();
+
+    while ( true ) {
+
+        if ( doCmdDataAvailable() ) {									// Message available
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {		// Valid event
+                if ( ( 0 == event.vscp_class ) && 
+                    ( 0x21 == event.vscp_type ) ) {						// DM reply?
+                        memcpy( pdata, event.data, 8 );
+                        break;
+                }
+            }
+        }
+
+        if ( (wxDateTime::Now() - start).GetSeconds() > 2 ) {
+            rv = false;
+            break;
+        }
+        else if ( (wxDateTime::Now() - start).GetSeconds() > 1 ) {
+            // Send again
+            if ( !bResend) {
+                doCmdSend( &event );
+            }
+            bResend = true;
+        }
+    } // while
+
+    return rv;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// readAllLevel1Registers
+//
+
+bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
+													uint8_t *pregisters,
+													unsigned char nodeid,
+													uint8_t startreg,
+													uint16_t count )
+{
+	int i;
+    unsigned char val;
+    bool rv = true;
+    int errors = 0;
+    wxString strBuf;
+
+    wxProgressDialog progressDlg( _("VSCP Works"),
+                                    _("Reading Registers"),
+                                    256, 
+                                    pwnd,
+                                    wxPD_ELAPSED_TIME | 
+                                        wxPD_AUTO_HIDE | 
+                                        wxPD_APP_MODAL | 
+                                        wxPD_CAN_ABORT );
+
+    progressDlg.Pulse( _("Reading registers!") );
+
+
+    // *********************
+    // Read register content
+    // *********************
+    for ( i = startreg; i < (startreg + count); i++ ) {
+
+        if ( !progressDlg.Update( i ) ) {
+            rv = false;
+            break;   // User aborted
+        }
+    
+        progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
+    
+        if ( readLevel1Register( nodeid, i, &val ) ) {
+    
+            pregisters[ i-startreg ] = val;
+
+        }
+        else {
+            errors++;
+        }
+
+        if ( errors > 2 ) {
+            wxMessageBox( _("No node present or problems when communicating with node. Aborting!") );
+            rv = false;
+            break;
+        }
+			
+    } // for
+
+    return rv;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// readAllLevel2Registers
+//
+
+bool CCanalSuperWrapper::readLevel2Registers( wxWindow *pwnd,
+													uint8_t *pregisters,
+													uint8_t *pinterfaceGUID,
+													uint32_t startreg,
+													uint32_t count )
+{
+    uint32_t i;
+    unsigned char val;
+    bool rv = true;
+    int errors = 0;
+    wxString strBuf;
+
+    wxProgressDialog progressDlg( _("VSCP Works"),
+                                    _("Reading Registers"),
+                                    256, 
+                                    pwnd,
+                                    wxPD_ELAPSED_TIME | 
+                                    wxPD_AUTO_HIDE | 
+                                    wxPD_APP_MODAL |
+                                    wxPD_CAN_ABORT );
+
+    progressDlg.Pulse( _("Reading registers!") );
+
+    // *********************
+    // Read register content
+    // *********************
+    for ( i = startreg; i < (startreg + count); i++ ) {
+
+        if ( !progressDlg.Update( i ) ) {
+            rv = false;
+            break;
+        }
+
+        progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
+    
+        if ( readLevel2Register( pinterfaceGUID, i, &val ) ) {
+      
+            pregisters[ i - startreg ] = val;
+      
+        }
+        else {
+            errors++;
+        }
+
+
+        if ( errors > 2 ) {
+            wxMessageBox( _("No node present or problems when communicating with node. Aborting!") );
+            rv = false;
+            break;
+        }
+			
+    } // for
+
+
+    return rv;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// setRegisterPage
+//
+
+bool CCanalSuperWrapper::setRegisterPage( uint8_t nodeid, 
+											uint16_t page, 
+											uint8_t *interfaceGUID )
+{
+	uint8_t val;
+
+	if ( NULL == interfaceGUID ) {
+
+		val = ( page >> 8 ) & 0xff;
+		if ( !writeLevel1Register( nodeid, 
+									0x92, 
+									&val ) ) {
+			return false;
+		}
+
+		val = page & 0xff;
+		if ( !writeLevel1Register( nodeid, 
+									0x93, 
+									&val ) ) {
+			return false;
+		}
+		
+	}
+	else {
+		
+		val = ( page >> 8 ) & 0xff;
+		if ( writeLevel2Register( interfaceGUID, 
+									0x92, 
+									&val ) ) {
+			return false;
+		}
+
+		val = page & 0xff;
+		if ( writeLevel2Register( interfaceGUID, 
+									0x93, 
+									&val ) ) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getRegisterPage
+//
+
+uint32_t CCanalSuperWrapper::getRegisterPage( wxWindow *pwnd, uint8_t nodeid, uint8_t *interfaceGUID )
+{
+	uint32_t page = 0;
+
+	if ( isGUIDEmpty( interfaceGUID ) ) {
+		
+		uint8_t regs[ 2 ];
+		if ( readLevel1Registers( pwnd,
+									regs,
+									nodeid,
+									0x92,
+									2 ) ) {
+			page = ( regs[ 0 ] << 8 ) + regs[ 1 ];
+		}
+		else {
+			return false;
+		}
+
+	}
+	else {
+		uint8_t regs[ 2 ];
+		if ( readLevel2Registers( pwnd,
+									regs,
+									interfaceGUID,
+									0xffffff92,
+									2 ) ) {
+			page = ( regs[ 0 ] << 8 ) + regs[ 1 ];
+		}
+		else {
+			return false;
+		}
+
+	}
+
+	return page;
+
+}
+
+#endif

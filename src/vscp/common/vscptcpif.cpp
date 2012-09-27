@@ -343,6 +343,29 @@ int VscpTcpIf::doCmdNOOP( void )
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// doCmdClear
+//
+
+int VscpTcpIf::doCmdClear( void )
+{	
+    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
+    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
+  
+    // If receive loop active terminate
+    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
+    
+    wxString strCmd(_("CLRA\r\n"));
+    m_psock->Write( strCmd.mb_str(), strCmd.length() );
+
+    if ( checkReturnValue() ) {
+        return CANAL_ERROR_SUCCESS;
+    }
+    else {
+        return CANAL_ERROR_GENERIC;
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // doCmdSend

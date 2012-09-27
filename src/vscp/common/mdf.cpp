@@ -1,6 +1,6 @@
 // FILE: mdf.cpp
 //
-// Copyright (C) 2002-2009 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2002-2012 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,6 @@
 // Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: vscp.c,v $                                       
-// $Date: 2005/03/08 08:29:24 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.9 $ 
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "frmmain.h"
@@ -46,6 +42,10 @@
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
+#include <wx/imaglist.h>
+#include <wx/url.h>
+#include <wx/xml/xml.h>
+#include <wx/wfstream.h>
 #include <wx/url.h>
 #include <wx/listimpl.cpp>
 
@@ -728,6 +728,75 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
     ::wxEndBusyCursor();
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  load
+//
+
+
+bool CMDF::load( wxString& remoteFile, bool bSilent, bool bLocalFile )
+{
+    wxStandardPaths stdpaths;
+	wxString localFile;
+
+	if ( wxNOT_FOUND == remoteFile.Find( _("http://") ) ) {
+		wxString str;
+		str = _("http://");
+		str += remoteFile;
+		remoteFile = str;
+	}
+
+	// Get URL from user if not given
+	if ( !bSilent && !bLocalFile && !remoteFile.Length() ) {
+
+		remoteFile = ::wxGetTextFromUser( _("Please enter URI to MDF file on server ") );
+
+	}
+	// Get filename from user if not given
+	else if ( !bSilent && bLocalFile && !remoteFile.Length() ) {
+
+		// Load MDF from local file
+        wxFileDialog dlg( NULL,
+                            _("Choose file to load MDF from "),
+                            stdpaths.GetUserDataDir(),
+                            _(""),
+                            _("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
+        if ( wxID_OK == dlg.ShowModal() ) {
+            localFile = dlg.GetPath();
+        }
+        else {
+            return false;
+        }
+	
+	}
+
+	// Must have a path at this point
+	if ( 0 == remoteFile.Length() ) {
+	
+		if ( !bSilent && bLocalFile ) {
+			::wxMessageBox( _("A filename must be entered."), _("VSCP Works"), wxICON_ERROR );
+		}
+		else if ( !bSilent ) {
+			::wxMessageBox( _("A URI must be entered."), _("VSCP Works"), wxICON_ERROR );
+		}
+
+		return false;
+
+	}
+
+	if ( !bLocalFile ) {
+		
+		if ( !downLoadMDF( remoteFile, localFile ) ) {
+			if ( !bSilent ) ::wxMessageBox( _("Unable to download MDF."), 
+												_("VSCP Works"), 
+												wxICON_ERROR );
+			return false;
+		}
+
+	}
+
+	return parseMDF( localFile );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2110,4 +2179,61 @@ bool CMDF::parseMDF( wxString& path )
 
     return rv;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  getNumberOfRegisters
+//  
+
+
+uint32_t CMDF::getNumberOfRegisters( uint32_t page ) 
+{ 
+	uint32_t nregisters = 0;
+
+	MDF_REGISTER_LIST::iterator iterValue;
+    for ( iterValue = m_list_register.begin(); 
+			iterValue != m_list_register.end(); 
+			++iterValue) {
+		CMDF_Register *pRecordValue = *iterValue;
+        if ( NULL != pRecordValue ) {
+			if ( page == pRecordValue->m_nPage ) nregisters++;
+		}
+    }
+
+	return nregisters;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//  getNumberOfPages
+//  
+
+uint32_t CMDF::getPages( SortedArrayLong& arraylong ) 
+{ 
+	uint32_t npages = 0;
+	bool bFound;
+
+	MDF_REGISTER_LIST::iterator iterValue;
+    for ( iterValue = m_list_register.begin(); 
+			iterValue != m_list_register.end();
+			++iterValue) {
+		CMDF_Register *pRecordValue = *iterValue;
+		if ( NULL != pRecordValue ) {
+			//if ( page == pRecordValue->m_nPage ) npages++;
+			bFound = false;
+			for ( uint32_t i=0; i<arraylong.Count(); i++ ) {
+				if ( pRecordValue->m_nPage== arraylong.Index( i ) ) {
+					bFound = true;
+					break;
+				}
+			}
+
+			if (!bFound ) arraylong.Add( pRecordValue->m_nPage );
+
+		}
+    }
+
+	//arraylong.Sort();
+
+	return arraylong.Count();
+};
 

@@ -1,6 +1,6 @@
 // FILE: mdf.h 
 //
-// Copyright (C) 2002 - 2011 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2002 - 2012 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,6 @@
 // Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: vscp.h,v $                                       
-// $Date: 2006/02/01 22:16:36 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.29 $ 
 
 
 #ifndef _MDF_H_
@@ -61,8 +57,7 @@ enum vscp_abstraction_type {
 };
 
 
-
-
+WX_DEFINE_ARRAY_LONG( uint32_t, SortedArrayLong );
 
 
 // * * * Settings * * *
@@ -209,7 +204,7 @@ public:
   
     uint16_t m_nPage;
     uint16_t m_nOffset;
-    uint16_t m_nWidth;  // Defaults to 1
+    uint16_t m_nWidth;					// Defaults to 1
 
     uint32_t m_nMin;
     uint32_t m_nMax;
@@ -218,8 +213,12 @@ public:
 
     uint8_t m_nAccess;
 
-    MDF_BIT_LIST  m_list_bit;             // dll list with bit defines
-    MDF_VALUE_LIST  m_list_value;         // dll list with selectable values
+    MDF_BIT_LIST  m_list_bit;			// dll list with bit defines
+    MDF_VALUE_LIST  m_list_value;		// dll list with selectable values
+
+	// For VSCP Works
+	uint8_t m_value;					// Initial value read. This is the value
+										// that will be restored.
 
 };
 
@@ -581,6 +580,17 @@ public:
     */
     bool downLoadMDF( wxString& remoteFile, wxString& tempFile );
 
+	/*!
+		Load MDF from local or remote storage and parse it into
+		a MDF stucture.
+		@param Filename or URL to MDF file. If emtpty and bSilent is false
+				the method will ask for this parameter.
+		@param bSilent No dialogs are shown if set to true.
+		@param blocalFile Asks for a local file if set to true.
+		@return returns true on success, false on falure.
+	*/
+	bool load( wxString& remoteFile, bool bSilent = false, bool bLocalFile = false );
+
     /*!
         Format an MDF description so it can be shown
         @param str String to format.
@@ -594,6 +604,23 @@ public:
         @return true if the parsing went well.
     */
     bool parseMDF( wxString& path );
+
+
+	// Helpers
+
+	/*!
+		Get number of defined registers
+		@param page Register page to check
+		@return Number of registers used.
+	*/
+	uint32_t getNumberOfRegisters( uint32_t page );
+
+	/*!
+		Get number of register pages used
+		@return Number of regsiter pages used.
+	*/
+	uint32_t getPages( SortedArrayLong& arraylong );
+
 
     wxString m_strLocale;                       // ISO code for requested language
                                                 // defaults to "en"
