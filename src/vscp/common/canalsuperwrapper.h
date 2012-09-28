@@ -40,6 +40,7 @@
 #include "dllwrapper.h"
 #include "vscptcpif.h"
 #include "guid.h"
+#include "mdf.h"
 #include "../../common/dllist.h"
 
 #if !defined(AFX_CANALSUPERWRAPPER_H__A908F21A_317D_4E74_9308_18D7DD6B7D49__INCLUDED_)
@@ -642,7 +643,8 @@ public:
 		Get MDf file from device registers
 
 		@param pguid Pointer to guid of node.
-		@param pinterface 
+		@param bLevel2 Set to true if this is a level II devive 
+		@param bSilent Set to true to not show error messages.
 		@return true on success, false on failure.
 	*/
 	wxString getMDFfromDevice2( uint8_t *pguid,
@@ -725,6 +727,182 @@ public:
 		@return Current register page.				
 	*/
 	uint32_t getRegisterPage( wxWindow *pwnd, uint8_t nodeid, uint8_t *interfaceGUID = NULL );
+
+	/*!
+		Get a decision matrix row
+
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param pdm Pointer to MDF decsion matrix info.
+		@param row Row to fetch.
+		@param pRow Pointer t array which must hold eight bytes and
+					will receive the row.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getDMRow( wxWindow *pwnd,
+						uint8_t nodeid, 
+						CMDF_DecisionMatrix *pdm, 
+						uint32_t row, 
+						uint8_t *pRow,
+						bool bSilent = false );
+
+	//			* * * * Abstraction handlers * * * *
+
+	/*!
+		Read abstraction string
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@retstr String that will reveive abstraction string.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstractionString( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									wxString& retstr,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction bool
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to boolean that will reveive abstraction boolean.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstractionBool( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									bool *bval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction 8-bit integer
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to 8-bit integer.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstraction8bitinteger( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									uint8_t *pval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction 16-bit integer
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to 16-bit iteger.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstraction16bitinteger( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									uint16_t *pval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction 32-bit integer
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to 32-bit integer.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstraction32bitinteger( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									uint32_t *pval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction 64-bit integer
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to 64-bit integer.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstraction64bitinteger( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									uint64_t *pval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction float 32-bit ( IEEE standard 754 1985 )
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to 64-bit IEEE standard 754 floating point.
+		@param bSilent Set to true to not show error messages.
+		http://en.wikipedia.org/wiki/IEEE_754-1985
+	*/
+	bool getAbstractionFloat( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									float *pval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction double 64-bit ( IEEE standard 754)
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to 64-bit IEEE standard 754 floating point.
+		@param bSilent Set to true to not show error messages.
+		http://docs.wxwidgets.org/trunk/group__group__funcmacro__math.html
+	*/
+	bool getAbstractionDouble( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									double *pval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction date
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to three byte array for data yymmdd.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstractionDate( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									wxDateTime *pval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction time
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to three byte array for time hhmmss.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstractionTime( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									wxDateTime *pval,
+									bool bSilent = false );
+
+	/*!
+		Read abstraction GUID
+		@param pwnd Pointer to window (owner usually this) that called this method.
+		@param nodeid nodeid The node whos registers should be read.
+		@param abstraction Pointer to MDF abstraction info
+		@param bval Pointer to GUID class.
+		@param bSilent Set to true to not show error messages.
+	*/
+	bool getAbstractionGUID( wxWindow *pwnd,
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									cguid *pval,
+									bool bSilent = false );
 
 #endif
 

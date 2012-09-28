@@ -672,11 +672,11 @@ bool CCanalSuperWrapper::readLevel1Register( uint8_t nodeid,
         // Should we resend?
         else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
 			m_registerReadResendTimeout ) {
-                // Send again
-                if ( !bResend) {
-                    doCmdSend( &canalEvent );
-                }
-                bResend = true;
+			// Send again
+            if ( !bResend) {
+				doCmdSend( &canalEvent );
+			}
+			bResend = true;
         }
 
         if ( errors > m_registerReadMaxRetries ) {
@@ -720,7 +720,7 @@ bool CCanalSuperWrapper::writeLevel1Register( uint8_t nodeid,
     while ( true ) {
 
         if ( doCmdDataAvailable() ) {									// Message available
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) { // Valid event
+			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) { // Valid event
                 if ( (unsigned short)( canalEvent.id & 0xffff ) ==
                     ( 0x0a00 + nodeid ) ) {         // Read reply?
                         if ( canalEvent.data[ 0 ] == reg ) {			// Requested register?
@@ -1203,8 +1203,8 @@ wxString CCanalSuperWrapper::getMDFfromDevice2( uint8_t *pguid,
 // getLevel1DmInfo
 //
 
-bool CCanalSuperWrapper::getLevel1DmInfo( const unsigned char nodeid, 
-											unsigned char *pdata )
+bool CCanalSuperWrapper::getLevel1DmInfo( const uint8_t nodeid, 
+											uint8_t *pdata )
 {
     bool rv = true;
     bool bResend;
@@ -1227,13 +1227,13 @@ bool CCanalSuperWrapper::getLevel1DmInfo( const unsigned char nodeid,
 
     while ( true ) {
 
-        if ( doCmdDataAvailable() ) {                         // Message available
-            if ( doCmdReceive( &canalEvent ) ) {              // Valid message
+        if ( doCmdDataAvailable() ) {							// Message available
+            if ( doCmdReceive( &canalEvent ) ) {				// Valid message
                 if ( (unsigned short)( canalEvent.id & 0xffff ) ==
-                    ( 0x2100 + nodeid ) ) {                     // DM info reply?
-                        // Copy in response data
-                        memcpy( pdata, canalEvent.data, 8 );
-                        break;
+						( 0x2100 + nodeid ) ) {                 // DM info reply?
+					// Copy in response data
+					memcpy( pdata, canalEvent.data, 8 );
+					break;
                 }
             }
         }
@@ -1259,8 +1259,8 @@ bool CCanalSuperWrapper::getLevel1DmInfo( const unsigned char nodeid,
 // getLevel2DmInfo
 //
 
-bool CCanalSuperWrapper::getLevel2DmInfo( unsigned char *interfaceGUID, 
-											unsigned char *pdata,
+bool CCanalSuperWrapper::getLevel2DmInfo( uint8_t *interfaceGUID, 
+											uint8_t *pdata,
 											bool bLevel2 )
 {
     bool rv = true;
@@ -1289,9 +1289,9 @@ bool CCanalSuperWrapper::getLevel2DmInfo( unsigned char *interfaceGUID,
         if ( doCmdDataAvailable() ) {									// Message available
             if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {		// Valid event
                 if ( ( 0 == event.vscp_class ) && 
-                    ( 0x21 == event.vscp_type ) ) {						// DM reply?
-                        memcpy( pdata, event.data, 8 );
-                        break;
+						( 0x21 == event.vscp_type ) ) {					// DM reply?
+					memcpy( pdata, event.data, 8 );
+                    break;
                 }
             }
         }
@@ -1319,7 +1319,7 @@ bool CCanalSuperWrapper::getLevel2DmInfo( unsigned char *interfaceGUID,
 
 bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
 													uint8_t *pregisters,
-													unsigned char nodeid,
+													uint8_t nodeid,
 													uint8_t startreg,
 													uint16_t count )
 {
@@ -1490,7 +1490,7 @@ uint32_t CCanalSuperWrapper::getRegisterPage( wxWindow *pwnd, uint8_t nodeid, ui
 {
 	uint32_t page = 0;
 
-	if ( isGUIDEmpty( interfaceGUID ) ) {
+	if ( ( NULL == interfaceGUID ) || isGUIDEmpty( interfaceGUID ) ) {
 		
 		uint8_t regs[ 2 ];
 		if ( readLevel1Registers( pwnd,
@@ -1522,6 +1522,792 @@ uint32_t CCanalSuperWrapper::getRegisterPage( wxWindow *pwnd, uint8_t nodeid, ui
 
 	return page;
 
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  getDMRow
+// 
+
+bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
+										uint8_t nodeid, 
+										CMDF_DecisionMatrix *pdm, 
+										uint32_t row, 
+										uint8_t *pRow,
+										bool bSilent )
+{
+	// True if the matrix is indexed. That is if it consist
+	//	of one row precided by an index into the matrix.
+	bool bIndexed = false;
+
+	// Can't load row that is larger then the availabel rows
+	if ( row >= pdm->m_nRowCount ) return false;
+
+	// Check if this matrix is indexed
+	if ( ( 1 == pdm->m_nLevel ) && ( 120 == pdm->m_nStartOffset ) ) {
+		bIndexed = true;
+	}	
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != pdm->m_nStartPage ) {
+		if ( !setRegisterPage( nodeid, pdm->m_nStartPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for decision matrix!") );
+			return false;
+		}
+	}
+
+	// Check if this matrix is indexed if so select row
+	if ( ( 1 == pdm->m_nLevel ) && ( 120 == pdm->m_nStartOffset ) ) {
+		uint8_t val = row;
+		if ( !writeLevel1Register( nodeid, 119, &val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register index for decision matrix!") );
+			return false;
+		}
+	}
+
+	// Read row
+	if ( !readLevel1Registers( pwnd, pRow, nodeid, 120, pdm->m_nRowSize ) ) {
+		if ( !bSilent ) wxMessageBox( _("Unable to read decision matrix row!") );
+		return false;
+	}
+
+	// Restore page
+	if ( savepage != pdm->m_nStartPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for decision matrix!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionString
+// 
+
+bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
+													uint8_t nodeid,
+													CMDF_Abstraction *abstraction,
+													wxString& retstr, 
+													bool bSilent )
+{
+	wxString str;
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction string!") );
+			return false;
+		}
+	}
+
+	uint8_t *p;
+	p = new uint8_t[ abstraction->m_nWidth + 1 ];
+	memset( p, 0, abstraction->m_nWidth + 1 );
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<abstraction->m_nWidth; i++ ) {
+			// Write index to string
+			uint8_t val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									abstraction->m_nWidth ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	retstr.From8BitData( (const char *)p );
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionBool
+//
+bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												bool *bval,
+												bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction bool!") );
+			return false;
+		}
+	}
+
+	// Read value
+	uint8_t val;
+	if ( !readLevel1Register( nodeid, 
+								abstraction->m_nOffset, 
+								&val ) ) {
+		if ( !bSilent ) wxMessageBox( _("Failed to read abstraction boolean value!") );
+	}
+
+	*bval = val ? true : false;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction bool!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstraction8bitinteger
+//
+bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint8_t *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 8-bit integer!") );
+			return false;
+		}
+	}
+
+	// Read value
+	if ( !readLevel1Register( nodeid, 
+								abstraction->m_nOffset, 
+								pval ) ) {
+		if ( !bSilent ) wxMessageBox( _("Failed to read abstraction 8-bit integer value!") );
+		
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid,savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 8-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstraction16bitinteger
+//
+bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint16_t *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	uint8_t *p = 0;
+	p = new uint8_t[ 2 ];
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<2; i++ ) {
+
+			// Write index to string
+			uint8_t idx = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&idx ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									2 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	*pval = ( p[0] << 8 ) + p[1];
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstraction32bitinteger
+//
+bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint32_t *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	uint8_t *p;
+	p = new uint8_t[ 4 ];
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<4; i++ ) {
+
+			// Write index to string
+			uint8_t idx = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&idx ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									4 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	*pval = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstraction64bitinteger
+//
+bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint64_t *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	uint8_t *p;
+	p = new uint8_t[ 8 ];
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<8; i++ ) {
+
+			// Write index to string
+			uint8_t idx = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&idx ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									8 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	*pval = *( (uint64_t *)p );
+		//( p[0] << 56 ) + ( p[1] << 48 ) + ( p[2] << 40 ) + ( p[3] << 32 ) +
+		//		( p[4] << 24 ) + ( p[5] << 16 ) + ( p[6] << 8 ) + p[7];
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionFloat
+//
+bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														float *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	uint8_t *p;
+	p = new uint8_t[ 4 ];
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<4; i++ ) {
+
+			// Write index to string
+			uint8_t idx = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&idx ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									4 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	*pval = wxINT32_SWAP_ON_LE( *((float *)p) );
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionDouble
+//
+bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														double *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	uint8_t *p;
+	p = new uint8_t[ 8 ];
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<8; i++ ) {
+
+			// Write index to string
+			uint8_t idx = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&idx ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									8 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	*pval = *((double *)p);
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionDate
+//
+bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														wxDateTime *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	uint8_t *p;
+	p = new uint8_t[ 3 ];
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<3; i++ ) {
+
+			// Write index to string
+			uint8_t idx = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&idx ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									3 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	pval->SetYear( 2000 + p[ 0 ] );
+	pval->SetMonth( wxDateTime::Month( p[ 1 ] ) );
+	pval->SetDay( p[ 2 ] );
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionTime
+//
+bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														wxDateTime *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	uint8_t *p;
+	p = new uint8_t[ 3 ];
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<3; i++ ) {
+
+			// Write index to string
+			uint8_t idx = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&idx ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									3 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	pval->SetHour( p[ 0 ] );
+	pval->SetMinute( p[ 1 ] );
+	pval->SetSecond( p[ 2 ] );
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionGUID
+//
+bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														cguid *pval,
+														bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	uint8_t *p;
+	p = new uint8_t[ 16 ];
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<16; i++ ) {
+
+			// Write index to string
+			uint8_t idx = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&idx ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+				break;
+			}
+		}
+	}
+	else {
+		
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+									p, 
+									nodeid, 
+									abstraction->m_nOffset, 
+									16 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+		}
+
+	}
+
+	pval->getFromArray( p );
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
 }
 
 #endif

@@ -447,8 +447,12 @@ bool DialogAbstractionEdit::TransferDataToWindow( CMDF_Abstraction *pAbstraction
 				strType = _("Unsigned 64-bit integer");
                 break;
 
-            case type_decimal:
-				strType = _("Decimal");
+            case type_float:
+				strType = _("Float");
+                break;
+
+			case type_double:
+				strType = _("Double");
                 break;
 
             case type_date:
@@ -457,6 +461,10 @@ bool DialogAbstractionEdit::TransferDataToWindow( CMDF_Abstraction *pAbstraction
 
             case type_time:
 				strType = _("Time");
+                break;
+
+			case type_guid:
+				strType = _("GUID");
                 break;
 
             case type_unknown:

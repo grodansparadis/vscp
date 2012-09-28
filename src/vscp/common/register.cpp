@@ -58,6 +58,39 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor
+//
+/*
+CDecisionMatrix::CDecisionMatrix( CMDF_DecisionMatrix *pdm )
+{
+	m_pdm = NULL;
+
+	// Check if this matrix is indexed
+	if ( ( 1 == pdm->m_nLevel ) && ( 120 == pdm->m_nStartOffset ) ) {
+		m_bIndexed = true;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  Destructor
+// 
+
+CDecisionMatrix::~CDecisionMatrix( void )
+{
+	if ( NULL != m_pdm ) delete m_pdm;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getRow
+// 
+
+bool getRow( uint32_t row, uint8_t *pRow )
+{
+	
+}
+*/
+
+///////////////////////////////////////////////////////////////////////////////
+//  Constructor
 // 
 
 CStandardRegisters::CStandardRegisters()

@@ -29,6 +29,58 @@
 #include "guid.h"
 
 /*!
+    \class CDecisionMatrix
+    \brief Encapsulates the decision matrix of a device
+*/
+class CDecisionMatrix  
+{
+
+public:
+
+	/*! 
+        Default Constructor
+    */
+    CDecisionMatrix( CMDF_DecisionMatrix *pdm, bool bIndexed = false );
+
+	/*! 
+        Default Destructor
+    */
+    ~CDecisionMatrix( void );
+
+	/*!
+		
+	*/
+	bool loadMatrix();
+
+	/*!
+		Load a DM row
+		@param row Row to load.
+		@param pRow Pointer t array which must hold eight bytes and
+					will receive the row.
+	*/
+	bool getRow( uint32_t row, uint8_t *pRow );
+	
+
+private:
+
+	/*!
+		True if the matrix is indexed. That is if it consist
+		of one row precided by an index into the matrix.
+	*/
+	bool m_bIndexed;
+
+	/*!
+		A memory array holding the full decision matrix
+	*/
+	uint8_t *m_pdm;
+
+	/*!
+		Pointer to decsion matrix info from MDF
+	*/
+	CMDF_DecisionMatrix *m_pmdfdm;
+};
+
+/*!
     \class CStandardRegisters
     \brief Encapsulates the standard registers of a device
 */
@@ -97,6 +149,7 @@ public:
 
 	/// Standard register storage
 	uint8_t m_reg[ 128 ];
+
 
 };
 

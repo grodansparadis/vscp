@@ -1,6 +1,6 @@
 // FILE: mdf.h 
 //
-// Copyright (C) 2002 - 2012 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2002-2012 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -51,9 +51,11 @@ enum vscp_abstraction_type {
     type_uint32_t,
     type_int64_t,
     type_uint64_t,
-    type_decimal,
+	type_float,
+	type_double,
     type_date,
-    type_time
+    type_time,
+	type_guid
 };
 
 
@@ -124,6 +126,8 @@ public:
     uint32_t m_nMin;                    // If numeric min value can be set
   
     uint8_t m_nAccess;                  // Access rights
+
+	bool m_bIndexed;					// True of indexed storage
 
     MDF_VALUE_LIST  m_list_value;       // list with selectable values
 

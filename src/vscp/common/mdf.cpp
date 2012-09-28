@@ -1170,6 +1170,15 @@ bool CMDF::parseMDF( wxString& path )
                             pAbstraction->m_nMax =  readStringValue( child3->GetPropVal ( wxT ( "max" ), _("0") ) );
                             pAbstraction->m_nMin =  readStringValue( child3->GetPropVal ( wxT ( "min" ), _("0") ) );
 
+							wxString stridx = child3->GetPropVal( wxT ( "indexed" ), _("false") );
+							stridx.Lower();
+							if ( wxNOT_FOUND != stridx.Find(_("true")) ) {
+								pAbstraction->m_bIndexed = true;
+							}
+							else {
+								pAbstraction->m_bIndexed = false;
+							}
+
                             wxString strType =  child3->GetPropVal ( wxT ( "type" ), _("") );
 
                             if ( strType.IsSameAs(_("string")) ) {
@@ -1217,20 +1226,20 @@ bool CMDF::parseMDF( wxString& path )
                             else if ( strType.IsSameAs(_("uint64_t")) ) {
                                 pAbstraction->m_nType = type_uint64_t;
                             }
-                            else if ( strType.IsSameAs(_("decimal")) ) {
-                                pAbstraction->m_nType = type_decimal;
-                            }
                             else if ( strType.IsSameAs(_("double")) ) {
-                                pAbstraction->m_nType = type_decimal;
+                                pAbstraction->m_nType = type_double;
                             }
                             else if ( strType.IsSameAs(_("float")) ) {
-                                pAbstraction->m_nType = type_decimal;
+                                pAbstraction->m_nType = type_float;
                             }
                             else if ( strType.IsSameAs(_("date")) ) {
                                 pAbstraction->m_nType = type_date;
                             }
                             else if ( strType.IsSameAs(_("time")) ) {
                                 pAbstraction->m_nType = type_time;
+                            }
+							else if ( strType.IsSameAs(_("guid")) ) {
+                                pAbstraction->m_nType = type_guid;
                             }
                             else {
                                 pAbstraction->m_nType = type_unknown;
