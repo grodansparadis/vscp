@@ -278,6 +278,15 @@ public:
 	*/
 	wxString getFormattedValue( uint8_t val );
 
+	/*!
+		Return the row for a register:page
+		@param reg Register to look for.
+		@aram page Page to look for.
+		@return Grid row where register:page is located. -1 is
+				retuned if row is not found.
+	*/
+	int getRegisterGridRow( uint32_t reg, uint16_t page );
+
 
 	////@begin frmDeviceConfig event handler declarations
 

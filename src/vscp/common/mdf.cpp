@@ -1179,7 +1179,7 @@ bool CMDF::parseMDF( wxString& path )
 								pAbstraction->m_bIndexed = false;
 							}
 
-                            wxString strType =  child3->GetPropVal ( wxT ( "type" ), _("") );
+                            wxString strType =  child3->GetPropVal( wxT ( "type" ), _("") );
 
                             if ( strType.IsSameAs(_("string")) ) {
                                 pAbstraction->m_nType = type_string;

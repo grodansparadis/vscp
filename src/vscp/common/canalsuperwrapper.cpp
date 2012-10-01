@@ -55,56 +55,56 @@ CCanalSuperWrapper::CCanalSuperWrapper( devItem *pItem )
 	init();
 
 	if ( pItem->strPath.Length() && pItem->strPath.IsSameAs(_("TCPIP") ) ) {
-	
-    // TCP/IP interface
-    m_itemDevice.id = USE_TCPIP_INTERFACE;
 
-    m_itemDevice.strName = pItem->strName;
-    m_itemDevice.strPath = pItem->strPath;
-	m_itemDevice.strParameters = pItem->strParameters;
-    m_itemDevice.flags = pItem->flags;
-    m_itemDevice.filter = pItem->filter;
-    m_itemDevice.mask = pItem->mask;
-  }
-  else if ( NULL != pItem )  {
+		// TCP/IP interface
+		m_itemDevice.id = USE_TCPIP_INTERFACE;
 
-		// DLL/DL Interface
-		m_itemDevice.id = USE_DLL_INTERFACE;
-    
-		if ( pItem->strName.Length() ) {
-			m_itemDevice.strName = pItem->strName;
-		}
-    
-		if ( pItem->strPath.Length() ) {
-			m_itemDevice.strPath = pItem->strPath;
-		}
-    
-		if ( pItem->strParameters.Length() ) {
-			m_itemDevice.strParameters = pItem->strParameters;
-		}	
-    
+		m_itemDevice.strName = pItem->strName;
+		m_itemDevice.strPath = pItem->strPath;
+		m_itemDevice.strParameters = pItem->strParameters;
 		m_itemDevice.flags = pItem->flags;
 		m_itemDevice.filter = pItem->filter;
 		m_itemDevice.mask = pItem->mask;
-  
-    m_canalDll.initialize( m_itemDevice.strPath );
-    
 	}
-  else {
-    
-    // pItem == NULL
-    // We do some default
-  
-    // TCP/IP interface
-    m_itemDevice.id = USE_TCPIP_INTERFACE;
-    m_itemDevice.strName = _("Locahost");
-    m_itemDevice.strPath = _("TCPIP");
-    m_itemDevice.strParameters = _("admin;secret;localhost;9598");
-    m_itemDevice.flags = 0;
-    m_itemDevice.filter = 0;
-    m_itemDevice.mask = 0;
-  
-  }
+	else if ( NULL != pItem )  {
+
+		// DLL/DL Interface
+		m_itemDevice.id = USE_DLL_INTERFACE;
+
+		if ( pItem->strName.Length() ) {
+			m_itemDevice.strName = pItem->strName;
+		}
+
+		if ( pItem->strPath.Length() ) {
+			m_itemDevice.strPath = pItem->strPath;
+		}
+
+		if ( pItem->strParameters.Length() ) {
+			m_itemDevice.strParameters = pItem->strParameters;
+		}	
+
+		m_itemDevice.flags = pItem->flags;
+		m_itemDevice.filter = pItem->filter;
+		m_itemDevice.mask = pItem->mask;
+
+		m_canalDll.initialize( m_itemDevice.strPath );
+
+	}
+	else {
+
+		// pItem == NULL
+		// We do some default
+
+		// TCP/IP interface
+		m_itemDevice.id = USE_TCPIP_INTERFACE;
+		m_itemDevice.strName = _("Locahost");
+		m_itemDevice.strPath = _("TCPIP");
+		m_itemDevice.strParameters = _("admin;secret;localhost;9598");
+		m_itemDevice.flags = 0;
+		m_itemDevice.filter = 0;
+		m_itemDevice.mask = 0;
+
+	}
 
 }
 
@@ -124,37 +124,37 @@ void CCanalSuperWrapper::init( void )
 	m_registerReadResendTimeout = VSCP_REGISTER_READ_RESEND_TIMEOUT;
 	m_registerReadMaxRetries = VSCP_REGISTER_READ_MAX_TRIES;
 }
- 
+
 ///////////////////////////////////////////////////////////////////////////////
 // setInterface
 //  TCP/IP version
 
 void CCanalSuperWrapper::setInterface( const wxString& host, 
-                                        const short port,
-                                        const wxString& username,
-                                        const wxString& password )
+	const short port,
+	const wxString& username,
+	const wxString& password )
 {
-    // TCP/IP interface
-    m_itemDevice.id = USE_TCPIP_INTERFACE;
-    
-    // No name
-    m_itemDevice.strName.Empty();
-    
-    // No path
-    m_itemDevice.strPath.Empty();
-  
-    // Build TCP/IP configuration string
-    m_itemDevice.strParameters = username;
-    m_itemDevice.strParameters += _(";"); 
+	// TCP/IP interface
+	m_itemDevice.id = USE_TCPIP_INTERFACE;
+
+	// No name
+	m_itemDevice.strName.Empty();
+
+	// No path
+	m_itemDevice.strPath.Empty();
+
+	// Build TCP/IP configuration string
+	m_itemDevice.strParameters = username;
+	m_itemDevice.strParameters += _(";"); 
 	m_itemDevice.strParameters += password;
 	m_itemDevice.strParameters += _(";");
 	m_itemDevice.strParameters += host;
 	m_itemDevice.strParameters += _(";");
 	m_itemDevice.strParameters += wxString::Format( _("%d"), port );
-    
-    m_itemDevice.flags = 0;
-    m_itemDevice.filter = 0;
-    m_itemDevice.mask = 0;
+
+	m_itemDevice.flags = 0;
+	m_itemDevice.filter = 0;
+	m_itemDevice.mask = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -162,24 +162,24 @@ void CCanalSuperWrapper::setInterface( const wxString& host,
 //  
 
 void CCanalSuperWrapper::setInterface( const wxString& name,
-                                        const wxString& path,
-                                        const wxString& parameters,
-                                        const unsigned long flags,
-                                        const unsigned long filter,
-                                        const unsigned long mask)
+	const wxString& path,
+	const wxString& parameters,
+	const unsigned long flags,
+	const unsigned long filter,
+	const unsigned long mask)
 {
 	// DLL/DL Interface
 	m_itemDevice.id = USE_DLL_INTERFACE;
-    
+
 	m_itemDevice.strName = name;
-    m_itemDevice.strPath = path;
-    m_itemDevice.strParameters = parameters;
-    
+	m_itemDevice.strPath = path;
+	m_itemDevice.strParameters = parameters;
+
 	m_itemDevice.flags = flags;
 	m_itemDevice.filter = filter;
 	m_itemDevice.mask = mask;
-  
-    m_canalDll.initialize( m_itemDevice.strPath );
+
+	m_canalDll.initialize( m_itemDevice.strPath );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -189,62 +189,62 @@ void CCanalSuperWrapper::setInterface( const wxString& name,
 long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface, unsigned long flags )
 {
 	long rv = false;
-  
-    if ( USE_DLL_INTERFACE == m_itemDevice.id ) {
-    
-    // *** Open dll/dl interface ***
-        
-        if ( strInterface.Length() ) {
-            rv = m_canalDll.doCmdOpen( strInterface, flags );
-        }
-        else {
-            rv = m_canalDll.doCmdOpen( m_itemDevice.strParameters, 
-                                  m_itemDevice.flags );
-        }   
 
-    }
-    else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
-    
-        // *** Open remote TCP/IP interface *** 
+	if ( USE_DLL_INTERFACE == m_itemDevice.id ) {
 
-        if ( strInterface.Length() ) {
-            rv = m_vscptcpif.doCmdOpen( strInterface, flags );
-        }
-        else {
-            rv = m_vscptcpif.doCmdOpen( m_itemDevice.strParameters, m_itemDevice.flags );
-            if ( CANAL_ERROR_SUCCESS == rv ) {
-                // We try to get the interface GUID. If we
-                // fail to get it we use the GUID assigned
-                // in the constructor
-                m_vscptcpif.doCmdGetGUID( (char *)m_GUID.m_id );
-            }
+		// *** Open dll/dl interface ***
 
-        }
+		if ( strInterface.Length() ) {
+			rv = m_canalDll.doCmdOpen( strInterface, flags );
+		}
+		else {
+			rv = m_canalDll.doCmdOpen( m_itemDevice.strParameters, 
+				m_itemDevice.flags );
+		}   
 
-    }
-  
-    m_devid = rv;
-  
-    return rv;
+	}
+	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
+
+		// *** Open remote TCP/IP interface *** 
+
+		if ( strInterface.Length() ) {
+			rv = m_vscptcpif.doCmdOpen( strInterface, flags );
+		}
+		else {
+			rv = m_vscptcpif.doCmdOpen( m_itemDevice.strParameters, m_itemDevice.flags );
+			if ( CANAL_ERROR_SUCCESS == rv ) {
+				// We try to get the interface GUID. If we
+				// fail to get it we use the GUID assigned
+				// in the constructor
+				m_vscptcpif.doCmdGetGUID( (char *)m_GUID.m_id );
+			}
+
+		}
+
+	}
+
+	m_devid = rv;
+
+	return rv;
 }
 
- 
+
 ///////////////////////////////////////////////////////////////////////////////
 // close
 //
 
 int CCanalSuperWrapper::doCmdClose( void )
 {
-  m_devid = 0;
-  
+	m_devid = 0;
+
 	if ( USE_DLL_INTERFACE == m_itemDevice.id) {
 		return m_canalDll.doCmdClose();
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdClose();
 	}
-  
-  return CANAL_ERROR_NOT_SUPPORTED;
+
+	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 
@@ -260,7 +260,7 @@ int CCanalSuperWrapper::doCmdNOOP( void )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdNOOP();
 	}
-  
+
 	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
@@ -282,7 +282,7 @@ int CCanalSuperWrapper::doCmdClear( void )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdClear();
 	}
-  
+
 	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
@@ -298,7 +298,7 @@ unsigned long CCanalSuperWrapper::doCmdGetLevel( void )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return CANAL_LEVEL_USES_TCPIP; 
 	}
-  
+
 	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
@@ -315,8 +315,8 @@ int CCanalSuperWrapper::doCmdSend( canalMsg *pMsg )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdSendLevel1( pMsg );
 	}
-  
-  return CANAL_ERROR_NOT_SUPPORTED;
+
+	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 
@@ -335,7 +335,7 @@ int CCanalSuperWrapper::doCmdSend( const vscpEvent *pEvent )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
 		return m_vscptcpif.doCmdSend( pEvent );
 	}
-  
+
 	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
@@ -357,7 +357,7 @@ int CCanalSuperWrapper::doCmdSend( const vscpEventEx *pEventEx )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
 		return m_vscptcpif.doCmdSendEx( pEventEx );
 	}
-  
+
 	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
@@ -373,8 +373,8 @@ int CCanalSuperWrapper::doCmdReceive( canalMsg *pMsg )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdReceiveLevel1( pMsg );
 	}
-  
-  return CANAL_ERROR_NOT_SUPPORTED;
+
+	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 
@@ -384,7 +384,7 @@ int CCanalSuperWrapper::doCmdReceive( canalMsg *pMsg )
 
 int CCanalSuperWrapper::doCmdReceive( vscpEvent *pEvent )
 {	
-  return m_vscptcpif.doCmdReceive( pEvent );
+	return m_vscptcpif.doCmdReceive( pEvent );
 }
 
 
@@ -394,7 +394,7 @@ int CCanalSuperWrapper::doCmdReceive( vscpEvent *pEvent )
 
 int CCanalSuperWrapper::doCmdReceive( vscpEventEx *pEventEx )
 {	
-  return m_vscptcpif.doCmdReceiveEx( pEventEx );
+	return m_vscptcpif.doCmdReceiveEx( pEventEx );
 }
 
 
@@ -410,8 +410,8 @@ int CCanalSuperWrapper::doCmdDataAvailable( void )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
 		return m_vscptcpif.doCmdDataAvailable();
 	}
-  
-  return CANAL_ERROR_NOT_SUPPORTED;
+
+	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 
@@ -427,8 +427,8 @@ int CCanalSuperWrapper::doCmdStatus( canalStatus *pStatus )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdStatus( pStatus );
 	}
-  
-  return CANAL_ERROR_NOT_SUPPORTED;
+
+	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 
@@ -445,8 +445,8 @@ int CCanalSuperWrapper::doCmdStatistics( canalStatistics *pStatistics )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdStatistics( pStatistics );
 	}
-  
-  return CANAL_ERROR_NOT_SUPPORTED;
+
+	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 
@@ -463,9 +463,9 @@ int CCanalSuperWrapper::doCmdFilter( unsigned long filter )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return CANAL_ERROR_NOT_SUPPORTED;
 	}
-  
+
 	return CANAL_ERROR_NOT_SUPPORTED;
-	
+
 }
 
 
@@ -482,9 +482,9 @@ int CCanalSuperWrapper::doCmdMask( unsigned long mask )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return CANAL_ERROR_NOT_SUPPORTED;
 	}
-	
+
 	return CANAL_ERROR_NOT_SUPPORTED;
-	
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -512,10 +512,10 @@ int CCanalSuperWrapper::doCmdBaudrate( unsigned long baudrate )
 		return m_canalDll.doCmdBaudrate( baudrate );
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
-    return CANAL_ERROR_SUCCESS;
+		return CANAL_ERROR_SUCCESS;
 	}
-  
-  return CANAL_ERROR_NOT_SUPPORTED;
+
+	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 
@@ -532,8 +532,8 @@ unsigned long CCanalSuperWrapper::doCmdVersion( void )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdVersion();
 	}
-  
-  return 0;
+
+	return 0;
 }
 
 
@@ -550,8 +550,8 @@ unsigned long CCanalSuperWrapper::doCmdDLLVersion( void )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
 		return m_vscptcpif.doCmdDLLVersion();
 	}
-  
-  return 0;
+
+	return 0;
 }
 
 
@@ -568,8 +568,8 @@ const char * CCanalSuperWrapper::doCmdVendorString( void )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
 		return m_vscptcpif.doCmdVendorString();
 	}
-  
-  return NULL;
+
+	return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -578,11 +578,11 @@ const char * CCanalSuperWrapper::doCmdVendorString( void )
 
 int CCanalSuperWrapper::doCmdShutDown( void )
 {
-  if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
-    return m_vscptcpif.doCmdShutDown();
-  }
-  
-  return CANAL_ERROR_NOT_SUPPORTED;
+	if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
+		return m_vscptcpif.doCmdShutDown();
+	}
+
+	return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -597,8 +597,8 @@ const char * CCanalSuperWrapper::doCmdGetDriverInfo( void )
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
 		return m_vscptcpif.doCmdGetDriverInfo();
 	}
-  
-  return NULL;
+
+	return NULL;
 }
 
 
@@ -618,75 +618,75 @@ const char * CCanalSuperWrapper::doCmdGetDriverInfo( void )
 //
 
 bool CCanalSuperWrapper::readLevel1Register( uint8_t nodeid, 
-												uint8_t reg, 
-												uint8_t *pcontent )
+	uint8_t reg, 
+	uint8_t *pcontent )
 {
-    bool rv = true;
-    uint32_t errors = 0;
-    bool bResend;
-    wxString strBuf;
-    canalMsg canalEvent;
+	bool rv = true;
+	uint32_t errors = 0;
+	bool bResend;
+	wxString strBuf;
+	canalMsg canalEvent;
 
-    // Check pointer
-    if ( NULL == pcontent ) return false;
+	// Check pointer
+	if ( NULL == pcontent ) return false;
 
-    canalEvent.flags = CANAL_IDFLAG_EXTENDED;
-    canalEvent.obid = 0;
-    canalEvent.id = 0x0900;             // CLASS1.PROTOCOL Read register
-    canalEvent.sizeData = 2;
-    canalEvent.data[ 0 ] = nodeid;      // Node to read from
-    canalEvent.data[ 1 ] = reg;         // Register to read
+	canalEvent.flags = CANAL_IDFLAG_EXTENDED;
+	canalEvent.obid = 0;
+	canalEvent.id = 0x0900;             // CLASS1.PROTOCOL Read register
+	canalEvent.sizeData = 2;
+	canalEvent.data[ 0 ] = nodeid;      // Node to read from
+	canalEvent.data[ 1 ] = reg;         // Register to read
 
-    bResend = false;
-    doCmdSend( &canalEvent );
+	bResend = false;
+	doCmdSend( &canalEvent );
 
-    //wxDateTime start = wxDateTime::Now();
-    wxLongLong startTime = ::wxGetLocalTimeMillis();
+	//wxDateTime start = wxDateTime::Now();
+	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
-    while ( true ) {
+	while ( true ) {
 
-        if ( doCmdDataAvailable() ) {									// Message available
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) {	// Valid event
-                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
-                    ( 0x0a00 + nodeid ) ) {                 // Read reply?
-                        if ( canalEvent.data[ 0 ] == reg ) {// Requested register?
+		if ( doCmdDataAvailable() ) {									// Message available
+			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) {	// Valid event
+				if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+					( 0x0a00 + nodeid ) ) {                 // Read reply?
+						if ( canalEvent.data[ 0 ] == reg ) {// Requested register?
 
-                            if ( NULL != pcontent ) {
-                                *pcontent = canalEvent.data[ 1 ];
-                            }
-                            break;
+							if ( NULL != pcontent ) {
+								*pcontent = canalEvent.data[ 1 ];
+							}
+							break;
 
-                        }	// Check for correct node
-                }			// Check for correct reply event 
-            }
-        }
-        else {
-            wxMilliSleep( 1 );
-        }
-
-        // Check for read error timeout
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-			m_registerReadErrorTimeout ) {
-			errors++;
-        }
-        // Should we resend?
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-			m_registerReadResendTimeout ) {
-			// Send again
-            if ( !bResend) {
-				doCmdSend( &canalEvent );
+						}	// Check for correct node
+				}			// Check for correct reply event 
 			}
-			bResend = true;
-        }
+		}
+		else {
+			wxMilliSleep( 1 );
+		}
 
-        if ( errors > m_registerReadMaxRetries ) {
-            rv = false;
-            break;
-        }
+		// Check for read error timeout
+		if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadErrorTimeout ) {
+				errors++;
+		}
+		// Should we resend?
+		else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadResendTimeout ) {
+				// Send again
+				if ( !bResend) {
+					doCmdSend( &canalEvent );
+				}
+				bResend = true;
+		}
 
-    } // while
+		if ( errors > m_registerReadMaxRetries ) {
+			rv = false;
+			break;
+		}
 
-    return rv;
+	} // while
+
+	return rv;
 }
 
 
@@ -695,73 +695,73 @@ bool CCanalSuperWrapper::readLevel1Register( uint8_t nodeid,
 //
 
 bool CCanalSuperWrapper::writeLevel1Register( uint8_t nodeid, 
-												uint8_t reg, 
-												uint8_t *pval )
+	uint8_t reg, 
+	uint8_t *pval )
 {
-    bool rv = true;
-    uint32_t errors = 0;
-    bool bResend;
-    wxString strBuf;
-    canalMsg canalEvent;
+	bool rv = true;
+	uint32_t errors = 0;
+	bool bResend;
+	wxString strBuf;
+	canalMsg canalEvent;
 
-    canalEvent.flags = CANAL_IDFLAG_EXTENDED;
-    canalEvent.obid = 0;
-    canalEvent.id = 0x0B00;             // CLASS1.PROTOCOL Write register
-    canalEvent.sizeData = 3;
-    canalEvent.data[ 0 ] = nodeid;      // Node to read from
-    canalEvent.data[ 1 ] = reg;         // Register to write
-    canalEvent.data[ 2 ] = *pval;			// value to write
+	canalEvent.flags = CANAL_IDFLAG_EXTENDED;
+	canalEvent.obid = 0;
+	canalEvent.id = 0x0B00;             // CLASS1.PROTOCOL Write register
+	canalEvent.sizeData = 3;
+	canalEvent.data[ 0 ] = nodeid;      // Node to read from
+	canalEvent.data[ 1 ] = reg;         // Register to write
+	canalEvent.data[ 2 ] = *pval;			// value to write
 
-    bResend = false;
-    doCmdSend( &canalEvent );
+	bResend = false;
+	doCmdSend( &canalEvent );
 
-    wxLongLong startTime = ::wxGetLocalTimeMillis();
+	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
-    while ( true ) {
+	while ( true ) {
 
-        if ( doCmdDataAvailable() ) {									// Message available
+		if ( doCmdDataAvailable() ) {									// Message available
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) { // Valid event
-                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
-                    ( 0x0a00 + nodeid ) ) {         // Read reply?
-                        if ( canalEvent.data[ 0 ] == reg ) {			// Requested register?
+				if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+					( 0x0a00 + nodeid ) ) {         // Read reply?
+						if ( canalEvent.data[ 0 ] == reg ) {			// Requested register?
 
-                            if ( *pval != canalEvent.data[ 1 ] ) rv = false;
-                            // Save read value
-                            *pval = canalEvent.data[ 1 ];
-                            break;
-                        } // Check for correct node
+							if ( *pval != canalEvent.data[ 1 ] ) rv = false;
+							// Save read value
+							*pval = canalEvent.data[ 1 ];
+							break;
+						} // Check for correct node
 
-                        // Save read value
-                        *pval = canalEvent.data[ 1 ];
+						// Save read value
+						*pval = canalEvent.data[ 1 ];
 
-                } // Check for correct reply event 
-            }
-        }
-        else {
-            wxMilliSleep( 1 );
-        }
+				} // Check for correct reply event 
+			}
+		}
+		else {
+			wxMilliSleep( 1 );
+		}
 
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadErrorTimeout ) {
-			errors++;
-        }
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-					m_registerReadResendTimeout ) {
-			// Send again
-            if ( !bResend) {
-				doCmdSend( &canalEvent );
-            }
-            bResend = true;
-        }
+		if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadErrorTimeout ) {
+				errors++;
+		}
+		else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadResendTimeout ) {
+				// Send again
+				if ( !bResend) {
+					doCmdSend( &canalEvent );
+				}
+				bResend = true;
+		}
 
-        if ( errors > m_registerReadMaxRetries ) {
-            rv = false;
-            break;
-        }
+		if ( errors > m_registerReadMaxRetries ) {
+			rv = false;
+			break;
+		}
 
-    } // while
+	} // while
 
-    return rv;
+	return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -769,18 +769,18 @@ bool CCanalSuperWrapper::writeLevel1Register( uint8_t nodeid,
 //
 
 bool CCanalSuperWrapper::readLevel2Register( uint8_t *interfaceGUID, 
-												uint32_t reg, 
-												uint8_t *pcontent,
-												uint8_t *pdestGUID,
-												bool bLevel2 )
+	uint32_t reg, 
+	uint8_t *pcontent,
+	uint8_t *pdestGUID,
+	bool bLevel2 )
 {
 	int i;
-    bool rv = true;
+	bool rv = true;
 	bool bInterface = false;  // No specific interface set
-    uint32_t errors = 0;
-    bool bResend;
-    wxString strBuf;
-    vscpEventEx event;
+	uint32_t errors = 0;
+	bool bResend;
+	wxString strBuf;
+	vscpEventEx event;
 
 	// Check if a specific interface is used
 	for ( i=0; i<16; i++ ) {
@@ -797,24 +797,24 @@ bool CCanalSuperWrapper::readLevel2Register( uint8_t *interfaceGUID,
 		event.head = VSCP_PRIORITY_NORMAL;
 		event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
 		event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
-		
+
 		memset( event.GUID, 0, 16 );                // We use GUID for interface 
-		
+
 		event.sizeData = 16 + 2;                    // Interface GUID + nodeid + register to read
-		
+
 		for ( i=0; i<16; i++ ) {
 			event.data[ i ] = interfaceGUID[ 15 - i ];	
 		}
-			
+
 		event.data[16] = interfaceGUID[0];          // nodeid
 		event.data[17] = reg;                       // Register to read
-	
+
 	}
 
 	else {
 
 		// Event should be sent to all interfaces
-	
+
 		// Must have a destination GUID
 		if ( NULL == pdestGUID ) return false;
 
@@ -825,11 +825,11 @@ bool CCanalSuperWrapper::readLevel2Register( uint8_t *interfaceGUID,
 			event.head = VSCP_PRIORITY_NORMAL;
 			event.vscp_class = VSCP_CLASS2_PROTOCOL;
 			event.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
-		
+
 			memset( event.GUID, 0, 16 );		// We use GUID for interface 
 
 			event.sizeData = 22;				// nodeid + register to read
-		
+
 			for ( i=0; i<16; i++ ) {			// Destination GUID
 				event.data[ i ] = pdestGUID[ 15 - i ];	
 			}	
@@ -839,7 +839,7 @@ bool CCanalSuperWrapper::readLevel2Register( uint8_t *interfaceGUID,
 			event.data[ 19 ] = reg;
 			event.data[ 20 ] = 0x00;			// Read one register
 			event.data[ 21 ] = 0x01;
-		
+
 		}
 		else {
 
@@ -848,7 +848,7 @@ bool CCanalSuperWrapper::readLevel2Register( uint8_t *interfaceGUID,
 			event.head = VSCP_PRIORITY_NORMAL;
 			event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
 			event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
-		
+
 			memset( event.GUID, 0, 16 );				// We use GUID for interface 
 
 			event.sizeData = 16 + 2;					// nodeid + register to read
@@ -856,114 +856,114 @@ bool CCanalSuperWrapper::readLevel2Register( uint8_t *interfaceGUID,
 			for ( i=0; i<16; i++ ) {
 				event.data[ i ] = pdestGUID[ 15 - i ];	
 			}
-			
+
 			event.data[16] = 0x00;						// nodeid
 			event.data[17] = reg;                       // Register to read
-			
+
 		}
 	}
 
-    bResend = false;
+	bResend = false;
 
-    // Send the event
+	// Send the event
 	doCmdClear();
 	event.timestamp = 0;
-    doCmdSend( &event );
-	
+	doCmdSend( &event );
 
-    //wxDateTime start = wxDateTime::Now();
-    wxLongLong startTime = ::wxGetLocalTimeMillis();
 
-    while ( true ) {
+	//wxDateTime start = wxDateTime::Now();
+	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
-        if ( doCmdDataAvailable() ) {								// Message available
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {	// Valid event
-                
+	while ( true ) {
+
+		if ( doCmdDataAvailable() ) {								// Message available
+			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {	// Valid event
+
 				// Check for correct reply event
-				
+
 				// Level I Read reply?
 				if ( bInterface && ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
-                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   
-                        if ( event.data[ 0 ] == reg ) {                         // Requested register?
-                            if ( event.GUID[0] == interfaceGUID[0] ) {          // Correct node?
-                                if ( NULL != pcontent ) {
-                                    *pcontent = event.data[ 1 ];
+					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   
+						if ( event.data[ 0 ] == reg ) {                         // Requested register?
+							if ( event.GUID[0] == interfaceGUID[0] ) {          // Correct node?
+								if ( NULL != pcontent ) {
+									*pcontent = event.data[ 1 ];
 									break;
-                                }
-                                break;
-                            }
-                        } // Check for correct node
-                }
+								}
+								break;
+							}
+						} // Check for correct node
+				}
 				// Level II 512 Read reply?
 				else if ( !bInterface && !bLevel2 && 
 					( VSCP_CLASS2_LEVEL1_PROTOCOL == event.vscp_class ) && 
-                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
+					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
 
-					if ( isSameGUID( pdestGUID, event.GUID ) ) {
-						// Reg we requested?
-						if ( event.data[ 0 ] == reg ) {
-							// OK get the data
-							if ( NULL != pcontent ) {
-								*pcontent = event.data[ 18 ];
-								break;
+						if ( isSameGUID( pdestGUID, event.GUID ) ) {
+							// Reg we requested?
+							if ( event.data[ 0 ] == reg ) {
+								// OK get the data
+								if ( NULL != pcontent ) {
+									*pcontent = event.data[ 18 ];
+									break;
+								}
 							}
 						}
-					}
 
 				}
 				// Level II Read reply?
 				else if ( !bInterface && bLevel2 && 
 					( VSCP_CLASS2_PROTOCOL == event.vscp_class ) && 
-                    ( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == event.vscp_type ) ) { 
-					
-					// from us
-					if ( isSameGUID( pdestGUID, event.GUID ) ) {	
-						
-						uint32_t retreg = ( event.data[ 0 ]  << 24 ) +
-										  (	event.data[ 1 ]  << 16 ) +
-										  (	event.data[ 2 ]  << 8 ) +
-											event.data[ 3 ];
-						
-						// Reg we requested?
-						if ( retreg == reg ) {
-							// OK get the data
-							if ( NULL != pcontent ) {
-								*pcontent = event.data[ 18 ];
-								break;
+					( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == event.vscp_type ) ) { 
+
+						// from us
+						if ( isSameGUID( pdestGUID, event.GUID ) ) {	
+
+							uint32_t retreg = ( event.data[ 0 ]  << 24 ) +
+								(	event.data[ 1 ]  << 16 ) +
+								(	event.data[ 2 ]  << 8 ) +
+								event.data[ 3 ];
+
+							// Reg we requested?
+							if ( retreg == reg ) {
+								// OK get the data
+								if ( NULL != pcontent ) {
+									*pcontent = event.data[ 18 ];
+									break;
+								}
 							}
 						}
-					}
 
 				}
-            } // valid event
-        }
-        else {
-            //wxMilliSleep( 1 );
-        }
+			} // valid event
+		}
+		else {
+			//wxMilliSleep( 1 );
+		}
 
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) >   
-                    m_registerReadErrorTimeout ) {
-            errors++;
-        }
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadResendTimeout ) {
-                // Send again
-                if ( !bResend) {
+		if ( ( ::wxGetLocalTimeMillis() - startTime ) >   
+			m_registerReadErrorTimeout ) {
+				errors++;
+		}
+		else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadResendTimeout ) {
+				// Send again
+				if ( !bResend) {
 					doCmdClear();
 					event.timestamp = 0;
-                    doCmdSend( &event );
-                }
-                bResend = true;
-        }   
+					doCmdSend( &event );
+				}
+				bResend = true;
+		}   
 
-        if ( errors > m_registerReadMaxRetries ) {
-            rv = false;
-            break;
-        }
+		if ( errors > m_registerReadMaxRetries ) {
+			rv = false;
+			break;
+		}
 
-    } // while
+	} // while
 
-    return rv;
+	return rv;
 }
 
 
@@ -972,21 +972,21 @@ bool CCanalSuperWrapper::readLevel2Register( uint8_t *interfaceGUID,
 //
 
 bool CCanalSuperWrapper::writeLevel2Register( uint8_t *interfaceGUID, 
-												uint32_t reg, 
-												uint8_t *pcontent,
-												uint8_t *pdestGUID,
-												bool bLevel2 )
+	uint32_t reg, 
+	uint8_t *pcontent,
+	uint8_t *pdestGUID,
+	bool bLevel2 )
 {
-    int i;
+	int i;
 	bool rv = true;
 	bool bInterface = false;  // No specific interface set
-    uint32_t errors = 0;
-    bool bResend;
-    wxString strBuf;
-    vscpEventEx event;
+	uint32_t errors = 0;
+	bool bResend;
+	wxString strBuf;
+	vscpEventEx event;
 
-    // Check pointers
-    if ( NULL == pcontent ) return false;
+	// Check pointers
+	if ( NULL == pcontent ) return false;
 
 	// Check if a specific interface is used
 	for ( i=0; i<16; i++ ) {
@@ -1001,18 +1001,18 @@ bool CCanalSuperWrapper::writeLevel2Register( uint8_t *interfaceGUID,
 		event.head = VSCP_PRIORITY_NORMAL;
 		event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
 		event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
-		
+
 		memset( event.GUID, 0, 16 );              // We use interface GUID
-		
+
 		event.sizeData = 16 + 3;                  // Interface GUID + nodeid + register to read + valied
-		
+
 		for ( i=0; i<16; i++ ) {
 			event.data[ i ] = interfaceGUID[ 15 - i ];	
 		}
 		event.data[16] = interfaceGUID[ 0 ];      // nodeid
 		event.data[17] = reg;                     // Register to write
 		event.data[18] = *pcontent;	              // value to write
-	
+
 	}
 	else {
 
@@ -1026,19 +1026,19 @@ bool CCanalSuperWrapper::writeLevel2Register( uint8_t *interfaceGUID,
 			event.vscp_type = VSCP2_TYPE_PROTOCOL_WRITE_REGISTER;
 
 			memset( event.GUID, 0, 16 );		// We use interface GUID
-		
+
 			event.sizeData = 21;				// nodeid + register to read
-		
+
 			for ( i=0; i<16; i++ ) {			// Destination GUID
 				event.data[ i ] = pdestGUID[ 15 - i ];	
 			}
-				
+
 			event.data[ 16 ] = 0x00;			// Register to write
 			event.data[ 17 ] = 0x00;
 			event.data[ 18 ] = 0x00;
 			event.data[ 19 ] = reg;
 			event.data[ 20 ] = *pcontent;		// Data to write
-		
+
 		}
 		else {
 
@@ -1049,7 +1049,7 @@ bool CCanalSuperWrapper::writeLevel2Register( uint8_t *interfaceGUID,
 			event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
 
 			memset( event.GUID, 0, 16 );			// We use interface GUID
-		
+
 			event.sizeData = 16 + 3;				
 
 			for ( i=0; i<16; i++ ) {		
@@ -1059,60 +1059,60 @@ bool CCanalSuperWrapper::writeLevel2Register( uint8_t *interfaceGUID,
 			event.data[16] = interfaceGUID[0];        // nodeid
 			event.data[17] = reg;                     // Register to write
 			event.data[18] = *pcontent;	              // value to write
-			
+
 		}
 
 	}
 
-    bResend = false;
-    doCmdSend( &event );
+	bResend = false;
+	doCmdSend( &event );
 
-    wxLongLong startTime = ::wxGetLocalTimeMillis();
+	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
-    while ( true ) {
+	while ( true ) {
 
-        if ( doCmdDataAvailable() ) {                                 // Message available
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {    // Valid event
-                if ( ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
-                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   // Read reply?
-                        if ( event.data[ 0 ] == reg ) {                         // Requested register?
-                            if ( event.GUID[0] == interfaceGUID[0] ) {          // Correct node?
+		if ( doCmdDataAvailable() ) {                                 // Message available
+			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {    // Valid event
+				if ( ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
+					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   // Read reply?
+						if ( event.data[ 0 ] == reg ) {                         // Requested register?
+							if ( event.GUID[0] == interfaceGUID[0] ) {          // Correct node?
 
-                                // We go a rw reply from the correct node is
-                                // the written data same as we expect.
-                                if ( *pcontent != event.data[ 1 ] ) rv = false;
-                                break;
+								// We go a rw reply from the correct node is
+								// the written data same as we expect.
+								if ( *pcontent != event.data[ 1 ] ) rv = false;
+								break;
 
-                            }
-                        }   // Check for correct node
-                }       // Check for correct reply event 
-            }
-        }
-        else {
-            wxMilliSleep( 1 );
-        }
+							}
+						}   // Check for correct node
+				}       // Check for correct reply event 
+			}
+		}
+		else {
+			wxMilliSleep( 1 );
+		}
 
-        if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadErrorTimeout ) {
-                errors++;
-        }
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
-            m_registerReadResendTimeout ) {
-                // Send again
-                if ( !bResend) {
-                    doCmdSend( &event );
-                }
-                bResend = true;
-        }
+		if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadErrorTimeout ) {
+				errors++;
+		}
+		else if ( ( ::wxGetLocalTimeMillis() - startTime ) > 
+			m_registerReadResendTimeout ) {
+				// Send again
+				if ( !bResend) {
+					doCmdSend( &event );
+				}
+				bResend = true;
+		}
 
-        if ( errors > m_registerReadMaxRetries ) {
-            rv = false;
-            break;
-        }
+		if ( errors > m_registerReadMaxRetries ) {
+			rv = false;
+			break;
+		}
 
-    } // while
+	} // while
 
-    return rv;
+	return rv;
 }
 
 
@@ -1128,12 +1128,12 @@ wxString CCanalSuperWrapper::getMDFfromDevice1( uint8_t id, bool bSilent )
 	uint8_t *p = (uint8_t *)url;
 	for ( int i=0; i<32; i++ ) {
 		if ( !readLevel1Register( id, 
-									0xE0 + i, 
-									p++ ) ) {
-			if ( !bSilent ) {												
-				::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
-			}
-			break;
+			0xE0 + i, 
+			p++ ) ) {
+				if ( !bSilent ) {												
+					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
+				}
+				break;
 		}
 	}
 
@@ -1144,7 +1144,7 @@ wxString CCanalSuperWrapper::getMDFfromDevice1( uint8_t id, bool bSilent )
 		str += strWrk;
 		strWrk = str;
 	}
-			
+
 	return strWrk;
 }
 
@@ -1153,8 +1153,8 @@ wxString CCanalSuperWrapper::getMDFfromDevice1( uint8_t id, bool bSilent )
 //
 
 wxString CCanalSuperWrapper::getMDFfromDevice2( uint8_t *pguid, 
-												bool bLevel2, 
-												bool bSilent )
+	bool bLevel2, 
+	bool bSilent )
 {
 	wxString strWrk;
 	char url[ 33 ];
@@ -1162,36 +1162,36 @@ wxString CCanalSuperWrapper::getMDFfromDevice2( uint8_t *pguid,
 	memset( url, 0, sizeof( url ) );
 
 	if ( bLevel2 ) {
-		
+
 		// Level 2 device
 		uint8_t *p = (uint8_t *)url;
 		for ( int i=0; i<32; i++ ) {
-			 if ( !readLevel1Register( *pguid, 
-										0xE0 + i, 
-										p++ ) ) {
-				if ( !bSilent ) {												
-					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
-				}
-				break;
-			 }
-			
+			if ( !readLevel1Register( *pguid, 
+				0xE0 + i, 
+				p++ ) ) {
+					if ( !bSilent ) {												
+						::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
+					}
+					break;
+			}
+
 		}
 
 	}
 	else {
-	
+
 		// Level 1 device
 		uint8_t *p = (uint8_t *)url;
 		for ( int i=0; i<32; i++ ) {
-			 if ( !readLevel2Register( pguid, 
-										0xFFFFFFE0 + i, 
-										p++ ) ) {
-				if ( !bSilent ) {
-					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
-				}
-				break;
-			 }
-			
+			if ( !readLevel2Register( pguid, 
+				0xFFFFFFE0 + i, 
+				p++ ) ) {
+					if ( !bSilent ) {
+						::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
+					}
+					break;
+			}
+
 		}
 
 	}
@@ -1204,54 +1204,54 @@ wxString CCanalSuperWrapper::getMDFfromDevice2( uint8_t *pguid,
 //
 
 bool CCanalSuperWrapper::getLevel1DmInfo( const uint8_t nodeid, 
-											uint8_t *pdata )
+	uint8_t *pdata )
 {
-    bool rv = true;
-    bool bResend;
-    wxString strBuf;
-    canalMsg canalEvent;
+	bool rv = true;
+	bool bResend;
+	wxString strBuf;
+	canalMsg canalEvent;
 
-    // Check pointer
-    if ( NULL == pdata ) return false;
+	// Check pointer
+	if ( NULL == pdata ) return false;
 
-    canalEvent.flags = CANAL_IDFLAG_EXTENDED;
-    canalEvent.obid = 0;
-    canalEvent.id = 0x2000;             // CLASS1.PROTOCOL Get decision matrix info
-    canalEvent.sizeData = 1;
-    canalEvent.data[ 0 ] = nodeid;      // Node to read from
+	canalEvent.flags = CANAL_IDFLAG_EXTENDED;
+	canalEvent.obid = 0;
+	canalEvent.id = 0x2000;             // CLASS1.PROTOCOL Get decision matrix info
+	canalEvent.sizeData = 1;
+	canalEvent.data[ 0 ] = nodeid;      // Node to read from
 
-    bResend = false;
-    doCmdSend( &canalEvent );
+	bResend = false;
+	doCmdSend( &canalEvent );
 
-    wxDateTime start = wxDateTime::Now();
+	wxDateTime start = wxDateTime::Now();
 
-    while ( true ) {
+	while ( true ) {
 
-        if ( doCmdDataAvailable() ) {							// Message available
-            if ( doCmdReceive( &canalEvent ) ) {				// Valid message
-                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
-						( 0x2100 + nodeid ) ) {                 // DM info reply?
-					// Copy in response data
-					memcpy( pdata, canalEvent.data, 8 );
-					break;
-                }
-            }
-        }
+		if ( doCmdDataAvailable() ) {							// Message available
+			if ( doCmdReceive( &canalEvent ) ) {				// Valid message
+				if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+					( 0x2100 + nodeid ) ) {                 // DM info reply?
+						// Copy in response data
+						memcpy( pdata, canalEvent.data, 8 );
+						break;
+				}
+			}
+		}
 
-        if ( (wxDateTime::Now() - start).GetSeconds() > 2 ) {
-            rv = false;
-            break;
-        }
-        else if ( (wxDateTime::Now() - start).GetSeconds() > 1 ) {
-            // Send again
-            if ( !bResend) {
-                doCmdSend( &canalEvent );
-            }
-            bResend = true;
-        }
-    } // while
+		if ( (wxDateTime::Now() - start).GetSeconds() > 2 ) {
+			rv = false;
+			break;
+		}
+		else if ( (wxDateTime::Now() - start).GetSeconds() > 1 ) {
+			// Send again
+			if ( !bResend) {
+				doCmdSend( &canalEvent );
+			}
+			bResend = true;
+		}
+	} // while
 
-    return rv;
+	return rv;
 }
 
 
@@ -1260,56 +1260,56 @@ bool CCanalSuperWrapper::getLevel1DmInfo( const uint8_t nodeid,
 //
 
 bool CCanalSuperWrapper::getLevel2DmInfo( uint8_t *interfaceGUID, 
-											uint8_t *pdata,
-											bool bLevel2 )
+	uint8_t *pdata,
+	bool bLevel2 )
 {
-    bool rv = true;
-    bool bResend;
-    wxString strBuf;
-    vscpEventEx event;
+	bool rv = true;
+	bool bResend;
+	wxString strBuf;
+	vscpEventEx event;
 
-    // Check pointer
-    if ( NULL == pdata ) return false;
+	// Check pointer
+	if ( NULL == pdata ) return false;
 
-    event.head = 0;
-    event.vscp_class = 512;                   // CLASS2.PROTOCOL1
-    event.vscp_type = 9;                      // Get decision matrix info
-    memset( event.GUID, 0, 16 );              // We use interface GUID
-    event.sizeData = 16 + 1;                  // Interface GUID + nodeid 
-    memcpy( event.data, interfaceGUID, 16 );  // Address node
-    event.data[16] = interfaceGUID[0];        // nodeid
+	event.head = 0;
+	event.vscp_class = 512;                   // CLASS2.PROTOCOL1
+	event.vscp_type = 9;                      // Get decision matrix info
+	memset( event.GUID, 0, 16 );              // We use interface GUID
+	event.sizeData = 16 + 1;                  // Interface GUID + nodeid 
+	memcpy( event.data, interfaceGUID, 16 );  // Address node
+	event.data[16] = interfaceGUID[0];        // nodeid
 
-    bResend = false;
-    doCmdSend( &event );
+	bResend = false;
+	doCmdSend( &event );
 
-    wxDateTime start = wxDateTime::Now();
+	wxDateTime start = wxDateTime::Now();
 
-    while ( true ) {
+	while ( true ) {
 
-        if ( doCmdDataAvailable() ) {									// Message available
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {		// Valid event
-                if ( ( 0 == event.vscp_class ) && 
-						( 0x21 == event.vscp_type ) ) {					// DM reply?
-					memcpy( pdata, event.data, 8 );
-                    break;
-                }
-            }
-        }
+		if ( doCmdDataAvailable() ) {									// Message available
+			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {		// Valid event
+				if ( ( 0 == event.vscp_class ) && 
+					( 0x21 == event.vscp_type ) ) {					// DM reply?
+						memcpy( pdata, event.data, 8 );
+						break;
+				}
+			}
+		}
 
-        if ( (wxDateTime::Now() - start).GetSeconds() > 2 ) {
-            rv = false;
-            break;
-        }
-        else if ( (wxDateTime::Now() - start).GetSeconds() > 1 ) {
-            // Send again
-            if ( !bResend) {
-                doCmdSend( &event );
-            }
-            bResend = true;
-        }
-    } // while
+		if ( (wxDateTime::Now() - start).GetSeconds() > 2 ) {
+			rv = false;
+			break;
+		}
+		else if ( (wxDateTime::Now() - start).GetSeconds() > 1 ) {
+			// Send again
+			if ( !bResend) {
+				doCmdSend( &event );
+			}
+			bResend = true;
+		}
+	} // while
 
-    return rv;
+	return rv;
 }
 
 
@@ -1318,59 +1318,59 @@ bool CCanalSuperWrapper::getLevel2DmInfo( uint8_t *interfaceGUID,
 //
 
 bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
-													uint8_t *pregisters,
-													uint8_t nodeid,
-													uint8_t startreg,
-													uint16_t count )
+	uint8_t *pregisters,
+	uint8_t nodeid,
+	uint8_t startreg,
+	uint16_t count )
 {
 	int i;
-    unsigned char val;
-    bool rv = true;
-    int errors = 0;
-    wxString strBuf;
+	unsigned char val;
+	bool rv = true;
+	int errors = 0;
+	wxString strBuf;
 
-    wxProgressDialog progressDlg( _("VSCP Works"),
-                                    _("Reading Registers"),
-                                    256, 
-                                    pwnd,
-                                    wxPD_ELAPSED_TIME | 
-                                        wxPD_AUTO_HIDE | 
-                                        wxPD_APP_MODAL | 
-                                        wxPD_CAN_ABORT );
+	wxProgressDialog progressDlg( _("VSCP Works"),
+		_("Reading Registers"),
+		256, 
+		pwnd,
+		wxPD_ELAPSED_TIME | 
+		wxPD_AUTO_HIDE | 
+		wxPD_APP_MODAL | 
+		wxPD_CAN_ABORT );
 
-    progressDlg.Pulse( _("Reading registers!") );
+	progressDlg.Pulse( _("Reading registers!") );
 
 
-    // *********************
-    // Read register content
-    // *********************
-    for ( i = startreg; i < (startreg + count); i++ ) {
+	// *********************
+	// Read register content
+	// *********************
+	for ( i = startreg; i < (startreg + count); i++ ) {
 
-        if ( !progressDlg.Update( i ) ) {
-            rv = false;
-            break;   // User aborted
-        }
-    
-        progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
-    
-        if ( readLevel1Register( nodeid, i, &val ) ) {
-    
-            pregisters[ i-startreg ] = val;
+		if ( !progressDlg.Update( i ) ) {
+			rv = false;
+			break;   // User aborted
+		}
 
-        }
-        else {
-            errors++;
-        }
+		progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
 
-        if ( errors > 2 ) {
-            wxMessageBox( _("No node present or problems when communicating with node. Aborting!") );
-            rv = false;
-            break;
-        }
-			
-    } // for
+		if ( readLevel1Register( nodeid, i, &val ) ) {
 
-    return rv;
+			pregisters[ i-startreg ] = val;
+
+		}
+		else {
+			errors++;
+		}
+
+		if ( errors > 2 ) {
+			wxMessageBox( _("No node present or problems when communicating with node. Aborting!") );
+			rv = false;
+			break;
+		}
+
+	} // for
+
+	return rv;
 }
 
 
@@ -1379,60 +1379,60 @@ bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::readLevel2Registers( wxWindow *pwnd,
-													uint8_t *pregisters,
-													uint8_t *pinterfaceGUID,
-													uint32_t startreg,
-													uint32_t count )
+	uint8_t *pregisters,
+	uint8_t *pinterfaceGUID,
+	uint32_t startreg,
+	uint32_t count )
 {
-    uint32_t i;
-    unsigned char val;
-    bool rv = true;
-    int errors = 0;
-    wxString strBuf;
+	uint32_t i;
+	unsigned char val;
+	bool rv = true;
+	int errors = 0;
+	wxString strBuf;
 
-    wxProgressDialog progressDlg( _("VSCP Works"),
-                                    _("Reading Registers"),
-                                    256, 
-                                    pwnd,
-                                    wxPD_ELAPSED_TIME | 
-                                    wxPD_AUTO_HIDE | 
-                                    wxPD_APP_MODAL |
-                                    wxPD_CAN_ABORT );
+	wxProgressDialog progressDlg( _("VSCP Works"),
+		_("Reading Registers"),
+		256, 
+		pwnd,
+		wxPD_ELAPSED_TIME | 
+		wxPD_AUTO_HIDE | 
+		wxPD_APP_MODAL |
+		wxPD_CAN_ABORT );
 
-    progressDlg.Pulse( _("Reading registers!") );
+	progressDlg.Pulse( _("Reading registers!") );
 
-    // *********************
-    // Read register content
-    // *********************
-    for ( i = startreg; i < (startreg + count); i++ ) {
+	// *********************
+	// Read register content
+	// *********************
+	for ( i = startreg; i < (startreg + count); i++ ) {
 
-        if ( !progressDlg.Update( i ) ) {
-            rv = false;
-            break;
-        }
+		if ( !progressDlg.Update( i ) ) {
+			rv = false;
+			break;
+		}
 
-        progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
-    
-        if ( readLevel2Register( pinterfaceGUID, i, &val ) ) {
-      
-            pregisters[ i - startreg ] = val;
-      
-        }
-        else {
-            errors++;
-        }
+		progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
 
+		if ( readLevel2Register( pinterfaceGUID, i, &val ) ) {
 
-        if ( errors > 2 ) {
-            wxMessageBox( _("No node present or problems when communicating with node. Aborting!") );
-            rv = false;
-            break;
-        }
-			
-    } // for
+			pregisters[ i - startreg ] = val;
+
+		}
+		else {
+			errors++;
+		}
 
 
-    return rv;
+		if ( errors > 2 ) {
+			wxMessageBox( _("No node present or problems when communicating with node. Aborting!") );
+			rv = false;
+			break;
+		}
+
+	} // for
+
+
+	return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1440,8 +1440,8 @@ bool CCanalSuperWrapper::readLevel2Registers( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::setRegisterPage( uint8_t nodeid, 
-											uint16_t page, 
-											uint8_t *interfaceGUID )
+	uint16_t page, 
+	uint8_t *interfaceGUID )
 {
 	uint8_t val;
 
@@ -1449,33 +1449,33 @@ bool CCanalSuperWrapper::setRegisterPage( uint8_t nodeid,
 
 		val = ( page >> 8 ) & 0xff;
 		if ( !writeLevel1Register( nodeid, 
-									0x92, 
-									&val ) ) {
-			return false;
+			0x92, 
+			&val ) ) {
+				return false;
 		}
 
 		val = page & 0xff;
 		if ( !writeLevel1Register( nodeid, 
-									0x93, 
-									&val ) ) {
-			return false;
+			0x93, 
+			&val ) ) {
+				return false;
 		}
-		
+
 	}
 	else {
-		
+
 		val = ( page >> 8 ) & 0xff;
 		if ( writeLevel2Register( interfaceGUID, 
-									0x92, 
-									&val ) ) {
-			return false;
+			0x92, 
+			&val ) ) {
+				return false;
 		}
 
 		val = page & 0xff;
 		if ( writeLevel2Register( interfaceGUID, 
-									0x93, 
-									&val ) ) {
-			return false;
+			0x93, 
+			&val ) ) {
+				return false;
 		}
 	}
 
@@ -1491,14 +1491,14 @@ uint32_t CCanalSuperWrapper::getRegisterPage( wxWindow *pwnd, uint8_t nodeid, ui
 	uint32_t page = 0;
 
 	if ( ( NULL == interfaceGUID ) || isGUIDEmpty( interfaceGUID ) ) {
-		
+
 		uint8_t regs[ 2 ];
 		if ( readLevel1Registers( pwnd,
-									regs,
-									nodeid,
-									0x92,
-									2 ) ) {
-			page = ( regs[ 0 ] << 8 ) + regs[ 1 ];
+			regs,
+			nodeid,
+			0x92,
+			2 ) ) {
+				page = ( regs[ 0 ] << 8 ) + regs[ 1 ];
 		}
 		else {
 			return false;
@@ -1508,11 +1508,11 @@ uint32_t CCanalSuperWrapper::getRegisterPage( wxWindow *pwnd, uint8_t nodeid, ui
 	else {
 		uint8_t regs[ 2 ];
 		if ( readLevel2Registers( pwnd,
-									regs,
-									interfaceGUID,
-									0xffffff92,
-									2 ) ) {
-			page = ( regs[ 0 ] << 8 ) + regs[ 1 ];
+			regs,
+			interfaceGUID,
+			0xffffff92,
+			2 ) ) {
+				page = ( regs[ 0 ] << 8 ) + regs[ 1 ];
 		}
 		else {
 			return false;
@@ -1530,11 +1530,11 @@ uint32_t CCanalSuperWrapper::getRegisterPage( wxWindow *pwnd, uint8_t nodeid, ui
 // 
 
 bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
-										uint8_t nodeid, 
-										CMDF_DecisionMatrix *pdm, 
-										uint32_t row, 
-										uint8_t *pRow,
-										bool bSilent )
+	uint8_t nodeid, 
+	CMDF_DecisionMatrix *pdm, 
+	uint32_t row, 
+	uint8_t *pRow,
+	bool bSilent )
 {
 	// True if the matrix is indexed. That is if it consist
 	//	of one row precided by an index into the matrix.
@@ -1587,10 +1587,10 @@ bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
 // 
 
 bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
-													uint8_t nodeid,
-													CMDF_Abstraction *abstraction,
-													wxString& retstr, 
-													bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	wxString& retstr, 
+	bool bSilent )
 {
 	wxString str;
 
@@ -1615,29 +1615,29 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 			// Write index to string
 			uint8_t val = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
-				break;
+				abstraction->m_nOffset, 
+				&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									abstraction->m_nWidth ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			abstraction->m_nWidth ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
@@ -1657,13 +1657,263 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writeAbstractionString
+//
+
+bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	wxString& strvalue,
+	bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint8_t *p;
+	p = new uint8_t[ abstraction->m_nWidth + 1 ];
+	memset( p, 0, abstraction->m_nWidth + 1 );
+	strcpy( (char *)p, (const char*)strvalue.mb_str( wxConvUTF8 ) );
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction string!") );
+			return false;
+		}
+	}
+
+
+	if ( abstraction->m_bIndexed ) {
+		
+		for ( uint8_t i=0; i<abstraction->m_nWidth; i++ ) {
+			// Write index
+			uint8_t val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
+				break;
+			}
+			// Read value
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
+				break;
+			}
+		}
+
+	}
+	else {
+		// Write string to linear storage.
+		for ( uint8_t i=0; i<abstraction->m_nWidth; i++ ) {
+
+			if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											p++ ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction string!") );
+					break;
+			}
+		}
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionBitField
+// 
+
+bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	wxString& retstr, 
+	bool bSilent )
+{
+	wxString strvalue;
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction BitField!") );
+			return false;
+		}
+	}
+
+	// Octet width is the number of bytes needed to store the bits
+	uint8_t octetwidth = abstraction->m_nWidth/8 + 
+							( abstraction->m_nWidth % 8 ) ? 1 : 0; 
+
+	uint8_t *p;
+	p = new uint8_t[ octetwidth ];
+	memset( p, 0, octetwidth );
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<octetwidth; i++ ) {
+			// Write index
+			uint8_t val = i;
+			if ( !writeLevel1Register( nodeid, 
+				abstraction->m_nOffset, 
+				&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction BitField index!") );
+					break;
+			}
+			// Read value
+			if ( !readLevel1Register( nodeid, 
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction BitField value!") );
+					break;
+			}
+		}
+	}
+	else {
+
+		// Read string from linear storage.
+		if ( !readLevel1Registers( pwnd, 
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			octetwidth ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction BitField!") );
+		}
+
+	}
+
+	for ( int i=0; i<abstraction->m_nWidth; i++ ) {
+		for ( int j=7; j>0; j-- ) {
+			if ( *(p + i) & (1 << j) ) {
+				strvalue += _("1");
+			}
+			else {
+				strvalue += _("0");
+			}
+		}
+	}
+
+	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction BitField!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  writeAbstractionBitField
+//
+
+bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	wxString& strBitField,
+	bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	// Octet width is the number of bytes needed to store the bits
+	uint8_t octetwidth = abstraction->m_nWidth/8 + 
+							( abstraction->m_nWidth % 8 ) ? 1 : 0; 
+
+	uint8_t *p;
+	p = new uint8_t[ octetwidth ];
+	memset( p, 0, octetwidth );
+
+	// Build byte array
+	wxString str = strBitField;
+	for ( int i=0; i<abstraction->m_nWidth; i++ ) {
+		for ( int j=7; j>0; j-- ) {
+			if ( !str.Length() ) break; // Must be digits left
+			if ( _("1") == str.Left( 1 ) ) {
+				*(p+1) += (1 << j);
+			}
+			str = str.Right( str.Length() - 1 );
+		}
+	}
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction BitField!") );
+			return false;
+		}
+	}
+
+
+	if ( abstraction->m_bIndexed ) {
+		
+		for ( uint8_t i=0; i<octetwidth; i++ ) {
+			// Write index to bitfield
+			uint8_t val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction BitField index!") );
+				break;
+			}
+			// Read value
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p+i) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction BitField value!") );
+				break;
+			}
+		}
+
+	}
+	else {
+		// Write bitfield to linear storage.
+		for ( uint8_t i=0; i<octetwidth; i++ ) {
+
+			if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											p++ ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction BitField!") );
+					break;
+			}
+		}
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction BitField!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstractionBool
 //
+
 bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
-												uint8_t nodeid,
-												CMDF_Abstraction *abstraction,
-												bool *bval,
-												bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	bool *bval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -1679,9 +1929,9 @@ bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
 	// Read value
 	uint8_t val;
 	if ( !readLevel1Register( nodeid, 
-								abstraction->m_nOffset, 
-								&val ) ) {
-		if ( !bSilent ) wxMessageBox( _("Failed to read abstraction boolean value!") );
+		abstraction->m_nOffset, 
+		&val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Failed to read abstraction boolean value!") );
 	}
 
 	*bval = val ? true : false;
@@ -1698,13 +1948,56 @@ bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writeAbstractionBool
+//
+
+bool CCanalSuperWrapper::writeAbstractionBool( wxWindow *pwnd,
+		uint8_t nodeid,
+		CMDF_Abstraction *abstraction,
+		bool& bval,
+		bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint8_t val = bval ? true : false;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction boolean!") );
+			return false;
+		}
+	}
+
+	val = bval ? true : false;
+	if ( !writeLevel1Register( nodeid, 
+								abstraction->m_nOffset, 
+								&val ) ) {
+		if ( !bSilent ) wxMessageBox( _("Unable to write abstraction boolean!") );
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstraction8bitinteger
 //
+
 bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														uint8_t *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	uint8_t *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -1719,10 +2012,10 @@ bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
 
 	// Read value
 	if ( !readLevel1Register( nodeid, 
-								abstraction->m_nOffset, 
-								pval ) ) {
-		if ( !bSilent ) wxMessageBox( _("Failed to read abstraction 8-bit integer value!") );
-		
+		abstraction->m_nOffset, 
+		pval ) ) {
+			if ( !bSilent ) wxMessageBox( _("Failed to read abstraction 8-bit integer value!") );
+
 	}
 
 	// Restore page
@@ -1737,13 +2030,53 @@ bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writeAbstraction8bitinteger
+//
+
+bool CCanalSuperWrapper::writeAbstraction8bitinteger( wxWindow *pwnd,
+		uint8_t nodeid,
+		CMDF_Abstraction *abstraction,
+		uint8_t& val,
+		bool bSilent )
+{
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 8-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( !writeLevel1Register( nodeid, 
+								abstraction->m_nOffset, 
+								&val ) ) {
+		if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 8-bit integer!") );
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 8-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstraction16bitinteger
 //
+
 bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														uint16_t *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	uint16_t *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -1763,32 +2096,32 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 
 		for ( uint8_t i=0; i<2; i++ ) {
 
-			// Write index to string
+			// Write index
 			uint8_t idx = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&idx ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-				break;
+				abstraction->m_nOffset, 
+				&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
@@ -1808,13 +2141,103 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writeAbstraction16bitinteger
+//
+
+bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint16_t& val16,
+										bool bSilent )
+{
+	uint8_t val;
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( abstraction->m_bIndexed ) {
+	
+		// Index = 0
+		val = 0;
+		if ( !writeLevel1Register( nodeid, 
+									abstraction->m_nOffset + 1, 
+									&val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+		}
+		
+		// Write MSB
+		val = ( ( val16 >> 8 ) & 0xff );
+		if ( !writeLevel1Register( nodeid, 
+									abstraction->m_nOffset + 1, 
+									&val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+		}
+
+		// Index = 1
+		val = 1;
+		if ( !writeLevel1Register( nodeid, 
+									abstraction->m_nOffset + 1, 
+									&val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+		}
+
+		// Write LSB
+		val = ( val16 & 0xff );
+		if ( !writeLevel1Register( nodeid, 
+									abstraction->m_nOffset + 1, 
+									&val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+		}
+
+	}
+	else {
+
+		// Write MSB
+		val = ( ( val16 >> 8 ) & 0xff );
+		if ( !writeLevel1Register( nodeid, 
+									abstraction->m_nOffset, 
+									&val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+		}
+
+		// Write LSB
+		val = ( val16 & 0xff );
+		if ( !writeLevel1Register( nodeid, 
+									abstraction->m_nOffset + 1, 
+									&val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+		}
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstraction32bitinteger
 //
+
 bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														uint32_t *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	uint32_t *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -1837,29 +2260,29 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 			// Write index to string
 			uint8_t idx = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&idx ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-				break;
+				abstraction->m_nOffset, 
+				&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									4 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			4 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
@@ -1879,13 +2302,87 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writeAbstraction32bitinteger
+//
+
+bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint32_t& val32,
+										bool bSilent )
+{
+	uint8_t val;
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( int i=0; i<4; i++ ) {
+	
+			// Index = 0
+			val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+		
+			// Write data
+			val = ( ( val32 >> (8 * (3-i) ) ) & 0xff );
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+
+	}
+	else {
+
+		for ( int i=0; i<4; i++ ) {
+
+			// Write data
+			val = ( ( val32 >> (8 * (3-i) ) ) & 0xff );
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + i, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+		
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstraction64bitinteger
 //
 bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														uint64_t *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	uint64_t *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -1908,37 +2405,111 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 			// Write index to string
 			uint8_t idx = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&idx ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-				break;
+				abstraction->m_nOffset, 
+				&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									8 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			8 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
 
 	*pval = *( (uint64_t *)p );
-		//( p[0] << 56 ) + ( p[1] << 48 ) + ( p[2] << 40 ) + ( p[3] << 32 ) +
-		//		( p[4] << 24 ) + ( p[5] << 16 ) + ( p[6] << 8 ) + p[7];
+	//( p[0] << 56 ) + ( p[1] << 48 ) + ( p[2] << 40 ) + ( p[3] << 32 ) +
+	//		( p[4] << 24 ) + ( p[5] << 16 ) + ( p[6] << 8 ) + p[7];
 	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  writeAbstraction64bitinteger
+//
+
+bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint64_t& val64,
+										bool bSilent )
+{
+	uint8_t val;
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( int i=0; i<8; i++ ) {
+	
+			// Index = 0
+			val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+		
+			// Write data
+			val = ( ( val64 >> (8 * (3-i) ) ) & 0xff );
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+
+	}
+	else {
+
+		for ( int i=0; i<8; i++ ) {
+
+			// Write data
+			val = ( ( val64 >> (8 * (3-i) ) ) & 0xff );
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + i, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+		
+	}
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -1955,10 +2526,10 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 //  getAbstractionFloat
 //
 bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														float *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	float *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -1981,29 +2552,29 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 			// Write index to string
 			uint8_t idx = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&idx ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-				break;
+				abstraction->m_nOffset, 
+				&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									4 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			4 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
@@ -2023,13 +2594,90 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writeAbstractionFloat
+//
+
+bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
+		uint8_t nodeid,
+		CMDF_Abstraction *abstraction,
+		float& valfloat,
+		bool bSilent )
+{
+	uint8_t val;
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint8_t *p = (uint8_t *)&valfloat;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( int i=0; i<4; i++ ) {
+	
+			// Index = 0
+			val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+		
+			// Write data
+			val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+
+	}
+	else {
+
+		for ( int i=0; i<4; i++ ) {
+
+			// Write data
+			val = val = *(p+i);;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + i, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+		
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstractionDouble
 //
+
 bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														double *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	double *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -2052,29 +2700,29 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 			// Write index to string
 			uint8_t idx = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&idx ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-				break;
+				abstraction->m_nOffset, 
+				&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									8 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			8 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
@@ -2094,13 +2742,90 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writetAbstractionDouble
+//
+
+bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
+		uint8_t nodeid,
+		CMDF_Abstraction *abstraction,
+		double& valdouble,
+		bool bSilent )
+{
+	uint8_t val;
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	uint8_t *p = (uint8_t *)&valdouble;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( int i=0; i<8; i++ ) {
+	
+			// Index = 0
+			val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+		
+			// Write data
+			val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+
+	}
+	else {
+
+		for ( int i=0; i<8; i++ ) {
+
+			// Write data
+			val = val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + i, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+		
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstractionDate
 //
+
 bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														wxDateTime *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	wxDateTime *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -2123,29 +2848,29 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 			// Write index to string
 			uint8_t idx = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&idx ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-				break;
+				abstraction->m_nOffset, 
+				&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									3 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			3 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
@@ -2167,13 +2892,95 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writeAbstractionDate
+//
+
+bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
+		uint8_t nodeid,
+		CMDF_Abstraction *abstraction,
+		wxDateTime& valdate,
+		bool bSilent )
+{
+	uint8_t val;
+	uint8_t buf[ 3 ];
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	buf[ 0 ] = valdate.GetYear() - 2000;
+	buf[ 1 ] = valdate.GetMonth();
+	buf[ 2 ] = valdate.GetDay();
+
+	uint8_t *p = buf;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( int i=0; i<3; i++ ) {
+	
+			// Index = 0
+			val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+		
+			// Write data
+			val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+
+	}
+	else {
+
+		for ( int i=0; i<3; i++ ) {
+
+			// Write data
+			val = val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + i, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+		
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstractionTime
 //
+
 bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														wxDateTime *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	wxDateTime *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -2196,29 +3003,29 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 			// Write index to string
 			uint8_t idx = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&idx ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-				break;
+				abstraction->m_nOffset, 
+				&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									3 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			3 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
@@ -2240,13 +3047,95 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+//  writeAbstractionTime
+//
+
+bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
+		uint8_t nodeid,
+		CMDF_Abstraction *abstraction,
+		wxDateTime& valtime,
+		bool bSilent )
+{
+	uint8_t val;
+	uint8_t buf[ 3 ];
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	buf[ 0 ] = valtime.GetHour();
+	buf[ 1 ] = valtime.GetMinute();
+	buf[ 2 ] = valtime.GetSecond();
+
+	uint8_t *p = buf;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( int i=0; i<3; i++ ) {
+	
+			// Index = 0
+			val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+		
+			// Write data
+			val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+
+	}
+	else {
+
+		for ( int i=0; i<3; i++ ) {
+
+			// Write data
+			val = val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + i, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+		
+	}
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //  getAbstractionGUID
 //
+
 bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
-														uint8_t nodeid,
-														CMDF_Abstraction *abstraction,
-														cguid *pval,
-														bool bSilent )
+	uint8_t nodeid,
+	CMDF_Abstraction *abstraction,
+	cguid *pval,
+	bool bSilent )
 {
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -2269,35 +3158,113 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
 			// Write index to string
 			uint8_t idx = i;
 			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&idx ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-				break;
+				abstraction->m_nOffset, 
+				&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					break;
 			}
 			// Read value
 			if ( !readLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-				break;
+				abstraction->m_nOffset + 1, 
+				(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
+					break;
 			}
 		}
 	}
 	else {
-		
+
 		// Read string from linear storage.
 		if ( !readLevel1Registers( pwnd, 
-									p, 
-									nodeid, 
-									abstraction->m_nOffset, 
-									16 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			p, 
+			nodeid, 
+			abstraction->m_nOffset, 
+			16 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
 
 	pval->getFromArray( p );
 	if ( NULL != p ) delete p;
+
+	// Restore page
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, savepage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  writeAbstractionGUID
+//
+
+bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
+		uint8_t nodeid,
+		CMDF_Abstraction *abstraction,
+		cguid& valguid,
+		bool bSilent )
+{
+	uint8_t val;
+	uint8_t buf[ 16 ];
+
+	// Check pointers
+	if ( NULL == abstraction) return false;
+
+	memcpy( buf, valguid.getGUID(), 16 );
+	uint8_t *p = buf;
+
+	// Save page
+	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	if ( savepage != abstraction->m_nPage ) {
+		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+			return false;
+		}
+	}
+
+	if ( abstraction->m_bIndexed ) {
+
+		for ( int i=0; i<16; i++ ) {
+	
+			// Index = 0
+			val = i;
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+		
+			// Write data
+			val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+
+	}
+	else {
+
+		for ( int i=0; i<16; i++ ) {
+
+			// Write data
+			val = val = *(p+i);
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + i, 
+										&val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			}
+
+		}
+		
+	}
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
