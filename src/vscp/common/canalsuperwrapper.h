@@ -1011,6 +1011,12 @@ public:
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pinter to Date
 	@param bSilent Set to true to not show error messages.
+
+	Dates are stored as YYYY-MM-DD
+	byte 0 - MSB of year
+	byte 1 - LSB of year
+	byte 2 - Month (1-12)
+	byte 3 - Date (0-31)
 	*/
 	bool getAbstractionDate( wxWindow *pwnd,
 		uint8_t nodeid,
@@ -1025,6 +1031,12 @@ public:
 	@param abstraction Pointer to MDF abstraction info
 	@param valdate Date to write
 	@param bSilent Set to true to not show error messages.
+
+	Dates are stored as YYYY-MM-DD
+	byte 0 - MSB of year
+	byte 1 - LSB of year
+	byte 2 - Month (1-12)
+	byte 3 - Date (0-31)
 	*/
 	bool writeAbstractionDate( wxWindow *pwnd,
 		uint8_t nodeid,

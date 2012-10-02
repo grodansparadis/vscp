@@ -2839,11 +2839,11 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 	}
 
 	uint8_t *p;
-	p = new uint8_t[ 3 ];
+	p = new uint8_t[ 4 ];
 
 	if ( abstraction->m_bIndexed ) {
 
-		for ( uint8_t i=0; i<3; i++ ) {
+		for ( uint8_t i=0; i<4; i++ ) {
 
 			// Write index to string
 			uint8_t idx = i;
@@ -2869,15 +2869,16 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 			p, 
 			nodeid, 
 			abstraction->m_nOffset, 
-			3 ) ) {
+			4 ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
 		}
 
 	}
 
-	pval->SetYear( 2000 + p[ 0 ] );
-	pval->SetMonth( wxDateTime::Month( p[ 1 ] ) );
-	pval->SetDay( p[ 2 ] );
+	uint8_t year = ( p[ 0 ] << 8 ) + p[ 1 ];
+	pval->SetYear( year );
+	pval->SetMonth( wxDateTime::Month( p[ 2 ] ) );
+	pval->SetDay( p[ 3 ] );
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -2902,14 +2903,16 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 		bool bSilent )
 {
 	uint8_t val;
-	uint8_t buf[ 3 ];
+	uint8_t buf[ 4 ];
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	buf[ 0 ] = valdate.GetYear() - 2000;
-	buf[ 1 ] = valdate.GetMonth();
-	buf[ 2 ] = valdate.GetDay();
+	uint16_t year = valdate.GetYear();
+	buf[ 0 ] = ( ( year >> 8 ) & 0xff );
+	buf[ 1 ] = ( year & 0xff ); 
+	buf[ 2 ] = valdate.GetMonth();
+	buf[ 3 ] = valdate.GetDay();
 
 	uint8_t *p = buf;
 
@@ -2924,7 +2927,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 
 	if ( abstraction->m_bIndexed ) {
 
-		for ( int i=0; i<3; i++ ) {
+		for ( int i=0; i<5; i++ ) {
 	
 			// Index = 0
 			val = i;
@@ -2947,7 +2950,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 	}
 	else {
 
-		for ( int i=0; i<3; i++ ) {
+		for ( int i=0; i<5; i++ ) {
 
 			// Write data
 			val = val = *(p+i);

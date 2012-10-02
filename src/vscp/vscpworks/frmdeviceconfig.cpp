@@ -6530,7 +6530,6 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 								// Cant write more then allocated space
 								if ( pos > octetwidth ) break;
 							}
-
 						}
 					}
 				
@@ -6543,33 +6542,6 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 				break;
 
 			case type_int8_t:
-				{
-					uint8_t val;
-					val = readStringValue( strValue );
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						strBuf = getFormattedValue( val );
-						m_gridRegisters->SetCellValue( 
-							row, 
-							2, 
-							strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-							row, 
-							2, *wxRED );
-
-					}
-
-					// Update registers
-					m_csw.writeAbstraction8bitinteger( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						val );
-				}
-				break;
-
 			case type_uint8_t:
 				{
 					uint8_t val;
@@ -6598,7 +6570,9 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 				}
 				break;
 
+
 			case type_int16_t:
+			case type_uint16_t:
 				{
 					uint16_t val;
 					val = readStringValue( strValue );
@@ -6606,7 +6580,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 					// Do visual part
 					if ( -1 != row ) {
 
-						strBuf = getFormattedValue( val );
+						strBuf = getFormattedValue( ( ( val >> 8 ) & 0xff ) );
 						m_gridRegisters->SetCellValue( 
 							row, 
 							2, 
@@ -6614,6 +6588,16 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 						m_gridRegisters->SetCellTextColour( 
 							row, 
+							2, *wxRED );
+
+						strBuf = getFormattedValue( val & 0xff );
+						m_gridRegisters->SetCellValue( 
+							row + 1, 
+							2, 
+							strBuf );
+
+						m_gridRegisters->SetCellTextColour( 
+							row + 1, 
 							2, *wxRED );
 					}
 
@@ -6625,201 +6609,328 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 				}
 				break;
 
-			case type_uint16_t:
-				{
-					uint16_t val;
-					val = readStringValue( strValue );
-
-					uint8_t *pVal = (uint8_t *)&val;
-					for ( int i=0; i<2; i++ ) {
-
-						strBuf.Printf( _("0x%02lx"), pVal[ i ] );
-						m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, 
-							strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
-					}
-
-				}
-				break;
 
 			case type_int32_t:
+			case type_uint32_t:
 				{
 					long longVal;
 					strValue.ToLong( &longVal );
 
-					uint8_t *pVal = (uint8_t *)&longVal;
-					for ( int i=0; i<4; i++ ) {
+					// Do visual part
+					if ( -1 != row ) {
 
-						strBuf.Printf( _("0x%02lx"), pVal[ i ] );
-						m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, 
-							strBuf );
+						uint8_t *pVal = (uint8_t *)&longVal;
 
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
+						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
+						
+							// index
+							strBuf = _("0");
+							m_gridRegisters->SetCellValue( 
+							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, 
+									strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, *wxRED );
+
+							// value
+							strBuf = getFormattedValue( pVal[ 0 ] );
+							m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, 
+									strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, *wxRED );
+
+						}
+						else {
+
+							
+							for ( int i=0; i<4; i++ ) {
+
+								strBuf = getFormattedValue( pVal[ i ] );
+								m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, 
+									strBuf );
+
+								m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, *wxRED );
+							}
+						}
 					}
 
-				}
-				break;
-
-			case type_uint32_t:
-				{
-					unsigned long ulongVal;
-					strValue.ToULong( &ulongVal );
-
-					uint8_t *pVal = (uint8_t *)&ulongVal;
-					for ( int i=0; i<4; i++ ) {
-
-						strBuf.Printf( _("0x%02lx"), pVal[ i ] );
-						m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, 
-							strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
-					}
-
+					// Update registers
+					uint32_t val32 = longVal;
+					m_csw.writeAbstraction32bitinteger( this,
+							readStringValue( m_comboNodeID->GetValue() ),
+							m_mdf.m_list_abstraction[ event.GetRow() ],
+							val32 );
 				}
 				break;
 
 			case type_int64_t:
+			case type_uint64_t:
 				{
 					wxLongLong_t  longlongVal;
 					strValue.ToLongLong( &longlongVal );
 
-					uint8_t *pVal = (uint8_t *)&longlongVal;
-					for ( int i=0; i<8; i++ ) {
+					// Do visual part
+					if ( -1 != row ) {
 
-						strBuf.Printf( _("0x%02lx"), pVal[ i ] );
-						m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, 
-							strBuf );
+						uint8_t *pVal = (uint8_t *)&longlongVal;
 
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
+						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
+						
+							// index
+							strBuf = _("0");
+							m_gridRegisters->SetCellValue( 
+							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, 
+									strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, *wxRED );
+
+							// value
+							strBuf = getFormattedValue( pVal[ 0 ] );
+							m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, 
+									strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, *wxRED );
+
+						}
+						else {
+
+							
+							for ( int i=0; i<8; i++ ) {
+
+								strBuf = getFormattedValue( pVal[ i ] );
+								m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, 
+									strBuf );
+
+								m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, *wxRED );
+							}
+						}
 					}
+
+					// Update register
+					uint64_t val64 = longlongVal;
+					m_csw.writeAbstraction64bitinteger( this,
+						readStringValue( m_comboNodeID->GetValue() ),
+						m_mdf.m_list_abstraction[ event.GetRow() ],
+						val64 );
 
 				}
 				break;
 
-			case type_uint64_t:
-				{
-					wxULongLong_t  ulonglongVal;
-					strValue.ToULongLong( &ulonglongVal );
-
-					uint8_t *pVal = (uint8_t *)&ulonglongVal;
-					for ( int i=0; i<8; i++ ) {
-
-						strBuf.Printf( _("0x%02lx"), pVal[ i ] );
-						m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, 
-							strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
-					}
-
-				}
-				break;
 
 			case type_float:
 				{
-					double floatVal;
-					strValue.ToDouble( &floatVal );
+					double doubleVal;
+					strValue.ToDouble( &doubleVal );
+					float floatVal = doubleVal;
 
 					uint8_t *pVal = (uint8_t *)&floatVal;
-					for ( int i=0; i<16; i++ ) {
+					// Do visual part
+					if ( -1 != row ) {
 
-						strBuf.Printf( _("0x%02lx"), pVal[ i ] );
-						m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, 
-							strBuf );
+						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
+						
+							// index
+							strBuf = _("0");
+							m_gridRegisters->SetCellValue( 
+							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, 
+									strBuf );
 
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, *wxRED );
+
+							// value
+							strBuf = getFormattedValue( pVal[ 0 ] );
+							m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, 
+									strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, *wxRED );
+
+						}
+						else {
+
+							
+							for ( int i=0; i<4; i++ ) {
+
+								strBuf = getFormattedValue( pVal[ i ] );
+								m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, 
+									strBuf );
+
+								m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, *wxRED );
+							}
+						}
 					}
+
+					// Update register
+					m_csw.writeAbstractionFloat( this,
+						readStringValue( m_comboNodeID->GetValue() ),
+						m_mdf.m_list_abstraction[ event.GetRow() ],
+						floatVal );
 
 				}
 				break;
 
 			case type_double:
 				{
-					double floatVal;
-					strValue.ToDouble( &floatVal );
+					double doubleVal;
+					strValue.ToDouble( &doubleVal );
 
-					uint8_t *pVal = (uint8_t *)&floatVal;
-					for ( int i=0; i<16; i++ ) {
+					uint8_t *pVal = (uint8_t *)&doubleVal;
+					// Do visual part
+					if ( -1 != row ) {
 
-						strBuf.Printf( _("0x%02lx"), pVal[ i ] );
-						m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, 
-							strBuf );
+						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
+						
+							// index
+							strBuf = _("0");
+							m_gridRegisters->SetCellValue( 
+							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, 
+									strBuf );
 
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, *wxRED );
+
+							// value
+							strBuf = getFormattedValue( pVal[ 0 ] );
+							m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, 
+									strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, *wxRED );
+
+						}
+						else {
+
+							
+							for ( int i=0; i<8; i++ ) {
+
+								strBuf = getFormattedValue( pVal[ i ] );
+								m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, 
+									strBuf );
+
+								m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, *wxRED );
+							}
+						}
 					}
+
+					// Update register
+					m_csw.writetAbstractionDouble( this,
+						readStringValue( m_comboNodeID->GetValue() ),
+						m_mdf.m_list_abstraction[ event.GetRow() ],
+						doubleVal );
 
 				}
 				break;
 
 			case type_date:
 				{
-					// Dates are stored as DD-MM-YYYY
-					// byte 0 - Date (0-31)
-					// byte 1 - Month (1-12)
-					// byte 2 - MSB of year
-					// byte 3 - LSB of year
+					// Dates are stored as YYYY-MM-DD
+					// byte 0 - MSB of year
+					// byte 1 - LSB of year
+					// byte 2 - Month (1-12)
+					// byte 3 - Date (0-31)
+
+					uint8_t buf[ 4 ];
 					wxDateTime date;
+					
 					date.ParseDate( strValue );
 
-					strBuf.Printf( _("0x%02lx"), date.GetDay() );
-					m_gridRegisters->SetCellValue( 
-						m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-						2, 
-						strBuf );
+					uint16_t year = date.GetYear();
+					buf[ 0 ] = ( ( year >> 8 ) & 0xff );
+					buf[ 1 ] = ( year & 0xff ); 
+					buf[ 2 ] = date.GetMonth();
+					buf[ 3 ] = date.GetDay();
 
-					strBuf.Printf( _("0x%02lx"), date.GetMonth() );
-					m_gridRegisters->SetCellValue( 
-						m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-						2, 
-						strBuf );
+					// Do visual part
+					if ( -1 != row ) {
 
-					strBuf.Printf( _("0x%02lx"), date.GetYear() >> 8 );
-					m_gridRegisters->SetCellValue( 
-						m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 2, 
-						2, 
-						strBuf );
+						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
+						
+							// index
+							strBuf = _("0");
+							m_gridRegisters->SetCellValue( 
+							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, 
+									strBuf );
 
-					strBuf.Printf( _("0x%02lx"), date.GetYear() & 0xff );
-					m_gridRegisters->SetCellValue( 
-						m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 3, 
-						2, 
-						strBuf );
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, *wxRED );
 
-					for ( int i=0; i<4; i++ ) {
+							// value
+							strBuf = getFormattedValue( buf[ 0 ] );
+							m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, 
+									strBuf );
 
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, *wxRED );
 
+						}
+						else {
+
+							
+							for ( int i=0; i<4; i++ ) {
+
+								strBuf = getFormattedValue( buf[ i ] );
+								m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, 
+									strBuf );
+
+								m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, *wxRED );
+							}
+						}
 					}
+
+					// Update register
+					m_csw.writeAbstractionDate( this,
+						readStringValue( m_comboNodeID->GetValue() ),
+						m_mdf.m_list_abstraction[ event.GetRow() ],
+						date );
 
 				}
 				break;
@@ -6830,35 +6941,65 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 					// byte 0 - Hours
 					// byte 1 - Minutes
 					// byte 2 - seconds
+					uint8_t buf[ 3 ];
 					wxDateTime time;
 					time.ParseTime( strValue );
 
-					strBuf.Printf( _("0x%02lx"), time.GetHour() );
-					m_gridRegisters->SetCellValue( 
-						m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-						2, 
-						strBuf );
+					buf[ 0 ] = time.GetHour();
+					buf[ 1 ] = time.GetMinute(); 
+					buf[ 2 ] = time.GetSecond();
 
-					strBuf.Printf( _("0x%02lx"), time.GetMinute() );
-					m_gridRegisters->SetCellValue( 
-						m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-						2, 
-						strBuf );
+					// Do visual part
+					if ( -1 != row ) {
 
-					strBuf.Printf( _("0x%02lx"), time.GetSecond() );
-					m_gridRegisters->SetCellValue( 
-						m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 2, 
-						2, 
-						strBuf );
+						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
+						
+							// index
+							strBuf = _("0");
+							m_gridRegisters->SetCellValue( 
+							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, 
+									strBuf );
 
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, *wxRED );
 
-					for ( int i=0; i<3; i++ ) {
+							// value
+							strBuf = getFormattedValue( buf[ 0 ] );
+							m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, 
+									strBuf );
 
-						m_gridRegisters->SetCellTextColour( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-							2, *wxRED );
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, *wxRED );
 
+						}
+						else {
+
+							
+							for ( int i=0; i<3; i++ ) {
+
+								strBuf = getFormattedValue( buf[ i ] );
+								m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, 
+									strBuf );
+
+								m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, *wxRED );
+							}
+						}
 					}
+
+					// Update register
+					m_csw.writeAbstractionTime( this,
+						readStringValue( m_comboNodeID->GetValue() ),
+						m_mdf.m_list_abstraction[ event.GetRow() ],
+						time );
 
 				}
 				break;
@@ -6868,9 +7009,59 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 					cguid guid;
 					guid.getFromString( strValue );
 
-					for ( int i=0; i<16; i++ ) {
-					
+					const uint8_t *p = guid.getGUID();
+
+					// Do visual part
+					if ( -1 != row ) {
+
+						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
+						
+							// index
+							strBuf = _("0");
+							m_gridRegisters->SetCellValue( 
+							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, 
+									strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
+									2, *wxRED );
+
+							// value
+							strBuf = getFormattedValue( p[ 0 ] );
+							m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, 
+									strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
+									2, *wxRED );
+
+						}
+						else {
+
+							
+							for ( int i=0; i<3; i++ ) {
+
+								strBuf = getFormattedValue( p[ i ] );
+								m_gridRegisters->SetCellValue( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, 
+									strBuf );
+
+								m_gridRegisters->SetCellTextColour( 
+									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
+									2, *wxRED );
+							}
+						}
 					}
+
+					// Update register
+					m_csw.writeAbstractionGUID( this,
+						readStringValue( m_comboNodeID->GetValue() ),
+						m_mdf.m_list_abstraction[ event.GetRow() ],
+						guid );
 				}
 				break;
 
