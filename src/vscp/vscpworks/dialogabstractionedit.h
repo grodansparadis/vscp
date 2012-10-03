@@ -53,7 +53,6 @@
 #include "../common/mdf.h"
 
 ////@begin includes
-#include "dialogabstractionedit_symbols.h"
 ////@end includes
 
 /*!
@@ -110,6 +109,9 @@ public:
 
 ////@begin DialogAbstractionEdit event handler declarations
 
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON18
+  void OnButtonDefaultClick( wxCommandEvent& event );
+
 ////@end DialogAbstractionEdit event handler declarations
 
 ////@begin DialogAbstractionEdit member function declarations
@@ -140,6 +142,7 @@ public:
   wxStaticText* m_abstractionDescription;
   wxStaticText* m_abstractionHelp;
   wxStaticText* m_abstractionAccessRights;
+  wxStaticText* m_abstractionDefaultValue;
   wxStaticText* m_singleValueLabel;
   wxTextCtrl* m_abstractionValue;
   wxStaticText* m_multipleValueLabel;
@@ -148,6 +151,7 @@ public:
   /// Control identifiers
   enum {
     ID_DIALOGABSTRACTIONEDIT = 10042,
+    ID_BUTTON18 = 10145,
     ID_TEXTCTRL_ABSTRACTION_VALUE = 10002,
     ID_CHOICE1 = 10043
   };

@@ -3650,7 +3650,6 @@ bool frmDeviceConfig::writeChangedLevel2Registers( void )
 			m_gridRegisters->SetCellValue( i, 2,  strBuf );
 			m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, i, 2 );
 			m_gridRegisters->SetCellTextColour( i, 2, *wxBLUE );
-			//m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
 			m_gridRegisters->SelectRow( i );
 			m_gridRegisters->MakeCellVisible( i, 2 );
 			m_gridRegisters->Update();
@@ -5611,6 +5610,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
 						3,  
 						str );
+					m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
 
 					wxString strAccess;
 					if ( reg->m_nAccess & MDF_ACCESS_READ ) strAccess = _("r");
@@ -5626,8 +5626,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 						strAccess );
 					// Protect cell if readonly
 					if ( wxNOT_FOUND == strAccess.Find( _("w") ) ) {
-						m_gridRegisters->SetReadOnly( reg->m_nOffset, 2 );
-					}                                  
+						m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
+					}        
+					m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows()-1, 1, wxALIGN_CENTRE, wxALIGN_CENTRE );
 
 					// Make all parts of the row visible
 					m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows()-1 );
@@ -7329,10 +7330,6 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 					strValue ); 
 				break;
 
-			case type_bitfield:
-				strType = _("Bitfield");
-				break;
-
 			case type_boolval:
 				{
 					bool bval;
@@ -7343,6 +7340,14 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 						&bval );
 					strValue = (bval? _("true") : _("false") );
 				}
+				break;
+
+			case type_bitfield:
+				strType = _("Bitfield");
+				m_csw.getAbstractionBitField( this,
+						m_stdRegisters.getNickname(),
+						abstraction,
+						strValue );
 				break;
 
 			case type_int8_t:
@@ -7502,7 +7507,6 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 				break;
 
 			case type_unknown:
-
 			default:
 				strType = _("Unknown Type");
 				strValue = _("Unknown Value");
@@ -7512,7 +7516,7 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 
 			// Value
 			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-				3, 
+				3,
 				strValue );
 
 			m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER, 
@@ -7595,13 +7599,13 @@ void frmDeviceConfig::updateDmGrid( void )
 				// Action
 				strBuf = getFormattedValue( prow[ 6 ] );
 				m_gridDM->SetCellValue( i, 6, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_LEFT, i, 6 );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 6 );
 				m_gridDM->SetReadOnly( i, 6 );
 
 				// Action Parameter
 				strBuf = getFormattedValue( prow[ 7 ] );
 				m_gridDM->SetCellValue( i, 7, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_LEFT, i, 7 );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 7 );
 				m_gridDM->SetReadOnly( i, 7 );
 
 				m_gridDM->Update();

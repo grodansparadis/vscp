@@ -1,5 +1,7 @@
 release notes for release 0.4.0 Fluorine
 ========================================
+2012-10-01 - AKHE VSCP Works now handle indexed storage for dm and abstractions.
+2012-09-30 - AKHE VSCP Works now handles pages.
 2012-09-18 - AKHE Dinesh Guleria contributed VSCP bootloader support for VSCP Works.
 2012-09-17 - AKHE Deamon local webserver added.
 2012-09-16 - AKHE Websocket interface now works on Linux/Unix to.

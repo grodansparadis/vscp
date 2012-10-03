@@ -410,7 +410,7 @@ public:
 	enum { m_constGridRegisterDefaultWidth = 70 };
 	enum { m_constGridAccessRightDefaultWidth = 20 };
 	enum { m_constGridContentdefaultWidth = 80 };
-	enum { m_constGridDescriptionDefaultWidth = 700 }; 
+	enum { m_constGridDescriptionDefaultWidth = 530 }; 
 
 	enum { m_constGridAbstractionNameDefaultWidth = 170 };
 	enum { m_constGridAbstractionTypeDefaultWidth = 170 };
@@ -418,11 +418,11 @@ public:
 	enum { m_constGridAbstractionContentdefaultWidth = 80 };
 	enum { m_constGridAbstractionDescriptionDefaultWidth = 700 };
 
-	enum { m_constGridDMOrigAddressDefaultWidth = 70 };
-	enum { m_constGridDMFlagsDefaultWidth = 70 };
-	enum { m_constGridDMMasksDefaultWidth = 100 };	
-	enum { m_constGridDMActionDefaultWidth = 250 }; 
-	enum { m_constGridDMActionParamDefaultWidth = 500 };
+	enum { m_constGridDMOrigAddressDefaultWidth = 90 };
+	enum { m_constGridDMFlagsDefaultWidth = 90 };
+	enum { m_constGridDMMasksDefaultWidth = 90 };	
+	enum { m_constGridDMActionDefaultWidth = 90 }; 
+	enum { m_constGridDMActionParamDefaultWidth = 90 };
 
 	/// Last left click column
 	int m_lastLeftClickCol;
