@@ -618,8 +618,8 @@ const char * CCanalSuperWrapper::doCmdGetDriverInfo( void )
 //
 
 bool CCanalSuperWrapper::readLevel1Register( uint8_t nodeid, 
-	uint8_t reg, 
-	uint8_t *pcontent )
+												uint8_t reg, 
+												uint8_t *pcontent )
 {
 	bool rv = true;
 	uint32_t errors = 0;
@@ -1318,20 +1318,20 @@ bool CCanalSuperWrapper::getLevel2DmInfo( uint8_t *interfaceGUID,
 //
 
 bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
-	uint8_t *pregisters,
-	uint8_t nodeid,
-	uint8_t startreg,
-	uint16_t count )
+												uint8_t *pregisters,
+												uint8_t nodeid,
+												uint8_t startreg,
+												uint16_t count )
 {
 	int i;
-	unsigned char val;
+	uint8_t val;
 	bool rv = true;
 	int errors = 0;
 	wxString strBuf;
 
 	wxProgressDialog progressDlg( _("VSCP Works"),
 		_("Reading Registers"),
-		256, 
+		count, 
 		pwnd,
 		wxPD_ELAPSED_TIME | 
 		wxPD_AUTO_HIDE | 
@@ -1346,7 +1346,7 @@ bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
 	// *********************
 	for ( i = startreg; i < (startreg + count); i++ ) {
 
-		if ( !progressDlg.Update( i ) ) {
+		if ( !progressDlg.Update( i-startreg ) ) {
 			rv = false;
 			break;   // User aborted
 		}
@@ -1354,9 +1354,7 @@ bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
 		progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
 
 		if ( readLevel1Register( nodeid, i, &val ) ) {
-
 			pregisters[ i-startreg ] = val;
-
 		}
 		else {
 			errors++;
@@ -1392,7 +1390,7 @@ bool CCanalSuperWrapper::readLevel2Registers( wxWindow *pwnd,
 
 	wxProgressDialog progressDlg( _("VSCP Works"),
 		_("Reading Registers"),
-		256, 
+		count, 
 		pwnd,
 		wxPD_ELAPSED_TIME | 
 		wxPD_AUTO_HIDE | 
@@ -1406,7 +1404,7 @@ bool CCanalSuperWrapper::readLevel2Registers( wxWindow *pwnd,
 	// *********************
 	for ( i = startreg; i < (startreg + count); i++ ) {
 
-		if ( !progressDlg.Update( i ) ) {
+		if ( !progressDlg.Update( i-startreg ) ) {
 			rv = false;
 			break;
 		}
@@ -1530,23 +1528,17 @@ uint32_t CCanalSuperWrapper::getRegisterPage( wxWindow *pwnd, uint8_t nodeid, ui
 // 
 
 bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
-	uint8_t nodeid, 
-	CMDF_DecisionMatrix *pdm, 
-	uint32_t row, 
-	uint8_t *pRow,
-	bool bSilent )
+									uint8_t nodeid, 
+									CMDF_DecisionMatrix *pdm, 
+									uint32_t row, 
+									uint8_t *pRow,
+									bool bSilent )
 {
-	// True if the matrix is indexed. That is if it consist
-	//	of one row precided by an index into the matrix.
-	bool bIndexed = false;
+	uint8_t val;
+	uint8_t *p = pRow;
 
-	// Can't load row that is larger then the availabel rows
+	// Can't load row that is larger than the availabel rows
 	if ( row >= pdm->m_nRowCount ) return false;
-
-	// Check if this matrix is indexed
-	if ( ( 1 == pdm->m_nLevel ) && ( 120 == pdm->m_nStartOffset ) ) {
-		bIndexed = true;
-	}	
 
 	uint16_t savepage = getRegisterPage( pwnd, nodeid );
 	if ( savepage != pdm->m_nStartPage ) {
@@ -1556,19 +1548,38 @@ bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
 		}
 	}
 
-	// Check if this matrix is indexed if so select row
-	if ( ( 1 == pdm->m_nLevel ) && ( 120 == pdm->m_nStartOffset ) ) {
-		uint8_t val = row;
-		if ( !writeLevel1Register( nodeid, 119, &val ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register index for decision matrix!") );
+	if ( pdm->m_bIndexed ) {
+
+		for ( int i=0; i<pdm->m_nRowSize; i++ ) {
+			
+			// Set index
+			val = i;
+			if ( !writeLevel1Register( nodeid, pdm->m_nStartOffset, &val ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register index for decision matrix!") );
+				return false;
+			}
+
+			// Read DM byte
+			if ( !readLevel1Register( nodeid, pdm->m_nStartOffset + 1, p++ ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read register in indexed decision matrix") );
+				return false;
+			}
+
+
+		}
+			
+	}
+	else {
+		// Read row
+		if ( !readLevel1Registers( pwnd, 
+									pRow, 
+									nodeid, 
+									pdm->m_nStartOffset + row * pdm->m_nRowSize, 
+									pdm->m_nRowSize ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to read decision matrix row!") );
 			return false;
 		}
-	}
 
-	// Read row
-	if ( !readLevel1Registers( pwnd, pRow, nodeid, 120, pdm->m_nRowSize ) ) {
-		if ( !bSilent ) wxMessageBox( _("Unable to read decision matrix row!") );
-		return false;
 	}
 
 	// Restore page

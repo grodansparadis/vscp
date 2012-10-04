@@ -295,6 +295,7 @@ CMDF_DecisionMatrix::CMDF_DecisionMatrix()
     m_nStartOffset = 0;
     m_nRowCount = 0;
     m_nRowSize = 8;
+	m_bIndexed = false;
 }
 
 CMDF_DecisionMatrix::~CMDF_DecisionMatrix()
@@ -735,10 +736,10 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
 //
 
 
-bool CMDF::load( wxString& remoteFile, bool bSilent, bool bLocalFile )
+bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 {
     wxStandardPaths stdpaths;
-	wxString localFile;
+	wxString localFile = remoteFile;
 
 	if ( wxNOT_FOUND == remoteFile.Find( _("http://") ) ) {
 		wxString str;
@@ -1384,7 +1385,7 @@ bool CMDF::parseMDF( wxString& path )
                             pRegister->m_nWidth = readStringValue( child3->GetPropVal ( wxT( "width" ), wxT("8") ) );
                             pRegister->m_nMin = readStringValue( child3->GetPropVal ( wxT( "min" ), wxT("0") ) );
                             pRegister->m_nMax = readStringValue( child3->GetPropVal ( wxT( "max" ), wxT("255") ) );
-                            pRegister->m_strDefault = child3->GetPropVal ( wxT( "default" ), wxT("0") );
+                            pRegister->m_strDefault = child3->GetPropVal ( wxT( "default" ), wxT("UNDEF") );
 
                             wxXmlNode *child4 = child3->GetChildren();
                             while (child4) {
@@ -1597,6 +1598,15 @@ bool CMDF::parseMDF( wxString& path )
                         else if ( child3->GetName() == wxT("start") ) {
                             m_dmInfo.m_nStartPage =  readStringValue( child3->GetPropVal ( wxT ( "page" ), _("0") ) );
                             m_dmInfo.m_nStartOffset = readStringValue( child3->GetPropVal ( wxT ( "offset" ), _("0") ) );
+							
+							wxString stridx = child3->GetPropVal( wxT ( "indexed" ), _("false") );
+							stridx.Lower();
+							if ( wxNOT_FOUND != stridx.Find(_("true")) ) {
+								m_dmInfo.m_bIndexed = true;
+							}
+							else {
+								m_dmInfo.m_bIndexed = false;
+							}
                         }
                         else if ( child3->GetName() == wxT("rowcnt") ) {
                             m_dmInfo.m_nRowCount = readStringValue( child3->GetNodeContent() );
@@ -1604,7 +1614,7 @@ bool CMDF::parseMDF( wxString& path )
                         else if ( child3->GetName() == wxT("rowsize") ) {
                             m_dmInfo.m_nRowSize = readStringValue( child3->GetNodeContent() );
                         }
-                        else if ( child3->GetName() == wxT("action") ) {
+						else if ( child3->GetName() == wxT("action") ) {
 
                             CMDF_Action *pAction = new CMDF_Action;
                             wxASSERT( NULL != pAction );
@@ -2186,6 +2196,13 @@ bool CMDF::parseMDF( wxString& path )
 
     } // while Child1
 
+	// If a Level I dm is placed at location 126 on the first
+	// page it will be automatically set to indexed
+	if ( ( 1 == m_dmInfo.m_nLevel ) && 
+			( 126 == m_dmInfo.m_nStartOffset ) &&
+			( 0 == m_dmInfo.m_nStartPage ) ) {
+		m_dmInfo.m_bIndexed = true;
+	}
     return rv;
 }
 
@@ -2246,3 +2263,20 @@ uint32_t CMDF::getPages( SortedArrayLong& arraylong )
 	return arraylong.Count();
 };
 
+///////////////////////////////////////////////////////////////////////////////
+//  getMDFRegs
+//  
+
+CMDF_Register * CMDF::getMDFRegs( uint8_t reg, uint16_t page )
+{
+	MDF_REGISTER_LIST::iterator iter;
+	for ( iter = m_list_register.begin(); iter != m_list_register.end(); ++iter ) {
+
+		CMDF_Register *preg = *iter;
+		if ( ( reg == preg->m_nOffset ) && ( page == preg->m_nPage ) ) {
+			return preg;
+		}
+	}
+
+	return NULL;
+}

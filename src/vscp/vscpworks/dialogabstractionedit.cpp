@@ -592,7 +592,7 @@ bool DialogAbstractionEdit::TransferDataFromWindow( wxString &strValue )
 void DialogAbstractionEdit::OnButtonDefaultClick( wxCommandEvent& event )
 {
 	if ( m_abstractionComboValue->GetCount() ) {
-		for ( int i=0; i<m_pAbstraction->m_list_value.GetCount(); i++ ) {
+		for ( unsigned int i=0; i<m_pAbstraction->m_list_value.GetCount(); i++ ) {
 			if ( wxNOT_FOUND != m_abstractionComboValue->GetString( i )
 				.Find( m_abstractionDefaultValue->GetLabel() ) ) {
 					m_abstractionComboValue->SetSelection( i );

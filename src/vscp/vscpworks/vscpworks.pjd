@@ -981,6 +981,7 @@
           <long name="use-xrc">0</long>
           <long name="working-mode">0</long>
           <string name="event-handler-0">"wxEVT_CLOSE_WINDOW|OnCloseWindow|NONE||frmMain"</string>
+          <string name="event-handler-1">"wxEVT_PAINT|OnPaint|NONE||"</string>
           <string name="proxy-Id name">"ID_FRMMAIN"</string>
           <long name="proxy-Id value">12000</long>
           <string name="proxy-Class">"frmMain"</string>

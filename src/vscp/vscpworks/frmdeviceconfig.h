@@ -102,6 +102,7 @@ enum {
 	Menu_Popup_Update,
 	Menu_Popup_Load_MDF,
 	Menu_Popup_Undo,
+	Menu_Popup_Default,
 	Menu_Popup_dm_enable_row,
 	Menu_Popup_dm_disable_row,
 	Menu_Popup_dm_row_wizard
@@ -173,40 +174,6 @@ public:
 
 	bool writeChangedLevel2Registers( void );
 
-	/*!
-	Get DM info
-	@param nodeid Nickname for node whos DM should be read.
-	@param Pointer to byte array of eight bytes that receive
-	DM information as of CLASS1.PROTOCOL type=33
-	@return True on success.
-	*/
-	//bool getLevel1DmInfo( unsigned char nodeid, unsigned char *pdata );
-
-	/*!
-	Get DM info ober Level II interface
-	@param interfaceGUID Interface GUID with LSB byte set to nodeid for node 
-	whos registers should be read.
-	@param Pointer to byte array of eight bytes that receive
-	DM information as of CLASS1.PROTOCOL type=33
-	@return True on success.
-	*/
-	//bool getLevel2DmInfo( unsigned char *interfaceGUID, unsigned char *pdata );
-
-
-	/*!
-	Check if a level 1 device with a specific nodeid is available
-	@patam nodeid Nickname id for rthe device.
-	@return True on success.
-	*/
-	//bool checkLevel1Device( unsigned char nodeid ); 
-
-	/*!
-	Check if a level 2 device with a specific nodeGUID is available
-	@patam interfaceGUID GUID for interface where devices sits with 
-	byte 0 set to nickname id for the device.
-	@return True on success. False otherwise.
-	*/
-	//bool checkLevel2Device( unsigned char *interfaceGUID );  
 
 	/*!
 	Clear grid and other data content
@@ -228,10 +195,21 @@ public:
 	*/
 	void undoValueSelectedRow( wxCommandEvent& event );
 
+	/*!
+	Default value for selected row
+	*/
+	void defaultValueSelectedRow( wxCommandEvent& event );
+
 	/*! 
 	Update the DM grid
 	*/
 	void updateDmGrid( void );
+
+	/*!
+	Update decision matrix grid if a certain page:row is part 
+	of it.
+	*/
+	void updateDmGridConditional( uint16_t page, uint32_t reg );
 
 	/*!
 	Update the abstraction grid

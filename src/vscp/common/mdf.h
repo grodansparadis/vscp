@@ -321,6 +321,7 @@ public:
     uint16_t m_nStartOffset;
     uint16_t m_nRowCount;
     uint16_t m_nRowSize;
+	bool m_bIndexed;
 
     MDF_ACTION_LIST  m_list_action; // Action description
 
@@ -593,7 +594,7 @@ public:
 		@param blocalFile Asks for a local file if set to true.
 		@return returns true on success, false on falure.
 	*/
-	bool load( wxString& remoteFile, bool bSilent = false, bool bLocalFile = false );
+	bool load( wxString& remoteFile, bool bLocalFile = false, bool bSilent = false );
 
     /*!
         Format an MDF description so it can be shown
@@ -624,6 +625,14 @@ public:
 		@return Number of regsiter pages used.
 	*/
 	uint32_t getPages( SortedArrayLong& arraylong );
+
+	/*!
+		Return register class from register + page
+		@param register Register to search for.
+		@param page Page top search for.
+		@return Pointer to CMDF_Register class if found else NULL.
+	*/
+	CMDF_Register *getMDFRegs( uint8_t reg, uint16_t page );
 
 
     wxString m_strLocale;                       // ISO code for requested language

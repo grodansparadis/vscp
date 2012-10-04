@@ -2684,6 +2684,7 @@ IMPLEMENT_CLASS( frmDeviceConfig, wxFrame )
 	EVT_MENU( Menu_Popup_Update, frmDeviceConfig::OnButtonUpdateClick )
 	EVT_MENU( Menu_Popup_Load_MDF, frmDeviceConfig::OnButtonLoadDefaultsClick )
 	EVT_MENU( Menu_Popup_Undo, frmDeviceConfig::undoValueSelectedRow )
+	EVT_MENU( Menu_Popup_Default, frmDeviceConfig::defaultValueSelectedRow )
 
 	EVT_MENU( Menu_Popup_dm_enable_row, frmDeviceConfig::dmEnableSelectedRow )
 	EVT_MENU( Menu_Popup_dm_disable_row, frmDeviceConfig::dmDisableSelectedRow )
@@ -5503,7 +5504,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
 	}
 
-
 	wxProgressDialog progressDlg( _("VSCP Works"),
 		_("Fetching status and MDF"),
 		256, 
@@ -5520,9 +5520,28 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
 		if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
-			// Get MDF from device
-			progressDlg.Pulse( _("Fetching MDF path from device.") );
-			strPath = m_csw.getMDFfromDevice1( nodeid );
+			// Feth MDF from local file or server
+			if ( m_chkMdfFromFile->GetValue() ) {
+
+				wxStandardPaths stdpaths;
+				
+				// Get MDF from local file
+				wxFileDialog dlg( this,
+					_("Choose file to load MDF from "),
+					stdpaths.GetUserDataDir(),
+					_(""),
+					_("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
+				
+				if ( wxID_OK == dlg.ShowModal() ) {
+					strPath = dlg.GetPath();
+				}
+
+			}
+			else {
+				// Get MDF from device
+				progressDlg.Pulse( _("Fetching MDF path from device.") );
+				strPath = m_csw.getMDFfromDevice1( nodeid );
+			}
 
 			// We need it to continue
 			if ( 0 == strPath.Length() ) {
@@ -5532,27 +5551,39 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
 			// Load and parse the MDF
 			progressDlg.Pulse( _("Loading and parsing MDF.") );
-			progressDlg.Update( 80 );
-			m_mdf.load( strPath );
+			if ( false == progressDlg.Update( 80 ) ) return;
+
+			m_mdf.load( strPath, m_chkMdfFromFile->GetValue() );
 
 			// Get the standard registers
 			progressDlg.Pulse( _("Reading standard registers.") );
-			progressDlg.Update( 90 );
+			if ( false == progressDlg.Update( 150 ) ) return;
+
+			// First part of standard registers
 			m_csw.readLevel1Registers( this, 
-				m_stdRegisters.m_reg, 
-				nodeid, 0x80, 26 );
+										m_stdRegisters.m_reg, 
+										nodeid, 0x80, 26 );
+
+			if ( false == progressDlg.Update( 200 ) ) return;
+			
+			// Second part of standard registers
 			m_csw.readLevel1Registers( this, 
-				( m_stdRegisters.m_reg + 0xD0 - 0x80 ), 
-				nodeid, 0xD0, 48 );
+										( m_stdRegisters.m_reg + 0xD0 - 0x80 ), 
+										nodeid, 0xD0, 48 );
 
 			// Get the application registers
 			progressDlg.Pulse( _("Reading application registers.") );
+			if ( false == progressDlg.Update( 230 ) ) return;
 
 			SortedArrayLong pageArray;
 			uint32_t n = m_mdf.getPages( pageArray );
 
+			if ( false == progressDlg.Update( 235 ) ) return;
+
 			uint8_t tt = m_stdRegisters.getNickname();
 			n = m_mdf.getNumberOfRegisters( 0 );
+
+			if ( false == progressDlg.Update( 240 ) ) return;
 
 			uint8_t val;
 			wxString strBuf;
@@ -5571,11 +5602,14 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 			for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
 
 				CMDF_Register *reg = *iter;
+				int cnt = 0;
 				if ( reg->m_nPage < MAX_CONFIG_REGISTER_PAGE ) {
 
 					progressDlg.Pulse( _("Reading standard registers.") );
 					progress += progress_count;
 					progressDlg.Update( progress );
+
+					if ( false == progressDlg.Update( 256 - m_mdf.m_list_register.GetCount() + cnt  ) ) return;
 
 					// Add a new row
 					m_gridRegisters->AppendRows( 1 );
@@ -5583,12 +5617,14 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 					// Register
 					strBuf.Printf( _("%04X:%02X"), reg->m_nPage, reg->m_nOffset );
 					progressDlg.Pulse( _("Reading page:register: ") + strBuf );
+
 					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
 					m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
 					m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
 					m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
 
 					if ( m_csw.readLevel1Register( nodeid, reg->m_nOffset, &val ) ) {
+						reg->m_value = val;
 						getFormattedValue( val );
 						m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
 							2,  
@@ -5637,11 +5673,17 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 				}
 			}
 
+			if ( false == progressDlg.Update( 255 ) ) return;
+			
 			// Fill grid with standard registers
 			fillStandardRegisters();
 
+			if ( false == progressDlg.Update( 240 ) ) return;
+
 			// Write status
 			writeStatusInfo();
+
+			if ( false == progressDlg.Update( 255 ) ) return;
 
 			m_bFirstRead = false;
 
@@ -5650,18 +5692,26 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
 			progressDlg.Pulse( _("Fetching MDF path from device through server.") );
 			strPath = m_csw.getMDFfromDevice2( guid, true );
+
 		}
+
+		if ( false == progressDlg.Update( 230 ) ) return;
 
 		// Update the DM grid    
 		updateDmGrid();
 
+		if ( false == progressDlg.Update( 240 ) ) return;
+
 		// Update abstractions
 		updateAbstractionGrid();
+
+		if ( false == progressDlg.Update( 255 ) ) return;
 
 		progressDlg.Update( 256, _("Done!") );
 
 		// Enable load defaults buttons
 		m_ctrlButtonLoadMDF->Enable( true );
+
 	}
 	else {
 
@@ -5673,8 +5723,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 		}
 	}
 
-
 	::wxEndBusyCursor();
+
+	event.Skip( false );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5683,199 +5734,81 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
 void frmDeviceConfig::OnButtonLoadDefaultsClick( wxCommandEvent& event )
 {
+	wxString strBuf;
+	wxString str;
+	uint8_t val;
+	uint8_t nodeid = 0;
+	uint32_t row = 0;
+
+	wxProgressDialog progressDlg( _("VSCP Works"),
+		_("Fetching status and MDF"),
+		256, 
+		this,
+		wxPD_ELAPSED_TIME | 
+		wxPD_AUTO_HIDE | 
+		wxPD_APP_MODAL | 
+		wxPD_CAN_ABORT );
+
+	// Get nickname
+	nodeid = readStringValue( m_comboNodeID->GetValue() );
+
+	wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
+	wxFont fontBold = defaultFont;
+	fontBold.SetStyle( wxFONTSTYLE_NORMAL );
+	fontBold.SetWeight( wxFONTWEIGHT_BOLD );
+
+	// Fill in register descriptions
+	uint8_t progress = 0;
+	uint8_t progress_count;
+	if ( m_mdf.m_list_register.GetCount() ) progress_count = 256/m_mdf.m_list_register.GetCount();
+	MDF_REGISTER_LIST::iterator iter;
+	for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
+
+		CMDF_Register *reg = *iter;
+		int cnt = 0;
+		if ( reg->m_nPage < MAX_CONFIG_REGISTER_PAGE ) {
+
+			progressDlg.Pulse( _("Reading standard registers.") );
+			progress += progress_count;
+			progressDlg.Update( progress );
+
+			if ( wxNOT_FOUND == reg->m_strDefault.Find(_("UNDEF")) ) {
+
+				if ( false == progressDlg.Update( 256 - m_mdf.m_list_register.GetCount() + cnt  ) ) return;
+
+				val = readStringValue( reg->m_strDefault );
+				strBuf = getFormattedValue( val );
+				m_gridRegisters->SelectRow( row );
+				m_gridRegisters->SetCellValue( row, 2,  strBuf );
+				m_gridRegisters->MakeCellVisible( row, 2 );
+				m_gridRegisters->SetCellTextColour( row, 2, *wxRED );
+				m_gridRegisters->Update();
+			}
+
+			// Make all parts of the row visible
+			m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows()-1 );
+
+			row++;
+		}
+
+		if ( false == progressDlg.Update( 240 ) ) return;
+
+	}
+
+	OnButtonUpdateClick( event );
+
+	// Update the DM grid    
+	updateDmGrid();
+
+	if ( false == progressDlg.Update( 250 ) ) return;
+
+	// Update abstractions
+	updateAbstractionGrid();
+
 
 	event.Skip( false );
 }
 
-/*
-void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
-{
-bool rv = true;
-wxString strBuf;
-short nodeid = 0;
-
-// Erase the grid
-//if ( m_gridRegisters->GetNumberRows() ) {
-//  m_gridRegisters->DeleteRows( 0, m_gridRegisters->GetNumberRows() );
-//}
-
-m_gridRegisters->BeginBatch();
-
-if ( m_bFirstRead ) { 
-initStandardRegInfo();
-}
-
-//initStandardRegInfo();
-
-if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-
-// Get Interface id
-nodeid = readStringValue( m_comboNodeID->GetValue() );
-
-if ( ( 0 == nodeid ) || ( nodeid > 254 )  ) {
-wxMessageBox( _("Invalid Node ID! Must be between 1-254") );
-return;
-}
-
-}
-else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-;
-}
-
-::wxBeginBusyCursor();
-
-if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-
-// Write back changed registers
-if ( !m_bFirstRead ) { 
-rv = writeChangedLevel1Registers( nodeid );
-}
-
-if ( m_chkFullUppdate->GetValue() || m_bFirstRead ) {
-// Read current register content
-if ( rv ) rv = readAllLevel1Registers( nodeid );
-}
-
-}
-else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-
-// Write back changed registers
-if ( !m_bFirstRead ) { 
-rv = writeChangedLevel2Registers();
-}
-
-if ( m_chkFullUppdate->GetValue() || m_bFirstRead ) { 
-// Read current register content
-if ( rv ) rv = readAllLevel2Registers();
-}
-
-}
-
-m_gridRegisters->EndBatch();
-
-wxProgressDialog progressDlg( _("VSCP Works"),
-_("Fetching status and MDF"),
-256, 
-this,
-wxPD_ELAPSED_TIME | 
-wxPD_AUTO_HIDE | 
-wxPD_APP_MODAL | 
-wxPD_CAN_ABORT );
-
-if ( m_chkFullUppdate->GetValue() || m_bFirstRead ) {
-
-progressDlg.Pulse( _("Fetching device status") );
-
-// Load MDF
-if ( rv ) OnButtonLoadMdfClick( event );
-
-// Write status information
-if ( rv ) writeStatusInfo();
-
-}
-
-// Don't save registers on next run
-if ( rv ) m_bFirstRead = false;
-
-::wxEndBusyCursor();
-
-// Enable undo and load buttons
-if ( rv ) m_ctrlButtonLoadMDF->Enable( true );
-if ( rv ) m_ctrlButtonUndo->Enable( true );
-
-// Set position
-if ( m_gridRegisters->IsSelection() ) {
-m_gridRegisters->MakeCellVisible( m_lastLeftClickCol, 
-m_lastLeftClickRow );
-}
-
-// Repaint the window
-m_gridRegisters->ForceRefresh();
-
-event.Skip( false );
-}
-*/
-
-
-
-/*
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnButtonUndoClick
-//
-
-/*
-void frmDeviceConfig::OnButtonUndoClick( wxCommandEvent& event )
-{
-bool rv = false;
-wxString str;
-unsigned char nodeid = 0;
-
-if ( m_bFirstRead ) {
-wxMessageBox(_("Registers must be read before they can be undon!"));
-return;
-}
-
-for ( int i=0; i<128; i++ ) {
-//str.Printf( _("0x%02lx"), m_saved_registers[ 0 ][ i ] );
-m_gridRegisters->SetCellValue( i, 2, str );
-
-m_gridRegisters->SetCellTextColour( i,
-2,
-*wxRED );
-}
-
-if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-
-// Get Interface id
-nodeid = readStringValue( m_comboNodeID->GetValue() );
-
-if ( ( 0 == nodeid ) || ( nodeid > 254 )  ) {
-wxMessageBox( _("Invalid Node ID! Must be between 1-254") );
-return;
-}
-
-}
-else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-
-;
-
-}
-
-::wxBeginBusyCursor();
-
-wxProgressDialog progressDlg( _("VSCP Works"),
-_("Undo Register updates"),
-256, 
-this,
-wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE | wxPD_APP_MODAL );
-
-m_gridRegisters->BeginBatch();
-
-if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-// Write back changed registers
-rv = writeChangedLevel1Registers( nodeid );
-
-// Read current register content
-//if ( rv ) rv = m_csw.readLevel1Registers( this, nodeid, regs );
-}
-else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-// Write back changed registers
-rv = writeChangedLevel2Registers();
-
-// Read current register content
-//if ( rv ) rv = readAllLevel2Registers();    
-}
-
-m_gridRegisters->EndBatch();
-
-progressDlg.Pulse( _("Fetching device status") );
-
-// Write status information
-if ( rv ) writeStatusInfo();
-
-event.Skip( false ); 
-}
-*/
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OnButtonWizardClick
@@ -5886,121 +5819,6 @@ void frmDeviceConfig::OnButtonWizardClick( wxCommandEvent& event )
 	wxMessageBox(_("The wizard is not implemented yet!"));
 	event.Skip();
 }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnButtonLoadMdfClickF
-//
-
-/*
-void frmDeviceConfig::OnButtonLoadDefaultsClick( wxCommandEvent& event )
-{
-bool rv = true;
-wxStandardPaths stdpaths;
-wxString remoteFile;
-
-remoteFile = m_stdRegisters.getMDF();
-
-wxString localFile;
-
-wxProgressDialog progressDlg( _("VSCP Works"),
-_("Load and parse MDF"),
-100, 
-this,
-wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE | wxPD_APP_MODAL );
-
-wxDateTime now = wxDateTime::Now();
-
-if ( m_chkMdfFromFile->GetValue() ) {
-
-// Load MDF from local file
-wxFileDialog dlg( this,
-_("Choose file to load MDF from "),
-stdpaths.GetUserDataDir(),
-_(""),
-_("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
-if ( wxID_OK == dlg.ShowModal() ) {
-localFile = dlg.GetPath();
-}
-else {
-return;
-}
-}
-else {
-// Download the MDF
-progressDlg.Update( 30, _("Download MDF.") );
-
-if ( !m_mdf.downLoadMDF( remoteFile, localFile ) ) {
-wxMessageBox( _("Failed to download MDF.") );
-progressDlg.Update( 100 );
-return;
-}
-}
-
-progressDlg.Update( 60, _("Parsing MDF.") );
-
-m_mdf.clearStorage();
-
-if ( !m_mdf.parseMDF( localFile ) ) {
-wxMessageBox( _("Failed to parse MDF.") );
-progressDlg.Update( 100 );
-return;
-}
-
-// Fill in register descriptions
-MDF_REGISTER_LIST::iterator iter;
-for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
-CMDF_Register *reg = *iter;
-if ( reg->m_nPage < MAX_CONFIG_REGISTER_PAGE ) {
-switch ( reg->m_nPage ) {
-case 0:	
-wxString str;
-str.Printf( reg->m_strName + 
-_("\n") + 
-reg->m_strDescription );
-m_gridRegisters->SetCellValue( reg->m_nOffset, 
-3,  
-str );
-
-wxString strAccess;
-if ( reg->m_nAccess & MDF_ACCESS_READ ) strAccess = _("r");
-if ( reg->m_nAccess & MDF_ACCESS_WRITE ) {
-strAccess += _("w");
-}
-else {
-strAccess += _("-");
-}
-
-m_gridRegisters->SetCellValue( reg->m_nOffset, 
-1,  
-strAccess );
-// Protect cell if readonly
-if ( wxNOT_FOUND == strAccess.Find( _("w") ) ) {
-//m_gridRegisters->SetReadOnly( reg->m_nOffset, 2 );
-}                                  
-
-// Make all parts of the row visible
-m_gridRegisters->AutoSizeRow( reg->m_nOffset );
-break;
-}
-}
-}
-
-progressDlg.Update( 100 );
-
-// Enable wizard buttons
-if ( rv ) m_ctrlButtonWizard->Enable( true );
-
-m_gridRegisters->Update();
-
-// Update the DM grid    
-updateDmGrid();
-
-// Update abstractions
-updateAbstractionGrid();
-
-event.Skip( false );
-}
-*/
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -6015,10 +5833,10 @@ void frmDeviceConfig::OnCellRightClick( wxGridEvent& event )
 
 	if ( ID_GRID_REGISTERS == event.GetId() ) {
 
-		menu.Append( Menu_Popup_Write_Value, _T("No MDF info for this register."));
+		menu.Append( Menu_Popup_Write_Value, _T("Be Hungry - Stay Foolish!"));
 		menu.AppendSeparator();
 		menu.Append( Menu_Popup_Update, _T("Update"));
-		menu.Append( Menu_Popup_Undo, _T("Default"));
+		menu.Append( Menu_Popup_Default, _T("Default"));
 		menu.AppendSeparator();
 		menu.Append( Menu_Popup_Read_Value, _T("Read value(s) for selected row(s)"));
 		menu.Append( Menu_Popup_Write_Value, _T("Write value(s) for selected row(s)"));
@@ -6129,6 +5947,13 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 					}
 				} // Interface
 			}
+
+			// Update the DM grid    
+			updateDmGrid();
+
+			// Update abstractions
+			updateAbstractionGrid();
+
 		}
 		else {
 			wxMessageBox(_("No rows selected!"));
@@ -6224,6 +6049,13 @@ void frmDeviceConfig::writeValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 					}
 				}
 			}
+
+			// Update the DM grid    
+			updateDmGrid();
+
+			// Update abstractions
+			updateAbstractionGrid();
+
 		}
 		else {
 			wxMessageBox(_("No rows selected!"));
@@ -6265,21 +6097,29 @@ void frmDeviceConfig::undoValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 					wxMessageBox(_("This register is not writable!"));
 				}
 				else {
+
 					uint8_t val;
 
-					// Restore saved register
-					//val = m_saved_registers[0][ selrows[i] ];
+					uint8_t reg = getRegFromCell( i );
+					uint32_t page = getPageFromCell( i );
 
-					uint8_t reg;
-					reg = readStringValue( m_gridRegisters->GetCellValue( selrows[i], 0 ) );
+					CMDF_Register *mdfRegs =  m_mdf.getMDFRegs( reg, page );
+					if ( NULL == mdfRegs ) {
+						wxMessageBox(_("Register is unkown. Report possible iternal problem."));
+						continue;
+					}
+
+					val = mdfRegs->m_value;
 
 					if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
 						// We don't test for errors here as some registers have reserved bits
 						// etc and therefore will not read the same as written
 						wxGetApp().writeLevel1Register( &m_csw, nodeid, reg, &val );
+
 						// Update display
-						strBuf.Printf( _("0x%02lx"), val );
+						strBuf = getFormattedValue( val );
+
 						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
 						m_gridRegisters->SelectRow( selrows[i] );
 						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
@@ -6316,6 +6156,101 @@ void frmDeviceConfig::undoValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 			wxMessageBox(_("No rows selected!"));
 		}
 	}  
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// defaultValueSelectedRow
+//
+
+void frmDeviceConfig::defaultValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
+{
+	wxString strBuf;
+	uint8_t nodeid = 0;
+
+	wxBusyCursor wait;
+
+	// Select the row
+	m_gridRegisters->SelectRow( m_lastLeftClickRow );
+
+	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+		// Get Interface id
+		nodeid = readStringValue( m_comboNodeID->GetValue() );
+	}
+
+	if ( m_gridRegisters->GetNumberRows() ) {
+
+		wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
+
+		if ( selrows.GetCount() ) {
+
+			for ( int i=selrows.GetCount()-1; i >= 0; i-- ) {
+
+				// Must be writable
+				wxString permissions = 
+					m_gridRegisters->GetCellValue( selrows[ i ], 1 );
+				if ( wxNOT_FOUND == permissions.Find( _("w") ) ) {
+					wxMessageBox(_("This register is not writable!"));
+				}
+				else {
+
+					uint8_t val;
+
+					uint8_t reg = getRegFromCell( i );
+					uint32_t page = getPageFromCell( i );
+
+					CMDF_Register *mdfRegs =  m_mdf.getMDFRegs( reg, page );
+					if ( NULL == mdfRegs ) {
+						wxMessageBox(_("Register is unkown. Report possible iternal problem."));
+						continue;
+					}
+
+					val = readStringValue( mdfRegs->m_strDefault );
+
+					if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+
+						// We don't test for errors here as some registers have reserved bits
+						// etc and therefore will not read the same as written
+						wxGetApp().writeLevel1Register( &m_csw, nodeid, reg, &val );
+
+						// Update display
+						strBuf = getFormattedValue( val );
+
+						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
+						m_gridRegisters->SelectRow( selrows[i] );
+						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
+						m_gridRegisters->SetCellTextColour( selrows[i], 2, *wxBLUE );
+						m_gridRegisters->Update();
+
+					}
+					else {
+
+						// Get the destination GUID
+						uint8_t destGUID[ 16 ];
+						getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
+
+						// We don't test for errors here as some registers have reserved bits
+						// etc and therefore will not read the same as written
+						wxGetApp().writeLevel2Register( &m_csw, 
+							m_interfaceGUID, 
+							reg, 
+							&val,
+							destGUID,
+							m_bLevel2->GetValue() );
+						// Update display
+						strBuf.Printf( _("0x%02lx"), val );
+						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
+						m_gridRegisters->SelectRow( selrows[i] );
+						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
+						m_gridRegisters->Update();
+
+					}
+				}
+			}
+		}
+		else {
+			wxMessageBox(_("No rows selected!"));
+		}
+	} 
 }
 
 
@@ -7217,12 +7152,67 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 				2, 
 				strBuf );
 
-			for ( int i=0; i<m_mdf.m_dmInfo.m_nRowSize; i++ ) {
-				m_gridRegisters->SetCellTextColour( 
-					i + m_mdf.m_dmInfo.m_nStartOffset + 
-					m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-					2, 
-					*wxRED );   
+			int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset + 
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											m_mdf.m_dmInfo.m_nStartPage );
+
+			// Visual indication
+			if ( -1 != row ) {
+
+				for ( int i=0; i<m_mdf.m_dmInfo.m_nRowSize; i++ ) {
+				
+					if ( m_mdf.m_dmInfo.m_bIndexed ) {
+					
+						// Index
+						strBuf = getFormattedValue( 0 );
+						m_gridRegisters->SetCellValue( 
+								row, 
+								2, 
+								strBuf );
+
+						m_gridRegisters->SetCellTextColour( 
+								row, 
+								2, *wxRED );
+
+						// Value
+						strBuf = getFormattedValue( 
+								readStringValue( dlg.m_oaddr->GetValue() ) );
+						m_gridRegisters->SetCellValue( 
+								row + 1, 
+								2, 
+								strBuf );
+
+						m_gridRegisters->SetCellTextColour( 
+								row + 1, 
+								2, *wxRED );
+
+					}
+					else {
+
+						for ( int i=0; i<m_mdf.m_dmInfo.m_nRowSize; i++ ) {
+
+							// Index
+							strBuf = 
+								getFormattedValue( readStringValue(
+								m_gridRegisters->GetCellValue( m_mdf.m_dmInfo.m_nStartOffset + 
+																m_mdf.m_dmInfo.m_nRowSize * 
+																event.GetRow() + i, 2 ) ) );
+							m_gridRegisters->SetCellValue( 
+								row + i, 
+								2, 
+								strBuf );
+
+							m_gridRegisters->SetCellTextColour( 
+								row + i, 
+								2, *wxRED );
+
+						}
+
+					}
+				}
+			}
+			else {
+				wxMessageBox(_("It's a problem with the MDF for this device. DM rows not in register definition."));
 			}
 
 			// Update registers
@@ -7236,6 +7226,11 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 	}
 	else if ( ID_GRID_ABSTRACTIONS == event.GetId() ) {
 
+		// Update the DM grid    
+		updateDmGrid();
+
+		// Update abstractions
+		updateAbstractionGrid();
 	}
 
 	event.Skip();
@@ -7256,6 +7251,7 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 	fontBold.SetWeight( wxFONTWEIGHT_BOLD );
 
 	// Delete grid rows if there are any
+	m_gridAbstractions->ClearGrid();
 	if ( m_gridAbstractions->GetNumberRows() ) {
 		m_gridAbstractions->DeleteRows( 0, m_gridAbstractions->GetNumberRows() );
 	}
@@ -7267,7 +7263,7 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 			CMDF_Abstraction *abstraction = *iter;
 
 			// Add a row
-			m_gridAbstractions->AppendRows();
+			m_gridAbstractions->AppendRows( 1 );
 
 			// Name
 			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
@@ -7541,37 +7537,34 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 void frmDeviceConfig::updateDmGrid( void )
 {
 	wxString strBuf;
-	uint8_t *prow;
+	uint8_t buf[ 512 ];
+	uint8_t *prow = buf;
 
-	if ( m_gridDM->GetNumberRows() ) {
-		m_gridDM->DeleteRows( 0, m_gridDM->GetNumberRows() );
-	}
+	m_gridDM->ClearGrid();
 
 	for ( int i=0; i<m_mdf.m_dmInfo.m_nRowCount; i++ ) {
 
-		prow = new uint8_t[ m_mdf.m_dmInfo.m_nRowSize ];
-		if ( ( NULL != prow ) && 
-			m_csw.getDMRow( this,
-			m_stdRegisters.getNickname(), 
-			&m_mdf.m_dmInfo, 
-			i, 
-			prow ) ) {
+		if ( m_csw.getDMRow( this,
+								m_stdRegisters.getNickname(), 
+								&m_mdf.m_dmInfo, 
+								i, 
+								prow ) ) {
 
 				// Add a row
-				m_gridDM->AppendRows();
-
-				// O-addr.
+				m_gridDM->AppendRows( 1 );
+				
+				// O-addr
 				strBuf = getFormattedValue( prow[ 0 ] );
 				m_gridDM->SetCellValue( i, 0, strBuf );
 				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 0 );
 				m_gridDM->SetReadOnly( i, 0 );
-
+				
 				// Flags
-				strBuf = getFormattedValue( prow[ 1 ] );;
+				strBuf = getFormattedValue( prow[ 1 ] );
 				m_gridDM->SetCellValue( i, 1, strBuf );
 				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 1 );
 				m_gridDM->SetReadOnly( i, 1 );
-
+				
 				// Class Mask
 				strBuf = getFormattedValue( prow[ 2 ] );
 				m_gridDM->SetCellValue( i, 2, strBuf );
@@ -7614,7 +7607,6 @@ void frmDeviceConfig::updateDmGrid( void )
 			wxMessageBox( _("Unable to read decision matrix row!") );
 		}
 
-		if ( NULL != prow ) delete prow;
 	}
 }
 

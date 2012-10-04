@@ -117,6 +117,9 @@ public:
   /// wxEVT_CLOSE_WINDOW event handler for ID_FRMMAIN
   void OnCloseWindow( wxCloseEvent& event );
 
+  /// wxEVT_PAINT event handler for ID_FRMMAIN
+  void OnPaint( wxPaintEvent& event );
+
   /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_OPEN_VSCP_SESSION
   void OnMenuitemOpenVscpSessionClick( wxCommandEvent& event );
 

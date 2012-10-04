@@ -4414,6 +4414,7 @@ IMPLEMENT_CLASS( frmMain, wxFrame )
 
     ////@begin frmMain event table entries
   EVT_CLOSE( frmMain::OnCloseWindow )
+  EVT_PAINT( frmMain::OnPaint )
 
   EVT_MENU( ID_MENUITEM_OPEN_VSCP_SESSION, frmMain::OnMenuitemOpenVscpSessionClick )
 
@@ -4574,7 +4575,6 @@ void frmMain::CreateControls()
   itemBoxSizer32->Add(itemStaticBitmap33, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
     ////@end frmMain content construction
-
 
 }
 
@@ -5163,5 +5163,31 @@ void frmMain::OnMenuitemMerlinClick( wxCommandEvent& event )
   Merlin* window = new Merlin(this);
   window->Show(true);
 ////@end wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_MERLIN in frmMain. 
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// wxEVT_PAINT event handler for ID_FRMMAIN
+//
+
+void frmMain::OnPaint( wxPaintEvent& event )
+{
+	wxPaintDC dc(this);
+
+	dc.DrawText(wxT("Version: "), 40, 60); 
+
+	// draw a circle
+	dc.SetBrush(*wxGREEN_BRUSH); // green filling
+	dc.SetPen( wxPen( wxColor(255,0,0), 5 ) ); // 5-pixels-thick red outline
+	dc.DrawCircle( wxPoint(200,100), 25 );
+
+	// draw a rectangle
+	dc.SetBrush(*wxBLUE_BRUSH); // blue filling
+	dc.SetPen( wxPen( wxColor(255,175,175), 10 ) ); // 10-pixels-thick pink outline
+	dc.DrawRectangle( 300, 100, 400, 200 );
+
+	// draw a line
+	dc.SetPen( wxPen( wxColor(0,0,0), 3 ) );	// black line, 3 pixels thick
+	dc.DrawLine( 300, 100, 700, 300 );			// draw line across the rectangle
 }
 
