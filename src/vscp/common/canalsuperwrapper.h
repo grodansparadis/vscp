@@ -49,11 +49,13 @@ events.
 #include "canal.h"
 #include "devitem.h"
 
+#include <wx/progdlg.h>
+
 // Default values for read/write register functions
 // used in device config and scan.
-#define VSCP_REGISTER_READ_RESEND_TIMEOUT       1000
-#define VSCP_REGISTER_READ_ERROR_TIMEOUT        2000
-#define VSCP_REGISTER_READ_MAX_TRIES            2
+#define SW_REGISTER_READ_RESEND_TIMEOUT		5000
+#define SW_REGISTER_READ_ERROR_TIMEOUT		2000
+#define SW_REGISTER_READ_MAX_TRIES			3
 
 /*!@{
 Constants for possible interfaces
@@ -608,11 +610,11 @@ public:
 	@param pcontent Pointer to read value.
 	@return True on success. False otherwise.
 	*/    
-	bool readLevel2Register( uint8_t *interfaceGUID, 
-		uint32_t reg = 0xd0, 
-		uint8_t *pcontent = NULL,
-		uint8_t *pdestGUID = NULL,
-		bool bLevel2 = false );
+	bool readLevel2Register( const uint8_t *interfaceGUID, 
+								uint32_t reg = 0xd0, 
+								uint8_t *pcontent = NULL,
+								const uint8_t *pdestGUID = NULL,
+								bool bLevel2 = false );
 
 	/*!
 	Write a level 2 register
@@ -623,57 +625,11 @@ public:
 	@param pcontent Pointer to data to write. Return read data.
 	@return True on success. False otherwise.
 	*/    
-	bool writeLevel2Register( uint8_t *interfaceGUID, 
-		uint32_t reg, 
-		uint8_t *pcontent,
-		uint8_t *pdestGUID = NULL,
-		bool bLevel2 = false );
-
-	/*!
-	Get MDf file from device registers
-
-	@param pid Pointer to id. Either a one byte nickname if bLevel = false
-	or a 16 byte GUID if bLevel2 = true.
-	@return true on success, false on failure.
-	*/
-	wxString getMDFfromDevice1( uint8_t id,
-		bool bSilent = false );
-
-	/*!
-	Get MDf file from device registers
-
-	@param pguid Pointer to guid of node.
-	@param bLevel2 Set to true if this is a level II devive 
-	@param bSilent Set to true to not show error messages.
-	@return true on success, false on failure.
-	*/
-	wxString getMDFfromDevice2( uint8_t *pguid,
-		bool bLevel2 = false,
-		bool bSilent = false );
-
-
-	/*!
-	Get Decision Matrix info for a Level I Node
-
-	@param nodeid id for node whos info should be fetched.
-	@param pdata Pointer to returned data. Array of eight bytes.
-	@return true on success, false on failure.
-	*/
-	bool getLevel1DmInfo( const uint8_t nodeid, 
-		uint8_t *pdata );
-
-	/*!
-	Get Decision Matrix info for a Level II Node
-
-	@param interfaceGUID GUID + nodeid for node whos info should be 
-	fetched.
-	@param pdata Pointer to returned data. Array of eight bytes.
-	@return true on success, false on failure.
-	*/
-	bool getLevel2DmInfo( uint8_t *interfaceGUID, 
-		uint8_t *pdata,
-		bool bLevel2 = false );
-
+	bool writeLevel2Register( const uint8_t *interfaceGUID, 
+								uint32_t reg, 
+								uint8_t *pcontent,
+								const uint8_t *pdestGUID,
+								bool bLevel2 = false );
 
 	/*!
 	Load level I register content into an array
@@ -687,26 +643,78 @@ public:
 	*/
 
 	bool readLevel1Registers( wxWindow *pwnd,
-		uint8_t *pregisters,
-		uint8_t nodeid,
-		uint8_t startreg = 0,
-		uint16_t count = 256 );
+								uint8_t *pregisters,
+								uint8_t nodeid,
+								uint8_t startreg = 0,
+								uint16_t count = 256 );
 
 
 	/*!
 	Load level II register content into an array
 	@param pwnd Pointer to window (owner usually this) that called this method.
 	@param pregisters Pointer to an array of 256 8-bit registers.
-	@param nodeid nodeid The node whos registers should be read.
-	@param bQuite No progress information if sett to true. (default is false)
+	@param pinterfaceGUID GUID for interface to do read on.
+	@param pdestGUID GUID for remote node.
+	@param startreg First register to read. Default is 0.
+	@param count Number of registers to read. Default is 256.
 	@return true on success, false on failure.
 	*/
 
 	bool readLevel2Registers( wxWindow *pwnd,
-		uint8_t *pregisters,
-		uint8_t *pinterfaceGUID,
-		uint32_t startreg = 0,
-		uint32_t count = 256 );
+								uint8_t *pregisters,
+								const uint8_t *pinterfaceGUID,
+								uint32_t startreg = 0,
+								uint32_t count = 256,
+								const uint8_t *pdestGUID = NULL,
+								bool bLevel2 = false );
+
+	/*!
+	Get MDf file from device registers
+
+	@param pid Pointer to id. Either a one byte nickname if bLevel = false
+	or a 16 byte GUID if bLevel2 = true.
+	@return true on success, false on failure.
+	*/
+	wxString getMDFfromDevice1( uint8_t id,
+									bool bSilent = false );
+
+	/*!
+	Get MDf file from device registers
+
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
+	@param bSilent Set to true to not show error messages.
+	@return true on success, false on failure.
+	*/
+	wxString getMDFfromDevice2( wxProgressDialog& progressDlg,
+									const uint8_t *interfaceGUID, 
+									const uint8_t *pdestGUID,
+									bool bLevel2 = false,
+									bool bSilent = false );
+
+
+	/*!
+	Get Decision Matrix info for a Level I Node
+
+	@param nodeid id for node whos info should be fetched.
+	@param pdata Pointer to returned data. Array of eight bytes.
+	@return true on success, false on failure.
+	*/
+	bool getLevel1DmInfo( const uint8_t nodeid, 
+							uint8_t *pdata );
+
+	/*!
+	Get Decision Matrix info for a Level II Node
+
+	@param interfaceGUID GUID + nodeid for node whos info should be 
+	fetched.
+	@param pdata Pointer to returned data. Array of eight bytes.
+	@return true on success, false on failure.
+	*/
+	bool getLevel2DmInfo( uint8_t *interfaceGUID, 
+							uint8_t *pdata,
+							bool bLevel2 = false );
 
 	/*!
 	Set register page for level 1 node
@@ -714,19 +722,33 @@ public:
 	@param page Page to set.
 	@Param Pointer to interface GUID if the interface should be set 
 	over the daemon interface.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@return True on success, false on failure. 
 	*/
 
-	bool setRegisterPage( uint8_t nodeid, uint16_t page, uint8_t *interfaceGUID = NULL );
+	bool setRegisterPage( uint8_t nodeid, 
+							uint16_t page, 
+							const uint8_t *interfaceGUID = NULL,
+							const uint8_t *destGUID = NULL,
+							bool bLevel2 = false );
 
 	/*!
 	Get current register page
 	@param nodeid Nickname for node to set register page for
 	@Param Pointer to interface GUID if the interface should be set 
 	over the daemon interface.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@return Current register page.				
 	*/
-	uint32_t getRegisterPage( wxWindow *pwnd, uint8_t nodeid, uint8_t *interfaceGUID = NULL );
+	uint32_t getRegisterPage( wxWindow *pwnd, 
+								uint8_t nodeid, 
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false );
 
 	/*!
 	Get a decision matrix row
@@ -740,13 +762,21 @@ public:
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getDMRow( wxWindow *pwnd,
-		uint8_t nodeid, 
-		CMDF_DecisionMatrix *pdm, 
-		uint32_t row, 
-		uint8_t *pRow,
-		bool bSilent = false );
+					uint8_t nodeid, 
+					CMDF_DecisionMatrix *pdm, 
+					uint32_t row, 
+					uint8_t *pRow,
+					bool bSilent = false );
+
+
+
+
 
 	//			* * * * Abstraction handlers * * * *
+
+
+
+
 
 	/*!
 	Read abstraction string
@@ -754,13 +784,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@retstr String that will reveive abstraction string.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstractionString( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		wxString& retstr,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								wxString& retstr,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Write abstraction string
@@ -768,13 +804,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@retstr Abstraction string that will get written.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool writeAbstractionString( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		wxString& strvalue,
-		bool bSilent = false );
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									wxString& strvalue,
+									const uint8_t *interfaceGUID = NULL,
+									const uint8_t *destGUID = NULL,
+									bool bLevel2 = false,
+									bool bSilent = false );
 
 	/*!
 	Read abstraction bitfield
@@ -782,13 +824,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@retstr String that will reveive abstraction string.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstractionBitField( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		wxString& strBitField,
-		bool bSilent = false );
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									wxString& strBitField,
+									const uint8_t *interfaceGUID = NULL,
+									const uint8_t *destGUID = NULL,
+									bool bLevel2 = false,
+									bool bSilent = false );
 
 	/*!
 	Write abstraction bitfield
@@ -796,26 +844,38 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@retstr Abstraction string that will get written.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool writeAbstractionBitField( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		wxString& strBitField,
-		bool bSilent = false );
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									wxString& strBitField,
+									const uint8_t *interfaceGUID = NULL,
+									const uint8_t *destGUID = NULL,
+									bool bLevel2 = false,
+									bool bSilent = false );
 	/*!
 	Read abstraction bool
 	@param pwnd Pointer to window (owner usually this) that called this method.
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to boolean that will reveive abstraction boolean.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstractionBool( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		bool *bval,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								bool *bval,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Write abstraction bool
@@ -823,13 +883,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to boolean that will be written as abstraction boolean.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool writeAbstractionBool( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		bool& bval,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								bool& bval,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Read abstraction 8-bit integer
@@ -837,13 +903,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to 8-bit integer.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstraction8bitinteger( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		uint8_t *pval,
-		bool bSilent = false );
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint8_t *pval,
+										const uint8_t *interfaceGUID = NULL,
+										const uint8_t *destGUID = NULL,
+										bool bLevel2 = false,
+										bool bSilent = false );
 
 	/*!
 	Write abstraction 8-bit integer
@@ -851,13 +923,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval 8-bit integer to write.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool writeAbstraction8bitinteger( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		uint8_t& val,
-		bool bSilent = false );
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint8_t& val,
+										const uint8_t *interfaceGUID = NULL,
+										const uint8_t *destGUID = NULL,
+										bool bLevel2 = false,
+										bool bSilent = false );
 
 	/*!
 	Read abstraction 16-bit integer
@@ -865,13 +943,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to 16-bit iteger.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstraction16bitinteger( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		uint16_t *pval,
-		bool bSilent = false );
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint16_t *pval,
+										const uint8_t *interfaceGUID = NULL,
+										const uint8_t *destGUID = NULL,
+										bool bLevel2 = false,
+										bool bSilent = false );
 
 	/*!
 	Write abstraction 16-bit integer
@@ -879,12 +963,18 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param val16 16-bit integer to write.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool writeAbstraction16bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint16_t& val16,
+										const uint8_t *interfaceGUID = NULL,
+										const uint8_t *destGUID = NULL,
+										bool bLevel2 = false,
 										bool bSilent = false );
 
 	/*!
@@ -893,13 +983,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to 32-bit integer.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstraction32bitinteger( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		uint32_t *pval,
-		bool bSilent = false );
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint32_t *pval,
+										const uint8_t *interfaceGUID = NULL,
+										const uint8_t *destGUID = NULL,
+										bool bLevel2 = false,
+										bool bSilent = false );
 
 	/*!
 	Write abstraction 32-bit integer
@@ -907,12 +1003,18 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param val32 32-bit integer to write.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
-	bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
+	bool writeAbstraction32bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint32_t& val32,
+										const uint8_t *interfaceGUID = NULL,
+										const uint8_t *destGUID = NULL,
+										bool bLevel2 = false,
 										bool bSilent = false );
 
 	/*!
@@ -921,13 +1023,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to 64-bit integer.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstraction64bitinteger( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		uint64_t *pval,
-		bool bSilent = false );
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint64_t *pval,
+										const uint8_t *interfaceGUID = NULL,
+										const uint8_t *destGUID = NULL,
+										bool bLevel2 = false,
+										bool bSilent = false );
 
 	/*!
 	Write abstraction 64-bit integer
@@ -935,13 +1043,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param val64 64-bit integer to write.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool writeAbstraction64bitinteger( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		uint64_t& val64,
-		bool bSilent = false );
+										uint8_t nodeid,
+										CMDF_Abstraction *abstraction,
+										uint64_t& val64,
+										const uint8_t *interfaceGUID = NULL,
+										const uint8_t *destGUID = NULL,
+										bool bLevel2 = false,
+										bool bSilent = false );
 
 	/*!
 	Read abstraction float 32-bit ( IEEE standard 754 1985 )
@@ -949,14 +1063,20 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to 64-bit IEEE standard 754 floating point.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	http://en.wikipedia.org/wiki/IEEE_754-1985
 	*/
 	bool getAbstractionFloat( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		float *pval,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								float *pval,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Write abstraction float 32-bit ( IEEE standard 754 1985 )
@@ -964,14 +1084,20 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param valfloat 64-bit IEEE standard 754 floating point value to write.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	http://en.wikipedia.org/wiki/IEEE_754-1985
 	*/
 	bool writeAbstractionFloat( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		float& valfloat,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								float& valfloat,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 
 	/*!
@@ -980,14 +1106,20 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to 64-bit IEEE standard 754 floating point.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	http://docs.wxwidgets.org/trunk/group__group__funcmacro__math.html
 	*/
 	bool getAbstractionDouble( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		double *pval,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								double *pval,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Write abstraction double 64-bit ( IEEE standard 754)
@@ -995,14 +1127,20 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param valdouble 64-bit IEEE standard 754 floating point to write.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	http://docs.wxwidgets.org/trunk/group__group__funcmacro__math.html
 	*/
 	bool writetAbstractionDouble( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		double& valdouble,
-		bool bSilent = false );
+									uint8_t nodeid,
+									CMDF_Abstraction *abstraction,
+									double& valdouble,
+									const uint8_t *interfaceGUID = NULL,
+									const uint8_t *destGUID = NULL,
+									bool bLevel2 = false,
+									bool bSilent = false );
 
 	/*!
 	Read abstraction date
@@ -1010,6 +1148,9 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pinter to Date
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 
 	Dates are stored as YYYY-MM-DD
@@ -1019,10 +1160,13 @@ public:
 	byte 3 - Date (0-31)
 	*/
 	bool getAbstractionDate( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		wxDateTime *pval,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								wxDateTime *pval,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Write abstraction date
@@ -1030,6 +1174,9 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param valdate Date to write
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 
 	Dates are stored as YYYY-MM-DD
@@ -1039,10 +1186,13 @@ public:
 	byte 3 - Date (0-31)
 	*/
 	bool writeAbstractionDate( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		wxDateTime& valdate,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								wxDateTime& valdate,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Read abstraction time
@@ -1050,13 +1200,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to three byte array for time hhmmss.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstractionTime( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		wxDateTime *pval,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								wxDateTime *pval,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Write abstraction time
@@ -1064,13 +1220,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param valtime Time to write
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool writeAbstractionTime( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		wxDateTime& valtime,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								wxDateTime& valtime,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	Read abstraction GUID
@@ -1078,13 +1240,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param bval Pointer to GUID class.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool getAbstractionGUID( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		cguid *pval,
-		bool bSilent = false );
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								cguid *pval,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 	/*!
 	write abstraction GUID
@@ -1092,14 +1260,19 @@ public:
 	@param nodeid nodeid The node whos registers should be read.
 	@param abstraction Pointer to MDF abstraction info
 	@param valguid GUID to write.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
 	*/
 	bool writeAbstractionGUID( wxWindow *pwnd,
-		uint8_t nodeid,
-		CMDF_Abstraction *abstraction,
-		cguid& valguid,
-		bool bSilent = false );
-
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
+								cguid& valguid,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
 
 #endif
 

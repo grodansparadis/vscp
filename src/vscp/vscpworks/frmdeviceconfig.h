@@ -369,16 +369,7 @@ public:
 	*/
 	CCanalSuperWrapper m_csw;
 
-	/*!
-	Registers
-	*/
-	//unsigned char m_registers[256][ 256 ];  
-
-	/*!
-	Saved registers (from first read)
-	*/
-	//unsigned char m_saved_registers[256][ 256 ];
-
+	/// Stabdard registers
 	CStandardRegisters m_stdRegisters;
 
 	/// Module description file functionality

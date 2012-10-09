@@ -5484,8 +5484,8 @@ void frmDeviceConfig::fillStandardRegisters()
 void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 {
 	wxString strPath;
+	cguid guid;	// Fill interace GUID
 	uint8_t nodeid = 0;
-	uint8_t guid[ 16 ];
 
 	::wxBeginBusyCursor();
 
@@ -5505,16 +5505,22 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 	}
 
 	wxProgressDialog progressDlg( _("VSCP Works"),
-		_("Fetching status and MDF"),
-		256, 
-		this,
-		wxPD_ELAPSED_TIME | 
-		wxPD_AUTO_HIDE | 
-		wxPD_APP_MODAL | 
-		wxPD_CAN_ABORT );
+									_("Fetching status and MDF"),
+									256, 
+									this,
+									wxPD_ELAPSED_TIME | 
+									wxPD_AUTO_HIDE | 
+									wxPD_APP_MODAL | 
+									wxPD_CAN_ABORT );
 
 	// Get nickname
-	nodeid = readStringValue( m_comboNodeID->GetValue() );
+	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+		nodeid = readStringValue( m_comboNodeID->GetValue() );
+	}
+	else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+		wxString str = m_comboNodeID->GetValue();
+		guid.getFromString( str );
+	}
 
 	if ( m_bFirstRead ) { 
 
@@ -5550,21 +5556,18 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 			}
 
 			// Load and parse the MDF
-			progressDlg.Pulse( _("Loading and parsing MDF.") );
-			if ( false == progressDlg.Update( 80 ) ) return;
-
+			if ( !progressDlg.Pulse( _("Loading and parsing MDF.") ) ) return;
 			m_mdf.load( strPath, m_chkMdfFromFile->GetValue() );
 
 			// Get the standard registers
-			progressDlg.Pulse( _("Reading standard registers.") );
-			if ( false == progressDlg.Update( 150 ) ) return;
+			if ( !progressDlg.Pulse( _("Reading standard registers.") ) ) return;
 
 			// First part of standard registers
 			m_csw.readLevel1Registers( this, 
 										m_stdRegisters.m_reg, 
 										nodeid, 0x80, 26 );
 
-			if ( false == progressDlg.Update( 200 ) ) return;
+			if ( false == progressDlg.Pulse() ) return;
 			
 			// Second part of standard registers
 			m_csw.readLevel1Registers( this, 
@@ -5690,29 +5693,203 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 		}
 		else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
-			progressDlg.Pulse( _("Fetching MDF path from device through server.") );
-			strPath = m_csw.getMDFfromDevice2( guid, true );
+			//progressDlg.Pulse( _("Fetching MDF path from device through server.") );
+			//strPath = m_csw.getMDFfromDevice2( guid, true );
 
+			// Feth MDF from local file or server
+			if ( m_chkMdfFromFile->GetValue() ) {
+
+				wxStandardPaths stdpaths;
+				
+				// Get MDF from local file
+				wxFileDialog dlg( this,
+					_("Choose file to load MDF from "),
+					stdpaths.GetUserDataDir(),
+					_(""),
+					_("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
+				
+				if ( wxID_OK == dlg.ShowModal() ) {
+					strPath = dlg.GetPath();
+				}
+
+			}
+			else {
+				// Get MDF from device
+				progressDlg.Pulse( _("Fetching MDF path from device.") );
+				strPath = m_csw.getMDFfromDevice2( progressDlg,
+													m_interfaceGUID,
+													guid.getGUID(),
+													m_bLevel2->GetValue() );
+			}
+
+			// We need it to continue
+			if ( 0 == strPath.Length() ) {
+				::wxMessageBox( _("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR );
+				return;
+			}
+
+			// Load and parse the MDF
+			progressDlg.Pulse( _("Loading and parsing MDF.") );
+			if ( false == progressDlg.Pulse() ) return;
+
+			m_mdf.load( strPath, m_chkMdfFromFile->GetValue() );
+
+			// Get the standard registers
+			if ( !progressDlg.Pulse( _("Reading standard registers.") ) ) return;
+
+			// First part of standard registers
+			if ( !m_csw.readLevel2Registers( this, 
+										m_stdRegisters.m_reg,
+										m_interfaceGUID, 
+										m_bLevel2->GetValue() ? 0xFFFFFF80 : 0x80, 
+										26,
+										guid.getGUID(),
+										m_bLevel2->GetValue() ) ) return;
+
+			if ( false == progressDlg.Pulse() ) return;
+			
+			// Second part of standard registers
+			if ( !m_csw.readLevel2Registers( this, 
+										( m_stdRegisters.m_reg + ( 0xD0 - 0x80 ) ), 
+										m_interfaceGUID,
+										m_bLevel2->GetValue() ? 0xFFFFFFD0 : 0xD0,
+										48,
+										guid.getGUID(),
+										m_bLevel2->GetValue() ) ) return;
+			
+			// Get the application registers
+			if ( !progressDlg.Pulse( _("Reading application registers.") ) ) return;
+
+			SortedArrayLong pageArray;
+			uint32_t n = m_mdf.getPages( pageArray );
+
+			if ( !progressDlg.Pulse() ) return;
+
+			uint8_t tt = m_stdRegisters.getNickname();
+			n = m_mdf.getNumberOfRegisters( 0 );
+
+			if ( !progressDlg.Pulse() ) return;
+
+			uint8_t val;
+			wxString strBuf;
+			wxString str;
+
+			wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
+			wxFont fontBold = defaultFont;
+			fontBold.SetStyle( wxFONTSTYLE_NORMAL );
+			fontBold.SetWeight( wxFONTWEIGHT_BOLD );
+
+			// Fill in register descriptions
+			uint8_t progress = 0;
+			uint8_t progress_count;
+
+			if ( m_mdf.m_list_register.GetCount() ) progress_count = 256/m_mdf.m_list_register.GetCount();
+			MDF_REGISTER_LIST::iterator iter;
+			for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
+
+				CMDF_Register *reg = *iter;
+				int cnt = 0;
+				if ( reg->m_nPage < MAX_CONFIG_REGISTER_PAGE ) {
+
+					//if ( !progressDlg.Update( _("Reading standard registers %0X02"), 256 - m_mdf.m_list_register.GetCount() + cnt  ) ) return;
+
+					// Add a new row
+					m_gridRegisters->AppendRows( 1 );
+
+					// Register
+					strBuf.Printf( _("%04X:%X"), reg->m_nPage, reg->m_nOffset );
+					progressDlg.Pulse( _("Reading page:register: ") + strBuf );
+
+					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
+					m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
+					m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
+					m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
+
+					if ( m_csw.readLevel2Register( m_interfaceGUID, 
+													m_bLevel2->GetValue() ? ( 0xFFFFFFE0 + reg->m_nOffset ) : reg->m_nOffset, 
+													&val,
+													guid.getGUID(),
+													m_bLevel2->GetValue() ) ) {
+						reg->m_value = val;
+						getFormattedValue( val );
+						m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
+							2,  
+							getFormattedValue( val ) );
+						m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
+						m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 2, fontBold );
+					}
+					else {
+						m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
+							2,  
+							_("Read error") );
+						m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows()-1, 2, wxALIGN_CENTRE, wxALIGN_CENTRE );
+						m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 2, fontBold );
+					}
+
+					str.Printf( reg->m_strName + 
+						_("\n") + 
+						reg->m_strDescription );
+					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
+						3,  
+						str );
+					m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
+
+					wxString strAccess;
+					if ( reg->m_nAccess & MDF_ACCESS_READ ) strAccess = _("r");
+					if ( reg->m_nAccess & MDF_ACCESS_WRITE ) {
+						strAccess += _("w");
+					}
+					else {
+						strAccess += _("-");
+					}
+
+					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
+						1,  
+						strAccess );
+					// Protect cell if readonly
+					if ( wxNOT_FOUND == strAccess.Find( _("w") ) ) {
+						m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
+					}        
+					m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows()-1, 1, wxALIGN_CENTRE, wxALIGN_CENTRE );
+
+					// Make all parts of the row visible
+					m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows()-1 );
+
+				}
+			}
+
+			if ( !progressDlg.Pulse( _("Fill standard register information.") ) ) return;
+			
+			// Fill grid with standard registers
+			fillStandardRegisters();
+
+			if ( !progressDlg.Pulse( _("Fill status information.") ) ) return;
+
+			// Write status
+			writeStatusInfo();
+
+			if ( !progressDlg.Pulse() ) return;
+
+			m_bFirstRead = false;
 		}
 
-		if ( false == progressDlg.Update( 230 ) ) return;
+		if ( !progressDlg.Pulse( _("Update DM grid.") ) ) return;
 
 		// Update the DM grid    
 		updateDmGrid();
 
-		if ( false == progressDlg.Update( 240 ) ) return;
+		if ( !progressDlg.Pulse( _("Update abstraction grid.") ) ) return;
 
 		// Update abstractions
 		updateAbstractionGrid();
 
-		if ( false == progressDlg.Update( 255 ) ) return;
-
-		progressDlg.Update( 256, _("Done!") );
+		if ( !progressDlg.Pulse( _("Done.") ) ) return;
 
 		// Enable load defaults buttons
 		m_ctrlButtonLoadMDF->Enable( true );
 
 	}
+	// next read
 	else {
 
 		if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
@@ -6846,7 +7023,6 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 						}
 						else {
 
-							
 							for ( int i=0; i<4; i++ ) {
 
 								strBuf = getFormattedValue( buf[ i ] );
@@ -7375,9 +7551,9 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 					uint16_t val;
 					strType = _("Signed 16-bit integer");
 					m_csw.getAbstraction16bitinteger( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
+														m_stdRegisters.getNickname(),
+														abstraction,
+														&val );
 					strValue.Printf( _("0x%04x"), val );
 				}
 				break;

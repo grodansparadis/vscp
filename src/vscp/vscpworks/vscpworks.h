@@ -132,8 +132,8 @@
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define VSCP_REGISTER_READ_RESEND_TIMEOUT       1000
-#define VSCP_REGISTER_READ_ERROR_TIMEOUT        2000
+#define VSCP_REGISTER_READ_RESEND_TIMEOUT       2000
+#define VSCP_REGISTER_READ_ERROR_TIMEOUT        5000
 #define VSCP_REGISTER_READ_MAX_TRIES            2
 
 #define VSCP_DEVCONFIG_NUMBERBASE_HEX			0

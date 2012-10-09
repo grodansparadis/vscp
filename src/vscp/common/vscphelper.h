@@ -170,7 +170,7 @@ extern "C"
       the first normalize byte.
       @return Bitarray as a unsigned 64-bit integer.
     */
-    uint32_t getDataCodingBitArray( const uint8_t *pNorm, const uint8_t length );
+    uint32_t getDataCodingBitArray( const unsigned char *pNorm, const unsigned char length );
 
     /*!
       Get normalized integer from coded event data
@@ -179,7 +179,7 @@ extern "C"
       the first normalize byte.
       @return returns value as a double.
     */
-    double getDataCodingNormalizedInteger( const uint8_t *pNorm, const uint8_t length );
+    double getDataCodingNormalizedInteger( const unsigned char *pNorm, const unsigned char length );
 
     /*!
       Get the string from coded event data
@@ -188,7 +188,7 @@ extern "C"
       the first normalize byte.
       @return Returns unicode UTF-8 string of event data
     */
-    wxString& getDataCodingString( const uint8_t *pString, const uint8_t length );
+    wxString& getDataCodingString( const unsigned char *pString, const unsigned char length );
 
     /*!
       Get data in the VSCP data coding format to a string
@@ -204,7 +204,7 @@ extern "C"
       @param length Number of bytes it consist of including datacoding byte
       @return value as float
     */
-	float getDataCodingFloat( const uint8_t *pNorm, const uint8_t length );
+	float getDataCodingFloat( const unsigned char *pNorm, const unsigned char length );
 
 	/*!
       Replace backshlashes in a string with forward slashes
@@ -240,7 +240,7 @@ extern "C"
       @param id CAN id
       @return VSCP head
     */
-    uint8_t getVSCPheadFromCANid( const uint32_t id );
+    unsigned char getVSCPheadFromCANid( const uint32_t id );
 
     /*!
      Get VSCP class from CAN id
@@ -270,7 +270,7 @@ extern "C"
       @param vscp_type VSCP type
       @return CAN id with nickname == 0
     */
-    uint32_t getCANidFromVSCPdata( const uint8_t priority, 
+    uint32_t getCANidFromVSCPdata( const unsigned char priority, 
                                         const uint16_t vscp_class, 
                                         const uint16_t vscp_type );
 
@@ -302,7 +302,7 @@ extern "C"
     /*!
       Fill event GUID from a string
     */
-    bool getGuidFromStringToArray( uint8_t *pGUID, const wxString& strGUID );
+    bool getGuidFromStringToArray( unsigned char *pGUID, const wxString& strGUID );
 
     /*!
       Write out GUID to string
@@ -336,7 +336,7 @@ extern "C"
       @param pGUID pointer to GUID to check
       @return tru of empty, false if not.
     */
-    bool isGUIDEmpty( unsigned char *pGUID );
+    bool isGUIDEmpty( const unsigned char *pGUID );
 
     /*!
       Compare two GUID's
@@ -475,7 +475,7 @@ extern "C"
       @return True on success false on failure.
     */
     bool writeVscpDataWithSizeToString( const uint16_t sizeData, 
-                                            const uint8_t *pData, 
+                                            const unsigned char *pData, 
                                             wxString& str, 
                                             bool bUseHtmlBreak = false );
 
@@ -496,7 +496,7 @@ extern "C"
       or hexadecimal form. Data can span multiple lines.
       @return true on success, false on failure.
     */
-    bool getVscpDataArrayFromString( uint8_t *pData, uint16_t *psizeData, const wxString& str );
+    bool getVscpDataArrayFromString( unsigned char *pData, uint16_t *psizeData, const wxString& str );
 
     /*!
       Write event to string.

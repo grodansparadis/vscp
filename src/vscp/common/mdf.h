@@ -117,7 +117,7 @@ public:
     wxString m_strDefault;              // default value
   
     uint16_t m_nPage;                   // stored on this page
-    uint16_t m_nOffset;                 // stored at this offset
+    uint32_t m_nOffset;                 // stored at this offset
     uint16_t m_nBitnumber;              // Stored at this bit position.
   
     uint16_t m_nWidth;                  // Width for bitfield and strings.

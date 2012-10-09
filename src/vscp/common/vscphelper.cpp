@@ -965,7 +965,8 @@ void VSCPInformation::fillTypeDescriptions( wxControlWithItems *pctrl,
 //
 
 // TODO should be uint64_t
-uint32_t getDataCodingBitArray( const uint8_t *pNorm, const uint8_t length )
+uint32_t getDataCodingBitArray( const unsigned char *pNorm, 
+									const unsigned char length )
 {
   uint32_t bitArray = 0;
 
@@ -978,7 +979,8 @@ uint32_t getDataCodingBitArray( const uint8_t *pNorm, const uint8_t length )
 // getDataCodingNormalizedInteger
 //
 
-double getDataCodingNormalizedInteger ( const uint8_t *pNorm, const uint8_t length )
+double getDataCodingNormalizedInteger ( const unsigned char *pNorm, 
+											const unsigned char length )
 {
   uint8_t valarray[ 8 ];
   uint8_t normbyte;
@@ -1058,7 +1060,8 @@ double getDataCodingNormalizedInteger ( const uint8_t *pNorm, const uint8_t leng
 // getDataCodingString
 //
 
-wxString& getDataCodingString( const uint8_t *pString, const uint8_t length )
+wxString& getDataCodingString( const unsigned char *pString, 
+								const unsigned char length )
 {
   static wxString str;
   char buf[ 8 ];
@@ -1077,7 +1080,7 @@ wxString& getDataCodingString( const uint8_t *pString, const uint8_t length )
 //////////////////////////////////////////////////////////////////////////////
 // getDataCodingFloat
 //
-float getDataCodingFloat ( const uint8_t *pNorm, const uint8_t length )
+float getDataCodingFloat ( const unsigned char *pNorm, const unsigned char length )
 {
   float value;
   value = std::numeric_limits<float>::infinity();
@@ -1496,9 +1499,9 @@ void setVscpPriority( vscpEvent *pEvent, unsigned char priority )
 // getVSCPheadFromCANid
 //
 
-uint8_t getVSCPheadFromCANid( const uint32_t id )
+unsigned char getVSCPheadFromCANid( const uint32_t id )
 {
-  return ( uint8_t ) ( 0xf0 & ( id >> 21 ) ); // Shift 26-5  1110 0000
+  return ( unsigned char ) ( 0xf0 & ( id >> 21 ) ); // Shift 26-5  1110 0000
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1532,7 +1535,7 @@ uint16_t getVSCPnicknameFromCANid ( const uint32_t id )
 // getCANidFromVSCPdata
 //
 
-uint32_t getCANidFromVSCPdata ( const uint8_t priority, const uint16_t vscp_class, const uint16_t vscp_type )
+uint32_t getCANidFromVSCPdata ( const unsigned char priority, const uint16_t vscp_class, const uint16_t vscp_type )
 {
   //unsigned long t1 = (unsigned long)priority << 20;
   //unsigned long t2 = (unsigned long)pvscpMsg->vscp_class << 16;
@@ -1641,7 +1644,7 @@ bool getGuidFromString ( vscpEvent *pEvent, const wxString& strGUID )
 // getGuidFromStringToArray
 //
 
-bool getGuidFromStringToArray( uint8_t *pGUID, const wxString& strGUID )
+bool getGuidFromStringToArray( unsigned char *pGUID, const wxString& strGUID )
 {
   unsigned long val;
 
@@ -1719,7 +1722,7 @@ bool writeGuidArrayToString( const unsigned char *pGUID, wxString& strGUID )
 // isGUIDEmpty
 //
 
-bool isGUIDEmpty( unsigned char *pGUID )
+bool isGUIDEmpty( const unsigned char *pGUID )
 {
   // Check pointers
   if ( NULL == pGUID ) return false;
@@ -2244,7 +2247,7 @@ bool writeVscpDataToString( const vscpEvent *pEvent, wxString& str, bool bUseHtm
 //
 
 bool writeVscpDataWithSizeToString( const uint16_t sizeData, 
-                                        const uint8_t *pData, 
+                                        const unsigned char *pData, 
                                         wxString& str, 
                                         bool bUseHtmlBreak )
 {
@@ -2319,7 +2322,7 @@ bool getVscpDataFromString( vscpEvent *pEvent, const wxString& str )
 // getVscpDataArrayFromString
 //
 
-bool getVscpDataArrayFromString( uint8_t *pData, uint16_t *psizeData, const wxString& str )
+bool getVscpDataArrayFromString( unsigned char *pData, uint16_t *psizeData, const wxString& str )
 {
     // Check pointers
     if ( NULL == pData ) return false;
