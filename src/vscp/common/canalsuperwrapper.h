@@ -611,7 +611,7 @@ public:
 	@return True on success. False otherwise.
 	*/    
 	bool readLevel2Register( const uint8_t *interfaceGUID, 
-								uint32_t reg = 0xd0, 
+								uint32_t reg, 
 								uint8_t *pcontent = NULL,
 								const uint8_t *pdestGUID = NULL,
 								bool bLevel2 = false );
@@ -766,6 +766,9 @@ public:
 					CMDF_DecisionMatrix *pdm, 
 					uint32_t row, 
 					uint8_t *pRow,
+					const uint8_t *interfaceGUID = NULL,
+					const uint8_t *destGUID = NULL,
+					bool bLevel2 = false,
 					bool bSilent = false );
 
 
@@ -788,6 +791,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstractionString( wxWindow *pwnd,
 								uint8_t nodeid,
@@ -808,6 +812,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstractionString( wxWindow *pwnd,
 									uint8_t nodeid,
@@ -828,6 +833,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstractionBitField( wxWindow *pwnd,
 									uint8_t nodeid,
@@ -848,6 +854,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstractionBitField( wxWindow *pwnd,
 									uint8_t nodeid,
@@ -867,6 +874,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstractionBool( wxWindow *pwnd,
 								uint8_t nodeid,
@@ -887,6 +895,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstractionBool( wxWindow *pwnd,
 								uint8_t nodeid,
@@ -907,6 +916,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstraction8bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
@@ -927,6 +937,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstraction8bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
@@ -947,6 +958,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstraction16bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
@@ -967,6 +979,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstraction16bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
@@ -987,6 +1000,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstraction32bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
@@ -1007,6 +1021,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstraction32bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
@@ -1027,6 +1042,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstraction64bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
@@ -1047,6 +1063,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstraction64bitinteger( wxWindow *pwnd,
 										uint8_t nodeid,
@@ -1067,6 +1084,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	http://en.wikipedia.org/wiki/IEEE_754-1985
 	*/
 	bool getAbstractionFloat( wxWindow *pwnd,
@@ -1088,6 +1106,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	http://en.wikipedia.org/wiki/IEEE_754-1985
 	*/
 	bool writeAbstractionFloat( wxWindow *pwnd,
@@ -1110,6 +1129,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	http://docs.wxwidgets.org/trunk/group__group__funcmacro__math.html
 	*/
 	bool getAbstractionDouble( wxWindow *pwnd,
@@ -1131,6 +1151,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	http://docs.wxwidgets.org/trunk/group__group__funcmacro__math.html
 	*/
 	bool writetAbstractionDouble( wxWindow *pwnd,
@@ -1152,6 +1173,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 
 	Dates are stored as YYYY-MM-DD
 	byte 0 - MSB of year
@@ -1178,6 +1200,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 
 	Dates are stored as YYYY-MM-DD
 	byte 0 - MSB of year
@@ -1204,6 +1227,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstractionTime( wxWindow *pwnd,
 								uint8_t nodeid,
@@ -1224,6 +1248,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstractionTime( wxWindow *pwnd,
 								uint8_t nodeid,
@@ -1244,6 +1269,7 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool getAbstractionGUID( wxWindow *pwnd,
 								uint8_t nodeid,
@@ -1264,11 +1290,32 @@ public:
 	@param pdestGUID Pointer to guid of node.
 	@param bLevel2 Set to true if this is a level II devive 
 	@param bSilent Set to true to not show error messages.
+	@return True on success, false on failure
 	*/
 	bool writeAbstractionGUID( wxWindow *pwnd,
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								cguid& valguid,
+								const uint8_t *interfaceGUID = NULL,
+								const uint8_t *destGUID = NULL,
+								bool bLevel2 = false,
+								bool bSilent = false );
+
+	/*!
+	Get string representation of abstraction value
+	@param pwnd Pointer to window (owner usually this) that called this method.
+	@param nodeid nodeid The node whos registers should be read.
+	@param abstraction Pointer to MDF abstraction info
+	@param valguid GUID to write.
+	@param interfaceGUID Interface to work on.
+	@param pdestGUID Pointer to guid of node.
+	@param bLevel2 Set to true if this is a level II devive 
+	@param bSilent Set to true to not show error messages.
+	@return String representation
+	*/
+	wxString getAbstractionValueAsString( wxWindow *pwnd,
+								uint8_t nodeid,
+								CMDF_Abstraction *abstraction,
 								const uint8_t *interfaceGUID = NULL,
 								const uint8_t *destGUID = NULL,
 								bool bLevel2 = false,

@@ -3307,7 +3307,7 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick( wxCommandEvent& event )
 		}
 
 		unsigned char val;
-		if ( wxGetApp().readLevel1Register( &m_csw, nodeid, 0xd0, &val ) ) {
+		if ( m_csw.readLevel1Register( nodeid, 0xd0, &val ) ) {
 			wxMessageBox(_("Device found!"));
 		}
 		else {
@@ -3322,13 +3322,12 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick( wxCommandEvent& event )
 		getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
 
 		unsigned char val;
-		if ( wxGetApp().readLevel2Register( &m_csw, 
-			m_interfaceGUID, 
-			0xd0, 
-			&val,
-			destGUID,
-			m_bLevel2->GetValue() ) ) {
-				wxMessageBox(_("Device found!"));
+		if ( m_csw.readLevel2Register( m_interfaceGUID, 
+										m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0, 
+										&val,
+										destGUID,
+										m_bLevel2->GetValue() ) ) {
+				wxMessageBox( _("Device found!") );
 		}
 		else {
 			wxMessageBox(_("Device was not found! Check interface GUID + nodeid."));
@@ -3568,8 +3567,6 @@ bool frmDeviceConfig::writeChangedLevel1Registers( unsigned char nodeid )
 
 				// Update display
 				strBuf = getFormattedValue( val );
-
-
 				m_gridRegisters->SetCellValue( i, 2,  strBuf );
 				m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, i, 2 );
 				m_gridRegisters->SetCellTextColour( i, 2, *wxBLUE );
@@ -3584,6 +3581,10 @@ bool frmDeviceConfig::writeChangedLevel1Registers( unsigned char nodeid )
 						break;
 					}			
 				}
+
+				updateDmGridConditional( reg, newpage );
+				updateAbstractionGridConditional( reg, newpage );
+
 			}
 			else {
 				wxMessageBox(_("Failed to write register."));	
@@ -3606,29 +3607,29 @@ bool frmDeviceConfig::writeChangedLevel2Registers( void )
 	bool rv = true;
 	int errors = 0;
 	wxString strBuf;
-
-	m_gridRegisters->BeginBatch();
+	uint32_t reg = 0;
+	uint16_t newpage = 0;
 
 	wxProgressDialog progressDlg( _("VSCP Works"),
-		_("Writing Registers"),
-		256, 
-		this,
-		wxPD_ELAPSED_TIME | 
-		wxPD_AUTO_HIDE | 
-		wxPD_APP_MODAL |    
-		wxPD_CAN_ABORT );
+									_("Writing Registers"),
+									256, 
+									this,
+									wxPD_ELAPSED_TIME | 
+									wxPD_AUTO_HIDE | 
+									wxPD_APP_MODAL |    
+									wxPD_CAN_ABORT );
 
 	// *********************************
 	// Write data from changed registers
 	// *********************************
 
-	progressDlg.Pulse( _("Writing registers!") );
+	progressDlg.Pulse( _("Writing changed registers!") );
 
 	// Get the destination GUID
 	uint8_t destGUID[ 16 ];
 	getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
 
-	for ( i = 0; i < 256; i++ ) {
+	for ( i = 0; i < m_gridRegisters->GetNumberRows(); i++ ) {
 
 		if ( !progressDlg.Update( i ) ) {
 			rv = false;
@@ -3639,34 +3640,50 @@ bool frmDeviceConfig::writeChangedLevel2Registers( void )
 
 			progressDlg.Pulse( wxString::Format(_("Writing register %d"), i) );
 
+			reg = getRegFromCell( i );
+			newpage = getPageFromCell( i );
+			uint16_t savepage = m_csw.getRegisterPage( this,
+														destGUID[0],
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() );
+
+			// Set new page
+			if ( newpage != savepage ) {
+				if ( !m_csw.setRegisterPage( destGUID[0], 
+												newpage, 
+												m_interfaceGUID,
+												destGUID,
+												m_bLevel2->GetValue() ) ) {
+					wxMessageBox(_("Failed to write/set new page."));
+					break;
+				}			
+			}
+
 			val = readStringValue( m_gridRegisters->GetCellValue( i, 2 ) );
-			wxGetApp().writeLevel2Register( &m_csw, 
-				m_interfaceGUID, 
-				i, 
-				&val,
-				destGUID,
-				m_bLevel2->GetValue() );
+
+			if ( !m_csw.writeLevel2Register( m_interfaceGUID, 
+												reg, 
+												&val,
+												destGUID,
+												m_bLevel2->GetValue() ) ) {
+				wxMessageBox(_("Failed to update data.") );
+			}
+
 			// Update display
-			strBuf.Printf( _("0x%02lx"), val );
+			strBuf = getFormattedValue( val );
 			m_gridRegisters->SetCellValue( i, 2,  strBuf );
 			m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, i, 2 );
 			m_gridRegisters->SetCellTextColour( i, 2, *wxBLUE );
 			m_gridRegisters->SelectRow( i );
 			m_gridRegisters->MakeCellVisible( i, 2 );
-			m_gridRegisters->Update();
+			m_gridRegisters->Update();    
 
-			//m_registers[ 0 ][ i ] = val;      
+			updateDmGridConditional( reg, newpage );
+			updateAbstractionGridConditional( reg, newpage );
 
-
-			if ( errors > 2 ) {
-				wxMessageBox( _("No node present or problems when communicating with node. Aborting!") );
-				rv = false;
-				break;
-			}
 		} // Changed register
 	} // for
-
-	m_gridRegisters->EndBatch();
 
 	return rv;
 }
@@ -5497,8 +5514,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 			writeChangedLevel1Registers( nodeid );
 		}
 		else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-
+			writeChangedLevel2Registers();
 		}
+
 		clearAllContent();
 		m_bFirstRead = true;
 
@@ -5896,7 +5914,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 			writeChangedLevel1Registers( nodeid );
 		}
 		else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-
+			writeChangedLevel2Registers();
 		}
 	}
 
@@ -6010,7 +6028,7 @@ void frmDeviceConfig::OnCellRightClick( wxGridEvent& event )
 
 	if ( ID_GRID_REGISTERS == event.GetId() ) {
 
-		menu.Append( Menu_Popup_Write_Value, _T("Be Hungry - Stay Foolish!"));
+		menu.Append( Menu_Popup_Read_Value, _T("Be Hungry - Stay Foolish!"));
 		menu.AppendSeparator();
 		menu.Append( Menu_Popup_Update, _T("Update"));
 		menu.Append( Menu_Popup_Default, _T("Default"));
@@ -6094,6 +6112,8 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 							// Set original page
 							m_csw.setRegisterPage( nodeid, savepage );
 
+							updateDmGridConditional( reg, page );
+							updateAbstractionGridConditional( reg, page );
 					}
 					else {
 						wxMessageBox(_("Failed to read value."));
@@ -6105,12 +6125,11 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 					uint8_t destGUID[ 16 ];
 					getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
 
-					if ( wxGetApp().readLevel2Register( &m_csw, 
-						m_interfaceGUID, 
-						reg, 
-						&val,
-						destGUID,
-						m_bLevel2->GetValue() ) ) {
+					if ( m_csw.readLevel2Register( m_interfaceGUID, 
+													reg, 
+													&val,
+													destGUID,
+													m_bLevel2->GetValue() ) ) {
 							// Update display
 							strBuf.Printf( _("0x%02lx"), val );
 							m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
@@ -6118,18 +6137,15 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 							m_gridRegisters->MakeCellVisible( selrows[i], 2 );
 							m_gridRegisters->Update();
 
+							updateDmGridConditional( reg, page );
+							updateAbstractionGridConditional( reg, page );
+
 					}
 					else {
 						wxMessageBox(_("Failed to read value."));
 					}
 				} // Interface
 			}
-
-			// Update the DM grid    
-			updateDmGrid();
-
-			// Update abstractions
-			updateAbstractionGrid();
 
 		}
 		else {
@@ -6148,6 +6164,10 @@ void frmDeviceConfig::writeValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 	uint8_t nodeid = 0;
 
 	wxBusyCursor wait;
+
+	// Get the destination GUID
+	uint8_t destGUID[ 16 ];
+	getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
 
 	// Select the row
 	m_gridRegisters->SelectRow( m_lastLeftClickRow );
@@ -6183,6 +6203,23 @@ void frmDeviceConfig::writeValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 					uint32_t reg;
 					reg = getRegFromCell( selrows[i] );
 
+					uint16_t savepage = m_csw.getRegisterPage( this,
+														destGUID[0],
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() );
+
+					// Set new page
+					if ( page != savepage ) {
+						if ( !m_csw.setRegisterPage( destGUID[0], 
+														page, 
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() ) ) {
+							wxMessageBox(_("Failed to write/set new page."));
+						}			
+					}
+
 					if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
 						// We don't test for errors here as some registers have reserved bits
@@ -6200,21 +6237,19 @@ void frmDeviceConfig::writeValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 						m_gridRegisters->SetCellTextColour( selrows[i], 2, *wxBLUE );
 						m_gridRegisters->Update();
 
+						updateDmGridConditional( reg, page );
+						updateAbstractionGridConditional( reg, page );
+
 					}
 					else {
 
-						// Get the destination GUID
-						uint8_t destGUID[ 16 ];
-						getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
-
 						// We don't test for errors here as some registers have reserved bits
 						// etc and therefore will not read the same as written
-						wxGetApp().writeLevel2Register( &m_csw, 
-							m_interfaceGUID, 
-							reg, 
-							&val,
-							destGUID,
-							m_bLevel2->GetValue() );
+						m_csw.writeLevel2Register( m_interfaceGUID, 
+													reg, 
+													&val,
+													destGUID,
+													m_bLevel2->GetValue() );
 						// Update display
 						strBuf.Printf( _("0x%02lx"), val );
 						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
@@ -6223,15 +6258,24 @@ void frmDeviceConfig::writeValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
 						m_gridRegisters->Update();
 
+						updateDmGridConditional( reg, page );
+						updateAbstractionGridConditional( reg, page );
+
+					}
+
+					// Restore page
+					if ( page != savepage ) {
+						if ( !m_csw.setRegisterPage( destGUID[0], 
+														savepage, 
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() ) ) {
+							wxMessageBox(_("Failed to write/set new page."));
+						}			
 					}
 				}
+
 			}
-
-			// Update the DM grid    
-			updateDmGrid();
-
-			// Update abstractions
-			updateAbstractionGrid();
 
 		}
 		else {
@@ -6250,6 +6294,10 @@ void frmDeviceConfig::undoValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 	uint8_t nodeid = 0;
 
 	wxBusyCursor wait;
+
+	// Get the destination GUID
+	uint8_t destGUID[ 16 ];
+	getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
 
 	// Select the row
 	m_gridRegisters->SelectRow( m_lastLeftClickRow );
@@ -6279,6 +6327,7 @@ void frmDeviceConfig::undoValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 
 					uint8_t reg = getRegFromCell( i );
 					uint32_t page = getPageFromCell( i );
+					
 
 					CMDF_Register *mdfRegs =  m_mdf.getMDFRegs( reg, page );
 					if ( NULL == mdfRegs ) {
@@ -6288,11 +6337,28 @@ void frmDeviceConfig::undoValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 
 					val = mdfRegs->m_value;
 
+					uint16_t savepage = m_csw.getRegisterPage( this,
+														destGUID[0],
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() );
+
+					// Set new page
+					if ( page != savepage ) {
+						if ( !m_csw.setRegisterPage( destGUID[0], 
+														page, 
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() ) ) {
+							wxMessageBox(_("Failed to write/set new page."));
+						}			
+					}
+
 					if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
 						// We don't test for errors here as some registers have reserved bits
 						// etc and therefore will not read the same as written
-						wxGetApp().writeLevel1Register( &m_csw, nodeid, reg, &val );
+						m_csw.writeLevel1Register( nodeid, reg, &val );
 
 						// Update display
 						strBuf = getFormattedValue( val );
@@ -6303,21 +6369,19 @@ void frmDeviceConfig::undoValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 						m_gridRegisters->SetCellTextColour( selrows[i], 2, *wxBLUE );
 						m_gridRegisters->Update();
 
+						updateDmGridConditional( reg, page );
+						updateAbstractionGridConditional( reg, page );
+
 					}
 					else {
 
-						// Get the destination GUID
-						uint8_t destGUID[ 16 ];
-						getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
-
 						// We don't test for errors here as some registers have reserved bits
 						// etc and therefore will not read the same as written
-						wxGetApp().writeLevel2Register( &m_csw, 
-							m_interfaceGUID, 
-							reg, 
-							&val,
-							destGUID,
-							m_bLevel2->GetValue() );
+						m_csw.writeLevel2Register( m_interfaceGUID, 
+													reg, 
+													&val,
+													destGUID,
+													m_bLevel2->GetValue() );
 						// Update display
 						strBuf.Printf( _("0x%02lx"), val );
 						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
@@ -6325,9 +6389,25 @@ void frmDeviceConfig::undoValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
 						m_gridRegisters->Update();
 
+						updateDmGridConditional( reg, page );
+						updateAbstractionGridConditional( reg, page );
+
 					}
+
+					// Restore page
+					if ( page != savepage ) {
+						if ( !m_csw.setRegisterPage( destGUID[0], 
+														savepage, 
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() ) ) {
+							wxMessageBox(_("Failed to write/set new page."));
+						}			
+					}
+
 				}
 			}
+
 		}
 		else {
 			wxMessageBox(_("No rows selected!"));
@@ -6345,6 +6425,10 @@ void frmDeviceConfig::defaultValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 	uint8_t nodeid = 0;
 
 	wxBusyCursor wait;
+
+	// Get the destination GUID
+	uint8_t destGUID[ 16 ];
+	getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
 
 	// Select the row
 	m_gridRegisters->SelectRow( m_lastLeftClickRow );
@@ -6383,11 +6467,28 @@ void frmDeviceConfig::defaultValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 
 					val = readStringValue( mdfRegs->m_strDefault );
 
+					uint16_t savepage = m_csw.getRegisterPage( this,
+														destGUID[0],
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() );
+
+					// Set new page
+					if ( page != savepage ) {
+						if ( !m_csw.setRegisterPage( destGUID[0], 
+														page, 
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() ) ) {
+							wxMessageBox(_("Failed to write/set new page."));
+						}			
+					}
+
 					if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
 						// We don't test for errors here as some registers have reserved bits
 						// etc and therefore will not read the same as written
-						wxGetApp().writeLevel1Register( &m_csw, nodeid, reg, &val );
+						m_csw.writeLevel1Register( nodeid, reg, &val );
 
 						// Update display
 						strBuf = getFormattedValue( val );
@@ -6401,18 +6502,16 @@ void frmDeviceConfig::defaultValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 					}
 					else {
 
-						// Get the destination GUID
-						uint8_t destGUID[ 16 ];
-						getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
-
 						// We don't test for errors here as some registers have reserved bits
 						// etc and therefore will not read the same as written
-						wxGetApp().writeLevel2Register( &m_csw, 
-							m_interfaceGUID, 
-							reg, 
-							&val,
-							destGUID,
-							m_bLevel2->GetValue() );
+						m_csw.writeLevel2Register( m_interfaceGUID, 
+													reg, 
+													&val,
+													destGUID,
+													m_bLevel2->GetValue() );
+
+						
+
 						// Update display
 						strBuf.Printf( _("0x%02lx"), val );
 						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
@@ -6421,8 +6520,26 @@ void frmDeviceConfig::defaultValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 						m_gridRegisters->Update();
 
 					}
+
+					// Restore page
+					if ( page != savepage ) {
+						if ( !m_csw.setRegisterPage( destGUID[0], 
+														savepage, 
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() ) ) {
+							wxMessageBox(_("Failed to write/set new page."));
+						}			
+					}
 				}
 			}
+
+			// Update the DM grid    
+			//updateDmGrid();
+
+			// Update abstractions
+			//updateAbstractionGrid();
+
 		}
 		else {
 			wxMessageBox(_("No rows selected!"));
@@ -6438,6 +6555,9 @@ void frmDeviceConfig::defaultValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 {
 	uint8_t reg;
+
+	uint8_t destGUID[ 16 ];
+	getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
 
 	if ( ID_GRID_REGISTERS == event.GetId() ) {
 		m_gridRegisters->SelectRow( event.GetRow() );
@@ -6526,7 +6646,10 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 				m_csw.writeAbstractionString( this,
 											readStringValue( m_comboNodeID->GetValue() ),
 											m_mdf.m_list_abstraction[ event.GetRow() ],
-											strValue );
+											strValue,
+											m_interfaceGUID,
+											destGUID,
+											m_bLevel2->GetValue() );
 				break;
 
 			case type_boolval:
@@ -6567,7 +6690,10 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 					m_csw.writeAbstractionBool( this,
 											readStringValue( m_comboNodeID->GetValue() ),
 											m_mdf.m_list_abstraction[ event.GetRow() ],
-											bval );
+											bval,
+											m_interfaceGUID,
+											destGUID,
+											m_bLevel2->GetValue() );
 				}
 				break;
 
@@ -6650,7 +6776,10 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 					m_csw.writeAbstractionBitField( this,
 											readStringValue( m_comboNodeID->GetValue() ),
 											m_mdf.m_list_abstraction[ event.GetRow() ],
-											strValue );
+											strValue,
+											m_interfaceGUID,
+											destGUID,
+											m_bLevel2->GetValue() );
 				}
 				break;
 
@@ -6677,9 +6806,12 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 					// Update registers
 					m_csw.writeAbstraction8bitinteger( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						val );
+									readStringValue( m_comboNodeID->GetValue() ),
+									m_mdf.m_list_abstraction[ event.GetRow() ],
+									val,
+									m_interfaceGUID,
+									destGUID,
+									m_bLevel2->GetValue() );
 				}
 				break;
 
@@ -6716,9 +6848,12 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 					// Update registers
 					m_csw.writeAbstraction16bitinteger( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						val );
+											readStringValue( m_comboNodeID->GetValue() ),
+											m_mdf.m_list_abstraction[ event.GetRow() ],
+											val,
+											m_interfaceGUID,
+											destGUID,
+											m_bLevel2->GetValue() );
 				}
 				break;
 
@@ -6780,9 +6915,12 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 					// Update registers
 					uint32_t val32 = longVal;
 					m_csw.writeAbstraction32bitinteger( this,
-							readStringValue( m_comboNodeID->GetValue() ),
-							m_mdf.m_list_abstraction[ event.GetRow() ],
-							val32 );
+											readStringValue( m_comboNodeID->GetValue() ),
+											m_mdf.m_list_abstraction[ event.GetRow() ],
+											val32,
+											m_interfaceGUID,
+											destGUID,
+											m_bLevel2->GetValue() );
 				}
 				break;
 
@@ -6823,7 +6961,6 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 						}
 						else {
-
 							
 							for ( int i=0; i<8; i++ ) {
 
@@ -6843,9 +6980,12 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 					// Update register
 					uint64_t val64 = longlongVal;
 					m_csw.writeAbstraction64bitinteger( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						val64 );
+										readStringValue( m_comboNodeID->GetValue() ),
+										m_mdf.m_list_abstraction[ event.GetRow() ],
+										val64,
+										m_interfaceGUID,
+										destGUID,
+										m_bLevel2->GetValue() );
 
 				}
 				break;
@@ -6906,9 +7046,12 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 					// Update register
 					m_csw.writeAbstractionFloat( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						floatVal );
+								readStringValue( m_comboNodeID->GetValue() ),
+								m_mdf.m_list_abstraction[ event.GetRow() ],
+								floatVal,
+								m_interfaceGUID,
+								destGUID,
+								m_bLevel2->GetValue() );
 
 				}
 				break;
@@ -6967,9 +7110,12 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 					// Update register
 					m_csw.writetAbstractionDouble( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						doubleVal );
+										readStringValue( m_comboNodeID->GetValue() ),
+										m_mdf.m_list_abstraction[ event.GetRow() ],
+										doubleVal,
+										m_interfaceGUID,
+										destGUID,
+										m_bLevel2->GetValue() );
 
 				}
 				break;
@@ -7040,9 +7186,12 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 					// Update register
 					m_csw.writeAbstractionDate( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						date );
+								readStringValue( m_comboNodeID->GetValue() ),
+								m_mdf.m_list_abstraction[ event.GetRow() ],
+								date,
+								m_interfaceGUID,
+								destGUID,
+								m_bLevel2->GetValue() );
 
 				}
 				break;
@@ -7109,9 +7258,12 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 					// Update register
 					m_csw.writeAbstractionTime( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						time );
+									readStringValue( m_comboNodeID->GetValue() ),
+									m_mdf.m_list_abstraction[ event.GetRow() ],
+									time,
+									m_interfaceGUID,
+									destGUID,
+									m_bLevel2->GetValue() );
 
 				}
 				break;
@@ -7250,46 +7402,49 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 		str = m_gridDM->GetCellValue( event.GetRow(), 7 );
 		dlg.m_actionParam->ChangeValue( str );
 
+		// Show the dialog
 		if ( wxID_OK == dlg.ShowModal() ) {
+
+			// OK Clicked 
 
 			wxString strBuf;
 
 			// O-addr
 			strBuf.Printf( _("0x%02lx"), readStringValue( dlg.m_oaddr->GetValue() ) );
 			m_gridRegisters->SetCellValue( m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-				2, 
-				strBuf );
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											2, 
+											strBuf );
 
 			// class mask
 			uint16_t class_mask = readStringValue( dlg.m_classMask->GetValue() );
 			strBuf.Printf( _("0x%02lx"), class_mask & 0xff );
 			m_gridRegisters->SetCellValue( 2 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-				2, 
-				strBuf );
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											2, 
+											strBuf );
 
 			// class filter
 			uint16_t class_filter = readStringValue( dlg.m_classFilter->GetValue() );
 			strBuf.Printf( _("0x%02lx"), class_filter & 0xff );
 			m_gridRegisters->SetCellValue( 3 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-				2, 
-				strBuf );
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											2, 
+											strBuf );
 
 			// type mask
 			strBuf.Printf( _("0x%02lx"), readStringValue( dlg.m_typeMask->GetValue() ) );
 			m_gridRegisters->SetCellValue( 4 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-				2, 
-				strBuf );
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											2, 
+											strBuf );
 
 			// type filter
 			strBuf.Printf( _("0x%02lx"), readStringValue( dlg.m_typeFilter->GetValue() ) );
 			m_gridRegisters->SetCellValue( 5 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-				2, 
-				strBuf );
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											2, 
+											strBuf );
 
 			// flags
 			uint8_t flags = 0;
@@ -7303,9 +7458,9 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 			if ( dlg.m_chkMatchSubzone->GetValue() ) flags |= 0x08;
 			strBuf.Printf( _("0x%02lx"), flags );
 			m_gridRegisters->SetCellValue( 1 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-				2, 
-				strBuf );
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											2, 
+											strBuf );
 
 			// Action
 			int idx = 0;
@@ -7317,16 +7472,16 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 				strBuf.Printf( _("0x%02lx"), 0 );
 			}
 			m_gridRegisters->SetCellValue( 6 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-				2, 
-				strBuf );
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											2, 
+											strBuf );
 
 			// Action Parameter
 			strBuf.Printf( _("0x%02lx"), readStringValue( dlg.m_actionParam->GetValue() ) );
 			m_gridRegisters->SetCellValue( 7 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-				2, 
-				strBuf );
+											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
+											2, 
+											strBuf );
 
 			int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset + 
 											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
@@ -7352,15 +7507,15 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
 						// Value
 						strBuf = getFormattedValue( 
-								readStringValue( dlg.m_oaddr->GetValue() ) );
+									readStringValue( dlg.m_oaddr->GetValue() ) );
 						m_gridRegisters->SetCellValue( 
-								row + 1, 
-								2, 
-								strBuf );
+												row + 1, 
+												2, 
+												strBuf );
 
 						m_gridRegisters->SetCellTextColour( 
-								row + 1, 
-								2, *wxRED );
+												row + 1, 
+												2, *wxRED );
 
 					}
 					else {
@@ -7368,19 +7523,18 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 						for ( int i=0; i<m_mdf.m_dmInfo.m_nRowSize; i++ ) {
 
 							// Index
-							strBuf = 
-								getFormattedValue( readStringValue(
+							strBuf =  getFormattedValue( readStringValue(
 								m_gridRegisters->GetCellValue( m_mdf.m_dmInfo.m_nStartOffset + 
 																m_mdf.m_dmInfo.m_nRowSize * 
 																event.GetRow() + i, 2 ) ) );
 							m_gridRegisters->SetCellValue( 
-								row + i, 
-								2, 
-								strBuf );
+												row + i, 
+												2, 
+												strBuf );
 
 							m_gridRegisters->SetCellTextColour( 
-								row + i, 
-								2, *wxRED );
+												row + i, 
+												2, *wxRED );
 
 						}
 
@@ -7420,6 +7574,9 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 void frmDeviceConfig::updateAbstractionGrid( void )
 {
 	wxString strBuf;
+
+	uint8_t destGUID[ 16 ];
+	getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
 
 	wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
 	wxFont fontBold = defaultFont;
@@ -7492,215 +7649,30 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 			wxString strValue;
 			wxString strType;
 			int pos = 0;	// Current character
-			switch ( abstraction->m_nType ) {
 
-			case type_string: 
-				strType = _("String");
-				m_csw.getAbstractionString( this,
-					m_stdRegisters.getNickname(),
-					abstraction,
-					strValue ); 
-				break;
-
-			case type_boolval:
-				{
-					bool bval;
-					strType = _("Boolean");
-					m_csw.getAbstractionBool( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&bval );
-					strValue = (bval? _("true") : _("false") );
-				}
-				break;
-
-			case type_bitfield:
-				strType = _("Bitfield");
-				m_csw.getAbstractionBitField( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						strValue );
-				break;
-
-			case type_int8_t:
-				{
-					uint8_t val;
-					strType = _("Signed 8-bit integer");
-					m_csw.getAbstraction8bitinteger( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("0x%02x"), val );
-				}
-				break;
-
-			case type_uint8_t:
-				{
-					uint8_t val;
-					strType = _("Unsigned 8-bit integer");
-					m_csw.getAbstraction8bitinteger( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("0x%02x"), val );
-				}
-				break;
-
-			case type_int16_t:
-				{
-					uint16_t val;
-					strType = _("Signed 16-bit integer");
-					m_csw.getAbstraction16bitinteger( this,
+			strType = abstraction->getAbstractionValueType();
+			strValue = m_csw.getAbstractionValueAsString( this,
 														m_stdRegisters.getNickname(),
 														abstraction,
-														&val );
-					strValue.Printf( _("0x%04x"), val );
-				}
-				break;
-
-			case type_uint16_t:
-				{
-					uint16_t val;
-					strType = _("Unsigned 16-bit integer");
-					m_csw.getAbstraction16bitinteger( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("0x%04x"), val );
-				}
-				break;
-
-			case type_int32_t:
-				{
-					uint32_t val;
-					strType = _("Signed 32-bit integer");
-					m_csw.getAbstraction32bitinteger( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("0x%04x"), val );
-				}
-				break;
-
-			case type_uint32_t:
-				{
-					uint32_t val;
-					strType = _("Unsigned 32-bit integer");
-					m_csw.getAbstraction32bitinteger( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("0x%08x"), val );
-				}
-				break;
-
-			case type_int64_t:
-				{
-					uint64_t val;
-					strType = _("Signed 64-bit integer");
-					m_csw.getAbstraction64bitinteger( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("0x%08x"), val );
-				}
-				break;
-
-			case type_uint64_t:
-				{
-					uint64_t val;
-					strType = _("Unsigned 64-bit integer");
-					m_csw.getAbstraction64bitinteger( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("0x%08x"), val );
-				}
-				break;
-
-			case type_float:
-				{
-					float val;
-					strType = _("float");
-					m_csw.getAbstractionFloat( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("%f"), val );
-				}
-				break;
-
-			case type_double:
-				{
-					double val;
-					strType = _("double");
-					m_csw.getAbstractionDouble( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue.Printf( _("%f"), val );
-				}
-				break;
-
-			case type_date:
-				{
-					wxDateTime val;
-					strType = _("Date");
-					m_csw.getAbstractionDate( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue = val.FormatISODate();
-				}
-				break;
-
-			case type_time:
-				{
-					wxDateTime val;
-					strType = _("Time");
-					m_csw.getAbstractionTime( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					strValue = val.FormatISOTime();
-				}
-				break;
-
-			case type_guid:
-				{
-					cguid val;
-					strType = _("GUID");
-					m_csw.getAbstractionGUID( this,
-						m_stdRegisters.getNickname(),
-						abstraction,
-						&val );
-					val.toString( strValue );
-				}
-				break;
-
-			case type_unknown:
-			default:
-				strType = _("Unknown Type");
-				strValue = _("Unknown Value");
-				break;
-			}
-
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() );
 
 			// Value
 			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-				3,
-				strValue );
+												3,
+												strValue );
 
 			m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER, 
-				m_gridAbstractions->GetNumberRows()-1, 
-				3 );
+													m_gridAbstractions->GetNumberRows()-1, 
+													3 );
 			m_gridAbstractions->SetCellFont( m_gridAbstractions->GetNumberRows()-1, 3, fontBold );
 			m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 3 );
 
 			// Type
 			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-				1, 
-				strType );
+												1, 
+												strType );
 	}
 }
 
@@ -7716,15 +7688,21 @@ void frmDeviceConfig::updateDmGrid( void )
 	uint8_t buf[ 512 ];
 	uint8_t *prow = buf;
 
+	uint8_t destGUID[ 16 ];
+	getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
+
 	m_gridDM->ClearGrid();
 
 	for ( int i=0; i<m_mdf.m_dmInfo.m_nRowCount; i++ ) {
 
 		if ( m_csw.getDMRow( this,
-								m_stdRegisters.getNickname(), 
-								&m_mdf.m_dmInfo, 
-								i, 
-								prow ) ) {
+								m_stdRegisters.getNickname(),
+								&m_mdf.m_dmInfo,
+								i,
+								prow,
+								m_interfaceGUID,
+								destGUID,
+								m_bLevel2->GetValue() ) ) {
 
 				// Add a row
 				m_gridDM->AppendRows( 1 );
@@ -7786,6 +7764,192 @@ void frmDeviceConfig::updateDmGrid( void )
 	}
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// updateDmGridConditional
+//
+
+void frmDeviceConfig::updateDmGridConditional( uint16_t reg, uint32_t page )
+{
+	int row = getRegisterGridRow( reg, page );
+	if ( -1 == row ) return;
+
+	if ( m_mdf.m_dmInfo.m_bIndexed ) {
+		
+		// Can't be first row
+		if ( 0 == row ) return;
+
+		// Must write to data part for a change
+		// to take place
+		if ( ( reg = ( m_mdf.m_dmInfo.m_nStartOffset + 1 ) ) &&
+			( page == m_mdf.m_dmInfo.m_nStartPage )  ) {
+
+			// Fetch index from grid
+			uint8_t index = readStringValue( m_gridRegisters->GetCellValue( row-1, 2 ) );
+			
+			// Fetch value from grid
+			uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
+			wxString strValue = getFormattedValue( value );
+
+			// Write it to the grid
+			m_gridDM->SetCellValue( strValue, index/m_mdf.m_dmInfo.m_nRowSize, index % 8 );
+
+		}
+
+	}
+	else {
+
+		// Must write to data part for a change
+		// to take place
+		if ( ( reg >= ( m_mdf.m_dmInfo.m_nStartOffset ) ) &&
+			( reg < ( m_mdf.m_dmInfo.m_nStartOffset + ( m_mdf.m_dmInfo.m_nRowCount * m_mdf.m_dmInfo.m_nRowSize ) ) ) &&
+			( page == m_mdf.m_dmInfo.m_nStartPage )  ) {
+		
+			// Fetch value from grid
+			uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
+			wxString strValue = getFormattedValue( value );
+
+			// Write it to the grid
+			m_gridDM->SetCellValue( strValue, 
+										(reg-m_mdf.m_dmInfo.m_nStartOffset)/m_mdf.m_dmInfo.m_nRowSize, 
+										(reg-m_mdf.m_dmInfo.m_nStartOffset) % 8 );
+		}
+	}
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// updateAbstractionGridConditional
+//
+
+void frmDeviceConfig::updateAbstractionGridConditional( uint16_t reg, uint32_t page )
+{
+	uint16_t rowAbstraction = 0;
+
+	uint8_t destGUID[ 16 ];
+	getGuidFromStringToArray( destGUID, m_comboNodeID->GetValue() );
+
+	int row = getRegisterGridRow( reg, page );
+	if ( -1 == row ) return;
+
+	// Iterate through abstractions to se if this regitser is used
+	MDF_ABSTRACTION_LIST::iterator iter;
+	for ( iter = m_mdf.m_list_abstraction.begin(); 
+		iter != m_mdf.m_list_abstraction.end(); ++iter ) {
+
+		CMDF_Abstraction *abstraction = *iter;
+		bool bIndexed = abstraction->m_bIndexed;
+		uint32_t regAbstraction = abstraction->m_nOffset;
+		uint16_t pageAbstraction = abstraction->m_nPage;
+		
+		uint32_t width;
+
+		if ( abstraction->m_nType == type_string ) {
+			width = abstraction->m_nWidth;
+		}
+		else if ( abstraction->m_nType == type_bitfield ) {
+			width = abstraction->m_nWidth;
+		}
+        else if ( abstraction->m_nType == type_boolval ) {
+			width = 1;
+        }
+        else if ( abstraction->m_nType == type_int8_t ) {
+			width = 1;
+        }
+        else if ( abstraction->m_nType == type_uint8_t ) {
+			width = 1;
+        }
+        else if ( abstraction->m_nType == type_int16_t ) {
+			width = 2;
+        }
+        else if ( abstraction->m_nType == type_uint16_t ) {
+			width = 2;
+        }
+        else if ( abstraction->m_nType == type_int32_t ) {
+			width = 4;
+        }
+        else if ( abstraction->m_nType == type_uint32_t ) {
+			width = 4;
+        }
+        else if ( abstraction->m_nType == type_int64_t ) {
+			width = 8;
+        }
+        else if ( abstraction->m_nType == type_uint64_t ) {
+			width = 8;
+        }
+        else if ( abstraction->m_nType == type_double ) {
+			width = 8;
+        }
+        else if ( abstraction->m_nType == type_float ) {
+			width = 4;
+        }
+        else if ( abstraction->m_nType == type_date ) {
+			width =4;
+        }
+        else if ( abstraction->m_nType == type_time ) {
+			width = 3;
+        }
+		else if ( abstraction->m_nType == type_guid ) {
+			width = 16;
+        }
+        else {
+			width = 0;
+		}
+
+		if ( bIndexed ) {
+
+			if ( ( reg == regAbstraction + 1 ) &&
+				 ( page == pageAbstraction ) ) {
+
+				// Register is datapart of an abstraction (the second byte)
+				// and the abstraction should be updated.
+
+				// Fetch index from grid
+				uint8_t index = readStringValue( m_gridRegisters->GetCellValue( row-1, 2 ) );
+			
+				// Fetch value from grid
+				//uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
+				//wxString strValue = getFormattedValue( value );
+				wxString strValue;
+				strValue = m_csw.getAbstractionValueAsString( this,
+														m_stdRegisters.getNickname(),
+														abstraction,
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() );
+				// Write it to the grid
+				m_gridAbstractions->SetCellValue( strValue, 
+													rowAbstraction, 
+													3 );
+			}
+
+		}
+		else {
+
+			if ( ( reg >= regAbstraction ) &&
+				 ( reg < ( regAbstraction + width ) ) &&
+				 ( page == pageAbstraction ) ) {
+
+				// Fetch value from grid
+				//uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
+				//wxString strValue = getFormattedValue( value );
+				wxString strValue;
+				strValue = m_csw.getAbstractionValueAsString( this,
+														m_stdRegisters.getNickname(),
+														abstraction,
+														m_interfaceGUID,
+														destGUID,
+														m_bLevel2->GetValue() );
+				// Write it to the grid
+				m_gridAbstractions->SetCellValue( strValue, 
+										rowAbstraction, 
+										3 );
+			}
+
+		}
+
+		rowAbstraction++;
+
+	}
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // dmEnableSelectedRow
@@ -7820,8 +7984,6 @@ void frmDeviceConfig::dmEnableSelectedRow( wxCommandEvent& event )
 			// Update registers
 			OnButtonUpdateClick( event );
 
-			// Update the DM Grid
-			updateDmGrid();
 
 		}
 
@@ -7860,9 +8022,6 @@ void frmDeviceConfig::dmDisableSelectedRow( wxCommandEvent& event )
 
 			// Update registers
 			OnButtonUpdateClick( event );
-
-			// Update the DM Grid
-			updateDmGrid();
 
 		}
 
@@ -8120,7 +8279,7 @@ uint32_t frmDeviceConfig::getRegFromCell( int row )
 		token2 = token1;
 	}
 
-	return readStringValue( _("0x") + token2 );
+	return readStringValue( _("0x") + token2.Trim() );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -8131,7 +8290,7 @@ uint16_t frmDeviceConfig::getPageFromCell( int row )
 {
 	wxString str = m_gridRegisters->GetCellValue( row, 0 );
 	if ( wxNOT_FOUND != str.Find(_(":")) ) {
-		return readStringValue( _("0x") + m_gridRegisters->GetCellValue( row, 0 ) );
+		return readStringValue( _("0x") + m_gridRegisters->GetCellValue( row, 0 ).Trim() );
 	}
 
 	return 0;

@@ -991,8 +991,8 @@ bool CCanalSuperWrapper::readLevel2Register( const uint8_t *interfaceGUID,
 							}
 						}
 					}
-
 				}
+
 			} // valid event
 		}
 		else {
@@ -1064,7 +1064,7 @@ bool CCanalSuperWrapper::writeLevel2Register( const uint8_t *interfaceGUID,
 		for ( i=0; i<16; i++ ) {
 			event.data[ i ] = interfaceGUID[ 15 - i ];	
 		}
-		event.data[16] = interfaceGUID[ 0 ];      // nodeid
+		event.data[16] = pdestGUID[ 0 ];		  // nodeid
 		event.data[17] = reg;                     // Register to write
 		event.data[18] = *pcontent;	              // value to write
 
@@ -1111,7 +1111,7 @@ bool CCanalSuperWrapper::writeLevel2Register( const uint8_t *interfaceGUID,
 				event.data[ i ] = interfaceGUID[ 15 - i ];	
 			}
 
-			event.data[16] = interfaceGUID[0];        // nodeid
+			event.data[16] = pdestGUID[0];			  // nodeid
 			event.data[17] = reg;                     // Register to write
 			event.data[18] = *pcontent;	              // value to write
 
@@ -1128,19 +1128,66 @@ bool CCanalSuperWrapper::writeLevel2Register( const uint8_t *interfaceGUID,
 
 		if ( doCmdDataAvailable() ) {                                 // Message available
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {    // Valid event
-				if ( ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
+				
+				if ( bInterface && ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
 					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   // Read reply?
-						if ( event.data[ 0 ] == reg ) {                         // Requested register?
-							if ( event.GUID[0] == interfaceGUID[0] ) {          // Correct node?
+					if ( event.data[ 0 ] == reg ) {                         // Requested register?
+						if ( event.GUID[0] == pdestGUID[ 0 ] ) {            // Correct node?
 
+							// We go a rw reply from the correct node is
+							// the written data same as we expect.
+							if ( *pcontent != event.data[ 1 ] ) rv = false;
+							break;
+
+						}
+					}   
+				} 
+
+				// Level II 512 Read reply?
+				else if ( !bInterface && !bLevel2 && 
+					( VSCP_CLASS2_LEVEL1_PROTOCOL == event.vscp_class ) && 
+					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
+
+					if ( isSameGUID( pdestGUID, event.GUID ) ) {
+						// Reg we requested?
+						if ( event.data[ 0 ] == reg ) {
+							// OK get the data
+							if ( NULL != pcontent ) {
 								// We go a rw reply from the correct node is
 								// the written data same as we expect.
 								if ( *pcontent != event.data[ 1 ] ) rv = false;
 								break;
-
 							}
-						}   // Check for correct node
-				}       // Check for correct reply event 
+						}
+					}
+
+				}
+				// Level II Read reply?
+				else if ( !bInterface && bLevel2 && 
+					( VSCP_CLASS2_PROTOCOL == event.vscp_class ) && 
+					( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == event.vscp_type ) ) { 
+
+					// from us
+					if ( isSameGUID( pdestGUID, event.GUID ) ) {	
+
+						uint32_t retreg = ( event.data[ 0 ]  << 24 ) +
+								(	event.data[ 1 ]  << 16 ) +
+								(	event.data[ 2 ]  << 8 ) +
+								event.data[ 3 ];
+
+						// Reg we requested?
+						if ( retreg == reg ) {
+								
+							// OK get the data
+							if ( NULL != pcontent ) {
+								// We go a rw reply from the correct node is
+								// the written data same as we expect.
+								if ( *pcontent != event.data[ 4 ] ) rv = false;
+								break;
+							}
+						}
+					}
+				}
 			}
 		}
 		else {
@@ -1271,7 +1318,7 @@ wxString CCanalSuperWrapper::getMDFfromDevice1( uint8_t id, bool bSilent )
 //
 
 wxString CCanalSuperWrapper::getMDFfromDevice2( wxProgressDialog& progressDlg,
-												const uint8_t *interfaceGUID,
+													const uint8_t *interfaceGUID,
 													const uint8_t *pdestGUID, 
 													bool bLevel2, 
 													bool bSilent )
@@ -1349,7 +1396,7 @@ wxString CCanalSuperWrapper::getMDFfromDevice2( wxProgressDialog& progressDlg,
 //
 
 bool CCanalSuperWrapper::getLevel1DmInfo( const uint8_t nodeid, 
-	uint8_t *pdata )
+											uint8_t *pdata )
 {
 	bool rv = true;
 	bool bResend;
@@ -1405,7 +1452,7 @@ bool CCanalSuperWrapper::getLevel1DmInfo( const uint8_t nodeid,
 //
 
 bool CCanalSuperWrapper::getLevel2DmInfo( uint8_t *interfaceGUID, 
-	uint8_t *pdata,
+											uint8_t *pdata,
 	bool bLevel2 )
 {
 	bool rv = true;
@@ -1567,17 +1614,21 @@ bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
 									CMDF_DecisionMatrix *pdm, 
 									uint32_t row, 
 									uint8_t *pRow,
+									const uint8_t *interfaceGUID,
+									const uint8_t *destGUID,
+									bool bLevel2,
 									bool bSilent )
 {
+	bool rv = true;
 	uint8_t val;
 	uint8_t *p = pRow;
 
 	// Can't load row that is larger than the availabel rows
 	if ( row >= pdm->m_nRowCount ) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid );
+	uint16_t savepage = getRegisterPage( pwnd, nodeid, interfaceGUID, destGUID, bSilent );
 	if ( savepage != pdm->m_nStartPage ) {
-		if ( !setRegisterPage( nodeid, pdm->m_nStartPage ) ) {
+		if ( !setRegisterPage( nodeid, pdm->m_nStartPage, interfaceGUID, destGUID, bSilent ) ) {
 			if ( !bSilent ) wxMessageBox( _("Unable to set register page for decision matrix!") );
 			return false;
 		}
@@ -1586,46 +1637,94 @@ bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
 	if ( pdm->m_bIndexed ) {
 
 		for ( int i=0; i<pdm->m_nRowSize; i++ ) {
+
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 			
-			// Set index
-			val = i;
-			if ( !writeLevel1Register( nodeid, pdm->m_nStartOffset, &val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to set register index for decision matrix!") );
-				return false;
+				// Set index
+				val = pdm->m_nStartOffset + row * pdm->m_nRowSize + i; // Indexed pos		
+				if ( !writeLevel1Register( nodeid, pdm->m_nStartOffset, &val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to set register index for decision matrix!") );
+					rv = false;
+					goto error;
+				}
+
+				// Read DM byte
+				if ( !readLevel1Register( nodeid, pdm->m_nStartOffset + 1, p++ ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to read register in indexed decision matrix") );
+					rv = false;
+					goto error;
+				}
+
 			}
-
-			// Read DM byte
-			if ( !readLevel1Register( nodeid, pdm->m_nStartOffset + 1, p++ ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to read register in indexed decision matrix") );
-				return false;
-			}
-
-
-		}
+			else {
 			
-	}
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											pdm->m_nStartOffset, 
+											&val,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID, 
+											pdm->m_nStartOffset + 1 , 
+											p++,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
+			}
+			
+		} // for
+	} // Indexed
 	else {
-		// Read row
-		if ( !readLevel1Registers( pwnd, 
-									pRow, 
-									nodeid, 
-									pdm->m_nStartOffset + row * pdm->m_nRowSize, 
-									pdm->m_nRowSize ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to read decision matrix row!") );
-			return false;
-		}
 
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			// Read row
+			if ( !readLevel1Registers( pwnd, 
+										pRow, 
+										nodeid, 
+										pdm->m_nStartOffset + row * pdm->m_nRowSize, 
+										pdm->m_nRowSize ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read decision matrix row!") );
+				rv = false;
+				goto error;
+			}
+
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										pdm->m_nStartOffset + row * pdm->m_nRowSize,
+										pdm->m_nRowSize,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
+		}
 	}
+
+error:
 
 	// Restore page
 	if ( savepage != pdm->m_nStartPage ) {
-		if ( !setRegisterPage( nodeid, savepage ) ) {
+		if ( !setRegisterPage( nodeid, savepage, interfaceGUID, destGUID, bSilent ) ) {
 			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for decision matrix!") );
-			return false;
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2206,11 +2305,9 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 					goto error;
 				}
 
-				if ( !readLevel2Registers( pwnd,
-											(p+i),
-											interfaceGUID,
+				if ( !readLevel2Register( interfaceGUID,
 											abstraction->m_nOffset + 1,
-											2,
+											(p+i),
 											destGUID, 
 											bLevel2 ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
@@ -2219,7 +2316,6 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 				}	
 
 			}
-
 			
 		}
 	}
@@ -2287,7 +2383,9 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 										bool bLevel2,
 										bool bSilent )
 {
-	uint8_t val;
+	bool rv = false;
+	val16 = wxINT16_SWAP_ON_LE( val16 );
+	uint8_t *p = (uint8_t *)&val16;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -2302,58 +2400,107 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 	}
 
 	if ( abstraction->m_bIndexed ) {
+
+		for ( uint8_t i=0; i<2; i++ ) {
+
+			uint8_t idx = i;
+
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 	
-		// Index = 0
-		val = 0;
-		if ( !writeLevel1Register( nodeid, 
-									abstraction->m_nOffset + 1, 
-									&val ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-		}
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				}
 		
-		// Write MSB
-		val = ( ( val16 >> 8 ) & 0xff );
-		if ( !writeLevel1Register( nodeid, 
-									abstraction->m_nOffset + 1, 
-									&val ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-		}
+				// Write MSB
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				}
 
-		// Index = 1
-		val = 1;
-		if ( !writeLevel1Register( nodeid, 
-									abstraction->m_nOffset + 1, 
-									&val ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-		}
+			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
 
-		// Write LSB
-		val = ( val16 & 0xff );
-		if ( !writeLevel1Register( nodeid, 
-									abstraction->m_nOffset + 1, 
-									&val ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				// Write data Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											(p+i),
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
+			}
 		}
 
 	}
 	else {
 
-		// Write MSB
-		val = ( ( val16 >> 8 ) & 0xff );
-		if ( !writeLevel1Register( nodeid, 
-									abstraction->m_nOffset, 
-									&val ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-		}
+		// Write string from linear storage.
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+		
+			// Write MSB
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset, 
+										p ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				rv = false;
+				goto error;
+			}
 
-		// Write LSB
-		val = ( val16 & 0xff );
-		if ( !writeLevel1Register( nodeid, 
-									abstraction->m_nOffset + 1, 
-									&val ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			// Write LSB
+			if ( !writeLevel1Register( nodeid, 
+										abstraction->m_nOffset + 1, 
+										(p + 1) ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				rv = false;
+				goto error;
+			}
+
+		}
+		else {
+		
+			// Write MSB
+			if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											p,
+											destGUID,
+											bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				rv = false;
+				goto error;
+			}
+
+			// Write LSB
+			if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + 1 , 
+											(p + 1),
+											destGUID,
+											bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+				rv = false;
+				goto error;
+			}
+		
 		}
 	}
+
+error:
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -2363,7 +2510,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3458,5 +3605,270 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 
 	return true;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  getAbstractionValueAsString
+//
+
+wxString CCanalSuperWrapper::getAbstractionValueAsString( wxWindow *pwnd,
+															uint8_t nodeid,
+															CMDF_Abstraction *abstraction,
+															const uint8_t *interfaceGUID,
+															const uint8_t *destGUID,
+															bool bLevel2,
+															bool bSilent )
+{
+	bool rv = false;
+	wxString strValue;
+
+	switch ( abstraction->m_nType ) {
+
+	case type_string: 
+		rv = getAbstractionString( pwnd,
+								nodeid,
+								abstraction,
+								strValue,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent ); 
+		break;
+
+	case type_boolval:
+		{
+			bool bval;
+			rv = getAbstractionBool( pwnd,
+								nodeid,
+								abstraction,
+								&bval,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue = (bval? _("true") : _("false") );
+		}
+		break;
+
+	case type_bitfield:
+		rv = getAbstractionBitField( pwnd,
+								nodeid,
+								abstraction,
+								strValue,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+		break;
+
+	case type_int8_t:
+		{
+			uint8_t val;
+			rv = getAbstraction8bitinteger( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("0x%02x"), val );
+		}
+		break;
+
+	case type_uint8_t:
+		{
+			uint8_t val;
+			rv = getAbstraction8bitinteger( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("0x%02x"), val );
+		}
+		break;
+
+	case type_int16_t:
+		{
+			uint16_t val;
+			rv = getAbstraction16bitinteger( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("0x%04x"), val );
+		}
+		break;
+
+	case type_uint16_t:
+		{
+			uint16_t val;
+			rv = getAbstraction16bitinteger( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("0x%04x"), val );
+		}
+		break;
+
+	case type_int32_t:
+		{
+			uint32_t val;
+			rv = getAbstraction32bitinteger( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("0x%04x"), val );
+		}
+		break;
+
+	case type_uint32_t:
+		{
+			uint32_t val;
+			rv = getAbstraction32bitinteger( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("0x%08x"), val );
+		}
+		break;
+
+	case type_int64_t:
+		{
+			uint64_t val;
+			rv = getAbstraction64bitinteger( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("0x%08x"), val );
+		}
+		break;
+
+	case type_uint64_t:
+		{
+			uint64_t val;
+			rv = getAbstraction64bitinteger( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("0x%08x"), val );
+		}
+		break;
+
+	case type_float:
+		{
+			float val;
+			rv = getAbstractionFloat( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("%f"), val );
+		}
+		break;
+
+	case type_double:
+		{
+			double val;
+			rv = getAbstractionDouble( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue.Printf( _("%f"), val );
+		}
+		break;
+
+	case type_date:
+		{
+			wxDateTime val;
+			rv = getAbstractionDate( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue = val.FormatISODate();
+		}
+		break;
+
+	case type_time:
+		{
+			wxDateTime val;
+			rv = getAbstractionTime( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			strValue = val.FormatISOTime();
+		}
+		break;
+
+	case type_guid:
+		{
+			cguid val;
+			rv = getAbstractionGUID( pwnd,
+								nodeid,
+								abstraction,
+								&val,
+								interfaceGUID,
+								destGUID,
+								bLevel2,
+								bSilent  );
+			val.toString( strValue );
+		}
+		break;
+
+	case type_unknown:
+	default:
+		strValue = _("Unknown Value");
+		break;
+	}
+
+	if ( !rv ) strValue = _("Error!");
+
+	return strValue;
+}
+
+
+
+
 
 #endif

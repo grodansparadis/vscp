@@ -106,6 +106,13 @@ public:
     */
     void clearStorage( void );
 
+	/*!
+		Get real text escription of type
+		@param type Abstraction type
+		@return Real text description of type.
+	*/
+	wxString getAbstractionValueType( void );
+
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;

@@ -146,23 +146,12 @@ public:
 	*/	
 	bool disableInterface( void );
 
-	/*!
-	Fill registers with standard VSCP 
-	register information
-	*/
-	//void initStandardRegInfo( void );
 
 	/*!
 	Write status infiormation
 	*/
 	void writeStatusInfo( void );
 
-	/*!
-	Read all Level 1 registers for anode
-	@param nodeid Node whos registers should be read.
-	@return True on success, false on failure.
-	*/
-	//bool readAllLevel1Registers( unsigned char nodeid );
 
 	/*!
 	Read all Level 1 registers for anode
@@ -209,12 +198,18 @@ public:
 	Update decision matrix grid if a certain page:row is part 
 	of it.
 	*/
-	void updateDmGridConditional( uint16_t page, uint32_t reg );
+	void updateDmGridConditional( uint16_t reg, uint32_t page );
 
 	/*!
 	Update the abstraction grid
 	*/
 	void updateAbstractionGrid( void );
+
+	/*!
+	Update abstraction grid if a certain page:row is part 
+	of it.
+	*/
+	void updateAbstractionGridConditional( uint16_t reg, uint32_t page );
 
 	/*!
 	Enable selected DM row
@@ -263,7 +258,7 @@ public:
 		@return Grid row where register:page is located. -1 is
 				retuned if row is not found.
 	*/
-	int getRegisterGridRow( uint32_t reg, uint16_t page );
+	int getRegisterGridRow( uint32_t reg, uint16_t page ); 
 
 
 	////@begin frmDeviceConfig event handler declarations
