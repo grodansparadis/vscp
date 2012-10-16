@@ -1740,6 +1740,7 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 												bool bLevel2,
 												bool bSilent )
 {
+	bool rv = true;
 	wxString str;
 
 	// Check pointers
@@ -1760,37 +1761,90 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 
 		for ( uint8_t i=0; i<abstraction->m_nWidth; i++ ) {
-			// Write index to string
+
 			uint8_t val = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&val ) ) {
-					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to string
+				
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&val ) ) {
+						if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
+						break;
+				}
+
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
 					break;
+				}
+
+			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 		}
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			abstraction->m_nWidth ) ) {
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										abstraction->m_nWidth ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+			}
+
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
 		}
 
 	}
 
 	retstr.From8BitData( (const char *)p );
+
+error:
+
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -1817,6 +1871,8 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 													bool bLevel2,
 													bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -1838,36 +1894,93 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 		
 		for ( uint8_t i=0; i<abstraction->m_nWidth; i++ ) {
-			// Write index
-			uint8_t val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
-				break;
+
+			
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index
+				uint8_t val = i;
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
+					rv = false;
+					goto error;;
+				}
+
+				// Read value
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
+					rv = false;
+					goto error;
+				}
 			}
-			// Read value
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
-				break;
+			else {
+			
+				// Write index Level II
+				uint8_t idx = i;
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Write data Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											(p+i),
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
+
 		}
 
 	}
 	else {
-		// Write string to linear storage.
+
 		for ( uint8_t i=0; i<abstraction->m_nWidth; i++ ) {
 
-			if ( !writeLevel1Register( nodeid, 
+			// Write string to linear storage.
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				if ( !writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											p++ ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction string!") );
-					break;
+					rv = false;
+					goto error;
+				}
 			}
+			else {
+	
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											p++,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+			}
+
 		}
+
 	}
+
+error:
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -1877,7 +1990,7 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1893,6 +2006,7 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 													bool bLevel2,
 													bool bSilent )
 {
+	bool rv = true;
 	wxString strvalue;
 
 	// Check pointers
@@ -1917,32 +2031,84 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 
 		for ( uint8_t i=0; i<octetwidth; i++ ) {
-			// Write index
+
 			uint8_t val = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&val ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction BitField index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+					rv = false;
+					goto error;
+				}
+
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction BitField value!") );
-					break;
+					rv = false;
+					goto error;
+				}
+			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 		}
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			octetwidth ) ) {
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										octetwidth ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction BitField!") );
+				rv = false;
+				goto error;
+			}
+
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
 		}
 
 	}
@@ -1957,6 +2123,10 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 			}
 		}
 	}
+	
+
+error:
+
 
 	if ( NULL != p ) delete p;
 
@@ -1968,7 +2138,7 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1982,8 +2152,10 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 													const uint8_t *interfaceGUID,
 													const uint8_t *destGUID,
 													bool bLevel2,
-	bool bSilent )
+													bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -2020,21 +2192,56 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 		
 		for ( uint8_t i=0; i<octetwidth; i++ ) {
-			// Write index to bitfield
-			uint8_t val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to write abstraction BitField index!") );
-				break;
+
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to bitfield
+				uint8_t val = i;
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction BitField index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Read value
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction BitField value!") );
+					rv = false;
+					goto error;
+				}
+
 			}
-			// Read value
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										(p+i) ) ) {
-				if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction BitField value!") );
-				break;
+			else {
+			
+				// Write index Level II
+				uint8_t idx = i;
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Write data Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											(p+i),
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
+
 		}
 
 	}
@@ -2042,14 +2249,37 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 		// Write bitfield to linear storage.
 		for ( uint8_t i=0; i<octetwidth; i++ ) {
 
-			if ( !writeLevel1Register( nodeid, 
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+			
+				if ( !writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											p++ ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction BitField!") );
-					break;
+					rv = false;
+					goto error;
+				}
+
+			}
+			else {
+	
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											p++,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
 			}
 		}
+
 	}
+
+
+error:
+
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -2059,7 +2289,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2075,6 +2305,9 @@ bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
 												bool bLevel2,
 												bool bSilent )
 {
+	bool rv = true;
+	uint8_t val;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -2086,13 +2319,34 @@ bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
 		}
 	}
 
-	// Read value
-	uint8_t val;
-	if ( !readLevel1Register( nodeid, 
-		abstraction->m_nOffset, 
-		&val ) ) {
+	
+	if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+		// Read value
+		if ( !readLevel1Register( nodeid, 
+									abstraction->m_nOffset, 
+									&val ) ) {
 			if ( !bSilent ) wxMessageBox( _("Failed to read abstraction boolean value!") );
+			rv = false;
+			goto error;
+		}
+
 	}
+	else {
+			
+		if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset,
+											&val,
+											destGUID, 
+											bLevel2 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+			rv = false;
+			goto error;
+		}
+	
+	}
+
+error:
 
 	*bval = val ? true : false;
 
@@ -2104,7 +2358,7 @@ bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2120,6 +2374,8 @@ bool CCanalSuperWrapper::writeAbstractionBool( wxWindow *pwnd,
 												bool bLevel2,
 												bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -2139,7 +2395,25 @@ bool CCanalSuperWrapper::writeAbstractionBool( wxWindow *pwnd,
 								abstraction->m_nOffset, 
 								&val ) ) {
 		if ( !bSilent ) wxMessageBox( _("Unable to write abstraction boolean!") );
+		rv = false;
+		goto error;
 	}
+	else {
+			
+		// Write index Level II
+		if ( !writeLevel2Register( interfaceGUID, 
+									abstraction->m_nOffset, 
+									&val,
+									destGUID ) ) {
+			if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+			rv = false;
+			goto error;
+		}
+
+	}
+
+error:
+
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -2149,7 +2423,7 @@ bool CCanalSuperWrapper::writeAbstractionBool( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2163,8 +2437,10 @@ bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
 														const uint8_t *interfaceGUID,
 														const uint8_t *destGUID,
 														bool bLevel2,
-	bool bSilent )
+														bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -2176,13 +2452,33 @@ bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
 		}
 	}
 
-	// Read value
-	if ( !readLevel1Register( nodeid, 
-		abstraction->m_nOffset, 
-		pval ) ) {
+	if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+		// Read value
+		if ( !readLevel1Register( nodeid, 
+									abstraction->m_nOffset, 
+									pval ) ) {
 			if ( !bSilent ) wxMessageBox( _("Failed to read abstraction 8-bit integer value!") );
+			rv = false;
+			goto error;
+		}
 
 	}
+	else {
+			
+		if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset,
+											pval,
+											destGUID, 
+											bLevel2 ) ) {
+			if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+			rv = false;
+			goto error;
+		}
+	
+	}
+
+error:
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -2206,8 +2502,10 @@ bool CCanalSuperWrapper::writeAbstraction8bitinteger( wxWindow *pwnd,
 														const uint8_t *interfaceGUID,
 														const uint8_t *destGUID,
 														bool bLevel2,
-		bool bSilent )
+														bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -2220,11 +2518,34 @@ bool CCanalSuperWrapper::writeAbstraction8bitinteger( wxWindow *pwnd,
 		}
 	}
 
-	if ( !writeLevel1Register( nodeid, 
-								abstraction->m_nOffset, 
-								&val ) ) {
-		if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 8-bit integer!") );
+	if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+	
+		if ( !writeLevel1Register( nodeid, 
+									abstraction->m_nOffset, 
+									&val ) ) {
+			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 8-bit integer!") );
+			rv = false;
+			goto error;
+		}
 	}
+	else {
+			
+		// Write index Level II
+		if ( !writeLevel2Register( interfaceGUID, 
+									abstraction->m_nOffset, 
+									&val,
+									destGUID ) ) {
+			if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+			rv = false;
+			goto error;
+	
+		}
+
+	}
+
+
+error:
+
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -2234,7 +2555,7 @@ bool CCanalSuperWrapper::writeAbstraction8bitinteger( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2375,13 +2696,13 @@ error:
 //
 
 bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										uint16_t& val16,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint16_t& val16,
+														const uint8_t *interfaceGUID,
+														const uint8_t *destGUID,
+														bool bLevel2,
+														bool bSilent )
 {
 	bool rv = false;
 	val16 = wxINT16_SWAP_ON_LE( val16 );
@@ -2411,6 +2732,8 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
 				}
 		
 				// Write MSB
@@ -2418,6 +2741,8 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
 				}
 
 			}
@@ -2518,14 +2843,16 @@ error:
 //
 
 bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										uint32_t *pval,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-	bool bSilent )
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint32_t *pval,
+														const uint8_t *interfaceGUID,
+														const uint8_t *destGUID,
+														bool bLevel2,
+														bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -2544,37 +2871,92 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 
 		for ( uint8_t i=0; i<4; i++ ) {
 
-			// Write index to string
 			uint8_t idx = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&idx ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to string
+				uint8_t idx = i;
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+					rv = false;
+					goto error;
+				}
+
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-					break;
+					rv = false;
+					goto error;
+				}
 			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
+			}
+
 		}
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			4 ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
-		}
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										4 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
+		}
 	}
 
 	*pval = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
+
+error:
+
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -2585,7 +2967,7 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2593,14 +2975,15 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										uint32_t& val32,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint32_t& val32,
+														const uint8_t *interfaceGUID,
+														const uint8_t *destGUID,
+														bool bLevel2,
+														bool bSilent )
 {
+	bool rv = true;
 	uint8_t val;
 
 	// Check pointers
@@ -2619,20 +3002,52 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 
 		for ( int i=0; i<4; i++ ) {
 	
-			// Index = 0
-			val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+			uint8_t idx = i;
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 		
-			// Write data
-			val = ( ( val32 >> (8 * (3-i) ) ) & 0xff );
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				// Write data
+				val = ( ( val32 >> (8 * (3-i) ) ) & 0xff );
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Write data Level II
+				val = ( ( val32 >> (8 * (3-i) ) ) & 0xff );
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 
 		}
@@ -2642,17 +3057,37 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 
 		for ( int i=0; i<4; i++ ) {
 
-			// Write data
 			val = ( ( val32 >> (8 * (3-i) ) ) & 0xff );
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + i, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 
+				// Write data
+				
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+
+			}
+			else {
+
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+			}
 		}
-		
 	}
+
+error:
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -2662,21 +3097,23 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  getAbstraction64bitinteger
 //
 bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										uint64_t *pval,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint64_t *pval,
+														const uint8_t *interfaceGUID,
+														const uint8_t *destGUID,
+														bool bLevel2,
+														bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -2695,32 +3132,84 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 
 		for ( uint8_t i=0; i<8; i++ ) {
 
-			// Write index to string
 			uint8_t idx = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&idx ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to string
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+					rv = false;
+					goto error;
+				}
+				
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-					break;
+					rv = false;
+					goto error;
+				}
+			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 		}
+
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			8 ) ) {
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										8 ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
 		}
 
 	}
@@ -2728,6 +3217,9 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 	*pval = *( (uint64_t *)p );
 	//( p[0] << 56 ) + ( p[1] << 48 ) + ( p[2] << 40 ) + ( p[3] << 32 ) +
 	//		( p[4] << 24 ) + ( p[5] << 16 ) + ( p[6] << 8 ) + p[7];
+
+error:
+
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -2738,7 +3230,7 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2746,14 +3238,15 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										uint64_t& val64,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+														uint8_t nodeid,
+														CMDF_Abstraction *abstraction,
+														uint64_t& val64,
+														const uint8_t *interfaceGUID,
+														const uint8_t *destGUID,
+														bool bLevel2,
+														bool bSilent )
 {
+	bool rv = true;
 	uint8_t val;
 
 	// Check pointers
@@ -2771,21 +3264,54 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 
 		for ( int i=0; i<8; i++ ) {
+
+			uint8_t idx = i;
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 	
-			// Index = 0
-			val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				// Index = 0
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&idx ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+			
+				// Write data
+				val = ( ( val64 >> (8 * (3-i) ) ) & 0xff );
+					if ( !writeLevel1Register( nodeid, 
+												abstraction->m_nOffset + 1, 
+												&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 			}
-		
-			// Write data
-			val = ( ( val64 >> (8 * (3-i) ) ) & 0xff );
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Write data Level II
+				val = ( ( val64 >> (8 * (3-i) ) ) & 0xff );
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 
 		}
@@ -2795,17 +3321,35 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 
 		for ( int i=0; i<8; i++ ) {
 
-			// Write data
 			val = ( ( val64 >> (8 * (3-i) ) ) & 0xff );
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + i, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+					
+				// Write data
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 			}
+			else {
 
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+			}
 		}
-		
 	}
+
+error:
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -2815,21 +3359,23 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //  getAbstractionFloat
 //
 bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										float *pval,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-	bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												float *pval,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -2848,37 +3394,92 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 
 		for ( uint8_t i=0; i<4; i++ ) {
 
-			// Write index to string
 			uint8_t idx = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&idx ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to string
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+					rv = false;
+					goto error;
+				}
+			
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-					break;
+					rv = false;
+					goto error;
+				}
 			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
+			}
+
 		}
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			4 ) ) {
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										4 ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
 		}
 
 	}
 
 	*pval = wxINT32_SWAP_ON_LE( *((float *)p) );
+
+error:
+
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -2889,7 +3490,7 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2897,14 +3498,15 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										float& valfloat,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												float& valfloat,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
 	uint8_t val;
 
 	// Check pointers
@@ -2924,21 +3526,54 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 
 		for ( int i=0; i<4; i++ ) {
+
+			uint8_t val = i;
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 	
-			// Index = 0
-			val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+				// Index = 0
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 		
-			// Write data
-			val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				// Write data
+				val = *(p+i);
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+
+			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Write data Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											(p+i),
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 
 		}
@@ -2948,17 +3583,39 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 
 		for ( int i=0; i<4; i++ ) {
 
-			// Write data
-			val = val = *(p+i);;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + i, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+			val = val = *(p+i);
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 
+				// Write data
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+
+			}
+			else {
+
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+			}
 		}
-		
+
 	}
+
+
+error:
+
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -2968,7 +3625,7 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2976,14 +3633,16 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										double *pval,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												double *pval,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -3002,37 +3661,91 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 
 		for ( uint8_t i=0; i<8; i++ ) {
 
-			// Write index to string
 			uint8_t idx = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&idx ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to string	
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+					rv = false;
+					goto error;
+				}
+
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-					break;
+					rv = false;
+					goto error;
+				}
 			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
+			}
+
 		}
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			8 ) ) {
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										8 ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;	
+			}
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
 		}
 
 	}
 
 	*pval = *((double *)p);
+
+error:
+
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -3043,7 +3756,7 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3051,14 +3764,15 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										double& valdouble,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+													uint8_t nodeid,
+													CMDF_Abstraction *abstraction,
+													double& valdouble,
+													const uint8_t *interfaceGUID,
+													const uint8_t *destGUID,
+													bool bLevel2,
+													bool bSilent )
 {
+	bool rv = true;
 	uint8_t val;
 
 	// Check pointers
@@ -3078,21 +3792,54 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 
 		for ( int i=0; i<8; i++ ) {
+
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 	
-			// Index = 0
-			val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+				// Index = 0
+				val = i;
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 		
-			// Write data
-			val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				// Write data
+				val = *(p+i);
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+			}
+			else {
+			
+				// Write index Level II
+				val = i;
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Write data Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											(p+i),
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 
 		}
@@ -3102,17 +3849,36 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 
 		for ( int i=0; i<8; i++ ) {
 
-			// Write data
-			val = val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + i, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 
+				// Write data
+				val = val = *(p+i);
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+			}
+			else {
+
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+			}
 		}
 		
 	}
+
+error:
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -3122,7 +3888,7 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3130,14 +3896,16 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										wxDateTime *pval,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												wxDateTime *pval,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -3156,32 +3924,83 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 
 		for ( uint8_t i=0; i<4; i++ ) {
 
-			// Write index to string
 			uint8_t idx = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&idx ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to string
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+					rv = false;
+					goto error;
+				}
+			
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-					break;
+					rv = false;
+					goto error;
+				}
 			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
+			}
+
 		}
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			4 ) ) {
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										4 ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
 		}
 
 	}
@@ -3190,6 +4009,9 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 	pval->SetYear( year );
 	pval->SetMonth( wxDateTime::Month( p[ 2 ] ) );
 	pval->SetDay( p[ 3 ] );
+
+error:
+
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -3200,7 +4022,7 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3208,14 +4030,15 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										wxDateTime& valdate,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												wxDateTime& valdate,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
 	uint8_t val;
 	uint8_t buf[ 4 ];
 
@@ -3242,21 +4065,54 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 
 		for ( int i=0; i<5; i++ ) {
+
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 	
-			// Index = 0
-			val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+				// Index = 0
+				val = i;
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 		
-			// Write data
-			val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				// Write data
+				val = *(p+i);
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+			}
+			else {
+			
+				// Write index Level II
+				val = i;
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Write data Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											(p+i),
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 
 		}
@@ -3266,17 +4122,36 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 
 		for ( int i=0; i<5; i++ ) {
 
-			// Write data
 			val = val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + i, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 
+				// Write data
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+
+			}
+			else {
+
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+			}
 		}
-		
 	}
+
+error:
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -3286,7 +4161,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3294,14 +4169,16 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										wxDateTime *pval,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												wxDateTime *pval,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -3320,32 +4197,83 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 
 		for ( uint8_t i=0; i<3; i++ ) {
 
-			// Write index to string
 			uint8_t idx = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&idx ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to string
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+					rv = false;
+					goto error;
+				}
+
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-					break;
+					rv = false;
+					goto error;
+				}
 			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
+			}
+
 		}
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			3 ) ) {
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										3 ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
 		}
 
 	}
@@ -3353,6 +4281,9 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 	pval->SetHour( p[ 0 ] );
 	pval->SetMinute( p[ 1 ] );
 	pval->SetSecond( p[ 2 ] );
+
+error:
+
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -3363,7 +4294,7 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3371,14 +4302,15 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										wxDateTime& valtime,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												wxDateTime& valtime,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
 	uint8_t val;
 	uint8_t buf[ 3 ];
 
@@ -3403,21 +4335,54 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 
 		for ( int i=0; i<3; i++ ) {
+
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 	
-			// Index = 0
-			val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+				// Index = 0
+				val = i;
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 		
-			// Write data
-			val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				// Write data
+				val = *(p+i);
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+			}
+			else {
+			
+				// Write index Level II
+				val = i;
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				// Write data Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset + i, 
+											(p+i),
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}	
+
 			}
 
 		}
@@ -3427,17 +4392,39 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 
 		for ( int i=0; i<3; i++ ) {
 
-			// Write data
 			val = val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + i, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write data
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+
+			}
+			else {
+
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
 			}
 
 		}
-		
 	}
+
+	
+error:
+
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -3447,7 +4434,7 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3455,14 +4442,16 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										cguid *pval,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												cguid *pval,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
+
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
@@ -3481,37 +4470,91 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
 
 		for ( uint8_t i=0; i<16; i++ ) {
 
-			// Write index to string
 			uint8_t idx = i;
-			if ( !writeLevel1Register( nodeid, 
-				abstraction->m_nOffset, 
-				&idx ) ) {
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+				// Write index to string
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset, 
+											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
-					break;
-			}
-			// Read value
-			if ( !readLevel1Register( nodeid, 
-				abstraction->m_nOffset + 1, 
-				(p+i) ) ) {
+					rv = false;
+					goto error;
+				}
+
+				// Read value
+				if ( !readLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
-					break;
+					rv = false;
+					goto error;
+				}
 			}
+			else {
+			
+				// Write index Level II
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&idx,
+											destGUID ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
+				if ( !readLevel2Register( interfaceGUID,
+											abstraction->m_nOffset + 1,
+											(p+i),
+											destGUID, 
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to read abstraction data!") );
+					rv = false;
+					goto error;
+				}	
+
+			}
+
 		}
 	}
 	else {
 
 		// Read string from linear storage.
-		if ( !readLevel1Registers( pwnd, 
-			p, 
-			nodeid, 
-			abstraction->m_nOffset, 
-			16 ) ) {
+		if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+
+			if ( !readLevel1Registers( pwnd, 
+										p, 
+										nodeid, 
+										abstraction->m_nOffset, 
+										16 ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+		}
+		else {
+
+			// Level II.
+			if ( !readLevel2Registers( pwnd,
+										p,
+										interfaceGUID,
+										abstraction->m_nOffset,
+										2,
+										destGUID, 
+										bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to read abstraction string!") );
+				rv = false;
+				goto error;
+			}
+
 		}
 
 	}
 
 	pval->getFromArray( p );
+	
+error:
+
 	if ( NULL != p ) delete p;
 
 	// Restore page
@@ -3522,7 +4565,7 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3530,14 +4573,15 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
 //
 
 bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
-										uint8_t nodeid,
-										CMDF_Abstraction *abstraction,
-										cguid& valguid,
-										const uint8_t *interfaceGUID,
-										const uint8_t *destGUID,
-										bool bLevel2,
-										bool bSilent )
+												uint8_t nodeid,
+												CMDF_Abstraction *abstraction,
+												cguid& valguid,
+												const uint8_t *interfaceGUID,
+												const uint8_t *destGUID,
+												bool bLevel2,
+												bool bSilent )
 {
+	bool rv = true;
 	uint8_t val;
 	uint8_t buf[ 16 ];
 
@@ -3559,21 +4603,28 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 	if ( abstraction->m_bIndexed ) {
 
 		for ( int i=0; i<16; i++ ) {
+
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
 	
-			// Index = 0
-			val = i;
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
-			}
+				// Index = 0
+				val = i;
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 		
-			// Write data
-			val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + 1, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+				// Write data
+				val = *(p+i);
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + 1, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
 			}
 
 		}
@@ -3583,17 +4634,37 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 
 		for ( int i=0; i<16; i++ ) {
 
-			// Write data
-			val = val = *(p+i);
-			if ( !writeLevel1Register( nodeid, 
-										abstraction->m_nOffset + i, 
-										&val ) ) {
-				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+			if ( !bLevel2 && ( NULL == interfaceGUID || isGUIDEmpty( interfaceGUID ) ) ) {
+				
+				// Write data
+				val = val = *(p+i);
+				if ( !writeLevel1Register( nodeid, 
+											abstraction->m_nOffset + i, 
+											&val ) ) {
+					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
+					rv = false;
+					goto error;
+				}
+			}
+			else {
+
+				if ( !writeLevel2Register( interfaceGUID, 
+											abstraction->m_nOffset, 
+											&val,
+											destGUID,
+											bLevel2 ) ) {
+					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
+					rv = false;
+					goto error;
+				}
+
 			}
 
 		}
 		
 	}
+
+error:
 
 	// Restore page
 	if ( savepage != abstraction->m_nPage ) {
@@ -3603,7 +4674,7 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 		}
 	}
 
-	return true;
+	return rv;
 }
 
 
