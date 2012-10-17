@@ -64,6 +64,7 @@
 #include "wx/html/htmlwin.h"
 ////@end includes
 
+#include "vscpworks.h"
 #include "../common/canalsuperwrapper.h"
 #include "../common/register.h"
 #include "../common/mdf.h"
@@ -260,6 +261,13 @@ public:
 	*/
 	int getRegisterGridRow( uint32_t reg, uint16_t page ); 
 
+	/*!
+		Fetch the GUID for a daemon interface from it's name
+		@param VSCP daemon interface structure for TCP/IP interface.
+		@return True on success.
+	*/
+	bool fetchIterfaceGUID( void );
+
 
 	////@begin frmDeviceConfig event handler declarations
 
@@ -351,7 +359,12 @@ public:
 
 	// GUID for interface or all
 	// zero if no interface selected
-	uint8_t m_interfaceGUID[ 16 ];
+	//uint8_t m_interfaceGUID[ 16 ];
+	cguid m_ifguid;
+
+	/// Name of interface or NULL string if
+	/// interface is not used.
+	wxString m_interfaceName;
 
 	/*!
 	CANAL driver level

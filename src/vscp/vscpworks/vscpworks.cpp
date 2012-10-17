@@ -2046,6 +2046,13 @@ bool VscpworksApp::readConfiguration( void )
                             pVSCPif->m_strPassword.Trim();
 
                         }
+						else if (subsubchild->GetName() == wxT("interfacename")) {
+
+                            pVSCPif->m_strInterfaceName = subsubchild->GetNodeContent().Trim();
+                            pVSCPif->m_strInterfaceName.Trim(false);
+                            pVSCPif->m_strInterfaceName.Trim();
+
+                        }
                         else if (subsubchild->GetName() == wxT("guid")) {
                             wxString str = subsubchild->GetNodeContent();
                             getGuidFromStringToArray( pVSCPif->m_GUID, str );
@@ -2108,12 +2115,6 @@ bool VscpworksApp::writeConfiguration( void )
 
     strcfgfile = strpath.GetUserDataDir();
     strcfgfile += _("/vscpworks.conf");
-
-    //#ifdef WIN32
-    //  strcfgfile = _("./vscpworks.conf");
-    //#else  
-    //  strcfgfile = _("/etc/vscp/vscpworks.conf");
-    //#endif
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream( strcfgfile );
     if ( NULL == pFileStream ) return false;
@@ -2468,6 +2469,11 @@ bool VscpworksApp::writeConfiguration( void )
             pFileStream->Write("<password>",strlen("<password>"));
             pFileStream->Write( pIf->m_strPassword.mb_str(), strlen( pIf->m_strPassword.mb_str() ) );
             pFileStream->Write("</password>\n",strlen("</password>\n"));
+
+			// Daemon interface
+            pFileStream->Write("<interfacename>",strlen("<interfacename>"));
+            pFileStream->Write( pIf->m_strInterfaceName.mb_str(), strlen( pIf->m_strInterfaceName.mb_str() ) );
+            pFileStream->Write("</interfacename>\n",strlen("</interfacename>\n"));
 
             // interface GUID
             pFileStream->Write("<guid>",strlen("<guid>"));

@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Fri 26 Oct 2007 11:57:04 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -149,22 +149,7 @@ public:
   wxTextCtrl* m_RemoteServerPort;
   wxTextCtrl* m_RemoteServerUsername;
   wxTextCtrl* m_RemoteServerPassword;
-  wxTextCtrl* m_GUID15;
-  wxTextCtrl* m_GUID14;
-  wxTextCtrl* m_GUID13;
-  wxTextCtrl* m_GUID12;
-  wxTextCtrl* m_GUID11;
-  wxTextCtrl* m_GUID10;
-  wxTextCtrl* m_GUID9;
-  wxTextCtrl* m_GUID8;
-  wxTextCtrl* m_GUID7;
-  wxTextCtrl* m_GUID6;
-  wxTextCtrl* m_GUID5;
-  wxTextCtrl* m_GUID4;
-  wxTextCtrl* m_GUID3;
-  wxTextCtrl* m_GUID2;
-  wxTextCtrl* m_GUID1;
-  wxTextCtrl* m_GUID0;
+  wxTextCtrl* m_RemoteInterfaceName;
   wxButton* m_btnTestConnection;
   wxButton* m_btnGetInterfaces;
   /// Control identifiers
@@ -183,22 +168,7 @@ public:
     ID_RemoteServerPort = 16027,
     ID_RemoteServerUsername = 16028,
     ID_RemoteServerPassword = 16029,
-    ID_GUID15 = 16031,
-    ID_GUID14 = 16032,
-    ID_GUID13 = 16033,
-    ID_GUID12 = 16034,
-    ID_GUID11 = 16035,
-    ID_GUID10 = 16036,
-    ID_GUID9 = 16037,
-    ID_GUID8 = 16038,
-    ID_GUID7 = 16008,
-    ID_GUID6 = 16009,
-    ID_GUID5 = 16010,
-    ID_GUID4 = 16011,
-    ID_GUID3 = 16012,
-    ID_GUID2 = 16013,
-    ID_GUID1 = 16014,
-    ID_GUID0 = 16015,
+    ID_TEXTCTRL_INTERFACE_NAME = 16019,
     ID_BUTTON_SET_FILTER = 16017,
     ID_BUTTON_TEST_INTERFACE = 16016,
     ID_BUTTON = 16018

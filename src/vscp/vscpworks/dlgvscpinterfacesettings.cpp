@@ -78,13 +78,13 @@
 IMPLEMENT_DYNAMIC_CLASS( dlgVscpInterfaceSettings, wxPropertySheetDialog )
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// dlgVscpInterfaceSettings event table definition
-//
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// dlgVscpInterfaceSettings event table definition
+	//
 
-BEGIN_EVENT_TABLE( dlgVscpInterfaceSettings, wxPropertySheetDialog )
+	BEGIN_EVENT_TABLE( dlgVscpInterfaceSettings, wxPropertySheetDialog )
 
-////@begin dlgVscpInterfaceSettings event table entries
+	////@begin dlgVscpInterfaceSettings event table entries
   EVT_BUTTON( ID_BUTTON_VSCP_DRIVER_SET_PATH, dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick )
 
   EVT_BUTTON( ID_BUTTON_VSCP_SET_CONFIGURATION, dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick )
@@ -95,24 +95,24 @@ BEGIN_EVENT_TABLE( dlgVscpInterfaceSettings, wxPropertySheetDialog )
 
   EVT_BUTTON( ID_BUTTON, dlgVscpInterfaceSettings::OnButtonGetInterfacesClick )
 
-////@end dlgVscpInterfaceSettings event table entries
+	////@end dlgVscpInterfaceSettings event table entries
 
-END_EVENT_TABLE()
+	END_EVENT_TABLE()
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// dlgVscpInterfaceSettings constructors
-//
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// dlgVscpInterfaceSettings constructors
+	//
 
-dlgVscpInterfaceSettings::dlgVscpInterfaceSettings()
+	dlgVscpInterfaceSettings::dlgVscpInterfaceSettings()
 {
-  Init();
+	Init();
 }
 
 dlgVscpInterfaceSettings::dlgVscpInterfaceSettings( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
-  Init();
-  Create(parent, id, caption, pos, size, style);
+	Init();
+	Create(parent, id, caption, pos, size, style);
 }
 
 
@@ -122,7 +122,7 @@ dlgVscpInterfaceSettings::dlgVscpInterfaceSettings( wxWindow* parent, wxWindowID
 
 bool dlgVscpInterfaceSettings::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
-////@begin dlgVscpInterfaceSettings creation
+	////@begin dlgVscpInterfaceSettings creation
   SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
   SetSheetStyle(wxPROPSHEET_DEFAULT);
   wxPropertySheetDialog::Create( parent, id, caption, pos, size, style );
@@ -132,8 +132,8 @@ bool dlgVscpInterfaceSettings::Create( wxWindow* parent, wxWindowID id, const wx
   SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
   LayoutDialog();
   Centre();
-////@end dlgVscpInterfaceSettings creation
-  return true;
+	////@end dlgVscpInterfaceSettings creation
+	return true;
 }
 
 
@@ -143,8 +143,8 @@ bool dlgVscpInterfaceSettings::Create( wxWindow* parent, wxWindowID id, const wx
 
 dlgVscpInterfaceSettings::~dlgVscpInterfaceSettings()
 {
-////@begin dlgVscpInterfaceSettings destruction
-////@end dlgVscpInterfaceSettings destruction
+	////@begin dlgVscpInterfaceSettings destruction
+	////@end dlgVscpInterfaceSettings destruction
 }
 
 
@@ -154,7 +154,7 @@ dlgVscpInterfaceSettings::~dlgVscpInterfaceSettings()
 
 void dlgVscpInterfaceSettings::Init()
 {
-////@begin dlgVscpInterfaceSettings member initialisation
+	////@begin dlgVscpInterfaceSettings member initialisation
   m_panelCanal = NULL;
   m_DriverDescription = NULL;
   m_PathToDriver = NULL;
@@ -166,25 +166,10 @@ void dlgVscpInterfaceSettings::Init()
   m_RemoteServerPort = NULL;
   m_RemoteServerUsername = NULL;
   m_RemoteServerPassword = NULL;
-  m_GUID15 = NULL;
-  m_GUID14 = NULL;
-  m_GUID13 = NULL;
-  m_GUID12 = NULL;
-  m_GUID11 = NULL;
-  m_GUID10 = NULL;
-  m_GUID9 = NULL;
-  m_GUID8 = NULL;
-  m_GUID7 = NULL;
-  m_GUID6 = NULL;
-  m_GUID5 = NULL;
-  m_GUID4 = NULL;
-  m_GUID3 = NULL;
-  m_GUID2 = NULL;
-  m_GUID1 = NULL;
-  m_GUID0 = NULL;
+  m_RemoteInterfaceName = NULL;
   m_btnTestConnection = NULL;
   m_btnGetInterfaces = NULL;
-////@end dlgVscpInterfaceSettings member initialisation
+	////@end dlgVscpInterfaceSettings member initialisation
 
 	// Init filter
 	clearVSCPFilter( &m_vscpfilter );
@@ -198,7 +183,7 @@ void dlgVscpInterfaceSettings::Init()
 
 void dlgVscpInterfaceSettings::CreateControls()
 {    
-////@begin dlgVscpInterfaceSettings content construction
+	////@begin dlgVscpInterfaceSettings content construction
   dlgVscpInterfaceSettings* itemPropertySheetDialog1 = this;
 
   m_panelCanal = new wxPanel;
@@ -339,132 +324,47 @@ void dlgVscpInterfaceSettings::CreateControls()
   wxBoxSizer* itemBoxSizer44 = new wxBoxSizer(wxHORIZONTAL);
   itemBoxSizer24->Add(itemBoxSizer44, 0, wxALIGN_RIGHT|wxALL, 1);
   wxStaticText* itemStaticText45 = new wxStaticText;
-  itemStaticText45->Create( m_panelServer, wxID_STATIC, _("Interface to use on server (use all null's for all interfaces)"), wxDefaultPosition, wxDefaultSize, 0 );
+  itemStaticText45->Create( m_panelServer, wxID_STATIC, _("Interface to use on server (leave blank to send events on all interfaces)"), wxDefaultPosition, wxDefaultSize, 0 );
   itemStaticText45->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
   itemBoxSizer44->Add(itemStaticText45, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
   itemBoxSizer44->Add(160, 1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   wxBoxSizer* itemBoxSizer47 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer47, 1, wxALIGN_RIGHT|wxALL, 1);
+  itemBoxSizer24->Add(itemBoxSizer47, 0, wxALIGN_RIGHT|wxALL, 1);
   wxStaticText* itemStaticText48 = new wxStaticText;
-  itemStaticText48->Create( m_panelServer, wxID_STATIC, _("GUID  (15-8):"), wxDefaultPosition, wxDefaultSize, 0 );
+  itemStaticText48->Create( m_panelServer, wxID_STATIC, _("Interface name:"), wxDefaultPosition, wxDefaultSize, 0 );
   itemBoxSizer47->Add(itemStaticText48, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_GUID15 = new wxTextCtrl;
-  m_GUID15->Create( m_panelServer, ID_GUID15, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID15->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer47->Add(m_GUID15, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+  m_RemoteInterfaceName = new wxTextCtrl;
+  m_RemoteInterfaceName->Create( m_panelServer, ID_TEXTCTRL_INTERFACE_NAME, wxEmptyString, wxDefaultPosition, wxSize(200, -1), 0 );
+  itemBoxSizer47->Add(m_RemoteInterfaceName, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_GUID14 = new wxTextCtrl;
-  m_GUID14->Create( m_panelServer, ID_GUID14, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID14->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer47->Add(m_GUID14, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+  itemBoxSizer47->Add(200, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_GUID13 = new wxTextCtrl;
-  m_GUID13->Create( m_panelServer, ID_GUID13, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID13->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer47->Add(m_GUID13, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+  wxBoxSizer* itemBoxSizer51 = new wxBoxSizer(wxHORIZONTAL);
+  itemBoxSizer24->Add(itemBoxSizer51, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 15);
+  wxButton* itemButton52 = new wxButton;
+  itemButton52->Create( m_panelServer, ID_BUTTON_SET_FILTER, _("Set Filter"), wxDefaultPosition, wxDefaultSize, 0 );
+  itemBoxSizer51->Add(itemButton52, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_GUID12 = new wxTextCtrl;
-  m_GUID12->Create( m_panelServer, ID_GUID12, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID12->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer47->Add(m_GUID12, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID11 = new wxTextCtrl;
-  m_GUID11->Create( m_panelServer, ID_GUID11, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID11->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer47->Add(m_GUID11, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID10 = new wxTextCtrl;
-  m_GUID10->Create( m_panelServer, ID_GUID10, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID10->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer47->Add(m_GUID10, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID9 = new wxTextCtrl;
-  m_GUID9->Create( m_panelServer, ID_GUID9, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID9->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer47->Add(m_GUID9, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID8 = new wxTextCtrl;
-  m_GUID8->Create( m_panelServer, ID_GUID8, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID8->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer47->Add(m_GUID8, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  itemBoxSizer47->Add(65, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  wxBoxSizer* itemBoxSizer58 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer58, 1, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText59 = new wxStaticText;
-  itemStaticText59->Create( m_panelServer, wxID_STATIC, _("GUID  (7-0):"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer58->Add(itemStaticText59, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID7 = new wxTextCtrl;
-  m_GUID7->Create( m_panelServer, ID_GUID7, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID7->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer58->Add(m_GUID7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID6 = new wxTextCtrl;
-  m_GUID6->Create( m_panelServer, ID_GUID6, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID6->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer58->Add(m_GUID6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID5 = new wxTextCtrl;
-  m_GUID5->Create( m_panelServer, ID_GUID5, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID5->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer58->Add(m_GUID5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID4 = new wxTextCtrl;
-  m_GUID4->Create( m_panelServer, ID_GUID4, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID4->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer58->Add(m_GUID4, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID3 = new wxTextCtrl;
-  m_GUID3->Create( m_panelServer, ID_GUID3, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID3->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer58->Add(m_GUID3, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID2 = new wxTextCtrl;
-  m_GUID2->Create( m_panelServer, ID_GUID2, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID2->SetBackgroundColour(wxColour(255, 192, 203));
-  itemBoxSizer58->Add(m_GUID2, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID1 = new wxTextCtrl;
-  m_GUID1->Create( m_panelServer, ID_GUID1, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_RIGHT );
-  m_GUID1->SetForegroundColour(wxColour(0, 0, 0));
-  m_GUID1->SetBackgroundColour(wxColour(0, 0, 0));
-  itemBoxSizer58->Add(m_GUID1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  m_GUID0 = new wxTextCtrl;
-  m_GUID0->Create( m_panelServer, ID_GUID0, _("0x00"), wxDefaultPosition, wxSize(40, -1), wxTE_READONLY|wxTE_RIGHT );
-  m_GUID0->SetBackgroundColour(wxColour(0, 0, 0));
-  itemBoxSizer58->Add(m_GUID0, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  itemBoxSizer58->Add(65, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  wxBoxSizer* itemBoxSizer69 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer69, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 15);
-  wxButton* itemButton70 = new wxButton;
-  itemButton70->Create( m_panelServer, ID_BUTTON_SET_FILTER, _("Set Filter"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer69->Add(itemButton70, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
-
-  itemBoxSizer69->Add(1, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+  itemBoxSizer51->Add(1, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
   m_btnTestConnection = new wxButton;
   m_btnTestConnection->Create( m_panelServer, ID_BUTTON_TEST_INTERFACE, _("Test connection"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer69->Add(m_btnTestConnection, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+  itemBoxSizer51->Add(m_btnTestConnection, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer69->Add(1, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+  itemBoxSizer51->Add(1, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
   m_btnGetInterfaces = new wxButton;
   m_btnGetInterfaces->Create( m_panelServer, ID_BUTTON, _("Get interfaces"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer69->Add(m_btnGetInterfaces, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+  itemBoxSizer51->Add(m_btnGetInterfaces, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer69->Add(30, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+  itemBoxSizer51->Add(30, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   GetBookCtrl()->AddPage(m_panelServer, _("Remote VSCP server"));
 
-////@end dlgVscpInterfaceSettings content construction
+	////@end dlgVscpInterfaceSettings content construction
 
 
 }
@@ -476,7 +376,7 @@ void dlgVscpInterfaceSettings::CreateControls()
 
 bool dlgVscpInterfaceSettings::ShowToolTips()
 {
-  return true;
+	return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -485,11 +385,11 @@ bool dlgVscpInterfaceSettings::ShowToolTips()
 
 wxBitmap dlgVscpInterfaceSettings::GetBitmapResource( const wxString& name )
 {
-  // Bitmap retrieval
-////@begin dlgVscpInterfaceSettings bitmap retrieval
+	// Bitmap retrieval
+	////@begin dlgVscpInterfaceSettings bitmap retrieval
   wxUnusedVar(name);
   return wxNullBitmap;
-////@end dlgVscpInterfaceSettings bitmap retrieval
+	////@end dlgVscpInterfaceSettings bitmap retrieval
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -498,11 +398,11 @@ wxBitmap dlgVscpInterfaceSettings::GetBitmapResource( const wxString& name )
 
 wxIcon dlgVscpInterfaceSettings::GetIconResource( const wxString& name )
 {
-  // Icon retrieval
-////@begin dlgVscpInterfaceSettings icon retrieval
+	// Icon retrieval
+	////@begin dlgVscpInterfaceSettings icon retrieval
   wxUnusedVar(name);
   return wxNullIcon;
-////@end dlgVscpInterfaceSettings icon retrieval
+	////@end dlgVscpInterfaceSettings icon retrieval
 }
 
 
@@ -512,12 +412,12 @@ wxIcon dlgVscpInterfaceSettings::GetIconResource( const wxString& name )
 
 void dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick( wxCommandEvent& event )
 {
-  wxString filename = wxFileSelector(_("Choose a CANAL driver"));
-  if ( !filename.empty() ) {
-    m_PathToDriver->SetValue( filename );
-  }
-  
-  event.Skip();
+	wxString filename = wxFileSelector(_("Choose a CANAL driver"));
+	if ( !filename.empty() ) {
+		m_PathToDriver->SetValue( filename );
+	}
+
+	event.Skip();
 }
 
 
@@ -527,8 +427,8 @@ void dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick( wxCommandEvent& e
 
 void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent& event )
 {
-  wxMessageBox(_("Sorry! This driver does not have a stored description of its configuration."));
-  event.Skip(); 
+	wxMessageBox(_("Sorry! This driver does not have a stored description of its configuration."));
+	event.Skip(); 
 }
 
 
@@ -538,56 +438,56 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
 
 void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event )
 {
-  VscpTcpIf tcpif;
-  wxString wxstr;
-  
-	
+	VscpTcpIf tcpif;
+	wxString wxstr;
 
-  m_btnTestConnection->Enable( false );
-  
-  wxProgressDialog *pProgressDlg = 
-                        new wxProgressDialog( _("TCP/IP session"),
-                                                _("Connecting to server..."),
-                                                100, 
-                                                this,
-                                                wxPD_AUTO_HIDE | wxPD_APP_MODAL );
-  pProgressDlg->Update(80 );
-  
-  // If server username is given and no password is entered we ask for it.
-  if ( m_RemoteServerPassword->GetValue().IsEmpty() && !m_RemoteServerUsername->GetValue().IsEmpty() ) {
-    wxstr = ::wxGetTextFromUser( _("Please enter passeword"), 
-                                  _("Connection Test") );
-  }
-  else {
-    wxstr = m_RemoteServerPassword->GetValue();
-  }
-  
-  wxBusyCursor busy;
 
-  unsigned long val;
-  m_RemoteServerPort->GetValue().ToULong( &val );
-  long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
-                                  val,
-                                  m_RemoteServerUsername->GetValue(),
-                                  wxstr );
-  if ( rv ) {
-    rv = tcpif.doCmdNOOP();
-    tcpif.doCmdClose();
-    if ( CANAL_ERROR_SUCCESS == rv ) {
-      wxMessageBox(_("Successfull connect to server."), _("Connection Test"), wxICON_INFORMATION );
-    }
-    else {
-      wxMessageBox(_("Failed do command on server (connected OK)."), _("Connection Test"), wxICON_STOP );
-    }
-  }
-  else {
-    wxMessageBox(_("Failed to connect to server."), _("Connection Test"), wxICON_STOP );
-  }
-  
-  m_btnTestConnection->Enable( true );
-  pProgressDlg->Update( 100 );
-  
-  event.Skip();
+
+	m_btnTestConnection->Enable( false );
+
+	wxProgressDialog *pProgressDlg = 
+		new wxProgressDialog( _("TCP/IP session"),
+		_("Connecting to server..."),
+		100, 
+		this,
+		wxPD_AUTO_HIDE | wxPD_APP_MODAL );
+	pProgressDlg->Update(80 );
+
+	// If server username is given and no password is entered we ask for it.
+	if ( m_RemoteServerPassword->GetValue().IsEmpty() && !m_RemoteServerUsername->GetValue().IsEmpty() ) {
+		wxstr = ::wxGetTextFromUser( _("Please enter passeword"), 
+			_("Connection Test") );
+	}
+	else {
+		wxstr = m_RemoteServerPassword->GetValue();
+	}
+
+	wxBusyCursor busy;
+
+	unsigned long val;
+	m_RemoteServerPort->GetValue().ToULong( &val );
+	long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
+		val,
+		m_RemoteServerUsername->GetValue(),
+		wxstr );
+	if ( rv ) {
+		rv = tcpif.doCmdNOOP();
+		tcpif.doCmdClose();
+		if ( CANAL_ERROR_SUCCESS == rv ) {
+			wxMessageBox(_("Successfull connect to server."), _("Connection Test"), wxICON_INFORMATION );
+		}
+		else {
+			wxMessageBox(_("Failed do command on server (connected OK)."), _("Connection Test"), wxICON_STOP );
+		}
+	}
+	else {
+		wxMessageBox(_("Failed to connect to server."), _("Connection Test"), wxICON_STOP );
+	}
+
+	m_btnTestConnection->Enable( true );
+	pProgressDlg->Update( 100 );
+
+	event.Skip();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -596,108 +496,106 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 
 void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event )
 {
-  VscpTcpIf tcpif;
-  wxString wxstr;
-  
-  m_btnGetInterfaces->Enable( false );
-  
-  // If server username is given and no password is entered we ask for it.
-  if ( m_RemoteServerPassword->GetValue().IsEmpty() && 
-        !m_RemoteServerUsername->GetValue().IsEmpty() ) {
-    wxstr = ::wxGetTextFromUser( _("Please enter passeword"), 
-                                  _("Connection Test") );
-  }
-  else {
-    wxstr = m_RemoteServerPassword->GetValue();
-  }
-  
-  wxProgressDialog *pProgressDlg = 
-                        new wxProgressDialog( _("TCP/IP session"),
-                                                _("Connecting to server..."),
-                                                100, 
-                                                this,
-                                                wxPD_AUTO_HIDE | wxPD_APP_MODAL );
-  pProgressDlg->Update( 80 );
-  
-  wxBusyCursor busy;
+	VscpTcpIf tcpif;
+	wxString wxstr;
 
-  unsigned long val;
-  m_RemoteServerPort->GetValue().ToULong( &val );
-  long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
-                                  val,
-                                  m_RemoteServerUsername->GetValue(),
-                                  wxstr );
-                                  
-  pProgressDlg->Update( 100 );
-  
-  if ( rv ) {
-    
+	m_btnGetInterfaces->Enable( false );
+
+	// If server username is given and no password is entered we ask for it.
+	if ( m_RemoteServerPassword->GetValue().IsEmpty() && 
+		!m_RemoteServerUsername->GetValue().IsEmpty() ) {
+			wxstr = ::wxGetTextFromUser( _("Please enter passeword"), 
+				_("Connection Test") );
+	}
+	else {
+		wxstr = m_RemoteServerPassword->GetValue();
+	}
+
+	wxProgressDialog *pProgressDlg = 
+		new wxProgressDialog( _("TCP/IP session"),
+		_("Connecting to server..."),
+		100, 
+		this,
+		wxPD_AUTO_HIDE | wxPD_APP_MODAL );
+	pProgressDlg->Update( 80 );
+
+	wxBusyCursor busy;
+
+	unsigned long val;
+	m_RemoteServerPort->GetValue().ToULong( &val );
+	long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
+								val,
+								m_RemoteServerUsername->GetValue(),
+								wxstr );
+
+	pProgressDlg->Update( 100 );
+
+	if ( rv ) {
+
 		// Get the interface list
 		wxArrayString array;
 		tcpif.doCmdInterfaceList( array );
-	
+
 		// Close the channel
-    tcpif.doCmdClose();
+		tcpif.doCmdClose();
 
-    if ( array.Count() ) {
-      
-      dlgSelectDaemonInterface dlg( this );
-      for ( unsigned int i=0; i<array.Count(); i++ ) {
-        wxStringTokenizer tkz( array[i], _(",") );
-        wxString strOrdinal = tkz.GetNextToken();
-        wxString strType = tkz.GetNextToken();
-        wxString strGUID = tkz.GetNextToken();
-        wxString strDescription = tkz.GetNextToken();
-        wxString strLine = strGUID;
-        strLine += _(" ");
-        strLine += _(" Type = ");
-        strLine +=  strType;
-        strLine += _(" - ");
-        strLine += strDescription;
-        
-        dlg.m_ctrlListInterfaces->Append( strLine );
-      }
-      if ( wxID_OK == dlg.ShowModal() ) {
-        int selidx;
-        if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
-          wxStringTokenizer tkz( array[selidx], _(",") );
-          wxString strOrdinal = tkz.GetNextToken();
-          wxString strType = tkz.GetNextToken();
-          wxString strGUID = tkz.GetNextToken();
-          unsigned char GUID[16];
-          getGuidFromStringToArray( GUID, strGUID );
-          m_GUID0->SetValue( wxString::Format(_("0x%02x"),GUID[0]) );
-          m_GUID1->SetValue( wxString::Format(_("0x%02x"),GUID[1]) );
-          m_GUID2->SetValue( wxString::Format(_("0x%02x"),GUID[2]) );
-          m_GUID3->SetValue( wxString::Format(_("0x%02x"),GUID[3]) );
-          m_GUID4->SetValue( wxString::Format(_("0x%02x"),GUID[4]) );
-          m_GUID5->SetValue( wxString::Format(_("0x%02x"),GUID[5]) );
-          m_GUID6->SetValue( wxString::Format(_("0x%02x"),GUID[6]) );
-          m_GUID7->SetValue( wxString::Format(_("0x%02x"),GUID[7]) );
-          m_GUID8->SetValue( wxString::Format(_("0x%02x"),GUID[8]) );
-          m_GUID9->SetValue( wxString::Format(_("0x%02x"),GUID[9]) );
-          m_GUID10->SetValue( wxString::Format(_("0x%02x"),GUID[10]) );
-          m_GUID11->SetValue( wxString::Format(_("0x%02x"),GUID[11]) );
-          m_GUID12->SetValue( wxString::Format(_("0x%02x"),GUID[12]) );
-          m_GUID13->SetValue( wxString::Format(_("0x%02x"),GUID[13]) );
-          m_GUID14->SetValue( wxString::Format(_("0x%02x"),GUID[14]) );
-          m_GUID15->SetValue( wxString::Format(_("0x%02x"),GUID[15]) );
-        }
-      }
+		if ( array.Count() ) {
 
-    }
-    else {
-      wxMessageBox(_("No interfaces found!"));
-    }
+			dlgSelectDaemonInterface dlg( this );
+			for ( unsigned int i=0; i<array.Count(); i++ ) {
 
-  }
-  else {
-    wxMessageBox(_("Failed to connect to server."), _("Get daemon interfaces"), wxICON_STOP );
-  }
-  
-  m_btnGetInterfaces->Enable( true );
-  
-  event.Skip( false );
+				wxStringTokenizer tkz( array[i], _(",") );
+				wxString strOrdinal = tkz.GetNextToken();
+				wxString strType = tkz.GetNextToken();
+				wxString strGUID = tkz.GetNextToken();
+				wxString strDescription = tkz.GetNextToken();
+				wxString strLine = strGUID;
+				strLine += _(" ");
+				strLine += _(" Type = ");
+				strLine +=  strType;
+				strLine += _(" - ");
+				strLine += strDescription;
+
+				dlg.m_ctrlListInterfaces->Append( strLine );
+			}
+
+			if ( wxID_OK == dlg.ShowModal() ) {
+
+				int selidx;
+				if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
+					
+					wxStringTokenizer tkz( array[selidx], _(",") );
+					wxString strOrdinal = tkz.GetNextToken();
+					wxString strType = tkz.GetNextToken();
+					wxString strGUID = tkz.GetNextToken();
+
+
+					// Name of interface
+					wxString strName = tkz.GetNextToken();
+					int pos;
+					if ( wxNOT_FOUND != ( pos = strName.Find(_(" ") ) ) ) {
+						strName = strName.Left( pos );
+						strName.Trim();
+					}
+
+					m_RemoteInterfaceName->SetLabel( strName );
+
+				}
+			}
+
+		}
+		else {
+			wxMessageBox(_("No interfaces found!"));
+		}
+
+	}
+	else {
+		wxMessageBox(_("Failed to connect to server."), _("Get daemon interfaces"), wxICON_STOP );
+	}
+
+	m_btnGetInterfaces->Enable( true );
+
+	event.Skip( false );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -707,12 +605,12 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 void dlgVscpInterfaceSettings::OnButtonSetFilterClick( wxCommandEvent& event )
 {
 	dlgVSCPFilter dlg( this );
-	
+
 	dlg.setFilter( &m_vscpfilter );
 	if ( wxID_OK == dlg.ShowModal() ) {
 		dlg.getFilter( &m_vscpfilter );
 	}
-	
+
 	event.Skip(); 
 }
 

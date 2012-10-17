@@ -170,6 +170,7 @@ typedef struct {
     wxString m_strUser;				// Username
     wxString m_strPassword;			// Password
     unsigned long m_port;			// Port to use on server
+	wxString m_strInterfaceName;	// Name for remote interface
     unsigned char m_GUID[16];		// GUID for interface
 	vscpEventFilter m_vscpfilter;	// Filter to apply
 } vscp_interface;

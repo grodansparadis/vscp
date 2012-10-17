@@ -2760,8 +2760,10 @@ void frmDeviceConfig::Init()
 
 	m_lastLeftClickCol = 0;
 	m_lastLeftClickRow = 0;
-	memset( m_interfaceGUID, 0, 16 );
 
+	// No interface
+	m_ifguid.clear()
+	m_ interfaceName.Empty();
 }
 
 
@@ -3159,7 +3161,35 @@ bool frmDeviceConfig::enableInterface( void )
 			}
 
 			// TCP/IP interface
-			progressDlg.Pulse( _("TCP/IP Interface Open") );		
+			progressDlg.Pulse( _("TCP/IP Interface Open.") );
+
+			// Should we fetch interface GUID
+			if ( m_interfaceName.Length() ) {
+			
+				progressDlg.Pulse( _("Fetching interace GUID.") );
+
+				if ( !fetchIterfaceGUID() ) {
+				
+					progressDlg.Pulse( _("Interace GUID found.") );
+
+					// Fill the combo
+					wxString str;
+					cguid guid = m_ifguid;
+                    for ( int i=1; i<256; i++ ) {
+						guid.setLSB( i );
+                        m_comboNodeID->Append( str );
+					}
+
+					guid.setLSB( 1 );
+                    m_comboNodeID->SetValue( str );
+
+				}
+				else {
+					m_comboNodeID->SetValue( _("Enter full GUID of node here") );
+				}
+
+			}
+
 		}
 	}
 	else {
@@ -3291,7 +3321,6 @@ void frmDeviceConfig::OnMenuitemVscpAboutClick( wxCommandEvent& event )
 void frmDeviceConfig::OnBitmapbuttonTestDeviceClick( wxCommandEvent& event )
 {
 	unsigned char nodeid;
-	//unsigned char interfaceGUID[16];
 
 	::wxBeginBusyCursor();
 
@@ -8326,4 +8355,69 @@ int frmDeviceConfig::getRegisterGridRow( uint32_t reg, uint16_t page )
 	}
 
 	return -1;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// fetchIterfaceGUID
+//
+
+bool frmDeviceConfig::fetchIterfaceGUID( void )
+{
+	wxString str;
+
+	if ( !m_csw.isOpen() ) {
+		wxMessageBox(_("TCP/IP connection to daemon must be open."));
+		return false;
+	}
+
+	if ( USE_TCPIP_INTERFACE != m_csw.getDeviceType() ) {
+		wxMessageBox(_("Interfaces can only be fetched from the VSCP daemon."));
+		return false;
+	}
+
+	// Get the interface list
+	wxArrayString ifarray;
+	if ( CANAL_ERROR_SUCCESS == 
+		m_csw.getTcpIpInterface()->doCmdInterfaceList( ifarray ) ) {
+
+		if ( ifarray.Count() ) {
+
+			for ( unsigned int i=0; i<ifarray.Count(); i++ ) {
+
+				wxStringTokenizer tkz( ifarray[ i ], _(",") );
+				wxString strOrdinal = tkz.GetNextToken();
+				wxString strType = tkz.GetNextToken();
+				wxString strIfGUID = tkz.GetNextToken();			
+				wxString strDescription = tkz.GetNextToken();
+			
+				int pos;
+				wxString strName;
+				if ( wxNOT_FOUND != ( pos = strName.Find(_(" ") ) ) ) {
+					strName = strName.Left( pos );
+					strName.Trim();
+				}
+
+				if ( strName == m_interfaceName ) {
+
+					// Save the name
+					m_interfaceName = strName;
+
+					// Save interface GUID;
+					m_ifguid.getFromString( strIfGUID );
+
+					return true;
+				}
+
+			}
+
+		}
+		else {
+			wxMessageBox(_("No interfaces found."));
+		}
+	}
+	else {
+		wxMessageBox(_("Unable to get interface list from VSCP daemon."));
+	}
+
+	return false;
 }

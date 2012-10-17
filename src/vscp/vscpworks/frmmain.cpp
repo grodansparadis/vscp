@@ -4790,27 +4790,14 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                     else if ( INTERFACE_VSCP == pBoth->m_type ) {
 
                         wxString str;
-                        memcpy( subframe->m_interfaceGUID, pBoth->m_pvscpif->m_GUID, 16 );
+                        //memcpy( subframe->m_interfaceGUID, pBoth->m_pvscpif->m_GUID, 16 );
 
 						// Check if a specific interface is used
-						bool bInterface= false;
-						for ( int i=0; i<16; i++ ) {
-							if ( subframe->m_interfaceGUID[ i ] ) {
-								bInterface= true;
-								break;
-							}
-						}
+						//bool bInterface = 
+						//		subframe->m_interfaceName.Length() ? true : false;
 
-                        // Fill the combo
-                        for ( int i=1; i<256; i++ ) {
-                            if ( bInterface ) subframe->m_interfaceGUID[ 0 ] = i;
-                            writeGuidArrayToString( subframe->m_interfaceGUID, str );
-                            subframe->m_comboNodeID->Append( str );
-                        }
-
-                        if ( bInterface ) subframe->m_interfaceGUID[ 0 ] = 0x01;
-                        writeGuidArrayToString( subframe->m_interfaceGUID, str );
-                        subframe->m_comboNodeID->SetValue( str );
+						// Save interface name
+						subframe->m_interfaceName = pBoth->m_pvscpif->m_strInterfaceName;
 
                         subframe->SetTitle(_("VSCP Registers (TCP/IP)- ") +  
                             pBoth->m_pvscpif->m_strDescription );

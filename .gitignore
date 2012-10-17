@@ -28,3 +28,4 @@ VCProjectRelease
 /src/vscp/ipch/vscp helper dll-7f0a27e1/*.ipch
 /src/vscp/ipch/rawethernet-e4fc8d3f/*.ipch
 *.ipch
+/src/vscp/vscpworks/*.tmp

@@ -65,6 +65,41 @@ cguid::~cguid()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// operator=
+//
+
+cguid& cguid::operator=( const cguid& guid )
+{
+	// Check for self-assignment!
+    if ( this == &guid ) {	// Same object?
+		return *this;		// Yes, so skip assignment, and just return *this.
+	}
+
+    memcpy( m_id, guid.m_id, 16 );
+
+    return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// operator==
+//
+
+bool cguid::operator==( const cguid &guid )
+{
+	if ( 0 != memcmp( m_id, guid.m_id, 16 ) ) return false;
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// operator!=
+//
+
+bool cguid::operator!=(const cguid &guid) 
+{
+	return !(*this == guid);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getFromString
 //
  
@@ -129,4 +164,28 @@ bool cguid::isSameGUID( const unsigned char *pguid )
     if ( 0 != memcmp ( m_id, pguid, 16 ) ) return false;
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isNULL
+//
+
+bool cguid::isNULL( void )
+{
+	for ( int i=0; i<16; i++ ) {
+		if ( m_id[ i ] ) return false;
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setGUID
+//
+
+void cguid::setGUID( uint8_t a )
+{
+	for ( int i=0; i<16; i++ ) {
+		a[ i ] = m_id[ 15 - i ];	
+	}
 }

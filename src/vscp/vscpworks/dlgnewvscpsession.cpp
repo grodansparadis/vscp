@@ -644,8 +644,10 @@ void dlgNewVSCPSession::OnButtonAddClick( wxCommandEvent& event )
       // A new remote host
       vscp_interface *pInfo = new vscp_interface;
       if ( NULL != pInfo ) {
+
         strDecription = pInfo->m_strDescription = dlg.m_RemoteServerDescription->GetValue();
-        pInfo->m_strHost = dlg.m_RemoteServerURL->GetValue();
+        
+		pInfo->m_strHost = dlg.m_RemoteServerURL->GetValue();
 				pInfo->m_strHost.Trim(false);
 				pInfo->m_strHost.Trim();
         pInfo->m_strUser = dlg.m_RemoteServerUsername->GetValue();
@@ -656,44 +658,16 @@ void dlgNewVSCPSession::OnButtonAddClick( wxCommandEvent& event )
 				pInfo->m_strPassword.Trim();
         dlg.m_RemoteServerPort->GetValue().ToULong( &pInfo->m_port );
         wxString str;
-        str = dlg.m_GUID0->GetValue();	
-				pInfo->m_GUID[ 0 ] = readStringValue( str ); 
-				str = dlg.m_GUID1->GetValue();
-				pInfo->m_GUID[ 1 ] = readStringValue( str ); 
-				str = dlg.m_GUID2->GetValue();	
-				pInfo->m_GUID[ 2 ] = readStringValue( str ); 
-				str = dlg.m_GUID3->GetValue();	
-				pInfo->m_GUID[ 3 ] = readStringValue( str ); 
-				str = dlg.m_GUID4->GetValue();	
-				pInfo->m_GUID[ 4 ] = readStringValue( str ); 
-				str = dlg.m_GUID5->GetValue();	
-				pInfo->m_GUID[ 5 ] = readStringValue( str ); 
-				str = dlg.m_GUID6->GetValue();	
-				pInfo->m_GUID[ 6 ] = readStringValue( str ); 
-				str = dlg.m_GUID7->GetValue();	
-				pInfo->m_GUID[ 7 ] = readStringValue( str ); 
-				str = dlg.m_GUID8->GetValue();
-				pInfo->m_GUID[ 8 ] = readStringValue( str ); 
-				str = dlg.m_GUID9->GetValue();	
-				pInfo->m_GUID[ 9 ] = readStringValue( str ); 
-				str = dlg.m_GUID10->GetValue();
-				pInfo->m_GUID[ 10 ] = readStringValue( str ); 
-				str = dlg.m_GUID11->GetValue();	
-				pInfo->m_GUID[ 11 ] = readStringValue( str ); 
-				str = dlg.m_GUID12->GetValue();	
-				pInfo->m_GUID[ 12 ] = readStringValue( str ); 
-				str = dlg.m_GUID13->GetValue();
-				pInfo->m_GUID[ 13 ] = readStringValue( str ); 
-				str = dlg.m_GUID14->GetValue();
-				pInfo->m_GUID[ 14 ] = readStringValue( str ); 
-				str = dlg.m_GUID15->GetValue();
-				pInfo->m_GUID[ 15 ] = readStringValue( str );
 
-				memcpy( &pInfo->m_vscpfilter, &dlg.m_vscpfilter, sizeof( vscpEventFilter ) );
+		// Interface name
+		pInfo->m_strInterfaceName = dlg.m_RemoteInterfaceName->GetValue();
+
+		// Filter
+		memcpy( &pInfo->m_vscpfilter, &dlg.m_vscpfilter, sizeof( vscpEventFilter ) );
 
         g_Config.m_vscpIfList.Append( pInfo );
 	
-				// Write the configuration
+		// Write the configuration
         ::wxGetApp().writeConfiguration();
 				
       }
@@ -746,24 +720,10 @@ void dlgNewVSCPSession::OnButtonEditClick( wxCommandEvent& event )
         	dlg.m_RemoteServerUsername->SetValue( pBoth->m_pvscpif->m_strUser );
         	dlg.m_RemoteServerPassword->SetValue( pBoth->m_pvscpif->m_strPassword );
         	dlg.m_RemoteServerPort->SetValue( wxString::Format( _("%lu"), pBoth->m_pvscpif->m_port ) );
-          dlg.m_GUID0->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 0 ] ) );
-					dlg.m_GUID1->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 1 ] ) );
-					dlg.m_GUID2->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 2 ] ) );
-					dlg.m_GUID3->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 3 ] ) );
-					dlg.m_GUID4->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 4 ] ) );
-					dlg.m_GUID5->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 5 ] ) );
-					dlg.m_GUID6->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 6 ] ) );
-					dlg.m_GUID7->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 7 ] ) );
-					dlg.m_GUID8->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 8 ] ) );
-					dlg.m_GUID9->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 9 ] ) );
-					dlg.m_GUID10->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 10 ] ) );
-					dlg.m_GUID11->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 11 ] ) );
-					dlg.m_GUID12->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 12 ] ) );
-					dlg.m_GUID13->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 13 ] ) );
-					dlg.m_GUID14->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 14 ] ) );
-					dlg.m_GUID15->SetValue( wxString::Format( _("0x%02X"), pBoth->m_pvscpif->m_GUID[ 15 ] ) );
-					memcpy( &dlg.m_vscpfilter, &pBoth->m_pvscpif->m_vscpfilter, sizeof( vscpEventFilter ) );
-          dlg.GetBookCtrl()->SetSelection( 1 );
+			dlg.m_RemoteInterfaceName->SetValue( pBoth->m_pvscpif->m_strInterfaceName );
+			memcpy( &dlg.m_vscpfilter, &pBoth->m_pvscpif->m_vscpfilter, sizeof( vscpEventFilter ) );
+          
+			dlg.GetBookCtrl()->SetSelection( 1 );
         	dlg.GetBookCtrl()->RemovePage( 0 );
       	}
       	else {
@@ -774,34 +734,19 @@ void dlgNewVSCPSession::OnButtonEditClick( wxCommandEvent& event )
       	if ( wxID_OK == dlg.ShowModal() ) {
       
         	if ( INTERFACE_CANAL == pBoth->m_type ) {
-          	pBoth->m_pcanalif->m_strDescription = dlg.m_DriverDescription->GetValue();
-          	pBoth->m_pcanalif->m_strPath = dlg.m_PathToDriver->GetValue();
-          	pBoth->m_pcanalif->m_strConfig = dlg.m_DriverConfigurationString->GetValue();
-          	dlg.m_DriverFlags->GetValue().ToULong( &pBoth->m_pcanalif->m_flags );
+          		pBoth->m_pcanalif->m_strDescription = dlg.m_DriverDescription->GetValue();
+          		pBoth->m_pcanalif->m_strPath = dlg.m_PathToDriver->GetValue();
+          		pBoth->m_pcanalif->m_strConfig = dlg.m_DriverConfigurationString->GetValue();
+          		dlg.m_DriverFlags->GetValue().ToULong( &pBoth->m_pcanalif->m_flags );
         	}
         	else if ( INTERFACE_VSCP == pBoth->m_type ) {
-          	pBoth->m_pvscpif->m_strDescription = dlg.m_RemoteServerDescription->GetValue();
-          	pBoth->m_pvscpif->m_strHost = dlg.m_RemoteServerURL->GetValue();
-          	pBoth->m_pvscpif->m_strUser = dlg.m_RemoteServerUsername->GetValue();
-          	pBoth->m_pvscpif->m_strPassword = dlg.m_RemoteServerPassword->GetValue();
-          	dlg.m_RemoteServerPort->GetValue().ToULong( &pBoth->m_pvscpif->m_port );
-            pBoth->m_pvscpif->m_GUID[0] = readStringValue( dlg.m_GUID0->GetValue() );
-            pBoth->m_pvscpif->m_GUID[1] = readStringValue( dlg.m_GUID1->GetValue() );
-            pBoth->m_pvscpif->m_GUID[2] = readStringValue( dlg.m_GUID2->GetValue() );
-            pBoth->m_pvscpif->m_GUID[3] = readStringValue( dlg.m_GUID3->GetValue() );
-            pBoth->m_pvscpif->m_GUID[4] = readStringValue( dlg.m_GUID4->GetValue() );
-            pBoth->m_pvscpif->m_GUID[5] = readStringValue( dlg.m_GUID5->GetValue() );
-            pBoth->m_pvscpif->m_GUID[6] = readStringValue( dlg.m_GUID6->GetValue() );
-            pBoth->m_pvscpif->m_GUID[7] = readStringValue( dlg.m_GUID7->GetValue() );
-            pBoth->m_pvscpif->m_GUID[8] = readStringValue( dlg.m_GUID8->GetValue() );
-            pBoth->m_pvscpif->m_GUID[9] = readStringValue( dlg.m_GUID9->GetValue() );
-            pBoth->m_pvscpif->m_GUID[10] = readStringValue( dlg.m_GUID10->GetValue() );
-            pBoth->m_pvscpif->m_GUID[11] = readStringValue( dlg.m_GUID11->GetValue() );
-            pBoth->m_pvscpif->m_GUID[12] = readStringValue( dlg.m_GUID12->GetValue() );
-            pBoth->m_pvscpif->m_GUID[13] = readStringValue( dlg.m_GUID13->GetValue() );
-            pBoth->m_pvscpif->m_GUID[14] = readStringValue( dlg.m_GUID14->GetValue() );
-            pBoth->m_pvscpif->m_GUID[15] = readStringValue( dlg.m_GUID15->GetValue() );
-						memcpy( &pBoth->m_pvscpif->m_vscpfilter, &dlg.m_vscpfilter, sizeof( vscpEventFilter ) );
+          		pBoth->m_pvscpif->m_strDescription = dlg.m_RemoteServerDescription->GetValue();
+          		pBoth->m_pvscpif->m_strHost = dlg.m_RemoteServerURL->GetValue();
+          		pBoth->m_pvscpif->m_strUser = dlg.m_RemoteServerUsername->GetValue();
+          		pBoth->m_pvscpif->m_strPassword = dlg.m_RemoteServerPassword->GetValue();
+          		dlg.m_RemoteServerPort->GetValue().ToULong( &pBoth->m_pvscpif->m_port );
+     
+				memcpy( &pBoth->m_pvscpif->m_vscpfilter, &dlg.m_vscpfilter, sizeof( vscpEventFilter ) );
         	}
   
 					// Write the configuration

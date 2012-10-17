@@ -826,33 +826,24 @@ bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
 // readLevel2Register
 //
 
-bool CCanalSuperWrapper::readLevel2Register( const uint8_t *interfaceGUID, 
+bool CCanalSuperWrapper::readLevel2Register( const cguid& ifGUID, 
 												uint32_t reg, 
 												uint8_t *pcontent,
-												const uint8_t *pdestGUID,
+												const cguid *pdestGUID,
 												bool bLevel2 )
 {
 	int i;
 	bool rv = true;
-	bool bInterface = false;  // No specific interface set
 	uint32_t errors = 0;
 	bool bResend;
 	wxString strBuf;
 	vscpEventEx event;
 
 	// Check pointers
-	if ( NULL == interfaceGUID ) return false; 
-	if ( NULL == pdestGUID ) return false;
+	if ( NULL == pdestGUID ) return false; 
 
 	// Check if a specific interface is used
-	for ( i=0; i<16; i++ ) {
-		if ( interfaceGUID[ i ] ) {
-			bInterface= true;
-			break;
-		}
-	}
-
-	if ( bInterface ) {
+	if ( !ifGUID.isNULL() ) {
 
 		// Event should be sent to a specific interface
 
@@ -863,11 +854,12 @@ bool CCanalSuperWrapper::readLevel2Register( const uint8_t *interfaceGUID,
 		memset( event.GUID, 0, 16 );	// We use GUID for interface 
 		event.sizeData = 16 + 2;		// Interface GUID + nodeid + register to read
 
+		pdestGUID->setGUID();
 		for ( i=0; i<16; i++ ) {
 			event.data[ i ] = interfaceGUID[ 15 - i ];	
 		}
 
-		event.data[ 16 ] = pdestGUID[ 0 ];			// nodeid
+		event.data[ 16 ] = pdestGUID->getLSB();		// nodeid
 		event.data[ 17 ] = reg;                     // Register to read
 
 	}

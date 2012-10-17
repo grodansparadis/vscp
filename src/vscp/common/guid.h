@@ -38,6 +38,21 @@ public:
 
 public:
 
+	/*!
+		Assignement overload
+	*/
+	cguid& cguid::operator=( const cguid& guid);
+
+	/*!
+		Positive compare
+	*/
+	bool cguid::operator==(const cguid &guid);
+
+	/*!
+		Negative compare
+	*/
+	bool cguid::operator!=(const cguid &guid);
+
     /*!
         Nill the GUID
     */
@@ -92,11 +107,32 @@ public:
     */
     void setAt( const unsigned char n, const unsigned char value ) { int pos; pos &= ( n & 0x0f ); m_id[ pos ] = value; };
 
+	/*!
+        Set LSB GUID position
+    */
+    void setLSB( const unsigned char value ) { m_id[ 0 ] = value; };
+
+	/*!
+        Get LSB GUID position
+    */
+    uint8_t getLSB( void ) { return m_id[ 0 ]; };
+
+	/*!
+		Fill array with GUID MSB firts			
+	*/
+	void setGUID( uint8_t a );
+
     /*!
         Check if same as supplied GUID
         \return true if same.
     */
     bool isSameGUID( const unsigned char *pguid );
+
+	/*!
+		Check if GUID is all zero
+		@return True if all bytes of GUID is zero, else false.
+	*/
+	bool isNULL( void );
             
 
 //private:

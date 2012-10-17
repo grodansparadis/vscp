@@ -576,7 +576,7 @@ public:
 	void setMaxRetries( uint32_t n ) { m_registerReadMaxRetries = n; };
 
 
-	// We don't want the graphcal UI on apps that don't use it 
+// We don't want the graphcal UI on apps that don't use it 
 #if ( wxUSE_GUI != 0 )
 
 
@@ -588,8 +588,8 @@ public:
 	@return True on success false on failure.
 	*/
 	bool readLevel1Register( uint8_t nodeid, 
-		uint8_t reg, 
-		uint8_t *pval );
+								uint8_t reg, 
+								uint8_t *pval );
 
 	/*!
 	Write level I register
@@ -599,8 +599,8 @@ public:
 	@return True on success false on failure.
 	*/
 	bool writeLevel1Register( uint8_t nodeid, 
-		uint8_t reg, 
-		uint8_t *pval );
+								uint8_t reg, 
+								uint8_t *pval );
 
 	/*!
 	Read a level 2 register
@@ -610,10 +610,10 @@ public:
 	@param pcontent Pointer to read value.
 	@return True on success. False otherwise.
 	*/    
-	bool readLevel2Register( const uint8_t *interfaceGUID, 
+	bool readLevel2Register( const cguid& ifGUID, 
 								uint32_t reg, 
 								uint8_t *pcontent = NULL,
-								const uint8_t *pdestGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false );
 
 	/*!
@@ -625,10 +625,10 @@ public:
 	@param pcontent Pointer to data to write. Return read data.
 	@return True on success. False otherwise.
 	*/    
-	bool writeLevel2Register( const uint8_t *interfaceGUID, 
+	bool writeLevel2Register( const cguid& ifGUID, 
 								uint32_t reg, 
 								uint8_t *pcontent,
-								const uint8_t *pdestGUID,
+								const cguid& destGUID,
 								bool bLevel2 = false );
 
 	/*!
@@ -662,10 +662,10 @@ public:
 
 	bool readLevel2Registers( wxWindow *pwnd,
 								uint8_t *pregisters,
-								const uint8_t *pinterfaceGUID,
+								const cguid& ifGUID,
 								uint32_t startreg = 0,
 								uint32_t count = 256,
-								const uint8_t *pdestGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false );
 
 	/*!
@@ -688,8 +688,8 @@ public:
 	@return true on success, false on failure.
 	*/
 	wxString getMDFfromDevice2( wxProgressDialog& progressDlg,
-									const uint8_t *interfaceGUID, 
-									const uint8_t *pdestGUID,
+									const cguid& ifGUID, 
+									const cguid& destGUID,
 									bool bLevel2 = false,
 									bool bSilent = false );
 
@@ -712,7 +712,7 @@ public:
 	@param pdata Pointer to returned data. Array of eight bytes.
 	@return true on success, false on failure.
 	*/
-	bool getLevel2DmInfo( uint8_t *interfaceGUID, 
+	bool getLevel2DmInfo( const cguid& ifGUID, 
 							uint8_t *pdata,
 							bool bLevel2 = false );
 
@@ -730,8 +730,8 @@ public:
 
 	bool setRegisterPage( uint8_t nodeid, 
 							uint16_t page, 
-							const uint8_t *interfaceGUID = NULL,
-							const uint8_t *destGUID = NULL,
+							const cguid *pifGUID = NULL,
+							const cguid *pdestGUID = NULL,
 							bool bLevel2 = false );
 
 	/*!
@@ -746,8 +746,8 @@ public:
 	*/
 	uint32_t getRegisterPage( wxWindow *pwnd, 
 								uint8_t nodeid, 
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false );
 
 	/*!
@@ -766,8 +766,8 @@ public:
 					CMDF_DecisionMatrix *pdm, 
 					uint32_t row, 
 					uint8_t *pRow,
-					const uint8_t *interfaceGUID = NULL,
-					const uint8_t *destGUID = NULL,
+					const cguid *pifGUID = NULL,
+					const cguid *pdestGUID = NULL,
 					bool bLevel2 = false,
 					bool bSilent = false );
 
@@ -797,8 +797,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxString& retstr,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -818,8 +818,8 @@ public:
 									uint8_t nodeid,
 									CMDF_Abstraction *abstraction,
 									wxString& strvalue,
-									const uint8_t *interfaceGUID = NULL,
-									const uint8_t *destGUID = NULL,
+									const cguid *pifGUID = NULL,
+									const cguid *pdestGUID = NULL,
 									bool bLevel2 = false,
 									bool bSilent = false );
 
@@ -839,8 +839,8 @@ public:
 									uint8_t nodeid,
 									CMDF_Abstraction *abstraction,
 									wxString& strBitField,
-									const uint8_t *interfaceGUID = NULL,
-									const uint8_t *destGUID = NULL,
+									const cguid *pifGUID = NULL,
+									const cguid *pdestGUID = NULL,
 									bool bLevel2 = false,
 									bool bSilent = false );
 
@@ -860,8 +860,8 @@ public:
 									uint8_t nodeid,
 									CMDF_Abstraction *abstraction,
 									wxString& strBitField,
-									const uint8_t *interfaceGUID = NULL,
-									const uint8_t *destGUID = NULL,
+									const cguid *pifGUID = NULL,
+									const cguid *pdestGUID = NULL,
 									bool bLevel2 = false,
 									bool bSilent = false );
 	/*!
@@ -880,8 +880,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								bool *bval,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -901,8 +901,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								bool& bval,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -922,8 +922,8 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint8_t *pval,
-										const uint8_t *interfaceGUID = NULL,
-										const uint8_t *destGUID = NULL,
+										const cguid *pifGUID = NULL,
+										const cguid *pdestGUID = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -943,8 +943,8 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint8_t& val,
-										const uint8_t *interfaceGUID = NULL,
-										const uint8_t *destGUID = NULL,
+										const cguid *pifGUID = NULL,
+										const cguid *pdestGUID = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -964,8 +964,8 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint16_t *pval,
-										const uint8_t *interfaceGUID = NULL,
-										const uint8_t *destGUID = NULL,
+										const cguid *pifGUID = NULL,
+										const cguid *pdestGUID = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -985,8 +985,8 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint16_t& val16,
-										const uint8_t *interfaceGUID = NULL,
-										const uint8_t *destGUID = NULL,
+										const cguid *pifGUID = NULL,
+										const cguid *pdestGUID = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1006,8 +1006,8 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint32_t *pval,
-										const uint8_t *interfaceGUID = NULL,
-										const uint8_t *destGUID = NULL,
+										const cguid *pifGUID = NULL,
+										const cguid *pdestGUID = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1027,8 +1027,8 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint32_t& val32,
-										const uint8_t *interfaceGUID = NULL,
-										const uint8_t *destGUID = NULL,
+										const cguid *pifGUID = NULL,
+										const cguid *pdestGUID = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1048,8 +1048,8 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint64_t *pval,
-										const uint8_t *interfaceGUID = NULL,
-										const uint8_t *destGUID = NULL,
+										const cguid *pifGUID = NULL,
+										const cguid *pdestGUID = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1069,8 +1069,8 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint64_t& val64,
-										const uint8_t *interfaceGUID = NULL,
-										const uint8_t *destGUID = NULL,
+										const cguid *pifGUID = NULL,
+										const cguid *pdestGUID = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1091,8 +1091,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								float *pval,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1113,8 +1113,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								float& valfloat,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1136,8 +1136,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								double *pval,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1158,8 +1158,8 @@ public:
 									uint8_t nodeid,
 									CMDF_Abstraction *abstraction,
 									double& valdouble,
-									const uint8_t *interfaceGUID = NULL,
-									const uint8_t *destGUID = NULL,
+									const cguid *pifGUID = NULL,
+									const cguid *pdestGUID = NULL,
 									bool bLevel2 = false,
 									bool bSilent = false );
 
@@ -1185,8 +1185,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxDateTime *pval,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1212,8 +1212,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxDateTime& valdate,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1233,8 +1233,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxDateTime *pval,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1254,8 +1254,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxDateTime& valtime,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1275,8 +1275,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								cguid *pval,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1296,8 +1296,8 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								cguid& valguid,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1316,8 +1316,8 @@ public:
 	wxString getAbstractionValueAsString( wxWindow *pwnd,
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
-								const uint8_t *interfaceGUID = NULL,
-								const uint8_t *destGUID = NULL,
+								const cguid *pifGUID = NULL,
+								const cguid *pdestGUID = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
