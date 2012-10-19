@@ -4568,306 +4568,6 @@ to the clipboard"</string>
               <bool name="proxy-Enabled">1</bool>
               <string name="proxy-Member variable name">""</string>
               <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              <document>
-                <string name="title">"Cut: ID_MENUITEM_EDIT_CUT"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_EDIT_CUT"</string>
-                <long name="proxy-Id value">19003</long>
-                <string name="proxy-Label">"Cut"</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Copy: ID_MENUITEM_EDIT_COPY"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_EDIT_COPY"</string>
-                <long name="proxy-Id value">19004</long>
-                <string name="proxy-Label">"Copy"</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Paste: ID_MENUITEM_EDIT_PASTE"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_EDIT_PASTE"</string>
-                <long name="proxy-Id value">19006</long>
-                <string name="proxy-Label">"Paste"</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-            </document>
-            <document>
-              <string name="title">"Tools"</string>
-              <string name="type">"dialog-control-document"</string>
-              <string name="filename">""</string>
-              <string name="icon-name">"menu"</string>
-              <long name="is-transient">0</long>
-              <long name="owns-file">1</long>
-              <long name="title-mode">0</long>
-              <long name="locked">0</long>
-              <string name="proxy-type">"wbMenuProxy"</string>
-              <string name="proxy-Label">"Tools"</string>
-              <bool name="proxy-Enabled">1</bool>
-              <string name="proxy-Member variable name">""</string>
-              <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              <document>
-                <string name="title">"Scan for nodes...: ID_MENUITEM_SCAN"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_SCAN"</string>
-                <long name="proxy-Id value">19007</long>
-                <string name="proxy-Label">"Scan for nodes..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Set node nickname...: ID_MENUITEM_SET_NICKNAME"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_SET_NICKNAME"</string>
-                <long name="proxy-Id value">19008</long>
-                <string name="proxy-Label">"Set node nickname..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Reset node (drop nickname)...: ID_MENUITEM_DROP_NICKNAME"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_DROP_NICKNAME"</string>
-                <long name="proxy-Id value">19009</long>
-                <string name="proxy-Label">"Reset node (drop nickname)..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"GUID reset node (drop nickname)...: ID_MENUITEM_GUID_RESET_NODE"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_GUID_RESET_NODE"</string>
-                <long name="proxy-Id value">19010</long>
-                <string name="proxy-Label">"GUID reset node (drop nickname)..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Increment register...: ID_MENUITEM_INCREMENT_REGISTER"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_INCREMENT_REGISTER"</string>
-                <long name="proxy-Id value">19011</long>
-                <string name="proxy-Label">"Increment register..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Decrement register...: ID_MENUITEM_DECREMENT_REGISTER"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_DECREMENT_REGISTER"</string>
-                <long name="proxy-Id value">19012</long>
-                <string name="proxy-Label">"Decrement register..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"------------"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuSeparatorProxy"</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Read register...: ID_MENUITEM_READ_REGISTER"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_READ_REGISTER"</string>
-                <long name="proxy-Id value">19019</long>
-                <string name="proxy-Label">"Read register..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Read page...: ID_MENUITEM_READ_PAGE"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_READ_PAGE"</string>
-                <long name="proxy-Id value">19020</long>
-                <string name="proxy-Label">"Read page..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Write register...: ID_MENUITEM_WRITE_REGISTER"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_WRITE_REGISTER"</string>
-                <long name="proxy-Id value">19021</long>
-                <string name="proxy-Label">"Write register..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
-              <document>
-                <string name="title">"Clone node...: ID_MENUITEM_CLONE_NODE"</string>
-                <string name="type">"dialog-control-document"</string>
-                <string name="filename">""</string>
-                <string name="icon-name">"menuitem"</string>
-                <long name="is-transient">0</long>
-                <long name="owns-file">1</long>
-                <long name="title-mode">0</long>
-                <long name="locked">0</long>
-                <string name="proxy-type">"wbMenuItemProxy"</string>
-                <string name="proxy-Id name">"ID_MENUITEM_CLONE_NODE"</string>
-                <long name="proxy-Id value">19022</long>
-                <string name="proxy-Label">"Clone node..."</string>
-                <string name="proxy-Kind">"Normal"</string>
-                <bool name="proxy-Checked">0</bool>
-                <bool name="proxy-Enabled">1</bool>
-                <string name="proxy-Help text">""</string>
-                <string name="proxy-Bitmap">""</string>
-                <string name="proxy-Bitmap unchecked">""</string>
-                <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-              </document>
             </document>
             <document>
               <string name="title">"Help"</string>
@@ -5073,36 +4773,6 @@ to the clipboard"</string>
                 <string name="proxy-Bitmap unchecked">""</string>
                 <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
               </document>
-            </document>
-            <document>
-              <string name="title">"Menu"</string>
-              <string name="type">"dialog-control-document"</string>
-              <string name="filename">""</string>
-              <string name="icon-name">"menu"</string>
-              <long name="is-transient">0</long>
-              <long name="owns-file">1</long>
-              <long name="title-mode">0</long>
-              <long name="locked">0</long>
-              <string name="proxy-type">"wbMenuProxy"</string>
-              <string name="proxy-Label">"Menu"</string>
-              <bool name="proxy-Enabled">1</bool>
-              <string name="proxy-Member variable name">""</string>
-              <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
-            </document>
-            <document>
-              <string name="title">"Menu"</string>
-              <string name="type">"dialog-control-document"</string>
-              <string name="filename">""</string>
-              <string name="icon-name">"menu"</string>
-              <long name="is-transient">0</long>
-              <long name="owns-file">1</long>
-              <long name="title-mode">0</long>
-              <long name="locked">0</long>
-              <string name="proxy-type">"wbMenuProxy"</string>
-              <string name="proxy-Label">"Menu"</string>
-              <bool name="proxy-Enabled">1</bool>
-              <string name="proxy-Member variable name">""</string>
-              <string name="proxy-Platform">"&lt;Any platform&gt;"</string>
             </document>
           </document>
           <document>
@@ -22230,6 +21900,14 @@ to the clipboard"</string>
             <string name="proxy-type">"wbBoxSizerProxy"</string>
             <string name="proxy-Orientation">"Vertical"</string>
             <string name="proxy-Member variable name">""</string>
+            <string name="proxy-AlignH">"Centre"</string>
+            <string name="proxy-AlignV">"Centre"</string>
+            <long name="proxy-Stretch factor">0</long>
+            <long name="proxy-Border">5</long>
+            <bool name="proxy-wxLEFT">1</bool>
+            <bool name="proxy-wxRIGHT">1</bool>
+            <bool name="proxy-wxTOP">1</bool>
+            <bool name="proxy-wxBOTTOM">1</bool>
             <bool name="proxy-wxSHAPED">0</bool>
             <bool name="proxy-wxADJUST_MINSIZE">0</bool>
             <bool name="proxy-wxFIXED_MINSIZE">0</bool>
@@ -27591,8 +27269,6 @@ to the clipboard"</string>
             <string name="proxy-Implementation filename">""</string>
             <string name="proxy-Header filename">""</string>
             <string name="proxy-Member variable name">"m_panelCanal"</string>
-            <string name="proxy-Tab label">"CANAL Driver"</string>
-            <string name="proxy-Tab icon">""</string>
             <string name="proxy-Help text">"For a CANAL driver enter or edit the description below and press OK"</string>
             <string name="proxy-Tooltip text">""</string>
             <string name="proxy-Background colour">""</string>
@@ -27646,6 +27322,8 @@ to the clipboard"</string>
             <string name="proxy-Custom ctor arguments">""</string>
             <string name="proxy-Event sources">""</string>
             <bool name="proxy-AUI manager">0</bool>
+            <string name="proxy-Tab label">"CANAL Driver"</string>
+            <string name="proxy-Tab icon">""</string>
             <document>
               <string name="title">"wxBoxSizer V"</string>
               <string name="type">"dialog-control-document"</string>
@@ -28678,8 +28356,6 @@ to the clipboard"</string>
             <string name="proxy-Implementation filename">""</string>
             <string name="proxy-Header filename">""</string>
             <string name="proxy-Member variable name">"m_panelServer"</string>
-            <string name="proxy-Tab label">"Remote VSCP server"</string>
-            <string name="proxy-Tab icon">""</string>
             <string name="proxy-Help text">""</string>
             <string name="proxy-Tooltip text">""</string>
             <string name="proxy-Background colour">""</string>
@@ -28733,6 +28409,8 @@ to the clipboard"</string>
             <string name="proxy-Custom ctor arguments">""</string>
             <string name="proxy-Event sources">""</string>
             <bool name="proxy-AUI manager">0</bool>
+            <string name="proxy-Tab label">"Remote VSCP server"</string>
+            <string name="proxy-Tab icon">""</string>
             <document>
               <string name="title">"wxBoxSizer V"</string>
               <string name="type">"dialog-control-document"</string>
@@ -30487,6 +30165,14 @@ to the clipboard"</string>
             <string name="proxy-type">"wbBoxSizerProxy"</string>
             <string name="proxy-Orientation">"Vertical"</string>
             <string name="proxy-Member variable name">""</string>
+            <string name="proxy-AlignH">"Centre"</string>
+            <string name="proxy-AlignV">"Centre"</string>
+            <long name="proxy-Stretch factor">0</long>
+            <long name="proxy-Border">5</long>
+            <bool name="proxy-wxLEFT">1</bool>
+            <bool name="proxy-wxRIGHT">1</bool>
+            <bool name="proxy-wxTOP">1</bool>
+            <bool name="proxy-wxBOTTOM">1</bool>
             <bool name="proxy-wxSHAPED">0</bool>
             <bool name="proxy-wxADJUST_MINSIZE">0</bool>
             <bool name="proxy-wxFIXED_MINSIZE">0</bool>
@@ -45068,7 +44754,7 @@ The transmission event period is  interval between automatically sent events."</
           <long name="proxy-X">-1</long>
           <long name="proxy-Y">-1</long>
           <long name="proxy-Width">350</long>
-          <long name="proxy-Height">220</long>
+          <long name="proxy-Height">-1</long>
           <bool name="proxy-AUI manager">0</bool>
           <string name="proxy-Event sources">""</string>
           <document>
@@ -46479,7 +46165,7 @@ The transmission event period is  interval between automatically sent events."</
                 <long name="proxy-X">-1</long>
                 <long name="proxy-Y">-1</long>
                 <long name="proxy-Width">200</long>
-                <long name="proxy-Height">-1</long>
+                <long name="proxy-Height">30</long>
                 <string name="proxy-AlignH">"Centre"</string>
                 <string name="proxy-AlignV">"Centre"</string>
                 <long name="proxy-Stretch factor">0</long>
@@ -46669,7 +46355,7 @@ The transmission event period is  interval between automatically sent events."</
                 <long name="proxy-X">-1</long>
                 <long name="proxy-Y">-1</long>
                 <long name="proxy-Width">200</long>
-                <long name="proxy-Height">-1</long>
+                <long name="proxy-Height">30</long>
                 <string name="proxy-AlignH">"Centre"</string>
                 <string name="proxy-AlignV">"Centre"</string>
                 <long name="proxy-Stretch factor">0</long>
@@ -47048,7 +46734,7 @@ The transmission event period is  interval between automatically sent events."</
                 <string name="proxy-Custom styles">""</string>
                 <long name="proxy-X">-1</long>
                 <long name="proxy-Y">-1</long>
-                <long name="proxy-Width">200</long>
+                <long name="proxy-Width">170</long>
                 <long name="proxy-Height">-1</long>
                 <string name="proxy-AlignH">"Centre"</string>
                 <string name="proxy-AlignV">"Centre"</string>
@@ -47085,7 +46771,7 @@ The transmission event period is  interval between automatically sent events."</
                 <string name="proxy-Implementation filename">""</string>
                 <string name="proxy-Header filename">""</string>
                 <string name="proxy-Member variable name">""</string>
-                <string name="proxy-Label">"*"</string>
+                <string name="proxy-Label">"default"</string>
                 <bool name="proxy-Default">0</bool>
                 <string name="proxy-Help text">""</string>
                 <string name="proxy-Tooltip text">""</string>
@@ -47114,7 +46800,7 @@ The transmission event period is  interval between automatically sent events."</
                 <string name="proxy-Custom styles">""</string>
                 <long name="proxy-X">-1</long>
                 <long name="proxy-Y">-1</long>
-                <long name="proxy-Width">30</long>
+                <long name="proxy-Width">60</long>
                 <long name="proxy-Height">15</long>
                 <string name="proxy-AlignH">"Centre"</string>
                 <string name="proxy-AlignV">"Centre"</string>

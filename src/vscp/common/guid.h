@@ -120,7 +120,7 @@ public:
 	/*!
 		Fill array with GUID MSB firts			
 	*/
-	void setGUID( uint8_t a );
+	void setGUID( uint8_t *pArray );
 
     /*!
         Check if same as supplied GUID

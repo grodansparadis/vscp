@@ -589,7 +589,8 @@ public:
 	*/
 	bool readLevel1Register( uint8_t nodeid, 
 								uint8_t reg, 
-								uint8_t *pval );
+								uint8_t *pval,
+								wxProgressDialog *pdlg = NULL );
 
 	/*!
 	Write level I register
@@ -600,7 +601,8 @@ public:
 	*/
 	bool writeLevel1Register( uint8_t nodeid, 
 								uint8_t reg, 
-								uint8_t *pval );
+								uint8_t *pval,
+								wxProgressDialog *pdlg = NULL );
 
 	/*!
 	Read a level 2 register
@@ -610,10 +612,11 @@ public:
 	@param pcontent Pointer to read value.
 	@return True on success. False otherwise.
 	*/    
-	bool readLevel2Register( const cguid& ifGUID, 
+	bool readLevel2Register( cguid& ifGUID, 
 								uint32_t reg, 
 								uint8_t *pcontent = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false );
 
 	/*!
@@ -625,10 +628,11 @@ public:
 	@param pcontent Pointer to data to write. Return read data.
 	@return True on success. False otherwise.
 	*/    
-	bool writeLevel2Register( const cguid& ifGUID, 
+	bool writeLevel2Register( cguid& ifGUID, 
 								uint32_t reg, 
 								uint8_t *pcontent,
-								const cguid& destGUID,
+								cguid& destGUID,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false );
 
 	/*!
@@ -646,7 +650,8 @@ public:
 								uint8_t *pregisters,
 								uint8_t nodeid,
 								uint8_t startreg = 0,
-								uint16_t count = 256 );
+								uint16_t count = 256,
+								wxProgressDialog *pdlg = NULL );
 
 
 	/*!
@@ -662,10 +667,11 @@ public:
 
 	bool readLevel2Registers( wxWindow *pwnd,
 								uint8_t *pregisters,
-								const cguid& ifGUID,
+								cguid& ifGUID,
 								uint32_t startreg = 0,
 								uint32_t count = 256,
-								const cguid *pdestGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false );
 
 	/*!
@@ -688,8 +694,8 @@ public:
 	@return true on success, false on failure.
 	*/
 	wxString getMDFfromDevice2( wxProgressDialog& progressDlg,
-									const cguid& ifGUID, 
-									const cguid& destGUID,
+									cguid& ifGUID, 
+									cguid& destGUID,
 									bool bLevel2 = false,
 									bool bSilent = false );
 
@@ -712,7 +718,7 @@ public:
 	@param pdata Pointer to returned data. Array of eight bytes.
 	@return true on success, false on failure.
 	*/
-	bool getLevel2DmInfo( const cguid& ifGUID, 
+	bool getLevel2DmInfo( cguid& ifGUID, 
 							uint8_t *pdata,
 							bool bLevel2 = false );
 
@@ -730,8 +736,8 @@ public:
 
 	bool setRegisterPage( uint8_t nodeid, 
 							uint16_t page, 
-							const cguid *pifGUID = NULL,
-							const cguid *pdestGUID = NULL,
+							cguid *pifGUID = NULL,
+							cguid *pdestGUID = NULL,
 							bool bLevel2 = false );
 
 	/*!
@@ -746,8 +752,8 @@ public:
 	*/
 	uint32_t getRegisterPage( wxWindow *pwnd, 
 								uint8_t nodeid, 
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
 								bool bLevel2 = false );
 
 	/*!
@@ -766,8 +772,8 @@ public:
 					CMDF_DecisionMatrix *pdm, 
 					uint32_t row, 
 					uint8_t *pRow,
-					const cguid *pifGUID = NULL,
-					const cguid *pdestGUID = NULL,
+					cguid *pifGUID = NULL,
+					cguid *pdestGUID = NULL,
 					bool bLevel2 = false,
 					bool bSilent = false );
 
@@ -797,8 +803,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxString& retstr,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -818,8 +825,9 @@ public:
 									uint8_t nodeid,
 									CMDF_Abstraction *abstraction,
 									wxString& strvalue,
-									const cguid *pifGUID = NULL,
-									const cguid *pdestGUID = NULL,
+									cguid *pifGUID = NULL,
+									cguid *pdestGUID = NULL,
+									wxProgressDialog *pdlg = NULL,
 									bool bLevel2 = false,
 									bool bSilent = false );
 
@@ -839,8 +847,9 @@ public:
 									uint8_t nodeid,
 									CMDF_Abstraction *abstraction,
 									wxString& strBitField,
-									const cguid *pifGUID = NULL,
-									const cguid *pdestGUID = NULL,
+									cguid *pifGUID = NULL,
+									cguid *pdestGUID = NULL,
+									wxProgressDialog *pdlg = NULL,
 									bool bLevel2 = false,
 									bool bSilent = false );
 
@@ -860,8 +869,9 @@ public:
 									uint8_t nodeid,
 									CMDF_Abstraction *abstraction,
 									wxString& strBitField,
-									const cguid *pifGUID = NULL,
-									const cguid *pdestGUID = NULL,
+									cguid *pifGUID = NULL,
+									cguid *pdestGUID = NULL,
+									wxProgressDialog *pdlg = NULL,
 									bool bLevel2 = false,
 									bool bSilent = false );
 	/*!
@@ -880,8 +890,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								bool *bval,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -901,8 +912,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								bool& bval,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -922,8 +934,9 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint8_t *pval,
-										const cguid *pifGUID = NULL,
-										const cguid *pdestGUID = NULL,
+										cguid *pifGUID = NULL,
+										cguid *pdestGUID = NULL,
+										wxProgressDialog *pdlg = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -943,8 +956,9 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint8_t& val,
-										const cguid *pifGUID = NULL,
-										const cguid *pdestGUID = NULL,
+										cguid *pifGUID = NULL,
+										cguid *pdestGUID = NULL,
+										wxProgressDialog *pdlg = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -964,8 +978,9 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint16_t *pval,
-										const cguid *pifGUID = NULL,
-										const cguid *pdestGUID = NULL,
+										cguid *pifGUID = NULL,
+										cguid *pdestGUID = NULL,
+										wxProgressDialog *pdlg = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -985,8 +1000,9 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint16_t& val16,
-										const cguid *pifGUID = NULL,
-										const cguid *pdestGUID = NULL,
+										cguid *pifGUID = NULL,
+										cguid *pdestGUID = NULL,
+										wxProgressDialog *pdlg = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1006,8 +1022,9 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint32_t *pval,
-										const cguid *pifGUID = NULL,
-										const cguid *pdestGUID = NULL,
+										cguid *pifGUID = NULL,
+										cguid *pdestGUID = NULL,
+										wxProgressDialog *pdlg = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1027,8 +1044,9 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint32_t& val32,
-										const cguid *pifGUID = NULL,
-										const cguid *pdestGUID = NULL,
+										cguid *pifGUID = NULL,
+										cguid *pdestGUID = NULL,
+										wxProgressDialog *pdlg = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1048,8 +1066,9 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint64_t *pval,
-										const cguid *pifGUID = NULL,
-										const cguid *pdestGUID = NULL,
+										cguid *pifGUID = NULL,
+										cguid *pdestGUID = NULL,
+										wxProgressDialog *pdlg = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1069,8 +1088,9 @@ public:
 										uint8_t nodeid,
 										CMDF_Abstraction *abstraction,
 										uint64_t& val64,
-										const cguid *pifGUID = NULL,
-										const cguid *pdestGUID = NULL,
+										cguid *pifGUID = NULL,
+										cguid *pdestGUID = NULL,
+										wxProgressDialog *pdlg = NULL,
 										bool bLevel2 = false,
 										bool bSilent = false );
 
@@ -1091,8 +1111,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								float *pval,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1113,8 +1134,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								float& valfloat,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1136,8 +1158,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								double *pval,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1158,8 +1181,9 @@ public:
 									uint8_t nodeid,
 									CMDF_Abstraction *abstraction,
 									double& valdouble,
-									const cguid *pifGUID = NULL,
-									const cguid *pdestGUID = NULL,
+									cguid *pifGUID = NULL,
+									cguid *pdestGUID = NULL,
+									wxProgressDialog *pdlg = NULL,
 									bool bLevel2 = false,
 									bool bSilent = false );
 
@@ -1185,8 +1209,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxDateTime *pval,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1212,8 +1237,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxDateTime& valdate,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1233,8 +1259,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxDateTime *pval,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1254,8 +1281,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								wxDateTime& valtime,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1275,8 +1303,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								cguid *pval,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1296,8 +1325,9 @@ public:
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
 								cguid& valguid,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 
@@ -1316,8 +1346,9 @@ public:
 	wxString getAbstractionValueAsString( wxWindow *pwnd,
 								uint8_t nodeid,
 								CMDF_Abstraction *abstraction,
-								const cguid *pifGUID = NULL,
-								const cguid *pdestGUID = NULL,
+								cguid *pifGUID = NULL,
+								cguid *pdestGUID = NULL,
+								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false,
 								bool bSilent = false );
 

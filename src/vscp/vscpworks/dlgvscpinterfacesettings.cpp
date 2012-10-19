@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Fri 26 Oct 2007 11:57:04 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -85,15 +85,15 @@ IMPLEMENT_DYNAMIC_CLASS( dlgVscpInterfaceSettings, wxPropertySheetDialog )
 	BEGIN_EVENT_TABLE( dlgVscpInterfaceSettings, wxPropertySheetDialog )
 
 	////@begin dlgVscpInterfaceSettings event table entries
-  EVT_BUTTON( ID_BUTTON_VSCP_DRIVER_SET_PATH, dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick )
+	EVT_BUTTON( ID_BUTTON_VSCP_DRIVER_SET_PATH, dlgVscpInterfaceSettings::OnButtonVscpDriverSetPathClick )
 
-  EVT_BUTTON( ID_BUTTON_VSCP_SET_CONFIGURATION, dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick )
+	EVT_BUTTON( ID_BUTTON_VSCP_SET_CONFIGURATION, dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick )
 
-  EVT_BUTTON( ID_BUTTON_SET_FILTER, dlgVscpInterfaceSettings::OnButtonSetFilterClick )
+	EVT_BUTTON( ID_BUTTON_SET_FILTER, dlgVscpInterfaceSettings::OnButtonSetFilterClick )
 
-  EVT_BUTTON( ID_BUTTON_TEST_INTERFACE, dlgVscpInterfaceSettings::OnButtonTestInterfaceClick )
+	EVT_BUTTON( ID_BUTTON_TEST_INTERFACE, dlgVscpInterfaceSettings::OnButtonTestInterfaceClick )
 
-  EVT_BUTTON( ID_BUTTON, dlgVscpInterfaceSettings::OnButtonGetInterfacesClick )
+	EVT_BUTTON( ID_BUTTON, dlgVscpInterfaceSettings::OnButtonGetInterfacesClick )
 
 	////@end dlgVscpInterfaceSettings event table entries
 
@@ -123,15 +123,15 @@ dlgVscpInterfaceSettings::dlgVscpInterfaceSettings( wxWindow* parent, wxWindowID
 bool dlgVscpInterfaceSettings::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
 	////@begin dlgVscpInterfaceSettings creation
-  SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
-  SetSheetStyle(wxPROPSHEET_DEFAULT);
-  wxPropertySheetDialog::Create( parent, id, caption, pos, size, style );
+	SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
+	SetSheetStyle(wxPROPSHEET_DEFAULT);
+	wxPropertySheetDialog::Create( parent, id, caption, pos, size, style );
 
-  CreateButtons(wxOK|wxCANCEL|wxHELP);
-  CreateControls();
-  SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
-  LayoutDialog();
-  Centre();
+	CreateButtons(wxOK|wxCANCEL|wxHELP);
+	CreateControls();
+	SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
+	LayoutDialog();
+	Centre();
 	////@end dlgVscpInterfaceSettings creation
 	return true;
 }
@@ -155,20 +155,20 @@ dlgVscpInterfaceSettings::~dlgVscpInterfaceSettings()
 void dlgVscpInterfaceSettings::Init()
 {
 	////@begin dlgVscpInterfaceSettings member initialisation
-  m_panelCanal = NULL;
-  m_DriverDescription = NULL;
-  m_PathToDriver = NULL;
-  m_DriverConfigurationString = NULL;
-  m_DriverFlags = NULL;
-  m_panelServer = NULL;
-  m_RemoteServerDescription = NULL;
-  m_RemoteServerURL = NULL;
-  m_RemoteServerPort = NULL;
-  m_RemoteServerUsername = NULL;
-  m_RemoteServerPassword = NULL;
-  m_RemoteInterfaceName = NULL;
-  m_btnTestConnection = NULL;
-  m_btnGetInterfaces = NULL;
+	m_panelCanal = NULL;
+	m_DriverDescription = NULL;
+	m_PathToDriver = NULL;
+	m_DriverConfigurationString = NULL;
+	m_DriverFlags = NULL;
+	m_panelServer = NULL;
+	m_RemoteServerDescription = NULL;
+	m_RemoteServerURL = NULL;
+	m_RemoteServerPort = NULL;
+	m_RemoteServerUsername = NULL;
+	m_RemoteServerPassword = NULL;
+	m_RemoteInterfaceName = NULL;
+	m_btnTestConnection = NULL;
+	m_btnGetInterfaces = NULL;
 	////@end dlgVscpInterfaceSettings member initialisation
 
 	// Init filter
@@ -184,185 +184,185 @@ void dlgVscpInterfaceSettings::Init()
 void dlgVscpInterfaceSettings::CreateControls()
 {    
 	////@begin dlgVscpInterfaceSettings content construction
-  dlgVscpInterfaceSettings* itemPropertySheetDialog1 = this;
+	dlgVscpInterfaceSettings* itemPropertySheetDialog1 = this;
 
-  m_panelCanal = new wxPanel;
-  m_panelCanal->Create( GetBookCtrl(), ID_PANEL_INTERFACE_DRIVER, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-  m_panelCanal->SetHelpText(_("For a CANAL driver enter or edit the description below and press OK"));
-  if (dlgVscpInterfaceSettings::ShowToolTips())
-    m_panelCanal->SetToolTip(_("For a CANAL driver enter or edit the description below and press OK"));
-  m_panelCanal->SetName(_T("canal"));
-  wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxVERTICAL);
-  m_panelCanal->SetSizer(itemBoxSizer3);
+	m_panelCanal = new wxPanel;
+	m_panelCanal->Create( GetBookCtrl(), ID_PANEL_INTERFACE_DRIVER, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+	m_panelCanal->SetHelpText(_("For a CANAL driver enter or edit the description below and press OK"));
+	if (dlgVscpInterfaceSettings::ShowToolTips())
+		m_panelCanal->SetToolTip(_("For a CANAL driver enter or edit the description below and press OK"));
+	m_panelCanal->SetName(_T("canal"));
+	wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxVERTICAL);
+	m_panelCanal->SetSizer(itemBoxSizer3);
 
-  wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer3->Add(itemBoxSizer4, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+	wxBoxSizer* itemBoxSizer4 = new wxBoxSizer(wxVERTICAL);
+	itemBoxSizer3->Add(itemBoxSizer4, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer5 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer3->Add(itemBoxSizer5, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText6 = new wxStaticText;
-  itemStaticText6->Create( m_panelCanal, wxID_STATIC, _("Description :"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer5->Add(itemStaticText6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer5 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer3->Add(itemBoxSizer5, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText6 = new wxStaticText;
+	itemStaticText6->Create( m_panelCanal, wxID_STATIC, _("Description :"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer5->Add(itemStaticText6, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_DriverDescription = new wxTextCtrl;
-  m_DriverDescription->Create( m_panelCanal, ID_DriverDescription, wxEmptyString, wxDefaultPosition, wxSize(300, -1), 0 );
-  itemBoxSizer5->Add(m_DriverDescription, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_DriverDescription = new wxTextCtrl;
+	m_DriverDescription->Create( m_panelCanal, ID_DriverDescription, wxEmptyString, wxDefaultPosition, wxSize(300, -1), 0 );
+	itemBoxSizer5->Add(m_DriverDescription, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer5->Add(52, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer5->Add(52, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer3->Add(itemBoxSizer9, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText10 = new wxStaticText;
-  itemStaticText10->Create( m_panelCanal, wxID_STATIC, _("Path to driver :"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer9->Add(itemStaticText10, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer3->Add(itemBoxSizer9, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText10 = new wxStaticText;
+	itemStaticText10->Create( m_panelCanal, wxID_STATIC, _("Path to driver :"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer9->Add(itemStaticText10, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_PathToDriver = new wxTextCtrl;
-  m_PathToDriver->Create( m_panelCanal, ID_PathToDriver, wxEmptyString, wxDefaultPosition, wxSize(300, -1), 0 );
-  itemBoxSizer9->Add(m_PathToDriver, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_PathToDriver = new wxTextCtrl;
+	m_PathToDriver->Create( m_panelCanal, ID_PathToDriver, wxEmptyString, wxDefaultPosition, wxSize(300, -1), 0 );
+	itemBoxSizer9->Add(m_PathToDriver, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxButton* itemButton12 = new wxButton;
-  itemButton12->Create( m_panelCanal, ID_BUTTON_VSCP_DRIVER_SET_PATH, _("..."), wxDefaultPosition, wxSize(30, -1), 0 );
-  itemBoxSizer9->Add(itemButton12, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxButton* itemButton12 = new wxButton;
+	itemButton12->Create( m_panelCanal, ID_BUTTON_VSCP_DRIVER_SET_PATH, _("..."), wxDefaultPosition, wxSize(30, -1), 0 );
+	itemBoxSizer9->Add(itemButton12, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer9->Add(20, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer9->Add(20, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer14 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer3->Add(itemBoxSizer14, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText15 = new wxStaticText;
-  itemStaticText15->Create( m_panelCanal, wxID_STATIC, _("Device configuration string :"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer14->Add(itemStaticText15, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer14 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer3->Add(itemBoxSizer14, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText15 = new wxStaticText;
+	itemStaticText15->Create( m_panelCanal, wxID_STATIC, _("Device configuration string :"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer14->Add(itemStaticText15, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_DriverConfigurationString = new wxTextCtrl;
-  m_DriverConfigurationString->Create( m_panelCanal, ID_DriverConfigurationString, wxEmptyString, wxDefaultPosition, wxSize(300, -1), 0 );
-  itemBoxSizer14->Add(m_DriverConfigurationString, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_DriverConfigurationString = new wxTextCtrl;
+	m_DriverConfigurationString->Create( m_panelCanal, ID_DriverConfigurationString, wxEmptyString, wxDefaultPosition, wxSize(300, -1), 0 );
+	itemBoxSizer14->Add(m_DriverConfigurationString, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxButton* itemButton17 = new wxButton;
-  itemButton17->Create( m_panelCanal, ID_BUTTON_VSCP_SET_CONFIGURATION, _("..."), wxDefaultPosition, wxSize(30, -1), 0 );
-  itemBoxSizer14->Add(itemButton17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxButton* itemButton17 = new wxButton;
+	itemButton17->Create( m_panelCanal, ID_BUTTON_VSCP_SET_CONFIGURATION, _("..."), wxDefaultPosition, wxSize(30, -1), 0 );
+	itemBoxSizer14->Add(itemButton17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer14->Add(20, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer14->Add(20, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer19 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer3->Add(itemBoxSizer19, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText20 = new wxStaticText;
-  itemStaticText20->Create( m_panelCanal, wxID_STATIC, _("Flags :"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer19->Add(itemStaticText20, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer19 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer3->Add(itemBoxSizer19, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText20 = new wxStaticText;
+	itemStaticText20->Create( m_panelCanal, wxID_STATIC, _("Flags :"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer19->Add(itemStaticText20, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_DriverFlags = new wxTextCtrl;
-  m_DriverFlags->Create( m_panelCanal, ID_DriverFlags, wxEmptyString, wxDefaultPosition, wxSize(50, -1), 0 );
-  itemBoxSizer19->Add(m_DriverFlags, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_DriverFlags = new wxTextCtrl;
+	m_DriverFlags->Create( m_panelCanal, ID_DriverFlags, wxEmptyString, wxDefaultPosition, wxSize(50, -1), 0 );
+	itemBoxSizer19->Add(m_DriverFlags, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer19->Add(302, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer19->Add(302, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  GetBookCtrl()->AddPage(m_panelCanal, _("CANAL Driver"));
+	GetBookCtrl()->AddPage(m_panelCanal, _("CANAL Driver"));
 
-  m_panelServer = new wxPanel;
-  m_panelServer->Create( GetBookCtrl(), ID_PANEL_INTERFACE_REMOTE, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-  m_panelServer->SetName(_T("server"));
-  wxBoxSizer* itemBoxSizer24 = new wxBoxSizer(wxVERTICAL);
-  m_panelServer->SetSizer(itemBoxSizer24);
+	m_panelServer = new wxPanel;
+	m_panelServer->Create( GetBookCtrl(), ID_PANEL_INTERFACE_REMOTE, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+	m_panelServer->SetName(_T("server"));
+	wxBoxSizer* itemBoxSizer24 = new wxBoxSizer(wxVERTICAL);
+	m_panelServer->SetSizer(itemBoxSizer24);
 
-  wxBoxSizer* itemBoxSizer25 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer24->Add(itemBoxSizer25, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+	wxBoxSizer* itemBoxSizer25 = new wxBoxSizer(wxVERTICAL);
+	itemBoxSizer24->Add(itemBoxSizer25, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer26 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer26, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText27 = new wxStaticText;
-  itemStaticText27->Create( m_panelServer, wxID_STATIC, _("Description:"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer26->Add(itemStaticText27, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer26 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer24->Add(itemBoxSizer26, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText27 = new wxStaticText;
+	itemStaticText27->Create( m_panelServer, wxID_STATIC, _("Description:"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer26->Add(itemStaticText27, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_RemoteServerDescription = new wxTextCtrl;
-  m_RemoteServerDescription->Create( m_panelServer, ID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxSize(400, -1), 0 );
-  itemBoxSizer26->Add(m_RemoteServerDescription, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_RemoteServerDescription = new wxTextCtrl;
+	m_RemoteServerDescription->Create( m_panelServer, ID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxSize(400, -1), 0 );
+	itemBoxSizer26->Add(m_RemoteServerDescription, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer29 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer29, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText30 = new wxStaticText;
-  itemStaticText30->Create( m_panelServer, wxID_STATIC, _("Server URL:"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer29->Add(itemStaticText30, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer29 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer24->Add(itemBoxSizer29, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText30 = new wxStaticText;
+	itemStaticText30->Create( m_panelServer, wxID_STATIC, _("Server URL:"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer29->Add(itemStaticText30, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_RemoteServerURL = new wxTextCtrl;
-  m_RemoteServerURL->Create( m_panelServer, ID_RemoteServerURL, _("localhost"), wxDefaultPosition, wxSize(400, -1), 0 );
-  itemBoxSizer29->Add(m_RemoteServerURL, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_RemoteServerURL = new wxTextCtrl;
+	m_RemoteServerURL->Create( m_panelServer, ID_RemoteServerURL, _("localhost"), wxDefaultPosition, wxSize(400, -1), 0 );
+	itemBoxSizer29->Add(m_RemoteServerURL, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer32 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer32, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText33 = new wxStaticText;
-  itemStaticText33->Create( m_panelServer, wxID_STATIC, _("Server port:"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer32->Add(itemStaticText33, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer32 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer24->Add(itemBoxSizer32, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText33 = new wxStaticText;
+	itemStaticText33->Create( m_panelServer, wxID_STATIC, _("Server port:"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer32->Add(itemStaticText33, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_RemoteServerPort = new wxTextCtrl;
-  m_RemoteServerPort->Create( m_panelServer, ID_RemoteServerPort, _("9598"), wxDefaultPosition, wxSize(50, -1), 0 );
-  itemBoxSizer32->Add(m_RemoteServerPort, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_RemoteServerPort = new wxTextCtrl;
+	m_RemoteServerPort->Create( m_panelServer, ID_RemoteServerPort, _("9598"), wxDefaultPosition, wxSize(50, -1), 0 );
+	itemBoxSizer32->Add(m_RemoteServerPort, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer32->Add(348, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer32->Add(348, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer36 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer36, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText37 = new wxStaticText;
-  itemStaticText37->Create( m_panelServer, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer36->Add(itemStaticText37, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer36 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer24->Add(itemBoxSizer36, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText37 = new wxStaticText;
+	itemStaticText37->Create( m_panelServer, wxID_STATIC, _("Username:"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer36->Add(itemStaticText37, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_RemoteServerUsername = new wxTextCtrl;
-  m_RemoteServerUsername->Create( m_panelServer, ID_RemoteServerUsername, wxEmptyString, wxDefaultPosition, wxSize(200, -1), 0 );
-  itemBoxSizer36->Add(m_RemoteServerUsername, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_RemoteServerUsername = new wxTextCtrl;
+	m_RemoteServerUsername->Create( m_panelServer, ID_RemoteServerUsername, wxEmptyString, wxDefaultPosition, wxSize(200, -1), 0 );
+	itemBoxSizer36->Add(m_RemoteServerUsername, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer36->Add(200, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer36->Add(200, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer40 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer40, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText41 = new wxStaticText;
-  itemStaticText41->Create( m_panelServer, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer40->Add(itemStaticText41, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer40 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer24->Add(itemBoxSizer40, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText41 = new wxStaticText;
+	itemStaticText41->Create( m_panelServer, wxID_STATIC, _("Password:"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer40->Add(itemStaticText41, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_RemoteServerPassword = new wxTextCtrl;
-  m_RemoteServerPassword->Create( m_panelServer, ID_RemoteServerPassword, wxEmptyString, wxDefaultPosition, wxSize(200, -1), wxTE_PASSWORD );
-  itemBoxSizer40->Add(m_RemoteServerPassword, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_RemoteServerPassword = new wxTextCtrl;
+	m_RemoteServerPassword->Create( m_panelServer, ID_RemoteServerPassword, wxEmptyString, wxDefaultPosition, wxSize(200, -1), wxTE_PASSWORD );
+	itemBoxSizer40->Add(m_RemoteServerPassword, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer40->Add(200, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer40->Add(200, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer44 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer44, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText45 = new wxStaticText;
-  itemStaticText45->Create( m_panelServer, wxID_STATIC, _("Interface to use on server (leave blank to send events on all interfaces)"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemStaticText45->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-  itemBoxSizer44->Add(itemStaticText45, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+	wxBoxSizer* itemBoxSizer44 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer24->Add(itemBoxSizer44, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText45 = new wxStaticText;
+	itemStaticText45->Create( m_panelServer, wxID_STATIC, _("Interface to use on server (leave blank to send events on all interfaces)"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemStaticText45->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+	itemBoxSizer44->Add(itemStaticText45, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  itemBoxSizer44->Add(160, 1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer44->Add(160, 1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer47 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer47, 0, wxALIGN_RIGHT|wxALL, 1);
-  wxStaticText* itemStaticText48 = new wxStaticText;
-  itemStaticText48->Create( m_panelServer, wxID_STATIC, _("Interface name:"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer47->Add(itemStaticText48, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer47 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer24->Add(itemBoxSizer47, 0, wxALIGN_RIGHT|wxALL, 1);
+	wxStaticText* itemStaticText48 = new wxStaticText;
+	itemStaticText48->Create( m_panelServer, wxID_STATIC, _("Interface name:"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer47->Add(itemStaticText48, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_RemoteInterfaceName = new wxTextCtrl;
-  m_RemoteInterfaceName->Create( m_panelServer, ID_TEXTCTRL_INTERFACE_NAME, wxEmptyString, wxDefaultPosition, wxSize(200, -1), 0 );
-  itemBoxSizer47->Add(m_RemoteInterfaceName, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_RemoteInterfaceName = new wxTextCtrl;
+	m_RemoteInterfaceName->Create( m_panelServer, ID_TEXTCTRL_INTERFACE_NAME, wxEmptyString, wxDefaultPosition, wxSize(200, -1), 0 );
+	itemBoxSizer47->Add(m_RemoteInterfaceName, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer47->Add(200, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer47->Add(200, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  wxBoxSizer* itemBoxSizer51 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer24->Add(itemBoxSizer51, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 15);
-  wxButton* itemButton52 = new wxButton;
-  itemButton52->Create( m_panelServer, ID_BUTTON_SET_FILTER, _("Set Filter"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer51->Add(itemButton52, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	wxBoxSizer* itemBoxSizer51 = new wxBoxSizer(wxHORIZONTAL);
+	itemBoxSizer24->Add(itemBoxSizer51, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 15);
+	wxButton* itemButton52 = new wxButton;
+	itemButton52->Create( m_panelServer, ID_BUTTON_SET_FILTER, _("Set Filter"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer51->Add(itemButton52, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer51->Add(1, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+	itemBoxSizer51->Add(1, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  m_btnTestConnection = new wxButton;
-  m_btnTestConnection->Create( m_panelServer, ID_BUTTON_TEST_INTERFACE, _("Test connection"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer51->Add(m_btnTestConnection, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_btnTestConnection = new wxButton;
+	m_btnTestConnection->Create( m_panelServer, ID_BUTTON_TEST_INTERFACE, _("Test connection"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer51->Add(m_btnTestConnection, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer51->Add(1, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+	itemBoxSizer51->Add(1, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  m_btnGetInterfaces = new wxButton;
-  m_btnGetInterfaces->Create( m_panelServer, ID_BUTTON, _("Get interfaces"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer51->Add(m_btnGetInterfaces, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	m_btnGetInterfaces = new wxButton;
+	m_btnGetInterfaces->Create( m_panelServer, ID_BUTTON, _("Get interfaces"), wxDefaultPosition, wxDefaultSize, 0 );
+	itemBoxSizer51->Add(m_btnGetInterfaces, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  itemBoxSizer51->Add(30, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+	itemBoxSizer51->Add(30, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  GetBookCtrl()->AddPage(m_panelServer, _("Remote VSCP server"));
+	GetBookCtrl()->AddPage(m_panelServer, _("Remote VSCP server"));
 
 	////@end dlgVscpInterfaceSettings content construction
 
@@ -387,8 +387,8 @@ wxBitmap dlgVscpInterfaceSettings::GetBitmapResource( const wxString& name )
 {
 	// Bitmap retrieval
 	////@begin dlgVscpInterfaceSettings bitmap retrieval
-  wxUnusedVar(name);
-  return wxNullBitmap;
+	wxUnusedVar(name);
+	return wxNullBitmap;
 	////@end dlgVscpInterfaceSettings bitmap retrieval
 }
 
@@ -400,8 +400,8 @@ wxIcon dlgVscpInterfaceSettings::GetIconResource( const wxString& name )
 {
 	// Icon retrieval
 	////@begin dlgVscpInterfaceSettings icon retrieval
-  wxUnusedVar(name);
-  return wxNullIcon;
+	wxUnusedVar(name);
+	return wxNullIcon;
 	////@end dlgVscpInterfaceSettings icon retrieval
 }
 
@@ -524,9 +524,9 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 	unsigned long val;
 	m_RemoteServerPort->GetValue().ToULong( &val );
 	long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
-								val,
-								m_RemoteServerUsername->GetValue(),
-								wxstr );
+		val,
+		m_RemoteServerUsername->GetValue(),
+		wxstr );
 
 	pProgressDlg->Update( 100 );
 
@@ -563,12 +563,11 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 
 				int selidx;
 				if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
-					
+
 					wxStringTokenizer tkz( array[selidx], _(",") );
 					wxString strOrdinal = tkz.GetNextToken();
 					wxString strType = tkz.GetNextToken();
 					wxString strGUID = tkz.GetNextToken();
-
 
 					// Name of interface
 					wxString strName = tkz.GetNextToken();

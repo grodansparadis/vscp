@@ -4816,13 +4816,15 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                             pBoth->m_pvscpif->m_strPassword );
 
                         // Connect to host
-                        subframe->enableInterface();
+                        if ( subframe->enableInterface() ) {
 
-                        // Show the VSCP configuration windows
-                        subframe->Show( true );
+							// Show the VSCP configuration windows
+							subframe->Show( true );
 
-                        // Move window on top
-                        subframe->Raise();
+							// Move window on top
+							subframe->Raise();
+						
+						}
 
                     }
 

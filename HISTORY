@@ -1,5 +1,6 @@
 release notes for release 0.4.0 Fluorine
 ========================================
+2012-10-17 - AKHE VSCP Works interfaces are now dynamic and stored by name.
 2012-10-01 - AKHE VSCP Works now handle indexed storage for dm and abstractions.
 2012-09-30 - AKHE VSCP Works now handles pages.
 2012-09-18 - AKHE Dinesh Guleria contributed VSCP bootloader support for VSCP Works.

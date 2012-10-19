@@ -272,7 +272,7 @@ void DialogAbstractionEdit::CreateControls()
   itemBoxSizer29->Add(itemStaticText30, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   m_abstractionDescription = new wxStaticText;
-  m_abstractionDescription->Create( itemDialog1, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0 );
+  m_abstractionDescription->Create( itemDialog1, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, 30), 0 );
   m_abstractionDescription->Wrap(200);
   itemBoxSizer29->Add(m_abstractionDescription, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
@@ -287,7 +287,7 @@ void DialogAbstractionEdit::CreateControls()
   itemBoxSizer33->Add(itemStaticText34, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   m_abstractionHelp = new wxStaticText;
-  m_abstractionHelp->Create( itemDialog1, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0 );
+  m_abstractionHelp->Create( itemDialog1, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, 30), 0 );
   itemBoxSizer33->Add(m_abstractionHelp, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   itemBoxSizer33->Add(20, 1, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
@@ -315,11 +315,11 @@ void DialogAbstractionEdit::CreateControls()
   itemBoxSizer41->Add(itemStaticText42, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   m_abstractionDefaultValue = new wxStaticText;
-  m_abstractionDefaultValue->Create( itemDialog1, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(200, -1), 0 );
+  m_abstractionDefaultValue->Create( itemDialog1, wxID_STATIC, _("-----"), wxDefaultPosition, wxSize(170, -1), 0 );
   itemBoxSizer41->Add(m_abstractionDefaultValue, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   wxButton* itemButton44 = new wxButton;
-  itemButton44->Create( itemDialog1, ID_BUTTON18, _("*"), wxDefaultPosition, wxSize(30, 15), 0 );
+  itemButton44->Create( itemDialog1, ID_BUTTON18, _("default"), wxDefaultPosition, wxSize(60, 15), 0 );
   itemBoxSizer41->Add(itemButton44, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
   wxBoxSizer* itemBoxSizer45 = new wxBoxSizer(wxHORIZONTAL);

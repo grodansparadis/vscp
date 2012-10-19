@@ -183,9 +183,9 @@ bool cguid::isNULL( void )
 // setGUID
 //
 
-void cguid::setGUID( uint8_t a )
+void cguid::setGUID( uint8_t *pArray )
 {
 	for ( int i=0; i<16; i++ ) {
-		a[ i ] = m_id[ 15 - i ];	
+		pArray[ i ] = m_id[ 15 - i ];	
 	}
 }
