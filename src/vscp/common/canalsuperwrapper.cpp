@@ -891,10 +891,10 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 			event.sizeData = 22;				// nodeid + register to read
 
 			pdestGUID->setGUID( event.data );	// Destination GUID
-			event.data[ 16 ] = 0x00;			// Register to read
-			event.data[ 17 ] = 0x00;
-			event.data[ 18 ] = 0x00;
-			event.data[ 19 ] = reg;
+			event.data[ 16 ] = ( reg >> 24 ) & 0xff;	// Register to read
+			event.data[ 17 ] = ( reg >> 16 ) & 0xff;
+			event.data[ 18 ] = ( reg >> 8 ) & 0xff;
+			event.data[ 19 ] = reg & 0xff;
 			event.data[ 20 ] = 0x00;			// Read one register
 			event.data[ 21 ] = 0x01;
 
@@ -969,7 +969,7 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 
 				}
 				// Level II Read reply?
-				else if ( !ifGUID.isNULL() && bLevel2 && 
+				else if ( ifGUID.isNULL() && bLevel2 && 
 					( VSCP_CLASS2_PROTOCOL == event.vscp_class ) && 
 					( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == event.vscp_type ) ) { 
 
@@ -986,7 +986,7 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 								
 							// OK get the data
 							if ( NULL != pcontent ) {
-									*pcontent = event.data[ 18 ];
+								*pcontent = event.data[ 4 ];
 								break;
 							}
 						}
@@ -1074,10 +1074,10 @@ bool CCanalSuperWrapper::writeLevel2Register( cguid& ifGUID,
 
 			destGUID.setGUID( event.data );	// Destination GUID
 
-			event.data[ 16 ] = 0x00;			// Register to write
-			event.data[ 17 ] = 0x00;
-			event.data[ 18 ] = 0x00;
-			event.data[ 19 ] = reg;
+			event.data[ 16 ] = ( reg >> 24 ) & 0xff;	// Register to write
+			event.data[ 17 ] = ( reg >> 16 ) & 0xff;
+			event.data[ 18 ] = ( reg >> 8 ) & 0xff;
+			event.data[ 19 ] = reg & 0xff;
 			event.data[ 20 ] = *pcontent;		// Data to write
 
 		}
@@ -1279,6 +1279,7 @@ wxString CCanalSuperWrapper::getMDFfromDevice1( uint8_t id, bool bSilent )
 {
 	wxString strWrk;
 	char url[ 33 ];
+	bool rv = true;
 
 	uint8_t *p = (uint8_t *)url;
 	for ( int i=0; i<32; i++ ) {
@@ -1288,7 +1289,8 @@ wxString CCanalSuperWrapper::getMDFfromDevice1( uint8_t id, bool bSilent )
 				if ( !bSilent ) {												
 					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
 				}
-				break;
+				rv = false;
+				goto error;
 		}
 	}
 
@@ -1299,6 +1301,10 @@ wxString CCanalSuperWrapper::getMDFfromDevice1( uint8_t id, bool bSilent )
 		str += strWrk;
 		strWrk = str;
 	}
+
+error:
+
+	if ( !rv ) strWrk.Empty();
 
 	return strWrk;
 }
@@ -1315,6 +1321,7 @@ wxString CCanalSuperWrapper::getMDFfromDevice2( wxProgressDialog& progressDlg,
 {
 	wxString strWrk;
 	char url[ 33 ];
+	bool rv = true;
 
 	memset( url, 0, sizeof( url ) );
 
@@ -1339,6 +1346,7 @@ wxString CCanalSuperWrapper::getMDFfromDevice2( wxProgressDialog& progressDlg,
 					if ( !bSilent ) {
 						::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
 					}
+					rv = false;
 					goto error;
 			}
 
@@ -1364,7 +1372,8 @@ wxString CCanalSuperWrapper::getMDFfromDevice2( wxProgressDialog& progressDlg,
 					if ( !bSilent ) {												
 						::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
 					}
-					break;
+					rv = false;
+					goto error;
 			}
 
 		}
@@ -1380,6 +1389,8 @@ wxString CCanalSuperWrapper::getMDFfromDevice2( wxProgressDialog& progressDlg,
 	}
 
 error:
+
+	if ( !rv ) strWrk.Empty();
 
 	return strWrk;
 }
@@ -1616,15 +1627,18 @@ bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
 	bool rv = true;
 	uint8_t val;
 	uint8_t *p = pRow;
+	uint16_t savepage;
 
 	// Can't load row that is larger than the availabel rows
 	if ( row >= pdm->m_nRowCount ) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bSilent );
-	if ( savepage != pdm->m_nStartPage ) {
-		if ( !setRegisterPage( nodeid, pdm->m_nStartPage, pifGUID, pdestGUID, bSilent ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for decision matrix!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bSilent );
+		if ( savepage != pdm->m_nStartPage ) {
+			if ( !setRegisterPage( nodeid, pdm->m_nStartPage, pifGUID, pdestGUID, bSilent ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for decision matrix!") );
+				return false;
+			}
 		}
 	}
 
@@ -1713,9 +1727,11 @@ bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != pdm->m_nStartPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bSilent ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for decision matrix!") );
+	if ( !bLevel2 ) {
+		if ( savepage != pdm->m_nStartPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bSilent ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for decision matrix!") );
+			}
 		}
 	}
 
@@ -1738,15 +1754,18 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 {
 	bool rv = true;
 	wxString str;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction string!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction string!") );
+				return false;
+			}
 		}
 	}
 
@@ -1846,10 +1865,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
+				return false;
+			}
 		}
 	}
 
@@ -1871,6 +1892,7 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 													bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -1881,11 +1903,13 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 	strcpy( (char *)p, (const char*)strvalue.mb_str( wxConvUTF8 ) );
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction string!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction string!") );
+				return false;
+			}
 		}
 	}
 
@@ -1985,10 +2009,12 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
+				return false;
+			}
 		}
 	}
 
@@ -2011,15 +2037,18 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 {
 	bool rv = true;
 	wxString strvalue;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction BitField!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction BitField!") );
+				return false;
+			}
 		}
 	}
 
@@ -2136,10 +2165,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction BitField!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction BitField!") );
+				return false;
+			}
 		}
 	}
 
@@ -2161,6 +2192,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 													bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -2186,11 +2218,13 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 	}
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction BitField!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction BitField!") );
+				return false;
+			}
 		}
 	}
 
@@ -2291,13 +2325,14 @@ error:
 
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction BitField!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction BitField!") );
+				return false;
+			}
 		}
 	}
-
 	return rv;
 }
 
@@ -2317,15 +2352,18 @@ bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
 {
 	bool rv = true;
 	uint8_t val;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction bool!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction bool!") );
+				return false;
+			}
 		}
 	}
 
@@ -2362,10 +2400,12 @@ error:
 	*bval = val ? true : false;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction bool!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction bool!") );
+				return false;
+			}
 		}
 	}
 
@@ -2387,6 +2427,7 @@ bool CCanalSuperWrapper::writeAbstractionBool( wxWindow *pwnd,
 												bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -2394,11 +2435,13 @@ bool CCanalSuperWrapper::writeAbstractionBool( wxWindow *pwnd,
 	uint8_t val = bval ? true : false;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction boolean!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction boolean!") );
+				return false;
+			}
 		}
 	}
 
@@ -2428,10 +2471,12 @@ error:
 
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction string!") );
+				return false;
+			}
 		}
 	}
 
@@ -2453,15 +2498,18 @@ bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
 														bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 8-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 8-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -2495,10 +2543,12 @@ bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid,savepage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 8-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid,savepage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 8-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -2520,16 +2570,19 @@ bool CCanalSuperWrapper::writeAbstraction8bitinteger( wxWindow *pwnd,
 														bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 8-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 8-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -2563,10 +2616,12 @@ error:
 
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 8-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 8-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -2588,15 +2643,18 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 														bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}	
 		}
 	}
 
@@ -2699,10 +2757,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -2726,16 +2786,19 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 	bool rv = false;
 	val16 = wxINT16_SWAP_ON_LE( val16 );
 	uint8_t *p = (uint8_t *)&val16;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -2851,10 +2914,12 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}	
 		}
 	}
 
@@ -2876,15 +2941,18 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 														bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -2986,10 +3054,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3012,16 +3082,19 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 {
 	bool rv = true;
 	uint8_t val;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3120,10 +3193,12 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3144,15 +3219,18 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 														bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3256,10 +3334,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3282,16 +3362,19 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 {
 	bool rv = true;
 	uint8_t val;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3389,10 +3472,12 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3413,15 +3498,18 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 												bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3523,10 +3611,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3549,6 +3639,7 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 {
 	bool rv = true;
 	uint8_t val;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -3556,11 +3647,13 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 	uint8_t *p = (uint8_t *)&valfloat;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3662,10 +3755,12 @@ error:
 
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3687,15 +3782,18 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 												bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3796,10 +3894,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3822,6 +3922,7 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 {
 	bool rv = true;
 	uint8_t val;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -3829,11 +3930,13 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 	uint8_t *p = (uint8_t *)&valdouble;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3932,10 +4035,12 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -3957,15 +4062,18 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 												bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}	
 		}
 	}
 
@@ -4069,10 +4177,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -4096,6 +4206,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 	bool rv = true;
 	uint8_t val;
 	uint8_t buf[ 4 ];
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -4109,11 +4220,13 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 	uint8_t *p = buf;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -4212,10 +4325,12 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+					return false;
+			}
 		}
 	}
 
@@ -4237,15 +4352,18 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 												bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+					return false;
+			}
 		}
 	}
 
@@ -4348,10 +4466,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -4375,6 +4495,7 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 	bool rv = true;
 	uint8_t val;
 	uint8_t buf[ 3 ];
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -4386,11 +4507,13 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 	uint8_t *p = buf;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -4492,10 +4615,12 @@ error:
 
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -4517,15 +4642,18 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
 												bool bSilent )
 {
 	bool rv = true;
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
 
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -4626,10 +4754,12 @@ error:
 	if ( NULL != p ) delete p;
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -4653,6 +4783,7 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 	bool rv = true;
 	uint8_t val;
 	uint8_t buf[ 16 ];
+	uint16_t savepage;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -4661,11 +4792,13 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 	uint8_t *p = buf;
 
 	// Save page
-	uint16_t savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		savepage = getRegisterPage( pwnd, nodeid, pifGUID, pdestGUID, bLevel2 );
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, abstraction->m_nPage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to set register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -4737,10 +4870,12 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 error:
 
 	// Restore page
-	if ( savepage != abstraction->m_nPage ) {
-		if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
-			if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
-			return false;
+	if ( !bLevel2 ) {
+		if ( savepage != abstraction->m_nPage ) {
+			if ( !setRegisterPage( nodeid, savepage, pifGUID, pdestGUID, bLevel2 ) ) {
+				if ( !bSilent ) wxMessageBox( _("Unable to restore register page for abstraction 16-bit integer!") );
+				return false;
+			}
 		}
 	}
 
@@ -5020,7 +5155,7 @@ wxString CCanalSuperWrapper::getAbstractionValueAsString( wxWindow *pwnd,
 		break;
 	}
 
-	if ( !rv ) strValue = _("Error!");
+	if ( !rv ) strValue = _("ERROR");
 
 	return strValue;
 }

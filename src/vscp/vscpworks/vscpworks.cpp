@@ -2161,6 +2161,18 @@ bool VscpworksApp::readConfiguration( void )
                             pVSCPif->m_strInterfaceName.Trim();
 
                         }
+						else if (subsubchild->GetName() == wxT("level2")) {
+
+							wxString str = subsubchild->GetNodeContent().Trim();
+							str = str.Upper();
+							if ( wxNOT_FOUND != str.Find( _("TRUE") )  ) {
+								pVSCPif->m_bLevel2 = true;		
+							}
+							else {
+								pVSCPif->m_bLevel2 = false;	
+							}
+
+                        }
                         else if (subsubchild->GetName() == wxT("guid")) {
                             wxString str = subsubchild->GetNodeContent();
                             getGuidFromStringToArray( pVSCPif->m_GUID, str );
@@ -2640,6 +2652,16 @@ bool VscpworksApp::writeConfiguration( void )
             pFileStream->Write("<interfacename>",strlen("<interfacename>"));
             pFileStream->Write( pIf->m_strInterfaceName.mb_str(), strlen( pIf->m_strInterfaceName.mb_str() ) );
             pFileStream->Write("</interfacename>\n",strlen("</interfacename>\n"));
+
+			// Fill Level II support
+			pFileStream->Write("<level2>",strlen("<level2>"));
+			if ( pIf->m_bLevel2 ) {
+				pFileStream->Write( "true", 4 );
+			}
+			else {
+				pFileStream->Write( "false", 5 );
+			}
+            pFileStream->Write("</level2>\n",strlen("</level2>\n"));
 
             // interface GUID
             pFileStream->Write("<guid>",strlen("<guid>"));

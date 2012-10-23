@@ -324,7 +324,7 @@ public:
   void OnComboNodeIDUpdated( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CHECK_LEVEL2
-  void OnBitmapbuttonTestDeviceClick( wxCommandEvent& event );
+  void OnTestDeviceClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON1
   void OnInterfaceActivate( wxCommandEvent& event );

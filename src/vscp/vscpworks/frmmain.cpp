@@ -4792,7 +4792,12 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         wxString str;
 
 						// Mark as full Level II interface if it is requested
-						if ( pBoth->m_pvscpif->m_bLevel2 ) subframe->m_bLevel2->SetValue( true );
+						if ( pBoth->m_pvscpif->m_bLevel2 ) {
+							subframe->m_bLevel2->SetValue( true );
+						}
+						else {
+							subframe->m_bLevel2->SetValue( false );
+						}
 
 						// Save interface name
 						subframe->m_interfaceName = pBoth->m_pvscpif->m_strInterfaceName;
