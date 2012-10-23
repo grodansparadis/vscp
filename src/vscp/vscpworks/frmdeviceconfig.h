@@ -254,18 +254,18 @@ public:
 	wxString getFormattedValue( uint8_t val );
 
 	/*!
-		Return the row for a register:page
-		@param reg Register to look for.
-		@aram page Page to look for.
-		@return Grid row where register:page is located. -1 is
-				retuned if row is not found.
+	Return the row for a register:page
+	@param reg Register to look for.
+	@aram page Page to look for.
+	@return Grid row where register:page is located. -1 is
+	retuned if row is not found.
 	*/
 	int getRegisterGridRow( uint32_t reg, uint16_t page ); 
 
 	/*!
-		Fetch the GUID for a daemon interface from it's name
-		@param VSCP daemon interface structure for TCP/IP interface.
-		@return True on success.
+	Fetch the GUID for a daemon interface from it's name
+	@param VSCP daemon interface structure for TCP/IP interface.
+	@return True on success.
 	*/
 	bool fetchIterfaceGUID( void );
 
@@ -283,6 +283,15 @@ public:
 
   /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_LOAD_REGISTES
   void OnMenuitemLoadRegistersClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_ADD_GUIDS
+  void OnMenuitemAddGuidsClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_GUIDS
+  void OnMenuitemSaveGuidsClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_LOAD_GUIDS
+  void OnMenuitemLoadGuidsClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_EXIT
   void OnMenuitemExitClick( wxCommandEvent& event );
@@ -351,6 +360,9 @@ public:
   /// Retrieves icon resources
   wxIcon GetIconResource( const wxString& name );
 	////@end frmDeviceConfig member function declarations
+
+	// Array with GUID's
+	wxArrayString m_guidarray;
 
 	/// Flag for first read
 	bool m_bFirstRead;
@@ -431,6 +443,9 @@ public:
     ID_MENUITEM_SAVE_REGSITERS = 19000,
     ID_MENUITEM = 10001,
     ID_MENUITEM_LOAD_REGISTES = 19001,
+    ID_MENUITEM_ADD_GUIDS = 10003,
+    ID_MENUITEM_SAVE_GUIDS = 10146,
+    ID_MENUITEM_LOAD_GUIDS = 10002,
     ID_MENUITEM_EXIT = 19002,
     ID_MENUITEM_HELP = 19023,
     ID_MENUITEM_FAQ = 19024,

@@ -13,8 +13,6 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://m2m.sourceforge.net) 
-//
-// Copyright (C) 2000-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -657,6 +655,7 @@ void dlgNewVSCPSession::OnButtonAddClick( wxCommandEvent& event )
 				pInfo->m_strPassword.Trim(false);
 				pInfo->m_strPassword.Trim();
 				dlg.m_RemoteServerPort->GetValue().ToULong( &pInfo->m_port );
+				pInfo->m_bLevel2 = dlg.m_fullLevel2->GetValue();
 				wxString str;
 
 				// Interface name
@@ -751,6 +750,7 @@ void dlgNewVSCPSession::OnButtonEditClick( wxCommandEvent& event )
 						pBoth->m_pvscpif->m_strPassword = dlg.m_RemoteServerPassword->GetValue();
 						pBoth->m_pvscpif->m_strInterfaceName = dlg.m_RemoteInterfaceName->GetValue();
 						dlg.m_RemoteServerPort->GetValue().ToULong( &pBoth->m_pvscpif->m_port );
+						pBoth->m_pvscpif->m_bLevel2 = dlg.m_fullLevel2->GetValue();
 
 						memcpy( &pBoth->m_pvscpif->m_vscpfilter, &dlg.m_vscpfilter, sizeof( vscpEventFilter ) );
 

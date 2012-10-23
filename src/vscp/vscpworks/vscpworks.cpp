@@ -193,6 +193,12 @@ void VscpworksApp::Init()
     result=3;
     }
     */
+
+	wxStandardPaths stdPath;
+	g_Config.m_strPathLogFile = stdPath.GetTempDir();
+	g_Config.m_strPathLogFile += _("/vscpworks.log");
+	g_Config.m_strPathTemp = stdPath.GetTempDir();
+
     int i,j;
     for ( i=0; i<MAX_NUMBER_OF_NODES; i++ ) {
 
@@ -286,7 +292,9 @@ void VscpworksApp::Init()
     g_Config.m_VscpRegisterReadErrorTimeout = VSCP_REGISTER_READ_ERROR_TIMEOUT;
     g_Config.m_VscpRegisterReadMaxRetries = VSCP_REGISTER_READ_MAX_TRIES;
 
-	g_Config.m_deviceconfigNumberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
+	g_Config.m_Numberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
+
+	g_Config.m_bConfirmDelete = true;
 }
 
 /*!
@@ -1552,18 +1560,56 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == wxT("path2tempfiles")) {
 
                     g_Config.m_strPathTemp = subchild->GetNodeContent();
+					if ( 0 == g_Config.m_strPathTemp.Length() ) {
+						wxStandardPaths stdPath;
+						g_Config.m_strPathTemp = stdPath.GetTempDir();
+					}
 
                 }
                 else if (subchild->GetName() == wxT("path2logfile")) {
 
+					unsigned long val;
+					wxStandardPaths stdPath;
+
+					g_Config.m_strPathLogFile = subchild->GetNodeContent();
+					if ( 0 == g_Config.m_strPathLogFile.Length() ) {
+						g_Config.m_strPathTemp = stdPath.GetTempDir();
+					}
+
+					// enable/siable
                     wxString enable = subchild->GetPropVal(wxT("enable"), wxT("false"));
                     if ( enable.IsSameAs(_("true"), false ) ) {
-                        g_Config.m_bLogFile = false;
+                        g_Config.m_bEnableLog = true;
                     }
 
-                    unsigned long val;
-                    g_Config.m_logLevel = 0; // Minimum of detail
+                    // level
+                    g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
                     wxString level = subchild->GetPropVal(wxT("level"), wxT("0"));
+					level = level.Upper();
+					if ( wxNOT_FOUND  != level.Find(_("DEBUG")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_DEBUG;
+					}
+					if ( wxNOT_FOUND  != level.Find(_("INFO")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_INFO;
+					}
+					if ( wxNOT_FOUND  != level.Find(_("WARNING")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_WARNING;
+					}
+					if ( wxNOT_FOUND  != level.Find(_("ERROR")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_ERROR;
+					}
+					if ( wxNOT_FOUND  != level.Find(_("CRITICAL")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_CRITICAL;
+					}
+					if ( wxNOT_FOUND  != level.Find(_("ALERT")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_ALERT;
+					}
+					if ( wxNOT_FOUND  != level.Find(_("EMERGENCY")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+					}
+					else {
+						g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+					}
                     if ( level.ToULong( &val, 10 ) ) {
                         g_Config.m_logLevel = val;
                     }
@@ -1596,6 +1642,68 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
+
+				else if (subchild->GetName() == wxT("NumberBase")) {
+
+                    g_Config.m_Numberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
+					wxString str = subchild->GetNodeContent();
+					str = str.Upper();
+					if ( wxNOT_FOUND  != str.Find(_("HEX")) ) {
+						g_Config.m_Numberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
+					}
+					if ( wxNOT_FOUND  != str.Find(_("HEXADECIMAL")) ) {
+						g_Config.m_Numberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
+					}
+					else if ( wxNOT_FOUND  != str.Find(_("DECIMAL")) ) {
+						g_Config.m_Numberbase = VSCP_DEVCONFIG_NUMBERBASE_DECIMAL;
+					}
+
+                }
+				else if (subchild->GetName() == wxT("ConfirmDelete")) {
+
+                    g_Config.m_bConfirmDelete = true;
+					wxString str = subchild->GetNodeContent();
+					str = str.Upper();
+					if ( wxNOT_FOUND  != str.Find(_("FALSE")) ) {
+						g_Config.m_bConfirmDelete = false;
+					}
+					else {
+						g_Config.m_bConfirmDelete = true;
+					}
+
+                }
+				else if (subchild->GetName() == wxT("loglevel")) {
+
+                    g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+					wxString str = subchild->GetNodeContent();
+					str = str.Upper();
+					if ( wxNOT_FOUND  != str.Find(_("DEBUG")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_DEBUG;
+					}
+					if ( wxNOT_FOUND  != str.Find(_("INFO")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_INFO;
+					}
+					if ( wxNOT_FOUND  != str.Find(_("WARNING")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_WARNING;
+					}
+					if ( wxNOT_FOUND  != str.Find(_("ERROR")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_ERROR;
+					}
+					if ( wxNOT_FOUND  != str.Find(_("CRITICAL")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_CRITICAL;
+					}
+					if ( wxNOT_FOUND  != str.Find(_("ALERT")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_ALERT;
+					}
+					if ( wxNOT_FOUND  != str.Find(_("EMERGENCY")) ) {
+						g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+					}
+					else {
+						g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+					}
+
+                }
+
 
                 subchild = subchild->GetNext();
             }
@@ -2116,6 +2224,9 @@ bool VscpworksApp::writeConfiguration( void )
     strcfgfile = strpath.GetUserDataDir();
     strcfgfile += _("/vscpworks.conf");
 
+	// Backup
+	::wxCopyFile( strcfgfile, strcfgfile + _(".bak") );
+
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream( strcfgfile );
     if ( NULL == pFileStream ) return false;
 
@@ -2166,15 +2277,50 @@ bool VscpworksApp::writeConfiguration( void )
 
     // Path2LogFile  
     pFileStream->Write("<path2logfile enable=\"",strlen("<path2logfile enable=\""));
-    if ( g_Config.m_bLogFile ) {
+    if ( g_Config.m_bEnableLog ) {
         pFileStream->Write("true",strlen("true"));
     }
     else {
         pFileStream->Write("false",strlen("false"));
     }
+
     pFileStream->Write("\" level=\"",strlen("\" level=\""));
-    buf.Printf(_("%d"), g_Config.m_logLevel );
-    pFileStream->Write( buf,buf.length() );
+
+    switch ( g_Config.m_logLevel ) {
+	
+	case DAEMON_LOGMSG_DEBUG:
+		pFileStream->Write("debug",strlen("debug"));
+		break;
+
+	case DAEMON_LOGMSG_INFO:
+		pFileStream->Write("info",strlen("info"));
+		break;
+
+	case DAEMON_LOGMSG_NOTICE:
+		pFileStream->Write("notice",strlen("notice"));
+		break;
+
+	case DAEMON_LOGMSG_WARNING:
+		pFileStream->Write("warning",strlen("warning"));
+		break;
+
+	case DAEMON_LOGMSG_ERROR:
+		pFileStream->Write("error",strlen("error"));
+		break;
+
+	case DAEMON_LOGMSG_CRITICAL:
+		pFileStream->Write("critical",strlen("critical"));
+		break;
+
+	case DAEMON_LOGMSG_ALERT:
+		pFileStream->Write("alert",strlen("alert"));
+		break;
+
+	default:
+		pFileStream->Write("emergency",strlen("emergency"));
+		break;
+	}
+
     pFileStream->Write("\" >",strlen("\" >"));
     pFileStream->Write( g_Config.m_strPathLogFile.mb_str(), strlen( g_Config.m_strPathLogFile.mb_str() ) );
     pFileStream->Write("</path2logfile>\n",strlen("</path2logfile>\n") );
@@ -2196,6 +2342,26 @@ bool VscpworksApp::writeConfiguration( void )
     buf.Printf(_("%d"), g_Config.m_VscpRegisterReadMaxRetries );
     pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
     pFileStream->Write("</RegisterReadMaxRetries>\n",strlen("</RegisterReadMaxRetries>\n"));
+
+	// ConfigNumberBase
+    pFileStream->Write("<NumberBase>",strlen("<NumberBase>"));
+	if ( VSCP_DEVCONFIG_NUMBERBASE_DECIMAL== g_Config.m_Numberbase ) {
+		pFileStream->Write("Decimal",strlen("Decimal"));	
+	}
+	else {
+		pFileStream->Write("Hex",strlen("Hex"));
+	}
+    pFileStream->Write("</NumberBase>\n",strlen("</NumberBase>\n"));
+
+	// ConfirmDelete
+    pFileStream->Write("<ConfirmDelete>",strlen("<ConfirmDelete>"));
+	if ( g_Config.m_bConfirmDelete ) {
+		pFileStream->Write("true",strlen("true"));	
+	}
+	else {
+		pFileStream->Write("false",strlen("false"));
+	}
+    pFileStream->Write("</ConfirmDelete>\n",strlen("</ConfirmDelete>\n"));
 
     // /General
     pFileStream->Write("</general>\n",strlen("</general>\n"));

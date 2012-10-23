@@ -14,7 +14,7 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-// Copyright (C) 2000-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -4790,11 +4790,9 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                     else if ( INTERFACE_VSCP == pBoth->m_type ) {
 
                         wxString str;
-                        //memcpy( subframe->m_interfaceGUID, pBoth->m_pvscpif->m_GUID, 16 );
 
-						// Check if a specific interface is used
-						//bool bInterface = 
-						//		subframe->m_interfaceName.Length() ? true : false;
+						// Mark as full Level II interface if it is requested
+						if ( pBoth->m_pvscpif->m_bLevel2 ) subframe->m_bLevel2->SetValue( true );
 
 						// Save interface name
 						subframe->m_interfaceName = pBoth->m_pvscpif->m_strInterfaceName;

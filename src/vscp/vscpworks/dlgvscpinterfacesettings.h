@@ -149,6 +149,7 @@ public:
   wxTextCtrl* m_RemoteServerPort;
   wxTextCtrl* m_RemoteServerUsername;
   wxTextCtrl* m_RemoteServerPassword;
+  wxCheckBox* m_fullLevel2;
   wxTextCtrl* m_RemoteInterfaceName;
   wxButton* m_btnTestConnection;
   wxButton* m_btnGetInterfaces;
@@ -168,6 +169,7 @@ public:
     ID_RemoteServerPort = 16027,
     ID_RemoteServerUsername = 16028,
     ID_RemoteServerPassword = 16029,
+    ID_CHECKBOX2 = 16009,
     ID_TEXTCTRL_INTERFACE_NAME = 16019,
     ID_BUTTON_SET_FILTER = 16017,
     ID_BUTTON_TEST_INTERFACE = 16016,

@@ -2643,6 +2643,12 @@ IMPLEMENT_CLASS( frmDeviceConfig, wxFrame )
 
   EVT_MENU( ID_MENUITEM_LOAD_REGISTES, frmDeviceConfig::OnMenuitemLoadRegistersClick )
 
+  EVT_MENU( ID_MENUITEM_ADD_GUIDS, frmDeviceConfig::OnMenuitemAddGuidsClick )
+
+  EVT_MENU( ID_MENUITEM_SAVE_GUIDS, frmDeviceConfig::OnMenuitemSaveGuidsClick )
+
+  EVT_MENU( ID_MENUITEM_LOAD_GUIDS, frmDeviceConfig::OnMenuitemLoadGuidsClick )
+
   EVT_MENU( ID_MENUITEM_EXIT, frmDeviceConfig::OnMenuitemExitClick )
 
   EVT_MENU( ID_MENUITEM_HELP, frmDeviceConfig::OnMenuitemVscpHelpClick )
@@ -2694,11 +2700,11 @@ IMPLEMENT_CLASS( frmDeviceConfig, wxFrame )
 	END_EVENT_TABLE()
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// frmDeviceConfig constructors
-//
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// frmDeviceConfig constructors
+	//
 
-frmDeviceConfig::frmDeviceConfig()
+	frmDeviceConfig::frmDeviceConfig()
 {
 	Init();
 }
@@ -2785,91 +2791,95 @@ void frmDeviceConfig::CreateControls()
   itemMenu3->Append(ID_MENUITEM, _("Save selected registers to file.."), wxEmptyString, wxITEM_NORMAL);
   itemMenu3->Append(ID_MENUITEM_LOAD_REGISTES, _("Load Registers from file..."), wxEmptyString, wxITEM_NORMAL);
   itemMenu3->AppendSeparator();
+  itemMenu3->Append(ID_MENUITEM_ADD_GUIDS, _("Add GUID..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu3->Append(ID_MENUITEM_SAVE_GUIDS, _("Save GUID's..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu3->Append(ID_MENUITEM_LOAD_GUIDS, _("Load GUID's..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu3->AppendSeparator();
   itemMenu3->Append(ID_MENUITEM_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
   menuBar->Append(itemMenu3, _("File"));
-  wxMenu* itemMenu9 = new wxMenu;
-  menuBar->Append(itemMenu9, _("Edit"));
-  wxMenu* itemMenu10 = new wxMenu;
-  itemMenu10->Append(ID_MENUITEM_HELP, _("VSCP-Works Help"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu10->Append(ID_MENUITEM_FAQ, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu10->Append(ID_MENUITEM_KB_SHRTCUTS, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu10->AppendSeparator();
-  itemMenu10->Append(ID_MENUITEM_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu10->Append(ID_MENUITEM_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu10->AppendSeparator();
-  itemMenu10->Append(ID_MENUITEM_GO_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu10->AppendSeparator();
-  itemMenu10->Append(ID_MENUITEM_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu10, _("Help"));
+  wxMenu* itemMenu13 = new wxMenu;
+  menuBar->Append(itemMenu13, _("Edit"));
+  wxMenu* itemMenu14 = new wxMenu;
+  itemMenu14->Append(ID_MENUITEM_HELP, _("VSCP-Works Help"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu14->Append(ID_MENUITEM_FAQ, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu14->Append(ID_MENUITEM_KB_SHRTCUTS, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu14->AppendSeparator();
+  itemMenu14->Append(ID_MENUITEM_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu14->Append(ID_MENUITEM_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu14->AppendSeparator();
+  itemMenu14->Append(ID_MENUITEM_GO_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu14->AppendSeparator();
+  itemMenu14->Append(ID_MENUITEM_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
+  menuBar->Append(itemMenu14, _("Help"));
   itemFrame1->SetMenuBar(menuBar);
 
-  wxToolBar* itemToolBar21 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR_DEVICE_CONFIG );
-  wxBitmap itemtool22Bitmap(itemFrame1->GetBitmapResource(wxT("open.xpm")));
-  wxBitmap itemtool22BitmapDisabled;
-  itemToolBar21->AddTool(ID_TOOL6, wxEmptyString, itemtool22Bitmap, itemtool22BitmapDisabled, wxITEM_NORMAL, _("Fetch data from file"), wxEmptyString);
-  wxBitmap itemtool23Bitmap(itemFrame1->GetBitmapResource(wxT("save.xpm")));
-  wxBitmap itemtool23BitmapDisabled;
-  itemToolBar21->AddTool(ID_TOOL7, wxEmptyString, itemtool23Bitmap, itemtool23BitmapDisabled, wxITEM_NORMAL, _("Save data to file"), wxEmptyString);
-  itemToolBar21->AddSeparator();
-  wxBitmap itemtool25Bitmap(itemFrame1->GetBitmapResource(wxT("cut.xpm")));
-  wxBitmap itemtool25BitmapDisabled;
-  itemToolBar21->AddTool(ID_TOOL8, wxEmptyString, itemtool25Bitmap, itemtool25BitmapDisabled, wxITEM_NORMAL, _("Remove selected row(s)"), wxEmptyString);
-  wxBitmap itemtool26Bitmap(itemFrame1->GetBitmapResource(wxT("copy.xpm")));
+  wxToolBar* itemToolBar25 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR_DEVICE_CONFIG );
+  wxBitmap itemtool26Bitmap(itemFrame1->GetBitmapResource(wxT("open.xpm")));
   wxBitmap itemtool26BitmapDisabled;
-  itemToolBar21->AddTool(ID_TOOL9, wxEmptyString, itemtool26Bitmap, itemtool26BitmapDisabled, wxITEM_NORMAL, _("Copy selected row(s) \nto the clipboard"), wxEmptyString);
-  wxBitmap itemtool27Bitmap(itemFrame1->GetBitmapResource(wxT("paste.xpm")));
+  itemToolBar25->AddTool(ID_TOOL6, wxEmptyString, itemtool26Bitmap, itemtool26BitmapDisabled, wxITEM_NORMAL, _("Fetch data from file"), wxEmptyString);
+  wxBitmap itemtool27Bitmap(itemFrame1->GetBitmapResource(wxT("save.xpm")));
   wxBitmap itemtool27BitmapDisabled;
-  itemToolBar21->AddTool(ID_TOOL10, wxEmptyString, itemtool27Bitmap, itemtool27BitmapDisabled, wxITEM_NORMAL, _("Paste row(s) from clipboard"), wxEmptyString);
-  itemToolBar21->AddSeparator();
-  wxBitmap itemtool29Bitmap(itemFrame1->GetBitmapResource(wxT("Print.xpm")));
+  itemToolBar25->AddTool(ID_TOOL7, wxEmptyString, itemtool27Bitmap, itemtool27BitmapDisabled, wxITEM_NORMAL, _("Save data to file"), wxEmptyString);
+  itemToolBar25->AddSeparator();
+  wxBitmap itemtool29Bitmap(itemFrame1->GetBitmapResource(wxT("cut.xpm")));
   wxBitmap itemtool29BitmapDisabled;
-  itemToolBar21->AddTool(ID_TOOL11, wxEmptyString, itemtool29Bitmap, itemtool29BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
-  itemToolBar21->AddSeparator();
-  wxStaticText* itemStaticText31 = new wxStaticText;
-  itemStaticText31->Create( itemToolBar21, wxID_STATIC, _("Node id: "), wxDefaultPosition, wxDefaultSize, 0 );
-  itemStaticText31->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
-  itemToolBar21->AddControl(itemStaticText31);
+  itemToolBar25->AddTool(ID_TOOL8, wxEmptyString, itemtool29Bitmap, itemtool29BitmapDisabled, wxITEM_NORMAL, _("Remove selected row(s)"), wxEmptyString);
+  wxBitmap itemtool30Bitmap(itemFrame1->GetBitmapResource(wxT("copy.xpm")));
+  wxBitmap itemtool30BitmapDisabled;
+  itemToolBar25->AddTool(ID_TOOL9, wxEmptyString, itemtool30Bitmap, itemtool30BitmapDisabled, wxITEM_NORMAL, _("Copy selected row(s) \nto the clipboard"), wxEmptyString);
+  wxBitmap itemtool31Bitmap(itemFrame1->GetBitmapResource(wxT("paste.xpm")));
+  wxBitmap itemtool31BitmapDisabled;
+  itemToolBar25->AddTool(ID_TOOL10, wxEmptyString, itemtool31Bitmap, itemtool31BitmapDisabled, wxITEM_NORMAL, _("Paste row(s) from clipboard"), wxEmptyString);
+  itemToolBar25->AddSeparator();
+  wxBitmap itemtool33Bitmap(itemFrame1->GetBitmapResource(wxT("Print.xpm")));
+  wxBitmap itemtool33BitmapDisabled;
+  itemToolBar25->AddTool(ID_TOOL11, wxEmptyString, itemtool33Bitmap, itemtool33BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
+  itemToolBar25->AddSeparator();
+  wxStaticText* itemStaticText35 = new wxStaticText;
+  itemStaticText35->Create( itemToolBar25, wxID_STATIC, _("Node id: "), wxDefaultPosition, wxDefaultSize, 0 );
+  itemStaticText35->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+  itemToolBar25->AddControl(itemStaticText35);
   wxArrayString m_comboNodeIDStrings;
   m_comboNodeID = new wxComboBox;
-  m_comboNodeID->Create( itemToolBar21, ID_COMBOBOX4, wxEmptyString, wxDefaultPosition, wxSize(370, -1), m_comboNodeIDStrings, wxCB_DROPDOWN );
+  m_comboNodeID->Create( itemToolBar25, ID_COMBOBOX4, wxEmptyString, wxDefaultPosition, wxSize(370, -1), m_comboNodeIDStrings, wxCB_DROPDOWN );
   if (frmDeviceConfig::ShowToolTips())
     m_comboNodeID->SetToolTip(_("Set nickname or GUID for node here"));
   m_comboNodeID->SetBackgroundColour(wxColour(255, 255, 210));
-  itemToolBar21->AddControl(m_comboNodeID);
-  wxBitmapButton* itemBitmapButton33 = new wxBitmapButton;
-  itemBitmapButton33->Create( itemToolBar21, ID_CHECK_LEVEL2, itemFrame1->GetBitmapResource(wxT("find.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  itemToolBar25->AddControl(m_comboNodeID);
+  wxBitmapButton* itemBitmapButton37 = new wxBitmapButton;
+  itemBitmapButton37->Create( itemToolBar25, ID_CHECK_LEVEL2, itemFrame1->GetBitmapResource(wxT("find.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
   if (frmDeviceConfig::ShowToolTips())
-    itemBitmapButton33->SetToolTip(_("Test if device is present."));
-  itemToolBar21->AddControl(itemBitmapButton33);
-  itemToolBar21->AddSeparator();
+    itemBitmapButton37->SetToolTip(_("Test if device is present."));
+  itemToolBar25->AddControl(itemBitmapButton37);
+  itemToolBar25->AddSeparator();
   m_bLevel2 = new wxCheckBox;
-  m_bLevel2->Create( itemToolBar21, ID_CHECKBOX_LEVEL22, _("Level II"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_bLevel2->Create( itemToolBar25, ID_CHECKBOX_LEVEL22, _("Level II"), wxDefaultPosition, wxDefaultSize, 0 );
   m_bLevel2->SetValue(false);
-  itemToolBar21->AddControl(m_bLevel2);
-  itemToolBar21->AddSeparator();
+  itemToolBar25->AddControl(m_bLevel2);
+  itemToolBar25->AddSeparator();
   m_BtnActivateInterface = new wxToggleButton;
-  m_BtnActivateInterface->Create( itemToolBar21, ID_TOGGLEBUTTON1, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0 );
+  m_BtnActivateInterface->Create( itemToolBar25, ID_TOGGLEBUTTON1, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0 );
   m_BtnActivateInterface->SetValue(true);
   if (frmDeviceConfig::ShowToolTips())
     m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
   m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
   m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
   m_BtnActivateInterface->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Sans")));
-  itemToolBar21->AddControl(m_BtnActivateInterface);
-  itemToolBar21->Realize();
-  itemFrame1->SetToolBar(itemToolBar21);
+  itemToolBar25->AddControl(m_BtnActivateInterface);
+  itemToolBar25->Realize();
+  itemFrame1->SetToolBar(itemToolBar25);
 
-  wxPanel* itemPanel40 = new wxPanel;
-  itemPanel40->Create( itemFrame1, ID_PANEL_DEVICE_CONFIG, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+  wxPanel* itemPanel44 = new wxPanel;
+  itemPanel44->Create( itemFrame1, ID_PANEL_DEVICE_CONFIG, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
 
-  wxBoxSizer* itemBoxSizer41 = new wxBoxSizer(wxVERTICAL);
-  itemPanel40->SetSizer(itemBoxSizer41);
+  wxBoxSizer* itemBoxSizer45 = new wxBoxSizer(wxVERTICAL);
+  itemPanel44->SetSizer(itemBoxSizer45);
 
-  wxBoxSizer* itemBoxSizer42 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer41->Add(itemBoxSizer42, 0, wxGROW|wxALL, 5);
+  wxBoxSizer* itemBoxSizer46 = new wxBoxSizer(wxVERTICAL);
+  itemBoxSizer45->Add(itemBoxSizer46, 0, wxGROW|wxALL, 5);
 
   m_choiceBook = new wxToolbook;
-  m_choiceBook->Create( itemPanel40, ID_CHOICEBOOK, wxDefaultPosition, wxSize(600, 400), wxBK_DEFAULT );
+  m_choiceBook->Create( itemPanel44, ID_CHOICEBOOK, wxDefaultPosition, wxSize(600, 400), wxBK_DEFAULT );
   wxImageList* m_choiceBookImageList = new wxImageList(32, 32, true, 3);
   {
     wxIcon m_choiceBookIcon0(itemFrame1->GetIconResource(wxT("icons/png/32x32/database_process.png")));
@@ -2884,8 +2894,8 @@ void frmDeviceConfig::CreateControls()
   m_panel0 = new wxPanel;
   m_panel0->Create( m_choiceBook, ID_PANEL_REGISTERS, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
   m_panel0->Show(false);
-  wxBoxSizer* itemBoxSizer45 = new wxBoxSizer(wxVERTICAL);
-  m_panel0->SetSizer(itemBoxSizer45);
+  wxBoxSizer* itemBoxSizer49 = new wxBoxSizer(wxVERTICAL);
+  m_panel0->SetSizer(itemBoxSizer49);
 
   m_gridRegisters = new wxGrid;
   m_gridRegisters->Create( m_panel0, ID_GRID_REGISTERS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
@@ -2896,18 +2906,18 @@ void frmDeviceConfig::CreateControls()
   m_gridRegisters->SetColLabelSize(18);
   m_gridRegisters->SetRowLabelSize(40);
   m_gridRegisters->CreateGrid(1, 4, wxGrid::wxGridSelectRows);
-  itemBoxSizer45->Add(m_gridRegisters, 0, wxGROW|wxALL, 5);
+  itemBoxSizer49->Add(m_gridRegisters, 0, wxGROW|wxALL, 5);
 
   m_choiceBook->AddPage(m_panel0, _("Registers"), false, 0);
 
-  wxPanel* itemPanel47 = new wxPanel;
-  itemPanel47->Create( m_choiceBook, ID_PANEL_ABSTRACTIONS, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-  itemPanel47->Show(false);
-  wxBoxSizer* itemBoxSizer48 = new wxBoxSizer(wxVERTICAL);
-  itemPanel47->SetSizer(itemBoxSizer48);
+  wxPanel* itemPanel51 = new wxPanel;
+  itemPanel51->Create( m_choiceBook, ID_PANEL_ABSTRACTIONS, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+  itemPanel51->Show(false);
+  wxBoxSizer* itemBoxSizer52 = new wxBoxSizer(wxVERTICAL);
+  itemPanel51->SetSizer(itemBoxSizer52);
 
   m_gridAbstractions = new wxGrid;
-  m_gridAbstractions->Create( itemPanel47, ID_GRID_ABSTRACTIONS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+  m_gridAbstractions->Create( itemPanel51, ID_GRID_ABSTRACTIONS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
   m_gridAbstractions->SetBackgroundColour(wxColour(240, 240, 240));
   m_gridAbstractions->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
   m_gridAbstractions->SetDefaultColSize(50);
@@ -2915,18 +2925,18 @@ void frmDeviceConfig::CreateControls()
   m_gridAbstractions->SetColLabelSize(18);
   m_gridAbstractions->SetRowLabelSize(40);
   m_gridAbstractions->CreateGrid(1, 5, wxGrid::wxGridSelectRows);
-  itemBoxSizer48->Add(m_gridAbstractions, 0, wxGROW|wxALL, 5);
+  itemBoxSizer52->Add(m_gridAbstractions, 0, wxGROW|wxALL, 5);
 
-  m_choiceBook->AddPage(itemPanel47, _("Abstraction"), false, 1);
+  m_choiceBook->AddPage(itemPanel51, _("Abstraction"), false, 1);
 
-  wxPanel* itemPanel50 = new wxPanel;
-  itemPanel50->Create( m_choiceBook, ID_PANEL_DM, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-  itemPanel50->Show(false);
-  wxBoxSizer* itemBoxSizer51 = new wxBoxSizer(wxVERTICAL);
-  itemPanel50->SetSizer(itemBoxSizer51);
+  wxPanel* itemPanel54 = new wxPanel;
+  itemPanel54->Create( m_choiceBook, ID_PANEL_DM, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+  itemPanel54->Show(false);
+  wxBoxSizer* itemBoxSizer55 = new wxBoxSizer(wxVERTICAL);
+  itemPanel54->SetSizer(itemBoxSizer55);
 
   m_gridDM = new wxGrid;
-  m_gridDM->Create( itemPanel50, ID_GRID_DM, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+  m_gridDM->Create( itemPanel54, ID_GRID_DM, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
   m_gridDM->SetBackgroundColour(wxColour(240, 240, 240));
   m_gridDM->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
   m_gridDM->SetDefaultColSize(50);
@@ -2934,59 +2944,59 @@ void frmDeviceConfig::CreateControls()
   m_gridDM->SetColLabelSize(18);
   m_gridDM->SetRowLabelSize(40);
   m_gridDM->CreateGrid(1, 8, wxGrid::wxGridSelectRows);
-  itemBoxSizer51->Add(m_gridDM, 0, wxGROW|wxALL, 5);
+  itemBoxSizer55->Add(m_gridDM, 0, wxGROW|wxALL, 5);
 
-  m_choiceBook->AddPage(itemPanel50, _("Decision Matrix"), false, 2);
+  m_choiceBook->AddPage(itemPanel54, _("Decision Matrix"), false, 2);
 
-  itemBoxSizer42->Add(m_choiceBook, 0, wxGROW|wxALL, 5);
-
-  wxBoxSizer* itemBoxSizer53 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer41->Add(itemBoxSizer53, 0, wxALIGN_RIGHT|wxALL, 0);
-
-  wxBoxSizer* itemBoxSizer54 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer53->Add(itemBoxSizer54, 0, wxGROW|wxALL, 5);
-
-  wxBoxSizer* itemBoxSizer55 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer54->Add(itemBoxSizer55, 0, wxALIGN_TOP|wxALL, 5);
-
-  itemBoxSizer55->Add(15, 5, 0, wxALIGN_LEFT|wxALL, 5);
+  itemBoxSizer46->Add(m_choiceBook, 0, wxGROW|wxALL, 5);
 
   wxBoxSizer* itemBoxSizer57 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer54->Add(itemBoxSizer57, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+  itemBoxSizer45->Add(itemBoxSizer57, 0, wxALIGN_RIGHT|wxALL, 0);
 
-  m_StatusWnd = new wxHtmlWindow;
-  m_StatusWnd->Create( itemPanel40, ID_HTMLWINDOW1, wxDefaultPosition, wxSize(680, 180), wxHW_SCROLLBAR_AUTO|wxRAISED_BORDER|wxWANTS_CHARS|wxHSCROLL|wxVSCROLL );
-  itemBoxSizer57->Add(m_StatusWnd, 0, wxALIGN_RIGHT|wxALL, 0);
+  wxBoxSizer* itemBoxSizer58 = new wxBoxSizer(wxHORIZONTAL);
+  itemBoxSizer57->Add(itemBoxSizer58, 0, wxGROW|wxALL, 5);
 
   wxBoxSizer* itemBoxSizer59 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer54->Add(itemBoxSizer59, 0, wxALIGN_TOP|wxALL, 5);
+  itemBoxSizer58->Add(itemBoxSizer59, 0, wxALIGN_TOP|wxALL, 5);
+
+  itemBoxSizer59->Add(15, 5, 0, wxALIGN_LEFT|wxALL, 5);
+
+  wxBoxSizer* itemBoxSizer61 = new wxBoxSizer(wxVERTICAL);
+  itemBoxSizer58->Add(itemBoxSizer61, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+  m_StatusWnd = new wxHtmlWindow;
+  m_StatusWnd->Create( itemPanel44, ID_HTMLWINDOW1, wxDefaultPosition, wxSize(680, 180), wxHW_SCROLLBAR_AUTO|wxRAISED_BORDER|wxWANTS_CHARS|wxHSCROLL|wxVSCROLL );
+  itemBoxSizer61->Add(m_StatusWnd, 0, wxALIGN_RIGHT|wxALL, 0);
+
+  wxBoxSizer* itemBoxSizer63 = new wxBoxSizer(wxVERTICAL);
+  itemBoxSizer58->Add(itemBoxSizer63, 0, wxALIGN_TOP|wxALL, 5);
 
   m_chkFullUppdate = new wxCheckBox;
-  m_chkFullUppdate->Create( itemPanel40, ID_CHECKBOX_FULL_UPDATE, _("Full Uppdate"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_chkFullUppdate->Create( itemPanel44, ID_CHECKBOX_FULL_UPDATE, _("Full Uppdate"), wxDefaultPosition, wxDefaultSize, 0 );
   m_chkFullUppdate->SetValue(false);
-  itemBoxSizer59->Add(m_chkFullUppdate, 0, wxALIGN_LEFT|wxALL, 5);
+  itemBoxSizer63->Add(m_chkFullUppdate, 0, wxALIGN_LEFT|wxALL, 5);
 
   m_chkMdfFromFile = new wxCheckBox;
-  m_chkMdfFromFile->Create( itemPanel40, ID_CHECKBOX_MDF_FROM_FILE, _("Use local MDF"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_chkMdfFromFile->Create( itemPanel44, ID_CHECKBOX_MDF_FROM_FILE, _("Use local MDF"), wxDefaultPosition, wxDefaultSize, 0 );
   m_chkMdfFromFile->SetValue(false);
-  itemBoxSizer59->Add(m_chkMdfFromFile, 0, wxALIGN_LEFT|wxALL, 5);
+  itemBoxSizer63->Add(m_chkMdfFromFile, 0, wxALIGN_LEFT|wxALL, 5);
 
-  wxButton* itemButton62 = new wxButton;
-  itemButton62->Create( itemPanel40, ID_BUTTON16, _("Update"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemButton62->SetDefault();
-  itemBoxSizer59->Add(itemButton62, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+  wxButton* itemButton66 = new wxButton;
+  itemButton66->Create( itemPanel44, ID_BUTTON16, _("Update"), wxDefaultPosition, wxDefaultSize, 0 );
+  itemButton66->SetDefault();
+  itemBoxSizer63->Add(itemButton66, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
 
   m_ctrlButtonLoadMDF = new wxButton;
-  m_ctrlButtonLoadMDF->Create( itemPanel40, ID_BUTTON17, _("Load defaults"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_ctrlButtonLoadMDF->Create( itemPanel44, ID_BUTTON17, _("Load defaults"), wxDefaultPosition, wxDefaultSize, 0 );
   m_ctrlButtonLoadMDF->Enable(false);
-  itemBoxSizer59->Add(m_ctrlButtonLoadMDF, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+  itemBoxSizer63->Add(m_ctrlButtonLoadMDF, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
 
-  itemBoxSizer59->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+  itemBoxSizer63->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
   m_ctrlButtonWizard = new wxButton;
-  m_ctrlButtonWizard->Create( itemPanel40, ID_BUTTON19, _("Wizard"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_ctrlButtonWizard->Create( itemPanel44, ID_BUTTON19, _("Wizard"), wxDefaultPosition, wxDefaultSize, 0 );
   m_ctrlButtonWizard->Enable(false);
-  itemBoxSizer59->Add(m_ctrlButtonWizard, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+  itemBoxSizer63->Add(m_ctrlButtonWizard, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
 	////@end frmDeviceConfig content construction
 
@@ -7824,55 +7834,55 @@ void frmDeviceConfig::updateDmGrid( void )
 				progressDlg.Pulse();
 
 				// Add a row
-				m_gridDM->AppendRows( 1 );
+				if ( !m_gridDM->AppendRows( 1 ) ) continue;
 				
 				// O-addr
 				strBuf = getFormattedValue( prow[ 0 ] );
-				m_gridDM->SetCellValue( i, 0, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 0 );
-				m_gridDM->SetReadOnly( i, 0 );
+				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 0, strBuf );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 0 );
+				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 0 );
 				
 				// Flags
 				strBuf = getFormattedValue( prow[ 1 ] );
-				m_gridDM->SetCellValue( i, 1, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 1 );
-				m_gridDM->SetReadOnly( i, 1 );
+				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 1, strBuf );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE,m_gridDM->GetNumberRows()-1, 1 );
+				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 1 );
 				
 				// Class Mask
 				strBuf = getFormattedValue( prow[ 2 ] );
-				m_gridDM->SetCellValue( i, 2, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 2 );
-				m_gridDM->SetReadOnly( i, 2 );
+				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 2, strBuf );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 2 );
+				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 2 );
 
 				// Class Filter
 				strBuf = getFormattedValue( prow[ 3 ] );
-				m_gridDM->SetCellValue( i, 3, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 3 );
-				m_gridDM->SetReadOnly( i, 3 );
+				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 3, strBuf );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 3 );
+				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 3 );
 
 				// Type Mask
 				strBuf = getFormattedValue( prow[ 4 ] );
-				m_gridDM->SetCellValue( i, 4, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 4 );
-				m_gridDM->SetReadOnly( i, 4 );
+				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 4, strBuf );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 4 );
+				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 4 );
 
 				// Type Filter
 				strBuf = getFormattedValue( prow[ 5 ] );
-				m_gridDM->SetCellValue( i, 5, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 5 );
-				m_gridDM->SetReadOnly( i, 5 );
+				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 5, strBuf );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 5 );
+				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 5 );
 
 				// Action
 				strBuf = getFormattedValue( prow[ 6 ] );
-				m_gridDM->SetCellValue( i, 6, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 6 );
-				m_gridDM->SetReadOnly( i, 6 );
+				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 6, strBuf );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 6 );
+				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 6 );
 
 				// Action Parameter
 				strBuf = getFormattedValue( prow[ 7 ] );
-				m_gridDM->SetCellValue( i, 7, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, i, 7 );
-				m_gridDM->SetReadOnly( i, 7 );
+				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 7, strBuf );
+				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 7 );
+				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 7 );
 
 				m_gridDM->Update();
 
@@ -8470,7 +8480,7 @@ uint16_t frmDeviceConfig::getPageFromCell( int row )
 wxString frmDeviceConfig::getFormattedValue( uint8_t val )
 {
 	if ( VSCP_DEVCONFIG_NUMBERBASE_HEX == 
-		g_Config.m_deviceconfigNumberbase ) {
+		g_Config.m_Numberbase ) {
 			return wxString::Format(_("0x%02X"), val );
 	}
 	else {
@@ -8534,7 +8544,7 @@ bool frmDeviceConfig::fetchIterfaceGUID( void )
 					strName.Trim();
 				}
 
-				if ( strName.Upper() = m_interfaceName.Upper() ) { 
+				if ( strName.Upper() == m_interfaceName.Upper() ) { 
 
 					// Save the name
 					m_interfaceName = strName;
@@ -8558,3 +8568,117 @@ bool frmDeviceConfig::fetchIterfaceGUID( void )
 
 	return false;
 }
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnMenuitemAddGuidsClick
+//
+
+void frmDeviceConfig::OnMenuitemAddGuidsClick( wxCommandEvent& event )
+{
+	wxString str = ::wxGetTextFromUser( _("Enter full GUID to add :"),
+										_("VSCP Works") );
+	m_guidarray.Add( str );
+	m_comboNodeID->Append( str );
+
+	event.Skip( false );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnMenuitemSaveGuidsClick
+//
+
+void frmDeviceConfig::OnMenuitemSaveGuidsClick( wxCommandEvent& event )
+{
+	wxString str;
+	wxStandardPaths stdpaths;
+
+	wxBusyCursor wait;
+
+	// First find a path to save TX data to
+	wxFileDialog dlg( this,
+		_("Choose file to GUID's to"),
+		stdpaths.GetUserDataDir(),
+		_("guidset"),
+		_("GUID set Files (*.guid)|*.guid|All files (*.*)|*.*"),
+		wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
+
+	if ( wxID_OK == dlg.ShowModal() ) {
+
+		wxFFileOutputStream *pFileStream = new wxFFileOutputStream( dlg.GetPath() );
+		if ( NULL == pFileStream ) {
+			wxMessageBox(_("Failed to create file for configuration."));
+			return;
+		}
+
+		for ( unsigned int i=0; i<m_comboNodeID->GetCount(); i++ ) {
+			wxString str =  m_comboNodeID->GetString( i ) + _("\r\n");
+			pFileStream->Write( str.mb_str(wxConvUTF8), str.Length() );
+		}
+
+		// Close the file
+		pFileStream->Close();
+
+		// Clean up
+		delete pFileStream;
+	}
+
+
+	
+
+	event.Skip( false ); 
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnMenuitemLoadGuidsClick
+//
+
+void frmDeviceConfig::OnMenuitemLoadGuidsClick( wxCommandEvent& event )
+{
+	wxStandardPaths stdpaths;
+	wxXmlDocument doc;
+
+	// First find a path to save register set data to
+	wxFileDialog dlg( this,
+		_("Choose file to load register set from "),
+		stdpaths.GetUserDataDir(),
+		_("guidset"),
+		_("GUID set Files (*.guid)|*.guid|All files (*.*)|*.*") );
+
+	if ( wxID_OK == dlg.ShowModal() ) { 
+
+		m_comboNodeID->Clear();
+
+		wxFFileInputStream *pFileStream = new wxFFileInputStream( dlg.GetPath() );
+		if ( NULL == pFileStream ) {
+			wxMessageBox(_("Failed to open GUID set file."));
+			return;
+		}
+
+		char buf[ 2048 ];
+		wxString str;
+
+		while ( !pFileStream->Eof() ) {
+		
+			memset( buf, 0, sizeof( buf ) );
+			pFileStream->Read( buf, sizeof( buf )-1 );
+			str += wxString::FromAscii( buf );
+
+		}
+
+		wxStringTokenizer tkz( str, _("\r\n") );
+		wxString strToken;
+		while ( tkz.HasMoreTokens() ) {
+			strToken = tkz.GetNextToken();
+			m_comboNodeID->Append( strToken );
+		}
+
+		if ( m_comboNodeID->GetCount() ) m_comboNodeID->Select( 0 );
+	}
+
+	event.Skip( false );
+}
+

@@ -139,6 +139,7 @@
 #define VSCP_DEVCONFIG_NUMBERBASE_HEX			0
 #define VSCP_DEVCONFIG_NUMBERBASE_DECIMAL		1
 
+
 // Structure for CANAL nodes
 typedef struct {
     unsigned char m_GUID[16];
@@ -169,6 +170,7 @@ typedef struct {
     wxString m_strHost;				// Host where server lives
     wxString m_strUser;				// Username
     wxString m_strPassword;			// Password
+	bool m_bLevel2;					// Full Level II communication
     unsigned long m_port;			// Port to use on server
 	wxString m_strInterfaceName;	// Name for remote interface
     unsigned char m_GUID[16];		// GUID for interface
@@ -201,9 +203,9 @@ typedef struct {
     wxString m_strPathTemp;     // Path to temporary storage
     
     // Logfile
-    bool m_bLogFile;            // True for writes to logfile
-    unsigned char m_logLevel;   // Detail of logfile 0=lowest
+    bool m_bEnableLog;          // True for writes to logfile
     wxString m_strPathLogFile;  // Path to logfile
+	uint8_t m_logLevel;			// Log level
     
     
 /*
@@ -268,8 +270,13 @@ typedef struct {
     uint32_t m_VscpRegisterReadErrorTimeout;	// Timeout before register read is considered and error
     uint8_t	m_VscpRegisterReadMaxRetries;		// Max number of retries to read a register.
 
-	// device vonfiguration
-	uint8_t m_deviceconfigNumberbase;			// Number base for register values
+	// device configuration
+	uint8_t m_Numberbase;						// Number base for register values
+
+	// Confirm switch 
+	bool m_bConfirmDelete;						// Must confirm session rx/tx etc list delete
+
+	
     
 } appConfiguration;	
 

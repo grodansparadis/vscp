@@ -52,8 +52,8 @@
  */
 
 ////@begin includes
-#include "dlgconfiguration_symbols.h"
 #include "wx/propdlg.h"
+#include "wx/spinctrl.h"
 ////@end includes
 
 /*!
@@ -61,6 +61,7 @@
  */
 
 ////@begin forward declarations
+class wxSpinCtrl;
 ////@end forward declarations
 
 /*!
@@ -140,6 +141,13 @@ public:
   static bool ShowToolTips();
 
 ////@begin dlgConfiguration member variables
+  wxStaticText* m_labelLogFile;
+  wxCheckBox* m_checkEnableLogging;
+  wxChoice* m_comboLogLevel;
+  wxCheckBox* m_checkConfirmDeletes;
+  wxChoice* m_comboNumericalBase;
+  wxSpinCtrl* m_maxRetries;
+  wxSpinCtrl* m_readTimeout;
   wxCheckBox* m_ChkAutoScroll;
   wxCheckBox* m_chkPyjamasLook;
   wxCheckBox* m_chkUseSymbols;
@@ -151,7 +159,13 @@ public:
   enum {
     ID_DLGCONFIGURATION = 15000,
     ID_PANEL_GENERAL = 15001,
+    ID_CHECKBOX1 = 15040,
+    ID_CHOICE3 = 15041,
+    ID_CHECKBOX3 = 15042,
+    ID_CHOICE = 15039,
     ID_PANEL_COMMUNICATION = 15003,
+    ID_SPINCTRL = 15002,
+    ID_SPINCTRL1 = 15038,
     ID_PANEL_COLORS = 15004,
     ID_PANEL_RECEIVE = 15005,
     ID_ChkAutoScroll = 15036,
