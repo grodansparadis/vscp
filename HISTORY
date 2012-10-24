@@ -1,6 +1,9 @@
 release notes for release 0.4.0 Fluorine
 ========================================
+
+2012-10-23 - AKHE 0.4.0.3
 2012-10-23 - AKHE GUID's can now be saved and loaded in configuration window.
+					Full Level II Works.
 2012-10-22 - AKHE VSCP works now have configuration of register read/write 
 					parameters. Build: 4.0.0.2
 				  Confirm of rx-list delete can now be disabled.
