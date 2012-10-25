@@ -19,10 +19,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: devicelist.h,v $                                       
-// $Date: 2005/08/25 20:08:09 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.12 $ 
 
 #if !defined(AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_)
 #define AFX_DEVICELIST_H__0ED35EA7_E9E1_41CD_8A98_5EB3369B3194__INCLUDED_

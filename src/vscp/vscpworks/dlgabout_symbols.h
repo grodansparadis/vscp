@@ -36,7 +36,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  Grodans Paradis AB at info@Grodans Paradis AB.se, http://www.grodansparadis.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 /////////////////////////////////////////////////////////////////////////////
 
 #define ID_DLGABOUT_SYMBOL_0 _("&OK")

@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Mon 16 Apr 2007 18:19:49 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -14,7 +14,6 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,7 +36,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  Grodans Paradis AB at info@Grodans Paradis AB.se, http://www.grodansparadis.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _FRMMAINNOMIDI_H_
@@ -126,11 +125,23 @@ public:
   /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_DEVICE_CONFIGURATION
   void OnMenuitemOpenConfigSessionClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_BOOTLOADER_WIZARD
-  void OnMenuitemBootloaderWizardClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_MDF_EDITOR
+  void OnMenuitemMdfEditorClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_DM_EDITOR
+  void OnMenuitemOpenDaemonDMEditorClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VARIABLE_EDITOR
+  void OnMenuitemOpenDaemonVariableEditorClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SCAN
   void OnMenuitemScanClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_BOOTLOADER_WIZARD
+  void OnMenuitemBootloaderWizardClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SIMPLE_UI_DESIGNER
+  void OnMenuitemOpenSimpleUIdesignerClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_MERLIN
   void OnMenuitemMerlinClick( wxCommandEvent& event );
@@ -140,9 +151,6 @@ public:
 
   /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_CONFIGURATION
   void OnMenuitemConfigurationClick( wxCommandEvent& event );
-
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_MDF_EDITOR
-  void OnMenuitemMdfEditorClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM33
   void OnMenuitemHelpClick( wxCommandEvent& event );
@@ -185,12 +193,15 @@ public:
     ID_FRMMAIN = 12000,
     ID_MENUITEM_OPEN_VSCP_SESSION = 12002,
     ID_MENUITEM_DEVICE_CONFIGURATION = 12003,
-    ID_MENUITEM_BOOTLOADER_WIZARD = 12004,
+    ID_MENUITEM_MDF_EDITOR = 12006,
+    ID_MENUITEM_DM_EDITOR = 10003,
+    ID_MENUITEM_VARIABLE_EDITOR = 10004,
     ID_MENUITEM_SCAN = 12001,
+    ID_MENUITEM_BOOTLOADER_WIZARD = 10000,
+    ID_MENUITEM_SIMPLE_UI_DESIGNER = 10001,
     ID_MENUITEM_MERLIN = 10143,
     ID_MENU_VSCPWORKS_EXIT = 12005,
     ID_MENUITEM_CONFIGURATION = 12011,
-    ID_MENUITEM_MDF_EDITOR = 12006,
     ID_MENUITEM33 = 12018,
     ID_MENUITEM34 = 12019,
     ID_MENUITEM35 = 12020,

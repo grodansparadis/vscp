@@ -35,7 +35,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  Grodans Paradis AB at info@Grodans Paradis AB.se, http://www.grodansparadis.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 /////////////////////////////////////////////////////////////////////////////
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
@@ -90,6 +90,8 @@ DEFINE_EVENT_TYPE(wxVSCP_RCV_CONNECTED_EVENT)
 DEFINE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT)
 
 extern appConfiguration g_Config;
+
+
 
 ////@begin XPM images
 /* XPM */
@@ -834,13 +836,13 @@ static char *redo_xpm[] = {
 IMPLEMENT_CLASS( frmVSCPSession, wxFrame )
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// frmVSCPSession event table definition
-//
+	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	// frmVSCPSession event table definition
+	//
 
-BEGIN_EVENT_TABLE( frmVSCPSession, wxFrame )
+	BEGIN_EVENT_TABLE( frmVSCPSession, wxFrame )
 
-////@begin frmVSCPSession event table entries
+	////@begin frmVSCPSession event table entries
   EVT_CLOSE( frmVSCPSession::OnCloseWindow )
 
   EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON_ACTIVATE, frmVSCPSession::OnInterfaceActivate )
@@ -906,6 +908,8 @@ BEGIN_EVENT_TABLE( frmVSCPSession, wxFrame )
   EVT_GRID_LABEL_LEFT_DCLICK( frmVSCPSession::OnGridLabelLeftDClick )
   EVT_GRID_SELECT_CELL( frmVSCPSession::OnSelectCell )
 
+  EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW_RCVINFO, frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked )
+
   EVT_BUTTON( ID_BITMAPBUTTON_TX_ADD, frmVSCPSession::OnTxAddClick )
 
   EVT_BUTTON( ID_BITMAPBUTTON_TX_EDIT, frmVSCPSession::OnTxEditClick )
@@ -922,23 +926,23 @@ BEGIN_EVENT_TABLE( frmVSCPSession, wxFrame )
 
   EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, frmVSCPSession::OnTxSendClick )
 
-////@end frmVSCPSession event table entries
+	////@end frmVSCPSession event table entries
 
-  EVT_MENU(Menu_Popup_TX_Transmit, frmVSCPSession::OnTxSendClick )
-  EVT_MENU(Menu_Popup_TX_Add, frmVSCPSession::OnTxAddClick )
-  EVT_MENU(Menu_Popup_TX_Edit, frmVSCPSession::OnTxEditClick )
-  EVT_MENU(Menu_Popup_TX_Delete, frmVSCPSession::OnTxDeleteClick )
-  EVT_MENU(Menu_Popup_TX_Clone, frmVSCPSession::OnTxCloneRow )
-  
-  EVT_COMMAND( ID_FRMVSCPSESSION, wxVSCP_IN_EVENT, frmVSCPSession::eventReceive )
-  EVT_COMMAND( ID_FRMVSCPSESSION, wxVSCP_OUT_EVENT, frmVSCPSession::eventTransmit )
+	EVT_MENU(Menu_Popup_TX_Transmit, frmVSCPSession::OnTxSendClick )
+	EVT_MENU(Menu_Popup_TX_Add, frmVSCPSession::OnTxAddClick )
+	EVT_MENU(Menu_Popup_TX_Edit, frmVSCPSession::OnTxEditClick )
+	EVT_MENU(Menu_Popup_TX_Delete, frmVSCPSession::OnTxDeleteClick )
+	EVT_MENU(Menu_Popup_TX_Clone, frmVSCPSession::OnTxCloneRow )
+
+	EVT_COMMAND( ID_FRMVSCPSESSION, wxVSCP_IN_EVENT, frmVSCPSession::eventReceive )
+	EVT_COMMAND( ID_FRMVSCPSESSION, wxVSCP_OUT_EVENT, frmVSCPSession::eventTransmit )
 	EVT_COMMAND( ID_FRMVSCPSESSION, wxVSCP_CTRL_LOST_EVENT, frmVSCPSession::eventLostCtrlIf )
 	EVT_COMMAND( ID_FRMVSCPSESSION, wxVSCP_RCV_PREP_CONNECT_EVENT, frmVSCPSession::eventPrepareConnect )
 	EVT_COMMAND( ID_FRMVSCPSESSION, wxVSCP_RCV_CONNECTED_EVENT, frmVSCPSession::eventConnected )
 	EVT_COMMAND( ID_FRMVSCPSESSION, wxVSCP_RCV_LOST_EVENT, frmVSCPSession::eventLostRcvIf )
-  
 
-END_EVENT_TABLE()
+
+	END_EVENT_TABLE()
 
 
 
@@ -1203,7 +1207,7 @@ frmVSCPSession::~frmVSCPSession()
 
 void frmVSCPSession::Init()
 {
-////@begin frmVSCPSession member initialisation
+	////@begin frmVSCPSession member initialisation
   m_BtnActivateInterface = NULL;
   m_pPanel = NULL;
   m_ctrlGridReceive = NULL;
@@ -1217,7 +1221,7 @@ void frmVSCPSession::Init()
   m_btnSend = NULL;
   m_btnActivate = NULL;
   m_btnClear = NULL;
-////@end frmVSCPSession member initialisation
+	////@end frmVSCPSession member initialisation
 
 	m_CtrlObject.m_bQuit = false;
 	m_CtrlObject.m_interfaceType = INTERFACE_VSCP;
@@ -1697,7 +1701,9 @@ void frmVSCPSession::CreateControls()
 }
 
 
-
+//m_ctrlRcvHtmlInfo = new HtmlWindow();
+ //m_ctrlRcvHtmlInfo->Create( m_pPanel, ID_HTMLWINDOW_RCVINFO, wxDefaultPosition, wxSize(300, 300), wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+ //itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4073,4 +4079,20 @@ void deviceWriteThread::OnExit()
 	;
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW_RCVINFO
+//
+
+void frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked( wxHtmlLinkEvent& event )
+{
+	if ( event.GetLinkInfo().GetHref().StartsWith( _("http://") ) ) {
+		wxLaunchDefaultBrowser( event.GetLinkInfo().GetHref() );
+		event.Skip( false );
+		return;
+	}
+
+	event.Skip();
+}
 

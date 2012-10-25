@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Sat 30 Jun 2007 14:08:14 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -13,8 +13,6 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-//
-// Copyright (C) 2000-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,7 +35,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  Grodans Paradis AB at info@Grodans Paradis AB.se, http://www.grodansparadis.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _FRMVSCPSESSION_H_
@@ -670,6 +668,9 @@ public:
 
   /// wxEVT_GRID_SELECT_CELL event handler for ID_VSCP_GRID_RECEIVE
   void OnSelectCell( wxGridEvent& event );
+
+  /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW_RCVINFO
+  void OnHtmlwindowRcvinfoLinkClicked( wxHtmlLinkEvent& event );
 
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON_TX_ADD
   void OnTxAddClick( wxCommandEvent& event );

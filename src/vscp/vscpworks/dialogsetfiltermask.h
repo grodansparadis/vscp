@@ -13,7 +13,6 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,7 +35,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  Grodans Paradis AB at info@Grodans Paradis AB.se, http://www.grodansparadis.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _DIALOGSETFILTERMASK_H_

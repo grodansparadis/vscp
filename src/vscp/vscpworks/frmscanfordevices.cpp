@@ -14,8 +14,6 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, 
-// <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -38,7 +36,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  Grodans Paradis AB at info@Grodans Paradis AB.se, http://www.grodansparadis.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 /////////////////////////////////////////////////////////////////////////////
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
@@ -598,6 +596,8 @@ BEGIN_EVENT_TABLE( frmScanforDevices, wxFrame )
 
   EVT_TREE_SEL_CHANGED( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceSelChanged )
   EVT_TREE_ITEM_RIGHT_CLICK( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceItemRightClick )
+
+  EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW3, frmScanforDevices::OnHtmlwindow3LinkClicked )
 
   EVT_BUTTON( ID_BUTTON_SCAN, frmScanforDevices::OnButtonScanClick )
 
@@ -1380,5 +1380,21 @@ void frmScanforDevices::OnTreeDeviceSelChanged( wxTreeEvent& event )
 	scanElement *pElement = (scanElement *)m_DeviceTree->GetItemData( m_DeviceTree->GetSelection() );
 	if ( NULL != pElement ) m_htmlWnd->SetPage( pElement->m_html );
 	event.Skip( false );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW3
+//
+
+void frmScanforDevices::OnHtmlwindow3LinkClicked( wxHtmlLinkEvent& event )
+{
+	if ( event.GetLinkInfo().GetHref().StartsWith( _("http://") ) ) {
+		wxLaunchDefaultBrowser( event.GetLinkInfo().GetHref() );
+		event.Skip( false );
+		return;
+	}
+
+	event.Skip(); 
 }
 

@@ -17,10 +17,6 @@
 // Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: vscp.h,v $
-// $Date: 2006/02/01 22:16:36 $
-// $Author: akhe $
-// $Revision: 1.29 $
 
 // HISTORY:
 //    021107 - AKHE Started this file

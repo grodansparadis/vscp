@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Sun 04 May 2009 17:28:13 CEST
 // RCS-ID:      
-// Copyright:   (C) 2000-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -37,7 +37,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  Grodans Paradis AB at info@Grodans Paradis AB.se, http://www.grodansparadis.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 /////////////////////////////////////////////////////////////////////////////
 
 //
@@ -324,7 +324,7 @@ public:
   void OnComboNodeIDUpdated( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CHECK_LEVEL2
-  void OnTestDeviceClick( wxCommandEvent& event );
+  void OnBitmapbuttonTestDeviceClick( wxCommandEvent& event );
 
   /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON1
   void OnInterfaceActivate( wxCommandEvent& event );
@@ -340,6 +340,9 @@ public:
 
   /// wxEVT_GRID_CELL_CHANGE event handler for ID_GRID_REGISTERS
   void OnRegisterEdited( wxGridEvent& event );
+
+  /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW1
+  void OnHtmlwindowCellClicked( wxHtmlLinkEvent& event );
 
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON16
   void OnButtonUpdateClick( wxCommandEvent& event );

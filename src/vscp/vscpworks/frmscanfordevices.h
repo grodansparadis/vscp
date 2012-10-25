@@ -13,8 +13,6 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-//
-// Copyright (C) 2000-2007 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -37,7 +35,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  Grodans Paradis AB at info@Grodans Paradis AB.se, http://www.grodansparadis.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 /////////////////////////////////////////////////////////////////////////////
 
 #ifndef _FRMSCANFORDEVICES_H_
@@ -163,66 +161,69 @@ public:
 
 ////@begin frmScanforDevices event handler declarations
 
-	/// wxEVT_CLOSE_WINDOW event handler for ID_SCANFORDEVICES
-	void OnCloseWindow( wxCloseEvent& event );
+  /// wxEVT_CLOSE_WINDOW event handler for ID_SCANFORDEVICES
+  void OnCloseWindow( wxCloseEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENU_VSCPWORKS_EXIT
-	void OnMenuitemExitClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENU_VSCPWORKS_EXIT
+  void OnMenuitemExitClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP
-	void OnMenuitemHelpClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP
+  void OnMenuitemHelpClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_FAQ
-	void OnMenuitemHelpFaqClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_FAQ
+  void OnMenuitemHelpFaqClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_SC
-	void OnMenuitemHelpScClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_SC
+  void OnMenuitemHelpScClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_THANKS
-	void OnMenuitemHelpThanksClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_THANKS
+  void OnMenuitemHelpThanksClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_CREDITS
-	void OnMenuitemHelpCreditsClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_CREDITS
+  void OnMenuitemHelpCreditsClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_VSCP_SITE
-	void OnMenuitemHelpVscpSiteClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_VSCP_SITE
+  void OnMenuitemHelpVscpSiteClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_ABOUT
-	void OnMenuitemHelpAboutClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_ABOUT
+  void OnMenuitemHelpAboutClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_TREE_SEL_CHANGED event handler for ID_TREE_DEVICE
-	void OnTreeDeviceSelChanged( wxTreeEvent& event );
+  /// wxEVT_COMMAND_TREE_SEL_CHANGED event handler for ID_TREE_DEVICE
+  void OnTreeDeviceSelChanged( wxTreeEvent& event );
 
-	/// wxEVT_COMMAND_TREE_ITEM_RIGHT_CLICK event handler for ID_TREE_DEVICE
-	void OnTreeDeviceItemRightClick( wxTreeEvent& event );
+  /// wxEVT_COMMAND_TREE_ITEM_RIGHT_CLICK event handler for ID_TREE_DEVICE
+  void OnTreeDeviceItemRightClick( wxTreeEvent& event );
 
-	/// wxEVT_LEFT_DCLICK event handler for ID_TREE_DEVICE
-	void OnLeftDClick( wxMouseEvent& event );
+  /// wxEVT_LEFT_DCLICK event handler for ID_TREE_DEVICE
+  void OnLeftDClick( wxMouseEvent& event );
 
-	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_SCAN
-	void OnButtonScanClick( wxCommandEvent& event );
+  /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW3
+  void OnHtmlwindow3LinkClicked( wxHtmlLinkEvent& event );
+
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_SCAN
+  void OnButtonScanClick( wxCommandEvent& event );
 
 ////@end frmScanforDevices event handler declarations
 
 ////@begin frmScanforDevices member function declarations
 
-	/// Retrieves bitmap resources
-	wxBitmap GetBitmapResource( const wxString& name );
+  /// Retrieves bitmap resources
+  wxBitmap GetBitmapResource( const wxString& name );
 
-	/// Retrieves icon resources
-	wxIcon GetIconResource( const wxString& name );
+  /// Retrieves icon resources
+  wxIcon GetIconResource( const wxString& name );
 ////@end frmScanforDevices member function declarations
 
 	/// Should we show tooltips?
 	static bool ShowToolTips();
 
 ////@begin frmScanforDevices member variables
-	wxStaticText* m_staticComboText;
-	wxComboBox* m_comboNodeID;
-	wxToggleButton* m_BtnActivateInterface;
-	wxPanel* m_pPanel;
-	wxTreeCtrl* m_DeviceTree;
-	wxHtmlWindow* m_htmlWnd;
+  wxStaticText* m_staticComboText;
+  wxComboBox* m_comboNodeID;
+  wxToggleButton* m_BtnActivateInterface;
+  wxPanel* m_pPanel;
+  wxTreeCtrl* m_DeviceTree;
+  wxHtmlWindow* m_htmlWnd;
   /// Control identifiers
   enum {
     ID_SCANFORDEVICES = 27000,

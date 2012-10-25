@@ -20,10 +20,6 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA.
 //
-// $RCSfile: dllwrapper.h,v $                                       
-// $Date: 2005/08/30 11:00:04 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.10 $ 
 ///////////////////////////////////////////////////////////////////////////////
 
 #if !defined(AFX_DLLWRAPPER_H__66E4FA3F_1CA1_405D_AAF1_5F9B1272D75A__INCLUDED_)

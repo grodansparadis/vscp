@@ -1,6 +1,7 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2012-10-23 - AKHE Fixed problem with link clicks in configuration status window.
 2012-10-23 - AKHE 0.4.0.3
 2012-10-23 - AKHE GUID's can now be saved and loaded in configuration window.
 					Full Level II Works.
