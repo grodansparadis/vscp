@@ -606,6 +606,17 @@ bool CControlObject::run ( void )
 	unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
 						  LWS_SEND_BUFFER_POST_PADDING ];
 
+#ifdef WIN32
+	context = libwebsocket_create_context( m_portWebsockets, 
+											websockif, 
+											protocols,  
+											libwebsocket_internal_extensions,
+											NULL, 
+											NULL, 
+											-1, 
+											-1, 
+											opts );
+#else
 	context = libwebsocket_create_context( m_portWebsockets, 
 											websockif, 
 											protocols,  
@@ -616,6 +627,7 @@ bool CControlObject::run ( void )
 											-1, 
 											opts,
 											NULL);
+#endif
 
 
     // DM Loop
@@ -2088,16 +2100,19 @@ CControlObject::callback_http( struct libwebsocket_context *context,
 						"serving HTTP URI %s mime %s\n",
 						(const char *)path.ToAscii(),
 						(const char *)mime.ToAscii() );
-
+#ifndef WIN32
 			syslog( LOG_ERR, "Ice: serving HTTP URI %s, mime %s",
 						(const char *)path.ToAscii(),
 						(const char *)mime.ToAscii() );
+#endif
 
 			if ( libwebsockets_serve_http_file( wsi,
 												path.ToAscii(), 
 												mime.ToAscii() ) ) {
 				fprintf(stderr, "* * *  Failed to send file * * * \n ");
+#ifndef WIN32
 				syslog( LOG_ERR, "Ice: * * *  Failed to send file * * * ");
+#endif
 			}
 
 		}
@@ -2122,8 +2137,10 @@ CControlObject::callback_http( struct libwebsocket_context *context,
 		fprintf( stderr, 
 					"Received network connect from %s (%s)\n",
 					client_name, client_ip);
+#ifndef WIN32
 		syslog( LOG_ERR, "Ice: Received network connect from %s (%s)",
 					client_name, client_ip);
+#endif
 
 		/* if we returned non-zero from here, we kill the connection */
 		break;
