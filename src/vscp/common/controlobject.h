@@ -44,11 +44,9 @@
 #include "dm.h"
 #include "vscp.h"
 
-//#ifdef WIN32
 extern "C" {
 #include <libwebsockets.h>
 }
-//#endif
 
 // List used for websocket triggers
 WX_DECLARE_LIST ( vscpEventFilter, TRIGGERLIST );

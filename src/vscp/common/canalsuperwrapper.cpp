@@ -3570,7 +3570,7 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 	}
 	else {
 
-		// Read string from linear storage.
+		// Read float from linear storage.
 		if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 			if ( !readLevel1Registers( pwnd, 
@@ -3604,7 +3604,7 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 
 	}
 
-	*pval = wxINT32_SWAP_ON_LE( *((float *)p) );
+	*pval = wxINT32_SWAP_ON_BE( *((float *)p) );
 
 error:
 

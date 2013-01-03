@@ -124,7 +124,7 @@
 #include "devicethread.h"
 #include "dm.h"
 #include "controlobject.h"
-#include "libwebsockets.h"
+#include <libwebsockets.h>
 
 // List for websocket triggers
 WX_DEFINE_LIST(TRIGGERLIST);
@@ -158,7 +158,6 @@ WSADATA wsaData;                             // WSA functions
 //					WEBSOCKETS
 ///////////////////////////////////////////////////
 
-#if ( WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32  // Windows XP 
 
 static int gbClose;
 
@@ -236,7 +235,6 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
 };
 
 
-#endif
 
 
 
@@ -378,8 +376,8 @@ CControlObject::~CControlObject()
 void CControlObject::logMsg( const wxString& wxstr, unsigned char level )
 {
     
-  wxString wxdebugmsg = (wxDateTime::Now()).FormatISOTime() + _(" vscpd: ") + wxstr;
-    
+  wxString wxdebugmsg = wxstr;
+
 #ifdef WIN32
 #ifdef BUILD_VSCPD_SERVICE
 
@@ -598,7 +596,6 @@ bool CControlObject::run ( void )
     // Feed startup event
     m_dm.feed( &EventStartUp );
 
-#if (WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32  // Windows XP
 
 	// Initialize websockets
 	int opts = 0;
@@ -617,9 +614,9 @@ bool CControlObject::run ( void )
 											NULL, 
 											-1, 
 											-1, 
-											opts );
+											opts,
+											NULL);
 
-#endif
 
     // DM Loop
     while ( !m_bQuit ) {
@@ -652,7 +649,6 @@ bool CControlObject::run ( void )
 			}
 		}
 
-#if (WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32  // Windows XP
 		/*
 		 * This broadcasts to all dumb-increment-protocol connections
 		 * at 20Hz.
@@ -688,7 +684,6 @@ bool CControlObject::run ( void )
 		 */
 
 		libwebsocket_service( context, 50 );
-#endif		
 
         // Wait for event
         if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout ( 10 ) ) {
@@ -737,9 +732,7 @@ bool CControlObject::run ( void )
     removeClient ( pClientItem );
     m_wxClientMutex.Unlock();
 
-#if (WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32   // Windows XP
-	libwebsocket_context_destroy( context );
-#endif	
+    libwebsocket_context_destroy( context );
 
     wxLogDebug ( _ ( "ControlObject: Done" ) );
     return true;
@@ -1983,7 +1976,7 @@ bool CControlObject::readConfiguration ( wxString& strcfgfile )
 
 }
 
-#if (WIN32 && (_WIN32_WINNT>=0x0500) || !WIN32 ) // Windows XP
+//#if (WIN32 && (_WIN32_WINNT>=0x0500) || !WIN32 ) // Windows XP
 
 
 ////////////////////////
@@ -2024,13 +2017,13 @@ CControlObject::callback_http( struct libwebsocket_context *context,
 				str = str.Left( n );	
 			}
 
-			path = _("C:/Users/akhe/Documents/development/sencha-touch-2.0.1.1"); 
-			//path = CControlObject::m_pathRoot;
+			path = CControlObject::m_pathRoot;
 			str.Trim();
 			if ( ( '\\' == str.Last() ) || ( '/' == str.Last() ) ) {
 				str += _("index.html");
 			}
 			path += str;
+
 			wxFileName fname( path );
 			//wxFileType *ptype = wxTheMimeTypesManager->GetFileTypeFromExtension( fname.GetExt() );
 		
@@ -2090,15 +2083,21 @@ CControlObject::callback_http( struct libwebsocket_context *context,
 				mime = _("text/plain");
 			}
 
-			//path += args;
+			path += args;
 			fprintf( stderr, 
-						"serving HTTP URI %s mine %s\n", 
-						path.ToAscii(),
-						mime.ToAscii() );
+						"serving HTTP URI %s mime %s\n",
+						(const char *)path.ToAscii(),
+						(const char *)mime.ToAscii() );
+
+			syslog( LOG_ERR, "Ice: serving HTTP URI %s, mime %s",
+						(const char *)path.ToAscii(),
+						(const char *)mime.ToAscii() );
+
 			if ( libwebsockets_serve_http_file( wsi,
 												path.ToAscii(), 
 												mime.ToAscii() ) ) {
 				fprintf(stderr, "* * *  Failed to send file * * * \n ");
+				syslog( LOG_ERR, "Ice: * * *  Failed to send file * * * ");
 			}
 
 		}
@@ -2122,6 +2121,8 @@ CControlObject::callback_http( struct libwebsocket_context *context,
 
 		fprintf( stderr, 
 					"Received network connect from %s (%s)\n",
+					client_name, client_ip);
+		syslog( LOG_ERR, "Ice: Received network connect from %s (%s)",
 					client_name, client_ip);
 
 		/* if we returned non-zero from here, we kill the connection */
@@ -2915,7 +2916,6 @@ CControlObject::handleWebSocketCommand( struct libwebsocket_context *context,
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#endif // WIN32
 
 
 

@@ -140,7 +140,7 @@ public:
 		Clear input queue
 		\return CANAL_ERROR_SUCCESS on success and error code if failure.
 	*/
-	int VscpTcpIf::doCmdClear( void );
+	int doCmdClear( void );
 
 
     /*!

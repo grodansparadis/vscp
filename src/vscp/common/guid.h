@@ -41,17 +41,17 @@ public:
 	/*!
 		Assignement overload
 	*/
-	cguid& cguid::operator=( const cguid& guid);
+	cguid& operator=( const cguid& guid);
 
 	/*!
 		Positive compare
 	*/
-	bool cguid::operator==(const cguid &guid);
+	bool operator==(const cguid &guid);
 
 	/*!
 		Negative compare
 	*/
-	bool cguid::operator!=(const cguid &guid);
+	bool operator!=(const cguid &guid);
 
     /*!
         Nill the GUID
