@@ -27,6 +27,8 @@ If you want the VSCP Works application to compile the wxWidgets library has to b
 
 You also need the websockets package. The package can be found at http://git.warmcat.com. If you have problems with the installation fo the package please read the instructions here http://martinsikora.com/libwebsockets-compiling-libraries-and-projects. On my debian system I have to issue "reconfigure" to be able to buidl as stated here https://github.com/wayneeseguin/rvm/issues/553
 
+libwebsockets is needed to compile. Can be found here git://git.warmcat.com/libwebsockets
+
 For the webserver libmicrohttpd is needed. You can find it here http://www.gnu.org/software/libmicrohttpd/  Read the README for build instructions.
 
 Configuration files should be located in /etc/vscp and there are samples of configuration files here in the root. 
@@ -39,7 +41,7 @@ If you build GUI applicatin that use the vscp helper dll the wxUSE_GUI=1 should 
 If you build non-guid components define wxUSE_GUI=0
 
 Have Fun!
-/Ake <akhe@eurosource.se>
+/Ake <akhe@grodansparadis.com>
 
 
 
