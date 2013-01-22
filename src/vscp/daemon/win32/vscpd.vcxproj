@@ -41,7 +41,7 @@
     <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>C:\Users\akhe\Documents\development\expat-2.0.1\win32\bin\Debug;$(VSCP_HOME)\src\vscp\contrib\libwebsocket\dll\win32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\akhe\Google Drive\development\expat-2.0.1\win32\bin\Debug;$(VSCP_HOME)\src\vscp\contrib\libwebsocket\dll\win32;$(LibraryPath)</LibraryPath>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />

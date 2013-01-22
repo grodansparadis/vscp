@@ -888,7 +888,7 @@ void TcpClientThread::handleClientSend ( void )
                             break;
                         }
 
-                }	
+                }
 
 				m_pCtrlObject->m_wxClientMutex.Unlock();
 

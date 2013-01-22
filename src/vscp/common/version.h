@@ -31,6 +31,6 @@
 
 #define VSCPD_DISPLAY_VERSION _("Alpha 0.4.0.6 Fluorine")
 
-#define VSCPD_COPYRIGHT _("Copyright (C) 2000-2012, Ake Hedman, Grodans Paradis AB, http://www.grodansparadis.com\n")
+#define VSCPD_COPYRIGHT _("Copyright (C) 2000-2013, Ake Hedman, Grodans Paradis AB, http://www.grodansparadis.com\n")
 
 #endif
