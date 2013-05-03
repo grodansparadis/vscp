@@ -13,7 +13,7 @@ CXX = g++
 CXXFLAGS = -g -O2 
 CPPFLAGS =  -I/usr/local/lib/wx/include/gtk2-unicode-debug-2.8 -I/usr/local/include/wx-2.8 -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXDEBUG__ -D__WXGTK__ -DwxUSE_GUI=1 
 LDFLAGS = 
-EXTRALIBS =  -lmicrohttpd -lwebsockets -lz -lm -lcrypto -lpthread -ldl -lcurses  -L/usr/local/lib -pthread   -lwx_gtk2ud_richtext-2.8 -lwx_gtk2ud_aui-2.8 -lwx_gtk2ud_xrc-2.8 -lwx_gtk2ud_qa-2.8 -lwx_gtk2ud_html-2.8 -lwx_gtk2ud_adv-2.8 -lwx_gtk2ud_core-2.8 -lwx_baseud_xml-2.8 -lwx_baseud_net-2.8 -lwx_baseud-2.8  -W1,--version-script
+EXTRALIBS =  -lwebsockets -lz -lm -lcrypto -lpthread -ldl -lcurses  -L/usr/local/lib -pthread   -lwx_gtk2ud_richtext-2.8 -lwx_gtk2ud_aui-2.8 -lwx_gtk2ud_xrc-2.8 -lwx_gtk2ud_qa-2.8 -lwx_gtk2ud_html-2.8 -lwx_gtk2ud_adv-2.8 -lwx_gtk2ud_core-2.8 -lwx_baseud_xml-2.8 -lwx_baseud_net-2.8 -lwx_baseud-2.8  -W1,--version-script
 STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
