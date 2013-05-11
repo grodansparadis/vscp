@@ -74,6 +74,8 @@
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <codeAssistance>
       </codeAssistance>
@@ -82,7 +84,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>vscpd</executablePath>
           <cTool>
             <incDir>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>

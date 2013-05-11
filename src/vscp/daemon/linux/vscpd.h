@@ -43,6 +43,7 @@
 //
 
 class VSCPApp {
+    
 public:
     VSCPApp();
 
@@ -67,4 +68,3 @@ private:
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
 #endif // !defined(AFX_VSCPD_H__3D1CDB8C_8027_46D5_9284_67750BEA4B7E__INCLUDED_)
-//

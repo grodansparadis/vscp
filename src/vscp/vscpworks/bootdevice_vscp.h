@@ -152,7 +152,7 @@ public:
 	 send  VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
 	 check response VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
 	*/
-	bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel2(  void  );
+	bool sendVSCPCommandSeqenceLevel2(  void  );
 
     /*!
 		Check for response from nodes (Level I).

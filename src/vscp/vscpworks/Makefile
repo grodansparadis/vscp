@@ -10,10 +10,10 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = ../../..
 top_wxbuilddir = @top_wxbuilddir@
 CXX = g++
-CXXFLAGS = -g -O2 
-CPPFLAGS =  -I/usr/local/lib/wx/include/gtk2-unicode-debug-2.8 -I/usr/local/include/wx-2.8 -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXDEBUG__ -D__WXGTK__ -DwxUSE_GUI=1 
+CXXFLAGS = -g -O2  
+CPPFLAGS =   -I/usr/local/lib/wx/include/gtk2-unicode-debug-2.8 -I/usr/local/include/wx-2.8 -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXDEBUG__ -D__WXGTK__ -DwxUSE_GUI=1 
 LDFLAGS = 
-EXTRALIBS =  -lwebsockets -lz -lm -lcrypto -lpthread -ldl -lcurses  -L/usr/local/lib -pthread   -lwx_gtk2ud_richtext-2.8 -lwx_gtk2ud_aui-2.8 -lwx_gtk2ud_xrc-2.8 -lwx_gtk2ud_qa-2.8 -lwx_gtk2ud_html-2.8 -lwx_gtk2ud_adv-2.8 -lwx_gtk2ud_core-2.8 -lwx_baseud_xml-2.8 -lwx_baseud_net-2.8 -lwx_baseud-2.8  -W1,--version-script
+EXTRALIBS =  -lwebsockets -lz -lm -lcrypto -lpthread -ldl -lcurses  -L/usr/local/lib -pthread   -lwx_gtk2ud_richtext-2.8 -lwx_gtk2ud_aui-2.8 -lwx_gtk2ud_xrc-2.8 -lwx_gtk2ud_qa-2.8 -lwx_gtk2ud_html-2.8 -lwx_gtk2ud_adv-2.8 -lwx_gtk2ud_core-2.8 -lwx_baseud_xml-2.8 -lwx_baseud_net-2.8 -lwx_baseud-2.8  
 STRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
@@ -34,7 +34,7 @@ WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPWORKS_OBJECTS =  \
-        vscpworks.o dlgvscpmsg.o frmmain.o frmvscpsession.o dlgnewvscpsession.o dlgconfiguration.o dlgvscpinterfacesettings.o dlgvscpfilter.o vscpbootloader.o dlgvscptrmit.o frmdeviceconfig.o frmscanfordevices.o dlgselectdaemoninterface.o frmmdfeditor.o dlgabout.o ../common/canalsuperwrapper.o ../../common/crc.o ../common/dllwrapper.o ../common/guid.o threadvscpwork.o ../common/vscphelper.o ../common/vscptcpif.o ../common/mdf.o vscptxobj.o gridtable.o dialogeditlevelidmrow.o dialogsetfiltermask.o dialogabstractionedit.o devicebootloaderwizard.o bootdevice.o bootdevice_pic1.o bootdevice_vscp.o merlin.o $(RESOURCEOBJECT)
+        vscpworks.o dlgvscpmsg.o frmmain.o frmvscpsession.o dlgnewvscpsession.o dlgconfiguration.o dlgvscpinterfacesettings.o dlgvscpfilter.o vscpbootloader.o dlgvscptrmit.o frmdeviceconfig.o frmscanfordevices.o dlgselectdaemoninterface.o frmmdfeditor.o dlgabout.o ../common/canalsuperwrapper.o ../../common/crc.o ../common/dllwrapper.o ../common/guid.o threadvscpwork.o ../common/vscphelper.o ../common/vscptcpif.o ../common/mdf.o vscptxobj.o gridtable.o dialogeditlevelidmrow.o dialogsetfiltermask.o dialogabstractionedit.o devicebootloaderwizard.o bootdevice.o bootdevice_pic1.o bootdevice_vscp.o merlin.o frmdaemondecisionmartrixeditor.o frmdaemonvariableeditor.o  frmsimpleuserinterfacegenerator.o readregister.o $(RESOURCEOBJECT)
 
 
 
