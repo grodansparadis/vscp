@@ -158,7 +158,7 @@ if sh -c "$WX_CONFIG_WITH_ARGS --basename" 2>/dev/null | grep wx_gtk2 >/dev/null
     AC_MSG_RESULT([Found; building GUI apps])
 fi
 
-EXTRALIBS="${EXTRALIBS} ${LIBS} -W1,--version-script"
+EXTRALIBS="${EXTRALIBS} ${LIBS}" 
 
 
 dnl 

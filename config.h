@@ -291,7 +291,7 @@
 
 /* Define to 1 if `lex' declares `yytext' as a `char *' by default, not a
    `char[]'. */
-/* #undef YYTEXT_POINTER */
+#define YYTEXT_POINTER 1
 
 /* Define like PROTOTYPES; this can be used by system headers. */
 /* #undef __PROTOTYPES */
