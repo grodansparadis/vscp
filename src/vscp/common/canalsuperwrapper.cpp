@@ -4063,6 +4063,7 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 {
 	bool rv = true;
 	uint16_t savepage;
+        uint8_t year;
 
 	// Check pointers
 	if ( NULL == abstraction) return false;
@@ -4167,7 +4168,7 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 
 	}
 
-	uint8_t year = ( p[ 0 ] << 8 ) + p[ 1 ];
+	year = ( p[ 0 ] << 8 ) + p[ 1 ];
 	pval->SetYear( year );
 	pval->SetMonth( wxDateTime::Month( p[ 2 ] ) );
 	pval->SetDay( p[ 3 ] );
