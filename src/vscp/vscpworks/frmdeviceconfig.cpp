@@ -5,7 +5,8 @@
 //  Modified by: 
 //  Created:     Sun 04 May 2009 17:28:12 CEST
 //  RCS-ID:      
-//  Copyright:   (C) 2007-2013 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+//  Copyright:   (C) 2007-2013 Ake Hedman, 
+//              Grodans Paradis AB, <akhe@grodansparadis.com>
 //  Licence:     
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -78,6 +79,7 @@
 #include "dlgabout.h"
 #include "dialogeditlevelidmrow.h"
 #include "dialogabstractionedit.h"
+#include "readregister.h"
 #include "frmdeviceconfig.h"
 
 extern appConfiguration g_Config;
@@ -7329,7 +7331,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                 iter != m_mdf.m_dmInfo.m_list_action.end(); ++iter) {
             CMDF_Action *action = *iter;
             int idx = dlg.m_comboAction->Append(action->m_strName);
-            dlg.m_comboAction->SetClientData(idx, (void *) action->m_nCode);
+            dlg.m_comboAction->SetClientData(idx, (void *) action->m_nCode); // Yes - ponter conversion
             if (reg == action->m_nCode) {
                 dlg.m_comboAction->SetSelection(idx);
             }

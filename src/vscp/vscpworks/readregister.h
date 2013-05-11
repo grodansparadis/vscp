@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     06/01/2009 17:24:28
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright:   (C) 2007-2013 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -13,7 +14,8 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-// Copyright (C) 2000-20079 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright (C) 2000-20013
+// Ake Hedman, eurosource, <ake@eurosource.se>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -78,21 +80,21 @@
  * ReadRegiister class declaration
  */
 
-class ReadRegiister: public wxDialog
+class ReadRegister: public wxDialog
 {    
   DECLARE_DYNAMIC_CLASS( ReadRegiister )
   DECLARE_EVENT_TABLE()
 
 public:
   /// Constructors
-  ReadRegiister();
-  ReadRegiister( wxWindow* parent, wxWindowID id = SYMBOL_READREGIISTER_IDNAME, const wxString& caption = SYMBOL_READREGIISTER_TITLE, const wxPoint& pos = SYMBOL_READREGIISTER_POSITION, const wxSize& size = SYMBOL_READREGIISTER_SIZE, long style = SYMBOL_READREGIISTER_STYLE );
+  ReadRegister();
+  ReadRegister( wxWindow* parent, wxWindowID id = SYMBOL_READREGIISTER_IDNAME, const wxString& caption = SYMBOL_READREGIISTER_TITLE, const wxPoint& pos = SYMBOL_READREGIISTER_POSITION, const wxSize& size = SYMBOL_READREGIISTER_SIZE, long style = SYMBOL_READREGIISTER_STYLE );
 
   /// Creation
   bool Create( wxWindow* parent, wxWindowID id = SYMBOL_READREGIISTER_IDNAME, const wxString& caption = SYMBOL_READREGIISTER_TITLE, const wxPoint& pos = SYMBOL_READREGIISTER_POSITION, const wxSize& size = SYMBOL_READREGIISTER_SIZE, long style = SYMBOL_READREGIISTER_STYLE );
 
   /// Destructor
-  ~ReadRegiister();
+  ~ReadRegister();
 
   /// Initialises member variables
   void Init();

@@ -34,7 +34,7 @@ WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPWORKS_OBJECTS =  \
-        vscpworks.o dlgvscpmsg.o frmmain.o frmvscpsession.o dlgnewvscpsession.o dlgconfiguration.o dlgvscpinterfacesettings.o dlgvscpfilter.o vscpbootloader.o dlgvscptrmit.o frmdeviceconfig.o frmscanfordevices.o dlgselectdaemoninterface.o frmmdfeditor.o dlgabout.o ../common/canalsuperwrapper.o ../../common/crc.o ../common/dllwrapper.o ../common/guid.o threadvscpwork.o ../common/vscphelper.o ../common/vscptcpif.o ../common/mdf.o vscptxobj.o gridtable.o dialogeditlevelidmrow.o dialogsetfiltermask.o dialogabstractionedit.o devicebootloaderwizard.o bootdevice.o bootdevice_pic1.o bootdevice_vscp.o merlin.o frmdaemondecisionmartrixeditor.o frmdaemonvariableeditor.o  frmsimpleuserinterfacegenerator.o readregister.o $(RESOURCEOBJECT)
+        vscpworks.o dlgvscpmsg.o frmmain.o frmvscpsession.o dlgnewvscpsession.o dlgconfiguration.o dlgvscpinterfacesettings.o dlgvscpfilter.o vscpbootloader.o dlgvscptrmit.o frmdeviceconfig.o frmscanfordevices.o dlgselectdaemoninterface.o frmmdfeditor.o dlgabout.o ../common/canalsuperwrapper.o ../../common/crc.o ../common/dllwrapper.o ../common/guid.o threadvscpwork.o ../common/vscphelper.o ../common/vscptcpif.o ../common/mdf.o vscptxobj.o gridtable.o dialogeditlevelidmrow.o dialogsetfiltermask.o dialogabstractionedit.o devicebootloaderwizard.o bootdevice.o bootdevice_pic1.o bootdevice_vscp.o merlin.o frmdaemondecisionmartrixeditor.o frmdaemonvariableeditor.o  frmsimpleuserinterfacegenerator.o ../common/register.o $(RESOURCEOBJECT)
 
 
 

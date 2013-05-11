@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     21/12/2007 17:15:57
 // RCS-ID:      
-// Copyright:   (C) 2007-2013 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2013 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -56,7 +57,7 @@
 ////@begin includes
 ////@end includes
 
-#include "ReadRegister.h"
+#include "readregister.h"
 
 ////@begin XPM images
 /* XPM */
@@ -355,62 +356,62 @@ static const char *fatbee_v2_xpm[] = {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ReadRegiister type definition
+// ReadRegister type definition
 //
 
-IMPLEMENT_DYNAMIC_CLASS(ReadRegiister, wxDialog)
+IMPLEMENT_DYNAMIC_CLASS(ReadRegister, wxDialog)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ReadRegiister event table definition
+// ReadRegister event table definition
 //
 
-BEGIN_EVENT_TABLE(ReadRegiister, wxDialog)
+BEGIN_EVENT_TABLE(ReadRegister, wxDialog)
 
-////@begin ReadRegiister event table entries
-////@end ReadRegiister event table entries
+////@begin ReadRegister event table entries
+////@end ReadRegister event table entries
 
 END_EVENT_TABLE()
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ReadRegiister constructors
+// ReadRegister constructors
 //
 
-ReadRegiister::ReadRegiister() {
+ReadRegister::ReadRegister() {
     Init();
 }
 
-ReadRegiister::ReadRegiister(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style) {
+ReadRegister::ReadRegister(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style) {
     Init();
     Create(parent, id, caption, pos, size, style);
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ReadRegiister creator
+// ReadRegister creator
 //
 
-bool ReadRegiister::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style) {
-    ////@begin ReadRegiister creation
+bool ReadRegister::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style) {
+    ////@begin ReadRegister creation
     SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create(parent, id, caption, pos, size, style);
 
     CreateControls();
     SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
     Centre();
-    ////@end ReadRegiister creation
+    ////@end ReadRegister creation
     return true;
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// ReadRegiister destructor
+// ReadRegister destructor
 //
 
-ReadRegiister::~ReadRegiister() {
-    ////@begin ReadRegiister destruction
-    ////@end ReadRegiister destruction
+ReadRegister::~ReadRegister() {
+    ////@begin ReadRegister destruction
+    ////@end ReadRegister destruction
 }
 
 
@@ -418,19 +419,19 @@ ReadRegiister::~ReadRegiister() {
 // Member initialisation
 //
 
-void ReadRegiister::Init() {
-    ////@begin ReadRegiister member initialisation
-    ////@end ReadRegiister member initialisation
+void ReadRegister::Init() {
+    ////@begin ReadRegister member initialisation
+    ////@end ReadRegister member initialisation
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for ReadRegiister
+// Control creation for ReadRegister
 //
 
-void ReadRegiister::CreateControls() {
-    ////@begin ReadRegiister content construction
-    ReadRegiister* itemDialog1 = this;
+void ReadRegister::CreateControls() {
+    ////@begin ReadRegister content construction
+    ReadRegister* itemDialog1 = this;
 
     wxPanel* itemPanel2 = new wxPanel;
     itemPanel2->Create(itemDialog1, ID_PANEL37, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | wxTAB_TRAVERSAL);
@@ -442,7 +443,7 @@ void ReadRegiister::CreateControls() {
     itemStaticText4->Create(itemPanel2, wxID_STATIC, _("Static text"), wxDefaultPosition, wxDefaultSize, 0);
     itemBoxSizer3->Add(itemStaticText4, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
 
-    ////@end ReadRegiister content construction
+    ////@end ReadRegister content construction
 }
 
 
@@ -450,7 +451,7 @@ void ReadRegiister::CreateControls() {
 // Should we show tooltips?
 //
 
-bool ReadRegiister::ShowToolTips() {
+bool ReadRegister::ShowToolTips() {
     return true;
 }
 
@@ -458,26 +459,26 @@ bool ReadRegiister::ShowToolTips() {
 // Get bitmap resources
 //
 
-wxBitmap ReadRegiister::GetBitmapResource(const wxString& name) {
+wxBitmap ReadRegister::GetBitmapResource(const wxString& name) {
     // Bitmap retrieval
-    ////@begin ReadRegiister bitmap retrieval
+    ////@begin ReadRegister bitmap retrieval
     wxUnusedVar(name);
     return wxNullBitmap;
-    ////@end ReadRegiister bitmap retrieval
+    ////@end ReadRegister bitmap retrieval
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Get icon resources
 //
 
-wxIcon ReadRegiister::GetIconResource(const wxString& name) {
+wxIcon ReadRegister::GetIconResource(const wxString& name) {
     // Icon retrieval
-    ////@begin ReadRegiister icon retrieval
+    ////@begin ReadRegister icon retrieval
     wxUnusedVar(name);
     if (name == _T("../../../docs/vscp/logo/fatbee_v2.ico")) {
         wxIcon icon(fatbee_v2_xpm);
         return icon;
     }
     return wxNullIcon;
-    ////@end ReadRegiister icon retrieval
+    ////@end ReadRegister icon retrieval
 }
