@@ -1,4 +1,4 @@
-// canallogger.cpp : Defines the initialization routines for the DLL.
+// vscpl2logger.cpp : Defines the initialization routines for the DLL.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -8,7 +8,7 @@
 // This file is part of the VSCP (http://www.vscp.org) 
 //
 // Copyright (C) 2000-2013 Ake Hedman, 
-//      eurosource, <akhe@eurosource.se>
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,28 +21,25 @@
 // Boston, MA 02111-1307, USA.
 //
 //
-// Linux
-// =====
-// device1 = logger,/tmp/canal_log,txt,/usr/local/lib/canallogger.so,64,64,1
-//
-// WIN32
-// =====
-// device1 = logger,c:\canal_log,txt,d:\winnr\system32\canallogger.dll,64,64,1
 
-#include "vscpl2logger.h"
 #include "stdio.h"
 #include "stdlib.h"
+#include "../common/log.h"
+#include "vscpl2logger.h"
 
+void _init () __attribute__ ((constructor));
+void _fini () __attribute__ ((destructor));
 
-void _init() __attribute__((constructor));
-void _fini() __attribute__((destructor));
-
-void _init() {
-    printf("initializing\n");
+void
+_init ()
+{
+  printf ("initializing\n");
 }
 
-void _fini() {
-    printf("finishing\n");
+void
+_fini ()
+{
+  printf ("finishing\n");
 }
 
 
@@ -54,36 +51,43 @@ void _fini() {
 ////////////////////////////////////////////////////////////////////////////
 // CLoggerdllApp construction
 
-CLoggerdllApp::CLoggerdllApp() {
-    m_instanceCounter = 0;
-    pthread_mutex_init(&m_objMutex, NULL);
+CLoggerdllApp::CLoggerdllApp ()
+{
 
-    // Init the driver array
-    for (int i = 0; i < CANAL_LOGGER_DRIVER_MAX_OPEN; i++) {
-        m_logArray[ i ] = NULL;
+  m_instanceCounter = 0;
+  pthread_mutex_init (&m_objMutex, NULL);
+
+  // Init the driver array
+  for (int i = 0; i < VSCP_LOGGER_DRIVER_MAX_OPEN; i++)
+    {
+      m_logArray[ i ] = NULL;
     }
 
-    UNLOCK_MUTEX(m_objMutex);
+  UNLOCK_MUTEX (m_objMutex);
 }
 
-CLoggerdllApp::~CLoggerdllApp() {
-    LOCK_MUTEX(m_objMutex);
+CLoggerdllApp::~CLoggerdllApp ()
+{
 
-    for (int i = 0; i < CANAL_LOGGER_DRIVER_MAX_OPEN; i++) {
+  LOCK_MUTEX (m_objMutex);
 
-        if (NULL == m_logArray[ i ]) {
+  for (int i = 0; i < VSCP_LOGGER_DRIVER_MAX_OPEN; i++)
+    {
 
-            CVSCPLog *pLog = getDriverObject(i);
-            if (NULL != pLog) {
-                pLog->close();
-                delete m_logArray[ i ];
-                m_logArray[ i ] = NULL;
-            }
+      if (NULL == m_logArray[ i ])
+{
+
+			CVSCPLog *pLog = getDriverObject(i);
+			if (NULL != pLog) {
+				pLog->close();
+				delete m_logArray[ i ];
+				m_logArray[ i ] = NULL;
+			}
         }
     }
 
-    UNLOCK_MUTEX(m_objMutex);
-    pthread_mutex_destroy(&m_objMutex);
+  UNLOCK_MUTEX (m_objMutex);
+  pthread_mutex_destroy (&m_objMutex);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -103,26 +107,30 @@ CLoggerdllApp theApp;
 // addDriverObject
 //
 
-long CLoggerdllApp::addDriverObject( CVSCPLog *plog )
+long
+CLoggerdllApp::addDriverObject (CVSCPLog *plog)
 {
-	long h = 0;
 
-	LOCK_MUTEX( m_objMutex );
-	for ( int i=0; i<CANAL_LOGGER_DRIVER_MAX_OPEN; i++ ) {
-	
-		if ( NULL == m_logArray[ i ] ) {
-		
-			m_logArray[ i ] = plog;	
-			h = i + 1681; 
-			break;
+  long h = 0;
 
-		}
+  LOCK_MUTEX (m_objMutex);
+  for (int i = 0; i < VSCP_LOGGER_DRIVER_MAX_OPEN; i++)
+    {
 
-	}
+      if (NULL == m_logArray[ i ])
+        {
 
-	UNLOCK_MUTEX( m_objMutex );
+          m_logArray[ i ] = plog;
+          h = i + 1681;
+          break;
 
-	return h;
+        }
+
+    }
+
+  UNLOCK_MUTEX (m_objMutex);
+
+  return h;
 }
 
 
@@ -130,14 +138,16 @@ long CLoggerdllApp::addDriverObject( CVSCPLog *plog )
 // getDriverObject
 //
 
-CVSCPLog * CLoggerdllApp::getDriverObject( long h )
+CVSCPLog *
+CLoggerdllApp::getDriverObject (long h)
 {
-	long idx = h - 1681;
 
-	// Check if valid handle
-	if ( idx < 0 ) return NULL;
-	if ( idx >= CANAL_LOGGER_DRIVER_MAX_OPEN ) return NULL;
-	return m_logArray[ idx ];
+  long idx = h - 1681;
+
+  // Check if valid handle
+  if (idx < 0) return NULL;
+  if (idx >= VSCP_LOGGER_DRIVER_MAX_OPEN) return NULL;
+  return m_logArray[ idx ];
 }
 
 
@@ -145,27 +155,30 @@ CVSCPLog * CLoggerdllApp::getDriverObject( long h )
 // removeDriverObject
 //
 
-void CLoggerdllApp::removeDriverObject( long h )
+void
+CLoggerdllApp::removeDriverObject (long h)
 {
-	long idx = h - 1681;
 
-	// Check if valid handle
-	if ( idx < 0 ) return;
-	if ( idx >= CANAL_LOGGER_DRIVER_MAX_OPEN ) return;
+  long idx = h - 1681;
 
-	LOCK_MUTEX( m_objMutex );
-	if ( NULL != m_logArray[ idx ] ) delete m_logArray[ idx ];
-	m_logArray[ idx ] = NULL;
-	UNLOCK_MUTEX( m_objMutex );
+  // Check if valid handle
+  if (idx < 0) return;
+  if (idx >= VSCP_LOGGER_DRIVER_MAX_OPEN) return;
+
+  LOCK_MUTEX (m_objMutex);
+  if (NULL != m_logArray[ idx ]) delete m_logArray[ idx ];
+  m_logArray[ idx ] = NULL;
+  UNLOCK_MUTEX (m_objMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // InitInstance
 
-BOOL CLoggerdllApp::InitInstance() 
+BOOL
+CLoggerdllApp::InitInstance ()
 {
-	m_instanceCounter++;
-	return TRUE;
+  m_instanceCounter++;
+  return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -176,31 +189,45 @@ BOOL CLoggerdllApp::InitInstance()
 // VSCPOpen
 //
 
-extern "C" long VSCPOpen(const char *pUsername,
-        const char *pPassword,
-        const char *pHost,
-        short port,
-        const char *pPrefix,
-        const char *pParameter,
-        unsigned long flags) {
-    long h = 0;
+extern "C" long
+VSCPOpen (const char *pUsername,
+          const char *pPassword,
+          const char *pHost,
+          short port,
+          const char *pPrefix,
+          const char *pParameter,
+          unsigned long flags)
+{
 
-    CVSCPLog *pdrvObj = new CVSCPLog();
-    if (NULL != pdrvObj) {
+  long h = 0;
 
-        if (pdrvObj->open(pUsername, pPassword, pHost, port, pPrefix, pParameter, flags)) {
+  CVSCPLog *pdrvObj = new CVSCPLog ();
+  if (NULL != pdrvObj)
+    {
 
-            if (!(h = theApp.addDriverObject(pdrvObj))) {
-                delete pdrvObj;
+      if (pdrvObj->open (pUsername,
+                         pPassword,
+                         pHost,
+                         port,
+                         pPrefix,
+                         pParameter,
+                         flags))
+        {
+
+          if (!(h = theApp.addDriverObject (pdrvObj)))
+            {
+              delete pdrvObj;
             }
 
-        } else {
-            delete pdrvObj;
+        }
+      else
+        {
+          delete pdrvObj;
         }
 
     }
 
-    return h;
+  return h;
 }
 
 
@@ -208,15 +235,17 @@ extern "C" long VSCPOpen(const char *pUsername,
 //  VSCPClose
 // 
 
-extern "C" int VSCPClose(long handle) {
-    int rv = 0;
+extern "C" int
+VSCPClose (long handle)
+{
+  int rv = 0;
 
-    CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
-    if (NULL == pdrvObj) return 0;
-    pdrvObj->close();
-    theApp.removeDriverObject(handle);
-    rv = 1;
-    return CANAL_ERROR_SUCCESS;
+  CVSCPLog *pdrvObj = theApp.getDriverObject (handle);
+  if (NULL == pdrvObj) return 0;
+  pdrvObj->close ();
+  theApp.removeDriverObject (handle);
+  rv = 1;
+  return CANAL_ERROR_SUCCESS;
 }
 
 
@@ -224,8 +253,10 @@ extern "C" int VSCPClose(long handle) {
 //  VSCPGetLevel
 // 
 
-extern "C" unsigned long VSCPGetLevel(void) {
-    return CANAL_LEVEL_USES_TCPIP;
+extern "C" unsigned long
+VSCPGetLevel (void)
+{
+  return CANAL_LEVEL_USES_TCPIP;
 }
 
 
@@ -233,8 +264,10 @@ extern "C" unsigned long VSCPGetLevel(void) {
 // VSCPGetDllVersion
 //
 
-extern "C" unsigned long VSCPGetDllVersion(void) {
-    return VSCP_DLL_VERSION;
+extern "C" unsigned long
+VSCPGetDllVersion (void)
+{
+  return VSCP_DLL_VERSION;
 }
 
 
@@ -242,8 +275,10 @@ extern "C" unsigned long VSCPGetDllVersion(void) {
 // VSCPGetVendorString
 //
 
-extern "C" const char * VSCPGetVendorString(void) {
-    return VSCP_DLL_VENDOR;
+extern "C" const char *
+VSCPGetVendorString (void)
+{
+  return VSCP_DLL_VENDOR;
 }
 
 
@@ -251,6 +286,8 @@ extern "C" const char * VSCPGetVendorString(void) {
 // VSCPGetDriverInfo
 //
 
-extern "C" const char * VSCPGetDriverInfo(void) {
-    return VSCP_LOGGER_DRIVERINFO;
+extern "C" const char *
+VSCPGetDriverInfo (void)
+{
+  return VSCP_LOGGER_DRIVERINFO;
 }

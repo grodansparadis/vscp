@@ -20,10 +20,7 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: log.h,v $                                       
-// $Date: 2005/10/14 16:49:49 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
+
 
 #if !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
 #define AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
@@ -60,9 +57,9 @@
 #include "../../../../../common/dllist.h"
 #include "../../../../common/vscptcpif.h"
 
-#define CANAL_DLL_LOGGER_OBJ_MUTEX	"___VSCP__DLL_L2LOGGER_OBJ_MUTEX____"
+#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LOGGER_OBJ_MUTEX____"
 
-#define CANAL_LOG_LIST_MAX_MSG		2048
+#define VSCP_LOG_LIST_MAX_MSG		2048
 
 // Flags
 #define LOG_FILE_OVERWRITE      1L  // Overwrite
@@ -87,33 +84,36 @@ public:
 
 
     /*!
-           Filter message
+        Filter message
 
-            @param pEvent Pointer to VSCP event
-            @return True if message is accepted false if rejected
+        @param pEvent Pointer to VSCP event
+        @return True if message is accepted false if rejected
      */
     bool doFilter(vscpEvent *pEvent);
 
 
     /*!
-            Set Filter
+        Set Filter
      */
     void setFilter(vscpEvent *pFilter);
 
 
     /*!
-            Set Mask
+        Set Mask
      */
     void setMask(vscpEvent *pMask);
 
 
     /*! 
-            Open/create the logfile
+        Open/create the logfile
 
-            @param Configuration string
-            @param flags 	bit 1 = 0 Append, bit 1 = 1 Rewrite
-        bit 2,3 Format: 00 - Standard. 01 - VSCP works receive format.
-            @return True on success.
+        @param Configuration string
+        @param flags 	
+                bit 1 = 0 Append, bit 
+                        1 = 1 Rewrite
+                bit 2,3 Format: 00 - Standard. 
+                                01 - VSCP works receive format.
+        @return True on success.
      */
     bool open(const char *pUsername,
             const char *pPassword,
@@ -124,14 +124,14 @@ public:
             unsigned long flags = 0);
 
     /*!
-            Flush and close the log file
+        Flush and close the log file
      */
     void close(void);
 
     /*!
-            Write an event out to the file
-            \param pEvent Pointer to VSCP event
-            \return True on success.
+        Write an event out to the file
+        \param pEvent Pointer to VSCP event
+        \return True on success.
      */
     bool writeEvent(vscpEvent *pEvent);
 
@@ -180,7 +180,7 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//						       Worker Tread
+//				Worker Tread
 ///////////////////////////////////////////////////////////////////////////////
 
 class CVSCPLogWrkTread : public wxThread {
@@ -193,13 +193,13 @@ public:
     ~CVSCPLogWrkTread();
 
     /*!
-            Thread code entry point
+        Thread code entry point
      */
     virtual void *Entry();
 
     /*! 
-            called when the thread exits - whether it terminates normally or is
-            stopped with Delete() (but not when it is Kill()ed!)
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
      */
     virtual void OnExit();
 

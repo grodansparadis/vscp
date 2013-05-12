@@ -1,4 +1,4 @@
-// canallogger.h : main header file for the canallogger.dll
+// vscp2logger.h : main header file for the canallogger.dll
 // Linux version
 //
 // This program is free software; you can redistribute it and/or
@@ -8,8 +8,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, 
-// eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2013 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -28,13 +28,21 @@
 #include "../common/log.h"
 
 // This is the version info for this DLL - Change to your own value
-#define VSCP_DLL_VERSION		1
+#define VSCP_DLL_VERSION        0x000001
 
 // This is the vendor string - Change to your own value
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
 
+// Driver information.
+#define VSCP_LOGGER_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
+"<!-- Version 0.0.1    2013-05-11   -->" \
+"<config level=\"1|2\"blocking\"true|false\" description=\"bla bla bla bla\">" \
+"   <item pos=\"0\" type=\"string\" description\"Serial number for Tellstick\"/>" \
+"   <item pos=\"1\" type=\"path\" description\"Path to configuration file\"/>" \
+"</config>"
+
 // Max number of open connections
-#define VSCP_LOGGER_DRIVER_MAX_OPEN	256
+#define VSCP_LOGGER_DRIVER_MAX_OPEN	    256
 
 /////////////////////////////////////////////////////////////////////////////
 // CLoggerdllApp
@@ -51,34 +59,34 @@ public:
     ~CLoggerdllApp();
 
     /*!
-                    Add a driver object
+        Add a driver object
 
-                    @parm plog Object to add
-                    @return handle or 0 for error
+        @parm plog Object to add
+        @return handle or 0 for error
      */
     long addDriverObject(CVSCPLog *plog);
 
     /*!
-            Get a driver object from its handle
+        Get a driver object from its handle
 
-            @param handle for object
-            @return pointer to object or NULL if invalid
-                            handle.
+        @param handle for object
+        @return pointer to object or NULL if invalid
+                handle.
      */
     CVSCPLog *getDriverObject(long h);
 
     /*!
-            Remove a driver object
+        Remove a driver object
 
-            @parm handle for object.
+        @parm handle for object.
      */
     void removeDriverObject(long h);
 
     /*!
-            The log file object
-            This is the array with driver objects (max 256 objects
+        The log file object
+        This is the array with driver objects (max 256 objects)
      */
-    CVSCPLog *m_logArray[ CANAL_LOGGER_DRIVER_MAX_OPEN ];
+    CVSCPLog *m_logArray[ VSCP_LOGGER_DRIVER_MAX_OPEN ];
 
     /// Mutex for open/close
     pthread_mutex_t m_objMutex;

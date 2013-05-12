@@ -10,12 +10,12 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@ 
-CPPFLAGS = @CPPFLAGS@ 
+CXXFLAGS = @CXXFLAGS@ -D__LINUX__ -fPIC
+CPPFLAGS = @CPPFLAGS@
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
-DLFLAGS = -g -shared -fPIC
+DLFLAGS = -g -shared -fPIC -Wl,--no-undefined
 TRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
@@ -35,8 +35,7 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL2LOGGER_OBJECTS =  vscpl2logger.o ../common/log.o ../../../../common/dllist.o ../../../common/devicelist.o
-PROJOBJS        =       ../../../../common/dllist.o ../../../common/devicelist.o
+VSCPL2LOGGER_OBJECTS =  vscpl2logger.o ../common/log.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 
 ### Targets: ###
@@ -54,16 +53,18 @@ clean:
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o
-	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
+	rm -f ../../../../../common/*.o
 	rm -f vscpl2logger.so
 	rm -f test
+	rm -rf ../common/*~
+	rm -rf *~
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
-#vscpl2logger: $(VSCPL2LOGGER_OBJECTS)
-#	$(CXX) -o $@ $< $(VSCPL2LOGGER_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+#can232drv: $(CANALLOGGER_OBJECTS)
+#	$(CXX) -o $@ $< $(CANALLOGGER_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 	
 
 test:  test.o $(PROJOBJS)

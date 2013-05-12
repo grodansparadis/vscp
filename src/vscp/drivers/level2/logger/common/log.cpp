@@ -5,7 +5,7 @@
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
 // 
-// This file is part of the VSCP (http://www.vscp.org) 
+// This file is part of the VSCP Project (http://www.vscp.org) 
 //
 // Copyright (C) 2000-2013 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
@@ -62,20 +62,22 @@ WX_DEFINE_LIST(VSCPEVENTLIST);
 // CVSCPLog
 //
 
-CVSCPLog::CVSCPLog() {
-    m_bQuit = false;
-    m_pLogStream = NULL;
-    m_pthreadWork = NULL;
-    ::wxInitialize();
+CVSCPLog::CVSCPLog()
+{
+	m_bQuit = false;
+	m_pLogStream = NULL;
+	m_pthreadWork = NULL;
+	::wxInitialize();
 }
 
 //////////////////////////////////////////////////////////////////////
 // ~CVSCPLog
 //
 
-CVSCPLog::~CVSCPLog() {
-    close();
-    ::wxUninitialize();
+CVSCPLog::~CVSCPLog()
+{
+	close();
+	::wxUninitialize();
 }
 
 
@@ -83,7 +85,7 @@ CVSCPLog::~CVSCPLog() {
 // open
 //
 // filename
-//		the name of the log file
+//      the name of the log file
 //
 // flags 
 //      bit 1 = 0 Append.
@@ -92,44 +94,47 @@ CVSCPLog::~CVSCPLog() {
 //      bit 2 - 1 VSCP Works XML format.
 //
 
-bool CVSCPLog::open(const char *pUsername,
-        const char *pPassword,
-        const char *pHost,
-        short port,
-        const char *pPrefix,
-        const char *pConfig,
-        unsigned long flags) {
-    bool rv = true;
-    m_flags = flags;
-    wxString wxstr = pConfig;
+bool
+CVSCPLog::open(const char *pUsername,
+	const char *pPassword,
+	const char *pHost,
+	short port,
+	const char *pPrefix,
+	const char *pConfig,
+	unsigned long flags)
+{
 
-    m_username = pUsername;
-    m_password = pPassword;
-    m_host = pHost;
-    m_port = port;
-    m_prefix = pPrefix;
+	bool rv = true;
+	m_flags = flags;
+	wxString wxstr = wxString::FromAscii(pConfig);
 
-    // Parse the configuration string. It should
-    // have the following form
-    // username;password;host;prefix;port;filename
-    wxStringTokenizer tkz(pConfig, ";\n");
+	m_username = wxString::FromAscii(pUsername);
+	m_password = wxString::FromAscii(pPassword);
+	m_host = wxString::FromAscii(pHost);
+	m_port = port;
+	m_prefix = wxString::FromAscii(pPrefix);
 
-    // Filename
-    if (tkz.HasMoreTokens()) {
-        m_path = tkz.GetNextToken();
-    }
+	// Parse the configuration string. It should
+	// have the following form
+	// username;password;host;prefix;port;filename
+	wxStringTokenizer tkz( wxString::FromAscii(pConfig), _(";\n"));
 
-    // start the workerthread
-    m_pthreadWork = new CVSCPLogWrkTread();
-    if (NULL != m_pthreadWork) {
-        m_pthreadWork->m_pLog = this;
-        m_pthreadWork->Create();
-        m_pthreadWork->Run();
-    } else {
-        rv = false;
-    }
+	// Filename
+	if (tkz.HasMoreTokens()) {
+		m_path = tkz.GetNextToken();
+	}
 
-    return rv;
+	// start the workerthread
+	m_pthreadWork = new CVSCPLogWrkTread();
+	if (NULL != m_pthreadWork) {
+		m_pthreadWork->m_pLog = this;
+		m_pthreadWork->Create();
+		m_pthreadWork->Run();
+	} else {
+		rv = false;
+	}
+
+	return rv;
 }
 
 
@@ -137,22 +142,25 @@ bool CVSCPLog::open(const char *pUsername,
 // close
 //
 
-void CVSCPLog::close(void) {
-    if (m_flags | LOG_FILE_VSCP_WORKS) {
-        m_pLogStream->Write("</vscprxdata>\n", strlen("</vscprxdata>\n"));
-    }
+void
+CVSCPLog::close(void)
+{
 
-    // Close the log-file
-    m_file.Close();
+	if (m_flags | LOG_FILE_VSCP_WORKS) {
+		m_pLogStream->Write("</vscprxdata>\n", strlen("</vscprxdata>\n"));
+	}
 
-    // Do nothing if already terminated
-    if (m_bQuit) return;
+	// Close the log-file
+	m_file.Close();
 
-    m_bQuit = true; // terminate the thread
-    wxSleep(1); // Give the thread some time to terminate
+	// Do nothing if already terminated
+	if (m_bQuit) return;
 
-    // Delete the stream object
-    if (NULL != m_pLogStream) delete m_pLogStream;
+	m_bQuit = true; // terminate the thread
+	wxSleep(1); // Give the thread some time to terminate
+
+	// Delete the stream object
+	if (NULL != m_pLogStream) delete m_pLogStream;
 
 }
 
@@ -161,9 +169,11 @@ void CVSCPLog::close(void) {
 // doFilter
 //
 
-bool CVSCPLog::doFilter(vscpEvent *pEvent) {
+bool
+CVSCPLog::doFilter(vscpEvent *pEvent)
+{
 
-    return true;
+	return true;
 }
 
 
@@ -171,8 +181,9 @@ bool CVSCPLog::doFilter(vscpEvent *pEvent) {
 // setFilter
 //
 
-void CVSCPLog::setFilter(vscpEvent *pFilter) {
-
+void
+CVSCPLog::setFilter(vscpEvent *pFilter)
+{
 }
 
 
@@ -180,8 +191,9 @@ void CVSCPLog::setFilter(vscpEvent *pFilter) {
 // setMask
 //
 
-void CVSCPLog::setMask(vscpEvent *pMask) {
-
+void
+CVSCPLog::setMask(vscpEvent *pMask)
+{
 }
 
 
@@ -189,48 +201,51 @@ void CVSCPLog::setMask(vscpEvent *pMask) {
 // openFile
 //
 
-bool CVSCPLog::openFile(void) {
-    if (m_flags & LOG_FILE_OVERWRITE) {
-        if (m_file.Open(m_path, wxFile::write)) {
-            m_pLogStream = new wxFileOutputStream(m_file);
-            if (NULL != m_pLogStream) {
-                if (m_pLogStream->IsOk()) {
-                    if (m_flags & LOG_FILE_VSCP_WORKS) {
-                        m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-                                strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
-                        // RX data start
-                        m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
-                        return true;
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-    } else {
-        if (m_file.Open(m_path, wxFile::write_append)) {
-            m_pLogStream = new wxFileOutputStream(m_file);
-            if (NULL != m_pLogStream) {
-                if (m_pLogStream->IsOk()) {
-                    if (m_flags & LOG_FILE_VSCP_WORKS) {
-                        m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-                                strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
-                        // RX data start
-                        m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
-                        return true;
-                    } else {
-                        return true;
-                    }
-                } else {
-                    return false;
-                }
-            }
-        }
-    }
+bool
+CVSCPLog::openFile(void)
+{
 
-    return false;
+	if (m_flags & LOG_FILE_OVERWRITE) {
+		if (m_file.Open(m_path, wxFile::write)) {
+			m_pLogStream = new wxFileOutputStream(m_file);
+			if (NULL != m_pLogStream) {
+				if (m_pLogStream->IsOk()) {
+					if (m_flags & LOG_FILE_VSCP_WORKS) {
+						m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+							strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
+						// RX data start
+						m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
+						return true;
+					} else {
+						return true;
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+	} else {
+		if (m_file.Open(m_path, wxFile::write_append)) {
+			m_pLogStream = new wxFileOutputStream(m_file);
+			if (NULL != m_pLogStream) {
+				if (m_pLogStream->IsOk()) {
+					if (m_flags & LOG_FILE_VSCP_WORKS) {
+						m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+							strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
+						// RX data start
+						m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
+						return true;
+					} else {
+						return true;
+					}
+				} else {
+					return false;
+				}
+			}
+		}
+	}
+
+	return false;
 }
 
 
@@ -238,103 +253,106 @@ bool CVSCPLog::openFile(void) {
 // writeEvent
 //
 
-bool CVSCPLog::writeEvent(vscpEvent *pEvent) {
-    if (m_flags & LOG_FILE_VSCP_WORKS) {
+bool
+CVSCPLog::writeEvent(vscpEvent *pEvent)
+{
 
-        wxString str;
+	if (m_flags & LOG_FILE_VSCP_WORKS) {
 
-        // VSCP Works log format
+		wxString str;
 
-        // Event
-        m_pLogStream->Write("<event>\n", strlen("<event>\n"));
-        m_pLogStream->Write("rx", strlen("rx"));
-        m_pLogStream->Write("</dir>\n", strlen("</dir>\n"));
+		// VSCP Works log format
 
-        m_pLogStream->Write("<time>", strlen("<time>"));
-        str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime();
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-        m_pLogStream->Write("</time>\n", strlen("</time>\n"));
+		// Event
+		m_pLogStream->Write("<event>\n", strlen("<event>\n"));
+		m_pLogStream->Write("rx", strlen("rx"));
+		m_pLogStream->Write("</dir>\n", strlen("</dir>\n"));
 
-        m_pLogStream->Write("<head>", strlen("<head>"));
-        str.Printf(_("%d"), pEvent->head);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-        m_pLogStream->Write("</head>\n", strlen("</head>\n"));
+		m_pLogStream->Write("<time>", strlen("<time>"));
+		str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime();
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write("</time>\n", strlen("</time>\n"));
 
-        m_pLogStream->Write("<class>", strlen("<class>"));
-        str.Printf(_("%d"), pEvent->vscp_class);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-        m_pLogStream->Write("</class>\n", strlen("</class>\n"));
+		m_pLogStream->Write("<head>", strlen("<head>"));
+		str.Printf(_("%d"), pEvent->head);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write("</head>\n", strlen("</head>\n"));
 
-        m_pLogStream->Write("<type>", strlen("<type>"));
-        str.Printf(_("%d"), pEvent->vscp_type);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-        m_pLogStream->Write("</type>\n", strlen("</type>\n"));
+		m_pLogStream->Write("<class>", strlen("<class>"));
+		str.Printf(_("%d"), pEvent->vscp_class);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write("</class>\n", strlen("</class>\n"));
 
-        m_pLogStream->Write("<guid>", strlen("<guid>"));
-        writeGuidToString(pEvent, str);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-        m_pLogStream->Write("</guid>\n", strlen("</guid>\n"));
+		m_pLogStream->Write("<type>", strlen("<type>"));
+		str.Printf(_("%d"), pEvent->vscp_type);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write("</type>\n", strlen("</type>\n"));
 
-        m_pLogStream->Write("<sizedata>", strlen("<sizedata>")); // Not used by read routine	
-        str.Printf(_("%d"), pEvent->sizeData);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-        m_pLogStream->Write("</sizedata>\n", strlen("</sizedata>\n"));
+		m_pLogStream->Write("<guid>", strlen("<guid>"));
+		writeGuidToString(pEvent, str);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write("</guid>\n", strlen("</guid>\n"));
 
-        if (0 != pEvent->sizeData) {
-            m_pLogStream->Write("<data>", strlen("<data>"));
-            writeVscpDataToString(pEvent, str);
-            m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-            m_pLogStream->Write("</data>\n", strlen("</data>\n"));
-        }
+		m_pLogStream->Write("<sizedata>", strlen("<sizedata>")); // Not used by read routine	
+		str.Printf(_("%d"), pEvent->sizeData);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write("</sizedata>\n", strlen("</sizedata>\n"));
 
-        m_pLogStream->Write("<timestamp>", strlen("<timestamp>"));
-        str.Printf(_("%lu"), pEvent->timestamp);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-        m_pLogStream->Write("</timestamp>\n", strlen("</timestamp>\n"));
+		if (0 != pEvent->sizeData) {
+			m_pLogStream->Write("<data>", strlen("<data>"));
+			writeVscpDataToString(pEvent, str);
+			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+			m_pLogStream->Write("</data>\n", strlen("</data>\n"));
+		}
 
-        m_pLogStream->Write("<note>", strlen("<note>"));
-        m_pLogStream->Write("</note>\n", strlen("</note>\n"));
+		m_pLogStream->Write("<timestamp>", strlen("<timestamp>"));
+		str.Printf(_("%lu"), pEvent->timestamp);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write("</timestamp>\n", strlen("</timestamp>\n"));
 
-        m_pLogStream->Write("</event>\n", strlen("</event>\n"));
+		m_pLogStream->Write("<note>", strlen("<note>"));
+		m_pLogStream->Write("</note>\n", strlen("</note>\n"));
 
-    } else {
-        // Standard log format
-        wxString str;
+		m_pLogStream->Write("</event>\n", strlen("</event>\n"));
 
-        str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime() + _(": ");
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+	} else {
+		// Standard log format
+		wxString str;
 
-        str.Printf(_("head=%d "), pEvent->head);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime() + _(": ");
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-        str.Printf(_("class=%d "), pEvent->vscp_class);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		str.Printf(_("head=%d "), pEvent->head);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-        str.Printf(_("type=%d "), pEvent->vscp_type);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		str.Printf(_("class=%d "), pEvent->vscp_class);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-        str.Printf(_("GUID="), pEvent->vscp_type);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		str.Printf(_("type=%d "), pEvent->vscp_type);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-        writeGuidToString(pEvent, str);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		str.Printf(_("GUID="), pEvent->vscp_type);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-        str.Printf(_("datasize=%d "), pEvent->sizeData);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		writeGuidToString(pEvent, str);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-        if (0 != pEvent->sizeData) {
-            str.Printf(_("data="), pEvent->vscp_type);
-            m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-            writeVscpDataToString(pEvent, str);
-            m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-        }
+		str.Printf(_("datasize=%d "), pEvent->sizeData);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-        str.Printf(_("Timestamp=%lu\r\n"), pEvent->timestamp);
-        m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		if (0 != pEvent->sizeData) {
+			str.Printf(_("data="), pEvent->vscp_type);
+			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+			writeVscpDataToString(pEvent, str);
+			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		}
 
-    }
+		str.Printf(_("Timestamp=%lu\r\n"), pEvent->timestamp);
+		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-    return true;
+	}
+
+	return true;
 }
 
 
@@ -344,12 +362,13 @@ bool CVSCPLog::writeEvent(vscpEvent *pEvent) {
 //                           Workerthread
 //////////////////////////////////////////////////////////////////////
 
-CVSCPLogWrkTread::CVSCPLogWrkTread() {
-    m_pLog = NULL;
+CVSCPLogWrkTread::CVSCPLogWrkTread()
+{
+	m_pLog = NULL;
 }
 
-CVSCPLogWrkTread::~CVSCPLogWrkTread() {
-
+CVSCPLogWrkTread::~CVSCPLogWrkTread()
+{
 }
 
 
@@ -357,104 +376,118 @@ CVSCPLogWrkTread::~CVSCPLogWrkTread() {
 // Entry
 //
 
-void *CVSCPLogWrkTread::Entry() {
-    // Check pointers
-    if (NULL == m_pLog) return NULL;
+void *
+CVSCPLogWrkTread::Entry()
+{
 
-    // First log on to the host and get configuration 
-    // variables
+	// Check pointers
+	if (NULL == m_pLog) return NULL;
 
-    if (m_srv.doCmdOpen(m_pLog->m_host,
-            m_pLog->m_port,
-            m_pLog->m_username,
-            m_pLog->m_password) <= 0) {
-        return NULL;
-    }
+	// First log on to the host and get configuration 
+	// variables
 
-    // Find the channel id
-    uint32_t ChannelID;
-    m_srv.doCmdGetChannelID(&ChannelID);
+	if (m_srv.doCmdOpen(m_pLog->m_host,
+		m_pLog->m_port,
+		m_pLog->m_username,
+		m_pLog->m_password) <= 0) {
+		return NULL;
+	}
 
-    // It is possible that there is configuration data the server holds 
-    // that we need to read in. 
-    // We look for 
-    //      prefix_filter to find a filter. A string is expected.
-    //      prefix_mask to find a mask. A string is expected.
-    //      prefix_path to overide the file path for the log file. A string is expected.
-    //      prefix_rewrite to override the overwrite flag. A bool is expected.
+	// Find the channel id
+	uint32_t ChannelID;
+	m_srv.doCmdGetChannelID(&ChannelID);
 
-
-    // Get filter data
-    wxString varFilter;
-    wxString varMask;
-
-    if (m_srv.getVariableString(m_pLog->m_prefix + _T("_filter"), &varFilter) &&
-            m_srv.getVariableString(m_pLog->m_prefix + _T("_mask"), &varMask)) {
-        m_srv.doCmdFilter(varFilter, varMask);
-    }
-
-    // get overrided file path
-    wxString varPath;
-    if (m_srv.getVariableString(m_pLog->m_prefix + _T("_path"), &varPath)) {
-        m_pLog->m_path = varPath;
-    }
-
-    bool bOverwrite;
-    if (m_srv.getVariableBool(m_pLog->m_prefix + _T("_rewrite"), &bOverwrite)) {
-        if (bOverwrite) {
-            m_pLog->m_flags |= LOG_FILE_OVERWRITE;
-        } else {
-            m_pLog->m_flags &= ~LOG_FILE_OVERWRITE;
-        }
-    }
-
-    bool bVSCPWorksFormat;
-    if (m_srv.getVariableBool(m_pLog->m_prefix + _T("_vscpworksfmt"), &bVSCPWorksFormat)) {
-        if (bVSCPWorksFormat) {
-            m_pLog->m_flags |= LOG_FILE_VSCP_WORKS;
-        } else {
-            m_pLog->m_flags &= ~LOG_FILE_VSCP_WORKS;
-        }
-    }
-
-    // Open the file
-    if (!m_pLog->openFile()) return NULL;
-
-    // Enter receive loop to start to log events
-    m_srv.doCmdEnterReceiveLoop();
-
-    int rv;
-    vscpEvent event;
-    while (!TestDestroy() && !m_pLog->m_bQuit) {
-
-        if (CANAL_ERROR_SUCCESS ==
-                (rv = m_srv.doCmdBlockReceive(&event, 1000))) {
-
-            //pRecord->m_time = wxDateTime::Now();
-            m_pLog->writeEvent(&event);
-
-            // We are done with the event - remove data if any
-            if (NULL != event.pdata) {
-                delete [] event.pdata;
-                event.pdata = NULL;
-            }
-
-        } // Event received
-    } // Receive loop
+	// It is possible that there is configuration data the server holds 
+	// that we need to read in. 
+	// We look for 
+	//      prefix_filter to find a filter. A string is expected.
+	//      prefix_mask to find a mask. A string is expected.
+	//      prefix_path to overide the file path for the log file. A string is expected.
+	//      prefix_rewrite to override the overwrite flag. A bool is expected.
 
 
+	// Get filter data
+	wxString varFilter;
+	wxString varMask;
+
+	wxString strFilter = m_pLog->m_prefix +
+		wxString::FromAscii("_filter");
+	wxString strMask = m_pLog->m_prefix +
+		wxString::FromAscii("_mask");
+	if (m_srv.getVariableString( strFilter, &varFilter) &&
+		m_srv.getVariableString(strMask, &varMask)) {
+		m_srv.doCmdFilter(varFilter, varMask);
+	}
+
+	// get overrided file path
+	wxString strPath = m_pLog->m_prefix +
+		wxString::FromAscii("_path");
+	wxString varPath;
+	if (m_srv.getVariableString(strPath, &varPath)) {
+		m_pLog->m_path = varPath;
+	}
+
+	wxString strRewrite = m_pLog->m_prefix +
+		wxString::FromAscii("_rewrite");
+	bool bOverwrite;
+	if (m_srv.getVariableBool(strRewrite, &bOverwrite)) {
+		if (bOverwrite) {
+			m_pLog->m_flags |= LOG_FILE_OVERWRITE;
+		} else {
+			m_pLog->m_flags &= ~LOG_FILE_OVERWRITE;
+		}
+	}
+
+	bool bVSCPWorksFormat;
+	wxString strVscpWorkdFmt = m_pLog->m_prefix +
+		wxString::FromAscii("_vscpworksfmt");
+	if (m_srv.getVariableBool(strVscpWorkdFmt, &bVSCPWorksFormat)) {
+		if (bVSCPWorksFormat) {
+			m_pLog->m_flags |= LOG_FILE_VSCP_WORKS;
+		} else {
+			m_pLog->m_flags &= ~LOG_FILE_VSCP_WORKS;
+		}
+	}
+
+	// Open the file
+	if (!m_pLog->openFile()) return NULL;
+
+	// Enter receive loop to start to log events
+	m_srv.doCmdEnterReceiveLoop();
+
+	int rv;
+	vscpEvent event;
+	while (!TestDestroy() && !m_pLog->m_bQuit) {
+
+		if (CANAL_ERROR_SUCCESS ==
+			(rv = m_srv.doCmdBlockReceive(&event, 1000))) {
+
+			//pRecord->m_time = wxDateTime::Now();
+			m_pLog->writeEvent(&event);
+
+			// We are done with the event - remove data if any
+			if (NULL != event.pdata) {
+				delete [] event.pdata;
+				event.pdata = NULL;
+			}
+
+		} // Event received
+	} // Receive loop
 
 
-    // Close the channel
-    m_srv.doCmdClose();
 
-    return NULL;
+
+	// Close the channel
+	m_srv.doCmdClose();
+
+	return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////
 // OnExit
 //
 
-void CVSCPLogWrkTread::OnExit() {
-
+void
+CVSCPLogWrkTread::OnExit()
+{
 }

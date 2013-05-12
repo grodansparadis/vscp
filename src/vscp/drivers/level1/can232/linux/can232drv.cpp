@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2010 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2012 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: can232drv.cpp,v $                                       
-// $Date: 2011/07/28 18:55:16 $                                  
-// $Author: akhe, ice@geomi.org $                                              
-// $Revision: 0.1 $ 
 //
 // Linux
 // =====
@@ -36,11 +33,20 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-void _init() __attribute__((constructor));
-void _fini() __attribute__((destructor));
+void _init () __attribute__ ((constructor));
+void _fini () __attribute__ ((destructor));
 
-void _init() {printf("initializing\n");}
-void _fini() {printf("finishing\n");}
+void
+_init ()
+{
+  printf ("initializing\n");
+}
+
+void
+_fini ()
+{
+  printf ("finishing\n");
+}
 
 ////////////////////////////////////////////////////////////////////////////
 // CCan232drvdllApp
@@ -48,38 +54,41 @@ void _fini() {printf("finishing\n");}
 ////////////////////////////////////////////////////////////////////////////
 // CCan232drvdllApp construction
 
-CCan232drvdllApp::CCan232drvdllApp()
+CCan232drvdllApp::CCan232drvdllApp ()
 {
-	m_instanceCounter = 0;
-	pthread_mutex_init( &m_objMutex, NULL );
-	// Init the driver array
-	for ( int i = 0; i<CANAL_LOGGER_DRIVER_MAX_OPEN; i++ ) {
-		m_logArray[ i ] = NULL;
-	}
+  m_instanceCounter = 0;
+  pthread_mutex_init (&m_objMutex, NULL);
+  // Init the driver array
+  for (int i = 0; i < CANAL_LOGGER_DRIVER_MAX_OPEN; i++)
+    {
+      m_logArray[ i ] = NULL;
+    }
 
-	UNLOCK_MUTEX( m_objMutex );
+  UNLOCK_MUTEX (m_objMutex);
 }
 
-
-CCan232drvdllApp::~CCan232drvdllApp()
+CCan232drvdllApp::~CCan232drvdllApp ()
 {
-	LOCK_MUTEX( m_objMutex );
-	
-	for ( int i = 0; i<CANAL_LOGGER_DRIVER_MAX_OPEN; i++ ) {
-		
-		if ( NULL == m_logArray[ i ] ) {
-			CCAN232Obj *pCAN232Obj = getDriverObject ( i );
+  LOCK_MUTEX (m_objMutex);
 
-			if ( NULL != pCAN232Obj ) { 
-				pCAN232Obj->close();	
-				delete m_logArray[ i ];
-				m_logArray[ i ] = NULL; 
-			}
-		}
-	}
+  for (int i = 0; i < CANAL_LOGGER_DRIVER_MAX_OPEN; i++)
+    {
 
-	UNLOCK_MUTEX( m_objMutex );	
-	pthread_mutex_destroy( &m_objMutex );
+      if (NULL == m_logArray[ i ])
+        {
+          CCAN232Obj *pCAN232Obj = getDriverObject (i);
+
+          if (NULL != pCAN232Obj)
+            {
+              pCAN232Obj->close ();
+              delete m_logArray[ i ];
+              m_logArray[ i ] = NULL;
+            }
+        }
+    }
+
+  UNLOCK_MUTEX (m_objMutex);
+  pthread_mutex_destroy (&m_objMutex);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -103,23 +112,27 @@ CCan232drvdllApp theApp;
 //
 
 //long CCan232drvdllApp::addDriverObject( CLog *plog )
-long CCan232drvdllApp::addDriverObject( CCAN232Obj *plog )
+
+long
+CCan232drvdllApp::addDriverObject (CCAN232Obj *plog)
 {
-	long h = 0;
+  long h = 0;
 
-	LOCK_MUTEX( m_objMutex );
-	for ( int i=0; i<CANAL_LOGGER_DRIVER_MAX_OPEN; i++ ) {
-	
-		if ( NULL == m_logArray[ i ] ) {
-		
-			m_logArray[ i ] = plog;	
-			h = i + 1681; 
-			break;
-		}
-	}
-	UNLOCK_MUTEX( m_objMutex );
+  LOCK_MUTEX (m_objMutex);
+  for (int i = 0; i < CANAL_LOGGER_DRIVER_MAX_OPEN; i++)
+    {
 
-	return h;
+      if (NULL == m_logArray[ i ])
+        {
+
+          m_logArray[ i ] = plog;
+          h = i + 1681;
+          break;
+        }
+    }
+  UNLOCK_MUTEX (m_objMutex);
+
+  return h;
 }
 
 
@@ -128,14 +141,16 @@ long CCan232drvdllApp::addDriverObject( CCAN232Obj *plog )
 //
 
 //CLog * CCan232drvdllApp::getDriverObject( long h )
-CCAN232Obj * CCan232drvdllApp::getDriverObject( long h )
-{
-	long idx = h - 1681;
 
-	// Check if valid handle
-	if ( idx < 0 ) return NULL;
-	if ( idx >= CANAL_LOGGER_DRIVER_MAX_OPEN ) return NULL;
-	return m_logArray[ idx ];
+CCAN232Obj *
+CCan232drvdllApp::getDriverObject (long h)
+{
+  long idx = h - 1681;
+
+  // Check if valid handle
+  if (idx < 0) return NULL;
+  if (idx >= CANAL_LOGGER_DRIVER_MAX_OPEN) return NULL;
+  return m_logArray[ idx ];
 }
 
 
@@ -143,27 +158,29 @@ CCAN232Obj * CCan232drvdllApp::getDriverObject( long h )
 // removeDriverObject
 //
 
-void CCan232drvdllApp::removeDriverObject( long h )
+void
+CCan232drvdllApp::removeDriverObject (long h)
 {
-	long idx = h - 1681;
+  long idx = h - 1681;
 
-	// Check if valid handle
-	if ( idx < 0 ) return;
-	if ( idx >= CANAL_LOGGER_DRIVER_MAX_OPEN ) return;
+  // Check if valid handle
+  if (idx < 0) return;
+  if (idx >= CANAL_LOGGER_DRIVER_MAX_OPEN) return;
 
-	LOCK_MUTEX( m_objMutex );
-	if ( NULL != m_logArray[ idx ] ) delete m_logArray[ idx ];
-	m_logArray[ idx ] = NULL;
-	UNLOCK_MUTEX( m_objMutex );
+  LOCK_MUTEX (m_objMutex);
+  if (NULL != m_logArray[ idx ]) delete m_logArray[ idx ];
+  m_logArray[ idx ] = NULL;
+  UNLOCK_MUTEX (m_objMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // InitInstance
 
-BOOL CCan232drvdllApp::InitInstance() 
+BOOL
+CCan232drvdllApp::InitInstance ()
 {
-	m_instanceCounter++;
-	return TRUE;
+  m_instanceCounter++;
+  return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -174,23 +191,28 @@ BOOL CCan232drvdllApp::InitInstance()
 // CanalOpen
 //
 
-extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
+extern "C" long
+CanalOpen (const char *pDevice, unsigned long flags)
 {
-	long h = 0;
+  long h = 0;
 
-	CCAN232Obj *pdrvObj = new CCAN232Obj();
-        if ( NULL != pdrvObj ) {
-                if ( pdrvObj->open( pDevice, flags ) ){
-                        if ( !( h = theApp.addDriverObject( pdrvObj ) ) ) {
-                                delete pdrvObj;
-                        }
-                }
-                else {
-                        delete pdrvObj;
-                }
+  CCAN232Obj *pdrvObj = new CCAN232Obj ();
+  if (NULL != pdrvObj)
+    {
+      if (pdrvObj->open (pDevice, flags))
+        {
+          if (!(h = theApp.addDriverObject (pdrvObj)))
+            {
+              delete pdrvObj;
+            }
         }
- 
-	return h;
+      else
+        {
+          delete pdrvObj;
+        }
+    }
+
+  return h;
 }
 
 
@@ -198,18 +220,19 @@ extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
 //  CanalClose
 // 
 
-extern "C" int CanalClose( long handle )
+extern "C" int
+CanalClose (long handle)
 {
-	int rv = 0;
+  int rv = 0;
 
-	CCAN232Obj *pLog = theApp.getDriverObject( handle );
-	if ( NULL == pLog ) return 0;
-	
-	pLog->close();
-	theApp.removeDriverObject( handle );
+  CCAN232Obj *pLog = theApp.getDriverObject (handle);
+  if (NULL == pLog) return 0;
 
-	rv = 1;
-	return CANAL_ERROR_SUCCESS;
+  pLog->close ();
+  theApp.removeDriverObject (handle);
+
+  rv = 1;
+  return CANAL_ERROR_SUCCESS;
 }
 
 
@@ -217,9 +240,10 @@ extern "C" int CanalClose( long handle )
 //  CanalGetLevel
 // 
 
-extern "C" unsigned long CanalGetLevel( long handle )
+extern "C" unsigned long
+CanalGetLevel (long handle)
 {
-	return CANAL_LEVEL_STANDARD;
+  return CANAL_LEVEL_STANDARD;
 }
 
 
@@ -227,48 +251,52 @@ extern "C" unsigned long CanalGetLevel( long handle )
 // CanalSend
 //
 
-extern "C" int CanalSend( long handle, PCANALMSG pCanalMsg  )
+extern "C" int
+CanalSend (long handle, PCANALMSG pCanalMsg)
 {
-	CCAN232Obj *pdrvObj = theApp.getDriverObject( handle );
+  CCAN232Obj *pdrvObj = theApp.getDriverObject (handle);
 
-	if ( NULL == pdrvObj ) return 0;
-	return ( pdrvObj->writeMsg( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+  if (NULL == pdrvObj) return 0;
+  return ( pdrvObj->writeMsg (pCanalMsg) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CanalReceive
 //
 
-extern "C" int CanalReceive( long handle, PCANALMSG pCanalMsg  )
+extern "C" int
+CanalReceive (long handle, PCANALMSG pCanalMsg)
 {
-        CCAN232Obj *pdrvObj =  theApp.getDriverObject( handle );
+  CCAN232Obj *pdrvObj = theApp.getDriverObject (handle);
 
-        if ( NULL == pdrvObj ) return 0;
-        return ( pdrvObj->readMsg( pCanalMsg )  ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+  if (NULL == pdrvObj) return 0;
+  return ( pdrvObj->readMsg (pCanalMsg) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CanalDataAvailable
 //
 
-extern "C" int CanalDataAvailable( long handle  )
+extern "C" int
+CanalDataAvailable (long handle)
 {
-        CCAN232Obj *pdrvObj =  theApp.getDriverObject( handle );
+  CCAN232Obj *pdrvObj = theApp.getDriverObject (handle);
 
-        if ( NULL == pdrvObj ) return 0;
-        return pdrvObj->dataAvailable();
+  if (NULL == pdrvObj) return 0;
+  return pdrvObj->dataAvailable ();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CanalGetStatus
 //
 
-extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
+extern "C" int
+CanalGetStatus (long handle, PCANALSTATUS pCanalStatus)
 {
-        CCAN232Obj *pdrvObj =  theApp.getDriverObject( handle );
+  CCAN232Obj *pdrvObj = theApp.getDriverObject (handle);
 
-        if ( NULL == pdrvObj ) return 0;
-        return ( pdrvObj->getStatus( pCanalStatus )  ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+  if (NULL == pdrvObj) return 0;
+  return ( pdrvObj->getStatus (pCanalStatus) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
 
 }
 
@@ -276,12 +304,13 @@ extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
 // CanalGetStatistics
 //
 
-extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistics  )
+extern "C" int
+CanalGetStatistics (long handle, PCANALSTATISTICS pCanalStatistics)
 {
-	CCAN232Obj *pdrvObj =  theApp.getDriverObject( handle );
+  CCAN232Obj *pdrvObj = theApp.getDriverObject (handle);
 
-	if ( NULL == pdrvObj ) return 0;
-	return ( pdrvObj->getStatistics( pCanalStatistics )  ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+  if (NULL == pdrvObj) return 0;
+  return ( pdrvObj->getStatistics (pCanalStatistics) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
 
 }
 
@@ -289,67 +318,75 @@ extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistic
 // CanalSetFilter
 //
 
-extern "C" int CanalSetFilter( long handle, unsigned long filter )
+extern "C" int
+CanalSetFilter (long handle, unsigned long filter)
 {
-        CCAN232Obj *pdrvObj =  theApp.getDriverObject( handle );
+  CCAN232Obj *pdrvObj = theApp.getDriverObject (handle);
 
-        if ( NULL == pdrvObj ) return 0;
-        return ( pdrvObj->setFilter( filter )  ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+  if (NULL == pdrvObj) return 0;
+  return ( pdrvObj->setFilter (filter) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CanalSetMask
 //
-extern "C" int CanalSetMask( long handle, unsigned long mask )
-{
-        CCAN232Obj *pdrvObj =  theApp.getDriverObject( handle );
 
-        if ( NULL == pdrvObj ) return 0;
-        return ( pdrvObj->setMask( mask )  ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC );
+extern "C" int
+CanalSetMask (long handle, unsigned long mask)
+{
+  CCAN232Obj *pdrvObj = theApp.getDriverObject (handle);
+
+  if (NULL == pdrvObj) return 0;
+  return ( pdrvObj->setMask (mask) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CanalSetBaudrate
 //
-extern "C" int CanalSetBaudrate( long handle, unsigned long baudrate )
+
+extern "C" int
+CanalSetBaudrate (long handle, unsigned long baudrate)
 {
-	// Not supported in this DLL
-	return CANAL_ERROR_NOT_SUPPORTED;
+  // Not supported in this DLL
+  return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CanalGetVersion
 //
 
-extern "C" unsigned long CanalGetVersion( void )
+extern "C" unsigned long
+CanalGetVersion (void)
 {
-	unsigned long version;
-	unsigned char *p = (unsigned char *)&version;
+  unsigned long version;
+  unsigned char *p = (unsigned char *) &version;
 
-	*p = CANAL_MAIN_VERSION;
-	*(p+1) = CANAL_MINOR_VERSION;
-	*(p+2) = CANAL_SUB_VERSION;
-	*(p+3) = 0;
-	return version;
+  *p = CANAL_MAIN_VERSION;
+  *(p + 1) = CANAL_MINOR_VERSION;
+  *(p + 2) = CANAL_SUB_VERSION;
+  *(p + 3) = 0;
+  return version;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CanalGetDllVersion
 //
 
-extern "C" unsigned long CanalGetDllVersion( void )
+extern "C" unsigned long
+CanalGetDllVersion (void)
 {
-	return DLL_VERSION;
+  return DLL_VERSION;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CanalGetVendorString
 //
 
-extern "C" const char * CanalGetVendorString( void )
+extern "C" const char *
+CanalGetVendorString (void)
 {
-	return CANAL_DLL_VENDOR;
+  return CANAL_DLL_VENDOR;
 }
 
 
- 
+
