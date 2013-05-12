@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -59,7 +60,7 @@
 #include "../../../../../common/dllist.h"
 #include "../../../../common/vscptcpif.h"
 
-#define CANAL_DLL_LOGGER_OBJ_MUTEX	"___VSCP__DLL_LOGGER_OBJ_MUTEX____"
+#define CANAL_DLL_LOGGER_OBJ_MUTEX	"___VSCP__DLL_L2LOGGER_OBJ_MUTEX____"
 
 #define CANAL_LOG_LIST_MAX_MSG		2048
 
@@ -68,86 +69,84 @@
 #define LOG_FILE_VSCP_WORKS     2L  // VSP Works format
 
 // List with VSCP events
-WX_DECLARE_LIST ( vscpEvent, VSCPEVENTLIST );
+WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST);
 
 // Forward declarations
 class CVSCPLogWrkTread;
 class VscpTcpIf;
 class wxFile;
 
-class CVSCPLog  
-{
-
+class CVSCPLog {
 public:
 
-	/// Constructor
-	CVSCPLog();
-	
-	/// Destructor
-	virtual ~CVSCPLog();
+    /// Constructor
+    CVSCPLog();
 
-	
-	/*!
-		Filter message
-
-		@param pEvent Pointer to VSCP event
-		@return True if message is accepted false if rejected
-	*/
-	bool doFilter( vscpEvent *pEvent );
-
-	
-	/*!
-		Set Filter
-	*/
-	void setFilter( vscpEvent *pFilter );
+    /// Destructor
+    virtual ~CVSCPLog();
 
 
-	/*!
-		Set Mask
-	*/
-	void setMask( vscpEvent *pMask );
+    /*!
+           Filter message
+
+            @param pEvent Pointer to VSCP event
+            @return True if message is accepted false if rejected
+     */
+    bool doFilter(vscpEvent *pEvent);
 
 
-	/*! 
-		Open/create the logfile
+    /*!
+            Set Filter
+     */
+    void setFilter(vscpEvent *pFilter);
 
-		@param Configuration string
-		@param flags 	bit 1 = 0 Append, bit 1 = 1 Rewrite
-            bit 2,3 Format: 00 - Standard. 01 - VSCP works receive format.
-		@return True on success.
-	*/
-	bool open( const char *pUsername,
-                const char *pPassword,
-                const char *pHost,
-                short port,
-                const char *pPrefix,
-                const char *pConfig, 
-                unsigned long flags = 0 );
 
-	/*!
-		Flush and close the log file
-	*/
-	void close( void );
+    /*!
+            Set Mask
+     */
+    void setMask(vscpEvent *pMask);
 
-	/*!
-		Write an event out to the file
-		\param pEvent Pointer to VSCP event
-		\return True on success.
-	*/
-	bool writeEvent( vscpEvent *pEvent );
+
+    /*! 
+            Open/create the logfile
+
+            @param Configuration string
+            @param flags 	bit 1 = 0 Append, bit 1 = 1 Rewrite
+        bit 2,3 Format: 00 - Standard. 01 - VSCP works receive format.
+            @return True on success.
+     */
+    bool open(const char *pUsername,
+            const char *pPassword,
+            const char *pHost,
+            short port,
+            const char *pPrefix,
+            const char *pConfig,
+            unsigned long flags = 0);
+
+    /*!
+            Flush and close the log file
+     */
+    void close(void);
+
+    /*!
+            Write an event out to the file
+            \param pEvent Pointer to VSCP event
+            \return True on success.
+     */
+    bool writeEvent(vscpEvent *pEvent);
 
 
     /*!
         Open the log file
         \return true on success.
-    */
-    bool openFile( void );
+     */
+    bool openFile(void);
 
 
 public:
 
-	/// Run flag
-	bool m_bQuit;
+    /// Run flag
+    bool m_bQuit;
 
     /// Driver flags
     unsigned long m_flags;
@@ -184,28 +183,25 @@ public:
 //						       Worker Tread
 ///////////////////////////////////////////////////////////////////////////////
 
-
-class CVSCPLogWrkTread : public wxThread 
-{
-
+class CVSCPLogWrkTread : public wxThread {
 public:
 
-	/// Constructor
-	CVSCPLogWrkTread();
+    /// Constructor
+    CVSCPLogWrkTread();
 
-	/// Destructor
-	~CVSCPLogWrkTread();
+    /// Destructor
+    ~CVSCPLogWrkTread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+            Thread code entry point
+     */
+    virtual void *Entry();
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
- 	virtual void OnExit();
+    /*! 
+            called when the thread exits - whether it terminates normally or is
+            stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
 
     /// VSCP server interface
     VscpTcpIf m_srv;
