@@ -114,7 +114,7 @@ long CLoggerdllApp::addDriverObject( CLog *plog )
 			h = i + 1681; 
 			break;
 
-		}
+		} 
 
 	} 
 
