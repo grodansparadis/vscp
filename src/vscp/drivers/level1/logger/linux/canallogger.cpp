@@ -116,7 +116,7 @@ long CLoggerdllApp::addDriverObject( CLog *plog )
 
 		}
 
-	}
+	} 
 
 	UNLOCK_MUTEX( m_objMutex );
 
