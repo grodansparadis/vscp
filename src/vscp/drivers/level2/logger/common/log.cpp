@@ -117,7 +117,7 @@ CVSCPLog::open(const char *pUsername,
 	// Parse the configuration string. It should
 	// have the following form
 	// username;password;host;prefix;port;filename
-	wxStringTokenizer tkz( wxString::FromAscii(pConfig), _(";\n"));
+	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
 	// Filename
 	if (tkz.HasMoreTokens()) {
@@ -414,7 +414,7 @@ CVSCPLogWrkTread::Entry()
 		wxString::FromAscii("_filter");
 	wxString strMask = m_pLog->m_prefix +
 		wxString::FromAscii("_mask");
-	if (m_srv.getVariableString( strFilter, &varFilter) &&
+	if (m_srv.getVariableString(strFilter, &varFilter) &&
 		m_srv.getVariableString(strMask, &varMask)) {
 		m_srv.doCmdFilter(varFilter, varMask);
 	}
