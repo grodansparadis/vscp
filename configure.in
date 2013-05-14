@@ -77,7 +77,7 @@ dnl
 dnl Project Sub directories
 dnl
 
-PROJ_SUBDIRS="src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/linuxvscpl1 src/vscp/daemon/linux src/vscp/mkpasswd"  
+PROJ_SUBDIRS="src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/drivers/level2/logger/linux src/vscp/linuxvscpl1 src/vscp/daemon/linux src/vscp/mkpasswd"  
 AC_SUBST(PROJ_SUBDIRS)
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks src/vscp/vscpcmd"
 AC_SUBST(PROJ_SUBDIRS_GUI)
