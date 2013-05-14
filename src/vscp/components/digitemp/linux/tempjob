@@ -1,0 +1,5 @@
+#!/bin/sh
+/usr/local/bin/digitemp -s /dev/ttyS0 -a -l/var/log/temperature  >/dev/null
+/usr/bin/bjornplot.pl 
+#>/dev/null
+cp /tmp/bjornplot.gif /var/www/html/temp.gif >/dev/null

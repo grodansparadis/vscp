@@ -1,0 +1,21 @@
+#!/usr/bin/perl -W
+
+
+my $guid= "01020304050607080910111213141516";
+my @test = $guid;
+
+my @guid_chars = split("", $guid);
+
+for ($idx=0; $idx<32; $idx += 2 ) {
+    print "$guid_chars[$idx]";
+    print "$guid_chars[$idx+1]";
+    if ( $idx < 30 ) {
+	print ":";
+    } 
+}
+
+my $timestamp = time();
+
+printf " ";
+print time();
+printf "\n";

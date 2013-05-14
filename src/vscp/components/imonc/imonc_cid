@@ -1,0 +1,214 @@
+#!/usr/bin/perl -W
+# -------------------------[ HISTORY ]-------------------------------------
+# 2007-04-10 AKHE Start of history.
+# -------------------------------------------------------------------------
+use IO::Socket;
+use DBI;
+
+
+# * * * VSCP info
+
+# Set your address for VSCP server here (canald)
+my $vscp_host   = "192.168.1.10"; 
+#my $vscp_host   = "localhost";
+
+# Set port used by VSCP server
+my $vscp_port   = "9598"; 
+
+# Set username for TCP/IP i/f of VSCP daemon
+my $vscp_user   = "admin"; 
+
+# Set password for TCP/IP i/f of VSCP daemon
+my $vscp_pass   = "secret"; 
+
+# GUID to use. Specify a GUID or set string to
+# "-" to use GUID of interface 
+#my $myguid = "00000000000000000000000000000001";
+my $myguid = "-";
+
+# Database info
+my $db_name     = "odin";
+my $db_user     = "dttemp";
+my $db_pass     = "nestor";
+
+# * * * * imonc info
+my $imonc_host   = "gatekeeper";   # Set address for imonc server
+my $imonc_port   = "5001";         # Set port for imonc server
+my $imonc_user   = "admin";        # Set username for TCP/IP i/f of VSCP daemon
+my $imonc_pass   = "secret";       # Set password for TCP/IP i/f of VSCP daemon
+my $imonc_period = 1;		   # seconds between checks
+
+# Set debug to non zero to output debug information
+my $debug = 1;
+
+	my $sock = new IO::Socket::INET ( PeerAddr => $imonc_host,
+        	                            PeerPort => $imonc_port,
+                	                    Proto => 'tcp' );
+	die "Could not create socket: $!\n" unless $sock;
+
+	recv( $sock, $buffer, 200, 0);
+	chomp $buffer;
+	chop $buffer;
+	($date, $time, $from, $to ) = split / /, $buffer;
+	print $buffer;
+	printf $date;
+	printf "\n";
+	printf $time;
+	printf "\n";
+	printf $from;
+	printf "\n";
+	printf $to;
+	printf "\n";
+
+	# Close connection to host
+	close($sock);
+
+
+	# Send VSCP event
+
+	my $vscp_class = 100;          		# Phone
+	my $vscp_type_incoming_call = 1;     	# Incoming call
+	my $vscp_type_database_info = 8; 	# database info for d:o
+
+	my $vscp_head = 0;    #
+	my $vscp_obid = 0;    # obid not used here so set to zero
+
+	my $sock = new IO::Socket::INET ( PeerAddr => $vscp_host,
+                                    		PeerPort => $vscp_port,
+                                    		Proto => 'tcp' );
+	die "Could not create socket: $!\n" unless $sock;
+
+	recv( $sock, $buffer, 200, 0);
+	print $buffer if($debug);;
+
+	print $sock "user $vscp_user\n";
+	print "user $vscp_user\n" if($debug);
+	recv( $sock, $buffer, 200, 0);
+	print $buffer if($debug);
+
+	print $sock "pass $vscp_pass\n";
+	print "pass $vscp_pass\n" if($debug);
+	recv( $sock, $buffer, 200, 0);
+	print $buffer if($debug);
+
+    	# Construct VSCP GUID
+    	print "GUID = $myguid\n" if($debug);
+
+	if ( $myguid eq '-' ) {
+		$guid =  "-";
+	}	
+	else {
+    		my @guid_chars = split("",$myguid);
+
+    		my $guid = "";
+    		for ($idx=0; $idx<32; $idx += 2 ) {
+        		$guid = $guid . "0x" . "$guid_chars[$idx]";
+        		$guid = $guid . "$guid_chars[$idx+1]";
+        		if ( $idx < 30 ) {
+            			$guid = $guid . ":";
+        		}
+    		}
+	}
+
+	# Check if unlisted number and set to nill if so
+	$from = "" if ( $from eq "00" );
+
+	# Build VSCP phone string
+	my $fullnumber = $from . "," . $to;
+
+	# Calculate number of frames needed
+	my $nframes = int( length($fullnumber)/5 );
+	$nframes++ if ( 0 != length($fullnumber)%5);
+
+	my $timestamp = time();
+
+	for ($i=0; $i<$nframes; $i++ ) {
+
+		$buffer = "SEND $vscp_head,$vscp_class,$vscp_type_incoming_call,$vscp_obid,$timestamp,$guid,0,$i,$nframes";
+
+		print $sock $buffer;
+		print "$buffer" if($debug);
+
+		$ff = substr( $fullnumber, $i * 5, 5 ); 		
+		#print "$ff\n" if($debug);
+		@ff = $ff;		
+
+		for ( $j=0; $j<length($ff); $j++ ) {
+			$val = substr( $ff, $j, 1 );
+			print $sock ",0x" . iso2hex( $val );
+			print ",0x" . iso2hex( $val ) if($debug);
+		}
+
+		print $sock "\n";
+		print "\n" if($debug);
+        	recv( $sock, $buffer, 200, 0);
+        	print $buffer if($debug);
+	}
+	
+
+	print $sock "quit\n";
+	recv( $sock, $buffer, 200, 0);
+	print $buffer if($debug);
+
+	# Close connection to host
+	close($sock);
+
+
+	# Database part
+
+	# Connect to the database
+	my $dbh = DBI->connect("dbi:mysql:$db_name","$db_user","$db_pass")
+        	or die "I cannot connect to dbi:mysql:$db_name as $db_user - $DBI::errstr\n";
+
+	my $sth1 = $dbh->prepare('SELECT id from seco WHERE seco.guid = ? AND seco.index = ?');
+	my $sth2 = $dbh->prepare('SELECT id from unit WHERE unit.datacoding = ?');
+
+	
+	$sth1->finish();
+	$sth2->finish();
+	$dbh->disconnect;
+
+
+#
+# Covert ISO char to hex
+sub iso2hex($) 
+{
+	my $hex = '';
+	for (my $i = 0; $i < length($_[0]); $i++) {
+		my $ordno = ord substr($_[0], $i, 1);
+		$hex .= sprintf("%lx", $ordno);
+	}
+
+	$hex =~ s/ $//;;
+	$hex;
+}
+
+
+#sub iso2hex ($) {
+#	my $iso = shift;
+#
+#$iso =~ s/^\s+//; $iso =~ s/\s+$//; # remove L/T WS
+#my @iso = split '', $iso;	# split into array
+#
+#my $hex = '';
+#for (my $ii = 0; $ii < @iso; $ii++) {
+#	$hex .= sprintf "%02x", ord $iso[$ii];
+#}
+#return $hex;
+#
+#}
+#
+#sub hex2iso ($) {
+#	my $hex = shift;
+#
+#$hex =~ s/^\s+//; $hex =~ s/\s+$//; # remove L/T WS
+#my @hex = split '(..)', $hex;	# split into 2 char array
+#
+#my $iso = '';
+#for (my $ii = 0; $ii < @hex; $ii++) {
+#	my $val = $hex[$ii];	# get 2 chars (1 array el)
+#	$val =~ s/%([\dA-F]{2})/pack('C',hex($1))/egi;
+#	$iso .= $val;
+#}
+#return $iso;
+
