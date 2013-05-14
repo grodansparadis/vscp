@@ -1,6 +1,0 @@
-AuthUserFile /var/www/.htpasswd
-AuthName "DTGraph Administration"
-AuthType Basic 
-<Limit GET POST>
-require user dt
-</Limit>
