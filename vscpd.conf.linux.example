@@ -12,7 +12,7 @@
 		<!-- It is possibel to disable the TCP/IP interface -->
 		<!--   Set binddaadress to listen for connections on a specific -->
 		<!--   interface. -->
-		<tcpif disabled="false" port="9598" bindaddress=""//>
+		<tcpif disabled="false" port="9598" bindaddress=""/>
 
         	<!-- It is possible to disable the UDP interface -->
 		<!--   Set ipaddress on a machine with multiple interfaces -->
