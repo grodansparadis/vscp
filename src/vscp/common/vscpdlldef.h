@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2011 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2013
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,8 +37,7 @@ typedef long ( __stdcall * LPFNDLL_VSCPOPEN) ( const char *pUsername,
                                                 const char *pHost,
                                                 short port,
                                                 const char *pPrefix,
-                                                const char *pParameter, 
-                                                unsigned long flags );
+                                                const char *pParameter );
 typedef int ( __stdcall * LPFNDLL_VSCPCLOSE) ( long handle );
 typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETLEVEL) ( long handle  );
 typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETVERSION) ( void );
@@ -52,8 +52,7 @@ typedef long ( *LPFNDLL_VSCPOPEN ) ( const char *pUsername,
                                         const char *pHost,
                                         short port,
                                         const char *pPrefix,
-                                        const char *pParameter, 
-                                        unsigned long flags );
+                                        const char *pParameter );
 typedef int ( *LPFNDLL_VSCPCLOSE ) ( long handle );
 typedef unsigned long ( *LPFNDLL_VSCPGETLEVEL ) ( long handle  );
 typedef unsigned long ( *LPFNDLL_VSCPGETVERSION ) (  void );

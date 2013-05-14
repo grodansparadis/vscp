@@ -120,8 +120,7 @@ public:
             const char *pHost,
             short port,
             const char *pPrefix,
-            const char *pConfig,
-            unsigned long flags = 0);
+            const char *pConfig );
 
     /*!
         Flush and close the log file
@@ -148,7 +147,7 @@ public:
     /// Run flag
     bool m_bQuit;
 
-    /// Driver flags
+    /// Working flags
     unsigned long m_flags;
 
     /// Server supplied username
@@ -177,6 +176,9 @@ public:
 
     /// Pointer to worker thread
     CVSCPLogWrkTread *m_pthreadWork;
+    
+    /// Filter
+    vscpEventFilter m_Filter;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

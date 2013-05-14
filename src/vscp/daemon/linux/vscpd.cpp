@@ -1,4 +1,4 @@
-// vscpd.cpp : Defines the class behaviors for the application.
+// vscpd.cpp : Defines the class behaviours for the application.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -7,8 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2013 Ake Hedman, Grodans Paradis AB, 
-// <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -213,7 +213,6 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 		close(STDIN_FILENO);
 		close(STDOUT_FILENO);
 		close(STDERR_FILENO);
-
 
 		if (open("/", 0)) {
 			syslog(LOG_CRIT, "VSCPD: open / not 0: %m");

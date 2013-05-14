@@ -64,6 +64,7 @@ WX_DEFINE_LIST(VSCPEVENTLIST);
 
 CVSCPLog::CVSCPLog()
 {
+	m_flags = 0;
 	m_bQuit = false;
 	m_pLogStream = NULL;
 	m_pthreadWork = NULL;
@@ -100,12 +101,10 @@ CVSCPLog::open(const char *pUsername,
 	const char *pHost,
 	short port,
 	const char *pPrefix,
-	const char *pConfig,
-	unsigned long flags)
+	const char *pConfig)
 {
 
 	bool rv = true;
-	m_flags = flags;
 	wxString wxstr = wxString::FromAscii(pConfig);
 
 	m_username = wxString::FromAscii(pUsername);
@@ -116,12 +115,56 @@ CVSCPLog::open(const char *pUsername,
 
 	// Parse the configuration string. It should
 	// have the following form
-	// username;password;host;prefix;port;filename
+	// path
+	// 
 	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Filename
+	// Check for path in configuration string
 	if (tkz.HasMoreTokens()) {
+		// Path
 		m_path = tkz.GetNextToken();
+	}
+	
+	// Check for rewrite in configuration string
+	// valid is "true|false"
+	if (tkz.HasMoreTokens()) {
+		wxString str;
+		str = tkz.GetNextToken();
+		str = str.Upper();
+                if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
+		    m_flags |= LOG_FILE_OVERWRITE;
+                }
+                else {
+                    m_flags &= ~LOG_FILE_OVERWRITE;
+                }
+	}
+	
+	// Check for vscpworksfmt in configuration string
+	// valid is "true|false"
+	if (tkz.HasMoreTokens()) {
+		wxString str;
+		str = tkz.GetNextToken();
+		str = str.Upper();
+                if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
+                    m_flags |= LOG_FILE_VSCP_WORKS;
+                }
+                else {
+                    m_flags &= ~LOG_FILE_VSCP_WORKS;
+                }
+	}
+	
+	// Filter
+	if (tkz.HasMoreTokens()) {
+		wxString str;
+		str = tkz.GetNextToken();
+		readFilterFromString(&m_Filter,str);
+	}
+	
+	// Mask
+	if (tkz.HasMoreTokens()) {
+		wxString str;
+		str = tkz.GetNextToken();
+		readMaskFromString(&m_Filter,str);
 	}
 
 	// start the workerthread
@@ -337,7 +380,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		writeGuidToString(pEvent, str);
 		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-		str.Printf(_("datasize=%d "), pEvent->sizeData);
+		str.Printf(_(" datasize=%d "), pEvent->sizeData);
 		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
 		if (0 != pEvent->sizeData) {
@@ -347,7 +390,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 		}
 
-		str.Printf(_("Timestamp=%lu\r\n"), pEvent->timestamp);
+		str.Printf(_(" Timestamp=%lu\r\n"), pEvent->timestamp);
 		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
 	}
