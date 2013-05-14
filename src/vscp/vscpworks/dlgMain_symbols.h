@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     04/04/2007 20:16:28
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright:   (C) 2007-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 /////////////////////////////////////////////////////////////////////////////
 

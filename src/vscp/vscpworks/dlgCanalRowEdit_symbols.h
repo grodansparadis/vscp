@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     Fri 29 Jun 2007 18:31:04 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright:   (C) 2007-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -13,8 +14,6 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-//
-// Copyright (C) 2000-2011 Ake Hedman, eurosource, <ake@eurosource.se>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
