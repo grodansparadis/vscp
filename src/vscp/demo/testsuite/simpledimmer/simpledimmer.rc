@@ -1,2 +1,0 @@
-lamp BITMAP "lamp1.bmp"
-#include "wx/msw/wx.rc"
