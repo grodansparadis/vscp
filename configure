@@ -8381,7 +8381,7 @@ You can tune the compiler flags in vscp-config.
 To build VSCP and friends, type \'make\' followed by \'make install\'
 
  use --enable-debug to build a debug version; release is default.
- use --enable-unicode to build a unicode version; ANSI is default.
+ use --disable-unicode to build an Ansi version; Unicode is default.
 
 "
 

@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     Thu 18 Dec 2007 10:05:16 CEST
 // RCS-ID:      
-// Copyright:   (C) 2000-2011 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright:   (C) 2000-2013 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
