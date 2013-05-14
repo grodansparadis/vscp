@@ -1,5 +1,7 @@
 // udpdrv.h : main header file for the UDPDRV DLL
 //
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #if !defined(AFX_UDPDRV_H__E25CBD40_602A_4B1A_8853_EB6231C64E1A__INCLUDED_)
 #define AFX_UDPDRV_H__E25CBD40_602A_4B1A_8853_EB6231C64E1A__INCLUDED_

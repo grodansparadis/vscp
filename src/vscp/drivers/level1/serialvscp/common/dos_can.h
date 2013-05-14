@@ -1,8 +1,7 @@
 // dos_can.h
 //
-// Copyright (c) 2005-2008 eurosource, Sweden
-//
-// Version 0.0.1
+// Copyright (C) 2005-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 
 #ifndef __DOSCANH__         

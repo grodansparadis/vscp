@@ -1,5 +1,7 @@
 // UDPDrvObj.cpp: implementation of the UDPDrvObj class.
 //
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"

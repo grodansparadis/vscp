@@ -1,5 +1,7 @@
 // tcpdrv.h : main header file for the TCPDRV DLL
 //
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #if !defined(AFX_TCPDRV_H__1F4301DA_F5D2_46AD_8CA3_71AE18D44E22__INCLUDED_)
 #define AFX_TCPDRV_H__1F4301DA_F5D2_46AD_8CA3_71AE18D44E22__INCLUDED_

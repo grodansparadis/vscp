@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Copyright (C) 2009 Gediminas Simanskis , edevices, www.edevices.lt
 // 
 // This file is distributed in the hope that it will be useful,
@@ -710,7 +711,7 @@ public:
 			1				1					0			Reject
 			1				1					1			Accept
 
-		Formula is !( ( filter îd ) & mask )
+		Formula is !( ( filter \EEd ) & mask )
 	*/
     uint32_t m_filter;
 

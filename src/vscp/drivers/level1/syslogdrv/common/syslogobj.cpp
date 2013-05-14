@@ -1,5 +1,7 @@
 // syslogobj.cpp: implementation of the CSysLogObj class.
 //
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 
 #ifdef __GNUG__

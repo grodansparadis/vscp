@@ -1,5 +1,7 @@
 // Enum.cpp: implementation of the CEnum class.
 //
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 
 #include "Enum.h"

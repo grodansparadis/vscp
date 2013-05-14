@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2010 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Copyright (C) 2009 Gediminas Simanskis , edevices, www.edevices.lt
 // 
 // This file is distributed in the hope that it will be useful,
@@ -757,17 +758,17 @@ bool CUsb2canObj::getStatistics( PCANALSTATISTICS pCanalStatistics )
 ==========================================
 Flag  value  Description  
 ===========================================
-CANAL_STATUSMSG_OK        0×00  Normal condition.  
-CANAL_STATUSMSG_OVERRUN   0×01  Overrun occured when sending data to CAN bus.  
-CANAL_STATUSMSG_BUSLIGHT  0×02  Error counter has reached 96.  
-CANAL_STATUSMSG_BUSHEAVY  0×03  Error counter has reached 128.  
-CANAL_STATUSMSG_BUSOFF    0×04  Device is in BUSOFF. CANAL_STATUSMSG_OK is sent when returning to operational mode.  
-CANAL_STATUSMSG_STUFF     0×20  Stuff Error.  
-CANAL_STATUSMSG_FORM      0×21  Form Error.  
-CANAL_STATUSMSG_ACK       0×23  Ack Error.  
-CANAL_STATUSMSG_BIT0      0×24  Bit1 Error.  
-CANAL_STATUSMSG_BIT1      0×25  Bit0 Error.  
-CANAL_STATUSMSG_CRC       0×26  CRC Error.  
+CANAL_STATUSMSG_OK        0\D700  Normal condition.  
+CANAL_STATUSMSG_OVERRUN   0\D701  Overrun occured when sending data to CAN bus.  
+CANAL_STATUSMSG_BUSLIGHT  0\D702  Error counter has reached 96.  
+CANAL_STATUSMSG_BUSHEAVY  0\D703  Error counter has reached 128.  
+CANAL_STATUSMSG_BUSOFF    0\D704  Device is in BUSOFF. CANAL_STATUSMSG_OK is sent when returning to operational mode.  
+CANAL_STATUSMSG_STUFF     0\D720  Stuff Error.  
+CANAL_STATUSMSG_FORM      0\D721  Form Error.  
+CANAL_STATUSMSG_ACK       0\D723  Ack Error.  
+CANAL_STATUSMSG_BIT0      0\D724  Bit1 Error.  
+CANAL_STATUSMSG_BIT1      0\D725  Bit0 Error.  
+CANAL_STATUSMSG_CRC       0\D726  CRC Error.  
 */
 
 /* STATUS

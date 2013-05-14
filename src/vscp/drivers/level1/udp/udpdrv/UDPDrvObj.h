@@ -1,5 +1,7 @@
 // UDPDrvObj.h: interface for the UDPDrvObj class.
 //
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 
 #if !defined(AFX_UDPDRVOBJ_H__490B2376_F5F3_4287_BB9F_A4B4BF0A12CD__INCLUDED_)

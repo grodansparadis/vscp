@@ -1,5 +1,7 @@
 // UdpServer.h: interface for the CUdpServer class.
 //
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 
 #if !defined(AFX_UDPSERVER_H__1BEF5E51_C7EE_47DB_92A6_477078A4B702__INCLUDED_)

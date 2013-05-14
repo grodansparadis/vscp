@@ -1,5 +1,7 @@
 // testDriver.h : main header file 
 //
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 
 
