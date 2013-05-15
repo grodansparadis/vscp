@@ -532,7 +532,7 @@ bool CControlObject::init(wxString& strcfgfile)
 
 	if (m_bTCPInterface) startTcpWorkerThread();
 
-	//if (m_bUDPInterface) startUdpWorkerThreads();
+	if (m_bUDPInterface) startUdpWorkerThreads();
 
 	startDaemonWorkerThread();
 
@@ -700,7 +700,7 @@ bool CControlObject::run(void)
 
 
 		/*
-		 * This example server does not fork or create a thread for
+		 * This html server does not fork or create a thread for
 		 * websocket service, it all runs in this single loop.  So,
 		 * we have to give the websockets an opportunity to service
 		 * "manually".

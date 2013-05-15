@@ -38,105 +38,98 @@
 class ClientList;
 class CControlObject;
 
-
-
 /*!
-	This class implement a one of thread that look
-	for specific events and react on them appropriatly.
+    This class implement a one of thread that look
+    for specific events and react on them appropriatly.
 
-*/
+ */
 
-class UDPSendThread : public wxThread
-{
-
+class UDPSendThread : public wxThread {
 public:
-	
-	/// Constructor
-	UDPSendThread();
 
-	/// Destructor
-	~UDPSendThread();
+    /// Constructor
+    UDPSendThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /// Destructor
+    ~UDPSendThread();
 
-	/*!
-		Send the UDP event
-		@param pMsg Event to send.
-		@return True on success.
-	*/
-	bool sendUdpEvent( vscpEvent *pEvent );
+    /*!
+        Thread code entry point
+     */
+    virtual void *Entry();
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
- 	virtual void OnExit();
+    /*!
+        Send the UDP event
+        @param pMsg Event to send.
+        @return True on success.
+     */
+    bool sendUdpEvent(vscpEvent *pEvent);
 
-	/*!
-		Termination control
-	*/
-	bool m_bQuit;
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
 
-	/*!
-		UDP Socket
-	*/
-	int	m_sendsock;
-	wxDatagramSocket *m_pSocket;
+    /*!
+        Termination control
+     */
+    bool m_bQuit;
+
+    /*!
+        UDP Socket
+     */
+    int m_sendsock;
+    wxDatagramSocket *m_pSocket;
 
 
-	/*!
-		Pointer to the control object
-	*/
-	CControlObject *m_pCtrlObject;
+    /*!
+        Pointer to the control object
+     */
+    CControlObject *m_pCtrlObject;
 
 };
 
-
 /*!
-	This class implement a thread that handles
-	incoming UDP datagrams
-*/
+    This class implement a thread that handles
+    incoming UDP datagrams
+ */
 
-class UDPReceiveThread : public wxThread
-{
-
+class UDPReceiveThread : public wxThread {
 public:
-	
-	/// Constructor
-	UDPReceiveThread();
 
-	/// Destructor
-	virtual ~UDPReceiveThread();
+    /// Constructor
+    UDPReceiveThread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /// Destructor
+    virtual ~UDPReceiveThread();
+
+    /*!
+        Thread code entry point
+     */
+    virtual void *Entry();
 
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
-	virtual void OnExit();
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
 
-	/*!
-		Termination control
-	*/
-	bool m_bQuit;
+    /*!
+        Termination control
+     */
+    bool m_bQuit;
 
-	/*!
-		Pointer to clientitem for this object
-	*/
-	//CClientItem *m_pClientItem;
+    /*!
+        Pointer to clientitem for this object
+     */
+    //CClientItem *m_pClientItem;
 
-	/*!
-		Pointer to control object.
-	*/
-	CControlObject *m_pCtrlObject;
+    /*!
+        Pointer to control object.
+     */
+    CControlObject *m_pCtrlObject;
 
 };
 
