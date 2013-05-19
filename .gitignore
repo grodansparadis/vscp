@@ -52,4 +52,5 @@ src/vscp/vscpcmd/Makefile
 src/vscp/vscpcmd/vscpcmd
 src/vscp/vscpworks/vscpworks
 src/vscp/web/demo/libwebsockets/README~
-
+src/vscp/drivers/level1/xap/linux/test
+src/vscp/linuxvscpl1/test
