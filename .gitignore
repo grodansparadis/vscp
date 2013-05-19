@@ -29,3 +29,4 @@ VCProjectRelease
 /src/vscp/ipch/rawethernet-e4fc8d3f/*.ipch
 *.ipch
 /src/vscp/vscpworks/*.tmp
+*.*~
