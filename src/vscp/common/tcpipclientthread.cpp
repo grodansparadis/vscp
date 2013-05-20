@@ -274,10 +274,12 @@ void *TcpClientThread::Entry()
     else {
         // Send welcome message
         wxString str = _(MSG_WELCOME);
-        str += _(" Version: ");
+        str += _("+OK Version: ");
         str += VSCPD_DISPLAY_VERSION;
         str += _("\r\n");
-        str += _(MSG_COPYRIGHT);
+		str += _("+OK ");
+		str += VSCPD_COPYRIGHT;
+        //str += _(MSG_COPYRIGHT);
         str += _(MSG_OK);
 
         m_pClientSocket->Write ( str.mb_str(), str.Length() );
@@ -484,14 +486,6 @@ void *TcpClientThread::Entry()
                 }
             }
 
-            //*********************************************************************
-            //                           Enter Binary Mode
-            //*********************************************************************
-            else if ( ( 0 == m_wxcmdUC.Find ( _( "FAST" ) ) ) ||
-                ( 0 == m_wxcmdUC.Find ( _( "BIN1" ) ) ) ||
-                ( 0 == m_wxcmdUC.Find ( _( "BIN2" ) ) ) ) {
-                if ( checkPrivilege( 4 ) ) handleBinaryMode();
-            }
 
             //*********************************************************************
             //                        + (repeat last command)
@@ -1617,9 +1611,11 @@ void TcpClientThread::handleClientRcvLoop()
 // handleClientHelp
 //
 
-void TcpClientThread::handleClientHelp ( void )
+void TcpClientThread::handleClientHelp(void)
 {
-
+	m_pClientSocket->Write(MSG_OK,
+			strlen(MSG_OK));
+	return;
 }
 
 
@@ -1629,7 +1625,9 @@ void TcpClientThread::handleClientHelp ( void )
 
 void TcpClientThread::handleClientTest ( void )
 {
-    ;
+	m_pClientSocket->Write ( MSG_OK,
+        strlen ( MSG_OK ) );
+	return;
 }
 
 
@@ -1639,7 +1637,9 @@ void TcpClientThread::handleClientTest ( void )
 
 void TcpClientThread::handleClientRestart ( void )
 {
-
+	m_pClientSocket->Write ( MSG_OK,
+        strlen ( MSG_OK ) );
+	return;
 }
 
 
@@ -1665,7 +1665,7 @@ void TcpClientThread::handleClientShutdown ( void )
 
 void TcpClientThread::handleClientRemote( void )
 {
-
+	return;
 }
 
 
@@ -2879,394 +2879,3 @@ void TcpClientThread::handleClientDriver( void )
 
 
 
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// **************************************************************************//
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// handleBinaryMode
-//
-
-void TcpClientThread::handleBinaryMode ( void )
-{
-    char rbuf[ 2048 ];
-
-    unsigned short nRead;
-    bool bAutoFrame = false;
-
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "BIN2" ) ) ) {
-        bAutoFrame = true;
-    }
-
-
-    // Must be accredited to do this
-    if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
-            strlen ( MSG_NOT_ACCREDITED ) );
-        return;
-    }
-
-    // Set binary mode
-    m_bBinaryMode = true;
-
-    m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
-
-
-    ////////////////////////////////////////////////////////
-    //				     Binary Mode Loop
-    ////////////////////////////////////////////////////////
-
-    bool bLocalRun = true;
-    unsigned char binaryFrameType;
-
-    while ( m_pClientSocket->IsConnected() &&
-				!TestDestroy() &&
-				m_bRun &&
-				bLocalRun ) {
-
-        // Read new data
-        if ( BINARY_ReadEvent ( rbuf,
-            sizeof ( rbuf ),
-            &nRead,
-            &binaryFrameType ) ) {
-
-            switch ( binaryFrameType ) {
-
-            case CANAL_BINARY_FRAME_TYPE_VSCP:
-                handleFastIncomingFrame ( rbuf, nRead );
-                break;
-
-            case CANAL_BINARY_FRAME_TYPE_ERROR:
-                // Stray error frame we do nothing
-                break;
-
-            case CANAL_BINARY_FRAME_TYPE_COMMAND:
-
-                switch ( rbuf[0] ) {
-
-                case CANAL_BINARY_COMMAND_NOOP:
-                    SendFastErrorFrame ( CANAL_BINARY_ERROR_NONE );
-                    break;
-
-                case CANAL_BINARY_COMMAND_READ:
-                    sendFastOutgoingFrame ( m_pClientItem );
-                    break;
-
-                case CANAL_BINARY_COMMAND_CLOSE:
-                    //m_pClientSocket->SetTimeout(1);
-                    bLocalRun = false;	// Go to standard i/f
-                    break;
-
-                default:
-                    SendFastErrorFrame ( CANAL_BINARY_ERROR_INVALID_CMD );
-                    break;
-                }
-                break;
-
-            case CANAL_BINARY_FRAME_TYPE_CAN:
-                // CAN frame we do nothing yet
-                break;
-
-            default:
-                // Don't know anything about this frame type
-                SendFastErrorFrame ( CANAL_BINARY_ERROR_UNKNOW_FRAME );
-                break;
-            }
-
-        }
-        else if ( m_pClientSocket->Error() &&
-            ( wxSOCKET_NOERROR !=
-            ( m_err = m_pClientSocket->LastError() ) ) ) {
-
-            switch ( m_err ) {
-
-            case wxSOCKET_IOERR:
-            case wxSOCKET_INVSOCK:
-                bLocalRun = false;	// socket error
-                break;
-
-
-            case wxSOCKET_TIMEDOUT:
-                SLEEP ( 200 );
-                break;
-
-            }
-
-        }
-        else if ( 0 == nRead ) {
-            bLocalRun = false; // No connection
-        }
-
-
-    } // while
-
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// handleFastIncomingFrame
-//
-
-void TcpClientThread::handleFastIncomingFrame ( char *rbuf,
-                                               unsigned short nRead )
-{
-    vscpEvent event;
-    char data[512];
-    bool bOK = true;	// Optimistic approach
-
-    event.head = rbuf[ 0 ];
-    event.vscp_class = ( rbuf[1] << 8 ) + rbuf[2];
-    event.vscp_type = ( rbuf[3] << 8 ) + rbuf[4];
-    memcpy ( event.GUID, rbuf + 5, 16 );
-    memcpy ( data, rbuf + 21, nRead - 21 );
-    event.sizeData = nRead - 21;
-
-    vscpEvent *pEvent = new vscpEvent;          // Create new VSCP event
-
-    if ( NULL != pEvent ) {
-        // Save the originating clients id so
-        // this client dont get the message back
-        pEvent->obid = m_pClientItem->m_clientID;
-
-        // Copy message
-        memcpy ( pEvent, &event, sizeof ( vscpEvent ) );
-
-        // And data...
-        if ( pEvent->sizeData > 0 ) {
-            // Copy in data
-            pEvent->pdata = new uint8_t[ pEvent->sizeData ];
-            if ( NULL != pEvent->pdata ) {
-                memcpy ( pEvent->pdata, data ,pEvent->sizeData );
-            }
-        }
-        else {
-            // No data
-            pEvent->pdata = NULL;
-        }
-
-        // Statistics
-        m_pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
-        m_pClientItem->m_statistics.cntTransmitFrames++;
-
-        // There must be room in the send queue
-        if ( m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-            m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
-            m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-            m_pCtrlObject->m_clientOutputQueue.Append ( pEvent );
-            m_pCtrlObject->m_semClientOutputQueue.Post();
-            m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
-        }
-
-    }
-    else {
-        SendFastErrorFrame ( CANAL_BINARY_ERROR_MEMORY );
-        bOK = false;
-    }
-
-    if ( bOK ) {
-        SendFastErrorFrame ( CANAL_BINARY_ERROR_NONE );
-    }
-
-
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// sendFastOutgoingFrame
-//
-
-void TcpClientThread::sendFastOutgoingFrame ( CClientItem *pClientItem )
-{
-    unsigned char outbuf[ 512 ];
-    CLIENTEVENTLIST::compatibility_iterator nodeClient;
-
-    // Check if there is data to write
-    pClientItem->m_mutexClientInputQueue.Lock();
-
-    vscpEvent *pEvent = new vscpEvent;
-
-    // If something to send
-    if ( pClientItem->m_clientInputQueue.GetCount() ) {
-        pClientItem->m_mutexClientInputQueue.Lock();
-		{
-            nodeClient = pClientItem->m_clientInputQueue.GetFirst();
-            vscpEvent *pqueueEvent = nodeClient->GetData();
-
-            // Copy message
-            memcpy ( pEvent, pqueueEvent, sizeof ( vscpEvent ) );
-
-            // Remove the node
-            pClientItem->m_clientInputQueue.DeleteNode ( nodeClient );
-        }
-        pClientItem->m_mutexClientInputQueue.Unlock();
-
-        outbuf[ 0 ] = pEvent->head;
-        outbuf[ 1 ] = ( pEvent->vscp_class ) >> 8 & 0xff;
-        outbuf[ 2 ] = pEvent->vscp_class & 0xff;
-        outbuf[ 3 ] = ( pEvent->vscp_type ) >> 8 & 0xff;
-        outbuf[ 4 ] = pEvent->vscp_type & 0xff;
-        memcpy ( ( outbuf + 5 ), pEvent->GUID, 16 );
-
-        // Handle data
-        if ( NULL != pEvent->pdata ) {
-            memcpy ( ( outbuf + 21 ), pEvent->pdata, pEvent->sizeData );
-        }
-
-        // Remove the old data
-        if ( NULL != pEvent->pdata ) delete pEvent->pdata;
-        pEvent->pdata = NULL;	 // Data stored in message
-
-        BINARY_WriteEvent ( CANAL_BINARY_FRAME_TYPE_VSCP,
-            outbuf,
-            pEvent->sizeData + 21 );
-
-        delete pEvent;
-
-    }
-	else {
-        // No event(s) to read
-        SendFastErrorFrame ( CANAL_BINARY_ERROR_NO_DATA );
-    }
-
-    pClientItem->m_mutexClientInputQueue.Unlock();
-
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// SendFastErrorFrame
-//
-
-void TcpClientThread::SendFastErrorFrame ( unsigned char error_code )
-{
-    char buf[1];
-
-    buf[0] = error_code;
-    BINARY_WriteEvent ( CANAL_BINARY_FRAME_TYPE_ERROR, buf, 1 );
-}
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// BINARY_WriteEvent
-//
-
-bool TcpClientThread::BINARY_WriteEvent ( unsigned char type,
-                                         const void *buffer,
-                                         wxUint32 nbytes )
-{
-    //wxUint32 total;
-    bool error;
-    int old_flags;
-    unsigned char outbuf[ 1024 ];
-    wxUint32 msgcnt = 0;
-
-    error = true;
-
-    old_flags = m_pClientSocket->GetFlags();
-    m_pClientSocket->SetFlags (
-        ( m_pClientSocket->GetFlags() &
-        wxSOCKET_BLOCK ) | wxSOCKET_WAITALL );
-
-    // SOF
-    outbuf[msgcnt++] = ( unsigned char ) 0x55;
-    outbuf[msgcnt++] = ( unsigned char ) 0xaa;
-
-    outbuf[msgcnt++] = type;
-
-    outbuf[msgcnt++] = ( unsigned char ) ( ( nbytes >> 8 ) & 0xff );
-    outbuf[msgcnt++] = ( unsigned char ) ( nbytes & 0xff );
-
-    memcpy ( outbuf + msgcnt, buffer, nbytes );
-    msgcnt += nbytes;
-
-    if ( ( m_pClientSocket->Write ( outbuf, msgcnt ).LastCount() ) < msgcnt ) {
-        goto exit;
-    }
-
-    // everything was OK
-    error = false;
-
-exit:
-
-    m_pClientSocket->SetFlags ( old_flags );
-    return !error;
-}
-
-// discard buffer
-#define MAX_DISCARD_SIZE (10 * 1024)
-
-///////////////////////////////////////////////////////////////////////////////
-// BINARY_ReadEvent
-//
-
-bool TcpClientThread::BINARY_ReadEvent( void* buffer,
-                                        wxUint32 nbytes,
-                                        unsigned short *pnRead,
-                                        unsigned char *ptype )
-{
-    wxUint32 len,err;
-    bool error;
-    int old_flags;
-    unsigned char inbuf[1024];
-
-    *pnRead = 0;;
-    error = true;
-    old_flags = m_pClientSocket->GetFlags();
-    //m_pClientSocket->SetFlags( (old_flags & wxSOCKET_BLOCK) | wxSOCKET_WAITALL );
-
-    memset ( inbuf, 0, sizeof ( inbuf ) );
-
-    if ( ! ( *pnRead = m_pClientSocket->Read ( inbuf,
-        sizeof ( inbuf ) ).LastCount() ) ) {
-        goto exit;
-    }
-
-    if ( m_pClientSocket->Error() &&
-        ( wxSOCKET_NOERROR != ( err = m_pClientSocket->LastError() ) ) ) {
-        //if ( wxSOCKET_TIMEDOUT != err ) {
-        //	m_pClientSocket->Close();
-        //}
-        goto exit;
-    }
-
-
-    if ( ! ( ( 0x55 == inbuf[ 0 ] ) && ( 0xaa == inbuf[ 1 ] ) ) ) {
-        wxLogWarning ( _( "wxSocket: invalid signature in BINARY_ReadEvent." ) );
-        goto exit;
-    }
-
-    *ptype = inbuf[ 2 ];
-    if ( *ptype ) {
-        inbuf[0] = 1;
-    }
-
-    len = ( wxUint16 ) inbuf[ 4 ];
-    len |= ( wxUint16 ) ( inbuf[ 3 ] << 8 );
-
-    // Check for invalid length
-    if ( len > *pnRead ) goto exit;
-
-    memcpy ( buffer, inbuf + 5, len );
-
-    *pnRead -= 5;
-
-    // everything was OK
-
-    error = false;
-
-exit:
-
-    m_pClientSocket->SetFlags ( old_flags );
-
-    return !error;
-}

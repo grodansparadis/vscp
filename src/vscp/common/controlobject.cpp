@@ -160,6 +160,11 @@ WSADATA wsaData; // WSA functions
 
 static int gbClose;
 
+// lws http
+struct per_session_data__http {
+	int fd;
+};
+
 struct per_session_data__dumb_increment {
 	int number;
 };
@@ -186,13 +191,13 @@ static int mirrorws_ringbuffer_head;
 #define MAX_VSCPWS_MESSAGE_QUEUE 512
 
 struct per_session_data__lws_vscp {
-	struct libwebsocket *wsi; // The websocket.
-	wxArrayString *pMessageList; // Messages (not events) to client.
-	CClientItem *pClientItem; // Client structure for websocket in VSCP world
-	bool bTrigger; // True to activate trigger functionality.
-	uint32_t triggerTimeout; // Time out before trigg (or errror) must occur.
-	TRIGGERLIST listTriggerOK; // List with positive triggers.
-	TRIGGERLIST listTriggerERR; // List with negative triggers.
+	struct libwebsocket *wsi;	// The websocket.
+	wxArrayString *pMessageList;	// Messages (not events) to client.
+	CClientItem *pClientItem;	// Client structure for websocket in VSCP world
+	bool bTrigger;			// True to activate trigger functionality.
+	uint32_t triggerTimeout;	// Time out before trigg (or errror) must occur.
+	TRIGGERLIST listTriggerOK;	// List with positive triggers.
+	TRIGGERLIST listTriggerERR;	// List with negative triggers.
 };
 
 
@@ -205,25 +210,29 @@ static struct libwebsocket_protocols protocols[] = {
 	{
 		"http-only", // name 
 		CControlObject::callback_http, // callback 
-		0 // per_session_data_size 
+		sizeof(struct per_session_data__http),	// per_session_data_size 
+		0,	// max frame size / rx buffer 
 	},
 	{
 		"dumb-increment-protocol",
 		CControlObject::callback_dumb_increment,
 		sizeof( struct per_session_data__dumb_increment),
+		10,
 	},
 	{
 		"lws-mirror-protocol",
 		CControlObject::callback_lws_mirror,
-		sizeof( struct per_session_data__lws_mirror)
+		sizeof(struct per_session_data__lws_mirror),
+		128,	
 	},
 	{
 		"very-simple-control-protocol",
 		CControlObject::callback_lws_vscp,
-		sizeof( struct per_session_data__lws_vscp)
+		sizeof( struct per_session_data__lws_vscp),
+		128	
 	},
 	{
-		NULL, NULL, 0 // End of list 
+		NULL, NULL, 0, 0 // End of list 
 	}
 };
 
@@ -234,12 +243,8 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
 };
 
 
-
-
-
 WX_DEFINE_LIST(CanalMsgList);
 WX_DEFINE_LIST(VSCPEventList);
-
 
 
 // Initialize statics
@@ -254,7 +259,6 @@ CControlObject::CControlObject()
 {
 	int i;
 	m_bQuit = false; // true if we should quit
-
 	gpctrlObj = this; // needed by websocket static callbacks
 
 	m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
@@ -284,18 +288,6 @@ CControlObject::CControlObject()
 
 	// Default TCP/IP interface
 	m_strTcpInterfaceAddress = _("");
-
-	// Control UDP Interface 
-	m_bUDPInterface = true;
-
-	// Default is UDP send/receive
-	m_bUDPInterfaceNoSend = false;
-
-	// Default UDP send interface
-	m_strUdpInterfaceAddress = _("");
-
-	// Default UDP bind interface
-	m_strUdpBindInterfaceAddress = _("");
 
 	// Canaldriver
 	m_bCanalDrivers = true;
@@ -341,7 +333,7 @@ CControlObject::CControlObject()
 
 #else
 
-	CControlObject::m_pathRoot = _("/var/vscp");
+	CControlObject::m_pathRoot = _("/srv/vscp/www");
 
 #endif
 
@@ -531,8 +523,6 @@ bool CControlObject::init(wxString& strcfgfile)
 	if (m_bCanalDrivers) startDeviceWorkerThreads();
 
 	if (m_bTCPInterface) startTcpWorkerThread();
-
-	if (m_bUDPInterface) startUdpWorkerThreads();
 
 	startDaemonWorkerThread();
 
@@ -771,7 +761,6 @@ bool CControlObject::run(void)
 bool CControlObject::cleanup(void)
 {
 	stopDeviceWorkerThreads();
-	stopUdpWorkerThreads();
 	stopTcpWorkerThread();
 	stopClientWorkerThread();
 	stopDaemonWorkerThread();
@@ -875,91 +864,6 @@ bool CControlObject::stopTcpWorkerThread(void)
 	return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// startUdpWorkerThreads
-//
-
-bool CControlObject::startUdpWorkerThreads(void)
-{
-	/////////////////////////////////////////////////////////////////////////////
-	// Run the UDP send thread   --   TODO - multiport
-	/////////////////////////////////////////////////////////////////////////////
-	if (m_bUDPInterface) {
-
-		if (!m_bUDPInterfaceNoSend) {
-
-			m_pudpSendThread = new UDPSendThread;
-
-			if (m_pudpSendThread) {
-				m_pudpSendThread->m_pCtrlObject = this;
-				wxThreadError err;
-				if (wxTHREAD_NO_ERROR == (err = m_pudpSendThread->Create())) {
-					//m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-					if (wxTHREAD_NO_ERROR != (err = m_pudpSendThread->Run())) {
-						logMsg(_("Unable to run UDP send thread."), DAEMON_LOGMSG_CRITICAL);
-					}
-				} else {
-					logMsg(_("Unable to create UDP send thread."), DAEMON_LOGMSG_CRITICAL);
-				}
-			} else {
-				logMsg(_("Unable to allocate memory for UDP send thread."), DAEMON_LOGMSG_CRITICAL);
-			}
-
-		}
-
-		// =========================================
-
-		m_pudpReceiveThread = new UDPReceiveThread;
-
-		if (m_pudpReceiveThread) {
-			m_pudpReceiveThread->m_pCtrlObject = this;
-			wxThreadError err;
-			if (wxTHREAD_NO_ERROR == (err = m_pudpReceiveThread->Create())) {
-				//m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-				if (wxTHREAD_NO_ERROR != (err = m_pudpReceiveThread->Run())) {
-					logMsg(_("Unable to run UDP receive thread."), DAEMON_LOGMSG_CRITICAL);
-				}
-			} else {
-				logMsg(_("Unable to create UDP receve thread."), DAEMON_LOGMSG_CRITICAL);
-			}
-		} else {
-			logMsg(_("Unable to allocate memory for UDP receive thread."), DAEMON_LOGMSG_CRITICAL);
-		}
-
-	} // udp i/f
-
-	return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// stopUdpWorkerThreads
-//
-
-bool CControlObject::stopUdpWorkerThreads(void)
-{
-	// send Thread
-	if (!m_bUDPInterfaceNoSend) {
-		if (NULL != m_pudpSendThread) {
-			m_mutexudpSendThread.Lock();
-			m_pudpSendThread->m_bQuit = true;
-			m_pudpSendThread->Wait();
-			delete m_pudpSendThread;
-			m_mutexudpSendThread.Unlock();
-		}
-	}
-
-
-	// Receive Thread
-	if (NULL != m_pudpReceiveThread) {
-		m_mutexudpReceiveThread.Lock();
-		m_pudpReceiveThread->m_bQuit = true;
-		m_pudpReceiveThread->Wait();
-		delete m_pudpReceiveThread;
-		m_mutexudpReceiveThread.Unlock();
-	}
-
-	return true;
-}
 
 /////////////////////////////////////////////////////////////////////////////
 // startDaemonWorkerThread
@@ -1513,27 +1417,6 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 					m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("ifaddress"), wxT(""));
 
-				} else if (subchild->GetName() == wxT("udpif")) {
-					wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
-					if (property.IsSameAs(_("false"), false)) {
-						m_bUDPInterface = false;
-					}
-
-					property = subchild->GetPropVal(wxT("onlyincoming"), wxT("false"));
-					if (property.IsSameAs(_("true"), false)) {
-						m_bUDPInterfaceNoSend = true;
-					}
-
-					property = subchild->GetPropVal(wxT("port"), wxT("9598"));
-					if (property.IsNumber()) {
-						m_UDPPort = readStringValue(property);
-					}
-
-					m_strUdpInterfaceAddress = subchild->GetPropVal(wxT("ifaddress"), wxT(""));
-
-					m_strUdpBindInterfaceAddress = subchild->GetPropVal(wxT("ifaddress"), wxT(""));
-
-
 				} else if (subchild->GetName() == wxT("canaldriver")) {
 					wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
 					if (property.IsSameAs(_("false"), false)) {
@@ -1578,7 +1461,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 					m_pathCert = subchild->GetNodeContent();
 				} else if (subchild->GetName() == wxT("pathkey")) {
 					m_pathKey = subchild->GetNodeContent();
-				} else if (subchild->GetName() == wxT("websocket")) {
+				} else if (subchild->GetName() == wxT("websockets")) {
 					wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
 					if (property.IsSameAs(_("false"), false)) {
 						m_bWebsocketif = false;
@@ -1910,7 +1793,7 @@ CControlObject::callback_http(struct libwebsocket_context *context,
 
 	switch (reason) {
 
-	case LWS_CALLBACK_HTTP:
+	case LWS_CALLBACK_HTTP: 
 	{
 		wxString mime;
 		wxString args;
@@ -1978,7 +1861,7 @@ CControlObject::callback_http(struct libwebsocket_context *context,
 			(const char *) path.ToAscii(),
 			(const char *) mime.ToAscii());
 #ifndef WIN32
-		syslog(LOG_ERR, "Ice: serving HTTP URI %s, mime %s",
+		syslog(LOG_ERR, "vscpd (ws): serving HTTP URI %s, mime %s",
 			(const char *) path.ToAscii(),
 			(const char *) mime.ToAscii());
 #endif
@@ -1987,14 +1870,21 @@ CControlObject::callback_http(struct libwebsocket_context *context,
 			wsi,
 			path.ToAscii(),
 			mime.ToAscii())) {
-			fprintf(stderr, "* * *  Failed to send file * * * \n ");
+			//fprintf(stderr, "* * *  Failed to send file * * * \n ");
 #ifndef WIN32
-			syslog(LOG_ERR, "Ice: * * *  Failed to send file * * * ");
+			syslog(LOG_ERR, "vscpd (ws): Success sending file");
 #endif
+			return -1;
 		}
 
 	}
+
 		break;
+		
+	case LWS_CALLBACK_HTTP_FILE_COMPLETION:
+//		lwsl_info("LWS_CALLBACK_HTTP_FILE_COMPLETION seen\n");
+		/* kill the connection after we sent one file */
+		return -1;		
 
 		/*
 		 * callback for confirming to continue with client IP appear in
@@ -2027,7 +1917,7 @@ CControlObject::callback_http(struct libwebsocket_context *context,
 				    client_name, client_ip);
 		 */
 #ifndef WIN32
-		syslog(LOG_ERR, "Ice: Received network connect from %s (%s)",
+		syslog(LOG_ERR, "vscpd (ws): Received network connect from %s (%s)",
 			client_name, client_ip);
 #endif
 

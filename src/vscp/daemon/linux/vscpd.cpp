@@ -252,6 +252,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
 	//wxFile
 
+
 	wxLogDebug(_("VSCPD: init"));
 	if (!gpobj->init(strcfgfile)) {
 		syslog(LOG_CRIT, "Can't initialize daemon. Exiting.");

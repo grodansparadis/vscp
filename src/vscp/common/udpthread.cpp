@@ -678,7 +678,7 @@ void *UDPReceiveThread::Entry()
 
 #endif
 
-		if (bLocalAddress) continue; // From us get next event
+		if (bLocalAddress) continue; // From ourself get next event
 
 		wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
 			_("udpReceiveThread: It's from another machine. Grab it."));

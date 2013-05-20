@@ -44,7 +44,6 @@ CANALD_OBJECTS =  \
 	../../common/vscpvariable.o \
 	../../common/interfacelist.o \
 	../../common/userlist.o \
-        ../../common/udpthread.o \
         ../../common/devicethread.o \
 	../../common/vscptcpif.o \
 	../../common/guid.o \

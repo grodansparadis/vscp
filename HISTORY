@@ -1,6 +1,10 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-05-20 - AKHE Binary mode removed from TCP/IP interface. The Nova code for the Modtronix SBC68C board still have binary code in it. This code does not work anymore.
+2013-05-20 - AKHE udp broadcast is no longer part of daemon. Use
+			raw Ethernet interface or udp driver
+			instead.
 2013-05-14 - AKHE Removed old code, old boot loader wizard etc
 2012-10-23 - AKHE Fixed problem with link clicks in configuration status window.
 2012-10-23 - AKHE 0.4.0.3

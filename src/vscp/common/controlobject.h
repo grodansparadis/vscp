@@ -193,17 +193,6 @@ public:
      */
     bool stopDaemonWorkerThread(void);
 
-    /*!
-        Starting UDP worker threads
-        @return true on success
-     */
-    bool startUdpWorkerThreads(void);
-
-    /*!
-        Stop the UDP worker threads
-        @return true on success
-     */
-    bool stopUdpWorkerThreads(void);
 
     /*!
         Starting TCP/IP worker thread
@@ -428,27 +417,6 @@ public:
      */
     wxString m_strTcpInterfaceAddress;
 
-    /*!
-        Enable control UDP interface
-     */
-    bool m_bUDPInterface;
-
-    /*!
-        UDP interface - just receive no send
-     */
-    bool m_bUDPInterfaceNoSend;
-
-    /*!
-        Interface used for UDP send 
-        Default: empty
-     */
-    wxString m_strUdpInterfaceAddress;
-
-    /*!
-        Interface used for UDP listen
-        Default: empty
-     */
-    wxString m_strUdpBindInterfaceAddress;
 
     /*!
         Enable CANAL Driver functionality

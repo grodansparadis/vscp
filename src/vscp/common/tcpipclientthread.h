@@ -20,10 +20,7 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: tcplistenthread.h,v $                                       
-// $Date: 2005/08/30 20:22:15 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.5 $ 
+
 
 #if !defined(TCPIPCLIENTTHREAD_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
 #define TCPIPCLIENTTHREAD_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
@@ -35,8 +32,8 @@
 #include "userlist.h"
 
 #define VSCP_TCP_MAX_CLIENTS                1024
-#define MSG_COPYRIGHT                       "OK Copyright (c) 2000-2012, Grodans Paradis AB, http://www.grodansparadis.com\r\n"
-#define MSG_WELCOME                         "OK Welcome to the VSCP daemon.\r\n"
+#define MSG_COPYRIGHT                       "+OK Copyright (c) 2000-2013, Grodans Paradis AB, http://www.grodansparadis.com\r\n"
+#define MSG_WELCOME                         "+OK Welcome to the VSCP daemon.\r\n"
 #define MSG_OK                              "+OK - Success.\r\n"
 #define MSG_GOODBY                          "+OK - Connection closed by client.\r\n"
 #define MSG_USENAME_OK                      "+OK - User name accepted, password please\r\n"
@@ -377,58 +374,6 @@ public:
 	*/
 	void handleClientDriver( void );
 
-
-	/////////////////////////////////////////////////////////////////////////////
-
-	/*!
-		Binary mode
-	*/
-	void handleBinaryMode ( void );
-
-	/*!
-		Handle received event in FAST mode
-
-		@param rbuf Input buffer with read data
-        @param nRead Datacount.
-
-
-
-
-	*/
-	void handleFastIncomingFrame( char *rbuf, 
-                                    unsigned short nRead );
-
-	/*!
-		Handle transmitted event in FAST mode
-
-		@param pClientItem Pointer to the client item structure.
-		@param rbuf Input buffer with read dara
-	*/
-	void sendFastOutgoingFrame( CClientItem *pClientItem );
-
-	/*!
-		Send Fast mode error frame
-
-		@param error_code Code representing the error
-	*/
-	void SendFastErrorFrame( unsigned char error_code );
-
-	/*!
-		Write a binary event to the out queue
-		  
-		@return True on success
-	*/
-	bool BINARY_WriteEvent( unsigned char type, const void *buffer, wxUint32 nbytes );
-
-	/*!
-		Read a binary event from the queue
-
-		@return True on success
-	*/
-	bool BINARY_ReadEvent( void* buffer, 
-							            wxUint32 nbytes, 
-							            unsigned short *pnRead, 
-							            unsigned char *ptype );
 
 // --- Member variables ---
 
