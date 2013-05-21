@@ -1,4 +1,27 @@
-This is a Level II driver for the linux Socketcan interface
+This is a Level II driver for the linux lmsensors interface
+
+The driver read the sensor values from the textfiles and convert the 
+values there to events at periodic intervals. 
+
+Variables 
+=========
+A driver is opened with a supplied prefix. This prefix is added in from of
+the variable name described below. For example if a prefix "lmsensor1" is 
+supplied the the variables read would be lmsensor1_numberffsensors, 
+lmsensor1_guid0, lmsensor1_path0 and so on.
+
+_numberffsensors - This is the number of sensors that the driver is supposed
+to read. Sensors are numbered staring with zero. 
+
+_guidn - GUID for sensor n. guid0, guid1, guid2 etc
+_pathn - Path to value for example 
+          /sys/class/hwmon/hwmon0/temp1_input
+        which is CPU temp for core 1
+        on the system this is written at.
+_intervaln - Interval in Seconds the event should be sent out. Zero disables.
+_codingn     - Coding for the value. See section 8 in specification.
+_dividen     - Divide value with this integer. Default is 1.
+_multiplyn   - Multiply value with this integer. Default is 1.
 
 
 

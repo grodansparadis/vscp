@@ -1,4 +1,4 @@
-// vccpl1.h : main header file for the canallogger.dll
+// vscp2drv_lmsensors.h : main header file for the canallogger.dll
 // Linux version
 //
 // This program is free software; you can redistribute it and/or
@@ -21,10 +21,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: canallogger.h,v $                                       
-// $Date: 2005/01/05 12:16:16 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 
 #if !defined(AFX_VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
 #define AFX_VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
@@ -36,9 +32,9 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <syslog.h>
-#include "../common/canal.h"
-#include "../common/vscptcpif.h"
-#include "../common/canal_macro.h"
+#include "../../../../common/canal.h"
+#include "../../../../common/vscptcpif.h"
+#include "../../../../common/canal_macro.h"
 
 #ifndef BOOL
 typedef int BOOL;
@@ -63,20 +59,20 @@ typedef int BOOL;
 #define VSCP_LEVEL1_INTERFACE_MAX_OPEN	256
 
 /////////////////////////////////////////////////////////////////////////////
-// CVSCPL1App
+// CVSCPL2App
 // See vscpl1.cpp for the implementation of this class
 //
 
-class CVSCPL1App
+class CVSCPL2App
 {
 
 public:
 
 	/// Constructor
-	CVSCPL1App();
+	CVSCPL2App();
 	
 	/// Destructor
-	~CVSCPL1App();
+	~CVSCPL2App();
 
 	/*!
 		Add a driver object
@@ -126,7 +122,7 @@ public:
 
 extern "C"
 {
-	CVSCPL1App *CreateObject( void );
+	CVSCPL2App *CreateObject( void );
 }
 
 #endif // !defined(AFX_VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

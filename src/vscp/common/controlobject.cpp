@@ -472,6 +472,7 @@ bool CControlObject::init(wxString& strcfgfile)
 
 	// A configuration file must be available
 	if (!wxFile::Exists(strcfgfile)) {
+		printf("vscpd: Configuration file was not found. Terminating.");
 		logMsg(_("No configuration file given. Can't initialize!).\n"), DAEMON_LOGMSG_CRITICAL);
 		logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
 		return FALSE;

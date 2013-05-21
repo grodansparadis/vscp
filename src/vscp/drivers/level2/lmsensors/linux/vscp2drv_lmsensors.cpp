@@ -1,4 +1,4 @@
-// vscpl1.cpp : Defines the initialization routines for the DLL.
+// vscp2drv_lmsensors.cpp : Defines the initialization routines for the DLL.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -20,18 +20,7 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: canallogger.cpp,v $                                       
-// $Date: 2005/01/05 12:16:16 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
-//
-// Linux
-// =====
-// device1 = logger,/tmp/canal_log,txt,/usr/local/lib/canallogger.so,64,64,1
-//
-// WIN32
-// =====
-// device1 = logger,c:\canal_log,txt,d:\winnr\system32\canallogger.dll,64,64,1
+
 
 #ifdef __GNUG__
 //#pragma implementation
@@ -54,7 +43,7 @@
 
 #include "wx/tokenzr.h"
 
-#include "vscpl1.h"
+#include "vscp2drv_lmsensors.h"
 #include "stdio.h"
 #include "stdlib.h"
 
@@ -68,9 +57,9 @@ void _fini() {printf("finishing\n");}
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CVSCPL1App construction
+// CVSCPL2App construction
 
-CVSCPL1App::CVSCPL1App()
+CVSCPL2App::CVSCPL2App()
 {
 	m_instanceCounter = 0;
 	pthread_mutex_init( &m_objMutex, NULL );
@@ -84,7 +73,7 @@ CVSCPL1App::CVSCPL1App()
 }
 
 
-CVSCPL1App::~CVSCPL1App()
+CVSCPL2App::~CVSCPL2App()
 {
 	LOCK_MUTEX( m_objMutex );
 	
@@ -108,7 +97,7 @@ CVSCPL1App::~CVSCPL1App()
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CLoggerdllApp object
 
-CVSCPL1App theApp;
+CVSCPL2App theApp;
 
 
 
@@ -121,7 +110,7 @@ CVSCPL1App theApp;
 // addDriverObject
 //
 
-long CVSCPL1App::addDriverObject( VscpTcpIf *pvscpif )
+long CVSCPL2App::addDriverObject( VscpTcpIf *pvscpif )
 {
 	long h = 0;
 
@@ -148,7 +137,7 @@ long CVSCPL1App::addDriverObject( VscpTcpIf *pvscpif )
 // getDriverObject
 //
 
-VscpTcpIf *CVSCPL1App::getDriverObject( long h )
+VscpTcpIf *CVSCPL2App::getDriverObject( long h )
 {
 	long idx = h - 1681;
 
@@ -163,7 +152,7 @@ VscpTcpIf *CVSCPL1App::getDriverObject( long h )
 // removeDriverObject
 //
 
-void CVSCPL1App::removeDriverObject( long h )
+void CVSCPL2App::removeDriverObject( long h )
 {
 	long idx = h - 1681;
 
@@ -180,7 +169,7 @@ void CVSCPL1App::removeDriverObject( long h )
 ///////////////////////////////////////////////////////////////////////////////
 // InitInstance
 
-BOOL CVSCPL1App::InitInstance() 
+BOOL CVSCPL2App::InitInstance() 
 {
 	m_instanceCounter++;
 	return TRUE;
