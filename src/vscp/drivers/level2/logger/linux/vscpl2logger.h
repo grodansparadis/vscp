@@ -34,7 +34,7 @@
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
 
 // Driver information.
-#define VSCP_LOGGER_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
+#define VSCP_LMSENSORS_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
 "<!-- Version 0.0.1    2013-05-11   -->" \
 "<config level=\"1|2\"blocking\"true|false\" description=\"bla bla bla bla\">" \
 "   <item pos=\"0\" type=\"string\" description\"Serial number for Tellstick\"/>" \
@@ -42,21 +42,21 @@
 "</config>"
 
 // Max number of open connections
-#define VSCP_LOGGER_DRIVER_MAX_OPEN	    256
+#define VSCP_LMSENSORS_DRIVER_MAX_OPEN	    256
 
 /////////////////////////////////////////////////////////////////////////////
-// CLoggerdllApp
+// CLmSensorApp
 // See loggerdll.cpp for the implementation of this class
 //
 
-class CLoggerdllApp {
+class CLmSensorApp {
 public:
 
     /// Constructor
-    CLoggerdllApp();
+    CLmSensorApp();
 
     /// Destructor
-    ~CLoggerdllApp();
+    ~CLmSensorApp();
 
     /*!
         Add a driver object
@@ -86,7 +86,7 @@ public:
         The log file object
         This is the array with driver objects (max 256 objects)
      */
-    CVSCPLog *m_logArray[ VSCP_LOGGER_DRIVER_MAX_OPEN ];
+    CVSCP_lmsens *m_logArray[ VSCP_LMSENSORS__DRIVER_MAX_OPEN ];
 
     /// Mutex for open/close
     pthread_mutex_t m_objMutex;
@@ -104,7 +104,7 @@ public:
 //
 
 extern "C" {
-    CLoggerdllApp *CreateObject(void);
+    CLmSensorApp *CreateObject(void);
 }
 
 #endif // !defined(AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

@@ -43,29 +43,29 @@ _fini()
 }
 
 
-//CLoggerdllApp *gtheapp;
+//CLmSensorApp *gtheapp;
 
 /////////////////////////////////////////////////////////////////////////////
-// CLoggerdllApp
+// CLmSensorApp
 
 ////////////////////////////////////////////////////////////////////////////
-// CLoggerdllApp construction
+// CLmSensorApp construction
 
-CLoggerdllApp::CLoggerdllApp()
+CLmSensorApp::CLmSensorApp()
 {
 
 	m_instanceCounter = 0;
 	pthread_mutex_init(&m_objMutex, NULL);
 
 	// Init the driver array
-	for (int i = 0; i < VSCP_LOGGER_DRIVER_MAX_OPEN; i++) {
+	for (int i = 0; i < VSCP_LMSENSORS__DRIVER_MAX_OPEN; i++) {
 		m_logArray[ i ] = NULL;
 	}
 
 	UNLOCK_MUTEX(m_objMutex);
 }
 
-CLoggerdllApp::~CLoggerdllApp()
+CLmSensorApp::~CLmSensorApp()
 {
 
 	LOCK_MUTEX(m_objMutex);
@@ -88,16 +88,16 @@ CLoggerdllApp::~CLoggerdllApp()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// The one and only CLoggerdllApp object
+// The one and only CLmSensorApp object
 
-CLoggerdllApp theApp;
+CLmSensorApp theApp;
 
 ///////////////////////////////////////////////////////////////////////////////
 // CreateObject
 
-//extern "C" CLoggerdllApp* CreateObject( void ) {
-//	CLoggerdllApp *theapp = new CLoggerdllApp;
-//	return ( ( CLoggerdllApp * ) theapp );
+//extern "C" CLmSensorApp* CreateObject( void ) {
+//	CLmSensorApp *theapp = new CLmSensorApp;
+//	return ( ( CLmSensorApp * ) theapp );
 //}
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ CLoggerdllApp theApp;
 //
 
 long
-CLoggerdllApp::addDriverObject(CVSCPLog *plog)
+CLmSensorApp::addDriverObject(CVSCPLog *plog)
 {
 
 	long h = 0;
@@ -134,7 +134,7 @@ CLoggerdllApp::addDriverObject(CVSCPLog *plog)
 //
 
 CVSCPLog *
-CLoggerdllApp::getDriverObject(long h)
+CLmSensorApp::getDriverObject(long h)
 {
 
 	long idx = h - 1681;
@@ -151,7 +151,7 @@ CLoggerdllApp::getDriverObject(long h)
 //
 
 void
-CLoggerdllApp::removeDriverObject(long h)
+CLmSensorApp::removeDriverObject(long h)
 {
 
 	long idx = h - 1681;
@@ -170,7 +170,7 @@ CLoggerdllApp::removeDriverObject(long h)
 // InitInstance
 
 BOOL
-CLoggerdllApp::InitInstance()
+CLmSensorApp::InitInstance()
 {
 	m_instanceCounter++;
 	return TRUE;
