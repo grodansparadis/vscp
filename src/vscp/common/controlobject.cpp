@@ -1690,25 +1690,21 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 				wxString strName;
 				wxString strParameter;
 				wxString strPath;
-				unsigned long flags;
 				wxString strGUID;
-				bool bCanalDriver = false;
+				bool bLevel2Driver = false;
 
 				if (subchild->GetName() == wxT("driver")) {
 					wxXmlNode *subsubchild = subchild->GetChildren();
 					while (subsubchild) {
 						if (subsubchild->GetName() == wxT("name")) {
 							strName = subsubchild->GetNodeContent();
-							bCanalDriver = true;
+							bLevel2Driver = true;
 						} else if (subsubchild->GetName() == wxT("parameter")) {
 							strParameter = subsubchild->GetNodeContent();
 							strParameter.Trim();
 						} else if (subsubchild->GetName() == wxT("path")) {
 							strPath = subsubchild->GetNodeContent();
 							strPath.Trim();
-						} else if (subsubchild->GetName() == wxT("flags")) {
-							wxString str = subsubchild->GetNodeContent();
-							flags = readStringValue(str);
 						} else if (subsubchild->GetName() == wxT("guid")) {
 							strGUID = subsubchild->GetNodeContent();
 							strGUID.Trim();
@@ -1732,12 +1728,12 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 				}
 
 				// Add the device
-				if (bCanalDriver) {
+				if (bLevel2Driver) {
 
 					if (!m_deviceList.addItem(strName,
 						strParameter,
 						strPath,
-						flags,
+						0,		
 						GUID,
 						VSCP_DRIVER_LEVEL2)) {
 						wxString errMsg = _("Driver not added. Path does not exist. - \n\t[ ") +
@@ -1746,7 +1742,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 						wxLogDebug(errMsg);
 					}
 
-					bCanalDriver = false;
+					bLevel2Driver = false;
 
 				}
 
