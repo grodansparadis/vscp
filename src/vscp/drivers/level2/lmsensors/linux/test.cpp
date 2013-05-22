@@ -32,7 +32,7 @@ int main()
     double val;
     // /sys/class/hwmon/hwmon0/temp1_input
     char str[999];
-    FILE * file;
+    FILE *file;
     // Processor core temp
     file = fopen( "/sys/class/hwmon/hwmon0/temp1_input" , "r");
     if (file) {

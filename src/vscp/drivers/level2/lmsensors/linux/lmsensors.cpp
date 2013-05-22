@@ -1,4 +1,4 @@
-// Log.cpp: implementation of the CVSCPLog class.
+// Lmsensors.cpp: implementation of the Clmsensors class.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -31,6 +31,7 @@
 #include "unistd.h"
 #include "stdlib.h"
 #include "limits.h"
+#include "syslog.h"
 
 #endif
 
@@ -49,33 +50,51 @@
 #include <wx/datetime.h>
 #include "../../../../common/vscphelper.h"
 #include "../../../../common/vscptcpif.h"
-#include "log.h"
+#include "lmsensors.h"
 
 // Lists
 WX_DEFINE_LIST(VSCPEVENTLIST);
+WX_DEFINE_LIST(VSCPSENSORDATALIST);
 
 //////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////
-// CVSCPLog
+// ClmSensorData
 //
 
-CVSCPLog::CVSCPLog()
+ClmSensorData::ClmSensorData()
 {
-	m_flags = 0;
+	m_path.Empty();
+	m_guid.clear(); // Interface GUID
+	m_interval = 0; // Disabled
+	m_measurement_data_coding = 0;
+	m_divideValue = 1;
+	m_multiplyValue = 1;
+}
+
+//////////////////////////////////////////////////////////////////////
+// ~ClmSensorData
+//
+
+ClmSensorData::~ClmSensorData()
+{
+
+}
+
+//////////////////////////////////////////////////////////////////////
+// Clmsensors
+//
+
+Clmsensors::Clmsensors()
+{
 	m_bQuit = false;
-	m_pLogStream = NULL;
 	m_pthreadWork = NULL;
 	::wxInitialize();
 }
 
 //////////////////////////////////////////////////////////////////////
-// ~CVSCPLog
+// ~Clmsensors
 //
 
-CVSCPLog::~CVSCPLog()
+Clmsensors::~Clmsensors()
 {
 	close();
 	::wxUninitialize();
@@ -85,23 +104,15 @@ CVSCPLog::~CVSCPLog()
 //////////////////////////////////////////////////////////////////////
 // open
 //
-// filename
-//      the name of the log file
-//
-// flags 
-//      bit 1 = 0 Append.
-//      bit 1 = 1 Rewrite (=overwrite)
-//      bit 2 - 0 Standard format.
-//      bit 2 - 1 VSCP Works XML format.
 //
 
 bool
-CVSCPLog::open(const char *pUsername,
-	const char *pPassword,
-	const char *pHost,
-	short port,
-	const char *pPrefix,
-	const char *pConfig)
+Clmsensors::open(const char *pUsername,
+		const char *pPassword,
+		const char *pHost,
+		short port,
+		const char *pPrefix,
+		const char *pConfig)
 {
 
 	bool rv = true;
@@ -119,64 +130,190 @@ CVSCPLog::open(const char *pUsername,
 	// 
 	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Check for path in configuration string
+	// Check for # of sensors in configuration string
 	if (tkz.HasMoreTokens()) {
 		// Path
-		m_path = tkz.GetNextToken();
+		m_nSensors = readStringValue(tkz.GetNextToken());
 	}
 	
-	// Check for rewrite in configuration string
-	// valid is "true|false"
-	if (tkz.HasMoreTokens()) {
-		wxString str;
-		str = tkz.GetNextToken();
-		str = str.Upper();
-                if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
-		    m_flags |= LOG_FILE_OVERWRITE;
-                }
-                else {
-                    m_flags &= ~LOG_FILE_OVERWRITE;
-                }
-	}
-	
-	// Check for vscpworksfmt in configuration string
-	// valid is "true|false"
-	if (tkz.HasMoreTokens()) {
-		wxString str;
-		str = tkz.GetNextToken();
-		str = str.Upper();
-                if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
-                    m_flags |= LOG_FILE_VSCP_WORKS;
-                }
-                else {
-                    m_flags &= ~LOG_FILE_VSCP_WORKS;
-                }
-	}
-	
-	// Filter
-	if (tkz.HasMoreTokens()) {
-		wxString str;
-		str = tkz.GetNextToken();
-		readFilterFromString(&m_Filter,str);
-	}
-	
-	// Mask
-	if (tkz.HasMoreTokens()) {
-		wxString str;
-		str = tkz.GetNextToken();
-		readMaskFromString(&m_Filter,str);
+	// First log on to the host and get configuration 
+	// variables
+
+	if (m_srv.doCmdOpen(m_host,
+			m_port,
+			m_username,
+			m_password) <= 0) {
+		syslog(LOG_ERR,
+				"%s",
+				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
+		return false;
 	}
 
-	// start the workerthread
-	m_pthreadWork = new CVSCPLogWrkTread();
-	if (NULL != m_pthreadWork) {
-		m_pthreadWork->m_pLog = this;
-		m_pthreadWork->Create();
-		m_pthreadWork->Run();
-	} else {
-		rv = false;
+	// Find the channel id
+	uint32_t ChannelID;
+	m_srv.doCmdGetChannelID(&ChannelID);
+
+	// The server should hold configuration data for each sensor
+	// we want to monitor.
+	// 
+	// We look for 
+	//	 _numberofsensors - This is the number of sensors that the driver is supposed
+	//	  to read. Sensors are numbered staring with zero. 
+	//
+	//   _guidn - GUID for sensor n. guid0, guid1, guid2 etc
+	//	 _pathn - Path to value for example 
+	//				/sys/class/hwmon/hwmon0/temp1_input
+	//	 		 which is CPU temp for core 1
+	//        on the system this is written at.
+	//   _intervaln   - Interval in Seconds the event should be sent out. 
+	//						Zero disables.
+	//   _vscptypen	  - VSCP_TYPE for CLASS=10 Measurement
+	//   _confign	  - Coding for the value. See calss=10 in specification.
+	//						measurement byte 0
+	//   _dividen     - Divide value with this integer. Default is 1.
+	//   _multiplyn   - Multiply value with this integer. Default is 1.    
+	//	      
+	//	      
+	//	
+
+
+	// Get configuration data
+	int varNumberOfSensors;
+
+	wxString strNumberOfSensors = m_prefix +
+			wxString::FromAscii("_numberofsensors");
+
+	if (!m_srv.getVariableInt(strNumberOfSensors, &varNumberOfSensors)) {
+		// The variable must be available - terminate
+		syslog(LOG_ERR,
+				"%s",
+				(const char *) "The variable prefix+NumberOfSensors is not available. Terminating!");
+		// Close the channel
+		m_srv.doCmdClose();
+		return false;
 	}
 
+	if (0 == varNumberOfSensors) {
+		syslog(LOG_ERR,
+				"%s",
+				(const char *) "NumberOfSensors is zero. Must be at least one sensor. Terminating!");
+		// Close the channel
+		m_srv.doCmdClose();
+		return false;
+	}
+
+	// Read in the configuration values for each sensor
+	for (int i = 0; i < varNumberOfSensors; i++) {
+
+		wxString strIteration = wxString::FromAscii(itoa(i));
+		strIteration.Trim();
+
+		ClmSensorData *pData = new ClmSensorData();
+		if (NULL != pData) {
+
+			// Get the path
+			wxString strVariableName = m_prefix +
+					wxString::FromAscii("_path") + strIteration;
+			if (!m_srv.getVariableString(strVariableName, &pData->m_path)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _path.",
+						m_prefix.ToAscii(),
+						i);
+			}
+
+			// Get GUID
+			strVariableName = m_prefix +
+					wxString::FromAscii("_path") + strIteration;
+			if (!m_srv.getVariableGUID(strVariableName, &pData->m_guid)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _guid.",
+						m_prefix.ToAscii(),
+						i);
+			}
+
+			// Get sample interval
+			strVariableName = m_prefix +
+					wxString::FromAscii("_interval") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName, &pData->m_interval)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _interval.",
+						m_prefix.ToAscii(),
+						i);
+			}
+
+			// Get VSCP type
+			strVariableName = m_prefix +
+					wxString::FromAscii("_vscptype") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName,
+					&pData->m_vscptype)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _vscptype.",
+						m_prefix.ToAscii(),
+						i);
+			}
+			
+			// Get measurement coding (first data byte)
+			strVariableName = m_prefix +
+					wxString::FromAscii("_coding") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName,
+					&pData->m_coding)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _coding.",
+						m_prefix.ToAscii(),
+						i);
+			}
+
+			// Get divide value
+			strVariableName = m_prefix +
+					wxString::FromAscii("_divide") + strIteration;
+			if (!m_srv.getVariableDouble(strVariableName,
+					&pData->m_divideValue)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _divide.",
+						m_prefix.ToAscii(),
+						i);
+			}
+
+			// Get multiply value
+			strVariableName = m_prefix +
+					wxString::FromAscii("_multiply") + strIteration;
+			if (!m_srv.getVariableDouble(strVariableName,
+					&pData->m_multiplyValue)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _multiply.",
+						m_prefix.ToAscii(),
+						i);
+			}
+			
+			// start the workerthread
+			CWrkTread *pthreadWork = new CWrkTread();
+			if (NULL != pthreadWork) {
+				pthreadWork->m_pObj = this;
+				pthreadWork->m_pData = pData;
+				pthreadWork->Create();
+				pthreadWork->Run();
+			} else {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to start workerthread.",
+						m_prefix.ToAscii(),
+						i);
+				rv = false;
+			}
+
+		}
+	}
+	
+	// Close the channel
+	m_srv.doCmdClose();
+	
 	return rv;
 }
 
@@ -186,218 +323,15 @@ CVSCPLog::open(const char *pUsername,
 //
 
 void
-CVSCPLog::close(void)
+Clmsensors::close(void)
 {
-
-	if (m_flags | LOG_FILE_VSCP_WORKS) {
-		m_pLogStream->Write("</vscprxdata>\n", strlen("</vscprxdata>\n"));
-	}
-
-	// Close the log-file
-	m_file.Close();
-
 	// Do nothing if already terminated
 	if (m_bQuit) return;
 
 	m_bQuit = true; // terminate the thread
 	wxSleep(1); // Give the thread some time to terminate
 
-	// Delete the stream object
-	if (NULL != m_pLogStream) delete m_pLogStream;
-
 }
-
-
-//////////////////////////////////////////////////////////////////////
-// doFilter
-//
-
-bool
-CVSCPLog::doFilter(vscpEvent *pEvent)
-{
-
-	return true;
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// setFilter
-//
-
-void
-CVSCPLog::setFilter(vscpEvent *pFilter)
-{
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// setMask
-//
-
-void
-CVSCPLog::setMask(vscpEvent *pMask)
-{
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// openFile
-//
-
-bool
-CVSCPLog::openFile(void)
-{
-
-	if (m_flags & LOG_FILE_OVERWRITE) {
-		if (m_file.Open(m_path, wxFile::write)) {
-			m_pLogStream = new wxFileOutputStream(m_file);
-			if (NULL != m_pLogStream) {
-				if (m_pLogStream->IsOk()) {
-					if (m_flags & LOG_FILE_VSCP_WORKS) {
-						m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-							strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
-						// RX data start
-						m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
-						return true;
-					} else {
-						return true;
-					}
-				} else {
-					return false;
-				}
-			}
-		}
-	} else {
-		if (m_file.Open(m_path, wxFile::write_append)) {
-			m_pLogStream = new wxFileOutputStream(m_file);
-			if (NULL != m_pLogStream) {
-				if (m_pLogStream->IsOk()) {
-					if (m_flags & LOG_FILE_VSCP_WORKS) {
-						m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-							strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
-						// RX data start
-						m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
-						return true;
-					} else {
-						return true;
-					}
-				} else {
-					return false;
-				}
-			}
-		}
-	}
-
-	return false;
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// writeEvent
-//
-
-bool
-CVSCPLog::writeEvent(vscpEvent *pEvent)
-{
-
-	if (m_flags & LOG_FILE_VSCP_WORKS) {
-
-		wxString str;
-
-		// VSCP Works log format
-
-		// Event
-		m_pLogStream->Write("<event>\n", strlen("<event>\n"));
-		m_pLogStream->Write("rx", strlen("rx"));
-		m_pLogStream->Write("</dir>\n", strlen("</dir>\n"));
-
-		m_pLogStream->Write("<time>", strlen("<time>"));
-		str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime();
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-		m_pLogStream->Write("</time>\n", strlen("</time>\n"));
-
-		m_pLogStream->Write("<head>", strlen("<head>"));
-		str.Printf(_("%d"), pEvent->head);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-		m_pLogStream->Write("</head>\n", strlen("</head>\n"));
-
-		m_pLogStream->Write("<class>", strlen("<class>"));
-		str.Printf(_("%d"), pEvent->vscp_class);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-		m_pLogStream->Write("</class>\n", strlen("</class>\n"));
-
-		m_pLogStream->Write("<type>", strlen("<type>"));
-		str.Printf(_("%d"), pEvent->vscp_type);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-		m_pLogStream->Write("</type>\n", strlen("</type>\n"));
-
-		m_pLogStream->Write("<guid>", strlen("<guid>"));
-		writeGuidToString(pEvent, str);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-		m_pLogStream->Write("</guid>\n", strlen("</guid>\n"));
-
-		m_pLogStream->Write("<sizedata>", strlen("<sizedata>")); // Not used by read routine	
-		str.Printf(_("%d"), pEvent->sizeData);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-		m_pLogStream->Write("</sizedata>\n", strlen("</sizedata>\n"));
-
-		if (0 != pEvent->sizeData) {
-			m_pLogStream->Write("<data>", strlen("<data>"));
-			writeVscpDataToString(pEvent, str);
-			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-			m_pLogStream->Write("</data>\n", strlen("</data>\n"));
-		}
-
-		m_pLogStream->Write("<timestamp>", strlen("<timestamp>"));
-		str.Printf(_("%lu"), pEvent->timestamp);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-		m_pLogStream->Write("</timestamp>\n", strlen("</timestamp>\n"));
-
-		m_pLogStream->Write("<note>", strlen("<note>"));
-		m_pLogStream->Write("</note>\n", strlen("</note>\n"));
-
-		m_pLogStream->Write("</event>\n", strlen("</event>\n"));
-
-	} else {
-		// Standard log format
-		wxString str;
-
-		str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime() + _(": ");
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-		str.Printf(_("head=%d "), pEvent->head);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-		str.Printf(_("class=%d "), pEvent->vscp_class);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-		str.Printf(_("type=%d "), pEvent->vscp_type);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-		str.Printf(_("GUID="), pEvent->vscp_type);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-		writeGuidToString(pEvent, str);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-		str.Printf(_(" datasize=%d "), pEvent->sizeData);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-		if (0 != pEvent->sizeData) {
-			str.Printf(_("data="), pEvent->vscp_type);
-			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-			writeVscpDataToString(pEvent, str);
-			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-		}
-
-		str.Printf(_(" Timestamp=%lu\r\n"), pEvent->timestamp);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-
-	}
-
-	return true;
-}
-
 
 
 
@@ -405,12 +339,12 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 //                           Workerthread
 //////////////////////////////////////////////////////////////////////
 
-CVSCPLogWrkTread::CVSCPLogWrkTread()
+CWrkTread::CWrkTread()
 {
-	m_pLog = NULL;
+	m_pObj = NULL;
 }
 
-CVSCPLogWrkTread::~CVSCPLogWrkTread()
+CWrkTread::~CWrkTread()
 {
 }
 
@@ -420,110 +354,103 @@ CVSCPLogWrkTread::~CVSCPLogWrkTread()
 //
 
 void *
-CVSCPLogWrkTread::Entry()
+CWrkTread::Entry()
 {
-
 	// Check pointers
-	if (NULL == m_pLog) return NULL;
+	if (NULL == m_pObj) return NULL;
 
-	// First log on to the host and get configuration 
-	// variables
-
-	if (m_srv.doCmdOpen(m_pLog->m_host,
-		m_pLog->m_port,
-		m_pLog->m_username,
-		m_pLog->m_password) <= 0) {
+	if (m_srv.doCmdOpen(m_pObj->m_host,
+			m_pObj->m_port,
+			m_pObj->m_username,
+			m_pObj->m_password) <= 0) {
+		syslog(LOG_ERR,
+				"%s",
+				(const char *) "Workerthread. Unable to connect to VSCP TCP/IP interface. Terminating!");
 		return NULL;
 	}
 
 	// Find the channel id
 	uint32_t ChannelID;
 	m_srv.doCmdGetChannelID(&ChannelID);
-
-	// It is possible that there is configuration data the server holds 
-	// that we need to read in. 
-	// We look for 
-	//      prefix_filter to find a filter. A string is expected.
-	//      prefix_mask to find a mask. A string is expected.
-	//      prefix_path to overide the file path for the log file. A string is expected.
-	//      prefix_rewrite to override the overwrite flag. A bool is expected.
-
-
-	// Get filter data
-	wxString varFilter;
-	wxString varMask;
-
-	wxString strFilter = m_pLog->m_prefix +
-		wxString::FromAscii("_filter");
-	wxString strMask = m_pLog->m_prefix +
-		wxString::FromAscii("_mask");
-	if (m_srv.getVariableString(strFilter, &varFilter) &&
-		m_srv.getVariableString(strMask, &varMask)) {
-		m_srv.doCmdFilter(varFilter, varMask);
-	}
-
-	// get overrided file path
-	wxString strPath = m_pLog->m_prefix +
-		wxString::FromAscii("_path");
-	wxString varPath;
-	if (m_srv.getVariableString(strPath, &varPath)) {
-		m_pLog->m_path = varPath;
-	}
-
-	wxString strRewrite = m_pLog->m_prefix +
-		wxString::FromAscii("_rewrite");
-	bool bOverwrite;
-	if (m_srv.getVariableBool(strRewrite, &bOverwrite)) {
-		if (bOverwrite) {
-			m_pLog->m_flags |= LOG_FILE_OVERWRITE;
-		} else {
-			m_pLog->m_flags &= ~LOG_FILE_OVERWRITE;
-		}
-	}
-
-	bool bVSCPWorksFormat;
-	wxString strVscpWorkdFmt = m_pLog->m_prefix +
-		wxString::FromAscii("_vscpworksfmt");
-	if (m_srv.getVariableBool(strVscpWorkdFmt, &bVSCPWorksFormat)) {
-		if (bVSCPWorksFormat) {
-			m_pLog->m_flags |= LOG_FILE_VSCP_WORKS;
-		} else {
-			m_pLog->m_flags &= ~LOG_FILE_VSCP_WORKS;
-		}
-	}
-
+	
 	// Open the file
-	if (!m_pLog->openFile()) return NULL;
+	wxFile file;
+	if ( !file.Open(m_pData->m_path)) {
+		syslog(LOG_ERR,
+				"%s",
+				(const char *) "Workerthread. File to open lmsensors file. Terminating!");
+		// Close the channel
+		m_srv.doCmdClose();
+		return NULL;
+	}
 
-	// Enter receive loop to start to log events
-	m_srv.doCmdEnterReceiveLoop();
-
-	int rv;
-	vscpEvent event;
-	while (!TestDestroy() && !m_pLog->m_bQuit) {
-
-		if (CANAL_ERROR_SUCCESS ==
-			(rv = m_srv.doCmdBlockReceive(&event, 1000))) {
-
-			//pRecord->m_time = wxDateTime::Now();
-			m_pLog->writeEvent(&event);
-
-			// We are done with the event - remove data if any
-			if (NULL != event.pdata) {
-				delete [] event.pdata;
-				event.pdata = NULL;
+	char buf[1024];
+	long val;
+	while (!TestDestroy() && !m_pObj->m_bQuit) {
+		
+		memset( 0, buf, sizeof(buf));
+		file.Seek(0);
+		if ( wxInvalidOffset != file.Read(buf, sizeof(buf)) ) {
+			
+			wxString str = wxString::FromAscii(buf);
+			str.ToLong(&val);
+			
+			if (m_pData->m_divideValue) {
+				val = val/m_pData->m_divideValue;
 			}
+			
+			if (m_pData->m_multiplyValue) {
+				val = val*m_pData->m_multiplyValue;
+			}
+			
+			bool bNegative = false;
+			if ( val < 0 ) {
+				bNegative = true;
+				val = abs(val);
+			}
+			
+			vscpEventEx event;
+			event.sizeData = 0;
+			event.data[0] = m_pData->m_coding;
+			event.GUID = m_pData->m_guid;
+			event.vscp_class = VSCP_CLASS1_MEASUREMENT;
+			event.vscp_type = m_pData->m_vscptype;
+			if ( val<0xff ) {
+				event.sizeData = 2;
+				event.data[1] = val; 
+			}
+			else if ( val<0xffff ) {
+				event.sizeData = 3;
+				event.data[1] = (val >> 8) & 0xff;
+				event.data[2] = val & 0xff;
+			}
+			else if ( val<0xffffff ) {
+				event.sizeData = 4;
+				event.data[1] = (val >> 16) & 0xff;
+				event.data[2] = (val >> 8) & 0xff;
+				event.data[3] = val & 0xff;
+			}
+			else {
+				event.sizeData = 5;
+				event.data[1] = (val >> 24) & 0xff;
+				event.data[2] = (val >> 16) & 0xff;
+				event.data[3] = (val >> 8) & 0xff;
+				event.data[4] = val & 0xff;
+			}
+			
+		}
+		
+		::wxSleep( m_pData->m_interval ? m_pData->m_interval : 1 );
+	}
+	
+	// Close the file
+	file.Close();
+}
 
-		} // Event received
-	} // Receive loop
+// Close the channel
+m_srv.doCmdClose();
 
-
-
-
-	// Close the channel
-	m_srv.doCmdClose();
-
-	return NULL;
+return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -531,6 +458,7 @@ CVSCPLogWrkTread::Entry()
 //
 
 void
-CVSCPLogWrkTread::OnExit()
+CWrkTread::OnExit()
 {
+	;
 }

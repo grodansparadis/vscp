@@ -1,4 +1,4 @@
-// Log.h: interface for the CVSCPLog class.
+// Lmsensors.h: interface for the Clmsensors class.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -56,63 +56,54 @@
 #include "../../../../common/canal_macro.h"
 #include "../../../../../common/dllist.h"
 #include "../../../../common/vscptcpif.h"
+#include "../../../../common/cguid.h"
 
-#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LOGGER_OBJ_MUTEX____"
+#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LMSENSORS_OBJ_MUTEX____"
 
-#define VSCP_LOG_LIST_MAX_MSG		2048
+#define VSCP_LMSENSORS_LIST_MAX_MSG		2048
 
-// Flags
-#define LOG_FILE_OVERWRITE      1L  // Overwrite
-#define LOG_FILE_VSCP_WORKS     2L  // VSP Works format
 
 // List with VSCP events
 WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST);
 
 // Forward declarations
-class CVSCPLogWrkTread;
+class ClmsensorsWrkTread;
 class VscpTcpIf;
 class wxFile;
 
-class CVSCPLog {
+class ClmSensorData {
+
 public:
 
     /// Constructor
-    CVSCPLog();
+    ClmSensorData();
 
     /// Destructor
-    virtual ~CVSCPLog();
-    
+    virtual ~ClmSensorData();
+        
+    wxString m_path;
+    cguid m_guid;
+    int m_interval;
+    int m_vscptype;     // VSCP_TYPE  Class is measurement
+    int m_coding;       // First databyte   
+    double m_divideValue;
+    double m_multiplyValue;
+};
 
-    /*!
-        Filter message
+// List with sensor data 
+WX_DECLARE_LIST(ClmSensorData, VSCPSENSORDATALIST);
 
-        @param pEvent Pointer to VSCP event
-        @return True if message is accepted false if rejected
-     */
-    bool doFilter(vscpEvent *pEvent);
+class Clmsensors {
+public:
 
+    /// Constructor
+    Clmsensors();
 
-    /*!
-        Set Filter
-     */
-    void setFilter(vscpEvent *pFilter);
-
-
-    /*!
-        Set Mask
-     */
-    void setMask(vscpEvent *pMask);
-
+    /// Destructor
+    virtual ~Clmsensors();
 
     /*! 
-        Open/create the logfile
-
-        @param Configuration string
-        @param flags 	
-                bit 1 = 0 Append, bit 
-                        1 = 1 Rewrite
-                bit 2,3 Format: 00 - Standard. 
-                                01 - VSCP works receive format.
+        Open
         @return True on success.
      */
     bool open(const char *pUsername,
@@ -120,35 +111,19 @@ public:
             const char *pHost,
             short port,
             const char *pPrefix,
-            const char *pConfig );
+            const char *pConfig);
 
     /*!
         Flush and close the log file
      */
     void close(void);
 
-    /*!
-        Write an event out to the file
-        \param pEvent Pointer to VSCP event
-        \return True on success.
-     */
-    bool writeEvent(vscpEvent *pEvent);
-
-
-    /*!
-        Open the log file
-        \return true on success.
-     */
-    bool openFile(void);
 
 
 public:
 
     /// Run flag
     bool m_bQuit;
-
-    /// Working flags
-    unsigned long m_flags;
 
     /// Server supplied username
     wxString m_username;
@@ -165,34 +140,30 @@ public:
     /// Server supplied port
     short m_port;
 
-    /// Path to logfile
-    wxString m_path;
-
-    /// File
-    wxFile m_file;
-
-    /// The log stream
-    wxFileOutputStream *m_pLogStream;
+    /// Number of sensors
+    int m_nSensors;
 
     /// Pointer to worker thread
-    CVSCPLogWrkTread *m_pthreadWork;
+    ClmsensorsWrkTread *m_pthreadWork;
     
-    /// Filter
-    vscpEventFilter m_Filter;
+     /// VSCP server interface
+    VscpTcpIf m_srv;
+
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//				Worker Tread
+//				                Worker Tread
 ///////////////////////////////////////////////////////////////////////////////
 
-class CVSCPLogWrkTread : public wxThread {
+
+class CWrkTread : public wxThread {
 public:
 
     /// Constructor
-    CVSCPLogWrkTread();
+    CWrkTread();
 
     /// Destructor
-    ~CVSCPLogWrkTread();
+    ~CWrkTread();
 
     /*!
         Thread code entry point
@@ -208,10 +179,12 @@ public:
     /// VSCP server interface
     VscpTcpIf m_srv;
 
-    /// Log object
-    CVSCPLog *m_pLog;
+    /// Sensor object
+    Clmsensors *m_pObj;
+    
+    /// Dataobject for specific sensor
+    ClmSensorData *m_pData;
 
 };
-
 
 #endif // !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
