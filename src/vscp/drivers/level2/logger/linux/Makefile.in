@@ -35,7 +35,7 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL2LOGGER_OBJECTS =  vscpl2logger.o ../common/log.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+VSCPL2LOGGER_OBJECTS =  ../common/log.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 PROJOBJS = ../common/log.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 ### Targets: ###
@@ -63,16 +63,13 @@ clean:
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
-#can232drv: $(CANALLOGGER_OBJECTS)
-#	$(CXX) -o $@ $< $(CANALLOGGER_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
-	
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
 %.so: %.o $(VSCPL2LOGGER_OBJECTS)
-	$(CXX) -o $@ $(VSCPL2LOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@ vscpl2logger.o $(VSCPL2LOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 # Include dependency info, if present:
 -include .deps/*.d
