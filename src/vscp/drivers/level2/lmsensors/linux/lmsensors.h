@@ -56,42 +56,17 @@
 #include "../../../../common/canal_macro.h"
 #include "../../../../../common/dllist.h"
 #include "../../../../common/vscptcpif.h"
-#include "../../../../common/cguid.h"
+#include "../../../../common/guid.h"
 
 #define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LMSENSORS_OBJ_MUTEX____"
 
 #define VSCP_LMSENSORS_LIST_MAX_MSG		2048
-
-
-// List with VSCP events
-WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST);
 
 // Forward declarations
 class ClmsensorsWrkTread;
 class VscpTcpIf;
 class wxFile;
 
-class ClmSensorData {
-
-public:
-
-    /// Constructor
-    ClmSensorData();
-
-    /// Destructor
-    virtual ~ClmSensorData();
-        
-    wxString m_path;
-    cguid m_guid;
-    int m_interval;
-    int m_vscptype;     // VSCP_TYPE  Class is measurement
-    int m_coding;       // First databyte   
-    double m_divideValue;
-    double m_multiplyValue;
-};
-
-// List with sensor data 
-WX_DECLARE_LIST(ClmSensorData, VSCPSENSORDATALIST);
 
 class Clmsensors {
 public:
@@ -183,7 +158,13 @@ public:
     Clmsensors *m_pObj;
     
     /// Dataobject for specific sensor
-    ClmSensorData *m_pData;
+    wxString m_path;
+    cguid m_guid;
+    int m_interval;
+    int m_vscptype;     // VSCP_TYPE  Class is measurement
+    int m_coding;       // First databyte   
+    double m_divideValue;
+    double m_multiplyValue;
 
 };
 

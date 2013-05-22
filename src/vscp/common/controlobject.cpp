@@ -82,7 +82,6 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <string.h>
-#include <syslog.h>
 #include <netdb.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>

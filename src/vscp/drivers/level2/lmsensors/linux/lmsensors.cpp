@@ -20,7 +20,12 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-
+// CPU load
+// http://stackoverflow.com/questions/3017162/how-to-get-total-cpu-usage-in-linux-c
+//
+// Memory usage
+// http://stackoverflow.com/questions/669438/how-to-get-memory-usage-at-run-time-in-c
+//
 
 #ifdef WIN32
 
@@ -52,32 +57,6 @@
 #include "../../../../common/vscptcpif.h"
 #include "lmsensors.h"
 
-// Lists
-WX_DEFINE_LIST(VSCPEVENTLIST);
-WX_DEFINE_LIST(VSCPSENSORDATALIST);
-
-//////////////////////////////////////////////////////////////////////
-// ClmSensorData
-//
-
-ClmSensorData::ClmSensorData()
-{
-	m_path.Empty();
-	m_guid.clear(); // Interface GUID
-	m_interval = 0; // Disabled
-	m_measurement_data_coding = 0;
-	m_divideValue = 1;
-	m_multiplyValue = 1;
-}
-
-//////////////////////////////////////////////////////////////////////
-// ~ClmSensorData
-//
-
-ClmSensorData::~ClmSensorData()
-{
-
-}
 
 //////////////////////////////////////////////////////////////////////
 // Clmsensors
@@ -135,7 +114,7 @@ Clmsensors::open(const char *pUsername,
 		// Path
 		m_nSensors = readStringValue(tkz.GetNextToken());
 	}
-	
+
 	// First log on to the host and get configuration 
 	// variables
 
@@ -157,13 +136,14 @@ Clmsensors::open(const char *pUsername,
 	// we want to monitor.
 	// 
 	// We look for 
+	//
 	//	 _numberofsensors - This is the number of sensors that the driver is supposed
 	//	  to read. Sensors are numbered staring with zero. 
 	//
 	//   _guidn - GUID for sensor n. guid0, guid1, guid2 etc
 	//	 _pathn - Path to value for example 
 	//				/sys/class/hwmon/hwmon0/temp1_input
-	//	 		 which is CPU temp for core 1
+	//	 		  which is CPU temp for core 1
 	//        on the system this is written at.
 	//   _intervaln   - Interval in Seconds the event should be sent out. 
 	//						Zero disables.
@@ -172,10 +152,8 @@ Clmsensors::open(const char *pUsername,
 	//						measurement byte 0
 	//   _dividen     - Divide value with this integer. Default is 1.
 	//   _multiplyn   - Multiply value with this integer. Default is 1.    
-	//	      
-	//	      
-	//	
-
+	//
+	//
 
 	// Get configuration data
 	int varNumberOfSensors;
@@ -205,11 +183,12 @@ Clmsensors::open(const char *pUsername,
 	// Read in the configuration values for each sensor
 	for (int i = 0; i < varNumberOfSensors; i++) {
 
-		wxString strIteration = wxString::FromAscii(itoa(i));
+		wxString strIteration;
+		strIteration.Printf(_("%d"), i);
 		strIteration.Trim();
 
-		ClmSensorData *pData = new ClmSensorData();
-		if (NULL != pData) {
+		CWrkTread *pthreadWork = new CWrkTread();
+		if (NULL != pthreadWork) {
 
 			// Get the path
 			wxString strVariableName = m_prefix +
@@ -255,7 +234,7 @@ Clmsensors::open(const char *pUsername,
 						m_prefix.ToAscii(),
 						i);
 			}
-			
+
 			// Get measurement coding (first data byte)
 			strVariableName = m_prefix +
 					wxString::FromAscii("_coding") + strIteration;
@@ -291,29 +270,27 @@ Clmsensors::open(const char *pUsername,
 						m_prefix.ToAscii(),
 						i);
 			}
-			
+
 			// start the workerthread
-			CWrkTread *pthreadWork = new CWrkTread();
-			if (NULL != pthreadWork) {
-				pthreadWork->m_pObj = this;
-				pthreadWork->m_pData = pData;
-				pthreadWork->Create();
-				pthreadWork->Run();
-			} else {
-				syslog(LOG_ERR,
-						"%s prefix=%s i=%d",
-						(const char *) "Failed to start workerthread.",
-						m_prefix.ToAscii(),
-						i);
-				rv = false;
-			}
+			pthreadWork->m_pObj = this;
+			pthreadWork->m_pData = pData;
+			pthreadWork->Create();
+			pthreadWork->Run();
 
 		}
+		else {
+			syslog(LOG_ERR,
+					"%s prefix=%s i=%d",
+					(const char *) "Failed to start workerthread.",
+					m_prefix.ToAscii(),
+					i);
+			rv = false;
+		}
 	}
-	
+
 	// Close the channel
 	m_srv.doCmdClose();
-	
+
 	return rv;
 }
 
@@ -342,6 +319,13 @@ Clmsensors::close(void)
 CWrkTread::CWrkTread()
 {
 	m_pObj = NULL;
+	m_path.Empty();
+	m_guid.clear(); // Interface GUID
+	m_interval = 0; // Disabled
+	m_vscptype = 0;
+	m_coding = 0;
+	m_divideValue = 1;
+	m_multiplyValue = 1;
 }
 
 CWrkTread::~CWrkTread()
@@ -372,10 +356,10 @@ CWrkTread::Entry()
 	// Find the channel id
 	uint32_t ChannelID;
 	m_srv.doCmdGetChannelID(&ChannelID);
-	
+
 	// Open the file
 	wxFile file;
-	if ( !file.Open(m_pData->m_path)) {
+	if (!file.Open(m_pData->m_path)) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Workerthread. File to open lmsensors file. Terminating!");
@@ -387,70 +371,67 @@ CWrkTread::Entry()
 	char buf[1024];
 	long val;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
-		
-		memset( 0, buf, sizeof(buf));
+
+		memset(buf, 0, sizeof(buf));
 		file.Seek(0);
-		if ( wxInvalidOffset != file.Read(buf, sizeof(buf)) ) {
-			
+		if (wxInvalidOffset != file.Read(buf, sizeof(buf))) {
+
 			wxString str = wxString::FromAscii(buf);
 			str.ToLong(&val);
-			
+
 			if (m_pData->m_divideValue) {
-				val = val/m_pData->m_divideValue;
+				val = val / m_pData->m_divideValue;
 			}
-			
+
 			if (m_pData->m_multiplyValue) {
-				val = val*m_pData->m_multiplyValue;
+				val = val * m_pData->m_multiplyValue;
 			}
-			
+
 			bool bNegative = false;
-			if ( val < 0 ) {
+			if (val < 0) {
 				bNegative = true;
 				val = abs(val);
 			}
-			
+
 			vscpEventEx event;
 			event.sizeData = 0;
 			event.data[0] = m_pData->m_coding;
 			event.GUID = m_pData->m_guid;
 			event.vscp_class = VSCP_CLASS1_MEASUREMENT;
 			event.vscp_type = m_pData->m_vscptype;
-			if ( val<0xff ) {
+			if (val < 0xff) {
 				event.sizeData = 2;
-				event.data[1] = val; 
-			}
-			else if ( val<0xffff ) {
+				event.data[1] = val;
+			} else if (val < 0xffff) {
 				event.sizeData = 3;
 				event.data[1] = (val >> 8) & 0xff;
 				event.data[2] = val & 0xff;
-			}
-			else if ( val<0xffffff ) {
+			} else if (val < 0xffffff) {
 				event.sizeData = 4;
 				event.data[1] = (val >> 16) & 0xff;
 				event.data[2] = (val >> 8) & 0xff;
 				event.data[3] = val & 0xff;
-			}
-			else {
+			} else {
 				event.sizeData = 5;
 				event.data[1] = (val >> 24) & 0xff;
 				event.data[2] = (val >> 16) & 0xff;
 				event.data[3] = (val >> 8) & 0xff;
 				event.data[4] = val & 0xff;
 			}
-			
+
 		}
-		
-		::wxSleep( m_pData->m_interval ? m_pData->m_interval : 1 );
+
+		::wxSleep(m_pData->m_interval ? m_pData->m_interval : 1);
 	}
-	
+
 	// Close the file
 	file.Close();
-}
 
-// Close the channel
-m_srv.doCmdClose();
+	// Close the channel
+	m_srv.doCmdClose();
 
-return NULL;
+	return NULL;
+
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -35,7 +35,7 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL2LOGGER_OBJECTS =  vscp2drv_lmsensors.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+VSCPL2LOGGER_OBJECTS =  vscp2drv_lmsensors.o lmsensors.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 
 ### Targets: ###

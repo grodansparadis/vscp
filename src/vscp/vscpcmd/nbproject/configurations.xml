@@ -8,6 +8,8 @@
       <itemPath>../common/canal.h</itemPath>
       <itemPath>../common/canal_macro.h</itemPath>
       <itemPath>../common/canal_win32_ipc.h</itemPath>
+      <itemPath>../../common/crc.c</itemPath>
+      <itemPath>../../common/crc.h</itemPath>
       <itemPath>../common/guid.cpp</itemPath>
       <itemPath>../common/guid.h</itemPath>
       <itemPath>../common/vscp.h</itemPath>
@@ -50,6 +52,19 @@
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
+          <cTool>
+            <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
+              <pElem>.</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
+              <Elem>__WXDEBUG__</Elem>
+              <Elem>__WXGTK__</Elem>
+            </preprocessorList>
+          </cTool>
           <ccTool>
             <incDir>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
@@ -64,6 +79,10 @@
           </ccTool>
         </makeTool>
       </makefileType>
+      <item path="../../common/crc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../common/crc.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../common/canal.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/canal_macro.h" ex="false" tool="3" flavor2="0">

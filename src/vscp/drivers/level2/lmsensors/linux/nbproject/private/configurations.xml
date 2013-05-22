@@ -6,6 +6,7 @@
       <in>lmsensors.cpp</in>
       <in>lmsensors.h</in>
       <in>test.c</in>
+      <in>test.cpp</in>
       <in>vscp2drv_lmsensors.cpp</in>
       <in>vscp2drv_lmsensors.h</in>
     </df>

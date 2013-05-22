@@ -555,34 +555,6 @@ public:
     */
     bool setVariableVSCPtype( wxString& name, uint16_t vscp_type );
 
-
-
- // ------------------------------------------------------------------------
- //                           B I N A R Y  M O D E
- // ------------------------------------------------------------------------
-
-
-
-    /*!
-        Go to binary mode
-        \return true if success false if not.
-    */
-    int doCmdBinary( void );
-
-    /*!
-        Send a VSCP Level II event through binary interface. 
-        \param pEvent VSCP Level II event to send.		
-        \return true if success false if not.
-    */
-    int doBinarySend( vscpEvent *pEvent );
-
-    /*!
-        Send a VSCP Level II ex event through binary interface. 
-        \param pEvent VSCP Level II ex event.	
-        \return true if success false if not.
-    */
-    int doBinarySendEx( vscpEventEx *pEvent );
-
     /*!
         Get a VSCP event from a line of data from the server
         \param strLine String with server event data line
@@ -596,58 +568,6 @@ public:
         \param to Timeout value in seconds. (Default = 2 seconds.)
     */
     void setResponseTimeout( uint8_t to ) { if ( to ) m_responseTimeOut = to; };
-
-    /*!
-        Receive a VSCP Level II event through binary interface. 
-        \param pEvent VSCP Level II event.	
-        \return true if success false if no event available.
-    */
-    int doBinaryReceive( vscpEvent *pEvent );
-
-    /*!
-        Receive a VSCP Level II event through binary interface. 
-        \param pEvent VSCP Level II ex event.	
-        \return true if success false if no event available.
-    */
-    int doBinaryReceiveEx( vscpEventEx *pEvent );
-
-
-    /*!
-        Write a binary VSCP event
-        \param type Frame type.
-        \param buffer data to send.
-        \param nbytes Number of bytes to send.
-        \return true on success, false on failure
-    */
-    int Binary_WriteMsg( uint8_t type, const void *buffer, wxUint32 nbytes );
-
-    /*!
-        Read a binary VSCP event
-        \param pType Receives the frame type.
-        \param buffer to receive data in 
-        \param nbytes buffer size.
-        \param pnRead Number of data bytes actually received.
-        \return true on success, false on failure
-    */
-    int Binary_ReadMsg( uint8_t *pType, void* buffer, wxUint32 nbytes, uint16_t *pnRead );
-
-    /*!
-        Send binary error frame
-        \param error_code Code to send out
-    */
-    void sendBinaryErrorFrame( uint8_t error_code );
-
-    /*!
-        Do a binary NOOP command.
-        \return True on success, false on failure
-    */
-    int doBinaryNOOP( void );
-
-    /*!
-        Do a binary close of the channel
-        \return True on success, false on failure
-    */
-    int doBinaryClose( void );
 
 
 // ------------------------------------------------------------------------
