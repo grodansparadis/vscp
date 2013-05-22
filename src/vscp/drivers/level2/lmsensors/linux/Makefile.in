@@ -36,9 +36,6 @@ WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCP2DRV_LMSENSORS_OBJECTS =  vscp2drv_lmsensors.o lmsensors.o ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
-PROJOBJS        =  ../common/vscptcpif.o ../common/vscp.o  ../../common/crc.o
-
-
 
 ### Targets: ###
 
