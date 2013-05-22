@@ -61,11 +61,7 @@ clean:
 	rm -f test
 
 distclean: clean
-	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
-
-#canallogger: $(VSCP2DRV_LMSENSORS_OBJECTS)
-#	$(CXX) -o $@ $< $(VSCPL1_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
-	
+	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile	
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
