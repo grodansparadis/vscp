@@ -10,12 +10,12 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = ../../../../../..
 top_wxbuilddir = @top_wxbuilddir@
 CXX = g++
-CXXFLAGS = -g -O2  -D__LINUX__ -fPIC
-CPPFLAGS =  -I/usr/local/lib/wx/include/gtk2-unicode-debug-2.8 -I/usr/local/include/wx-2.8 -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -D__WXDEBUG__ -D__WXGTK__
-CFLAGS = -g -O2 -pthread
+CXXFLAGS = -g -O2  -fPIC
+CPPFLAGS =  -I/usr/lib/i386-linux-gnu/wx/include/base-unicode-release-2.8 -I/usr/include/wx-2.8 -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -DwxUSE_GUI=0 -fPIC
+CFLAGS = -fPIC
 LDFLAGS = 
-EXTRALIBS =  -lmicrohttpd -lwebsockets -lz -lm -lcrypto -lpthread -ldl -lcurses  -L/usr/local/lib -pthread   -lwx_gtk2ud_richtext-2.8 -lwx_gtk2ud_aui-2.8 -lwx_gtk2ud_xrc-2.8 -lwx_gtk2ud_qa-2.8 -lwx_gtk2ud_html-2.8 -lwx_gtk2ud_adv-2.8 -lwx_gtk2ud_core-2.8 -lwx_baseud_xml-2.8 -lwx_baseud_net-2.8 -lwx_baseud-2.8 
-DLFLAGS = -g -shared -fPIC -Wl,--no-undefined
+EXTRALIBS =  -lwebsockets -lz -lm -lcrypto -lpthread -ldl  -L/usr/lib/i386-linux-gnu -pthread   -lwx_baseu_xml-2.8 -lwx_baseu_net-2.8 -lwx_baseu-2.8 
+DLFLAGS = -g -shared -fPIC
 TRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_DATA = ${INSTALL} -m 644
@@ -35,7 +35,9 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL2LOGGER_OBJECTS =  vscp2drv_lmsensors.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+VSCP2DRV_LMSENSORS_OBJECTS =  vscp2drv_lmsensors.o  ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
+PROJOBJS        =  ../common/vscptcpif.o ../common/vscp.o  ../../common/crc.o
+
 
 
 ### Targets: ###
@@ -53,23 +55,24 @@ clean:
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o
+	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
-	rm -f ../../../../../common/*.o
 	rm -f vscp2drv_lmsensors.so
 	rm -f test
-	rm -rf ../common/*~
-	rm -rf *~
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
+#canallogger: $(VSCP2DRV_LMSENSORS_OBJECTS)
+#	$(CXX) -o $@ $< $(VSCPL1_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
-%.so: %.o $(VSCPL2LOGGER_OBJECTS)
-	$(CXX) -o $@ $(VSCPL2LOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+%.so: %.o $(VSCP2DRV_LMSENSORS_OBJECTS)
+	$(CXX) -o $@ $(LMSENSORS_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 # Include dependency info, if present:
 -include .deps/*.d
