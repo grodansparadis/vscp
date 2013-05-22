@@ -89,7 +89,7 @@ int main()
 	for ( long i=0; i<3; i++ ) {
 		
 		wxString strIteration;
-		strIteration.Printf("%d", i);
+		strIteration.Printf(_("%d"), i);
 		strIteration.Trim();
 		
 		memset( buf, 0, sizeof(buf));

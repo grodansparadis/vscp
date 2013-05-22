@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCP2DRV_LMSENSORS_OBJECTS =  vscp2drv_lmsensors.o lmsensors.o ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
-PROJOBJS        =  ../common/vscptcpif.o 
+LMSENSOROBJ =  lmsensors.o ../common/vscptcpif.o ../../../../common/vscphelper.o
+PROJOBJS =  lmsensors.o ../common/vscptcpif.o ../../../../common/vscphelper.o
 
 
 
@@ -67,8 +67,8 @@ test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
-%.so: %.o $(VSCP2DRV_LMSENSORS_OBJECTS)
-	$(CXX) -o $@ $(LMSENSORS_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+%.so: %.o $(LMSENSOROBJ)
+	$(CXX) -o $@ vscp2drv_lmsensors.o $(LMSENSOROBJ) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 # Include dependency info, if present:
 -include .deps/*.d
