@@ -119,7 +119,7 @@ public:
     uint8_t getLSB( void ) { return m_id[ 0 ]; };
 
 	/*!
-		Fill array with GUID MSB firts			
+		Fill array with GUID MSB first			
 	*/
 	void setGUID( uint8_t *pArray );
 

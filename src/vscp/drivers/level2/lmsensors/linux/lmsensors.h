@@ -62,6 +62,9 @@
 
 #define VSCP_LMSENSORS_LIST_MAX_MSG		2048
 
+// Deafult seconds between events
+#define DEFAULT_INTERVAL    10    
+
 // Forward declarations
 class ClmsensorsWrkTread;
 class VscpTcpIf;
@@ -161,8 +164,9 @@ public:
     wxString m_path;
     cguid m_guid;
     int m_interval;
+    int m_vscpclass;    // VSCP CLASS
     int m_vscptype;     // VSCP_TYPE  Class is measurement
-    int m_coding;       // First databyte   
+    int m_datacoding;   // First databyte   
     double m_divideValue;
     double m_multiplyValue;
 

@@ -80,7 +80,6 @@
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__LINUX__</Elem>
               <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
@@ -150,7 +149,9 @@
         <cTool>
         </cTool>
       </item>
-      <item path="test.cpp" ex="false" tool="1" flavor2="0">
+      <item path="test.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+        </ccTool>
       </item>
       <item path="vscp2drv_lmsensors.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>

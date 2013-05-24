@@ -54,3 +54,13 @@ src/vscp/vscpworks/vscpworks
 src/vscp/web/demo/libwebsockets/README~
 src/vscp/drivers/level1/xap/linux/test
 src/vscp/linuxvscpl1/test
+README~
+HISTORY~
+src/vscp/drivers/level1/can232/linux/test
+src/vscp/drivers/level1/logger/linux/test
+src/vscp/drivers/level2/lmsensors/linux/Makefile.save
+src/vscp/drivers/level2/lmsensors/linux/log.d
+src/vscp/drivers/level2/lmsensors/linux/test
+src/vscp/drivers/level2/logger/linux/test
+src/vscp/drivers/level2/udpdrv/linux/
+src/vscp/web/demo/README~

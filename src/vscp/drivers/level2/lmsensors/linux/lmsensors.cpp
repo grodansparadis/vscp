@@ -55,6 +55,8 @@
 #include <wx/datetime.h>
 #include "../../../../common/vscphelper.h"
 #include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscp_type.h"
+#include "../../../../common/vscp_class.h"
 #include "lmsensors.h"
 
 
@@ -193,33 +195,33 @@ Clmsensors::open(const char *pUsername,
 			// Get the path
 			wxString strVariableName = m_prefix +
 					wxString::FromAscii("_path") + strIteration;
-			if (!m_srv.getVariableString(strVariableName, &pData->m_path)) {
+			if (!m_srv.getVariableString(strVariableName, &pthreadWork->m_path)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _path.",
-						m_prefix.ToAscii(),
+						(const char *)m_prefix.ToAscii(),
 						i);
 			}
 
 			// Get GUID
 			strVariableName = m_prefix +
 					wxString::FromAscii("_path") + strIteration;
-			if (!m_srv.getVariableGUID(strVariableName, &pData->m_guid)) {
+			if (!m_srv.getVariableGUID(strVariableName, pthreadWork->m_guid)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _guid.",
-						m_prefix.ToAscii(),
+						(const char *)m_prefix.ToAscii(),
 						i);
 			}
 
 			// Get sample interval
 			strVariableName = m_prefix +
 					wxString::FromAscii("_interval") + strIteration;
-			if (!m_srv.getVariableInt(strVariableName, &pData->m_interval)) {
+			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_interval)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _interval.",
-						m_prefix.ToAscii(),
+						(const char *)m_prefix.ToAscii(),
 						i);
 			}
 
@@ -227,11 +229,11 @@ Clmsensors::open(const char *pUsername,
 			strVariableName = m_prefix +
 					wxString::FromAscii("_vscptype") + strIteration;
 			if (!m_srv.getVariableInt(strVariableName,
-					&pData->m_vscptype)) {
+					&pthreadWork->m_vscptype)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _vscptype.",
-						m_prefix.ToAscii(),
+						(const char *)m_prefix.ToAscii(),
 						i);
 			}
 
@@ -239,11 +241,11 @@ Clmsensors::open(const char *pUsername,
 			strVariableName = m_prefix +
 					wxString::FromAscii("_coding") + strIteration;
 			if (!m_srv.getVariableInt(strVariableName,
-					&pData->m_coding)) {
+					&pthreadWork->m_datacoding)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _coding.",
-						m_prefix.ToAscii(),
+						(const char *)m_prefix.ToAscii(),
 						i);
 			}
 
@@ -251,11 +253,11 @@ Clmsensors::open(const char *pUsername,
 			strVariableName = m_prefix +
 					wxString::FromAscii("_divide") + strIteration;
 			if (!m_srv.getVariableDouble(strVariableName,
-					&pData->m_divideValue)) {
+					&pthreadWork->m_divideValue)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _divide.",
-						m_prefix.ToAscii(),
+						(const char *)m_prefix.ToAscii(),
 						i);
 			}
 
@@ -263,17 +265,16 @@ Clmsensors::open(const char *pUsername,
 			strVariableName = m_prefix +
 					wxString::FromAscii("_multiply") + strIteration;
 			if (!m_srv.getVariableDouble(strVariableName,
-					&pData->m_multiplyValue)) {
+					&pthreadWork->m_multiplyValue)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _multiply.",
-						m_prefix.ToAscii(),
+						(const char *)m_prefix.ToAscii(),
 						i);
 			}
 
 			// start the workerthread
 			pthreadWork->m_pObj = this;
-			pthreadWork->m_pData = pData;
 			pthreadWork->Create();
 			pthreadWork->Run();
 
@@ -282,7 +283,7 @@ Clmsensors::open(const char *pUsername,
 			syslog(LOG_ERR,
 					"%s prefix=%s i=%d",
 					(const char *) "Failed to start workerthread.",
-					m_prefix.ToAscii(),
+					(const char *)m_prefix.ToAscii(),
 					i);
 			rv = false;
 		}
@@ -321,15 +322,17 @@ CWrkTread::CWrkTread()
 	m_pObj = NULL;
 	m_path.Empty();
 	m_guid.clear(); // Interface GUID
-	m_interval = 0; // Disabled
+	m_interval = DEFAULT_INTERVAL; 
+	m_vscpclass = VSCP_CLASS1_MEASUREMENT;
 	m_vscptype = 0;
-	m_coding = 0;
-	m_divideValue = 1;
-	m_multiplyValue = 1;
+	m_datacoding = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
+	m_divideValue = 0;		// Zero means ignore
+	m_multiplyValue = 0;	// Zero means ignore
 }
 
 CWrkTread::~CWrkTread()
 {
+	;
 }
 
 
@@ -359,7 +362,7 @@ CWrkTread::Entry()
 
 	// Open the file
 	wxFile file;
-	if (!file.Open(m_pData->m_path)) {
+	if (!file.Open(m_path)) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Workerthread. File to open lmsensors file. Terminating!");
@@ -379,12 +382,12 @@ CWrkTread::Entry()
 			wxString str = wxString::FromAscii(buf);
 			str.ToLong(&val);
 
-			if (m_pData->m_divideValue) {
-				val = val / m_pData->m_divideValue;
+			if (m_divideValue) {
+				val = val / m_divideValue;
 			}
 
-			if (m_pData->m_multiplyValue) {
-				val = val * m_pData->m_multiplyValue;
+			if (m_multiplyValue) {
+				val = val * m_multiplyValue;
 			}
 
 			bool bNegative = false;
@@ -395,10 +398,10 @@ CWrkTread::Entry()
 
 			vscpEventEx event;
 			event.sizeData = 0;
-			event.data[0] = m_pData->m_coding;
-			event.GUID = m_pData->m_guid;
+			event.data[0] = m_datacoding;
+			m_guid.setGUID(event.GUID);
 			event.vscp_class = VSCP_CLASS1_MEASUREMENT;
-			event.vscp_type = m_pData->m_vscptype;
+			event.vscp_type = m_vscptype;
 			if (val < 0xff) {
 				event.sizeData = 2;
 				event.data[1] = val;
@@ -421,7 +424,7 @@ CWrkTread::Entry()
 
 		}
 
-		::wxSleep(m_pData->m_interval ? m_pData->m_interval : 1);
+		::wxSleep(m_interval ? m_interval : 1);
 	}
 
 	// Close the file
