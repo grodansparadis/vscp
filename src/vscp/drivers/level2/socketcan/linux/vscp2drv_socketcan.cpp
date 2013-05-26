@@ -1,4 +1,4 @@
-// vscpl1.cpp : Defines the initialization routines for the DLL.
+// socketcan.cpp : Defines the initialization routines for the DLL.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License

@@ -44,9 +44,11 @@
 #include <assert.h>
 
 #include "wx/wxprec.h"
-#include "wx/wx.h"
-#include "wx/defs.h"
-#include "wx/app.h"
+#include <wx/wx.h>
+#include <wx/defs.h>
+#include <wx/app.h>
+#include <wx/log.h>
+#include <wx/stdpaths.h>
 #include <wx/xml/xml.h>
 #include <wx/listimpl.cpp>
 #include <wx/thread.h>
@@ -58,11 +60,24 @@
 
 int main()
 {
+	wxStandardPaths strpath;
 	double val;
 	// Temp for cpu core on this machine
 	// /sys/class/hwmon/hwmon0/temp1_input
 	char str[999];
 	FILE *f;
+	
+	wxInitializer initializer;
+	
+	wxString strcfg;
+	
+	strcfg = strpath.GetConfigDir();
+	printf("Config dir:%s\n",(const char *)strcfg.ToAscii());
+	strcfg= strpath.GetDataDir() + _(" ");
+	printf("Data dir:%s\n",(const char *)strcfg.ToAscii());
+	strcfg = strpath.GetDocumentsDir() + _(" ");;
+	printf("Document dir:%s\n",(const char *)strcfg.ToAscii());
+	
 	// Processor core0 temp
 	f = fopen("/sys/class/hwmon/hwmon1/device/temp2_input", "r");
 	if (f) {

@@ -35,17 +35,17 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL1_OBJECTS =  vscpl1.o  ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
+SPCKETCAN_OBJECTS =  ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
 PROJOBJS        =  ../common/vscptcpif.o ../common/vscp.o  ../../common/crc.o
 
 
 
 ### Targets: ###
 
-all: vscpl1.so test
+all: vscp2drv_socketcan.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl1.so $(libdir)
+	$(INSTALL_PROGRAM) vscp2drv_socketcan.so $(libdir)
 
 uninstall: 
 
@@ -57,22 +57,19 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
-	rm -f vscpl1.so
+	rm -f vscp2drv_socketcan.so
 	rm -f test
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
-#canallogger: $(VSCPL1_OBJECTS)
-#	$(CXX) -o $@ $< $(VSCPL1_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
-	
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
-%.so: %.o $(VSCPL1_OBJECTS)
-	$(CXX) -o $@ $(VSCPL1_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+%.so: %.o $(SOCKETCAN_OBJECTS)
+	$(CXX) -o $@ vscp2drv_socketcan.o $(SOCKETCAN_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 # Include dependency info, if present:
 -include .deps/*.d
