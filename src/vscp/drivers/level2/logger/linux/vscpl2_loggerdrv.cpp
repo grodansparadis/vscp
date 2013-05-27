@@ -1,4 +1,4 @@
-// vscpl2logger.cpp : Defines the initialization routines for the DLL.
+// vscpl2_loggerdrv.cpp : Defines the initialization routines for the DLL.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -25,7 +25,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "../common/log.h"
-#include "vscpl2logger.h"
+#include "vscpl2_loggerdrv.h"
 
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));

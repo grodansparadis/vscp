@@ -40,10 +40,10 @@ PROJOBJS = ../common/log.o ../../../../../common/crc.o ../../../../common/vscptc
 
 ### Targets: ###
 
-all: vscpl2logger.so test
+all: vscpl2_loggerdrv.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl2logger.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl2_loggerdrv.so $(libdir)
 
 uninstall: 
 
@@ -55,7 +55,7 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl2logger.so
+	rm -f vscpl2_loggerdrv.so
 	rm -f test
 	rm -rf ../common/*~
 	rm -rf *~
@@ -69,7 +69,7 @@ test:  test.o $(PROJOBJS)
 
 # Build the Linux DL
 %.so: %.o $(VSCPL2LOGGER_OBJECTS)
-	$(CXX) -o $@ vscpl2logger.o $(VSCPL2LOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@ vscpl2_loggerdrv.o $(VSCPL2LOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 # Include dependency info, if present:
 -include .deps/*.d
