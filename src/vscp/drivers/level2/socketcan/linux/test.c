@@ -1,4 +1,4 @@
-// test.c : 
+// test.cpp : 
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -19,10 +19,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile:  $
-// $Date: 2005/01/05 12:16:16 $
-// $Author:  $
-// $Revision: 1.2 $
 
 #include <unistd.h>
 #include <stdio.h>
@@ -30,8 +26,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../common/canal.h"
-#include "../common/canaldlldef.h"
+#include "../../../../common/canal.h"
+#include "../../../../common/canaldlldef.h"
 
 static void* handle = NULL;
 

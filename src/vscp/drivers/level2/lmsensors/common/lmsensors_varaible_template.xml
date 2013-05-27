@@ -1,0 +1,127 @@
+
+<!-- ********************************************************   -->
+<!--  VSCP vscp2drv_lmsensors Level II driver varible template  -->
+<!-- ********************************************************   -->
+
+<template name="lmsensors">
+    
+    <!-- Here is the configuration string defined -->
+    <config>
+        <!-- Option example with selectable values -->   
+		<option pos="0" type="string" optional="false">       
+            <name lang="en">$prefix_numberofsensors</name>   
+            <prompt lang="en">Enter number of sensors to read</prompt>  
+			<description lang="en">
+                Number of sensors that should be checked. This
+                value is optional and can be present in the 
+                variable file instead. If both are present the
+                varible file value will be used. Leave blank if
+                your want to set this value in a variable instead.
+            </description>       
+		</option>     
+	        
+    </config>
+    
+    <!-- The variable file holds information about varaibles    -->
+    <!-- going into the varibles file                           -->
+    <variablefile>
+        
+        <!-- names the variable that controls the number of     -->
+        <!-- runs that the configuration should take through    -->
+        <!-- the enumeration section.                           -->                    
+        <enumerationcount>$prefix_numberofsensors</enumerationcount>
+
+        <!-- Number of sensors to read -->
+        <variable type="int" default="1">
+            <prompt>Enter number of sensors to read</prompt>
+            <description lang="en">
+                This is the number of sensors you want to read data 
+                from. Enter a value greater then zero.
+            </description>
+            <name>$prefix_numberofsensors</name>         
+            <value>1</value>     
+        </variable>
+
+        <enumeration>
+
+            <!-- Interval -->
+            <variable type="int" default="10"> 
+                <prompt>Interval (in seconds) between sensor reads for sensor $enum</prompt>
+                <description lang="en">
+                    The interval sets up how frequent events will be sent out
+                    from the driver. Set this value up so it holds the number
+                    of seconds between events.
+                </description>         
+                <name>lmsensors_interval$enum</name>         
+                <value>$value</value>     
+            </variable>
+
+            <!-- VSCP GUID -->
+            <variable type="guid" default="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00">         
+                <prompt>Enter the GUID to use for this sensor</prompt>
+                <description lang="en">yyy</description>
+                <name>lmsensors_guid$enum</name>
+                <value>$value</value>     
+            </variable>
+
+            <!-- Path to sensor data file --> 
+            <variable type="string" default="">                  
+                <prompt>Enter the path to this sensors datafile</prompt>
+                <description lang="en">
+                    Enter the path to the sensor data file here. The file should
+                    contain one value in the way lmsensor files does. You can
+                    manipilate this value with the multiply and the divide 
+                    variables to get it in the correct format for the datacoding
+                    you have choosen.
+                </description>
+                <name>lmsensors_path$enum</name>         
+                <value>$value</value>     
+            </variable>
+
+            <!-- VSCP datacoding -->
+            <variable type="int" default="0">         
+                <prompt>Enter the VSCP event datacoding to use</prompt>
+                <description lang="en">yyy</description>
+                <name>lmsensors_datacoding$enum</name>
+                <value>$value</value>
+            </variable>
+            
+            <!-- VSCP class value -->
+            <variable type="int" default="10">         
+                <prompt>Enter the VSCP Class to use</prompt>
+                <description lang="en">yyy</description>
+                <name>lmsensors_vscpclass$enum</name>
+                <value>$value</value>
+            </variable>
+
+            <!-- VSCP Type value -->
+            <variable type="int" default="6">         
+                <prompt>Enter the VSCP Type to use</prompt>
+                <description lang="en">yyy</description>
+                <name>lmsensors_vscptype$enum</name>
+                <value>$value</value> 
+            </variable>
+
+            <!-- Multiply value -->
+            <variable type="int" default="1">         
+                <prompt>Enter the multiply value</prompt>
+                <description lang="en">yyy</description>
+                <name>lmsensors_multiply$enum</name>
+                <value>$value</value>     
+            </variable>
+
+            <!-- Divide value -->
+            <variable type="int" default="1">         
+                <prompt>Enter the divide value</prompt>
+                <description lang="en">yyy</description>
+                <name>lmsensors_divide$enum</name>
+                <value>$value</value>     
+            </variable> 
+        
+        </enumeration>
+    
+    </variablefile>
+
+
+</template>
+

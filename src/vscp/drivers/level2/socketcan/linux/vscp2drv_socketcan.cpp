@@ -1,4 +1,4 @@
-// socketcan.cpp : Defines the initialization routines for the DLL.
+// vscp2drv_socketcan.cpp : Defines the initialization routines for the DLL.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
@@ -20,18 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: canallogger.cpp,v $                                       
-// $Date: 2005/01/05 12:16:16 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
-//
-// Linux
-// =====
-// device1 = logger,/tmp/canal_log,txt,/usr/local/lib/canallogger.so,64,64,1
-//
-// WIN32
-// =====
-// device1 = logger,c:\canal_log,txt,d:\winnr\system32\canallogger.dll,64,64,1
 
 #ifdef __GNUG__
 //#pragma implementation
@@ -54,7 +42,7 @@
 
 #include "wx/tokenzr.h"
 
-#include "vscpl1.h"
+#include "vscp2drv_socketcan.h"
 #include "stdio.h"
 #include "stdlib.h"
 

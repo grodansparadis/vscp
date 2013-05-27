@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-SPCKETCAN_OBJECTS =  ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
-PROJOBJS        =  ../common/vscptcpif.o ../common/vscp.o  ../../common/crc.o
+SPCKETCAN_OBJECTS = ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+PROJOBJS        =  ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 
 

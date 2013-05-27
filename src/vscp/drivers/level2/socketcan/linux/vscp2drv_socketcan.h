@@ -1,4 +1,4 @@
-// socketcan.h : main header file for the canallogger.dll
+// vscp2drv_socketcan.h : main header file for the canallogger.dll
 // Linux version
 //
 // This program is free software; you can redistribute it and/or
@@ -33,9 +33,9 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <syslog.h>
-#include "../common/canal.h"
-#include "../common/vscptcpif.h"
-#include "../common/canal_macro.h"
+#include "../../../../common/canal.h"
+#include "../../../../common/vscptcpif.h"
+#include "../../../../common/canal_macro.h"
 
 #ifndef BOOL
 typedef int BOOL;

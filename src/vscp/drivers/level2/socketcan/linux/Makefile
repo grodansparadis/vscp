@@ -14,7 +14,7 @@ CXXFLAGS = -g -O2 -I/usr/local/lib/wx/include/gtk2-unicode-debug-2.8 -I/usr/loca
 CPPFLAGS =  -fPIC -fPIC
 CFLAGS = -fPIC
 LDFLAGS =  -L/usr/local/lib -pthread   -lwx_gtk2ud_aui-2.8 -lwx_gtk2ud_xrc-2.8 -lwx_gtk2ud_qa-2.8 -lwx_gtk2ud_html-2.8 -lwx_gtk2ud_adv-2.8 -lwx_gtk2ud_core-2.8 -lwx_baseud_xml-2.8 -lwx_baseud_net-2.8 -lwx_baseud-2.8 
-EXTRALIBS =  -pthread -W1,--version-script -lz -ldl -lm -lcrypto
+EXTRALIBS =  -pthread -lz -ldl -lm -lcrypto
 DLFLAGS = -g -shared -fPIC
 TRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-SOCKETCAN_OBJECTS =  ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
-PROJOBJS        =  ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
+SOCKETCAN_OBJECTS = ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+PROJOBJS        =  ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 
 
@@ -45,7 +45,7 @@ PROJOBJS        =  ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
 all: vscp2drv_socketcan.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl1.so $(libdir)
+	$(INSTALL_PROGRAM) vscp2drv_socketcan.so $(libdir)
 
 uninstall: 
 

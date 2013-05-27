@@ -6020,7 +6020,7 @@ done
 
 
 
-PROJ_SUBDIRS="src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/drivers/level2/logger/linux src/vscp/drivers/level2/lmsensors/linux src/vscp/linuxvscpl1 src/vscp/daemon/linux src/vscp/mkpasswd"
+PROJ_SUBDIRS="src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/drivers/level2/logger/linux src/vscp/drivers/level2/lmsensors/linux src/vscp/drivers/level2/socketcan/linux src/vscp/linuxvscpl1 src/vscp/daemon/linux src/vscp/mkpasswd"
 
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks src/vscp/vscpcmd"
 
@@ -7051,7 +7051,7 @@ EXTRALIBS="${EXTRALIBS} ${LIBS}"
 
 
 
-ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/drivers/level1/logger/linux/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level2/logger/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/vscpcmd/Makefile src/vscp/vscpworks/Makefile src/vscp/daemon/linux/Makefile src/vscp/mkpasswd/Makefile src/vscp/linuxvscpl1/Makefile"
+ac_config_files="$ac_config_files Makefile m4/Makefile src/vscp/drivers/level1/logger/linux/Makefile src/vscp/drivers/level1/can232/linux/Makefile src/vscp/drivers/level1/xap/linux/Makefile src/vscp/drivers/level2/logger/linux/Makefile src/vscp/drivers/level2/lmsensors/linux/Makefile src/vscp/drivers/level2/socketcan/linux/Makefile src/vscp/vscpcmd/Makefile src/vscp/vscpworks/Makefile src/vscp/daemon/linux/Makefile src/vscp/mkpasswd/Makefile src/vscp/linuxvscpl1/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -7753,6 +7753,7 @@ do
     "src/vscp/drivers/level1/xap/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level1/xap/linux/Makefile" ;;
     "src/vscp/drivers/level2/logger/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/logger/linux/Makefile" ;;
     "src/vscp/drivers/level2/lmsensors/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/lmsensors/linux/Makefile" ;;
+    "src/vscp/drivers/level2/socketcan/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/drivers/level2/socketcan/linux/Makefile" ;;
     "src/vscp/vscpcmd/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscpcmd/Makefile" ;;
     "src/vscp/vscpworks/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/vscpworks/Makefile" ;;
     "src/vscp/daemon/linux/Makefile") CONFIG_FILES="$CONFIG_FILES src/vscp/daemon/linux/Makefile" ;;
