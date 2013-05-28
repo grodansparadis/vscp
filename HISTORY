@@ -1,6 +1,9 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-05-28 - AKHE driver config <parameter> has been changed to <config>
+			Default path for varibles has been moved to /srv/vscp/variable.xml
+			Deafult path for dm has been moved to /srv/vscp/dm.xml
 2013-05-20 - AKHE Binary mode removed from TCP/IP interface. The Nova code for the Modtronix SBC68C board still have binary code in it. This code does not work anymore.
 2013-05-20 - AKHE udp broadcast is no longer part of daemon. Use
 			raw Ethernet interface or udp driver

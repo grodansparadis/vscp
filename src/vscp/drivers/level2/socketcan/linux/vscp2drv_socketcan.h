@@ -49,31 +49,30 @@ typedef int BOOL;
 #define FALSE 0
 #endif
 
-
 // This is the version info for this DLL - Change to your own value
 #define VSCP_DLL_VERSION	1
 
 // This is the vendor string - Change to your own value
-#define VSCP_DLL_VENDOR "eurosource, Sweden, http://www.eurosource.se"
+#define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
 
 // Max number of open connections
-#define VSCP_LEVEL1_INTERFACE_MAX_OPEN	256
+#define VSCP_LEVEL2_INTERFACE_MAX_OPEN	256
 
 /////////////////////////////////////////////////////////////////////////////
-// CVSCPL1App
+// CVSCPDrvApp
 // See vscpl1.cpp for the implementation of this class
 //
 
-class CVSCPL1App
+class CVSCPDrvApp
 {
 
 public:
 
 	/// Constructor
-	CVSCPL1App();
+	CVSCPDrvApp();
 	
 	/// Destructor
-	~CVSCPL1App();
+	~CVSCPDrvApp();
 
 	/*!
 		Add a driver object
@@ -103,7 +102,7 @@ public:
 		The log file object
 		This is the array with driver objects (max 256 objects
 	*/
-	VscpTcpIf *m_pvscpifArray[ VSCP_LEVEL1_INTERFACE_MAX_OPEN ];
+	VscpTcpIf *m_pvscpifArray[ VSCP_LEVEL2_INTERFACE_MAX_OPEN ];
 	
 	
 	/// Mutex for open/close
@@ -123,7 +122,7 @@ public:
 
 extern "C"
 {
-	CVSCPL1App *CreateObject( void );
+	CVSCPDrvApp *CreateObject( void );
 }
 
 #endif // !defined(AFX_VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

@@ -280,6 +280,12 @@ public:
         \return CANAL_ERROR_SUCCESS on success and error code if failure.
     */
     int doCmdGetGUID( char *pGUID );
+    
+    /*!
+        Get GUID for this interface.  
+        \return CANAL_ERROR_SUCCESS on success and error code if failure.
+    */
+    int doCmdGetGUID( cguid& ifguid );
 
     /*!
         Set GUID for this interface.  

@@ -1,4 +1,4 @@
-// Lmsensors.h: interface for the Clmsensors class.
+// socketcan.h: interface for the socketcan class.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -58,27 +58,25 @@
 #include "../../../../common/vscptcpif.h"
 #include "../../../../common/guid.h"
 
-#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LMSENSORS_OBJ_MUTEX____"
+#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2SOCKETCAN_OBJ_MUTEX____"
 
-#define VSCP_LMSENSORS_LIST_MAX_MSG		2048
-
-// Deafult seconds between events
-#define DEFAULT_INTERVAL    10    
+#define VSCP_SOCKETCAN_LIST_MAX_MSG		2048
+  
 
 // Forward declarations
-class ClmsensorsWrkTread;
+class CReadSocketCanTread;
 class VscpTcpIf;
 class wxFile;
 
 
-class Clmsensors {
+class Csocketcan {
 public:
 
     /// Constructor
-    Clmsensors();
+    Csocketcan();
 
     /// Destructor
-    virtual ~Clmsensors();
+    virtual ~Csocketcan();
 
     /*! 
         Open
@@ -117,12 +115,15 @@ public:
 
     /// Server supplied port
     short m_port;
-
-    /// Number of sensors
-    int m_nSensors;
+    
+    /// socketcan interface to use
+    wxString m_interface;
+    
+    /// Filter
+    vscpEventFilter m_vscpfilter;
 
     /// Pointer to worker thread
-    ClmsensorsWrkTread *m_pthreadWork;
+    CReadSocketCanTread *m_pthreadWork;
     
      /// VSCP server interface
     VscpTcpIf m_srv;
@@ -130,18 +131,18 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//				                Worker Tread
+//				                Worker Treads
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class CWrkTread : public wxThread {
+class CReadSocketCanTread : public wxThread {
 public:
 
     /// Constructor
-    CWrkTread();
+    CReadSocketCanTread();
 
     /// Destructor
-    ~CWrkTread();
+    ~CReadSocketCanTread();
 
     /*!
         Thread code entry point
@@ -158,18 +159,38 @@ public:
     VscpTcpIf m_srv;
 
     /// Sensor object
-    Clmsensors *m_pObj;
-    
-    /// Dataobject for specific sensor
-    wxString m_path;
-    cguid m_guid;
-    int m_interval;
-    int m_vscpclass;    // VSCP CLASS
-    int m_vscptype;     // VSCP_TYPE  Class is measurement
-    int m_datacoding;   // First databyte   
-    double m_divideValue;
-    double m_multiplyValue;
+    Csocketcan *m_pObj;
 
 };
+
+
+class CWriteSocketCanTread : public wxThread {
+public:
+
+    /// Constructor
+    CWriteSocketCanTread();
+
+    /// Destructor
+    ~CWriteSocketCanTread();
+
+    /*!
+        Thread code entry point
+     */
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
+
+    /// VSCP server interface
+    VscpTcpIf m_srv;
+
+    /// Sensor object
+    Csocketcan *m_pObj;
+
+};
+
 
 #endif // !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

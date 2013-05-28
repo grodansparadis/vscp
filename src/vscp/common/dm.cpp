@@ -236,8 +236,6 @@ void actionThreadURL::OnExit()
 
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // actionThreadVSCPSrv
 //
@@ -2381,8 +2379,12 @@ CDM::CDM( CControlObject *ctrlObj )
     wxStandardPaths stdPath;
 
     // Set the default dm configuration path
+#ifdef WIN32	
     m_configPath = stdPath.GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
+#else
+	m_configPath = _("/srv/vscp/dm.xml");
+#endif	
 #endif
 
     m_pCtrlObject = ctrlObj;

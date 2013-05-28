@@ -73,25 +73,25 @@
 
 <!-- Path to sensor data file for CPU core 1 --> 
 <variable type="string" >                  
-	<name>lmsensors_path0</name>         
+	<name>lmsensors_path1</name>         
 	<value>/sys/class/hwmon/hwmon1/device/temp3_input</value>     
 </variable>
 
 <!-- VSCP class value -->
 <variable type="int" >         
-	<name>lmsensors_vscpclass0</name>
+	<name>lmsensors_vscpclass1</name>
 	<value>10</value>  // Measurement class    
 </variable>
 
 <!-- VSCP Type value -->
 <variable type="int" >         
-	<name>lmsensors_vscptype0</name>
+	<name>lmsensors_vscptype1</name>
 	<value>6</value>  // Temperature    
 </variable>
 
 <!-- VSCP datacoding value -->
 <variable type="int" >         
-	<name>lmsensors_datacoding0</name>
+	<name>lmsensors_datacoding</name>
 	<value>6</value>
 </variable>
 

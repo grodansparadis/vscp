@@ -1371,6 +1371,42 @@ int VscpTcpIf::doCmdGetGUID( char *pGUID )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// doCmdGetGUID
+//
+
+int VscpTcpIf::doCmdGetGUID( cguid& ifguid )
+{
+    long val;
+    int pos;
+    wxString strLine;
+    wxStringTokenizer strTokens;
+
+    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
+    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
+  
+    // If receive loop active terminate
+    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
+        
+    wxString strCmd(_("SGID\r\n"));
+    m_psock->Write( strCmd.mb_str(), strCmd.length() );
+    if ( !checkReturnValue() ) return CANAL_ERROR_GENERIC;
+
+    // Handle the data (if any)
+    pos = m_strReply.Find(_("\r") );
+    if ( !pos ) {
+        return CANAL_ERROR_GENERIC; // No reply data
+    }
+    
+    // Save the line
+    strLine = m_strReply.Left( pos );
+    
+	ifguid.getFromString(strLine);
+    
+    return CANAL_ERROR_SUCCESS;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // doCmdSetGUID
 //
 

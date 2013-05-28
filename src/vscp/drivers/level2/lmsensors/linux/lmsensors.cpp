@@ -139,10 +139,11 @@ Clmsensors::open(const char *pUsername,
 	// 
 	// We look for 
 	//
-	//	 _numberofsensors - This is the number of sensors that the driver is supposed
-	//	  to read. Sensors are numbered staring with zero. 
+	//	 _numberofsensors - This is the number of sensors 
+	// 	   that the driver is supposed
+	//	   to read. Sensors are numbered staring with zero. 
 	//
-	//   _guidn - GUID for sensor n. guid0, guid1, guid2 etc
+	//       _guidn - GUID for sensor n. guid0, guid1, guid2 etc
 	//	 _pathn - Path to value for example 
 	//				/sys/class/hwmon/hwmon0/temp1_input
 	//	 		  which is CPU temp for core 1

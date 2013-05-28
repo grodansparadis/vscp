@@ -3,8 +3,8 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="linux">
       <in>test.cpp</in>
+      <in>vscpl2_loggerdrv.cpp</in>
       <in>vscpl2logger.cpp</in>
-      <in>vscpl2logger.h</in>
     </df>
     <logicalFolder name="src" displayName="src" projectFiles="true">
       <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -173,11 +173,11 @@
         <ccTool>
         </ccTool>
       </item>
+      <item path="vscpl2_loggerdrv.cpp" ex="false" tool="1" flavor2="0">
+      </item>
       <item path="vscpl2logger.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="vscpl2logger.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

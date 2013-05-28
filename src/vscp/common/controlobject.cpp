@@ -1616,7 +1616,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 			wxXmlNode *subchild = child->GetChildren();
 			while (subchild) {
 				wxString strName;
-				wxString strParameter;
+				wxString strConfig;
 				wxString strPath;
 				unsigned long flags;
 				wxString strGUID;
@@ -1628,9 +1628,10 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 						if (subsubchild->GetName() == wxT("name")) {
 							strName = subsubchild->GetNodeContent();
 							bCanalDriver = true;
-						} else if (subsubchild->GetName() == wxT("parameter")) {
-							strParameter = subsubchild->GetNodeContent();
-							strParameter.Trim();
+						} else if (subsubchild->GetName() == wxT("config") ||
+								subsubchild->GetName() == wxT("parameter")) {
+							strConfig = subsubchild->GetNodeContent();
+							strConfig.Trim();
 						} else if (subsubchild->GetName() == wxT("path")) {
 							strPath = subsubchild->GetNodeContent();
 							strPath.Trim();
@@ -1663,7 +1664,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 				if (bCanalDriver) {
 
 					if (!m_deviceList.addItem(strName,
-						strParameter,
+						strConfig,
 						strPath,
 						flags,
 						GUID)) {
@@ -1687,7 +1688,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 			wxXmlNode *subchild = child->GetChildren();
 			while (subchild) {
 				wxString strName;
-				wxString strParameter;
+				wxString strConfig;
 				wxString strPath;
 				wxString strGUID;
 				bool bLevel2Driver = false;
@@ -1698,9 +1699,10 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 						if (subsubchild->GetName() == wxT("name")) {
 							strName = subsubchild->GetNodeContent();
 							bLevel2Driver = true;
-						} else if (subsubchild->GetName() == wxT("parameter")) {
-							strParameter = subsubchild->GetNodeContent();
-							strParameter.Trim();
+						} else if (subsubchild->GetName() == wxT("config") ||
+								subsubchild->GetName() == wxT("parameter")) {
+							strConfig = subsubchild->GetNodeContent();
+							strConfig.Trim();
 						} else if (subsubchild->GetName() == wxT("path")) {
 							strPath = subsubchild->GetNodeContent();
 							strPath.Trim();
@@ -1730,9 +1732,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 				if (bLevel2Driver) {
 
 					if (!m_deviceList.addItem(strName,
-						strParameter,
+						strConfig,
 						strPath,
-						0,		
+						0,
 						GUID,
 						VSCP_DRIVER_LEVEL2)) {
 						wxString errMsg = _("Driver not added. Path does not exist. - \n\t[ ") +

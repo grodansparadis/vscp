@@ -4,6 +4,8 @@
     <df root="." name="linux">
       <in>config.h</in>
       <in>test.cpp</in>
+      <in>vscpl2_loggerdrv.cpp</in>
+      <in>vscpl2_loggerdrv.h</in>
       <in>vscpl2logger.cpp</in>
       <in>vscpl2logger.h</in>
     </df>

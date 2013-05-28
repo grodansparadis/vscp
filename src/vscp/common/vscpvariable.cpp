@@ -583,8 +583,12 @@ CVariableStorage::CVariableStorage()
     wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = stdPath.GetConfigDir();
+#ifdef WIN32
+	m_configPath = stdPath.GetConfigDir();
     m_configPath += _("/vscp/variable.xml");
+#else	
+    m_configPath = _("/srv/vscp/variable.xml");
+#endif	
 #endif    
 }
 

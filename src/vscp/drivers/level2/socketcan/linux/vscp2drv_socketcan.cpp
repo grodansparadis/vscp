@@ -56,15 +56,15 @@ void _fini() {printf("finishing\n");}
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CVSCPL1App construction
+// CVSCPDrvApp construction
 
-CVSCPL1App::CVSCPL1App()
+CVSCPDrvApp::CVSCPDrvApp()
 {
 	m_instanceCounter = 0;
 	pthread_mutex_init( &m_objMutex, NULL );
 
 	// Init the driver array
-	for ( int i = 0; i<VSCP_LEVEL1_INTERFACE_MAX_OPEN; i++ ) {
+	for ( int i = 0; i<VSCP_LEVEL2_INTERFACE_MAX_OPEN; i++ ) {
 		m_pvscpifArray[ i ] = NULL;
 	}
 
@@ -72,11 +72,11 @@ CVSCPL1App::CVSCPL1App()
 }
 
 
-CVSCPL1App::~CVSCPL1App()
+CVSCPDrvApp::~CVSCPDrvApp()
 {
 	LOCK_MUTEX( m_objMutex );
 	
-	for ( int i = 0; i<VSCP_LEVEL1_INTERFACE_MAX_OPEN; i++ ) {
+	for ( int i = 0; i<VSCP_LEVEL2_INTERFACE_MAX_OPEN; i++ ) {
 		
 		if ( NULL == m_pvscpifArray[ i ] ) {
 			
@@ -96,7 +96,7 @@ CVSCPL1App::~CVSCPL1App()
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CLoggerdllApp object
 
-CVSCPL1App theApp;
+CVSCPDrvApp theApp;
 
 
 
@@ -109,12 +109,12 @@ CVSCPL1App theApp;
 // addDriverObject
 //
 
-long CVSCPL1App::addDriverObject( VscpTcpIf *pvscpif )
+long CVSCPDrvApp::addDriverObject( VscpTcpIf *pvscpif )
 {
 	long h = 0;
 
 	LOCK_MUTEX( m_objMutex );
-	for ( int i=0; i<VSCP_LEVEL1_INTERFACE_MAX_OPEN; i++ ) {
+	for ( int i=0; i<VSCP_LEVEL2_INTERFACE_MAX_OPEN; i++ ) {
 	
 		if ( NULL == m_pvscpifArray[ i ] ) {
 		
@@ -136,13 +136,13 @@ long CVSCPL1App::addDriverObject( VscpTcpIf *pvscpif )
 // getDriverObject
 //
 
-VscpTcpIf *CVSCPL1App::getDriverObject( long h )
+VscpTcpIf *CVSCPDrvApp::getDriverObject( long h )
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
 	if ( idx < 0 ) return NULL;
-	if ( idx >= VSCP_LEVEL1_INTERFACE_MAX_OPEN ) return NULL;
+	if ( idx >= VSCP_LEVEL2_INTERFACE_MAX_OPEN ) return NULL;
 	return m_pvscpifArray[ idx ];
 }
 
@@ -151,13 +151,13 @@ VscpTcpIf *CVSCPL1App::getDriverObject( long h )
 // removeDriverObject
 //
 
-void CVSCPL1App::removeDriverObject( long h )
+void CVSCPDrvApp::removeDriverObject( long h )
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
 	if ( idx < 0 ) return;
-	if ( idx >= VSCP_LEVEL1_INTERFACE_MAX_OPEN  ) return;
+	if ( idx >= VSCP_LEVEL2_INTERFACE_MAX_OPEN  ) return;
 
 	LOCK_MUTEX( m_objMutex );
 	if ( NULL != m_pvscpifArray[ idx ] ) delete m_pvscpifArray[ idx ];
@@ -168,7 +168,7 @@ void CVSCPL1App::removeDriverObject( long h )
 ///////////////////////////////////////////////////////////////////////////////
 // InitInstance
 
-BOOL CVSCPL1App::InitInstance() 
+BOOL CVSCPDrvApp::InitInstance() 
 {
 	m_instanceCounter++;
 	return TRUE;
