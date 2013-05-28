@@ -42,16 +42,24 @@
 
 #include "wx/tokenzr.h"
 
-#include "vscp2drv_socketcan.h"
 #include "stdio.h"
 #include "stdlib.h"
 
+#include "vscp2drv_socketcan.h"
+#include "socketcan.h"
 
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));
 
-void _init() {printf("initializing\n");}
-void _fini() {printf("finishing\n");}
+void _init()
+{
+	printf("initializing\n");
+}
+
+void _fini()
+{
+	printf("finishing\n");
+}
 
 
 
@@ -61,36 +69,35 @@ void _fini() {printf("finishing\n");}
 CVSCPDrvApp::CVSCPDrvApp()
 {
 	m_instanceCounter = 0;
-	pthread_mutex_init( &m_objMutex, NULL );
+	pthread_mutex_init(&m_objMutex, NULL);
 
 	// Init the driver array
-	for ( int i = 0; i<VSCP_LEVEL2_INTERFACE_MAX_OPEN; i++ ) {
-		m_pvscpifArray[ i ] = NULL;
+	for (int i = 0; i < VSCP_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
+		m_psockcanArray[ i ] = NULL;
 	}
 
-	UNLOCK_MUTEX( m_objMutex );
+	UNLOCK_MUTEX(m_objMutex);
 }
-
 
 CVSCPDrvApp::~CVSCPDrvApp()
 {
-	LOCK_MUTEX( m_objMutex );
-	
-	for ( int i = 0; i<VSCP_LEVEL2_INTERFACE_MAX_OPEN; i++ ) {
-		
-		if ( NULL == m_pvscpifArray[ i ] ) {
-			
-			VscpTcpIf *pvscpif =  getDriverObject( i );
-			if ( NULL != pvscpif ) { 
-				pvscpif->doCmdClose();	
-				delete m_pvscpifArray[ i ];
-				m_pvscpifArray[ i ] = NULL; 
+	LOCK_MUTEX(m_objMutex);
+
+	for (int i = 0; i < VSCP_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
+
+		if (NULL == m_psockcanArray[ i ]) {
+
+			Csocketcan *psockcan = getDriverObject(i);
+			if (NULL != psockcan) {
+				psockcan->close();
+				delete m_psockcanArray[ i ];
+				m_psockcanArray[ i ] = NULL;
 			}
 		}
 	}
 
-	UNLOCK_MUTEX( m_objMutex );	
-	pthread_mutex_destroy( &m_objMutex );
+	UNLOCK_MUTEX(m_objMutex);
+	pthread_mutex_destroy(&m_objMutex);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -109,24 +116,24 @@ CVSCPDrvApp theApp;
 // addDriverObject
 //
 
-long CVSCPDrvApp::addDriverObject( VscpTcpIf *pvscpif )
+long CVSCPDrvApp::addDriverObject(Csocketcan *psockcan)
 {
 	long h = 0;
 
-	LOCK_MUTEX( m_objMutex );
-	for ( int i=0; i<VSCP_LEVEL2_INTERFACE_MAX_OPEN; i++ ) {
-	
-		if ( NULL == m_pvscpifArray[ i ] ) {
-		
-			m_pvscpifArray[ i ] = pvscpif;	
-			h = i + 1681; 
+	LOCK_MUTEX(m_objMutex);
+	for (int i = 0; i < VSCP_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
+
+		if (NULL == m_psockcanArray[ i ]) {
+
+			m_psockcanArray[ i ] = psockcan;
+			h = i + 1681;
 			break;
 
 		}
 
 	}
 
-	UNLOCK_MUTEX( m_objMutex );
+	UNLOCK_MUTEX(m_objMutex);
 
 	return h;
 }
@@ -136,14 +143,14 @@ long CVSCPDrvApp::addDriverObject( VscpTcpIf *pvscpif )
 // getDriverObject
 //
 
-VscpTcpIf *CVSCPDrvApp::getDriverObject( long h )
+Csocketcan *CVSCPDrvApp::getDriverObject(long h)
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
-	if ( idx < 0 ) return NULL;
-	if ( idx >= VSCP_LEVEL2_INTERFACE_MAX_OPEN ) return NULL;
-	return m_pvscpifArray[ idx ];
+	if (idx < 0) return NULL;
+	if (idx >= VSCP_SOCKETCAN_DRIVER_MAX_OPEN) return NULL;
+	return m_psockcanArray[ idx ];
 }
 
 
@@ -151,261 +158,130 @@ VscpTcpIf *CVSCPDrvApp::getDriverObject( long h )
 // removeDriverObject
 //
 
-void CVSCPDrvApp::removeDriverObject( long h )
+void CVSCPDrvApp::removeDriverObject(long h)
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
-	if ( idx < 0 ) return;
-	if ( idx >= VSCP_LEVEL2_INTERFACE_MAX_OPEN  ) return;
+	if (idx < 0) return;
+	if (idx >= VSCP_SOCKETCAN_DRIVER_MAX_OPEN) return;
 
-	LOCK_MUTEX( m_objMutex );
-	if ( NULL != m_pvscpifArray[ idx ] ) delete m_pvscpifArray[ idx ];
-	m_pvscpifArray[ idx ] = NULL;
-	UNLOCK_MUTEX( m_objMutex );
+	LOCK_MUTEX(m_objMutex);
+	if (NULL != m_psockcanArray[ idx ]) delete m_psockcanArray[ idx ];
+	m_psockcanArray[ idx ] = NULL;
+	UNLOCK_MUTEX(m_objMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // InitInstance
 
-BOOL CVSCPDrvApp::InitInstance() 
+BOOL CVSCPDrvApp::InitInstance()
 {
 	m_instanceCounter++;
 	return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//                             C A N A L -  A P I
+//                         V S C P   D R I V E R -  A P I
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// CanalOpen
+// VSCPOpen
 //
 
-extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
+extern "C" long
+VSCPOpen(const char *pUsername,
+		const char *pPassword,
+		const char *pHost,
+		short port,
+		const char *pPrefix,
+		const char *pParameter,
+		unsigned long flags)
 {
-	long h = CANAL_ERROR_SUB_DRIVER;
-	unsigned long filter=0, mask=0;
-	bool bFilter=false, bMask=false;
-	wxString str;
-	wxString strDevice( pDevice, wxConvUTF8);
-	wxStringTokenizer tkz(strDevice, _(";") );
+	long h = 0;
 
-	// Get possible filter	
-	if ( str = tkz.GetNextToken() ) {
-		if ( 0 != str.Length() ) {
-			if ( str.ToULong( &filter ) ) {
-				bFilter = true;
-			}
-		}
-	}
+	Csocketcan *pdrvObj = new Csocketcan();
+	if (NULL != pdrvObj) {
 
-	// Get possible mask
-	if ( str = tkz.GetNextToken() ) {
-		if ( 0 != str.Length() ) {
-			if ( str.ToULong( &mask ) ) {
-				bMask = true;
-			}
-		}
-	}
-	
-	
-	VscpTcpIf *pvscpif = new VscpTcpIf();
-	if ( NULL != pvscpif ) {
+		if (pdrvObj->open(pUsername,
+				pPassword,
+				pHost,
+				port,
+				pPrefix,
+				pParameter)) {
 
-		if ( pvscpif->doCmdOpen( strDevice, flags ) ){
-
-			if ( !( h = theApp.addDriverObject( pvscpif ) ) ) {
-				delete pvscpif;
-			}
-			else {
-				
-				if ( bFilter ) {
-					pvscpif->doCmdFilter( filter );	
-				}
-
-				if ( bMask ) {
-					pvscpif->doCmdMask( mask );
-				}
+			if (!(h = theApp.addDriverObject(pdrvObj))) {
+				delete pdrvObj;
 			}
 
-		}
-		else {
-			delete pvscpif;
+		} else {
+			delete pdrvObj;
 		}
 
 	}
- 
+
 	return h;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//  CanalClose
+//  VSCPClose
 // 
 
-extern "C" int CanalClose( long handle )
+extern "C" int
+VSCPClose(long handle)
 {
 	int rv = 0;
 
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	pvscpif->doCmdClose();
-	theApp.removeDriverObject( handle );
-	rv = CANAL_ERROR_SUCCESS;
-	return rv;
+	Csocketcan *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return 0;
+	pdrvObj->close();
+	theApp.removeDriverObject(handle);
+	rv = 1;
+	return CANAL_ERROR_SUCCESS;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//  CanalGetLevel
+//  VSCPGetLevel
 // 
 
-extern "C" unsigned long CanalGetLevel( long handle )
+extern "C" unsigned long
+VSCPGetLevel(void)
 {
-	unsigned long level;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	level = pvscpif->doCmdGetLevel();
-	return level;
+	return CANAL_LEVEL_USES_TCPIP;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// CanalSend
+// VSCPGetDllVersion
 //
 
-extern "C" int CanalSend( long handle, PCANALMSG pCanalMsg  )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdSendLevel1( pCanalMsg )? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalReceive
-//
-
-extern "C" int CanalReceive( long handle, PCANALMSG pCanalMsg  )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	
-	return ( pvscpif->doCmdReceiveLevel1( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalDataAvailable
-//
-
-extern "C" int CanalDataAvailable( long handle  )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdDataAvailable() ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetStatus
-//
-
-extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdStatus( pCanalStatus) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetStatistics
-//
-
-extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistics  )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdStatistics( pCanalStatistics ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetFilter
-//
-
-extern "C" int CanalSetFilter( long handle, unsigned long filter )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	return ( pvscpif->doCmdFilter( filter ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetMask
-//
-
-extern "C" int CanalSetMask( long handle, unsigned long mask )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	return ( pvscpif->doCmdMask( mask ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetBaudrate
-//
-
-extern "C" int CanalSetBaudrate( long handle, unsigned long baudrate )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdSetBaudrate( baudrate ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetVersion
-//
-
-extern "C" unsigned long CanalGetVersion( void )
-{
-	unsigned long version;
-	unsigned char *p = (unsigned char *)&version;
-
-	*p = CANAL_MAIN_VERSION;
-	*(p+1) = CANAL_MINOR_VERSION;
-	*(p+2) = CANAL_SUB_VERSION;
-	*(p+3) = 0;
-	return version;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetDllVersion
-//
-
-extern "C" unsigned long CanalGetDllVersion( void )
+extern "C" unsigned long
+VSCPGetDllVersion(void)
 {
 	return VSCP_DLL_VERSION;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-// CanalGetVendorString
+// VSCPGetVendorString
 //
 
-extern "C" const char * CanalGetVendorString( void )
+extern "C" const char *
+VSCPGetVendorString(void)
 {
 	return VSCP_DLL_VENDOR;
 }
 
 
- 
+///////////////////////////////////////////////////////////////////////////////
+// VSCPGetDriverInfo
+//
+
+extern "C" const char *
+VSCPGetDriverInfo(void)
+{
+	return VSCP_SOCKETCAN_DRIVERINFO;
+}
+
+

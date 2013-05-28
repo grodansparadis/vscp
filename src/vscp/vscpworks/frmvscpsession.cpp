@@ -5,8 +5,8 @@
 //  Modified by: 
 //  Created:     Sat 30 Jun 2007 14:08:14 CEST
 //  RCS-ID:      
-// Copyright:   (C) 2007-2013 
-// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+//  Copyright:   (C) 2007-2013 
+//  Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //  Licence:     
 //  This program is free software; you can redistribute it and/or  
 //  modify it under the terms of the GNU General Public License
@@ -845,88 +845,49 @@ IMPLEMENT_CLASS( frmVSCPSession, wxFrame )
 
 	////@begin frmVSCPSession event table entries
   EVT_CLOSE( frmVSCPSession::OnCloseWindow )
-
   EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON_ACTIVATE, frmVSCPSession::OnInterfaceActivate )
-
   EVT_MENU( ID_MENUITEM_VSCP_LOAD_MSG_LIST, frmVSCPSession::LoadRXEventList )
-
   EVT_MENU( ID_MENUITEM_VSCP_SAVE_MSG_LIST, frmVSCPSession::SaveRXEventList )
-
   EVT_MENU( ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, frmVSCPSession::OnTxLoadClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, frmVSCPSession::OnTxSaveClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_SESSION_EXIT, frmVSCPSession::OnMenuitemVscpSessionExitClick )
-
   EVT_MENU( ID_MENUITEM4, frmVSCPSession::ClearRxList )
-
   EVT_MENU( ID_MENUITEM5, frmVSCPSession::ClearTxList )
-
   EVT_MENU( ID_MENUITEM_VSCP_LOG, frmVSCPSession::OnMenuitemVscpViewLogClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_COUNT, frmVSCPSession::OnMenuitemVscpViewCountClick )
-
   EVT_MENU( ID_MENUITEM_READ_REGISTER, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-
   EVT_MENU( ID_MENUITEM_WRITE_REGISTER, frmVSCPSession::OnMenuitemSetBurstCountClick )
-
   EVT_MENU( ID_MENUITEM_READ_ALL_REGISTERS, frmVSCPSession::OnMenuitemSetFilterClick )
-
   EVT_MENU( ID_MENUITEM_GET_GUID, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-
   EVT_MENU( ID_MENUITEM_GET_MDF_URL, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-
   EVT_MENU( ID_MENUITEM_GET_MDF, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-
   EVT_MENU( ID_MENUITEM_RX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveRxCellWidth )
-
   EVT_MENU( ID_MENUITEM_SAVE_TX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveTxCellWidth )
-
   EVT_MENU( ID_MENUITEM1, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-
   EVT_MENU( ID_MENUITEM2, frmVSCPSession::OnMenuitemSetBurstCountClick )
-
   EVT_MENU( ID_MENUITEM3, frmVSCPSession::OnMenuitemSetFilterClick )
-
   EVT_MENU( ID_MENUITEM, frmVSCPSession::OnMenuitemConfigurationClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_HELP, frmVSCPSession::OnMenuitemVscpHelpClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_FAQ, frmVSCPSession::OnMenuitemVscpFaqClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_SHORTCUTS, frmVSCPSession::OnMenuitemVscpShortcutsClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_THANKS, frmVSCPSession::OnMenuitemVscpThanksClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_CREDITS, frmVSCPSession::OnMenuitemVscpCreditsClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_VSCP_SITE, frmVSCPSession::OnMenuitemVscpVscpSiteClick )
-
   EVT_MENU( ID_MENUITEM_VSCP_ABOUT, frmVSCPSession::OnMenuitemVscpAboutClick )
-
   EVT_GRID_CELL_LEFT_CLICK( frmVSCPSession::OnCellReceiveLeftClick )
   EVT_GRID_CELL_RIGHT_CLICK( frmVSCPSession::OnGridCellReceiveRightClick )
   EVT_GRID_LABEL_LEFT_DCLICK( frmVSCPSession::OnGridLabelLeftDClick )
   EVT_GRID_SELECT_CELL( frmVSCPSession::OnSelectCell )
-
   EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW_RCVINFO, frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked )
-
   EVT_BUTTON( ID_BITMAPBUTTON_TX_ADD, frmVSCPSession::OnTxAddClick )
-
   EVT_BUTTON( ID_BITMAPBUTTON_TX_EDIT, frmVSCPSession::OnTxEditClick )
-
   EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, frmVSCPSession::OnTxDeleteClick )
-
   EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, frmVSCPSession::OnTxLoadClick )
-
   EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, frmVSCPSession::OnTxSaveClick )
-
   EVT_GRID_CELL_LEFT_CLICK( frmVSCPSession::OnCellTxLeftClick )
   EVT_GRID_CELL_RIGHT_CLICK( frmVSCPSession::OnCellTxRightClick )
   EVT_GRID_CELL_LEFT_DCLICK( frmVSCPSession::OnGridLeftDClick )
-
   EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, frmVSCPSession::OnTxSendClick )
-
 	////@end frmVSCPSession event table entries
 
 	EVT_MENU(Menu_Popup_TX_Transmit, frmVSCPSession::OnTxSendClick )

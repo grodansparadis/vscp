@@ -497,7 +497,12 @@ bool CControlObject::init(wxString& strcfgfile)
 		_T(""));
 
 	// Read configuration
-	readConfiguration(strcfgfile);
+	if (!readConfiguration(strcfgfile) ) {
+		printf("vscpd: Unable to open/parse configuration file. Terminating.");
+		logMsg(_("Unable to open/parse configuration file. Can't initialize!).\n"), DAEMON_LOGMSG_CRITICAL);
+		logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
+		return FALSE;
+	}
 
 	// Get GUID
 	if (isGUIDEmpty(m_GUID)) {
@@ -1455,7 +1460,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 				} else if (subchild->GetName() == wxT("clientbuffersize")) {
 					wxString str = subchild->GetNodeContent();
 					m_maxItemsInClientReceiveQueue = readStringValue(str);
-				} else if (subchild->GetName() == wxT("pathroot")) {
+				} else if (subchild->GetName() == wxT("webrootpath")) {
 					CControlObject::m_pathRoot = subchild->GetNodeContent();
 				} else if (subchild->GetName() == wxT("pathcert")) {
 					m_pathCert = subchild->GetNodeContent();

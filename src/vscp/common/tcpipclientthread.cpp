@@ -756,7 +756,9 @@ void TcpClientThread::handleClientSend ( void )
 #ifdef WIN32
             event.timestamp = GetTickCount();
 #else
-            event.timestamp = 0;  // TODO
+			struct timespec ts;
+			clock_gettime(CLOCK_MONOTONIC, &ts);
+			event.timestamp = (unsigned long)ts.tv_sec * 1000000 + ts.tv_nsec/1000;  
 #endif
         }
     }
@@ -816,11 +818,11 @@ void TcpClientThread::handleClientSend ( void )
 
         }
 
-        // Copy message
+        // Copy event
         memcpy ( pEvent, &event, sizeof ( vscpEvent ) );
 
         // Save the originating clients id so
-        // this client dont get the message back
+        // this client don't get the message back
         pEvent->obid = m_pClientItem->m_clientID;
 
         wxString dbgStr = 

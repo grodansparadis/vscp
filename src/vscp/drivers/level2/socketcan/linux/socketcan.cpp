@@ -251,6 +251,8 @@ CReadSocketCanTread::Entry()
 	const int canfd_on = 1;
 	cguid ifguid; // Interface GUID on VSCP server.
 
+	::wxInitialize();
+			
 	// Check pointers
 	if (NULL == m_pObj) return NULL;
 
@@ -275,6 +277,8 @@ CReadSocketCanTread::Entry()
 
 	// Get GUID for this interface. 
 	m_srv.doCmdGetGUID(ifguid);
+	
+	strncpy(devname, "can0", sizeof(devname)-1);
 
 	sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 	if (sock < 0) {
@@ -315,10 +319,10 @@ CReadSocketCanTread::Entry()
 		FD_SET(sock, &rdfs);
 
 		tv.tv_sec = 0;
-		tv.tv_usec = 50000; // 50ms timeout 
+		tv.tv_usec = 5000; // 50ms timeout 
 
 		int ret;
-		if ((ret = select(sock, &rdfs, NULL, NULL, &tv)) < 0) {
+		if ((ret = select(sock+1, &rdfs, NULL, NULL, &tv)) < 0) {
 			// Error
 			m_pObj->m_bQuit = true;
 			continue;
@@ -354,46 +358,49 @@ CReadSocketCanTread::Entry()
 				ifguid.setGUID(pEvent->data);
 
 				// Copy data if any
-				pEvent->sizeData = frame.len;
+				pEvent->sizeData = frame.len + 16;
 				if (frame.len) {
 					memcpy(pEvent->data + 16, frame.data, frame.len);
 				}
 
-				// Send  the event
+				// Send the event
 				m_srv.doCmdSendEx(pEvent);
 			}
 
 		} else {
-
+	
 			// Check if there is event(s) to send
 			if (m_srv.doCmdDataAvailable()) {
 
 				// Yes there are data to send
 				// So send it out on the CAN bus
-				if (CANAL_ERROR_SUCCESS == m_srv.doCmdReceiveEx(pEvent)) {
+				
+				pEvent = new vscpEventEx();
+				if (NULL != pEvent && 
+						CANAL_ERROR_SUCCESS == m_srv.doCmdReceiveEx(pEvent)) {
 					// Class must be a Level I class or a Level II
 					// mirror class
 					if (pEvent->vscp_class < 512) {
-						frame.can_id = getCANidFromVSCPevent(pEvent);
+						frame.can_id = getCANidFromVSCPeventEx(pEvent);
 						frame.can_id |= CAN_EFF_FLAG; // Always extended
-						if (NULL != pEvent->pdata) {
-							frame.can_dlc = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-							memcpy(frame.data, pEvent->pdata, frame.can_dlc);
+						if (0 != pEvent->sizeData) {
+							frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
+							memcpy(frame.data, pEvent->data, frame.len);
 						}
 					} else if (pEvent->vscp_class < 1024) {
 						pEvent->vscp_class -= 512;
 						frame.can_id |= CAN_EFF_FLAG; // Always extended
-						if (NULL != pEvent->pdata) {
-							frame.can_dlc = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
-							memcpy(frame.data, pEvent->pdata + 16, frame.can_dlc);
+						if (0 != pEvent->sizeData) {
+							frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
+							memcpy(frame.data, pEvent->data + 16, frame.len);
 						}
 					}
 
 					// Remove the event
-					deleteVSCPevent(pEvent);
+					deleteVSCPeventEx(pEvent);
 
 					// Write the data
-					nbytes = write(sock, &frame, sizeof(struct can_frame));
+					int nbytes = write(sock, &frame, sizeof(struct can_frame));
 				}
 			}
 		}

@@ -68,7 +68,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>../../../../daemon/linux/vscpd</executablePath>
           <cTool>
             <incDir>
               <pElem>include</pElem>

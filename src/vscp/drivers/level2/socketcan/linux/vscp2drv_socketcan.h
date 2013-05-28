@@ -37,6 +37,8 @@
 #include "../../../../common/vscptcpif.h"
 #include "../../../../common/canal_macro.h"
 
+#include "socketcan.h"
+
 #ifndef BOOL
 typedef int BOOL;
 #endif
@@ -50,13 +52,21 @@ typedef int BOOL;
 #endif
 
 // This is the version info for this DLL - Change to your own value
-#define VSCP_DLL_VERSION	1
+#define VSCP_DLL_VERSION        0x000001
 
 // This is the vendor string - Change to your own value
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
 
+// Driver information.
+#define VSCP_SOCKETCAN_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
+"<!-- Version 0.0.1    2013-05-11   -->" \
+"<config level=\"1|2\"blocking\"true|false\" description=\"bla bla bla bla\">" \
+"   <item pos=\"0\" type=\"string\" description\"Serial number for Tellstick\"/>" \
+"   <item pos=\"1\" type=\"path\" description\"Path to configuration file\"/>" \
+"</config>"
+
 // Max number of open connections
-#define VSCP_LEVEL2_INTERFACE_MAX_OPEN	256
+#define VSCP_SOCKETCAN_DRIVER_MAX_OPEN	    256
 
 /////////////////////////////////////////////////////////////////////////////
 // CVSCPDrvApp
@@ -80,7 +90,7 @@ public:
 		@parm plog Object to add
 		@return handle or 0 for error
 	*/	
-	long addDriverObject( VscpTcpIf  *pvscpif );
+	long addDriverObject( Csocketcan *psockcan );
 
 	/*!
 		Get a driver object from its handle
@@ -89,7 +99,7 @@ public:
 		@return pointer to object or NULL if invalid
 				handle.
 	*/
-	VscpTcpIf  *getDriverObject( long h );
+	Csocketcan *getDriverObject( long h );
 
 	/*!
 		Remove a driver object
@@ -102,7 +112,7 @@ public:
 		The log file object
 		This is the array with driver objects (max 256 objects
 	*/
-	VscpTcpIf *m_pvscpifArray[ VSCP_LEVEL2_INTERFACE_MAX_OPEN ];
+	Csocketcan *m_psockcanArray[ VSCP_SOCKETCAN_DRIVER_MAX_OPEN ];
 	
 	
 	/// Mutex for open/close

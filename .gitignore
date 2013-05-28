@@ -64,3 +64,6 @@ src/vscp/drivers/level2/lmsensors/linux/test
 src/vscp/drivers/level2/logger/linux/test
 src/vscp/drivers/level2/udpdrv/linux/
 src/vscp/web/demo/README~
+src/vscp/drivers/level2/socketcan/linux/a.out
+src/vscp/drivers/level2/socketcan/linux/readsockt
+src/vscp/drivers/level2/socketcan/linux/test
