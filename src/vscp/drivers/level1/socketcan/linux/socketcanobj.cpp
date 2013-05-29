@@ -464,11 +464,7 @@ void *workThread(void *pObject)
 						
 						// Update statistics
 						psocketcanobj->m_socketcanobj.m_stat.cntReceiveData += pMsg->sizeData;
-						psocketcanobj->m_socketcanobj.m_stat.cntReceiveFrames += 1;
-				
-						// Failed to translate message
-						//delete pMsg;
-						//delete pNode;
+						psocketcanobj->m_socketcanobj.m_stat.cntReceiveFrames += 1;			
 						
 					} 
 					else {

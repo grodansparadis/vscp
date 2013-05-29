@@ -1,1 +1,1 @@
-This is a driver for VSCP over raw Ethernet
+This is a driver for VSCP over a TCP/IP link using the limited command set

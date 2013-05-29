@@ -409,6 +409,9 @@ extern "C" {
      */
     bool doLevel2Filter(const vscpEvent *pEvent,
             const vscpEventFilter *pFilter);
+    
+    bool doLevel2FilterEx(const vscpEventEx *pEventEx,
+            const vscpEventFilter *pFilter);
 
     /*!
         Read a filter from a string

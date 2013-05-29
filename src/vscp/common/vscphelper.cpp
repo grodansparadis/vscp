@@ -1952,6 +1952,37 @@ bool doLevel2Filter(const vscpEvent *pEvent,
 	return true;
 }
 
+
+bool doLevel2FilterEx(const vscpEventEx *pEventEx,
+		const vscpEventFilter *pFilter)
+{
+	// Must be a valid client
+	if (NULL == pFilter) return false;
+
+	// Must be a valid message
+	if (NULL == pEventEx) return false;
+
+	// Test vscp_class
+	if (0xffff != (uint16_t) (~(pFilter->filter_class ^ pEventEx->vscp_class) |
+			~pFilter->mask_class)) return false;
+
+	// Test vscp_type
+	if (0xffff != (uint16_t) (~(pFilter->filter_type ^ pEventEx->vscp_type) |
+			~pFilter->mask_type)) return false;
+
+	// GUID
+	for (int i = 0; i < 16; i++) {
+		if (0xff != (uint8_t) (~(pFilter->filter_GUID[ i ] ^ pEventEx->GUID[ i ]) |
+				~pFilter->mask_GUID[ i ])) return false;
+	}
+
+	// Test priority
+	if (0xff != (uint8_t) (~(pFilter->filter_priority ^ getVscpPriorityEx(pEventEx)) |
+			~pFilter->mask_priority)) return false;
+
+	return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////
 // ClearVSCPFilter
 //
