@@ -67,3 +67,4 @@ src/vscp/web/demo/README~
 src/vscp/drivers/level2/socketcan/linux/a.out
 src/vscp/drivers/level2/socketcan/linux/readsockt
 src/vscp/drivers/level2/socketcan/linux/test
+src/vscp/drivers/level2/socketcan/linux/readsock

@@ -1,6 +1,7 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-05-29 - AKHE Added Level I socketcan driver.
 2013-05-28 - AKHE driver config <parameter> has been changed to <config>
 			Default path for varibles has been moved to /srv/vscp/variable.xml
 			Deafult path for dm has been moved to /srv/vscp/dm.xml
