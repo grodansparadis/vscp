@@ -278,8 +278,6 @@ CReadSocketCanTread::Entry()
 	// Get GUID for this interface. 
 	m_srv.doCmdGetGUID(ifguid);
 	
-	strncpy(devname, "can0", sizeof(devname)-1);
-
 	sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
 	if (sock < 0) {
 		syslog(LOG_ERR,
@@ -312,7 +310,6 @@ CReadSocketCanTread::Entry()
 		return NULL;
 	}
 
-	vscpEventEx *pEvent;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
 
 		FD_ZERO(&rdfs);
@@ -344,8 +341,14 @@ CReadSocketCanTread::Entry()
 			// Mask of control bits
 			frame.can_id &= CAN_EFF_MASK;
 
-			pEvent = new vscpEventEx();
+			vscpEvent *pEvent = new vscpEvent();
 			if (NULL != pEvent) {
+				
+				pEvent->pdata = new uint8_t[16 + frame.len];
+				if ( NULL == pEvent->pdata ) {
+					delete pEvent;
+					continue;
+				}
 
 				// Set VSCP class + 512
 				pEvent->vscp_class = getVSCPclassFromCANid(frame.can_id) + 512;
@@ -355,16 +358,21 @@ CReadSocketCanTread::Entry()
 
 				// Set node id + guid
 				ifguid.setLSB(frame.can_id & 0xff);
-				ifguid.setGUID(pEvent->data);
+				ifguid.setGUID(pEvent->pdata);
 
 				// Copy data if any
 				pEvent->sizeData = frame.len + 16;
-				if (frame.len) {
-					memcpy(pEvent->data + 16, frame.data, frame.len);
+				if (frame.len) {	
+					memcpy(pEvent->pdata + 16, frame.data, frame.len);
 				}
 
-				// Send the event
-				m_srv.doCmdSendEx(pEvent);
+				if ( doLevel2Filter(pEvent, &m_pObj->m_vscpfilter )) {						
+					// Send the event
+					m_srv.doCmdSend(pEvent);
+				}
+				else {
+					deleteVSCPevent(pEvent);
+				}
 			}
 
 		} else {
@@ -375,29 +383,29 @@ CReadSocketCanTread::Entry()
 				// Yes there are data to send
 				// So send it out on the CAN bus
 				
-				pEvent = new vscpEventEx();
-				if (NULL != pEvent && 
-						CANAL_ERROR_SUCCESS == m_srv.doCmdReceiveEx(pEvent)) {
+				vscpEventEx *pEventEx = new vscpEventEx();
+				if (NULL != pEventEx && 
+						CANAL_ERROR_SUCCESS == m_srv.doCmdReceiveEx(pEventEx)) {
 					// Class must be a Level I class or a Level II
 					// mirror class
-					if (pEvent->vscp_class < 512) {
-						frame.can_id = getCANidFromVSCPeventEx(pEvent);
+					if (pEventEx->vscp_class < 512) {
+						frame.can_id = getCANidFromVSCPeventEx(pEventEx);
 						frame.can_id |= CAN_EFF_FLAG; // Always extended
-						if (0 != pEvent->sizeData) {
-							frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-							memcpy(frame.data, pEvent->data, frame.len);
+						if (0 != pEventEx->sizeData) {
+							frame.len = (pEventEx->sizeData > 8 ? 8 : pEventEx->sizeData);
+							memcpy(frame.data, pEventEx->data, frame.len);
 						}
-					} else if (pEvent->vscp_class < 1024) {
-						pEvent->vscp_class -= 512;
+					} else if (pEventEx->vscp_class < 1024) {
+						pEventEx->vscp_class -= 512;
 						frame.can_id |= CAN_EFF_FLAG; // Always extended
-						if (0 != pEvent->sizeData) {
-							frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
-							memcpy(frame.data, pEvent->data + 16, frame.len);
+						if (0 != pEventEx->sizeData) {
+							frame.len = ((pEventEx->sizeData - 16) > 8 ? 8 : pEventEx->sizeData - 16);
+							memcpy(frame.data, pEventEx->data + 16, frame.len);
 						}
 					}
 
 					// Remove the event
-					deleteVSCPeventEx(pEvent);
+					deleteVSCPeventEx(pEventEx);
 
 					// Write the data
 					int nbytes = write(sock, &frame, sizeof(struct can_frame));
@@ -426,132 +434,4 @@ CReadSocketCanTread::OnExit()
 	;
 }
 
-//////////////////////////////////////////////////////////////////////
-//                Workerthread  - CWriteSocketCanTread
-//////////////////////////////////////////////////////////////////////
 
-CWriteSocketCanTread::CWriteSocketCanTread()
-{
-	m_pObj = NULL;
-}
-
-CWriteSocketCanTread::~CWriteSocketCanTread()
-{
-	;
-}
-
-//////////////////////////////////////////////////////////////////////
-// Entry
-//
-
-void *
-CWriteSocketCanTread::Entry()
-{
-	// Check pointers
-	if (NULL == m_pObj) return NULL;
-
-	if (m_srv.doCmdOpen(m_pObj->m_host,
-			m_pObj->m_port,
-			m_pObj->m_username,
-			m_pObj->m_password) <= 0) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "CWriteSocketCanTread. Unable to connect to VSCP TCP/IP interface. Terminating!");
-		return NULL;
-	}
-
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
-
-	int sock;
-	char devname[IFNAMSIZ + 1];
-	int nbytes;
-	struct sockaddr_can addr;
-	struct can_frame frame;
-	struct ifreq ifr;
-
-	strncpy(devname, m_pObj->m_interface.ToAscii(), sizeof(devname) - 1);
-#if DEBUG	
-	syslog(LOG_ERR, "CWriteSocketCanTread: Interface: %s\n", ifname);
-#endif	
-
-	if ((sock = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "CWriteSocketCanTread: Error while opening socket. Terminating!");
-		return NULL;
-	}
-
-	strcpy(ifr.ifr_name, devname);
-	ioctl(sock, SIOCGIFINDEX, &ifr);
-
-	addr.can_family = AF_CAN;
-	addr.can_ifindex = ifr.ifr_ifindex;
-
-#if DEBUG	
-	syslog(LOG_ERR, "CWriteSocketCanTread: %s at index %d\n", ifname, ifr.ifr_ifindex);
-#endif	
-
-	if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "CWriteSocketCanTread: Error in socket bind. Terminating!");
-		return NULL;
-	}
-
-	// We will not read on this socket
-	shutdown(sock, SHUT_RD);
-
-	m_srv.doCmdEnterReceiveLoop();
-
-	vscpEvent *pEvent;
-	while (!TestDestroy() && !m_pObj->m_bQuit) {
-
-		if (CANAL_ERROR_SUCCESS == m_srv.doCmdBlockReceive(pEvent)) {
-			// Class must be a Level I class or a Level II
-			// mirror class
-			if (pEvent->vscp_class < 512) {
-				frame.can_id = getCANidFromVSCPevent(pEvent);
-				frame.can_id |= CAN_EFF_FLAG; // Always extended
-				if (NULL != pEvent->pdata) {
-					frame.can_dlc = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-					memcpy(frame.data, pEvent->pdata, frame.can_dlc);
-				}
-			} else if (pEvent->vscp_class < 1024) {
-				pEvent->vscp_class -= 512;
-				frame.can_id |= CAN_EFF_FLAG; // Always extended
-				if (NULL != pEvent->pdata) {
-					frame.can_dlc = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
-					memcpy(frame.data, pEvent->pdata + 16, frame.can_dlc);
-				}
-			}
-
-			// Remove the event
-			deleteVSCPevent(pEvent);
-
-			// Write the data
-			nbytes = write(sock, &frame, sizeof(struct can_frame));
-		}
-
-	}
-
-	// Close the socket
-	close(sock);
-
-	// Close the channel
-	m_srv.doCmdClose();
-
-	return NULL;
-
-}
-
-//////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void
-CWriteSocketCanTread::OnExit()
-{
-	;
-}

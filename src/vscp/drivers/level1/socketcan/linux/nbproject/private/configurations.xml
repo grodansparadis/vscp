@@ -2,14 +2,40 @@
 <configurationDescriptor version="88">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="linux">
+      <df name="include">
+        <df name="linux">
+          <df name="can">
+            <in>bcm.h</in>
+            <in>core.h</in>
+            <in>dev.h</in>
+            <in>error.h</in>
+            <in>gw.h</in>
+            <in>isotp.h</in>
+            <in>netlink.h</in>
+            <in>raw.h</in>
+          </df>
+          <in>can.h</in>
+        </df>
+        <df name="socketcan">
+          <df name="can">
+            <in>bcm.h</in>
+            <in>error.h</in>
+            <in>gw.h</in>
+            <in>ioctl.h</in>
+            <in>isotp.h</in>
+            <in>netlink.h</in>
+            <in>raw.h</in>
+          </df>
+          <in>can.h</in>
+        </df>
+      </df>
       <in>config.h</in>
+      <in>socketcandrv.cpp</in>
+      <in>socketcandrv.h</in>
+      <in>socketcanobj.cpp</in>
+      <in>socketcanobj.h</in>
       <in>test.cpp</in>
-      <in>vscpl2_loggerdrv.cpp</in>
-      <in>vscpl2_loggerdrv.h</in>
-      <in>vscpl2logger.cpp</in>
     </df>
-    <itemPath>../common/log.cpp</itemPath>
-    <itemPath>../common/log.h</itemPath>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
@@ -26,8 +52,6 @@
         </gdb_interceptlist>
         <gdb_options>
           <DebugOptions>
-            <option name="debug_command" value="vscpd  -s"/>
-            <option name="debug_dir" value="/home/akhe/vscp_software/src/vscp/daemon/linux"/>
           </DebugOptions>
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
