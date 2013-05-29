@@ -117,15 +117,26 @@ public:
     /// Server supplied port
     short m_port;
     
-    /// socketcan interface to use
+    /// Ethernet interface to use
     wxString m_interface;
+    
+    /// Source MAC address
+    wxString m_strlocalMac;
+    uint8_t m_localMac[16];
     
     /// Filter
     vscpEventFilter m_vscpfilter;
+    
+    /// Daemon channel id for rawEthernet tx channel
+    uint32_t m_ChannelIDtx;
+    
+    // GUID's
+    cguid m_localGUIDtx;
+    cguid m_localGUIDrx;
 
     /// Pointer to worker threads
-    CWrkReadThread *m_pthreadWork;
-    CWrkWriteThread *m_pthwriteWork;
+    CWrkReadThread *m_preadWorkThread;
+    CWrkWriteThread *m_pwriteWorkThread;
     
      /// VSCP server interface
     VscpTcpIf m_srv;
