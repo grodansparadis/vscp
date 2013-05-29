@@ -283,6 +283,7 @@ void *
 CWrkTread::Entry()
 {
 	bool bActivity;
+	bool bRemoteConnectionLost = false;
 
 	::wxInitialize();
 			
@@ -296,7 +297,7 @@ CWrkTread::Entry()
 			m_pObj->m_passwordLocal) <= 0) {
 		syslog(LOG_ERR,
 				"%s",
-				(const char *) "CReadSocketCanTread: Error while opening local VSCP TCP/IP interface. Terminating!");
+				(const char *) "Error while opening local VSCP TCP/IP interface. Terminating!");
 		return NULL;
 	}
 
@@ -315,7 +316,7 @@ CWrkTread::Entry()
 			m_pObj->m_passwordRemote) <= 0) {
 		syslog(LOG_ERR,
 				"%s",
-				(const char *) "CReadSocketCanTread: Error while opening remote VSCP TCP/IP interface. Terminating!");
+				(const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
 		return NULL;
 	}
 
@@ -329,6 +330,32 @@ CWrkTread::Entry()
 
 	vscpEventEx eventEx;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
+
+		// Make sure the remote connection is up
+		if (!m_srvRemote.isConnected()) {
+
+			if (!bRemoteConnectionLost) {
+				bRemoteConnectionLost = true;
+				m_srvRemote.doCmdClose();
+				syslog(LOG_ERR,
+						"%s",
+						(const char *) "Lost connection to remote host.");
+			}
+
+			// Wait five seconds before we try to connect again
+			::wxSleep(5);
+
+			if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
+					m_pObj->m_portRemote,
+					m_pObj->m_usernameRemote,
+					m_pObj->m_passwordRemote)) {
+				syslog(LOG_ERR,
+						"%s",
+						(const char *) "Reconnected to remote host.");
+				bRemoteConnectionLost = false;
+			}
+
+		}
 
 		bActivity = false;
 		
@@ -352,7 +379,7 @@ CWrkTread::Entry()
 			bActivity = true;
 			
 			// Yes there are data to send if filter allows it
-			if ( doLevel2Filter(&eventEx, &m_pObj->m_vscpfilter )) {						
+			if ( doLevel2FilterEx(&eventEx, &m_pObj->m_vscpfilter )) {						
 				if (CANAL_ERROR_SUCCESS == m_srvLocal.doCmdReceiveEx(&eventEx)) {
 					m_srvLocal.doCmdSendEx(&eventEx);
 				}
@@ -367,11 +394,9 @@ CWrkTread::Entry()
 		
 	}
 
-	// Close the socket
-	close(sock);
-
 	// Close the channel
-	m_srvcal.doCmdClose();
+	m_srvLocal.doCmdClose();
+	m_srvRemote.doCmdClose();
 
 	return NULL;
 
@@ -382,7 +407,7 @@ CWrkTread::Entry()
 //
 
 void
-CReadSocketCanTread::OnExit()
+CWrkTread::OnExit()
 {
 	;
 }

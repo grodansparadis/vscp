@@ -1,7 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configurationDescriptor version="88">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="common"
+                   displayName="common"
+                   projectFiles="true"
+                   root="../../../../common">
+      <itemPath>../../../../common/canal.h</itemPath>
+      <itemPath>../../../../common/canal_macro.h</itemPath>
+      <itemPath>../../../../common/guid.cpp</itemPath>
+      <itemPath>../../../../common/guid.h</itemPath>
+      <itemPath>../../../../common/vscp.h</itemPath>
+      <itemPath>../../../../common/vscp_class.h</itemPath>
+      <itemPath>../../../../common/vscp_type.h</itemPath>
+      <itemPath>../../../../common/vscphelper.cpp</itemPath>
+      <itemPath>../../../../common/vscphelper.h</itemPath>
+      <itemPath>../../../../common/vscptcpif.cpp</itemPath>
+      <itemPath>../../../../common/vscptcpif.h</itemPath>
+    </logicalFolder>
     <df root="." name="linux">
+      <in>test.c</in>
       <in>vscp2drv_tcpip.cpp</in>
       <in>vscp2drv_tcpiplink.cpp</in>
       <in>vscp2drv_tcpiplink.h</in>
@@ -36,6 +53,19 @@
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
+          <cTool>
+            <incDir>
+              <pElem>include</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
+            </incDir>
+            <preprocessorList>
+              <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
+              <Elem>__WXDEBUG__</Elem>
+              <Elem>__WXGTK__</Elem>
+            </preprocessorList>
+          </cTool>
           <ccTool>
             <incDir>
               <pElem>include</pElem>
@@ -51,6 +81,37 @@
           </ccTool>
         </makeTool>
       </makefileType>
+      <item path="../../../../common/canal.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../../common/canal_macro.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../../common/guid.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../../common/vscp.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../../common/vscp_class.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../../common/vscp_type.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../../common/vscphelper.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../../../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <folder path="common">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
+      <item path="test.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="vscp2drv_tcpip.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>

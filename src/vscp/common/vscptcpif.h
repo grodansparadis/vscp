@@ -88,6 +88,11 @@ public:
     virtual ~VscpTcpIf();
 
 public:
+    
+    /*!
+        
+     */
+    bool isConnected( void ) { return m_psock->IsOk(); };
 
     /*!
         checkReturnValue
