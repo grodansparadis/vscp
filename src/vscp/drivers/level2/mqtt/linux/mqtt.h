@@ -48,6 +48,8 @@
 
 #endif
 
+#include <mosquittopp.h>
+
 #include <wx/file.h>
 #include <wx/wfstream.h>
 
@@ -58,16 +60,138 @@
 #include "../../../../common/vscptcpif.h"
 #include "../../../../common/guid.h"
 
+
+
 #define VSCP_LEVEL2_DLL_MQTT_OBJ_MUTEX "___VSCP__DLL_L2MQTT_OBJ_MUTEX____"
 
 #define VSCP_MQTT_LIST_MAX_MSG		2048
-  
+
 
 // Forward declarations
 class CWrkThread;
 class VscpTcpIf;
 class wxFile;
 
+// Subscribe base class
+
+class mqtt_subscribe : public mosqpp::mosquittopp {
+public:
+    mqtt_subscribe(const wxString& usernameLocal,
+            const wxString& passwordLocal,
+            const wxString& hostLocal = _("localhost"),
+            const int portLocal = 9598,
+            const wxString& topic = _("vscp"),
+            const wxString& hostRemote = _("localhost"),
+            int portRemote = 1883,
+            int keepalive = 60);
+    ~mqtt_subscribe();
+
+    void on_connect(int rc);
+    void on_message(const struct mosquitto_message *message);
+    void on_subscribe(int mid, int qos_count, const int *granted_qos);
+
+    /*!
+    VSCP daemon address
+     */
+    wxString m_hostLocal;
+
+    /*!
+        VSCP daemon port
+     */
+    int m_portLocal;
+
+    /*!
+        User name for VSCP daemon
+     */
+    wxString m_usernameLocal;
+
+    /*!
+        Password for VSCP daemon
+     */
+    wxString m_passwordLocal;
+
+    /*!
+        Subscribe or Publish topic.
+     */
+    wxString m_topic;
+    
+    /*!
+        MQTT host (broker)
+     */
+    wxString m_hostMQTT;
+    
+    /*!
+        MQTT port
+    */       
+	int m_portMQTT;
+                
+    /*!
+        Keepalive value
+    */
+	int m_keepalive;
+    
+    /// VSCP server interface
+    VscpTcpIf m_srv;
+};
+
+// Publish base class
+
+class mqtt_publish : public mosqpp::mosquittopp {
+public:
+    mqtt_publish(const wxString& usernameLocal,
+            const wxString& passwordLocal,
+            const wxString& hostLocal = _("localhost"),
+            const int portLocal = 9598,
+            const wxString& topic = _("vscp"),
+            const wxString& hostRemote = _("localhost"),
+            int portRemote = 1883,
+            int keepalive = 60);
+    ~mqtt_publish();
+
+    void on_connect(int rc);
+    void on_message(const struct mosquitto_message *message);
+    void on_subscribe(int mid, int qos_count, const int *granted_qos);
+
+    /*!
+    VSCP daemon address
+     */
+    wxString m_hostLocal;
+
+    /*!
+        VSCP daemon port
+     */
+    int m_portLocal;
+
+    /*!
+        User name for VSCP daemon
+     */
+    wxString m_usernameLocal;
+
+    /*!
+        Password for VSCP daemon
+     */
+    wxString m_passwordLocal;
+
+    /*!
+        Subscribe or Publish topic.
+     */
+    wxString m_topic;
+    
+    /*!
+        MQTT host (broker)
+     */
+    wxString m_hostMQTT;
+    
+    /*!
+        MQTT port
+    */       
+	int m_portMQTT;
+                
+    /*!
+        Keepalive value
+    */
+	int m_keepalive;
+};
 
 class Cmqtt {
 public:
@@ -100,6 +224,9 @@ public:
 
     /// Run flag
     bool m_bQuit;
+    
+    /// True if we should subscribe. False if we should publish)
+    bool bSubscribe;
 
     /// Server supplied username
     wxString m_username;
@@ -115,17 +242,44 @@ public:
 
     /// Server supplied port
     short m_port;
+
+    /*!
+        Subscribe or Publish topic.
+     */
+    wxString m_topic;
     
-    /// mqtt interface to use
-    wxString m_interface;
+    /*!
+        MQTT host (broker)
+     */
+    wxString m_hostMQTT;
     
+    /*!
+        MQTT port
+    */       
+	int m_portMQTT;
+    
+    /*!
+        MQTT username (broker)
+     */
+    wxString m_usernameMQTT;
+    
+    /*!
+        MQTT password (broker)
+     */
+    wxString m_passwordMQTT;
+                
+    /*!
+        Keepalive value
+    */
+	int m_keepalive;
+
     /// Filter
     vscpEventFilter m_vscpfilter;
 
     /// Pointer to worker thread
     CWrkThread *m_pthreadWork;
-    
-     /// VSCP server interface
+
+    /// VSCP server interface
     VscpTcpIf m_srv;
 
 };
@@ -133,7 +287,6 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 //				                Worker Treads
 ///////////////////////////////////////////////////////////////////////////////
-
 
 class CWrkThread : public wxThread {
 public:
@@ -162,7 +315,6 @@ public:
     Cmqtt *m_pObj;
 
 };
-
 
 class CWriteSocketCanTread : public wxThread {
 public:

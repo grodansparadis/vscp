@@ -1891,7 +1891,7 @@ bool VscpTcpIf::setVariableEventEx( wxString& name, vscpEventEx *pEvent )
     wxString strCmd;
     wxString strValue;
 
-    writeVscpEventToStringEx( pEvent, strValue );
+    writeVscpEventExToString( pEvent, strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(",,,") + strValue + _("\r\n");
     m_psock->Write( strCmd.ToAscii(), strlen( strCmd.ToAscii() ) );
     if ( !checkReturnValue() ) return false;

@@ -70,3 +70,6 @@ src/vscp/drivers/level2/socketcan/linux/test
 src/vscp/drivers/level2/socketcan/linux/readsock
 src/vscp/drivers/level2/rawethernet/linux/test
 src/vscp/drivers/level2/tcpdrv/linux/test
+BUILD_UNIX~
+src/vscp/drivers/level2/mqtt/linux/test
+

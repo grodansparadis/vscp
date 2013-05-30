@@ -5,6 +5,7 @@
       <in>config.h</in>
       <in>mqtt.cpp</in>
       <in>mqtt.h</in>
+      <in>publish.c</in>
       <in>test.c</in>
       <in>vscp2drv_mqtt.cpp</in>
       <in>vscp2drv_mqtt.h</in>

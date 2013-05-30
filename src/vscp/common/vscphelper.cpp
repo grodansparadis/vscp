@@ -2413,10 +2413,10 @@ bool writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// writeVscpEventToString
+// writeVscpEventExToString
 //
 
-bool writeVscpEventToStringEx(vscpEventEx *pEventEx, wxString& str)
+bool writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
 {
 	vscpEvent Event;
 

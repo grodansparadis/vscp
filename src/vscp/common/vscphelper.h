@@ -526,7 +526,7 @@ extern "C" {
       @param str String that receive the result
       @return true on success, false on failure.
      */
-    bool writeVscpEventToStringEx(vscpEventEx *pEvent, wxString& str);
+    bool writeVscpEventExToString(vscpEventEx *pEvent, wxString& str);
 
 
     /*!
