@@ -1,4 +1,4 @@
-// VSCP helper dll.h : main header file for the VSCP helper dll DLL
+// vscphelperexport.h : main header file for the VSCP helper dll DLL
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@
 #endif
 
 #include "resource.h"		// main symbols
-#include "../../common/canalsuperwrapper.h"
+#include "../../../common/vscphelper.h"
 
 /*!
 	\class CVSCPhelperdllApp
@@ -50,10 +50,10 @@
 	See VSCP helper dll.cpp for the implementation of this class.
 */
 
-class CVSCPhelperdllApp : public CWinApp
+class CVSCPhelperApp : public CWinApp
 {
 public:
-	CVSCPhelperdllApp();
+	CVSCPhelperApp();
 
 // Overrides
 public:

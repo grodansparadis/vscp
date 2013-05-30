@@ -50,7 +50,7 @@
 
 #include "wx/tokenzr.h"
 
-#include "vscpl1.h"
+#include "libvscphelper.h"
 #include "stdio.h"
 #include "stdlib.h"
 
@@ -64,15 +64,15 @@ void _fini() {printf("finishing\n");}
 
 
 ////////////////////////////////////////////////////////////////////////////
-// CVSCPL1App construction
+// CVSCPLApp construction
 
-CVSCPL1App::CVSCPL1App()
+CVSCPLApp::CVSCPLApp()
 {
 	m_instanceCounter = 0;
 	pthread_mutex_init( &m_objMutex, NULL );
 
 	// Init the driver array
-	for ( int i = 0; i<VSCP_LEVEL1_INTERFACE_MAX_OPEN; i++ ) {
+	for ( int i = 0; i<VSCP_INTERFACE_MAX_OPEN; i++ ) {
 		m_pvscpifArray[ i ] = NULL;
 	}
 
@@ -80,11 +80,11 @@ CVSCPL1App::CVSCPL1App()
 }
 
 
-CVSCPL1App::~CVSCPL1App()
+CVSCPLApp::~CVSCPLApp()
 {
 	LOCK_MUTEX( m_objMutex );
 	
-	for ( int i = 0; i<VSCP_LEVEL1_INTERFACE_MAX_OPEN; i++ ) {
+	for ( int i = 0; i<VSCP_INTERFACE_MAX_OPEN; i++ ) {
 		
 		if ( NULL == m_pvscpifArray[ i ] ) {
 			
@@ -104,7 +104,7 @@ CVSCPL1App::~CVSCPL1App()
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CLoggerdllApp object
 
-CVSCPL1App theApp;
+CVSCPLApp theApp;
 
 
 
@@ -117,12 +117,12 @@ CVSCPL1App theApp;
 // addDriverObject
 //
 
-long CVSCPL1App::addDriverObject( VscpTcpIf *pvscpif )
+long CVSCPLApp::addDriverObject( VscpTcpIf *pvscpif )
 {
 	long h = 0;
 
 	LOCK_MUTEX( m_objMutex );
-	for ( int i=0; i<VSCP_LEVEL1_INTERFACE_MAX_OPEN; i++ ) {
+	for ( int i=0; i<VSCP_INTERFACE_MAX_OPEN; i++ ) {
 	
 		if ( NULL == m_pvscpifArray[ i ] ) {
 		
@@ -144,13 +144,13 @@ long CVSCPL1App::addDriverObject( VscpTcpIf *pvscpif )
 // getDriverObject
 //
 
-VscpTcpIf *CVSCPL1App::getDriverObject( long h )
+VscpTcpIf *CVSCPLApp::getDriverObject( long h )
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
 	if ( idx < 0 ) return NULL;
-	if ( idx >= VSCP_LEVEL1_INTERFACE_MAX_OPEN ) return NULL;
+	if ( idx >= VSCP_INTERFACE_MAX_OPEN ) return NULL;
 	return m_pvscpifArray[ idx ];
 }
 
@@ -159,13 +159,13 @@ VscpTcpIf *CVSCPL1App::getDriverObject( long h )
 // removeDriverObject
 //
 
-void CVSCPL1App::removeDriverObject( long h )
+void CVSCPLApp::removeDriverObject( long h )
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
 	if ( idx < 0 ) return;
-	if ( idx >= VSCP_LEVEL1_INTERFACE_MAX_OPEN  ) return;
+	if ( idx >= VSCP_INTERFACE_MAX_OPEN  ) return;
 
 	LOCK_MUTEX( m_objMutex );
 	if ( NULL != m_pvscpifArray[ idx ] ) delete m_pvscpifArray[ idx ];
@@ -176,244 +176,787 @@ void CVSCPL1App::removeDriverObject( long h )
 ///////////////////////////////////////////////////////////////////////////////
 // InitInstance
 
-BOOL CVSCPL1App::InitInstance() 
+BOOL CVSCPLApp::InitInstance() 
 {
 	m_instanceCounter++;
 	return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-//                             C A N A L -  A P I
+//                      V S C P   H E L P E R -  A P I
 ///////////////////////////////////////////////////////////////////////////////
 
-///////////////////////////////////////////////////////////////////////////////
-// CanalOpen
-//
+/*!
+    \fn long vscp_readStringValue( const char * pStrValue )
+    \brief Read a value (decimal or hex) from a string.
+	\return The converted number.
+*/
 
-extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
+extern "C" unsigned long  vscp_readStringValue( const char * pStrValue )
 {
-	long h = CANAL_ERROR_SUB_DRIVER;
-	unsigned long filter=0, mask=0;
-	bool bFilter=false, bMask=false;
-	wxString str;
-	wxString strDevice( pDevice, wxConvUTF8);
-	wxStringTokenizer tkz(strDevice, _(";") );
+    wxString strVal;
+    strVal.FromAscii( pStrValue );
 
-	// Get possible filter	
-	if ( str = tkz.GetNextToken() ) {
-		if ( 0 != str.Length() ) {
-			if ( str.ToULong( &filter ) ) {
-				bFilter = true;
-			}
-		}
-	}
-
-	// Get possible mask
-	if ( str = tkz.GetNextToken() ) {
-		if ( 0 != str.Length() ) {
-			if ( str.ToULong( &mask ) ) {
-				bMask = true;
-			}
-		}
-	}
-	
-	
-	VscpTcpIf *pvscpif = new VscpTcpIf();
-	if ( NULL != pvscpif ) {
-
-		if ( pvscpif->doCmdOpen( strDevice, flags ) ){
-
-			if ( !( h = theApp.addDriverObject( pvscpif ) ) ) {
-				delete pvscpif;
-			}
-			else {
-				
-				if ( bFilter ) {
-					pvscpif->doCmdFilter( filter );	
-				}
-
-				if ( bMask ) {
-					pvscpif->doCmdMask( mask );
-				}
-			}
-
-		}
-		else {
-			delete pvscpif;
-		}
-
-	}
- 
-	return h;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//  CanalClose
-// 
-
-extern "C" int CanalClose( long handle )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	pvscpif->doCmdClose();
-	theApp.removeDriverObject( handle );
-	rv = CANAL_ERROR_SUCCESS;
-	return rv;
+    return readStringValue( strVal );
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-//  CanalGetLevel
-// 
 
-extern "C" unsigned long CanalGetLevel( long handle )
+/*!
+    \fn unsigned char vscp_getVscpPriority( const vscpEvent *pEvent )
+    \brief Get VSCP priority.
+*/
+
+extern "C" unsigned char  vscp_getVscpPriority( const vscpEvent *pEvent )
 {
-	unsigned long level;
+    return getVscpPriority( pEvent );
+}
 
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
+/*!
+    \fn void vscp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+    \brief Set VSCP priority.
+*/
 
-	level = pvscpif->doCmdGetLevel();
-	return level;
+extern "C" void  vscp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+{
+    setVscpPriority( pEvent, priority );
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
-// CanalSend
-//
+/*!
+    \fn vscp_getVSCPheadFromCANid( const unsigned long id )
+    \brief Get the VSCP head from a CANAL message id (CAN id).
+*/
 
-extern "C" int CanalSend( long handle, PCANALMSG pCanalMsg  )
+extern "C" unsigned char  vscp_getVSCPheadFromCANid( const unsigned long id )
 {
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdSendLevel1( pCanalMsg )? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
+    return  getVSCPheadFromCANid( id );
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// CanalReceive
-//
+/*!
+    \fn vscp_getVSCPclassFromCANid( const unsigned long id )
+    \brief Get the VSCP class from a CANAL message id (CAN id).
+*/
 
-extern "C" int CanalReceive( long handle, PCANALMSG pCanalMsg  )
+extern "C" unsigned short  vscp_getVSCPclassFromCANid( const unsigned long id )
 {
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	
-	return ( pvscpif->doCmdReceiveLevel1( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalDataAvailable
-//
-
-extern "C" int CanalDataAvailable( long handle  )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdDataAvailable() ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetStatus
-//
-
-extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdStatus( pCanalStatus) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetStatistics
-//
-
-extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistics  )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdStatistics( pCanalStatistics ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetFilter
-//
-
-extern "C" int CanalSetFilter( long handle, unsigned long filter )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	return ( pvscpif->doCmdFilter( filter ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetMask
-//
-
-extern "C" int CanalSetMask( long handle, unsigned long mask )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	return ( pvscpif->doCmdMask( mask ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetBaudrate
-//
-
-extern "C" int CanalSetBaudrate( long handle, unsigned long baudrate )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdSetBaudrate( baudrate ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetVersion
-//
-
-extern "C" unsigned long CanalGetVersion( void )
-{
-	unsigned long version;
-	unsigned char *p = (unsigned char *)&version;
-
-	*p = CANAL_MAIN_VERSION;
-	*(p+1) = CANAL_MINOR_VERSION;
-	*(p+2) = CANAL_SUB_VERSION;
-	*(p+3) = 0;
-	return version;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetDllVersion
-//
-
-extern "C" unsigned long CanalGetDllVersion( void )
-{
-	return VSCP_DLL_VERSION;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetVendorString
-//
-
-extern "C" const char * CanalGetVendorString( void )
-{
-	return VSCP_DLL_VENDOR;
+    return getVSCPclassFromCANid( id );
 }
 
 
- 
+/*!
+    \fn unsigned short vscp_getVSCPtypeFromCANid( const unsigned long id )
+    \brief Get the VSCP type from a a CANAL message id (CAN id).
+*/
+
+extern "C" unsigned short  vscp_getVSCPtypeFromCANid( const unsigned long id )
+{
+    return getVSCPtypeFromCANid( id );
+}
+
+/*!
+    \fn unsigned short vscp_getVSCPnicknameFromCANid( const unsigned long id )
+    \brief Get the VSCP nickname from a a CANAL message id (CAN id).
+*/
+
+extern "C" unsigned short  vscp_getVSCPnicknameFromCANid( const unsigned long id )
+{
+    return getVSCPnicknameFromCANid( id );
+}
+
+/*!
+    \fn unsigned long vscp_getCANidFromVSCPdata( const unsigned char priority, 
+                                                    const unsigned short vscp_class, 
+                                                    const unsigned short vscp_type )
+    \brief Construct a CANAL id (CAN id ) from VSCP.
+*/
+
+extern "C" unsigned long  vscp_getCANidFromVSCPdata( const unsigned char priority, 
+                                                                    const unsigned short vscp_class, 
+                                                                    const unsigned short vscp_type )
+{
+    return  getCANidFromVSCPdata( priority, vscp_class, vscp_type );
+}
+
+/*!
+    \fn unsigned long vscp_getCANidFromVSCPevent( const vscpEvent *pEvent )
+    \brief Get CANAL id (CAN id) from VSCP event.
+*/
+
+extern "C" unsigned long  vscp_getCANidFromVSCPevent( const vscpEvent *pEvent )
+{
+    return getCANidFromVSCPevent( pEvent );
+}
+
+/*!
+    \fn unsigned short vscp_calcCRC( vscpEvent *pEvent, short bSet )
+    \brief Calculate VSCP crc.
+*/
+
+extern "C" unsigned short  vscp_calcCRC( vscpEvent *pEvent, short bSet )
+{
+    return vscp_calc_crc( pEvent, bSet );
+}
+
+
+/*!
+    \fn bool vscp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+    \brief Write GUID into VSCP event from string.
+*/
+
+extern "C" bool  vscp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+{
+    wxString strGUID = wxString::FromAscii( pGUID );
+    return  getGuidFromString( pEvent, strGUID );
+}
+
+/*!
+    \fn bool vscp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+    \brief Write GUID from string into array.
+*/
+
+extern "C" bool  vscp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+{
+    wxString strGUID = wxString::FromAscii( pStr );
+    return getGuidFromStringToArray( pGUID, strGUID );
+}
+
+/*!
+    \fn bool vscp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
+    \brief Write GUID froom VSCP event to string.
+*/
+
+extern "C" bool  vscp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
+{
+    bool rv;
+
+    wxString strGUID;
+    rv = writeGuidToString( pEvent, strGUID );
+    strcpy( pStr, strGUID.ToAscii() );
+    return rv;
+}
+
+
+/*!
+    \fn bool vscp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                            wxString& strGUID )
+    \brief Write GUID from VSCP event to string with four bytes on each
+    row seperated by \r\n. 
+*/
+
+extern "C" bool  vscp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                                                wxString& strGUID )
+{
+    return writeGuidToString4Rows( pEvent, strGUID );
+}
+
+/*!
+    \fn bool vscp_writeGuidArrayToString( const unsigned char * pGUID, 
+                                            wxString& strGUID )
+    \brief Write GUID from byte array to string.
+*/
+
+extern "C" bool  vscp_writeGuidArrayToString( const unsigned char * pGUID, 
+                                                                wxString& strGUID )
+{
+    return writeGuidArrayToString( pGUID, strGUID );
+}
+
+/*!
+    \fn bool vscp_isGUIDEmpty( unsigned char *pGUID )
+    \brief Check if GUID is empty (all nills).
+*/
+
+extern "C" bool  vscp_isGUIDEmpty( unsigned char *pGUID )
+{
+    return isGUIDEmpty( pGUID );
+}
+
+/*!
+    \fn bool vscp_isSameGUID( const unsigned char *pGUID1, 
+                                const unsigned char *pGUID2 )
+    \brief Check if two GUID's is equal to each other.
+*/
+
+extern "C" bool  vscp_isSameGUID( const unsigned char *pGUID1, 
+                                                const unsigned char *pGUID2 )
+{
+    return isSameGUID( pGUID1, pGUID2 );
+}
+
+/*!
+    \fn bool vscp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+                                    const vscpEvent *pEvent )
+    \brief Convert VSCP standard event form to ex. form.
+*/
+
+extern "C" bool  vscp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+                                                        const vscpEvent *pEvent )
+{
+    return convertVSCPtoEx( pEventEx, pEvent );
+}
+
+/*!
+    \fn bool vscp_convertVSCPfromEx( vscpEvent *pEvent, 
+                                        const vscpEventEx *pEventEx )
+    \brief Convert VSCP ex. event form to standard form.
+*/
+
+extern "C" bool  vscp_convertVSCPfromEx( vscpEvent *pEvent, 
+                                                        const vscpEventEx *pEventEx )
+{
+    return convertVSCPfromEx( pEvent, pEventEx );
+}
+
+
+/*!
+    \fn void vscp_deleteVSCPevent( vscpEvent *pEvent )
+    \brief Delete VSCP event.
+*/
+
+extern "C" void  vscp_deleteVSCPevent( vscpEvent *pEvent )
+{
+    return deleteVSCPevent( pEvent );
+}
+
+/*!
+    \fn void vscp_deleteVSCPeventEx( vscpEventEx *pEventEx )
+    \brief Delete VSCP event ex.
+*/
+
+extern "C" void  vscp_deleteVSCPeventEx( vscpEventEx *pEventEx )
+{
+    return deleteVSCPeventEx( pEventEx );
+}
+
+/*!
+    \fn void vscp_clearVSCPFilter( vscpEventFilter *pFilter )
+    \brief Clear VSCP filter.
+*/
+
+extern "C" void  vscp_clearVSCPFilter( vscpEventFilter *pFilter )
+{
+    return clearVSCPFilter( pFilter );
+}
+
+/*!
+    \fn bool readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
+    \brief Read a filter from a string
+	\param pFilter Filter structure to write filter to.
+	\param strFilter Filter in string form 
+				filter-priority, filter-class, filter-type, filter-GUID
+	\return true on success, fals eon failure.
+*/
+
+extern "C" bool  vscp_readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
+{
+	return readFilterFromString( pFilter, strFilter );
+}
+
+/*!
+    \fn bool readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
+    \brief Read a mask from a string
+	\param pFilter Filter structure to write mask to.
+	\param strMask Mask in string form 
+				mask-priority, mask-class, mask-type, mask-GUID
+	\return true on success, fals eon failure.
+*/
+
+extern "C" bool  vscp_readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
+{
+	return readMaskFromString( pFilter, strMask );
+}
+
+/*!
+    \fn bool vscp_doLevel2Filter( const vscpEvent *pEvent,
+                                    const vscpEventFilter *pFilter )
+    \brief Check VSCP filter condition.
+*/
+
+extern "C" bool  vscp_doLevel2Filter( const vscpEvent *pEvent,
+                                                    const vscpEventFilter *pFilter )
+{
+    return  doLevel2Filter( pEvent, pFilter );
+}
+
+
+/*!
+    \fn bool vscp_convertCanalToEvent( vscpEvent *pvscpEvent,
+                                            const canalMsg *pcanalMsg,
+                                            unsigned char *pGUID,
+                                            bool bCAN )
+    \brief Convert CANAL message to VSCP event.
+*/
+
+extern "C" bool  vscp_convertCanalToEvent( vscpEvent *pvscpEvent,
+                                                            const canalMsg *pcanalMsg,
+                                                            unsigned char *pGUID,
+                                                            bool bCAN )
+{
+    return convertCanalToEvent( pvscpEvent,
+                                    pcanalMsg,
+                                    pGUID,
+                                    bCAN );
+}
+
+
+/*!
+    \fn bool vscp_convertEventToCanal( canalMsg *pcanalMsg,
+                                        const vscpEvent *pvscpEvent )
+    \brief Convert VSCP event to CANAL message.
+*/
+
+extern "C" bool  vscp_convertEventToCanal( canalMsg *pcanalMsg,
+                                                            const vscpEvent *pvscpEvent )
+{
+    return  convertEventToCanal( pcanalMsg,
+                                    pvscpEvent );
+}
+
+
+/*!
+    \fn bool vscp_convertEventExToCanal( canalMsg *pcanalMsg,
+                                            const vscpEventEx *pvscpEventEx )
+    \brief Convert VSCP event ex. to CANAL message.
+*/
+
+extern "C" bool  vscp_convertEventExToCanal( canalMsg *pcanalMsg,
+                                                            const vscpEventEx *pvscpEventEx )
+{
+    return  convertEventExToCanal( pcanalMsg,
+                                    pvscpEventEx );
+}
+
+/*!
+    \fn unsigned long vscp_getTimeStamp( void )
+    \brief Get VSCP timestamp.
+*/
+
+extern "C" unsigned long  vscp_getTimeStamp( void )
+{
+    return makeTimeStamp();
+}
+
+/*!
+    \fn bool vscp_copyVSCPEvent( vscpEvent *pEventTo, 
+                                    const vscpEvent *pEventFrom )
+    \brief Copy VSCP event.
+*/
+
+extern "C" bool  vscp_copyVSCPEvent( vscpEvent *pEventTo, 
+                                                    const vscpEvent *pEventFrom )
+{
+    return copyVSCPEvent( pEventTo, pEventFrom );
+}
+
+/*!
+    \fn bool vscp_writeVscpDataToString( const vscpEvent *pEvent, 
+                                            wxString& str, 
+                                            bool bUseHtmlBreak )
+    \brief Write VSCP data in readable form to a (multiline) string.
+*/
+
+extern "C" bool  vscp_writeVscpDataToString( const vscpEvent *pEvent, 
+                                                            wxString& str, 
+                                                            bool bUseHtmlBreak )
+{
+    return writeVscpDataToString( pEvent, 
+                                    str, 
+                                    bUseHtmlBreak );
+}
+
+
+/*!
+    \fn bool vscp_getVscpDataFromString( vscpEvent *pEvent, 
+                                            const wxString& str )
+    \brief Set data in VSCP event from a string.
+*/
+extern "C" bool  vscp_getVscpDataFromString( vscpEvent *pEvent, 
+                                                                const wxString& str )
+{
+    return getVscpDataFromString( pEvent, str );
+}
+
+/*!
+    \fn bool vscp_writeVscpEventToString( vscpEvent *pEvent, 
+                                            char *p )
+    \brief Write VSCP data to a string.
+*/
+
+extern "C" bool  vscp_writeVscpEventToString( vscpEvent *pEvent, 
+                                                                char *p )
+{
+    bool rv;
+
+    wxString str = wxString::FromAscii( p );
+    if ( ( rv =  writeVscpEventToString( pEvent, str ) ) ) {
+        strcpy( p, str.ToAscii() );
+    }
+    return rv;
+}
+
+/*!
+    \fn bool vscp_getVscpEventFromString( vscpEvent *pEvent, 
+                                            const char *p )
+    \brief Get VSCP event from string.
+*/
+
+extern "C" bool  vscp_getVscpEventFromString( vscpEvent *pEvent, 
+                                                                const char *p )
+{
+    wxString str = wxString::FromAscii( p );
+    return getVscpEventFromString( pEvent, str ); 
+}
+
+
+//-------------------------------------------------------------------------
+
+
+/*!
+    \fn bool vscp_getVariableString( const char *pName, char *pValue ) 
+    \brief Get variable value from string variable
+    \param name of variable
+    \param pointer to string that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableString( const char *pName, char *pValue ) 
+{ 
+    bool rv;
+
+    wxString name = wxString::FromAscii( pName );
+    wxString strValue;
+    if ( ( rv = theApp.m_vscpif.getVariableString( name, &strValue ) ) ) {
+        strcpy( pValue, strValue.ToAscii() );
+    }
+
+    return rv;
+}
+
+/*!
+    \fn bool vscp_setVariableString( const char *pName, char *pValue ) 
+    \brief set string variable from a pointer to a string
+    \param name of variable
+    \param pointer to string that contains the string.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableString( const char *pName, char *pValue ) 
+{ 
+    bool rv;
+
+    // Check pointers
+    if ( NULL == pName ) return false;
+    if ( NULL == pValue ) return false;
+
+    wxString name = wxString::FromAscii( pName );
+    wxString strValue = wxString::FromAscii( pValue );
+    return theApp.m_vscpif.setVariableString( name, strValue );
+
+    return rv;
+}
+
+/*!
+    \fn bool vscp_getVariableBool( const char *pName, bool *bValue )
+    \brief Get variable value from boolean variable
+    \param name of variable
+    \param pointer to boolean variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableBool( const char *pName, bool *bValue )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableBool( name, bValue ); 
+};
+
+
+/*!
+    \fn bool vscp_setVariableBool( const char *pName, bool bValue )
+    \brief Get variable value from boolean variable
+    \param name of variable
+    \param pointer to boolean variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableBool( const char *pName, bool bValue )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableBool( name, bValue ); 
+};
+
+
+/*!
+    \fn bool vscp_getVariableInt( const char *pName, int *value )
+    \brief Get variable value from integer variable
+    \param name of variable
+    \param pointer to integer variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableInt( const char *pName, int *value )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableInt( name, value ); 
+};
+
+
+/*!
+    \fn bool vscp_setVariableInt( const char *pName, int value )
+    \brief Get variable value from integer variable
+    \param name of variable
+    \param pointer to integer variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableInt( const char *pName, int value )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableInt( name, value ); 
+};
+
+/*!
+    \fn bool vscp_getVariableLong( const char *pName, long *value )
+    \brief Get variable value from long variable
+    \param name of variable
+    \param pointer to long variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableLong( const char *pName, long *value )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableLong( name, value ); 
+};
+
+/*!
+    \fn bool vscp_setVariableLong( const char *pName, long value )
+    \brief Get variable value from long variable
+    \param name of variable
+    \param pointer to long variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableLong( const char *pName, long value )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableLong( name, value ); 
+};
+
+/*!
+    \fn bool vscp_getVariableDouble( const char *pName, double *value )
+    \brief Get variable value from double variable
+    \param name of variable
+    \param pointer to double variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableDouble( const char *pName, double *value )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableDouble( name, value ); 
+};
+
+/*!
+    \fn bool vscp_setVariableDouble( const char *pName, double value )
+    \brief Get variable value from double variable
+    \param name of variable
+    \param pointer to double variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableDouble( const char *pName, double value )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableDouble( name, value ); 
+};
+
+/*!
+    \fn bool vscp_getVariableMeasurement( const char *pName, char *pValue )
+    \brief Get variable value from measurement variable
+    \param name of variable
+    \param String that get that get the 
+    value of the measurement.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableMeasurement( const char *pName, char *pValue )
+{ 
+    bool rv;
+
+    wxString name = wxString::FromAscii( pName );
+    wxString strValue;
+    if ( rv = theApp.m_vscpif.getVariableMeasurement( name, strValue ) ) {
+        strcpy( pValue, strValue.ToAscii() );
+    }
+
+    return rv;
+};
+
+/*!
+    \fn bool vscp_setVariableMeasurement( const char *pName, char *pValue )
+    \brief Get variable value from measurement variable
+    \param name of variable
+    \param String that get that get the 
+    value of the measurement.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableMeasurement( const char *pName, char *pValue )
+{ 
+    bool rv;
+
+    wxString name = wxString::FromAscii( pName );
+    wxString strValue;
+    return theApp.m_vscpif.setVariableMeasurement( name, strValue );
+
+    return rv;
+};
+
+/*!
+    \fn bool vscp_getVariableEvent( const char *pName, vscpEvent *pEvent )
+    \breif Get variable value from event variable
+    \param name of variable
+    \param pointer to event variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableEvent( const char *pName, vscpEvent *pEvent )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableEvent( name, pEvent ); 
+}
+
+/*!
+    \fn bool vscp_setVariableEvent( const char *pName, vscpEvent *pEvent )
+    \breif Get variable value from event variable
+    \param name of variable
+    \param pointer to event variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableEvent( const char *pName, vscpEvent *pEvent )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableEvent( name, pEvent ); 
+}
+
+/*!
+    \fn bool vscp_getVariableEventEx( const char *pName, vscpEventEx *pEvent )
+    \brief Get variable value from event variable
+    \param name of variable
+    \param pointer to event variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableEventEx( const char *pName, vscpEventEx *pEvent )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableEventEx( name, pEvent ); 
+}
+
+/*!
+    \fn bool vscp_setVariableEventEx( const char *pName, vscpEventEx *pEvent )
+    \brief Get variable value from event variable
+    \param name of variable
+    \param pointer to event variable that get the value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableEventEx( const char *pName, vscpEventEx *pEvent )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableEventEx( name, pEvent ); 
+}
+
+/*!
+    \fn bool vscp_getVariableGUID( const char *pName, cguid& GUID )
+    \brief Get variable value from GUID variable
+    \param name of variable
+    \param pointer to event variable that get the value of the GUID variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableGUID( const char *pName, cguid& GUID )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableGUID( name, GUID ); 
+}
+
+/*!
+    \fn bool vscp_setVariableGUID( const char *pName, cguid& GUID )
+    \brief Get variable value from GUID variable
+    \param name of variable
+    \param pointer to event variable that get the value of the GUID variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableGUID( const char *pName, cguid& GUID )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableGUID( name, GUID ); 
+}
+
+/*!
+    \fn bool vscp_getVariableVSCPdata( const char *pName, uint16_t *psizeData, uint8_t *pData )
+    \brief Get variable value from VSCP data variable
+    \param name of variable
+    \param Pointer to variable that will hold the size of the data array
+    \param pointer to VSCP data array variable (unsigned char [8] ) that get the 
+    value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableVSCPdata( const char *pName, uint16_t *psizeData, uint8_t *pData )
+{ 
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableVSCPdata( name, psizeData, pData ); 
+}
+
+/*!
+    \fn bool vscp_setVariableVSCPdata( const char *pName, uint16_t sizeData, uint8_t *pData )
+    \brief Get variable value from VSCP data variable
+    \param name of variable
+    \param Pointer to variable that will hold the size of the data array
+    \param pointer to VSCP data array variable (unsigned char [8] ) that get the 
+    value of the string variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableVSCPdata( const char *pName, uint16_t sizeData, uint8_t *pData )
+{ 
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableVSCPdata( name, sizeData, pData ); 
+}
+
+/*!
+    \fn bool vscp_getVariableVSCPclass( const char *pName, uint16_t *vscp_class )
+    \brief Get variable value from class variable
+    \param name of variable
+    \param pointer to int that get the value of the class variable.
+    \return true if the variable is of type string.
+*/
+extern "C"  bool  vscp_getVariableVSCPclass( const char *pName, uint16_t *vscp_class )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableVSCPclass( name, vscp_class ); 
+}
+
+/*!
+    \fn bool vscp_setVariableVSCPclass( const char *pName, uint16_t vscp_class )
+    \brief Get variable value from class variable
+    \param name of variable
+    \param pointer to int that get the value of the class variable.
+    \return true if the variable is of type string.
+*/
+extern "C"  bool  vscp_setVariableVSCPclass( const char *pName, uint16_t vscp_class )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableVSCPclass( name, vscp_class ); 
+}
+
+/*!
+    \fn bool vscp_getVariableVSCPtype( const char *pName, uint8_t *vscp_type )
+    \brief Get variable value from type variable
+    \param name of variable
+    \param pointer to int that get the value of the type variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_getVariableVSCPtype( const char *pName, uint8_t *vscp_type )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.getVariableVSCPtype( name, vscp_type ); 
+}
+
+/*!
+    \fn bool  vscp_setVariableVSCPtype( const char *pName, uint8_t vscp_type )
+    \brief Get variable value from type variable
+    \param name of variable
+    \param pointer to int that get the value of the type variable.
+    \return true if the variable is of type string.
+*/
+extern "C" bool  vscp_setVariableVSCPtype( const char *pName, uint8_t vscp_type )
+{
+    wxString name = wxString::FromAscii( pName );
+    return theApp.m_vscpif.setVariableVSCPtype( name, vscp_type ); 
+}

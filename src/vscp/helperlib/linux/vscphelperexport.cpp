@@ -1,4 +1,4 @@
-// VSCP helper dll.cpp : Defines the initialization routines for the DLL.
+// vscphelperexport.cpp : Defines the initialization routines for the DLL.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@
 //
 
 #include "stdafx.h"
-#include "vscphelperdll.h"
+#include "vscphelperexport.h"
 
 /*!
     \file VSCP helper dll.cpp
@@ -54,12 +54,12 @@ CVSCPhelperdllApp::CVSCPhelperdllApp()
 
 // The one and only CVSCPhelperdllApp object
 
-CVSCPhelperdllApp theApp;
+CVSCPhelperApp theApp;
 
 
 // CVSCPhelperdllApp initialization
 
-BOOL CVSCPhelperdllApp::InitInstance()
+BOOL CVSCPhelperApp::InitInstance()
 {
     CWinApp::InitInstance();
 
