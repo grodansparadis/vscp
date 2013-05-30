@@ -1504,6 +1504,19 @@ void setVscpPriority(vscpEvent *pEvent, unsigned char priority)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// setVscpPriorityEx
+
+void setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority)
+{
+	// Must be a valid message pointer
+	if (NULL == pEvent) return;
+
+	if (priority > 7) return;
+
+	pEvent->head = ((unsigned char) (priority << 5));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getVSCPheadFromCANid
 //
 
@@ -1543,7 +1556,9 @@ uint16_t getVSCPnicknameFromCANid(const uint32_t id)
 // getCANidFromVSCPdata
 //
 
-uint32_t getCANidFromVSCPdata(const unsigned char priority, const uint16_t vscp_class, const uint16_t vscp_type)
+uint32_t getCANidFromVSCPdata(const unsigned char priority, 
+		const uint16_t vscp_class, 
+		const uint16_t vscp_type)
 {
 	//unsigned long t1 = (unsigned long)priority << 20;
 	//unsigned long t2 = (unsigned long)pvscpMsg->vscp_class << 16;
@@ -1657,6 +1672,33 @@ bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getGuidFromStringEx
+//
+
+bool getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
+{
+	unsigned long val;
+
+	// Check pointer
+	if (NULL == pEvent) return false;
+
+	if (0 == strGUID.Find(_("-"))) {
+		memset(pEvent->GUID, 0, 16);
+	} else {
+		wxStringTokenizer tkz(strGUID, wxT(":"));
+		for (int i = 0; i < 16; i++) {
+			tkz.GetNextToken().ToULong(&val, 16);
+			pEvent->GUID[ 15 - i ] = (uint8_t) val;
+			// If no tokens left no use to continue
+			if (!tkz.HasMoreTokens()) break;
+		}
+	}
+
+	return true;
+
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getGuidFromStringToArray
@@ -1698,6 +1740,25 @@ bool writeGuidToString(const vscpEvent *pEvent, wxString& strGUID)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// writeGuidToStringEx
+//
+
+bool writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID)
+{
+	// Check pointer
+	if (NULL == pEvent) return false;
+
+	strGUID.Printf(_("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"),
+			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
+			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
+			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
+			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+
+	return true;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // writeGuidToString4Rows
 //
 
@@ -1713,7 +1774,24 @@ bool writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID)
 			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
 
 	return true;
+}
 
+///////////////////////////////////////////////////////////////////////////////
+// writeGuidToString4RowsEx
+//
+
+bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID)
+{
+	// Check pointer
+	if (NULL == pEvent) return false;
+
+	strGUID.Printf(_("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X"),
+			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
+			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
+			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
+			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+
+	return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2150,6 +2228,24 @@ bool convertCanalToEvent(vscpEvent *pvscpEvent,
 	return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// convertCanalToEvent
+//
+
+bool convertCanalToEventEx(vscpEventEx *pvscpEvent,
+		const canalMsg *pcanalMsg,
+		unsigned char *pGUID,
+		bool bCAN)
+{
+	vscpEvent *pEvent = new vscpEvent;
+	convertVSCPfromEx(pEvent, pvscpEvent );
+	bool rv = convertCanalToEvent(pEvent,
+		pcanalMsg,
+		pGUID,
+		bCAN);
+	deleteVSCPevent(pEvent);
+	return rv;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // convertEventToCanal

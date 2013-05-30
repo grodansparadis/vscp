@@ -112,8 +112,8 @@ extern "C" {
 
         /*!
             Fills a string  array with class descriptions
-            @param strArray String array to fill.
-            @param format Format for list. 0 is just description, 1 is
+            \param strArray String array to fill.
+            \param format Format for list. 0 is just description, 1 is
                 id + description
          */
         void fillClassDescriptions(wxArrayString& strArray, VSCPInformationFormat format = DEFAULT);
@@ -122,8 +122,8 @@ extern "C" {
 #if ( wxUSE_GUI != 0 )
         /*!
             Fills a combobox with class descriptions
-            @param pctrl Pointer to control to fill.
-            @param format Format for list. 0 is just description, 1 is
+            \param pctrl Pointer to control to fill.
+            \param format Format for list. 0 is just description, 1 is
                 id + description
          */
         void fillClassDescriptions(wxControlWithItems *pctrl, VSCPInformationFormat format = DEFAULT);
@@ -132,8 +132,8 @@ extern "C" {
 
         /*!
             Fills a string array with type descriptions
-            @param strArray String array to fill.
-            @param format Format for list. 0 is just description, 1 is
+            \param strArray String array to fill.
+            \param format Format for list. 0 is just description, 1 is
                 id + description
          */
         void fillTypeDescriptions(wxArrayString& strArray, unsigned int vscp_class, VSCPInformationFormat format = DEFAULT);
@@ -142,8 +142,8 @@ extern "C" {
 #if ( wxUSE_GUI != 0 )
         /*!
             Fills a combobox with type descriptions
-            @param pctrl Pointer to control to fill.
-            @param format Format for list. 0 is just description, 1 is
+            \param pctrl Pointer to control to fill.
+            \param format Format for list. 0 is just description, 1 is
                 id + description
          */
         void fillTypeDescriptions(wxControlWithItems *pctrl, unsigned int vscp_class, VSCPInformationFormat format = DEFAULT);
@@ -160,117 +160,124 @@ extern "C" {
 
     /*!
       Get bitarray from coded event data
-      @param pNorm Pointer to normalized integer.
-      @param length Number of bytes it consist of including
+      \param pNorm Pointer to normalized integer.
+      \param length Number of bytes it consist of including
       the first normalize byte.
-      @return Bitarray as a unsigned 64-bit integer.
+      \return Bitarray as a unsigned 64-bit integer.
      */
     uint32_t getDataCodingBitArray(const unsigned char *pNorm, const unsigned char length);
 
     /*!
       Get normalized integer from coded event data
-      @param pNorm Pointer to normalized integer.
-      @param length Number of bytes it consist of including
+      \param pNorm Pointer to normalized integer.
+      \param length Number of bytes it consist of including
       the first normalize byte.
-      @return returns value as a double.
+      \return returns value as a double.
      */
     double getDataCodingNormalizedInteger(const unsigned char *pNorm, const unsigned char length);
 
     /*!
       Get the string from coded event data
-      @param pString Pointer to normalized integer.
-      @param length Number of bytes it consist of including
+      \param pString Pointer to normalized integer.
+      \param length Number of bytes it consist of including
       the first normalize byte.
-      @return Returns unicode UTF-8 string of event data
+      \return Returns unicode UTF-8 string of event data
      */
     wxString& getDataCodingString(const unsigned char *pString, const unsigned char length);
 
     /*!
       Get data in the VSCP data coding format to a string
-      @param pEvent Pointer to VSCP event.
-      @param str String that holds the result
-      @return true on success, false on failure.
+      \param pEvent Pointer to VSCP event.
+      \param str String that holds the result
+      \return true on success, false on failure.
      */
     bool getVSCPDataCodingAsString(const vscpEvent *pEvent, wxString& str);
 
     /*!
       Get data in the VSCP data coding format to a float
-      @param pNorm Pointer to VSCP event.
-      @param length Number of bytes it consist of including datacoding byte
-      @return value as float
+      \param pNorm Pointer to VSCP event.
+      \param length Number of bytes it consist of including datacoding byte
+      \return value as float
      */
     float getDataCodingFloat(const unsigned char *pNorm, const unsigned char length);
 
     /*!
       Replace backshlashes in a string with forward slashes
-      @param wxstr String that should be handled.
-      @return Fixed string.
+      \param wxstr String that should be handled.
+      \return Fixed string.
      */
     wxString& replaceBackslash(wxString& wxstr);
 
     /*!
       Read a numerical value from a string
       The string value can be set as a hex or a decimal value.
-      @param strval wxString containing value to be converted
-      @return Unsigned long containing value
+      \param strval wxString containing value to be converted
+      \return Unsigned long containing value
      */
     uint32_t readStringValue(const wxString& strval);
 
     /*!
       Get VSCP priority
-      @param pEvent Pointer to VSCP event to set priority for.
-      @return Priority (0-7) for event.
+      \param pEvent Pointer to VSCP event to set priority for.
+      \return Priority (0-7) for event.
      */
     unsigned char getVscpPriority(const vscpEvent *pEvent);
 
     /*!
       Get VSCP priority
-      @param pEvent Pointer to VSCP event to set priority for.
-      @return Priority (0-7) for event.
+      \param pEvent Pointer to VSCP event to set priority for.
+      \return Priority (0-7) for event.
      */
     unsigned char getVscpPriorityEx(const vscpEventEx *pEvent);
 
     /*!
       Set VSCP priority
-      @param pEvent Pointer to VSCP event to set priority for.
-      @param priority Priority (0-7) to set.
+      \param pEvent Pointer to VSCP event to set priority for.
+      \param priority Priority (0-7) to set.
      */
     void setVscpPriority(vscpEvent *pEvent, unsigned char priority);
+    
+     /*!
+      Set VSCP priority Ex
+      \param pEvent Pointer to VSCP event to set priority for.
+      \param priority Priority (0-7) to set.
+     */
+    void setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority);
 
     /*!
       Get VSCP head from CAN id
-      @param id CAN id
-      @return VSCP head
+      \param id CAN id
+      \return VSCP head
      */
     unsigned char getVSCPheadFromCANid(const uint32_t id);
 
     /*!
      Get VSCP class from CAN id
-      @param id CAN id
-      @return VSCP class
+      \param id CAN id
+      \return VSCP class
      */
     uint16_t getVSCPclassFromCANid(const uint32_t id);
 
     /*!
       Get VSCP type from CAN id
-      @param id CAN id
-     @return VSCP type
+      \param id CAN id
+     \return VSCP type
      */
     uint16_t getVSCPtypeFromCANid(const uint32_t id);
 
     /*!
      Get VSCP nide nickname from CAN id
-      @param id CAN id
-      @return VSCP node nickname
+      \param id CAN id
+      \return VSCP node nickname
      */
     uint16_t getVSCPnicknameFromCANid(const uint32_t id);
 
     /*!
       Get CAN id from VSCP info
-      @param priority VSCP priority
-      @param vscp_class VSCP class
-      @param vscp_type VSCP type
-      @return CAN id with nickname == 0
+      \param priority VSCP priority
+      \param vscp_class VSCP class
+      \param vscp_type VSCP type
+      \return CAN id with nickname == 0
      */
     uint32_t getCANidFromVSCPdata(const unsigned char priority,
             const uint16_t vscp_class,
@@ -278,15 +285,15 @@ extern "C" {
 
     /*!
       Get CAN id from VSCP event
-      @param pEvent Pointer to VSCP event
-      @return CAN id with nickname == 0
+      \param pEvent Pointer to VSCP event
+      \return CAN id with nickname == 0
      */
     uint32_t getCANidFromVSCPevent(const vscpEvent *pEvent);
 
     /*!
       Get CAN id from VSCP event
-      @param pEvent Pointer to VSCP event
-      @return CAN id with nickname == 0
+      \param pEvent Pointer to VSCP event
+      \return CAN id with nickname == 0
      */
     uint32_t getCANidFromVSCPeventEx(const vscpEventEx *pEvent);
 
@@ -302,11 +309,20 @@ extern "C" {
     /*!
       Get GUID from string
 
-      @param pEvent Pointer to VSCP event
-      @param strGUID String with GUID (xx:yy:zz....)
-      @return True on success, false on failure.
+      \param pEvent Pointer to VSCP event
+      \param strGUID String with GUID (xx:yy:zz....)
+      \return True on success, false on failure.
      */
     bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID);
+    
+        /*!
+      Get GUID from string
+
+      \param pEvent Pointer to VSCP event
+      \param strGUID String with GUID (xx:yy:zz....)
+      \return True on success, false on failure.
+     */
+    bool getGuidFromStringEx(vscpEventEx *pEventEx, const wxString& strGUID);
 
     /*!
       Fill event GUID from a string
@@ -316,49 +332,67 @@ extern "C" {
     /*!
       Write out GUID to string
 
-      @param pEvent Pointer to VSCP event
-      @param strGUID Reference to string for written GUID
-      @return True on success, false on failure.
+      \param pEvent Pointer to VSCP event
+      \param strGUID Reference to string for written GUID
+      \return True on success, false on failure.
      */
     bool writeGuidToString(const vscpEvent *pEvent, wxString& strGUID);
+    
+        /*!
+      Write out GUID to string
+
+      \param pEvent Pointer to VSCP event
+      \param strGUID Reference to string for written GUID
+      \return True on success, false on failure.
+     */
+    bool writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID);
 
     /*!
       Write out GUID to string as four rows
 
-      @param pEvent Pointer to VSCP event
-      @param strGUID Reference to string for written GUID
-      @return True on success, false on failure.
+      \param pEvent Pointer to VSCP event
+      \param strGUID Reference to string for written GUID
+      \return True on success, false on failure.
      */
     bool writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID);
+    
+        /*!
+      Write out GUID to string as four rows
+
+      \param pEvent Pointer to VSCP event
+      \param strGUID Reference to string for written GUID
+      \return True on success, false on failure.
+     */
+    bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID);
 
     /*!
       Write out GUID to string
 
-      @param pGUID Pointer to VSCP GUID array.
-      @param strGUID Reference to string for written GUID
-      @return True on success, false on failure.
+      \param pGUID Pointer to VSCP GUID array.
+      \param strGUID Reference to string for written GUID
+      \return True on success, false on failure.
      */
     bool writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID);
 
     /*!
       Check if GUID is all null
-      @param pGUID pointer to GUID to check
-      @return tru of empty, false if not.
+      \param pGUID pointer to GUID to check
+      \return tru of empty, false if not.
      */
     bool isGUIDEmpty(const unsigned char *pGUID);
 
     /*!
       Compare two GUID's
-      @param pGUID1 First GUID to compare
-      @param pGUID2 Second GUID to compare
-      @return True if the two GUID's are equal. False otherwise.
+      \param pGUID1 First GUID to compare
+      \param pGUID2 Second GUID to compare
+      \return True if the two GUID's are equal. False otherwise.
      */
     bool isSameGUID(const unsigned char *pGUID1, const unsigned char *pGUID2);
 
     /*!
         Recerse GUID
-        @param pGUID Pointer to GUID to reverse.
-        @return true if OK.
+        \param pGUID Pointer to GUID to reverse.
+        \return true if OK.
      */
     bool reverseGUID(unsigned char *pGUID);
 
@@ -384,7 +418,7 @@ extern "C" {
 
     /*!
       Clear VSCP filter so it will allow all events to go through
-      @param pFilter Pointer to VSCP filter.
+      \param pFilter Pointer to VSCP filter.
      */
     void clearVSCPFilter(vscpEventFilter *pFilter);
 
@@ -405,29 +439,29 @@ extern "C" {
       must be equal to get a true filter return.
 
       So a nill mask will let everything through
-      @return true if message should be delivered false if not.
+      \return true if message should be delivered false if not.
      */
     bool doLevel2Filter(const vscpEvent *pEvent,
             const vscpEventFilter *pFilter);
-    
+
     bool doLevel2FilterEx(const vscpEventEx *pEventEx,
             const vscpEventFilter *pFilter);
 
     /*!
         Read a filter from a string
-        @param pFilter Filter structure to write filter to.
-        @param strFilter Filter in string form 
+        \param pFilter Filter structure to write filter to.
+        \param strFilter Filter in string form 
                 filter-priority, filter-class, filter-type, filter-GUID
-        @return true on success, fals eon failure.
+        \return true on success, fals eon failure.
      */
     bool readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter);
 
     /*!
         Read a mask from a string
-        @param pFilter Filter structure to write mask to.
-        @param strMask Mask in string form 
+        \param pFilter Filter structure to write mask to.
+        \param strMask Mask in string form 
                 mask-priority, mask-class, mask-type, mask-GUID
-        @return true on success, fals eon failure.
+        \return true on success, fals eon failure.
      */
     bool readMaskFromString(vscpEventFilter *pFilter, wxString& strMask);
 
@@ -438,22 +472,31 @@ extern "C" {
             const canalMsg *pcanalMsg,
             unsigned char *pGUID,
             bool bCAN = false);
+    
+    /*!
+      Convert an Event from a CANAL message
+     */
+    bool convertCanalToEventEx(vscpEventEx *pvscpEvent,
+            const canalMsg *pcanalMsg,
+            unsigned char *pGUID,
+            bool bCAN = false);
 
     /*!
       Covert VSCP event to CANAL message
      */
     bool convertEventToCanal(canalMsg *pcanalMsg,
             const vscpEvent *pvscpEvent);
-
+    
     /*!
-      Covert VSCP event ex to CANAL message
-     */
+      Covert VSCP event to CANAL message
+    */
     bool convertEventExToCanal(canalMsg *pcanalMsg,
-            const vscpEventEx *pvscpEventEx);
+            const vscpEventEx *pvscpEvent);
+
 
     /*!
       Make a timestamp for events etc 
-      @return Event timestamp as an unigned long
+      \return Event timestamp as an unigned long
      */
     unsigned long makeTimeStamp(void);
 
@@ -461,30 +504,33 @@ extern "C" {
     /*!
       Copy a VSCP event to another
 
-      @param pEventTo Pointer to event to copy to.
-      @param pEventFrom Pointer to event to copy from.
-      @return True on success.
+      \param pEventTo Pointer to event to copy to.
+      \param pEventFrom Pointer to event to copy from.
+      \return True on success.
      */
     bool copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom);
+    
 
     /*!
       Write VSCP data to string
-      @param pEvent Pointer to event where data is fetched from
-      @param str String that receive result.
-      @param bUseHtmlBreak Set to true to use <br> instead of \\n as
+      \param pEvent Pointer to event where data is fetched from
+      \param str String that receive result.
+      \param bUseHtmlBreak Set to true to use <br> instead of \\n as
       line break 
-      @return True on success false on failure.
+      \return True on success false on failure.
      */
-    bool writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUseHtmlBreak = false);
+    bool writeVscpDataToString(const vscpEvent *pEvent, 
+            wxString& str, 
+            bool bUseHtmlBreak = false);
 
     /*!
       Write VSCP data to string
-      @param sizeData Number of databytes.
-      @param pData Pointer to datastructure.
-       @param str String that receive result.
-      @param bUseHtmlBreak Set to true to use <br> instead of \\n as
+      \param sizeData Number of databytes.
+      \param pData Pointer to datastructure.
+       \param str String that receive result.
+      \param bUseHtmlBreak Set to true to use <br> instead of \\n as
       line break 
-      @return True on success false on failure.
+      \return True on success false on failure.
      */
     bool writeVscpDataWithSizeToString(const uint16_t sizeData,
             const unsigned char *pData,
@@ -493,38 +539,40 @@ extern "C" {
 
     /*!
       Get VSCP data from a string
-      @param pEvent Ponter to a VSCP event to write parsed data to.
-      @param str A string with comma or whitespace separated data in decimal
+      \param pEvent Ponter to a VSCP event to write parsed data to.
+      \param str A string with comma or whitespace separated data in decimal
       or hexadecimal form. Data can span multiple lines.
-      @return true on success, false on failure.
+      \return true on success, false on failure.
      */
     bool getVscpDataFromString(vscpEvent *pEvent, const wxString& str);
 
     /*!
       Get VSCP data from a string
-      @param pData Ponter to a unsigned byte array to write parsed data to.
-      @param psizeData Number of databytes. 
-      @param str A string with comma or whitespace separated data in decimal
+      \param pData Ponter to a unsigned byte array to write parsed data to.
+      \param psizeData Number of databytes. 
+      \param str A string with comma or whitespace separated data in decimal
       or hexadecimal form. Data can span multiple lines.
-      @return true on success, false on failure.
+      \return true on success, false on failure.
      */
-    bool getVscpDataArrayFromString(unsigned char *pData, uint16_t *psizeData, const wxString& str);
+    bool getVscpDataArrayFromString(unsigned char *pData, 
+            uint16_t *psizeData, 
+            const wxString& str);
 
     /*!
       Write event to string.
       priority,class,type,guid,data
-      @param pEvent Event that should be presented
-      @param str String that receive the result
-      @return true on success, false on failure.
+      \param pEvent Event that should be presented
+      \param str String that receive the result
+      \return true on success, false on failure.
      */
     bool writeVscpEventToString(vscpEvent *pEvent, wxString& str);
 
     /*!
       Write event to string.
       priority,class,type,guid,data
-      @param pEvent Event that should be presented
-      @param str String that receive the result
-      @return true on success, false on failure.
+      \param pEvent Event that should be presented
+      \param str String that receive the result
+      \return true on success, false on failure.
      */
     bool writeVscpEventExToString(vscpEventEx *pEvent, wxString& str);
 
@@ -532,18 +580,18 @@ extern "C" {
     /*!
       Get event data from string format
       Format: head,class,type,obid,timestamp,GUID,data1,data2,data3....
-      @param pEvent Event that will get data
-      @param str String that contain the event on string form
-      @return true on success, false on failure.
+      \param pEvent Event that will get data
+      \param str String that contain the event on string form
+      \return true on success, false on failure.
      */
     bool getVscpEventFromString(vscpEvent *pEvent, const wxString& str);
 
     /*!
       Get event data from string format
       Format: head,class,type,obid,timestamp,GUID,data1,data2,data3....
-      @param pEventEx Pointer to VSCP event that will get the parsed data
-      @param str String that contain the event on string form
-      @return true on success, false on failure.
+      \param pEventEx Pointer to VSCP event that will get the parsed data
+      \param str String that contain the event on string form
+      \return true on success, false on failure.
      */
     bool getVscpEventExFromString(vscpEventEx *pEventEx, const wxString& str);
 
@@ -552,8 +600,8 @@ extern "C" {
       This for meaurement class events that can be describes in real text
       in a deterministic way. Temperature event is typical which can be returned
       in clear text as "Temperature = 22.5 C".
-      @param pEvent Event that should be presented
-      @return Text data representation of the event data or an empty string 
+      \param pEvent Event that should be presented
+      \return Text data representation of the event data or an empty string 
       if the class/type pair is not supported..
      */
     wxString& getRealTextData(vscpEvent *pEvent);
@@ -561,7 +609,7 @@ extern "C" {
     /*!
       This function makes a HTML string from a standard string. LF is replaced
       with a '<BR>'.
-      @param str String that should be HTML coded.
+      \param str String that should be HTML coded.
      */
     void makeHtml(wxString& str);
 

@@ -80,7 +80,7 @@ dnl
 dnl Project Sub directories
 dnl
 
-PROJ_SUBDIRS="src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/drivers/level1/socketcan/linux src/vscp/drivers/level2/logger/linux src/vscp/drivers/level2/lmsensors/linux src/vscp/drivers/level2/socketcan/linux src/vscp/drivers/level2/lmsensors/linux src/vscp/drivers/level2/tcpdrv/linux src/vscp/drivers/level2/rawethernet/linux src/vscp/linuxvscpl1 src/vscp/daemon/linux src/vscp/mkpasswd"  
+PROJ_SUBDIRS="src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can232/linux src/vscp/drivers/level1/xap/linux src/vscp/drivers/level1/socketcan/linux src/vscp/drivers/level2/logger/linux src/vscp/drivers/level2/lmsensors/linux src/vscp/drivers/level2/socketcan/linux src/vscp/drivers/level2/lmsensors/linux src/vscp/drivers/level2/tcpdrv/linux src/vscp/drivers/level2/rawethernet/linux src/vscp/linuxvscpl1 src/vscp/helperlib/linux src/vscp/daemon/linux src/vscp/mkpasswd"  
 AC_SUBST(PROJ_SUBDIRS)
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks src/vscp/vscpcmd"
 AC_SUBST(PROJ_SUBDIRS_GUI)
@@ -169,21 +169,22 @@ dnl Construct Makefiles
 dnl 
 
 AC_CONFIG_FILES([Makefile
-		 m4/Makefile
-		 src/vscp/drivers/level1/logger/linux/Makefile
-		 src/vscp/drivers/level1/can232/linux/Makefile
+         m4/Makefile
+         src/vscp/drivers/level1/logger/linux/Makefile
+         src/vscp/drivers/level1/can232/linux/Makefile
          src/vscp/drivers/level1/xap/linux/Makefile
-		 src/vscp/drivers/level1/socketcan/linux/Makefile
+         src/vscp/drivers/level1/socketcan/linux/Makefile
          src/vscp/drivers/level2/logger/linux/Makefile
          src/vscp/drivers/level2/lmsensors/linux/Makefile
-		 src/vscp/drivers/level2/socketcan/linux/Makefile
-		 src/vscp/drivers/level2/tcpdrv/linux
+         src/vscp/drivers/level2/socketcan/linux/Makefile
+         src/vscp/drivers/level2/tcpdrv/linux
          src/vscp/drivers/level2/rawethernet/linux
          src/vscp/vscpcmd/Makefile
          src/vscp/vscpworks/Makefile
          src/vscp/daemon/linux/Makefile
          src/vscp/mkpasswd/Makefile
-		 src/vscp/linuxvscpl1/Makefile
+         src/vscp/linuxvscpl1/Makefile
+         src/vscp/helperlib/linux
 ])
 
 dnl Generate makefiles

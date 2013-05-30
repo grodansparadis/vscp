@@ -89,14 +89,14 @@ public:
 		@return pointer to object or NULL if invalid
 				handle.
 	*/
-	VscpTcpIf *getDriverObject( long h );
+	VscpTcpIf *getDriverObject( long handle );
 
 	/*!
 		Remove a driver object
 
 		@parm handle for object.
 	*/
-	void removeDriverObject( long h );
+	void removeDriverObject( long handle );
 
 	/*!
 		The log file object

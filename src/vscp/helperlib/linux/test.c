@@ -26,8 +26,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../common/canal.h"
-#include "../common/canaldlldef.h"
+#include "../../common/canal.h"
+#include "../../common/canaldlldef.h"
 
 static void* handle = NULL;
 
