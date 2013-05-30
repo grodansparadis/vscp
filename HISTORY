@@ -2,7 +2,7 @@ release notes for release 0.4.0 Fluorine
 ========================================
 
 2013-05-30 - AKHE Changed writeVscpEventToStringEx to writeVscpEventExToString in VSCP helper lib. This will break some software compiles. Sorry for that.
-			Chnaged filder helper_dll to helper_lib
+			Chnaged filder helper_dll to helperlib
 2013-05-29 - AKHE Added Level I socketcan driver.
 2013-05-28 - AKHE driver config <parameter> has been changed to <config>
 			Default path for varibles has been moved to /srv/vscp/variable.xml
