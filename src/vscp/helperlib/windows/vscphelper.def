@@ -1,0 +1,80 @@
+; VSCP helper dll.def : Declares the module parameters for the DLL.
+
+LIBRARY      "vscphelper"
+
+EXPORTS
+    ; Explicit exports can go here
+    vscp_setInterfaceTcp @1
+    vscp_setInterfaceDll @2
+    vscp_doCmdOpen @3
+    vscp_doCmdClose @4
+    vscp_doCmdNoop @5
+    vscp_doCmdGetLevel @6
+    vscp_doCmdSendCanal @7
+    vscp_doCmdSendEvent @8
+    vscp_doCmdSendEventEx @9
+    vscp_doCmdReceiveCanal @10
+    vscp_doCmdReceiveEvent @11
+    vscp_doCmdReceiveEventEx @12    
+    vscp_doCmdDataAvailable @13
+    vscp_doCmdStatus @14
+    vscp_doCmdStatistics @15
+    vscp_doCmdFilter @16
+    vscp_doCmdMask @17
+    vscp_doCmdVscpFilter @18
+    vscp_doCmdBaudrate @19
+    vscp_doCmdVersion @20
+    vscp_doCmdDLLVersion @21
+    vscp_doCmdVendorString @22
+    vscp_doCmdGetDriverInfo @23
+    vscp_getDeviceType @24
+    vscp_isOpen @25
+    vscp_doCmdShutDown @26
+    vscp_getTcpIpInterface @27
+    vscp_readStringValue @28
+    vscp_getVscpPriority @29
+	vscp_setVscpPriority @30;
+    vscp_getVSCPheadFromCANid @31
+	vscp_getVSCPtypeFromCANid @32
+	vscp_getVSCPnicknameFromCANid @33
+	vscp_getCANidFromVSCPdata @34
+	vscp_calcCRC @35
+	vscp_getGuidFromString @36
+	vscp_getGuidFromStringToArray @37
+	vscp_writeGuidToString @38
+	vscp_writeGuidToString4Rows @39
+	vscp_writeGuidArrayToString @40
+	vscp_isGUIDEmpty @41
+	vscp_isSameGUID @42
+	vscp_convertVSCPtoEx @43
+	vscp_convertVSCPfromEx @44
+	vscp_deleteVSCPevent @45
+	vscp_deleteVSCPeventEx @46
+	vscp_clearVSCPFilter @47
+	vscp_doLevel2Filter @48
+	vscp_convertCanalToEvent @49
+	vscp_convertEventToCanal @50
+	vscp_convertEventExToCanal @51
+	vscp_getTimeStamp @52
+	vscp_copyVSCPEvent @53
+	vscp_writeVscpDataToString @54
+	vscp_getVscpDataFromString @55
+	vscp_writeVscpEventToString @56
+	vscp_getVscpEventFromString @57
+	vscp_getVariableString @58
+	vscp_getVariableBool @59
+	vscp_getVariableInt @60
+	vscp_getVariableLong @61
+	vscp_getVariableDouble @62
+	vscp_getVariableMeasurement @63
+	vscp_getVariableEvent @64
+	vscp_getVariableEventEx @65
+	vscp_getVariableGUID @66
+	vscp_getVariableVSCPdata @67
+	vscp_getVariableVSCPclass @68
+	vscp_getVariableVSCPtype @69
+
+
+
+
+	
