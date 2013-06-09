@@ -2299,8 +2299,9 @@ CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
 
 						// Write it out
 						char buf[ 512 ];
-						memset((char *) buf, 0, sizeof( buf));
-						strcpy((char *) buf, (const char*) str.mb_str(wxConvUTF8));
+						memset((char *)buf, 0, sizeof( buf));
+						strcpy((char *)buf, (const char*)"E;");
+						strcat((char *)buf, (const char*) str.mb_str(wxConvUTF8));
 						int n = libwebsocket_write(wsi, (unsigned char *)
 							buf,
 							strlen((char *) buf),
