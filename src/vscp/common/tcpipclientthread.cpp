@@ -359,14 +359,14 @@ void *TcpClientThread::Entry()
             m_bOK = true;
 
             m_wxcmd = wxstr.Mid ( 0, pos4lf );
-            wxLogDebug( _("Command = ") + m_wxcmd );
+            //wxLogDebug( _("Command = ") + m_wxcmd );
             m_wxcmdUC = m_wxcmd.Upper();
             m_wxcmd.Trim();
             m_wxcmd.Trim( false );
             m_wxcmdUC.Trim();
             m_wxcmdUC.Trim( false );
             wxstr = wxstr.Mid ( pos4lf + 1 );
-            wxLogDebug( _("Argument = ") + m_wxcmdUC );
+            //wxLogDebug( _("Argument = ") + m_wxcmdUC );
 
 
             // *********************************************************************
