@@ -45,7 +45,7 @@ PROJOBJS        =  ../../common/vscptcpif.o ../../common/vscphelper.o  ../../../
 all: libvscphelper.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl1.so $(libdir)
+	$(INSTALL_PROGRAM) libvscphelper.so $(libdir)
 
 uninstall: 
 
