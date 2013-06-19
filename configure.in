@@ -35,8 +35,7 @@ AC_CHECK_LIB([z], [gzopen])
 AC_CHECK_LIB([websockets], [libwebsocket_create_context])
 AC_CHECK_LIB([microhttpd], [MHD_start_daemon])
 AC_CHECK_LIB([pcap], [pcap_open_live])
-AC_CHECK_LIB([mosquittopp], [mosqpp::lib_init])
-
+AC_CHECK_LIB([mosquittopp], [_init])
 
 # Checks for header files.
 AC_HEADER_DIRENT
