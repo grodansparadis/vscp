@@ -563,7 +563,7 @@ CWrkThread::Entry()
 			vscpEventEx eventex;
 			if (m_srv.doCmdDataAvailable()){
 				if ( m_srv.doCmdReceiveEx(&eventex) ) { 
-					writeVscpEventToStringEx(&eventex, str);
+					writeVscpEventExToString(&eventex, str);
 					if (getVscpEventExFromString(&eventex, str)) {
 						m_srv.doCmdSendEx(&eventex);
 					}
