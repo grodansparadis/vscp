@@ -33,34 +33,21 @@ DESTDIR =
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALD_OBJECTS =  \
-	vscpd.o \
-        ../../common/daemonvscp.o \
-        ../../common/clientlist.o \ 
-	../../common/controlobject.o \
-        ../../common/devicelist.o \
-        ../../common/vscphelper.o \
-        ../../common/tcpipclientthread.o \
-	../../common/dm.o \
-	../../common/vscpvariable.o \
-	../../common/interfacelist.o \
-	../../common/userlist.o \
-        ../../common/devicethread.o \
-	../../common/vscptcpif.o \
-	../../common/guid.o \
+UVSCPD_OBJECTS =  \
+	uvscpd.o ../common/vscphelper.o \
 	../../../common/dllist.o \
-	../../../common/configfile.o \
 	../../../common/crc.o \
 	../../../common/md5.o \
-	../../../common/randPassword.o       	
+	../../../common/configfile.o \
+	../../../common/randPassword.o 
 
 
 ### Targets: ###
 
-all: vscpd
+all: uvscpd
 
 install: all
-	$(INSTALL_PROGRAM) vscpd $(bindir)
+	$(INSTALL_PROGRAM) uvscpd $(bindir)
 
 uninstall: 
 
@@ -69,16 +56,15 @@ install-strip: install
 clean: 
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
+	rm -f ../common/*.o
 	rm -f ../../common/*.o
-	rm -f ../../../common/*.o
-	rm -f ../../../vscp/common/*.o
-	rm -f vscpd
+	rm -f uvscpd
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
-vscpd: $(CANALD_OBJECTS)
-	$(CXX) -o $@ $(CANALD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+uvscpd: $(UVSCPD_OBJECTS)
+	$(CXX) -o $@ $(UVSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 	
 
 

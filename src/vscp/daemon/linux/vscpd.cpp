@@ -286,9 +286,9 @@ void copyleft(void)
 {
 	wxPrintf(_("\n\n"));
 	wxPrintf(_("vscpd - "));
-	wxPrintf(VSCPD_DISPLAY_VERSION);
+	wxPrintf(_(VSCPD_DISPLAY_VERSION));
 	wxPrintf(_("\n"));
-	wxPrintf(VSCPD_COPYRIGHT);
+	wxPrintf(_(VSCPD_COPYRIGHT));
 	wxPrintf(_("\n"));
 	wxPrintf(_("\n"));
 	wxPrintf(_("This program is free software; you can redistribute it and/or \n"));

@@ -459,9 +459,9 @@ bool CControlObject::init(wxString& strcfgfile)
 
 	wxString str = _("VSCP Daemon started\n");
 	str += _("Version: ");
-	str += VSCPD_DISPLAY_VERSION;
+	str += _(VSCPD_DISPLAY_VERSION);
 	str += _("\n");
-	str += VSCPD_COPYRIGHT;
+	str += _(VSCPD_COPYRIGHT);
 	str += _("\n");
 #ifdef BUILD_VSCPD_SERVICE
 	logMsg(str);

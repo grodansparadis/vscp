@@ -275,10 +275,10 @@ void *TcpClientThread::Entry()
         // Send welcome message
         wxString str = _(MSG_WELCOME);
         str += _("+OK Version: ");
-        str += VSCPD_DISPLAY_VERSION;
+        str += _(VSCPD_DISPLAY_VERSION);
         str += _("\r\n");
 		str += _("+OK ");
-		str += VSCPD_COPYRIGHT;
+		str += _(VSCPD_COPYRIGHT);
         //str += _(MSG_COPYRIGHT);
         str += _(MSG_OK);
 

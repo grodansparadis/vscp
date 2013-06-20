@@ -252,13 +252,13 @@
 #define PACKAGE_NAME "vscp"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "vscp 0.3.3"
+#define PACKAGE_STRING "vscp 0.4.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "vscp"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "0.3.3"
+#define PACKAGE_VERSION "0.4.0"
 
 /* Define to 1 if the C compiler supports function prototypes. */
 /* #undef PROTOTYPES */

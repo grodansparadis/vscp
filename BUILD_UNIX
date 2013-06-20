@@ -24,7 +24,7 @@ libwebsockets is needed to compile. Can be found here git://git.warmcat.com/libw
 
 For the webserver libmicrohttpd is needed. You can find it here http://www.gnu.org/software/libmicrohttpd/  Read the README for build instructions.
 
-Uf you want the MQTT driver to build you need to install and build the mosquitto-1.1.3.tar.gz or later from here http://mosquitto.org/download/
+If you want the MQTT driver to build you need to install and build the mosquitto-1.1.3.tar.gz or later from here http://mosquitto.org/download/
 
 Configuration files should be located in /etc/vscp and there are samples of configuration files here in the root. 
 The names should be vscpd.conf for the daemon and vscpworks.conf for VSCP works. The daemon can be started with 
