@@ -2,8 +2,14 @@
 <configurationDescriptor version="89">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="uvscpd">
+      <in>base64_enc.c</in>
+      <in>base64_enc.h</in>
+      <in>sha1.c</in>
+      <in>sha1.h</in>
       <in>uvscpd.c</in>
       <in>uvscpd.h</in>
+      <in>websocket.c</in>
+      <in>websocket.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
