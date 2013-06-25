@@ -962,7 +962,7 @@ void VSCPInformation::fillTypeDescriptions(wxControlWithItems *pctrl,
 // TODO should be uint64_t
 
 uint32_t getDataCodingBitArray(const unsigned char *pNorm,
-		const unsigned char length)
+                                const unsigned char length)
 {
 	uint32_t bitArray = 0;
 
@@ -995,9 +995,8 @@ double getDataCodingNormalizedInteger(const unsigned char *pNorm,
 	decibyte = *(pNorm + 1);
 
 	// Check if this is a negative number
-	if (decibyte & 0x80) {
+	if (*(pNorm + 2) & 0x80) {
 		bNegative = true;
-		decibyte = (decibyte & 0x7f);
 	}
 
 	switch (length - 2) {
@@ -1041,9 +1040,21 @@ double getDataCodingNormalizedInteger(const unsigned char *pNorm,
 
 	// Bring back decimal points
 #ifdef WIN32
-	value = value / (pow(10.0, decibyte));
+	if ( decibyte & 0x80 ) {
+        decibyte &= 0x7f;
+        value = value * (pow(10.0, decibyte));
+    }
+    else {
+        value = value / (pow(10.0, decibyte));
+    }
 #else
-	value = value / (pow(10, decibyte));
+    if ( decibyte & 0x80 ) {
+        decibyte &= 0x7f;
+        value = value * (pow(10, decibyte));
+    }
+    else {
+        value = value / (pow(10, decibyte));
+    }
 #endif
 	return value;
 

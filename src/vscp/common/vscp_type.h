@@ -1,4 +1,4 @@
- /**
+/**
  * @brief           VSCP Level I/II type definition file
  * @file            vscp_type.h
  * @author          Ake Hedman, Grodans Paradis AB, www.vscp.org
@@ -37,12 +37,12 @@
  *	http://www.vscp.org
  *
  * ******************************************************************************
-*/
+ */
 
 #ifndef VSCP_TYPE_H
 #define VSCP_TYPE_H
 
-#define VSCP_TYPE_UNDEFINED									0
+#define VSCP_TYPE_UNDEFINED				0
 
 // VSCP Protocol Functionality
 #define VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT                1
@@ -111,12 +111,12 @@
 #define VSCP_TYPE_SECURITY_SMOKE_SENSOR                     6
 #define VSCP_TYPE_SECURITY_HEAT_SENSOR                      7
 #define VSCP_TYPE_SECURITY_PANIC_SWITCH                     8
-#define VSCP_TYPE_SECURITY_DOOR_OPEN                     	9
-#define VSCP_TYPE_SECURITY_WINDOW_OPEN                     	10
-#define VSCP_TYPE_SECURITY_CO_SENSOR                     	11
+#define VSCP_TYPE_SECURITY_DOOR_OPEN                        9
+#define VSCP_TYPE_SECURITY_WINDOW_OPEN                      10
+#define VSCP_TYPE_SECURITY_CO_SENSOR                        11
 #define VSCP_TYPE_SECURITY_FROST_DETECTED                   12
 #define VSCP_TYPE_SECURITY_FLAME_DETECTED                   13
-#define VSCP_TYPE_SECURITY_OXYGEN_LOW                     	14
+#define VSCP_TYPE_SECURITY_OXYGEN_LOW                       14
 #define VSCP_TYPE_SECURITY_WEIGHT_DETECTED                  15
 #define VSCP_TYPE_SECURITY_WATER_DETECTED                   16
 #define VSCP_TYPE_SECURITY_CONDENSATION_DETECTED            17
@@ -275,7 +275,7 @@
 #define VSCP_TYPE_CONTROL_TOGGLE_STATE                    29
 #define VSCP_TYPE_CONTROL_TIMED_PULE_ON                   30
 #define VSCP_TYPE_CONTROL_TIMED_PULSE_OFF                 31
-#define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE				32
+#define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE	          32
 
 // class 40 (0x28) -- MULTIMEDIA
 #define VSCP_TYPE_MULTIMEDIA_GENERAL                      0
@@ -333,7 +333,7 @@
 #define VSCP_TYPE_AOL_REPAIR_OPERATING_SYSTEM             14
 #define VSCP_TYPE_AOL_UPDATE_BIOS_IMAGE                   15
 #define VSCP_TYPE_AOL_UPDATE_DIAGNOSTIC_PROCEDURE         16
-  
+
 // class 60 (0x3C) -- CLASS1.MEASUREMENT64
 // Types are the same as CLASS1.MEASUREMENT=10
 #define VSCP_TYPE_MEASUREMENT64_GENERAL                     0
@@ -382,7 +382,7 @@
 #define VSCP_TYPE_MEASUREMENT64_LUMINOUS_ENERGY             43
 #define VSCP_TYPE_MEASUREMENT64_LUMINANCE                   44
 #define VSCP_TYPE_MEASUREMENT64_CHEMICAL_CONCENTRATION      45
-#define VSCP_TYPE_MEASUREMENT64_RESERVED	                46
+#define VSCP_TYPE_MEASUREMENT64_RESERVED	            46
 #define VSCP_TYPE_MEASUREMENT64_DOSE_EQVIVALENT             47
 #define VSCP_TYPE_MEASUREMENT64_DEWPOINT                    49
 #define VSCP_TYPE_MEASUREMENT64_RELATIVE_LEVEL              50
@@ -513,7 +513,7 @@
 #define VSCP_TYPE_SETVALUEZONE_IRRADIANCE                  	55
 #define VSCP_TYPE_SETVALUEZONE_SPECTRAL_RADIANCE           	56
 #define VSCP_TYPE_SETVALUEZONE_SPECTRAL_IRRADIANCE         	57
-  
+
 // class 100 (0x64) -- PHONE
 #define VSCP_TYPE_PHONE_GENERAL                           0
 #define VSCP_TYPE_PHONE_INCOMING_CALL                     1

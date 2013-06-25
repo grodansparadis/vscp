@@ -1,4 +1,4 @@
- /**
+/**
  * @brief           VSCP Level I/II class definition file
  * @file            vscp_class.h
  * @author          Ake Hedman, Grodans Paradis AB, www.vscp.org
@@ -36,7 +36,7 @@
  *	http://www.vscp.org
  *
  * ******************************************************************************
-*/
+ */
 
 #ifndef VSCP_CLASS_H
 #define VSCP_CLASS_H
@@ -50,9 +50,9 @@
 #define VSCP_CLASS1_CONTROL                             30
 #define VSCP_CLASS1_MULTIMEDIA                          40
 #define VSCP_CLASS1_AOL                                 50
-#define VSCP_CLASS1_MEASUREMENT64                		60
-#define VSCP_CLASS1_MEASUREZONE							65
-#define VSCP_CLASS1_SETVALUEZONE						85
+#define VSCP_CLASS1_MEASUREMENT64                	60
+#define VSCP_CLASS1_MEASUREZONE				65
+#define VSCP_CLASS1_SETVALUEZONE			85
 #define VSCP_CLASS1_PHONE                               100
 #define VSCP_CLASS1_LIN                                 101
 #define VSCP_CLASS1_DISPLAY                             102
@@ -78,9 +78,9 @@
 #define VSCP_CLASS2_LEVEL1_CONTROL                      ( 512 + 30 )
 #define VSCP_CLASS2_LEVEL1_MULTIMEDIA                   ( 512 + 40 )
 #define VSCP_CLASS2_LEVEL1_AOL                          ( 512 + 50 )
-#define VSCP_CLASS2_MEASUREMENT64                		( 512 + 60 )
-#define VSCP_CLASS2_MEASUREZONE							( 512 + 65 )
-#define VSCP_CLASS2_SETVALUEZONE						( 512 + 85 )
+#define VSCP_CLASS2_MEASUREMENT64                	( 512 + 60 )
+#define VSCP_CLASS2_MEASUREZONE				( 512 + 65 )
+#define VSCP_CLASS2_SETVALUEZONE			( 512 + 85 )
 #define VSCP_CLASS2_LEVEL1_PHONE                        ( 512 + 100 )
 #define VSCP_CLASS2_LEVEL1_LIN                          ( 512 + 101 )
 #define VSCP_CLASS2_LEVEL1_RC5                          ( 512 + 110 )
