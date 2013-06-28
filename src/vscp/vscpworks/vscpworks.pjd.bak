@@ -46593,7 +46593,7 @@ The transmission event period is  interval between automatically sent events."</
           <string name="proxy-Implementation filename">"readregister.cpp"</string>
           <string name="proxy-Header filename">"readregiister.h"</string>
           <string name="proxy-XRC filename">""</string>
-          <string name="proxy-Title">"Read Regiister"</string>
+          <string name="proxy-Title">"Read Register"</string>
           <bool name="proxy-Centre">1</bool>
           <string name="proxy-Icon">"../../../docs/vscp/logo/fatbee_v2.ico"</string>
           <bool name="proxy-Dialog units">0</bool>
