@@ -192,7 +192,7 @@ wxIcon ReadRegister::GetIconResource( const wxString& name )
   // Icon retrieval
 ////@begin ReadRegister icon retrieval
   wxUnusedVar(name);
-  if (name == _T("../../../docs/vscp/logo/fatbee_v2.ico"))
+  if (name == _T("fatbee_v2.ico"))
   {
     wxIcon icon(fatbee_v2_xpm);
     return icon;
