@@ -133,7 +133,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>vscpworks</executablePath>
           <cTool>
             <incDir>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>

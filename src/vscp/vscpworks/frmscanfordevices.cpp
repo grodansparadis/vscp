@@ -1174,7 +1174,8 @@ void frmScanforDevices::OnButtonScanClick( wxCommandEvent& event )
             if ( !progressDlg.Pulse( wxString::Format(_("Checking for device %d"), i ) ) ) {
 				if ( m_DeviceTree->GetCount() ) {
 					wxTreeItemIdValue  cookie;
-					m_DeviceTree->SelectItem( m_DeviceTree->GetFirstChild( m_DeviceTree->GetRootItem(), cookie ) );
+                    wxTreeItemId tree = m_DeviceTree->GetFirstChild( m_DeviceTree->GetRootItem(), cookie );
+					if (tree.IsOk()) m_DeviceTree->SelectItem( tree );
 				}
                 ::wxEndBusyCursor();
                 return;

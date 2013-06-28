@@ -1090,7 +1090,7 @@ float getDataCodingFloat(const unsigned char *pNorm, const unsigned char length)
 	float value;
 	value = std::numeric_limits<float>::infinity();
 	if (length >= 5) {
-		float *pfloat = (float*) (pNorm + 1);
+		float *pfloat = (float*)(pNorm + 1);
 		value = pfloat[0];
 		// please insert test for (!NaN || !INF)
 	}

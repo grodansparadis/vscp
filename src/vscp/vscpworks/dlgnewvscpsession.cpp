@@ -733,6 +733,7 @@ void dlgNewVSCPSession::OnButtonEditClick( wxCommandEvent& event )
 					return;
 				}
 
+                // Show the dialog
 				if ( wxID_OK == dlg.ShowModal() ) {
 
 					if ( INTERFACE_CANAL == pBoth->m_type ) {

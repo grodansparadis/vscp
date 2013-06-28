@@ -74,5 +74,5 @@ BUILD_UNIX~
 src/vscp/drivers/level2/mqtt/linux/test
 src/vscp/helperlib/linux/Makefile
 src/vscp/drivers/level1/socketcan/linux/test
-helperlib/linux/test
+src/vscp/helperlib/linux/test
 
