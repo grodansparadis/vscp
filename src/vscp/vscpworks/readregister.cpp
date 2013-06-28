@@ -60,7 +60,6 @@
 #include "readregister.h"
 
 ////@begin XPM images
-
 ////@end XPM images
 
 

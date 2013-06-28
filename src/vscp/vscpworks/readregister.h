@@ -100,9 +100,11 @@ public:
   void CreateControls();
 
 ////@begin ReadRegister event handler declarations
+
 ////@end ReadRegister event handler declarations
 
 ////@begin ReadRegister member function declarations
+
   /// Retrieves bitmap resources
   wxBitmap GetBitmapResource( const wxString& name );
 
