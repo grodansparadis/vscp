@@ -145,6 +145,7 @@
       <in>readmsfurl.cpp</in>
       <in>readmsfurl.h</in>
       <in>readmsfurl_symbols.h</in>
+      <in>readregiister.h</in>
       <in>readregister.cpp</in>
       <in>readregister.h</in>
       <in>readregister_symbols.h</in>

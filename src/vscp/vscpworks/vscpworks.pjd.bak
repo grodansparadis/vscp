@@ -757,7 +757,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"VC++ Project"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"VC++ Project"</string>
           <string name="Build mode">"Release"</string>
@@ -840,7 +840,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"VC++ Project"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"VC++ Project"</string>
           <string name="Build mode">"Debug"</string>
@@ -46585,7 +46585,7 @@ The transmission event period is  interval between automatically sent events."</
           <string name="app-kind">"Standard"</string>
           <long name="use-xrc">0</long>
           <long name="working-mode">0</long>
-          <string name="proxy-Id name">"ID_READREGIISTER"</string>
+          <string name="proxy-Id name">"ID_READREGISTER"</string>
           <long name="proxy-Id value">20000</long>
           <string name="proxy-Class">"ReadRegiister"</string>
           <string name="proxy-Base class">"wxDialog"</string>
