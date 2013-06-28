@@ -44,11 +44,11 @@ This is the "original" project and includes all sub-projects.
     define environment variable VSCP_FIRMWARE that points to VSCP firmware base folder 
     (c:\development\m2m\firmware)
 
-2.) Install and build wxWidgets 2.6.0 or higher. 2.8.11 Recommended but others will probably 
+2.) Install and build wxWidgets 2.6.0 or higher. 2.8.12 Recommended but others will probably 
     do to. You find the build files in the build folder of the wxWidgets project. 
 
 3.) Make an environment variable WXWIN that points to the wxWidgets installation directory.
-    (e.g. c:\wxWidgets-2.8.10).
+    (e.g. c:\wxWidgets-2.8.12).
 
 4.) Add the wxwin include directory to the list of include files under 
     tools->options->directories ('projects and solutions->VC++ Direcories' on 2003/2005/2008) 
@@ -57,7 +57,9 @@ This is the "original" project and includes all sub-projects.
     This is not needed on Visual Studio 2010 as it looks.
 
 5.) expat(http://expat.sourceforge.net/) is needed to build the daemon and other applications in the suit.
-    Download and install. Make a environment variable EXPAT that points to the folder.   	
+    Download and install. Make a environment variable EXPAT that points to the folder. 
+
+6.) Install OpenSLL from http://slproweb.com/products/Win32OpenSSL.html  	
 
 6.) To build the APOX driver and the tellstick driver the dxx driver whish is available from ftdi 
     (http://www.ftdichip.com/) is needed. Make an environment variable named "ftdi" that points on 
