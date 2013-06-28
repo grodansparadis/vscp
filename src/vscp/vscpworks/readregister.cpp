@@ -142,7 +142,7 @@ void ReadRegister::CreateControls() {
     ReadRegister* itemDialog1 = this;
 
     wxPanel* itemPanel2 = new wxPanel;
-    itemPanel2->Create(itemDialog1, ID_PANEL37, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | wxTAB_TRAVERSAL);
+    itemPanel2->Create(itemDialog1, ID_READREGISTER, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | wxTAB_TRAVERSAL);
 
     wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxVERTICAL);
     itemPanel2->SetSizer(itemBoxSizer3);
