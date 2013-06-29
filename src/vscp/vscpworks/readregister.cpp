@@ -109,7 +109,7 @@ bool ReadRegister::Create( wxWindow* parent, wxWindowID id, const wxString& capt
   wxDialog::Create( parent, id, caption, pos, size, style );
 
   CreateControls();
-  SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
+  SetIcon(GetIconResource(wxT("fatbee_v2.ico")));
   Centre();
 ////@end ReadRegister creation
   return true;
