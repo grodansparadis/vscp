@@ -779,7 +779,15 @@ bool CVariableStorage::load( void )
             while (subchild) {
 
                 if (subchild->GetName() == wxT("name")) {
-                    pVar->setName( subchild->GetNodeContent() );
+                    wxString strName = subchild->GetNodeContent();
+                    strName.Trim();
+                    strName.Trim(false);
+                    // Replace spaces in name with underscore
+                    int pos;
+                    while (wxNOT_FOUND != ( pos = strName.Find(_(" ")))){
+                        strName.SetChar(pos,wxChar('_'));
+                    }
+                    pVar->setName( strName );
                 }
                 else if (subchild->GetName() == wxT("value")) {
                     pVar->setValueFromString( pVar->getType(),  subchild->GetNodeContent() );
