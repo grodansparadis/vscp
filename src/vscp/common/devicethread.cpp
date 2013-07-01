@@ -471,7 +471,7 @@ void *deviceThread::Entry()
 			str += m_pDeviceItem->m_strName;
             str += _("'");
 			m_pCtrlObject->logMsg(str, DAEMON_LOGMSG_INFO);
-			//wxLogDebug(str);
+			wxLogDebug(str);
 		}
 
 		// * * * * VSCP OPEN * * * *

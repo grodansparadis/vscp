@@ -1698,7 +1698,12 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 						logMsg(errMsg, DAEMON_LOGMSG_ERROR);
 						wxLogDebug(errMsg);
 					}
-
+                    else {
+                        wxString errMsg = _("Level I driver added. - \n\t[ ") +
+							strPath + _(" ]\n");
+						logMsg(errMsg, DAEMON_LOGMSG_INFO);
+                    }
+                    
 					bCanalDriver = false;
 
 				}
@@ -1777,6 +1782,12 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 						logMsg(errMsg, DAEMON_LOGMSG_INFO);
 						wxLogDebug(errMsg);
 					}
+                    else {
+                        wxString errMsg = _("Level II driver added. - \n\t[ ") +
+							strPath + _(" ]\n");
+						logMsg(errMsg, DAEMON_LOGMSG_INFO);
+                    }
+                    
 
 					bLevel2Driver = false;
 
