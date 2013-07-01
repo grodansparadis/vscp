@@ -1,6 +1,7 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-06-29 - AKHE Added clone button to session window in VSCP Works
 2013-05-30 - AKHE Changed writeVscpEventToStringEx to writeVscpEventExToString 
                   in VSCP helper lib. This will break some software compiles. 
                   Sorry for that.

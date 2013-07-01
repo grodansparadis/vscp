@@ -52,8 +52,6 @@
 
 ////@begin includes
 #include "wx/frame.h"
-#include "wx/toolbar.h"
-#include "wx/tglbtn.h"
 #include "wx/treectrl.h"
 #include "wx/html/htmlwin.h"
 ////@end includes
@@ -73,7 +71,6 @@ enum {
  */
 
 ////@begin forward declarations
-class wxToggleButton;
 class wxTreeCtrl;
 class wxHtmlWindow;
 ////@end forward declarations
@@ -86,7 +83,7 @@ class wxHtmlWindow;
 #define SYMBOL_FRMSCANFORDEVICES_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_FRMSCANFORDEVICES_TITLE _("Scan for Devices")
 #define SYMBOL_FRMSCANFORDEVICES_IDNAME ID_SCANFORDEVICES
-#define SYMBOL_FRMSCANFORDEVICES_SIZE wxSize(800, 470)
+#define SYMBOL_FRMSCANFORDEVICES_SIZE wxSize(800, 540)
 #define SYMBOL_FRMSCANFORDEVICES_POSITION wxDefaultPosition
 ////@end control identifiers
 
@@ -139,6 +136,10 @@ public:
 	//both_interface m_both;
 	canal_interface m_canalif;
 	vscp_interface m_vscpif;
+	
+	// GUID for interface or all
+	// zero if no interface selected
+	cguid m_ifguid;
 
 	/*!
 		CANAL driver level
@@ -153,12 +154,17 @@ public:
 
 	/// Module description file functionality
 	CMDF m_mdf;
+	
+	
 
     /// Display info about node
 	void getNodeInfo(wxCommandEvent& event);
 
     /// Open configuration window
 	void openConfiguration(wxCommandEvent& event);
+	
+	// Get GUID for interface
+	bool fetchIterfaceGUID(void);
 
 ////@begin frmScanforDevices event handler declarations
 
@@ -219,24 +225,15 @@ public:
 	static bool ShowToolTips();
 
 ////@begin frmScanforDevices member variables
-  wxStaticText* m_staticComboText;
-  wxComboBox* m_comboNodeID;
-  wxToggleButton* m_BtnActivateInterface;
   wxPanel* m_pPanel;
+  wxStaticText* m_labelInterface;
   wxTreeCtrl* m_DeviceTree;
   wxHtmlWindow* m_htmlWnd;
   /// Control identifiers
   enum {
     ID_SCANFORDEVICES = 27000,
     ID_MENU_VSCPWORKS_EXIT = 27001,
-    ID_MENUITEM11 = 27005,
-    ID_MENUITEM12 = 27006,
-    ID_MENUITEM13 = 27007,
     ID_MENUITEM14 = 27008,
-    ID_MENUITEM16 = 27010,
-    ID_MENUITEM17 = 27011,
-    ID_MENUITEM18 = 27012,
-    ID_MENUITEM19 = 27013,
     ID_MENUITEM_HELP = 27018,
     ID_MENUITEM_HELP_FAQ = 27019,
     ID_MENUITEM_HELP_SC = 27020,
@@ -244,15 +241,6 @@ public:
     ID_MENUITEM_HELP_CREDITS = 27022,
     ID_MENUITEM_HELP_VSCP_SITE = 27023,
     ID_MENUITEM_HELP_ABOUT = 27024,
-    ID_TOOLBAR2 = 27025,
-    ID_TOOL1 = 27026,
-    ID_TOOL2 = 27027,
-    ID_TOOL3 = 27028,
-    ID_TOOL4 = 27029,
-    ID_TOOL5 = 27030,
-    ID_TOOL12 = 27031,
-    ID_COMBOBOX1 = 27032,
-    ID_TOGGLEBUTTON = 27034,
     ID_PANEL_DEVICE_SCAN = 27004,
     ID_TREE_DEVICE = 27035,
     ID_HTMLWINDOW3 = 27002,

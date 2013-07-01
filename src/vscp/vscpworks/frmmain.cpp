@@ -4854,9 +4854,6 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 							subframe->m_bLevel2->SetValue( false );
 						}
 
-						// Save interface name
-						subframe->m_interfaceName = pBoth->m_pvscpif->m_strInterfaceName;
-
                         subframe->SetTitle(_("VSCP Registers (TCP/IP)- ") +  
                             pBoth->m_pvscpif->m_strDescription );
 
@@ -4867,11 +4864,23 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                                     ::wxGetTextFromUser( _("Please enter passeword"), 
                                     _("Connection Test") );
                         }
+                        
+                        // Save interface parameters
+						subframe->m_vscpif.m_strDescription = pBoth->m_pvscpif->m_strDescription;
+						subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
+						subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;
+						subframe->m_vscpif.m_strPassword = pBoth->m_pvscpif->m_strPassword;
+						subframe->m_vscpif.m_port = pBoth->m_pvscpif->m_port;
+                        subframe->m_vscpif.m_strInterfaceName = pBoth->m_pvscpif->m_strInterfaceName;
+						memcpy( subframe->m_vscpif.m_GUID, pBoth->m_pvscpif->m_GUID, 16 );
+						memcpy( &subframe->m_vscpif.m_vscpfilter, 
+									&pBoth->m_pvscpif->m_vscpfilter, 
+									sizeof( vscpEventFilter ) );
 
                         subframe->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
-                            pBoth->m_pvscpif->m_port,
-                            pBoth->m_pvscpif->m_strUser,
-                            pBoth->m_pvscpif->m_strPassword );
+                                                        pBoth->m_pvscpif->m_port,
+                                                        pBoth->m_pvscpif->m_strUser,
+                                                        pBoth->m_pvscpif->m_strPassword );
 
                         // Connect to host
                         if ( subframe->enableInterface() ) {
@@ -4921,6 +4930,7 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
         if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
 
             frmScanforDevices *subframe = new frmScanforDevices( this );
+            
             if ( NULL != subframe ) {
 
                 both_interface *pBoth = 
@@ -4934,17 +4944,17 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
                     if ( INTERFACE_CANAL == pBoth->m_type ) {
 
                         // Init node id combo
-                        wxRect rc = subframe->m_comboNodeID->GetRect();
-                        rc.SetWidth( 60 );
-                        subframe->m_comboNodeID->SetSize( rc );
-                        for ( int i=1; i<256; i++ ) {
-                            subframe->m_comboNodeID->Append( wxString::Format(_("0x%02x"), i));
-                        }
+                        //wxRect rc = subframe->m_comboNodeID->GetRect();
+                        //rc.SetWidth( 60 );
+                        //subframe->m_comboNodeID->SetSize( rc );
+                        //for ( int i=1; i<256; i++ ) {
+                        //    subframe->m_comboNodeID->Append( wxString::Format(_("0x%02x"), i));
+                        //}
                         
-						subframe->m_comboNodeID->SetValue(_("0x01"));
+						//subframe->m_comboNodeID->SetValue(_("0x01"));
                         subframe->SetTitle(_("VSCP Registers (CANAL) - ") +  pBoth->m_pcanalif->m_strDescription );
 
-						// Transfer som parameters so the configuration window can be
+						// Transfer some parameters so the configuration window can be
 						// opened from the scan window.
 						subframe->m_canalif.m_strDescription = pBoth->m_pcanalif->m_strDescription;
 						subframe->m_canalif.m_strPath =  pBoth->m_pcanalif->m_strPath;
@@ -4974,15 +4984,15 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
                         memcpy( GUID, pBoth->m_pvscpif->m_GUID, 16 );
 
                         // Fill the combo
-                        for ( int i=1; i<256; i++ ) {
-                            GUID[0] = i;
-                            writeGuidArrayToString( GUID, str );
-                            subframe->m_comboNodeID->Append( str );
-                        }
+                        //for ( int i=1; i<256; i++ ) {
+                        //    GUID[0] = i;
+                        //    writeGuidArrayToString( GUID, str );
+                        //    subframe->m_comboNodeID->Append( str );
+                        //}
 
-                        GUID[0] = 0x01;
-                        writeGuidArrayToString( GUID, str );
-                        subframe->m_comboNodeID->SetValue( str );
+                        //GUID[0] = 0x01;
+                        //writeGuidArrayToString( GUID, str );
+                        //subframe->m_comboNodeID->SetValue( str );
 
                         subframe->SetTitle(_("VSCP Registers (TCP/IP)- ") +  
                             pBoth->m_pvscpif->m_strDescription );
@@ -4991,19 +5001,26 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
                         if ( pBoth->m_pvscpif->m_strPassword.IsEmpty() && 
                             !pBoth->m_pvscpif->m_strUser.IsEmpty() ) {
                                 pBoth->m_pvscpif->m_strPassword = 
-                                    ::wxGetTextFromUser( _("Please enter passeword"), 
+                                    ::wxGetTextFromUser( _("Please enter password"), 
                                     _("Connection Test") );
                         }
 
+                        // Save interface parameters
 						subframe->m_vscpif.m_strDescription = pBoth->m_pvscpif->m_strDescription;
 						subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
 						subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;
 						subframe->m_vscpif.m_strPassword = pBoth->m_pvscpif->m_strPassword;
 						subframe->m_vscpif.m_port = pBoth->m_pvscpif->m_port;
+                        subframe->m_vscpif.m_strInterfaceName = pBoth->m_pvscpif->m_strInterfaceName;
 						memcpy( subframe->m_vscpif.m_GUID, pBoth->m_pvscpif->m_GUID, 16 );
 						memcpy( &subframe->m_vscpif.m_vscpfilter, 
 									&pBoth->m_pvscpif->m_vscpfilter, 
 									sizeof( vscpEventFilter ) );
+                        
+                        // Set information about interface we search on
+                        str = _("Searching on interface: ");
+                        str += pBoth->m_pvscpif->m_strInterfaceName;
+                        subframe->m_labelInterface->SetLabel(str);
 
                         //subframe->m_csw = m_interfaceType;
                         subframe->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,

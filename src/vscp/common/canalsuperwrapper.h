@@ -611,7 +611,7 @@ public:
 	*/    
 	bool readLevel2Register( cguid& ifGUID, 
 								uint32_t reg, 
-								uint8_t *pcontent = NULL,
+								uint8_t *pcontent,
 								cguid *pdestGUID = NULL,
 								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false );

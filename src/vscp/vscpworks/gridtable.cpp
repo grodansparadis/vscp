@@ -451,7 +451,7 @@ void BigGridTable::clearEventList( void )
 
 VscpRXObj *BigGridTable::readEvent( unsigned long pos )
 {
-  if ( pos >= m_rxList.GetCount() ) return false;
+  if ( pos >= m_rxList.GetCount() ) return NULL;
   
   return m_rxList.Item( pos )->GetData();
 

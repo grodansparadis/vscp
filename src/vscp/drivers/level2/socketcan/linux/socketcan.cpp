@@ -386,6 +386,7 @@ CReadSocketCanTread::Entry()
 				vscpEventEx *pEventEx = new vscpEventEx();
 				if (NULL != pEventEx && 
 						CANAL_ERROR_SUCCESS == m_srv.doCmdReceiveEx(pEventEx)) {
+                    
 					// Class must be a Level I class or a Level II
 					// mirror class
 					if (pEventEx->vscp_class < 512) {
@@ -397,6 +398,7 @@ CReadSocketCanTread::Entry()
 						}
 					} else if (pEventEx->vscp_class < 1024) {
 						pEventEx->vscp_class -= 512;
+                        frame.can_id = getCANidFromVSCPeventEx(pEventEx);
 						frame.can_id |= CAN_EFF_FLAG; // Always extended
 						if (0 != pEventEx->sizeData) {
 							frame.len = ((pEventEx->sizeData - 16) > 8 ? 8 : pEventEx->sizeData - 16);

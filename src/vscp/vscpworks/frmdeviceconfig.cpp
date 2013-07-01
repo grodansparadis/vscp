@@ -2771,7 +2771,6 @@ void frmDeviceConfig::Init() {
 
     // No interface
     m_ifguid.clear();
-    m_interfaceName.Empty();
 }
 
 
@@ -3157,13 +3156,13 @@ bool frmDeviceConfig::enableInterface(void) {
             progressDlg.Pulse(_("TCP/IP Interface Open."));
 
             // Should we fetch interface GUID
-            if (m_interfaceName.Length()) {
+            if (m_vscpif.m_strInterfaceName.Length()) {
 
-                progressDlg.Pulse(_("Fetching interace GUID."));
+                progressDlg.Pulse(_("Fetching interface GUID."));
 
                 if (fetchIterfaceGUID()) {
 
-                    progressDlg.Pulse(_("Interace GUID found."));
+                    progressDlg.Pulse(_("Interface GUID found."));
 
                     // Fill the combo
                     wxString str;
@@ -3310,6 +3309,7 @@ void frmDeviceConfig::OnMenuitemVscpAboutClick(wxCommandEvent& event) {
 //
 
 void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event) {
+    
     unsigned char nodeid;
 
     ::wxBeginBusyCursor();
@@ -8354,10 +8354,10 @@ bool frmDeviceConfig::fetchIterfaceGUID(void) {
                     strName.Trim();
                 }
 
-                if (strName.Upper() == m_interfaceName.Upper()) {
+                if (strName.Upper() == m_vscpif.m_strInterfaceName.Upper()) {
 
                     // Save the name
-                    m_interfaceName = strName;
+                    //m_vscpif.m_strInterfaceName. = strName;
 
                     // Save interface GUID;
                     m_ifguid.getFromString(strIfGUID);

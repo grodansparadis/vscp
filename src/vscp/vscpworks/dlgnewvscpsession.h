@@ -138,6 +138,9 @@ public:
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_REMOVE
   void OnButtonRemoveClick( wxCommandEvent& event );
 
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
+  void OnButtonCloneClick( wxCommandEvent& event );
+
 ////@end dlgNewVSCPSession event handler declarations
 
 ////@begin dlgNewVSCPSession member function declarations
@@ -163,7 +166,8 @@ public:
     ID_LISTBOX_INTERFACES = 14001,
     ID_BUTTON_ADD = 14002,
     ID_BUTTON_EDIT = 14003,
-    ID_BUTTON_REMOVE = 14004
+    ID_BUTTON_REMOVE = 14004,
+    ID_BUTTON = 14005
   };
 ////@end dlgNewVSCPSession member variables
 };

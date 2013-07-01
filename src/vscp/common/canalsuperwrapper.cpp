@@ -843,9 +843,9 @@ bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
 bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID, 
 												uint32_t reg, 
 												uint8_t *pcontent,
-												cguid *pdestGUID,
-												wxProgressDialog *pdlg,
-												bool bLevel2 )
+                                                cguid *pdestGUID,
+                                                wxProgressDialog *pdlg,
+                                                bool bLevel2 )
 {
 	bool rv = true;
 	uint32_t errors = 0;
@@ -854,7 +854,8 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 	vscpEventEx event;
 
 	// Check pointers
-	if ( NULL == pdestGUID ) return false; 
+	if ( NULL == pcontent ) return false; 
+    if (NULL == pdestGUID ) return false;
 
 	// Check if a specific interface is used
 	if ( !ifGUID.isNULL() ) {
@@ -914,8 +915,8 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 
 			pdestGUID->setGUID( event.data );	// Destination GUID
 
-			event.data[16] = 0x00;				// nodeid
-			event.data[17] = reg;               // Register to read
+			event.data[16] = pdestGUID->getLSB(); // nodeid
+			event.data[17] = reg;                 // Register to read
 
 		}
 	}

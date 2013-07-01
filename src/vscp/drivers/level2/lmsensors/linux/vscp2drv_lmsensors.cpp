@@ -43,6 +43,7 @@
 
 #include "wx/tokenzr.h"
 
+#include "lmsensors.h"
 #include "vscp2drv_lmsensors.h"
 #include "stdio.h"
 #include "stdlib.h"
@@ -81,9 +82,9 @@ CVSCPL2App::~CVSCPL2App()
 		
 		if ( NULL == m_pvscpifArray[ i ] ) {
 			
-			VscpTcpIf *pvscpif =  getDriverObject( i );
-			if ( NULL != pvscpif ) { 
-				pvscpif->doCmdClose();	
+			Clmsensors *plmif =  getDriverObject( i );
+			if ( NULL != plmif ) { 
+				plmif->close();	
 				delete m_pvscpifArray[ i ];
 				m_pvscpifArray[ i ] = NULL; 
 			}
@@ -110,7 +111,7 @@ CVSCPL2App theApp;
 // addDriverObject
 //
 
-long CVSCPL2App::addDriverObject( VscpTcpIf *pvscpif )
+long CVSCPL2App::addDriverObject( Clmsensors *plmif )
 {
 	long h = 0;
 
@@ -119,7 +120,7 @@ long CVSCPL2App::addDriverObject( VscpTcpIf *pvscpif )
 	
 		if ( NULL == m_pvscpifArray[ i ] ) {
 		
-			m_pvscpifArray[ i ] = pvscpif;	
+			m_pvscpifArray[ i ] = plmif;	
 			h = i + 1681; 
 			break;
 
@@ -137,7 +138,7 @@ long CVSCPL2App::addDriverObject( VscpTcpIf *pvscpif )
 // getDriverObject
 //
 
-VscpTcpIf *CVSCPL2App::getDriverObject( long h )
+Clmsensors *CVSCPL2App::getDriverObject( long h )
 {
 	long idx = h - 1681;
 
@@ -175,238 +176,112 @@ BOOL CVSCPL2App::InitInstance()
 	return TRUE;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-//                             C A N A L -  A P I
+//                         V S C P   D R I V E R -  A P I
 ///////////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////////
-// CanalOpen
+// VSCPOpen
 //
 
-extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
+extern "C" long
+VSCPOpen(const char *pUsername,
+	const char *pPassword,
+	const char *pHost,
+	short port,
+	const char *pPrefix,
+	const char *pParameter,
+	unsigned long flags)
 {
-	long h = CANAL_ERROR_SUB_DRIVER;
-	unsigned long filter=0, mask=0;
-	bool bFilter=false, bMask=false;
-	wxString str;
-	wxString strDevice( pDevice, wxConvUTF8);
-	wxStringTokenizer tkz(strDevice, _(";") );
 
-	// Get possible filter	
-	if ( str = tkz.GetNextToken() ) {
-		if ( 0 != str.Length() ) {
-			if ( str.ToULong( &filter ) ) {
-				bFilter = true;
-			}
-		}
-	}
+	long h = 0;
 
-	// Get possible mask
-	if ( str = tkz.GetNextToken() ) {
-		if ( 0 != str.Length() ) {
-			if ( str.ToULong( &mask ) ) {
-				bMask = true;
-			}
-		}
-	}
-	
-	
-	VscpTcpIf *pvscpif = new VscpTcpIf();
-	if ( NULL != pvscpif ) {
+	Clmsensors *pdrvObj = new Clmsensors();
+	if (NULL != pdrvObj) {
 
-		if ( pvscpif->doCmdOpen( strDevice, flags ) ){
+		if (pdrvObj->open(pUsername,
+			pPassword,
+			pHost,
+			port,
+			pPrefix,
+			pParameter )) {
 
-			if ( !( h = theApp.addDriverObject( pvscpif ) ) ) {
-				delete pvscpif;
-			}
-			else {
-				
-				if ( bFilter ) {
-					pvscpif->doCmdFilter( filter );	
-				}
-
-				if ( bMask ) {
-					pvscpif->doCmdMask( mask );
-				}
+			if (!(h = theApp.addDriverObject(pdrvObj))) {
+				delete pdrvObj;
 			}
 
-		}
-		else {
-			delete pvscpif;
+		} else {
+			delete pdrvObj;
 		}
 
 	}
- 
+
 	return h;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-//  CanalClose
+//  VSCPClose
 // 
 
-extern "C" int CanalClose( long handle )
+extern "C" int
+VSCPClose(long handle)
 {
 	int rv = 0;
 
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	pvscpif->doCmdClose();
-	theApp.removeDriverObject( handle );
-	rv = CANAL_ERROR_SUCCESS;
-	return rv;
+	Clmsensors *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return 0;
+	pdrvObj->close();
+	theApp.removeDriverObject(handle);
+	rv = 1;
+	return CANAL_ERROR_SUCCESS;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//  CanalGetLevel
+//  VSCPGetLevel
 // 
 
-extern "C" unsigned long CanalGetLevel( long handle )
+extern "C" unsigned long
+VSCPGetLevel(void)
 {
-	unsigned long level;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	level = pvscpif->doCmdGetLevel();
-	return level;
+	return CANAL_LEVEL_USES_TCPIP;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// CanalSend
+// VSCPGetDllVersion
 //
 
-extern "C" int CanalSend( long handle, PCANALMSG pCanalMsg  )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdSendLevel1( pCanalMsg )? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalReceive
-//
-
-extern "C" int CanalReceive( long handle, PCANALMSG pCanalMsg  )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	
-	return ( pvscpif->doCmdReceiveLevel1( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalDataAvailable
-//
-
-extern "C" int CanalDataAvailable( long handle  )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdDataAvailable() ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetStatus
-//
-
-extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
-{
-	int rv = 0;
-
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdStatus( pCanalStatus) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetStatistics
-//
-
-extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistics  )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdStatistics( pCanalStatistics ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetFilter
-//
-
-extern "C" int CanalSetFilter( long handle, unsigned long filter )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	return ( pvscpif->doCmdFilter( filter ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetMask
-//
-
-extern "C" int CanalSetMask( long handle, unsigned long mask )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-	return ( pvscpif->doCmdMask( mask ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalSetBaudrate
-//
-
-extern "C" int CanalSetBaudrate( long handle, unsigned long baudrate )
-{
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
-        if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
-
-	return ( pvscpif->doCmdSetBaudrate( baudrate ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetVersion
-//
-
-extern "C" unsigned long CanalGetVersion( void )
-{
-	unsigned long version;
-	unsigned char *p = (unsigned char *)&version;
-
-	*p = CANAL_MAIN_VERSION;
-	*(p+1) = CANAL_MINOR_VERSION;
-	*(p+2) = CANAL_SUB_VERSION;
-	*(p+3) = 0;
-	return version;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// CanalGetDllVersion
-//
-
-extern "C" unsigned long CanalGetDllVersion( void )
+extern "C" unsigned long
+VSCPGetDllVersion(void)
 {
 	return VSCP_DLL_VERSION;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
-// CanalGetVendorString
+// VSCPGetVendorString
 //
 
-extern "C" const char * CanalGetVendorString( void )
+extern "C" const char *
+VSCPGetVendorString(void)
 {
 	return VSCP_DLL_VENDOR;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// VSCPGetDriverInfo
+//
+
+extern "C" const char *
+VSCPGetDriverInfo(void)
+{
+	return VSCP_LMSENSORS_DRIVERINFO;
+}
+
 
 
  
