@@ -20,10 +20,7 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: daemon_VSCP.cpp,v $
-// $Date: 2005/09/15 16:26:43 $
-// $Author: akhe $
-// $Revision: 1.5 $
+
 
 #include "wx/wxprec.h"
 #include "wx/wx.h"
@@ -470,10 +467,11 @@ void *deviceThread::Entry()
 
 		{
 			wxString str;
-			str = _("Loading level II driver: ");
+			str = _("Loading level II driver: '");
 			str += m_pDeviceItem->m_strName;
+            str += _("'");
 			m_pCtrlObject->logMsg(str, DAEMON_LOGMSG_INFO);
-			wxLogDebug(str);
+			//wxLogDebug(str);
 		}
 
 		// * * * * VSCP OPEN * * * *

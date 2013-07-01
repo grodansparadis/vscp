@@ -449,12 +449,12 @@ void CControlObject::logMsg(const wxString& wxstr, unsigned char level)
 bool CControlObject::init(wxString& strcfgfile)
 {
 	//wxLog::AddTraceMask( "wxTRACE_doWorkLoop" );
-	wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
+	//wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
 	wxLog::AddTraceMask(_("wxTRACE_vscpd_Msg"));
 	wxLog::AddTraceMask(_("wxTRACE_VSCP_Msg"));
-	wxLog::AddTraceMask(_("wxTRACE_vscpd_ReceiveMutex"));
-	wxLog::AddTraceMask(_("wxTRACE_vscpd_sendMutexLevel1"));
-	wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
+	//wxLog::AddTraceMask(_("wxTRACE_vscpd_ReceiveMutex"));
+	//wxLog::AddTraceMask(_("wxTRACE_vscpd_sendMutexLevel1"));
+	//wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
 	//wxLog::AddTraceMask( _( "wxTRACE_vscpd_dm" ) );
 
 	wxString str = _("VSCP Daemon started\n");
@@ -945,7 +945,7 @@ bool CControlObject::startDeviceWorkerThreads(void)
 
 				pDeviceItem->m_pdeviceThread->m_pCtrlObject = this;
 				pDeviceItem->m_pdeviceThread->m_pDeviceItem = pDeviceItem;
-
+                
 				wxThreadError err;
 				if (wxTHREAD_NO_ERROR == (err = pDeviceItem->m_pdeviceThread->Create())) {
 					if (wxTHREAD_NO_ERROR != (err = pDeviceItem->m_pdeviceThread->Run())) {
@@ -1438,6 +1438,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 					// Get the path to the DM file
 					m_dm.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
+                    m_dm.m_configPath.Trim();
+                    m_dm.m_configPath.Trim(false);
 
 				} else if (subchild->GetName() == wxT("variables")) {
 					// Should the internal DM be disabled
@@ -1448,6 +1450,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 					// Get the path to the DM file
 					m_VSCP_Variables.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
+                    m_VSCP_Variables.m_configPath.Trim();
+                    m_VSCP_Variables.m_configPath.Trim(false);
 
 				} else if (subchild->GetName() == wxT("vscp")) {
 					wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1462,10 +1466,16 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 					m_maxItemsInClientReceiveQueue = readStringValue(str);
 				} else if (subchild->GetName() == wxT("webrootpath")) {
 					CControlObject::m_pathRoot = subchild->GetNodeContent();
+                    CControlObject::m_pathRoot.Trim();
+                    CControlObject::m_pathRoot.Trim(false);
 				} else if (subchild->GetName() == wxT("pathcert")) {
 					m_pathCert = subchild->GetNodeContent();
+                    m_pathCert.Trim();
+                    m_pathCert.Trim(false);
 				} else if (subchild->GetName() == wxT("pathkey")) {
 					m_pathKey = subchild->GetNodeContent();
+                    m_pathKey.Trim();
+                    m_pathKey.Trim(false);
 				} else if (subchild->GetName() == wxT("websockets")) {
 					wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
 					if (property.IsSameAs(_("false"), false)) {
@@ -1632,20 +1642,30 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 					while (subsubchild) {
 						if (subsubchild->GetName() == wxT("name")) {
 							strName = subsubchild->GetNodeContent();
+                            strName.Trim();
+                            strName.Trim(false);
+                            // Replace spaces in name with underscore
+                            int pos;
+                            while (wxNOT_FOUND != ( pos = strName.Find(_(" ")))){
+                                strName.SetChar(pos,wxChar('_'));
+                            }
 							bCanalDriver = true;
 						} else if (subsubchild->GetName() == wxT("config") ||
 								subsubchild->GetName() == wxT("parameter")) {
 							strConfig = subsubchild->GetNodeContent();
 							strConfig.Trim();
+                            strConfig.Trim(false);
 						} else if (subsubchild->GetName() == wxT("path")) {
 							strPath = subsubchild->GetNodeContent();
 							strPath.Trim();
+                            strPath.Trim(false);
 						} else if (subsubchild->GetName() == wxT("flags")) {
 							wxString str = subsubchild->GetNodeContent();
 							flags = readStringValue(str);
 						} else if (subsubchild->GetName() == wxT("guid")) {
 							strGUID = subsubchild->GetNodeContent();
 							strGUID.Trim();
+                            strGUID.Trim(false);
 						}
 
 						// Next driver item
@@ -1703,17 +1723,27 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 					while (subsubchild) {
 						if (subsubchild->GetName() == wxT("name")) {
 							strName = subsubchild->GetNodeContent();
+                            strName.Trim();
+                            strName.Trim(false);
+                            // Replace spaces in name with underscore
+                            int pos;
+                            while (wxNOT_FOUND != ( pos = strName.Find(_(" ")))){
+                                strName.SetChar(pos,wxChar('_'));
+                            }
 							bLevel2Driver = true;
 						} else if (subsubchild->GetName() == wxT("config") ||
 								subsubchild->GetName() == wxT("parameter")) {
 							strConfig = subsubchild->GetNodeContent();
 							strConfig.Trim();
+                            strConfig.Trim(false);
 						} else if (subsubchild->GetName() == wxT("path")) {
 							strPath = subsubchild->GetNodeContent();
 							strPath.Trim();
+                            strPath.Trim(false);
 						} else if (subsubchild->GetName() == wxT("guid")) {
 							strGUID = subsubchild->GetNodeContent();
 							strGUID.Trim();
+                            strGUID.Trim(false);
 						}
 
 						// Next driver item
@@ -1811,6 +1841,7 @@ CControlObject::callback_http(struct libwebsocket_context *context,
 
 		path = CControlObject::m_pathRoot;
 		str.Trim();
+        str.Trim(false);
 		if (('\\' == str.Last()) || ('/' == str.Last())) {
 			str += _("index.html");
 		}
