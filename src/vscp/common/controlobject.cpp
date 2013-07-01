@@ -1626,8 +1626,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 			}
 
-		}// Level I driver
+		}
+        
+        // Level I driver
 		else if (child->GetName() == wxT("canaldriver")) {
+            
 			wxXmlNode *subchild = child->GetChildren();
 			while (subchild) {
 				wxString strName;
@@ -1713,8 +1716,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 			}
 
-		}// Level II driver
+		}
+        
+        // Level II driver
 		else if (child->GetName() == wxT("vscpdriver")) {
+            
 			wxXmlNode *subchild = child->GetChildren();
 			while (subchild) {
 				wxString strName;

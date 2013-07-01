@@ -921,9 +921,11 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
                     // A new CANAL driver
                     canal_interface *pInfo = new canal_interface;
                     if (NULL != pInfo) {
-                        pBoth->m_type = INTERFACE_CANAL;
-                        memcpy(&pInfo, &pBoth->m_pcanalif, sizeof(canal_interface));
+
                         pInfo->m_strDescription = wxGetTextFromUser(_("Enter new description"));
+                        pInfo->m_strPath = pBoth->m_pcanalif->m_strPath;
+                        pInfo->m_strConfig = pBoth->m_pcanalif->m_strConfig;
+                        pInfo->m_flags = pBoth->m_pcanalif->m_flags;
                         g_Config.m_canalIfList.Append(pInfo);
                     }
 
@@ -932,9 +934,16 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
                     // A new remote host
                     vscp_interface *pInfo = new vscp_interface;
                     if (NULL != pInfo) {
-
-                        pBoth->m_type = INTERFACE_VSCP;
-                        memcpy(&pInfo, &pBoth->m_pvscpif, sizeof(vscp_interface));
+                        pInfo->m_strDescription = wxGetTextFromUser(_("Enter description"));
+                        pInfo->m_strHost = pBoth->m_pvscpif->m_strHost;
+                        pInfo->m_strUser = pBoth->m_pvscpif->m_strUser;
+                        pInfo->m_strPassword = pBoth->m_pvscpif->m_strPassword;
+                        pInfo->m_strInterfaceName = pBoth->m_pvscpif->m_strInterfaceName;
+                        pInfo->m_port = pBoth->m_pvscpif->m_port;
+                        pInfo->m_bLevel2 = pBoth->m_pvscpif->m_bLevel2;
+                        memcpy(&pBoth->m_pvscpif->m_vscpfilter, 
+                                &pBoth->m_pvscpif->m_vscpfilter, 
+                                sizeof( vscpEventFilter));
                         g_Config.m_vscpIfList.Append(pInfo);
                     }
 
