@@ -846,7 +846,7 @@ void TcpClientThread::handleClientSend ( void )
             pEvent->pdata = NULL;
         }
 
-        // Level II events betwen 512-1023 is recognized by the daemon and 
+        // Level II events between 512-1023 is recognised by the daemon and 
         // sent to the correct interface as Level I events if the interface  
         // is addressed by the client.
         if (( pEvent->vscp_class <= 1023 ) && 
@@ -866,6 +866,15 @@ void TcpClientThread::handleClientSend ( void )
 
                 destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
                 destGUID[1] = 0;
+                
+                wxString dbgStr = 
+                    wxString::Format( _("Level I event over Level II dest = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
+                    destGUID[ 15 ],destGUID[ 14 ],destGUID[ 13 ],destGUID[ 12 ],
+                    destGUID[ 11 ],destGUID[ 10 ],destGUID[ 9 ],destGUID[ 8 ],
+                    destGUID[ 7 ],destGUID[ 6 ],destGUID[ 5 ],destGUID[ 4 ],
+                    destGUID[ 3 ],destGUID[ 2 ],destGUID[ 1 ],destGUID[ 0 ] );    
+                    m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
+                
 
                 m_pCtrlObject->m_wxClientMutex.Lock();
 
@@ -875,12 +884,25 @@ void TcpClientThread::handleClientSend ( void )
                 for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin(); 
                     iter != m_pCtrlObject->m_clientList.m_clientItemList.end(); 
                     ++iter) {
-
+                    
                         CClientItem *pItem = *iter;
+                        dbgStr = 
+                            wxString::Format( _("Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
+                            pItem->m_GUID[ 15 ],pItem->m_GUID[ 14 ],pItem->m_GUID[ 13 ],pItem->m_GUID[ 12 ],
+                            pItem->m_GUID[ 11 ],pItem->m_GUID[ 10 ],pItem->m_GUID[ 9 ],pItem->m_GUID[ 8 ],
+                            pItem->m_GUID[ 7 ],pItem->m_GUID[ 6 ],pItem->m_GUID[ 5 ],pItem->m_GUID[ 4 ],
+                            pItem->m_GUID[ 3 ],pItem->m_GUID[ 2 ],pItem->m_GUID[ 1 ],pItem->m_GUID[ 0 ] );    
+                            dbgStr += _(" ");
+                            dbgStr += pItem->m_strDeviceName;
+                            m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
+                        
+                        
                         if ( isSameGUID( pItem->m_GUID, destGUID ) ) {
                             // Found
                             pDestClientItem = pItem;
 							bSent = true;
+                            dbgStr = _("Match ");    
+                            m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
 							m_pCtrlObject->sendEventToClient( pItem, pEvent );
                             break;
                         }

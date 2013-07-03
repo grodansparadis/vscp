@@ -98,7 +98,12 @@ void *deviceThread::Entry()
 
 	// This is now an active Client
 	m_pDeviceItem->m_pClientItem->m_bOpen = true;
-	m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_CANAL;
+    if ( VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel ) {
+        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_VSCP;
+    }
+    else {
+        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_CANAL;
+    }
 	m_pDeviceItem->m_pClientItem->m_strDeviceName = m_pDeviceItem->m_strName;
 	m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" Started at ");
 	wxDateTime now = wxDateTime::Now();
@@ -308,7 +313,7 @@ void *deviceThread::Entry()
 			/////////////////////////////////////////////////////////////////////////////
 			// Device write worker thread
 			/////////////////////////////////////////////////////////////////////////////
-			m_pwriteThread = new deviceWriteThread;
+			m_pwriteThread = new deviceCanalWriteThread;
 
 			if (m_pwriteThread) {
 				m_pwriteThread->m_pMainThreadObj = this;
@@ -328,7 +333,7 @@ void *deviceThread::Entry()
 			/////////////////////////////////////////////////////////////////////////////
 			// Device read worker thread
 			/////////////////////////////////////////////////////////////////////////////
-			m_preceiveThread = new deviceReceiveThread;
+			m_preceiveThread = new deviceCanalReceiveThread;
 
 			if (m_preceiveThread) {
 				m_preceiveThread->m_pMainThreadObj = this;
@@ -464,7 +469,6 @@ void *deviceThread::Entry()
 	} else if (VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel) {
 
 		// Now find methods in library
-
 		{
 			wxString str;
 			str = _("Loading level II driver: '");
@@ -487,6 +491,22 @@ void *deviceThread::Entry()
 			(LPFNDLL_VSCPCLOSE) m_wxdll.GetSymbol(_T("VSCPClose")))) {
 			// Free the library
 			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPClose."), DAEMON_LOGMSG_CRITICAL);
+			return NULL;
+		}
+        
+        // * * * * VSCP BLOCKINGSEND * * * *
+		if (NULL == (m_pDeviceItem->m_proc_VSCPBlockingSend =
+			(LPFNDLL_VSCPBLOCKINGSEND) m_wxdll.GetSymbol(_T("VSCPBlockingSend")))) {
+			// Free the library
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPBlockingSend."), DAEMON_LOGMSG_CRITICAL);
+			return NULL;
+		}
+        
+        // * * * * VSCP BLOCKINGRECEIVE * * * *
+		if (NULL == (m_pDeviceItem->m_proc_VSCPBlockingReceive =
+			(LPFNDLL_VSCPBLOCKINGRECEIVE) m_wxdll.GetSymbol(_T("VSCPBlockingReceive")))) {
+			// Free the library
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPBlockingReceive."), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -573,29 +593,91 @@ void *deviceThread::Entry()
 					pVar->getValue((int *) &cfgport);
 					port = cfgport;
 				}
-			}
+            }
 
+        }
+
+        // Open up the driver
+        m_pDeviceItem->m_openHandle =
+                m_pDeviceItem->m_proc_VSCPOpen(m_pCtrlObject->m_driverUsername.mb_str(wxConvUTF8),
+                m_pCtrlObject->m_driverPassword.mb_str(wxConvUTF8),
+                strHost.mb_str(wxConvUTF8),
+                port,
+                (const char *)m_pDeviceItem->m_strName.mb_str(wxConvUTF8),
+                (const char *)m_pDeviceItem->m_strParameter.mb_str(wxConvUTF8));
+
+        /////////////////////////////////////////////////////////////////////////////
+        // Device write worker thread
+        /////////////////////////////////////////////////////////////////////////////
+        
+        ::wxLogDebug(_("*** VSCP Device Worker Write Thread Started"));
+        m_pwriteLevel2Thread = new deviceLevel2WriteThread;
+
+        if (m_pwriteLevel2Thread) {
+            m_pwriteLevel2Thread->m_pMainThreadObj = this;
+            wxThreadError err;
+            if (wxTHREAD_NO_ERROR == (err = m_pwriteLevel2Thread->Create())) {
+                m_pwriteLevel2Thread->SetPriority(WXTHREAD_MAX_PRIORITY);
+                if (wxTHREAD_NO_ERROR != (err = m_pwriteLevel2Thread->Run())) {
+                    m_pCtrlObject->logMsg(_("Unable to run device write worker thread."), DAEMON_LOGMSG_CRITICAL);
+                }
+            } else {
+                m_pCtrlObject->logMsg(_("Unable to create device write worker thread."), DAEMON_LOGMSG_CRITICAL);
+            }
+        } else {
+            m_pCtrlObject->logMsg(_("Unable to allocate memory for device write worker thread."), DAEMON_LOGMSG_CRITICAL);
+        }
+
+        /////////////////////////////////////////////////////////////////////////////
+        // Device read worker thread
+        /////////////////////////////////////////////////////////////////////////////
+        ::wxLogDebug(_("*** VSCP Device Worker Receive Thread Started"));
+        m_preceiveLevel2Thread = new deviceLevel2ReceiveThread;
+
+        if (m_preceiveLevel2Thread) {
+            m_preceiveLevel2Thread->m_pMainThreadObj = this;
+            wxThreadError err;
+            if (wxTHREAD_NO_ERROR == (err = m_preceiveLevel2Thread->Create())) {
+                m_preceiveLevel2Thread->SetPriority(WXTHREAD_MAX_PRIORITY);
+                if (wxTHREAD_NO_ERROR != (err = m_preceiveLevel2Thread->Run())) {
+                    m_pCtrlObject->logMsg(_("Unable to run device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
+                }
+            } else {
+                m_pCtrlObject->logMsg(_("Unable to create device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
+            }
+        } else {
+            m_pCtrlObject->logMsg(_("Unable to allocate memory for device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
+        }
+
+        // Just sit and wait until the end of the world as we know it...
+        while (!TestDestroy() && !m_pDeviceItem->m_bQuit) {
+            wxSleep(200);
+        }
+        
+        m_preceiveLevel2Thread->m_bQuit = true;
+		m_pwriteLevel2Thread->m_bQuit = true;
+		
+        // Close channel
+		m_pDeviceItem->m_proc_VSCPClose(m_pDeviceItem->m_openHandle);
+
+		// Library is unloaded in destructor
+
+		// Remove messages in the client queues
+		m_pCtrlObject->m_wxClientMutex.Lock();
+		m_pCtrlObject->removeClient(m_pDeviceItem->m_pClientItem);
+		m_pCtrlObject->m_wxClientMutex.Unlock();
+
+		if (NULL != m_preceiveLevel2Thread) {
+			m_preceiveLevel2Thread->Wait();
+			delete m_preceiveLevel2Thread;
 		}
 
-		m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_TCPIP;
-
-		// Open up the driver
-		// Open the device
-		m_pDeviceItem->m_openHandle =
-			m_pDeviceItem->m_proc_VSCPOpen(m_pCtrlObject->m_driverUsername.mb_str(wxConvUTF8),
-			m_pCtrlObject->m_driverPassword.mb_str(wxConvUTF8),
-			strHost.mb_str(wxConvUTF8),
-			port,
-			(const char *) m_pDeviceItem->m_strName.mb_str(wxConvUTF8),
-			(const char *) m_pDeviceItem->m_strParameter.mb_str(wxConvUTF8) );
-
-
-		// Just sit and wait until the end of the world as we know it...
-		while (!TestDestroy() && !m_pDeviceItem->m_bQuit) {
-			wxSleep(200);
+		if (NULL != m_pwriteLevel2Thread) {
+			m_pwriteLevel2Thread->Wait();
+			delete m_pwriteLevel2Thread;
 		}
-
-	}
+        
+    }
 
 
 
@@ -624,17 +706,17 @@ void deviceThread::OnExit()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// deviceReceiveThread
+// deviceCanalReceiveThread
 //
 
-deviceReceiveThread::deviceReceiveThread()
+deviceCanalReceiveThread::deviceCanalReceiveThread()
 : wxThread(wxTHREAD_JOINABLE)
 {
 	m_pMainThreadObj = NULL;
 	m_bQuit = false;
 }
 
-deviceReceiveThread::~deviceReceiveThread()
+deviceCanalReceiveThread::~deviceCanalReceiveThread()
 {
 	;
 }
@@ -643,7 +725,7 @@ deviceReceiveThread::~deviceReceiveThread()
 // Entry
 //
 
-void *deviceReceiveThread::Entry()
+void *deviceCanalReceiveThread::Entry()
 {
 	canalMsg msg;
 	CanalMsgOutList::compatibility_iterator nodeCanal;
@@ -656,9 +738,11 @@ void *deviceReceiveThread::Entry()
 
 	int rv;
 	while (!TestDestroy() && !m_bQuit) {
+        
 		if (CANAL_ERROR_SUCCESS ==
 			(rv = m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingReceive(
-			m_pMainThreadObj->m_pDeviceItem->m_openHandle, &msg, 500))) {
+                    m_pMainThreadObj->m_pDeviceItem->m_openHandle, &msg, 500))) {
+            
 			// There must be room in the receive queue
 			if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
 				m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
@@ -691,7 +775,7 @@ void *deviceReceiveThread::Entry()
 // OnExit
 //
 
-void deviceReceiveThread::OnExit()
+void deviceCanalReceiveThread::OnExit()
 {
 	;
 }
@@ -701,17 +785,17 @@ void deviceReceiveThread::OnExit()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// deviceWriteThread
+// deviceCanalWriteThread
 //
 
-deviceWriteThread::deviceWriteThread()
+deviceCanalWriteThread::deviceCanalWriteThread()
 : wxThread(wxTHREAD_JOINABLE)
 {
 	m_pMainThreadObj = NULL;
 	m_bQuit = false;
 }
 
-deviceWriteThread::~deviceWriteThread()
+deviceCanalWriteThread::~deviceCanalWriteThread()
 {
 	;
 }
@@ -721,7 +805,7 @@ deviceWriteThread::~deviceWriteThread()
 // Entry
 //
 
-void *deviceWriteThread::Entry()
+void *deviceCanalWriteThread::Entry()
 {
 
 	CanalMsgOutList::compatibility_iterator nodeCanal;
@@ -772,7 +856,158 @@ void *deviceWriteThread::Entry()
 // OnExit
 //
 
-void deviceWriteThread::OnExit()
+void deviceCanalWriteThread::OnExit()
+{
+
+}
+
+//-----------------------------------------------------------------------------
+//                               L e v e l  I I
+//-----------------------------------------------------------------------------
+
+
+// ****************************************************************************
+
+
+///////////////////////////////////////////////////////////////////////////////
+// deviceLevel2ReceiveThread
+//
+
+deviceLevel2ReceiveThread::deviceLevel2ReceiveThread()
+: wxThread(wxTHREAD_JOINABLE)
+{
+	m_pMainThreadObj = NULL;
+	m_bQuit = false;
+}
+
+deviceLevel2ReceiveThread::~deviceLevel2ReceiveThread()
+{
+	;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+
+void *deviceLevel2ReceiveThread::Entry()
+{
+	vscpEvent *pEvent;
+
+	// Must be a valid main object pointer
+	if (NULL == m_pMainThreadObj) return NULL;
+
+	int rv;
+	while (!TestDestroy() && !m_bQuit) {
+        
+        pEvent = new vscpEvent;
+        if (NULL == pEvent) continue;
+        rv = m_pMainThreadObj->m_pDeviceItem->m_proc_VSCPBlockingReceive(
+                    m_pMainThreadObj->m_pDeviceItem->m_openHandle, pEvent, 500);
+        
+        if ((CANAL_ERROR_SUCCESS != rv) || (NULL == pEvent))  continue;
+                       
+        // Identify ourselves 
+        pEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
+            
+        // There must be room in the receive queue
+		if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
+				m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
+
+            m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
+            m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append(pEvent);
+            m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
+            m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
+
+		}
+        else {
+            if (NULL == pEvent) deleteVSCPevent(pEvent);
+        }
+ 
+	}
+
+	return NULL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void deviceLevel2ReceiveThread::OnExit()
+{
+	;
+}
+
+
+// ****************************************************************************
+
+
+///////////////////////////////////////////////////////////////////////////////
+// deviceLevel2WriteThread
+//
+
+deviceLevel2WriteThread::deviceLevel2WriteThread()
+: wxThread(wxTHREAD_JOINABLE)
+{
+	m_pMainThreadObj = NULL;
+	m_bQuit = false;
+}
+
+deviceLevel2WriteThread::~deviceLevel2WriteThread()
+{
+	;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+
+void *deviceLevel2WriteThread::Entry()
+{
+	// Must be a valid main object pointer
+	if (NULL == m_pMainThreadObj) return NULL;
+
+	while (!TestDestroy() && !m_bQuit) {
+        
+		// Wait until there is something to send
+		if (wxSEMA_TIMEOUT ==
+			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_semClientInputQueue.WaitTimeout(500)) {
+			continue;
+		}
+
+		if (m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetCount()) {
+            
+            CLIENTEVENTLIST::compatibility_iterator nodeClient;
+
+			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Lock();
+			nodeClient = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetFirst();
+			vscpEvent *pqueueEvent = nodeClient->GetData();
+			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Unlock();
+
+			if (CANAL_ERROR_SUCCESS ==
+				m_pMainThreadObj->m_pDeviceItem->m_proc_VSCPBlockingSend(m_pMainThreadObj->m_pDeviceItem->m_openHandle, pqueueEvent, 300)) {
+				// Remove the node
+				//deleteVSCPevent(pqueueEvent);
+				m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+			} else {
+				// Give it another try
+				m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
+			}
+
+		} // events in queue 
+
+	} // while
+
+	return NULL;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void deviceLevel2WriteThread::OnExit()
 {
 
 }

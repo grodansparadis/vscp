@@ -127,6 +127,13 @@ public:
      */
     void close(void);
 
+	/*!
+		Add one event to the output queue 
+		\param pEvent Pointer to VSCP event
+        \return True on success.S
+	 */
+	bool addEvent2Queue(const vscpEvent *pEvent);
+	
     /*!
         Write an event out to the file
         \param pEvent Pointer to VSCP event
@@ -143,6 +150,16 @@ public:
 
 
 public:
+	
+	VSCPEVENTLIST m_outputQueue;
+	
+	/*!
+        Event object to indicate that there is an event in the output queue
+     */
+    wxSemaphore m_semQueue;
+	
+	// Mutex to protect the output queue
+	wxMutex m_mutexQueue;
 
     /// Run flag
     bool m_bQuit;

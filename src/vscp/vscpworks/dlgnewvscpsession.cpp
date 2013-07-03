@@ -921,7 +921,6 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
                     // A new CANAL driver
                     canal_interface *pInfo = new canal_interface;
                     if (NULL != pInfo) {
-
                         pInfo->m_strDescription = wxGetTextFromUser(_("Enter new description"));
                         pInfo->m_strPath = pBoth->m_pcanalif->m_strPath;
                         pInfo->m_strConfig = pBoth->m_pcanalif->m_strConfig;

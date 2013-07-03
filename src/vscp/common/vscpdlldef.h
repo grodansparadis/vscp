@@ -39,6 +39,8 @@ typedef long ( __stdcall * LPFNDLL_VSCPOPEN) ( const char *pUsername,
                                                 const char *pPrefix,
                                                 const char *pParameter );
 typedef int ( __stdcall * LPFNDLL_VSCPCLOSE) ( long handle );
+typedef int ( __stdcall * LPFNDLL_VSCPBLOCKINGSEND ) ( long handle, vscpEvent *pEvent, unsigned long timeout );
+typedef int ( __stdcall * LPFNDLL_VSCPBLOCKINGRECEIVE ) ( long handle, vscpEvent *pEvent, unsigned long timeout );
 typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETLEVEL) ( long handle  );
 typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETVERSION) ( void );
 typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETDLLVERSION) ( void );
@@ -54,6 +56,8 @@ typedef long ( *LPFNDLL_VSCPOPEN ) ( const char *pUsername,
                                         const char *pPrefix,
                                         const char *pParameter );
 typedef int ( *LPFNDLL_VSCPCLOSE ) ( long handle );
+typedef int ( *LPFNDLL_VSCPBLOCKINGSEND ) ( long handle, const vscpEvent *pEvent, unsigned long timeout );
+typedef int ( *LPFNDLL_VSCPBLOCKINGRECEIVE ) ( long handle, vscpEvent *pEvent, unsigned long timeout );
 typedef unsigned long ( *LPFNDLL_VSCPGETLEVEL ) ( long handle  );
 typedef unsigned long ( *LPFNDLL_VSCPGETVERSION ) (  void );
 typedef unsigned long ( *LPFNDLL_VSCPGETDLLVERSION ) (  void );

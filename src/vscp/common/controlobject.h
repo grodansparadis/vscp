@@ -559,12 +559,13 @@ public:
     /*!
         Send queue
 
-        This is the send queue for all clients attached to the system
+        This is the send queue for all clients attached to the system. A client
+	 *  place events here and the system distribute it to all other clients.
      */
     VSCPEventList m_clientOutputQueue;
 
     /*!
-        Event object to indicate that there is an event in the client output queue
+        Event object to indicate that there is an event in the client output queue.
      */
     wxSemaphore m_semClientOutputQueue;
 

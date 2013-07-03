@@ -832,8 +832,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             _("Reading Registers"),
             255,
             this,
-            wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE |
-            wxPD_APP_MODAL | wxPD_CAN_ABORT);
+            wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_CAN_ABORT);
 
     wxTreeItemId rootItem = m_DeviceTree->AddRoot(_("Found device(s)"));
     m_DeviceTree->ExpandAll();
@@ -845,14 +844,15 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
         if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-            if (!progressDlg.Pulse(wxString::Format(_("Checking for device %d"), i))) {
+            if (!progressDlg.Update(i,wxString::Format(_("Checking for device %d"),i))) {
                 if (m_DeviceTree->GetCount()) {
                     wxTreeItemIdValue cookie;
                     m_DeviceTree->SelectItem(m_DeviceTree->GetFirstChild(m_DeviceTree->GetRootItem(), cookie));
                 }
                 ::wxEndBusyCursor();
-                return;
+                break;
             }
+            
 
             if (wxGetApp().readLevel1Register(&m_csw, i, 0xd0, &val)) {
 
@@ -876,7 +876,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
         } else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
             // Show progress
-            if (!progressDlg.Pulse(wxString::Format(_("Checking for device %d"), i))) {
+            if (!progressDlg.Update(i,wxString::Format(_("Checking for device %d"),i))) {
                 
                 // Want us to terminate  we obey
                 if (m_DeviceTree->GetCount()) {
@@ -887,7 +887,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                 }
                 
                 ::wxEndBusyCursor();
-                return;
+                break;;
             }
 
             cguid destguid;

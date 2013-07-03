@@ -167,13 +167,14 @@ CVSCPLog::open(const char *pUsername,
 		readMaskFromString(&m_Filter,str);
 	}
 
-	// start the workerthread
+	// start the worker thread
 	m_pthreadWork = new CVSCPLogWrkTread();
 	if (NULL != m_pthreadWork) {
 		m_pthreadWork->m_pLog = this;
 		m_pthreadWork->Create();
 		m_pthreadWork->Run();
-	} else {
+	} 
+    else {
 		rv = false;
 	}
 
@@ -227,6 +228,7 @@ CVSCPLog::doFilter(vscpEvent *pEvent)
 void
 CVSCPLog::setFilter(vscpEvent *pFilter)
 {
+    
 }
 
 
@@ -237,6 +239,7 @@ CVSCPLog::setFilter(vscpEvent *pFilter)
 void
 CVSCPLog::setMask(vscpEvent *pMask)
 {
+    
 }
 
 
@@ -289,6 +292,19 @@ CVSCPLog::openFile(void)
 	}
 
 	return false;
+}
+
+//////////////////////////////////////////////////////////////////////
+// addEvent2Queue
+//
+
+bool CVSCPLog::addEvent2Queue(const vscpEvent *pEvent)
+{
+    m_mutexQueue.Lock();
+	m_outputQueue.Append((vscpEvent *)pEvent);
+	m_semQueue.Post();
+	m_mutexQueue.Unlock();
+    return true;
 }
 
 
@@ -495,16 +511,28 @@ CVSCPLogWrkTread::Entry()
 	// Open the file
 	if (!m_pLog->openFile()) return NULL;
 
+    // Close server connection
+    m_srv.doCmdClose();
+    
 	// Enter receive loop to start to log events
-	m_srv.doCmdEnterReceiveLoop();
+	//m_srv.doCmdEnterReceiveLoop();
 
 	int rv;
 	vscpEvent event;
 	while (!TestDestroy() && !m_pLog->m_bQuit) {
 
+        if ( wxSEMA_TIMEOUT == m_pLog->m_semQueue.WaitTimeout(300)) continue;
+        
+        
 		if (CANAL_ERROR_SUCCESS ==
 			(rv = m_srv.doCmdBlockReceive(&event, 1000))) {
-
+            
+            VSCPEVENTLIST::compatibility_iterator nodeClient;
+			m_pLog->m_mutexQueue.Lock();
+			nodeClient = m_pLog->m_outputQueue.GetFirst();
+			vscpEvent *pqueueEvent = nodeClient->GetData();
+			m_pLog->m_mutexQueue.Unlock();
+                    
 			//pRecord->m_time = wxDateTime::Now();
 			m_pLog->writeEvent(&event);
 

@@ -39,19 +39,19 @@ class deviceThread;
 
 /*!
 	This class implement a thread that write data
-	to a blocking driver
+	to a blocking CANAL driver
 */
 
-class deviceWriteThread : public wxThread
+class deviceCanalWriteThread : public wxThread
 {
 
 public:
 	
 	/// Constructor
-	deviceWriteThread();
+	deviceCanalWriteThread();
 
 	/// Destructor
-	virtual ~deviceWriteThread();
+	virtual ~deviceCanalWriteThread();
 
 	/*!
 		Thread code entry point
@@ -80,19 +80,19 @@ public:
 
 /*!
 	This class implement a thread that read data
-	from a blocking driver
+	from a blocking CANAL driver
 */
 
-class deviceReceiveThread : public wxThread
+class deviceCanalReceiveThread : public wxThread
 {
 
 public:
 	
 	/// Constructor
-	deviceReceiveThread();
+	deviceCanalReceiveThread();
 
 	/// Destructor
-	virtual ~deviceReceiveThread();
+	virtual ~deviceCanalReceiveThread();
 
 	/*!
 		Thread code entry point
@@ -118,9 +118,92 @@ public:
 
 };
 
+
+/*!
+	This class implement a thread that write data
+	to a blocking VSCP Level II driver
+*/
+
+class deviceLevel2WriteThread : public wxThread
+{
+
+public:
+	
+	/// Constructor
+	deviceLevel2WriteThread();
+
+	/// Destructor
+	virtual ~deviceLevel2WriteThread();
+
+	/*!
+		Thread code entry point
+	*/
+	virtual void *Entry();
+
+	/*! 
+		called when the thread exits - whether it terminates normally or is
+		stopped with Delete() (but not when it is Kill()ed!)
+	*/
+	virtual void OnExit();
+
+	/*!
+		Pointer to master thread.
+	*/
+	deviceThread *m_pMainThreadObj;
+
+  /*!
+    Termination control
+  */
+  bool m_bQuit;
+
+
+};
+
+
+/*!
+	This class implement a thread that read data
+	from a blocking VSCP Level II driver
+*/
+
+class deviceLevel2ReceiveThread : public wxThread
+{
+
+public:
+	
+	/// Constructor
+	deviceLevel2ReceiveThread();
+
+	/// Destructor
+	virtual ~deviceLevel2ReceiveThread();
+
+	/*!
+		Thread code entry point
+	*/
+	virtual void *Entry();
+
+
+	/*! 
+		called when the thread exits - whether it terminates normally or is
+		stopped with Delete() (but not when it is Kill()ed!)
+	*/
+    virtual void OnExit();
+
+	/*!
+		Pointer to master thread.
+	*/
+	deviceThread *m_pMainThreadObj;
+
+  /*!
+    Termination control
+  */
+  bool m_bQuit;
+
+};
+
+
 /*!
 	This class implement a one of thread that look
-	for specific events and react on them appropriatly.
+	for specific events and react on them appropriately .
 
 */
 
@@ -162,35 +245,46 @@ public:
 	CControlObject *m_pCtrlObject;
 
 	/*!
-		Holder for receive thread
+		Holder for CANAL receive thread
 	*/
-	deviceReceiveThread *m_preceiveThread;
+	deviceCanalReceiveThread *m_preceiveThread;
 
 	/*!
-		Holder for write thread
+		Holder for CANAL write thread
 	*/
-	deviceWriteThread *m_pwriteThread;
+	deviceCanalWriteThread *m_pwriteThread;
+	
+	
+	/*!
+		Holder for VSCP Level II receive thread
+	*/
+	deviceLevel2ReceiveThread *m_preceiveLevel2Thread;
 
-		/*!
-			Check filter/mask to see if filter should be delivered
+	/*!
+		Holder for VSCP Level II write thread
+	*/
+	deviceLevel2WriteThread *m_pwriteLevel2Thread;
 
-			The filter have the following matrix
+	/*!
+		Check filter/mask to see if filter should be delivered
 
-			mask bit n	|	filter bit n	| msg id bit	|	result
-			===========================================================
-				0				X					X			Accept
-				1				0					0			Accept
-				1				0					1			Reject
-				1				1					0			Reject
-				1				1					1			Accept
+		The filter have the following matrix
 
-				Formula is !( ( filter �d ) & mask )
+		mask bit n	|	filter bit n	| msg id bit	|	result
+		===========================================================
+			0				X					X			Accept
+			1				0					0			Accept
+			1				0					1			Reject
+			1				1					0			Reject
+			1				1					1			Accept
 
-			@param pclientItem Pointer to client item
-			@param pcanalMsg Pointer to can message
-			@return True if message is accepted false if rejected
-			TODO
-		*/
+			Formula is !( ( filter �d ) & mask )
+
+		@param pclientItem Pointer to client item
+		@param pcanalMsg Pointer to can message
+		@return True if message is accepted false if rejected
+		TODO
+	*/
 		
 };
 

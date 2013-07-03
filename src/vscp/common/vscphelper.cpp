@@ -1942,7 +1942,7 @@ bool convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
 
 bool copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 {
-	// Check ponters
+	// Check pointers
 	if (NULL == pEventTo) return false;
 	if (NULL == pEventFrom) return false;
 

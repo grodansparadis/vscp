@@ -237,6 +237,38 @@ VSCPClose(long handle)
 	return CANAL_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingSend
+// 
+
+extern "C" int
+VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+
+	CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return 0;
+    
+    pdrvObj->addEvent2Queue( pEvent );
+	
+	return CANAL_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingReceive
+// 
+
+extern "C" int
+VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+
+	CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return 0;
+	
+	return CANAL_ERROR_SUCCESS;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetLevel

@@ -489,7 +489,7 @@ class DTtemp_Driver_sql extends DTtemp_Driver {
                 $qi .= " VALUES ('$serial', 'BogusName')";
                 $insertResult = $this->_db->query($qi);
                 if (!DB::isError($insertResult)) {
-             //       echo "INSERT SUccessfull";
+             //       echo "INSERT Successful";
                 } else {
                     echo "ERROR inserting :".$insertResult;
                     return;

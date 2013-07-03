@@ -152,6 +152,8 @@ public:
     // VSCP driver methods
     LPFNDLL_VSCPOPEN			        m_proc_VSCPOpen;
 	LPFNDLL_VSCPCLOSE				    m_proc_VSCPClose;
+	LPFNDLL_VSCPBLOCKINGSEND			m_proc_VSCPBlockingSend;
+	LPFNDLL_VSCPBLOCKINGRECEIVE			m_proc_VSCPBlockingReceive;
     LPFNDLL_VSCPGETLEVEL				m_proc_VSCPGetLevel;
     LPFNDLL_VSCPGETVERSION			    m_proc_VSCPGetVersion;
 	LPFNDLL_VSCPGETDLLVERSION		    m_proc_VSCPGetDllVersion;

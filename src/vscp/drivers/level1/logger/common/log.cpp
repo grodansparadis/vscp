@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: log.cpp,v $                                       
-// $Date: 2005/10/14 17:19:44 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.5 $ 
 
 #ifdef WIN32
 

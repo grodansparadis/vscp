@@ -68,6 +68,8 @@ void _fini()
 
 CVSCPDrvApp::CVSCPDrvApp()
 {
+    ::wxInitialize();
+    
 	m_instanceCounter = 0;
 	pthread_mutex_init(&m_objMutex, NULL);
 
@@ -233,13 +235,63 @@ VSCPClose(long handle)
 	int rv = 0;
 
 	Csocketcan *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return 0;
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
 	pdrvObj->close();
 	theApp.removeDriverObject(handle);
 	rv = 1;
 	return CANAL_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingSend
+// 
+
+extern "C" int
+VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+
+	Csocketcan *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    
+    pdrvObj->addEvent2SendQueue( pEvent );
+	
+	return CANAL_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingReceive
+// 
+
+extern "C" int
+VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+ 
+    // Check pointer
+    if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
+    
+	Csocketcan *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    
+    if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
+        return CANAL_ERROR_TIMEOUT;
+    }
+    
+    VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
+
+	pdrvObj->m_mutexReceiveQueue.Lock();
+	nodeClient = pdrvObj->m_receiveQueue.GetFirst();
+	vscpEvent *pLocalEvent = nodeClient->GetData();
+	pdrvObj->m_mutexReceiveQueue.Unlock();
+    if (NULL == pLocalEvent) return CANAL_ERROR_NOT_OPEN;
+    
+    copyVSCPEvent( pEvent, pLocalEvent );
+    pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
+    deleteVSCPevent( pLocalEvent );
+	
+	return CANAL_ERROR_SUCCESS;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetLevel

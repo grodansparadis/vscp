@@ -62,9 +62,12 @@
 
 #define VSCP_SOCKETCAN_LIST_MAX_MSG		2048
   
+// Input and output queue
+WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_SEND);
+WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
 
 // Forward declarations
-class CReadSocketCanTread;
+class CSocketCanWorkerTread;
 class VscpTcpIf;
 class wxFile;
 
@@ -94,13 +97,16 @@ public:
      */
     void close(void);
 
-
+	/*!
+		Add event to send queue 
+	 */
+	bool addEvent2SendQueue(const vscpEvent *pEvent);
 
 public:
 
     /// Run flag
     bool m_bQuit;
-
+	
     /// Server supplied username
     wxString m_username;
 
@@ -121,12 +127,29 @@ public:
     
     /// Filter
     vscpEventFilter m_vscpfilter;
+	
+	/// Get GUID for this interface.
+	cguid m_ifguid;
 
-    /// Pointer to worker thread
-    CReadSocketCanTread *m_pthreadWork;
+    /// Pointer to worker threads
+    CSocketCanWorkerTread *m_pthreadWorker;
     
      /// VSCP server interface
     VscpTcpIf m_srv;
+	
+	// Queue
+	VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
+	VSCPEVENTLIST_RECEIVE m_receiveQueue;	// Thing this driver receive
+	
+	/*!
+        Event object to indicate that there is an event in the output queue
+     */
+    wxSemaphore m_semSendQueue;			
+	wxSemaphore m_semReceiveQueue;		
+	
+	// Mutex to protect the output queue
+	wxMutex m_mutexSendQueue;		
+	wxMutex m_mutexReceiveQueue;
 
 };
 
@@ -135,14 +158,14 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class CReadSocketCanTread : public wxThread {
+class CSocketCanWorkerTread : public wxThread {
 public:
 
     /// Constructor
-    CReadSocketCanTread();
+    CSocketCanWorkerTread();
 
     /// Destructor
-    ~CReadSocketCanTread();
+    ~CSocketCanWorkerTread();
 
     /*!
         Thread code entry point
@@ -163,34 +186,6 @@ public:
 
 };
 
-
-class CWriteSocketCanTread : public wxThread {
-public:
-
-    /// Constructor
-    CWriteSocketCanTread();
-
-    /// Destructor
-    ~CWriteSocketCanTread();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /// VSCP server interface
-    VscpTcpIf m_srv;
-
-    /// Sensor object
-    Csocketcan *m_pObj;
-
-};
 
 
 #endif // !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)

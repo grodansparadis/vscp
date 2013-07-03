@@ -283,7 +283,7 @@ long VscpTcpIf::doCmdOpen( const wxString& strHostname,
     m_psock->Write( strBuf.mb_str(), strBuf.length() );
     if ( !checkReturnValue() ) return CANAL_ERROR_USER;
     
-    wxLogDebug( _("Successfull log in to VSCP server") );
+    wxLogDebug( _("Successful log in to VSCP server") );
   
     return 1922;  // Driver handle == any positiv value -- 1922 is a good value ;-)
 }

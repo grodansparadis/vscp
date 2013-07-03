@@ -856,13 +856,16 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 	// Check pointers
 	if ( NULL == pcontent ) return false; 
     if (NULL == pdestGUID ) return false;
+    
+    event.head = VSCP_PRIORITY_NORMAL;
+    event.timestamp = 0;
+    event.obid = 0;
 
 	// Check if a specific interface is used
 	if ( !ifGUID.isNULL() ) {
 
 		// Event should be sent to a specific interface
 
-		event.head = VSCP_PRIORITY_NORMAL;
 		event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
 		event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
 
