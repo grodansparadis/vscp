@@ -913,10 +913,8 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 			event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
 
 			memset( event.GUID, 0, 16 );		// We use GUID for interface 
-
 			event.sizeData = 16 + 2;			// nodeid + register to read
-
-			pdestGUID->setGUID( event.data );	// Destination GUID
+			pdestGUID->setGUID( event.data );   // Destination GUID
 
 			event.data[16] = pdestGUID->getLSB(); // nodeid
 			event.data[17] = reg;                 // Register to read
@@ -934,7 +932,7 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 	wxLongLong resendTime = ::wxGetLocalTimeMillis();
 
 	while ( true ) {
-
+        
 		if ( NULL != pdlg ) pdlg->Pulse();
 
 		if ( doCmdDataAvailable() ) {								// Message available
@@ -942,15 +940,20 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {	// Valid event
 
 				// Check for correct reply event
+                {
+                    wxString str;
+                    str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
+                            event.vscp_class, event.vscp_type, event.sizeData, event.data[16], event.data[17] );
+                    wxLogDebug(str);
+                }
 
 				// Level I Read reply?
 				if ( /*ifGUID.isNULL() &&*/ ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
 					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   
-						if ( event.data[ 0 ] == reg ) {						// Requested register?
+						if ( event.data[ 1 ] == reg ) {						// Requested register?
 							if ( event.GUID[ 0 ] == pdestGUID->getLSB() ) { // Correct node?
 								if ( NULL != pcontent ) {
 									*pcontent = event.data[ 1 ];
-									break;
 								}
 								break;
 							}
@@ -961,16 +964,16 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 					( VSCP_CLASS2_LEVEL1_PROTOCOL == event.vscp_class ) && 
 					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
 
-						if ( pdestGUID->isSameGUID( event.GUID ) ) {
+						//if ( pdestGUID->isSameGUID( event.GUID ) ) {
 							// Reg we requested?
-							if ( event.data[ 0 ] == reg ) {
+							if ( event.data[ 16 ] == reg ) {
 								// OK get the data
 								if ( NULL != pcontent ) {
-									*pcontent = event.data[ 18 ];
+									*pcontent = event.data[ 17 ];
 									break;
 								}
 							}
-						}
+						//}
 
 				}
 				// Level II Read reply?
@@ -999,10 +1002,8 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 				}
 
 			} // valid event
-		}
-		else {
-			//wxMilliSleep( 1 );
-			::wxSafeYield();
+            
+            
 		}
 
 		if ( ( ::wxGetLocalTimeMillis() - resendTime ) > 
@@ -1021,6 +1022,9 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 			rv = false;
 			break;
 		}
+        
+        wxMilliSleep( 10 );
+        //::wxSafeYield();
 
 	} // while
 

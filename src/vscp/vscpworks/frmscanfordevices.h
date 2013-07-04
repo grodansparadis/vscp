@@ -83,7 +83,7 @@ class wxHtmlWindow;
 #define SYMBOL_FRMSCANFORDEVICES_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_FRMSCANFORDEVICES_TITLE _("Scan for Devices")
 #define SYMBOL_FRMSCANFORDEVICES_IDNAME ID_SCANFORDEVICES
-#define SYMBOL_FRMSCANFORDEVICES_SIZE wxSize(800, 540)
+#define SYMBOL_FRMSCANFORDEVICES_SIZE wxSize(800, 480)
 #define SYMBOL_FRMSCANFORDEVICES_POSITION wxDefaultPosition
 ////@end control identifiers
 
@@ -229,6 +229,8 @@ public:
   wxStaticText* m_labelInterface;
   wxTreeCtrl* m_DeviceTree;
   wxHtmlWindow* m_htmlWnd;
+  wxTextCtrl* m_ctrlEditFrom;
+  wxTextCtrl* m_ctrlEditTo;
   /// Control identifiers
   enum {
     ID_SCANFORDEVICES = 27000,
@@ -244,6 +246,9 @@ public:
     ID_PANEL_DEVICE_SCAN = 27004,
     ID_TREE_DEVICE = 27035,
     ID_HTMLWINDOW3 = 27002,
+    ID_CHECKBOX4 = 10151,
+    ID_TEXTCTRL40 = 10147,
+    ID_TEXTCTRL = 10000,
     ID_BUTTON_SCAN = 27003
   };
 ////@end frmScanforDevices member variables

@@ -2726,6 +2726,7 @@ bool VscpworksApp::writeConfiguration( void )
     return true;
 }
 
+/*
 //////////////////////////////////////////////////////////////////////////////
 // readLevel1Register
 //
@@ -2802,7 +2803,7 @@ bool VscpworksApp::readLevel1Register( CCanalSuperWrapper *pcsw,
 
     return rv;
 }
-
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 // writeLevel1Register
@@ -3260,10 +3261,9 @@ wxString VscpworksApp::getMDFfromDevice( CCanalSuperWrapper *pcsw,
 		// Level 2 device
 		uint8_t *p = (uint8_t *)url;
 		for ( int i=0; i<32; i++ ) {
-			 if ( !readLevel1Register( pcsw,
-										*pid, 
-										0xE0 + i, 
-										p++ ) ) {
+			 if ( !pcsw->readLevel1Register( *pid, 
+                                            0xE0 + i, 
+                                            p++ ) ) {
 				if ( !bSilent ) {												
 					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
 				}
@@ -3361,7 +3361,7 @@ wxString VscpworksApp::formatString( const wxString& str, const unsigned int wid
 //////////////////////////////////////////////////////////////////////////////
 // getLevel1DmInfo
 //
-
+/*
 bool VscpworksApp::getLevel1DmInfo( CCanalSuperWrapper *pcsw, 
                                    const unsigned char nodeid, 
                                    unsigned char *pdata )
@@ -3413,12 +3413,12 @@ bool VscpworksApp::getLevel1DmInfo( CCanalSuperWrapper *pcsw,
 
     return rv;
 }
-
+*/
 
 //////////////////////////////////////////////////////////////////////////////
 // getLevel2DmInfo
 //
-
+/*
 bool VscpworksApp::getLevel2DmInfo( CCanalSuperWrapper *pcsw,
                                    unsigned char *interfaceGUID, 
                                    unsigned char *pdata,
@@ -3473,11 +3473,11 @@ bool VscpworksApp::getLevel2DmInfo( CCanalSuperWrapper *pcsw,
 
     return rv;
 }
-
+*/
 //////////////////////////////////////////////////////////////////////////////
 // getHtmlStatusInfo
 //
-
+/*
 wxString VscpworksApp::getHtmlStatusInfo( CCanalSuperWrapper *pcsw,
                                             const uint8_t *registers )
 {
@@ -3493,13 +3493,13 @@ wxString VscpworksApp::getHtmlStatusInfo( CCanalSuperWrapper *pcsw,
     strHTML += str;
     strHTML += _("<br>");
 
-    /*
-    if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-    strHTML += _("Daemon Interface = ");
-    strHTML += m_comboNodeID->GetValue();
-    strHTML += _("<br>");
-    }
-    */  
+    
+    //if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+    //strHTML += _("Daemon Interface = ");
+    //strHTML += m_comboNodeID->GetValue();
+    //strHTML += _("<br>");
+    //}
+      
     strHTML += _("GUID = ");
     writeGuidArrayToString( registers + 0xd0, str );
     strHTML += str;
@@ -3680,7 +3680,7 @@ wxString VscpworksApp::getHtmlStatusInfo( CCanalSuperWrapper *pcsw,
 
     return strHTML;
 }
-
+*/
 //////////////////////////////////////////////////////////////////////////////
 // loadMDF
 //
@@ -3711,8 +3711,7 @@ bool VscpworksApp::loadMDF( wxWindow *pwnd,
 
             if ( USE_DLL_INTERFACE == pcsw->getDeviceType() ) {
                 uint8_t reg;
-                if ( !readLevel1Register( pcsw,
-                                            *pid,
+                if ( !pcsw->readLevel1Register( *pid,
                                             0xe0 + i, 
                                             &reg ) ) return false;
                 mdf_url[ i ] = reg;
@@ -3792,7 +3791,7 @@ bool VscpworksApp::loadMDF( wxWindow *pwnd,
 //////////////////////////////////////////////////////////////////////////////
 // readAllLevel1Registers
 //
-
+/*
 bool VscpworksApp::readAllLevel1Registers( wxWindow *pwnd,
 											CCanalSuperWrapper *pcsw,
 											uint8_t *pregisters,
@@ -3828,7 +3827,7 @@ bool VscpworksApp::readAllLevel1Registers( wxWindow *pwnd,
     
         progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
     
-        if ( wxGetApp().readLevel1Register( pcsw, nodeid, i, &val ) ) {
+        if ( pcsw->readLevel1Register( nodeid, i, &val ) ) {
     
             pregisters[ i ] = val;
 
@@ -3847,8 +3846,8 @@ bool VscpworksApp::readAllLevel1Registers( wxWindow *pwnd,
 
     return rv;
 }
-
-
+*/
+/*
 //////////////////////////////////////////////////////////////////////////////
 // readAllLevel2Registers
 //
@@ -3911,11 +3910,11 @@ bool VscpworksApp::readAllLevel2Registers( wxWindow *pwnd,
 
     return rv;
 }
-
+*/
 //////////////////////////////////////////////////////////////////////////////
 // addMDFInfo
 //
-
+/*
 wxString VscpworksApp::addMDFInfo( CMDF *pmdf )
 {
 	wxString strHTML;
@@ -4052,5 +4051,5 @@ wxString VscpworksApp::addMDFInfo( CMDF *pmdf )
 	return strHTML;
 }
 
-
+*/
 

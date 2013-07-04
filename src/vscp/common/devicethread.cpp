@@ -84,6 +84,8 @@ deviceThread::~deviceThread()
 
 void *deviceThread::Entry()
 {
+    m_pCtrlObject->logMsg(_("1-------------------------->"), DAEMON_LOGMSG_INFO);
+    
 	// Must have a valid pointer to the device item
 	if (NULL == m_pDeviceItem) return NULL;
 
@@ -122,6 +124,13 @@ void *deviceThread::Entry()
 		m_pCtrlObject->logMsg(_T("Unable to load dynamic library."), DAEMON_LOGMSG_CRITICAL);
 		return NULL;
 	}
+    
+
+    {
+            wxString str;
+			str = _("-------------------------->");
+            m_pCtrlObject->logMsg(str, DAEMON_LOGMSG_INFO);
+    }
 
 	if (VSCP_DRIVER_LEVEL1 == m_pDeviceItem->m_driverLevel) {
 
@@ -468,14 +477,15 @@ void *deviceThread::Entry()
 
 	} else if (VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel) {
 
+        m_pCtrlObject->logMsg(_("Level 2"), DAEMON_LOGMSG_INFO);
+        
 		// Now find methods in library
 		{
 			wxString str;
-			str = _("Loading level II driver: '");
+			str = _("Loading level II driver: <");
 			str += m_pDeviceItem->m_strName;
-            str += _("'");
+            str += _(">");
 			m_pCtrlObject->logMsg(str, DAEMON_LOGMSG_INFO);
-			wxLogDebug(str);
 		}
 
 		// * * * * VSCP OPEN * * * *
@@ -542,6 +552,8 @@ void *deviceThread::Entry()
 			return NULL;
 		}
 
+        m_pCtrlObject->logMsg(_("Discovered all methods"), DAEMON_LOGMSG_INFO);
+        
 		// Username, password, host and port can be set in configuration file. Read in them here
 		// if they are.
 		wxString strHost(_("localhost"));
@@ -611,6 +623,7 @@ void *deviceThread::Entry()
         /////////////////////////////////////////////////////////////////////////////
         
         ::wxLogDebug(_("*** VSCP Device Worker Write Thread Started"));
+        m_pCtrlObject->logMsg(_("********************************************"), DAEMON_LOGMSG_INFO);
         m_pwriteLevel2Thread = new deviceLevel2WriteThread;
 
         if (m_pwriteLevel2Thread) {
@@ -983,13 +996,14 @@ void *deviceLevel2WriteThread::Entry()
 			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Lock();
 			nodeClient = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetFirst();
 			vscpEvent *pqueueEvent = nodeClient->GetData();
+            //m_pObj->m_sendQueue.DeleteNode(nodeClient);
 			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
 			if (CANAL_ERROR_SUCCESS ==
 				m_pMainThreadObj->m_pDeviceItem->m_proc_VSCPBlockingSend(m_pMainThreadObj->m_pDeviceItem->m_openHandle, pqueueEvent, 300)) {
 				// Remove the node
-				//deleteVSCPevent(pqueueEvent);
 				m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+                //deleteVSCPevent(pqueueEvent);
 			} else {
 				// Give it another try
 				m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();

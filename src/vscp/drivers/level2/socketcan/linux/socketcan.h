@@ -58,12 +58,17 @@
 #include "../../../../common/vscptcpif.h"
 #include "../../../../common/guid.h"
 
+#include <list>
+#include <string>
+
+using namespace std;
+
 #define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2SOCKETCAN_OBJ_MUTEX____"
 
 #define VSCP_SOCKETCAN_LIST_MAX_MSG		2048
   
 // Input and output queue
-WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_SEND);
+//WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_SEND);
 WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
 
 // Forward declarations
@@ -138,8 +143,10 @@ public:
     VscpTcpIf m_srv;
 	
 	// Queue
-	VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
+	//VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
 	VSCPEVENTLIST_RECEIVE m_receiveQueue;	// Thing this driver receive
+	
+	std::list<vscpEvent *> m_sendList;
 	
 	/*!
         Event object to indicate that there is an event in the output queue

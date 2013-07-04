@@ -66,7 +66,7 @@
 #include "socketcan.h"
 
 // queues
-WX_DEFINE_LIST(VSCPEVENTLIST_SEND);
+//WX_DEFINE_LIST(VSCPEVENTLIST_SEND);
 WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
 
 //////////////////////////////////////////////////////////////////////
@@ -228,7 +228,8 @@ bool
 Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
-	m_sendQueue.Append((vscpEvent *)pEvent);
+	//m_sendQueue.Append((vscpEvent *)pEvent);
+    m_sendList.push_back((vscpEvent *)pEvent);
 	m_semSendQueue.Post();
 	m_mutexSendQueue.Unlock();
     return true;
@@ -381,15 +382,16 @@ CSocketCanWorkerTread::Entry()
 		} else {
 	
 			// Check if there is event(s) to send
-			if (m_pObj->m_sendQueue.GetCount()) {
+			if (m_pObj->m_sendList.size()   /*m_pObj->m_sendQueue.GetCount()*/) {
 
 				// Yes there are data to send
 				// So send it out on the CAN bus
 				
-                VSCPEVENTLIST_SEND::compatibility_iterator nodeClient;
+                //VSCPEVENTLIST_SEND::compatibility_iterator nodeClient;
                 m_pObj->m_mutexSendQueue.Lock();
-                nodeClient = m_pObj->m_sendQueue.GetFirst();
-                vscpEvent *pEvent = nodeClient->GetData();
+                //nodeClient = m_pObj->m_sendQueue.GetFirst();
+                vscpEvent *pEvent = /*nodeClient->GetData()*/m_pObj->m_sendList.front();
+                m_pObj->m_sendList.pop_front();
                 m_pObj->m_mutexSendQueue.Unlock();
               
                 if ( NULL == pEvent ) continue;
@@ -414,7 +416,11 @@ CSocketCanWorkerTread::Entry()
 				}
 
 				// Remove the event
-				deleteVSCPevent(pEvent);
+                m_pObj->m_mutexSendQueue.Lock();
+                //m_pObj->m_sendQueue.DeleteNode(nodeClient);
+                deleteVSCPevent(pEvent);
+                m_pObj->m_mutexSendQueue.Unlock();
+				
 
 				// Write the data
 				int nbytes = write(sock, &frame, sizeof(struct can_frame));

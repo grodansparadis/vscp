@@ -96,736 +96,443 @@ extern appConfiguration g_Config;
 
 ////@begin XPM images
 /* XPM */
-static const char *fatbee_v2_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "32 32 253 2",
-    "c. c #75790B",
-    "c  c Black",
-    "dX c #A8AE0F",
-    "3. c #3C3C3C",
-    "l  c #73E4E4",
-    "d  c #595B12",
-    "~  c #4A4C08",
-    "y. c #292A04",
-    "8X c #6E4F0B",
-    ".  c #828817",
-    "I  c #B0B60C",
-    "(. c #E8EF0F",
-    "H  c #5C5F0A",
-    "x  c #5C5F0B",
-    "L. c #C2C90E",
-    "k. c #5C5F12",
-    "K  c #2A463A",
-    "xX c #211C13",
-    "w. c #7E8062",
-    "s. c #D9E00D",
-    "8. c #D9E00E",
-    "r  c #566060",
-    "(  c #B8BE0D",
-    "HX c #533B09",
-    "{. c #0B0C04",
-    "C. c #EBF30E",
-    "*  c #6ED1D1",
-    "}. c #454213",
-    "T  c #3E4107",
-    "p  c #427F7F",
-    "t  c #6CD7D7",
-    "W  c #010100",
-    "mX c #996D0C",
-    "4. c #767A0C",
-    "D  c #010101",
-    "M  c #3D7878",
-    "lX c #101010",
-    "OX c #767A0F",
-    "+  c #7CFCFC",
-    "4X c #4C4021",
-    ">. c #343607",
-    "$  c #52A1A1",
-    "9  c #7CF9F9",
-    "V. c #BBC20F",
-    "<X c #CBA455",
-    "a  c #458686",
-    "1  c #6FDEDD",
-    "1. c #5C7171",
-    "_  c #D2D90E",
-    "6  c #4D9797",
-    "$. c #7E5C10",
-    "r. c #E4EC0D",
-    "O. c #131410",
-    "N. c #90950B",
-    "KX c #8B910C",
-    "^. c #90950D",
-    "J  c #53580C",
-    "0. c #6F7309",
-    "f. c #707252",
-    "7X c #1D1C1B",
-    "FX c #363636",
-    "=X c #6F730D",
-    "T. c #DAE10D",
-    "M. c #4E5108",
-    "-. c #4E5109",
-    "bX c #312306",
-    "*X c #393413",
-    "G. c #81860D",
-    "B  c #ECF40C",
-    ";X c #656809",
-    "E. c #ECF40D",
-    "e. c #0C0D04",
-    "nX c #72510A",
-    "zX c #77550C",
-    "w  c #75ECEC",
-    "j. c #777B0B",
-    "n. c #3F420C",
-    "Q  c #020202",
-    "[. c #070604",
-    "P  c #3F4212",
-    "I. c #353707",
-    "b. c #C1C70D",
-    "#  c #598787",
-    "9X c #BD994F",
-    ":. c #686C09",
-    "JX c #BCC30F",
-    "5  c #8E9090",
-    "LX c #898E1B",
-    " X c #0A0A04",
-    "v  c #E5ED0D",
-    "0  c #5D6F6F",
-    "N  c #68C8C8",
-    "). c #7F693E",
-    ",  c #498E8D",
-    "!. c #DBE20D",
-    "x. c #2B2C17",
-    "u. c #DBE20E",
-    "<. c #D6DE0D",
-    "ZX c #D6DE0E",
-    "a. c #A3A90F",
-    ",X c #322A1B",
-    "g  c #7BF7F7",
-    "#. c #2E3008",
-    "z  c #59B0AF",
-    "k  c #274444",
-    "^  c #CCD30E",
-    "2X c #030301",
-    "&. c #030302",
-    "5. c #ABB10D",
-    "S. c #E3EA0E",
-    "j  c #151C12",
-    "-  c #4C9292",
-    "%. c #302409",
-    "_. c #BE9A51",
-    "u  c #4F9C9B",
-    "F. c #4D4F08",
-    ">X c #D4DB0D",
-    "VX c #7D5D2A",
-    "jX c #D4DB0F",
-    "=  c #949595",
-    "|. c #B3B90C",
-    "[  c #A37714",
-    ";. c #C5CC0F",
-    "   c None",
-    "<  c #52A3A3",
-    "Y. c #71750C",
-    "R  c #A9AE0D",
-    "3  c #7CFBFB",
-    "h. c #D7DF0D",
-    " . c #DCE30E",
-    "g. c #0E0F02",
-    "vX c #D0920D",
-    "6. c #BBC10E",
-    "iX c #513A09",
-    "t. c #9A9F0C",
-    "sX c #464808",
-    "tX c #DFE70D",
-    ".X c #DFE70E",
-    "B. c #373908",
-    "h  c #488C8C",
-    "o  c #686969",
-    "oX c #494C0A",
-    "i  c #7AF5F5",
-    "~. c #282A07",
-    "eX c #0C0C04",
-    "G  c #E7EF0D",
-    "/. c #60630B",
-    "n  c #020404",
-    "BX c #815C0C",
-    "1X c #725C31",
-    "!  c #C6CD0D",
-    "kX c #0C0C0C",
-    "7  c #68D0D0",
-    "qX c #515408",
-    "+X c #9A7C41",
-    "C  c #393939",
-    "4  c #6DCEC0",
-    "`  c #696A4F",
-    "DX c #141403",
-    ".. c #84890D",
-    "$X c #7A6434",
-    "m  c #4E9796",
-    "&X c #262706",
-    "AX c #050501",
-    ",. c #42450C",
-    "F  c #686B16",
-    "MX c #595C0A",
-    "wX c #987C42",
-    "X. c #595C0D",
-    "q. c #605A10",
-    "Z  c #595C0F",
-    "z. c #C4CA0F",
-    ";  c #607878",
-    "e  c #63BDBD",
-    "SX c #9EA410",
-    "uX c #D4940C",
-    "9. c #7D820B",
-    "2. c #55514C",
-    "cX c #D4940D",
-    "L  c #D6DD12",
-    "/  c #080902",
-    "A  c #B5BB0D",
-    "q  c #6EDBDB",
-    "hX c #94990D",
-    "'  c #A57914",
-    "&  c #585E5E",
-    "GX c #553F1A",
-    "}  c #73770A",
-    "o. c #0D0D0D",
-    "+. c #A6AC0C",
-    "b  c #DEE50D",
-    "J. c #6E7312",
-    "Q. c #101102",
-    "-X c #BDC30E",
-    "7. c #101103",
-    "@X c #4E4D4D",
-    "v. c #676767",
-    "{  c #64680A",
-    "E  c #696C0C",
-    "%  c #6ED2D2",
-    "Y  c #484A0B",
-    "P. c #767B0A",
-    "0X c #7B7F0C",
-    "fX c #5A5D08",
-    "m. c #393B07",
-    "`. c #C0C70D",
-    "U. c #343708",
-    "y  c #67CECE",
-    "6X c #6C700C",
-    "D. c #5A5D14",
-    "]. c #C6A155",
-    "H. c #6C700F",
-    "5X c #6C7010",
-    "d. c #4B4E0A",
-    ">  c #838585",
-    "=. c #2F3006",
-    "Z. c #7E7E7D",
-    "V  c #2A2C07",
-    "#X c #B1B80D",
-    "l. c #E9F10D",
-    "@. c #E9F110",
-    "8  c #55A9A8",
-    "rX c #3C3F07",
-    "R. c #2F300F",
-    "O  c #458180",
-    "NX c #3E3F1E",
-    "S  c #202106",
-    "@  c #7AF7F7",
-    "X  c #434C4C",
-    "pX c #4F390A",
-    ":X c #65690D",
-    "K. c #D0D70F",
-    "*. c #D0D710",
-    "2  c #A4A4A4",
-    ")  c #AFB50D",
-    "gX c #161613",
-    "p. c #070707",
-    "CX c #1B1404",
-    "]  c #CC9414",
-    "aX c #1B1406",
-    "f  c #4B8F8E",
-    "'. c #A0A60B",
-    "A. c #191A07",
-    "%X c #342B18",
-    ":  c #468888",
-    "|  c #303105",
-    "W. c #646550",
-    "i. c #EAF20D",
-    "yX c #63660A",
-    "3X c #614F2A",
-    "XX c #EAF20E",
-    "U  c #EAF20F",
-    "s  c #9D9D9D",
-    /* pixels */
-    "                            . .             . X o               ",
-    "                          O + @ #         $ % + % .             ",
-    "                        & * + + % .     . % + + + =             ",
-    "                        - + + + + ;     : + + + + >             ",
-    "                        , + + + + <   . 1 + + + + 2             ",
-    "                    .   . 3 + 4 + + 5 6 + 4 + + 7 .   .         ",
-    "                          8 + 9 4 + 0 q w + e @ r   .           ",
-    "                          . + t y + u i p a + s     .           ",
-    "                        s d : + f g h j k l z                   ",
-    "              . x c c c v b c n m M N B B V c C .               ",
-    "            Z A S c D F G H c c c J K B L c c c P I             ",
-    "          c B U c c Y B T c c c R B B E W c Q ! B B I .         ",
-    "      . c W B ~ c c ^ B c c c / ( B B ) c c c _ B B B `         ",
-    ". ' ] [ c { } c c | B  .c c c ..B B B X.c o.O.B B B +.@.#.      ",
-    "  . $.%.&.*.=.c c -.B ;.c c c :.B B B c c c >.B B B ,.B <.1.2.. ",
-    "      3.4.B c c c 5.B 6.c c 7.8.B B B c c c 9.B I 0.B B q.w..   ",
-    "      c _ B c c e.r.B t.c c y.u.B B i.c c p.a.B s.d.B B B f.    ",
-    "    . c B B c c g.h.B j.c c k.l.B B z.c c x.+.B B I I B +.c.v.  ",
-    "    . c B b.c c n.B B m.c c M.B B B N.c c B.V.B B B I I I C.Z.  ",
-    "    . A.B S.c c D.B B F.c c G.B B B H.c c J.K.B B B B B B L..   ",
-    "    . c B P.c c I.B B U.c c Y.B B T.4.c c R.E.B B B B B B W.    ",
-    "      Q.B !.c c ~.r.B ^.c c H B B C./.c c ,.(.B B B B B +..     ",
-    "    )._.`.'.].[.{.E.}.|.c c  X.XB XXoXc c OXB B B B B B /.      ",
-    "  ,.+X@X#X$X%Xc &XY.*X=Xc c ,.B B -X;Xc c :X>XB B B B K..       ",
-    ". ,X,.,.<X1X2Xc 3X4XB B c c c 5XB B `.c D c 6XB B B B /.        ",
-    "7X8X.   9X0XqXc wXeXB B c c c rXtXB B c c c yXB B +./.          ",
-    ",.uXiXpXaXsXdXc c c B B fXc c gXhXB jXkXc c lXl.+./.            ",
-    ". zXxXcXvXbXnXmXc c B B MXc c c NXB B c c c c /..               ",
-    "      BXuXVXuXuXvXCXB B ZXAXc c c B B SXDXFX.                   ",
-    "      . GX. ,.uXuXHXB B B JXc c c KXB LX.                       ",
-    "            . ,.,..   . . . . . . .                             ",
-    "                                                                "
-};
-
-/* XPM */
 static char *open_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "16 15 5 1",
-    "  c None",
-    ". c Black",
-    "X c Yellow",
-    "o c Gray100",
-    "O c #bfbf00",
-    /* pixels */
-    "                ",
-    "          ...   ",
-    "         .   . .",
-    "              ..",
-    "  ...        ...",
-    " .XoX.......    ",
-    " .oXoXoXoXo.    ",
-    " .XoXoXoXoX.    ",
-    " .oXoX..........",
-    " .XoX.OOOOOOOOO.",
-    " .oo.OOOOOOOOO. ",
-    " .X.OOOOOOOOO.  ",
-    " ..OOOOOOOOO.   ",
-    " ...........    ",
-    "                "
+/* columns rows colors chars-per-pixel */
+"16 15 5 1",
+"  c None",
+". c Black",
+"X c Yellow",
+"o c Gray100",
+"O c #bfbf00",
+/* pixels */
+"                ",
+"          ...   ",
+"         .   . .",
+"              ..",
+"  ...        ...",
+" .XoX.......    ",
+" .oXoXoXoXo.    ",
+" .XoXoXoXoX.    ",
+" .oXoX..........",
+" .XoX.OOOOOOOOO.",
+" .oo.OOOOOOOOO. ",
+" .X.OOOOOOOOO.  ",
+" ..OOOOOOOOO.   ",
+" ...........    ",
+"                "
 };
 
 /* XPM */
 static char *save_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "16 15 4 1",
-    "  c None",
-    ". c Black",
-    "X c #808000",
-    "o c #808080",
-    /* pixels */
-    "                ",
-    " .............. ",
-    " .X.        . . ",
-    " .X.        ... ",
-    " .X.        .X. ",
-    " .X.        .X. ",
-    " .X.        .X. ",
-    " .X.        .X. ",
-    " .XX........oX. ",
-    " .XXXXXXXXXXXX. ",
-    " .XX.........X. ",
-    " .XX......  .X. ",
-    " .XX......  .X. ",
-    " .XX......  .X. ",
-    "  ............. "
+/* columns rows colors chars-per-pixel */
+"16 15 4 1",
+"  c None",
+". c Black",
+"X c #808000",
+"o c #808080",
+/* pixels */
+"                ",
+" .............. ",
+" .X.        . . ",
+" .X.        ... ",
+" .X.        .X. ",
+" .X.        .X. ",
+" .X.        .X. ",
+" .X.        .X. ",
+" .XX........oX. ",
+" .XXXXXXXXXXXX. ",
+" .XX.........X. ",
+" .XX......  .X. ",
+" .XX......  .X. ",
+" .XX......  .X. ",
+"  ............. "
 };
 
 /* XPM */
 static char *cut_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "16 15 3 1",
-    "  c None",
-    ". c Black",
-    "X c #000080",
-    /* pixels */
-    "                ",
-    "     .   .      ",
-    "     .   .      ",
-    "     .   .      ",
-    "     .. ..      ",
-    "      . .       ",
-    "      ...       ",
-    "       .        ",
-    "      X.X       ",
-    "      X XXX     ",
-    "    XXX X  X    ",
-    "   X  X X  X    ",
-    "   X  X X  X    ",
-    "   X  X  XX     ",
-    "    XX          "
+/* columns rows colors chars-per-pixel */
+"16 15 3 1",
+"  c None",
+". c Black",
+"X c #000080",
+/* pixels */
+"                ",
+"     .   .      ",
+"     .   .      ",
+"     .   .      ",
+"     .. ..      ",
+"      . .       ",
+"      ...       ",
+"       .        ",
+"      X.X       ",
+"      X XXX     ",
+"    XXX X  X    ",
+"   X  X X  X    ",
+"   X  X X  X    ",
+"   X  X  XX     ",
+"    XX          "
 };
 
 /* XPM */
 static char *copy_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "16 15 4 1",
-    "  c None",
-    ". c Black",
-    "X c Gray100",
-    "o c #000080",
-    /* pixels */
-    "                ",
-    " ......         ",
-    " .XXXX..        ",
-    " .XXXX.X.       ",
-    " .X..X.oooooo   ",
-    " .XXXXXoXXXXoo  ",
-    " .X....oXXXXoXo ",
-    " .XXXXXoX..Xoooo",
-    " .X....oXXXXXXXo",
-    " .XXXXXoX.....Xo",
-    " ......oXXXXXXXo",
-    "       oX.....Xo",
-    "       oXXXXXXXo",
-    "       ooooooooo",
-    "                "
+/* columns rows colors chars-per-pixel */
+"16 15 4 1",
+"  c None",
+". c Black",
+"X c Gray100",
+"o c #000080",
+/* pixels */
+"                ",
+" ......         ",
+" .XXXX..        ",
+" .XXXX.X.       ",
+" .X..X.oooooo   ",
+" .XXXXXoXXXXoo  ",
+" .X....oXXXXoXo ",
+" .XXXXXoX..Xoooo",
+" .X....oXXXXXXXo",
+" .XXXXXoX.....Xo",
+" ......oXXXXXXXo",
+"       oX.....Xo",
+"       oXXXXXXXo",
+"       ooooooooo",
+"                "
 };
 
 /* XPM */
 static char *paste_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "16 15 6 1",
-    "  c None",
-    ". c Black",
-    "X c Yellow",
-    "o c #808080",
-    "O c #000080",
-    "+ c Gray100",
-    /* pixels */
-    "                ",
-    "     ....       ",
-    " .....XX.....   ",
-    ".ooo.X..X.ooo.  ",
-    ".oo.      .oo.  ",
-    ".oo........oo.  ",
-    ".oooooooooooo.  ",
-    ".oooooOOOOOOO.  ",
-    ".oooooO+++++OO  ",
-    ".oooooO+++++O+O ",
-    ".oooooO+OOO+OOO ",
-    ".oooooO+++++++O ",
-    ".oooooO+OOOOO+O ",
-    " .....O+++++++O ",
-    "      OOOOOOOOO "
+/* columns rows colors chars-per-pixel */
+"16 15 6 1",
+"  c None",
+". c Black",
+"X c Yellow",
+"o c #808080",
+"O c #000080",
+"+ c Gray100",
+/* pixels */
+"                ",
+"     ....       ",
+" .....XX.....   ",
+".ooo.X..X.ooo.  ",
+".oo.      .oo.  ",
+".oo........oo.  ",
+".oooooooooooo.  ",
+".oooooOOOOOOO.  ",
+".oooooO+++++OO  ",
+".oooooO+++++O+O ",
+".oooooO+OOO+OOO ",
+".oooooO+++++++O ",
+".oooooO+OOOOO+O ",
+" .....O+++++++O ",
+"      OOOOOOOOO "
 };
 
 /* XPM */
 static char *print_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "16 15 35 1",
-    "y c #EDF2FB",
-    "9 c #4E7FD0",
-    "> c #B9CDED",
-    "# c #3365B7",
-    "r c #FFFFFF",
-    "8 c #2C58A0",
-    "X c #779DDB",
-    "7 c #7FA2DD",
-    "t c #3263B4",
-    "q c #6E96D8",
-    "= c #6992D7",
-    "* c #D9E4F5",
-    "0 c #356AC1",
-    "& c #CBD9F1",
-    "; c #97B4E3",
-    "e c #3161B1",
-    "  c None",
-    "1 c #B5C9EB",
-    ", c #7CA0DC",
-    "4 c #487BCE",
-    "- c #4377CD",
-    ". c #5584D1",
-    "6 c #3A70CA",
-    "2 c #305FAC",
-    "< c #5685D2",
-    "w c #4075CC",
-    "5 c #638ED5",
-    "3 c #3467BC",
-    "% c #2F5DA9",
-    "o c #ECF1FA",
-    ": c #D6E1F4",
-    "@ c #376EC9",
-    "$ c #2D5AA5",
-    "+ c #A2BCE6",
-    "O c #CFDDF3",
-    /* pixels */
-    "   .XXXXXXXX    ",
-    "   .oooooooX    ",
-    "   .OOOOOOOX    ",
-    "   .+++++++X    ",
-    " @@#$%%%%%$%@@  ",
-    "#&*=-=;:>,<#*&# ",
-    ".11.2345.63#11. ",
-    "4;;;;;;;;;;;;;4 ",
-    "677588888889776 ",
-    "0qq60wwwwwweqq0 ",
-    "3553rrrrrrr$553 ",
-    "3<<tyrrrrrr$<<3 ",
-    "XXX%rrrrrrr$XXX ",
-    "   3rrrrrrr$    ",
-    "   #XXXXXXX@    "
+/* columns rows colors chars-per-pixel */
+"16 15 35 1",
+"y c #EDF2FB",
+"9 c #4E7FD0",
+"> c #B9CDED",
+"# c #3365B7",
+"r c #FFFFFF",
+"8 c #2C58A0",
+"X c #779DDB",
+"7 c #7FA2DD",
+"t c #3263B4",
+"q c #6E96D8",
+"= c #6992D7",
+"* c #D9E4F5",
+"0 c #356AC1",
+"& c #CBD9F1",
+"; c #97B4E3",
+"e c #3161B1",
+"  c None",
+"1 c #B5C9EB",
+", c #7CA0DC",
+"4 c #487BCE",
+"- c #4377CD",
+". c #5584D1",
+"6 c #3A70CA",
+"2 c #305FAC",
+"< c #5685D2",
+"w c #4075CC",
+"5 c #638ED5",
+"3 c #3467BC",
+"% c #2F5DA9",
+"o c #ECF1FA",
+": c #D6E1F4",
+"@ c #376EC9",
+"$ c #2D5AA5",
+"+ c #A2BCE6",
+"O c #CFDDF3",
+/* pixels */
+"   .XXXXXXXX    ",
+"   .oooooooX    ",
+"   .OOOOOOOX    ",
+"   .+++++++X    ",
+" @@#$%%%%%$%@@  ",
+"#&*=-=;:>,<#*&# ",
+".11.2345.63#11. ",
+"4;;;;;;;;;;;;;4 ",
+"677588888889776 ",
+"0qq60wwwwwweqq0 ",
+"3553rrrrrrr$553 ",
+"3<<tyrrrrrr$<<3 ",
+"XXX%rrrrrrr$XXX ",
+"   3rrrrrrr$    ",
+"   #XXXXXXX@    "
 };
 
 /* XPM */
 static char *new_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "16 15 31 1",
-    ". c #7198D9",
-    "2 c #DCE6F6",
-    ", c #FFFFFF",
-    "= c #9AB6E4",
-    "6 c #EAF0FA",
-    "w c #6992D7",
-    "0 c #5886D2",
-    "7 c #F7F9FD",
-    "5 c #F0F5FC",
-    "* c #A8C0E8",
-    "  c None",
-    "8 c #FDFEFF",
-    "% c #C4D5F0",
-    "3 c #E2EAF8",
-    "+ c #4377CD",
-    "O c #487BCE",
-    "; c #6B94D7",
-    "- c #89A9DF",
-    ": c #5584D1",
-    "# c #3569BF",
-    "@ c #3A70CA",
-    "1 c #D2DFF4",
-    "> c #3366BB",
-    "$ c #2E5CA8",
-    "9 c #FAFCFE",
-    "4 c #F5F8FD",
-    "q c #638ED5",
-    "o c #5282D0",
-    "& c #B8CCEC",
-    "X c #376EC9",
-    "< c #ACE95B",
-    /* pixels */
-    "   .XoO+@#$.    ",
-    "   .%%&*=-O;:   ",
-    "  >>>>%&*=O,=o  ",
-    "  ><<>%%&*O,,=o ",
-    ">>><<>>>%&OOo+@ ",
-    "><<<<<<>1%&*=-@ ",
-    "><<<<<<>21%&*=@ ",
-    ">>><<>>>321%&*+ ",
-    "  ><<>456321%&O ",
-    "  >>>>7456321%o ",
-    "   .,8974563210 ",
-    "   .,,897456320 ",
-    "   .,,,8974563q ",
-    "   .,,,,897456w ",
-    "   ............ "
+/* columns rows colors chars-per-pixel */
+"16 15 31 1",
+". c #7198D9",
+"2 c #DCE6F6",
+", c #FFFFFF",
+"= c #9AB6E4",
+"6 c #EAF0FA",
+"w c #6992D7",
+"0 c #5886D2",
+"7 c #F7F9FD",
+"5 c #F0F5FC",
+"* c #A8C0E8",
+"  c None",
+"8 c #FDFEFF",
+"% c #C4D5F0",
+"3 c #E2EAF8",
+"+ c #4377CD",
+"O c #487BCE",
+"; c #6B94D7",
+"- c #89A9DF",
+": c #5584D1",
+"# c #3569BF",
+"@ c #3A70CA",
+"1 c #D2DFF4",
+"> c #3366BB",
+"$ c #2E5CA8",
+"9 c #FAFCFE",
+"4 c #F5F8FD",
+"q c #638ED5",
+"o c #5282D0",
+"& c #B8CCEC",
+"X c #376EC9",
+"< c #ACE95B",
+/* pixels */
+"   .XoO+@#$.    ",
+"   .%%&*=-O;:   ",
+"  >>>>%&*=O,=o  ",
+"  ><<>%%&*O,,=o ",
+">>><<>>>%&OOo+@ ",
+"><<<<<<>1%&*=-@ ",
+"><<<<<<>21%&*=@ ",
+">>><<>>>321%&*+ ",
+"  ><<>456321%&O ",
+"  >>>>7456321%o ",
+"   .,8974563210 ",
+"   .,,897456320 ",
+"   .,,,8974563q ",
+"   .,,,,897456w ",
+"   ............ "
 };
 
 /* XPM */
 static char * delete_xpm[] = {
-    "16 16 107 2",
-    "    c None",
-    ".   c #1B0202",
-    "+   c #51758F",
-    "@   c #5A89A6",
-    "#   c #6B98B8",
-    "$   c #6591AE",
-    "%   c #538DB3",
-    "&   c #4581AA",
-    "*   c #3A749C",
-    "=   c #8EA9BC",
-    "-   c #D6DFE7",
-    ";   c #2B232B",
-    ">   c #C3DDF1",
-    ",   c #B6D5EE",
-    "'   c #A5CCEA",
-    ")   c #97C4E7",
-    "!   c #85BBE2",
-    "~   c #5F9BC8",
-    "{   c #72A8D2",
-    "]   c #F1F4F7",
-    "^   c #47667C",
-    "/   c #3B2A2D",
-    "(   c #888B94",
-    "_   c #67A1CF",
-    ":   c #FFFFFF",
-    "<   c #A69FA1",
-    "[   c #64626A",
-    "}   c #4F444A",
-    "|   c #BED7EA",
-    "1   c #7EA6C0",
-    "2   c #8AAFCE",
-    "3   c #2D232A",
-    "4   c #E2EFF8",
-    "5   c #2E2229",
-    "6   c #53687E",
-    "7   c #7EAED3",
-    "8   c #57768D",
-    "9   c #5D809A",
-    "0   c #383B47",
-    "a   c #3D5C74",
-    "b   c #C0BCBE",
-    "c   c #605051",
-    "d   c #9498A1",
-    "e   c #D1E5F5",
-    "f   c #A1B9CE",
-    "g   c #6C788A",
-    "h   c #4E5261",
-    "i   c #434C5C",
-    "j   c #515F73",
-    "k   c #3E3E4A",
-    "l   c #6C95B4",
-    "m   c #6689A5",
-    "n   c #6A8CAA",
-    "o   c #3C3B47",
-    "p   c #577189",
-    "q   c #8BB1D0",
-    "r   c #F4F9FD",
-    "s   c #72676A",
-    "t   c #463537",
-    "u   c #443538",
-    "v   c #3D2C30",
-    "w   c #72747E",
-    "x   c #8FA0B3",
-    "y   c #27161A",
-    "z   c #31272F",
-    "A   c #668CA8",
-    "B   c #81B5DB",
-    "C   c #FAFCFE",
-    "D   c #DCDCDE",
-    "E   c #726465",
-    "F   c #9F9B9F",
-    "G   c #433032",
-    "H   c #8D8D91",
-    "I   c #B6C3CE",
-    "J   c #7AA8CC",
-    "K   c #3B3A46",
-    "L   c #7CAED2",
-    "M   c #4A5466",
-    "N   c #414453",
-    "O   c #5B768F",
-    "P   c #749BB4",
-    "Q   c #635151",
-    "R   c #5F4E4F",
-    "S   c #DFE1E3",
-    "T   c #F7FBFD",
-    "U   c #B5B3B8",
-    "V   c #594A4C",
-    "W   c #594C4F",
-    "X   c #9FA4AD",
-    "Y   c #8AA4B6",
-    "Z   c #89868C",
-    "`   c #332D36",
-    " .  c #77A3C5",
-    "..  c #5E768F",
-    "+.  c #5D5053",
-    "@.  c #595E6D",
-    "#.  c #616B77",
-    "$.  c #594C4E",
-    "%.  c #FDFDFE",
-    "&.  c #D3D5DA",
-    "*.  c #868083",
-    "=.  c #362D32",
-    "-.  c #1D0303",
-    ";.  c #463F46",
-    ">.  c #717F8D",
-    ",.  c #7995A8",
-    "'.  c #768D9D",
-    "  . + @ # $ $ % & * = -         ",
-    "  . ; > > , ' ) ! ~ { ~ ]     . ",
-    "    ^ / ( > , ' ) _ : ) # <     ",
-    "    = [ } | > , ' 1 : : 2 3     ",
-    "    = 4 5 6 7 ! ! _ 8 9 0 a     ",
-    "    = 4 b c d e > f g h i %     ",
-    "    = 4 ! j k l m n o p q %     ",
-    "    = 4 r r s t u v w x ' $     ",
-    "    = 4 ! ! 7 y z A B ! , $     ",
-    "    = 4 C D E F G H I e > #     ",
-    "    = 4 J 5 K L M N O B e P     ",
-    "    = 4 Q R S T r U V W X P     ",
-    "    Y Z ` L ! ! ! !  ...+.@.    ",
-    "    #.$.: : : %.C T r &.*.=.-.  ",
-    "    ;.>.= = = = = = = Y ,.'.  -.",
-    "                                "
-};
+"16 16 107 2",
+"    c None",
+".   c #1B0202",
+"+   c #51758F",
+"@   c #5A89A6",
+"#   c #6B98B8",
+"$   c #6591AE",
+"%   c #538DB3",
+"&   c #4581AA",
+"*   c #3A749C",
+"=   c #8EA9BC",
+"-   c #D6DFE7",
+";   c #2B232B",
+">   c #C3DDF1",
+",   c #B6D5EE",
+"'   c #A5CCEA",
+")   c #97C4E7",
+"!   c #85BBE2",
+"~   c #5F9BC8",
+"{   c #72A8D2",
+"]   c #F1F4F7",
+"^   c #47667C",
+"/   c #3B2A2D",
+"(   c #888B94",
+"_   c #67A1CF",
+":   c #FFFFFF",
+"<   c #A69FA1",
+"[   c #64626A",
+"}   c #4F444A",
+"|   c #BED7EA",
+"1   c #7EA6C0",
+"2   c #8AAFCE",
+"3   c #2D232A",
+"4   c #E2EFF8",
+"5   c #2E2229",
+"6   c #53687E",
+"7   c #7EAED3",
+"8   c #57768D",
+"9   c #5D809A",
+"0   c #383B47",
+"a   c #3D5C74",
+"b   c #C0BCBE",
+"c   c #605051",
+"d   c #9498A1",
+"e   c #D1E5F5",
+"f   c #A1B9CE",
+"g   c #6C788A",
+"h   c #4E5261",
+"i   c #434C5C",
+"j   c #515F73",
+"k   c #3E3E4A",
+"l   c #6C95B4",
+"m   c #6689A5",
+"n   c #6A8CAA",
+"o   c #3C3B47",
+"p   c #577189",
+"q   c #8BB1D0",
+"r   c #F4F9FD",
+"s   c #72676A",
+"t   c #463537",
+"u   c #443538",
+"v   c #3D2C30",
+"w   c #72747E",
+"x   c #8FA0B3",
+"y   c #27161A",
+"z   c #31272F",
+"A   c #668CA8",
+"B   c #81B5DB",
+"C   c #FAFCFE",
+"D   c #DCDCDE",
+"E   c #726465",
+"F   c #9F9B9F",
+"G   c #433032",
+"H   c #8D8D91",
+"I   c #B6C3CE",
+"J   c #7AA8CC",
+"K   c #3B3A46",
+"L   c #7CAED2",
+"M   c #4A5466",
+"N   c #414453",
+"O   c #5B768F",
+"P   c #749BB4",
+"Q   c #635151",
+"R   c #5F4E4F",
+"S   c #DFE1E3",
+"T   c #F7FBFD",
+"U   c #B5B3B8",
+"V   c #594A4C",
+"W   c #594C4F",
+"X   c #9FA4AD",
+"Y   c #8AA4B6",
+"Z   c #89868C",
+"`   c #332D36",
+" .  c #77A3C5",
+"..  c #5E768F",
+"+.  c #5D5053",
+"@.  c #595E6D",
+"#.  c #616B77",
+"$.  c #594C4E",
+"%.  c #FDFDFE",
+"&.  c #D3D5DA",
+"*.  c #868083",
+"=.  c #362D32",
+"-.  c #1D0303",
+";.  c #463F46",
+">.  c #717F8D",
+",.  c #7995A8",
+"'.  c #768D9D",
+"  . + @ # $ $ % & * = -         ",
+"  . ; > > , ' ) ! ~ { ~ ]     . ",
+"    ^ / ( > , ' ) _ : ) # <     ",
+"    = [ } | > , ' 1 : : 2 3     ",
+"    = 4 5 6 7 ! ! _ 8 9 0 a     ",
+"    = 4 b c d e > f g h i %     ",
+"    = 4 ! j k l m n o p q %     ",
+"    = 4 r r s t u v w x ' $     ",
+"    = 4 ! ! 7 y z A B ! , $     ",
+"    = 4 C D E F G H I e > #     ",
+"    = 4 J 5 K L M N O B e P     ",
+"    = 4 Q R S T r U V W X P     ",
+"    Y Z ` L ! ! ! !  ...+.@.    ",
+"    #.$.: : : %.C T r &.*.=.-.  ",
+"    ;.>.= = = = = = = Y ,.'.  -.",
+"                                "};
 
 /* XPM */
 static char *filesaveas_xpm[] = {
-    /* columns rows colors chars-per-pixel */
-    "16 15 23 1",
-    "X c Black",
-    "+ c #FFFFFF",
-    "< c #D5D6D8",
-    "> c #446A8C",
-    "3 c #CAD2DC",
-    ", c #C0C7D1",
-    "  c #5F666D",
-    "* c #A5B0BA",
-    "O c #65839D",
-    "1 c #DCE2EA",
-    "2 c #C3C5C8",
-    ": c #E1E6EE",
-    ". c #FFFF00",
-    "- c #C6CCD3",
-    "@ c None",
-    "& c #305F81",
-    "4 c #D6DFE7",
-    "; c #D2D9E0",
-    "= c #B7BFC7",
-    "o c #1B4467",
-    "$ c #BCBDBE",
-    "# c #7A90AC",
-    "% c #5D7C93",
-    /* pixels */
-    "         .X .XX.",
-    " oO+++++++.X.X.@",
-    " #O+$$$$$XX...XX",
-    " #O++++++.......",
-    " #O+$$$$$XX...XX",
-    " #O+++++++.X.X.@",
-    " ##%%%%%%.X%.X .",
-    " ############# @",
-    " ###&&&&&&&&## @",
-    " ##&***=-;:+&# @",
-    " ##&*o>>-;:+&# @",
-    " ##&*o>>,<1+&# @",
-    " ##&*o>>234+&# @",
-    " ##&224+++++&# @",
-    "@             @@"
+/* columns rows colors chars-per-pixel */
+"16 15 23 1",
+"X c Black",
+"+ c #FFFFFF",
+"< c #D5D6D8",
+"> c #446A8C",
+"3 c #CAD2DC",
+", c #C0C7D1",
+"  c #5F666D",
+"* c #A5B0BA",
+"O c #65839D",
+"1 c #DCE2EA",
+"2 c #C3C5C8",
+": c #E1E6EE",
+". c #FFFF00",
+"- c #C6CCD3",
+"@ c None",
+"& c #305F81",
+"4 c #D6DFE7",
+"; c #D2D9E0",
+"= c #B7BFC7",
+"o c #1B4467",
+"$ c #BCBDBE",
+"# c #7A90AC",
+"% c #5D7C93",
+/* pixels */
+"         .X .XX.",
+" oO+++++++.X.X.@",
+" #O+$$$$$XX...XX",
+" #O++++++.......",
+" #O+$$$$$XX...XX",
+" #O+++++++.X.X.@",
+" ##%%%%%%.X%.X .",
+" ############# @",
+" ###&&&&&&&&## @",
+" ##&***=-;:+&# @",
+" ##&*o>>-;:+&# @",
+" ##&*o>>,<1+&# @",
+" ##&*o>>234+&# @",
+" ##&224+++++&# @",
+"@             @@"
 };
 
 /* XPM */
 static char *redo_xpm[] = {
-    /* width height num_colors chars_per_pixel */
-    "    16    15        3            1",
-    /* colors */
-    ". c #000080",
-    "# c None",
-    "a c #808080",
-    /* pixels */
-    "################",
-    "################",
-    "################",
-    "################",
-    "###a....########",
-    "##a.####..###.##",
-    "##.#######.#..##",
-    "##.########...##",
-    "##.#######....##",
-    "##a.#####.....##",
-    "###.a###########",
-    "################",
-    "################",
-    "################",
-    "################"
+/* width height num_colors chars_per_pixel */
+"    16    15        3            1",
+/* colors */
+". c #000080",
+"# c None",
+"a c #808080",
+/* pixels */
+"################",
+"################",
+"################",
+"################",
+"###a....########",
+"##a.####..###.##",
+"##.#######.#..##",
+"##.########...##",
+"##.#######....##",
+"##a.#####.....##",
+"###.a###########",
+"################",
+"################",
+"################",
+"################"
 };
 
 ////@end XPM images
@@ -845,50 +552,50 @@ IMPLEMENT_CLASS(frmVSCPSession, wxFrame)
 BEGIN_EVENT_TABLE(frmVSCPSession, wxFrame)
 
 ////@begin frmVSCPSession event table entries
-EVT_CLOSE(frmVSCPSession::OnCloseWindow)
-EVT_TOGGLEBUTTON(ID_TOGGLEBUTTON_ACTIVATE, frmVSCPSession::OnInterfaceActivate)
-EVT_MENU(ID_MENUITEM_VSCP_LOAD_MSG_LIST, frmVSCPSession::LoadRXEventList)
-EVT_MENU(ID_MENUITEM_VSCP_SAVE_MSG_LIST, frmVSCPSession::SaveRXEventList)
-EVT_MENU(ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, frmVSCPSession::OnTxLoadClick)
-EVT_MENU(ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, frmVSCPSession::OnTxSaveClick)
-EVT_MENU(ID_MENUITEM_VSCP_SESSION_EXIT, frmVSCPSession::OnMenuitemVscpSessionExitClick)
-EVT_MENU(ID_MENUITEM4, frmVSCPSession::ClearRxList)
-EVT_MENU(ID_MENUITEM5, frmVSCPSession::ClearTxList)
-EVT_MENU(ID_MENUITEM_VSCP_LOG, frmVSCPSession::OnMenuitemVscpViewLogClick)
-EVT_MENU(ID_MENUITEM_VSCP_COUNT, frmVSCPSession::OnMenuitemVscpViewCountClick)
-EVT_MENU(ID_MENUITEM_READ_REGISTER, frmVSCPSession::OnMenuitemSetAutoreplyClick)
-EVT_MENU(ID_MENUITEM_WRITE_REGISTER, frmVSCPSession::OnMenuitemSetBurstCountClick)
-EVT_MENU(ID_MENUITEM_READ_ALL_REGISTERS, frmVSCPSession::OnMenuitemSetFilterClick)
-EVT_MENU(ID_MENUITEM_GET_GUID, frmVSCPSession::OnMenuitemSetAutoreplyClick)
-EVT_MENU(ID_MENUITEM_GET_MDF_URL, frmVSCPSession::OnMenuitemSetAutoreplyClick)
-EVT_MENU(ID_MENUITEM_GET_MDF, frmVSCPSession::OnMenuitemSetAutoreplyClick)
-EVT_MENU(ID_MENUITEM_RX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveRxCellWidth)
-EVT_MENU(ID_MENUITEM_SAVE_TX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveTxCellWidth)
-EVT_MENU(ID_MENUITEM1, frmVSCPSession::OnMenuitemSetAutoreplyClick)
-EVT_MENU(ID_MENUITEM2, frmVSCPSession::OnMenuitemSetBurstCountClick)
-EVT_MENU(ID_MENUITEM3, frmVSCPSession::OnMenuitemSetFilterClick)
-EVT_MENU(ID_MENUITEM, frmVSCPSession::OnMenuitemConfigurationClick)
-EVT_MENU(ID_MENUITEM_VSCP_HELP, frmVSCPSession::OnMenuitemVscpHelpClick)
-EVT_MENU(ID_MENUITEM_VSCP_FAQ, frmVSCPSession::OnMenuitemVscpFaqClick)
-EVT_MENU(ID_MENUITEM_VSCP_SHORTCUTS, frmVSCPSession::OnMenuitemVscpShortcutsClick)
-EVT_MENU(ID_MENUITEM_VSCP_THANKS, frmVSCPSession::OnMenuitemVscpThanksClick)
-EVT_MENU(ID_MENUITEM_VSCP_CREDITS, frmVSCPSession::OnMenuitemVscpCreditsClick)
-EVT_MENU(ID_MENUITEM_VSCP_VSCP_SITE, frmVSCPSession::OnMenuitemVscpVscpSiteClick)
-EVT_MENU(ID_MENUITEM_VSCP_ABOUT, frmVSCPSession::OnMenuitemVscpAboutClick)
-EVT_GRID_CELL_LEFT_CLICK(frmVSCPSession::OnCellReceiveLeftClick)
-EVT_GRID_CELL_RIGHT_CLICK(frmVSCPSession::OnGridCellReceiveRightClick)
-EVT_GRID_LABEL_LEFT_DCLICK(frmVSCPSession::OnGridLabelLeftDClick)
-EVT_GRID_SELECT_CELL(frmVSCPSession::OnSelectCell)
-EVT_HTML_LINK_CLICKED(ID_HTMLWINDOW_RCVINFO, frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked)
-EVT_BUTTON(ID_BITMAPBUTTON_TX_ADD, frmVSCPSession::OnTxAddClick)
-EVT_BUTTON(ID_BITMAPBUTTON_TX_EDIT, frmVSCPSession::OnTxEditClick)
-EVT_BUTTON(ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, frmVSCPSession::OnTxDeleteClick)
-EVT_BUTTON(ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, frmVSCPSession::OnTxLoadClick)
-EVT_BUTTON(ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, frmVSCPSession::OnTxSaveClick)
-EVT_GRID_CELL_LEFT_CLICK(frmVSCPSession::OnCellTxLeftClick)
-EVT_GRID_CELL_RIGHT_CLICK(frmVSCPSession::OnCellTxRightClick)
-EVT_GRID_CELL_LEFT_DCLICK(frmVSCPSession::OnGridLeftDClick)
-EVT_BUTTON(ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, frmVSCPSession::OnTxSendClick)
+  EVT_CLOSE( frmVSCPSession::OnCloseWindow )
+  EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON_ACTIVATE, frmVSCPSession::OnInterfaceActivate )
+  EVT_MENU( ID_MENUITEM_VSCP_LOAD_MSG_LIST, frmVSCPSession::LoadRXEventList )
+  EVT_MENU( ID_MENUITEM_VSCP_SAVE_MSG_LIST, frmVSCPSession::SaveRXEventList )
+  EVT_MENU( ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, frmVSCPSession::OnTxLoadClick )
+  EVT_MENU( ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, frmVSCPSession::OnTxSaveClick )
+  EVT_MENU( ID_MENUITEM_VSCP_SESSION_EXIT, frmVSCPSession::OnMenuitemVscpSessionExitClick )
+  EVT_MENU( ID_MENUITEM4, frmVSCPSession::ClearRxList )
+  EVT_MENU( ID_MENUITEM5, frmVSCPSession::ClearTxList )
+  EVT_MENU( ID_MENUITEM_VSCP_LOG, frmVSCPSession::OnMenuitemVscpViewLogClick )
+  EVT_MENU( ID_MENUITEM_VSCP_COUNT, frmVSCPSession::OnMenuitemVscpViewCountClick )
+  EVT_MENU( ID_MENUITEM_READ_REGISTER, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+  EVT_MENU( ID_MENUITEM_WRITE_REGISTER, frmVSCPSession::OnMenuitemSetBurstCountClick )
+  EVT_MENU( ID_MENUITEM_READ_ALL_REGISTERS, frmVSCPSession::OnMenuitemSetFilterClick )
+  EVT_MENU( ID_MENUITEM_GET_GUID, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+  EVT_MENU( ID_MENUITEM_GET_MDF_URL, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+  EVT_MENU( ID_MENUITEM_GET_MDF, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+  EVT_MENU( ID_MENUITEM_RX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveRxCellWidth )
+  EVT_MENU( ID_MENUITEM_SAVE_TX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveTxCellWidth )
+  EVT_MENU( ID_MENUITEM1, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+  EVT_MENU( ID_MENUITEM2, frmVSCPSession::OnMenuitemSetBurstCountClick )
+  EVT_MENU( ID_MENUITEM3, frmVSCPSession::OnMenuitemSetFilterClick )
+  EVT_MENU( ID_MENUITEM, frmVSCPSession::OnMenuitemConfigurationClick )
+  EVT_MENU( ID_MENUITEM_VSCP_HELP, frmVSCPSession::OnMenuitemVscpHelpClick )
+  EVT_MENU( ID_MENUITEM_VSCP_FAQ, frmVSCPSession::OnMenuitemVscpFaqClick )
+  EVT_MENU( ID_MENUITEM_VSCP_SHORTCUTS, frmVSCPSession::OnMenuitemVscpShortcutsClick )
+  EVT_MENU( ID_MENUITEM_VSCP_THANKS, frmVSCPSession::OnMenuitemVscpThanksClick )
+  EVT_MENU( ID_MENUITEM_VSCP_CREDITS, frmVSCPSession::OnMenuitemVscpCreditsClick )
+  EVT_MENU( ID_MENUITEM_VSCP_VSCP_SITE, frmVSCPSession::OnMenuitemVscpVscpSiteClick )
+  EVT_MENU( ID_MENUITEM_VSCP_ABOUT, frmVSCPSession::OnMenuitemVscpAboutClick )
+  EVT_GRID_CELL_LEFT_CLICK( frmVSCPSession::OnCellReceiveLeftClick )
+  EVT_GRID_CELL_RIGHT_CLICK( frmVSCPSession::OnGridCellReceiveRightClick )
+  EVT_GRID_LABEL_LEFT_DCLICK( frmVSCPSession::OnGridLabelLeftDClick )
+  EVT_GRID_SELECT_CELL( frmVSCPSession::OnSelectCell )
+  EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW_RCVINFO, frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked )
+  EVT_BUTTON( ID_BITMAPBUTTON_TX_ADD, frmVSCPSession::OnTxAddClick )
+  EVT_BUTTON( ID_BITMAPBUTTON_TX_EDIT, frmVSCPSession::OnTxEditClick )
+  EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, frmVSCPSession::OnTxDeleteClick )
+  EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, frmVSCPSession::OnTxLoadClick )
+  EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, frmVSCPSession::OnTxSaveClick )
+  EVT_GRID_CELL_LEFT_CLICK( frmVSCPSession::OnCellTxLeftClick )
+  EVT_GRID_CELL_RIGHT_CLICK( frmVSCPSession::OnCellTxRightClick )
+  EVT_GRID_CELL_LEFT_DCLICK( frmVSCPSession::OnGridLeftDClick )
+  EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, frmVSCPSession::OnTxSendClick )
 ////@end frmVSCPSession event table entries
 
 EVT_MENU(Menu_Popup_TX_Transmit, frmVSCPSession::OnTxSendClick)
@@ -1121,10 +828,10 @@ frmVSCPSession::frmVSCPSession(wxWindow* parent, wxWindowID id, const wxString& 
 bool frmVSCPSession::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
 {
     ////@begin frmVSCPSession creation
-    wxFrame::Create(parent, id, caption, pos, size, style);
+  wxFrame::Create( parent, id, caption, pos, size, style );
 
-    CreateControls();
-    SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
+  CreateControls();
+  SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
     ////@end frmVSCPSession creation
 
     return true;
@@ -1169,19 +876,19 @@ frmVSCPSession::~frmVSCPSession()
 void frmVSCPSession::Init()
 {
     ////@begin frmVSCPSession member initialisation
-    m_BtnActivateInterface = NULL;
-    m_pPanel = NULL;
-    m_ctrlGridReceive = NULL;
-    m_ctrlRcvHtmlInfo = NULL;
-    m_btnAdd = NULL;
-    m_btnEdit = NULL;
-    m_btnDelete = NULL;
-    m_btnLoadSet = NULL;
-    m_btnSaveSet = NULL;
-    m_ctrlGridTransmission = NULL;
-    m_btnSend = NULL;
-    m_btnActivate = NULL;
-    m_btnClear = NULL;
+  m_BtnActivateInterface = NULL;
+  m_pPanel = NULL;
+  m_ctrlGridReceive = NULL;
+  m_ctrlRcvHtmlInfo = NULL;
+  m_btnAdd = NULL;
+  m_btnEdit = NULL;
+  m_btnDelete = NULL;
+  m_btnLoadSet = NULL;
+  m_btnSaveSet = NULL;
+  m_ctrlGridTransmission = NULL;
+  m_btnSend = NULL;
+  m_btnActivate = NULL;
+  m_btnClear = NULL;
     ////@end frmVSCPSession member initialisation
 
     m_CtrlObject.m_bQuit = false;
@@ -1380,205 +1087,205 @@ void frmVSCPSession::CreateControls()
 
 
     ////@begin frmVSCPSession content construction
-    frmVSCPSession* itemFrame1 = this;
+  frmVSCPSession* itemFrame1 = this;
 
-    wxMenuBar* menuBar = new wxMenuBar;
-    wxMenu* itemMenu16 = new wxMenu;
-    itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_MSG_LIST, _("Load VSCP events from file..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_MSG_LIST, _("Save VSCP events to file..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu16->AppendSeparator();
-    itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, _("Load transmission set from file..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, _("Save transmission set to file..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu16->AppendSeparator();
-    itemMenu16->Append(ID_MENUITEM_VSCP_SESSION_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu16, _("File"));
-    wxMenu* itemMenu24 = new wxMenu;
-    itemMenu24->Append(ID_MENUITEM_VSCP_CUT, _("Cut"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu24->Append(ID_MENUITEM_VSCP_COPY, _("Copy"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu24->Append(ID_MENUITEM_VSCP_PASTE, _("Paste"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu24->AppendSeparator();
-    itemMenu24->Append(ID_MENUITEM4, _("Clear receive list"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu24->Append(ID_MENUITEM5, _("Clear transmission list"), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu24, _("Edit"));
-    wxMenu* itemMenu31 = new wxMenu;
-    itemMenu31->Append(ID_MENUITEM_VSCP_LOG, _("Message Log"), wxEmptyString, wxITEM_RADIO);
-    itemMenu31->Check(ID_MENUITEM_VSCP_LOG, true);
-    itemMenu31->Append(ID_MENUITEM_VSCP_COUNT, _("Message Count"), wxEmptyString, wxITEM_RADIO);
-    itemMenu31->AppendSeparator();
-    menuBar->Append(itemMenu31, _("View"));
-    wxMenu* itemMenu35 = new wxMenu;
-    itemMenu35->Append(ID_MENUITEM_READ_REGISTER, _("Read Regiister..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu35->Append(ID_MENUITEM_WRITE_REGISTER, _("Write Register..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu35->Append(ID_MENUITEM_READ_ALL_REGISTERS, _("Read all registers..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu35->AppendSeparator();
-    itemMenu35->Append(ID_MENUITEM_GET_GUID, _("Get GUID for node..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu35->Append(ID_MENUITEM_GET_MDF_URL, _("Get MDF URL..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu35->Append(ID_MENUITEM_GET_MDF, _("Get MDF..."), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu35, _("VSCP"));
-    wxMenu* itemMenu43 = new wxMenu;
-    itemMenu43->Append(ID_MENUITEM_RX_GRID_WIDTH, _("Save RX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu43->Append(ID_MENUITEM_SAVE_TX_GRID_WIDTH, _("Save TX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu43->AppendSeparator();
-    itemMenu43->Append(ID_MENUITEM1, _("Auto Reply Settings..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu43->Append(ID_MENUITEM2, _("Set Burst Count..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu43->Append(ID_MENUITEM3, _("Set Filter..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu43->AppendSeparator();
-    itemMenu43->Append(ID_MENUITEM, _("Configuration..."), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu43, _("Configuration"));
-    wxMenu* itemMenu52 = new wxMenu;
-    menuBar->Append(itemMenu52, _("Tools"));
-    wxMenu* itemMenu53 = new wxMenu;
-    itemMenu53->Append(ID_MENUITEM_VSCP_HELP, _("VSCP Works Help"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu53->Append(ID_MENUITEM_VSCP_FAQ, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu53->Append(ID_MENUITEM_VSCP_SHORTCUTS, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu53->AppendSeparator();
-    itemMenu53->Append(ID_MENUITEM_VSCP_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu53->Append(ID_MENUITEM_VSCP_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu53->AppendSeparator();
-    itemMenu53->Append(ID_MENUITEM_VSCP_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu53->AppendSeparator();
-    itemMenu53->Append(ID_MENUITEM_VSCP_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu53, _("Help"));
-    itemFrame1->SetMenuBar(menuBar);
+  wxMenuBar* menuBar = new wxMenuBar;
+  wxMenu* itemMenu16 = new wxMenu;
+  itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_MSG_LIST, _("Load VSCP events from file..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_MSG_LIST, _("Save VSCP events to file..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu16->AppendSeparator();
+  itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, _("Load transmission set from file..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, _("Save transmission set to file..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu16->AppendSeparator();
+  itemMenu16->Append(ID_MENUITEM_VSCP_SESSION_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
+  menuBar->Append(itemMenu16, _("File"));
+  wxMenu* itemMenu24 = new wxMenu;
+  itemMenu24->Append(ID_MENUITEM_VSCP_CUT, _("Cut"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu24->Append(ID_MENUITEM_VSCP_COPY, _("Copy"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu24->Append(ID_MENUITEM_VSCP_PASTE, _("Paste"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu24->AppendSeparator();
+  itemMenu24->Append(ID_MENUITEM4, _("Clear receive list"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu24->Append(ID_MENUITEM5, _("Clear transmission list"), wxEmptyString, wxITEM_NORMAL);
+  menuBar->Append(itemMenu24, _("Edit"));
+  wxMenu* itemMenu31 = new wxMenu;
+  itemMenu31->Append(ID_MENUITEM_VSCP_LOG, _("Message Log"), wxEmptyString, wxITEM_RADIO);
+  itemMenu31->Check(ID_MENUITEM_VSCP_LOG, true);
+  itemMenu31->Append(ID_MENUITEM_VSCP_COUNT, _("Message Count"), wxEmptyString, wxITEM_RADIO);
+  itemMenu31->AppendSeparator();
+  menuBar->Append(itemMenu31, _("View"));
+  wxMenu* itemMenu35 = new wxMenu;
+  itemMenu35->Append(ID_MENUITEM_READ_REGISTER, _("Read Regiister..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu35->Append(ID_MENUITEM_WRITE_REGISTER, _("Write Register..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu35->Append(ID_MENUITEM_READ_ALL_REGISTERS, _("Read all registers..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu35->AppendSeparator();
+  itemMenu35->Append(ID_MENUITEM_GET_GUID, _("Get GUID for node..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu35->Append(ID_MENUITEM_GET_MDF_URL, _("Get MDF URL..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu35->Append(ID_MENUITEM_GET_MDF, _("Get MDF..."), wxEmptyString, wxITEM_NORMAL);
+  menuBar->Append(itemMenu35, _("VSCP"));
+  wxMenu* itemMenu43 = new wxMenu;
+  itemMenu43->Append(ID_MENUITEM_RX_GRID_WIDTH, _("Save RX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu43->Append(ID_MENUITEM_SAVE_TX_GRID_WIDTH, _("Save TX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu43->AppendSeparator();
+  itemMenu43->Append(ID_MENUITEM1, _("Auto Reply Settings..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu43->Append(ID_MENUITEM2, _("Set Burst Count..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu43->Append(ID_MENUITEM3, _("Set Filter..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu43->AppendSeparator();
+  itemMenu43->Append(ID_MENUITEM, _("Configuration..."), wxEmptyString, wxITEM_NORMAL);
+  menuBar->Append(itemMenu43, _("Configuration"));
+  wxMenu* itemMenu52 = new wxMenu;
+  menuBar->Append(itemMenu52, _("Tools"));
+  wxMenu* itemMenu53 = new wxMenu;
+  itemMenu53->Append(ID_MENUITEM_VSCP_HELP, _("VSCP Works Help"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu53->Append(ID_MENUITEM_VSCP_FAQ, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu53->Append(ID_MENUITEM_VSCP_SHORTCUTS, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu53->AppendSeparator();
+  itemMenu53->Append(ID_MENUITEM_VSCP_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu53->Append(ID_MENUITEM_VSCP_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
+  itemMenu53->AppendSeparator();
+  itemMenu53->Append(ID_MENUITEM_VSCP_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
+  itemMenu53->AppendSeparator();
+  itemMenu53->Append(ID_MENUITEM_VSCP_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
+  menuBar->Append(itemMenu53, _("Help"));
+  itemFrame1->SetMenuBar(menuBar);
 
-    wxToolBar* itemToolBar2 = CreateToolBar(wxTB_FLAT | wxTB_HORIZONTAL, ID_TOOLBAR_VSCP_SESSION);
-    wxBitmap itemtool3Bitmap(itemFrame1->GetBitmapResource(wxT("open.xpm")));
-    wxBitmap itemtool3BitmapDisabled;
-    itemToolBar2->AddTool(ID_MENUITEM_VSCP_LOAD_MSG_LIST, wxEmptyString, itemtool3Bitmap, itemtool3BitmapDisabled, wxITEM_NORMAL, _("Fetch data from file"), wxEmptyString);
-    wxBitmap itemtool4Bitmap(itemFrame1->GetBitmapResource(wxT("save.xpm")));
-    wxBitmap itemtool4BitmapDisabled;
-    itemToolBar2->AddTool(ID_MENUITEM_VSCP_SAVE_MSG_LIST, wxEmptyString, itemtool4Bitmap, itemtool4BitmapDisabled, wxITEM_NORMAL, _("Save data to file"), wxEmptyString);
-    itemToolBar2->AddSeparator();
-    wxBitmap itemtool6Bitmap(itemFrame1->GetBitmapResource(wxT("cut.xpm")));
-    wxBitmap itemtool6BitmapDisabled;
-    itemToolBar2->AddTool(ID_TOOL_VSCP_CUT, wxEmptyString, itemtool6Bitmap, itemtool6BitmapDisabled, wxITEM_NORMAL, _("Remove selected row(s)"), wxEmptyString);
-    wxBitmap itemtool7Bitmap(itemFrame1->GetBitmapResource(wxT("copy.xpm")));
-    wxBitmap itemtool7BitmapDisabled;
-    itemToolBar2->AddTool(ID_TOOL_VSCP_COPY, wxEmptyString, itemtool7Bitmap, itemtool7BitmapDisabled, wxITEM_NORMAL, _("Copy selected row(s) \nto the clipboard"), wxEmptyString);
-    wxBitmap itemtool8Bitmap(itemFrame1->GetBitmapResource(wxT("paste.xpm")));
-    wxBitmap itemtool8BitmapDisabled;
-    itemToolBar2->AddTool(ID_TOOL_VSCP_PASTE, wxEmptyString, itemtool8Bitmap, itemtool8BitmapDisabled, wxITEM_NORMAL, _("Paste row(s) from clipboard"), wxEmptyString);
-    itemToolBar2->AddSeparator();
-    wxBitmap itemtool10Bitmap(itemFrame1->GetBitmapResource(wxT("Print.xpm")));
-    wxBitmap itemtool10BitmapDisabled;
-    itemToolBar2->AddTool(ID_TOOL_VSCP_PRINT, wxEmptyString, itemtool10Bitmap, itemtool10BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
-    itemToolBar2->AddSeparator();
-    itemToolBar2->AddSeparator();
-    m_BtnActivateInterface = new wxToggleButton;
-    m_BtnActivateInterface->Create(itemToolBar2, ID_TOGGLEBUTTON_ACTIVATE, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0);
-    m_BtnActivateInterface->SetValue(true);
-    if (frmVSCPSession::ShowToolTips())
-        m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
-    m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
-    m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
-    m_BtnActivateInterface->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Sans")));
-    itemToolBar2->AddControl(m_BtnActivateInterface);
-    itemToolBar2->Realize();
-    itemFrame1->SetToolBar(itemToolBar2);
+  wxToolBar* itemToolBar2 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR_VSCP_SESSION );
+  wxBitmap itemtool3Bitmap(itemFrame1->GetBitmapResource(wxT("open.xpm")));
+  wxBitmap itemtool3BitmapDisabled;
+  itemToolBar2->AddTool(ID_MENUITEM_VSCP_LOAD_MSG_LIST, wxEmptyString, itemtool3Bitmap, itemtool3BitmapDisabled, wxITEM_NORMAL, _("Fetch data from file"), wxEmptyString);
+  wxBitmap itemtool4Bitmap(itemFrame1->GetBitmapResource(wxT("save.xpm")));
+  wxBitmap itemtool4BitmapDisabled;
+  itemToolBar2->AddTool(ID_MENUITEM_VSCP_SAVE_MSG_LIST, wxEmptyString, itemtool4Bitmap, itemtool4BitmapDisabled, wxITEM_NORMAL, _("Save data to file"), wxEmptyString);
+  itemToolBar2->AddSeparator();
+  wxBitmap itemtool6Bitmap(itemFrame1->GetBitmapResource(wxT("cut.xpm")));
+  wxBitmap itemtool6BitmapDisabled;
+  itemToolBar2->AddTool(ID_TOOL_VSCP_CUT, wxEmptyString, itemtool6Bitmap, itemtool6BitmapDisabled, wxITEM_NORMAL, _("Remove selected row(s)"), wxEmptyString);
+  wxBitmap itemtool7Bitmap(itemFrame1->GetBitmapResource(wxT("copy.xpm")));
+  wxBitmap itemtool7BitmapDisabled;
+  itemToolBar2->AddTool(ID_TOOL_VSCP_COPY, wxEmptyString, itemtool7Bitmap, itemtool7BitmapDisabled, wxITEM_NORMAL, _("Copy selected row(s) \nto the clipboard"), wxEmptyString);
+  wxBitmap itemtool8Bitmap(itemFrame1->GetBitmapResource(wxT("paste.xpm")));
+  wxBitmap itemtool8BitmapDisabled;
+  itemToolBar2->AddTool(ID_TOOL_VSCP_PASTE, wxEmptyString, itemtool8Bitmap, itemtool8BitmapDisabled, wxITEM_NORMAL, _("Paste row(s) from clipboard"), wxEmptyString);
+  itemToolBar2->AddSeparator();
+  wxBitmap itemtool10Bitmap(itemFrame1->GetBitmapResource(wxT("Print.xpm")));
+  wxBitmap itemtool10BitmapDisabled;
+  itemToolBar2->AddTool(ID_TOOL_VSCP_PRINT, wxEmptyString, itemtool10Bitmap, itemtool10BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
+  itemToolBar2->AddSeparator();
+  itemToolBar2->AddSeparator();
+  m_BtnActivateInterface = new wxToggleButton;
+  m_BtnActivateInterface->Create( itemToolBar2, ID_TOGGLEBUTTON_ACTIVATE, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0 );
+  m_BtnActivateInterface->SetValue(true);
+  if (frmVSCPSession::ShowToolTips())
+    m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
+  m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
+  m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
+  m_BtnActivateInterface->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Sans")));
+  itemToolBar2->AddControl(m_BtnActivateInterface);
+  itemToolBar2->Realize();
+  itemFrame1->SetToolBar(itemToolBar2);
 
-    m_pPanel = new wxPanel;
-    m_pPanel->Create(itemFrame1, ID_PANEL_VSCP_SESSION, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER | wxTAB_TRAVERSAL);
+  m_pPanel = new wxPanel;
+  m_pPanel->Create( itemFrame1, ID_PANEL_VSCP_SESSION, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
 
-    wxBoxSizer* itemBoxSizer65 = new wxBoxSizer(wxVERTICAL);
-    m_pPanel->SetSizer(itemBoxSizer65);
+  wxBoxSizer* itemBoxSizer65 = new wxBoxSizer(wxVERTICAL);
+  m_pPanel->SetSizer(itemBoxSizer65);
 
-    wxBoxSizer* itemBoxSizer66 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer65->Add(itemBoxSizer66, 0, wxGROW | wxALL, 2);
+  wxBoxSizer* itemBoxSizer66 = new wxBoxSizer(wxVERTICAL);
+  itemBoxSizer65->Add(itemBoxSizer66, 0, wxGROW|wxALL, 2);
 
-    wxBoxSizer* itemBoxSizer67 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer66->Add(itemBoxSizer67, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5);
+  wxBoxSizer* itemBoxSizer67 = new wxBoxSizer(wxHORIZONTAL);
+  itemBoxSizer66->Add(itemBoxSizer67, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    m_ctrlGridReceive = new wxGrid;
-    m_ctrlGridReceive->Create(m_pPanel, ID_VSCP_GRID_RECEIVE, wxDefaultPosition, wxSize(550, 300), wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL);
-    m_ctrlGridReceive->SetName(_T("vscprcveventgrid"));
-    m_ctrlGridReceive->SetBackgroundColour(wxColour(204, 244, 244));
-    m_ctrlGridReceive->SetFont(wxFont(8, wxDEFAULT, wxNORMAL, wxBOLD, false, wxT("")));
-    m_ctrlGridReceive->SetDefaultColSize(100);
-    m_ctrlGridReceive->SetDefaultRowSize(18);
-    m_ctrlGridReceive->SetColLabelSize(18);
-    m_ctrlGridReceive->SetRowLabelSize(30);
-    itemBoxSizer67->Add(m_ctrlGridReceive, 0, wxALIGN_CENTER_VERTICAL | wxALL, 2);
+  m_ctrlGridReceive = new wxGrid;
+  m_ctrlGridReceive->Create( m_pPanel, ID_VSCP_GRID_RECEIVE, wxDefaultPosition, wxSize(550, 300), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+  m_ctrlGridReceive->SetName(_T("vscprcveventgrid"));
+  m_ctrlGridReceive->SetBackgroundColour(wxColour(204, 244, 244));
+  m_ctrlGridReceive->SetFont(wxFont(8, wxDEFAULT, wxNORMAL, wxBOLD, false, wxT("")));
+  m_ctrlGridReceive->SetDefaultColSize(100);
+  m_ctrlGridReceive->SetDefaultRowSize(18);
+  m_ctrlGridReceive->SetColLabelSize(18);
+  m_ctrlGridReceive->SetRowLabelSize(30);
+  itemBoxSizer67->Add(m_ctrlGridReceive, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
 
-    m_ctrlRcvHtmlInfo = new wxHtmlWindow;
-    m_ctrlRcvHtmlInfo->Create(m_pPanel, ID_HTMLWINDOW_RCVINFO, wxDefaultPosition, wxSize(300, 300), wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL);
-    itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 0, wxALIGN_CENTER_VERTICAL | wxALL, 0);
+  m_ctrlRcvHtmlInfo = new wxHtmlWindow;
+  m_ctrlRcvHtmlInfo->Create( m_pPanel, ID_HTMLWINDOW_RCVINFO, wxDefaultPosition, wxSize(300, 300), wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+  itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
-    wxBoxSizer* itemBoxSizer70 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer65->Add(itemBoxSizer70, 0, wxGROW | wxALL, 2);
+  wxBoxSizer* itemBoxSizer70 = new wxBoxSizer(wxVERTICAL);
+  itemBoxSizer65->Add(itemBoxSizer70, 0, wxGROW|wxALL, 2);
 
-    wxBoxSizer* itemBoxSizer71 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer70->Add(itemBoxSizer71, 0, wxGROW | wxALL, 0);
+  wxBoxSizer* itemBoxSizer71 = new wxBoxSizer(wxHORIZONTAL);
+  itemBoxSizer70->Add(itemBoxSizer71, 0, wxGROW|wxALL, 0);
 
-    wxBoxSizer* itemBoxSizer72 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer71->Add(itemBoxSizer72, 0, wxALIGN_TOP | wxALL, 5);
+  wxBoxSizer* itemBoxSizer72 = new wxBoxSizer(wxVERTICAL);
+  itemBoxSizer71->Add(itemBoxSizer72, 0, wxALIGN_TOP|wxALL, 5);
 
-    m_btnAdd = new wxBitmapButton;
-    m_btnAdd->Create(m_pPanel, ID_BITMAPBUTTON_TX_ADD, itemFrame1->GetBitmapResource(wxT("New1.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    if (frmVSCPSession::ShowToolTips())
-        m_btnAdd->SetToolTip(_("Add transmission line"));
-    itemBoxSizer72->Add(m_btnAdd, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+  m_btnAdd = new wxBitmapButton;
+  m_btnAdd->Create( m_pPanel, ID_BITMAPBUTTON_TX_ADD, itemFrame1->GetBitmapResource(wxT("New1.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  if (frmVSCPSession::ShowToolTips())
+    m_btnAdd->SetToolTip(_("Add transmission line"));
+  itemBoxSizer72->Add(m_btnAdd, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-    m_btnEdit = new wxBitmapButton;
-    m_btnEdit->Create(m_pPanel, ID_BITMAPBUTTON_TX_EDIT, itemFrame1->GetBitmapResource(wxT("copy.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    if (frmVSCPSession::ShowToolTips())
-        m_btnEdit->SetToolTip(_("Edit selected line"));
-    itemBoxSizer72->Add(m_btnEdit, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+  m_btnEdit = new wxBitmapButton;
+  m_btnEdit->Create( m_pPanel, ID_BITMAPBUTTON_TX_EDIT, itemFrame1->GetBitmapResource(wxT("copy.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  if (frmVSCPSession::ShowToolTips())
+    m_btnEdit->SetToolTip(_("Edit selected line"));
+  itemBoxSizer72->Add(m_btnEdit, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-    m_btnDelete = new wxBitmapButton;
-    m_btnDelete->Create(m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, itemFrame1->GetBitmapResource(wxT("delete.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    if (frmVSCPSession::ShowToolTips())
-        m_btnDelete->SetToolTip(_("Delete selected line"));
-    itemBoxSizer72->Add(m_btnDelete, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+  m_btnDelete = new wxBitmapButton;
+  m_btnDelete->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, itemFrame1->GetBitmapResource(wxT("delete.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  if (frmVSCPSession::ShowToolTips())
+    m_btnDelete->SetToolTip(_("Delete selected line"));
+  itemBoxSizer72->Add(m_btnDelete, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-    itemBoxSizer72->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 2);
+  itemBoxSizer72->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 2);
 
-    m_btnLoadSet = new wxBitmapButton;
-    m_btnLoadSet->Create(m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    if (frmVSCPSession::ShowToolTips())
-        m_btnLoadSet->SetToolTip(_("Load transmission set from file..."));
-    itemBoxSizer72->Add(m_btnLoadSet, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+  m_btnLoadSet = new wxBitmapButton;
+  m_btnLoadSet->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  if (frmVSCPSession::ShowToolTips())
+    m_btnLoadSet->SetToolTip(_("Load transmission set from file..."));
+  itemBoxSizer72->Add(m_btnLoadSet, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-    m_btnSaveSet = new wxBitmapButton;
-    m_btnSaveSet->Create(m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, itemFrame1->GetBitmapResource(wxT("filesaveas.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    if (frmVSCPSession::ShowToolTips())
-        m_btnSaveSet->SetToolTip(_("Save transmission set to file..."));
-    itemBoxSizer72->Add(m_btnSaveSet, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+  m_btnSaveSet = new wxBitmapButton;
+  m_btnSaveSet->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, itemFrame1->GetBitmapResource(wxT("filesaveas.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  if (frmVSCPSession::ShowToolTips())
+    m_btnSaveSet->SetToolTip(_("Save transmission set to file..."));
+  itemBoxSizer72->Add(m_btnSaveSet, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-    wxBoxSizer* itemBoxSizer79 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer71->Add(itemBoxSizer79, 5, wxALIGN_TOP | wxALL, 0);
+  wxBoxSizer* itemBoxSizer79 = new wxBoxSizer(wxVERTICAL);
+  itemBoxSizer71->Add(itemBoxSizer79, 5, wxALIGN_TOP|wxALL, 0);
 
-    m_ctrlGridTransmission = new wxGrid;
-    m_ctrlGridTransmission->Create(m_pPanel, ID_VSCP_GRID_TRANSMISSION, wxDefaultPosition, wxSize(700, 190), wxHSCROLL | wxVSCROLL);
-    if (frmVSCPSession::ShowToolTips())
-        m_ctrlGridTransmission->SetToolTip(_("Right click for menu / double click to transmit"));
-    m_ctrlGridTransmission->SetFont(wxFont(8, wxDEFAULT, wxNORMAL, wxBOLD, false, wxT("")));
-    m_ctrlGridTransmission->SetDefaultColSize(100);
-    m_ctrlGridTransmission->SetDefaultRowSize(18);
-    m_ctrlGridTransmission->SetColLabelSize(18);
-    m_ctrlGridTransmission->SetRowLabelSize(30);
-    m_ctrlGridTransmission->CreateGrid(1, 6, wxGrid::wxGridSelectRows);
-    itemBoxSizer79->Add(m_ctrlGridTransmission, 5, wxGROW | wxALL, 2);
+  m_ctrlGridTransmission = new wxGrid;
+  m_ctrlGridTransmission->Create( m_pPanel, ID_VSCP_GRID_TRANSMISSION, wxDefaultPosition, wxSize(700, 190), wxHSCROLL|wxVSCROLL );
+  if (frmVSCPSession::ShowToolTips())
+    m_ctrlGridTransmission->SetToolTip(_("Right click for menu / double click to transmit"));
+  m_ctrlGridTransmission->SetFont(wxFont(8, wxDEFAULT, wxNORMAL, wxBOLD, false, wxT("")));
+  m_ctrlGridTransmission->SetDefaultColSize(100);
+  m_ctrlGridTransmission->SetDefaultRowSize(18);
+  m_ctrlGridTransmission->SetColLabelSize(18);
+  m_ctrlGridTransmission->SetRowLabelSize(30);
+  m_ctrlGridTransmission->CreateGrid(1, 6, wxGrid::wxGridSelectRows);
+  itemBoxSizer79->Add(m_ctrlGridTransmission, 5, wxGROW|wxALL, 2);
 
-    wxBoxSizer* itemBoxSizer81 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer71->Add(itemBoxSizer81, 0, wxALIGN_TOP | wxALL, 5);
+  wxBoxSizer* itemBoxSizer81 = new wxBoxSizer(wxVERTICAL);
+  itemBoxSizer71->Add(itemBoxSizer81, 0, wxALIGN_TOP|wxALL, 5);
 
-    m_btnSend = new wxBitmapButton;
-    m_btnSend->Create(m_pPanel, ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, itemFrame1->GetBitmapResource(wxT("redo.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    if (frmVSCPSession::ShowToolTips())
-        m_btnSend->SetToolTip(_("Transmit event from selected row(s)"));
-    itemBoxSizer81->Add(m_btnSend, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+  m_btnSend = new wxBitmapButton;
+  m_btnSend->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, itemFrame1->GetBitmapResource(wxT("redo.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  if (frmVSCPSession::ShowToolTips())
+    m_btnSend->SetToolTip(_("Transmit event from selected row(s)"));
+  itemBoxSizer81->Add(m_btnSend, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-    itemBoxSizer81->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 2);
+  itemBoxSizer81->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 2);
 
-    m_btnActivate = new wxBitmapButton;
-    m_btnActivate->Create(m_pPanel, ID_BITMAPBUTTON12, itemFrame1->GetBitmapResource(wxT("Print.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    m_btnActivate->Show(false);
-    itemBoxSizer81->Add(m_btnActivate, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+  m_btnActivate = new wxBitmapButton;
+  m_btnActivate->Create( m_pPanel, ID_BITMAPBUTTON12, itemFrame1->GetBitmapResource(wxT("Print.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  m_btnActivate->Show(false);
+  itemBoxSizer81->Add(m_btnActivate, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-    m_btnClear = new wxBitmapButton;
-    m_btnClear->Create(m_pPanel, ID_BITMAPBUTTON13, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW);
-    m_btnClear->Show(false);
-    itemBoxSizer81->Add(m_btnClear, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 0);
+  m_btnClear = new wxBitmapButton;
+  m_btnClear->Create( m_pPanel, ID_BITMAPBUTTON13, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+  m_btnClear->Show(false);
+  itemBoxSizer81->Add(m_btnClear, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
     ////@end frmVSCPSession content construction
 
@@ -1711,39 +1418,58 @@ wxBitmap frmVSCPSession::GetBitmapResource(const wxString& name)
 {
     // Bitmap retrieval
     ////@begin frmVSCPSession bitmap retrieval
-    wxUnusedVar(name);
-    if (name == _T("open.xpm")) {
-        wxBitmap bitmap(open_xpm);
-        return bitmap;
-    } else if (name == _T("save.xpm")) {
-        wxBitmap bitmap(save_xpm);
-        return bitmap;
-    } else if (name == _T("cut.xpm")) {
-        wxBitmap bitmap(cut_xpm);
-        return bitmap;
-    } else if (name == _T("copy.xpm")) {
-        wxBitmap bitmap(copy_xpm);
-        return bitmap;
-    } else if (name == _T("paste.xpm")) {
-        wxBitmap bitmap(paste_xpm);
-        return bitmap;
-    } else if (name == _T("Print.xpm")) {
-        wxBitmap bitmap(print_xpm);
-        return bitmap;
-    } else if (name == _T("New1.xpm")) {
-        wxBitmap bitmap(new_xpm);
-        return bitmap;
-    } else if (name == _T("delete.xpm")) {
-        wxBitmap bitmap(delete_xpm);
-        return bitmap;
-    } else if (name == _T("filesaveas.xpm")) {
-        wxBitmap bitmap(filesaveas_xpm);
-        return bitmap;
-    } else if (name == _T("redo.xpm")) {
-        wxBitmap bitmap(redo_xpm);
-        return bitmap;
-    }
-    return wxNullBitmap;
+  wxUnusedVar(name);
+  if (name == _T("open.xpm"))
+  {
+    wxBitmap bitmap(open_xpm);
+    return bitmap;
+  }
+  else if (name == _T("save.xpm"))
+  {
+    wxBitmap bitmap(save_xpm);
+    return bitmap;
+  }
+  else if (name == _T("cut.xpm"))
+  {
+    wxBitmap bitmap(cut_xpm);
+    return bitmap;
+  }
+  else if (name == _T("copy.xpm"))
+  {
+    wxBitmap bitmap(copy_xpm);
+    return bitmap;
+  }
+  else if (name == _T("paste.xpm"))
+  {
+    wxBitmap bitmap(paste_xpm);
+    return bitmap;
+  }
+  else if (name == _T("Print.xpm"))
+  {
+    wxBitmap bitmap(print_xpm);
+    return bitmap;
+  }
+  else if (name == _T("New1.xpm"))
+  {
+    wxBitmap bitmap(new_xpm);
+    return bitmap;
+  }
+  else if (name == _T("delete.xpm"))
+  {
+    wxBitmap bitmap(delete_xpm);
+    return bitmap;
+  }
+  else if (name == _T("filesaveas.xpm"))
+  {
+    wxBitmap bitmap(filesaveas_xpm);
+    return bitmap;
+  }
+  else if (name == _T("redo.xpm"))
+  {
+    wxBitmap bitmap(redo_xpm);
+    return bitmap;
+  }
+  return wxNullBitmap;
     ////@end frmVSCPSession bitmap retrieval
 }
 
@@ -1755,12 +1481,13 @@ wxIcon frmVSCPSession::GetIconResource(const wxString& name)
 {
     // Icon retrieval
     ////@begin frmVSCPSession icon retrieval
-    wxUnusedVar(name);
-    if (name == _T("../../../docs/vscp/logo/fatbee_v2.ico")) {
-        wxIcon icon(fatbee_v2_xpm);
-        return icon;
-    }
-    return wxNullIcon;
+  wxUnusedVar(name);
+  if (name == _T("../../../docs/vscp/logo/fatbee_v2.ico"))
+  {
+    wxIcon icon(fatbee_v2_xpm);
+    return icon;
+  }
+  return wxNullIcon;
     ////@end frmVSCPSession icon retrieval
 }
 
