@@ -90,9 +90,10 @@ class wxHtmlWindow;
 class scanElement : public wxTreeItemData 
 {
 public:
-	uint8_t m_nodeid;
-	uint8_t m_reg[256];
-	wxString m_html;
+	bool m_bLoaded;		// True if registers and info loaded
+	uint8_t m_nodeid;	// Node id
+	uint8_t m_reg[256]; // Full register space
+	wxString m_html;	// Device HTML info page.
 };
 
 
@@ -229,6 +230,7 @@ public:
   wxStaticText* m_labelInterface;
   wxTreeCtrl* m_DeviceTree;
   wxHtmlWindow* m_htmlWnd;
+  wxCheckBox* m_slowAlgorithm;
   wxTextCtrl* m_ctrlEditFrom;
   wxTextCtrl* m_ctrlEditTo;
   /// Control identifiers

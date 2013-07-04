@@ -44,6 +44,9 @@
 #include "canal.h"
 #include "../../common/crc.h"
 
+// Forward declaration
+class CMDF;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -613,7 +616,13 @@ extern "C" {
      */
     void makeHtml(wxString& str);
 
-
+	/*
+		Get device HTML status from device
+		@param registers Aray with all 256 registers for the device
+	    @param pmdf Optional pointer to CMDF class which gives more info
+				about the device if it is supplied.
+	 */
+	wxString getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
 
 
 #ifdef __cplusplus

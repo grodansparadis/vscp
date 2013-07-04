@@ -54,7 +54,9 @@
 #include <sys/times.h>
 #include <sys/types.h>
 #endif
+
 #include "vscp.h"
+#include "../common/mdf.h"
 #include "vscphelper.h"
 
 
@@ -2676,6 +2678,320 @@ void makeHtml(wxString& str)
 			str += strOriginal.GetChar(i);
 		}
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// getDeviceHtmlStatusInfo
+//
+
+wxString getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
+{
+    wxString strHTML;
+    wxString str;
+
+    strHTML = _("<html><body>");
+    strHTML += _("<h4>Clear text node data</h4>");
+    strHTML += _("<font color=\"#009900\">");
+
+    strHTML += _("nodeid = ");
+    str = wxString::Format(_("%d"), registers[0x91]);
+    strHTML += str;
+    strHTML += _("<br>");
+
+    strHTML += _("GUID = ");
+    writeGuidArrayToString(registers + 0xd0, str);
+    strHTML += str;
+    strHTML += _("<br>");
+
+    strHTML += _("MDF URL = ");
+    char url[33];
+    memset(url, 0, sizeof( url));
+    memcpy(url, registers + 0xe0, 32);
+    str = wxString::From8BitData(url);
+    strHTML += str;
+    strHTML += _("<br>");
+
+    strHTML += _("Alarm: ");
+    if (registers[0x80]) {
+        strHTML += _("Yes");
+    } else {
+        strHTML += _("No");
+    }
+    strHTML += _("<br>");
+
+
+    strHTML += _("Node Control Flags: ");
+    if (registers[0x83] & 0x10) {
+        strHTML += _("[Register Write Protect] ");
+    } else {
+        strHTML += _("[Register Read/Write] ");
+    }
+    switch ((registers[0x83] & 0xC0) >> 6) {
+    case 1:
+        strHTML += _(" [Initialized] ");
+        break;
+    default:
+        strHTML += _(" [Uninitialized] ");
+        break;
+    }
+    strHTML += _("<br>");
+
+    strHTML += _("Firmware VSCP conformance : ");
+    strHTML += wxString::Format(_("%d.%d"), registers[0x81], registers[0x82]);
+    strHTML += _("<br>");
+
+    strHTML += _("User ID: ");
+    strHTML += wxString::Format(_("%d.%d.%d.%d.%d"),
+            registers[0x84],
+            registers[0x85],
+            registers[0x86],
+            registers[0x87],
+            registers[0x88]);
+    strHTML += _("<br>");
+
+    strHTML += _("Manufacturer device ID: ");
+    strHTML += wxString::Format(_("%d.%d.%d.%d"),
+            registers[0x89],
+            registers[0x8A],
+            registers[0x8B],
+            registers[0x8C]);
+    strHTML += _("<br>");
+
+    strHTML += _("Manufacturer sub device ID: ");
+    strHTML += wxString::Format(_("%d.%d.%d.%d"),
+            registers[0x8d],
+            registers[0x8e],
+            registers[0x8f],
+            registers[0x90]);
+    strHTML += _("<br>");
+
+    strHTML += _("Page select: ");
+    strHTML += wxString::Format(_("%d (MSB=%d LSB=%d)"),
+            registers[0x92] * 256 + registers[0x93],
+            registers[0x92],
+            registers[0x93]);
+    strHTML += _("<br>");
+
+    strHTML += _("Firmware version: ");
+    strHTML += wxString::Format(_("%d.%d.%d"),
+            registers[0x94],
+            registers[0x95],
+            registers[0x96]);
+    strHTML += _("<br>");
+
+    strHTML += _("Boot loader algorithm: ");
+    strHTML += wxString::Format(_("%d - "),
+            registers[0x97]);
+    switch (registers[0x97]) {
+
+    case 0x00:
+        strHTML += _("VSCP universal algorithm 0");
+        break;
+
+    case 0x01:
+        strHTML += _("Microchip PIC algorithm 0");
+        break;
+
+    case 0x10:
+        strHTML += _("Atmel AVR algorithm 0");
+        break;
+
+    case 0x20:
+        strHTML += _("NXP ARM algorithm 0");
+        break;
+
+    case 0x30:
+        strHTML += _("ST ARM algorithm 0");
+        break;
+
+    default:
+        strHTML += _("Unknown algorithm.");
+        break;
+    }
+
+    strHTML += _("<br>");
+
+    strHTML += _("Buffer size: ");
+    strHTML += wxString::Format(_("%d bytes. "),
+            registers[0x98]);
+    if (!registers[0x98]) strHTML += _(" ( == default size (8 or 487 bytes) )");
+    strHTML += _("<br>");
+
+    strHTML += _("Number of register pages: ");
+    strHTML += wxString::Format(_("%d"),
+            registers[0x99]);
+    if (registers[0x99] > 22) {
+        strHTML += _(" (Note: VSCP Works display max 22 pages.) ");
+    }
+    strHTML += _("<br>");
+
+    // Decision matrix info.
+    if (NULL != pmdf) {
+
+        unsigned char data[8];
+        memset(data, 0, 8);
+
+        strHTML += _("Decison Matrix: Rows=");
+        strHTML += wxString::Format(_("%d "), pmdf->m_dmInfo.m_nRowCount);
+        strHTML += _(" Offset=");
+        strHTML += wxString::Format(_("%d "), pmdf->m_dmInfo.m_nStartOffset);
+        strHTML += _(" Page start=");
+        strHTML += wxString::Format(_("%d "), pmdf->m_dmInfo.m_nStartPage);
+        strHTML += _(" Row Size=");
+        strHTML += wxString::Format(_("%d "), pmdf->m_dmInfo.m_nRowSize);
+        strHTML += _(" Level=");
+        strHTML += wxString::Format(_("%d "), pmdf->m_dmInfo.m_nLevel);
+        strHTML += _(" # actions define =");
+        strHTML += wxString::Format(_("%d "), pmdf->m_dmInfo.m_list_action.GetCount());
+        strHTML += _("<br>");
+    } else {
+        strHTML += _("No Decision Matrix is available on this device.");
+        strHTML += _("<br>");
+    }
+
+
+    if (NULL != pmdf) {
+
+        // MDF Info
+        strHTML = _("<h1>MDF Information</h1>");
+
+        strHTML += _("<font color=\"#009900\">");
+
+        // Manufacturer data
+        strHTML += _("<b>Module name :</b> ");
+        strHTML += pmdf->m_strModule_Name;
+        strHTML += _("<br>");
+
+        strHTML += _("<b>Module model:</b> ");
+        strHTML += pmdf->m_strModule_Model;
+        strHTML += _("<br>");
+
+        strHTML += _("<b>Module version:</b> ");
+        strHTML += pmdf->m_strModule_Version;
+        strHTML += _("<br>");
+
+        strHTML += _("<b>Module last change:</b> ");
+        strHTML += pmdf->m_changeDate;
+        strHTML += _("<br>");
+
+        strHTML += _("<b>Module description:</b> ");
+        strHTML += pmdf->m_strModule_Description;
+        strHTML += _("<br>");
+
+        strHTML += _("<b>Module URL</b> : ");
+        strHTML += _("<a href=\"");
+        strHTML += pmdf->m_strModule_InfoURL;
+        strHTML += _("\">");
+        strHTML += pmdf->m_strModule_InfoURL;
+        strHTML += _("</a>");
+        strHTML += _("<br>");
+
+
+        MDF_MANUFACTURER_LIST::iterator iter;
+        for (iter = pmdf->m_list_manufacturer.begin();
+                iter != pmdf->m_list_manufacturer.end(); ++iter) {
+
+            strHTML += _("<hr><br>");
+
+            CMDF_Manufacturer *manufacturer = *iter;
+            strHTML += _("<b>Manufacturer:</b> ");
+            strHTML += manufacturer->m_strName;
+            strHTML += _("<br>");
+
+            MDF_ADDRESS_LIST::iterator iterAddr;
+            for (iterAddr = manufacturer->m_list_Address.begin();
+                    iterAddr != manufacturer->m_list_Address.end(); ++iterAddr) {
+
+                CMDF_Address *address = *iterAddr;
+                strHTML += _("<h4>Address</h4>");
+                strHTML += _("<b>Street:</b> ");
+                strHTML += address->m_strStreet;
+                strHTML += _("<br>");
+                strHTML += _("<b>Town:</b> ");
+                strHTML += address->m_strTown;
+                strHTML += _("<br>");
+                strHTML += _("<b>City:</b> ");
+                strHTML += address->m_strCity;
+                strHTML += _("<br>");
+                strHTML += _("<b>Post Code:</b> ");
+                strHTML += address->m_strPostCode;
+                strHTML += _("<br>");
+                strHTML += _("<b>State:</b> ");
+                strHTML += address->m_strState;
+                strHTML += _("<br>");
+                strHTML += _("<b>Region:</b> ");
+                strHTML += address->m_strRegion;
+                strHTML += _("<br>");
+                strHTML += _("<b>Country:</b> ");
+                strHTML += address->m_strCountry;
+                strHTML += _("<br><br>");
+            }
+
+            MDF_ITEM_LIST::iterator iterPhone;
+            for (iterPhone = manufacturer->m_list_Phone.begin();
+                    iterPhone != manufacturer->m_list_Phone.end(); ++iterPhone) {
+
+                CMDF_Item *phone = *iterPhone;
+                strHTML += _("<b>Phone:</b> ");
+                strHTML += phone->m_strItem;
+                strHTML += _(" ");
+                strHTML += phone->m_strDescription;
+                strHTML += _("<br>");
+            }
+
+            MDF_ITEM_LIST::iterator iterFax;
+            for (iterFax = manufacturer->m_list_Fax.begin();
+                    iterFax != manufacturer->m_list_Fax.end(); ++iterFax) {
+
+                CMDF_Item *fax = *iterFax;
+                strHTML += _("<b>Fax:</b> ");
+                strHTML += fax->m_strItem;
+                strHTML += _(" ");
+                strHTML += fax->m_strDescription;
+                strHTML += _("<br>");
+            }
+
+            MDF_ITEM_LIST::iterator iterEmail;
+            for (iterEmail = manufacturer->m_list_Email.begin();
+                    iterEmail != manufacturer->m_list_Email.end(); ++iterEmail) {
+
+                CMDF_Item *email = *iterEmail;
+                strHTML += _("<b>Email:</b> <a href=\"");
+                strHTML += email->m_strItem;
+                strHTML += _("\" >");
+                strHTML += email->m_strItem;
+                strHTML += _("</a> ");
+                strHTML += email->m_strDescription;
+                strHTML += _("<br>");
+            }
+
+            MDF_ITEM_LIST::iterator iterWeb;
+            for (iterWeb = manufacturer->m_list_Web.begin();
+                    iterWeb != manufacturer->m_list_Web.end(); ++iterWeb) {
+
+                CMDF_Item *web = *iterWeb;
+                strHTML += _("<b>Web:</b> <a href=\"");
+                strHTML += web->m_strItem;
+                strHTML += _("\">");
+                strHTML += web->m_strItem;
+                strHTML += _("</a> ");
+                strHTML += web->m_strDescription;
+                strHTML += _("<br>");
+            }
+
+        } // manufacturer
+
+    } else {
+        strHTML += _("No MDF info available.");
+        strHTML += _("<br>");
+    }
+
+
+    strHTML += _("</font>");
+    strHTML += _("</body></html>");
+
+    return strHTML;
 }
 
 

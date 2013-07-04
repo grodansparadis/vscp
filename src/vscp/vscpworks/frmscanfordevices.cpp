@@ -464,6 +464,7 @@ void frmScanforDevices::Init()
   m_labelInterface = NULL;
   m_DeviceTree = NULL;
   m_htmlWnd = NULL;
+  m_slowAlgorithm = NULL;
   m_ctrlEditFrom = NULL;
   m_ctrlEditTo = NULL;
     ////@end frmScanforDevices member initialisation
@@ -544,11 +545,10 @@ void frmScanforDevices::CreateControls()
   wxBoxSizer* itemBoxSizer30 = new wxBoxSizer(wxVERTICAL);
   itemBoxSizer23->Add(itemBoxSizer30, 0, wxALIGN_BOTTOM|wxALL, 5);
 
-  wxCheckBox* itemCheckBox31 = new wxCheckBox;
-  itemCheckBox31->Create( m_pPanel, ID_CHECKBOX4, _("Slow"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemCheckBox31->SetValue(false);
-  itemCheckBox31->SetName(_T("m_slowAlgorithm"));
-  itemBoxSizer30->Add(itemCheckBox31, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+  m_slowAlgorithm = new wxCheckBox;
+  m_slowAlgorithm->Create( m_pPanel, ID_CHECKBOX4, _("Slow"), wxDefaultPosition, wxDefaultSize, 0 );
+  m_slowAlgorithm->SetValue(false);
+  itemBoxSizer30->Add(m_slowAlgorithm, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
   wxStaticText* itemStaticText32 = new wxStaticText;
   itemStaticText32->Create( m_pPanel, wxID_STATIC, _("Scan from"), wxDefaultPosition, wxDefaultSize, 0 );
@@ -847,7 +847,7 @@ void frmScanforDevices::OnMenuitemHelpAboutClick(wxCommandEvent& event)
 
 void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 {
-    int scan_algorithm = 2;
+    bool bSlowAlgorithm = false;
     uint8_t val;
     uint8_t reg[256];
     CMDF mdf;
@@ -855,6 +855,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     wxTreeItemId newitem;
 
     ::wxBeginBusyCursor();
+    
+    bSlowAlgorithm = m_slowAlgorithm->GetValue();
     
     uint8_t scanFrom = readStringValue(m_ctrlEditFrom->GetValue());
     uint8_t scanTo = readStringValue(m_ctrlEditTo->GetValue());
@@ -878,7 +880,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     // Fetch GUID for the interface
     fetchIterfaceGUID();
 
-    if (1 == scan_algorithm) {
+    if (bSlowAlgorithm) {
 
         for (uint8_t i = scanFrom; i < scanTo; i++) {
 
@@ -908,10 +910,11 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
                     scanElement *pElement = new scanElement;
                     if (NULL != pElement) {
-                        //pElement->m_nodeid = i;
-                        //pElement->m_html = str;
-                        //memcpy(pElement->m_reg, reg, 256);
-                        //m_DeviceTree->SetItemData(newitem, pElement);
+                        pElement->m_bLoaded = false;
+                        pElement->m_nodeid = i;
+                        //pElement->m_html = str; 
+                        memset(pElement->m_reg, 0, 256);
+                        m_DeviceTree->SetItemData(newitem, pElement);
                     }
                 }
 
@@ -931,15 +934,16 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                     //::wxGetApp().loadMDF( this, &m_csw, &mdf, url, &i );
                     //wxString str = ::wxGetApp().getHtmlStatusInfo(&m_csw, reg);
                     //m_htmlWnd->SetPage(str);
-                    /*
-                                    scanElement *pElement = new scanElement;
-                                    if (NULL != pElement) {
-                                        pElement->m_nodeid = i;
-                                        pElement->m_html = str;
-                                        memcpy(pElement->m_reg, reg, 256);
-                                        m_DeviceTree->SetItemData(newitem, pElement);
-                                    }
-                     */
+                    
+                    scanElement *pElement = new scanElement;
+                    if (NULL != pElement) {
+                        pElement->m_bLoaded = false;
+                        pElement->m_nodeid = i;
+                        //pElement->m_html = str; 
+                        memset(pElement->m_reg, 0, 256);
+                        m_DeviceTree->SetItemData(newitem, pElement);
+                    }
+                     
                 }
 
             }
@@ -948,7 +952,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
         }// for
     }
-    else { // Algorithm 2
+    else { // Fast Algorithm
 
         vscpEventEx eventex;
             
@@ -986,28 +990,26 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
         
         // Check for replies
         wxLongLong resendTime = ::wxGetLocalTimeMillis();
-
-        //uint8_t *pAnswers = new uint8_t[scanTo-scanFrom+1];
-        //memset( pAnswers, 0, sizeof(pAnswers) );
-        
+       
         std::list<int> found_list;
         bool bLevel2 = false;
         uint8_t cnt = 0; 
         while (true) {
             
-   
             progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
 
             if (m_csw.doCmdDataAvailable()) { // Message available
 
                 if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
                     
+#if 0                    
                     {
                         wxString str;
                         str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
                             eventex.vscp_class, eventex.vscp_type, eventex.sizeData, eventex.data[15], eventex.data[16] );
                         wxLogDebug(str);
                     }
+#endif                    
 
                     // Level I Read reply?
                     if (/*ifGUID.isNULL() &&*/ (VSCP_CLASS1_PROTOCOL == eventex.vscp_class) &&
@@ -1061,17 +1063,23 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                 wxTreeItemId newitem;
                 for( std::list<int>::iterator list_iter = found_list.begin(); 
                         list_iter != found_list.end(); list_iter++) {
+                    
                     newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), *list_iter));
                     m_DeviceTree->ExpandAll();
                     
+                    scanElement *pElement = new scanElement;
+                    if (NULL != pElement) {
+                        pElement->m_bLoaded = false;
+                        pElement->m_nodeid = *list_iter;
+                        pElement->m_html = _("Right click on item to load info about node."); 
+                        memset(pElement->m_reg, 0, 256);
+                        m_DeviceTree->SetItemData(newitem, pElement);
+                    }
                 }
                 
                 break;
 
             }
-
-            //wxMilliSleep(10);
-            //::wxSafeYield();
 
         } // while
         
@@ -1100,7 +1108,7 @@ void frmScanforDevices::OnTreeDeviceItemRightClick(wxTreeEvent& event)
     wxMenu menu;
 
     menu.Append(Menu_Popup_GetNodeInfo, _T("Update node info from MDF..."));
-    menu.Append(Menu_Popup_OpenConfig, _T("Open configuratin window..."));
+    menu.Append(Menu_Popup_OpenConfig, _T("Open configuration window..."));
     PopupMenu(&menu);
 
     event.Skip(false);
@@ -1128,16 +1136,40 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
 
     scanElement *pElement =
             (scanElement *) m_DeviceTree->GetItemData(m_DeviceTree->GetSelection());
-
+    
     if (NULL != pElement) {
+        
+        wxProgressDialog progressDlg(_("Getting node info."),
+                        _("Reading Registers"),
+                        256,
+                        this,
+                        wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE  | wxPD_CAN_ABORT);
 
-        //::wxGetApp().readAllLevel1Registers(this, &m_csw, pElement->m_reg, pElement->m_nodeid);
-        //::wxGetApp().loadMDF(this, &m_csw, &mdf, url, &pElement->m_nodeid);
+        cguid destguid;
+        destguid.setLSB( pElement->m_nodeid );
+        
+        bool bregs = m_csw.readLevel2Registers( this,
+									pElement->m_reg,
+									m_ifguid,
+									0,
+									256,
+									&destguid,
+									&progressDlg,
+									false );
 
-        //pElement->m_html = ::wxGetApp().getHtmlStatusInfo(&m_csw, pElement->m_reg);
-        //pElement->m_html = pElement->m_html + ::wxGetApp().addMDFInfo(&mdf);
-        //m_htmlWnd->SetPage(pElement->m_html);
-
+        uint8_t preg_url[33];
+        memset( preg_url, 0, sizeof(preg_url));
+        memcpy( preg_url, pElement->m_reg + 0xe0, 32 );
+        bool bmdf = m_csw.loadMDF( this,
+                                    preg_url,
+                                    url,
+                                    &mdf );
+                
+        pElement->m_html = getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
+        m_htmlWnd->SetPage(pElement->m_html);
+        
+        // Mark as loaded
+        if ( bregs ) pElement->m_bLoaded = true;
     }
 
     event.Skip(false);

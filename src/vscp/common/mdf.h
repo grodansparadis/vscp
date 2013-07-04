@@ -323,7 +323,7 @@ public:
     */
     void clearStorage( void );
 
-    uint8_t  m_nLevel;        // 1 or 2 (defults to 1)
+    uint8_t  m_nLevel;        // 1 or 2 (defaults to 1)
     uint16_t m_nStartPage;
     uint16_t m_nStartOffset;
     uint16_t m_nRowCount;

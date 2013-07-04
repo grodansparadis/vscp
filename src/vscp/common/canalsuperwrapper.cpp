@@ -26,6 +26,7 @@
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include <wx/progdlg.h>
+#include <wx/stdpaths.h>
 
 #include "vscp.h"
 #include "canalsuperwrapper.h"
@@ -1403,6 +1404,93 @@ error:
 
 	return strWrk;
 }
+
+
+//////////////////////////////////////////////////////////////////////////////
+// loadMDF
+//
+
+bool CCanalSuperWrapper::loadMDF( wxWindow *pwnd,
+                                    uint8_t *preg_url,
+                                    wxString& url,
+                                    CMDF *pmdf )
+{
+    bool rv = true;
+    wxStandardPaths stdpaths;
+    wxString remoteFile;
+    //uint8_t mdf_url[33];
+
+    // Check pointers
+    if ( NULL == pmdf ) return false;
+    //if ( NULL == pmdf_url ) return false;
+
+    // If length of url is zero registers should be read
+    // from device to get mdf url
+    if ( NULL != preg_url ) {
+
+        remoteFile = _("http://") + wxString::From8BitData( (const char *)preg_url );
+        //wxString remoteFile = _("http://www.grodansparadis.com/smart2_001.mdf");
+
+    }
+    else {
+        remoteFile = url;
+    }
+
+    wxString localFile;
+
+    wxProgressDialog progressDlg(_("VSCP Module Description File"),
+            _("Load and parse MDF"),
+            100,
+            pwnd,
+            wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+    
+
+    wxDateTime now = wxDateTime::Now();
+
+    if ( wxNOT_FOUND == remoteFile.Find( _("://") ) ) {
+
+        // If no UI no way to ask
+        if (NULL != pwnd)  return false;
+        
+        localFile = remoteFile;
+
+        // Load MDF from local file
+        wxFileDialog dlg( pwnd,
+                            _("Choose file to load MDF from "),
+                            stdpaths.GetUserDataDir(),
+                            _(""),
+                            _("MSF Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
+        if ( wxID_OK == dlg.ShowModal() ) {
+            localFile = dlg.GetPath();
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        // Download the MDF
+        progressDlg.Update( 30, _("Download MDF.") );
+
+        if ( !pmdf->downLoadMDF( remoteFile, localFile ) ) {
+            wxMessageBox( _("Failed to download MDF.") );
+            progressDlg.Update( 100 );
+            return false;
+        }
+    }
+
+    progressDlg.Update( 60, _("Parsing MDF.") );
+
+    pmdf->clearStorage();
+
+    if ( !pmdf->parseMDF( localFile ) ) {
+        wxMessageBox( _("Failed to parse MDF.") );
+        progressDlg.Update( 100 );
+        return false;
+    }
+
+    return rv;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // getLevel1DmInfo
