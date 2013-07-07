@@ -67,7 +67,7 @@
 
 // queues
 //WX_DEFINE_LIST(VSCPEVENTLIST_SEND);
-WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
+//WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
 
 //////////////////////////////////////////////////////////////////////
 // Csocketcan
@@ -370,7 +370,8 @@ CSocketCanWorkerTread::Entry()
 
 				if ( doLevel2Filter(pEvent, &m_pObj->m_vscpfilter )) {						
                     m_pObj->m_mutexReceiveQueue.Lock();
-                    m_pObj->m_receiveQueue.Append(pEvent);
+                    //m_pObj->m_receiveQueue.Append(pEvent);
+                    m_pObj->m_receiveList.push_back(pEvent);
                     m_pObj->m_semReceiveQueue.Post();
                     m_pObj->m_mutexReceiveQueue.Unlock();
 				}
@@ -390,7 +391,7 @@ CSocketCanWorkerTread::Entry()
                 //VSCPEVENTLIST_SEND::compatibility_iterator nodeClient;
                 m_pObj->m_mutexSendQueue.Lock();
                 //nodeClient = m_pObj->m_sendQueue.GetFirst();
-                vscpEvent *pEvent = /*nodeClient->GetData()*/m_pObj->m_sendList.front();
+                vscpEvent *pEvent = m_pObj->m_sendList.front();
                 m_pObj->m_sendList.pop_front();
                 m_pObj->m_mutexSendQueue.Unlock();
               

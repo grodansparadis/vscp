@@ -285,16 +285,18 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
         return CANAL_ERROR_TIMEOUT;
     }
     
-    VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
+    //VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
 
 	pdrvObj->m_mutexReceiveQueue.Lock();
-	nodeClient = pdrvObj->m_receiveQueue.GetFirst();
-	vscpEvent *pLocalEvent = nodeClient->GetData();
+	//nodeClient = pdrvObj->m_receiveQueue.GetFirst();
+	//vscpEvent *pLocalEvent = nodeClient->GetData();
+    vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
+    pdrvObj->m_receiveList.pop_front();
 	pdrvObj->m_mutexReceiveQueue.Unlock();
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
     
     copyVSCPEvent( pEvent, pLocalEvent );
-    pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
+    //pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
     deleteVSCPevent( pLocalEvent );
 	
 	return CANAL_ERROR_SUCCESS;

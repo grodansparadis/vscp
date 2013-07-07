@@ -1149,13 +1149,13 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
         destguid.setLSB( pElement->m_nodeid );
         
         bool bregs = m_csw.readLevel2Registers( this,
-									pElement->m_reg,
-									m_ifguid,
-									0,
-									256,
-									&destguid,
-									&progressDlg,
-									false );
+                                                    pElement->m_reg,
+                                                    m_ifguid,
+                                                    0,
+                                                    256,
+                                                    &destguid,
+                                                    &progressDlg,
+                                                    false );
 
         uint8_t preg_url[33];
         memset( preg_url, 0, sizeof(preg_url));

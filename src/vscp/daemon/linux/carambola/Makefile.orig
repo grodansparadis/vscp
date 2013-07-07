@@ -20,22 +20,13 @@ SOURCES=vscpd.cpp \
 	md5.cpp \
 	randPassword.cpp
 
-CANALSOCKETCAN_SOURCES=socketcandrv.cpp socketcanobj.cpp dllist.c devicelist.cpp
-CANALSOCKETCAN_OBJECTS=$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(CANALSOCKETCAN_SOURCES)))
-
 OBJECTS=$(patsubst %.c,%.o,$(patsubst %.cpp,%.o,$(SOURCES)))
 LDFLAGS += -s
 
-#all: socketcandrv.so
-all: $(SOURCES) $(EXECUTABLE) socketcandrv.so
-#all: $(SOURCES) $(EXECUTABLE)
-
-# Build the Linux DL
-%.so: %.o $(CANALSOCKETCAN_OBJECTS)
-	$(CXX) -o $@ $(CANALSOCKETCAN_OBJECTS) $(DLFLAGS) $(LIBS)
-
+all: $(SOURCES) $(EXECUTABLE)
+    
 clean:
-	rm -f *.o *.so $(EXECUTABLE)
+	rm -f *.o $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
 ifeq (,$(findstring .cpp,$(SOURCES)))

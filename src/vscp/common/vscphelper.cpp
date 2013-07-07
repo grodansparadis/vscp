@@ -2854,7 +2854,7 @@ wxString getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     if (NULL != pmdf) {
 
         // MDF Info
-        strHTML = _("<h1>MDF Information</h1>");
+        strHTML += _("<h1>MDF Information</h1>");
 
         strHTML += _("<font color=\"#009900\">");
 

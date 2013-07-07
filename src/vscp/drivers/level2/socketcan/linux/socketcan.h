@@ -69,7 +69,7 @@ using namespace std;
   
 // Input and output queue
 //WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_SEND);
-WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
+//WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
 
 // Forward declarations
 class CSocketCanWorkerTread;
@@ -144,9 +144,10 @@ public:
 	
 	// Queue
 	//VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
-	VSCPEVENTLIST_RECEIVE m_receiveQueue;	// Thing this driver receive
+	//VSCPEVENTLIST_RECEIVE m_receiveQueue;		// Thing this driver receive
 	
 	std::list<vscpEvent *> m_sendList;
+	std::list<vscpEvent *> m_receiveList;
 	
 	/*!
         Event object to indicate that there is an event in the output queue
