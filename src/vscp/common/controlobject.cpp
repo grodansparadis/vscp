@@ -264,7 +264,8 @@ CControlObject::CControlObject()
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
     // Nill the GUID
-    memset(m_GUID, 0, 16);
+    //memset(m_GUID, 0, 16);
+    m_guid.clear();
 
     // Initialize the client map
     // to all unused
@@ -423,11 +424,11 @@ bool CControlObject::init(wxString& strcfgfile)
     }
 
     // Get GUID
-    if (isGUIDEmpty(m_GUID)) {
-        if (!getMacAddress(m_GUID)) {
+    if ( m_guid.isNULL() ) {
+        if (!getMacAddress(m_guid)) {
             // We failed to create GUID from MAC address use
             // 'localhost' IP instead as the base.
-            getIPAddress(m_GUID);
+            getIPAddress(m_guid);
         }
     }
 
@@ -513,7 +514,7 @@ bool CControlObject::run(void)
     unsigned int oldus = 0;
     //char interface_name[ 128 ] = "";
     const char *websockif = NULL;
-    struct libwebsocket_context *context;
+    struct libwebsocket_context *pcontext;
     unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
             LWS_SEND_BUFFER_POST_PADDING ];
 
@@ -532,7 +533,7 @@ bool CControlObject::run(void)
     info.port = m_portWebsockets;
     info.iface = websockif;
     info.protocols = protocols;
-    info.extensions = libwebsocket_internal_extensions;
+    info.extensions = libwebsocket_get_internal_extensions();
     info.ssl_ca_filepath = NULL;
     info.ssl_cert_filepath = NULL;
     info.ssl_cipher_list = NULL;
@@ -545,7 +546,12 @@ bool CControlObject::run(void)
     info.ka_probes = 0;
     info.ka_interval = 0;
 
-    context = libwebsocket_create_context(&info);
+    pcontext = libwebsocket_create_context(&info);
+    if ( NULL == pcontext ) {
+        logMsg(_("Unable to initialize websockets. Terminating!\n"), DAEMON_LOGMSG_CRITICAL);
+        return FALSE;
+    }
+    
 #endif
 
 
@@ -622,7 +628,7 @@ bool CControlObject::run(void)
          * immediately and quickly.
          */
 
-        libwebsocket_service(context, 50);
+        libwebsocket_service(pcontext, 50);
 
         // Wait for event
         if (wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout(10)) {
@@ -671,7 +677,7 @@ bool CControlObject::run(void)
     removeClient(pClientItem);
     m_wxClientMutex.Unlock();
 
-    libwebsocket_context_destroy(context);
+    libwebsocket_context_destroy(pcontext);
 
     wxLogDebug(_("ControlObject: Done"));
     return true;
@@ -1165,12 +1171,12 @@ void CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
     addIdToClientMap(pClientItem->m_clientID);
 
     // Set GUID for interface
-    //getIPAddress ( pClientItem->m_GUID );
-    memcpy(pClientItem->m_GUID, m_GUID, 16);
-    pClientItem->m_GUID[ 0 ] = 0x00;
-    pClientItem->m_GUID[ 1 ] = 0x00;
-    pClientItem->m_GUID[ 2 ] = pClientItem->m_clientID & 0xff;
-    pClientItem->m_GUID[ 3 ] = (pClientItem->m_clientID >> 8) & 0xff;
+    //getIPAddress( m_guid );
+    pClientItem->m_guid = m_guid;
+    pClientItem->m_guid.setAt( 0, 0);
+    pClientItem->m_guid.setAt( 1, 0);
+    pClientItem->m_guid.setAt( 2, pClientItem->m_clientID & 0xff );
+    pClientItem->m_guid.setAt( 3, (pClientItem->m_clientID >> 8) & 0xff );
 }
 
 
@@ -1192,11 +1198,8 @@ void CControlObject::removeClient(CClientItem *pClientItem)
 //  getMacAddress
 //
 
-bool CControlObject::getMacAddress(unsigned char *pGUID)
+bool CControlObject::getMacAddress(cguid& guid)
 {
-    // Check pointer
-    if (NULL == pGUID) return false;
-
 #ifdef WIN32
 
     bool rv = false;
@@ -1206,7 +1209,7 @@ bool CControlObject::getMacAddress(unsigned char *pGUID)
     int i;
 
     // Clear the GUID
-    memset(pGUID, 0, 16);
+    guid.clear();
 
     memset(&Ncb, 0, sizeof( Ncb));
     Ncb.ncb_command = NCBENUM;
@@ -1233,31 +1236,31 @@ bool CControlObject::getMacAddress(unsigned char *pGUID)
         uRetCode = Netbios(&Ncb);
 
         if (uRetCode == 0) {
-            pGUID[ 15 ] = 0xff; // Ethernet assigned group
-            pGUID[ 14 ] = 0xff;
-            pGUID[ 13 ] = 0xff;
-            pGUID[ 12 ] = 0xff;
-            pGUID[ 11 ] = 0xff;
-            pGUID[ 10 ] = 0xff;
-            pGUID[ 9 ] = 0xff;
-            pGUID[ 8 ] = 0xfe;
-            pGUID[ 7 ] = Adapter.adapt.adapter_address[ 0 ];
-            pGUID[ 6 ] = Adapter.adapt.adapter_address[ 1 ];
-            pGUID[ 5 ] = Adapter.adapt.adapter_address[ 2 ];
-            pGUID[ 4 ] = Adapter.adapt.adapter_address[ 3 ];
-            pGUID[ 3 ] = Adapter.adapt.adapter_address[ 4 ];
-            pGUID[ 2 ] = Adapter.adapt.adapter_address[ 5 ];
-            pGUID[ 1 ] = 0;
-            pGUID[ 0 ] = 0;
+            guid.setAt( 15, 0xff );
+            guid.setAt( 14, 0xff );
+            guid.setAt( 13, 0xff );
+            guid.setAt( 12, 0xff );
+            guid.setAt( 11, 0xff );
+            guid.setAt( 10, 0xff );
+            guid.setAt( 9, 0xff );
+            guid.setAt( 8, 0xfe );
+            guid.setAt( 7, Adapter.adapt.adapter_address[ 0 ] );
+            guid.setAt( 6, Adapter.adapt.adapter_address[ 1 ] );
+            guid.setAt( 5, Adapter.adapt.adapter_address[ 2 ] );
+            guid.setAt( 4, Adapter.adapt.adapter_address[ 3 ] );
+            guid.setAt( 3, Adapter.adapt.adapter_address[ 4 ] );
+            guid.setAt( 2, Adapter.adapt.adapter_address[ 5 ] );
+            guid.setAt( 1, 0 );
+            guid.setAt( 0, 0 );
 #ifdef __WXDEBUG__
             char buf[256];
             sprintf(buf, "The Ethernet MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
-                    pGUID[ 2 ],
-                    pGUID[ 3 ],
-                    pGUID[ 4 ],
-                    pGUID[ 5 ],
-                    pGUID[ 6 ],
-                    pGUID[ 7 ]);
+                    guid.getAt(2),
+                    guid.getAt(3),
+                    guid.getAt(4),
+                    guid.getAt(5),
+                    guid.getAt(6),
+                    guid.getAt(7));
 
             wxString str = wxString::FromUTF8(buf);
             wxLogDebug(str);
@@ -1276,7 +1279,7 @@ bool CControlObject::getMacAddress(unsigned char *pGUID)
     int fd;
 
     // Clear the GUID
-    memset(pGUID, 0, 16);
+    guid.clear();
 
     fd = socket(PF_INET, SOCK_RAW, htons(ETH_P_ALL));
     memset(&ifr, 0, sizeof( ifr));
@@ -1291,22 +1294,22 @@ bool CControlObject::getMacAddress(unsigned char *pGUID)
                 *(ptr + 3),
                 *(ptr + 4),
                 *(ptr + 5)), DAEMON_LOGMSG_INFO);
-        pGUID[ 15 ] = 0xff; // Ethernet assigned group
-        pGUID[ 14 ] = 0xff;
-        pGUID[ 13 ] = 0xff;
-        pGUID[ 12 ] = 0xff;
-        pGUID[ 11 ] = 0xff;
-        pGUID[ 10 ] = 0xff;
-        pGUID[ 9 ] = 0xff;
-        pGUID[ 8 ] = 0xfe;
-        pGUID[ 7 ] = *ptr;
-        pGUID[ 6 ] = *(ptr + 1);
-        pGUID[ 5 ] = *(ptr + 2);
-        pGUID[ 4 ] = *(ptr + 3);
-        pGUID[ 3 ] = *(ptr + 4);
-        pGUID[ 2 ] = *(ptr + 5);
-        pGUID[ 1 ] = 0;
-        pGUID[ 0 ] = 0;
+        guid.setAt( 15, 0xff );
+        guid.setAt( 14, 0xff );
+        guid.setAt( 13, 0xff );
+        guid.setAt( 12, 0xff );
+        guid.setAt( 11, 0xff );
+        guid.setAt( 10, 0xff );
+        guid.setAt( 9, 0xff );
+        guid.setAt( 8, 0xfe );
+        guid.setAt( 7, *ptr );
+        guid.setAt( 6, *(ptr + 1) );
+        guid.setAt( 5, *(ptr + 2) );
+        guid.setAt( 4, *(ptr + 3) );
+        guid.setAt( 3, *(ptr + 4));
+        guid.setAt( 2, *(ptr + 5) );
+        guid.setAt( 1, 0 );
+        guid.setAt( 0, 0 );
     } else {
         logMsg(_("Failed to get hardware address (must be root?).\n"), DAEMON_LOGMSG_WARNING);
         rv = false;
@@ -1325,19 +1328,19 @@ bool CControlObject::getMacAddress(unsigned char *pGUID)
 //  getIPAddress
 //
 
-bool CControlObject::getIPAddress(unsigned char *pGUID)
+bool CControlObject::getIPAddress(cguid& guid)
 {
     // Clear the GUID
-    memset(pGUID, 0, 16);
+    guid.clear();
 
-    pGUID[15] = 0xff;
-    pGUID[14] = 0xff;
-    pGUID[13] = 0xff;
-    pGUID[12] = 0xff;
-    pGUID[11] = 0xff;
-    pGUID[10] = 0xff;
-    pGUID[9] = 0xff;
-    pGUID[8] = 0xfd;
+    guid.setAt( 15, 0xff );
+    guid.setAt( 14, 0xff );
+    guid.setAt( 13, 0xff );
+    guid.setAt( 12, 0xff );
+    guid.setAt( 11, 0xff );
+    guid.setAt( 10, 0xff );
+    guid.setAt( 9, 0xff );
+    guid.setAt( 8, 0xfd );
 
     char szName[ 128 ];
     gethostname(szName, sizeof( szName));
@@ -1362,12 +1365,11 @@ bool CControlObject::getIPAddress(unsigned char *pGUID)
         if (NULL != pAddr) localaddr[ idx ] = *((unsigned long *) pAddr);
     } while ((NULL != pAddr) && (idx < 16));
 
-
-    pGUID[7] = (localaddr[ 0 ] >> 24) & 0xff;
-    pGUID[6] = (localaddr[ 0 ] >> 16) & 0xff;
-    pGUID[5] = (localaddr[ 0 ] >> 8) & 0xff;
-    pGUID[4] = localaddr[ 0 ] & 0xff;
-
+    guid.setAt( 7, (localaddr[ 0 ] >> 24) & 0xff );
+    guid.setAt( 6, (localaddr[ 0 ] >> 16) & 0xff );
+    guid.setAt( 5, (localaddr[ 0 ] >> 8) & 0xff );
+    guid.setAt( 4, localaddr[ 0 ] & 0xff );
+    
     return true;
 }
 
@@ -1461,7 +1463,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
                 } else if (subchild->GetName() == wxT("guid")) {
                     wxString str = subchild->GetNodeContent();
-                    getGuidFromStringToArray(m_GUID, str);
+                    //getGuidFromStringToArray(m_GUID, str);
+                    m_guid.getFromString(str);
                 } else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = readStringValue(str);
@@ -2453,10 +2456,14 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
         // available on this machine. If not it should be sent to 
         // the rest of the network as normal
 
-        unsigned char destGUID[16];
-        memcpy(destGUID, pEvent->pdata, 16); // get destination GUID
-        destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
-        destGUID[1] = 0;
+        cguid destguid;
+        destguid.getFromArray(pEvent->pdata);
+        destguid.setAt(0,0);
+        destguid.setAt(1,0);
+        //unsigned char destGUID[16];
+        //memcpy(destGUID, pEvent->pdata, 16); // get destination GUID
+        //destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
+        //destGUID[1] = 0;
 
         m_wxClientMutex.Lock();
 
@@ -2468,7 +2475,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
                 ++iter) {
 
             CClientItem *pItem = *iter;
-            if (isSameGUID(pItem->m_GUID, destGUID)) {
+            if ( pItem->m_guid == destguid ) {
                 // Found
                 pDestClientItem = pItem;
                 break;

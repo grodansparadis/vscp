@@ -4157,6 +4157,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Alarm Status Register"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4186,6 +4189,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("VSCP Major version number"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4215,6 +4221,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("VSCP Minor version number"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4244,6 +4253,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Node Control Flags\r test"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4272,6 +4284,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 0"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4300,6 +4315,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 1"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4328,6 +4346,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 2"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4357,6 +4378,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 3"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4386,6 +4410,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 4"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4416,6 +4443,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 0"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4446,6 +4476,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 1"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4476,6 +4509,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 2"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4506,6 +4542,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 3"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4536,6 +4575,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 0"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4566,6 +4608,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 1"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4596,6 +4641,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 2"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4626,6 +4674,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 3"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4656,6 +4707,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Nickname id"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4685,6 +4739,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Page select register MSB"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4714,6 +4771,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Page select register LSB"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4744,6 +4804,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware major version number"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4774,6 +4837,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware minor version number"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4804,6 +4870,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware sub minor version number"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4834,6 +4903,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Boot loader algorithm"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4863,6 +4935,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Buffer Size"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
@@ -4893,6 +4968,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Number of register pages used."));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4922,6 +5000,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 15 MSB"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4959,6 +5040,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 14"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -4989,6 +5073,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 13"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5020,6 +5107,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 12"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5050,6 +5140,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 11"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5081,6 +5174,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 10"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5111,6 +5207,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 9"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5141,6 +5240,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 8"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5172,6 +5274,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 7"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5202,6 +5307,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 6"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5232,6 +5340,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 5"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5262,6 +5373,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 4"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5292,6 +5406,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 3"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5322,6 +5439,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 2"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5352,6 +5472,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 1"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5382,6 +5505,9 @@ void frmDeviceConfig::fillStandardRegisters() {
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 0, LSB"));
     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
     for (i = 0; i < 4; i++) {
         m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
@@ -5431,6 +5557,9 @@ void frmDeviceConfig::fillStandardRegisters() {
         m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Module Description File URL") + str);
         m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
         m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+        
+        // Make all parts of the row visible
+        m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
         for (j = 0; j < 4; j++) {
             m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1,

@@ -244,17 +244,17 @@ public:
     /*!
         Get device address for primary etehernet adapter
 
-        @param pGUID Pointer to GUID array (16 bytes)
+        @param guid class
      */
-    bool getMacAddress(uint8_t *pGUID);
+    bool getMacAddress(cguid& guid);
 
 
     /*!
         Get the first IP address computer is known under
 
-        @param pGUID Pointer to GUID array (16 bytes)
+        @param pGUID Pointer to GUID class
      */
-    bool getIPAddress(uint8_t *pGUID);
+    bool getIPAddress(cguid& guid);
 
     /*!
         Read configuration data
@@ -377,7 +377,8 @@ public:
         Server GUID
         This is the GUID for the server
      */
-    uint8_t m_GUID[ 16 ];
+    //uint8_t m_GUID[ 16 ];
+	cguid m_guid;
 
     /*!
         ClientMap

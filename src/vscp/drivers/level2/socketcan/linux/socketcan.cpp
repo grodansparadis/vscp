@@ -145,7 +145,7 @@ Csocketcan::open(const char *pUsername,
 	uint32_t ChannelID;
 	m_srv.doCmdGetChannelID(&ChannelID);
     
-	m_srv.doCmdGetGUID(m_ifguid);
+	//m_srv.doCmdGetGUID(m_ifguid);
 
 	// The server should hold configuration data for each sensor
 	// we want to monitor.
@@ -351,16 +351,21 @@ CSocketCanWorkerTread::Entry()
 					delete pEvent;
 					continue;
 				}
-
+                
+                // Interface GUID is set to all nulls as
+                // this event should be sent to all clients.
+                memset(pEvent->pdata, 0, 16 );
+                
+                // GUID will be set to GUID of interface
+                // by driver interface with LSB set to nickname
+                memset( pEvent->GUID, 0, 16 );
+                pEvent->GUID[0] = frame.can_id & 0xff;
+                
 				// Set VSCP class + 512
 				pEvent->vscp_class = getVSCPclassFromCANid(frame.can_id) + 512;
 
 				// Set VSCP type
 				pEvent->vscp_type = getVSCPtypeFromCANid(frame.can_id);
-
-				// Set node id + guid
-				m_pObj->m_ifguid.setLSB(frame.can_id & 0xff);
-				m_pObj->m_ifguid.setGUID(pEvent->pdata);
 
 				// Copy data if any
 				pEvent->sizeData = frame.len + 16;

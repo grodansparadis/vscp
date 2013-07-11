@@ -72,7 +72,8 @@ CClientItem::CClientItem()
     m_bUDPReceiveChannel = false;
 
 	// Nill GUID
-	memset( m_GUID, 0, 16 );
+	//memset( m_GUID, 0, 16 );
+    m_guid.clear();
 
 	// Nill Level II mask (accept all)
 	clearVSCPFilter( &m_filterVSCP );

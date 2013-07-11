@@ -40,6 +40,7 @@
 #endif
 
 #include "../../vscp/common/vscp.h"
+#include "guid.h"
 #include "devicelist.h"
 
 
@@ -127,7 +128,8 @@ public:
         This is the default address and it can be changed by the client application
 
     */
-    uint8_t m_GUID[ 16 ];
+    //uint8_t m_GUID[ 16 ];
+	cguid m_guid;
 
     /*!
         Interface name

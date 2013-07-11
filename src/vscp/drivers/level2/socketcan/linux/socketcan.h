@@ -134,7 +134,7 @@ public:
     vscpEventFilter m_vscpfilter;
 	
 	/// Get GUID for this interface.
-	cguid m_ifguid;
+	//cguid m_ifguid;
 
     /// Pointer to worker threads
     CSocketCanWorkerTread *m_pthreadWorker;

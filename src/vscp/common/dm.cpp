@@ -2782,7 +2782,8 @@ bool CDM::feedPeriodicEvent( void )
         EventSecond.timestamp = makeTimeStamp();                        // Set timestamp
         EventSecond.sizeData = 0;								        // No data
         EventSecond.pdata = NULL;
-        memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        //memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventSecond.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal second event\n") );
         feed( &EventSecond );
 
@@ -2798,7 +2799,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomMinute.sizeData = 0;									    // No data
             EventRandomMinute.timestamp = makeTimeStamp();                      // Set timestamp
             EventRandomMinute.pdata = NULL;
-            memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomMinute.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random minute event\n")  );
             feed( &EventRandomMinute );
 
@@ -2816,7 +2818,8 @@ bool CDM::feedPeriodicEvent( void )
         EventMinute.timestamp = makeTimeStamp();                            // Set timestamp
         EventMinute.sizeData = 0;									        // No data
         EventMinute.pdata = NULL;
-        memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        //memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventMinute.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal minute event\n") );
         m_rndMinute = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 60;
         feed( &EventMinute );
@@ -2830,7 +2833,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomHour.timestamp = makeTimeStamp();                    // Set timestamp
             EventRandomHour.sizeData = 0;								    // No data
             EventRandomHour.pdata = NULL;
-            memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomHour.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random hour event\n") );
             feed( &EventRandomHour );
 
@@ -2840,17 +2844,18 @@ bool CDM::feedPeriodicEvent( void )
     if ( m_lastTime.GetHour() != wxDateTime::Now().GetHour() ) {
 
         m_rndHour = (rand()/ RAND_MAX) * 60;
-        vscpEvent EventtHour;
-        EventtHour.vscp_class = VSCP_CLASS2_VSCPD;
-        EventtHour.vscp_type = VSCP2_TYPE_VSCPD_HOUR;				        // Internal Hour Event
-        EventtHour.head = VSCP_PRIORITY_NORMAL;						        // Set priority
-        EventtHour.timestamp = makeTimeStamp();                             // Set timestamp
-        EventtHour.sizeData = 0;									        // No data
-        EventtHour.pdata = NULL;
-        memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        vscpEvent EventHour;
+        EventHour.vscp_class = VSCP_CLASS2_VSCPD;
+        EventHour.vscp_type = VSCP2_TYPE_VSCPD_HOUR;				        // Internal Hour Event
+        EventHour.head = VSCP_PRIORITY_NORMAL;						        // Set priority
+        EventHour.timestamp = makeTimeStamp();                             // Set timestamp
+        EventHour.sizeData = 0;									        // No data
+        EventHour.pdata = NULL;
+        //memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventHour.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal hour event\n") );
         m_rndHour = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 24;
-        feed( &EventtHour );
+        feed( &EventHour );
 
         // Check if it's time to send radom day event
         if ( m_rndDay == wxDateTime::Now().GetHour() ) {
@@ -2862,7 +2867,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomDay.timestamp = makeTimeStamp();                     // Set timestamp
             EventRandomDay.sizeData = 0;								    // No data
             EventRandomDay.pdata = NULL;
-            memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomDay.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random day event\n") );
             feed( &EventRandomDay );
 
@@ -2879,7 +2885,8 @@ bool CDM::feedPeriodicEvent( void )
         EventDay.timestamp = makeTimeStamp();                               // Set timestamp
         EventDay.sizeData = 0;									            // No data
         EventDay.pdata = NULL;
-        memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );		            // Server GUID
+        //memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );		            // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventDay.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal day event\n") );
         m_rndDay = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 7;
         feed( &EventDay );
@@ -2894,7 +2901,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomWeek.timestamp = makeTimeStamp();                    // Set timestamp
             EventRandomWeek.sizeData = 0;								    // No data
             EventRandomWeek.pdata = NULL;
-            memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomWeek.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random week event\n") );
             feed( &EventRandomWeek );
 
@@ -2912,7 +2920,8 @@ bool CDM::feedPeriodicEvent( void )
             EventWeek.timestamp = makeTimeStamp();                          // Set timestamp
             EventWeek.sizeData = 0;										    // No data
             EventWeek.pdata = NULL;
-            memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 );		    // Server GUID
+            //memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 );		    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventWeek.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal week event\n") );
             m_rndWeek = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 52;
             feed( &EventWeek );
@@ -2926,7 +2935,8 @@ bool CDM::feedPeriodicEvent( void )
                 EventRandomMonth.timestamp = makeTimeStamp();                   // Set timestamp
                 EventRandomMonth.sizeData = 0;									// No data
                 EventRandomMonth.pdata = NULL;
-                memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+                //memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+                m_pCtrlObject->m_guid.setGUID( EventRandomMonth.GUID );
                 wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random month event\n") );
                 feed( &EventRandomMonth );
 
@@ -2943,7 +2953,8 @@ bool CDM::feedPeriodicEvent( void )
         EventMonth.timestamp = makeTimeStamp();                                 // Set timestamp
         EventMonth.sizeData = 0;										        // No data
         EventMonth.pdata = NULL;
-        memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );			        // Server GUID
+        //memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );			        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventMonth.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal month event\n") );
         m_rndMonth = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 12;
         feed( &EventMonth );
@@ -2957,7 +2968,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomYear.timestamp = makeTimeStamp();                        // Set timestamp
             EventRandomYear.sizeData = 0;								        // No data
             EventRandomYear.pdata = NULL;
-            memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+            //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomYear.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random year event\n") );
             feed( &EventRandomYear );
 
@@ -2974,7 +2986,8 @@ bool CDM::feedPeriodicEvent( void )
         EventYear.timestamp = makeTimeStamp();                          // Set timestamp
         EventYear.sizeData = 0;									        // No data
         EventYear.pdata = NULL;
-        memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        //memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventYear.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal year event\n") );
         m_rndYear = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 365;
         feed( &EventYear );
@@ -2991,7 +3004,8 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
-            memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3007,7 +3021,8 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
-            memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3023,7 +3038,8 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
             EventQuarter.sizeData = 0;					                // No data
             EventQuarter.pdata = NULL;
-            memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3039,7 +3055,8 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
-            memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 

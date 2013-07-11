@@ -106,7 +106,7 @@ public:
     /*!
         Set a byte at a specific GUID position
     */
-    void setAt( const unsigned char n, const unsigned char value ) { int pos; pos &= ( n & 0x0f ); m_id[ pos ] = value; };
+    void setAt( const unsigned char n, const unsigned char value ) { int pos; pos = ( n & 0x0f ); m_id[ pos ] = value; };
 
 	/*!
         Set LSB GUID position

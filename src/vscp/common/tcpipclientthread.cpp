@@ -722,8 +722,7 @@ void TcpClientThread::handleClientSend ( void )
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
-
-
+    
     // Get Type
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
@@ -769,8 +768,6 @@ void TcpClientThread::handleClientSend ( void )
         return;	
     }
 
-
-
     // Get GUID
     wxString strGUID;
     if ( tkz.HasMoreTokens() ) {
@@ -796,26 +793,12 @@ void TcpClientThread::handleClientSend ( void )
     if ( NULL != pEvent ) {
 
         // Check if i/f GUID should be used
-        if ( '-' == strGUID[0] ) {
+        if ( ( '-' == strGUID[0] ) || isGUIDEmpty( event.GUID ) ) {
             // Copy in the i/f GUID
-            memcpy ( event.GUID, m_pClientItem->m_GUID, 16 );
+            m_pClientItem->m_guid.setGUID( event.GUID );
         }
         else {
-
             getGuidFromString( &event, strGUID );
-
-            // Check if the GUID is all nill'd if so 
-            // use interface GUID
-            int sumGUID = 0;
-            for ( int i=0; i<16; i++ ) {
-                sumGUID += event.GUID[ i ];
-            }
-
-            if ( 0 == sumGUID) {
-                // Copy in the i/f GUID
-                memcpy ( event.GUID, m_pClientItem->m_GUID, 16 );
-            }
-
         }
 
         // Copy event
@@ -857,22 +840,18 @@ void TcpClientThread::handleClientSend ( void )
                 // available on this machine. If not it should be sent to 
                 // the rest of the network as normal
 
-                unsigned char destGUID[16];
-                //memcpy( destGUID, pEvent->pdata, 16 );	// get destination GUID
-				// External GUID's are always stored MSB first
-				for ( int i=0; i<16; i++ ) {
-					destGUID[ i ] = pEvent->pdata[ 15 - i ];		
-				}
+                cguid destguid;
+                destguid.getFromArray( pEvent->pdata );
 
-                destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
-                destGUID[1] = 0;
+                destguid.setAt(0,0);    // Interface GUID's have LSB bytes nilled
+                destguid.setAt(1,0);
                 
                 wxString dbgStr = 
                     wxString::Format( _("Level I event over Level II dest = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
-                    destGUID[ 15 ],destGUID[ 14 ],destGUID[ 13 ],destGUID[ 12 ],
-                    destGUID[ 11 ],destGUID[ 10 ],destGUID[ 9 ],destGUID[ 8 ],
-                    destGUID[ 7 ],destGUID[ 6 ],destGUID[ 5 ],destGUID[ 4 ],
-                    destGUID[ 3 ],destGUID[ 2 ],destGUID[ 1 ],destGUID[ 0 ] );    
+                    destguid.getAt(15),destguid.getAt(14),destguid.getAt(13),destguid.getAt(12),
+                    destguid.getAt(11),destguid.getAt(10),destguid.getAt(9),destguid.getAt(8),
+                    destguid.getAt(7),destguid.getAt(6),destguid.getAt(5),destguid.getAt(4),
+                    destguid.getAt(3),destguid.getAt(2),destguid.getAt(1),destguid.getAt(0) );    
                     m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
                 
 
@@ -888,16 +867,16 @@ void TcpClientThread::handleClientSend ( void )
                         CClientItem *pItem = *iter;
                         dbgStr = 
                             wxString::Format( _("Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
-                            pItem->m_GUID[ 15 ],pItem->m_GUID[ 14 ],pItem->m_GUID[ 13 ],pItem->m_GUID[ 12 ],
-                            pItem->m_GUID[ 11 ],pItem->m_GUID[ 10 ],pItem->m_GUID[ 9 ],pItem->m_GUID[ 8 ],
-                            pItem->m_GUID[ 7 ],pItem->m_GUID[ 6 ],pItem->m_GUID[ 5 ],pItem->m_GUID[ 4 ],
-                            pItem->m_GUID[ 3 ],pItem->m_GUID[ 2 ],pItem->m_GUID[ 1 ],pItem->m_GUID[ 0 ] );    
+                            pItem->m_guid.getAt(15),pItem->m_guid.getAt(14),pItem->m_guid.getAt(13),pItem->m_guid.getAt(12),
+                            pItem->m_guid.getAt(11),pItem->m_guid.getAt(10),pItem->m_guid.getAt(9),pItem->m_guid.getAt(8),
+                            pItem->m_guid.getAt(7),pItem->m_guid.getAt(6),pItem->m_guid.getAt(5),pItem->m_guid.getAt(4),
+                            pItem->m_guid.getAt(3),pItem->m_guid.getAt(2),pItem->m_guid.getAt(1),pItem->m_guid.getAt(0) );    
                             dbgStr += _(" ");
                             dbgStr += pItem->m_strDeviceName;
                             m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
                         
                         
-                        if ( isSameGUID( pItem->m_GUID, destGUID ) ) {
+                        if ( pItem->m_guid == destguid ) {
                             // Found
                             pDestClientItem = pItem;
 							bSent = true;
@@ -1273,7 +1252,8 @@ void TcpClientThread::handleClientSetChannelGUID ( void )
     }
 
     wxString str = m_wxcmdUC.Right( m_wxcmdUC.Length() - 5 ); // remove: command + space
-    getGuidFromStringToArray( m_pClientItem->m_GUID, str );
+    //getGuidFromStringToArray( m_pClientItem->m_GUID, str );
+    m_pClientItem->m_guid.getFromString(str);
     m_bOK = true;
     m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 }
@@ -1284,8 +1264,9 @@ void TcpClientThread::handleClientSetChannelGUID ( void )
 
 void TcpClientThread::handleClientGetChannelGUID ( void )
 {
-    char outbuf[ 1024 ];
-    char wrkbuf[ 20 ];
+    wxString strBuf;
+    //char outbuf[ 1024 ];
+    //char wrkbuf[ 20 ];
     int i;
 
     // Must be accredited to do this
@@ -1295,22 +1276,27 @@ void TcpClientThread::handleClientGetChannelGUID ( void )
         return;
     }
 
-    *outbuf = 0;
-
+    //*outbuf = 0;
+/*
     for ( i=0; i<16; i++ ) {
-        sprintf ( wrkbuf, "%d", m_pClientItem->m_GUID[ i ] );
+        sprintf ( wrkbuf, "%d", m_pClientItem->m_guid.getAt(i) );
         if ( 15 != i ) {
             strcat ( wrkbuf, ":" );
         }
 
         strcat ( outbuf, wrkbuf );
     }
+    strlen( strBuf.mb_str()
 
     strcat ( outbuf, "\r\n" );
     strcat ( outbuf, MSG_OK );
+    */
+    m_pClientItem->m_guid.toString( strBuf );
+    strBuf += _("\r\n");
+    strBuf += _(MSG_OK);
 
-    m_pClientSocket->Write ( outbuf,
-                                strlen ( outbuf ) );
+    m_pClientSocket->Write( strBuf.mb_str(),
+                                strlen( strBuf.mb_str() ) );
 
 }
 
@@ -1737,7 +1723,8 @@ void TcpClientThread::handleClientInterface_List( void )
         ++iter) {
 
             CClientItem *pItem = *iter;
-            writeGuidArrayToString( pItem->m_GUID, strGUID );	// Get GUID
+            //writeGuidArrayToString( pItem->m_GUID, strGUID );	// Get GUID
+            pItem->m_guid.toString( strGUID );
             strBuf = wxString::Format(_("%d,"), pItem->m_clientID );
             strBuf += wxString::Format(_("%d,"), pItem->m_type );
             strBuf += strGUID;

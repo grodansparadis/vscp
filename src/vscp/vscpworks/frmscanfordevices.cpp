@@ -1016,7 +1016,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                             (VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
                         if (eventex.data[ 1 ] == 0xd0) { // Requested register?
                             // Add nickname to list 
-                            found_list.push_back( eventex.data[15] );
+                            found_list.push_back( eventex.GUID[0] );
                         } // Check for correct node
                     }                        // Level II 512 Read reply?
                     else if (/*!m_ifguid.isNULL() && !bLevel2 &&*/
@@ -1027,7 +1027,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                         // Reg we requested?
                         if (0xd0 == eventex.data[ 16 ] ) {
                             // Add nickname to list 
-                            found_list.push_back( eventex.data[15] );
+                            found_list.push_back( eventex.GUID[0] );
                         }
                         //}
 

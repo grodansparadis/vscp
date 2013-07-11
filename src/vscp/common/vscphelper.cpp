@@ -1675,7 +1675,7 @@ bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 		wxStringTokenizer tkz(strGUID, wxT(":"));
 		for (int i = 0; i < 16; i++) {
 			tkz.GetNextToken().ToULong(&val, 16);
-			pEvent->GUID[ 15 - i ] = (uint8_t) val;
+			pEvent->GUID[ 15-i ] = (uint8_t) val;
 			// If no tokens left no use to continue
 			if (!tkz.HasMoreTokens()) break;
 		}
@@ -1702,7 +1702,7 @@ bool getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
 		wxStringTokenizer tkz(strGUID, wxT(":"));
 		for (int i = 0; i < 16; i++) {
 			tkz.GetNextToken().ToULong(&val, 16);
-			pEvent->GUID[ 15 - i ] = (uint8_t) val;
+			pEvent->GUID[ 15-i ] = (uint8_t) val;
 			// If no tokens left no use to continue
 			if (!tkz.HasMoreTokens()) break;
 		}
@@ -1724,7 +1724,7 @@ bool getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID)
 	wxStringTokenizer tkz(strGUID, wxT(":"));
 	for (int i = 0; i < 16; i++) {
 		tkz.GetNextToken().ToULong(&val, 16);
-		pGUID[ 15 - i ] = (uint8_t) val;
+		pGUID[ 15-i ] = (uint8_t) val;
 		// If no tokens left no use to continue
 		if (!tkz.HasMoreTokens()) break;
 	}

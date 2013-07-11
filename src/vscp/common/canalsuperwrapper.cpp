@@ -1066,8 +1066,8 @@ bool CCanalSuperWrapper::writeLevel2Register( cguid& ifGUID,
 
 		destGUID.setGUID( event.data );		// Destination GUID
 		event.data[16] = destGUID.getLSB();	// nodeid
-		event.data[17] = reg;					// Register to write
-		event.data[18] = *pcontent;				// value to write
+		event.data[17] = reg;				// Register to write
+		event.data[18] = *pcontent;			// value to write
 
 	}
 	else {
@@ -1099,21 +1099,23 @@ bool CCanalSuperWrapper::writeLevel2Register( cguid& ifGUID,
 			event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
 			event.vscp_type = VSCP_TYPE_PROTOCOL_WRITE_REGISTER;
 
-			memset( event.GUID, 0, 16 );			// We use interface GUID
+			memset( event.GUID, 0, 16 );		// We use interface GUID
 
 			event.sizeData = 16 + 3;				
 
-			destGUID.setGUID( event.data );			// Destination GUID
+			destGUID.setGUID( event.data );		// Destination GUID
 
-			event.data[16] = destGUID.getLSB();		// nodeid
-			event.data[17] = reg;                   // Register to write
-			event.data[18] = *pcontent;	            // value to write
+			event.data[16] = destGUID.getLSB();	// nodeid
+			event.data[17] = reg;               // Register to write
+			event.data[18] = *pcontent;	        // value to write
 
 		}
 
 	}
 
 	bResend = false;
+    
+    // Send the event
 	doCmdSend( &event );
 
 	wxLongLong startTime = ::wxGetLocalTimeMillis();
@@ -1144,14 +1146,15 @@ bool CCanalSuperWrapper::writeLevel2Register( cguid& ifGUID,
 					( VSCP_CLASS2_LEVEL1_PROTOCOL == event.vscp_class ) && 
 					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
 
-					if ( destGUID.isSameGUID( event.GUID ) ) {
+					//if ( destGUID.isSameGUID( event.GUID ) ) {
+                    if (destGUID.getLSB() == event.data[15] ) {
 						// Reg we requested?
-						if ( event.data[ 0 ] == reg ) {
+						if ( event.data[ 16 ] == reg ) {
 							// OK get the data
 							if ( NULL != pcontent ) {
 								// We go a rw reply from the correct node is
 								// the written data same as we expect.
-								if ( *pcontent != event.data[ 1 ] ) rv = false;
+								if ( *pcontent != event.data[ 17 ] ) rv = false;
 								break;
 							}
 						}

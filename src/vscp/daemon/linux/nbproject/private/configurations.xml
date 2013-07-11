@@ -3,7 +3,36 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="linux">
       <df name="carambola">
+        <df name="include">
+          <df name="linux">
+            <df name="can">
+              <in>bcm.h</in>
+              <in>core.h</in>
+              <in>dev.h</in>
+              <in>error.h</in>
+              <in>gw.h</in>
+              <in>isotp.h</in>
+              <in>netlink.h</in>
+              <in>raw.h</in>
+            </df>
+            <in>can.h</in>
+          </df>
+          <df name="socketcan">
+            <df name="can">
+              <in>bcm.h</in>
+              <in>error.h</in>
+              <in>gw.h</in>
+              <in>ioctl.h</in>
+              <in>isotp.h</in>
+              <in>netlink.h</in>
+              <in>raw.h</in>
+            </df>
+            <in>can.h</in>
+          </df>
+        </df>
         <df name="pkg">
+        </df>
+        <df name="www">
         </df>
         <in>SelectDevice.h</in>
         <in>actioncodes.h</in>
@@ -26,6 +55,8 @@
         <in>devicethread.cpp</in>
         <in>devicethread.h</in>
         <in>devitem.h</in>
+        <in>dlldrvobj.cpp</in>
+        <in>dlldrvobj.h</in>
         <in>dllist.c</in>
         <in>dllwrapper.h</in>
         <in>dm.cpp</in>
@@ -38,6 +69,10 @@
         <in>mdf.h</in>
         <in>options.h</in>
         <in>randPassword.cpp</in>
+        <in>socketcandrv.cpp</in>
+        <in>socketcandrv.h</in>
+        <in>socketcanobj.cpp</in>
+        <in>socketcanobj.h</in>
         <in>stdafx.h</in>
         <in>tcpipclientthread.cpp</in>
         <in>tcpipclientthread.h</in>

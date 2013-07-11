@@ -134,9 +134,7 @@ bool cguid::operator!=(const cguid &guid)
 
  void cguid::getFromArray( uint8_t *pguid )
  {
-	for ( int i=0; i<16; i++ ) {
-		m_id[ i ] = pguid[ 15-i ];
-	}
+	memcpy(m_id, pguid, 16 );
  }
 
 
@@ -186,7 +184,5 @@ bool cguid::isNULL( void )
 
 void cguid::setGUID( uint8_t *pArray )
 {
-	for ( int i=0; i<16; i++ ) {
-		pArray[ i ] = m_id[ 15 - i ];	
-	}
+    memcpy(pArray, m_id, 16 );
 }

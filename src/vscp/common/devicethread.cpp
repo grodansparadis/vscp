@@ -83,9 +83,7 @@ deviceThread::~deviceThread()
 //
 
 void *deviceThread::Entry()
-{
-    m_pCtrlObject->logMsg(_("1-------------------------->"), DAEMON_LOGMSG_INFO);
-    
+{ 
 	// Must have a valid pointer to the device item
 	if (NULL == m_pDeviceItem) return NULL;
 
@@ -125,13 +123,6 @@ void *deviceThread::Entry()
 		return NULL;
 	}
     
-
-    {
-            wxString str;
-			str = _("-------------------------->");
-            m_pCtrlObject->logMsg(str, DAEMON_LOGMSG_INFO);
-    }
-
 	if (VSCP_DRIVER_LEVEL1 == m_pDeviceItem->m_driverLevel) {
 
 		// Now find methods in library
@@ -397,7 +388,7 @@ void *deviceThread::Entry()
 								// Convert CANAL message to VSCP event
 								convertCanalToEvent(pvscpEvent,
 									&msg,
-									m_pDeviceItem->m_pClientItem->m_GUID);
+									m_pDeviceItem->m_pClientItem->m_guid.m_id );
 
 								pvscpEvent->obid = m_pDeviceItem->m_pClientItem->m_clientID;
 
@@ -644,7 +635,7 @@ void *deviceThread::Entry()
         /////////////////////////////////////////////////////////////////////////////
         // Device read worker thread
         /////////////////////////////////////////////////////////////////////////////
-        ::wxLogDebug(_("*** VSCP Device Worker Receive Thread Started"));
+        
         m_preceiveLevel2Thread = new deviceLevel2ReceiveThread;
 
         if (m_preceiveLevel2Thread) {
@@ -766,7 +757,7 @@ void *deviceCanalReceiveThread::Entry()
 					// Convert CANAL message to VSCP event
 					convertCanalToEvent(pvscpEvent,
 						&msg,
-						m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_GUID);
+						m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.m_id);
 
 					pvscpEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
 
@@ -900,6 +891,7 @@ deviceLevel2ReceiveThread::~deviceLevel2ReceiveThread()
 
 ///////////////////////////////////////////////////////////////////////////////
 // Entry
+//  Read from device
 //
 
 void *deviceLevel2ReceiveThread::Entry()
@@ -921,6 +913,17 @@ void *deviceLevel2ReceiveThread::Entry()
                        
         // Identify ourselves 
         pEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
+        
+        // If this is a Level I event over Level II we need to fill in the
+        // interface GUID
+        if ( (pEvent->vscp_class < 1024) && (pEvent->vscp_class >= 512) ) {
+            uint8_t l1 = pEvent->GUID[0];
+            uint8_t l2 = pEvent->GUID[1];
+            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.setGUID( pEvent->GUID );
+            pEvent->GUID[ 0 ] = l1;
+            pEvent->GUID[ 1 ] = l2;
+            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.setAt(1,l2);
+        }
             
         // There must be room in the receive queue
 		if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
@@ -974,6 +977,7 @@ deviceLevel2WriteThread::~deviceLevel2WriteThread()
 
 ///////////////////////////////////////////////////////////////////////////////
 // Entry
+//  Write to device
 //
 
 void *deviceLevel2WriteThread::Entry()
