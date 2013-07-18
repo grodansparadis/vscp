@@ -152,7 +152,7 @@ public:
       logMsg
       write log message
      */
-    void logMsg(const wxString& wxstr, unsigned char level = DAEMON_LOGMSG_WARNING);
+    void logMsg(const wxString& wxstr, unsigned char level = DAEMON_LOGMSG_INFO);
 
     /*!
         General initialization
@@ -503,17 +503,25 @@ public:
     wxString m_driverPassword;
 
     //*****************************************************
-    //                   websocket interface
+    //                   websocket/webserver interface
     //*****************************************************
 
     // Path to filesystem root
     static wxString m_pathRoot;
 
     // Enable disable web socket interface
-    bool m_bWebsocketif;
+    bool m_bWebSockets;
 
     // websocket port
-    uint16_t m_portWebsockets; // 7681
+    uint16_t m_portWebsockets;		// defaults to 7681
+	
+	/*!
+        webserver port 
+     */
+    unsigned short m_portWebServer;	// defaults to 8080
+	
+	// Enable/disable full webserver
+    bool m_bWebServer;
 
     //*****************************************************
     //                         Security

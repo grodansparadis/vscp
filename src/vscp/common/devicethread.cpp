@@ -467,9 +467,7 @@ void *deviceThread::Entry()
 		}
 
 	} else if (VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel) {
-
-        m_pCtrlObject->logMsg(_("Level 2"), DAEMON_LOGMSG_INFO);
-        
+       
 		// Now find methods in library
 		{
 			wxString str;
@@ -613,8 +611,6 @@ void *deviceThread::Entry()
         // Device write worker thread
         /////////////////////////////////////////////////////////////////////////////
         
-        ::wxLogDebug(_("*** VSCP Device Worker Write Thread Started"));
-        m_pCtrlObject->logMsg(_("********************************************"), DAEMON_LOGMSG_INFO);
         m_pwriteLevel2Thread = new deviceLevel2WriteThread;
 
         if (m_pwriteLevel2Thread) {

@@ -248,7 +248,7 @@ WX_DEFINE_LIST(VSCPEventList);
 
 
 // Initialize statics
-wxString CControlObject::m_pathRoot = _("");
+wxString CControlObject::m_pathRoot = _("/srv/vscp/www");
 
 
 //////////////////////////////////////////////////////////////////////
@@ -307,9 +307,16 @@ CControlObject::CControlObject()
     m_pdaemonVSCPThread = NULL;
     m_pudpSendThread = NULL;
     m_pudpReceiveThread = NULL;
+    
+    // Websocket interface
     m_portWebsockets = 7681;
+    m_bWebSockets = true;
     m_pathCert.Empty();
     m_pathKey.Empty();
+    
+    // Webserver interface
+    m_portWebServer = 8080;
+    m_bWebServer = true;
 
     // Set control object
     m_dm.setControlObject(this);
@@ -385,19 +392,20 @@ bool CControlObject::init(wxString& strcfgfile)
 #ifdef BUILD_VSCPD_SERVICE
     logMsg(str);
 #else
-    printf("%s", (const char *) str.ToAscii());
+    //printf("%s", (const char *) str.ToAscii());
+    logMsg(str);
 #endif
+     
 
     // A configuration file must be available
     if (!wxFile::Exists(strcfgfile)) {
-        printf("vscpd: Configuration file was not found. Terminating.");
         logMsg(_("No configuration file given. Can't initialise!).\n"), DAEMON_LOGMSG_CRITICAL);
         logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
         return FALSE;
     }
 
-    ::wxLogDebug(_("Using configuration file: \n\t") + strcfgfile);
-
+    //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
+    
     // Generate username and password for drivers
     char buf[ 64 ];
     randPassword pw(3);
@@ -422,6 +430,10 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
         return FALSE;
     }
+    
+    str.Printf(_("Log Level = %d"), m_logLevel );
+    logMsg(str);
+    //printf("Loglevel=%n\n",m_logLevel);
 
     // Get GUID
     if ( m_guid.isNULL() ) {
@@ -434,21 +446,55 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // Load decision matrix if mechanism is enabled
     if (m_bDM) {
+        logMsg(_("DM enabled.\n"), DAEMON_LOGMSG_INFO);
         m_dm.load();
+    }
+    else {
+        logMsg(_("DM disabled.\n"), DAEMON_LOGMSG_INFO);
     }
 
     // Load variables if mechanism is enabled
     if (m_bVariables) {
+        logMsg(_("Variables enabled.\n"), DAEMON_LOGMSG_INFO);
         m_VSCP_Variables.load();
+    }
+    else {
+        logMsg(_("Variables disabled.\n"), DAEMON_LOGMSG_INFO);
     }
 
     startClientWorkerThread();
 
-    if (m_bCanalDrivers) startDeviceWorkerThreads();
+    if (m_bCanalDrivers) {
+        logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
+        startDeviceWorkerThreads();
+    }
+    else {
+        logMsg(_("Level I drivers disabled.\n"), DAEMON_LOGMSG_INFO);
+    }
 
-    if (m_bTCPInterface) startTcpWorkerThread();
+    if (m_bTCPInterface) {
+        logMsg(_("TCP/IP interface enabled.\n"), DAEMON_LOGMSG_INFO);
+        startTcpWorkerThread();
+    }
+    else {
+        logMsg(_("TCP/IP interface disabled.\n"), DAEMON_LOGMSG_INFO);
+    }
 
     startDaemonWorkerThread();
+    
+    if ( m_bWebSockets ) {
+        logMsg(_("WebSocket interface active.\n"), DAEMON_LOGMSG_INFO);
+    }
+    else {
+        logMsg(_("WebSocket interface disabled.\n"), DAEMON_LOGMSG_INFO);
+    }
+    
+    if ( m_bWebServer ) {
+        logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
+    }
+    else {
+        logMsg(_("WebServer interface disabled.\n"), DAEMON_LOGMSG_INFO);
+    }
 
     return true;
 
@@ -508,10 +554,10 @@ bool CControlObject::run(void)
     // Feed startup event
     m_dm.feed(&EventStartUp);
 
-
     // Initialize websockets
     int opts = 0;
     unsigned int oldus = 0;
+
     //char interface_name[ 128 ] = "";
     const char *websockif = NULL;
     struct libwebsocket_context *pcontext;
@@ -547,14 +593,13 @@ bool CControlObject::run(void)
     info.ka_interval = 0;
 
     pcontext = libwebsocket_create_context(&info);
-    if ( NULL == pcontext ) {
+    if (NULL == pcontext) {
         logMsg(_("Unable to initialize websockets. Terminating!\n"), DAEMON_LOGMSG_CRITICAL);
         return FALSE;
     }
-    
+
 #endif
-
-
+    
     // DM Loop
     while (!m_bQuit) {
 
@@ -600,20 +645,22 @@ bool CControlObject::run(void)
          */
 
         if (((unsigned int) tv.tv_usec - oldus) > 50000) {
-            /*
-                libwebsockets_broadcast( &protocols[ PROTOCOL_DUMB_INCREMENT ],
-                                &buf[ LWS_SEND_BUFFER_PRE_PADDING ], 
-                                1 );
-                libwebsockets_broadcast( &protocols[ PROTOCOL_VSCP ],
-                                &buf[ LWS_SEND_BUFFER_PRE_PADDING ], 
-                                1 );
-             */
-            libwebsocket_callback_on_writable_all_protocol(
-                                        &protocols[ PROTOCOL_DUMB_INCREMENT ]);
+            
+            if (m_bWebSockets) {
+                /*
+                    libwebsockets_broadcast( &protocols[ PROTOCOL_DUMB_INCREMENT ],
+                                    &buf[ LWS_SEND_BUFFER_PRE_PADDING ], 
+                                    1 );
+                    libwebsockets_broadcast( &protocols[ PROTOCOL_VSCP ],
+                                    &buf[ LWS_SEND_BUFFER_PRE_PADDING ], 
+                                    1 );
+                 */
+                libwebsocket_callback_on_writable_all_protocol(
+                        &protocols[ PROTOCOL_DUMB_INCREMENT ]);
 
-            libwebsocket_callback_on_writable_all_protocol(
-                                        &protocols[ PROTOCOL_VSCP ]);
-
+                libwebsocket_callback_on_writable_all_protocol(
+                        &protocols[ PROTOCOL_VSCP ]);
+            }
             oldus = tv.tv_usec;
         }
 
@@ -628,7 +675,7 @@ bool CControlObject::run(void)
          * immediately and quickly.
          */
 
-        libwebsocket_service(pcontext, 50);
+        if ( m_bWebSockets ) libwebsocket_service(pcontext, 50);
 
         // Wait for event
         if (wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout(10)) {
@@ -677,7 +724,7 @@ bool CControlObject::run(void)
     removeClient(pClientItem);
     m_wxClientMutex.Unlock();
 
-    libwebsocket_context_destroy(pcontext);
+    if ( m_bWebSockets ) libwebsocket_context_destroy(pcontext);
 
     wxLogDebug(_("ControlObject: Done"));
     return true;
@@ -739,7 +786,7 @@ void CControlObject::logMsg(const wxString& wxstr, unsigned char level)
 #endif
 #else
 
-    ::wxLogDebug(wxdebugmsg);
+    //::wxLogDebug(wxdebugmsg);
 
     if (m_logLevel >= level) {
         wxPrintf(wxdebugmsg);
@@ -1401,17 +1448,48 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                // Depricated <==============
+                // Deprecated <==============
                 if (subchild->GetName() == wxT("tcpport")) {
                     wxString str = subchild->GetNodeContent();
                     m_TCPPort = readStringValue(str);
-                }// Depricated <==============
+                }// Deprecated <==============
                 else if (subchild->GetName() == wxT("udpport")) {
                     wxString str = subchild->GetNodeContent();
                     m_UDPPort = readStringValue(str);
                 } else if (subchild->GetName() == wxT("loglevel")) {
                     wxString str = subchild->GetNodeContent();
-                    m_logLevel = readStringValue(str);
+                    str.Trim();
+                    str.Trim(false);
+                    if ( str.IsSameAs(_("NONE"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NONE;
+                    }
+                    else if ( str.IsSameAs(_("INFO"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_INFO;
+                    }
+                    else if ( str.IsSameAs(_("NOTICE"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_NOTICE;
+                    }
+                    else if ( str.IsSameAs(_("WARNING"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_WARNING;
+                    }
+                    else if ( str.IsSameAs(_("ERROR"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_ERROR;
+                    }
+                    else if ( str.IsSameAs(_("CRITICAL"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_CRITICAL;
+                    }
+                    else if ( str.IsSameAs(_("ALERT"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_ALERT;
+                    }
+                    else if ( str.IsSameAs(_("EMERGENCY"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+                    }
+                    else if ( str.IsSameAs(_("DEBUG"), false)) {
+                        m_logLevel = DAEMON_LOGMSG_DEBUG;
+                    }
+                    else {
+                        m_logLevel = readStringValue(str);
+                    }
                 } else if (subchild->GetName() == wxT("tcpif")) {
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
                     if (property.IsSameAs(_("false"), false)) {
@@ -1483,12 +1561,22 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 } else if (subchild->GetName() == wxT("websockets")) {
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
                     if (property.IsSameAs(_("false"), false)) {
-                        m_bWebsocketif = false;
+                        m_bWebSockets = false;
                     }
 
                     property = subchild->GetPropVal(wxT("port"), wxT("7681"));
                     if (property.IsNumber()) {
                         m_portWebsockets = readStringValue(property);
+                    }
+                } else if (subchild->GetName() == wxT("webserver")) {
+                    wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+                    if (property.IsSameAs(_("false"), false)) {
+                        m_bWebServer = false;
+                    }
+
+                    property = subchild->GetPropVal(wxT("port"), wxT("8080"));
+                    if (property.IsNumber()) {
+                        m_portWebServer = readStringValue(property);
                     }
                 }
 
@@ -1699,12 +1787,12 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             strPath,
                             flags,
                             GUID)) {
-                        wxString errMsg = _("Driver not added. Path does not exist. - \n\t[ ") +
+                        wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
                                 strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_ERROR);
-                        wxLogDebug(errMsg);
+                        //wxLogDebug(errMsg);
                     } else {
-                        wxString errMsg = _("Level I driver added. - \n\t[ ") +
+                        wxString errMsg = _("Level I driver added. - [ ") +
                                 strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
                     }
@@ -1784,12 +1872,12 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             0,
                             GUID,
                             VSCP_DRIVER_LEVEL2)) {
-                        wxString errMsg = _("Driver not added. Path does not exist. - \n\t[ ") +
+                        wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
                                 strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
-                        wxLogDebug(errMsg);
+                        //wxLogDebug(errMsg);
                     } else {
-                        wxString errMsg = _("Level II driver added. - \n\t[ ") +
+                        wxString errMsg = _("Level II driver added. - [ ") +
                                 strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
                     }
@@ -2710,6 +2798,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
         }
 
         pss->pMessageList->Add(_("+;ADDVAR"));
+        
     } else if (0 == strTok.Find(_("READVAR"))) {
 
         CVSCPVariable *pvar;
