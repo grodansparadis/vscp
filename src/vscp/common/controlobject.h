@@ -45,6 +45,7 @@
 #include "vscp.h"
 
 extern "C" {
+#include <microhttpd.h>	
 #include <libwebsockets.h>
 }
 
@@ -92,6 +93,19 @@ enum websocket_protocols {
     /* always last */
     DEMO_PROTOCOL_COUNT
 };
+
+/**
+ * Number of threads to run in the thread pool.  Should (roughly) match
+ * the number of cores on your system.
+ */
+#define WEBSERVER_NUMBER_OF_THREADS 8
+
+/**
+ * How many bytes of a file do we give to libmagic to determine the mime type?
+ * 16k might be a bit excessive, but ought not hurt performance much anyway,
+ * and should definitively be on the safe side.
+ */
+#define WEBSERVER_MAGIC_HEADER_SIZE (16 * 1024)
 
 
 WX_DECLARE_LIST(canalMsg, CanalMsgList);
@@ -294,12 +308,10 @@ public:
      */
     bool removeIdFromClientMap(uint32_t clid);
 
-#if ( WIN32 && (_WIN32_WINNT>=0x0500)) || !WIN32 
-
 
     /////////////////////////////////////////////////
     //               WEBSOCKET STATICS
-    ////////////////////////////////////////////////
+    /////////////////////////////////////////////////
 
     static void
     dump_handshake_info(struct lws_tokens *lwst);
@@ -352,7 +364,132 @@ public:
             struct libwebsocket *wsi,
             struct per_session_data__lws_vscp *pss,
             const char *pCommand);
-#endif								
+	
+	/////////////////////////////////////////////////
+    //               WEB SERVER STATICS
+    /////////////////////////////////////////////////
+	
+	/**
+		Main MHD callback for handling requests.
+ 
+		@param cls argument given together with the function
+ 				pointer when the handler was registered with MHD
+		@param connection handle identifying the incoming connection
+		@param url the requested url
+		@param method the HTTP method used ("GET", "PUT", etc.)
+		@param version the HTTP version string (i.e. "HTTP/1.1")
+		@param upload_data the data being uploaded (excluding HEADERS,
+				for a POST that fits into memory and that is encoded
+				with a supported encoding, the POST data will NOT be
+				given in upload_data and is instead available as
+				part of MHD_get_connection_values; very large POST
+				data *will* be made available incrementally in
+				upload_data)
+		@param upload_data_size set initially to the size of the
+ 				upload_data provided; the method must update this
+ 				value to the number of bytes NOT processed;
+		@param ptr pointer that the callback can set to some
+				address and that will be preserved by MHD for future
+				calls for this request; since the access handler may
+				be called many times (i.e., for a PUT/POST operation
+				with plenty of upload data) this allows the application
+				to easily associate some request-specific state.
+				If necessary, this state can be cleaned up in the
+				global "MHD_RequestCompleted" callback (which
+				can be set with the MHD_OPTION_NOTIFY_COMPLETED).
+				Initially, <tt>*con_cls</tt> will be NULL.
+			 @return MHS_YES if the connection was handled successfully,
+ *         MHS_NO if the socket must be closed due to a serios
+ *         error while handling the request
+ */
+	static int 
+	callback_webpage(void *cls,
+        struct MHD_Connection *connection,
+        const char *url,
+        const char *method,
+        const char *version,
+        const char *upload_data, size_t *upload_data_size, void **ptr);
+	
+	/*!
+		Return the session handle for this connection, or 
+		create one if this is a new user.
+	*/
+	static struct Session *
+	get_session(struct MHD_Connection *connection);
+	
+	/**
+		Clean up handles of sessions that have been idle for
+		too long.
+	*/
+	static void
+	expire_sessions(void);
+	
+	/*!
+		Add header to response to set a session cookie.
+	 
+		@param session session to use
+		@param response response to modify
+	*/ 
+	static void
+	add_session_cookie(struct Session *session,
+						struct MHD_Response *response);
+	
+	/**
+		Handler used to generate a 404 reply.
+	 
+		@param cls a 'const char *' with the HTML webpage to return
+		@param mime mime type to use
+		@param session session handle 
+		@param connection connection to use
+	*/
+	static int
+	not_found_page (const void *cls,
+						const char *mime,
+						struct Session *session,
+						struct MHD_Connection *connection);
+	
+	/**
+	 * Iterator over key-value pairs where the value
+	 * maybe made available in increments and/or may
+	 * not be zero-terminated.  Used for processing
+	 * POST data.
+	 *
+	 * @param cls user-specified closure
+	 * @param kind type of the value
+	 * @param key 0-terminated key for the value
+	 * @param filename name of the uploaded file, NULL if not known
+	 * @param content_type mime-type of the data, NULL if not known
+	 * @param transfer_encoding encoding of the data, NULL if not known
+	 * @param data pointer to size bytes of data at the
+	 *              specified offset
+	 * @param off offset of data in the overall value
+	 * @param size number of bytes in data available
+	 * @return MHD_YES to continue iterating,
+	 *         MHD_NO to abort the iteration
+	 */
+	static int
+	post_iterator(void *cls,
+		enum MHD_ValueKind kind,
+		const char *key,
+		const char *filename,
+		const char *content_type,
+		const char *transfer_encoding,
+		const char *data, uint64_t off, size_t size);
+	
+	/**
+	 * Callback called upon completion of a request.
+	 * Decrements session reference counter.
+	 *
+	 * @param cls not used
+	 * @param connection connection that completed
+	 * @param con_cls session handle
+	 * @param toe status code
+	 */
+	static void
+	request_completed_callback(void *cls,
+		struct MHD_Connection *connection,
+		void **con_cls,
+		enum MHD_RequestTerminationCode toe);
 
 public:
 

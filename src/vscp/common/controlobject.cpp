@@ -123,6 +123,7 @@
 #include "devicethread.h"
 #include "dm.h"
 #include "controlobject.h"
+#include <microhttpd.h>
 #include <libwebsockets.h>
 
 // List for websocket triggers
@@ -241,6 +242,164 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
         NULL, NULL, 0
     }
 };
+
+///////////////////////////////////////////////////
+//		          WEBSERVER
+///////////////////////////////////////////////////
+
+/**
+ * Invalid method page.
+ */
+#define METHOD_ERROR "<html><head><title>Illegal request</title></head><body>Go away.</body></html>"
+
+/**
+ * Invalid URL page.
+ */
+#define NOT_FOUND_ERROR "<html><head><title>Not found</title></head><body>Go away.</body></html>"
+
+/**
+ * Start page
+ */
+#define PAGE "<html><head><title>VSCP Daemon</title></head><body>VSCP Daemon.</body></html>"
+
+/**
+ * Invalid password
+ */
+#define DENIED "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
+
+/**
+ * Name of our cookie.
+ */
+#define COOKIE_NAME "____vscp_session____"
+
+/**
+ * State we keep for each user/session/browser.
+ */
+struct Session
+{
+  /**
+   * We keep all sessions in a linked list.
+   */
+  struct Session *next;
+
+  /**
+   * Unique ID for this session. 
+   */
+  char sid[33];
+
+  /**
+   * Reference counter giving the number of connections
+   * currently using this session.
+   */
+  unsigned int rc;
+
+  /**
+   * Time when this session was last active.
+   */
+  time_t start;
+
+  /**
+   * String submitted via form.
+   */
+  char value_1[64];
+
+  /**
+   * Another value submitted via form.
+   */
+  char value_2[64];
+
+};
+
+
+/**
+ * Data kept per request.
+ */
+struct Request
+{
+
+  /**
+   * Associated session.
+   */
+  struct Session *session;
+
+  /**
+   * Post processor handling form data (IF this is
+   * a POST request).
+   */
+  struct MHD_PostProcessor *pp;
+
+  /**
+   * URL to serve in response to this POST (if this request 
+   * was a 'POST')
+   */
+  const char *post_url;
+  
+  int aptr;
+
+};
+
+
+/**
+ * Linked list of all active sessions.  Yes, O(n) but a
+ * hash table would be overkill for a simple example...
+ */
+static struct Session *sessions;
+
+/**
+ * Type of handler that generates a reply.
+ *
+ * @param cls content for the page (handler-specific)
+ * @param mime mime type to use
+ * @param session session information
+ * @param connection connection to process
+ * @param MHD_YES on success, MHD_NO on failure
+ */
+typedef int (*PageHandler)(const void *cls,
+			   const char *mime,
+			   struct Session *session,
+			   struct MHD_Connection *connection);
+
+
+/**
+ * Entry we generate for each page served.
+ */ 
+struct Page
+{
+  /**
+   * Acceptable URL for this page.
+   */
+  const char *url;
+
+  /**
+   * Mime type to set for the page.
+   */
+  const char *mime;
+
+  /**
+   * Handler to call to generate response.
+   */
+  PageHandler handler;
+
+  /**
+   * Extra argument to handler.
+   */ 
+  const void *handler_cls;
+};
+
+
+/**
+ * List of all pages served by this HTTP server.
+ */
+static struct Page pages[] = 
+  {
+    { "/", "text/html",  /*&fill_v1_form*/NULL, METHOD_ERROR },
+    { "/2", "text/html", /*&fill_v1_v2_form*/NULL, METHOD_ERROR },
+    { "/S", "text/html", /*&serve_simple_form*/NULL, METHOD_ERROR },
+    { "/F", "text/html", /*&serve_simple_form*/NULL, METHOD_ERROR },
+    { NULL, NULL, &CControlObject::not_found_page, NULL } /* 404 */
+  };
+
+
 
 
 WX_DEFINE_LIST(CanalMsgList);
@@ -599,6 +758,23 @@ bool CControlObject::run(void)
     }
 
 #endif
+    
+    // Web server
+    struct MHD_Daemon *pwebserver;
+
+    pwebserver = MHD_start_daemon(
+            MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG | MHD_USE_SSL,
+            m_portWebServer,
+            NULL,
+            NULL,
+            &callback_webpage,
+            (void *) this,
+            MHD_OPTION_CONNECTION_MEMORY_LIMIT, (size_t)(256 * 1024),
+            MHD_OPTION_PER_IP_CONNECTION_LIMIT, (unsigned int)(64),
+            MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)(120 /* seconds */),
+            MHD_OPTION_THREAD_POOL_SIZE, (unsigned int) WEBSERVER_NUMBER_OF_THREADS,
+            MHD_OPTION_NOTIFY_COMPLETED, &request_completed_callback, NULL,
+            MHD_OPTION_END);
     
     // DM Loop
     while (!m_bQuit) {
@@ -2833,6 +3009,350 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
     }
 
 }
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                              WEB SERVER
+///////////////////////////////////////////////////////////////////////////////
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// callback_webpage
+//
+
+int CControlObject::callback_webpage(void *cls,
+        struct MHD_Connection *connection,
+        const char *url,
+        const char *method,
+        const char *version,
+        const char *upload_data,
+        size_t *upload_data_size,
+        void **ptr)
+{
+    //static int aptr;
+    CControlObject *pObject = (CControlObject *) cls;
+    const char *defaultPage = PAGE;
+    struct MHD_Response *response;
+    int ret;
+    char *user;
+    char *pass;
+    bool bFail;
+    struct Request *request;
+    struct Session *session;
+    unsigned int i;
+
+    request = (struct Request *)*ptr;
+    if (NULL == request) {
+        
+        request = (struct Request *)calloc(1, sizeof(struct Request));
+        if (NULL == request) {
+            fprintf(stderr, "calloc error: %s\n", strerror(errno));
+            return MHD_NO;
+        }
+        
+        *ptr = request;
+        if (0 == strcmp(method, MHD_HTTP_METHOD_POST)) {
+            request->pp = MHD_create_post_processor(connection, 1024,
+                    &post_iterator, request);
+            if (NULL == request->pp) {
+                fprintf(stderr, "Failed to setup post processor for `%s'\n",
+                        url);
+                return MHD_NO; /* internal error */
+            }
+        }
+        else if ( 0 != strcmp(method, MHD_HTTP_METHOD_GET) ) {
+            return MHD_NO; // unexpected method
+        }
+        
+        return MHD_YES;
+    }
+
+    session = request->session;
+    session->start = time(NULL);
+    
+    if (0 == strcmp(method, MHD_HTTP_METHOD_POST)) {
+        
+        // evaluate POST data 
+        MHD_post_process(request->pp,
+                            upload_data,
+                            *upload_data_size);
+        
+        if (0 != *upload_data_size) {
+            *upload_data_size = 0;
+            return MHD_YES;
+        }
+        
+        // done with POST data, serve response 
+        MHD_destroy_post_processor(request->pp);
+        request->pp = NULL;
+        
+        method = MHD_HTTP_METHOD_GET; // fake 'GET' 
+        
+        if (NULL != request->post_url) {
+            url = request->post_url;
+        }
+    }
+
+    if ((0 == strcmp(method, MHD_HTTP_METHOD_GET)) ||
+            (0 == strcmp(method, MHD_HTTP_METHOD_HEAD))) {
+        
+        // find out which page to serve 
+        i = 0;
+        while ((pages[i].url != NULL) && (0 != strcmp(pages[i].url, url))) {
+            i++;
+        }
+        
+        ret = pages[i].handler( pages[i].handler_cls,
+                                    pages[i].mime,
+                                    session, connection);
+        
+        if (ret != MHD_YES) {
+            fprintf(stderr, "Failed to create page for `%s'\n", url);
+        }
+        
+        return ret;
+    }
+    
+    // ----
+    
+    //if ( &aptr != *ptr ) {
+        // do never respond on first call 
+    //    *ptr = &aptr;
+    //    return MHD_YES;
+    //}
+
+    *ptr = NULL; // reset when done 
+
+    pass = NULL;
+    user = MHD_basic_auth_get_username_password(connection, &pass);
+
+    bFail = ((user == NULL) ||
+            (0 != strcmp(user, "admin")) ||
+            (0 != strcmp(pass, "secret")));
+
+    if ( bFail ) {
+        // Send fail response
+        response = MHD_create_response_from_buffer(strlen(DENIED),
+                (void *) DENIED,
+                MHD_RESPMEM_PERSISTENT);
+        ret = MHD_queue_basic_auth_fail_response(connection,
+                "VSCP Daemon",
+                response);
+    }
+    else {
+        // OK
+        response = MHD_create_response_from_buffer(strlen(defaultPage),
+                (void *)defaultPage,
+                MHD_RESPMEM_PERSISTENT);
+        ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+    }
+
+    MHD_destroy_response(response);
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// get_session
+//
+
+struct Session *
+CControlObject::get_session(struct MHD_Connection *connection)
+{
+    struct Session *ret;
+    const char *cookie;
+
+    cookie = MHD_lookup_connection_value(connection,
+            MHD_COOKIE_KIND,
+            COOKIE_NAME);
+    
+    if (cookie != NULL) {
+        
+        // find existing session 
+        ret = sessions;
+        while (NULL != ret) {
+            if (0 == strcmp(cookie, ret->sid))
+                break;
+            ret = ret->next;
+        }
+        if (NULL != ret) {
+            ret->rc++;
+            return ret;
+        }
+    }
+    
+    // create fresh session 
+    ret = (struct Session *)calloc(1, sizeof(struct Session));
+    if (NULL == ret) {
+        fprintf(stderr, "calloc error: %s\n", strerror(errno));
+        return NULL;
+    }
+    
+    // not a super-secure way to generate a random session ID,
+    //   but should do for a simple example... 
+    snprintf(ret->sid,
+            sizeof(ret->sid),
+            "%X%X%X%X",
+            (unsigned int) random(),
+            (unsigned int) random(),
+            (unsigned int) random(),
+            (unsigned int) random());
+    ret->rc++;
+    ret->start = time(NULL);
+    ret->next = sessions;
+    sessions = ret;
+    
+    return ret;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// expire_sessions
+//
+
+void
+CControlObject::expire_sessions()
+{
+    struct Session *pos;
+    struct Session *prev;
+    struct Session *next;
+    time_t now;
+
+    now = time(NULL);
+    prev = NULL;
+    pos = sessions;
+    
+    while (NULL != pos) {
+        next = pos->next;
+        if (now - pos->start > 60 * 60) {
+            // expire sessions after 1h 
+            if (NULL == prev)
+                sessions = pos->next;
+            else
+                prev->next = next;
+            free(pos);
+        } else
+            prev = pos;
+        pos = next;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// not_found_page
+//
+
+int
+CControlObject::not_found_page(const void *cls,
+        const char *mime,
+        struct Session *session,
+        struct MHD_Connection *connection )
+{
+    int ret;
+    struct MHD_Response *response;
+
+    // unsupported HTTP method 
+    response = MHD_create_response_from_buffer(strlen(NOT_FOUND_ERROR),
+            (void *) NOT_FOUND_ERROR,
+            MHD_RESPMEM_PERSISTENT);
+    
+    ret = MHD_queue_response(connection,
+            MHD_HTTP_NOT_FOUND,
+            response);
+    
+    MHD_add_response_header(response,
+            MHD_HTTP_HEADER_CONTENT_ENCODING,
+            mime);
+    
+    MHD_destroy_response(response);
+    
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// request_completed_callback
+//
+
+int
+CControlObject::post_iterator(void *cls,
+        enum MHD_ValueKind kind,
+        const char *key,
+        const char *filename,
+        const char *content_type,
+        const char *transfer_encoding,
+        const char *data, uint64_t off, size_t size)
+{
+    struct Request *request = (struct Request *)cls;
+    struct Session *session = request->session;
+
+    if (0 == strcmp("DONE", key)) {
+        fprintf(stdout,
+                "Session `%s' submitted `%s', `%s'\n",
+                session->sid,
+                session->value_1,
+                session->value_2);
+        return MHD_YES;
+    }
+    if (0 == strcmp("v1", key)) {
+        if (size + off > sizeof(session->value_1))
+            size = sizeof(session->value_1) - off;
+        memcpy(&session->value_1[off],
+                data,
+                size);
+        if (size + off < sizeof(session->value_1))
+            session->value_1[size + off] = '\0';
+        return MHD_YES;
+    }
+    if (0 == strcmp("v2", key)) {
+        if (size + off > sizeof(session->value_2))
+            size = sizeof(session->value_2) - off;
+        memcpy(&session->value_2[off],
+                data,
+                size);
+        if (size + off < sizeof(session->value_2))
+            session->value_2[size + off] = '\0';
+        return MHD_YES;
+    }
+    fprintf(stderr, "Unsupported form value `%s'\n", key);
+    return MHD_YES;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// request_completed_callback
+//
+
+void
+CControlObject::request_completed_callback(void *cls,
+        struct MHD_Connection *connection,
+        void **con_cls,
+        enum MHD_RequestTerminationCode toe)
+{
+    struct Request *request = (struct Request *) *con_cls;
+
+    if (NULL == request) {
+        return;
+    }
+    
+    if (NULL != request->session) {
+        request->session->rc--;
+    }
+    
+    if (NULL != request->pp) {
+        MHD_destroy_post_processor(request->pp);
+    }
+    
+    free(request);
+}
+
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
