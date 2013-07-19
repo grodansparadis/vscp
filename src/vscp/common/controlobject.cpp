@@ -123,6 +123,7 @@
 #include "devicethread.h"
 #include "dm.h"
 #include "controlobject.h"
+#include "../common/webserver.h"
 #include <microhttpd.h>
 #include <libwebsockets.h>
 
@@ -247,96 +248,7 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
 //		          WEBSERVER
 ///////////////////////////////////////////////////
 
-/**
- * Invalid method page.
- */
-#define METHOD_ERROR "<html><head><title>Illegal request</title></head><body>Go away.</body></html>"
 
-/**
- * Invalid URL page.
- */
-#define NOT_FOUND_ERROR "<html><head><title>Not found</title></head><body>Go away.</body></html>"
-
-/**
- * Start page
- */
-#define PAGE "<html><head><title>VSCP Daemon</title></head><body>VSCP Daemon.</body></html>"
-
-/**
- * Invalid password
- */
-#define DENIED "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
-
-/**
- * Name of our cookie.
- */
-#define COOKIE_NAME "____vscp_session____"
-
-/**
- * State we keep for each user/session/browser.
- */
-struct Session
-{
-  /**
-   * We keep all sessions in a linked list.
-   */
-  struct Session *next;
-
-  /**
-   * Unique ID for this session. 
-   */
-  char sid[33];
-
-  /**
-   * Reference counter giving the number of connections
-   * currently using this session.
-   */
-  unsigned int rc;
-
-  /**
-   * Time when this session was last active.
-   */
-  time_t start;
-
-  /**
-   * String submitted via form.
-   */
-  char value_1[64];
-
-  /**
-   * Another value submitted via form.
-   */
-  char value_2[64];
-
-};
-
-
-/**
- * Data kept per request.
- */
-struct Request
-{
-
-  /**
-   * Associated session.
-   */
-  struct Session *session;
-
-  /**
-   * Post processor handling form data (IF this is
-   * a POST request).
-   */
-  struct MHD_PostProcessor *pp;
-
-  /**
-   * URL to serve in response to this POST (if this request 
-   * was a 'POST')
-   */
-  const char *post_url;
-  
-  int aptr;
-
-};
 
 
 /**
@@ -387,19 +299,15 @@ struct Page
 };
 
 
-/**
- * List of all pages served by this HTTP server.
- */
+// List of all pages served by this HTTP server.
 static struct Page pages[] = 
   {
-    { "/", "text/html",  /*&fill_v1_form*/NULL, METHOD_ERROR },
-    { "/2", "text/html", /*&fill_v1_v2_form*/NULL, METHOD_ERROR },
-    { "/S", "text/html", /*&serve_simple_form*/NULL, METHOD_ERROR },
-    { "/F", "text/html", /*&serve_simple_form*/NULL, METHOD_ERROR },
+    { "/", "text/html",  &CControlObject::serve_simple_page, WEBSERVER_PAGE },
+    { "/2", "text/html", &CControlObject::serve_simple_page, WEBSERVER_PAGE },
+    { "/S", "text/html", &CControlObject::serve_simple_page, WEBSERVER_PAGE },
+    { "/F", "text/html", &CControlObject::serve_simple_page, WEBSERVER_PAGE },
     { NULL, NULL, &CControlObject::not_found_page, NULL } /* 404 */
   };
-
-
 
 
 WX_DEFINE_LIST(CanalMsgList);
@@ -763,7 +671,7 @@ bool CControlObject::run(void)
     struct MHD_Daemon *pwebserver;
 
     pwebserver = MHD_start_daemon(
-            MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG | MHD_USE_SSL,
+            MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG /*| MHD_USE_SSL*/,
             m_portWebServer,
             NULL,
             NULL,
@@ -772,7 +680,6 @@ bool CControlObject::run(void)
             MHD_OPTION_CONNECTION_MEMORY_LIMIT, (size_t)(256 * 1024),
             MHD_OPTION_PER_IP_CONNECTION_LIMIT, (unsigned int)(64),
             MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)(120 /* seconds */),
-            MHD_OPTION_THREAD_POOL_SIZE, (unsigned int) WEBSERVER_NUMBER_OF_THREADS,
             MHD_OPTION_NOTIFY_COMPLETED, &request_completed_callback, NULL,
             MHD_OPTION_END);
     
@@ -2171,24 +2078,12 @@ CControlObject::callback_http(struct libwebsocket_context *context,
         }
 
         path += args;
-        fprintf(stderr,
-                "serving HTTP URI %s mime %s\n",
-                (const char *) path.ToAscii(),
-                (const char *) mime.ToAscii());
-#ifndef WIN32
-        syslog(LOG_ERR, "vscpd (ws): serving HTTP URI %s, mime %s",
-                (const char *) path.ToAscii(),
-                (const char *) mime.ToAscii());
-#endif
 
         if (libwebsockets_serve_http_file(context,
                 wsi,
                 path.ToAscii(),
                 mime.ToAscii())) {
-            //fprintf(stderr, "* * *  Failed to send file * * * \n ");
-#ifndef WIN32
-            syslog(LOG_ERR, "vscpd (ws): Success sending file");
-#endif
+            
             return -1;
         }
 
@@ -2215,11 +2110,11 @@ CControlObject::callback_http(struct libwebsocket_context *context,
         libwebsockets_get_peer_addresses(context, wsi, (int) (long) in, client_name,
                 sizeof(client_name), client_ip, sizeof(client_ip));
 
-        fprintf(stderr, "Received network connect from %s (%s)\n",
-                client_name, client_ip);
+        //fprintf(stderr, "Received network connect from %s (%s)\n",
+        //        client_name, client_ip);
 #endif
 
-        /*
+        /*  TODO
                 libwebsockets_get_peer_addresses(m_context,
                     (int) (long) user,
                     client_name,
@@ -2227,14 +2122,14 @@ CControlObject::callback_http(struct libwebsocket_context *context,
                     client_ip,
                     sizeof ( client_ip));
 
-                fprintf(stderr,
-                    "Received network connect from %s (%s)\n",
-                    client_name, client_ip);
+                //fprintf(stderr,
+                //    "Received network connect from %s (%s)\n",
+                //    client_name, client_ip);
          */
-#ifndef WIN32
-        syslog(LOG_ERR, "vscpd (ws): Received network connect from %s (%s)",
-                client_name, client_ip);
-#endif
+
+        //syslog(LOG_ERR, "vscpd (ws): Received network connect from %s (%s)",
+        //        client_name, client_ip);
+
 
         /* if we returned non-zero from here, we kill the connection */
         break;
@@ -2292,7 +2187,7 @@ CControlObject::dump_handshake_info(struct lws_tokens *lwst)
 
         if (lwst[n].token == NULL) continue;
 
-        fprintf(stderr, "    %s = %s\n", token_names[n], lwst[n].token);
+        //fprintf(stderr, "    %s = %s\n", token_names[n], lwst[n].token);
     }
 }
 
@@ -2318,8 +2213,8 @@ CControlObject::callback_dumb_increment(struct libwebsocket_context *context,
     switch (reason) {
 
     case LWS_CALLBACK_ESTABLISHED:
-        fprintf(stderr, "callback_dumb_increment: "
-                "LWS_CALLBACK_ESTABLISHED\n");
+        //fprintf(stderr, "callback_dumb_increment: "
+        //        "LWS_CALLBACK_ESTABLISHED\n");
         pss->number = 0;
         break;
 
@@ -2335,12 +2230,12 @@ CControlObject::callback_dumb_increment(struct libwebsocket_context *context,
         n = libwebsocket_write(wsi, p, n, LWS_WRITE_TEXT);
 
         if (n < 0) {
-            fprintf(stderr, "ERROR writing to socket");
+            syslog(LOG_ERR, "ERROR writing to socket");
             return 1;
         }
 
         if (gbClose && pss->number == 50) {
-            fprintf(stderr, "close testing limit, closing\n");
+            //fprintf(stderr, "close testing limit, closing\n");
             lwsl_info("close tesing limit, closing\n");
             return -1;
         }
@@ -2348,7 +2243,7 @@ CControlObject::callback_dumb_increment(struct libwebsocket_context *context,
 
     case LWS_CALLBACK_RECEIVE:
 
-        fprintf(stderr, "rx %d\n", (int) len);
+        //fprintf(stderr, "rx %d\n", (int) len);
 
         if (len < 6)
             break;
@@ -2386,8 +2281,8 @@ CControlObject::callback_lws_mirror(struct libwebsocket_context *context,
 
     case LWS_CALLBACK_ESTABLISHED:
 
-        fprintf(stderr, "callback_lws_mirror: "
-                "LWS_CALLBACK_ESTABLISHED\n");
+        //fprintf(stderr, "callback_lws_mirror: "
+        //        "LWS_CALLBACK_ESTABLISHED\n");
         pss->ringbuffer_tail = mirrorws_ringbuffer_head;
         pss->wsi = wsi;
         break;
@@ -2407,7 +2302,7 @@ CControlObject::callback_lws_mirror(struct libwebsocket_context *context,
                     mirrorws_ringbuffer[ pss->ringbuffer_tail ].len,
                     LWS_WRITE_TEXT);
             if (n < 0) {
-                fprintf(stderr, "ERROR writing to socket");
+                syslog(LOG_ERR, "ERROR writing to socket");
             }
 
             if (pss->ringbuffer_tail == (MAX_MIRROR_MESSAGE_QUEUE - 1))
@@ -2424,14 +2319,6 @@ CControlObject::callback_lws_mirror(struct libwebsocket_context *context,
         }
         break;
 
-        /*            
-            case LWS_CALLBACK_BROADCAST:
-
-                n = libwebsocket_write(wsi, (unsigned char *) in, len, LWS_WRITE_TEXT);
-                if (n < 0)
-                fprintf(stderr, "mirror write failed\n");
-                break;
-         */
     case LWS_CALLBACK_RECEIVE:
 
         if (mirrorws_ringbuffer[ mirrorws_ringbuffer_head ].payload)
@@ -2497,8 +2384,8 @@ CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
         // an incoming client
     case LWS_CALLBACK_ESTABLISHED:
     {
-        fprintf(stderr, "callback_lws_vscp: "
-                "LWS_CALLBACK_ESTABLISHED\n");
+        //fprintf(stderr, "callback_lws_vscp: "
+        //        "LWS_CALLBACK_ESTABLISHED\n");
 
         pss->wsi = wsi;
         // Create receive message list
@@ -2584,7 +2471,7 @@ CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
                     strlen((char *) buf),
                     LWS_WRITE_TEXT);
             if (n < 0) {
-                fprintf(stderr, "ERROR writing to socket");
+                syslog(LOG_ERR, "ERROR writing to socket");
             }
 
             libwebsocket_callback_on_writable(context, wsi);
@@ -2619,7 +2506,7 @@ CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
                                 strlen((char *) buf),
                                 LWS_WRITE_TEXT);
                         if (n < 0) {
-                            fprintf(stderr, "ERROR writing to socket");
+                            syslog(LOG_ERR, "ERROR writing to socket");
                         }
                     }
                 }
@@ -3037,9 +2924,9 @@ int CControlObject::callback_webpage(void *cls,
         size_t *upload_data_size,
         void **ptr)
 {
-    //static int aptr;
+
     CControlObject *pObject = (CControlObject *) cls;
-    const char *defaultPage = PAGE;
+    const char *defaultPage = WEBSERVER_PAGE;
     struct MHD_Response *response;
     int ret;
     char *user;
@@ -3054,7 +2941,7 @@ int CControlObject::callback_webpage(void *cls,
         
         request = (struct Request *)calloc(1, sizeof(struct Request));
         if (NULL == request) {
-            fprintf(stderr, "calloc error: %s\n", strerror(errno));
+            syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
             return MHD_NO;
         }
         
@@ -3063,9 +2950,9 @@ int CControlObject::callback_webpage(void *cls,
             request->pp = MHD_create_post_processor(connection, 1024,
                     &post_iterator, request);
             if (NULL == request->pp) {
-                fprintf(stderr, "Failed to setup post processor for `%s'\n",
+                syslog(LOG_ERR, "Failed to setup post processor for `%s'\n",
                         url);
-                return MHD_NO; /* internal error */
+                return MHD_NO; // internal error 
             }
         }
         else if ( 0 != strcmp(method, MHD_HTTP_METHOD_GET) ) {
@@ -3075,6 +2962,14 @@ int CControlObject::callback_webpage(void *cls,
         return MHD_YES;
     }
 
+    if (NULL == request->session) {
+        request->session = get_session(connection);
+        if (NULL == request->session) {
+            syslog(LOG_ERR, "Failed to setup session for `%s'\n", url);
+            return MHD_NO; // internal error 
+        }
+    }
+    
     session = request->session;
     session->start = time(NULL);
     
@@ -3115,19 +3010,11 @@ int CControlObject::callback_webpage(void *cls,
                                     session, connection);
         
         if (ret != MHD_YES) {
-            fprintf(stderr, "Failed to create page for `%s'\n", url);
+            syslog(LOG_ERR, "Failed to create page for `%s'\n", url);
         }
         
         return ret;
     }
-    
-    // ----
-    
-    //if ( &aptr != *ptr ) {
-        // do never respond on first call 
-    //    *ptr = &aptr;
-    //    return MHD_YES;
-    //}
 
     *ptr = NULL; // reset when done 
 
@@ -3139,15 +3026,17 @@ int CControlObject::callback_webpage(void *cls,
             (0 != strcmp(pass, "secret")));
 
     if ( bFail ) {
+        
         // Send fail response
-        response = MHD_create_response_from_buffer(strlen(DENIED),
-                (void *) DENIED,
+        response = MHD_create_response_from_buffer(strlen(WEBSERVER_DENIED),
+                (void *) WEBSERVER_DENIED,
                 MHD_RESPMEM_PERSISTENT);
         ret = MHD_queue_basic_auth_fail_response(connection,
                 "VSCP Daemon",
                 response);
     }
     else {
+        
         // OK
         response = MHD_create_response_from_buffer(strlen(defaultPage),
                 (void *)defaultPage,
@@ -3171,19 +3060,20 @@ CControlObject::get_session(struct MHD_Connection *connection)
 
     cookie = MHD_lookup_connection_value(connection,
             MHD_COOKIE_KIND,
-            COOKIE_NAME);
+            WEBSERVER_COOKIE_NAME);
     
     if (cookie != NULL) {
         
         // find existing session 
         ret = sessions;
         while (NULL != ret) {
-            if (0 == strcmp(cookie, ret->sid))
+            if (0 == strcmp(cookie, ret->m_sid))
                 break;
-            ret = ret->next;
+            ret = ret->m_next;
         }
+        
         if (NULL != ret) {
-            ret->rc++;
+            ret->m_rc++;
             return ret;
         }
     }
@@ -3191,27 +3081,54 @@ CControlObject::get_session(struct MHD_Connection *connection)
     // create fresh session 
     ret = (struct Session *)calloc(1, sizeof(struct Session));
     if (NULL == ret) {
-        fprintf(stderr, "calloc error: %s\n", strerror(errno));
+        syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
         return NULL;
     }
     
-    // not a super-secure way to generate a random session ID,
-    //   but should do for a simple example... 
-    snprintf(ret->sid,
-            sizeof(ret->sid),
-            "%X%X%X%X",
-            (unsigned int) random(),
-            (unsigned int) random(),
-            (unsigned int) random(),
-            (unsigned int) random());
-    ret->rc++;
+    // Generate a random session ID
+    time_t t;
+    t = time( NULL );
+    snprintf(ret->m_sid,
+            sizeof(ret->m_sid),
+            "__VSCP__DAEMON_%X%X%X%X_be_hungry_stay_foolish_%X%X",
+            (unsigned int)random(),
+            (unsigned int)random(),
+            (unsigned int)random(),
+            (unsigned int)t,
+            (unsigned int)random());
+    
+    ret->m_rc++;
     ret->start = time(NULL);
-    ret->next = sessions;
+    ret->m_next = sessions;
     sessions = ret;
     
     return ret;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// add_session_cookie
+//
+
+void
+CControlObject::add_session_cookie(struct Session *session,
+        struct MHD_Response *response)
+{
+    char cstr[256];
+    snprintf(cstr,
+            sizeof(cstr),
+            "%s=%s",
+            WEBSERVER_COOKIE_NAME,
+            session->m_sid);
+    
+    if (MHD_NO ==
+            MHD_add_response_header(response,
+            MHD_HTTP_HEADER_SET_COOKIE,
+            cstr)) {
+        syslog(LOG_ERR,
+                "Failed to set session cookie header!\n");
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // expire_sessions
@@ -3230,13 +3147,13 @@ CControlObject::expire_sessions()
     pos = sessions;
     
     while (NULL != pos) {
-        next = pos->next;
+        next = pos->m_next;
         if (now - pos->start > 60 * 60) {
             // expire sessions after 1h 
             if (NULL == prev)
-                sessions = pos->next;
+                sessions = pos->m_next;
             else
-                prev->next = next;
+                prev->m_next = next;
             free(pos);
         } else
             prev = pos;
@@ -3258,8 +3175,8 @@ CControlObject::not_found_page(const void *cls,
     struct MHD_Response *response;
 
     // unsupported HTTP method 
-    response = MHD_create_response_from_buffer(strlen(NOT_FOUND_ERROR),
-            (void *) NOT_FOUND_ERROR,
+    response = MHD_create_response_from_buffer(strlen(WEBSERVER_NOT_FOUND_ERROR),
+            (void *)WEBSERVER_NOT_FOUND_ERROR,
             MHD_RESPMEM_PERSISTENT);
     
     ret = MHD_queue_response(connection,
@@ -3276,50 +3193,99 @@ CControlObject::not_found_page(const void *cls,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// serve_simple_page
+//
+
+int
+CControlObject::serve_simple_page(const void *cls,
+        const char *mime,
+        struct Session *session,
+        struct MHD_Connection *connection)
+{
+    int ret;
+    const char *page = (const char *)cls;
+    struct MHD_Response *response;
+
+    // return static page 
+    response = MHD_create_response_from_buffer( strlen(page),
+            (void *)page,
+            MHD_RESPMEM_PERSISTENT);
+    
+    add_session_cookie(session, response);
+    
+    MHD_add_response_header(response,
+            MHD_HTTP_HEADER_CONTENT_ENCODING,
+            mime);
+    
+    ret = MHD_queue_response(connection,
+            MHD_HTTP_OK,
+            response);
+    
+    MHD_destroy_response(response);
+    
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // request_completed_callback
 //
 
 int
-CControlObject::post_iterator(void *cls,
+CControlObject::post_iterator( void *cls,
         enum MHD_ValueKind kind,
         const char *key,
         const char *filename,
         const char *content_type,
         const char *transfer_encoding,
-        const char *data, uint64_t off, size_t size)
+        const char *data, 
+        uint64_t off, 
+        size_t size )
 {
     struct Request *request = (struct Request *)cls;
     struct Session *session = request->session;
 
-    if (0 == strcmp("DONE", key)) {
-        fprintf(stdout,
-                "Session `%s' submitted `%s', `%s'\n",
-                session->sid,
-                session->value_1,
-                session->value_2);
+    if ( 0 == strcmp("DONE", key) ) {
+        //fprintf(stderr,
+        //        "Session `%s' submitted `%s', `%s'\n",
+        //        session->m_sid,
+        //        session->value_1,
+        //        session->value_2);
         return MHD_YES;
     }
+    
     if (0 == strcmp("v1", key)) {
-        if (size + off > sizeof(session->value_1))
-            size = sizeof(session->value_1) - off;
-        memcpy(&session->value_1[off],
+        
+        if ( size + off > sizeof( session->value_1 ) )
+            size = sizeof( session->value_1 ) - off;
+        
+        memcpy( &session->value_1[ off ],
                 data,
-                size);
-        if (size + off < sizeof(session->value_1))
-            session->value_1[size + off] = '\0';
+                size );
+        
+        if ( size + off < sizeof( session->value_1 ) ) {
+            session->value_1[ size + off ] = '\0';
+        }
+        
         return MHD_YES;
     }
-    if (0 == strcmp("v2", key)) {
-        if (size + off > sizeof(session->value_2))
-            size = sizeof(session->value_2) - off;
-        memcpy(&session->value_2[off],
+    
+    if ( 0 == strcmp("v2", key) ) {
+    
+        if ( size + off > sizeof( session->value_2 ) ) {
+            size = sizeof( session->value_2 ) - off;
+        }
+        
+        memcpy( &session->value_2[off],
                 data,
-                size);
-        if (size + off < sizeof(session->value_2))
-            session->value_2[size + off] = '\0';
+                size );
+        
+        if ( size + off < sizeof( session->value_2 ) )
+            session->value_2[ size + off ] = '\0';
+        
         return MHD_YES;
     }
-    fprintf(stderr, "Unsupported form value `%s'\n", key);
+    
+    syslog(LOG_ERR, "Unsupported form value `%s'\n", key);
     return MHD_YES;
 }
 
@@ -3340,7 +3306,7 @@ CControlObject::request_completed_callback(void *cls,
     }
     
     if (NULL != request->session) {
-        request->session->rc--;
+        request->session->m_rc--;
     }
     
     if (NULL != request->pp) {

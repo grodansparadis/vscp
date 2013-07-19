@@ -94,18 +94,8 @@ enum websocket_protocols {
     DEMO_PROTOCOL_COUNT
 };
 
-/**
- * Number of threads to run in the thread pool.  Should (roughly) match
- * the number of cores on your system.
- */
-#define WEBSERVER_NUMBER_OF_THREADS 8
 
-/**
- * How many bytes of a file do we give to libmagic to determine the mime type?
- * 16k might be a bit excessive, but ought not hurt performance much anyway,
- * and should definitively be on the safe side.
- */
-#define WEBSERVER_MAGIC_HEADER_SIZE (16 * 1024)
+
 
 
 WX_DECLARE_LIST(canalMsg, CanalMsgList);
@@ -165,7 +155,7 @@ public:
     /*!
       logMsg
       write log message
-     */
+    */ 
     void logMsg(const wxString& wxstr, unsigned char level = DAEMON_LOGMSG_INFO);
 
     /*!
@@ -310,7 +300,7 @@ public:
 
 
     /////////////////////////////////////////////////
-    //               WEBSOCKET STATICS
+    //                  WEBSOCKETS
     /////////////////////////////////////////////////
 
     static void
@@ -365,15 +355,16 @@ public:
             struct per_session_data__lws_vscp *pss,
             const char *pCommand);
 	
+	
 	/////////////////////////////////////////////////
-    //               WEB SERVER STATICS
+    //                 WEB SERVER
     /////////////////////////////////////////////////
 	
 	/**
 		Main MHD callback for handling requests.
  
 		@param cls argument given together with the function
- 				pointer when the handler was registered with MHD
+				pointer when the handler was registered with MHD
 		@param connection handle identifying the incoming connection
 		@param url the requested url
 		@param method the HTTP method used ("GET", "PUT", etc.)
@@ -386,8 +377,8 @@ public:
 				data *will* be made available incrementally in
 				upload_data)
 		@param upload_data_size set initially to the size of the
- 				upload_data provided; the method must update this
- 				value to the number of bytes NOT processed;
+				upload_data provided; the method must update this
+				value to the number of bytes NOT processed;
 		@param ptr pointer that the callback can set to some
 				address and that will be preserved by MHD for future
 				calls for this request; since the access handler may
@@ -398,24 +389,34 @@ public:
 				global "MHD_RequestCompleted" callback (which
 				can be set with the MHD_OPTION_NOTIFY_COMPLETED).
 				Initially, <tt>*con_cls</tt> will be NULL.
-			 @return MHS_YES if the connection was handled successfully,
- *         MHS_NO if the socket must be closed due to a serios
- *         error while handling the request
- */
-	static int 
-	callback_webpage(void *cls,
-        struct MHD_Connection *connection,
-        const char *url,
-        const char *method,
-        const char *version,
-        const char *upload_data, size_t *upload_data_size, void **ptr);
+		@return MHS_YES if the connection was handled successfully,
+		  MHS_NO if the socket must be closed due to a serios
+		  error while handling the request
+	 */
+	static int
+	callback_webpage( void *cls,
+		struct MHD_Connection *connection,
+		const char *url,
+		const char *method,
+		const char *version,
+		const char *upload_data, size_t *upload_data_size, void **ptr);
 	
 	/*!
 		Return the session handle for this connection, or 
 		create one if this is a new user.
 	*/
 	static struct Session *
-	get_session(struct MHD_Connection *connection);
+	get_session( struct MHD_Connection *connection);
+
+	/**
+	 * Add header to response to set a session cookie.
+	 *
+	 * @param session session to use
+	 * @param response response to modify
+	 */
+	static void
+	add_session_cookie( struct Session *session,
+		struct MHD_Response *response);
 	
 	/**
 		Clean up handles of sessions that have been idle for
@@ -424,15 +425,6 @@ public:
 	static void
 	expire_sessions(void);
 	
-	/*!
-		Add header to response to set a session cookie.
-	 
-		@param session session to use
-		@param response response to modify
-	*/ 
-	static void
-	add_session_cookie(struct Session *session,
-						struct MHD_Response *response);
 	
 	/**
 		Handler used to generate a 404 reply.
@@ -443,10 +435,25 @@ public:
 		@param connection connection to use
 	*/
 	static int
-	not_found_page (const void *cls,
+	not_found_page( const void *cls,
 						const char *mime,
 						struct Session *session,
 						struct MHD_Connection *connection);
+
+	/**
+	 * Handler that returns a simple static HTTP page that
+	 * is passed in via 'cls'.
+	 *
+	 * @param cls a 'const char *' with the HTML webpage to return
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int
+	serve_simple_page( const void *cls,
+		const char *mime,
+		struct Session *session,
+		struct MHD_Connection *connection);
 	
 	/**
 	 * Iterator over key-value pairs where the value
@@ -468,7 +475,7 @@ public:
 	 *         MHD_NO to abort the iteration
 	 */
 	static int
-	post_iterator(void *cls,
+	post_iterator( void *cls,
 		enum MHD_ValueKind kind,
 		const char *key,
 		const char *filename,
@@ -640,7 +647,7 @@ public:
     wxString m_driverPassword;
 
     //*****************************************************
-    //                   websocket/webserver interface
+    //                websocket/webserver interface
     //*****************************************************
 
     // Path to filesystem root
