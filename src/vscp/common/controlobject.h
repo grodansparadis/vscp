@@ -360,6 +360,12 @@ public:
     //                 WEB SERVER
     /////////////////////////////////////////////////
 	
+	/*!
+	 * 
+	 */
+	static ssize_t
+	websrv_file_reader (void *cls, uint64_t pos, char *buf, size_t max);
+	
 	/**
 		Main MHD callback for handling requests.
  
@@ -394,19 +400,21 @@ public:
 		  error while handling the request
 	 */
 	static int
-	callback_webpage( void *cls,
-		struct MHD_Connection *connection,
-		const char *url,
-		const char *method,
-		const char *version,
-		const char *upload_data, size_t *upload_data_size, void **ptr);
+	websrv_callback_webpage( void *cls,
+								struct MHD_Connection *connection,
+								const char *url,
+								const char *method,
+								const char *version,
+								const char *upload_data, 
+								size_t *upload_data_size, 
+								void **ptr);
 	
 	/*!
 		Return the session handle for this connection, or 
 		create one if this is a new user.
 	*/
-	static struct Session *
-	get_session( struct MHD_Connection *connection);
+	static struct websrv_Session *
+	websrv_get_session( struct MHD_Connection *connection);
 
 	/**
 	 * Add header to response to set a session cookie.
@@ -415,15 +423,15 @@ public:
 	 * @param response response to modify
 	 */
 	static void
-	add_session_cookie( struct Session *session,
-		struct MHD_Response *response);
+	websrv_add_session_cookie( struct websrv_Session *session,
+								struct MHD_Response *response);
 	
 	/**
 		Clean up handles of sessions that have been idle for
 		too long.
 	*/
 	static void
-	expire_sessions(void);
+	websrv_expire_sessions(void);
 	
 	
 	/**
@@ -435,10 +443,10 @@ public:
 		@param connection connection to use
 	*/
 	static int
-	not_found_page( const void *cls,
-						const char *mime,
-						struct Session *session,
-						struct MHD_Connection *connection);
+	websrv_not_found_page( const void *cls,
+							const char *mime,
+							struct websrv_Session *session,
+							struct MHD_Connection *connection);
 
 	/**
 	 * Handler that returns a simple static HTTP page that
@@ -450,10 +458,10 @@ public:
 	 * @param connection connection to use
 	 */
 	static int
-	serve_simple_page( const void *cls,
-		const char *mime,
-		struct Session *session,
-		struct MHD_Connection *connection);
+	websrv_serve_simple_page( const void *cls,
+								const char *mime,
+								struct websrv_Session *session,
+								struct MHD_Connection *connection);
 	
 	/**
 	 * Iterator over key-value pairs where the value
@@ -475,13 +483,13 @@ public:
 	 *         MHD_NO to abort the iteration
 	 */
 	static int
-	post_iterator( void *cls,
-		enum MHD_ValueKind kind,
-		const char *key,
-		const char *filename,
-		const char *content_type,
-		const char *transfer_encoding,
-		const char *data, uint64_t off, size_t size);
+	websrv_post_iterator( void *cls,
+							enum MHD_ValueKind kind,
+							const char *key,
+							const char *filename,
+							const char *content_type,
+							const char *transfer_encoding,
+							const char *data, uint64_t off, size_t size);
 	
 	/**
 	 * Callback called upon completion of a request.
@@ -493,10 +501,10 @@ public:
 	 * @param toe status code
 	 */
 	static void
-	request_completed_callback(void *cls,
-		struct MHD_Connection *connection,
-		void **con_cls,
-		enum MHD_RequestTerminationCode toe);
+	websrv_request_completed_callback(void *cls,
+										struct MHD_Connection *connection,
+										void **con_cls,
+										enum MHD_RequestTerminationCode toe);
 
 public:
 

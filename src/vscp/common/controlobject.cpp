@@ -244,6 +244,9 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
     }
 };
 
+
+
+
 ///////////////////////////////////////////////////
 //		          WEBSERVER
 ///////////////////////////////////////////////////
@@ -255,7 +258,7 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
  * Linked list of all active sessions.  Yes, O(n) but a
  * hash table would be overkill for a simple example...
  */
-static struct Session *sessions;
+static struct websrv_Session *websrv_sessions;
 
 /**
  * Type of handler that generates a reply.
@@ -267,9 +270,9 @@ static struct Session *sessions;
  * @param MHD_YES on success, MHD_NO on failure
  */
 typedef int (*PageHandler)(const void *cls,
-			   const char *mime,
-			   struct Session *session,
-			   struct MHD_Connection *connection);
+                            const char *mime,
+                            struct websrv_Session *session,
+                            struct MHD_Connection *connection);
 
 
 /**
@@ -302,11 +305,15 @@ struct Page
 // List of all pages served by this HTTP server.
 static struct Page pages[] = 
   {
-    { "/", "text/html",  &CControlObject::serve_simple_page, WEBSERVER_PAGE },
-    { "/2", "text/html", &CControlObject::serve_simple_page, WEBSERVER_PAGE },
-    { "/S", "text/html", &CControlObject::serve_simple_page, WEBSERVER_PAGE },
-    { "/F", "text/html", &CControlObject::serve_simple_page, WEBSERVER_PAGE },
-    { NULL, NULL, &CControlObject::not_found_page, NULL } /* 404 */
+    { "/vscp", "text/html",  &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE_MAIN },
+    { "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/dm", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/discovery", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/session", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/configure", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/variables", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/bootload", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { NULL, NULL, &CControlObject::websrv_not_found_page, NULL } /* 404 */
   };
 
 
@@ -675,12 +682,12 @@ bool CControlObject::run(void)
             m_portWebServer,
             NULL,
             NULL,
-            &callback_webpage,
+            &websrv_callback_webpage,
             (void *) this,
             MHD_OPTION_CONNECTION_MEMORY_LIMIT, (size_t)(256 * 1024),
             MHD_OPTION_PER_IP_CONNECTION_LIMIT, (unsigned int)(64),
             MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)(120 /* seconds */),
-            MHD_OPTION_NOTIFY_COMPLETED, &request_completed_callback, NULL,
+            MHD_OPTION_NOTIFY_COMPLETED, &websrv_request_completed_callback, NULL,
             MHD_OPTION_END);
     
     // DM Loop
@@ -2911,18 +2918,35 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 
 
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// file_reader
+//
+
+ssize_t
+CControlObject::websrv_file_reader (void *cls, uint64_t pos, char *buf, size_t max)
+{
+  FILE *file = (FILE *)cls;
+
+  (void)  fseek (file, pos, SEEK_SET);
+  return fread (buf, 1, max, file);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // callback_webpage
 //
 
-int CControlObject::callback_webpage(void *cls,
-        struct MHD_Connection *connection,
-        const char *url,
-        const char *method,
-        const char *version,
-        const char *upload_data,
-        size_t *upload_data_size,
-        void **ptr)
+int CControlObject::websrv_callback_webpage(void *cls,
+                                                struct MHD_Connection *connection,
+                                                const char *url,
+                                                const char *method,
+                                                const char *version,
+                                                const char *upload_data,
+                                                size_t *upload_data_size,
+                                                void **ptr)
 {
 
     CControlObject *pObject = (CControlObject *) cls;
@@ -2932,14 +2956,14 @@ int CControlObject::callback_webpage(void *cls,
     char *user;
     char *pass;
     bool bFail;
-    struct Request *request;
-    struct Session *session;
+    struct websrv_Request *request;
+    struct websrv_Session *session;
     unsigned int i;
 
-    request = (struct Request *)*ptr;
+    request = (struct websrv_Request *)*ptr;
     if (NULL == request) {
         
-        request = (struct Request *)calloc(1, sizeof(struct Request));
+        request = (struct websrv_Request *)calloc(1, sizeof(struct websrv_Request));
         if (NULL == request) {
             syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
             return MHD_NO;
@@ -2948,7 +2972,7 @@ int CControlObject::callback_webpage(void *cls,
         *ptr = request;
         if (0 == strcmp(method, MHD_HTTP_METHOD_POST)) {
             request->pp = MHD_create_post_processor(connection, 1024,
-                    &post_iterator, request);
+                    &websrv_post_iterator, request);
             if (NULL == request->pp) {
                 syslog(LOG_ERR, "Failed to setup post processor for `%s'\n",
                         url);
@@ -2963,7 +2987,7 @@ int CControlObject::callback_webpage(void *cls,
     }
 
     if (NULL == request->session) {
-        request->session = get_session(connection);
+        request->session = websrv_get_session(connection);
         if (NULL == request->session) {
             syslog(LOG_ERR, "Failed to setup session for `%s'\n", url);
             return MHD_NO; // internal error 
@@ -3052,10 +3076,10 @@ int CControlObject::callback_webpage(void *cls,
 // get_session
 //
 
-struct Session *
-CControlObject::get_session(struct MHD_Connection *connection)
+struct websrv_Session *
+CControlObject::websrv_get_session( struct MHD_Connection *connection )
 {
-    struct Session *ret;
+    struct websrv_Session *ret;
     const char *cookie;
 
     cookie = MHD_lookup_connection_value(connection,
@@ -3065,7 +3089,7 @@ CControlObject::get_session(struct MHD_Connection *connection)
     if (cookie != NULL) {
         
         // find existing session 
-        ret = sessions;
+        ret = websrv_sessions;
         while (NULL != ret) {
             if (0 == strcmp(cookie, ret->m_sid))
                 break;
@@ -3079,7 +3103,7 @@ CControlObject::get_session(struct MHD_Connection *connection)
     }
     
     // create fresh session 
-    ret = (struct Session *)calloc(1, sizeof(struct Session));
+    ret = (struct websrv_Session *)calloc(1, sizeof(struct websrv_Session));
     if (NULL == ret) {
         syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
         return NULL;
@@ -3099,8 +3123,8 @@ CControlObject::get_session(struct MHD_Connection *connection)
     
     ret->m_rc++;
     ret->start = time(NULL);
-    ret->m_next = sessions;
-    sessions = ret;
+    ret->m_next = websrv_sessions;
+    websrv_sessions = ret;
     
     return ret;
 }
@@ -3111,8 +3135,8 @@ CControlObject::get_session(struct MHD_Connection *connection)
 //
 
 void
-CControlObject::add_session_cookie(struct Session *session,
-        struct MHD_Response *response)
+CControlObject::websrv_add_session_cookie(struct websrv_Session *session,
+                                            struct MHD_Response *response)
 {
     char cstr[256];
     snprintf(cstr,
@@ -3135,23 +3159,23 @@ CControlObject::add_session_cookie(struct Session *session,
 //
 
 void
-CControlObject::expire_sessions()
+CControlObject::websrv_expire_sessions(void)
 {
-    struct Session *pos;
-    struct Session *prev;
-    struct Session *next;
+    struct websrv_Session *pos;
+    struct websrv_Session *prev;
+    struct websrv_Session *next;
     time_t now;
 
     now = time(NULL);
     prev = NULL;
-    pos = sessions;
+    pos = websrv_sessions;
     
     while (NULL != pos) {
         next = pos->m_next;
         if (now - pos->start > 60 * 60) {
             // expire sessions after 1h 
             if (NULL == prev)
-                sessions = pos->m_next;
+                websrv_sessions = pos->m_next;
             else
                 prev->m_next = next;
             free(pos);
@@ -3166,10 +3190,10 @@ CControlObject::expire_sessions()
 //
 
 int
-CControlObject::not_found_page(const void *cls,
-        const char *mime,
-        struct Session *session,
-        struct MHD_Connection *connection )
+CControlObject::websrv_not_found_page(const void *cls,
+                                        const char *mime,
+                                        struct websrv_Session *session,
+                                        struct MHD_Connection *connection )
 {
     int ret;
     struct MHD_Response *response;
@@ -3197,10 +3221,10 @@ CControlObject::not_found_page(const void *cls,
 //
 
 int
-CControlObject::serve_simple_page(const void *cls,
-        const char *mime,
-        struct Session *session,
-        struct MHD_Connection *connection)
+CControlObject::websrv_serve_simple_page(const void *cls,
+                                            const char *mime,
+                                            struct websrv_Session *session,
+                                            struct MHD_Connection *connection)
 {
     int ret;
     const char *page = (const char *)cls;
@@ -3211,7 +3235,7 @@ CControlObject::serve_simple_page(const void *cls,
             (void *)page,
             MHD_RESPMEM_PERSISTENT);
     
-    add_session_cookie(session, response);
+    websrv_add_session_cookie(session, response);
     
     MHD_add_response_header(response,
             MHD_HTTP_HEADER_CONTENT_ENCODING,
@@ -3231,18 +3255,18 @@ CControlObject::serve_simple_page(const void *cls,
 //
 
 int
-CControlObject::post_iterator( void *cls,
-        enum MHD_ValueKind kind,
-        const char *key,
-        const char *filename,
-        const char *content_type,
-        const char *transfer_encoding,
-        const char *data, 
-        uint64_t off, 
-        size_t size )
+CControlObject::websrv_post_iterator( void *cls,
+                                        enum MHD_ValueKind kind,
+                                        const char *key,
+                                        const char *filename,
+                                        const char *content_type,
+                                        const char *transfer_encoding,
+                                        const char *data, 
+                                        uint64_t off, 
+                                        size_t size )
 {
-    struct Request *request = (struct Request *)cls;
-    struct Session *session = request->session;
+    struct websrv_Request *request = (struct websrv_Request *)cls;
+    struct websrv_Session *session = request->session;
 
     if ( 0 == strcmp("DONE", key) ) {
         //fprintf(stderr,
@@ -3294,12 +3318,12 @@ CControlObject::post_iterator( void *cls,
 //
 
 void
-CControlObject::request_completed_callback(void *cls,
-        struct MHD_Connection *connection,
-        void **con_cls,
-        enum MHD_RequestTerminationCode toe)
+CControlObject::websrv_request_completed_callback(void *cls,
+                                            struct MHD_Connection *connection,
+                                            void **con_cls,
+                                            enum MHD_RequestTerminationCode toe)
 {
-    struct Request *request = (struct Request *) *con_cls;
+    struct websrv_Request *request = (struct websrv_Request *) *con_cls;
 
     if (NULL == request) {
         return;

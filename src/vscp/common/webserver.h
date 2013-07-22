@@ -34,6 +34,11 @@
 /**
  * Start page
  */
+#define WEBSERVER_PAGE_MAIN "<html><head><title>VSCP Daemon</title></head><body>Welcome to the VSCP Daemon.</body></html>"
+
+/**
+ * Start page
+ */
 #define WEBSERVER_PAGE "<html><head><title>VSCP Daemon</title></head><body>VSCP Daemon.</body></html>"
 
 /**
@@ -49,10 +54,10 @@
 /**
  * State we keep for each user/session/browser.
  */
-struct Session
+struct websrv_Session
 {
   // We keep all sessions in a linked list.
-  struct Session *m_next;
+  struct websrv_Session *m_next;
 
   // Unique ID for this session. 
   char m_sid[33];
@@ -80,13 +85,13 @@ struct Session
 /**
  * Data kept per request.
  */
-struct Request
+struct websrv_Request
 {
 
   /**
    * Associated session.
    */
-  struct Session *session;
+  struct websrv_Session *session;
 
   /**
    * Post processor handling form data (IF this is
