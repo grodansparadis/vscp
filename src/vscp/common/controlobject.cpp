@@ -463,17 +463,11 @@ bool CControlObject::init(wxString& strcfgfile)
     str += _("\n");
     str += _(VSCPD_COPYRIGHT);
     str += _("\n");
-#ifdef BUILD_VSCPD_SERVICE
     logMsg(str);
-#else
-    //printf("%s", (const char *) str.ToAscii());
-    logMsg(str);
-#endif
-     
 
     // A configuration file must be available
     if (!wxFile::Exists(strcfgfile)) {
-        logMsg(_("No configuration file given. Can't initialise!).\n"), DAEMON_LOGMSG_CRITICAL);
+        logMsg(_("No configuration file given. Can't initialise!.\n"), DAEMON_LOGMSG_CRITICAL);
         logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
         return FALSE;
     }
@@ -499,10 +493,15 @@ bool CControlObject::init(wxString& strcfgfile)
 
     // Read configuration
     if (!readConfiguration(strcfgfile)) {
-        printf("vscpd: Unable to open/parse configuration file. Terminating.");
-        logMsg(_("Unable to open/parse configuration file. Can't initialize!).\n"), DAEMON_LOGMSG_CRITICAL);
+        logMsg(_("Unable to open/parse configuration file. Can't initialize!.\n"), DAEMON_LOGMSG_CRITICAL);
         logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
         return FALSE;
+    }
+    
+    // Read mime types
+    if (!readMimeTypes(m_pathToMimeTypeFile)) {
+        logMsg(_("Unable to open/parse mime type file.\n"), DAEMON_LOGMSG_CRITICAL);
+        logMsg(_("Path = .") + m_pathToMimeTypeFile + _("\n"), DAEMON_LOGMSG_CRITICAL);
     }
     
     str.Printf(_("Log Level = %d"), m_logLevel );
@@ -1600,7 +1599,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     } else {
                         m_bCanalDrivers = true;
                     }
-                } else if (subchild->GetName() == wxT("dm")) {
+                } 
+                else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
                     if (property.IsSameAs(_("false"), false)) {
@@ -1611,8 +1611,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_dm.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
                     m_dm.m_configPath.Trim();
                     m_dm.m_configPath.Trim(false);
-
-                } else if (subchild->GetName() == wxT("variables")) {
+                    
+                }                 
+                else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
                     if (property.IsSameAs(_("false"), false)) {
@@ -1669,6 +1670,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_portWebServer = readStringValue(property);
                     }
                 }
+                else if (subchild->GetName() == wxT("pathtomimetypes")) {
+                    m_pathToMimeTypeFile = subchild->GetNodeContent();
+                    m_pathToMimeTypeFile.Trim();
+                    m_pathToMimeTypeFile.Trim(false);
+                } 
 
                 subchild = subchild->GetNext();
             }
@@ -1993,7 +1999,43 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 }
 
-//#if (WIN32 && (_WIN32_WINNT>=0x0500) || !WIN32 ) // Windows XP
+///////////////////////////////////////////////////////////////////////////////
+// readMimeTypes
+//
+// Read the Mime Types XML file 
+//
+
+bool CControlObject::readMimeTypes(wxString& path)
+{
+    unsigned long val;
+    wxXmlDocument doc;
+    if (!doc.Load(path)) {
+        return false;
+    }
+
+    // start processing the XML file
+    if (doc.GetRoot()->GetName() != wxT("mimetypes")) {
+        return false;
+    }
+
+    wxXmlNode *child = doc.GetRoot()->GetChildren();
+    while (child) {  
+        
+        if (child->GetName() == wxT("mimetype")) {
+            wxString strEnable = child->GetPropVal(wxT("enable"), wxT("false"));
+            wxString strExt = child->GetPropVal(wxT("extension"), wxT(""));
+            wxString strType = child->GetPropVal(wxT("mime"), wxT(""));
+            if ( strEnable.IsSameAs(_("true"),false )) {
+                m_hashMimeTypes[strExt] = strType;
+            }
+        }
+        
+        child = child->GetNext();
+
+    }
+    
+    return true;
+}
 
 
 ////////////////////////

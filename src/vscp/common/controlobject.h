@@ -52,6 +52,8 @@ extern "C" {
 // List used for websocket triggers
 WX_DECLARE_LIST(vscpEventFilter, TRIGGERLIST);
 
+WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
+
 #define DAEMON_LOGMSG_NONE                      0
 #define DAEMON_LOGMSG_INFO                      1		
 #define DAEMON_LOGMSG_NOTICE                    2
@@ -266,6 +268,13 @@ public:
         @return Returns true on success false on failure.
      */
     bool readConfiguration(wxString& strcfgfile);
+	
+	/*!
+		Read in mime types
+		@param path path to XML file holding mime types
+		@return Returns true on success false on failure.
+	 */
+	bool readMimeTypes(wxString& path);
 
     /*!
         send level II message to all clients
@@ -658,6 +667,9 @@ public:
     //                websocket/webserver interface
     //*****************************************************
 
+	/// Path to file holding mime types
+	wxString m_pathToMimeTypeFile;
+	
     // Path to filesystem root
     static wxString m_pathRoot;
 
@@ -674,6 +686,10 @@ public:
 	
 	// Enable/disable full webserver
     bool m_bWebServer;
+	
+	// Hash table with mime types, gives mime type from
+	// file extension.
+	HashString m_hashMimeTypes;
 
     //*****************************************************
     //                         Security

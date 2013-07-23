@@ -135,7 +135,7 @@ int main(int argc, char **argv)
 		switch (arg) {
 
 		case 's':
-			wxPrintf(_("Will not run as daemon!\n"));
+			wxPrintf(_("Will ***NOT*** run as daemon!\n"));
 			gbDontRunAsDaemon = true;
 			break;
 
