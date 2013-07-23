@@ -686,7 +686,7 @@ bool CControlObject::run(void)
             MHD_OPTION_CONNECTION_MEMORY_LIMIT, (size_t)(256 * 1024),
             MHD_OPTION_PER_IP_CONNECTION_LIMIT, (unsigned int)(64),
             MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)(120 /* seconds */),
-            MHD_OPTION_NOTIFY_COMPLETED, &websrv_request_completed_callback, NULL,
+            MHD_OPTION_NOTIFY_COMPLETED, &websrv_request_callback_completed, NULL,
             MHD_OPTION_END);
     
     // DM Loop
@@ -2969,12 +2969,23 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 //
 
 ssize_t
-CControlObject::websrv_file_reader (void *cls, uint64_t pos, char *buf, size_t max)
+CControlObject::websrv_callback_file_free (void *cls, uint64_t pos, char *buf, size_t max)
 {
   FILE *file = (FILE *)cls;
 
   (void)  fseek (file, pos, SEEK_SET);
   return fread (buf, 1, max, file);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_callback_file_free
+//
+
+void
+CControlObject::websrv_callback_file_free (void *cls)
+{
+  FILE *file = (FILE *)cls;
+  fclose (file);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2990,7 +3001,7 @@ int CControlObject::websrv_callback_webpage(void *cls,
                                                 size_t *upload_data_size,
                                                 void **ptr)
 {
-
+    wxString strUser, strPassword;
     CControlObject *pObject = (CControlObject *) cls;
     const char *defaultPage = WEBSERVER_PAGE;
     struct MHD_Response *response;
@@ -3001,10 +3012,53 @@ int CControlObject::websrv_callback_webpage(void *cls,
     struct websrv_Request *request;
     struct websrv_Session *session;
     unsigned int i;
+    
 
+    user = MHD_basic_auth_get_username_password(connection, &pass);
+    
+    if ( NULL != user ) {
+        strUser = wxString::FromAscii(user);
+        delete user;
+        user = NULL;
+    }
+    
+    if ( NULL != pass ) {
+        Cmd5 md5;
+        strPassword = wxString::FromAscii( md5.digest((unsigned char *)pass) );
+        delete pass;
+        pass = NULL;
+    }
+    
+
+    bFail = ( 0 == strUser.Length() || 
+             ( NULL == pObject->m_userList.checkUser(strUser,strPassword)));
+
+    if ( bFail ) {
+        
+        // Send fail response
+        response = 
+            MHD_create_response_from_buffer( strlen(WEBSERVER_DENIED),
+                                                (void *) WEBSERVER_DENIED,
+                                                MHD_RESPMEM_PERSISTENT);
+        
+        ret = MHD_queue_basic_auth_fail_response( connection,
+                                                    "VSCP Daemon",
+                                                    response);
+    }
+    /*
+    else {
+        
+        // OK
+        response = MHD_create_response_from_buffer(strlen(defaultPage),
+                (void *)defaultPage,
+                MHD_RESPMEM_PERSISTENT);
+        ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+    }*/
+    
     request = (struct websrv_Request *)*ptr;
     if (NULL == request) {
         
+        // Allocate request structure on first call
         request = (struct websrv_Request *)calloc(1, sizeof(struct websrv_Request));
         if (NULL == request) {
             syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
@@ -3012,24 +3066,48 @@ int CControlObject::websrv_callback_webpage(void *cls,
         }
         
         *ptr = request;
-        if (0 == strcmp(method, MHD_HTTP_METHOD_POST)) {
-            request->pp = MHD_create_post_processor(connection, 1024,
-                    &websrv_post_iterator, request);
-            if (NULL == request->pp) {
-                syslog(LOG_ERR, "Failed to setup post processor for `%s'\n",
+        
+        if ( 0 == strcmp( method, MHD_HTTP_METHOD_POST ) ) {
+            
+            // Assign post processor iterator
+            request->pp = MHD_create_post_processor( connection, 
+                                                        1024,
+                                                        &websrv_post_iterator, 
+                                                        request);
+            
+            if ( NULL == request->pp ) {
+                syslog(LOG_ERR, 
+                        "Failed to setup post processor for `%s'\n",
                         url);
                 return MHD_NO; // internal error 
             }
+            
         }
         else if ( 0 != strcmp(method, MHD_HTTP_METHOD_GET) ) {
-            return MHD_NO; // unexpected method
+            
+            // Assign post processor iterator
+            request->pp = MHD_create_post_processor( connection, 
+                                                        1024,
+                                                        &websrv_post_iterator, 
+                                                        request);
+            
+            if ( NULL == request->pp ) {
+                syslog(LOG_ERR, 
+                        "Failed to setup post processor for `%s'\n",
+                        url);
+                return MHD_NO; // internal error 
+            }
+            
         }
         
         return MHD_YES;
     }
 
+    // Get session
     if (NULL == request->session) {
+        
         request->session = websrv_get_session(connection);
+        
         if (NULL == request->session) {
             syslog(LOG_ERR, "Failed to setup session for `%s'\n", url);
             return MHD_NO; // internal error 
@@ -3065,6 +3143,8 @@ int CControlObject::websrv_callback_webpage(void *cls,
     if ((0 == strcmp(method, MHD_HTTP_METHOD_GET)) ||
             (0 == strcmp(method, MHD_HTTP_METHOD_HEAD))) {
         
+        const char* q = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "q");
+        
         // find out which page to serve 
         i = 0;
         while ((pages[i].url != NULL) && (0 != strcmp(pages[i].url, url))) {
@@ -3084,33 +3164,75 @@ int CControlObject::websrv_callback_webpage(void *cls,
 
     *ptr = NULL; // reset when done 
 
-    pass = NULL;
-    user = MHD_basic_auth_get_username_password(connection, &pass);
-
-    bFail = ((user == NULL) ||
-            (0 != strcmp(user, "admin")) ||
-            (0 != strcmp(pass, "secret")));
-
-    if ( bFail ) {
-        
-        // Send fail response
-        response = MHD_create_response_from_buffer(strlen(WEBSERVER_DENIED),
-                (void *) WEBSERVER_DENIED,
-                MHD_RESPMEM_PERSISTENT);
-        ret = MHD_queue_basic_auth_fail_response(connection,
-                "VSCP Daemon",
-                response);
-    }
-    else {
-        
-        // OK
-        response = MHD_create_response_from_buffer(strlen(defaultPage),
-                (void *)defaultPage,
-                MHD_RESPMEM_PERSISTENT);
-        ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
-    }
+    
 
     MHD_destroy_response(response);
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// get_session
+//
+
+int
+CControlObject::websrv_callback_file(void *cls,
+                                        struct MHD_Connection *connection,
+                                        const char *url,
+                                        const char *method,
+                                        const char *version,
+                                        const char *upload_data,
+                                        size_t *upload_data_size, 
+                                        void **ptr)
+{
+    static int aptr;
+    struct MHD_Response *response;
+    int ret;
+    FILE *file;
+    struct stat buf;
+
+    if (0 != strcmp(method, MHD_HTTP_METHOD_GET)) {
+        return MHD_NO;  // unexpected method 
+    }
+    
+    if (&aptr != *ptr) {
+        // do never respond on first call 
+        *ptr = &aptr;
+        return MHD_YES;
+    }
+    
+    *ptr = NULL; // reset when done 
+    
+    if (0 == stat(&url[1], &buf)) {
+        file = fopen(&url[1], "rb");
+    }
+    else {
+        file = NULL;
+    }
+    
+    if (file == NULL) {
+        response = 
+          MHD_create_response_from_buffer(strlen(WEBSERVER_NOT_FOUND_ERROR),
+                (void *)WEBSERVER_NOT_FOUND_ERROR,
+                MHD_RESPMEM_PERSISTENT);
+        ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
+        MHD_destroy_response(response);
+    } 
+    else {
+        response = 
+          MHD_create_response_from_callback( buf.st_size, 
+                                                32 * 1024, /* 32k page size */
+                                                &websrv_callback_file_free,
+                                                file,
+                                                &websrv_callback_file_free);
+        if (response == NULL) {
+            fclose(file);
+            return MHD_NO;
+        }
+        
+        ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+        MHD_destroy_response(response);
+    }
+    
     return ret;
 }
 
@@ -3139,7 +3261,7 @@ CControlObject::websrv_get_session( struct MHD_Connection *connection )
         }
         
         if (NULL != ret) {
-            ret->m_rc++;
+            ret->m_referenceCount++;
             return ret;
         }
     }
@@ -3163,7 +3285,7 @@ CControlObject::websrv_get_session( struct MHD_Connection *connection )
             (unsigned int)t,
             (unsigned int)random());
     
-    ret->m_rc++;
+    ret->m_referenceCount++;
     ret->start = time(NULL);
     ret->m_next = websrv_sessions;
     websrv_sessions = ret;
@@ -3356,11 +3478,11 @@ CControlObject::websrv_post_iterator( void *cls,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// request_completed_callback
+// websrv_request_callback_completed
 //
 
 void
-CControlObject::websrv_request_completed_callback(void *cls,
+CControlObject::websrv_request_callback_completed(void *cls,
                                             struct MHD_Connection *connection,
                                             void **con_cls,
                                             enum MHD_RequestTerminationCode toe)
@@ -3372,7 +3494,7 @@ CControlObject::websrv_request_completed_callback(void *cls,
     }
     
     if (NULL != request->session) {
-        request->session->m_rc--;
+        request->session->m_referenceCount--;
     }
     
     if (NULL != request->pp) {

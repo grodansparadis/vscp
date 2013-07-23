@@ -66,11 +66,12 @@ struct websrv_Session
    * Reference counter giving the number of connections
    * currently using this session.
    */
-  unsigned int m_rc;
+  unsigned int m_referenceCount;
 
   // Time when this session was last active.
   time_t start;
 
+  // Client item for this session
   CClientItem *m_pClientItem;
   
   // String submitted via form.
@@ -78,6 +79,9 @@ struct websrv_Session
 
   // Another value submitted via form.
   char value_2[64];
+  
+  // Keypairs
+  HashString m_keys;
   
 };
 

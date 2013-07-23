@@ -369,11 +369,7 @@ public:
     //                 WEB SERVER
     /////////////////////////////////////////////////
 	
-	/*!
-	 * 
-	 */
-	static ssize_t
-	websrv_file_reader (void *cls, uint64_t pos, char *buf, size_t max);
+
 	
 	/**
 		Main MHD callback for handling requests.
@@ -417,6 +413,30 @@ public:
 								const char *upload_data, 
 								size_t *upload_data_size, 
 								void **ptr);
+	
+	/*!
+	 * 
+	 */
+	static ssize_t
+	websrv_callback_file_free(void *cls, uint64_t pos, char *buf, size_t max);
+	
+	/*!
+	 * 
+	 */
+	static void
+	websrv_callback_file_free (void *cls);
+	
+	/*!
+	 */
+	static int
+	websrv_callback_file(void *cls,
+							struct MHD_Connection *connection,
+							const char *url,
+							const char *method,
+							const char *version,
+							const char *upload_data,
+							size_t *upload_data_size, 
+							void **ptr);
 	
 	/*!
 		Return the session handle for this connection, or 
@@ -472,6 +492,21 @@ public:
 								struct websrv_Session *session,
 								struct MHD_Connection *connection);
 	
+		/**
+	 * Callback called upon completion of a request.
+	 * Decrements session reference counter.
+	 *
+	 * @param cls not used
+	 * @param connection connection that completed
+	 * @param con_cls session handle
+	 * @param toe status code
+	 */
+	static void
+	websrv_request_callback_completed(void *cls,
+										struct MHD_Connection *connection,
+										void **con_cls,
+										enum MHD_RequestTerminationCode toe);
+	
 	/**
 	 * Iterator over key-value pairs where the value
 	 * maybe made available in increments and/or may
@@ -500,20 +535,7 @@ public:
 							const char *transfer_encoding,
 							const char *data, uint64_t off, size_t size);
 	
-	/**
-	 * Callback called upon completion of a request.
-	 * Decrements session reference counter.
-	 *
-	 * @param cls not used
-	 * @param connection connection that completed
-	 * @param con_cls session handle
-	 * @param toe status code
-	 */
-	static void
-	websrv_request_completed_callback(void *cls,
-										struct MHD_Connection *connection,
-										void **con_cls,
-										enum MHD_RequestTerminationCode toe);
+
 
 public:
 
@@ -664,7 +686,7 @@ public:
     wxString m_driverPassword;
 
     //*****************************************************
-    //                websocket/webserver interface
+    //            websocket/webserver interface
     //*****************************************************
 
 	/// Path to file holding mime types
@@ -692,7 +714,7 @@ public:
 	HashString m_hashMimeTypes;
 
     //*****************************************************
-    //                         Security
+    //                     Security
     //*****************************************************
 
     // Path to SSL certificate
