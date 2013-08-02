@@ -492,6 +492,21 @@ public:
 								struct websrv_Session *session,
 								struct MHD_Connection *connection);
 	
+	/**
+	 * Handler that returns a simple static HTTP page that
+	 * is passed in via 'cls'.
+	 *
+	 * @param cls a 'const char *' with the HTML webpage to return
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int
+	websrv_serve_interfaces( const void *cls,
+								const char *mime,
+								struct websrv_Session *session,
+								struct MHD_Connection *connection);	
+	
 		/**
 	 * Callback called upon completion of a request.
 	 * Decrements session reference counter.

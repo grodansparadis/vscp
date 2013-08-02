@@ -109,6 +109,10 @@
 #include <wx/mimetype.h>
 #include <wx/filename.h>
 
+#include "web_css.h"
+#include "web_js.h"
+#include "web_template.h"
+
 #include "canal_macro.h"
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
@@ -270,13 +274,14 @@ static struct websrv_Session *websrv_sessions;
 static struct Page pages[] = 
   {
     { "/vscp", "text/html",  &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE_MAIN },
-    { "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_interfaces, NULL },
     { "/vscp/dm", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/discovery", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/session", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/configure", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/variables", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/bootload", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/m2m", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { NULL, NULL, &CControlObject::websrv_not_found_page, NULL } /* 404 */
   };
 
@@ -3108,7 +3113,8 @@ int CControlObject::websrv_callback_webpage(void *cls,
         }
 
         if (NULL != pages[i].url) {
-            ret = pages[i].handler(pages[i].handler_cls,
+            ret = pages[i].handler( 
+                    ( NULL != pages[i].handler_cls ) ? pages[i].handler_cls : pObject,
                     pages[i].mime,
                     session, connection);
         } 
@@ -3178,6 +3184,8 @@ int CControlObject::websrv_callback_webpage(void *cls,
                 
                     ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
                     
+                    MHD_destroy_response(response);
+                    
                     // Remove allocated string
                     delete [] p;
                     
@@ -3194,8 +3202,7 @@ int CControlObject::websrv_callback_webpage(void *cls,
     }
 
     //*ptr = NULL; // reset when done 
-
-    MHD_destroy_response(response);
+    
     return ret;
 }
 
@@ -3392,17 +3399,17 @@ CControlObject::websrv_not_found_page(const void *cls,
     struct MHD_Response *response;
 
     // unsupported HTTP method 
-    response = MHD_create_response_from_buffer(strlen(WEBSERVER_NOT_FOUND_ERROR),
-            (void *)WEBSERVER_NOT_FOUND_ERROR,
-            MHD_RESPMEM_PERSISTENT);
+    response = MHD_create_response_from_buffer( strlen(WEBSERVER_NOT_FOUND_ERROR),
+                                                    (void *)WEBSERVER_NOT_FOUND_ERROR,
+                                                    MHD_RESPMEM_PERSISTENT);
     
-    ret = MHD_queue_response(connection,
-            MHD_HTTP_NOT_FOUND,
-            response);
+    ret = MHD_queue_response( connection,
+                                MHD_HTTP_NOT_FOUND,
+                                response);
     
-    MHD_add_response_header(response,
-            MHD_HTTP_HEADER_CONTENT_ENCODING,
-            mime);
+    MHD_add_response_header( response,
+                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                mime);
     
     MHD_destroy_response(response);
     
@@ -3425,20 +3432,129 @@ CControlObject::websrv_serve_simple_page(const void *cls,
 
     // return static page 
     response = MHD_create_response_from_buffer( strlen(page),
-            (void *)page,
-            MHD_RESPMEM_PERSISTENT);
+                                                    (void *)page,
+                                                    MHD_RESPMEM_PERSISTENT);
+    
+    websrv_add_session_cookie( session, response);
+    
+    MHD_add_response_header( response,
+                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                mime);
+    
+    ret = MHD_queue_response( connection,
+                                MHD_HTTP_OK,
+                                response);
+    
+    MHD_destroy_response(response);
+    
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_serve_interfaces
+//
+
+int
+CControlObject::websrv_serve_interfaces( const void *cls,
+                                            const char *mime,
+                                            struct websrv_Session *session,
+                                            struct MHD_Connection *connection)
+{
+    int ret;
+    CControlObject *pObject = (CControlObject *) cls;
+    struct MHD_Response *response;
+
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Interfaces"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    buildPage += _(WEB_COMMON_MENU);
+    buildPage += _(WEB_DMLIST_BODY_START);
+    buildPage += _(WEB_DMLIST_TR_HEAD);
+
+    wxString strGUID;  
+    wxString strBuf;
+
+    // Display Interface List
+    pObject->m_wxClientMutex.Lock();
+    VSCPCLIENTLIST::iterator iter;
+    for (iter = pObject->m_clientList.m_clientItemList.begin();
+            iter != pObject->m_clientList.m_clientItemList.end();
+            ++iter) {
+
+        CClientItem *pItem = *iter;
+        pItem->m_guid.toString(strGUID);
+
+        buildPage += _(WEB_DMLIST_TR);
+
+        // Client id
+        buildPage += _(WEB_DMLIST_TD_CENTERED);
+        buildPage += wxString::Format(_("%d"), pItem->m_clientID);
+        buildPage += _("</td>");
+
+        // Interface type
+        buildPage += _(WEB_DMLIST_TD_CENTERED);
+        buildPage += wxString::Format(_("%d"), pItem->m_type);
+        buildPage += _("</td>");
+
+        // GUID
+        buildPage += _(WEB_DMLIST_TD_GUID);
+        buildPage += strGUID.Left(23);
+        buildPage += _("<br>");
+        buildPage += strGUID.Right(23);
+        buildPage += _("</td>");
+
+        // Interface name
+        buildPage += _("<td>");
+        buildPage += pItem->m_strDeviceName.Left(pItem->m_strDeviceName.Length() - 30);
+        buildPage += _("</td>");
+
+        // Start date
+        buildPage += _("<td>");
+        buildPage += pItem->m_strDeviceName.Right(19);
+        buildPage += _("</td>");
+
+        buildPage += _("</tr>");
+
+    }
+    pObject->m_wxClientMutex.Unlock();
+    
+    buildPage += _(WEB_DMLIST_TABLE_END);
+    
+    buildPage += _("<br>All interfaces to the daemon is listed here. This is drivers as well as clients on one of the daemons interfaces. It is possible to see events coming in on a on a specific interface and send events on just one of the interfaces. This is mostly used on the driver interfaces but is possible on all interfacs<br>");
+    
+    buildPage += _("<br><b>Interface Types</b><br>");
+    buildPage += _("0 - Unknown (you should not see this).<br>");
+    buildPage += _("1 - Internal daemon client.<br>");
+    buildPage += _("2 - Level I (CANAL) Driver.<br>");
+    buildPage += _("3 - Level II Driver.<br>");
+    buildPage += _("4 - TCP/IP Client.<br>");
+
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+    
+    // return page 
+    response = MHD_create_response_from_buffer( strlen(ppage),
+                                                    (void *)ppage,
+                                                    MHD_RESPMEM_MUST_FREE );
     
     websrv_add_session_cookie(session, response);
     
-    MHD_add_response_header(response,
-            MHD_HTTP_HEADER_CONTENT_ENCODING,
-            mime);
+    MHD_add_response_header( response,
+                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                mime);
     
-    ret = MHD_queue_response(connection,
-            MHD_HTTP_OK,
-            response);
+    ret = MHD_queue_response( connection,
+                                MHD_HTTP_OK,
+                                response);
     
-    MHD_destroy_response(response);
+    MHD_destroy_response( response );
     
     return ret;
 }

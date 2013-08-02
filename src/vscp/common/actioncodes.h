@@ -178,7 +178,7 @@
 // Get/Post URL
 // Format: url
 // 
-#define VSCP_DAEMON_ACTION_CODE_GET_POST_URL				0x00000075  // Get/Post URL
+#define VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL			0x00000075  // Get/Post URL
 
 
 #endif

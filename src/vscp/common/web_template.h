@@ -27,33 +27,37 @@
 
 // * * * M e n u * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"#\">Variables</a></li><li><a href=\"#\">Decision Matrix</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"#\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
+#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"#\">Variables</a></li><li><a href=\"#\">Decision Matrix</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"http://localhost:8080/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
 
 
 // * * * C o m m o n * * *
 
-// Common head upt ot <body>
+// Common head up to <body>
 // Contains three string insert points for printf
 // 1. Page title
-// 2. CSS including "<style"... in inserted string 
-// 3. Javascript including "<script"... in inserted string
-#define WEB_COMMON_HEAD "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><meta content=\"text/html; charset=ISO-8859-1\" http-equiv=\"content-type\"><title>%s</title>%s%s</head><body><br>"
+#define WEB_COMMON_HEAD "<!DOCTYPE html PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\"><html><head><meta content=\"text/html; charset=ISO-8859-1\" http-equiv=\"content-type\"><title>%s</title>"
+
+#define WEB_COMMON_HEAD_END_BODY_START "</head><body>"
 
 // End with footer
-#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright © 2012-2013 VSCP & Friends,<a href=\"mailto:info@grodansparadis.com\">Ake Hedman</a><a href=\"http://www.grodansparadis.com\"> Grodans Paradis AB.</a></div></div></body></html>"
+#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; 2000-2013 VSCP & Friends,<a href=\"mailto:info@grodansparadis.com\">Ake Hedman</a><a href=\"http://www.grodansparadis.com\"> Grodans Paradis AB.</a></div></div></body></html>"
 
 
 // * * * DM List * * *
 
 // Place after menus
-#define WEB_DMLIST_BODY_START "<div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Decision matrix</h1></div><table><tbody>"
+#define WEB_DMLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Interfaces</h1></div><table><tbody>"
 
 // Place before common end
-#define WEB_DMLIST_BODY_END "</tbody></table>"
+#define WEB_DMLIST_TABLE_END "</tbody></table>"
 
 // Rows
+#define WEB_DMLIST_TR_HEAD "<tr><th>I/f Id</th><th>Type</th><th>Interface GUID</th><th>Name</th><th>Start time</th></tr>"
+
 #define WEB_DMLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.yahoo.com/')\" >"
 
 #define WEB_DMLIST_TD_CENTERED "<td id=\"tdcenter\">"
+
+#define WEB_DMLIST_TD_GUID "<td id=\"tdguid\">"
 
 #endif

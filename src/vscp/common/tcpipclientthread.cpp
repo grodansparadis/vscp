@@ -1715,7 +1715,7 @@ void TcpClientThread::handleClientInterface_List( void )
     wxString strGUID;
     wxString strBuf;
 
-    // Add the client to the Client List
+    // Display Interface List
     m_pCtrlObject->m_wxClientMutex.Lock();
     VSCPCLIENTLIST::iterator iter;
     for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin(); 

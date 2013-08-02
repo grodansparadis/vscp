@@ -1452,7 +1452,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
         doActionWriteFile( pEvent );
         break;
 
-    case VSCP_DAEMON_ACTION_CODE_GET_URL:
+    case VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL:
         doActionGetURL( pEvent );
         break;
 

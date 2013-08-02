@@ -26,8 +26,9 @@
 #define WEBJS__INCLUDED_
 
 
-#define WEB_JS_COMMON "<script type=\"text/javascript\">sfHover=function(){var sfEls=document.getElementById(\"nav\").getElementsByTagName(\"LI\");for(var i=0;i<sfEls.length;i++){sfEls[i].onmouseover=function(){this.className+=\" sfhover\";} sfEls[i].onmouseout=function(){this.className=this.className.replace(new RegExp(\" sfhover\\b\"),\"\");}}} if(window.attachEvent) window.attachEvent(\"onload\",sfHover);function ChangeColor(tableRow,highLight){if(highLight){tableRow.style.backgroundColor='#dcfac9';} else{tableRow.style.backgroundColor='white';}} function DoNav(theUrl){document.location.href=theUrl;}</script>"
+//#define WEB_COMMON_JS "<script type=\"text/javascript\">sfHover=function(){var sfEls=document.getElementById(\"nav\").getElementsByTagName(\"LI\");for(var i=0;i<sfEls.length;i++){sfEls[i].onmouseover=function(){this.className+=\" sfhover\";} sfEls[i].onmouseout=function(){this.className=this.className.replace(new RegExp(\" sfhover\\b\"),\"\");}}} if(window.attachEvent){window.attachEvent(\"onload\",sfHover);} function ChangeColor(tableRow,highLight){alert('---');if(highLight){tableRow.style.backgroundColor='#dcfac9';} else{tableRow.style.backgroundColor='white';}} function DoNav(theUrl){document.location.href=theUrl;}</script>"
 
+#define WEB_COMMON_JS "<script type=\"text/javascript\">sfHover=function(){var b=document.getElementById(\"nav\").getElementsByTagName(\"LI\");for(var a=0;a<b.length;a++){b[a].onmouseover=function(){this.className+=\" sfhover\"};b[a].onmouseout=function(){this.className=this.className.replace(new RegExp(\" sfhover\\\\b\"),\"\")}}};if(window.attachEvent){window.attachEvent(\"onload\",sfHover)}function ChangeColor(a,b){if(b){a.style.backgroundColor=\"#dcfac9\"}else{a.style.backgroundColor=\"white\"}}function DoNav(a){document.location.href=a};</script>"
 
 
 #endif
