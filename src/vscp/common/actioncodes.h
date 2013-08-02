@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dm.cpp,v $                                       
-// $Date: 2005/08/30 11:00:04 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 
 
 // VSCP daemon action codes are defined in this file
@@ -182,7 +178,7 @@
 // Get URL
 // Format: url
 // 
-#define VSCP_DAEMON_ACTION_CODE_GET_URL						  0x00000075  // Get URL
+#define VSCP_DAEMON_ACTION_CODE_GET_URL						0x00000075  // Get URL
 
 
 #endif

@@ -260,46 +260,10 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
  */
 static struct websrv_Session *websrv_sessions;
 
-/**
- * Type of handler that generates a reply.
- *
- * @param cls content for the page (handler-specific)
- * @param mime mime type to use
- * @param session session information
- * @param connection connection to process
- * @param MHD_YES on success, MHD_NO on failure
- */
-typedef int (*PageHandler)(const void *cls,
-                            const char *mime,
-                            struct websrv_Session *session,
-                            struct MHD_Connection *connection);
 
 
-/**
- * Entry we generate for each page served.
- */ 
-struct Page
-{
-  /**
-   * Acceptable URL for this page.
-   */
-  const char *url;
 
-  /**
-   * Mime type to set for the page.
-   */
-  const char *mime;
 
-  /**
-   * Handler to call to generate response.
-   */
-  PageHandler handler;
-
-  /**
-   * Extra argument to handler.
-   */ 
-  const void *handler_cls;
-};
 
 
 // List of all pages served by this HTTP server.
@@ -3028,7 +2992,6 @@ int CControlObject::websrv_callback_webpage(void *cls,
         delete pass;
         pass = NULL;
     }
-    
 
     bFail = ( 0 == strUser.Length() || 
              ( NULL == pObject->m_userList.checkUser(strUser,strPassword)));
@@ -3044,16 +3007,9 @@ int CControlObject::websrv_callback_webpage(void *cls,
         ret = MHD_queue_basic_auth_fail_response( connection,
                                                     "VSCP Daemon",
                                                     response);
-    }
-    /*
-    else {
         
-        // OK
-        response = MHD_create_response_from_buffer(strlen(defaultPage),
-                (void *)defaultPage,
-                MHD_RESPMEM_PERSISTENT);
-        ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
-    }*/
+        return ret;
+    }
     
     request = (struct websrv_Request *)*ptr;
     if (NULL == request) {
@@ -3142,29 +3098,102 @@ int CControlObject::websrv_callback_webpage(void *cls,
 
     if ((0 == strcmp(method, MHD_HTTP_METHOD_GET)) ||
             (0 == strcmp(method, MHD_HTTP_METHOD_HEAD))) {
-        
+
         const char* q = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "q");
-        
-        // find out which page to serve 
+
+        // find out which page among the stock functionality to serve 
         i = 0;
         while ((pages[i].url != NULL) && (0 != strcmp(pages[i].url, url))) {
             i++;
         }
-        
-        ret = pages[i].handler( pages[i].handler_cls,
-                                    pages[i].mime,
-                                    session, connection);
-        
+
+        if (NULL != pages[i].url) {
+            ret = pages[i].handler(pages[i].handler_cls,
+                    pages[i].mime,
+                    session, connection);
+        } 
+        else {
+
+            FILE *file;
+            struct stat buf;
+            
+            wxString strPath2File; 
+            strPath2File = pObject->m_pathRoot;
+            strPath2File += _("/");
+            strPath2File += wxString::FromAscii( &url[1] );
+
+            char *p = new char[strPath2File.Length() + 1];
+            
+            if ( NULL != p ) {
+                
+                memset( p, 0, strPath2File.Length() + 1 );
+                memcpy( p, strPath2File.ToAscii(), strPath2File.Length() );
+            
+                if ( 0 == stat( p, &buf ) ) {
+                    file = fopen( p, "rb" );
+                } 
+                else {
+                    file = NULL;
+                }
+            
+                // Remove allocated string
+                delete [] p;
+            }
+            
+            wxFileName xfile(strPath2File);
+            wxString file_extension = xfile.GetExt();
+            wxString mimetype = pObject->m_hashMimeTypes[file_extension];
+
+            if (file == NULL) {
+                response =
+                        MHD_create_response_from_buffer( strlen(WEBSERVER_NOT_FOUND_ERROR),
+                        (void *) WEBSERVER_NOT_FOUND_ERROR,
+                        MHD_RESPMEM_PERSISTENT);
+                
+                ret = MHD_queue_response(connection, MHD_HTTP_NOT_FOUND, response);
+            }
+            else {
+                
+                response =
+                        MHD_create_response_from_callback( buf.st_size,
+                                                32 * 1024, /* 32k page size */
+                                                &websrv_callback_file_free,
+                                                file,
+                                                &websrv_callback_file_free);
+                if (response == NULL) {
+                    fclose(file);
+                    return MHD_NO;
+                }
+
+                //ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+                char *p = new char[mimetype.Length() + 1];
+                if ( NULL != p ) {
+                    
+                    memset( p, 0, mimetype.Length() + 1 );
+                    memcpy( p, mimetype.ToAscii(), mimetype.Length() );
+                    
+                    MHD_add_response_header( response,
+                                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                                p );
+                
+                    ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+                    
+                    // Remove allocated string
+                    delete [] p;
+                    
+                }
+            }
+
+        }
+
         if (ret != MHD_YES) {
             syslog(LOG_ERR, "Failed to create page for `%s'\n", url);
         }
-        
-        return ret;
+
+        //return ret;
     }
 
-    *ptr = NULL; // reset when done 
-
-    
+    //*ptr = NULL; // reset when done 
 
     MHD_destroy_response(response);
     return ret;

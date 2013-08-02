@@ -52,6 +52,47 @@
 #define WEBSERVER_COOKIE_NAME "____vscp_session____"
 
 /**
+ * Type of handler that generates a reply.
+ *
+ * @param cls content for the page (handler-specific)
+ * @param mime mime type to use
+ * @param session session information
+ * @param connection connection to process
+ * @param MHD_YES on success, MHD_NO on failure
+ */
+typedef int (*PageHandler)(const void *cls,
+                            const char *mime,
+                            struct websrv_Session *session,
+                            struct MHD_Connection *connection);
+
+/**
+ * Entry we generate for each page served.
+ */ 
+struct Page
+{
+  /**
+   * Acceptable URL for this page.
+   */
+  const char *url;
+
+  /**
+   * Mime type to set for the page.
+   */
+  const char *mime;
+
+  /**
+   * Handler to call to generate response.
+   */
+  PageHandler handler;
+
+  /**
+   * Extra argument to handler.
+   */ 
+  const void *handler_cls;
+};
+
+
+/**
  * State we keep for each user/session/browser.
  */
 struct websrv_Session

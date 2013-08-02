@@ -19,6 +19,7 @@
 <!--            minutes past and ten minutes past.-->
 <dm>
     <row enabled="true" groupid="test">
+        
         <!-- Mask to trigger row - zero for a bit is dont care -->
         <mask priority="0" class="0xffff" type="0xff" guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
 		
