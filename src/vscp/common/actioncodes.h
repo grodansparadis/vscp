@@ -175,10 +175,10 @@
 // timerid is any numerical id > 0
 #define VSCP_DAEMON_ACTION_CODE_WRITE_FILE					0x00000070  // Write file
 
-// Get URL
+// Get/Post URL
 // Format: url
 // 
-#define VSCP_DAEMON_ACTION_CODE_GET_URL						0x00000075  // Get URL
+#define VSCP_DAEMON_ACTION_CODE_GET_POST_URL				0x00000075  // Get/Post URL
 
 
 #endif

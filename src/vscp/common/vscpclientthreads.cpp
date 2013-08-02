@@ -97,7 +97,7 @@ DEFINE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT)
 
 ctrlObj::ctrlObj()
 {
-  m_bQuit = false;      // Dont even think of quiting yet...
+  m_bQuit = false;      // Don't even think of quitting yet...
   m_errorControl = 0;   // No error
   m_errorReceive = 0;
 }

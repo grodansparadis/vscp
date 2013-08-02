@@ -20,13 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dm.cpp,v $                                       
-// $Date: 2005/08/30 11:00:04 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
-
-
-
 
 #ifdef __GNUG__
     //#pragma implementation
@@ -77,7 +70,7 @@ CInterfaceItem::~CInterfaceItem( void )
 
 
 //*****************************************************************************
-//															CInterfaceList4
+//							 CInterfaceList
 //*****************************************************************************
 
 
