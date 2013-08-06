@@ -275,7 +275,7 @@ static struct Page pages[] =
   {
     { "/vscp", "text/html",  &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE_MAIN },
     { "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_interfaces, NULL },
-    { "/vscp/dm", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/dm", "text/html", &CControlObject::websrv_serve_dmlist, NULL },
     { "/vscp/discovery", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/session", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/configure", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
@@ -3472,8 +3472,8 @@ CControlObject::websrv_serve_interfaces( const void *cls,
     buildPage += _(WEB_COMMON_JS);      // Common Javascript code
     buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
     buildPage += _(WEB_COMMON_MENU);
-    buildPage += _(WEB_DMLIST_BODY_START);
-    buildPage += _(WEB_DMLIST_TR_HEAD);
+    buildPage += _(WEB_IFLIST_BODY_START);
+    buildPage += _(WEB_IFLIST_TR_HEAD);
 
     wxString strGUID;  
     wxString strBuf;
@@ -3488,20 +3488,20 @@ CControlObject::websrv_serve_interfaces( const void *cls,
         CClientItem *pItem = *iter;
         pItem->m_guid.toString(strGUID);
 
-        buildPage += _(WEB_DMLIST_TR);
+        buildPage += _(WEB_IFLIST_TR);
 
         // Client id
-        buildPage += _(WEB_DMLIST_TD_CENTERED);
+        buildPage += _(WEB_IFLIST_TD_CENTERED);
         buildPage += wxString::Format(_("%d"), pItem->m_clientID);
         buildPage += _("</td>");
 
         // Interface type
-        buildPage += _(WEB_DMLIST_TD_CENTERED);
+        buildPage += _(WEB_IFLIST_TD_CENTERED);
         buildPage += wxString::Format(_("%d"), pItem->m_type);
         buildPage += _("</td>");
 
         // GUID
-        buildPage += _(WEB_DMLIST_TD_GUID);
+        buildPage += _(WEB_IFLIST_TD_GUID);
         buildPage += strGUID.Left(23);
         buildPage += _("<br>");
         buildPage += strGUID.Right(23);
@@ -3520,9 +3520,10 @@ CControlObject::websrv_serve_interfaces( const void *cls,
         buildPage += _("</tr>");
 
     }
+    
     pObject->m_wxClientMutex.Unlock();
     
-    buildPage += _(WEB_DMLIST_TABLE_END);
+    buildPage += _(WEB_IFLIST_TABLE_END);
     
     buildPage += _("<br>All interfaces to the daemon is listed here. This is drivers as well as clients on one of the daemons interfaces. It is possible to see events coming in on a on a specific interface and send events on just one of the interfaces. This is mostly used on the driver interfaces but is possible on all interfacs<br>");
     
@@ -3532,6 +3533,107 @@ CControlObject::websrv_serve_interfaces( const void *cls,
     buildPage += _("2 - Level I (CANAL) Driver.<br>");
     buildPage += _("3 - Level II Driver.<br>");
     buildPage += _("4 - TCP/IP Client.<br>");
+
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+    
+    // return page 
+    response = MHD_create_response_from_buffer( strlen(ppage),
+                                                    (void *)ppage,
+                                                    MHD_RESPMEM_MUST_FREE );
+    
+    websrv_add_session_cookie(session, response);
+    
+    MHD_add_response_header( response,
+                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                mime);
+    
+    ret = MHD_queue_response( connection,
+                                MHD_HTTP_OK,
+                                response);
+    
+    MHD_destroy_response( response );
+    
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_serve_dmlist
+//
+
+int
+CControlObject::websrv_serve_dmlist( const void *cls,
+                                            const char *mime,
+                                            struct websrv_Session *session,
+                                            struct MHD_Connection *connection)
+{
+    int ret;
+    CControlObject *pObject = (CControlObject *) cls;
+    struct MHD_Response *response;
+
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    buildPage += _(WEB_COMMON_MENU);
+    buildPage += _(WEB_DMLIST_BODY_START);
+
+    wxString strGUID;  
+    wxString strBuf;
+
+    // Display DM List
+    
+    if ( 0 == pObject->m_dm.getRowCount() ) {
+        buildPage += _("<br>Decision Matrix is empty!<br>");
+    }
+    else {
+        buildPage += _(WEB_DMLIST_TR_HEAD);
+    }
+    
+    for ( int i=0;i<pObject->m_dm.getRowCount();i++) {
+        
+        dmElement *pElement = pObject->m_dm.getRow(i);
+        
+
+        buildPage += _(WEB_DMLIST_TR);
+
+        // Client id
+        buildPage += _(WEB_DMLIST_TD_CENTERED);
+        buildPage += wxString::Format(_("%d"), i );
+        buildPage += _("</td>");
+
+
+        // DM entry
+        buildPage += _("<td>");
+        
+        if ( NULL != pElement  ) {
+            //pItem->m_guid.toString(strGUID);
+            buildPage += _("<div id=\"small\">"); 
+            buildPage += _("<b>Group:</b> ");
+            buildPage += pElement->m_strGroupID;
+            buildPage += _("<br>");
+            
+            
+            buildPage += _("</div>");
+        }
+        else {
+            buildPage += _("Internal error: Non existent DM entry.");
+        }
+
+        buildPage += _("</td>");
+
+
+        buildPage += _("</tr>");
+
+    }
+       
+    buildPage += _(WEB_DMLIST_TABLE_END);
 
     buildPage += _(WEB_COMMON_END);     // Common end code
     

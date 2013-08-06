@@ -689,7 +689,7 @@ public:
   /*!
   Get number of rows in matrix
   */
-  unsigned short getRowCount( void );
+  unsigned short getRowCount( void ) { return m_DMList.GetCount(); };
 
   /*!
   Get a row from the matrix

@@ -46,18 +46,34 @@
 // * * * DM List * * *
 
 // Place after menus
-#define WEB_DMLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Interfaces</h1></div><table><tbody>"
+#define WEB_DMLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Decision Matrix</h1></div><table><tbody>"
 
 // Place before common end
 #define WEB_DMLIST_TABLE_END "</tbody></table>"
 
 // Rows
-#define WEB_DMLIST_TR_HEAD "<tr><th>I/f Id</th><th>Type</th><th>Interface GUID</th><th>Name</th><th>Start time</th></tr>"
+#define WEB_DMLIST_TR_HEAD "<tr><th>Pos</th><th>Entry</th></tr>"
 
 #define WEB_DMLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.yahoo.com/')\" >"
 
 #define WEB_DMLIST_TD_CENTERED "<td id=\"tdcenter\">"
 
-#define WEB_DMLIST_TD_GUID "<td id=\"tdguid\">"
+
+// * * * Interface List * * *
+
+// Place after menus
+#define WEB_IFLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Interfaces</h1></div><table><tbody>"
+
+// Place before common end
+#define WEB_IFLIST_TABLE_END "</tbody></table>"
+
+// Rows
+#define WEB_IFLIST_TR_HEAD "<tr><th>I/f Id</th><th>Type</th><th>Interface GUID</th><th>Name</th><th>Start time</th></tr>"
+
+#define WEB_IFLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.yahoo.com/')\" >"
+
+#define WEB_IFLIST_TD_CENTERED "<td id=\"tdcenter\">"
+
+#define WEB_IFLIST_TD_GUID "<td id=\"tdguid\">"
 
 #endif

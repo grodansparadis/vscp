@@ -34,6 +34,7 @@
 #include "wx/socket.h"
 #include <wx/url.h>
 #include "wx/datetime.h"
+#include <wx/filename.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -1465,26 +1466,44 @@ bool dmElement::doAction( vscpEvent *pEvent )
 // doActionExecute 
 //		
 
-bool dmElement::doActionExecute( vscpEvent *pDMEvent )
+bool dmElement::doActionExecute(vscpEvent *pDMEvent)
 {
     // Write in possible escapes
     wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
+    handleEscapes(pDMEvent, wxstr);
 
-    if ( !::wxExecute( wxstr ) ) {
-        // Failed to execute
-        m_errorCounter++;
-        m_strLastError = _("Failed to execute :");
-        m_strLastError += m_actionparam;
-        m_strLastError += _("\n");
-        m_pDM->m_pCtrlObject->logMsg( wxstr, DAEMON_LOGMSG_ERROR );
-        return false;
+    // wxExecute breaks if the path does not exist so we have to
+    // check it does.
+    wxString strfn = m_actionparam;
+    bool bOK = true;
+    int pos = m_actionparam.First(' ');
+    if (wxNOT_FOUND != pos) {
+        strfn = m_actionparam.Left(pos);
     }
-    else {
+
+    if (!wxFileName::FileExists(strfn) ||
+            !wxFileName::IsFileExecutable(strfn)) {
+        bOK = false;
+    }
+
+    if (bOK && ::wxExecute(wxstr, wxEXEC_SYNC)) {
         wxString wxstr = wxT("[Action] Executed: ");
         wxstr += m_actionparam;
         wxstr += _("\n");
-        m_pDM->m_pCtrlObject->logMsg( wxstr, DAEMON_LOGMSG_INFO );
+        m_pDM->m_pCtrlObject->logMsg(wxstr, DAEMON_LOGMSG_INFO);
+    } 
+    else {
+        // Failed to execute
+        m_errorCounter++;
+        if (bOK) {
+            m_strLastError = _("Failed to execute :");
+        } else {
+            m_strLastError = _("File does not exists or is not executable :");
+        }
+        m_strLastError += m_actionparam;
+        m_strLastError += _("\n");
+        m_pDM->m_pCtrlObject->logMsg(wxstr, DAEMON_LOGMSG_ERROR);
+        return false;
     }
 
     return true;
@@ -2461,6 +2480,14 @@ bool CDM::addElement( dmElement *pItem )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getRow
+//
+
+dmElement *CDM::getRow( short row ) 
+{ 
+    return m_DMList.Item( row )->GetData(); 
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // load
