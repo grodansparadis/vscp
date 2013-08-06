@@ -1478,7 +1478,7 @@ uint32_t readStringValue(const wxString& strval)
 		str.ToULong(&val);
 	}
 
-	return(uint16_t) val;
+	return (uint32_t)val;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

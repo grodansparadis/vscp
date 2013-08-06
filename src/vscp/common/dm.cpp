@@ -2553,12 +2553,14 @@ bool CDM::load ( void )
             pDMitem->m_timeAllow.m_endTime = wxDateTime::Now();
             pDMitem->m_timeAllow.setWeekDays(wxT("twtfss"));
             clearVSCPFilter( &pDMitem->m_vscpfilter );
+            bool bEnabled = false;
 
             // Check if row is enabled
             wxString strEnabled = child->GetPropVal( wxT( "enabled" ), wxT("false") );
             strEnabled.MakeUpper();
             if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
                 pDMitem->enable();
+                bEnabled = true;
             }
             else {
                 pDMitem->disable();   
@@ -2599,6 +2601,8 @@ bool CDM::load ( void )
                 }
                 else if ( subchild->GetName() == wxT ( "control" ) ) {
                     pDMitem->m_control = readStringValue( subchild->GetNodeContent() );
+                    // Main property overrides enable bit if set
+                    if (bEnabled ) pDMitem->m_control |=  DM_CONTROL_ENABLE;
                 }
                 else if ( subchild->GetName() == wxT ( "action" ) ) {
                     pDMitem->m_action = readStringValue( subchild->GetNodeContent() );
@@ -2624,7 +2628,7 @@ bool CDM::load ( void )
                 else if ( subchild->GetName() == wxT ( "index" ) ) {
                     wxString str;
                     str = subchild->GetPropVal( wxT( "bMeasurement" ), wxT("false") );
-                    str.Upper();
+                    str.MakeUpper();
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bMeasurement = true;
                     }
@@ -2826,7 +2830,7 @@ bool CDM::feed( vscpEvent *pEvent )
         if ( doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) && 
             pDMitem->m_timeAllow.ShouldWeDoAction() ) { 
             
-                if ( pDMitem->isCheckIndex() ) {
+                if ( pDMitem->isCheckIndexSet() ) {
                     if ( pDMitem->m_bMeasurement ) {
                         if ( ( 0 == pEvent->sizeData ) || 
                                 ( pEvent->pdata[0] & 7 != pDMitem->m_index ) ) continue;
@@ -2837,18 +2841,21 @@ bool CDM::feed( vscpEvent *pEvent )
                     }
                 }
                 
-                if ( pDMitem->isCheckZone() ) {
+                if ( pDMitem->isCheckZoneSet() ) {
                     if ( ( 2 > pEvent->sizeData ) || 
                                 ( pEvent->pdata[1] != pDMitem->m_zone ) ) continue;
                 }
                 
-                if ( pDMitem->isCheckSubZone() ) {
+                if ( pDMitem->isCheckSubZoneSet() ) {
                     if ( ( 3 > pEvent->sizeData ) || 
                                 ( pEvent->pdata[2] != pDMitem->m_subzone ) ) continue;
                 }
                 
                 // Match do action for this row
                 pDMitem->doAction( pEvent );
+        
+                // Check if DM scan should continue after this DM row
+                if ( pDMitem->isScanDontContinueSet() ) break;
                 
         }
 

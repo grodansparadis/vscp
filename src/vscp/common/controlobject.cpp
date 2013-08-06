@@ -3632,38 +3632,36 @@ CControlObject::websrv_serve_dmlist( const void *cls,
             }
             
             // Control - End scan
-            if ( pElement->isEnabled() ) {
-                buildPage += _("[End scan on this row] ");
-            }
-            else {
-                buildPage += _("[Continue scan] ");
+            if ( pElement->isScanDontContinueSet() ) {
+                buildPage += _("[End scan after this row] ");
             }
             
             // Control - Check index
-            if ( pElement->isEnabled() ) {
-                buildPage += _("[Check Index] ");
+            if ( pElement->isCheckIndexSet() ) {
+                if (pElement->m_bMeasurement ) {
+                    buildPage += _("[Check Measurement Index] ");
+                }
+                else {
+                    buildPage += _("[Check Index] ");
+                }
             }
             else {
                 buildPage += _("[Check Index] ");
             }
             
             // Control - Check zone
-            if ( pElement->isEnabled() ) {
-                buildPage += _("[Check Zone] ");
-            }
-            else {
+            if ( pElement->isCheckZoneSet() ) {
                 buildPage += _("[Check Zone] ");
             }
             
             // Control - Check subzone
-            if ( pElement->isEnabled() ) {
-                buildPage += _("[Check Subzone] ");
-            }
-            else {
+            if ( pElement->isCheckSubZoneSet() ) {
                 buildPage += _("[Check Subzone] ");
             }
             
             buildPage += _("<br>");
+            
+            
             
             buildPage += _("</div>");
         }

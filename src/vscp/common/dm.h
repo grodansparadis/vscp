@@ -442,7 +442,7 @@ public:
   /*!
   Enable item
   */
-  void enable( void )  { m_control |= 0x80000000; };
+  void enable( void )  { m_control |= DM_CONTROL_ENABLE; };
 
   /*!
   Disable item
@@ -459,25 +459,25 @@ public:
   Check if scan should continue
   @returns true if enabled false otherwise
   */
-  bool isScanContinue( void ) { return ( ( m_control & DM_CONTROL_DONT_CONTINUE_SCAN ) ? true : false ); };
+  bool isScanDontContinueSet( void ) { return ( ( m_control & DM_CONTROL_DONT_CONTINUE_SCAN ) ? true : false ); };
 
   /*!
   Check if index should be checked
   @returns true if enabled false otherwise
   */
-  bool isCheckIndex( void ) { return ( ( m_control & DM_CONTROL_CHECK_INDEX ) ? true : false ); };
+  bool isCheckIndexSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_INDEX ) ? true : false ); };
     
   /*!
   Check if zone should be checked
   @returns true if enabled false otherwise
   */
-  bool isCheckZone( void ) { return ( ( m_control & DM_CONTROL_CHECK_ZONE ) ? true : false ); };
+  bool isCheckZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_ZONE ) ? true : false ); };
   
     /*!
   Check if zone should be checked
   @returns true if enabled false otherwise
   */
-  bool isCheckSubZone( void ) { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
+  bool isCheckSubZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
   
   /*!
   Handle escape sequencys
