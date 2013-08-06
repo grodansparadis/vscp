@@ -1015,6 +1015,11 @@ dmElement::dmElement()
     m_errorCounter = 0;
     m_actionparam.Empty();
     m_comment.Empty();
+    
+    m_index = 0;
+    m_bMeasurement = false;
+    m_zone = 0;
+    m_subzone = 0;
 
     m_pDM = NULL;	// Initially no owner
 
@@ -1035,7 +1040,7 @@ wxString dmElement::getAsRealText( void )
 {
     wxString strRow;
 
-    if ( m_control & 0x80000000 ) {
+    if ( m_control & DM_CONTROL_ENABLE ) {
         strRow = _("enabled,");
     }
     else {
@@ -2616,6 +2621,21 @@ bool CDM::load ( void )
                 else if ( subchild->GetName() == wxT ( "allowed_time" ) ) {
                     pDMitem->m_timeAllow.parseActionTime( subchild->GetNodeContent() );
                 }
+                else if ( subchild->GetName() == wxT ( "index" ) ) {
+                    wxString str;
+                    str = subchild->GetPropVal( wxT( "bMeasurement" ), wxT("false") );
+                    str.Upper();
+                    if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
+                        pDMitem->m_bMeasurement = true;
+                    }
+                    pDMitem->m_index = readStringValue( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "zone" ) ) {
+                    pDMitem->m_zone = readStringValue( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "subzone" ) ) {
+                    pDMitem->m_subzone = readStringValue( subchild->GetNodeContent() );
+                }
 
                 subchild = subchild->GetNext();
 
@@ -2669,7 +2689,7 @@ bool CDM::save ( void )
         if ( NULL != pDMitem ) {  // Must be an dmElement to work with  m_strGroupID
 
             pFileStream->Write( "<row enabled=\"",strlen ( "<row enabled=\"" ) );
-            if ( pDMitem->m_control & 0x80000000 ) {
+            if ( pDMitem->m_control & DM_CONTROL_ENABLE ) {
                 pFileStream->Write("true\" ",strlen("true\" "));
             }
             else {
@@ -2752,6 +2772,28 @@ bool CDM::save ( void )
 
             pFileStream->Write ( "<allowed_time>\n",strlen ( "<allowed_time>\n" ) );
             pFileStream->Write ( "</allowed_time>\n",strlen ( "</allowed_time>\n" ) );
+            
+            // Index
+            pFileStream->Write ( "<index ",strlen ( "<index " ) );
+            buf.Printf ( _ ( " bMeasurement=\"%s\" " ), 
+                    (pDMitem->m_bMeasurement) ? "true" : "false" );
+            pFileStream->Write ( "\" > ",strlen ( "\" > " ) );
+            buf.Printf ( _ ( "%d" ), pDMitem->m_index );
+            pFileStream->Write ( buf, buf.length() );
+            pFileStream->Write ( "</index>\n",strlen ( "</index>\n" ) );
+            
+            // Zone
+            pFileStream->Write ( "<zone>\n",strlen ( "<zone>\n" ) );
+            buf.Printf ( _ ( "%d" ), pDMitem->m_zone );
+            pFileStream->Write ( buf, buf.length() );
+            pFileStream->Write ( "</zone>\n",strlen ( "</zone>\n" ) );
+            
+            // Subzone
+            pFileStream->Write ( "<subzone>\n",strlen ( "<subzone>\n" ) );
+            buf.Printf ( _ ( "%d" ), pDMitem->m_subzone );
+            pFileStream->Write ( buf, buf.length() );
+            pFileStream->Write ( "</subzone>\n",strlen ( "</subzone>\n" ) );
+            
 
             pFileStream->Write ( "</row>\n",strlen ( "</row>\n" ) );
         }
@@ -2783,8 +2825,31 @@ bool CDM::feed( vscpEvent *pEvent )
         dmElement *pDMitem = *it;
         if ( doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) && 
             pDMitem->m_timeAllow.ShouldWeDoAction() ) { 
+            
+                if ( pDMitem->isCheckIndex() ) {
+                    if ( pDMitem->m_bMeasurement ) {
+                        if ( ( 0 == pEvent->sizeData ) || 
+                                ( pEvent->pdata[0] & 7 != pDMitem->m_index ) ) continue;
+                    }
+                    else {
+                        if ( ( 0 == pEvent->sizeData ) || 
+                                ( pEvent->pdata[0] != pDMitem->m_index ) ) continue;
+                    }
+                }
+                
+                if ( pDMitem->isCheckZone() ) {
+                    if ( ( 2 > pEvent->sizeData ) || 
+                                ( pEvent->pdata[1] != pDMitem->m_zone ) ) continue;
+                }
+                
+                if ( pDMitem->isCheckSubZone() ) {
+                    if ( ( 3 > pEvent->sizeData ) || 
+                                ( pEvent->pdata[2] != pDMitem->m_subzone ) ) continue;
+                }
+                
                 // Match do action for this row
                 pDMitem->doAction( pEvent );
+                
         }
 
     }

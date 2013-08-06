@@ -3615,10 +3615,55 @@ CControlObject::websrv_serve_dmlist( const void *cls,
         if ( NULL != pElement  ) {
             //pItem->m_guid.toString(strGUID);
             buildPage += _("<div id=\"small\">"); 
+            
+            // Group
             buildPage += _("<b>Group:</b> ");
             buildPage += pElement->m_strGroupID;
             buildPage += _("<br>");
             
+            buildPage += _("<b>Control:</b> ");
+            
+            // Control - Enabled
+            if ( pElement->isEnabled() ) {
+                buildPage += _("[Enabled row] ");
+            }
+            else {
+                buildPage += _("[Disabled row] ");
+            }
+            
+            // Control - End scan
+            if ( pElement->isEnabled() ) {
+                buildPage += _("[End scan on this row] ");
+            }
+            else {
+                buildPage += _("[Continue scan] ");
+            }
+            
+            // Control - Check index
+            if ( pElement->isEnabled() ) {
+                buildPage += _("[Check Index] ");
+            }
+            else {
+                buildPage += _("[Check Index] ");
+            }
+            
+            // Control - Check zone
+            if ( pElement->isEnabled() ) {
+                buildPage += _("[Check Zone] ");
+            }
+            else {
+                buildPage += _("[Check Zone] ");
+            }
+            
+            // Control - Check subzone
+            if ( pElement->isEnabled() ) {
+                buildPage += _("[Check Subzone] ");
+            }
+            else {
+                buildPage += _("[Check Subzone] ");
+            }
+            
+            buildPage += _("<br>");
             
             buildPage += _("</div>");
         }
