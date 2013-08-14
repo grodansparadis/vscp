@@ -331,6 +331,15 @@ extern "C" {
       Fill event GUID from a string
      */
     bool getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID);
+	
+	/*!
+      Write out GUID to string
+
+      \param pGUID Pointer to VSCP GUID array.
+      \param strGUID Reference to string for written GUID
+      \return True on success, false on failure.
+    */
+    bool writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID);
 
     /*!
       Write out GUID to string
@@ -368,14 +377,6 @@ extern "C" {
      */
     bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID);
 
-    /*!
-      Write out GUID to string
-
-      \param pGUID Pointer to VSCP GUID array.
-      \param strGUID Reference to string for written GUID
-      \return True on success, false on failure.
-     */
-    bool writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID);
 
     /*!
       Check if GUID is all null

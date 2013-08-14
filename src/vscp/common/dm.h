@@ -315,10 +315,10 @@ public:
   ~actionTime();
 
   /*!
-  Set the weekdays that the action is allowed to occour at. The
+  Set the weekdays that the action is allowed to occur at. The
   string is on the form 'mtwtfss'  The day can be replaced with a
   '-' to indicate a none valid day.
-  @param actionTime strWeek on the format mtwtfss
+  @param actionTime strWeek on the format 'mtwtfss'
   @return True on success.
   */
   bool setWeekDays( const wxString& strWeek );
@@ -326,7 +326,7 @@ public:
 
   /*!
   Get the allowed weekdays as a wxWtring on the form 'mtwtfss' where
-  '-' is used to indicate a day when the event is not allowd to occure.
+  '-' is used to indicate a day when the event is not allowe to occur.
   @return A string with the allowed weekdays.
   */
   wxString getWeekDays( void );

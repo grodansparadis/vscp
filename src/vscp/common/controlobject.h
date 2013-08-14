@@ -369,7 +369,10 @@ public:
     //                 WEB SERVER
     /////////////////////////////////////////////////
 	
-
+	static int
+	websrv_callback_check_address( void *cls,
+									const struct sockaddr *addr,
+                                    socklen_t addrlen );
 	
 	/**
 		Main MHD callback for handling requests.
@@ -519,6 +522,34 @@ public:
 							const char *mime,
                             struct websrv_Session *session,
                             struct MHD_Connection *connection);
+	
+	/**
+	 * Handler edit of one decision matrix entry 
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int
+	websrv_serve_dmedit( const void *cls,
+							const char *mime,
+                            struct websrv_Session *session,
+                            struct MHD_Connection *connection);
+	
+	/**
+	 * Handler post of one decision matrix entry 
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int 
+	websrv_serve_dmpost( const void *cls,
+							const char *mime,
+                            struct websrv_Session *session,
+	                        struct MHD_Connection *connection);
 	
 	/**
 	 * Callback called upon completion of a request.

@@ -271,11 +271,15 @@ static struct websrv_Session *websrv_sessions;
 
 
 // List of all pages served by this HTTP server.
+// If URL is NULL a coded page should be delivered. If it's there a
+// static page is delivered
 static struct Page pages[] = 
   {
     { "/vscp", "text/html",  &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE_MAIN },
     { "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_interfaces, NULL },
     { "/vscp/dm", "text/html", &CControlObject::websrv_serve_dmlist, NULL },
+    { "/vscp/dmedit", "text/html", &CControlObject::websrv_serve_dmedit, NULL },
+    { "/vscp/dmpost", "text/html", &CControlObject::websrv_serve_dmpost, NULL },
     { "/vscp/discovery", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/session", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/configure", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
@@ -648,8 +652,8 @@ bool CControlObject::run(void)
     pwebserver = MHD_start_daemon(
             MHD_USE_THREAD_PER_CONNECTION | MHD_USE_DEBUG /*| MHD_USE_SSL*/,
             m_portWebServer,
-            NULL,
-            NULL,
+            &websrv_callback_check_address,
+            (void *) this,
             &websrv_callback_webpage,
             (void *) this,
             MHD_OPTION_CONNECTION_MEMORY_LIMIT, (size_t)(256 * 1024),
@@ -2957,6 +2961,29 @@ CControlObject::websrv_callback_file_free (void *cls)
   fclose (file);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_callback_check_address
+//
+
+int CControlObject::websrv_callback_check_address( void *cls,
+                                                    const struct sockaddr *addr,
+                                                    socklen_t addrlen )
+{
+    CControlObject *pObject = (CControlObject *)cls;
+    int ret = MHD_YES;  // TODO
+    
+    // Check if this user is allowed to connect from this location
+    pObject->m_mutexUserList.Lock();
+    //bool bValidHost = 
+    //        pObject->m_userList.checkRemote( m_pUserItem, 
+    //                                            remoteaddr.IPAddress() );
+    pObject->m_mutexUserList.Unlock();
+    
+    return ret;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // callback_webpage
 //
@@ -2971,7 +2998,7 @@ int CControlObject::websrv_callback_webpage(void *cls,
                                                 void **ptr)
 {
     wxString strUser, strPassword;
-    CControlObject *pObject = (CControlObject *) cls;
+    CControlObject *pObject = (CControlObject *)cls;
     const char *defaultPage = WEBSERVER_PAGE;
     struct MHD_Response *response;
     int ret;
@@ -2991,7 +3018,7 @@ int CControlObject::websrv_callback_webpage(void *cls,
         user = NULL;
     }
     
-    if ( NULL != pass ) {
+    if ( strUser.Length() && ( NULL != pass ) ) {
         Cmd5 md5;
         strPassword = wxString::FromAscii( md5.digest((unsigned char *)pass) );
         delete pass;
@@ -3064,15 +3091,16 @@ int CControlObject::websrv_callback_webpage(void *cls,
         return MHD_YES;
     }
 
-    // Get session
+    // Get/create session
     if (NULL == request->session) {
         
-        request->session = websrv_get_session(connection);
+        request->session = websrv_get_session( connection );
         
         if (NULL == request->session) {
             syslog(LOG_ERR, "Failed to setup session for `%s'\n", url);
             return MHD_NO; // internal error 
         }
+        
     }
     
     session = request->session;
@@ -3103,8 +3131,6 @@ int CControlObject::websrv_callback_webpage(void *cls,
 
     if ((0 == strcmp(method, MHD_HTTP_METHOD_GET)) ||
             (0 == strcmp(method, MHD_HTTP_METHOD_HEAD))) {
-
-        const char* q = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "q");
 
         // find out which page among the stock functionality to serve 
         i = 0;
@@ -3198,7 +3224,6 @@ int CControlObject::websrv_callback_webpage(void *cls,
             syslog(LOG_ERR, "Failed to create page for `%s'\n", url);
         }
 
-        //return ret;
     }
 
     //*ptr = NULL; // reset when done 
@@ -3282,9 +3307,9 @@ CControlObject::websrv_get_session( struct MHD_Connection *connection )
     struct websrv_Session *ret;
     const char *cookie;
 
-    cookie = MHD_lookup_connection_value(connection,
-            MHD_COOKIE_KIND,
-            WEBSERVER_COOKIE_NAME);
+    cookie = MHD_lookup_connection_value( connection,
+                                            MHD_COOKIE_KIND,
+                                            WEBSERVER_COOKIE_NAME);
     
     if (cookie != NULL) {
         
@@ -3366,21 +3391,31 @@ CControlObject::websrv_expire_sessions(void)
     struct websrv_Session *next;
     time_t now;
 
-    now = time(NULL);
+    now = time( NULL );
     prev = NULL;
     pos = websrv_sessions;
     
     while (NULL != pos) {
+        
         next = pos->m_next;
+        
         if (now - pos->start > 60 * 60) {
+        
             // expire sessions after 1h 
-            if (NULL == prev)
+            if ( NULL == prev ) {
                 websrv_sessions = pos->m_next;
-            else
+            }
+            else {
                 prev->m_next = next;
+            }
+            
             free(pos);
-        } else
+            
+        } 
+        else {
             prev = pos;
+        }
+        
         pos = next;
     }
 }
@@ -3464,6 +3499,23 @@ CControlObject::websrv_serve_interfaces( const void *cls,
     CControlObject *pObject = (CControlObject *) cls;
     struct MHD_Response *response;
 
+    // Get connection type
+    const MHD_ConnectionInfo *pProtocolInfo = 
+            MHD_get_connection_info(connection, 
+                                        MHD_CONNECTION_INFO_PROTOCOL );
+    // Get hostname
+    wxString strHost = _("http://localhost:8080");
+    const char *str_host = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, "host");
+    if ( NULL != str_host ) {
+        strHost = wxString::FromAscii(str_host);
+        if ( NULL != pProtocolInfo ) {
+            strHost = _("https://") + strHost;
+        }
+        else {
+            strHost = _("http://") + strHost;
+        }
+    }
+
     wxString buildPage;
     buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Interfaces"));
     buildPage += _(WEB_STYLE_START);
@@ -3471,7 +3523,16 @@ CControlObject::websrv_serve_interfaces( const void *cls,
     buildPage += _(WEB_STYLE_END);
     buildPage += _(WEB_COMMON_JS);      // Common Javascript code
     buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
-    buildPage += _(WEB_COMMON_MENU);
+    
+    // Insert server url into navigation menu 
+    wxString navstr = _(WEB_COMMON_MENU);
+    int pos;
+    while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
+        buildPage += navstr.Left( pos );
+        navstr = navstr.Right(navstr.Length() - pos - 2);
+    }
+    buildPage += navstr;
+    
     buildPage += _(WEB_IFLIST_BODY_START);
     buildPage += _(WEB_IFLIST_TR_HEAD);
 
@@ -3571,8 +3632,126 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                                             struct MHD_Connection *connection)
 {
     int ret;
+    VSCPInformation vscpinfo;
     CControlObject *pObject = (CControlObject *) cls;
     struct MHD_Response *response;
+    long upperLimit = 50;
+    
+    // Get connection type
+    const MHD_ConnectionInfo *pProtocolInfo = 
+            MHD_get_connection_info(connection, 
+                                        MHD_CONNECTION_INFO_PROTOCOL );
+    // Get hostname
+    wxString strHost = _("http://localhost:8080");
+    const char *str_host = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, "host");
+    if ( NULL != str_host ) {
+        strHost = wxString::FromAscii(str_host);
+        if ( NULL != pProtocolInfo ) {
+            strHost = _("https://") + strHost;
+        }
+        else {
+            strHost = _("http://") + strHost;
+        }
+    }
+    
+    // light
+    bool bLight = false;
+    const char *str_light = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "light");
+    if ( (NULL != str_light) && NULL != strstr("true",str_light) ) bLight = true;
+    
+    // From
+    long nFrom = 0;
+    const char *str_from = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "from");
+    if ( NULL != str_from ) nFrom = atoi(str_from);
+    // Check limits
+    if (nFrom > pObject->m_dm.getRowCount()) nFrom = 0;
+    
+    // Count
+    uint16_t nCount = 50;
+    const char *str_count = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "count");
+    if ( NULL != str_count ) nCount = atoi(str_count);
+    // Check limits
+    if ((nFrom+nCount) > pObject->m_dm.getRowCount()) {
+        upperLimit = pObject->m_dm.getRowCount()-nFrom;
+    }
+    else {
+        upperLimit = nFrom+nCount;
+    }
+    
+    // Navigation button
+    const char *str_navbtn = 
+                    MHD_lookup_connection_value(connection, 
+                                                    MHD_GET_ARGUMENT_KIND, 
+                                                    "navbtn");
+    if ( NULL == str_navbtn ) {
+        //nFrom = 0;
+        if ((nFrom+nCount) > pObject->m_dm.getRowCount()) {
+            upperLimit = pObject->m_dm.getRowCount()-nFrom;
+        }
+        else {
+            upperLimit = nFrom+nCount;
+        }
+    }
+    else if (NULL != strstr("first",str_navbtn)) {
+        nFrom = 0;
+        if ((nFrom+nCount) > pObject->m_dm.getRowCount()) {
+            upperLimit = pObject->m_dm.getRowCount()-nFrom;
+        }
+        else {
+            upperLimit = nFrom+nCount;
+        }
+    }
+    else if (NULL != strstr("previous",str_navbtn)) {
+        
+        if ( 0 != nFrom ) {    
+            
+            nFrom -= nCount;
+            upperLimit = nFrom+nCount;
+            
+            if ( nFrom < 0 ) {
+                nFrom = 0;
+                if ((nFrom-nCount) < 0) {
+                    upperLimit = pObject->m_dm.getRowCount()- nFrom;
+                }
+                else {
+                    upperLimit = nFrom-nCount;
+                }
+            }
+            
+            if (upperLimit < 0) {
+                upperLimit = nCount;
+            }
+        }
+        
+    }
+    else if (NULL != strstr("next",str_navbtn)) {
+
+        if ( upperLimit < pObject->m_dm.getRowCount() ) {
+            nFrom += nCount;
+            if (nFrom >= pObject->m_dm.getRowCount()) {
+                nFrom = pObject->m_dm.getRowCount() - nCount;
+                if ( nFrom < 0 ) nFrom = 0;
+            }
+        
+            if ((nFrom+nCount) > pObject->m_dm.getRowCount()) {
+                upperLimit = pObject->m_dm.getRowCount();
+            }
+            else {
+                upperLimit = nFrom+nCount;
+            }
+        }
+
+    }
+    else if (NULL != strstr("last",str_navbtn)) {
+        nFrom = pObject->m_dm.getRowCount() - nCount;
+        if ( nFrom < 0 ) {
+            nFrom = 0;
+            upperLimit = pObject->m_dm.getRowCount();
+        }
+        else {
+            upperLimit = pObject->m_dm.getRowCount();
+        }
+    }
 
     wxString buildPage;
     buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix"));
@@ -3581,8 +3760,33 @@ CControlObject::websrv_serve_dmlist( const void *cls,
     buildPage += _(WEB_STYLE_END);
     buildPage += _(WEB_COMMON_JS);      // Common Javascript code
     buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
-    buildPage += _(WEB_COMMON_MENU);
+    
+    // Insert server url into navigation menu 
+    wxString navstr = _(WEB_COMMON_MENU);
+    int pos;
+    while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
+        buildPage += navstr.Left( pos );
+        navstr = navstr.Right(navstr.Length() - pos - 2);
+    }
+    buildPage += navstr;
+    
     buildPage += _(WEB_DMLIST_BODY_START);
+    
+    {
+        wxString wxstrurl = wxString::Format(_("%s/vscp/dm"), 
+                                                strHost.GetData() );
+        wxString wxstrlight = ((bLight) ? _("true") : _("false"));
+        buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
+                wxstrurl.GetData(),
+                nFrom,
+                ((nFrom + nCount) < pObject->m_dm.getRowCount()) ? 
+                    nFrom + nCount - 1 : pObject->m_dm.getRowCount() - 1,
+                pObject->m_dm.getRowCount(),
+                nCount,
+                nFrom,
+                wxstrlight.GetWriteBuf(wxstrlight.Length()) );
+        buildPage += _("<br>");
+    } 
 
     wxString strGUID;  
     wxString strBuf;
@@ -3596,15 +3800,23 @@ CControlObject::websrv_serve_dmlist( const void *cls,
         buildPage += _(WEB_DMLIST_TR_HEAD);
     }
     
-    for ( int i=0;i<pObject->m_dm.getRowCount();i++) {
+    if (nFrom < 0) nFrom = 0;
+    for ( int i=nFrom;i<upperLimit;i++) {
         
         dmElement *pElement = pObject->m_dm.getRow(i);
         
+        {
+            wxString url_dmedit = 
+                    wxString::Format(_("%s/vscp/dmedit?id=%d"),
+                                        strHost.GetData(),
+                                        i );
+            wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
+                                                url_dmedit.GetData() );
+            buildPage += str;
+        }
 
-        buildPage += _(WEB_DMLIST_TR);
-
-        // Client id
-        buildPage += _(WEB_DMLIST_TD_CENTERED);
+        // Client id    
+        buildPage += _(WEB_IFLIST_TD_CENTERED);
         buildPage += wxString::Format(_("%d"), i );
         buildPage += _("</td>");
 
@@ -3612,72 +3824,601 @@ CControlObject::websrv_serve_dmlist( const void *cls,
         // DM entry
         buildPage += _("<td>");
         
-        if ( NULL != pElement  ) {
-            //pItem->m_guid.toString(strGUID);
-            buildPage += _("<div id=\"small\">"); 
-            
+        if (NULL != pElement) {
+
+            buildPage += _("<div id=\"small\">");
+
             // Group
             buildPage += _("<b>Group:</b> ");
             buildPage += pElement->m_strGroupID;
             buildPage += _("<br>");
             
+            buildPage += _("<b>Comment:</b> ");
+            buildPage += pElement->m_comment;
+            buildPage += _("<br><hr width=\"90%\">");
+
             buildPage += _("<b>Control:</b> ");
-            
+
             // Control - Enabled
-            if ( pElement->isEnabled() ) {
-                buildPage += _("[Enabled row] ");
-            }
+            if (pElement->isEnabled()) {
+                buildPage += _("[Row is enabled] ");
+            } 
             else {
-                buildPage += _("[Disabled row] ");
+                buildPage += _("[Row is disabled] ");
             }
-            
+
             // Control - End scan
-            if ( pElement->isScanDontContinueSet() ) {
+            if (pElement->isScanDontContinueSet()) {
                 buildPage += _("[End scan after this row] ");
             }
-            
+
             // Control - Check index
-            if ( pElement->isCheckIndexSet() ) {
-                if (pElement->m_bMeasurement ) {
+            if (pElement->isCheckIndexSet()) {
+                if (pElement->m_bMeasurement) {
                     buildPage += _("[Check Measurement Index] ");
-                }
+                } 
                 else {
                     buildPage += _("[Check Index] ");
                 }
-            }
-            else {
-                buildPage += _("[Check Index] ");
-            }
-            
+            } 
+
             // Control - Check zone
-            if ( pElement->isCheckZoneSet() ) {
+            if (pElement->isCheckZoneSet()) {
                 buildPage += _("[Check Zone] ");
             }
-            
+
             // Control - Check subzone
-            if ( pElement->isCheckSubZoneSet() ) {
+            if (pElement->isCheckSubZoneSet()) {
                 buildPage += _("[Check Subzone] ");
             }
-            
+
             buildPage += _("<br>");
-            
-            
-            
+
+            if (!bLight) {
+
+                // * Filter
+
+                buildPage += _("<b>Filter_priority: </b>");
+                buildPage += wxString::Format(_("%d "),
+                        pElement->m_vscpfilter.filter_priority);
+
+                buildPage += _("<b>Filter_class: </b>");
+                buildPage += wxString::Format(_("%d "),
+                        pElement->m_vscpfilter.filter_class);
+                buildPage += _(" [");
+                buildPage += vscpinfo.getClassDescription(
+                        pElement->m_vscpfilter.filter_class);
+                buildPage += _("] ");
+
+                buildPage += _(" <b>Filter_type: </b>");
+                buildPage += wxString::Format(_("%d "),
+                        pElement->m_vscpfilter.filter_type);
+                buildPage += _(" [");
+                buildPage += vscpinfo.getTypeDescription(
+                        pElement->m_vscpfilter.filter_class,
+                        pElement->m_vscpfilter.filter_type);
+                buildPage += _("]<br>");
+
+                buildPage += _(" <b>Filter_GUID: </b>");
+                writeGuidArrayToString(pElement->m_vscpfilter.filter_GUID, strGUID);
+                buildPage += strGUID;
+
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Mask_priority: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_vscpfilter.mask_priority);
+
+                buildPage += _("<b>Mask_class: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_vscpfilter.mask_class);
+
+                buildPage += _("<b>Mask_type: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_vscpfilter.mask_type);
+
+                buildPage += _("<b>Mask_GUID: </b>");
+                writeGuidArrayToString(pElement->m_vscpfilter.mask_GUID, strGUID);
+                buildPage += strGUID;
+
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Index: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_index);
+
+                buildPage += _("<b>Zone: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_zone);
+
+                buildPage += _("<b>Subzone: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_subzone);
+
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Allowed from:</b> ");
+                buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
+                buildPage += _(" ");
+                buildPage += pElement->m_timeAllow.m_fromTime.FormatISOTime();
+
+                buildPage += _(" <b>Allowed to:</b> ");
+                buildPage += pElement->m_timeAllow.m_endTime.FormatISODate();
+                buildPage += _(" ");
+                buildPage += pElement->m_timeAllow.m_endTime.FormatISOTime();
+
+                buildPage += _(" <b>Weekdays:</b> ");
+                buildPage += pElement->m_timeAllow.getWeekDays();
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Allowed time:</b> ");
+                buildPage += pElement->m_timeAllow.getActionTimeAsString();
+                buildPage += _("<br>");
+
+            } // mini
+
+            buildPage += _("<b>Action:</b> ");
+            buildPage += wxString::Format(_("%d "), pElement->m_action);
+
+            buildPage += _(" <b>Action parameters:</b> ");
+            buildPage += pElement->m_actionparam;
+            buildPage += _("<br>");
+
+            if (!bLight) {
+
+                buildPage += _("<b>Trigger Count:</b> ");
+                buildPage += wxString::Format(_("%d "), pElement->m_triggCounter);
+
+                buildPage += _("<b>Error Count:</b> ");
+                buildPage += wxString::Format(_("%d "), pElement->m_errorCounter);
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Last Error String:</b> ");
+                buildPage += pElement->m_strLastError;
+
+            } // mini
+
             buildPage += _("</div>");
-        }
+
+        } 
         else {
             buildPage += _("Internal error: Non existent DM entry.");
         }
 
         buildPage += _("</td>");
-
-
         buildPage += _("</tr>");
 
     }
        
     buildPage += _(WEB_DMLIST_TABLE_END);
+    
+    {
+        wxString wxstrurl = wxString::Format(_("%s/vscp/dm"), 
+                                                strHost.GetData() );
+        wxString wxstrlight = ((bLight) ? _("true") : _("false"));
+        buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
+                wxstrurl.GetData(),
+                nFrom,
+                ((nFrom + nCount) < pObject->m_dm.getRowCount()) ? 
+                    nFrom + nCount - 1 : pObject->m_dm.getRowCount() - 1,
+                pObject->m_dm.getRowCount(),
+                nCount,
+                nFrom,
+                wxstrlight.GetWriteBuf(wxstrlight.Length()) );
+    }
+     
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+    
+    // return page 
+    response = MHD_create_response_from_buffer( strlen(ppage),
+                                                    (void *)ppage,
+                                                    MHD_RESPMEM_MUST_FREE );
+    
+    websrv_add_session_cookie(session, response);
+    
+    MHD_add_response_header( response,
+                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                mime);
+    
+    ret = MHD_queue_response( connection,
+                                MHD_HTTP_OK,
+                                response);
+    
+    MHD_destroy_response( response );
+    
+    return ret; 
+}
 
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_serve_dmedit
+//
+
+int 
+CControlObject::websrv_serve_dmedit( const void *cls,
+							const char *mime,
+                            struct websrv_Session *session,
+                            struct MHD_Connection *connection)
+{
+    int ret,i;
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *) cls;
+    struct MHD_Response *response;
+    dmElement *pElement = NULL;
+    
+    // Get connection type
+    const MHD_ConnectionInfo *pProtocolInfo = 
+            MHD_get_connection_info(connection, 
+                                        MHD_CONNECTION_INFO_PROTOCOL );
+    // Get hostname
+    wxString strHost = _("http://localhost:8080");
+    const char *str_host = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, "host");
+    if ( NULL != str_host ) {
+        strHost = wxString::FromAscii(str_host);
+        if ( NULL != pProtocolInfo ) {
+            strHost = _("https://") + strHost;
+        }
+        else {
+            strHost = _("http://") + strHost;
+        }
+    }
+    
+    // id
+    long id = -1;
+    const char *str_id = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "id");
+    if ( NULL != str_id ) id = atoi(str_id);
+    
+    // Flag for new DM row
+    bool bNew = false;
+    const char *str_new = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "new");
+    if ( (NULL != str_new) && NULL != strstr( "true", str_new ) ) bNew = true;
+    
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix Edit"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Insert server url into navigation menu 
+    wxString navstr = _(WEB_COMMON_MENU);
+    int pos;
+    while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
+        buildPage += navstr.Left( pos );
+        navstr = navstr.Right(navstr.Length() - pos - 2);
+    }
+    buildPage += navstr;
+    
+    buildPage += _(WEB_DMEDIT_BODY_START);
+
+    if ( !bNew && id < pObject->m_dm.getRowCount() ) {
+        pElement = pObject->m_dm.getRow(id);
+    }
+
+    if (bNew || (NULL != pElement)) {
+        
+        buildPage += _("<br><form method=\"get\" action=\"");
+        buildPage += strHost;
+        buildPage += _("/vscp/dmpost");
+        buildPage += _("\" name=\"dmedit\">");
+        
+        buildPage += wxString::Format(_("<input name=\"id\" value=\"%d\" type=\"hidden\">"), id );
+        
+        buildPage += _("<h4>Group id:</h4>");
+        buildPage += _("<textarea cols=\"20\" rows=\"1\" name=\"groupid\">");
+        buildPage += pElement->m_strGroupID;
+        buildPage += _("</textarea><br>");
+        
+        
+        buildPage += _("<h4>Event:</h4> <span id=\"optiontext\">(leave items blank for don't care)</span><br>");
+
+        buildPage += _("<table class=\"invisable\"><tbody><tr class=\"invisable\">");
+
+        buildPage += _("<td class=\"invisable\">Priority:</td><td class=\"invisable\">");
+
+        // Priority
+        buildPage += _("<select name=\"filter_priority\">");
+        buildPage += _("<option value=\"-1\" ");
+        if (bNew) buildPage += _(" selected ");
+        buildPage += _(">Don't care</option>");
+
+        str = (0 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0\" %s>0 - Highest</option>"),
+                str.GetData());
+
+        str = (1 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"1\" %s>1 - Very High</option>"),
+                str.GetData());
+
+        str = (2 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"2\" %s>2 - High</option>"),
+                str.GetData());
+
+        str = (3 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"3\" %s>3 - Normal</option>"),
+                str.GetData());
+
+        str = (4 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"4\" %s>4 - Low</option>"),
+                str.GetData());
+
+        str = (5 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"5\" %s>5 - Lower</option>"),
+                str.GetData());
+
+        str = (6 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"6\" %s>6 - Very Low</option>"),
+                str.GetData());
+
+        str = (7 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"7\" %s>7 - Lowest</option>"),
+                str.GetData());
+
+        buildPage += _("</select>");
+        // Priority mask
+        buildPage += _("<textarea cols=\"5\" rows=\"1\" name=\"mask_priority\">");
+        buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_class);
+        buildPage += _("</textarea>");
+        
+        buildPage += _("</td></tr>");
+
+        // Class
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Class:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"filter_vscpclass\">");
+        buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_class);
+        buildPage += _("</textarea>");
+        
+        buildPage += _(" <textarea cols=\"10\" rows=\"1\" name=\"mask_vscpclass\">");
+        buildPage += wxString::Format(_("0x%04x"), pElement->m_vscpfilter.mask_class);
+        buildPage += _("</textarea>");
+        
+        buildPage += _("</td></tr>");
+        
+        // Type
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Type:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"filter_vscptype\">");
+        buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_type);
+        buildPage += _("</textarea>");
+        
+        buildPage += _(" <textarea cols=\"10\" rows=\"1\" name=\"mask_vscptype\">");
+        buildPage += wxString::Format(_("0x%04x"), pElement->m_vscpfilter.mask_type);
+        buildPage += _("</textarea>");
+        
+        buildPage += _("</td></tr>");
+        
+        // GUID
+        writeGuidArrayToString( pElement->m_vscpfilter.filter_GUID, str );
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Type:</td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"filter_vscpguid\">");
+        buildPage += wxString::Format(_("%s"), str.GetData() );
+        buildPage += _("</textarea></td>");
+        
+        writeGuidArrayToString( pElement->m_vscpfilter.mask_GUID, str );
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\"> </td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"mask_vscpguid\">");
+        buildPage += wxString::Format(_("%s"), str.GetData() );
+        buildPage += _("</textarea></td>");
+        
+        buildPage += _("</tr>");
+        
+        // Index
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Index:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpindex\">");
+        buildPage += wxString::Format(_("%d"), pElement->m_index );
+        buildPage += _("</textarea></td></tr>");
+
+        // Zone
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Zone:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpzone\">");
+        buildPage += wxString::Format(_("%d"), pElement->m_zone );
+        buildPage += _("</textarea></td></tr>");
+        
+        // Subzone
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Subzone:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpsubzone\">");
+        buildPage += wxString::Format(_("%d"), pElement->m_subzone );
+        buildPage += _("</textarea>");
+        buildPage += _("</td></tr>");
+        
+        buildPage += _("</tbody></table><br>");
+        
+        // Control
+        buildPage += _("<h4>Control:</h4>");
+        
+        // Enable row
+        buildPage += _("<input name=\"check_enablerow\" value=\"true\" ");
+        buildPage += wxString::Format(_("%s"), 
+                                        pElement->isEnabled() ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">");            
+        buildPage += _("<span id=\"optiontext\">Enable row</span>"); 
+
+        // End scan on this row
+        buildPage += _("<input name=\"check_endscan\" value=\"true\"");
+        buildPage += wxString::Format(_("%d"), 
+                                        pElement->isScanDontContinueSet() ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">");           
+        buildPage += _("<span id=\"optiontext\">End scan on this row</span>");
+
+        buildPage += _("<br>");
+
+        // Check Index
+        buildPage += _("<input name=\"check_index\" value=\"true\"");
+        buildPage += wxString::Format(_("%d"), 
+                                        pElement->isCheckIndexSet() ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">"); 
+        buildPage += _("<span id=\"optiontext\">Check Index</span>");
+
+        // Check Zone
+        buildPage += _("<input name=\"check_zone\" value=\"true\"");
+        buildPage += wxString::Format(_("%d"), 
+                                        pElement->isCheckZoneSet() ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">"); 
+        buildPage += _("<span id=\"optiontext\">Check Zone</span>"); 
+
+        // Check subzone
+        buildPage += _("<input name=\"check_subzone\" value=\"true\"");
+        buildPage += wxString::Format(_("%d"), 
+                                        pElement->isCheckSubZoneSet() ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">"); 
+        buildPage += _("<span id=\"optiontext\">Check Subzone</span>");
+        buildPage += _("<br><br><br>");
+        
+        buildPage += _("<h4>Allowed From:</h4>");
+        buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedfrom\">");
+        buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
+        buildPage += _(" ");
+        buildPage += pElement->m_timeAllow.m_fromTime.FormatISOTime();
+        buildPage += _("</textarea>");
+
+        buildPage += _("<h4>Allowed To:</h4>");
+        buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedto\">");
+        buildPage += pElement->m_timeAllow.m_endTime.FormatISODate();
+        buildPage += _(" ");
+        buildPage += pElement->m_timeAllow.m_endTime.FormatISOTime();
+        buildPage += _("</textarea>");
+       
+        buildPage += _("<h4>Allowed time:</h4>");
+        buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedtime\">");
+        buildPage += pElement->m_timeAllow.getActionTimeAsString();
+        buildPage += _("</textarea>");
+        
+        buildPage += _("<h4>Allowed days:</h4>");
+        buildPage += _("<input name=\"monday\" value=\"true\" ");
+        buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[0] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Monday ");
+
+        buildPage += _("<input name=\"tuesday\" value=\"true\" ");
+        buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[1] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Tuesday ");
+
+        buildPage += _("<input name=\"wednesday\" value=\"true\" ");
+        buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[2] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Wednesday ");
+
+        buildPage += _("<input name=\"thursday\" value=\"true\" ");
+        buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[3] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Thursday ");
+         
+        buildPage += _("<input name=\"friday\" value=\"true\" ");
+        buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[4] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Friday ");
+
+        buildPage += _("<input name=\"saturday\" value=\"true\" ");
+        buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[5] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Saturday ");
+
+        buildPage += _("<input name=\"sunday\" value=\"true\" ");
+        buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[6] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Sunday ");
+        buildPage += _("<br>");
+        
+        buildPage += _("<h4>Action:</h4>");
+        
+        buildPage += _("<select name=\"action\">");
+        buildPage += _("<option value=\"0\" ");
+        if (bNew) buildPage += _(" selected ");
+        buildPage += _(">No Operation</option>");
+
+        str = (0x10 == pElement->m_action ) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x10\" %s>Execute external program</option>"),
+                str.GetData());
+
+        str = (0x12 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x12\" %s>Execute internal procedure</option>"),
+                str.GetData());
+
+        str = (0x30 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x30\" %s>Execute library procedure</option>"),
+                str.GetData());
+
+        str = (0x40 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x40\" %s>Send event</option>"),
+                str.GetData());
+
+        str = (0x41 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x41\" %s>Send event Conditional</option>"),
+                str.GetData());
+
+        str = (0x42 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x42\" %s>Send event(s) from file</option>"),
+                str.GetData());
+
+        str = (0x43 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x43\" %s>Send event(s) to remote VSCP server</option>"),
+                str.GetData());
+
+        str = (0x50 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x50\" %s>Store in variable</option>"),
+                str.GetData());
+        
+        str = (0x51 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x51\" %s>Store in array</option>"),
+                str.GetData());
+        
+        str = (0x52 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x52\" %s>Add to variable</option>"),
+                str.GetData());
+        
+        str = (0x53 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x53\" %s>Subtract from variable</option>"),
+                str.GetData());
+        
+        str = (0x54 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x54\" %s>Multiply variable</option>"),
+                str.GetData());
+        
+        str = (0x55 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x55\" %s>Divide variable</option>"),
+                str.GetData());
+        
+        str = (0x60 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x60\" %s>Start timer</option>"),
+                str.GetData());
+        
+        str = (0x61 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x61\" %s>Pause timer</option>"),
+                str.GetData());
+        
+        str = (0x62 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x62\" %s>Stop timer</option>"),
+                str.GetData());
+        
+        str = (0x63 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x63\" %s>Resume timer</option>"),
+                str.GetData());
+        
+        str = (0x70 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x70\" %s>Write file</option>"),
+                str.GetData());
+        
+        str = (0x75 == pElement->m_action) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0x75\" %s>Get/Put/Post URL</option>"),
+                str.GetData());
+
+        buildPage += _("</select>");
+        
+        
+        buildPage += _("<h4>Action parameter:</h4>");
+        buildPage += _("<textarea cols=\"80\" rows=\"1\" name=\"actionparameter\">");
+        buildPage += pElement->m_actionparam;
+        buildPage += _("</textarea>");
+
+        buildPage += _("<h4>Comment:</h4>");
+        buildPage += _("<textarea cols=\"80\" rows=\"5\" name=\"comment\">");
+        buildPage += pElement->m_comment;
+        buildPage += _("</textarea>");
+    } 
+    else {
+        buildPage += _("<br><b>Error: Non existent id</b>");
+    }
+    
+    
+    wxString wxstrurl = wxString::Format(_("%s/vscp/dmpost"), 
+                                                strHost.GetData() );
+    buildPage += wxString::Format( _(WEB_DMEDIT_SUBMIT),
+                                    wxstrurl.GetData() );
+    
+    buildPage += _("</form>");
     buildPage += _(WEB_COMMON_END);     // Common end code
     
     char *ppage = new char[ buildPage.Length() + 1 ];
@@ -3703,6 +4444,331 @@ CControlObject::websrv_serve_dmlist( const void *cls,
     
     return ret;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_serve_dmpost
+//
+
+int 
+CControlObject::websrv_serve_dmpost( const void *cls,
+							const char *mime,
+                            struct websrv_Session *session,
+                            struct MHD_Connection *connection)
+{
+    int ret,i;
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *) cls;
+    struct MHD_Response *response;
+    dmElement *pElement = NULL;
+    
+    // Get connection type
+    const MHD_ConnectionInfo *pProtocolInfo = 
+            MHD_get_connection_info(connection, 
+                                        MHD_CONNECTION_INFO_PROTOCOL );
+    // Get hostname
+    wxString strHost = _("http://localhost:8080");
+    const char *str_host = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, "host");
+    if ( NULL != str_host ) {
+        strHost = wxString::FromAscii(str_host);
+        if ( NULL != pProtocolInfo ) {
+            strHost = _("https://") + strHost;
+        }
+        else {
+            strHost = _("http://") + strHost;
+        }
+    }
+    
+    // id
+    long id = -1;
+    const char *str_id = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "id");
+    if ( NULL != str_id ) id = atoi(str_id);
+    
+    // Flag for new DM row
+    bool bNew = false;
+    const char *str_new = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "new");
+    if ( (NULL != str_new) && NULL != strstr( "true", str_new ) ) bNew = true;
+
+    wxString strGroupID;
+    const char *str_groupid = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "groupid");
+    if ( NULL != str_groupid ) strGroupID = wxString::FromAscii(str_groupid);
+        
+    int filter_priority = -1;
+    const char *str_filter_priority = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "filter_priority");
+    if ( NULL != str_filter_priority ) filter_priority == wxString::FromAscii(str_filter_priority);
+         
+    int mask_priority = 0;    
+    const char *str_mask_priority = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "mask_priority");
+    if ( NULL != str_mask_priority ) mask_priority == wxString::FromAscii(str_mask_priority);
+    
+    uint16_t filter_vscpclass = -1;
+    const char *str_filter_vscpclass = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "filter_vscpclass");
+    if ( NULL != str_filter_vscpclass ) filter_vscpclass == wxString::FromAscii(str_filter_vscpclass);
+    
+    uint16_t mask_vscpclass = 0;
+    const char *str_mask_vscpclass = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "mask_vscpclass");
+    if ( NULL != str_mask_vscpclass ) mask_vscpclass == wxString::FromAscii(str_mask_vscpclass);
+    
+    uint16_t filter_vscptype = 0;
+    const char *str_filter_vscptype = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "filter_vscptype");
+    if ( NULL != str_filter_vscptype ) filter_vscptype == wxString::FromAscii(str_filter_vscptype);
+    
+    uint16_t mask_vscptype = 0;
+    const char *str_mask_vscptype = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "mask_vscptype");
+    if ( NULL != str_mask_vscptype ) mask_vscptype == wxString::FromAscii(str_mask_vscptype);
+    
+    wxString strFilterGuid;
+    const char *str_filter_vscpguid = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "filter_vscpguid");
+    if ( NULL != str_filter_vscpguid ) strFilterGuid = wxString::FromAscii(str_filter_vscpguid);
+    strFilterGuid = strFilterGuid.Trim();
+    strFilterGuid = strFilterGuid.Trim(false);
+    
+    wxString strMaskGuid;
+    const char *str_mask_vscpguid = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "mask_vscpguid");
+    if ( NULL != str_mask_vscpguid ) strMaskGuid = wxString::FromAscii(str_mask_vscpguid);
+    strMaskGuid = strMaskGuid.Trim();
+    strMaskGuid = strMaskGuid.Trim(false);
+    
+    uint8_t index = 0;
+    const char *str_vscpindex = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "vscpindex");
+    if ( NULL != str_vscpindex ) index = readStringValue( wxString::FromAscii(str_vscpindex) );
+    
+    uint8_t zone = 0;
+    const char *str_vscpzone = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "vscpzone");
+    if ( NULL != str_vscpzone ) zone = readStringValue( wxString::FromAscii(str_vscpzone) );
+    
+    uint8_t subzone = 0;
+    const char *str_vscpsubzone = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "vscpsubzone");
+    if ( NULL != str_vscpsubzone ) index = readStringValue( wxString::FromAscii(str_vscpsubzone) );
+    
+    bool bEnableRow = false;
+    const char *str_check_enablerow = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "check_enablerow");
+    if ( (NULL != str_check_enablerow) && NULL != strstr( "true", str_check_enablerow ) ) bEnableRow = true;
+        
+    bool bEndScan = false;
+    const char *str_check_endscan = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "check_endscan");
+    if ( (NULL != str_check_endscan) && NULL != strstr( "true", str_check_endscan ) ) bEndScan = true;
+    
+    bool bCheckIndex = false;
+    const char *str_check_index = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "check_index");
+    if ( (NULL != str_check_index) && NULL != strstr( "true", str_check_index ) ) bCheckIndex = true;
+    
+    bool bCheckZone = false;
+    const char *str_check_zone = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "check_zone");
+    if ( (NULL != str_check_zone) && NULL != strstr( "true", str_check_zone ) ) bCheckZone = true;
+    
+    bool bCheckSubZone = false;
+    const char *str_check_subzone = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "check_subzone");
+    if ( (NULL != str_check_subzone) && NULL != strstr( "true", str_check_subzone ) ) bCheckSubZone = true;
+    
+    wxString strAllowedFrom;
+    const char *str_allowedfrom = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "allowedfrom");
+    if ( NULL != str_allowedfrom ) strAllowedFrom = wxString::FromAscii(str_allowedfrom);
+    
+    wxString strAllowedTo;
+    const char *str_allowedto = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "allowedto");
+    if ( NULL != str_allowedto ) strAllowedTo = wxString::FromAscii(str_allowedto);
+    
+    wxString strAllowedTime;
+    const char *str_allowedtime = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "allowedtime");
+    if ( NULL != str_allowedtime ) strAllowedTime = wxString::FromAscii(str_allowedtime);
+    
+    bool bCheckMonday = false;
+    const char *str_monday = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "monday");
+    if ( (NULL != str_monday) && NULL != strstr( "true", str_monday ) ) bCheckMonday = true;
+    
+    bool bCheckTuesday = false;
+    const char *str_tuesday = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "tuesday");
+    if ( (NULL != str_tuesday) && NULL != strstr( "true", str_tuesday ) ) bCheckTuesday = true;
+    
+    bool bCheckWednesday = false;
+    const char *str_wednesday = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "wednesday");
+    if ( (NULL != str_wednesday) && NULL != strstr( "true", str_wednesday ) ) bCheckWednesday = true;
+    
+    bool bCheckThursday = false;
+    const char *str_thursday = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "thursday");
+    if ( (NULL != str_thursday) && NULL != strstr( "true", str_thursday ) ) bCheckThursday = true;
+    
+    bool bCheckFriday = false;
+    const char *str_friday = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "friday");
+    if ( (NULL != str_friday) && NULL != strstr( "true", str_friday ) ) bCheckFriday = true;
+    
+    bool bCheckSaturday = false;
+    const char *str_saturday = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "saturday");
+    if ( (NULL != str_saturday) && NULL != strstr( "true", str_saturday ) ) bCheckSaturday = true;
+    
+    bool bCheckSunday = false;
+    const char *str_sunday = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "sunday");
+    if ( (NULL != str_sunday) && NULL != strstr( "true", str_sunday ) ) bCheckSunday = true;
+    
+    uint32_t action = 0;
+    const char *str_action = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "action");
+    if ( NULL != str_action ) action = readStringValue( wxString::FromAscii(str_action) );
+    
+    wxString strActionParameter;
+    const char *str_actionparameter = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "actionparameter");
+    if ( NULL != str_actionparameter ) strActionParameter = wxString::FromAscii(str_actionparameter);
+    
+    wxString strComment;
+    const char *str_comment = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "comment");
+    if ( NULL != str_comment ) strComment = wxString::FromAscii(str_comment);
+    
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix Post"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
+    buildPage += wxString::Format(_("?from=%d"), id );
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Insert server url into navigation menu 
+    wxString navstr = _(WEB_COMMON_MENU);
+    int pos;
+    while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
+        buildPage += navstr.Left( pos );
+        navstr = navstr.Right(navstr.Length() - pos - 2);
+    }
+    buildPage += navstr;
+    
+    buildPage += _(WEB_DMPOST_BODY_START);
+        
+    if ( bNew ) {
+        dmElement *pElement = new dmElement;
+    }
+    
+    
+    if (NULL != pElement) {
+        
+        if ( id >= 0 ) {
+            
+            if ( id < pObject->m_dm.getRowCount() ) {
+                
+                dmElement *pElement = pObject->m_dm.getRow(id);
+                
+                if ( -1 == filter_priority ) {
+                    pElement->m_vscpfilter.mask_priority = 0;
+                    pElement->m_vscpfilter.filter_priority = 0;
+                }
+                else {
+                    pElement->m_vscpfilter.mask_priority = mask_priority;
+                    pElement->m_vscpfilter.filter_priority = filter_priority;
+                }
+                
+                if ( -1 == filter_vscpclass ) {
+                    pElement->m_vscpfilter.mask_class = 0;
+                    pElement->m_vscpfilter.filter_class = 0;
+                }
+                else {
+                    pElement->m_vscpfilter.mask_class = mask_vscptype;
+                    pElement->m_vscpfilter.filter_class = filter_vscptype;
+                }
+                
+                if ( -1 == filter_vscptype ) {
+                    pElement->m_vscpfilter.mask_type = 0;
+                    pElement->m_vscpfilter.filter_type = 0;
+                }
+                else {
+                    pElement->m_vscpfilter.mask_type = mask_vscptype;
+                    pElement->m_vscpfilter.filter_type = filter_vscptype;
+                }
+                
+                if ( 0 == strFilterGuid.Length() ) {
+                    for (int i=0;i<16;i++) {
+                        pElement->m_vscpfilter.mask_GUID[i] = 0;
+                        pElement->m_vscpfilter.filter_GUID[i] = 0;
+                    }
+                }
+                else {
+                    getGuidFromStringToArray( pElement->m_vscpfilter.mask_GUID, 
+                                                strMaskGuid );
+                    getGuidFromStringToArray( pElement->m_vscpfilter.filter_GUID, 
+                                                strFilterGuid );
+                }
+                
+                pElement->m_index = index;
+                pElement->m_zone = zone;
+                pElement->m_subzone = subzone;
+                
+                pElement->m_control = 0;
+                if ( bEnableRow ) pElement->m_control |= DM_CONTROL_ENABLE;
+                if ( bEndScan ) pElement->m_control |= DM_CONTROL_DONT_CONTINUE_SCAN;
+                if ( bCheckIndex ) pElement->m_control |=  DM_CONTROL_CHECK_INDEX;
+                if ( bCheckZone ) pElement->m_control |= DM_CONTROL_CHECK_ZONE;    
+                if ( bCheckSubZone ) pElement->m_control |= DM_CONTROL_CHECK_SUBZONE;
+                
+                pElement->m_timeAllow.m_fromTime.ParseDateTime( strAllowedFrom );
+                pElement->m_timeAllow.m_endTime.ParseDateTime( strAllowedTo );
+                pElement->m_timeAllow.parseActionTime( strAllowedTime );
+                
+                wxString weekdays;
+                
+                if (bCheckMonday) weekdays = _("m"); else weekdays = _("-"); 
+                if (bCheckTuesday) weekdays += _("t"); else weekdays += _("-");
+                if (bCheckWednesday) weekdays += _("w"); else weekdays += _("-");
+                if (bCheckThursday) weekdays += _("t"); else weekdays += _("-");
+                if (bCheckFriday) weekdays += _("f"); else weekdays += _("-");
+                if (bCheckSaturday) weekdays += _("s"); else weekdays += _("-");
+                if (bCheckSunday) weekdays += _("s"); else weekdays += _("-");
+                pElement->m_timeAllow.setWeekDays(weekdays);
+                
+                pElement->m_action = action;
+                
+                pElement->m_actionparam = strActionParameter;
+                pElement->m_comment = strComment;
+                
+                pElement->m_triggCounter = 0;
+                pElement->m_errorCounter = 0;
+                
+                if ( bNew ) {
+                    // add the DM row to the matrix
+                    pObject->m_dm.addElement( pElement );
+                }
+                            
+                buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id="),id);
+                
+            }
+            else {
+                buildPage += wxString::Format(_("<br><br>Record id=%d is to large. Unable to save record"), id );
+            }
+        }
+        else {
+            buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id );        
+        }
+    }
+    else {
+        buildPage += wxString::Format(_("<br><br>Memory problem id=%d. Unable to save record"), id );
+    }
+    
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+    
+    // return page 
+    response = MHD_create_response_from_buffer( strlen(ppage),
+                                                    (void *)ppage,
+                                                    MHD_RESPMEM_MUST_FREE );
+    
+    websrv_add_session_cookie(session, response);
+    
+    MHD_add_response_header( response,
+                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                mime);
+    
+    ret = MHD_queue_response( connection,
+                                MHD_HTTP_OK,
+                                response);
+    
+    MHD_destroy_response( response );
+    
+    return ret;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // request_completed_callback

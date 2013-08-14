@@ -114,7 +114,7 @@ struct websrv_Session
 
   // Client item for this session
   CClientItem *m_pClientItem;
-  
+    
   // String submitted via form.
   char value_1[64];
 
@@ -150,7 +150,7 @@ struct websrv_Request
    */
   const char *post_url;
   
-  int aptr;
+  //int aptr;
 
 };
 

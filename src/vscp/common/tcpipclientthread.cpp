@@ -89,7 +89,7 @@ void *TcpClientListenThread::Entry()
     addr.Service ( m_pCtrlObject->m_tcpport );
 
 	// Normally listens on all interfaces of a multi interface machine
-	// by specifing an interface it will jsut listen on that
+	// by specifying an interface it will jnstead listen on that
 	// specific interface. Default is to listen on all.
 	if ( 0 != m_pCtrlObject->m_strTcpInterfaceAddress.Length() ) {
 		addr.Hostname( m_pCtrlObject->m_strTcpInterfaceAddress );
@@ -164,7 +164,7 @@ void TcpClientListenThread::OnExit()
         }
     }
 
-    // Second stage - Wait until thay terminates
+    // Second stage - Wait until they terminates
     for (iter = m_tcpclients.begin(); iter != m_tcpclients.end(); ++iter) {
         TcpClientThread *pThread = *iter;
         if ( ( NULL != pThread )  ) {
@@ -235,7 +235,7 @@ void *TcpClientThread::Entry()
     // Must be connected
     if ( m_pClientSocket->IsDisconnected() ) return NULL;
 
-    m_pCtrlObject->logMsg ( _T ( "TCP ClientThread: Start.\n" ), DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg(_T("TCP ClientThread: Start.\n"), DAEMON_LOGMSG_INFO);
 
     // We need to create a clientobject and add this object to the list
     m_pClientItem = new CClientItem;
@@ -282,7 +282,7 @@ void *TcpClientThread::Entry()
         //str += _(MSG_COPYRIGHT);
         str += _(MSG_OK);
 
-        m_pClientSocket->Write ( str.mb_str(), str.Length() );
+        m_pClientSocket->Write( str.mb_str(), str.Length() );
     }
 
 
@@ -300,6 +300,7 @@ void *TcpClientThread::Entry()
 
         // Check if command already in buffer
         if ( wxNOT_FOUND == ( pos4lf = wxstr.Find ( 0x0a ) ) ) {
+            
             // Read new data
             memset( rbuf, 0, sizeof( rbuf ) );                  // nil rbuf
             m_pClientSocket->Read ( rbuf, sizeof ( rbuf ) );    
@@ -356,6 +357,7 @@ void *TcpClientThread::Entry()
         // * * *  Check for a command  * * *
 
         else {
+            
             m_bOK = true;
 
             m_wxcmd = wxstr.Mid ( 0, pos4lf );
@@ -1554,7 +1556,9 @@ bool TcpClientThread::handleClientPassword ( void )
 
     // Check if this user is allowed to connect from this location
     m_pCtrlObject->m_mutexUserList.Lock();
-    bool bValidHost = m_pCtrlObject->m_userList.checkRemote( m_pUserItem, remoteaddr.IPAddress() );
+    bool bValidHost = 
+            m_pCtrlObject->m_userList.checkRemote( m_pUserItem, 
+                                                    remoteaddr.IPAddress() );
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( !bValidHost ) {

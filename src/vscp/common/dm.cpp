@@ -1491,7 +1491,7 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
         bOK = false;
     }
 
-    if (bOK && ::wxExecute(wxstr, wxEXEC_SYNC)) {
+    if ( bOK && ( -1 !=::wxExecute(wxstr, wxEXEC_SYNC ) ) ) {
         wxString wxstr = wxT("[Action] Executed: ");
         wxstr += m_actionparam;
         wxstr += _("\n");
@@ -1690,7 +1690,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
     wxXmlDocument doc;
     if ( !doc.Load ( wxstr ) ) {
-        wxString wxstrErr = wxT("[Action] Send event from file: Faild to load event XML file  ");
+        wxString wxstrErr = wxT("[Action] Send event from file: Failed to load event XML file  ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
@@ -2547,11 +2547,15 @@ bool CDM::load ( void )
             pDMitem->m_control = 0;
             pDMitem->m_action = 0;
             pDMitem->m_triggCounter = 0;
+            pDMitem->m_errorCounter = 0;
             pDMitem->m_actionparam.Empty();
             pDMitem->m_comment.Empty();
             pDMitem->m_timeAllow.m_fromTime = wxDateTime::Now();
             pDMitem->m_timeAllow.m_endTime = wxDateTime::Now();
-            pDMitem->m_timeAllow.setWeekDays(wxT("twtfss"));
+            pDMitem->m_timeAllow.setWeekDays(wxT("mtwtfss"));
+            pDMitem->m_index = 0;
+            pDMitem->m_zone = 0;
+            pDMitem->m_subzone = 0;
             clearVSCPFilter( &pDMitem->m_vscpfilter );
             bool bEnabled = false;
 
@@ -2602,16 +2606,25 @@ bool CDM::load ( void )
                 else if ( subchild->GetName() == wxT ( "control" ) ) {
                     pDMitem->m_control = readStringValue( subchild->GetNodeContent() );
                     // Main property overrides enable bit if set
-                    if (bEnabled ) pDMitem->m_control |=  DM_CONTROL_ENABLE;
+                    if (bEnabled ) {
+                        pDMitem->m_control |=  DM_CONTROL_ENABLE;
+                    }
+                    else {
+                        pDMitem->m_control &=  ~DM_CONTROL_ENABLE;
+                    }
                 }
                 else if ( subchild->GetName() == wxT ( "action" ) ) {
                     pDMitem->m_action = readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "param" ) ){
                     pDMitem->m_actionparam = subchild->GetNodeContent();
+                    pDMitem->m_actionparam = pDMitem->m_actionparam.Trim();
+                    pDMitem->m_actionparam = pDMitem->m_actionparam.Trim(false);
                 }
                 else if ( subchild->GetName() == wxT ( "comment" ) ) {
                     pDMitem->m_comment = subchild->GetNodeContent();
+                    pDMitem->m_comment = pDMitem->m_comment.Trim();
+                    pDMitem->m_comment = pDMitem->m_comment.Trim(false);
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_from" ) ) {
                     pDMitem->m_timeAllow.m_fromTime.ParseDateTime( subchild->GetNodeContent() );

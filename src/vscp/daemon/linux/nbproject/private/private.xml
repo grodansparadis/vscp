@@ -7,22 +7,27 @@
         <activeConfTypeElem>0</activeConfTypeElem>
         <activeConfIndexElem>0</activeConfIndexElem>
     </data>
-    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="3">
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="4">
         <file>
             <url>file:/home/akhe/vscp_software/src/vscp/common/controlobject.cpp</url>
             <bookmark id="3">
                 <name/>
-                <line>269</line>
+                <line>275</line>
                 <key/>
             </bookmark>
             <bookmark id="1">
                 <name/>
-                <line>642</line>
+                <line>651</line>
                 <key/>
             </bookmark>
             <bookmark id="2">
                 <name/>
-                <line>2958</line>
+                <line>2990</line>
+                <key/>
+            </bookmark>
+            <bookmark id="4">
+                <name/>
+                <line>4035</line>
                 <key/>
             </bookmark>
         </file>

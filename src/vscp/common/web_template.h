@@ -27,7 +27,7 @@
 
 // * * * M e n u * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"#\">Variables</a></li><li><a href=\"#\">Decision Matrix</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"http://localhost:8080/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
+#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"#\">Variables</a></li><li><a href=\"%s/vscp/dm\">Decision Matrix</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
 
 
 // * * * C o m m o n * * *
@@ -42,6 +42,17 @@
 // End with footer
 #define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; 2000-2013 VSCP & Friends,<a href=\"mailto:info@grodansparadis.com\">Ake Hedman</a><a href=\"http://www.grodansparadis.com\"> Grodans Paradis AB.</a></div></div></body></html>"
 
+// List navigation - 
+// Action url			- string
+// First shown record	- integer
+// Last shown record	- integer
+// total records		- integer
+// count to show		- integer
+#define WEB_COMMON_LIST_NAVIGATION "<br><div style=\"text-align:center\"><form method=\"get\" action=\"%s\" name=\"PageSelect\"><button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button><button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button><button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button><button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button><span style=\"font-weight:bold\">%d - %d</span> of <span style=\"font-weight:bold\">%d</span> Show: <input name=\"count\" value=\"%d\" size=\"3\"><input name=\"from\" value=\"%d\" type=\"hidden\"><input name=\"light\" value=\"%s\" type=\"hidden\"><br></form></div>"
+
+// Clickable/navigational table rows
+// Fill in Navigation url
+#define WEB_COMMON_TR_CLICKABLE_ROW "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('%s')\" >"
 
 // * * * DM List * * *
 
@@ -54,9 +65,27 @@
 // Rows
 #define WEB_DMLIST_TR_HEAD "<tr><th>Pos</th><th>Entry</th></tr>"
 
-#define WEB_DMLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.yahoo.com/')\" >"
-
 #define WEB_DMLIST_TD_CENTERED "<td id=\"tdcenter\">"
+
+
+
+// * * * DM Edit * * *
+
+
+// Place after menus
+#define WEB_DMEDIT_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Decision Matrix Edit</h1></div><table><tbody>"
+
+// Place before common end
+#define WEB_DMEDIT_TABLE_END "</tbody></table>"
+
+// DM-Edit post - 
+#define WEB_DMEDIT_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnexit\" name=\"btnexit\">Exit</button><button type=\"submit\" value=\"btnsave\" name=\"btnsave\">save</button><br></div>"
+
+
+// * * * DM Post * * *
+
+#define WEB_DMPOST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Decision Matrix Edit</h1></div><table><tbody>"
+
 
 
 // * * * Interface List * * *
