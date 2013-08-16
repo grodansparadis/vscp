@@ -27,7 +27,7 @@
 
 // * * * M e n u * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"#\">Variables</a></li><li><a href=\"%s/vscp/dm\">Decision Matrix</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
+#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"#\">Variables</a></li><li><a href=\"%s/vscp/dm\">DM - list</a></li><li><a href=\"%s/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
 
 
 // * * * C o m m o n * * *

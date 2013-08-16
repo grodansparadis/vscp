@@ -2491,6 +2491,9 @@ bool CDM::addElement( dmElement *pItem )
 
 dmElement *CDM::getRow( short row ) 
 { 
+    if (row < 0) return NULL;
+    if ( row >= m_DMList.GetCount() ) return NULL;
+    
     return m_DMList.Item( row )->GetData(); 
 }
 
@@ -2679,7 +2682,15 @@ bool CDM::load ( void )
 bool CDM::save ( void )
 {
     wxString buf;
+    wxLogDebug( _("DM: Saving decision matrix from :") );
+
 #ifdef BUILD_VSCPD_SERVICE
+    wxStandardPaths stdPath;
+
+    // Set the default dm configuration path
+    m_configPath = stdPath.GetConfigDir();
+    m_configPath += _("/vscp/dm.xml");
+#else
     wxStandardPaths stdPath;
 
     // Set the default dm configuration path
@@ -2690,13 +2701,13 @@ bool CDM::save ( void )
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
     if ( NULL == pFileStream ) return false;
 
-    pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>",
-        strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" ) );
+    pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+        strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) );
 
     m_mutexDM.Lock();
 
     // DM matrix information start
-    pFileStream->Write ( "<dm>",strlen ( "<dm>" ) );
+    pFileStream->Write ( "<dm>\n",strlen ( "<dm>\n" ) );
 
     DMLIST::iterator it;
     for ( it = m_DMList.begin(); it != m_DMList.end(); ++it ) {
@@ -2705,114 +2716,126 @@ bool CDM::save ( void )
 
         if ( NULL != pDMitem ) {  // Must be an dmElement to work with  m_strGroupID
 
-            pFileStream->Write( "<row enabled=\"",strlen ( "<row enabled=\"" ) );
+            pFileStream->Write( "  <row enabled=\"",strlen ( "  <row enabled=\"" ) );
             if ( pDMitem->m_control & DM_CONTROL_ENABLE ) {
                 pFileStream->Write("true\" ",strlen("true\" "));
             }
             else {
                 pFileStream->Write("false\" ",strlen("false\" "));
             }
+            
             pFileStream->Write("groupid=\"",strlen("groupid=\""));
-            pFileStream->Write( pDMitem->m_strGroupID, pDMitem->m_strGroupID.Length() );
-            pFileStream->Write("\n >\n",strlen("\n >\n"));
+            pFileStream->Write( pDMitem->m_strGroupID.mb_str(), strlen(pDMitem->m_strGroupID.mb_str()) );
+            pFileStream->Write("\" >\n", strlen("\" >\n"));
 
-            pFileStream->Write ( "<mask ",strlen ( "<mask " ) );
-            buf.Printf ( _ ( " priority=\"%d\" " ), pDMitem->m_vscpfilter.mask_priority );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " class=\"%d\" " ), pDMitem->m_vscpfilter.mask_class );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " type=\"%d\" " ), pDMitem->m_vscpfilter.mask_type );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " GUID=\" " ) );
-            pFileStream->Write ( buf,buf.length() );
+            pFileStream->Write( "    <mask ",strlen ( "    <mask " ) );
+            buf.Printf( _( " priority=\"%d\" " ), pDMitem->m_vscpfilter.mask_priority );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            
+            buf.Printf( _( " class=\"%d\" " ), pDMitem->m_vscpfilter.mask_class );
+            pFileStream->Write ( buf.mb_str(), strlen( buf.mb_str() ) );
+            
+            buf.Printf ( _( " type=\"%d\" " ), pDMitem->m_vscpfilter.mask_type );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            
+            buf.Printf( _( " GUID=\" " ) );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            
             wxString strGUID;
-            writeGuidArrayToString( pDMitem->m_vscpfilter.mask_GUID, strGUID );
-            pFileStream->Write ( strGUID, strGUID.length() );
-            pFileStream->Write ( "\" > ",strlen ( "\" > " ) );
-            pFileStream->Write ( "</mask>\n",strlen ( "</mask>\n" ) );
+            writeGuidArrayToString( pDMitem->m_vscpfilter. mask_GUID, strGUID );
+            pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
+            pFileStream->Write( "\" > ", strlen( "\" > " ) );
+            pFileStream->Write( "</mask>\n", strlen( "</mask>\n" ) );
 
-            pFileStream->Write ( "<filter ",strlen ( "<filter " ) );
-            buf.Printf ( _ ( " priority=\"%d\" " ), pDMitem->m_vscpfilter.filter_priority );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " class=\"%d\" " ), pDMitem->m_vscpfilter.filter_class );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " type=\"%d\" " ), pDMitem->m_vscpfilter.filter_type );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " GUID=\" " ) );
-            pFileStream->Write ( buf,buf.length() );
+            pFileStream->Write( "    <filter ", strlen( "    <filter " ) );
+            buf.Printf( _( " priority=\"%d\" " ), pDMitem->m_vscpfilter.filter_priority );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " class=\"%d\" " ), pDMitem->m_vscpfilter.filter_class );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " type=\"%d\" " ), pDMitem->m_vscpfilter.filter_type );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " GUID=\" " ) );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
             writeGuidArrayToString( pDMitem->m_vscpfilter.filter_GUID, strGUID );
-            pFileStream->Write ( strGUID, strGUID.length() );
-            pFileStream->Write ( "\" > ",strlen ( "\" > " ) );
-            pFileStream->Write ( "> ",strlen ( "> " ) );
-            pFileStream->Write ( "</filter>\n",strlen ( "</filter>\n" ) );
+            pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
+            pFileStream->Write( "\" > ", strlen( "\" > " ) );
+            pFileStream->Write( "</filter>\n", strlen( "</filter>\n" ) );
 
-            pFileStream->Write ( "<control>\n",strlen ( "<control>\n" ) );
-            buf.Printf ( _ ( "%d" ), pDMitem->m_control );
-            pFileStream->Write ( buf, buf.length() );
-            pFileStream->Write ( "</control>\n",strlen ( "</control>\n" ) );
+            pFileStream->Write( "    <control>", strlen( "    <control>" ) );
+            buf.Printf( _( "0x%x" ), pDMitem->m_control );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            pFileStream->Write( "</control>\n", strlen( "</control>\n" ) );
 
-            pFileStream->Write ( "<action>\n",strlen ( "<action>\n" ) );
-            buf.Printf ( _ ( "%d" ), pDMitem->m_action );
-            pFileStream->Write ( buf, buf.length() );
-            pFileStream->Write ( "</action>\n",strlen ( "</action>\n" ) );
+            pFileStream->Write( "    <action>", strlen( "    <action>" ) );
+            buf.Printf( _( "0x%x" ), pDMitem->m_action );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ));
+            pFileStream->Write( "</action>\n", strlen ( "</action>\n" ) );
 
-            pFileStream->Write ( "<param>\n",strlen ( "<param>\n" ) );
-            pFileStream->Write ( pDMitem->m_actionparam, pDMitem->m_actionparam.length() );
-            pFileStream->Write ( "</parm>\n",strlen ( "</param>\n" ) );
+            pFileStream->Write( "    <param>", strlen ( "    <param>" ) );
+            pFileStream->Write( pDMitem->m_actionparam.mb_str(), 
+                                    strlen( pDMitem->m_actionparam.mb_str() ) );
+            pFileStream->Write( "</param>\n", strlen ( "</param>\n" ) );
 
-            pFileStream->Write ( "<comment>\n",strlen ( "<comment>\n" ) );
-            pFileStream->Write ( pDMitem->m_comment, pDMitem->m_comment.length() );
-            pFileStream->Write ( "</comment>\n",strlen ( "</comment>\n" ) );
+            pFileStream->Write( "    <comment>", strlen ( "    <comment>" ) );
+            pFileStream->Write( pDMitem->m_comment.mb_str(), 
+                                    strlen(pDMitem->m_comment.mb_str()) );
+            pFileStream->Write( "</comment>\n", strlen ( "</comment>\n" ) );
 
-            pFileStream->Write ( "<allowed_from>\n",strlen ( "<allowed_from>\n" ) );
+            pFileStream->Write( "    <allowed_from>", strlen ( "    <allowed_from>" ) );
             {
                 wxString str = pDMitem->m_timeAllow.m_fromTime.FormatISODate() + _(" ") + 
                     pDMitem->m_timeAllow.m_fromTime.FormatISOTime();
-                pFileStream->Write ( str, str.length() );
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
-            pFileStream->Write ( "</allowed_from>\n",strlen ( "</allowed_from>\n" ) );
+            pFileStream->Write( "</allowed_from>\n", strlen( "</allowed_from>\n" ) );
 
-            pFileStream->Write ( "<allowed_to>\n",strlen ( "<allowed_to>\n" ) );
+            pFileStream->Write ( "    <allowed_to>", strlen( "    <allowed_to>" ) );
             {
                 wxString str = pDMitem->m_timeAllow.m_endTime.FormatISODate() + _(" ") + 
                     pDMitem->m_timeAllow.m_endTime.FormatISOTime();
-                pFileStream->Write ( str, str.length() );
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
-            pFileStream->Write ( "</allowed_to>\n",strlen ( "</allowed_to>\n" ) );
+            pFileStream->Write("</allowed_to>\n", strlen ( "</allowed_to>\n" ) );
 
-            pFileStream->Write ( "<allowed_weekdays>\n",strlen ( "<allowed_weekdays>\n" ) );
+            pFileStream->Write("    <allowed_weekdays>", strlen ( "    <allowed_weekdays>" ) );
             {
                 wxString str = pDMitem->m_timeAllow.getWeekDays();
-                pFileStream->Write ( str, str.length() );
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
-            pFileStream->Write ( "</allowed_weekdays>\n",strlen ( "</allowed_weekdays>\n" ) );
+            pFileStream->Write( "</allowed_weekdays>\n", strlen ( "</allowed_weekdays>\n" ) );
 
-            pFileStream->Write ( "<allowed_time>\n",strlen ( "<allowed_time>\n" ) );
-            pFileStream->Write ( "</allowed_time>\n",strlen ( "</allowed_time>\n" ) );
+            pFileStream->Write( "    <allowed_time>", strlen ( "    <allowed_time>" ) );
+            {
+                wxString str = pDMitem->m_timeAllow.getActionTimeAsString();
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+            }
+            pFileStream->Write( "</allowed_time>\n",strlen ( "</allowed_time>\n" ) );
             
             // Index
-            pFileStream->Write ( "<index ",strlen ( "<index " ) );
-            buf.Printf ( _ ( " bMeasurement=\"%s\" " ), 
-                    (pDMitem->m_bMeasurement) ? "true" : "false" );
-            pFileStream->Write ( "\" > ",strlen ( "\" > " ) );
-            buf.Printf ( _ ( "%d" ), pDMitem->m_index );
-            pFileStream->Write ( buf, buf.length() );
-            pFileStream->Write ( "</index>\n",strlen ( "</index>\n" ) );
+            pFileStream->Write( "    <index ", strlen( "    <index " ) );
+            buf.Printf( _( " bMeasurement=\"%s\" " ), 
+                    (pDMitem->m_bMeasurement) ? _("true") : _("false") );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( " > ", strlen( " > " ) );
+            buf.Printf( _( "%d" ), pDMitem->m_index );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</index>\n", strlen ( "</index>\n" ) );
             
             // Zone
-            pFileStream->Write ( "<zone>\n",strlen ( "<zone>\n" ) );
-            buf.Printf ( _ ( "%d" ), pDMitem->m_zone );
-            pFileStream->Write ( buf, buf.length() );
-            pFileStream->Write ( "</zone>\n",strlen ( "</zone>\n" ) );
+            pFileStream->Write( "    <zone>", strlen ( "    <zone>" ) );
+            buf.Printf( _( "%d" ), pDMitem->m_zone );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</zone>\n", strlen ( "</zone>\n" ) );
             
             // Subzone
-            pFileStream->Write ( "<subzone>\n",strlen ( "<subzone>\n" ) );
-            buf.Printf ( _ ( "%d" ), pDMitem->m_subzone );
-            pFileStream->Write ( buf, buf.length() );
-            pFileStream->Write ( "</subzone>\n",strlen ( "</subzone>\n" ) );
+            pFileStream->Write( "    <subzone>", strlen ( "    <subzone>" ) );
+            buf.Printf( _( "%d" ), pDMitem->m_subzone );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</subzone>\n", strlen ( "</subzone>\n" ) );
             
 
-            pFileStream->Write ( "</row>\n",strlen ( "</row>\n" ) );
+            pFileStream->Write( "  </row>\n\n",strlen( "  </row>\n\n" ) );
+            
         }
 
     }

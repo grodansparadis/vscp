@@ -280,6 +280,7 @@ static struct Page pages[] =
     { "/vscp/dm", "text/html", &CControlObject::websrv_serve_dmlist, NULL },
     { "/vscp/dmedit", "text/html", &CControlObject::websrv_serve_dmedit, NULL },
     { "/vscp/dmpost", "text/html", &CControlObject::websrv_serve_dmpost, NULL },
+    { "/vscp/dmdelete", "text/html", &CControlObject::websrv_serve_dmdelete, NULL },
     { "/vscp/discovery", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/session", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/vscp/configure", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
@@ -3818,8 +3819,9 @@ CControlObject::websrv_serve_dmlist( const void *cls,
         // Client id    
         buildPage += _(WEB_IFLIST_TD_CENTERED);
         buildPage += wxString::Format(_("%d"), i );
+        buildPage += _("<br>");
+        buildPage += wxString::Format(_("<form name=\"input\" action=\"%s/vscp/dmdelete?id=%d\" method=\"get\"><input type=\"submit\" value=\"x\"></form>"),id);
         buildPage += _("</td>");
-
 
         // DM entry
         buildPage += _("<td>");
@@ -4097,16 +4099,30 @@ CControlObject::websrv_serve_dmedit( const void *cls,
 
     if (bNew || (NULL != pElement)) {
         
+        if ( bNew ) {
+            buildPage += _("<span id=\"optiontext\">New record.</span><br>");
+        }
+        else {
+            buildPage += wxString::Format(_("<span id=\"optiontext\">Record = %d.</span><br>"), id);
+        }
+        
         buildPage += _("<br><form method=\"get\" action=\"");
         buildPage += strHost;
         buildPage += _("/vscp/dmpost");
         buildPage += _("\" name=\"dmedit\">");
         
-        buildPage += wxString::Format(_("<input name=\"id\" value=\"%d\" type=\"hidden\">"), id );
+        buildPage += wxString::Format(_("<input name=\"id\" value=\"%d\" type=\"hidden\"></input>"), id );
+        
+        if (bNew) {
+            buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\"></input>");
+        }
+        else {
+            buildPage += _("<input name=\"new\" value=\"false\" type=\"hidden\">false</input>");
+        }
         
         buildPage += _("<h4>Group id:</h4>");
         buildPage += _("<textarea cols=\"20\" rows=\"1\" name=\"groupid\">");
-        buildPage += pElement->m_strGroupID;
+        if ( !bNew ) buildPage += pElement->m_strGroupID;
         buildPage += _("</textarea><br>");
         
         
@@ -4122,94 +4138,144 @@ CControlObject::websrv_serve_dmedit( const void *cls,
         if (bNew) buildPage += _(" selected ");
         buildPage += _(">Don't care</option>");
 
-        str = (0 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        if ( !bNew ) str = (0 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"0\" %s>0 - Highest</option>"),
                 str.GetData());
 
-        str = (1 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        if ( !bNew ) str = (1 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"1\" %s>1 - Very High</option>"),
                 str.GetData());
 
-        str = (2 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        if ( !bNew ) str = (2 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"2\" %s>2 - High</option>"),
                 str.GetData());
 
-        str = (3 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        if ( !bNew ) str = (3 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"3\" %s>3 - Normal</option>"),
                 str.GetData());
 
-        str = (4 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        if ( !bNew ) str = (4 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"4\" %s>4 - Low</option>"),
                 str.GetData());
 
-        str = (5 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        if ( !bNew ) str = (5 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"5\" %s>5 - Lower</option>"),
                 str.GetData());
 
-        str = (6 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        if ( !bNew ) str = (6 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"6\" %s>6 - Very Low</option>"),
                 str.GetData());
 
-        str = (7 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        if ( !bNew ) str = (7 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"7\" %s>7 - Lowest</option>"),
                 str.GetData());
 
         buildPage += _("</select>");
         // Priority mask
         buildPage += _("<textarea cols=\"5\" rows=\"1\" name=\"mask_priority\">");
-        buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_class);
+        if ( bNew ) {
+            buildPage += _("0x00");
+        }
+        else {
+            buildPage += wxString::Format(_("%X"), pElement->m_vscpfilter.mask_priority );
+        }
         buildPage += _("</textarea>");
         
         buildPage += _("</td></tr>");
 
         // Class
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Class:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"filter_vscpclass\">");
-        buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_class);
+        if ( bNew ) {
+            buildPage += _("");;
+        }
+        else {
+            buildPage += wxString::Format(_("0x%X"), pElement->m_vscpfilter.filter_class);
+        }
         buildPage += _("</textarea>");
         
         buildPage += _(" <textarea cols=\"10\" rows=\"1\" name=\"mask_vscpclass\">");
-        buildPage += wxString::Format(_("0x%04x"), pElement->m_vscpfilter.mask_class);
+        if ( bNew ) {
+            buildPage += _("0x0000");
+        }
+        else {
+            buildPage += wxString::Format(_("0x%04x"), pElement->m_vscpfilter.mask_class);
+        }
         buildPage += _("</textarea>");
         
         buildPage += _("</td></tr>");
         
         // Type
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Type:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"filter_vscptype\">");
-        buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_type);
+        if ( bNew ) {
+            buildPage += _("");;
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_type);
+        }
         buildPage += _("</textarea>");
         
         buildPage += _(" <textarea cols=\"10\" rows=\"1\" name=\"mask_vscptype\">");
-        buildPage += wxString::Format(_("0x%04x"), pElement->m_vscpfilter.mask_type);
+        if ( bNew ) {
+            buildPage += _("0x0000");;
+        }
+        else {
+            buildPage += wxString::Format(_("0x%04x"), pElement->m_vscpfilter.mask_type);
+        }
         buildPage += _("</textarea>");
         
-        buildPage += _("</td></tr>");
+        buildPage += _("</td></tr>"); 
         
         // GUID
-        writeGuidArrayToString( pElement->m_vscpfilter.filter_GUID, str );
+        if ( !bNew ) writeGuidArrayToString( pElement->m_vscpfilter.filter_GUID, str );
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Type:</td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"filter_vscpguid\">");
-        buildPage += wxString::Format(_("%s"), str.GetData() );
+        if ( bNew ) {
+            buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
+        }
+        else {
+            buildPage += wxString::Format(_("%s"), str.GetData() );
+        }
         buildPage += _("</textarea></td>");
         
-        writeGuidArrayToString( pElement->m_vscpfilter.mask_GUID, str );
+        if ( !bNew ) writeGuidArrayToString( pElement->m_vscpfilter.mask_GUID, str );
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\"> </td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"mask_vscpguid\">");
-        buildPage += wxString::Format(_("%s"), str.GetData() );
+        if ( bNew ) {
+            buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
+        }
+        else {
+            buildPage += wxString::Format(_("%s"), str.GetData() );
+        }
         buildPage += _("</textarea></td>");
         
         buildPage += _("</tr>");
         
         // Index
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Index:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpindex\">");
-        buildPage += wxString::Format(_("%d"), pElement->m_index );
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), pElement->m_index );
+        }
         buildPage += _("</textarea></td></tr>");
 
         // Zone
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Zone:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpzone\">");
-        buildPage += wxString::Format(_("%d"), pElement->m_zone );
+        if ( bNew ) {
+            buildPage += _("0");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), pElement->m_zone );
+        }
         buildPage += _("</textarea></td></tr>");
         
         // Subzone
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Subzone:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpsubzone\">");
-        buildPage += wxString::Format(_("%d"), pElement->m_subzone );
+        if ( bNew ) {
+            buildPage += _("0");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), pElement->m_subzone );
+        }
         buildPage += _("</textarea>");
         buildPage += _("</td></tr>");
         
@@ -4220,15 +4286,25 @@ CControlObject::websrv_serve_dmedit( const void *cls,
         
         // Enable row
         buildPage += _("<input name=\"check_enablerow\" value=\"true\" ");
-        buildPage += wxString::Format(_("%s"), 
-                                        pElement->isEnabled() ? _("checked") : _("") );
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%s"), 
+                                            pElement->isEnabled() ? _("checked") : _("") );
+        }
         buildPage += _(" type=\"checkbox\">");            
         buildPage += _("<span id=\"optiontext\">Enable row</span>"); 
 
         // End scan on this row
         buildPage += _("<input name=\"check_endscan\" value=\"true\"");
-        buildPage += wxString::Format(_("%d"), 
-                                        pElement->isScanDontContinueSet() ? _("checked") : _("") );
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), 
+                                            pElement->isScanDontContinueSet() ? _("checked") : _("") );
+        }
         buildPage += _(" type=\"checkbox\">");           
         buildPage += _("<span id=\"optiontext\">End scan on this row</span>");
 
@@ -4236,78 +4312,109 @@ CControlObject::websrv_serve_dmedit( const void *cls,
 
         // Check Index
         buildPage += _("<input name=\"check_index\" value=\"true\"");
-        buildPage += wxString::Format(_("%d"), 
-                                        pElement->isCheckIndexSet() ? _("checked") : _("") );
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), 
+                                            pElement->isCheckIndexSet() ? _("checked") : _("") );
+        }
         buildPage += _(" type=\"checkbox\">"); 
         buildPage += _("<span id=\"optiontext\">Check Index</span>");
 
         // Check Zone
         buildPage += _("<input name=\"check_zone\" value=\"true\"");
-        buildPage += wxString::Format(_("%d"), 
-                                        pElement->isCheckZoneSet() ? _("checked") : _("") );
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), 
+                                            pElement->isCheckZoneSet() ? _("checked") : _("") );
+        }
         buildPage += _(" type=\"checkbox\">"); 
         buildPage += _("<span id=\"optiontext\">Check Zone</span>"); 
 
         // Check subzone
         buildPage += _("<input name=\"check_subzone\" value=\"true\"");
-        buildPage += wxString::Format(_("%d"), 
-                                        pElement->isCheckSubZoneSet() ? _("checked") : _("") );
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), 
+                                            pElement->isCheckSubZoneSet() ? _("checked") : _("") );
+        }
         buildPage += _(" type=\"checkbox\">"); 
         buildPage += _("<span id=\"optiontext\">Check Subzone</span>");
         buildPage += _("<br><br><br>");
         
         buildPage += _("<h4>Allowed From:</h4>");
         buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedfrom\">");
-        buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
-        buildPage += _(" ");
-        buildPage += pElement->m_timeAllow.m_fromTime.FormatISOTime();
+        if ( bNew ) {
+            buildPage += _("yy-mm-dd hh:mm:ss");
+        }
+        else {
+            buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
+            buildPage += _(" ");
+            buildPage += pElement->m_timeAllow.m_fromTime.FormatISOTime();
+        }
         buildPage += _("</textarea>");
 
         buildPage += _("<h4>Allowed To:</h4>");
         buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedto\">");
-        buildPage += pElement->m_timeAllow.m_endTime.FormatISODate();
-        buildPage += _(" ");
-        buildPage += pElement->m_timeAllow.m_endTime.FormatISOTime();
+        if ( bNew ) {
+            buildPage += _("yy-mm-dd hh:mm:ss");
+        }
+        else {
+            buildPage += pElement->m_timeAllow.m_endTime.FormatISODate();
+            buildPage += _("yy-mm-dd hh:mm:ss");
+            buildPage += pElement->m_timeAllow.m_endTime.FormatISOTime();
+        }
         buildPage += _("</textarea>");
        
         buildPage += _("<h4>Allowed time:</h4>");
         buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedtime\">");
-        buildPage += pElement->m_timeAllow.getActionTimeAsString();
+        if ( bNew ) {
+            buildPage += _("yy-mm-dd hh:mm:ss");
+        }
+        else {
+            buildPage += pElement->m_timeAllow.getActionTimeAsString();
+        }
         buildPage += _("</textarea>");
         
         buildPage += _("<h4>Allowed days:</h4>");
         buildPage += _("<input name=\"monday\" value=\"true\" ");
-        buildPage += wxString::Format(_("%s"), 
+        
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
                                         pElement->m_timeAllow.m_weekDay[0] ? _("checked") : _("") );
         buildPage += _(" type=\"checkbox\">Monday ");
 
         buildPage += _("<input name=\"tuesday\" value=\"true\" ");
-        buildPage += wxString::Format(_("%s"), 
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
                                         pElement->m_timeAllow.m_weekDay[1] ? _("checked") : _("") );
         buildPage += _(" type=\"checkbox\">Tuesday ");
 
         buildPage += _("<input name=\"wednesday\" value=\"true\" ");
-        buildPage += wxString::Format(_("%s"), 
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
                                         pElement->m_timeAllow.m_weekDay[2] ? _("checked") : _("") );
         buildPage += _(" type=\"checkbox\">Wednesday ");
 
         buildPage += _("<input name=\"thursday\" value=\"true\" ");
-        buildPage += wxString::Format(_("%s"), 
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
                                         pElement->m_timeAllow.m_weekDay[3] ? _("checked") : _("") );
         buildPage += _(" type=\"checkbox\">Thursday ");
          
         buildPage += _("<input name=\"friday\" value=\"true\" ");
-        buildPage += wxString::Format(_("%s"), 
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
                                         pElement->m_timeAllow.m_weekDay[4] ? _("checked") : _("") );
         buildPage += _(" type=\"checkbox\">Friday ");
 
         buildPage += _("<input name=\"saturday\" value=\"true\" ");
-        buildPage += wxString::Format(_("%s"), 
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
                                         pElement->m_timeAllow.m_weekDay[5] ? _("checked") : _("") );
         buildPage += _(" type=\"checkbox\">Saturday ");
 
         buildPage += _("<input name=\"sunday\" value=\"true\" ");
-        buildPage += wxString::Format(_("%s"), 
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
                                         pElement->m_timeAllow.m_weekDay[6] ? _("checked") : _("") );
         buildPage += _(" type=\"checkbox\">Sunday ");
         buildPage += _("<br>");
@@ -4319,93 +4426,187 @@ CControlObject::websrv_serve_dmedit( const void *cls,
         if (bNew) buildPage += _(" selected ");
         buildPage += _(">No Operation</option>");
 
-        str = (0x10 == pElement->m_action ) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x10 == pElement->m_action ) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x10\" %s>Execute external program</option>"),
                 str.GetData());
 
-        str = (0x12 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x12 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x12\" %s>Execute internal procedure</option>"),
                 str.GetData());
 
-        str = (0x30 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x30 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x30\" %s>Execute library procedure</option>"),
                 str.GetData());
 
-        str = (0x40 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x40 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x40\" %s>Send event</option>"),
                 str.GetData());
 
-        str = (0x41 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x41 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x41\" %s>Send event Conditional</option>"),
                 str.GetData());
 
-        str = (0x42 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x42 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x42\" %s>Send event(s) from file</option>"),
                 str.GetData());
 
-        str = (0x43 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x43 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x43\" %s>Send event(s) to remote VSCP server</option>"),
                 str.GetData());
 
-        str = (0x50 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x50 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x50\" %s>Store in variable</option>"),
                 str.GetData());
         
-        str = (0x51 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x51 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x51\" %s>Store in array</option>"),
                 str.GetData());
         
-        str = (0x52 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x52 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x52\" %s>Add to variable</option>"),
                 str.GetData());
         
-        str = (0x53 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x53 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x53\" %s>Subtract from variable</option>"),
                 str.GetData());
         
-        str = (0x54 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x54 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x54\" %s>Multiply variable</option>"),
                 str.GetData());
         
-        str = (0x55 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x55 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x55\" %s>Divide variable</option>"),
                 str.GetData());
         
-        str = (0x60 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x60 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x60\" %s>Start timer</option>"),
                 str.GetData());
         
-        str = (0x61 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x61 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x61\" %s>Pause timer</option>"),
                 str.GetData());
         
-        str = (0x62 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x62 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x62\" %s>Stop timer</option>"),
                 str.GetData());
         
-        str = (0x63 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x63 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x63\" %s>Resume timer</option>"),
                 str.GetData());
         
-        str = (0x70 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x70 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x70\" %s>Write file</option>"),
                 str.GetData());
         
-        str = (0x75 == pElement->m_action) ? _("selected") : _(" ");
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x75 == pElement->m_action) ? _("selected") : _(" ");
+        }
         buildPage += wxString::Format(_("<option value=\"0x75\" %s>Get/Put/Post URL</option>"),
                 str.GetData());
 
         buildPage += _("</select>");
-        
-        
+             
         buildPage += _("<h4>Action parameter:</h4>");
         buildPage += _("<textarea cols=\"80\" rows=\"1\" name=\"actionparameter\">");
-        buildPage += pElement->m_actionparam;
+        if ( !bNew ) buildPage += pElement->m_actionparam;
         buildPage += _("</textarea>");
 
         buildPage += _("<h4>Comment:</h4>");
         buildPage += _("<textarea cols=\"80\" rows=\"5\" name=\"comment\">");
-        buildPage += pElement->m_comment;
+        if ( !bNew ) buildPage += pElement->m_comment;
         buildPage += _("</textarea>");
     } 
     else {
@@ -4636,77 +4837,76 @@ CControlObject::websrv_serve_dmpost( const void *cls,
     
     buildPage += _(WEB_DMPOST_BODY_START);
         
-    if ( bNew ) {
-        dmElement *pElement = new dmElement;
+    if (bNew) {
+        pElement = new dmElement;
     }
-    
-    
-    if (NULL != pElement) {
-        
-        if ( id >= 0 ) {
-            
-            if ( id < pObject->m_dm.getRowCount() ) {
-                
-                dmElement *pElement = pObject->m_dm.getRow(id);
-                
-                if ( -1 == filter_priority ) {
+
+    if ( bNew || ( id >= 0 ) ) {
+
+        if ( bNew || ((0 == id) && !bNew) || ( id < pObject->m_dm.getRowCount() ) ) {
+
+            if (!bNew) pElement = pObject->m_dm.getRow(id);
+
+            if (NULL != pElement) {
+
+                if (-1 == filter_priority) {
                     pElement->m_vscpfilter.mask_priority = 0;
                     pElement->m_vscpfilter.filter_priority = 0;
-                }
+                } 
                 else {
                     pElement->m_vscpfilter.mask_priority = mask_priority;
                     pElement->m_vscpfilter.filter_priority = filter_priority;
                 }
-                
-                if ( -1 == filter_vscpclass ) {
+
+                if (-1 == filter_vscpclass) {
                     pElement->m_vscpfilter.mask_class = 0;
                     pElement->m_vscpfilter.filter_class = 0;
-                }
+                } 
                 else {
                     pElement->m_vscpfilter.mask_class = mask_vscptype;
                     pElement->m_vscpfilter.filter_class = filter_vscptype;
                 }
-                
-                if ( -1 == filter_vscptype ) {
+
+                if (-1 == filter_vscptype) {
                     pElement->m_vscpfilter.mask_type = 0;
                     pElement->m_vscpfilter.filter_type = 0;
-                }
+                } 
                 else {
                     pElement->m_vscpfilter.mask_type = mask_vscptype;
                     pElement->m_vscpfilter.filter_type = filter_vscptype;
                 }
-                
-                if ( 0 == strFilterGuid.Length() ) {
-                    for (int i=0;i<16;i++) {
+
+                if (0 == strFilterGuid.Length()) {
+                    for (int i = 0; i < 16; i++) {
                         pElement->m_vscpfilter.mask_GUID[i] = 0;
                         pElement->m_vscpfilter.filter_GUID[i] = 0;
                     }
-                }
+                } 
                 else {
-                    getGuidFromStringToArray( pElement->m_vscpfilter.mask_GUID, 
-                                                strMaskGuid );
-                    getGuidFromStringToArray( pElement->m_vscpfilter.filter_GUID, 
-                                                strFilterGuid );
+                    getGuidFromStringToArray(pElement->m_vscpfilter.mask_GUID,
+                            strMaskGuid);
+                    getGuidFromStringToArray(pElement->m_vscpfilter.filter_GUID,
+                            strFilterGuid);
                 }
-                
+
                 pElement->m_index = index;
                 pElement->m_zone = zone;
                 pElement->m_subzone = subzone;
-                
+
                 pElement->m_control = 0;
-                if ( bEnableRow ) pElement->m_control |= DM_CONTROL_ENABLE;
-                if ( bEndScan ) pElement->m_control |= DM_CONTROL_DONT_CONTINUE_SCAN;
-                if ( bCheckIndex ) pElement->m_control |=  DM_CONTROL_CHECK_INDEX;
-                if ( bCheckZone ) pElement->m_control |= DM_CONTROL_CHECK_ZONE;    
-                if ( bCheckSubZone ) pElement->m_control |= DM_CONTROL_CHECK_SUBZONE;
-                
-                pElement->m_timeAllow.m_fromTime.ParseDateTime( strAllowedFrom );
-                pElement->m_timeAllow.m_endTime.ParseDateTime( strAllowedTo );
-                pElement->m_timeAllow.parseActionTime( strAllowedTime );
-                
+                if (bEnableRow) pElement->m_control |= DM_CONTROL_ENABLE;
+                if (bEndScan) pElement->m_control |= DM_CONTROL_DONT_CONTINUE_SCAN;
+                if (bCheckIndex) pElement->m_control |= DM_CONTROL_CHECK_INDEX;
+                if (bCheckZone) pElement->m_control |= DM_CONTROL_CHECK_ZONE;
+                if (bCheckSubZone) pElement->m_control |= DM_CONTROL_CHECK_SUBZONE;
+
+                pElement->m_timeAllow.m_fromTime.ParseDateTime(strAllowedFrom);
+                pElement->m_timeAllow.m_endTime.ParseDateTime(strAllowedTo);
+                pElement->m_timeAllow.parseActionTime(strAllowedTime);
+
                 wxString weekdays;
-                
-                if (bCheckMonday) weekdays = _("m"); else weekdays = _("-"); 
+
+                if (bCheckMonday) weekdays = _("m"); else weekdays = _("-");
                 if (bCheckTuesday) weekdays += _("t"); else weekdays += _("-");
                 if (bCheckWednesday) weekdays += _("w"); else weekdays += _("-");
                 if (bCheckThursday) weekdays += _("t"); else weekdays += _("-");
@@ -4714,36 +4914,38 @@ CControlObject::websrv_serve_dmpost( const void *cls,
                 if (bCheckSaturday) weekdays += _("s"); else weekdays += _("-");
                 if (bCheckSunday) weekdays += _("s"); else weekdays += _("-");
                 pElement->m_timeAllow.setWeekDays(weekdays);
-                
+
                 pElement->m_action = action;
-                
+
                 pElement->m_actionparam = strActionParameter;
                 pElement->m_comment = strComment;
                 
+                pElement->m_strGroupID = strGroupID;
+
                 pElement->m_triggCounter = 0;
                 pElement->m_errorCounter = 0;
-                
-                if ( bNew ) {
+
+                if (bNew) {
                     // add the DM row to the matrix
-                    pObject->m_dm.addElement( pElement );
+                    pObject->m_dm.addElement(pElement);
                 }
-                            
-                buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id="),id);
-                
+
+                pObject->m_dm.save();
+
+                buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id=%d"), id);
+            } else {
+                buildPage += wxString::Format(_("<br><br>Memory problem id=%d. Unable to save record"), id);
             }
-            else {
-                buildPage += wxString::Format(_("<br><br>Record id=%d is to large. Unable to save record"), id );
-            }
+
+        } else {
+            buildPage += wxString::Format(_("<br><br>Record id=%d is to large. Unable to save record"), id);
         }
-        else {
-            buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id );        
-        }
+    } else {
+        buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id);
     }
-    else {
-        buildPage += wxString::Format(_("<br><br>Memory problem id=%d. Unable to save record"), id );
-    }
-    
-    buildPage += _(WEB_COMMON_END);     // Common end code
+
+
+    buildPage += _(WEB_COMMON_END); // Common end code 
     
     char *ppage = new char[ buildPage.Length() + 1 ];
     memset(ppage, 0, buildPage.Length() + 1 );

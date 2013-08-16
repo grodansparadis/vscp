@@ -22,6 +22,7 @@
 //    130814 - AKHE Started this file
 //
 // http://docs.python.org/2/extending/extending.html
+// http://docs.python.org/release/1.5.2/ext/parseTuple.html
 //
 
 #include <Python.h>
