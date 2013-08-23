@@ -2387,9 +2387,9 @@ bool writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUseHtml
 //
 
 bool writeVscpDataWithSizeToString(const uint16_t sizeData,
-		const unsigned char *pData,
-		wxString& str,
-		bool bUseHtmlBreak)
+                                    const unsigned char *pData,
+                                    wxString& str,
+                                    bool bUseHtmlBreak)
 {
 	wxString wrk, strBreak;
 
@@ -2460,23 +2460,26 @@ bool getVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 // getVscpDataArrayFromString
 //
 
-bool getVscpDataArrayFromString(unsigned char *pData, uint16_t *psizeData, const wxString& str)
+bool getVscpDataArrayFromString(uint8_t *pData, 
+                                    uint16_t *psizeData, 
+                                    const wxString& str)
 {
 	// Check pointers
 	if (NULL == pData) return false;
 	if (NULL == psizeData) return false;
 
-	psizeData = 0;
+	*psizeData = 0;
 	wxStringTokenizer tkz(str, _(","));
 
 	while (tkz.HasMoreTokens()) {
 		wxString token = tkz.GetNextToken();
-		pData[ *psizeData ] = readStringValue(token);
-		*psizeData++;
+		pData[ *psizeData ] = readStringValue( token );
+		(*psizeData)++;
 		if (*psizeData >= VSCP_MAX_DATA) break;
 	}
 
 	return true;
+    
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

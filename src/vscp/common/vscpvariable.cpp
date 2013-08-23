@@ -68,9 +68,9 @@ CVSCPVariable::CVSCPVariable( void )
     m_event.pdata = NULL;
     m_longValue = 0;
     m_floatValue = 0;
-    m_normalizedIntCode = 0;
+    m_normIntSize = 0;
+    memset( m_normInteger, 0, sizeof( m_normInteger ) );
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Destructor
@@ -211,7 +211,7 @@ bool CVSCPVariable::writeVariableToString( wxString& strVariable )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
-            strVariable.Printf(_("%d"), m_longValue );
+            strVariable.Printf(_("%ld"), m_longValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
@@ -219,7 +219,7 @@ bool CVSCPVariable::writeVariableToString( wxString& strVariable )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-            getVSCPDataCodingAsString( &m_event, strVariable );
+            writeVscpDataWithSizeToString( m_normIntSize, m_normInteger, strVariable );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
@@ -293,6 +293,9 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
+            m_longValue = readStringValue( strValue );
+            break;
+            
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
             m_longValue = readStringValue( strValue );
             break;
@@ -302,7 +305,14 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-            // TODO
+            {
+                uint8_t data[ VSCP_MAX_DATA ];
+                uint16_t sizeData = 0;
+                getVscpDataArrayFromString( data, &sizeData, strValue );
+                if ( sizeData > 8 ) sizeData = 8;
+                if (sizeData) memcpy( m_normInteger, data, sizeData );
+                m_normIntSize = sizeData;
+            }
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
@@ -571,8 +581,6 @@ void CVSCPVariable::setFalse( void )
 
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
 //
@@ -790,7 +798,7 @@ bool CVariableStorage::load( void )
                     pVar->setName( strName );
                 }
                 else if (subchild->GetName() == wxT("value")) {
-                    pVar->setValueFromString( pVar->getType(),  subchild->GetNodeContent() );
+                    pVar->setValueFromString( pVar->getType(), subchild->GetNodeContent() );
                     pVar->setPersistatValue( subchild->GetNodeContent() );
                 }
                 else if (subchild->GetName() == wxT("note")) {
@@ -1041,7 +1049,9 @@ bool CVariableStorage::save( wxString& path )
 
                     // Write value
                     pFileStream->Write( _("<value>"), strlen("<value>") );
-                    str.Printf( _("%02x%07x"), pVariable->m_normalizedIntCode, pVariable->m_longValue );
+                    writeVscpDataWithSizeToString( pVariable->m_normIntSize, 
+                                                    pVariable->m_normInteger, 
+                                                    str );
                     pFileStream->Write( str, str.length() );
                     pFileStream->Write( _("</value>"), strlen("</value>") );
 

@@ -524,8 +524,8 @@ extern "C" {
       \return True on success false on failure.
      */
     bool writeVscpDataToString(const vscpEvent *pEvent, 
-            wxString& str, 
-            bool bUseHtmlBreak = false);
+								wxString& str, 
+								bool bUseHtmlBreak = false);
 
     /*!
       Write VSCP data to string
@@ -537,9 +537,9 @@ extern "C" {
       \return True on success false on failure.
      */
     bool writeVscpDataWithSizeToString(const uint16_t sizeData,
-            const unsigned char *pData,
-            wxString& str,
-            bool bUseHtmlBreak = false);
+										const unsigned char *pData,
+										wxString& str,
+										bool bUseHtmlBreak = false);
 
     /*!
       Get VSCP data from a string
@@ -552,15 +552,15 @@ extern "C" {
 
     /*!
       Get VSCP data from a string
-      \param pData Ponter to a unsigned byte array to write parsed data to.
-      \param psizeData Number of databytes. 
+      \param pData Pointer to a unsigned byte array to write parsed data to.
+      \param psizeData Number of data bytes. 
       \param str A string with comma or whitespace separated data in decimal
       or hexadecimal form. Data can span multiple lines.
       \return true on success, false on failure.
      */
-    bool getVscpDataArrayFromString(unsigned char *pData, 
-            uint16_t *psizeData, 
-            const wxString& str);
+    bool getVscpDataArrayFromString( uint8_t *pData, 
+										uint16_t *psizeData, 
+										const wxString& str);
 
     /*!
       Write event to string.

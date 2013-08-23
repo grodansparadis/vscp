@@ -27,7 +27,7 @@
 
 // * * * M e n u * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"#\">Variables</a></li><li><a href=\"%s/vscp/dm\">DM - list</a></li><li><a href=\"%s/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
+#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"%s/vscp/variables\">Variables</a></li><li><a href=\"%s/vscp/dm\">DM - list</a></li><li><a href=\"%s/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
 
 
 // * * * C o m m o n * * *
@@ -62,7 +62,7 @@
 // Place before common end
 #define WEB_DMLIST_TABLE_END "</tbody></table>"
 
-// Rows
+// Header
 #define WEB_DMLIST_TR_HEAD "<tr><th>Pos</th><th>Entry</th></tr>"
 
 #define WEB_DMLIST_TD_CENTERED "<td id=\"tdcenter\">"
@@ -104,5 +104,31 @@
 #define WEB_IFLIST_TD_CENTERED "<td id=\"tdcenter\">"
 
 #define WEB_IFLIST_TD_GUID "<td id=\"tdguid\">"
+
+
+
+// * * * Variables List * * *
+
+// Place after menus
+#define WEB_VARLIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Variables</h1></div><table><tbody>"
+
+// Table head
+#define WEB_VARLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Variable</th></tr>"
+
+// * * * Variables Edit * * *
+
+// Place after menus
+#define WEB_VAREDIT_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Variable Edit</h1></div><table><tbody>"
+
+// Place before common end
+#define WEB_VAREDIT_TABLE_END "</tbody></table>"
+
+//  Variable-Edit submit 
+#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnexit\" name=\"btnexit\">Exit</button><button type=\"submit\" value=\"btnsave\" name=\"btnsave\">save</button><br></div>"
+
+// * * * Variable Post * * *
+
+#define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Variable Edit</h1></div><table><tbody>"
+
 
 #endif

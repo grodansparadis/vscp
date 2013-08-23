@@ -520,8 +520,8 @@ public:
 	static int
 	websrv_serve_dmlist( const void *cls,
 							const char *mime,
-                            struct websrv_Session *session,
-                            struct MHD_Connection *connection);
+							struct websrv_Session *session,
+							struct MHD_Connection *connection);
 	
 	/**
 	 * Handler edit of one decision matrix entry 
@@ -534,8 +534,8 @@ public:
 	static int
 	websrv_serve_dmedit( const void *cls,
 							const char *mime,
-                            struct websrv_Session *session,
-                            struct MHD_Connection *connection);
+							struct websrv_Session *session,
+							struct MHD_Connection *connection);
 	
 	/**
 	 * Handler post of one decision matrix entry 
@@ -548,8 +548,78 @@ public:
 	static int 
 	websrv_serve_dmpost( const void *cls,
 							const char *mime,
-                            struct websrv_Session *session,
-	                        struct MHD_Connection *connection);
+							struct websrv_Session *session,
+							struct MHD_Connection *connection);
+	
+		/**
+	 * Handler - Delete DMe entries 
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int 
+	websrv_serve_dmdelete( const void *cls,
+							const char *mime,
+							struct websrv_Session *session,
+							struct MHD_Connection *connection);
+	
+	/**
+	 * Handler that displays the decision matrix list 
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int
+	websrv_serve_variables_list( const void *cls,
+									const char *mime,
+									struct websrv_Session *session,
+									struct MHD_Connection *connection);
+	
+	/**
+	 * Handler edit of one decision matrix entry 
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int
+	websrv_serve_variables_edit( const void *cls,
+									const char *mime,
+									struct websrv_Session *session,
+									struct MHD_Connection *connection);
+	
+	/**
+	 * Handler post of one decision matrix entry 
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int 
+	websrv_serve_variables_post( const void *cls,
+									const char *mime,
+									struct websrv_Session *session,
+									struct MHD_Connection *connection);
+	
+		/**
+	 * Handler - Delete DMe entries 
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int 
+	websrv_serve_variables_delete( const void *cls,
+									const char *mime,
+									struct websrv_Session *session,
+									struct MHD_Connection *connection);
 	
 	/**
 	 * Callback called upon completion of a request.

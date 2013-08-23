@@ -2486,6 +2486,24 @@ bool CDM::addElement( dmElement *pItem )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// removeRow
+//
+
+bool CDM::removeRow( unsigned short pos )
+{
+    if (pos < 0) return false;
+    if ( pos >= m_DMList.GetCount() ) return false;
+    
+    wxDMLISTNode *node = m_DMList.Item( pos );
+    
+    m_mutexDM.Lock();
+    m_DMList.DeleteNode(node);
+    m_mutexDM.Unlock();
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getRow
 //
 
