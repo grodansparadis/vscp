@@ -1468,7 +1468,8 @@ wxString& replaceBackslash(wxString& wxstr)
 
 uint32_t readStringValue(const wxString& strval)
 {
-	static unsigned long val;
+	//static unsigned long val;
+    unsigned long val;
 	wxString str = strval;
 
 	str.MakeLower();
@@ -1478,7 +1479,7 @@ uint32_t readStringValue(const wxString& strval)
 		str.ToULong(&val);
 	}
 
-	return (uint32_t)val;
+	return val;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

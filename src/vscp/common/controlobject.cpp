@@ -288,6 +288,7 @@ static struct Page pages[] =
     { "/vscp/varedit", "text/html", &CControlObject::websrv_serve_variables_edit, NULL },
     { "/vscp/varpost", "text/html", &CControlObject::websrv_serve_variables_post, NULL },
     { "/vscp/vardelete", "text/html", &CControlObject::websrv_serve_variables_delete, NULL },
+    { "/vscp/varnew", "text/html", &CControlObject::websrv_serve_variables_new, NULL },
     { "/vscp/bootload", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { "/m2m", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
     { NULL, NULL, &CControlObject::websrv_not_found_page, NULL } /* 404 */
@@ -4935,6 +4936,7 @@ CControlObject::websrv_serve_dmpost( const void *cls,
                     pObject->m_dm.addElement(pElement);
                 }
 
+                // Save decision matrix
                 pObject->m_dm.save();
 
                 buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id=%d"), id);
@@ -5040,6 +5042,8 @@ CControlObject::websrv_serve_dmdelete( const void *cls,
     
     if ( pObject->m_dm.removeRow( id ) ) {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
+        // Save decision matrix
+        pObject->m_dm.save();
     }
     else {
         buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
@@ -5510,18 +5514,21 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
         buildPage += _("\" name=\"varedit\">");
         
         // Hidden id
-        buildPage += wxString::Format(_("<input name=\"id\" value=\"%d\" type=\"hidden\"></input>"), id );
+        buildPage += wxString::Format(_("<input name=\"id\" value=\"%d\" type=\"hidden\">"), id );
         
-        // Hidden new
-        if (bNew) {
-            buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\"></input>");
-            buildPage += _("<input name=\"type\" value=\"");
-            buildPage += wxString::Format(_("%d"), nType );
-            buildPage += _("\" type=\"hidden\"></input>");
+        if (bNew) {     
+            // Hidden new
+            buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\">");
         }
         else {
-            buildPage += _("<input name=\"new\" value=\"false\" type=\"hidden\"></input>");
+            // Hidden new
+            buildPage += _("<input name=\"new\" value=\"false\" type=\"hidden\">");
         }
+        
+        // Hidden type
+        buildPage += _("<input name=\"type\" value=\"");
+        buildPage += wxString::Format(_("%d"), ( bNew ? nType : pVariable->getType()) );
+        buildPage += _("\" type=\"hidden\"></input>");
         
         buildPage += _("<h4>Variable:</h4> <span id=\"optiontext\"></span><br>");
 
@@ -5530,14 +5537,19 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
         buildPage += _("<td class=\"invisable\">Name:</td><td class=\"invisable\">");
         if ( !bNew ) {
             buildPage += pVariable->getName();
+            buildPage += _("<input name=\"value_name\" value=\"");
+            buildPage += pVariable->getName();
+            buildPage += _("\" type=\"hidden\">");
         }
         else {
-            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_name\">");
+            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_name\"></textarea>");
         }
         buildPage += _("</td></tr><tr>");
         buildPage += _("<td class=\"invisable\">Value:</td><td class=\"invisable\">");
         
-        if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_STRING ) {
+        if (!bNew ) nType = pVariable->getType();
+        
+        if ( nType  == VSCP_DAEMON_VARIABLE_CODE_STRING ) {
             
             buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_string\">");
             if ( bNew ) {
@@ -5552,7 +5564,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) {
             
             bool bValue;
             pVariable->getValue( &bValue );
@@ -5570,7 +5582,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
                 buildPage += _(">checked >false ");
             }
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_INTEGER ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_INTEGER ) {
             
             buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_integer\">");
             if ( bNew ) {
@@ -5585,7 +5597,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_LONG ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_LONG ) {
             
             buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_long\">");
             if ( bNew ) {
@@ -5600,7 +5612,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_DOUBLE ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_DOUBLE ) {
             
             buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_double\">");
             if ( bNew ) {
@@ -5615,7 +5627,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT ) {
             buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_measurement\">");
             if ( bNew ) {
                 buildPage += _("");
@@ -5628,7 +5640,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             
             buildPage += _("</textarea>");
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT ) {
             
             buildPage += _("<table>");
             
@@ -5640,9 +5652,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
                 buildPage += _("");
             }
             else {
-                double val;
-                pVariable->getValue( &val );
-                buildPage += wxString::Format(_("0x%x"), val );
+                buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_class );
             }
             
             buildPage += _("</textarea>");
@@ -5779,9 +5789,9 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</table>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID ) {
             
-            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_eventguid\">");
+            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");
             if ( bNew ) {
                 buildPage += _("");
             }
@@ -5794,9 +5804,9 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA ) {
             
-            buildPage += _("<textarea cols=\"50\" rows=\"5\" name=\"value_eventdata\">");
+            buildPage += _("<textarea cols=\"50\" rows=\"5\" name=\"value_data\">");
             if ( bNew ) {
                 buildPage += _("");
             }
@@ -5809,9 +5819,9 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS ) {
             
-            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_eventclass\">");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_class\">");
             if ( bNew ) {
                 buildPage += _("");
             }
@@ -5824,9 +5834,9 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE ) {
             
-            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_eventtype\">");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_type\">");
             if ( bNew ) {
                 buildPage += _("");
             }
@@ -5839,9 +5849,9 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP ) {
             
-            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_eventtimestamp\">");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_timestamp\">");
             if ( bNew ) {
                 buildPage += _("");
             }
@@ -5854,9 +5864,9 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("</textarea>");
             
         }
-        else if ( pVariable->getType() == VSCP_DAEMON_VARIABLE_CODE_DATETIME ) {
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_DATETIME ) {
             
-            buildPage += _("<textarea cols=\"20\" rows=\"1\" name=\"value_eventdatetime\">");
+            buildPage += _("<textarea cols=\"20\" rows=\"1\" name=\"value_date_time\">");
             if ( bNew ) {
                 buildPage += _("");
             }
@@ -5874,16 +5884,18 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("Invalid type - Something is very wrong!");
         }
         
+        buildPage += _("</tr><tr><td>Note: </td><td>");
         buildPage += _("<textarea cols=\"50\" rows=\"5\" name=\"note\">");
         if (bNew) {
             buildPage += _("");
-        } else {
-            buildPage += strNote.GetData();
+        } 
+        else {
+            buildPage += pVariable->getNote();
         }
 
         buildPage += _("</textarea>");
 
-        buildPage += _("</td></tr>");
+        buildPage += _("</td></tr></table>");
 
         buildPage += _(WEB_VAREDIT_TABLE_END);
 
@@ -5971,50 +5983,53 @@ CControlObject::websrv_serve_variables_post( const void *cls,
     const char *str_variable_type = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "type");
     if ( NULL != str_variable_type ) nType = atoi(str_variable_type);
     
+    wxString strName;
+    const char *str_name = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_name");
+    if ( NULL != str_name ) strName = wxString::FromAscii(str_name);
+    
     // Flag for new variable row
     bool bNew = false;
     const char *str_new = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "new");
     if ( (NULL != str_new) && NULL != strstr( "true", str_new ) ) bNew = true;
 
     wxString strNote;
-    const char *str_note = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_note");
+    const char *str_note = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "note");
     if ( NULL != str_note ) strNote = wxString::FromAscii(str_note);
     
-    wxString strName;
-    const char *str_name = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_string");
-    if ( NULL != str_name ) strName = wxString::FromAscii(str_name);
-        
     wxString strValueString;
-    const char *str_string = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_name");
+    const char *str_string = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_string");
     if ( NULL != str_string ) strValueString = wxString::FromAscii(str_string);
     
+           
     bool bValueBoolean = false;
     const char *str_boolean = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_boolean");
     if ( (NULL != str_boolean) && NULL != strstr( "true", str_boolean ) ) bValueBoolean = true;
     
     int value_integer = 0;
     const char *str_integer = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_integer");
-    if ( NULL != str_integer ) value_integer == readStringValue( wxString::FromAscii(str_integer) );
+    str = wxString::FromAscii(str_integer);
+    if ( NULL != str_integer ) value_integer = readStringValue( str );
        
     long value_long = 0;
     const char *str_long = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_long");
-    if ( NULL != str_long ) value_long == readStringValue( wxString::FromAscii(str_long) );
+    str = wxString::FromAscii(str_long);
+    if ( NULL != str_long ) value_long = readStringValue( str );
     
     double value_double = 0;
     const char *str_double = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_double");
-    if ( NULL != str_double ) value_long == atof( str_double );
+    if ( NULL != str_double ) value_double = atof( str_double );
     
     wxString strMeasurement;
     const char *str_measurement = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_measurement");
-    if ( NULL != str_measurement ) strValueString = wxString::FromAscii(str_measurement);
+    if ( NULL != str_measurement ) strMeasurement = wxString::FromAscii(str_measurement);
     
     uint16_t value_class = 0;
     const char *str_class = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_class");
-    if ( NULL != str_class ) value_class == readStringValue( wxString::FromAscii(str_class) );
+    if ( NULL != str_class ) value_class = readStringValue( wxString::FromAscii(str_class) );
     
     uint16_t value_type = 0;
     const char *str_type = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_type");
-    if ( NULL != str_type ) value_type == readStringValue( wxString::FromAscii(str_type) );
+    if ( NULL != str_type ) value_type = readStringValue( wxString::FromAscii(str_type) );
     
     wxString strGUID;
     const char *str_guid = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_guid");
@@ -6022,27 +6037,31 @@ CControlObject::websrv_serve_variables_post( const void *cls,
     
     uint32_t value_timestamp = 0;
     const char *str_timestamp = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_timestamp");
-    if ( NULL != str_timestamp ) value_timestamp == readStringValue( wxString::FromAscii(str_timestamp) );
+    if ( NULL != str_timestamp ) value_timestamp = readStringValue( wxString::FromAscii(str_timestamp) );
     
     uint32_t value_obid = 0;
     const char *str_obid = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_obid");
-    if ( NULL != str_obid ) value_obid == readStringValue( wxString::FromAscii(str_obid) );
+    if ( NULL != str_obid ) value_obid = readStringValue( wxString::FromAscii(str_obid) );
     
     uint8_t value_head = 0;
     const char *str_head = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_head");
-    if ( NULL != str_head ) value_head == readStringValue( wxString::FromAscii(str_head) );
+    if ( NULL != str_head ) value_head = readStringValue( wxString::FromAscii(str_head) );
     
     uint32_t value_crc = 0;
     const char *str_crc = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_crc");
-    if ( NULL != str_crc ) value_crc == readStringValue( wxString::FromAscii(str_crc) );
+    if ( NULL != str_crc ) value_crc = readStringValue( wxString::FromAscii(str_crc) );
     
     uint16_t value_sizedata = 0;
     const char *str_sizedata = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_sizedata");
-    if ( NULL != str_sizedata ) value_sizedata == readStringValue( wxString::FromAscii(str_sizedata) );
+    if ( NULL != str_sizedata ) value_sizedata = readStringValue( wxString::FromAscii(str_sizedata) );
     
     wxString strData;
     const char *str_data = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_data");
     if ( NULL != str_data ) strData = wxString::FromAscii(str_data);
+    
+    wxString strDateTime;
+    const char *str_date_time = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "value_date_time");
+    if ( NULL != str_date_time ) strDateTime = wxString::FromAscii(str_date_time);
     
     wxString buildPage;
     buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variable Post"));
@@ -6074,7 +6093,7 @@ CControlObject::websrv_serve_variables_post( const void *cls,
 
         if (bNew || 
                 ((0 == id) && !bNew) || 
-                (id < pObject->m_VSCP_Variables.m_listVariable.GetCount())) {
+                (id < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ) {
 
             if (!bNew) pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
 
@@ -6084,73 +6103,93 @@ CControlObject::websrv_serve_variables_post( const void *cls,
                 pVariable->setPersistent( true );
                 pVariable->setType( nType );
                 pVariable->m_note = strNote;
+                pVariable->setName( strName );
                 
                 switch ( nType ) {
 
                 case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
-                    
+                    buildPage += _("Error: Variable code is unassigned.<br>");
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_STRING:
-                    
+                    pVariable->setValue( strValueString );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
-                    
+                    pVariable->setValue( bValueBoolean );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-                    
+                    pVariable->setValue( value_integer );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_LONG:
-                    
+                    pVariable->setValue( value_long );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-                    
+                    pVariable->setValue( value_double );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-                    
+                    uint16_t size;
+                    getVscpDataArrayFromString( pVariable->m_normInteger, 
+                                                    &size,
+                                                    strMeasurement );
+                    pVariable->m_normIntSize = size;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-                    
+                    pVariable->m_event.vscp_class = value_class;
+                    pVariable->m_event.vscp_type = value_type;
+                    getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
+                    getVscpDataFromString( &pVariable->m_event,
+                                            strData );
+                    pVariable->m_event.crc = value_crc;
+                    pVariable->m_event.head = value_head;
+                    pVariable->m_event.obid = value_obid;
+                    pVariable->m_event.timestamp = value_timestamp;        
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-                    
+                    getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-                    
+                    getVscpDataFromString( &pVariable->m_event,
+                                            strData );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-                    
+                    pVariable->m_event.vscp_class = value_class;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
-                    
+                    pVariable->m_event.vscp_type = value_type;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-                    
+                    pVariable->m_event.timestamp = value_timestamp;
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-                    
+                    pVariable->m_timestamp.ParseDateTime( strDateTime );
                     break;
 
                 default:
-                    
+                    buildPage += _("Error: Variable code is unknown.<br>");
                     break;
 
+                }
+                
+                // If new variable add it
+                if (bNew ) {
+                    pObject->m_VSCP_Variables.add( pVariable );
                 }
 
                 // Save variables
                 pObject->m_VSCP_Variables.save();
+                
                 buildPage += wxString::Format(_("<br><br>Variable has been saved. id=%d"), id);
 
             }
@@ -6235,12 +6274,12 @@ CControlObject::websrv_serve_variables_delete( const void *cls,
     if ( NULL != str_id ) id = atoi(str_id);
         
     wxString buildPage;
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix Delete"));
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variable Delete"));
     buildPage += _(WEB_STYLE_START);
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
     buildPage += _(WEB_COMMON_JS);      // Common Javascript code
-    buildPage += wxString::Format(_("<meta http-equiv=\"refresh\" content=\"2;url=%s/vscp/dm"), strHost.GetData() );
+    buildPage += wxString::Format(_("<meta http-equiv=\"refresh\" content=\"2;url=%s/vscp/variables"), strHost.GetData() );
     buildPage += wxString::Format(_("?from=%d"), id + 1 );
     buildPage += _("\">");
     buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
@@ -6254,15 +6293,18 @@ CControlObject::websrv_serve_variables_delete( const void *cls,
     }
     buildPage += navstr;
     
-    buildPage += _(WEB_DMEDIT_BODY_START);
+    buildPage += _(WEB_VAREDIT_BODY_START);
     
-    /*
-    if ( pObject->m_VSCP_Variables.m_listVariable.removeRow( id ) ) {
+    wxlistVscpVariableNode *node = 
+            pObject->m_VSCP_Variables.m_listVariable.Item( id );
+    if ( pObject->m_VSCP_Variables.m_listVariable.DeleteNode( node )  ) {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
+        // Save variables
+        pObject->m_VSCP_Variables.save();
     }
     else {
         buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
-    }*/
+    }
     
     buildPage += _(WEB_COMMON_END);     // Common end code
     
@@ -6291,6 +6333,119 @@ CControlObject::websrv_serve_variables_delete( const void *cls,
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// websrv_serve_variables_new
+//
+
+int 
+CControlObject::websrv_serve_variables_new( const void *cls,
+                                                const char *mime,
+                                                struct websrv_Session *session,
+                                                struct MHD_Connection *connection)
+{
+    int ret,i;
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *) cls;
+    struct MHD_Response *response;
+    CVSCPVariable *pVariable = NULL;
+ 
+       // Get connection type
+    const MHD_ConnectionInfo *pProtocolInfo = 
+            MHD_get_connection_info(connection, 
+                                        MHD_CONNECTION_INFO_PROTOCOL );
+    // Get hostname
+    wxString strHost = _("http://localhost:8080");
+    const char *str_host = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, "host");
+    if ( NULL != str_host ) {
+        strHost = wxString::FromAscii(str_host);
+        if ( NULL != pProtocolInfo ) {
+            strHost = _("https://") + strHost;
+        }
+        else {
+            strHost = _("http://") + strHost;
+        }
+    }
+    
+        
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - New variable"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Insert server url into navigation menu 
+    wxString navstr = _(WEB_COMMON_MENU);
+    int pos;
+    while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
+        buildPage += navstr.Left( pos );
+        navstr = navstr.Right(navstr.Length() - pos - 2);
+    }
+    buildPage += navstr;
+    
+    buildPage += _(WEB_VAREDIT_BODY_START);
+
+    buildPage += _("<br><div style=\"text-align:center\">");
+    
+    buildPage += _("<br><form method=\"get\" action=\"");
+    buildPage += strHost;
+    buildPage += _("/vscp/varedit");
+    buildPage += _("\" name=\"varnewstep1\">");
+    
+    buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\">");
+    
+    buildPage += _("<select name=\"type\">");
+    buildPage += _("<option value=\"1\">String value</option>");
+    buildPage += _("<option value=\"2\">Boolean value</option>");
+    buildPage += _("<option value=\"3\">Integer value</option>");
+    buildPage += _("<option value=\"4\">Long value</option>");
+    buildPage += _("<option value=\"5\">Floating point value</option>");
+    buildPage += _("<option value=\"6\">VSCP data coding</option>");
+    buildPage += _("<option value=\"7\">VSCP event (Level II)</option>");
+    buildPage += _("<option value=\"8\">VSCP event GUID</option>");
+    buildPage += _("<option value=\"9\">VSCP event data</option>");
+    buildPage += _("<option value=\"10\">VSCP event class</option>");
+    buildPage += _("<option value=\"11\">VSCP event type</option>");
+    buildPage += _("<option value=\"12\">VSCP event timestamp</option>");
+    buildPage += _("<option value=\"13\">Date + Time in iso format</option>");
+    buildPage += _("</select>");
+    
+    buildPage += _("<br></div>");
+    buildPage += _(WEB_VARNEW_SUBMIT);
+    //wxString wxstrurl = wxString::Format(_("%s/vscp/varedit?new=true"), 
+    //                                            strHost.GetData() );
+    //buildPage += wxString::Format( _(WEB_VARNEW_SUBMIT),
+    //                                wxstrurl.GetData() );
+    
+    buildPage += _("</form>");
+    
+    buildPage += _(WEB_COMMON_END); // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+    
+    // return page 
+    response = MHD_create_response_from_buffer( strlen(ppage),
+                                                    (void *)ppage,
+                                                    MHD_RESPMEM_MUST_FREE );
+    
+    websrv_add_session_cookie(session, response);
+    
+    MHD_add_response_header( response,
+                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                mime);
+    
+    ret = MHD_queue_response( connection,
+                                MHD_HTTP_OK,
+                                response);
+    
+    MHD_destroy_response( response );
+    
+    return ret;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // request_completed_callback

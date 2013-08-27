@@ -27,7 +27,7 @@
 
 // * * * M e n u * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"%s/vscp/variables\">Variables</a></li><li><a href=\"%s/vscp/dm\">DM - list</a></li><li><a href=\"%s/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
+#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"%s/vscp/variables\">Variable - List</a></li><li><a href=\"%s/vscp/varnew\">Variable - New</a></li><li><a href=\"%s/vscp/dm\">DM - list</a></li><li><a href=\"%s/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
 
 
 // * * * C o m m o n * * *
@@ -129,6 +129,9 @@
 // * * * Variable Post * * *
 
 #define WEB_VARPOST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Variable Edit</h1></div><table><tbody>"
+
+//  Variable-New step1 submit 
+#define WEB_VARNEW_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnnext\" name=\"btnnext\">next</button><br></div>"
 
 
 #endif

@@ -777,7 +777,7 @@ bool CVariableStorage::load( void )
         if (child->GetName() == wxT("variable")) {
 
             CVSCPVariable *pVar = new CVSCPVariable;
-            pVar->setPersistent( true );     // Loaded variables are persistant
+            pVar->setPersistent( true );     // Loaded variables are persistent
             bArray = false;
 
             // Get variable type - String is default
@@ -856,11 +856,11 @@ bool CVariableStorage::save( wxString& path )
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream( path );
     if ( NULL == pFileStream ) return false;
 
-    pFileStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>", 
-                        strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>") );
+    pFileStream->Write("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n", 
+                        strlen("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n") );
 
     // VSCP variables
-    pFileStream->Write("<persistent>",strlen("<persistent>"));
+    pFileStream->Write("<persistent>\n\n", strlen("<persistent>\n\n") );
 
     listVscpVariable::iterator it;
     for( it = m_listVariable.begin(); it != m_listVariable.end(); ++it ) {
@@ -874,319 +874,332 @@ bool CVariableStorage::save( wxString& path )
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
                     
-                    str.Printf( _("<variable type=\"event\">"), pVariable->getType() );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"event\">\n"), pVariable->getType() );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
-                    pFileStream->Write( pVariable->m_strValue, pVariable->m_strValue.Length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    //pFileStream->Write( pVariable->m_strValue, pVariable->m_strValue.Length() );
+                    pVariable->writeVariableToString( str );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_STRING:
 
-                    str.Printf( _("<variable type=\"string\">"), pVariable->getType() );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"string\">\n"), pVariable->getType() );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
-                    pFileStream->Write( pVariable->m_strValue, pVariable->m_strValue.Length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    pFileStream->Write( pVariable->m_strValue.mb_str(), 
+                            strlen( pVariable->m_strValue.mb_str() ) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
 
-                    str.Printf( _("<variable type=\"bool\">") );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"bool\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
                     if ( pVariable->m_boolValue ) {
-                        pFileStream->Write( _("true"), strlen("true") );
+                        pFileStream->Write( "true", strlen("true") );
                     }
                     else {
-                        pFileStream->Write( _("false"), strlen("false") );
+                        pFileStream->Write( "false", strlen("false") );
                     }
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
 
-                    str.Printf( _("<variable type=\"integer\">") );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"integer\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
                     str.Printf( _("%d"), pVariable->m_longValue );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_LONG:
 
-                    str.Printf( _("<variable type=\"long\">") );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"long\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
                     str.Printf( _("%d"), pVariable->m_longValue );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
 
-                    str.Printf( _("<variable type=\"double\">") );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"double\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
                     str.Printf( _("%f"), pVariable->m_floatValue );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
 
-                    str.Printf( _("<variable type=\"measurement\">") );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"measurement\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
-                    writeVscpDataWithSizeToString( pVariable->m_normIntSize, 
-                                                    pVariable->m_normInteger, 
-                                                    str );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    //writeVscpDataWithSizeToString( pVariable->m_normIntSize, 
+                    //                                pVariable->m_normInteger, 
+                    //                                str,
+                    //                                true );
+                    //pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pVariable->writeVariableToString( str );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
 
-                    str.Printf( _("<variable type=\"class\">") );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"class\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
                     str.Printf( _("%d"), pVariable->m_event.vscp_class );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
 
-                    str.Printf( _("<variable type=\"type\">") );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"type\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
                     str.Printf( _("%d"), pVariable->m_event.vscp_type );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
 
-                    str.Printf( _("<variable type=\"timestamp\">") );
-                    pFileStream->Write( str, str.length() );
+                    str.Printf( _("  <variable type=\"timestamp\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
-                    str.Printf( _("%d"), pVariable->m_event.timestamp );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    //str.Printf( _("%d"), pVariable->m_event.timestamp );
+                    //pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pVariable->writeVariableToString( str );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
 
-                    str.Printf( _("<variable type=\"guid\">") );
-                    writeGuidToString( &pVariable->m_event, str );
+                    str.Printf( _("  <variable type=\"guid\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( pVariable->m_strValue, pVariable->m_strValue.Length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    pVariable->writeVariableToString( str );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
 
-                    str.Printf( _("<variable type=\"datetime\">") );
+                    str.Printf( _("  <variable type=\"datetime\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     writeGuidToString( &pVariable->m_event, str );
 
                     // Write name
-                    pFileStream->Write( _("<name>"), strlen("<name>") );
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
                     str = pVariable->getName();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</name>"), strlen("</name>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
 
                     // Write note
-                    pFileStream->Write( _("<note>"), strlen("<note>") );
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
                     str = pVariable->getNote();
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( _("</note>"), strlen("</note>") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
 
                     // Write value
-                    pFileStream->Write( _("<value>"), strlen("<value>") );
-                    pFileStream->Write( str, str.length() );
-                    pFileStream->Write( pVariable->m_strValue, pVariable->m_strValue.Length() );
-                    pFileStream->Write( _("</value>"), strlen("</value>") );
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    //pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    //str = pVariable->m_timestamp.FormatISODate();
+                    //str += _(" ");
+                    //str = pVariable->m_timestamp.FormatISOTime();
+                    pVariable->writeVariableToString( str );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
-                    pFileStream->Write( _("</variable>"), strlen("</variable>") );
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
 
             }	
@@ -1196,7 +1209,7 @@ bool CVariableStorage::save( wxString& path )
     }
 
     // DM matrix information end
-    pFileStream->Write("</persistent>",strlen("</persistent>"));
+    pFileStream->Write("</persistent>\n",strlen("</persistent>\n"));
 
     // Close the file
     pFileStream->Close();

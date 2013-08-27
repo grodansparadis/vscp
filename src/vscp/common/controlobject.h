@@ -566,7 +566,7 @@ public:
 							struct MHD_Connection *connection);
 	
 	/**
-	 * Handler that displays the decision matrix list 
+	 * Handler that displays the variable list 
 	 *
 	 * @param cls Pointer to the control object.
 	 * @param mime mime type to use
@@ -580,7 +580,7 @@ public:
 									struct MHD_Connection *connection);
 	
 	/**
-	 * Handler edit of one decision matrix entry 
+	 * Handler edit of one variable entry 
 	 *
 	 * @param cls Pointer to the control object.
 	 * @param mime mime type to use
@@ -594,7 +594,7 @@ public:
 									struct MHD_Connection *connection);
 	
 	/**
-	 * Handler post of one decision matrix entry 
+	 * Handler post of one variable entry 
 	 *
 	 * @param cls Pointer to the control object.
 	 * @param mime mime type to use
@@ -607,7 +607,21 @@ public:
 									struct websrv_Session *session,
 									struct MHD_Connection *connection);
 	
-		/**
+   /**
+	 * Handler - New variable initial type selection state 
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int 
+	websrv_serve_variables_new( const void *cls,
+									const char *mime,
+									struct websrv_Session *session,
+									struct MHD_Connection *connection);
+	
+	/**
 	 * Handler - Delete DMe entries 
 	 *
 	 * @param cls Pointer to the control object.
