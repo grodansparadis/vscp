@@ -47,9 +47,9 @@
 #define VSCP_DAEMON_VARIABLE_CODE_DATETIME                  13  // Date + Time in iso format 
 
 // A non persistent variable is stored with the name as the hash value.
-// A persistent variable is stored with $ + its name as the hash value
-// A non persistent array is stored with @ + its name as hash value
-// A persistent array is stored with $ + @ + its name as hash value
+// A persistent variable is stored with $ + its name as the hash value.
+// A non persistent array is stored with @ + its name as hash value.
+// A persistent array is stored with $ + @ + its name as hash value.
 #define VSCP_DAEMON_VARIABLE_PREFIX_PERSISTENT              '$' // Prefix for persistent variablename
 #define VSCP_DAEMON_VARIABLE_PREFIX_ARRAY                   '@' // Prefix for persistent variablename
 

@@ -5364,7 +5364,7 @@ CControlObject::websrv_serve_variables_list( const void *cls,
             
             buildPage += _("<br>");
             buildPage += _("<b>Persistent: </b> ");
-            if ( pVariable->m_persistant ) {
+            if ( pVariable->isPersistent() ) {
                 buildPage += _("yes");
             }
             else {
@@ -5884,6 +5884,32 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
             buildPage += _("Invalid type - Something is very wrong!");
         }
         
+        
+        buildPage += _("</tr><tr><td>Persistence: </td><td>");
+
+        buildPage += _("<input type=\"radio\" name=\"persistent\" value=\"true\" ");
+        
+        if ( !bNew ) {
+            buildPage += wxString::Format(_("%s"), 
+                pVariable->isPersistent() ? _("checked >Persistent ") : _(">Persistent ") );
+        }
+        else {
+            buildPage += _("checked >Persistent ");
+        }
+        
+         buildPage += _("<input type=\"radio\" name=\"persistent\" value=\"false\" ");
+         
+        if ( !bNew ) {
+            buildPage += wxString::Format(_("%s"), 
+                !pVariable->isPersistent() ? _("checked >Non persistent ") : _(">Non persistent ") );
+        }
+        else {
+            buildPage += _(">Non persistent ");
+        }
+        
+        buildPage += _("</td></tr>");
+        
+        
         buildPage += _("</tr><tr><td>Note: </td><td>");
         buildPage += _("<textarea cols=\"50\" rows=\"5\" name=\"note\">");
         if (bNew) {
@@ -5991,6 +6017,11 @@ CControlObject::websrv_serve_variables_post( const void *cls,
     bool bNew = false;
     const char *str_new = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "new");
     if ( (NULL != str_new) && NULL != strstr( "true", str_new ) ) bNew = true;
+    
+    // Flag for persistence
+    bool bPersistent = true;
+    const char *str_persistent = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "persistent");
+    if ( (NULL != str_persistent) && NULL != strstr( "false", str_persistent ) ) bPersistent = false;
 
     wxString strNote;
     const char *str_note = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "note");
@@ -6100,7 +6131,7 @@ CControlObject::websrv_serve_variables_post( const void *cls,
             if (NULL != pVariable) {
 
                 // Set the type
-                pVariable->setPersistent( true );
+                pVariable->setPersistent( bPersistent );
                 pVariable->setType( nType );
                 pVariable->m_note = strNote;
                 pVariable->setName( strName );

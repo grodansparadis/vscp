@@ -1063,6 +1063,32 @@ bool CVariableStorage::save( wxString& path )
 
                     pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
                     break;
+                    
+                case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+
+                    str.Printf( _("  <variable type=\"data\">\n") );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+
+                    // Write name
+                    pFileStream->Write( "    <name>", strlen("    <name>") );
+                    str = pVariable->getName();
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</name>\n", strlen("</name>\n") );
+
+                    // Write note
+                    pFileStream->Write( "    <note>", strlen("    <note>") );
+                    str = pVariable->getNote();
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</note>\n", strlen("</note>\n") );
+
+                    // Write value
+                    pFileStream->Write( "    <value>", strlen("    <value>") );
+                    pVariable->writeVariableToString( str );
+                    pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+                    pFileStream->Write( "</value>\n", strlen("</value>\n") );
+
+                    pFileStream->Write( "  </variable>\n\n", strlen("  </variable>\n\n") );
+                    break;    
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
 
