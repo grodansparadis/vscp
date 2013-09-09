@@ -2045,8 +2045,8 @@ bool doLevel2Filter(const vscpEvent *pEvent,
 }
 
 
-bool doLevel2FilterEx(const vscpEventEx *pEventEx,
-		const vscpEventFilter *pFilter)
+bool doLevel2FilterEx( const vscpEventEx *pEventEx,
+                        const vscpEventFilter *pFilter )
 {
 	// Must be a valid client
 	if (NULL == pFilter) return false;

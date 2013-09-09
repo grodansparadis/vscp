@@ -35,11 +35,11 @@ LIBDIRNAME = $(top_wxbuilddir)lib
 
 UVSCPD_OBJECTS =  uvscpd.o websocket.o base64_enc.o sha1.c \
         ../common/vscphelper.o \
-	../../../common/dllist.o \
-	../../../common/crc.o \
-	../../../common/md5.o \
-	../../../common/configfile.o \
-	../../../common/randPassword.o 
+	../../common/dllist.o \
+	../../common/crc.o \
+	../../common/md5.o \
+	../../common/configfile.o \
+	../../common/randPassword.o 
 
 
 ### Targets: ###

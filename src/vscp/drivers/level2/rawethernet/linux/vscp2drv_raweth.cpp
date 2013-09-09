@@ -240,6 +240,65 @@ VSCPClose(long handle)
 	return CANAL_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingSend
+// 
+
+extern "C" int
+VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+
+	CRawEthernet *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    
+    //vscpEvent *pEventNew = new vscpEvent;
+    //if ( NULL != pEventNew ) {
+    //    copyVSCPEvent( pEventNew, pEvent );
+    pdrvObj->addEvent2SendQueue( pEvent );
+	//}
+    //else {
+    //    return CANAL_ERROR_MEMORY;
+    //}
+    
+	return CANAL_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingReceive
+// 
+
+extern "C" int
+VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+ 
+    // Check pointer
+    if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
+    
+	CRawEthernet *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    
+    if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
+        return CANAL_ERROR_TIMEOUT;
+    }
+    
+    //VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
+
+	pdrvObj->m_mutexReceiveQueue.Lock();
+	//nodeClient = pdrvObj->m_receiveQueue.GetFirst();
+	//vscpEvent *pLocalEvent = nodeClient->GetData();
+    vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
+    pdrvObj->m_receiveList.pop_front();
+	pdrvObj->m_mutexReceiveQueue.Unlock();
+    if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
+    
+    copyVSCPEvent( pEvent, pLocalEvent );
+    //pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
+    deleteVSCPevent( pLocalEvent );
+	
+	return CANAL_ERROR_SUCCESS;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetLevel
@@ -284,4 +343,41 @@ VSCPGetDriverInfo(void)
 	return VSCP_RAWETHERNET_DRIVERINFO;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPGetWebPageTemplate
+// 
+
+extern "C" long
+VSCPGetWebPageTemplate( long handle, const char *url, char *page )
+{
+    page = NULL;
+    
+    // Not implemented
+	return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPWebPageInfo
+// 
+
+extern "C" int
+VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
+{
+    // Not implemented
+	return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPWebPageupdate
+// 
+
+extern "C" int
+VSCPWebPageupdate( long handle, const char *url )
+{
+    // Not implemented
+	return -1;
+}
 

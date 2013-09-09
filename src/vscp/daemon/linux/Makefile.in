@@ -33,27 +33,7 @@ DESTDIR =
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALD_OBJECTS =  \
-	vscpd.o \
-        ../../common/daemonvscp.o \
-        ../../common/clientlist.o \ 
-	../../common/controlobject.o \
-        ../../common/devicelist.o \
-        ../../common/vscphelper.o \
-        ../../common/tcpipclientthread.o \
-	../../common/dm.o \
-	../../common/vscpvariable.o \
-	../../common/interfacelist.o \
-	../../common/userlist.o \
-        ../../common/devicethread.o \
-	../../common/vscptcpif.o \
-	../../common/guid.o \
-	../../../common/dllist.o \
-	../../../common/configfile.o \
-	../../../common/crc.o \
-	../../../common/md5.o \
-	../../../common/randPassword.o       	
-
+CANALD_OBJECTS =  vscpd.o ../../common/daemonvscp.o ../../common/clientlist.o ../../common/controlobject.o ../../common/devicelist.o ../../common/vscphelper.o ../../common/tcpipclientthread.o ../../common/dm.o ../../common/vscpvariable.o ../../common/interfacelist.o ../../common/userlist.o ../../common/devicethread.o ../../common/vscptcpif.o ../../common/guid.o ../../../common/dllist.o ../../../common/configfile.o ../../../common/crc.o ../../../common/md5.o ../../../common/randPassword.o       	
 
 ### Targets: ###
 
@@ -79,8 +59,6 @@ distclean: clean
 
 vscpd: $(CANALD_OBJECTS)
 	$(CXX) -o $@ $(CANALD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
-	
-
 
 # Include dependency info, if present:
 -include .deps/*.d

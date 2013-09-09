@@ -29,10 +29,12 @@
       <itemPath>../../common/dm.cpp</itemPath>
       <itemPath>../../common/dm.h</itemPath>
       <itemPath>../../common/guid.cpp</itemPath>
+      <itemPath>../../common/guid.h</itemPath>
       <itemPath>../../common/interfacelist.cpp</itemPath>
       <itemPath>../../common/interfacelist.h</itemPath>
       <itemPath>../../../common/md5.cpp</itemPath>
       <itemPath>../../../common/md5.h</itemPath>
+      <itemPath>../../common/mdf.h</itemPath>
       <itemPath>../../../common/randPassword.cpp</itemPath>
       <itemPath>../../../common/randPassword.h</itemPath>
       <itemPath>../../common/tcpipclientthread.cpp</itemPath>
@@ -50,8 +52,13 @@
       <itemPath>../../common/vscphelper.cpp</itemPath>
       <itemPath>../../common/vscphelper.h</itemPath>
       <itemPath>../../common/vscptcpif.cpp</itemPath>
+      <itemPath>../../common/vscptcpif.h</itemPath>
       <itemPath>../../common/vscpvariable.cpp</itemPath>
       <itemPath>../../common/vscpvariable.h</itemPath>
+      <itemPath>../../common/web_css.h</itemPath>
+      <itemPath>../../common/web_js.h</itemPath>
+      <itemPath>../../common/web_template.h</itemPath>
+      <itemPath>../../common/webserver.h</itemPath>
     </logicalFolder>
     <df root="." name="linux">
       <in>vscpd.cpp</in>
@@ -87,32 +94,33 @@
           <executablePath>vscpd</executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
               <pElem>/usr/local/include/wx-2.8</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
         </makeTool>
       </makefileType>
       <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../../common/configfile.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -125,10 +133,24 @@
       <item path="../../../common/dllist.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../common/md5.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../../common/md5.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../common/randPassword.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../../common/randPassword.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -144,47 +166,127 @@
       </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="../../common/clientlist.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/controlobject.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/controlobject.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/daemonvscp.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="../../common/daemonvscp.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/devicelist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/devicelist.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/devicethread.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/devicethread.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/dm.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="../../common/guid.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/interfacelist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/interfacelist.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="../../common/mdf.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../../common/tcpipclientthread.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/tcpipclientthread.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../../common/udpthread.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/udpthread.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../common/udpthread.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/userlist.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/userlist.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -201,19 +303,51 @@
       <item path="../../common/vscpdlldef.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscphelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
+      </item>
+      <item path="../../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/vscpvariable.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../common/vscpvariable.h" ex="false" tool="3" flavor2="0">
       </item>
-      <folder path="common">
+      <item path="../../common/web_css.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../common/web_js.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../common/web_template.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../common/webserver.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <folder path="linux">
         <ccTool>
           <incDir>
-            <pElem>.</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
         </ccTool>
       </folder>

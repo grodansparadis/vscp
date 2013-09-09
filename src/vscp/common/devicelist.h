@@ -159,7 +159,9 @@ public:
 	LPFNDLL_VSCPGETDLLVERSION		    m_proc_VSCPGetDllVersion;
 	LPFNDLL_VSCPGETVENDORSTRING	        m_proc_VSCPGetVendorString;
     LPFNDLL_VSCPGETDRIVERINFO		    m_proc_VSCPGetdriverInfo;
-
+	LPFNDLL_VSCPGETWEBPAGETEMPLATE		m_proc_VSCPGetWebPageTemplate;
+	LPFNDLL_VSCPGETWEBPAGEINFO			m_proc_VSCPGetWebPageInfo;
+	LPFNDLL_VSCPWEBPAGEUPDATE			m_proc_VSCPWebPageupdate;
 };
 
 // List with device items

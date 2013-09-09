@@ -31,6 +31,12 @@
 #define SHA1_H_
 
 #include <stdint.h>
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /** \def SHA1_HASH_BITS
  * definees the size of a SHA-1 hash in bits 
  */
@@ -114,6 +120,8 @@ void sha1_ctx2hash (void *dest, sha1_ctx_t *state);
  */ 
 void sha1(void *dest, const void* msg, uint32_t length_b);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /*SHA1_H_*/

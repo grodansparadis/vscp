@@ -218,7 +218,7 @@ void sha1_ctx2hash (void *dest, sha1_ctx_t *state){
  *
  *
  */
-void sha1 (void *dest, const void* msg, uint32_t length){
+void sha1(void *dest, const void* msg, uint32_t length){
 	sha1_ctx_t s;
 	sha1_init(&s);
 	while(length & (~0x0001ff)){ /* length>=512 */

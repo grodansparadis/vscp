@@ -68,6 +68,7 @@ Clmsensors::Clmsensors()
 {
 	m_bQuit = false;
 	m_pthreadWork = NULL;
+    clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
 
@@ -312,7 +313,20 @@ Clmsensors::close(void)
 
 }
 
+//////////////////////////////////////////////////////////////////////
+// addEvent2SendQueue
+//
 
+bool 
+Clmsensors::addEvent2SendQueue(const vscpEvent *pEvent)
+{
+    m_mutexSendQueue.Lock();
+	//m_sendQueue.Append((vscpEvent *)pEvent);
+    m_sendList.push_back((vscpEvent *)pEvent);
+	m_semSendQueue.Post();
+	m_mutexSendQueue.Unlock();
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////
 //                           Workerthread
@@ -347,6 +361,7 @@ CWrkTread::Entry()
 	// Check pointers
 	if (NULL == m_pObj) return NULL;
 
+/*    
 	if (m_srv.doCmdOpen(m_pObj->m_host,
 			m_pObj->m_port,
 			m_pObj->m_username,
@@ -360,7 +375,8 @@ CWrkTread::Entry()
 	// Find the channel id
 	uint32_t ChannelID;
 	m_srv.doCmdGetChannelID(&ChannelID);
-
+*/
+    
 	// Open the file
 	wxFile file;
 	if (!file.Open(m_path)) {
@@ -397,31 +413,61 @@ CWrkTread::Entry()
 				val = abs(val);
 			}
 
-			vscpEventEx event;
-			event.sizeData = 0;
-			event.data[0] = m_datacoding;
-			m_guid.setGUID(event.GUID);
-			event.vscp_class = VSCP_CLASS1_MEASUREMENT;
-			event.vscp_type = m_vscptype;
-			if (val < 0xff) {
-				event.sizeData = 2;
-				event.data[1] = val;
-			} else if (val < 0xffff) {
-				event.sizeData = 3;
-				event.data[1] = (val >> 8) & 0xff;
-				event.data[2] = val & 0xff;
-			} else if (val < 0xffffff) {
-				event.sizeData = 4;
-				event.data[1] = (val >> 16) & 0xff;
-				event.data[2] = (val >> 8) & 0xff;
-				event.data[3] = val & 0xff;
-			} else {
-				event.sizeData = 5;
-				event.data[1] = (val >> 24) & 0xff;
-				event.data[2] = (val >> 16) & 0xff;
-				event.data[3] = (val >> 8) & 0xff;
-				event.data[4] = val & 0xff;
-			}
+            vscpEvent *pEvent = new vscpEvent();
+            if (NULL != pEvent) {
+
+                pEvent->pdata = NULL;
+                pEvent->sizeData = 0;
+                
+                m_guid.setGUID(pEvent->GUID);
+                pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+                pEvent->vscp_type = m_vscptype;
+                if (val < 0xff) {
+                    pEvent->sizeData = 2;
+                    pEvent->pdata = new uint8_t[2];
+                    if ( NULL != pEvent->pdata ) {
+                        pEvent->pdata[1] = val;
+                    }
+                } else if (val < 0xffff) {
+                    pEvent->sizeData = 3;
+                    pEvent->pdata = new uint8_t[3];
+                    if ( NULL != pEvent->pdata ) {
+                        pEvent->pdata[1] = (val >> 8) & 0xff;
+                        pEvent->pdata[2] = val & 0xff;
+                    }
+                } else if (val < 0xffffff) {
+                    pEvent->sizeData = 4;
+                    pEvent->pdata = new uint8_t[4];
+                    if ( NULL != pEvent->pdata ) {
+                        pEvent->pdata[1] = (val >> 16) & 0xff;
+                        pEvent->pdata[2] = (val >> 8) & 0xff;
+                        pEvent->pdata[3] = val & 0xff;
+                    }
+                } else {
+                    pEvent->sizeData = 5;
+                    pEvent->pdata = new uint8_t[5];
+                    if ( NULL != pEvent->pdata ) {
+                        pEvent->pdata[1] = (val >> 24) & 0xff;
+                        pEvent->pdata[2] = (val >> 16) & 0xff;
+                        pEvent->pdata[3] = (val >> 8) & 0xff;
+                        pEvent->pdata[4] = val & 0xff;
+                    }
+                }
+                
+                if ( NULL != pEvent->pdata ) {
+                    pEvent->pdata[0] = m_datacoding;
+                }
+
+                if (doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
+                    m_pObj->m_mutexReceiveQueue.Lock();
+                    m_pObj->m_receiveList.push_back(pEvent);
+                    m_pObj->m_semReceiveQueue.Post();
+                    m_pObj->m_mutexReceiveQueue.Unlock();
+                }
+                else {
+                    deleteVSCPevent(pEvent);
+                }
+            }
 
 		}
 
@@ -432,7 +478,7 @@ CWrkTread::Entry()
 	file.Close();
 
 	// Close the channel
-	m_srv.doCmdClose();
+	//m_srv.doCmdClose();
 
 	return NULL;
 

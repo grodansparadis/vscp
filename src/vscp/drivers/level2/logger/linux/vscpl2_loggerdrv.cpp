@@ -247,10 +247,8 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 	int rv = 0;
 
 	CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return 0;
-    
-    pdrvObj->addEvent2Queue( pEvent );
-	
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    pdrvObj->addEvent2SendQueue( pEvent );   
 	return CANAL_ERROR_SUCCESS;
 }
 
@@ -261,13 +259,11 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 extern "C" int
 VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
-	int rv = 0;
-
-	CVSCPLog *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return 0;
-	
-	return CANAL_ERROR_SUCCESS;
+    // Nothing to receive
+    pEvent = NULL;
+	return CANAL_ERROR_FIFO_EMPTY;
 }
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -311,4 +307,41 @@ extern "C" const char *
 VSCPGetDriverInfo(void)
 {
 	return VSCP_LOGGER_DRIVERINFO;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPGetWebPageTemplate
+// 
+
+extern "C" long
+VSCPGetWebPageTemplate( long handle, const char *url, char *page )
+{
+    page = NULL;
+    
+    // Not implemented
+	return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPWebPageInfo
+// 
+
+extern "C" int
+VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
+{
+    // Not implemented
+	return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPWebPageupdate
+// 
+
+extern "C" int
+VSCPWebPageupdate( long handle, const char *url )
+{
+    // Not implemented
+	return -1;
 }

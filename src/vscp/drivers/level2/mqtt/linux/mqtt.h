@@ -60,7 +60,10 @@
 #include "../../../../common/vscptcpif.h"
 #include "../../../../common/guid.h"
 
+#include <list>
+#include <string>
 
+using namespace std;
 
 #define VSCP_LEVEL2_DLL_MQTT_OBJ_MUTEX "___VSCP__DLL_L2MQTT_OBJ_MUTEX____"
 
@@ -132,6 +135,8 @@ public:
     
     /// VSCP server interface
     VscpTcpIf m_srv;
+	
+	
 };
 
 // Publish base class
@@ -218,7 +223,10 @@ public:
      */
     void close(void);
 
-
+	/*!
+		Add event to send queue 
+	 */
+	bool addEvent2SendQueue(const vscpEvent *pEvent);
 
 public:
 
@@ -281,6 +289,20 @@ public:
 
     /// VSCP server interface
     VscpTcpIf m_srv;
+	
+	// Queue
+	std::list<vscpEvent *> m_sendList;
+	std::list<vscpEvent *> m_receiveList;
+	
+	/*!
+        Event object to indicate that there is an event in the output queue
+     */
+    wxSemaphore m_semSendQueue;			
+	wxSemaphore m_semReceiveQueue;		
+	
+	// Mutex to protect the output queue
+	wxMutex m_mutexSendQueue;		
+	wxMutex m_mutexReceiveQueue;
 
 };
 

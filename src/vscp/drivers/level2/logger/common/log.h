@@ -57,6 +57,11 @@
 #include "../../../../../common/dllist.h"
 #include "../../../../common/vscptcpif.h"
 
+#include <list>
+#include <string>
+
+using namespace std;
+
 #define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LOGGER_OBJ_MUTEX____"
 
 #define VSCP_LOG_LIST_MAX_MSG		2048
@@ -147,19 +152,24 @@ public:
         \return true on success.
      */
     bool openFile(void);
+	
+	/*!
+		Add event to send queue 
+	 */
+	bool addEvent2SendQueue(const vscpEvent *pEvent);
 
 
 public:
 	
-	VSCPEVENTLIST m_outputQueue;
+	//VSCPEVENTLIST m_outputQueue;
 	
 	/*!
         Event object to indicate that there is an event in the output queue
      */
-    wxSemaphore m_semQueue;
+    //wxSemaphore m_semQueue;
 	
 	// Mutex to protect the output queue
-	wxMutex m_mutexQueue;
+	//wxMutex m_mutexQueue;
 
     /// Run flag
     bool m_bQuit;
@@ -196,6 +206,20 @@ public:
     
     /// Filter
     vscpEventFilter m_Filter;
+	
+	// Queue
+	std::list<vscpEvent *> m_sendList;
+	//std::list<vscpEvent *> m_receiveList;
+	
+	/*!
+        Event object to indicate that there is an event in the output queue
+     */
+    wxSemaphore m_semSendQueue;			
+	//wxSemaphore m_semReceiveQueue;		
+	
+	// Mutex to protect the output queue
+	wxMutex m_mutexSendQueue;		
+	//wxMutex m_mutexReceiveQueue;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

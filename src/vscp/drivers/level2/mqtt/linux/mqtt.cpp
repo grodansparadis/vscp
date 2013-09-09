@@ -69,15 +69,15 @@
 //
 
 mqtt_subscribe::mqtt_subscribe(const wxString& usernameLocal,
-		const wxString& passwordLocal,
-		const wxString& hostLocal,
-		const int portLocal,
-		const wxString& topic,
-		const wxString& hostMQTT,
-		int portMQTT,
-		int keepalive)
+                                    const wxString& passwordLocal,
+                                    const wxString& hostLocal,
+                                    const int portLocal,
+                                    const wxString& topic,
+                                    const wxString& hostMQTT,
+                                    int portMQTT,
+                                    int keepalive)
 {
-	m_hostLocal = hostLocal;
+    m_hostLocal = hostLocal;
 	m_portLocal = portLocal;
 	m_usernameLocal = usernameLocal;
 	m_passwordLocal = passwordLocal;
@@ -101,7 +101,7 @@ mqtt_subscribe::mqtt_subscribe(const wxString& usernameLocal,
 	uint32_t ChannelID;
 	m_srv.doCmdGetChannelID(&ChannelID);
 
-
+    
 	/* Connect immediately. This could also be done by calling
 	 * mqtt_tempconv->connect(). */
 	//connect(host, port );
@@ -165,13 +165,13 @@ void mqtt_subscribe::on_subscribe(int mid, int qos_count, const int *granted_qos
 //
 
 mqtt_publish::mqtt_publish(const wxString& usernameLocal,
-		const wxString& passwordLocal,
-		const wxString& hostLocal,
-		const int portLocal,
-		const wxString& topic,
-		const wxString& hostMQTT,
-		int portMQTT,
-		int keepalive)
+                            const wxString& passwordLocal,
+                            const wxString& hostLocal,
+                            const int portLocal,
+                            const wxString& topic,
+                            const wxString& hostMQTT,
+                            int portMQTT,
+                            int keepalive)
 {
 	m_hostLocal = hostLocal;
 	m_portLocal = portLocal;
@@ -271,11 +271,11 @@ Cmqtt::~Cmqtt()
 
 bool
 Cmqtt::open(const char *pUsername,
-		const char *pPassword,
-		const char *pHost,
-		short port,
-		const char *pPrefix,
-		const char *pConfig)
+                const char *pPassword,
+                const char *pHost,
+                short port,
+                const char *pPrefix,
+                const char *pConfig)
 {
 	bool rv = true;
 	wxString str;
@@ -522,16 +522,59 @@ CWrkThread::Entry()
 
 		while (!TestDestroy() && !m_pObj->m_bQuit) {
 
-			rv = pSubscribe->loop();
-			if (rv) {
-				pSubscribe->reconnect();
-			}
+            vscpEvent *pEvent = new vscpEvent();
+            if (NULL != pEvent) {
+/*
+                pEvent->pdata = new uint8_t[16 + frame.len];
+                if (NULL == pEvent->pdata) {
+                    delete pEvent;
+                    continue;
+                }
 
-			::wxMilliSleep(50);
+                // Interface GUID is set to all nulls as
+                // this event should be sent to all clients.
+                memset(pEvent->pdata, 0, 16);
+
+                // GUID will be set to GUID of interface
+                // by driver interface with LSB set to nickname
+                memset(pEvent->GUID, 0, 16);
+                pEvent->GUID[0] = frame.can_id & 0xff;
+
+                // Set VSCP class + 512
+                pEvent->vscp_class = getVSCPclassFromCANid(frame.can_id) + 512;
+
+                // Set VSCP type
+                pEvent->vscp_type = getVSCPtypeFromCANid(frame.can_id);
+
+                // Copy data if any
+                pEvent->sizeData = frame.len + 16;
+                if (frame.len) {
+                    memcpy(pEvent->pdata + 16, frame.data, frame.len);
+                }
+*/
+                if (doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
+                    m_pObj->m_mutexReceiveQueue.Lock();
+                    //m_pObj->m_receiveQueue.Append(pEvent);
+                    m_pObj->m_receiveList.push_back(pEvent);
+                    m_pObj->m_semReceiveQueue.Post();
+                    m_pObj->m_mutexReceiveQueue.Unlock();
+                } else {
+                    deleteVSCPevent(pEvent);
+                }
+            }
+
+            rv = pSubscribe->loop();
+
+            if (rv) {
+                pSubscribe->reconnect();
+            }
+
+            ::wxMilliSleep(50);
 
 		}
-	} else {
-
+	} 
+    else {
+/*
 		// Connect to the VSCP Server
 		if (m_srv.doCmdOpen(m_pObj->m_host,
 				m_pObj->m_port,
@@ -546,44 +589,56 @@ CWrkThread::Entry()
 		// Find the channel id
 		uint32_t ChannelID;
 		m_srv.doCmdGetChannelID(&ChannelID);
-
+ */ 
+        
 		// P u b l i s h
-		mqtt_publish *pPublish = new mqtt_publish(
-				m_pObj->m_username,
-				m_pObj->m_password,
-				m_pObj->m_host,
-				m_pObj->m_port,
-				m_pObj->m_topic,
-				m_pObj->m_hostMQTT,
-				m_pObj->m_portMQTT,
-				m_pObj->m_keepalive);
+		mqtt_publish *pPublish = new mqtt_publish( m_pObj->m_username,
+                                                        m_pObj->m_password,
+                                                        m_pObj->m_host,
+                                                        m_pObj->m_port,
+                                                        m_pObj->m_topic,
+                                                        m_pObj->m_hostMQTT,
+                                                        m_pObj->m_portMQTT,
+                                                        m_pObj->m_keepalive);
 
 		while (!TestDestroy() && !m_pObj->m_bQuit) {
-		
-			vscpEventEx eventex;
-			if (m_srv.doCmdDataAvailable()){
-				if ( m_srv.doCmdReceiveEx(&eventex) ) { 
-					writeVscpEventExToString(&eventex, str);
-					if (getVscpEventExFromString(&eventex, str)) {
-						m_srv.doCmdSendEx(&eventex);
-					}
-				}
-			}
 
-			rv = pPublish->loop();
-			if (rv) {
-				pPublish->reconnect();
-			}
+            if (wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout(300)) continue;
 
-			::wxMilliSleep(50);
+            if (m_pObj->m_sendList.size()) {
 
-		}
-	}
+                m_pObj->m_mutexSendQueue.Lock();
+                vscpEvent *pEvent = m_pObj->m_sendList.front();
+                m_pObj->m_sendList.pop_front();
+                m_pObj->m_mutexSendQueue.Unlock();
+
+                if (NULL == pEvent) continue;
+
+                //_pObj->writeEvent(&event);
+
+                // We are done with the event - remove data if any
+                if (NULL != pEvent->pdata) {
+                    delete [] pEvent->pdata;
+                    pEvent->pdata = NULL;
+                }
+
+            } // Event received
+
+            rv = pPublish->loop();
+
+            if (rv) {
+                pPublish->reconnect();
+            }
+
+            ::wxMilliSleep(50);
+
+        }
+    }
 
 	mosqpp::lib_cleanup();
 
 	// Close the VSCP channel
-	m_srv.doCmdClose();
+	//m_srv.doCmdClose();
 
 	return NULL;
 

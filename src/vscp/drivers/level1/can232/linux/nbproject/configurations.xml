@@ -25,6 +25,7 @@
           <itemPath>../../../../common/devicelist.cpp</itemPath>
           <itemPath>../../../../common/devicelist.h</itemPath>
           <itemPath>../../../../common/devicethread.h</itemPath>
+          <itemPath>../../../../common/guid.h</itemPath>
           <itemPath>../../../../common/vscp.h</itemPath>
           <itemPath>../../../../common/vscp_class.h</itemPath>
           <itemPath>../../../../common/vscp_type.h</itemPath>
@@ -62,27 +63,25 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
               <pElem>/usr/local/include/wx-2.8</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
               <pElem>/usr/local/include/wx-2.8</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
@@ -104,8 +103,6 @@
       </item>
       <item path="../../../../common/canal_macro.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../../../../common/canaldlldef.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../../../common/clientlist.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
@@ -114,15 +111,13 @@
       </item>
       <item path="../../../../common/devicelist.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="../../../../common/devicethread.h" ex="false" tool="3" flavor2="0">
+      <item path="../../../../common/guid.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/vscp.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/vscp_class.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/vscp_type.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscpdlldef.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="can232drv.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>

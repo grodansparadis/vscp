@@ -540,6 +540,30 @@ void *deviceThread::Entry()
 			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetDriverInfo."), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
+        
+        // * * * * VSCP GET WEB PAGE TEMPLATE * * * *
+		if (NULL == (m_pDeviceItem->m_proc_VSCPGetWebPageTemplate =
+			(LPFNDLL_VSCPGETWEBPAGETEMPLATE) m_wxdll.GetSymbol(_T("VSCPGetWebPageTemplate")))) {
+			// Free the library
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetWebPageTemplate."), DAEMON_LOGMSG_CRITICAL);
+			return NULL;
+		}
+        
+        // * * * * VSCP GET WEB PAGE INFO * * * *
+		if (NULL == (m_pDeviceItem->m_proc_VSCPGetWebPageInfo =
+			(LPFNDLL_VSCPGETWEBPAGEINFO) m_wxdll.GetSymbol(_T("VSCPGetWebPageInfo")))) {
+			// Free the library
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetWebPageInfo."), DAEMON_LOGMSG_CRITICAL);
+			return NULL;
+		}
+        
+        // * * * * VSCP WEB PAGE UPDATE * * * *
+		if (NULL == (m_pDeviceItem->m_proc_VSCPWebPageupdate =
+			(LPFNDLL_VSCPWEBPAGEUPDATE) m_wxdll.GetSymbol(_T("VSCPWebPageupdate")))) {
+			// Free the library
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPWebPageupdate."), DAEMON_LOGMSG_CRITICAL);
+			return NULL;
+		}
 
         m_pCtrlObject->logMsg(_("Discovered all methods"), DAEMON_LOGMSG_INFO);
         

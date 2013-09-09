@@ -1,5 +1,4 @@
-// vscp2drv_lmsensors.h : main header file for the canallogger.dll
-// Linux version
+// vscp2drv_lmsensors.h : main header file for the vscp2drv_lmsensors driver
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License

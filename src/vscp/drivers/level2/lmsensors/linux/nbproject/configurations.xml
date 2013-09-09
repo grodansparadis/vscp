@@ -22,6 +22,7 @@
           <itemPath>../../../../common/canal_win32_ipc.h</itemPath>
           <itemPath>../../../../common/guid.cpp</itemPath>
           <itemPath>../../../../common/guid.h</itemPath>
+          <itemPath>../../../../common/mdf.h</itemPath>
           <itemPath>../../../../common/vscp.h</itemPath>
           <itemPath>../../../../common/vscp_class.h</itemPath>
           <itemPath>../../../../common/vscp_type.h</itemPath>
@@ -61,26 +62,20 @@
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
           <cTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
               <pElem>/usr/local/include/wx-2.8</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
@@ -109,6 +104,8 @@
       </item>
       <item path="../../../../common/guid.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="../../../../common/mdf.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../../../../common/vscp.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/vscp_class.h" ex="false" tool="3" flavor2="0">
@@ -127,9 +124,22 @@
       </item>
       <item path="../../../../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
       </item>
+      <folder path="linux">
+        <cTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </cTool>
+      </folder>
       <folder path="src">
         <cTool>
           <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
         </cTool>

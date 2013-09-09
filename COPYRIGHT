@@ -1,4 +1,4 @@
-Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB
+Copyright (C) 2000-2013 Ake Hedman, Grodans Paradis AB
 <akhe@grodansparadis.com>
 
 Programs in the VSCP & Friends project use different free
@@ -13,9 +13,9 @@ give credit to the project if you use this code.
 Libraries and other development tools are licensed under LGPL
 Full details here http://www.gnu.org/licenses/lgpl-2.1.html
 
-User space softare is licensed under GPL. 
+User space software is licensed under GPL. 
 Full details here: http://www.gnu.org/licenses/gpl-2.0.html
 
 If you need a commerical license please contact 
 Ake Hedman Grodans Paradis AB. <akhe@grodansparadis.com> to get 
-available options.
+information about available options.

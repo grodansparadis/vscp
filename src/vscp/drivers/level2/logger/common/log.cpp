@@ -298,12 +298,13 @@ CVSCPLog::openFile(void)
 // addEvent2Queue
 //
 
-bool CVSCPLog::addEvent2Queue(const vscpEvent *pEvent)
+bool CVSCPLog::addEvent2SendQueue(const vscpEvent *pEvent)
 {
-    m_mutexQueue.Lock();
-	m_outputQueue.Append((vscpEvent *)pEvent);
-	m_semQueue.Post();
-	m_mutexQueue.Unlock();
+    m_mutexSendQueue.Lock();
+	//m_sendQueue.Append((vscpEvent *)pEvent);
+    m_sendList.push_back((vscpEvent *)pEvent);
+	m_semSendQueue.Post();
+	m_mutexSendQueue.Unlock();
     return true;
 }
 
@@ -518,29 +519,28 @@ CVSCPLogWrkTread::Entry()
 	//m_srv.doCmdEnterReceiveLoop();
 
 	int rv;
-	vscpEvent event;
+	//vscpEvent event;
 	while (!TestDestroy() && !m_pLog->m_bQuit) {
 
-        if ( wxSEMA_TIMEOUT == m_pLog->m_semQueue.WaitTimeout(300)) continue;
+        if ( wxSEMA_TIMEOUT == m_pLog->m_semSendQueue.WaitTimeout(300)) continue;
         
-        
-		if (CANAL_ERROR_SUCCESS ==
-			(rv = m_srv.doCmdBlockReceive(&event, 1000))) {
-            
-            VSCPEVENTLIST::compatibility_iterator nodeClient;
-			m_pLog->m_mutexQueue.Lock();
-			nodeClient = m_pLog->m_outputQueue.GetFirst();
-			vscpEvent *pqueueEvent = nodeClient->GetData();
-			m_pLog->m_mutexQueue.Unlock();
-                    
-			//pRecord->m_time = wxDateTime::Now();
-			m_pLog->writeEvent(&event);
 
-			// We are done with the event - remove data if any
-			if (NULL != event.pdata) {
-				delete [] event.pdata;
-				event.pdata = NULL;
-			}
+        if (m_pLog->m_sendList.size()) {
+
+            m_pLog->m_mutexSendQueue.Lock();
+            vscpEvent *pEvent = m_pLog->m_sendList.front();
+            m_pLog->m_sendList.pop_front();
+            m_pLog->m_mutexSendQueue.Unlock();
+
+            if (NULL == pEvent) continue;
+
+            //m_pLog->writeEvent(&event);
+
+            // We are done with the event - remove data if any
+            if (NULL != pEvent->pdata) {
+                delete [] pEvent->pdata;
+                pEvent->pdata = NULL;
+            }
 
 		} // Event received
 	} // Receive loop

@@ -41,6 +41,7 @@
 //   wxTRACE_vscpd_Msg - Received messages.
 //   wxTRACE_vscpd_ReceiveMutex  - Mutex lock
 //   wxTRACE_VSCP_Msg - VSCP message mechanism
+//
 
 #ifdef __GNUG__
 //#pragma implementation
@@ -2580,9 +2581,9 @@ CControlObject::handleWebSocketReceive(struct libwebsocket_context *context,
         p++;
         p++; // Point beyond initial info "C;"
         handleWebSocketCommand(context,
-                wsi,
-                pss,
-                p);
+                                wsi,
+                                pss,
+                                p);
         break;
 
         // Event | 'E' ; head(byte) , vscp_class(unsigned short) , vscp_type(unsigned
@@ -2734,9 +2735,9 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
 
 void
 CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
-        struct libwebsocket *wsi,
-        struct per_session_data__lws_vscp *pss,
-        const char *pCommand)
+                                        struct libwebsocket *wsi,
+                                        struct per_session_data__lws_vscp *pss,
+                                        const char *pCommand)
 {
     wxString strTok;
     wxString str = wxString::FromAscii(pCommand);
