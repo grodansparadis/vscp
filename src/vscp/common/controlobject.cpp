@@ -276,7 +276,7 @@ static struct websrv_Session *websrv_sessions;
 // static page is delivered
 static struct Page pages[] = 
   {
-    { "/vscp", "text/html",  &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE_MAIN },
+    { "/vscp", "text/html",  &CControlObject::websrv_serve_mainpage, NULL },
     { "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_interfaces, NULL },
     { "/vscp/dm", "text/html", &CControlObject::websrv_serve_dmlist, NULL },
     { "/vscp/dmedit", "text/html", &CControlObject::websrv_serve_dmedit, NULL },
@@ -3529,6 +3529,90 @@ CControlObject::websrv_serve_simple_page(const void *cls,
                                 response);
     
     MHD_destroy_response(response);
+    
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_serve_mainpage
+//
+
+int
+CControlObject::websrv_serve_mainpage( const void *cls,
+                                            const char *mime,
+                                            struct websrv_Session *session,
+                                            struct MHD_Connection *connection)
+{
+    int ret;
+    CControlObject *pObject = (CControlObject *) cls;
+    struct MHD_Response *response;
+
+    // Get connection type
+    const MHD_ConnectionInfo *pProtocolInfo = 
+            MHD_get_connection_info(connection, 
+                                        MHD_CONNECTION_INFO_PROTOCOL );
+    // Get hostname
+    wxString strHost = _("http://localhost:8080");
+    const char *str_host = MHD_lookup_connection_value(connection, MHD_HEADER_KIND, "host");
+    if ( NULL != str_host ) {
+        strHost = wxString::FromAscii(str_host);
+        if ( NULL != pProtocolInfo ) {
+            strHost = _("https://") + strHost;
+        }
+        else {
+            strHost = _("http://") + strHost;
+        }
+    }
+
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Control"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Insert server url into navigation menu 
+    wxString navstr = _(WEB_COMMON_MENU);  
+    int pos;
+    while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
+        buildPage += navstr.Left( pos );
+        navstr = navstr.Right(navstr.Length() - pos - 2);
+    }
+    buildPage += navstr;
+    
+    buildPage += _("<span align=\"center\">");
+    buildPage += _("<h4> Welcome to the VSCP daemon control interface.</h4>");
+    buildPage += _("</span>");
+    buildPage += _("<span style=\"text-indent:50px;\"><p>");
+    buildPage += _(" <b>Version:</b> ");
+    buildPage += _(VSCPD_DISPLAY_VERSION);
+    buildPage += _("</p><p>");
+    buildPage += _(VSCPD_COPYRIGHT);
+    buildPage += _("</p></span>");
+            
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+    
+    // return page 
+    response = MHD_create_response_from_buffer( strlen(ppage),
+                                                    (void *)ppage,
+                                                    MHD_RESPMEM_MUST_FREE );
+    
+    websrv_add_session_cookie(session, response);
+    
+    MHD_add_response_header( response,
+                                MHD_HTTP_HEADER_CONTENT_ENCODING,
+                                mime);
+    
+    ret = MHD_queue_response( connection,
+                                MHD_HTTP_OK,
+                                response);
+    
+    MHD_destroy_response( response );
     
     return ret;
 }

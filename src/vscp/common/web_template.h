@@ -27,7 +27,7 @@
 
 // * * * M e n u * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"%s/vscp/variables\">Variable - List</a></li><li><a href=\"%s/vscp/varnew\">Variable - New</a></li><li><a href=\"%s/vscp/dm\">DM - list</a></li><li><a href=\"%s/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul></li></ul>"
+#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"#\">Configuration File</a></li><li><a href=\"%s/vscp/variables\">Variable - List</a></li><li><a href=\"%s/vscp/varnew\">Variable - New</a></li><li><a href=\"%s/vscp/dm\">DM - list</a></li><li><a href=\"%s/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"#\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"#\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"#\">Configure</a></li><li><a href=\"#\">Update firmware</a></li></ul><li><a href=\"#\">Help</a><ul><li><a href=\"http://www.vscp.org/wiki/doku.php\" target=\"moon\">VSCP wiki</a></li><li><a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a></li></ul></li></ul>"
 
 
 // * * * C o m m o n * * *
@@ -99,7 +99,7 @@
 // Rows
 #define WEB_IFLIST_TR_HEAD "<tr><th>I/f Id</th><th>Type</th><th>Interface GUID</th><th>Name</th><th>Start time</th></tr>"
 
-#define WEB_IFLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.yahoo.com/')\" >"
+#define WEB_IFLIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.vscp.org/')\" >"
 
 #define WEB_IFLIST_TD_CENTERED "<td id=\"tdcenter\">"
 

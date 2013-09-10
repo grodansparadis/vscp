@@ -496,6 +496,20 @@ public:
 								struct MHD_Connection *connection);
 	
 	/**
+	 * Handler that displays the VSCP control main page.
+	 *
+	 * @param cls Pointer to the control object.
+	 * @param mime mime type to use
+	 * @param session session handle 
+	 * @param connection connection to use
+	 */
+	static int
+	websrv_serve_mainpage( const void *cls,
+								const char *mime,
+                                struct websrv_Session *session,
+                                struct MHD_Connection *connection);
+	
+	/**
 	 * Handler that displays the available interfaces.
 	 *
 	 * @param cls Pointer to the control object.
