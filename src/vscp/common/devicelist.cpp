@@ -69,6 +69,7 @@ WX_DEFINE_LIST(VSCPDEVICELIST);
 CDeviceItem::CDeviceItem()
 {
     m_bQuit = false;
+    m_bEnable = false;  // Default is that driver should not be started
 
     m_strName.Empty(); // No Device Name
     m_strParameter.Empty(); // No Parameters
@@ -160,7 +161,8 @@ bool CDeviceList::addItem(wxString strName,
                             wxString strPath,
                             uint32_t flags,
                             uint8_t *pGUID,
-                            uint8_t level)
+                            uint8_t level,
+                            bool bEnable )
 {
     bool rv = true;
     CDeviceItem *pDeviceItem = new CDeviceItem();
@@ -172,6 +174,8 @@ bool CDeviceList::addItem(wxString strName,
 
             m_devItemList.Append(pDeviceItem);
 
+            pDeviceItem->m_bEnable = bEnable;
+            
             pDeviceItem->m_driverLevel = level;
             pDeviceItem->m_strName = strName;
             pDeviceItem->m_strParameter = strParameter;

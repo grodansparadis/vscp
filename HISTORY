@@ -1,6 +1,7 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-09-10 - AKHE Drivers can now be enabled/disabled in configuration file.
 2013-09-04 - AKHE Added som method to Level II drivers that can be used to
                     serve driver specific internal web pages. Can be used for custom
                     configuration etc.

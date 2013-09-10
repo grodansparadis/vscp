@@ -97,6 +97,9 @@ public:
 		Canal Driver Level
 	*/
 	uint32_t m_driverLevel;
+	
+	/// True if driver should be started.
+	bool m_bEnable;
 
 	/*!
 		termination control
@@ -181,7 +184,8 @@ public:
 					        wxString strPath, 
 					        uint32_t flags,
 					        uint8_t *pGUID,
-                            uint8_t level = VSCP_DRIVER_LEVEL1 );
+                            uint8_t level = VSCP_DRIVER_LEVEL1,
+							bool bEnable = true );
 
 	/*!
 		Remove a driver item
