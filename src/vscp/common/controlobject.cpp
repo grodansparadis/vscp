@@ -566,14 +566,20 @@ bool CControlObject::run(void)
     vscpEvent EventLoop;
     EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
     EventLoop.vscp_type = VSCP2_TYPE_VSCPD_LOOP;
+    EventLoop.sizeData = 0;
+    EventLoop.pdata = NULL;
 
     vscpEvent EventStartUp;
-    EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
-    EventLoop.vscp_type = VSCP2_TYPE_VSCPD_STARTING_UP;
+    EventStartUp.vscp_class = VSCP_CLASS2_VSCPD;
+    EventStartUp.vscp_type = VSCP2_TYPE_VSCPD_STARTING_UP;
+    EventStartUp.sizeData = 0;
+    EventStartUp.pdata = NULL;
 
     vscpEvent EventShutDown;
-    EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
-    EventLoop.vscp_type = VSCP2_TYPE_VSCPD_SHUTTING_DOWN;
+    EventShutDown.vscp_class = VSCP_CLASS2_VSCPD;
+    EventShutDown.vscp_type = VSCP2_TYPE_VSCPD_SHUTTING_DOWN;
+    EventShutDown.sizeData = 0;
+    EventShutDown.pdata = NULL;
 
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
