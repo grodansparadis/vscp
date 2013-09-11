@@ -282,16 +282,16 @@ static struct Page pages[] =
     { "/vscp/dmedit", "text/html", &CControlObject::websrv_serve_dmedit, NULL },
     { "/vscp/dmpost", "text/html", &CControlObject::websrv_serve_dmpost, NULL },
     { "/vscp/dmdelete", "text/html", &CControlObject::websrv_serve_dmdelete, NULL },
-    { "/vscp/discovery", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
-    { "/vscp/session", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
-    { "/vscp/configure", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/discovery", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
+    { "/vscp/session", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
+    { "/vscp/configure", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
     { "/vscp/variables", "text/html", &CControlObject::websrv_serve_variables_list, NULL },
     { "/vscp/varedit", "text/html", &CControlObject::websrv_serve_variables_edit, NULL },
     { "/vscp/varpost", "text/html", &CControlObject::websrv_serve_variables_post, NULL },
     { "/vscp/vardelete", "text/html", &CControlObject::websrv_serve_variables_delete, NULL },
     { "/vscp/varnew", "text/html", &CControlObject::websrv_serve_variables_new, NULL },
-    { "/vscp/bootload", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
-    { "/m2m", "text/html", &CControlObject::websrv_serve_simple_page, WEBSERVER_PAGE },
+    { "/vscp/bootload", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
+    { "/m2m", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
     { NULL, NULL, &CControlObject::websrv_not_found_page, NULL } /* 404 */
   };
 

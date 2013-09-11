@@ -42,6 +42,11 @@
 #define WEBSERVER_PAGE "<html><head><title>VSCP Daemon</title></head><body>VSCP Daemon.</body></html>"
 
 /**
+ * Available in next version
+ */
+#define NEXTVERSION_PAGE "<html><head><title>VSCP Daemon</title></head><body>Sorry this functionality is not available until next version of VSCP & Friends.</body></html>"
+
+/**
  * Invalid password
  */
 #define WEBSERVER_DENIED "<html><head><title>Access denied</title></head><body>Access denied</body></html>"
