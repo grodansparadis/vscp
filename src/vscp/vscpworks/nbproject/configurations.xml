@@ -95,7 +95,6 @@
       <in>platform.h</in>
       <in>readregister.cpp</in>
       <in>readregister.h</in>
-      <in>readregister_symbols.h</in>
       <in>threadvscpwork.cpp</in>
       <in>threadvscpwork.h</in>
       <in>vscpbootloader.cpp</in>
@@ -149,14 +148,9 @@
             </preprocessorList>
           </cTool>
           <ccTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>wxUSE_GUI=1</Elem>
             </preprocessorList>
@@ -181,6 +175,11 @@
       </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="../common/canalsuperwrapper.h" ex="false" tool="3" flavor2="0">
@@ -189,23 +188,48 @@
       </item>
       <item path="../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="../common/dllwrapper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/guid.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/mdf.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="../common/mdf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/register.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../common/register.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -219,12 +243,25 @@
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="../common/vscphelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
@@ -333,11 +370,15 @@
       </item>
       <item path="dlgvscptrmit.h" ex="false" tool="3" flavor2="0">
       </item>
-      <folder path="common">
+      <folder path="vscpworks">
         <ccTool>
           <incDir>
-            <pElem>.</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <item path="frmcanalsession.h" ex="false" tool="3" flavor2="0">
@@ -414,8 +455,6 @@
         </ccTool>
       </item>
       <item path="readregister.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="readregister_symbols.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="threadvscpwork.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>

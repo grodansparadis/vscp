@@ -90,11 +90,11 @@ Clmsensors::~Clmsensors()
 
 bool
 Clmsensors::open(const char *pUsername,
-		const char *pPassword,
-		const char *pHost,
-		short port,
-		const char *pPrefix,
-		const char *pConfig)
+                    const char *pPassword,
+                    const char *pHost,
+                    short port,
+                    const char *pPrefix,
+                    const char *pConfig)
 {
 
 	bool rv = true;
@@ -121,10 +121,10 @@ Clmsensors::open(const char *pUsername,
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen(m_host,
-			m_port,
-			m_username,
-			m_password) <= 0) {
+	if (m_srv.doCmdOpen( m_host,
+                            m_port,
+                            m_username,
+                            m_password) <= 0) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
@@ -241,7 +241,7 @@ Clmsensors::open(const char *pUsername,
 
 			// Get measurement coding (first data byte)
 			strVariableName = m_prefix +
-					wxString::FromAscii("_coding") + strIteration;
+					wxString::FromAscii("_datacoding") + strIteration;
 			if (!m_srv.getVariableInt(strVariableName,
 					&pthreadWork->m_datacoding)) {
 				syslog(LOG_ERR,
@@ -361,22 +361,6 @@ CWrkTread::Entry()
 	// Check pointers
 	if (NULL == m_pObj) return NULL;
 
-/*    
-	if (m_srv.doCmdOpen(m_pObj->m_host,
-			m_pObj->m_port,
-			m_pObj->m_username,
-			m_pObj->m_password) <= 0) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "Workerthread. Unable to connect to VSCP TCP/IP interface. Terminating!");
-		return NULL;
-	}
-
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
-*/
-    
 	// Open the file
 	wxFile file;
 	if (!file.Open(m_path)) {
@@ -428,14 +412,16 @@ CWrkTread::Entry()
                     if ( NULL != pEvent->pdata ) {
                         pEvent->pdata[1] = val;
                     }
-                } else if (val < 0xffff) {
+                } 
+                else if (val < 0xffff) {
                     pEvent->sizeData = 3;
                     pEvent->pdata = new uint8_t[3];
                     if ( NULL != pEvent->pdata ) {
                         pEvent->pdata[1] = (val >> 8) & 0xff;
                         pEvent->pdata[2] = val & 0xff;
                     }
-                } else if (val < 0xffffff) {
+                } 
+                else if (val < 0xffffff) {
                     pEvent->sizeData = 4;
                     pEvent->pdata = new uint8_t[4];
                     if ( NULL != pEvent->pdata ) {
@@ -443,7 +429,8 @@ CWrkTread::Entry()
                         pEvent->pdata[2] = (val >> 8) & 0xff;
                         pEvent->pdata[3] = val & 0xff;
                     }
-                } else {
+                } 
+                else {
                     pEvent->sizeData = 5;
                     pEvent->pdata = new uint8_t[5];
                     if ( NULL != pEvent->pdata ) {
@@ -472,6 +459,7 @@ CWrkTread::Entry()
 		}
 
 		::wxSleep(m_interval ? m_interval : 1);
+        
 	}
 
 	// Close the file

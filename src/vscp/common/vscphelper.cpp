@@ -1067,7 +1067,7 @@ double getDataCodingNormalizedInteger(const unsigned char *pNorm,
 //
 
 wxString& getDataCodingString(const unsigned char *pString,
-		const unsigned char length)
+                                const unsigned char length)
 {
 	static wxString str;
 	char buf[ 8 ];
@@ -3234,7 +3234,9 @@ wxString& getRealTextData(vscpEvent *pEvent)
 		}
 			break;
 		case 0x20: // byte format
+            getVSCPDataCodingAsString( pEvent, wrkstr1 );
 			str += _("[byte] = ?");
+            str += wrkstr1;
 			break;
 		case 0x40: // string format
 		{
@@ -3244,7 +3246,9 @@ wxString& getRealTextData(vscpEvent *pEvent)
 		}
 			break;
 		case 0x60: // int format
-			str += _("[int] = ?");
+            getVSCPDataCodingAsString( pEvent, wrkstr1 );
+			str += _("[int] = ");
+            str += wrkstr1;
 			break;
 		case 0x80: // normalized int format
 		{
