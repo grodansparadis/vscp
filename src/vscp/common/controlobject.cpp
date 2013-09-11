@@ -959,6 +959,7 @@ bool CControlObject::startTcpWorkerThread(void)
     // Run the TCP server thread   --   TODO - multiport
     /////////////////////////////////////////////////////////////////////////////
     if (m_bTCPInterface) {
+        
         m_pTcpClientListenThread = new TcpClientListenThread;
 
         if (NULL != m_pTcpClientListenThread) {

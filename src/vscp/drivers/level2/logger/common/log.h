@@ -64,7 +64,7 @@ using namespace std;
 
 #define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LOGGER_OBJ_MUTEX____"
 
-#define VSCP_LOG_LIST_MAX_MSG		2048
+#define VSCP_LOG_LIST_MAX_MSG	2048
 
 // Flags
 #define LOG_FILE_OVERWRITE      1L  // Overwrite
@@ -86,7 +86,7 @@ public:
 
     /// Destructor
     virtual ~CVSCPLog();
-    
+	
 
     /*!
         Filter message

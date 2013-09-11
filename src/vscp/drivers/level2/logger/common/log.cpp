@@ -97,11 +97,11 @@ CVSCPLog::~CVSCPLog()
 
 bool
 CVSCPLog::open(const char *pUsername,
-	const char *pPassword,
-	const char *pHost,
-	short port,
-	const char *pPrefix,
-	const char *pConfig)
+                const char *pPassword,
+                const char *pHost,
+                short port,
+                const char *pPrefix,
+                const char *pConfig)
 {
 
 	bool rv = true;
@@ -251,47 +251,52 @@ bool
 CVSCPLog::openFile(void)
 {
 
-	if (m_flags & LOG_FILE_OVERWRITE) {
-		if (m_file.Open(m_path, wxFile::write)) {
-			m_pLogStream = new wxFileOutputStream(m_file);
-			if (NULL != m_pLogStream) {
-				if (m_pLogStream->IsOk()) {
-					if (m_flags & LOG_FILE_VSCP_WORKS) {
-						m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-							strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
-						// RX data start
-						m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
-						return true;
-					} else {
-						return true;
-					}
-				} else {
-					return false;
-				}
-			}
-		}
-	} else {
-		if (m_file.Open(m_path, wxFile::write_append)) {
-			m_pLogStream = new wxFileOutputStream(m_file);
-			if (NULL != m_pLogStream) {
-				if (m_pLogStream->IsOk()) {
-					if (m_flags & LOG_FILE_VSCP_WORKS) {
-						m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-							strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
-						// RX data start
-						m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
-						return true;
-					} else {
-						return true;
-					}
-				} else {
-					return false;
-				}
-			}
-		}
-	}
+    if (m_flags & LOG_FILE_OVERWRITE) {
+        if (m_file.Open(m_path, wxFile::write)) {
+            m_pLogStream = new wxFileOutputStream(m_file);
+            if (NULL != m_pLogStream) {
+                if (m_pLogStream->IsOk()) {
+                    if (m_flags & LOG_FILE_VSCP_WORKS) {
+                        m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+                                strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
+                        // RX data start
+                        m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
+                        return true;
+                    } 
+                    else {
+                        return true;
+                    }
+                } 
+                else {
+                    return false;
+                }
+            }
+        }
+    } 
+    else {
+        if (m_file.Open(m_path, wxFile::write_append)) {
+            m_pLogStream = new wxFileOutputStream(m_file);
+            if (NULL != m_pLogStream) {
+                if (m_pLogStream->IsOk()) {
+                    if (m_flags & LOG_FILE_VSCP_WORKS) {
+                        m_pLogStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+                                strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
+                        // RX data start
+                        m_pLogStream->Write("<vscprxdata>\n", strlen("<vscprxdata>\n"));
+                        return true;
+                    } 
+                    else {
+                        return true;
+                    }
+                } 
+                else {
+                    return false;
+                }
+            }
+        }
+    }
 
-	return false;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -375,7 +380,8 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 
 		m_pLogStream->Write("</event>\n", strlen("</event>\n"));
 
-	} else {
+	} 
+    else {
 		// Standard log format
 		wxString str;
 
@@ -493,7 +499,8 @@ CVSCPLogWrkTread::Entry()
 	if (m_srv.getVariableBool(strRewrite, &bOverwrite)) {
 		if (bOverwrite) {
 			m_pLog->m_flags |= LOG_FILE_OVERWRITE;
-		} else {
+		} 
+        else {
 			m_pLog->m_flags &= ~LOG_FILE_OVERWRITE;
 		}
 	}
@@ -504,7 +511,8 @@ CVSCPLogWrkTread::Entry()
 	if (m_srv.getVariableBool(strVscpWorkdFmt, &bVSCPWorksFormat)) {
 		if (bVSCPWorksFormat) {
 			m_pLog->m_flags |= LOG_FILE_VSCP_WORKS;
-		} else {
+		} 
+        else {
 			m_pLog->m_flags &= ~LOG_FILE_VSCP_WORKS;
 		}
 	}
@@ -514,15 +522,12 @@ CVSCPLogWrkTread::Entry()
 
     // Close server connection
     m_srv.doCmdClose();
-    
-	// Enter receive loop to start to log events
-	//m_srv.doCmdEnterReceiveLoop();
 
 	int rv;
 	//vscpEvent event;
 	while (!TestDestroy() && !m_pLog->m_bQuit) {
 
-        if ( wxSEMA_TIMEOUT == m_pLog->m_semSendQueue.WaitTimeout(300)) continue;
+        if ( wxSEMA_TIMEOUT == m_pLog->m_semSendQueue.WaitTimeout(500)) continue;
         
 
         if (m_pLog->m_sendList.size()) {
@@ -534,7 +539,7 @@ CVSCPLogWrkTread::Entry()
 
             if (NULL == pEvent) continue;
 
-            //m_pLog->writeEvent(&event);
+            m_pLog->writeEvent(pEvent);
 
             // We are done with the event - remove data if any
             if (NULL != pEvent->pdata) {

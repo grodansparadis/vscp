@@ -186,12 +186,12 @@ CLoggerApp::InitInstance()
 
 extern "C" long
 VSCPOpen(const char *pUsername,
-	const char *pPassword,
-	const char *pHost,
-	short port,
-	const char *pPrefix,
-	const char *pParameter,
-	unsigned long flags)
+            const char *pPassword,
+            const char *pHost,
+            short port,
+            const char *pPrefix,
+            const char *pParameter,
+            unsigned long flags)
 {
 
 	long h = 0;
@@ -199,18 +199,19 @@ VSCPOpen(const char *pUsername,
 	CVSCPLog *pdrvObj = new CVSCPLog();
 	if (NULL != pdrvObj) {
 
-		if (pdrvObj->open(pUsername,
-			pPassword,
-			pHost,
-			port,
-			pPrefix,
-			pParameter )) {
+		if (pdrvObj->open( pUsername,
+                            pPassword,
+                            pHost,
+                            port,
+                            pPrefix,
+                            pParameter )) {
 
 			if (!(h = theApp.addDriverObject(pdrvObj))) {
 				delete pdrvObj;
 			}
 
-		} else {
+		} 
+        else {
 			delete pdrvObj;
 		}
 

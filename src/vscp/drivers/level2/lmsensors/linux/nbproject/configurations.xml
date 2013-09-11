@@ -60,7 +60,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>test</executablePath>
           <cTool>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>

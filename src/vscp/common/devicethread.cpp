@@ -624,7 +624,7 @@ void *deviceThread::Entry()
 
         // Open up the driver
         m_pDeviceItem->m_openHandle =
-                m_pDeviceItem->m_proc_VSCPOpen(m_pCtrlObject->m_driverUsername.mb_str(wxConvUTF8),
+                m_pDeviceItem->m_proc_VSCPOpen( m_pCtrlObject->m_driverUsername.mb_str(wxConvUTF8),
                 m_pCtrlObject->m_driverPassword.mb_str(wxConvUTF8),
                 strHost.mb_str(wxConvUTF8),
                 port,
@@ -634,7 +634,7 @@ void *deviceThread::Entry()
         /////////////////////////////////////////////////////////////////////////////
         // Device write worker thread
         /////////////////////////////////////////////////////////////////////////////
-        
+
         m_pwriteLevel2Thread = new deviceLevel2WriteThread;
 
         if (m_pwriteLevel2Thread) {
@@ -645,10 +645,12 @@ void *deviceThread::Entry()
                 if (wxTHREAD_NO_ERROR != (err = m_pwriteLevel2Thread->Run())) {
                     m_pCtrlObject->logMsg(_("Unable to run device write worker thread."), DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            }
+            else {
                 m_pCtrlObject->logMsg(_("Unable to create device write worker thread."), DAEMON_LOGMSG_CRITICAL);
             }
-        } else {
+        }
+        else {
             m_pCtrlObject->logMsg(_("Unable to allocate memory for device write worker thread."), DAEMON_LOGMSG_CRITICAL);
         }
 
@@ -666,10 +668,12 @@ void *deviceThread::Entry()
                 if (wxTHREAD_NO_ERROR != (err = m_preceiveLevel2Thread->Run())) {
                     m_pCtrlObject->logMsg(_("Unable to run device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+            else {
                 m_pCtrlObject->logMsg(_("Unable to create device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
             }
-        } else {
+        } 
+        else {
             m_pCtrlObject->logMsg(_("Unable to allocate memory for device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
         }
 
@@ -929,7 +933,10 @@ void *deviceLevel2ReceiveThread::Entry()
         rv = m_pMainThreadObj->m_pDeviceItem->m_proc_VSCPBlockingReceive(
                     m_pMainThreadObj->m_pDeviceItem->m_openHandle, pEvent, 500);
         
-        if ((CANAL_ERROR_SUCCESS != rv) || (NULL == pEvent))  continue;
+        if ((CANAL_ERROR_SUCCESS != rv) || (NULL == pEvent)) {
+            delete pEvent;
+            continue;
+        }
                        
         // Identify ourselves 
         pEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
@@ -1028,7 +1035,8 @@ void *deviceLevel2WriteThread::Entry()
 				// Remove the node
 				m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
                 //deleteVSCPevent(pqueueEvent);
-			} else {
+			} 
+            else {
 				// Give it another try
 				m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
 			}
