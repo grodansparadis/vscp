@@ -260,6 +260,8 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 extern "C" int
 VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 {
+    wxMilliSleep( timeout );
+    
     // Nothing to receive
     pEvent = NULL;
 	return CANAL_ERROR_FIFO_EMPTY;

@@ -92,7 +92,7 @@ public:
     /*!
      Returns TRUE if we are connected false otherwise.
      */
-    bool isConnected( void ) { return m_psock->IsOk(); };
+    bool isConnected( void ) { return ( m_psock->IsOk() && (m_psock->LastError() != wxSOCKET_INVSOCK )); };
 
     /*!
         checkReturnValue
