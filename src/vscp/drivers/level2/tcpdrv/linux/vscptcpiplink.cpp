@@ -324,10 +324,6 @@ CWrkSendTread::Entry()
 		return NULL;
 	}
 
-	// Find the channel id
-	//uint32_t remoteChannelID;
-	//m_srvRemote.doCmdGetChannelID(&remoteChannelID);
-
 	vscpEventEx eventEx;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
 
