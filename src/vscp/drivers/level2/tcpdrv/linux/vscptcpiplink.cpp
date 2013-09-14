@@ -269,6 +269,20 @@ CTcpipLink::close(void)
 }
 
 
+//////////////////////////////////////////////////////////////////////
+// addEvent2SendQueue
+//
+
+bool 
+CTcpipLink::addEvent2SendQueue(const vscpEvent *pEvent)
+{
+    m_mutexSendQueue.Lock();
+	//m_sendQueue.Append((vscpEvent *)pEvent);
+    m_sendList.push_back((vscpEvent *)pEvent);
+	m_semSendQueue.Post();
+	m_mutexSendQueue.Unlock();
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////
 //                Workerthread Send - CWrkSendTread
@@ -310,15 +324,11 @@ CWrkSendTread::Entry()
 		return NULL;
 	}
 
-	// Find the channel id
-	//uint32_t remoteChannelID;
-	//m_srvRemote.doCmdGetChannelID(&remoteChannelID);
-
 	vscpEventEx eventEx;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
 
 		// Make sure the remote connection is up
-		if (!m_srvRemote.isConnected()) {
+		if ( !m_srvRemote.isConnected() ) {
 
 			if (!bRemoteConnectionLost) {
 				bRemoteConnectionLost = true;
@@ -345,7 +355,7 @@ CWrkSendTread::Entry()
 
 		}
 
-        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout(300)) continue;
+        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout(500)) continue;
         
         // Check if there is event(s) to send
         if ( m_pObj->m_sendList.size() ) {
@@ -429,6 +439,9 @@ CWrkReceiveTread::Entry()
 				(const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
 		return NULL;
 	}
+    
+    // Enter the receive loop
+    m_srvRemote.doCmdEnterReceiveLoop();
 
 	vscpEventEx eventEx;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
@@ -457,6 +470,9 @@ CWrkReceiveTread::Entry()
 				bRemoteConnectionLost = false;
 			}
             
+            // Enter the receive loop
+            m_srvRemote.doCmdEnterReceiveLoop();
+            
             continue;
 
 		}   
@@ -464,6 +480,10 @@ CWrkReceiveTread::Entry()
 		// Check if remote server has something to send
         vscpEvent *pEvent = new vscpEvent;
         if (NULL != pEvent) {
+            
+            pEvent->sizeData = 0;
+            pEvent->pdata = NULL;
+            
             if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockReceive(pEvent)) {
 
                 if (doLevel2Filter( pEvent, &m_pObj->m_vscpfilter)) {

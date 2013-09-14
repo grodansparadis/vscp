@@ -92,7 +92,8 @@ public:
     /*!
      Returns TRUE if we are connected false otherwise.
      */
-    bool isConnected( void ) { return m_psock->IsOk(); };
+    bool isConnected( void ) { return ( m_psock->IsOk() && 
+			(m_psock->LastError() != wxSOCKET_INVSOCK )); };
 
     /*!
         checkReturnValue
@@ -276,12 +277,12 @@ public:
     /*!
         Get vendor string
     */
-    const char * doCmdVendorString( void );
+    const char *doCmdVendorString( void );
 
     /*!
         Get Driver information string.
     */
-    const char * doCmdGetDriverInfo( void );
+    const char *doCmdGetDriverInfo( void );
 
     /*!
         Get GUID for this interface.  

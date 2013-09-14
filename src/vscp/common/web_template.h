@@ -79,7 +79,7 @@
 #define WEB_DMEDIT_TABLE_END "</tbody></table>"
 
 // DM-Edit post - 
-#define WEB_DMEDIT_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnexit\" name=\"btnexit\">Exit</button><button type=\"submit\" value=\"btnsave\" name=\"btnsave\">save</button><br></div>"
+#define WEB_DMEDIT_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnsave\" name=\"btnsave\">save</button><br></div>"
 
 
 // * * * DM Post * * *
@@ -124,7 +124,7 @@
 #define WEB_VAREDIT_TABLE_END "</tbody></table>"
 
 //  Variable-Edit submit 
-#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnexit\" name=\"btnexit\">Exit</button><button type=\"submit\" value=\"btnsave\" name=\"btnsave\">save</button><br></div>"
+#define WEB_VAREDIT_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnsave\" name=\"btnsave\">save</button><br></div>"
 
 // * * * Variable Post * * *
 
