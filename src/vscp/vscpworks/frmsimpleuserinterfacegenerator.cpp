@@ -62,7 +62,7 @@
 
 ////@begin XPM images
 /* XPM */
-static char *deffile_xpm[] = {
+static const char *deffile_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 16 32 1",
 "= c #97C4E7",
@@ -117,7 +117,7 @@ static char *deffile_xpm[] = {
 };
 
 /* XPM */
-static char *open_xpm[] = {
+static const char *open_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 15 5 1",
 "  c None",
@@ -144,7 +144,7 @@ static char *open_xpm[] = {
 };
 
 /* XPM */
-static char *save_xpm[] = {
+static const char *save_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 15 4 1",
 "  c None",
@@ -170,7 +170,7 @@ static char *save_xpm[] = {
 };
 
 /* XPM */
-static char *filesaveas_xpm[] = {
+static const char *filesaveas_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 15 23 1",
 "X c Black",
@@ -215,7 +215,7 @@ static char *filesaveas_xpm[] = {
 };
 
 /* XPM */
-static char *redo_xpm[] = {
+static const char *redo_xpm[] = {
 /* width height num_colors chars_per_pixel */
 "    16    15        3            1",
 /* colors */
@@ -241,7 +241,7 @@ static char *redo_xpm[] = {
 };
 
 /* XPM */
-static char *new_xpm[] = {
+static const char *new_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 15 31 1",
 ". c #7198D9",
@@ -294,7 +294,7 @@ static char *new_xpm[] = {
 };
 
 /* XPM */
-static char * delete_xpm[] = {
+static const char * delete_xpm[] = {
 "16 16 107 2",
 "    c None",
 ".   c #1B0202",

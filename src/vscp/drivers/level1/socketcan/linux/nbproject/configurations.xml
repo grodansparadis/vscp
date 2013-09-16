@@ -2,6 +2,20 @@
 <configurationDescriptor version="89">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="linux">
+      <df name="include">
+        <df name="linux">
+          <df name="can">
+            <in>raw.h</in>
+          </df>
+          <in>can.h</in>
+        </df>
+        <df name="socketcan">
+          <df name="can">
+            <in>raw.h</in>
+          </df>
+          <in>can.h</in>
+        </df>
+      </df>
       <in>socketcandrv.cpp</in>
       <in>socketcandrv.h</in>
       <in>socketcanobj.cpp</in>
@@ -25,6 +39,7 @@
           <itemPath>../../../../common/devicelist.cpp</itemPath>
           <itemPath>../../../../common/devicelist.h</itemPath>
           <itemPath>../../../../common/devicethread.h</itemPath>
+          <itemPath>../../../../common/guid.h</itemPath>
           <itemPath>../../../../common/vscp.h</itemPath>
           <itemPath>../../../../common/vscp_class.h</itemPath>
           <itemPath>../../../../common/vscp_type.h</itemPath>
@@ -77,14 +92,11 @@
           <ccTool>
             <incDir>
               <pElem>include</pElem>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
@@ -120,6 +132,8 @@
       </item>
       <item path="../../../../common/devicethread.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="../../../../common/guid.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../../../../common/vscp.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/vscp_class.h" ex="false" tool="3" flavor2="0">
@@ -131,22 +145,52 @@
       <folder path="src">
         <ccTool>
           <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
       </folder>
+      <item path="include/linux/can.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/linux/can/raw.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/socketcan/can.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="include/socketcan/can/raw.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="socketcandrv.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="socketcandrv.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="socketcanobj.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="socketcanobj.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
     </conf>

@@ -73,7 +73,8 @@ using namespace std;
 // Forward declarations
 class CWrkThread;
 class VscpTcpIf;
-class wxFile;
+//class wxFile;
+class Cmqtt;
 
 // Subscribe base class
 
@@ -92,50 +93,9 @@ public:
     void on_connect(int rc);
     void on_message(const struct mosquitto_message *message);
     void on_subscribe(int mid, int qos_count, const int *granted_qos);
-
-    /*!
-    VSCP daemon address
-     */
-    wxString m_hostLocal;
-
-    /*!
-        VSCP daemon port
-     */
-    int m_portLocal;
-
-    /*!
-        User name for VSCP daemon
-     */
-    wxString m_usernameLocal;
-
-    /*!
-        Password for VSCP daemon
-     */
-    wxString m_passwordLocal;
-
-    /*!
-        Subscribe or Publish topic.
-     */
-    wxString m_topic;
-    
-    /*!
-        MQTT host (broker)
-     */
-    wxString m_hostMQTT;
-    
-    /*!
-        MQTT port
-    */       
-	int m_portMQTT;
-                
-    /*!
-        Keepalive value
-    */
-	int m_keepalive;
-    
-    /// VSCP server interface
-    VscpTcpIf m_srv;
-	
+   
+    /// Sensor object
+    Cmqtt *m_pObj;	
 	
 };
 
@@ -156,46 +116,9 @@ public:
     void on_connect(int rc);
     void on_message(const struct mosquitto_message *message);
     void on_subscribe(int mid, int qos_count, const int *granted_qos);
-
-    /*!
-    VSCP daemon address
-     */
-    wxString m_hostLocal;
-
-    /*!
-        VSCP daemon port
-     */
-    int m_portLocal;
-
-    /*!
-        User name for VSCP daemon
-     */
-    wxString m_usernameLocal;
-
-    /*!
-        Password for VSCP daemon
-     */
-    wxString m_passwordLocal;
-
-    /*!
-        Subscribe or Publish topic.
-     */
-    wxString m_topic;
-    
-    /*!
-        MQTT host (broker)
-     */
-    wxString m_hostMQTT;
-    
-    /*!
-        MQTT port
-    */       
-	int m_portMQTT;
-                
-    /*!
-        Keepalive value
-    */
-	int m_keepalive;
+	
+	/// Sensor object
+    Cmqtt *m_pObj;
 };
 
 class Cmqtt {
@@ -234,7 +157,7 @@ public:
     bool m_bQuit;
     
     /// True if we should subscribe. False if we should publish)
-    bool bSubscribe;
+    bool m_bSubscribe;
 
     /// Server supplied username
     wxString m_username;
@@ -275,7 +198,30 @@ public:
         MQTT password (broker)
      */
     wxString m_passwordMQTT;
-                
+	
+	/*!
+		Event simplification
+     */
+    wxString m_simplify;
+	
+	/// Flag for simple channel handling
+	bool m_bSimplify;
+	
+	/// Class for simple channel handling
+	uint16_t m_simple_class;
+	
+	/// Type for simple channel handling
+	uint16_t m_simple_type;
+	
+	/// Coding for simple channel handling
+	uint16_t m_simple_coding;
+	
+	/// zone for simple channel handling
+	uint16_t m_simple_zone;
+            
+	/// Subzone for simple channel handling
+	uint16_t m_simple_subzone;
+	
     /*!
         Keepalive value
     */
@@ -318,34 +264,6 @@ public:
 
     /// Destructor
     ~CWrkThread();
-
-    /*!
-        Thread code entry point
-     */
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-     */
-    virtual void OnExit();
-
-    /// VSCP server interface
-    VscpTcpIf m_srv;
-
-    /// Sensor object
-    Cmqtt *m_pObj;
-
-};
-
-class CWriteSocketCanTread : public wxThread {
-public:
-
-    /// Constructor
-    CWriteSocketCanTread();
-
-    /// Destructor
-    ~CWriteSocketCanTread();
 
     /*!
         Thread code entry point

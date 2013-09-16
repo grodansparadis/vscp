@@ -426,7 +426,7 @@ static const char *pdf_xpm[] = {
 };
 
 /* XPM */
-static char *help_xpm[] = {
+static const char *help_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 15 50 1",
 "j c #4E7FD0",

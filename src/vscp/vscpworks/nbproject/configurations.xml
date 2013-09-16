@@ -135,14 +135,13 @@
           <executablePath>vscpworks</executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
               <pElem>/usr/local/include/wx-2.8</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>wxUSE_GUI=1</Elem>
             </preprocessorList>
@@ -175,11 +174,6 @@
       </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="../common/canalsuperwrapper.h" ex="false" tool="3" flavor2="0">
@@ -188,48 +182,23 @@
       </item>
       <item path="../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="../common/dllwrapper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/guid.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/mdf.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="../common/mdf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/register.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
-        </ccTool>
       </item>
       <item path="../common/register.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -243,43 +212,42 @@
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="../common/vscphelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="bootdevice.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="bootdevice.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="bootdevice_pic1.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="bootdevice_pic1.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="bootdevice_vscp.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="bootdevice_vscp.h" ex="false" tool="3" flavor2="0">
@@ -288,18 +256,30 @@
       </item>
       <item path="devicebootloaderwizard.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="devicebootloaderwizard.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dialogabstractionedit.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dialogabstractionedit.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dialogeditlevelidmrow.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dialogeditlevelidmrow.h" ex="false" tool="3" flavor2="0">
@@ -308,12 +288,20 @@
       </item>
       <item path="dialogsetfiltermask.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dialogsetfiltermask.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dlgabout.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dlgabout.h" ex="false" tool="3" flavor2="0">
@@ -322,6 +310,10 @@
       </item>
       <item path="dlgconfiguration.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dlgconfiguration.h" ex="false" tool="3" flavor2="0">
@@ -332,18 +324,30 @@
       </item>
       <item path="dlgnewvscpsession.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dlgnewvscpsession.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dlgselectdaemoninterface.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dlgselectdaemoninterface.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dlgvscpfilter.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dlgvscpfilter.h" ex="false" tool="3" flavor2="0">
@@ -352,12 +356,20 @@
       </item>
       <item path="dlgvscpinterfacesettings.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dlgvscpinterfacesettings.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="dlgvscpmsg.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dlgvscpmsg.h" ex="false" tool="3" flavor2="0">
@@ -366,19 +378,21 @@
       </item>
       <item path="dlgvscptrmit.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="dlgvscptrmit.h" ex="false" tool="3" flavor2="0">
       </item>
-      <folder path="vscpworks">
+      <folder path="common">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
         </ccTool>
       </folder>
       <item path="frmcanalsession.h" ex="false" tool="3" flavor2="0">
@@ -387,36 +401,60 @@
       </item>
       <item path="frmdaemondecisionmartrixeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="frmdaemondecisionmartrixeditor.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="frmdaemonvariableeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="frmdaemonvariableeditor.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="frmdeviceconfig.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="frmdeviceconfig.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="frmmain.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="frmmain.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="frmmdfeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="frmmdfeditor.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="frmscanfordevices.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="frmscanfordevices.h" ex="false" tool="3" flavor2="0">
@@ -426,24 +464,40 @@
             tool="1"
             flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="frmsimpleuserinterfacegenerator.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="frmvscpsession.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="frmvscpsession.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="gridtable.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="gridtable.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="merlin.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="merlin.h" ex="false" tool="3" flavor2="0">
@@ -452,18 +506,33 @@
       </item>
       <item path="readregister.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="readregister.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="threadvscpwork.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="threadvscpwork.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="vscpbootloader.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="vscpbootloader.h" ex="false" tool="3" flavor2="0">
@@ -472,12 +541,20 @@
       </item>
       <item path="vscptxobj.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="vscptxobj.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="vscpworks.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
         </ccTool>
       </item>
       <item path="vscpworks.h" ex="false" tool="3" flavor2="0">

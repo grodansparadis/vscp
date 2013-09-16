@@ -243,12 +243,12 @@ extern "C" void vscphlp_getDataCodingString(const unsigned char *pString,
   \param str String that holds the result
   \return true on success, false on failure.
  */
-extern "C" BOOL vscphlp_getVSCPDataCodingAsString(const vscpEvent *pEvent,
-		char *pStr,
-		int len)
+extern "C" BOOL vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
+                                                    char *pStr,
+                                                    int len)
 {
 	wxString wxstr;
-	if (!getVSCPDataCodingAsString(pEvent, wxstr)) return FALSE;
+	if (!getVSCPMeasurementAsString(pEvent, wxstr)) return FALSE;
 
 	strncpy(pStr, wxstr.ToAscii(), len);
 
@@ -261,10 +261,29 @@ extern "C" BOOL vscphlp_getVSCPDataCodingAsString(const vscpEvent *pEvent,
   \param length Number of bytes it consist of including datacoding byte
   \return value as float
  */
-extern "C" float vscphlp_getDataCodingFloat(const unsigned char *pNorm,
+extern "C" float vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
 		const unsigned char length)
 {
-	return getDataCodingFloat(pNorm, length);
+	return getMeasurementAsFloat(pNorm, length);
+}
+
+/*!
+  Get data in the VSCP data coding format to a float
+  \param value Floating point value to convert.
+  \param pdata Pointer to first byte of VSCP data.
+  \param unit Code for the unit the data is represented in.
+  \param sendoridx Index for sensor-   
+  \return value as float
+ */
+extern "C" float vscphlp_convertFloatToNormalizedEventData( float value, 
+                                                       unsigned char *pdata,
+                                                       unsigned char unit,
+                                                       unsigned char sensoridx)
+{
+	return convertFloatToNormalizedEventData( value, 
+												pdata,
+												unit,
+												sensoridx );
 }
 
 

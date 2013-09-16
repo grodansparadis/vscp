@@ -77,34 +77,7 @@ mqtt_subscribe::mqtt_subscribe(const wxString& usernameLocal,
                                     int portMQTT,
                                     int keepalive)
 {
-    m_hostLocal = hostLocal;
-	m_portLocal = portLocal;
-	m_usernameLocal = usernameLocal;
-	m_passwordLocal = passwordLocal;
-	m_topic = topic;
-	m_hostMQTT = hostMQTT;
-	m_portMQTT = portMQTT;
-	m_keepalive = keepalive;
-
-	// Connect to the VSCP Server
-	if (m_srv.doCmdOpen(hostLocal,
-			portLocal,
-			usernameLocal,
-			passwordLocal) <= 0) {
-		syslog(LOG_ERR,
-				"%s",
-				(const char *) "mqtt_subscribe:Unable to connect to VSCP TCP/IP interface. Terminating!");
-		return;
-	}
-
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
-
-    
-	/* Connect immediately. This could also be done by calling
-	 * mqtt_tempconv->connect(). */
-	//connect(host, port );
+    ;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -113,8 +86,7 @@ mqtt_subscribe::mqtt_subscribe(const wxString& usernameLocal,
 
 mqtt_subscribe::~mqtt_subscribe()
 {
-	// Close the VSCP channel
-	m_srv.doCmdClose();
+    ;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -125,7 +97,7 @@ void mqtt_subscribe::on_connect(int rc)
 {
 	if (0 == rc) {
 		// Only attempt to subscribe on a successful connect. 
-		subscribe(NULL, m_topic.ToAscii());
+		subscribe(NULL, m_pObj->m_topic.ToAscii() );
 	}
 }
 
@@ -137,10 +109,33 @@ void mqtt_subscribe::on_message(const struct mosquitto_message *message)
 {
 	vscpEventEx eventEx;
 
-	if (!strcmp(message->topic, m_topic.ToAscii())) {
+	if ( !strcmp( message->topic, m_pObj->m_topic.ToAscii() ) ) {
+        
 		wxString str = wxString::FromAscii((const char *) message->payload);
 		if (getVscpEventExFromString(&eventEx, str)) {
-			m_srv.doCmdSendEx(&eventEx);
+            
+            vscpEvent *pEvent = new vscpEvent;
+            if (NULL != pEvent) {
+                
+                pEvent->sizeData = 0;
+                pEvent->pdata = NULL;
+                
+                if ( doLevel2FilterEx( &eventEx, &m_pObj->m_vscpfilter ) ) {
+                    
+                    if ( convertVSCPfromEx( pEvent, &eventEx ) ) {
+                        m_pObj->m_mutexReceiveQueue.Lock();
+                        m_pObj->m_receiveList.push_back(pEvent);
+                        m_pObj->m_semReceiveQueue.Post();
+                        m_pObj->m_mutexReceiveQueue.Unlock();
+                    }
+                    else {
+                        
+                    }
+                }
+                else {
+                    deleteVSCPevent(pEvent);
+                }
+            }
 		}
 	}
 }
@@ -173,20 +168,7 @@ mqtt_publish::mqtt_publish(const wxString& usernameLocal,
                             int portMQTT,
                             int keepalive)
 {
-	m_hostLocal = hostLocal;
-	m_portLocal = portLocal;
-	m_usernameLocal = usernameLocal;
-	m_passwordLocal = passwordLocal;
-	m_topic = topic;
-	m_hostMQTT = hostMQTT;
-	m_portMQTT = portMQTT;
-	m_keepalive = keepalive;
-
-	//int keepalive = 60;
-
-	/* Connect immediately. This could also be done by calling
-	 * mqtt_tempconv->connect(). */
-	//connect(host, port, keepalive);
+    ;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -204,10 +186,10 @@ mqtt_publish::~mqtt_publish()
 
 void mqtt_publish::on_connect(int rc)
 {
-	printf("Connected with code %d.\n", rc);
+	//printf("Connected with code %d.\n", rc);
 	if (rc == 0) {
-		/* Only attempt to subscribe on a successful connect. */
-		subscribe(NULL, "temperature/celsius");
+		// Only attempt to subscribe on a successful connect. 
+		subscribe( NULL, m_pObj->m_topic.ToAscii() );
 	}
 }
 
@@ -217,18 +199,21 @@ void mqtt_publish::on_connect(int rc)
 
 void mqtt_publish::on_message(const struct mosquitto_message *message)
 {
+    /*
 	double temp_celsius, temp_farenheit;
 	char buf[51];
 
 	if (!strcmp(message->topic, "temperature/celsius")) {
 		memset(buf, 0, 51 * sizeof(char));
-		/* Copy N-1 bytes to ensure always 0 terminated. */
+		// Copy N-1 bytes to ensure always 0 terminated. 
 		memcpy(buf, message->payload, 50 * sizeof(char));
 		temp_celsius = atof(buf);
 		temp_farenheit = temp_celsius * 9.0 / 5.0 + 32.0;
 		snprintf(buf, 50, "%f", temp_farenheit);
 		publish(NULL, "temperature/farenheit", strlen(buf), buf);
 	}
+    */
+    
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -237,7 +222,7 @@ void mqtt_publish::on_message(const struct mosquitto_message *message)
 
 void mqtt_publish::on_subscribe(int mid, int qos_count, const int *granted_qos)
 {
-	printf("Subscription succeeded.\n");
+	//printf("Subscription succeeded.\n");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -248,7 +233,13 @@ Cmqtt::Cmqtt()
 {
 	m_bQuit = false;
 	m_pthreadWork = NULL;
-	bSubscribe = true;
+	m_bSubscribe = true;
+    m_bSimplify = false;
+    m_simple_class = 0;
+    m_simple_type = 0;
+    m_simple_coding = 0;
+    m_simple_zone = 0;
+    m_simple_subzone = 0;
 	clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
@@ -301,7 +292,7 @@ Cmqtt::open(const char *pUsername,
 		str.Trim(false);
 		str.MakeUpper();
 		if (wxNOT_FOUND != str.Find(_("PUBLISH"))) {
-			bSubscribe = false;
+			m_bSubscribe = false;
 		}
 	}
 
@@ -394,7 +385,6 @@ Cmqtt::open(const char *pUsername,
 	//				are received. 
 	//
 
-
 	wxString strName = m_prefix +
 			wxString::FromAscii("_type");
 	m_srv.getVariableString(strName, &str);
@@ -405,7 +395,7 @@ Cmqtt::open(const char *pUsername,
 	str.Trim(false);
 	str.MakeUpper();
 	if (wxNOT_FOUND != str.Find(_("PUBLISH"))) {
-		bSubscribe = false;
+		m_bSubscribe = false;
 	}
 
 	strName = m_prefix +
@@ -443,7 +433,48 @@ Cmqtt::open(const char *pUsername,
 	if (m_srv.getVariableString(strName, &str)) {
 		readMaskFromString(&m_vscpfilter, str);
 	}
-
+    
+    strName = m_prefix +
+			wxString::FromAscii("_simplify");
+	m_srv.getVariableString(strName, &m_simplify);
+    
+    if ( m_simplify.Length() ) {
+        
+        m_bSimplify = true; 
+        
+        wxStringTokenizer tkzSimple( m_simplify, _(",\n"));
+        
+        // simple class
+        if (tkzSimple.HasMoreTokens()) {
+            m_simple_class = readStringValue(tkzSimple.GetNextToken());
+        }
+        
+        // simple type
+        if (tkzSimple.HasMoreTokens()) {
+            m_simple_type = readStringValue(tkzSimple.GetNextToken());
+        }
+        
+        // simple coding
+        if (tkzSimple.HasMoreTokens()) {
+            m_simple_coding = readStringValue(tkzSimple.GetNextToken());
+        }
+        
+        // simple zone
+        if (tkzSimple.HasMoreTokens()) {
+            m_simple_zone = readStringValue(tkzSimple.GetNextToken());
+        }
+        
+        // simple subzone
+        if (tkzSimple.HasMoreTokens()) {
+            m_simple_subzone = readStringValue(tkzSimple.GetNextToken());
+        }
+        
+    }
+    else {
+        m_bSimplify = false;
+    }
+    
+    
 	// Close the channel
 	m_srv.doCmdClose();
 
@@ -485,12 +516,12 @@ Cmqtt::close(void)
 
 CWrkThread::CWrkThread()
 {
-	m_pObj = NULL;
+    m_pObj = NULL;
 }
 
 CWrkThread::~CWrkThread()
 {
-	;
+    ;
 }
 
 
@@ -501,68 +532,30 @@ CWrkThread::~CWrkThread()
 void *
 CWrkThread::Entry()
 {
-	bool bActivity;
-	wxString str;
-	int rv;
+    bool bActivity;
+    wxString str;
+    int rv;
 
-	mosqpp::lib_init();
+    mosqpp::lib_init();
 
-	if (m_pObj->bSubscribe) {
+    if (m_pObj->m_bSubscribe) {
 
-		// S u b s c r i b e
-		mqtt_subscribe *pSubscribe = new mqtt_subscribe(
-				m_pObj->m_username,
-				m_pObj->m_password,
-				m_pObj->m_host,
-				m_pObj->m_port,
-				m_pObj->m_topic,
-				m_pObj->m_hostMQTT,
-				m_pObj->m_portMQTT,
-				m_pObj->m_keepalive);
+        // S u b s c r i b e
+        mqtt_subscribe *pSubscribe = new mqtt_subscribe(
+                                            m_pObj->m_username,
+                                            m_pObj->m_password,
+                                            m_pObj->m_host,
+                                            m_pObj->m_port,
+                                            m_pObj->m_topic,
+                                            m_pObj->m_hostMQTT,
+                                            m_pObj->m_portMQTT,
+                                            m_pObj->m_keepalive);
+        
+        // Save the object class
+        pSubscribe->m_pObj = m_pObj;
 
-		while (!TestDestroy() && !m_pObj->m_bQuit) {
-
-            vscpEvent *pEvent = new vscpEvent();
-            if (NULL != pEvent) {
-/*
-                pEvent->pdata = new uint8_t[16 + frame.len];
-                if (NULL == pEvent->pdata) {
-                    delete pEvent;
-                    continue;
-                }
-
-                // Interface GUID is set to all nulls as
-                // this event should be sent to all clients.
-                memset(pEvent->pdata, 0, 16);
-
-                // GUID will be set to GUID of interface
-                // by driver interface with LSB set to nickname
-                memset(pEvent->GUID, 0, 16);
-                pEvent->GUID[0] = frame.can_id & 0xff;
-
-                // Set VSCP class + 512
-                pEvent->vscp_class = getVSCPclassFromCANid(frame.can_id) + 512;
-
-                // Set VSCP type
-                pEvent->vscp_type = getVSCPtypeFromCANid(frame.can_id);
-
-                // Copy data if any
-                pEvent->sizeData = frame.len + 16;
-                if (frame.len) {
-                    memcpy(pEvent->pdata + 16, frame.data, frame.len);
-                }
-*/
-                if (doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
-                    m_pObj->m_mutexReceiveQueue.Lock();
-                    //m_pObj->m_receiveQueue.Append(pEvent);
-                    m_pObj->m_receiveList.push_back(pEvent);
-                    m_pObj->m_semReceiveQueue.Post();
-                    m_pObj->m_mutexReceiveQueue.Unlock();
-                } else {
-                    deleteVSCPevent(pEvent);
-                }
-            }
-
+        while (!TestDestroy() && !m_pObj->m_bQuit) {
+           
             rv = pSubscribe->loop();
 
             if (rv) {
@@ -571,28 +564,12 @@ CWrkThread::Entry()
 
             ::wxMilliSleep(50);
 
-		}
-	} 
+        }
+    }
     else {
-/*
-		// Connect to the VSCP Server
-		if (m_srv.doCmdOpen(m_pObj->m_host,
-				m_pObj->m_port,
-				m_pObj->m_username,
-				m_pObj->m_password) <= 0) {
-			syslog(LOG_ERR,
-					"%s",
-					(const char *) "mqtt_subscribe:Unable to connect to VSCP TCP/IP interface. Terminating!");
-			return NULL;
-		}
-
-		// Find the channel id
-		uint32_t ChannelID;
-		m_srv.doCmdGetChannelID(&ChannelID);
- */ 
-        
-		// P u b l i s h
-		mqtt_publish *pPublish = new mqtt_publish( m_pObj->m_username,
+       
+        // P u b l i s h
+        mqtt_publish *pPublish = new mqtt_publish( m_pObj->m_username,
                                                         m_pObj->m_password,
                                                         m_pObj->m_host,
                                                         m_pObj->m_port,
@@ -601,7 +578,10 @@ CWrkThread::Entry()
                                                         m_pObj->m_portMQTT,
                                                         m_pObj->m_keepalive);
 
-		while (!TestDestroy() && !m_pObj->m_bQuit) {
+        // Save the object class
+        pPublish->m_pObj = m_pObj;
+        
+        while (!TestDestroy() && !m_pObj->m_bQuit) {
 
             if (wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout(300)) continue;
 
@@ -611,11 +591,18 @@ CWrkThread::Entry()
                 vscpEvent *pEvent = m_pObj->m_sendList.front();
                 m_pObj->m_sendList.pop_front();
                 m_pObj->m_mutexSendQueue.Unlock();
-
                 if (NULL == pEvent) continue;
-
-                //_pObj->writeEvent(&event);
-
+                if (m_pObj->m_bSimplify) {
+                    
+                }
+                else {
+                    writeVscpEventToString( pEvent, str );
+                    pPublish->publish( NULL, 
+                                        m_pObj->m_topic.ToAscii(), 
+                                        strlen( str.mb_str() ), 
+                                        str.mb_str() );
+                }
+                
                 // We are done with the event - remove data if any
                 if (NULL != pEvent->pdata) {
                     delete [] pEvent->pdata;
@@ -635,12 +622,9 @@ CWrkThread::Entry()
         }
     }
 
-	mosqpp::lib_cleanup();
+    mosqpp::lib_cleanup();
 
-	// Close the VSCP channel
-	//m_srv.doCmdClose();
-
-	return NULL;
+    return NULL;
 
 }
 
@@ -651,7 +635,6 @@ CWrkThread::Entry()
 void
 CWrkThread::OnExit()
 {
-	;
+    ;
 }
-
 

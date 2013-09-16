@@ -122,6 +122,7 @@ VSCPInformation::VSCPInformation(void)
 	m_hashClass[ 1028 ] = _("CLASS2_TEXT2SPEECH");
 	m_hashClass[ 1029 ] = _("CLASS2_CUSTOM");
 	m_hashClass[ 1030 ] = _("CLASS2_DISPLAY");
+    m_hashClass[ 1040 ] = _("CLASS2_MEASUREMENT_STR");
 	m_hashClass[ 65535 ] = _("CLASS2_VSCPD");
 
 
@@ -642,6 +643,65 @@ VSCPInformation::VSCPInformation(void)
 
 	// Level II Display functionality Class=1030 (0x406)
 	m_hashType[ MAKE_CLASSTYPE_LONG(1030, 0) ] = _("DISPLAY_GENERAL");
+    
+    // Level II Measurement class Class=1040 (0x410)
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 0) ] = _("MEASUREMENT_STR_GENERAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(1040, 1) ] = _("COUNT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 2) ] = _("LENGTH");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 3) ] = _("MASS");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 4) ] = _("TIME");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 5) ] = _("ELECTRIC_CURRENT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 6) ] = _("TEMPERATURE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 7) ] = _("AMOUNT_OF_SUBSTANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 8) ] = _("INTENSITY_OF_LIGHT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 9) ] = _("FREQUENCY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 10) ] = _("RADIOACTIVITY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 11) ] = _("FORCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 12) ] = _("PRESSURE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 13) ] = _("ENERGY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 14) ] = _("POWER");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 15) ] = _("ELECTRICAL_CHARGE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 16) ] = _("ELECTRICAL_POTENTIAL");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 17) ] = _("ELECTRICAL_CAPACITANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 18) ] = _("ELECTRICAL_RECISTANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 19) ] = _("ELECTRICAL_CONDUCTANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 20) ] = _("MAGNETIC_FIELD_STRENGTH");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 21) ] = _("MAGNETIC_FLUX");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 22) ] = _("MAGNETIC_FLUX_DENSITY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 23) ] = _("INDUCTANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 24) ] = _("FLUX_OF_LIGHT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 25) ] = _("ILLUMINANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 26) ] = _("RADIATION_DOSE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 27) ] = _("CATALYTIC_ACITIVITY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 28) ] = _("VOLUME");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 29) ] = _("SOUND_INTENSITY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 30) ] = _("ANGLE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 31) ] = _("POSITION");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 32) ] = _("SPEED");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 33) ] = _("ACCELERATION");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 34) ] = _("TENSION");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 35) ] = _("HUMIDITY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 36) ] = _("FLOW");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 27) ] = _("THERMAL_RESISTANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 38) ] = _("REFRACTIVE_POWER");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 39) ] = _("DYNAMIC_VISCOSITY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 40) ] = _("SOUND_IMPEDANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 41) ] = _("SOUND_RESISTANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 42) ] = _("ELECTRIC_ELASTANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 43) ] = _("LUMINOUS_ENERGY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 44) ] = _("LUMINANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 45) ] = _("CHEMICAL_CONCENTRATION");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 46) ] = _("ABSORBED_DOSE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 47) ] = _("DOSE_EQVIVALENT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 49) ] = _("DEWPOINT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 50) ] = _("RELATIVE_LEVEL");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 51) ] = _("ALTITUDE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 52) ] = _("AREA");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 53) ] = _("RADIANT INTENSITY");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 54) ] = _("RADIANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 55) ] = _("IRRADIANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 56) ] = _("SPECTRAL RADIANCE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 57) ] = _("SPECTRAL IRRADIANCE");
 
 	// Level II VSCPD daemon functionality Class=65535 (0xFFFF)
 	m_hashType[ MAKE_CLASSTYPE_LONG(65535, 0) ] = _("VSCPD_GENERAL");
@@ -1084,10 +1144,11 @@ wxString& getDataCodingString(const unsigned char *pString,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// getDataCodingFloat
+// getMeasurementAsFloat
 //
 
-float getDataCodingFloat(const unsigned char *pNorm, const unsigned char length)
+float getMeasurementAsFloat(const unsigned char *pNorm, 
+                                    const unsigned char length)
 {
 	float value;
 	value = std::numeric_limits<float>::infinity();
@@ -1096,15 +1157,16 @@ float getDataCodingFloat(const unsigned char *pNorm, const unsigned char length)
 		value = pfloat[0];
 		// please insert test for (!NaN || !INF)
 	}
+    
 	return value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeVSCPDataCodingToString
+// getVSCPMeasurementAsString
 //
 //
 
-bool getVSCPDataCodingAsString(const vscpEvent *pEvent, wxString& strValue)
+bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 {
 	int i, j;
 	int offset = 0;
@@ -1448,6 +1510,139 @@ bool getVSCPDataCodingAsString(const vscpEvent *pEvent, wxString& strValue)
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getVSCPMeasurementFloat64AsString
+//
+//
+
+bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strValue)
+{
+    float value;
+    int offset = 0;
+    
+    // If class >= 512 and class <1024 we
+	// have GUID in front of data. 
+	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && 
+			(pEvent->vscp_class < VSCP_CLASS2_PROTOCOL) ) {
+		offset = 16;
+	}
+    
+    if (pEvent->sizeData-offset < 6) return false;
+    
+	value = std::numeric_limits<float>::infinity();
+	float *pfloat = (float*)(pEvent->pdata+offset);
+    strValue.Format( _("%f"), *pfloat );
+    
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// getVSCPMeasurementWithZoneAsString
+//
+//
+
+bool getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strValue)
+{
+    int offset;
+    
+    // If class >= 512 and class <1024 we
+	// have GUID in front of data. 
+	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && 
+			(pEvent->vscp_class < VSCP_CLASS2_PROTOCOL) ) {
+		offset = 16;
+	}
+    
+    // Must at least have indez, zone, subzone, normalizewr byte, one data byte
+    if (pEvent->sizeData-offset < 5) return false;
+    
+    // We mimic a standard measurement
+    vscpEvent eventMimic;
+    eventMimic.vscp_class = pEvent->vscp_class;
+    eventMimic.vscp_type = pEvent->vscp_type;
+    eventMimic.sizeData = pEvent->sizeData;
+    memcpy( eventMimic.pdata, pEvent->pdata+offset+3, pEvent->sizeData-offset-3 );
+    
+    return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// convertMeasurementFloatToNormalizedEventData
+//
+
+bool convertMeasurementFloatToNormalizedEventData( double value, 
+                                                        uint8_t *pdata, 
+                                                        uint8_t unit,
+                                                        uint8_t sensoridx )
+{
+    // Check pointer
+    if ( NULL == pdata ) return false;
+    
+    unit &= 3;      // Mask of invalid bits
+    unit <<= 3;     // Shift to correct position
+    
+    sensoridx &= 7;   // Mask of invalid bits
+    
+    char buf[128];
+    bool bNegative = (value>0) ? false : true ;
+    int ndigits = 0;
+    uint64_t val64;
+    double intpart;
+       
+    char *pos = strchr(buf,'.');
+    if ( NULL != pos ) {
+        ndigits = strlen(pos)-1;
+    }
+    else {
+       ndigits=0;
+    }
+    
+    modf( value, &intpart );
+    val64 = (uint64_t)(value * pow(10,ndigits));
+    wxUINT64_SWAP_ON_LE(val64);
+    
+    if ( val64 < ((double)0x80) ) {
+        pdata[2] = val64 & 0xff;
+    }
+    else if ( val64 < ((double)0x800) ) {
+        pdata[2] = (val64 >> 8) & 0xff;
+        pdata[3] = val64 & 0xff;
+    }
+    else if ( val64 < ((double)0x800) ) {
+        pdata[2] = (val64 >> 16) & 0xff;
+        pdata[3] = (val64 >> 8) & 0xff;
+        pdata[4] = val64 & 0xff;
+    }
+    else if ( val64 < ((double)0x80000) ) {
+        pdata[2] = (val64 >> 24) & 0xff;
+        pdata[3] = (val64 >> 16) & 0xff;
+        pdata[4] = (val64 >> 8) & 0xff;
+        pdata[5] = val64 & 0xff;
+    }
+    else if ( val64 < ((double)0x80000) ) {
+        pdata[2] = (val64 >> 32) & 0xff;
+        pdata[3] = (val64 >> 24) & 0xff;
+        pdata[4] = (val64 >> 16) & 0xff;
+        pdata[5] = (val64 >> 8) & 0xff;
+        pdata[6] = val64 & 0xff;
+    }
+    else if ( val64 < ((double)0x80000) ) {
+        pdata[2] = (val64 >> 40) & 0xff;
+        pdata[3] = (val64 >> 32) & 0xff;
+        pdata[4] = (val64 >> 24) & 0xff;
+        pdata[5] = (val64 >> 16) & 0xff;
+        pdata[6] = (val64 >> 8) & 0xff;
+        pdata[7] = val64 & 0xff;
+    }
+    else {
+        return false;
+    } 
+    
+    pdata[0] = 0x80 + unit + sensoridx;  // Normalized integer + unit + sensorindex
+    pdata[1] = 0x80 + ndigits;  // Decimal point shifted five steps to the left
+    
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////////////
 // replaceBackslash
@@ -3234,7 +3429,7 @@ wxString& getRealTextData(vscpEvent *pEvent)
 		}
 			break;
 		case 0x20: // byte format
-            getVSCPDataCodingAsString( pEvent, wrkstr1 );
+            getVSCPMeasurementAsString( pEvent, wrkstr1 );
 			str += _("[byte] = ?");
             str += wrkstr1;
 			break;
@@ -3246,7 +3441,7 @@ wxString& getRealTextData(vscpEvent *pEvent)
 		}
 			break;
 		case 0x60: // int format
-            getVSCPDataCodingAsString( pEvent, wrkstr1 );
+            getVSCPMeasurementAsString( pEvent, wrkstr1 );
 			str += _("[int] = ");
             str += wrkstr1;
 			break;
@@ -3258,7 +3453,7 @@ wxString& getRealTextData(vscpEvent *pEvent)
 		}
 			break;
 		case 0xA0: // float format
-			float msrmt = getDataCodingFloat(pEvent->pdata+offset, 
+			float msrmt = getMeasurementAsFloat(pEvent->pdata+offset, 
 					pEvent->sizeData-offset);
 			str += wxString::Format(_("[float] = %g "), msrmt);
 			break;

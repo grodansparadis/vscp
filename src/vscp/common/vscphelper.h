@@ -171,30 +171,65 @@ extern "C" {
     uint32_t getDataCodingBitArray(const unsigned char *pNorm, const unsigned char length);
 
     /*!
-      Get normalized integer from coded event data
-      \param pNorm Pointer to normalized integer.
+      Get normalised integer from coded event data
+      \param pNorm Pointer to normalised integer.
       \param length Number of bytes it consist of including
-      the first normalize byte.
+      the first normalise byte.
       \return returns value as a double.
      */
     double getDataCodingNormalizedInteger(const unsigned char *pNorm, const unsigned char length);
 
     /*!
       Get the string from coded event data
-      \param pString Pointer to normalized integer.
+      \param pString Pointer to normalised integer.
       \param length Number of bytes it consist of including
-      the first normalize byte.
+      the first normalise byte.
       \return Returns unicode UTF-8 string of event data
      */
     wxString& getDataCodingString(const unsigned char *pString, const unsigned char length);
 
     /*!
-      Get data in the VSCP data coding format to a string
+      Get data in the VSCP data coding format to a string. Works for
+	  CLASS1.MEAUREMENT, CLASS2_LEVEL1.MEASUREMENT
       \param pEvent Pointer to VSCP event.
       \param str String that holds the result
       \return true on success, false on failure.
      */
-    bool getVSCPDataCodingAsString(const vscpEvent *pEvent, wxString& str);
+    bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& str);
+	
+	/*!
+      Get data in the VSCP data coding format to a string. Works for
+	  CLASS1.MEASUREMENT64, CLASS2_LEVEL1.MEASUREMENT64
+      \param pEvent Pointer to VSCP event.
+      \param str String that holds the result
+      \return true on success, false on failure.
+     */
+    bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& str);
+	
+	/*!
+		Convert a floating point measurement value into VSCP data with the
+	 first byte being the normaliser byte
+	  CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
+      \param value Floating point value to convert.
+      \param pdata Pointer to beginning of VSCP event data.
+	  \param unit Untit for the data. Zero is default.
+	  \param sensoridx Sensor index 0-7. Zero is default.
+      \return true on success, false on failure.
+     */
+	bool convertFloatToNormalizedEventData( float value, 
+												uint8_t *pdata,
+												uint8_t unit=0,
+												uint8_t sensoridx=0 );
+	
+	/*!
+      Get data in the VSCP data coding format to a string. Works for
+	  CLASS1.MEASUREZONE and CLASS1.SETVALUEZONE,CLASS2_LEVEL1.MEASUREZONE
+	  CLASS2_LEVEL1.SETVALUEZONE
+      \param pEvent Pointer to VSCP event.
+      \param str String that holds the result
+      \return true on success, false on failure.
+     */
+    bool getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, wxString& str);
 
     /*!
       Get data in the VSCP data coding format to a float
@@ -202,7 +237,7 @@ extern "C" {
       \param length Number of bytes it consist of including datacoding byte
       \return value as float
      */
-    float getDataCodingFloat(const unsigned char *pNorm, const unsigned char length);
+    float getMeasurementAsFloat(const unsigned char *pNorm, const unsigned char length);
 
     /*!
       Replace backshlashes in a string with forward slashes

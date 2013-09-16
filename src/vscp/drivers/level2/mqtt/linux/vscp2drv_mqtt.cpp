@@ -250,16 +250,8 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 	int rv = 0;
 
 	Cmqtt *pdrvObj = theApp.getDriverObject(handle);
-	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
-    
-    //vscpEvent *pEventNew = new vscpEvent;
-    //if ( NULL != pEventNew ) {
-    //    copyVSCPEvent( pEventNew, pEvent );
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;   
     pdrvObj->addEvent2SendQueue( pEvent );
-	//}
-    //else {
-    //    return CANAL_ERROR_MEMORY;
-    //}
     
 	return CANAL_ERROR_SUCCESS;
 }
@@ -286,15 +278,12 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
     //VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
 
 	pdrvObj->m_mutexReceiveQueue.Lock();
-	//nodeClient = pdrvObj->m_receiveQueue.GetFirst();
-	//vscpEvent *pLocalEvent = nodeClient->GetData();
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
 	pdrvObj->m_mutexReceiveQueue.Unlock();
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
     
     copyVSCPEvent( pEvent, pLocalEvent );
-    //pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
     deleteVSCPevent( pLocalEvent );
 	
 	return CANAL_ERROR_SUCCESS;
