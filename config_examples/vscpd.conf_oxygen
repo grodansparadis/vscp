@@ -75,18 +75,21 @@
 	
         <!-- List level I/CANAL drivers here -->
         <canaldriver> 
-            <driver enable="true">
+
+            <driver enable="false">
                 <name>logger</name>
                 <config>/tmp/canallog.txt</config>
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level1/logger/linux/canallogger.soa</path>
+                <path>/home/akhe/vscp_software/src/vscp/drivers/level1/logger/linux/canallogger.so</path>
                 <flags>1</flags>
             </driver>
-            <driver enable="true" >
+
+            <driver enable="false" >
                 <name>can232</name>
                 <config>/dev/ttyS0;19200;0;0;125</config>
                 <path>/usr/local/lib/can232drv.soa</path>
                 <flags>0</flags>
             </driver>
+
         </canaldriver>
 
 	<!-- List level II VSCP drivers here-->
@@ -95,16 +98,16 @@
             <!-- Level II Logger -->
             <driver enable="true" >
                 <name>VSCPLoggerDriver1</name>	
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/logger/linux/vscpl2_loggerdrv.soa</path>
+                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/logger/linux/vscpl2_loggerdrv.so</path>
                 <config>/tmp/vscp_level2.log</config> 		
                 <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
            </driver>
  	
-           <driver enable="false" >
-               <name>VSCPLMSensorsDriver1</name>
-               <path>/home/akhe/vscp_software/src/vscp/drivers/level2/lmsensors/linux/vscp2drv_lmsensors.soa</path>
+           <driver enable="true" >
+               <name>lmsensors</name>
+               <path>/home/akhe/vscp_software/src/vscp/drivers/level2/lmsensors/linux/vscp2drv_lmsensors.so</path>
                 <config>2</config>
-                <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+                <guid>01:02:03:04:05:00:00:00:00:00:00:00:00:00:00:00</guid>
             </driver>
 
 	    <driver enable="false" >
@@ -114,12 +117,18 @@
                 <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             </driver>
 
-            <driver enable="false" >
+            <driver enable="true" >
                 <name>VSCPMQTTDriver1</name>
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/vscp2drv_mqtt.soa</path>
-                <config>publish;vscp;localhost;1883;;60</config>
-                <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/vscp2drv_mqtt.so</path>
+                <config>subscribe;vscp;localhost;1883;;60</config>
+                <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             </driver>	
+
+            <driver enable="true" >                 
+                <name>tcpiplink1</name>
+                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/tcpdrv/linux/vscp2drv_tcpiplink.so</path>
+                <config>192.168.1.2;9598;admin;secret</config>                 
+                <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>                </driver>
 
         </vscpdriver>	
 
