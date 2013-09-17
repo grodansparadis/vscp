@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALSOCKETCAN_OBJECTS =  socketcandrv.o socketcanobj.o ../../../../../common/dllist.o ../../../../common/devicelist.o ../../../../../common/com.o
-PROJOBJS        =       ../../../../../common/dllist.o ../../../../common/devicelist.o
+CANALSOCKETCAN_OBJECTS =  socketcandrv.o socketcanobj.o ../../../../common/guid.o ../../../../../common/dllist.o ../../../../common/devicelist.o ../../../../../common/com.o
+PROJOBJS = ../../../../common/guid.o ../../../../../common/dllist.o ../../../../common/devicelist.o
 
 
 ### Targets: ###

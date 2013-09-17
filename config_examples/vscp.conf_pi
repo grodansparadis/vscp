@@ -22,23 +22,22 @@
         <dm enable="true" path="/srv/vscp/dm.xml"/>
 
         <!-- Path to variables storage. -->
-        <variables enable="true" path="/etc/vscp/variables.xml"/>
+        <variables enable="true" path="/srv/vscp/variables.xml"/>
 
         <!-- Set to true to disable VSCP high end services -->
         <vscp enable="true"/>
 
+        <webserver enable="true" port="8080" />
+
         <!-- Path to server root file system -->
         <!-- Server should have read/write access to this location -->
-        <webrootpath>/home/akhe/vscp_merlin</webrootpath>
-
-	<!-- Path to file holding mime types -->
-	<pathtomimetypes>/etc/vscp/mimetypes.xml</pathtomimetypes>
+        <webrootpath>/srv/vscp/www</webrootpath>
 
         <websockets enable="true" port="7681" />
 
         <!-- Set GUID for daemon -->
         <guid>
-            FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:00:00:00:00
+            00:01:02:03:04:05:06:07:08:09:0A:0B:0C:0D:0E:0F
         </guid>
 
     </general>
@@ -51,7 +50,7 @@
                 <name>admin</name>
                 <password>5ebe2294ecd0e0f08eab7690d2a6ee69</password>
                 <privilege>admin</privilege>
-                <allowfrom>127.0.0.1,192.168.1.23</allowfrom>
+                <allowfrom>127.0.0.1,192.168.1.*</allowfrom>
             </user>	
             <user>
                 <name>user</name>
@@ -74,68 +73,57 @@
         </interfaces>
 	
         <!-- List level I/CANAL drivers here -->
+        <!--
         <canaldriver> 
-
-            <driver enable="false">
+            <driver>
                 <name>logger</name>
                 <config>/tmp/canallog.txt</config>
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level1/logger/linux/canallogger.so</path>
+                <path>/usr/local/lib/canallogger.so</path>
                 <flags>1</flags>
             </driver>
-
-            <driver enable="false" >
+            <driver>
                 <name>can232</name>
                 <config>/dev/ttyS0;19200;0;0;125</config>
-                <path>/usr/local/lib/can232drv.soa</path>
+                <path>/usr/local/lib/can232drv.so</path>
                 <flags>0</flags>
             </driver>
-
         </canaldriver>
+	-->	
 
 	<!-- List level II VSCP drivers here-->
         <vscpdriver>	 	
-
             <!-- Level II Logger -->
-            <driver enable="true" >
-                <name>VSCPLoggerDriver1</name>	
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/logger/linux/vscpl2_loggerdrv.so</path>
+            <driver prefix="mainlogger" >
+                <name>VSCP Logger Driver 1</name>	
+                <path>
+                    /home/akhe/vscp_software/src/vscp/drivers/level2/logger/linux/vscpl2_loggerdrv.so
+                </path>
                 <config>/tmp/vscp_level2.log</config> 		
-                <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-           </driver>
- 	
-           <driver enable="true" >
-               <name>lmsensors</name>
-               <path>/home/akhe/vscp_software/src/vscp/drivers/level2/lmsensors/linux/vscp2drv_lmsensors.so</path>
+                <guid>
+                    00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+                </guid>
+           </driver> 	
+           <driver prefix="lmsensors1" >
+               <name>VSCP LM-Sensors driver 1</name>
+               <path>
+                   /home/akhe/vscp_software/src/vscp/drivers/level2/lmsensors/linux/vscp2drv_lmsensors.so
+                </path>
                 <config>2</config>
-                <guid>01:02:03:04:05:00:00:00:00:00:00:00:00:00:00:00</guid>
+                <guid>
+                    00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+                </guid>
             </driver>
 
-	    <driver enable="false" >
-                <name>VSCPSocketCANDriver 1</name>
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/socketcan/linux/vscp2drv_socketcan.so</path>
+		<driver prefix="socketcan1" >
+               		<name>VSCP SocketCAN Driver 1</name>
+               <path>
+                   /home/akhe/vscp_software/src/vscp/drivers/level2/socketcan/linux/vscp2drv_socketcan.so
+                </path>
                 <config>can0</config>
-                <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+                <guid>
+                    00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+                </guid>
             </driver>
-
-            <driver enable="true" >
-                <name>VSCPMQTTDriver1</name>
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/mqtt/linux/vscp2drv_mqtt.so</path>
-                <config>subscribe;vscp;localhost;1883;;60</config>
-                <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-            </driver>	
-
-            <driver enable="true" >                 
-                <name>tcpiplink1</name>
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/tcpdrv/linux/vscp2drv_tcpiplink.so</path>
-                <config>192.168.1.2;9598;admin;secret</config>                 
-                <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>                </driver>
-
-            <driver enable="true"> 		   	 			
-                <name>rawethernet1</name> 		   	 		
-                <config>eth0</config>
-                <path>/home/akhe/vscp_software/src/vscp/drivers/level2/rawethernet/vscp2drv_raweth.so</path>
-            </driver>
- 
 
         </vscpdriver>	
 

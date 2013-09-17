@@ -90,103 +90,102 @@
 #include "../common/vscphelper.h"
 
 // Prototypes
-void setDataFromValue( uint8_t encoding, uint8_t type, wxString& wxstrval, uint8_t *msgdata, uint16_t *pnDataCnt );
-uint8_t setNormalizedValue( wxString& wxstrval, uint8_t *msgdata, uint8_t type );
+void setDataFromValue(uint8_t encoding, uint8_t type, wxString& wxstrval, uint8_t *msgdata, uint16_t *pnDataCnt);
+uint8_t setNormalizedValue(wxString& wxstrval, uint8_t *msgdata, uint8_t type);
 
 
-static const wxCmdLineEntryDesc cmdLineDesc[] = { 
-{ 
-	wxCMD_LINE_OPTION, 
-    _("q"), 
-    _("host"), 
-    _("VSCP server on the form user:password@host or just host"), 
-    wxCMD_LINE_VAL_STRING, 
-    wxCMD_LINE_OPTION_MANDATORY 
-}, 
-{ 
-	wxCMD_LINE_OPTION, 
-    _("e"), 
-    _("event"), 
-    _("event data on the form head,class,type,obid,timestamp,GUID,data1,data2,data3...."), 
-    wxCMD_LINE_VAL_STRING, 
-    wxCMD_LINE_OPTION_MANDATORY 
-},
-{ 
-	wxCMD_LINE_OPTION, 
-    _("u"), 
-    _("user"), 
-    _("Username for VSCP server."), 
-    wxCMD_LINE_VAL_STRING, 
-    wxCMD_LINE_PARAM_OPTIONAL 
-},  
-{ 
-	wxCMD_LINE_OPTION, 
-    _("p"), 
-    _("password"), 
-    _("Password for VSCP server."), 
-    wxCMD_LINE_VAL_STRING, 
-    wxCMD_LINE_PARAM_OPTIONAL 
-}, 
-{ 
-	wxCMD_LINE_OPTION, 
-    _("m"), 
-    _("measurement"), 
-    _("Set this event as a measurement event. Argumen can be given as\n three bytes as format,intrepretion,index"), 
-    wxCMD_LINE_VAL_STRING, 
-    wxCMD_LINE_PARAM_OPTIONAL 
-}, 
-{ 
-    wxCMD_LINE_OPTION, 
-    _("y"), 
-    _("value"), 
-    _("VSCP value"), 
-    wxCMD_LINE_VAL_STRING, 
-    wxCMD_LINE_PARAM_OPTIONAL 
-},
-{ 
-    wxCMD_LINE_OPTION, 
-    _("n"), 
-    _("count"), 
-    _("# of messages to send or receive."), 
-    wxCMD_LINE_VAL_NUMBER, 
-    wxCMD_LINE_PARAM_OPTIONAL 
-},
-{ 
-    wxCMD_LINE_OPTION, 
-    _T("z"), 
-    _T("zone"), 
-    _T("Zone for event."), 
-    wxCMD_LINE_VAL_NUMBER, 
-    wxCMD_LINE_PARAM_OPTIONAL 
-},
-{ 
-    wxCMD_LINE_OPTION, 
-    _T("s"), 
-    _T("subzone"), 
-    _T("Subzone for event."), 
-    wxCMD_LINE_VAL_NUMBER, 
-    wxCMD_LINE_PARAM_OPTIONAL 
-},
-  /*{ wxCMD_LINE_SWITCH, _T("h"), _T("help"), _T("Shows this message"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_OPTION_HELP  },*/
-  { wxCMD_LINE_SWITCH, _T("v"), _T("verbose"), _T("Vebose mode"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
-  { wxCMD_LINE_SWITCH, _T("t"), _T("test"), _T("Interface test mode (for vscpd developers only)."), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
-  { wxCMD_LINE_NONE } 
+static const wxCmdLineEntryDesc cmdLineDesc[] = {
+    {
+        wxCMD_LINE_OPTION,
+        _("q"),
+        _("host"),
+        _("VSCP server on the form user:password@host or just host"),
+        wxCMD_LINE_VAL_STRING,
+        wxCMD_LINE_OPTION_MANDATORY
+    },
+    {
+        wxCMD_LINE_OPTION,
+        _("e"),
+        _("event"),
+        _("event data on the form head,class,type,obid,timestamp,GUID,data1,data2,data3...."),
+        wxCMD_LINE_VAL_STRING,
+        wxCMD_LINE_OPTION_MANDATORY
+    },
+    {
+        wxCMD_LINE_OPTION,
+        _("u"),
+        _("user"),
+        _("Username for VSCP server."),
+        wxCMD_LINE_VAL_STRING,
+        wxCMD_LINE_PARAM_OPTIONAL
+    },
+    {
+        wxCMD_LINE_OPTION,
+        _("p"),
+        _("password"),
+        _("Password for VSCP server."),
+        wxCMD_LINE_VAL_STRING,
+        wxCMD_LINE_PARAM_OPTIONAL
+    },
+    {
+        wxCMD_LINE_OPTION,
+        _("m"),
+        _("measurement"),
+        _("Set this event as a measurement event. Argument can be given as\n three bytes as format,intrepretion,index"),
+        wxCMD_LINE_VAL_STRING,
+        wxCMD_LINE_PARAM_OPTIONAL
+    },
+    {
+        wxCMD_LINE_OPTION,
+        _("y"),
+        _("value"),
+        _("VSCP value"),
+        wxCMD_LINE_VAL_STRING,
+        wxCMD_LINE_PARAM_OPTIONAL
+    },
+    {
+        wxCMD_LINE_OPTION,
+        _("n"),
+        _("count"),
+        _("# of messages to send or receive."),
+        wxCMD_LINE_VAL_NUMBER,
+        wxCMD_LINE_PARAM_OPTIONAL
+    },
+    {
+        wxCMD_LINE_OPTION,
+        _T("z"),
+        _T("zone"),
+        _T("Zone for event."),
+        wxCMD_LINE_VAL_NUMBER,
+        wxCMD_LINE_PARAM_OPTIONAL
+    },
+    {
+        wxCMD_LINE_OPTION,
+        _T("s"),
+        _T("subzone"),
+        _T("Subzone for event."),
+        wxCMD_LINE_VAL_NUMBER,
+        wxCMD_LINE_PARAM_OPTIONAL
+    },
+    { wxCMD_LINE_SWITCH, _T("v"), _T("verbose"), _T("Vebose mode"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL},
+    { wxCMD_LINE_SWITCH, _T("t"), _T("test"), _T("Interface test mode (for vscpd developers only)."), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL},
+    { wxCMD_LINE_SWITCH, _T("h"), _T("help"), _T("Shows this message"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_OPTION_HELP},
+    { wxCMD_LINE_NONE}
 };
 
-
-int main( int argc, char **argv )
+int main(int argc, char **argv)
 {
-	bool bVerbose = false;
-	bool bTestMode = false;
-    bool bHostParam = false;    // Set to true if host parameter given
-    bool bEventParam = false;   // Set to true if event parameter given
-	int cntSend = 1;				    // One event is default
-	wxString strUsername = _("admin");	// Default user
-	wxString strPassword = _("secret"); // Default password
-    wxString strHost = _("localhost");  // The local machine
+    bool bVerbose = false;
+    bool bTestMode = false;
+    bool bHostParam = false; // Set to true if host parameter given
+    bool bEventParam = false; // Set to true if event parameter given
+    int cntSend = 1; // One event is default
+    wxString strUsername = _("admin"); // Default user
+    wxString strPassword = _("secret"); // Default password
+    wxString strHost = _("localhost"); // The local machine
 
-	// VSCP tcp/ip interface
-	VscpTcpIf m_vscpif;
+    // VSCP tcp/ip interface
+    VscpTcpIf m_vscpif;
 
     // Event 
     vscpEventEx event;
@@ -197,97 +196,98 @@ int main( int argc, char **argv )
     {
         int n;
 
-        for (n = 0; n < argc; n++ )
-        {
-            wxMB2WXbuf warg = wxConvertMB2WX( argv[n] );
-            wxArgv[ n ] = wxStrdup( warg );
+        for (n = 0; n < argc; n++) {
+            wxMB2WXbuf warg = wxConvertMB2WX(argv[n]);
+            wxArgv[ n ] = wxStrdup(warg);
         }
 
         wxArgv[n] = NULL;
     }
 
 #else // !wxUSE_UNICODE
-    #define wxArgv argv
+#define wxArgv argv
 #endif // wxUSE_UNICODE/!wxUSE_UNICODE
 
-	wxApp::CheckBuildOptions( WX_BUILD_OPTIONS_SIGNATURE, "program" );
-		
-	//wxInitializer initializer;
-	if ( !::wxInitialize() ) {
-		fprintf( stderr, "Failed to initialize the wxWindows library, aborting." );
-		return -1;      
-	}
-	
-	wxCmdLineParser *pparser = new wxCmdLineParser( cmdLineDesc, argc, argv );
-    
-	if ( NULL != pparser ) {
-		
-		wxString wxstr;
-			if ( pparser->Parse(false) > 0 ) {
-		printf("\n\nUsage for vscpcmd.exe\n");
-		printf("-------------------------\n");
-		char idx = 0;
-		while( cmdLineDesc[idx].kind != wxCMD_LINE_NONE ) {
-			wxPrintf( _("%s or %s \t %s \n"),
-						cmdLineDesc[idx].shortName, 
-						cmdLineDesc[idx].longName,
-						cmdLineDesc[idx].description );
-			idx++;
-		}
-	}
+    wxApp::CheckBuildOptions(WX_BUILD_OPTIONS_SIGNATURE, "program");
 
-		long opt;
+    //wxInitializer initializer;
+    if (!::wxInitialize()) {
+        fprintf(stderr, "Failed to initialize the wxWindows library, aborting.");
+        return -1;
+    }
 
-		// * * * Verbose * * *
-		if ( pparser->Found( wxT("verbose") ) ) {
-			bVerbose = true;
-			{
-				wxString wxstr;
-				wxstr.Printf(wxT("Verbose mode set\n"));
-			}
-		}
+    wxCmdLineParser *pparser = new wxCmdLineParser(cmdLineDesc, argc, argv);
 
-		// * * * Count * * *
-		if ( pparser->Found( _T("count"), &opt ) ) {
-			cntSend = (int)opt;
-			if ( bVerbose ) {
-				wxString wxstr;
-				wxstr.Printf( _("Count set to %d\n"), cntSend );			
-			}
-		}
+    if (NULL != pparser) {
 
-		// * * * Test * * *
-		if ( pparser->Found( _T("test") ) ) {
-			bTestMode = true;	
-			if ( bVerbose ) {
-				wxString wxstr;
-				wxstr.Printf( _("Testmode set\n") );				
-			}
-		}
+        wxString wxstr;
+        if (pparser->Parse(true) > 0) {
+            //pparser->Usage();
+            /*
+            printf("\n\nUsage for vscpcmd\n");
+            printf("---------------------\n");
+            char idx = 0;
+            while (cmdLineDesc[idx].kind != wxCMD_LINE_NONE) {
+                wxPrintf(_("%s or %s \t %s \n"),
+                        cmdLineDesc[idx].shortName,
+                        cmdLineDesc[idx].longName,
+                        cmdLineDesc[idx].description);
+                idx++;
+            }*/
+        }
+
+        long opt;
+
+        // * * * Verbose * * *
+        if (pparser->Found(wxT("verbose"))) {
+            bVerbose = true;
+            {
+                wxString wxstr;
+                wxstr.Printf(wxT("Verbose mode set\n"));
+            }
+        }
+
+        // * * * Count * * *
+        if (pparser->Found(_T("count"), &opt)) {
+            cntSend = (int) opt;
+            if (bVerbose) {
+                wxString wxstr;
+                wxstr.Printf(_("Count set to %d\n"), cntSend);
+            }
+        }
+
+        // * * * Test * * *
+        if (pparser->Found(_T("test"))) {
+            bTestMode = true;
+            if (bVerbose) {
+                wxString wxstr;
+                wxstr.Printf(_("Testmode set\n"));
+            }
+        }
 
         // * * * Username * * *
-		if ( pparser->Found( _T("user"), &wxstr ) ) {
+        if (pparser->Found(_T("user"), &wxstr)) {
             strUsername = wxstr;
         }
 
         // * * * Password * * *
-		if ( pparser->Found( _T("password"), &wxstr ) ) {
+        if (pparser->Found(_T("password"), &wxstr)) {
             strPassword = wxstr;
         }
 
         // * * * Host * * *
-		if ( pparser->Found( _T("host"), &wxstr ) ) {
-            
+        if (pparser->Found(_T("host"), &wxstr)) {
+
             // Flag host parameter
             bHostParam = true;
 
             // Can be on the form "user:password@host" or just "host"
-            
-            wxStringTokenizer tok;
-            tok.SetString( wxstr, wxT("@") );
 
-            if ( tok.CountTokens() > 1 ) {
-            
+            wxStringTokenizer tok;
+            tok.SetString(wxstr, wxT("@"));
+
+            if (tok.CountTokens() > 1) {
+
                 // Get username/password
                 wxString str = tok.GetNextToken();
 
@@ -295,120 +295,118 @@ int main( int argc, char **argv )
                 strHost = tok.GetNextToken();
 
                 wxStringTokenizer tok2;
-                tok2.SetString( str, wxT(":") );
+                tok2.SetString(str, wxT(":"));
 
                 // Get username
                 strUsername = tok2.GetNextToken();
 
-                if ( tok2.HasMoreTokens() ) {
+                if (tok2.HasMoreTokens()) {
                     // Get password
                     strPassword = tok2.GetNextToken();
                 }
 
-            }
-            else {
+            } else {
                 // Get host
                 strHost = tok.GetNextToken();
             }
         }
 
         // * * * Event * * *
-		if ( pparser->Found( _T("event"), &wxstr ) ) {
+        if (pparser->Found(_T("event"), &wxstr)) {
 
             // Flag event parameter
             bEventParam = true;
 
-            getVscpEventExFromString( &event, wxstr );
+            getVscpEventExFromString(&event, wxstr);
         }
 
-		// * * * Value * * *
-		if ( pparser->Found( _T("value"), &wxstr ) ) {
-			
-			uint8_t encoding;
-			uint8_t type;
-			wxString wxstrEncoding, wxstrType, wxstrValue, wxstr;
-			wxStringTokenizer tok;
+        // * * * Value * * *
+        if (pparser->Found(_T("value"), &wxstr)) {
 
-			tok.SetString( wxstr, wxT(",\r\n") );
+            uint8_t encoding;
+            uint8_t type;
+            wxString wxstrEncoding, wxstrType, wxstrValue, wxstr;
+            wxStringTokenizer tok;
 
-			// Get encoding
-			wxstr = tok.GetNextToken();
-			encoding = (uint8_t)readStringValue( wxstr );
-			if ( !tok.HasMoreTokens() ) {
-				wxString wxstr;
-				wxstr.Printf( _("Invalid format for value. Should be {encoding,type,value}\n") );			
-			}
+            tok.SetString(wxstr, wxT(",\r\n"));
 
-			// Get type
-			wxstr = tok.GetNextToken();
-			type = readStringValue( wxstr );
-			if ( !tok.HasMoreTokens() ) {
-				wxString wxstr;
-				wxstr.Printf( _("Invalid format for value. Should be {encoding,type,value}\n") );				
-			}
+            // Get encoding
+            wxstr = tok.GetNextToken();
+            encoding = (uint8_t) readStringValue(wxstr);
+            if (!tok.HasMoreTokens()) {
+                wxString wxstr;
+                wxstr.Printf(_("Invalid format for value. Should be {encoding,type,value}\n"));
+            }
 
-			// Get value
-			wxstr = tok.GetNextToken();
+            // Get type
+            wxstr = tok.GetNextToken();
+            type = readStringValue(wxstr);
+            if (!tok.HasMoreTokens()) {
+                wxString wxstr;
+                wxstr.Printf(_("Invalid format for value. Should be {encoding,type,value}\n"));
+            }
 
-			//setDataFromValue( encoding, type, wxstr, msgdata, &nDataCnt );
-		}
+            // Get value
+            wxstr = tok.GetNextToken();
+
+            uint8_t msgdata[512];
+            uint16_t nDataCnt;
+            setDataFromValue( encoding, type, wxstr, msgdata, &nDataCnt );
+        }
 
 
+    } else {
+        //fprintf( stderr, _("Failed to initialize parser class.") );
+        return -1;
     }
-	else {
-		//fprintf( stderr, _("Failed to initialize parser class.") );
-		return -1;
-	}
-		
+
     delete pparser;
 
     // Terminate if required parameters are missing
-    if ( !bHostParam || !bEventParam ) {
+    if (!bHostParam || !bEventParam) {
         //fprintf( stderr, _("Missing required parameter.") );
-        exit( -1 );
+        exit(-1);
     }
 
 
-	if ( bTestMode ) {
-	
-		if ( bVerbose ) {
-			wxString wxstr;
-			wxstr.Printf( _("================================================\n") );
-			wxstr.Printf( _(" V S C P D  I N T E R F A C E  T E S T  M O D E \n") );
-			wxstr.Printf( _("================================================\n") );			
-		}
-		
-	}
-	else {
-			
-		// We should send an event to the world
+    if (bTestMode) {
 
-        if ( bVerbose ) {
+        if (bVerbose) {
+            wxString wxstr;
+            wxstr.Printf(_("================================================\n"));
+            wxstr.Printf(_(" V S C P D  I N T E R F A C E  T E S T  M O D E \n"));
+            wxstr.Printf(_("================================================\n"));
+        }
+
+    } else {
+
+        // We should send an event to the world
+
+        if (bVerbose) {
             wxString wxstr =
-	    	_("Connecting to host ") + strHost + _("\r\n");
+                    _("Connecting to host ") + strHost + _("\r\n");
         }
 
         // Open the interface
-        if ( m_vscpif.doCmdOpen( strHost, VSCP_LEVEL2_TCP_PORT, strUsername, strPassword ) ) {
-        
-            if ( bVerbose ) {
+        if (m_vscpif.doCmdOpen(strHost, VSCP_LEVEL2_TCP_PORT, strUsername, strPassword)) {
+
+            if (bVerbose) {
                 wxString wxstr =
-			_("Connection open to host ") + strHost + _("\r\n");
+                        _("Connection open to host ") + strHost + _("\r\n");
             }
-        
-            
-            for ( int i=0; i < cntSend; i++ ) {
-                if ( CANAL_ERROR_SUCCESS == m_vscpif.doCmdSendEx( &event ) ) {
-                    if ( bVerbose ) {
+
+
+            for (int i = 0; i < cntSend; i++) {
+                if (CANAL_ERROR_SUCCESS == m_vscpif.doCmdSendEx(&event)) {
+                    if (bVerbose) {
                         wxString wxstr =
-			            _("successfully sent one event ") + strHost + _("\r\n");
-                    }    
-                }
-                else {
-                    if ( bVerbose ) {
+                                _("successfully sent one event ") + strHost + _("\r\n");
+                    }
+                } else {
+                    if (bVerbose) {
                         wxString wxstr =
-			            _("Failed to send event ") + strHost + _("\r\n");
-                    }   
+                                _("Failed to send event ") + strHost + _("\r\n");
+                    }
                 }
             }
 
@@ -416,147 +414,138 @@ int main( int argc, char **argv )
             // Close the connection
             m_vscpif.doCmdClose();
         }
-		
-	}
-	
-	::wxUninitialize();
-	return 0;
+
+    }
+
+    ::wxUninitialize();
+    return 0;
 
 }
-
-
-
-
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // setDataFromValue
 // TODO: byte order
 
-void setDataFromValue( uint8_t encoding, 
-		       uint8_t type, 
-		       wxString& wxstrval, 
-		       uint8_t *msgdata, 
-		       uint16_t *pnDataCnt )
+void setDataFromValue(uint8_t encoding,
+        uint8_t type,
+        wxString& wxstrval,
+        uint8_t *msgdata,
+        uint16_t *pnDataCnt)
 {
-  wxString wxstr;
+    wxString wxstr;
 
-  msgdata[ 0 ] = type;
+    msgdata[ 0 ] = type;
 
-  switch ( encoding )  {
+    switch (encoding) {
 
-  case 0:	// Bit format
+    case 0: // Bit format
     {
-      int idx = 1;
-      wxStringTokenizer tok;
+        int idx = 1;
+        wxStringTokenizer tok;
 
-      msgdata[ 0 ] |= VSCP_DATACODING_BIT;
+        msgdata[ 0 ] |= VSCP_DATACODING_BIT;
 
-      tok.SetString( wxstr, wxT(",\r\n") );
-			
-      while( ( idx < (512-25) ) && tok.HasMoreTokens() ) {
+        tok.SetString(wxstr, wxT(",\r\n"));
 
-	wxString wxstrbuf = tok.GetNextToken();
-	msgdata[ idx ] = readStringValue( wxstrbuf );
-	idx++;
+        while ((idx < (512 - 25)) && tok.HasMoreTokens()) {
 
-      }
+            wxString wxstrbuf = tok.GetNextToken();
+            msgdata[ idx ] = readStringValue(wxstrbuf);
+            idx++;
 
-      *pnDataCnt = idx;	
+        }
+
+        *pnDataCnt = idx;
     }
-    break;
+        break;
 
-  case 1:	// Byte format
+    case 1: // Byte format
     {
-      int idx = 1;
-      wxStringTokenizer tok;
+        int idx = 1;
+        wxStringTokenizer tok;
 
-      msgdata[ 0 ] |= VSCP_DATACODING_BYTE;
+        msgdata[ 0 ] |= VSCP_DATACODING_BYTE;
 
-      tok.SetString( wxstr, wxT(",\r\n") );
-			
-      while( ( idx < (512-25) ) && tok.HasMoreTokens() ) {
+        tok.SetString(wxstr, wxT(",\r\n"));
 
-	wxString wxstrbuf = tok.GetNextToken();
-	msgdata[ idx ] = readStringValue( wxstrbuf );
-	idx++;
+        while ((idx < (512 - 25)) && tok.HasMoreTokens()) {
 
-      }
+            wxString wxstrbuf = tok.GetNextToken();
+            msgdata[ idx ] = readStringValue(wxstrbuf);
+            idx++;
 
-      *pnDataCnt = idx;	
+        }
+
+        *pnDataCnt = idx;
     }
-    break;
+        break;
 
-  case 2: // String format
-    msgdata[ 0 ] |= VSCP_DATACODING_STRING;
-    strncpy( (char *)(msgdata + 1), wxstr.mb_str(), 512 - 25 - 2 );
-    *pnDataCnt = strlen( (char *)(msgdata + 1) ) + 1;
-    break;
-			
-  case 3: // Integer format
+    case 2: // String format
+        msgdata[ 0 ] |= VSCP_DATACODING_STRING;
+        strncpy((char *) (msgdata + 1), wxstr.mb_str(), 512 - 25 - 2);
+        *pnDataCnt = strlen((char *) (msgdata + 1)) + 1;
+        break;
+
+    case 3: // Integer format
     {
-      msgdata[ 0 ] |= VSCP_DATACODING_INTEGER;
+        msgdata[ 0 ] |= VSCP_DATACODING_INTEGER;
 
-      uint32_t intval = readStringValue( wxstrval );
-      if ( intval > 0x00ffffff ) {
-	*pnDataCnt = 5;
-	msgdata[ 1 ] = ( intval >> 24 ) & 0xff;
-	msgdata[ 2 ] = ( intval >> 16 ) & 0xff;
-	msgdata[ 3 ] = ( intval >> 8 ) & 0xff;
-	msgdata[ 4 ] = intval & 0xff;
-      }
-      else if ( intval > 0x0000ffff ) {
-	*pnDataCnt = 4;
-	msgdata[ 1 ] = ( intval >> 16 ) & 0xff;
-	msgdata[ 2 ] = intval >> 8;
-	msgdata[ 3 ] = intval & 0xff;
-      }
-      else if ( intval > 0x000000ff ) {
-	*pnDataCnt = 3;
-	msgdata[ 1 ] = intval >> 8;
-	msgdata[ 2 ] = intval & 0xff;
-      }
-      else {
-	*pnDataCnt = 2;
-	msgdata[ 1 ] = intval;
-      }
+        uint32_t intval = readStringValue(wxstrval);
+        if (intval > 0x00ffffff) {
+            *pnDataCnt = 5;
+            msgdata[ 1 ] = (intval >> 24) & 0xff;
+            msgdata[ 2 ] = (intval >> 16) & 0xff;
+            msgdata[ 3 ] = (intval >> 8) & 0xff;
+            msgdata[ 4 ] = intval & 0xff;
+        } else if (intval > 0x0000ffff) {
+            *pnDataCnt = 4;
+            msgdata[ 1 ] = (intval >> 16) & 0xff;
+            msgdata[ 2 ] = intval >> 8;
+            msgdata[ 3 ] = intval & 0xff;
+        } else if (intval > 0x000000ff) {
+            *pnDataCnt = 3;
+            msgdata[ 1 ] = intval >> 8;
+            msgdata[ 2 ] = intval & 0xff;
+        } else {
+            *pnDataCnt = 2;
+            msgdata[ 1 ] = intval;
+        }
     }
-    break;
+        break;
 
-  case 4: // Normalized integer
-    *pnDataCnt = setNormalizedValue( wxstrval, msgdata, type );
-    break;
-			
-  case 5: // Floating point format
+    case 4: // Normalized integer
+        *pnDataCnt = setNormalizedValue(wxstrval, msgdata, type);
+        break;
+
+    case 5: // Floating point format
     {
-      double value;
-      unsigned char *p;
+        double value;
+        unsigned char *p;
 
-      msgdata[ 0 ] |= VSCP_DATACODING_SINGLE;
+        msgdata[ 0 ] |= VSCP_DATACODING_SINGLE;
 
-      wxstrval.ToDouble( &value );
-      p = (unsigned char *)&value;
+        wxstrval.ToDouble(&value);
+        p = (unsigned char *) &value;
 
-      memcpy( msgdata + 1, p, sizeof( value ) );
+        memcpy(msgdata + 1, p, sizeof( value));
     }
-    break;
+        break;
 
-  case 6: // Reserved
-	  {
-		wxString wxstr;
-		wxstr.Printf( _("Unsupported data interpretion [6] used.\n") );
-	  }			
-    break;
+    case 6: // Reserved
+    {
+        wxString wxstr;
+        wxstr.Printf(_("Unsupported data interpretion [6] used.\n"));
+    }
+        break;
 
-  case 7: // Reserved
-	  {
-		wxString wxstr;
-		wxstr.Printf( _("Unsupported data interpretion [7] used.\n") );
-	  }			
-    break;     
+    case 7: // Reserved
+    {
+        wxString wxstr;
+        wxstr.Printf(_("Unsupported data interpretion [7] used.\n"));
+    }
+        break;
 
-  }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -564,107 +553,103 @@ void setDataFromValue( uint8_t encoding,
 //
 // returns count
 
-uint8_t setNormalizedValue( wxString& wxstrval, uint8_t *msgdata, uint8_t type )
+uint8_t setNormalizedValue(wxString& wxstrval, uint8_t *msgdata, uint8_t type)
 {
-  uint8_t *pto;
-  unsigned char pos = 0;
-  bool bNegative = false;
-  bool bDPFound = false;
-  uint8_t cntDecimals = 0;
-  uint8_t cntNum = 0;
-  uint8_t size = 0;
-  uint32_t ivalue = 0;
-  uint8_t buf[ 12 ];
+    uint8_t *pto;
+    unsigned char pos = 0;
+    bool bNegative = false;
+    bool bDPFound = false;
+    uint8_t cntDecimals = 0;
+    uint8_t cntNum = 0;
+    uint8_t size = 0;
+    uint32_t ivalue = 0;
+    uint8_t buf[ 12 ];
 
-  memset( buf, 0, sizeof( buf ) );
+    memset(buf, 0, sizeof( buf));
 
-  msgdata[ 0 ] = ( type | VSCP_DATACODING_NORMALIZED );
-  pto = buf;
+    msgdata[ 0 ] = (type | VSCP_DATACODING_NORMALIZED);
+    pto = buf;
 
 
-  while ( wxstrval.GetChar( pos ) ) {
-	
-    switch ( wxstrval.GetChar( pos ) ) {
+    while (wxstrval.GetChar(pos)) {
 
-    case '+':
-      bNegative = false;
-      break;
+        switch (wxstrval.GetChar(pos)) {
 
-    case '-':
-      bNegative = true;
-      break;
+        case '+':
+            bNegative = false;
+            break;
 
-    case ',':
-    case '.':
-      bDPFound = true;
-      break;
+        case '-':
+            bNegative = true;
+            break;
 
-    case '0':
-    case '1':
-    case '2':
-    case '3':
-    case '4':
-    case '5':
-    case '6':
-    case '7':
-    case '8':
-    case '9':
-      cntNum++;
-      if ( bDPFound ) cntDecimals++;
-      *pto = wxstrval.GetChar( pos );
-      pto++;
-      break;
+        case ',':
+        case '.':
+            bDPFound = true;
+            break;
+
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            cntNum++;
+            if (bDPFound) cntDecimals++;
+            *pto = wxstrval.GetChar(pos);
+            pto++;
+            break;
+
+        }
+
+        pos++;
+
+        // There is only room for ten numbers
+        if (cntNum >= 10) break;
+
+    } // while
+
+
+    if (cntNum > 0) {
+
+        ivalue = atol((const char *) buf);
+        if (ivalue > 0x00ffffff) {
+            size = 6;
+            msgdata[ 1 ] = cntDecimals;
+            msgdata[ 2 ] = (ivalue >> 24) & 0xff;
+            msgdata[ 3 ] = (ivalue >> 16) & 0xff;
+            msgdata[ 4 ] = (ivalue >> 8) & 0xff;
+            msgdata[ 5 ] = ivalue & 0xff;
+        } else if (ivalue > 0x000000ffff) {
+            size = 5;
+            msgdata[ 1 ] = cntDecimals;
+            msgdata[ 2 ] = (ivalue >> 16) & 0xff;
+            msgdata[ 3 ] = ivalue >> 8;
+            msgdata[ 4 ] = ivalue & 0xff;
+        } else if (ivalue > 0x000000ff) {
+            size = 4;
+            msgdata[ 1 ] = cntDecimals;
+            msgdata[ 2 ] = ivalue >> 8;
+            msgdata[ 3 ] = ivalue & 0xff;
+        } else {
+            size = 3;
+            msgdata[ 1 ] = cntDecimals;
+            msgdata[ 2 ] = ivalue;
+        }
+
+    } else {
+
+        size = 3;
+        msgdata[ 1 ] = 0;
+        msgdata[ 2 ] = 0;
 
     }
 
-    pos++;
+    if (bNegative) msgdata[ 1 ] |= 0x80;
 
-    // There is only room for ten numbers
-    if ( cntNum >= 10 ) break;
-
-  } // while
-
-
-  if ( cntNum > 0 ) {
-		
-    ivalue = atol( (const char *)buf );
-    if ( ivalue > 0x00ffffff ) {
-      size = 6;
-      msgdata[ 1 ] = cntDecimals;
-      msgdata[ 2 ] = ( ivalue >> 24 ) & 0xff;
-      msgdata[ 3 ] = ( ivalue >> 16 ) & 0xff;
-      msgdata[ 4 ] = ( ivalue >> 8 ) & 0xff;
-      msgdata[ 5 ] = ivalue & 0xff;
-    }
-    else if ( ivalue > 0x000000ffff ) {
-      size = 5;
-      msgdata[ 1 ] = cntDecimals;
-      msgdata[ 2 ] = ( ivalue >> 16 ) & 0xff;
-      msgdata[ 3 ] = ivalue >> 8;
-      msgdata[ 4 ] = ivalue & 0xff;
-    }
-    else if ( ivalue > 0x000000ff ) {
-      size = 4;
-      msgdata[ 1 ] = cntDecimals;
-      msgdata[ 2 ] = ivalue >> 8;
-      msgdata[ 3 ] = ivalue & 0xff;
-    }
-    else {
-      size = 3;
-      msgdata[ 1 ] = cntDecimals;
-      msgdata[ 2 ] = ivalue;
-    }
-
-  }
-  else {
-		
-    size = 3;
-    msgdata[ 1 ] = 0;
-    msgdata[ 2 ] = 0;	
-
-  }
-
-  if ( bNegative ) msgdata[ 1 ] |= 0x80;
-
-  return size;
+    return size;
 }
