@@ -323,6 +323,9 @@ CWrkSendTread::Entry()
 				(const char *) "Error while opening remote VSCP TCP/IP interface. Terminating!");
 		return NULL;
 	}
+    
+    // Find the channel id
+	m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
 
 	vscpEventEx eventEx;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
@@ -348,6 +351,10 @@ CWrkSendTread::Entry()
 				syslog(LOG_ERR,
 						"%s",
 						(const char *) "Reconnected to remote host.");
+                
+                // Find the channel id
+                m_srvRemote.doCmdGetChannelID(&m_pObj->txChannelID);
+    
 				bRemoteConnectionLost = false;
 			}
             
@@ -486,7 +493,9 @@ CWrkReceiveTread::Entry()
             
             if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockReceive(pEvent)) {
 
-                if (doLevel2Filter( pEvent, &m_pObj->m_vscpfilter)) {
+                if ( doLevel2Filter( pEvent, 
+                                        &m_pObj->m_vscpfilter) && 
+                                            ( m_pObj->txChannelID != pEvent->obid ) ) {
                     m_pObj->m_mutexReceiveQueue.Lock();
                     m_pObj->m_receiveList.push_back(pEvent);
                     m_pObj->m_semReceiveQueue.Post();

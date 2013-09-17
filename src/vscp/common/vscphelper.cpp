@@ -2695,16 +2695,20 @@ unsigned long makeTimeStamp(void)
 ////////////////////////////////////////////////////////////////////////////////////
 // writeVscpEventToString
 //
+// head,class,type,obid,timestamp,GUID,data1,data2,data3....
+//
 
 bool writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 {
 	// Check pointer
 	if (NULL == pEvent) return false;
 
-	str.Printf(_("%d,%d,%d,"),
-			getVscpPriority(pEvent),
+	str.Printf(_("%d,%d,%d,%d,%d"),
+			pEvent->head,
 			pEvent->vscp_class,
-			pEvent->vscp_type);
+			pEvent->vscp_type,
+            pEvent->obid,
+            pEvent->timestamp );
 
 	wxString strGUID;
 	writeGuidToString(pEvent, strGUID);
@@ -2722,6 +2726,8 @@ bool writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 
 ////////////////////////////////////////////////////////////////////////////////////
 // writeVscpEventExToString
+//
+// head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
 bool writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)

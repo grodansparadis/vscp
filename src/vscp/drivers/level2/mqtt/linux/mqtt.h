@@ -80,14 +80,11 @@ class Cmqtt;
 
 class mqtt_subscribe : public mosqpp::mosquittopp {
 public:
-    mqtt_subscribe(const wxString& usernameLocal,
-            const wxString& passwordLocal,
-            const wxString& hostLocal = _("localhost"),
-            const int portLocal = 9598,
-            const wxString& topic = _("vscp"),
-            const wxString& hostRemote = _("localhost"),
-            int portRemote = 1883,
-            int keepalive = 60);
+    mqtt_subscribe(const char *id,
+						const char *topic,
+                        const char *host,
+                        int port=1883,
+                        int keepalive=60);
     ~mqtt_subscribe();
 
     void on_connect(int rc);
@@ -103,14 +100,11 @@ public:
 
 class mqtt_publish : public mosqpp::mosquittopp {
 public:
-    mqtt_publish(const wxString& usernameLocal,
-            const wxString& passwordLocal,
-            const wxString& hostLocal = _("localhost"),
-            const int portLocal = 9598,
-            const wxString& topic = _("vscp"),
-            const wxString& hostRemote = _("localhost"),
-            int portRemote = 1883,
-            int keepalive = 60);
+    mqtt_publish(const char *id,
+						const char *topic,
+                        const char *host,
+                        int port=1883,
+                        int keepalive=60);
     ~mqtt_publish();
 
     void on_connect(int rc);

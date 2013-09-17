@@ -61,7 +61,7 @@ enum _driver_levels {
 };
 
 class CClientItem;
-
+class cguid;
 
 WX_DECLARE_LIST ( canalMsg, CanalMsgOutList );
 
@@ -105,6 +105,11 @@ public:
 		termination control
 	*/
 	bool m_bQuit;
+	
+	/*!
+		GUID to use for driver interface if set
+	 */
+	cguid m_guid;
 
 	/*!
 		Worker thread for device

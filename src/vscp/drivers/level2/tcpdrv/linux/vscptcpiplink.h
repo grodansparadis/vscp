@@ -136,6 +136,9 @@ public:
 
     /// server supplied prefix
     wxString m_prefix;
+	
+	/// Send channel id
+	uint32_t txChannelID;
     
     /// Filter
     vscpEventFilter m_vscpfilter;

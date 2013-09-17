@@ -78,14 +78,13 @@
           <cTool>
             <incDir>
               <pElem>include</pElem>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
               <pElem>/usr/local/include/wx-2.8</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
@@ -162,12 +161,9 @@
       <item path="socketcandrv.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="socketcandrv.h" ex="false" tool="3" flavor2="0">

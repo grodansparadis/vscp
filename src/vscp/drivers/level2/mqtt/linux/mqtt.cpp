@@ -68,16 +68,13 @@
 // mqtt_subscribe - Constructor
 //
 
-mqtt_subscribe::mqtt_subscribe(const wxString& usernameLocal,
-                                    const wxString& passwordLocal,
-                                    const wxString& hostLocal,
-                                    const int portLocal,
-                                    const wxString& topic,
-                                    const wxString& hostMQTT,
-                                    int portMQTT,
-                                    int keepalive)
+mqtt_subscribe::mqtt_subscribe( const char *id,
+                                    const char *topic,
+                                    const char *host,
+                                    int port,
+                                    int keepalive ) : mosquittopp(id)
 {
-    ;
+    connect(host, port, keepalive);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -159,16 +156,13 @@ void mqtt_subscribe::on_subscribe(int mid, int qos_count, const int *granted_qos
 // mqtt_publish - Constructor
 //
 
-mqtt_publish::mqtt_publish(const wxString& usernameLocal,
-                            const wxString& passwordLocal,
-                            const wxString& hostLocal,
-                            const int portLocal,
-                            const wxString& topic,
-                            const wxString& hostMQTT,
-                            int portMQTT,
-                            int keepalive)
+mqtt_publish::mqtt_publish( const char *id,
+                            const char *topic,
+                            const char *host,
+                            int port,
+                            int keepalive ) : mosquittopp(id)
 {
-    ;
+    connect(host, port, keepalive);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -189,7 +183,7 @@ void mqtt_publish::on_connect(int rc)
 	//printf("Connected with code %d.\n", rc);
 	if (rc == 0) {
 		// Only attempt to subscribe on a successful connect. 
-		subscribe( NULL, m_pObj->m_topic.ToAscii() );
+		//subscribe( NULL, m_pObj->m_topic.ToAscii() );
 	}
 }
 
@@ -222,7 +216,7 @@ void mqtt_publish::on_message(const struct mosquitto_message *message)
 
 void mqtt_publish::on_subscribe(int mid, int qos_count, const int *granted_qos)
 {
-	//printf("Subscription succeeded.\n");
+	printf("Subscription succeeded.\n");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -240,6 +234,7 @@ Cmqtt::Cmqtt()
     m_simple_coding = 0;
     m_simple_zone = 0;
     m_simple_subzone = 0;
+    
 	clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
@@ -508,7 +503,20 @@ Cmqtt::close(void)
 
 }
 
+//////////////////////////////////////////////////////////////////////
+// addEvent2SendQueue
+//
 
+bool 
+Cmqtt::addEvent2SendQueue(const vscpEvent *pEvent)
+{
+    m_mutexSendQueue.Lock();
+	//m_sendQueue.Append((vscpEvent *)pEvent);
+    m_sendList.push_back((vscpEvent *)pEvent);
+	m_semSendQueue.Post();
+	m_mutexSendQueue.Unlock();
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////
 //                Workerthread - CWrkThread
@@ -541,15 +549,12 @@ CWrkThread::Entry()
     if (m_pObj->m_bSubscribe) {
 
         // S u b s c r i b e
-        mqtt_subscribe *pSubscribe = new mqtt_subscribe(
-                                            m_pObj->m_username,
-                                            m_pObj->m_password,
-                                            m_pObj->m_host,
-                                            m_pObj->m_port,
-                                            m_pObj->m_topic,
-                                            m_pObj->m_hostMQTT,
-                                            m_pObj->m_portMQTT,
-                                            m_pObj->m_keepalive);
+        mqtt_subscribe *pSubscribe = 
+                new mqtt_subscribe( "vscpdriver",
+                                        m_pObj->m_topic.ToAscii(),
+                                        m_pObj->m_hostMQTT.ToAscii(),
+                                        m_pObj->m_portMQTT,
+                                        m_pObj->m_keepalive);
         
         // Save the object class
         pSubscribe->m_pObj = m_pObj;
@@ -569,14 +574,12 @@ CWrkThread::Entry()
     else {
        
         // P u b l i s h
-        mqtt_publish *pPublish = new mqtt_publish( m_pObj->m_username,
-                                                        m_pObj->m_password,
-                                                        m_pObj->m_host,
-                                                        m_pObj->m_port,
-                                                        m_pObj->m_topic,
-                                                        m_pObj->m_hostMQTT,
-                                                        m_pObj->m_portMQTT,
-                                                        m_pObj->m_keepalive);
+        mqtt_publish *pPublish = 
+                new mqtt_publish( "vscpdriver",
+                                        m_pObj->m_topic.ToAscii(),
+                                        m_pObj->m_hostMQTT.ToAscii(),
+                                        m_pObj->m_portMQTT,
+                                        m_pObj->m_keepalive);
 
         // Save the object class
         pPublish->m_pObj = m_pObj;
@@ -620,9 +623,11 @@ CWrkThread::Entry()
             ::wxMilliSleep(50);
 
         }
+        
+        mosqpp::lib_cleanup();
+        delete pPublish;
+    
     }
-
-    mosqpp::lib_cleanup();
 
     return NULL;
 

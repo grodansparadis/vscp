@@ -207,7 +207,7 @@ Clmsensors::open(const char *pUsername,
 
 			// Get GUID
 			strVariableName = m_prefix +
-					wxString::FromAscii("_path") + strIteration;
+					wxString::FromAscii("_guid") + strIteration;
 			if (!m_srv.getVariableGUID(strVariableName, pthreadWork->m_guid)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",

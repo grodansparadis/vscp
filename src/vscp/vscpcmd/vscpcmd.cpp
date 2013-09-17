@@ -178,8 +178,8 @@ int main( int argc, char **argv )
 {
 	bool bVerbose = false;
 	bool bTestMode = false;
-    bool bHostParam = false;    // Set to tur if host parameter given
-    bool bEventParam = false;   // Set to true if ebemt parameter given
+    bool bHostParam = false;    // Set to true if host parameter given
+    bool bEventParam = false;   // Set to true if event parameter given
 	int cntSend = 1;				    // One event is default
 	wxString strUsername = _("admin");	// Default user
 	wxString strPassword = _("secret"); // Default password

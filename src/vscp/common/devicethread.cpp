@@ -941,6 +941,22 @@ void *deviceLevel2ReceiveThread::Entry()
         // Identify ourselves 
         pEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
         
+        // If no GUID is set,
+        //      - Set driver GUID if define
+        //      - Set interface GUID if no driver GUID defined.
+        if ( isGUIDEmpty( pEvent->GUID ) ) {
+            
+            // Set driver GUID if set
+            if ( !m_pMainThreadObj->m_pDeviceItem->m_guid.isNULL() ) {
+                m_pMainThreadObj->m_pDeviceItem->m_guid.setGUID( pEvent->GUID );
+            }
+            else {
+                // If no driver GUID set use interface GUID
+                m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.setGUID( pEvent->GUID );
+            }
+        }
+        
+        /*
         // If this is a Level I event over Level II we need to fill in the
         // interface GUID
         if ( (pEvent->vscp_class < 1024) && (pEvent->vscp_class >= 512) ) {
@@ -951,6 +967,8 @@ void *deviceLevel2ReceiveThread::Entry()
             pEvent->GUID[ 1 ] = l2;
             m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.setAt(1,l2);
         }
+        */
+        
             
         // There must be room in the receive queue
 		if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >

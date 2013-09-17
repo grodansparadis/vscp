@@ -53,6 +53,7 @@
 #include "vscp.h"
 #include "../../common/dllist.h"
 #include "clientlist.h"
+#include "guid.h"
 #include "devicelist.h"
 
 WX_DEFINE_LIST(CanalMsgOutList);
@@ -71,11 +72,11 @@ CDeviceItem::CDeviceItem()
     m_bQuit = false;
     m_bEnable = false;  // Default is that driver should not be started
 
-    m_strName.Empty(); // No Device Name
+    m_strName.Empty();      // No Device Name
     m_strParameter.Empty(); // No Parameters
-    m_strPath.Empty(); // No path
-    m_DeviceFlags = 0; // Default: No flags.
-    m_driverLevel = 0; // Standard Canal messages is the default
+    m_strPath.Empty();      // No path
+    m_DeviceFlags = 0;      // Default: No flags.
+    m_driverLevel = 0;      // Standard Canal messages is the default
 
     m_pdeviceThread = NULL;
 
@@ -180,6 +181,7 @@ bool CDeviceList::addItem(wxString strName,
             pDeviceItem->m_strName = strName;
             pDeviceItem->m_strParameter = strParameter;
             pDeviceItem->m_strPath = strPath;
+            pDeviceItem->m_guid.getFromArray(pGUID);
 
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
