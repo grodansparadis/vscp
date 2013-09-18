@@ -277,6 +277,7 @@ static struct websrv_Session *websrv_sessions;
 static struct Page pages[] = 
   {
     { "/vscp", "text/html",  &CControlObject::websrv_serve_mainpage, NULL },
+    { "/vscp/", "text/html",  &CControlObject::websrv_serve_mainpage, NULL },
     { "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_interfaces, NULL },
     { "/vscp/dm", "text/html", &CControlObject::websrv_serve_dmlist, NULL },
     { "/vscp/dmedit", "text/html", &CControlObject::websrv_serve_dmedit, NULL },

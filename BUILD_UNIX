@@ -1,6 +1,8 @@
 To build VSCP and friends type 
 
-".configure --enable-unicode" 
+There are detailed build instructions in the VSCP wiki for a copuple of different platforms. Look gete http://www.vscp.org/wiki/doku.php/howto
+
+".configure" 
 
 (You can add "--enable-debug" to build a debug version.)
 
@@ -10,13 +12,10 @@ followed by
 
 and "make install" as root user.
 
-You can use ./configure --help to get help about available switches. Use --enable-debug to use the debug 
-version of wxWidgets and use --enable-unicode to use the unicode version. The use of the unicode version 
-is recommended.
-
+You can use ./configure --help to get help about available switches. Use --enable-debug to use the debug version of wxWidgets and use --enable-unicode to use the unicode version (default=. The use of the unicode version is recommended.
 
 To compile the package you need the wxWidgets libraries. The toolkit can be found at 
-http://www.wxwidgets.org. At the moment use the graphical version ()GTK2 of the library if you want to build the graphical components. For the server, libs amd drivers the wxBase libs are enough.
+http://www.wxwidgets.org. Either use the graphical version GTK2 of the library (if you want to build the graphical components == vscpworks) or the base verson.
 
 You also need the websockets package. The package can be found at http://git.warmcat.com. If you have problems with the installation fo the package please read the instructions here http://martinsikora.com/libwebsockets-compiling-libraries-and-projects. On my debian system I have to issue "reconfigure" to be able to buidl as stated here https://github.com/wayneeseguin/rvm/issues/553
 
@@ -26,9 +25,11 @@ For the webserver libmicrohttpd is needed. You can find it here http://www.gnu.o
 
 If you want the MQTT driver to build you need to install and build the mosquitto-1.1.3.tar.gz or later from here http://mosquitto.org/download/
 
-Configuration files should be located in /etc/vscp and there are samples of configuration files here in the root. 
-The names should be vscpd.conf for the daemon and vscpworks.conf for VSCP works. The daemon can be started with 
-a path to a configuration file in anoter location using the -c switch.
+You also need libssl-dev, libmicrohttpd-dev, and optional libpcap-dev for raw ethernet support and  libmosquittopp0-dev for MQTT support.
+
+Configuration files should be located in /etc/vscp and there are samples of configuration files here in the config_examples folder in the distribution root. You need vscpd.conf, variables.xml, dm.xml and mimetypes.xml. 
+
+The names should be vscpd.conf for the daemon and vscpworks.conf for VSCP works. The daemon can be started with a path to a configuration file in anoter location using the -c switch.
 
 Notes on making your own applications
 -------------------------------------
@@ -36,7 +37,8 @@ If you build GUI applicatin that use the vscp helper dll the wxUSE_GUI=1 should 
 If you build non-guid components define wxUSE_GUI=0
 
 Have Fun!
-/Ake <akhe@grodansparadis.com>
+/Ake 
+<akhe@grodansparadis.com>
 
 
 
