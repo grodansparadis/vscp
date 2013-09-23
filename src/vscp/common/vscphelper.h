@@ -658,7 +658,7 @@ extern "C" {
 	    @param pmdf Optional pointer to CMDF class which gives more info
 				about the device if it is supplied.
 	 */
-	wxString getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
+	wxString& getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
 
 
 #ifdef __cplusplus

@@ -41,11 +41,11 @@
     <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <LibraryPath>C:\Users\akhe\Google Drive\development\expat-2.0.1\win32\bin\Debug;$(VSCP_HOME)\src\vscp\contrib\libwebsocket\dll\win32;$(LibraryPath)</LibraryPath>
+    <LibraryPath>C:\Users\akhe\Google Drive\development\expat-2.0.1\win32\bin\Debug;$(VSCP_HOME)\src\vscp\contrib\libwebsocket\dll\win32;C:\Users\akhe\development\libmicrohttpd-0.9.17_win32\lib;$(LibraryPath)</LibraryPath>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
-    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;C:\Users\akhe\development\libmicrohttpd-0.9.17_win32\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\Release\</OutDir>
@@ -55,7 +55,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
-    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;$(VSCP_HOME)\src\common\zlib;$(IncludePath)</IncludePath>
+    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;$(VSCP_HOME)\src\common\zlib;C:\Users\akhe\development\libmicrohttpd-0.9.17_win32\include;..\..\common\win32helpers;$(IncludePath)</IncludePath>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

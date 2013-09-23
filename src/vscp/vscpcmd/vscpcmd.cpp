@@ -76,10 +76,12 @@
 #include <math.h>
 
 #ifdef WIN32
-#include "../common/controlobject.h"
+//#include "../common/controlobject.h"
 #else
 
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <wchar.h>
 #endif
 

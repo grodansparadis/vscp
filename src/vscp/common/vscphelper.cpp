@@ -20,7 +20,7 @@
 //
 
 // HISTORY:
-//    021107 - AKHE Started this filewww
+//    021107 - AKHE Started this file
 //
 
 #ifdef __GNUG__
@@ -1558,6 +1558,7 @@ bool getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strVa
     
     // We mimic a standard measurement
     vscpEvent eventMimic;
+	eventMimic.pdata = new uint8_t[pEvent->sizeData-offset-3];
     eventMimic.vscp_class = pEvent->vscp_class;
     eventMimic.vscp_type = pEvent->vscp_type;
     eventMimic.sizeData = pEvent->sizeData;
@@ -1598,7 +1599,7 @@ bool convertMeasurementFloatToNormalizedEventData( double value,
     }
     
     modf( value, &intpart );
-    val64 = (uint64_t)(value * pow(10,ndigits));
+    val64 = (uint64_t)(value * pow(10.0,ndigits));
     wxUINT64_SWAP_ON_LE(val64);
     
     if ( val64 < ((double)0x80) ) {
@@ -2890,9 +2891,9 @@ void makeHtml(wxString& str)
 // getDeviceHtmlStatusInfo
 //
 
-wxString getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
+wxString &getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 {
-    wxString strHTML;
+    static wxString strHTML;
     wxString str;
 
     strHTML = _("<html><body>");

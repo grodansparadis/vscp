@@ -1376,7 +1376,7 @@ int VscpTcpIf::doCmdGetGUID( char *pGUID )
 
 int VscpTcpIf::doCmdGetGUID( cguid& ifguid )
 {
-    long val;
+    //long val;
     int pos;
     wxString strLine;
     wxStringTokenizer strTokens;

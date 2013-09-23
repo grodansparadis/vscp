@@ -21,24 +21,43 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#include "stdafx.h"
-#include "vscphelperdll.h"
+//#define WIN32_LEAN_AND_MEAN
+#include "wx/wxprec.h"
+#include "wx/wx.h"
+//#include <windows.h>
+//#include <stdlib.h>
 
-/*!
-    \file VSCP helper dll.cpp
-    \brief Helper dll for VSCP related tasks. 
-    \details This code exports functionality to handle the CANAL interface
-        and the TCP/IP interface plus a lot of extra functionality for VSCP related tasks.
-    \author Ake Hedman <akhe@grodansparadis.com>, Grodans Paradis AB, Sweden
-*/
+#include "dlldrvobj.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
+#ifdef WIN32
+#include <stdio.h>
+#include <stdlib.h>
+//#include "winsock.h"
+//#include <winsock2.h>
+
 #endif
 
-// CVSCPhelperdllApp
+#include "wx/defs.h"
+#include "wx/app.h"
+#include <wx/xml/xml.h>
+#include <wx/listimpl.cpp>
+#include <wx/thread.h>
+#include <wx/tokenzr.h>
+#include <wx/datetime.h>
+#include <wx/utils.h>
 
+
+
+#include "../../common/vscphelper.h"
+#include "../../common/vscptcpif.h"
+#include "vscphelperdll.h"
+
+static HANDLE hThisInstDll = NULL;
+static CDllDrvObj *theApp = NULL;
+
+// CVSCPhelperdllApp
+/*
 BEGIN_MESSAGE_MAP( CVSCPhelperdllApp, CWinApp )
 END_MESSAGE_MAP()
 
@@ -70,7 +89,7 @@ BOOL CVSCPhelperdllApp::InitInstance()
 
     return TRUE;
 }
-
+*/
 
 ///////////////////////////////////////////////////////////////////////////////
 //                             V S C P -  A P I

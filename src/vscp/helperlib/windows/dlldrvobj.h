@@ -25,13 +25,11 @@
 #define AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
 
 
-#include "../common/can4vscpobj.h"
-
 // This is the version info for this DLL - Change to your own value
 #define DLL_VERSION		0x000001
 
 // This is the vendor string - Change to your own value
-#define CANAL_DLL_VENDOR "eurosource, Sweden, http://www.eurosource.se"
+#define CANAL_DLL_VENDOR "eurosource, Sweden, http://www.grodanspaadis.com"
 							
 
 // Max number of open connections
