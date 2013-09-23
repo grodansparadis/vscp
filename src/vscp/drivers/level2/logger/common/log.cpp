@@ -189,8 +189,7 @@ CVSCPLog::open(const char *pUsername,
 void
 CVSCPLog::close(void)
 {
-
-	if (m_flags | LOG_FILE_VSCP_WORKS) {
+	if ( m_file.IsOpened() && (m_flags | LOG_FILE_VSCP_WORKS ) ) {
 		m_pLogStream->Write("</vscprxdata>\n", strlen("</vscprxdata>\n"));
 	}
 

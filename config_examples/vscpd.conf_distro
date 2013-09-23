@@ -132,8 +132,8 @@
     <automation>
         <zone>1</zone>
         <sub-zone>2</sub-zone>
-        <longitude>44.651</longitude>
-        <latitude>09.625</latitude>
+        <longitude>61.74418333333333</longitude>
+        <latitude>15.160416666666666</latitude>
         <time enable="true" interval="60" />
         <sunrise enable="true" />
         <sunset enable="true" />

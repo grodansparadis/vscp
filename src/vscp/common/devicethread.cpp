@@ -285,7 +285,6 @@ void *deviceThread::Entry()
 			}
 		}
 
-
 		// Open the device
 		m_pDeviceItem->m_openHandle =
 			m_pDeviceItem->m_proc_CanalOpen((const char *) m_pDeviceItem->m_strParameter.mb_str(wxConvUTF8),
