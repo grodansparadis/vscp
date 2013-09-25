@@ -1,6 +1,7 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-09-25 - AKHE Missing comma in conversion of writeVscpEventToString caused problems in websocket.
 2013-09-18 - AKHE Release 0.4.0.9 Fluorine.
 2013-09-10 - AKHE Added help/about to internal webserver internal pages.
 2013-09-10 - AKHE Fixed problem in DM fed that could cause segfault.

@@ -5624,7 +5624,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
     
     buildPage += _(WEB_VAREDIT_BODY_START);
 
-    if ( !bNew && id < pObject->m_VSCP_Variables.m_listVariable.GetCount() ) {
+    if ( !bNew && ( id < pObject->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
         pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
     }
 
@@ -5695,8 +5695,8 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
         }
         else if ( nType == VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) {
             
-            bool bValue;
-            pVariable->getValue( &bValue );
+            bool bValue = false;
+            if (!bNew ) pVariable->getValue( &bValue );
             buildPage += _("<input type=\"radio\" name=\"value_boolean\" value=\"true\" ");
             if ( !bNew ) buildPage += wxString::Format(_("%s"), 
                                         bValue ? _("checked >true ") : _(">true ") );
