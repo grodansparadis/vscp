@@ -207,17 +207,19 @@ extern "C" {
     bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& str);
 	
 	/*!
-		Convert a floating point measurement value into VSCP data with the
-	 first byte being the normaliser byte
+	  Convert a floating point measurement value into VSCP data with the
+	  first byte being the normaliser byte
 	  CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
       \param value Floating point value to convert.
-      \param pdata Pointer to beginning of VSCP event data.
+      \param pdata Pointer to beginning of VSCP returned event data.
+	  \param psize Pointer to size for returned data.
 	  \param unit Untit for the data. Zero is default.
 	  \param sensoridx Sensor index 0-7. Zero is default.
       \return true on success, false on failure.
      */
-	bool convertFloatToNormalizedEventData( float value, 
+	bool convertFloatToNormalizedEventData( double value, 
 												uint8_t *pdata,
+												uint16_t *psize,
 												uint8_t unit=0,
 												uint8_t sensoridx=0 );
 	

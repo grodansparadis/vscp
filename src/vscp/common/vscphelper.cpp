@@ -644,7 +644,7 @@ VSCPInformation::VSCPInformation(void)
 	// Level II Display functionality Class=1030 (0x406)
 	m_hashType[ MAKE_CLASSTYPE_LONG(1030, 0) ] = _("DISPLAY_GENERAL");
     
-    // Level II Measurement class Class=1040 (0x410)
+    // Level II Measurement class string Class=1040 (0x410)
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 0) ] = _("MEASUREMENT_STR_GENERAL");
     m_hashType[ MAKE_CLASSTYPE_LONG(1040, 1) ] = _("COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 2) ] = _("LENGTH");
@@ -1568,16 +1568,21 @@ bool getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strVa
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// convertMeasurementFloatToNormalizedEventData
+// convertFloatToNormalizedEventData
 //
 
-bool convertMeasurementFloatToNormalizedEventData( double value, 
-                                                        uint8_t *pdata, 
-                                                        uint8_t unit,
-                                                        uint8_t sensoridx )
+bool convertFloatToNormalizedEventData( double value, 
+                                            uint8_t *pdata,
+                                            uint16_t *psize,
+                                            uint8_t unit,
+                                            uint8_t sensoridx )
 {
     // Check pointer
     if ( NULL == pdata ) return false;
+    if ( NULL == psize ) return false;
+    
+    // No data assigned yet
+    *psize = 0;
     
     unit &= 3;      // Mask of invalid bits
     unit <<= 3;     // Shift to correct position
@@ -1603,24 +1608,29 @@ bool convertMeasurementFloatToNormalizedEventData( double value,
     wxUINT64_SWAP_ON_LE(val64);
     
     if ( val64 < ((double)0x80) ) {
+        *psize = 3;
         pdata[2] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x800) ) {
+        *psize = 4;
         pdata[2] = (val64 >> 8) & 0xff;
         pdata[3] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x800) ) {
+        *psize = 5;
         pdata[2] = (val64 >> 16) & 0xff;
         pdata[3] = (val64 >> 8) & 0xff;
         pdata[4] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x80000) ) {
+        *psize = 6;
         pdata[2] = (val64 >> 24) & 0xff;
         pdata[3] = (val64 >> 16) & 0xff;
         pdata[4] = (val64 >> 8) & 0xff;
         pdata[5] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x80000) ) {
+        *psize = 7;
         pdata[2] = (val64 >> 32) & 0xff;
         pdata[3] = (val64 >> 24) & 0xff;
         pdata[4] = (val64 >> 16) & 0xff;
@@ -1628,6 +1638,7 @@ bool convertMeasurementFloatToNormalizedEventData( double value,
         pdata[6] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x80000) ) {
+        *psize = 8;
         pdata[2] = (val64 >> 40) & 0xff;
         pdata[3] = (val64 >> 32) & 0xff;
         pdata[4] = (val64 >> 24) & 0xff;
@@ -2704,7 +2715,7 @@ bool writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 	// Check pointer
 	if (NULL == pEvent) return false;
 
-	str.Printf(_("%d,%d,%d,%d,%d"),
+	str.Printf(_("%d,%d,%d,%d,%d,"),
 			pEvent->head,
 			pEvent->vscp_class,
 			pEvent->vscp_type,
