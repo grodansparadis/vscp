@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="89">
+<configurationDescriptor version="90">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="common"
                    displayName="common"
@@ -18,7 +18,7 @@
       <itemPath>../common/vscphelper.cpp</itemPath>
       <itemPath>../common/vscphelper.h</itemPath>
     </logicalFolder>
-    <df root="." name="mkpasswd">
+    <df root="." name="0">
       <in>mkpasswd.cpp</in>
       <in>mkpasswd.h</in>
     </df>
@@ -37,7 +37,6 @@
   <confs>
     <conf name="Default" type="0">
       <toolsSet>
-        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>default</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
@@ -64,9 +63,14 @@
             </preprocessorList>
           </cTool>
           <ccTool>
+            <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
+            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
@@ -115,17 +119,6 @@
       </item>
       <item path="../common/vscphelper.h" ex="false" tool="3" flavor2="0">
       </item>
-      <folder path="mkpasswd">
-        <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
       <item path="mkpasswd.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>

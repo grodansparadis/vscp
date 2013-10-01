@@ -1156,7 +1156,8 @@ void CControlObject::sendEventToClient(CClientItem *pClientItem,
     // Create an event
     vscpEvent *pnewvscpEvent = new vscpEvent;
     if (NULL != pnewvscpEvent) {
-        // Copy in the new message
+        
+        // Copy in the new event
         memcpy(pnewvscpEvent, pEvent, sizeof( vscpEvent));
 
         // And data...
@@ -4361,7 +4362,7 @@ CControlObject::websrv_serve_dmedit( const void *cls,
         
         // GUID
         if ( !bNew ) writeGuidArrayToString( pElement->m_vscpfilter.filter_GUID, str );
-        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Type:</td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"filter_vscpguid\">");
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">GUID:</td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"filter_vscpguid\">");
         if ( bNew ) {
             buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         }
@@ -5696,19 +5697,22 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
         else if ( nType == VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) {
             
             bool bValue = false;
-            if (!bNew ) pVariable->getValue( &bValue );
+            if ( !bNew ) pVariable->getValue( &bValue );
+            
             buildPage += _("<input type=\"radio\" name=\"value_boolean\" value=\"true\" ");
-            if ( !bNew ) buildPage += wxString::Format(_("%s"), 
-                                        bValue ? _("checked >true ") : _(">true ") );
+            if ( !bNew ) 
+                buildPage += wxString::Format(_("%s"), 
+                                bValue ? _("checked >true ") : _(">true ") );
             else {
                 buildPage += _(">true ");
             }
             
             buildPage += _("<input type=\"radio\" name=\"value_boolean\" value=\"false\" ");
-            if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+            if ( !bNew ) 
+                buildPage += wxString::Format(_("%s"), 
                                         !bValue ? _("checked >false ") : _(">false ") );
             else {
-                buildPage += _(">checked >false ");
+                buildPage += _(">false ");
             }
         }
         else if ( nType == VSCP_DAEMON_VARIABLE_CODE_INTEGER ) {
