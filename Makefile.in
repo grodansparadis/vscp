@@ -2,6 +2,10 @@
 # Makefile : Builds wxWindows samples for Unix.
 #
 
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = ${INSTALL}
+INSTALL_DATA = ${INSTALL} -m 644
+INSTALL_DIR = /usr/bin/install -c -d
 PROJ_SUBDIRS=@PROJ_SUBDIRS@
 
 all:
