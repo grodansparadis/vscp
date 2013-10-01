@@ -24,7 +24,6 @@
     </logicalFolder>
     <df root="." name="0">
       <in>libvscphelper.cpp</in>
-      <in>libvscphelper.h</in>
       <in>test.c</in>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -62,7 +61,9 @@
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
+              <Elem>__PIC__=2</Elem>
               <Elem>__WXGTK__</Elem>
+              <Elem>__pic__=2</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
@@ -82,21 +83,10 @@
         <cTool>
         </cTool>
       </item>
-      <item path="../../../common/crc.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/canal.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/canal_macro.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/canal_win32_ipc.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/canaldlldef.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -104,32 +94,17 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../common/guid.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/mdf.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/vscp.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/vscp_class.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/vscp_type.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
         </ccTool>
-      </item>
-      <item path="../../common/vscphelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -137,8 +112,14 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
-      </item>
+      <folder path="0">
+        <ccTool>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
       <folder path="common">
         <cTool>
           <incDir>
@@ -149,8 +130,6 @@
       <item path="libvscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="libvscphelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
         <cTool>
