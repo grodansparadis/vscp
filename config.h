@@ -48,7 +48,7 @@
 #define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the `curses' library (-lcurses). */
-#define HAVE_LIBCURSES 1
+/* #undef HAVE_LIBCURSES */
 
 /* Define to 1 if you have the `dl' library (-ldl). */
 #define HAVE_LIBDL 1
