@@ -1,6 +1,8 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-10-01 - AKHE Fixed compile problem on 64-bit platforms that caused
+                  /usr/bin/ld: ../../../../../common/crc.o: relocation R_X86_64_32S against
 2013-10-01 - AKHE 0.4.0.10
 2013-10-01 - AKHE Fixed problems in install part of main make file
 2013-09-25 - AKHE Fixed bug that caused segfault when adding a new boolean variable in the internal web interface
