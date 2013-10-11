@@ -3,11 +3,9 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
       <in>lmsensors.cpp</in>
-      <in>lmsensors.h</in>
       <in>test.c</in>
       <in>test.cpp</in>
       <in>vscp2drv_lmsensors.cpp</in>
-      <in>vscp2drv_lmsensors.h</in>
     </df>
     <logicalFolder name="src" displayName="src" projectFiles="true" root="../../..">
       <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -89,50 +87,22 @@
         <cTool>
         </cTool>
       </item>
-      <item path="../../../../../common/crc.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../../common/dllist.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/canal.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/canal_macro.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/canal_win32_ipc.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="../../../../common/guid.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/mdf.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp_class.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp_type.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
       </item>
-      <item path="../../../../common/vscphelper.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="../../../../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
       </item>
       <folder path="src">
         <cTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
         </cTool>
@@ -144,9 +114,12 @@
       </folder>
       <item path="lmsensors.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </ccTool>
-      </item>
-      <item path="lmsensors.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
         <cTool>
@@ -158,9 +131,12 @@
       </item>
       <item path="vscp2drv_lmsensors.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </ccTool>
-      </item>
-      <item path="vscp2drv_lmsensors.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

@@ -458,7 +458,7 @@ CWrkTread::Entry()
 			bool bNegative = false;
 			if (val < 0) {
 				bNegative = true;
-				val = abs(val);
+				val = (val< 0) ? -1.0 * val : val;
             }
 
             vscpEvent *pEvent = new vscpEvent();

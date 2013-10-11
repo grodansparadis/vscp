@@ -8,7 +8,8 @@ PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_PROTO:=git
 PKG_SOURCE_URL:=https://github.com/grodansparadis/vscp_software.git
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
-PKG_SOURCE_VERSION:=4eec440344efa18d03121f576002856e6b21363f
+#PKG_SOURCE_VERSION:=4eec440344efa18d03121f576002856e6b21363f
+PKG_SOURCE_VERSION:=HEAD
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
 PKG_CAT:=zcat
 
@@ -21,15 +22,15 @@ define Package/$(PKG_NAME)
 	CATEGORY:=Utilities
 	TITLE:=$(PKG_NAME)
 	URL:=http://www.vscp.org
-	DEPENDS:= +uclibcxx +libwxbase +libexpat +libopenssl +libmicrohttpd +libwebsockets  
+	DEPENDS:= +uclibcxx +libwxbase +libexpat +libopenssl +libmicrohttpd +libwebsockets +libmosquitto-nossl 
 endef
 
 MAKE_FLAGS += \
-	CFLAGS="$(TARGET_CFLAGS)" \
-	CXXFLAGS="$(TARGET_CXXFLAGS) -fno-builtin -fno-rtti -nostdinc++" \
-	CPPFLAGS="$(TARGET_CPPFLAGS) -I$(STAGING_DIR)/usr/include/uClibc++ -I$(STAGING_DIR)/usr/lib/wx/include/mipsel-openwrt-linux-base-unicode-release-2.8 -I$/home/akhe/vscp_software/src/vscp/daemon/linux -I$(STAGING_DIR)/usr/include/wx-2.8 -I$(LINUX_DIR)/include -I$(STAGING_DIR)/mosquitto-ssl/mosquitto-1.0.3/lib/cpp/" \
-	LDFLAGS="$(TARGET_LDFLAGS) $(LDFLAGS)" \
-	LIBS="$(TARGET_LIBS) -lm" \
+	CFLAGS="$(TARGET_CFLAGS) -fPIC" \
+	CXXFLAGS="$(TARGET_CXXFLAGS) -fPIC -fno-builtin -fno-rtti -nostdinc++" \
+	CPPFLAGS="$(TARGET_CPPFLAGS) -fPIC -I$(STAGING_DIR)/usr/include/uClibc++ -I$(STAGING_DIR)/usr/lib/wx/include/mipsel-openwrt-linux-base-unicode-release-2.8 -I$/home/akhe/vscp_software/src/vscp/daemon/linux -I$(STAGING_DIR)/usr/include/wx-2.8 -I$(PKG_BUILD_DIR)/src/vscp/drivers/level1/socketcan/linux/include -I$(LINUX_DIR)/include -I$(BUILD_DIR)/mosquitto-nossl/mosquitto-1.0.3/lib/cpp" \
+	LDFLAGS="$(TARGET_LDFLAGS) $(LDFLAGS) -L$(BUILD_DIR)/mosquitto-nossl/mosquitto-1.0.3/lib/cpp" \
+	LIBS="$(TARGET_LIBS) -lm " \
 	DESTDIR="$(PKG_INSTALL_DIR)"
 
 #define Build/Prepare
@@ -39,7 +40,7 @@ MAKE_FLAGS += \
 #	mv $(PKG_BUILD_DIR)/vscp/daemon/linux/Makefile.carambola $(PKG_BUILD_DIR)/vscp/daemon/linux/Makefile
 #endef
 
-CONFIGURE_ARGS+=--with-wx-config=$(STAGING_DIR)/usr/bin/wx-config
+CONFIGURE_ARGS+=--with-wx-config=$(STAGING_DIR)/usr/bin/wx-config --enable-shared
 
 define Build/Configure
 	$(call Build/Configure/Default, --with-linux-headers=$(LINUX_DIR))
@@ -51,7 +52,7 @@ endef
 
 define Package/$(PKG_NAME)/install
 	$(INSTALL_DIR) $(1)/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/$(PKG_NAME) $(1)/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR) $(1)/bin/
 endef
 
 $(eval $(call BuildPackage,$(PKG_NAME)))
