@@ -7,8 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, 
-// 	<akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,12 +24,13 @@
 #ifndef _____VSCP_VERSION_h_____
 #define _____VSCP_VERSION_h_____
 
-#define VSCPD_MAJOR_VERSION 0
-#define VSCPD_MINOR_VERSION 3
-#define VSCPD_SUB_VERSION   3
+#define VSCPD_MAJOR_VERSION 	0
+#define VSCPD_MINOR_VERSION 	4
+#define VSCPD_SUB_VERSION   	0
+#define VSCPD_SUB_SUB_VERSION   11
 
-#define VSCPD_DISPLAY_VERSION _("0.3.3 Oxygen")
+#define VSCPD_DISPLAY_VERSION "0.4.0.11 Fluorine"
 
-#define VSCPD_COPYRIGHT _("Copyright (c) 2000-2012, Ake Hedman, Grodans Paradis AB, http://www.grodansparadis.com\n")
+#define VSCPD_COPYRIGHT "Copyright (C) 2000-2013, Ake Hedman, Grodans Paradis AB, http://www.grodansparadis.com\n"
 
 #endif

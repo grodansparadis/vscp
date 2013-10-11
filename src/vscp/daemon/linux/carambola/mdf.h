@@ -1,6 +1,6 @@
 // FILE: mdf.h 
 //
-// Copyright (C) 2002 - 2011 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2002-2013 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,6 @@
 // Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: vscp.h,v $                                       
-// $Date: 2006/02/01 22:16:36 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.29 $ 
 
 
 #ifndef _MDF_H_
@@ -55,14 +51,15 @@ enum vscp_abstraction_type {
     type_uint32_t,
     type_int64_t,
     type_uint64_t,
-    type_decimal,
+	type_float,
+	type_double,
     type_date,
-    type_time
+    type_time,
+	type_guid
 };
 
 
-
-
+WX_DEFINE_ARRAY_LONG( uint32_t, SortedArrayLong );
 
 
 // * * * Settings * * *
@@ -109,6 +106,13 @@ public:
     */
     void clearStorage( void );
 
+	/*!
+		Get real text escription of type
+		@param type Abstraction type
+		@return Real text description of type.
+	*/
+	wxString getAbstractionValueType( void );
+
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
@@ -120,7 +124,7 @@ public:
     wxString m_strDefault;              // default value
   
     uint16_t m_nPage;                   // stored on this page
-    uint16_t m_nOffset;                 // stored at this offset
+    uint32_t m_nOffset;                 // stored at this offset
     uint16_t m_nBitnumber;              // Stored at this bit position.
   
     uint16_t m_nWidth;                  // Width for bitfield and strings.
@@ -129,6 +133,8 @@ public:
     uint32_t m_nMin;                    // If numeric min value can be set
   
     uint8_t m_nAccess;                  // Access rights
+
+	bool m_bIndexed;					// True of indexed storage
 
     MDF_VALUE_LIST  m_list_value;       // list with selectable values
 
@@ -209,7 +215,7 @@ public:
   
     uint16_t m_nPage;
     uint16_t m_nOffset;
-    uint16_t m_nWidth;  // Defaults to 1
+    uint16_t m_nWidth;					// Defaults to 1
 
     uint32_t m_nMin;
     uint32_t m_nMax;
@@ -218,8 +224,12 @@ public:
 
     uint8_t m_nAccess;
 
-    MDF_BIT_LIST  m_list_bit;             // dll list with bit defines
-    MDF_VALUE_LIST  m_list_value;         // dll list with selectable values
+    MDF_BIT_LIST  m_list_bit;			// dll list with bit defines
+    MDF_VALUE_LIST  m_list_value;		// dll list with selectable values
+
+	// For VSCP Works
+	uint8_t m_value;					// Initial value read. This is the value
+										// that will be restored.
 
 };
 
@@ -313,11 +323,12 @@ public:
     */
     void clearStorage( void );
 
-    uint8_t  m_nLevel;        // 1 or 2 (defults to 1)
+    uint8_t  m_nLevel;        // 1 or 2 (defaults to 1)
     uint16_t m_nStartPage;
     uint16_t m_nStartOffset;
     uint16_t m_nRowCount;
     uint16_t m_nRowSize;
+	bool m_bIndexed;
 
     MDF_ACTION_LIST  m_list_action; // Action description
 
@@ -581,6 +592,17 @@ public:
     */
     bool downLoadMDF( wxString& remoteFile, wxString& tempFile );
 
+	/*!
+		Load MDF from local or remote storage and parse it into
+		a MDF stucture.
+		@param Filename or URL to MDF file. If emtpty and bSilent is false
+				the method will ask for this parameter.
+		@param bSilent No dialogs are shown if set to true.
+		@param blocalFile Asks for a local file if set to true.
+		@return returns true on success, false on falure.
+	*/
+	bool load( wxString& remoteFile, bool bLocalFile = false, bool bSilent = false );
+
     /*!
         Format an MDF description so it can be shown
         @param str String to format.
@@ -594,6 +616,31 @@ public:
         @return true if the parsing went well.
     */
     bool parseMDF( wxString& path );
+
+
+	// Helpers
+
+	/*!
+		Get number of defined registers
+		@param page Register page to check
+		@return Number of registers used.
+	*/
+	uint32_t getNumberOfRegisters( uint32_t page );
+
+	/*!
+		Get number of register pages used
+		@return Number of regsiter pages used.
+	*/
+	uint32_t getPages( SortedArrayLong& arraylong );
+
+	/*!
+		Return register class from register + page
+		@param register Register to search for.
+		@param page Page top search for.
+		@return Pointer to CMDF_Register class if found else NULL.
+	*/
+	CMDF_Register *getMDFRegs( uint8_t reg, uint16_t page );
+
 
     wxString m_strLocale;                       // ISO code for requested language
                                                 // defaults to "en"

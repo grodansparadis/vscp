@@ -7,7 +7,8 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,6 +34,7 @@
 #include "wx/socket.h"
 #include <wx/url.h>
 #include "wx/datetime.h"
+#include <wx/filename.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -230,8 +232,6 @@ void actionThreadURL::OnExit()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
-
 
 
 
@@ -1015,6 +1015,11 @@ dmElement::dmElement()
     m_errorCounter = 0;
     m_actionparam.Empty();
     m_comment.Empty();
+    
+    m_index = 0;
+    m_bMeasurement = false;
+    m_zone = 0;
+    m_subzone = 0;
 
     m_pDM = NULL;	// Initially no owner
 
@@ -1035,7 +1040,7 @@ wxString dmElement::getAsRealText( void )
 {
     wxString strRow;
 
-    if ( m_control & 0x80000000 ) {
+    if ( m_control & DM_CONTROL_ENABLE ) {
         strRow = _("enabled,");
     }
     else {
@@ -1453,7 +1458,7 @@ bool dmElement::doAction( vscpEvent *pEvent )
         doActionWriteFile( pEvent );
         break;
 
-    case VSCP_DAEMON_ACTION_CODE_GET_URL:
+    case VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL:
         doActionGetURL( pEvent );
         break;
 
@@ -1466,26 +1471,44 @@ bool dmElement::doAction( vscpEvent *pEvent )
 // doActionExecute 
 //		
 
-bool dmElement::doActionExecute( vscpEvent *pDMEvent )
+bool dmElement::doActionExecute(vscpEvent *pDMEvent)
 {
     // Write in possible escapes
     wxString wxstr = m_actionparam;
-    handleEscapes( pDMEvent, wxstr );
+    handleEscapes(pDMEvent, wxstr);
 
-    if ( !::wxExecute( wxstr ) ) {
-        // Failed to execute
-        m_errorCounter++;
-        m_strLastError = _("Failed to execute :");
-        m_strLastError += m_actionparam;
-        m_strLastError += _("\n");
-        m_pDM->m_pCtrlObject->logMsg( wxstr, DAEMON_LOGMSG_ERROR );
-        return false;
+    // wxExecute breaks if the path does not exist so we have to
+    // check it does.
+    wxString strfn = m_actionparam;
+    bool bOK = true;
+    int pos = m_actionparam.First(' ');
+    if (wxNOT_FOUND != pos) {
+        strfn = m_actionparam.Left(pos);
     }
-    else {
+
+    if (!wxFileName::FileExists(strfn) ||
+            !wxFileName::IsFileExecutable(strfn)) {
+        bOK = false;
+    }
+
+    if ( bOK && ( -1 !=::wxExecute(wxstr, wxEXEC_SYNC ) ) ) {
         wxString wxstr = wxT("[Action] Executed: ");
         wxstr += m_actionparam;
         wxstr += _("\n");
-        m_pDM->m_pCtrlObject->logMsg( wxstr, DAEMON_LOGMSG_INFO );
+        m_pDM->m_pCtrlObject->logMsg(wxstr, DAEMON_LOGMSG_INFO);
+    } 
+    else {
+        // Failed to execute
+        m_errorCounter++;
+        if (bOK) {
+            m_strLastError = _("Failed to execute :");
+        } else {
+            m_strLastError = _("File does not exists or is not executable :");
+        }
+        m_strLastError += m_actionparam;
+        m_strLastError += _("\n");
+        m_pDM->m_pCtrlObject->logMsg(wxstr, DAEMON_LOGMSG_ERROR);
+        return false;
     }
 
     return true;
@@ -1667,7 +1690,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
 
     wxXmlDocument doc;
     if ( !doc.Load ( wxstr ) ) {
-        wxString wxstrErr = wxT("[Action] Send event from file: Faild to load event XML file  ");
+        wxString wxstrErr = wxT("[Action] Send event from file: Failed to load event XML file  ");
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
@@ -2380,8 +2403,12 @@ CDM::CDM( CControlObject *ctrlObj )
     wxStandardPaths stdPath;
 
     // Set the default dm configuration path
+#ifdef WIN32	
     m_configPath = stdPath.GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
+#else
+	m_configPath = _("/srv/vscp/dm.xml");
+#endif	
 #endif
 
     m_pCtrlObject = ctrlObj;
@@ -2458,6 +2485,35 @@ bool CDM::addElement( dmElement *pItem )
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// removeRow
+//
+
+bool CDM::removeRow( unsigned short pos )
+{
+    if (pos < 0) return false;
+    if ( pos >= m_DMList.GetCount() ) return false;
+    
+    wxDMLISTNode *node = m_DMList.Item( pos );
+    
+    m_mutexDM.Lock();
+    m_DMList.DeleteNode(node);
+    m_mutexDM.Unlock();
+    
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getRow
+//
+
+dmElement *CDM::getRow( short row ) 
+{ 
+    if (row < 0) return NULL;
+    if ( row >= m_DMList.GetCount() ) return NULL;
+    
+    return m_DMList.Item( row )->GetData(); 
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // load
@@ -2512,18 +2568,24 @@ bool CDM::load ( void )
             pDMitem->m_control = 0;
             pDMitem->m_action = 0;
             pDMitem->m_triggCounter = 0;
+            pDMitem->m_errorCounter = 0;
             pDMitem->m_actionparam.Empty();
             pDMitem->m_comment.Empty();
             pDMitem->m_timeAllow.m_fromTime = wxDateTime::Now();
             pDMitem->m_timeAllow.m_endTime = wxDateTime::Now();
-            pDMitem->m_timeAllow.setWeekDays(wxT("twtfss"));
+            pDMitem->m_timeAllow.setWeekDays(wxT("mtwtfss"));
+            pDMitem->m_index = 0;
+            pDMitem->m_zone = 0;
+            pDMitem->m_subzone = 0;
             clearVSCPFilter( &pDMitem->m_vscpfilter );
+            bool bEnabled = false;
 
             // Check if row is enabled
             wxString strEnabled = child->GetPropVal( wxT( "enabled" ), wxT("false") );
             strEnabled.MakeUpper();
             if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
                 pDMitem->enable();
+                bEnabled = true;
             }
             else {
                 pDMitem->disable();   
@@ -2564,15 +2626,26 @@ bool CDM::load ( void )
                 }
                 else if ( subchild->GetName() == wxT ( "control" ) ) {
                     pDMitem->m_control = readStringValue( subchild->GetNodeContent() );
+                    // Main property overrides enable bit if set
+                    if (bEnabled ) {
+                        pDMitem->m_control |=  DM_CONTROL_ENABLE;
+                    }
+                    else {
+                        pDMitem->m_control &=  ~DM_CONTROL_ENABLE;
+                    }
                 }
                 else if ( subchild->GetName() == wxT ( "action" ) ) {
                     pDMitem->m_action = readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "param" ) ){
                     pDMitem->m_actionparam = subchild->GetNodeContent();
+                    pDMitem->m_actionparam = pDMitem->m_actionparam.Trim();
+                    pDMitem->m_actionparam = pDMitem->m_actionparam.Trim(false);
                 }
                 else if ( subchild->GetName() == wxT ( "comment" ) ) {
                     pDMitem->m_comment = subchild->GetNodeContent();
+                    pDMitem->m_comment = pDMitem->m_comment.Trim();
+                    pDMitem->m_comment = pDMitem->m_comment.Trim(false);
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_from" ) ) {
                     pDMitem->m_timeAllow.m_fromTime.ParseDateTime( subchild->GetNodeContent() );
@@ -2585,6 +2658,21 @@ bool CDM::load ( void )
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_time" ) ) {
                     pDMitem->m_timeAllow.parseActionTime( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "index" ) ) {
+                    wxString str;
+                    str = subchild->GetPropVal( wxT( "bMeasurement" ), wxT("false") );
+                    str.MakeUpper();
+                    if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
+                        pDMitem->m_bMeasurement = true;
+                    }
+                    pDMitem->m_index = readStringValue( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "zone" ) ) {
+                    pDMitem->m_zone = readStringValue( subchild->GetNodeContent() );
+                }
+                else if ( subchild->GetName() == wxT ( "subzone" ) ) {
+                    pDMitem->m_subzone = readStringValue( subchild->GetNodeContent() );
                 }
 
                 subchild = subchild->GetNext();
@@ -2612,7 +2700,15 @@ bool CDM::load ( void )
 bool CDM::save ( void )
 {
     wxString buf;
+    wxLogDebug( _("DM: Saving decision matrix from :") );
+
 #ifdef BUILD_VSCPD_SERVICE
+    wxStandardPaths stdPath;
+
+    // Set the default dm configuration path
+    m_configPath = stdPath.GetConfigDir();
+    m_configPath += _("/vscp/dm.xml");
+#else
     wxStandardPaths stdPath;
 
     // Set the default dm configuration path
@@ -2623,13 +2719,13 @@ bool CDM::save ( void )
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
     if ( NULL == pFileStream ) return false;
 
-    pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>",
-        strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" ) );
+    pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+        strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) );
 
     m_mutexDM.Lock();
 
     // DM matrix information start
-    pFileStream->Write ( "<dm>",strlen ( "<dm>" ) );
+    pFileStream->Write ( "<dm>\n",strlen ( "<dm>\n" ) );
 
     DMLIST::iterator it;
     for ( it = m_DMList.begin(); it != m_DMList.end(); ++it ) {
@@ -2638,92 +2734,126 @@ bool CDM::save ( void )
 
         if ( NULL != pDMitem ) {  // Must be an dmElement to work with  m_strGroupID
 
-            pFileStream->Write( "<row enabled=\"",strlen ( "<row enabled=\"" ) );
-            if ( pDMitem->m_control & 0x80000000 ) {
+            pFileStream->Write( "  <row enabled=\"",strlen ( "  <row enabled=\"" ) );
+            if ( pDMitem->m_control & DM_CONTROL_ENABLE ) {
                 pFileStream->Write("true\" ",strlen("true\" "));
             }
             else {
                 pFileStream->Write("false\" ",strlen("false\" "));
             }
+            
             pFileStream->Write("groupid=\"",strlen("groupid=\""));
-            pFileStream->Write( pDMitem->m_strGroupID, pDMitem->m_strGroupID.Length() );
-            pFileStream->Write("\n >\n",strlen("\n >\n"));
+            pFileStream->Write( pDMitem->m_strGroupID.mb_str(), strlen(pDMitem->m_strGroupID.mb_str()) );
+            pFileStream->Write("\" >\n", strlen("\" >\n"));
 
-            pFileStream->Write ( "<mask ",strlen ( "<mask " ) );
-            buf.Printf ( _ ( " priority=\"%d\" " ), pDMitem->m_vscpfilter.mask_priority );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " class=\"%d\" " ), pDMitem->m_vscpfilter.mask_class );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " type=\"%d\" " ), pDMitem->m_vscpfilter.mask_type );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " GUID=\" " ) );
-            pFileStream->Write ( buf,buf.length() );
+            pFileStream->Write( "    <mask ",strlen ( "    <mask " ) );
+            buf.Printf( _( " priority=\"%d\" " ), pDMitem->m_vscpfilter.mask_priority );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            
+            buf.Printf( _( " class=\"%d\" " ), pDMitem->m_vscpfilter.mask_class );
+            pFileStream->Write ( buf.mb_str(), strlen( buf.mb_str() ) );
+            
+            buf.Printf ( _( " type=\"%d\" " ), pDMitem->m_vscpfilter.mask_type );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            
+            buf.Printf( _( " GUID=\" " ) );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            
             wxString strGUID;
-            writeGuidArrayToString( pDMitem->m_vscpfilter.mask_GUID, strGUID );
-            pFileStream->Write ( strGUID, strGUID.length() );
-            pFileStream->Write ( "\" > ",strlen ( "\" > " ) );
-            pFileStream->Write ( "</mask>\n",strlen ( "</mask>\n" ) );
+            writeGuidArrayToString( pDMitem->m_vscpfilter. mask_GUID, strGUID );
+            pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
+            pFileStream->Write( "\" > ", strlen( "\" > " ) );
+            pFileStream->Write( "</mask>\n", strlen( "</mask>\n" ) );
 
-            pFileStream->Write ( "<filter ",strlen ( "<filter " ) );
-            buf.Printf ( _ ( " priority=\"%d\" " ), pDMitem->m_vscpfilter.filter_priority );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " class=\"%d\" " ), pDMitem->m_vscpfilter.filter_class );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " type=\"%d\" " ), pDMitem->m_vscpfilter.filter_type );
-            pFileStream->Write ( buf,buf.length() );
-            buf.Printf ( _ ( " GUID=\" " ) );
-            pFileStream->Write ( buf,buf.length() );
+            pFileStream->Write( "    <filter ", strlen( "    <filter " ) );
+            buf.Printf( _( " priority=\"%d\" " ), pDMitem->m_vscpfilter.filter_priority );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " class=\"%d\" " ), pDMitem->m_vscpfilter.filter_class );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " type=\"%d\" " ), pDMitem->m_vscpfilter.filter_type );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            buf.Printf( _( " GUID=\" " ) );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
             writeGuidArrayToString( pDMitem->m_vscpfilter.filter_GUID, strGUID );
-            pFileStream->Write ( strGUID, strGUID.length() );
-            pFileStream->Write ( "\" > ",strlen ( "\" > " ) );
-            pFileStream->Write ( "> ",strlen ( "> " ) );
-            pFileStream->Write ( "</filter>\n",strlen ( "</filter>\n" ) );
+            pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
+            pFileStream->Write( "\" > ", strlen( "\" > " ) );
+            pFileStream->Write( "</filter>\n", strlen( "</filter>\n" ) );
 
-            pFileStream->Write ( "<control>\n",strlen ( "<control>\n" ) );
-            buf.Printf ( _ ( "%d" ), pDMitem->m_control );
-            pFileStream->Write ( buf, buf.length() );
-            pFileStream->Write ( "</control>\n",strlen ( "</control>\n" ) );
+            pFileStream->Write( "    <control>", strlen( "    <control>" ) );
+            buf.Printf( _( "0x%x" ), pDMitem->m_control );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+            pFileStream->Write( "</control>\n", strlen( "</control>\n" ) );
 
-            pFileStream->Write ( "<action>\n",strlen ( "<action>\n" ) );
-            buf.Printf ( _ ( "%d" ), pDMitem->m_action );
-            pFileStream->Write ( buf, buf.length() );
-            pFileStream->Write ( "</action>\n",strlen ( "</action>\n" ) );
+            pFileStream->Write( "    <action>", strlen( "    <action>" ) );
+            buf.Printf( _( "0x%x" ), pDMitem->m_action );
+            pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ));
+            pFileStream->Write( "</action>\n", strlen ( "</action>\n" ) );
 
-            pFileStream->Write ( "<param>\n",strlen ( "<param>\n" ) );
-            pFileStream->Write ( pDMitem->m_actionparam, pDMitem->m_actionparam.length() );
-            pFileStream->Write ( "</parm>\n",strlen ( "</param>\n" ) );
+            pFileStream->Write( "    <param>", strlen ( "    <param>" ) );
+            pFileStream->Write( pDMitem->m_actionparam.mb_str(), 
+                                    strlen( pDMitem->m_actionparam.mb_str() ) );
+            pFileStream->Write( "</param>\n", strlen ( "</param>\n" ) );
 
-            pFileStream->Write ( "<comment>\n",strlen ( "<comment>\n" ) );
-            pFileStream->Write ( pDMitem->m_comment, pDMitem->m_comment.length() );
-            pFileStream->Write ( "</comment>\n",strlen ( "</comment>\n" ) );
+            pFileStream->Write( "    <comment>", strlen ( "    <comment>" ) );
+            pFileStream->Write( pDMitem->m_comment.mb_str(), 
+                                    strlen(pDMitem->m_comment.mb_str()) );
+            pFileStream->Write( "</comment>\n", strlen ( "</comment>\n" ) );
 
-            pFileStream->Write ( "<allowed_from>\n",strlen ( "<allowed_from>\n" ) );
+            pFileStream->Write( "    <allowed_from>", strlen ( "    <allowed_from>" ) );
             {
                 wxString str = pDMitem->m_timeAllow.m_fromTime.FormatISODate() + _(" ") + 
                     pDMitem->m_timeAllow.m_fromTime.FormatISOTime();
-                pFileStream->Write ( str, str.length() );
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
-            pFileStream->Write ( "</allowed_from>\n",strlen ( "</allowed_from>\n" ) );
+            pFileStream->Write( "</allowed_from>\n", strlen( "</allowed_from>\n" ) );
 
-            pFileStream->Write ( "<allowed_to>\n",strlen ( "<allowed_to>\n" ) );
+            pFileStream->Write ( "    <allowed_to>", strlen( "    <allowed_to>" ) );
             {
                 wxString str = pDMitem->m_timeAllow.m_endTime.FormatISODate() + _(" ") + 
                     pDMitem->m_timeAllow.m_endTime.FormatISOTime();
-                pFileStream->Write ( str, str.length() );
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
-            pFileStream->Write ( "</allowed_to>\n",strlen ( "</allowed_to>\n" ) );
+            pFileStream->Write("</allowed_to>\n", strlen ( "</allowed_to>\n" ) );
 
-            pFileStream->Write ( "<allowed_weekdays>\n",strlen ( "<allowed_weekdays>\n" ) );
+            pFileStream->Write("    <allowed_weekdays>", strlen ( "    <allowed_weekdays>" ) );
             {
                 wxString str = pDMitem->m_timeAllow.getWeekDays();
-                pFileStream->Write ( str, str.length() );
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
             }
-            pFileStream->Write ( "</allowed_weekdays>\n",strlen ( "</allowed_weekdays>\n" ) );
+            pFileStream->Write( "</allowed_weekdays>\n", strlen ( "</allowed_weekdays>\n" ) );
 
-            pFileStream->Write ( "<allowed_time>\n",strlen ( "<allowed_time>\n" ) );
-            pFileStream->Write ( "</allowed_time>\n",strlen ( "</allowed_time>\n" ) );
+            pFileStream->Write( "    <allowed_time>", strlen ( "    <allowed_time>" ) );
+            {
+                wxString str = pDMitem->m_timeAllow.getActionTimeAsString();
+                pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
+            }
+            pFileStream->Write( "</allowed_time>\n",strlen ( "</allowed_time>\n" ) );
+            
+            // Index
+            pFileStream->Write( "    <index ", strlen( "    <index " ) );
+            buf.Printf( _( " bMeasurement=\"%s\" " ), 
+                    (pDMitem->m_bMeasurement) ? _("true") : _("false") );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( " > ", strlen( " > " ) );
+            buf.Printf( _( "%d" ), pDMitem->m_index );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</index>\n", strlen ( "</index>\n" ) );
+            
+            // Zone
+            pFileStream->Write( "    <zone>", strlen ( "    <zone>" ) );
+            buf.Printf( _( "%d" ), pDMitem->m_zone );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</zone>\n", strlen ( "</zone>\n" ) );
+            
+            // Subzone
+            pFileStream->Write( "    <subzone>", strlen ( "    <subzone>" ) );
+            buf.Printf( _( "%d" ), pDMitem->m_subzone );
+            pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
+            pFileStream->Write( "</subzone>\n", strlen ( "</subzone>\n" ) );
+            
 
-            pFileStream->Write ( "</row>\n",strlen ( "</row>\n" ) );
+            pFileStream->Write( "  </row>\n\n",strlen( "  </row>\n\n" ) );
+            
         }
 
     }
@@ -2753,8 +2883,34 @@ bool CDM::feed( vscpEvent *pEvent )
         dmElement *pDMitem = *it;
         if ( doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) && 
             pDMitem->m_timeAllow.ShouldWeDoAction() ) { 
+            
+                if ( pDMitem->isCheckIndexSet() ) {
+                    if ( pDMitem->m_bMeasurement ) {
+                        if ( ( 0 == pEvent->sizeData ) || 
+                                ( pEvent->pdata[0] & 7 != pDMitem->m_index ) ) continue;
+                    }
+                    else {
+                        if ( ( 0 == pEvent->sizeData ) || 
+                                ( pEvent->pdata[0] != pDMitem->m_index ) ) continue;
+                    }
+                }
+                
+                if ( pDMitem->isCheckZoneSet() ) {
+                    if ( ( 2 > pEvent->sizeData ) || 
+                                ( pEvent->pdata[1] != pDMitem->m_zone ) ) continue;
+                }
+                
+                if ( pDMitem->isCheckSubZoneSet() ) {
+                    if ( ( 3 > pEvent->sizeData ) || 
+                                ( pEvent->pdata[2] != pDMitem->m_subzone ) ) continue;
+                }
+                
                 // Match do action for this row
                 pDMitem->doAction( pEvent );
+        
+                // Check if DM scan should continue after this DM row
+                if ( pDMitem->isScanDontContinueSet() ) break;
+                
         }
 
     }
@@ -2779,7 +2935,8 @@ bool CDM::feedPeriodicEvent( void )
         EventSecond.timestamp = makeTimeStamp();                        // Set timestamp
         EventSecond.sizeData = 0;								        // No data
         EventSecond.pdata = NULL;
-        memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        //memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventSecond.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal second event\n") );
         feed( &EventSecond );
 
@@ -2795,7 +2952,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomMinute.sizeData = 0;									    // No data
             EventRandomMinute.timestamp = makeTimeStamp();                      // Set timestamp
             EventRandomMinute.pdata = NULL;
-            memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomMinute.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random minute event\n")  );
             feed( &EventRandomMinute );
 
@@ -2813,7 +2971,8 @@ bool CDM::feedPeriodicEvent( void )
         EventMinute.timestamp = makeTimeStamp();                            // Set timestamp
         EventMinute.sizeData = 0;									        // No data
         EventMinute.pdata = NULL;
-        memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        //memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventMinute.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal minute event\n") );
         m_rndMinute = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 60;
         feed( &EventMinute );
@@ -2827,7 +2986,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomHour.timestamp = makeTimeStamp();                    // Set timestamp
             EventRandomHour.sizeData = 0;								    // No data
             EventRandomHour.pdata = NULL;
-            memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomHour.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random hour event\n") );
             feed( &EventRandomHour );
 
@@ -2837,17 +2997,18 @@ bool CDM::feedPeriodicEvent( void )
     if ( m_lastTime.GetHour() != wxDateTime::Now().GetHour() ) {
 
         m_rndHour = (rand()/ RAND_MAX) * 60;
-        vscpEvent EventtHour;
-        EventtHour.vscp_class = VSCP_CLASS2_VSCPD;
-        EventtHour.vscp_type = VSCP2_TYPE_VSCPD_HOUR;				        // Internal Hour Event
-        EventtHour.head = VSCP_PRIORITY_NORMAL;						        // Set priority
-        EventtHour.timestamp = makeTimeStamp();                             // Set timestamp
-        EventtHour.sizeData = 0;									        // No data
-        EventtHour.pdata = NULL;
-        memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        vscpEvent EventHour;
+        EventHour.vscp_class = VSCP_CLASS2_VSCPD;
+        EventHour.vscp_type = VSCP2_TYPE_VSCPD_HOUR;				        // Internal Hour Event
+        EventHour.head = VSCP_PRIORITY_NORMAL;						        // Set priority
+        EventHour.timestamp = makeTimeStamp();                             // Set timestamp
+        EventHour.sizeData = 0;									        // No data
+        EventHour.pdata = NULL;
+        //memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventHour.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal hour event\n") );
         m_rndHour = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 24;
-        feed( &EventtHour );
+        feed( &EventHour );
 
         // Check if it's time to send radom day event
         if ( m_rndDay == wxDateTime::Now().GetHour() ) {
@@ -2859,7 +3020,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomDay.timestamp = makeTimeStamp();                     // Set timestamp
             EventRandomDay.sizeData = 0;								    // No data
             EventRandomDay.pdata = NULL;
-            memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomDay.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random day event\n") );
             feed( &EventRandomDay );
 
@@ -2876,7 +3038,8 @@ bool CDM::feedPeriodicEvent( void )
         EventDay.timestamp = makeTimeStamp();                               // Set timestamp
         EventDay.sizeData = 0;									            // No data
         EventDay.pdata = NULL;
-        memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );		            // Server GUID
+        //memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );		            // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventDay.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal day event\n") );
         m_rndDay = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 7;
         feed( &EventDay );
@@ -2891,7 +3054,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomWeek.timestamp = makeTimeStamp();                    // Set timestamp
             EventRandomWeek.sizeData = 0;								    // No data
             EventRandomWeek.pdata = NULL;
-            memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomWeek.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random week event\n") );
             feed( &EventRandomWeek );
 
@@ -2909,7 +3073,8 @@ bool CDM::feedPeriodicEvent( void )
             EventWeek.timestamp = makeTimeStamp();                          // Set timestamp
             EventWeek.sizeData = 0;										    // No data
             EventWeek.pdata = NULL;
-            memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 );		    // Server GUID
+            //memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 );		    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventWeek.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal week event\n") );
             m_rndWeek = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 52;
             feed( &EventWeek );
@@ -2923,7 +3088,8 @@ bool CDM::feedPeriodicEvent( void )
                 EventRandomMonth.timestamp = makeTimeStamp();                   // Set timestamp
                 EventRandomMonth.sizeData = 0;									// No data
                 EventRandomMonth.pdata = NULL;
-                memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+                //memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+                m_pCtrlObject->m_guid.setGUID( EventRandomMonth.GUID );
                 wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random month event\n") );
                 feed( &EventRandomMonth );
 
@@ -2940,7 +3106,8 @@ bool CDM::feedPeriodicEvent( void )
         EventMonth.timestamp = makeTimeStamp();                                 // Set timestamp
         EventMonth.sizeData = 0;										        // No data
         EventMonth.pdata = NULL;
-        memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );			        // Server GUID
+        //memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );			        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventMonth.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal month event\n") );
         m_rndMonth = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 12;
         feed( &EventMonth );
@@ -2954,7 +3121,8 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomYear.timestamp = makeTimeStamp();                        // Set timestamp
             EventRandomYear.sizeData = 0;								        // No data
             EventRandomYear.pdata = NULL;
-            memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+            //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventRandomYear.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random year event\n") );
             feed( &EventRandomYear );
 
@@ -2971,7 +3139,8 @@ bool CDM::feedPeriodicEvent( void )
         EventYear.timestamp = makeTimeStamp();                          // Set timestamp
         EventYear.sizeData = 0;									        // No data
         EventYear.pdata = NULL;
-        memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        //memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+        m_pCtrlObject->m_guid.setGUID( EventYear.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal year event\n") );
         m_rndYear = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 365;
         feed( &EventYear );
@@ -2988,7 +3157,8 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
-            memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3004,7 +3174,8 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
-            memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3020,7 +3191,8 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
             EventQuarter.sizeData = 0;					                // No data
             EventQuarter.pdata = NULL;
-            memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3036,7 +3208,8 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
-            memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
+            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 

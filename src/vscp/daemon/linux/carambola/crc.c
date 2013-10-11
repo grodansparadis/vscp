@@ -42,6 +42,7 @@
 #define REFLECT_REMAINDER(X)	(X)
 #endif
 
+crc  crcTable[256];
 
 /*********************************************************************
  *
@@ -136,8 +137,6 @@ crcSlow( unsigned char const message[], int nBytes )
 
 }   /* crcSlow() */
 
-
-crc  crcTable[256];
 
 
 /*********************************************************************

@@ -1,6 +1,6 @@
 // FILE: vscp.h 
 //
-// Copyright (C) 2000-2012 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2000-2013 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -177,11 +177,7 @@ extern "C" {
 
 // This structure is for VSCP Level II
 // 
-// If bit 2 in the head byte is set this is a CAN message
-// which is the same as a VSCP Level I event. Bits 0,1 will
-// have useage only for CAN in this case and GUID[15] is part 
-// of the CAN id. Max data size is eight bytes in this case.
-//
+
 typedef struct  {	
 	uint16_t crc;           // crc checksum - currently only used for UDP and RF
 	uint8_t  *pdata;        // Pointer to data. Max 487 (512- 25) bytes
@@ -209,13 +205,8 @@ typedef vscpEvent *PVSCPEVENT;
 
 
 // This structure is for VSCP Level II with data embedded which is used
-// for the TCP interface.
-// 
-// If bit 2 in the head byte is set this is a CAN message
-// which is the same as a VSCP Level I event. Bits 0,1 will
-// have useage only for CAN in this case and GUID[15] is part 
-// of the CAN id. Max data size is eight bytes in this case.
-//
+// for the TCP interface.// 
+
 typedef struct {	
 	uint16_t crc;                   // crc checksum
 	
@@ -344,7 +335,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_DATACODING_STRING          0x40
 #define VSCP_DATACODING_INTEGER         0x60
 #define VSCP_DATACODING_NORMALIZED      0x80
-#define VSCP_DATACODING_SINGLE          0xA0
+#define VSCP_DATACODING_SINGLE          0xA0	// single precision float
 #define VSCP_DATACODING_RESERVED1       0xC0
 #define VSCP_DATACODING_RESERVED2       0xE0
 

@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,6 +40,7 @@
 #endif
 
 #include "../../vscp/common/vscp.h"
+#include "guid.h"
 #include "devicelist.h"
 
 
@@ -53,7 +55,7 @@ WX_DECLARE_LIST ( vscpEvent, CLIENTEVENTLIST );
 #define CLIENT_ITEM_INTERFACE_TYPE_NONE                 0
 #define CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL      1
 #define CLIENT_ITEM_INTERFACE_TYPE_DRIVER_CANAL         2
-#define CLIENT_ITEM_INTERFACE_TYPE_DRIVER_TCPIP         3
+#define CLIENT_ITEM_INTERFACE_TYPE_DRIVER_VSCP          3
 #define CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP         4
 
 // Both the UDP send and receive id clients use this is. This way
@@ -126,7 +128,8 @@ public:
         This is the default address and it can be changed by the client application
 
     */
-    uint8_t m_GUID[ 16 ];
+    //uint8_t m_GUID[ 16 ];
+	cguid m_guid;
 
     /*!
         Interface name
@@ -163,7 +166,7 @@ public:
 };
 
 // List with clientitems
-WX_DECLARE_LIST ( CClientItem, VSCPCLIENTLIST );
+WX_DECLARE_LIST( CClientItem, VSCPCLIENTLIST );
 
 
 class CClientList  

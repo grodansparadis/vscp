@@ -1,4 +1,4 @@
- /**
+/**
  * @brief           VSCP Level I/II type definition file
  * @file            vscp_type.h
  * @author          Ake Hedman, Grodans Paradis AB, www.vscp.org
@@ -14,7 +14,7 @@
  * 	VSCP (Very Simple Control Protocol) 
  * 	http://www.vscp.org
  *
- *  Copyright (C) 1995-2012 Ake Hedman,
+ *  Copyright (C) 1995-2013 Ake Hedman,
  #  Grodans Paradis AB, <akhe@grodansparadis.com>
  *
  * This software is provided 'as-is', without any express or implied
@@ -37,12 +37,12 @@
  *	http://www.vscp.org
  *
  * ******************************************************************************
-*/
+ */
 
 #ifndef VSCP_TYPE_H
 #define VSCP_TYPE_H
 
-#define VSCP_TYPE_UNDEFINED									0
+#define VSCP_TYPE_UNDEFINED				0
 
 // VSCP Protocol Functionality
 #define VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT                1
@@ -111,12 +111,12 @@
 #define VSCP_TYPE_SECURITY_SMOKE_SENSOR                     6
 #define VSCP_TYPE_SECURITY_HEAT_SENSOR                      7
 #define VSCP_TYPE_SECURITY_PANIC_SWITCH                     8
-#define VSCP_TYPE_SECURITY_DOOR_OPEN                     	9
-#define VSCP_TYPE_SECURITY_WINDOW_OPEN                     	10
-#define VSCP_TYPE_SECURITY_CO_SENSOR                     	11
+#define VSCP_TYPE_SECURITY_DOOR_OPEN                        9
+#define VSCP_TYPE_SECURITY_WINDOW_OPEN                      10
+#define VSCP_TYPE_SECURITY_CO_SENSOR                        11
 #define VSCP_TYPE_SECURITY_FROST_DETECTED                   12
 #define VSCP_TYPE_SECURITY_FLAME_DETECTED                   13
-#define VSCP_TYPE_SECURITY_OXYGEN_LOW                     	14
+#define VSCP_TYPE_SECURITY_OXYGEN_LOW                       14
 #define VSCP_TYPE_SECURITY_WEIGHT_DETECTED                  15
 #define VSCP_TYPE_SECURITY_WATER_DETECTED                   16
 #define VSCP_TYPE_SECURITY_CONDENSATION_DETECTED            17
@@ -275,7 +275,7 @@
 #define VSCP_TYPE_CONTROL_TOGGLE_STATE                    29
 #define VSCP_TYPE_CONTROL_TIMED_PULE_ON                   30
 #define VSCP_TYPE_CONTROL_TIMED_PULSE_OFF                 31
-#define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE				32
+#define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE	          32
 
 // class 40 (0x28) -- MULTIMEDIA
 #define VSCP_TYPE_MULTIMEDIA_GENERAL                      0
@@ -333,7 +333,7 @@
 #define VSCP_TYPE_AOL_REPAIR_OPERATING_SYSTEM             14
 #define VSCP_TYPE_AOL_UPDATE_BIOS_IMAGE                   15
 #define VSCP_TYPE_AOL_UPDATE_DIAGNOSTIC_PROCEDURE         16
-  
+
 // class 60 (0x3C) -- CLASS1.MEASUREMENT64
 // Types are the same as CLASS1.MEASUREMENT=10
 #define VSCP_TYPE_MEASUREMENT64_GENERAL                     0
@@ -382,7 +382,7 @@
 #define VSCP_TYPE_MEASUREMENT64_LUMINOUS_ENERGY             43
 #define VSCP_TYPE_MEASUREMENT64_LUMINANCE                   44
 #define VSCP_TYPE_MEASUREMENT64_CHEMICAL_CONCENTRATION      45
-#define VSCP_TYPE_MEASUREMENT64_RESERVED	                46
+#define VSCP_TYPE_MEASUREMENT64_RESERVED	            46
 #define VSCP_TYPE_MEASUREMENT64_DOSE_EQVIVALENT             47
 #define VSCP_TYPE_MEASUREMENT64_DEWPOINT                    49
 #define VSCP_TYPE_MEASUREMENT64_RELATIVE_LEVEL              50
@@ -453,7 +453,67 @@
 #define VSCP_TYPE_MEASUREZONE_IRRADIANCE                  	55
 #define VSCP_TYPE_MEASUREZONE_SPECTRAL_RADIANCE           	56
 #define VSCP_TYPE_MEASUREZONE_SPECTRAL_IRRADIANCE         	57
-  
+
+// class 85 (0x55) -- CLASS1.SETVALUEZONE 
+// Types are the same as CLASS1.MEASUREMENT=10
+#define VSCP_TYPE_SETVALUEZONE_GENERAL                     	0
+#define VSCP_TYPE_SETVALUEZONE_COUNT                       	1
+#define VSCP_TYPE_SETVALUEZONE_LENGTH                      	2
+#define VSCP_TYPE_SETVALUEZONE_MASS                        	3
+#define VSCP_TYPE_SETVALUEZONE_TIME                        	4
+#define VSCP_TYPE_SETVALUEZONE_ELECTRIC_CURRENT            	5
+#define VSCP_TYPE_SETVALUEZONE_TEMPERATURE                 	6
+#define VSCP_TYPE_SETVALUEZONE_AMOUNT_OF_SUBSTANCE         	7
+#define VSCP_TYPE_SETVALUEZONE_INTENSITY_OF_LIGHT          	8
+#define VSCP_TYPE_SETVALUEZONE_FREQUENCY                   	9
+#define VSCP_TYPE_SETVALUEZONE_RADIOACTIVITY               	10	// or other random event
+#define VSCP_TYPE_SETVALUEZONE_FORCE                       	11
+#define VSCP_TYPE_SETVALUEZONE_PRESSURE                    	12
+#define VSCP_TYPE_SETVALUEZONE_ENERGY                      	13
+#define VSCP_TYPE_SETVALUEZONE_POWER                       	14
+#define VSCP_TYPE_SETVALUEZONE_ELECTRICAL_CHARGE           	15
+#define VSCP_TYPE_SETVALUEZONE_ELECTRICAL_POTENTIAL        	16	// Voltage
+#define VSCP_TYPE_SETVALUEZONE_ELECTRICAL_CAPACITANCE      	17
+#define VSCP_TYPE_SETVALUEZONE_ELECTRICAL_RECISTANCE       	18
+#define VSCP_TYPE_SETVALUEZONE_ELECTRICAL_CONDUCTANCE      	19
+#define VSCP_TYPE_SETVALUEZONE_MAGNETIC_FIELD_STRENGTH     	20
+#define VSCP_TYPE_SETVALUEZONE_MAGNETIC_FLUX               	21
+#define VSCP_TYPE_SETVALUEZONE_MAGNETIC_FLUX_DENSITY       	22
+#define VSCP_TYPE_SETVALUEZONE_INDUCTANCE                  	23
+#define VSCP_TYPE_SETVALUEZONE_FLUX_OF_LIGHT               	24
+#define VSCP_TYPE_SETVALUEZONE_ILLUMINANCE                 	25
+#define VSCP_TYPE_SETVALUEZONE_RADIATION_DOSE              	26
+#define VSCP_TYPE_SETVALUEZONE_CATALYTIC_ACITIVITY         	27
+#define VSCP_TYPE_SETVALUEZONE_VOLUME                      	28
+#define VSCP_TYPE_SETVALUEZONE_SOUND_INTENSITY             	29
+#define VSCP_TYPE_SETVALUEZONE_ANGLE                       	30
+#define VSCP_TYPE_SETVALUEZONE_POSITION                    	31
+#define VSCP_TYPE_SETVALUEZONE_SPEED                       	32
+#define VSCP_TYPE_SETVALUEZONE_ACCELERATION                	33
+#define VSCP_TYPE_SETVALUEZONE_TENSION                     	34
+#define VSCP_TYPE_SETVALUEZONE_HUMIDITY                    	35	// Damp/moist (Hygrometer reading)
+#define VSCP_TYPE_SETVALUEZONE_FLOW                        	36
+#define VSCP_TYPE_SETVALUEZONE_THERMAL_RESISTANCE          	37
+#define VSCP_TYPE_SETVALUEZONE_REFRACTIVE_POWER            	38
+#define VSCP_TYPE_SETVALUEZONE_DYNAMIC_VISCOSITY           	39
+#define VSCP_TYPE_SETVALUEZONE_SOUND_IMPEDANCE             	40
+#define VSCP_TYPE_SETVALUEZONE_SOUND_RESISTANCE            	41
+#define VSCP_TYPE_SETVALUEZONE_ELECTRIC_ELASTANCE          	42
+#define VSCP_TYPE_SETVALUEZONE_LUMINOUS_ENERGY             	43
+#define VSCP_TYPE_SETVALUEZONE_LUMINANCE                   	44
+#define VSCP_TYPE_SETVALUEZONE_CHEMICAL_CONCENTRATION      	45
+#define VSCP_TYPE_SETVALUEZONE_RESERVED	               	  	46
+#define VSCP_TYPE_SETVALUEZONE_DOSE_EQVIVALENT             	47
+#define VSCP_TYPE_SETVALUEZONE_DEWPOINT                    	49
+#define VSCP_TYPE_SETVALUEZONE_RELATIVE_LEVEL              	50
+#define VSCP_TYPE_SETVALUEZONE_ALTITUDE                    	51
+#define VSCP_TYPE_SETVALUEZONE_AREA                        	52
+#define VSCP_TYPE_SETVALUEZONE_RADIANT_INTENSITY           	53
+#define VSCP_TYPE_SETVALUEZONE_RADIANCE                    	54
+#define VSCP_TYPE_SETVALUEZONE_IRRADIANCE                  	55
+#define VSCP_TYPE_SETVALUEZONE_SPECTRAL_RADIANCE           	56
+#define VSCP_TYPE_SETVALUEZONE_SPECTRAL_IRRADIANCE         	57
+
 // class 100 (0x64) -- PHONE
 #define VSCP_TYPE_PHONE_GENERAL                           0
 #define VSCP_TYPE_PHONE_INCOMING_CALL                     1
@@ -551,13 +611,6 @@
 #define VSCP2_TYPE_PROTOCOL_READ_REGISTER                 1
 #define VSCP2_TYPE_PROTOCOL_WRITE_REGISTER                2
 #define VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE           3
-#define VSCP2_TYPE_PROTOCOL_CONFIG_READ_REQUEST           4
-#define VSCP2_TYPE_PROTOCOL_CONFIG_READ_RESPONSE          5
-#define VSCP2_TYPE_PROTOCOL_CONFIG_CHANGED                6
-#define VSCP2_TYPE_PROTOCOL_CONFIG_UPDATE_REQUEST         7
-#define VSCP2_TYPE_PROTOCOL_CONFIG_UPDATE_RESPONSE        8   
-#define VSCP2_TYPE_PROTOCOL_CONFIG_PARAM_REQUEST          9
-#define VSCP2_TYPE_PROTOCOL_CONFIG_PARAM_RESPONSE         10
 
 // Level II Control functionality Class=1025 (0x401)
 #define VSCP2_TYPE_CONTROL_GENERAL                        0
@@ -575,6 +628,65 @@
 
 // Level II Display functionality Class=1030 (0x406)
 #define VSCP2_TYPE_DISPLAY_GENERAL                        0
+
+// Level II Measurement String Class=1040 (0x410)
+#define VSCP2_TYPE_MEASUREMENT_STR_GENERAL                0
+#define VSCP_TYPE_MEASUREMENT_COUNT                       1
+#define VSCP_TYPE_MEASUREMENT_COUNT_LENGTH                      2
+#define VSCP_TYPE_MEASUREMENT_COUNT_MASS                        3
+#define VSCP_TYPE_MEASUREMENT_COUNT_TIME                        4
+#define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRIC_CURRENT            5
+#define VSCP_TYPE_MEASUREMENT_COUNT_TEMPERATURE                 6
+#define VSCP_TYPE_MEASUREMENT_COUNT_AMOUNT_OF_SUBSTANCE         7
+#define VSCP_TYPE_MEASUREMENT_COUNT_INTENSITY_OF_LIGHT          8
+#define VSCP_TYPE_MEASUREMENT_COUNT_FREQUENCY                   9
+#define VSCP_TYPE_MEASUREMENT_COUNT_RADIOACTIVITY               10	// or other random event
+#define VSCP_TYPE_MEASUREMENT_COUNT_FORCE                       11
+#define VSCP_TYPE_MEASUREMENT_COUNT_PRESSURE                    12
+#define VSCP_TYPE_MEASUREMENT_COUNT_ENERGY                      13
+#define VSCP_TYPE_MEASUREMENT_COUNT_POWER                       14
+#define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRICAL_CHARGE           15
+#define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRICAL_POTENTIAL        16	// Voltage
+#define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRICAL_CAPACITANCE      17
+#define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRICAL_RECISTANCE       18
+#define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRICAL_CONDUCTANCE      19
+#define VSCP_TYPE_MEASUREMENT_COUNT_MAGNETIC_FIELD_STRENGTH     20
+#define VSCP_TYPE_MEASUREMENT_COUNT_MAGNETIC_FLUX               21
+#define VSCP_TYPE_MEASUREMENT_COUNT_MAGNETIC_FLUX_DENSITY       22
+#define VSCP_TYPE_MEASUREMENT_COUNT_INDUCTANCE                  23
+#define VSCP_TYPE_MEASUREMENT_COUNT_FLUX_OF_LIGHT               24
+#define VSCP_TYPE_MEASUREMENT_COUNT_ILLUMINANCE                 25
+#define VSCP_TYPE_MEASUREMENT_COUNT_RADIATION_DOSE              26
+#define VSCP_TYPE_MEASUREMENT_COUNT_CATALYTIC_ACITIVITY         27
+#define VSCP_TYPE_MEASUREMENT_COUNT_VOLUME                      28
+#define VSCP_TYPE_MEASUREMENT_COUNT_SOUND_INTENSITY             29
+#define VSCP_TYPE_MEASUREMENT_COUNT_ANGLE                       30
+#define VSCP_TYPE_MEASUREMENT_COUNT_POSITION                    31
+#define VSCP_TYPE_MEASUREMENT_COUNT_SPEED                       32
+#define VSCP_TYPE_MEASUREMENT_COUNT_ACCELERATION                33
+#define VSCP_TYPE_MEASUREMENT_COUNT_TENSION                     34
+#define VSCP_TYPE_MEASUREMENT_COUNT_HUMIDITY                    35	// Damp/moist (Hygrometer reading)
+#define VSCP_TYPE_MEASUREMENT_COUNT_FLOW                        36
+#define VSCP_TYPE_MEASUREMENT_COUNT_THERMAL_RESISTANCE          37
+#define VSCP_TYPE_MEASUREMENT_COUNT_REFRACTIVE_POWER            38
+#define VSCP_TYPE_MEASUREMENT_COUNT_DYNAMIC_VISCOSITY           39
+#define VSCP_TYPE_MEASUREMENT_COUNT_SOUND_IMPEDANCE             40
+#define VSCP_TYPE_MEASUREMENT_COUNT_SOUND_RESISTANCE            41
+#define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRIC_ELASTANCE          42
+#define VSCP_TYPE_MEASUREMENT_COUNT_LUMINOUS_ENERGY             43
+#define VSCP_TYPE_MEASUREMENT_COUNT_LUMINANCE                   44
+#define VSCP_TYPE_MEASUREMENT_COUNT_CHEMICAL_CONCENTRATION      45
+#define VSCP_TYPE_MEASUREMENT_COUNT_RESERVED	                46
+#define VSCP_TYPE_MEASUREMENT_COUNT_DOSE_EQVIVALENT             47
+#define VSCP_TYPE_MEASUREMENT_COUNT_DEWPOINT                    49
+#define VSCP_TYPE_MEASUREMENT_COUNT_RELATIVE_LEVEL              50
+#define VSCP_TYPE_MEASUREMENT_COUNT_ALTITUDE                    51
+#define VSCP_TYPE_MEASUREMENT_COUNT_AREA                        52
+#define VSCP_TYPE_MEASUREMENT_COUNT_RADIANT_INTENSITY           53
+#define VSCP_TYPE_MEASUREMENT_COUNT_RADIANCE                    54
+#define VSCP_TYPE_MEASUREMENT_COUNT_IRRADIANCE                  55
+#define VSCP_TYPE_MEASUREMENT_COUNT_SPECTRAL_RADIANCE           56
+#define VSCP_TYPE_MEASUREMENT_COUNT_SPECTRAL_IRRADIANCE         57
 
 // Level II VSCPD daemon functionality Class=65535 (0xFFFF)
 #define VSCP2_TYPE_VSCPD_GENERAL                          0
@@ -601,7 +713,7 @@
 #define VSCP2_TYPE_VSCPD_STARTING_UP                      23
 #define VSCP2_TYPE_VSCPD_SHUTTING_DOWN                    24
 #define VSCP2_TYPE_VSCPD_TIMER_STARTED                    25
-#define VSCP2_TYPE_VSCPD_TIMER_PAUSED					  26
+#define VSCP2_TYPE_VSCPD_TIMER_PAUSED                     26
 #define VSCP2_TYPE_VSCPD_TIMER_RESUMED                    27
 #define VSCP2_TYPE_VSCPD_TIMER_STOPPED                    28
 #define VSCP2_TYPE_VSCPD_TIMER_ELLAPSED                   29

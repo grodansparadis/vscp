@@ -4,7 +4,8 @@
 // This file is part is part of VSCP, Very Simple Control Protocol
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -282,7 +283,7 @@ long VscpTcpIf::doCmdOpen( const wxString& strHostname,
     m_psock->Write( strBuf.mb_str(), strBuf.length() );
     if ( !checkReturnValue() ) return CANAL_ERROR_USER;
     
-    wxLogDebug( _("Successfull log in to VSCP server") );
+    wxLogDebug( _("Successful log in to VSCP server") );
   
     return 1922;  // Driver handle == any positiv value -- 1922 is a good value ;-)
 }
@@ -333,6 +334,29 @@ int VscpTcpIf::doCmdNOOP( void )
     if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
     
     wxString strCmd(_("NOOP\r\n"));
+    m_psock->Write( strCmd.mb_str(), strCmd.length() );
+
+    if ( checkReturnValue() ) {
+        return CANAL_ERROR_SUCCESS;
+    }
+    else {
+        return CANAL_ERROR_GENERIC;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// doCmdClear
+//
+
+int VscpTcpIf::doCmdClear( void )
+{	
+    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
+    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
+  
+    // If receive loop active terminate
+    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
+    
+    wxString strCmd(_("CLRA\r\n"));
     m_psock->Write( strCmd.mb_str(), strCmd.length() );
 
     if ( checkReturnValue() ) {
@@ -1347,6 +1371,42 @@ int VscpTcpIf::doCmdGetGUID( char *pGUID )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// doCmdGetGUID
+//
+
+int VscpTcpIf::doCmdGetGUID( cguid& ifguid )
+{
+    //long val;
+    int pos;
+    wxString strLine;
+    wxStringTokenizer strTokens;
+
+    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
+    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
+  
+    // If receive loop active terminate
+    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
+        
+    wxString strCmd(_("SGID\r\n"));
+    m_psock->Write( strCmd.mb_str(), strCmd.length() );
+    if ( !checkReturnValue() ) return CANAL_ERROR_GENERIC;
+
+    // Handle the data (if any)
+    pos = m_strReply.Find(_("\r") );
+    if ( !pos ) {
+        return CANAL_ERROR_GENERIC; // No reply data
+    }
+    
+    // Save the line
+    strLine = m_strReply.Left( pos );
+    
+	ifguid.getFromString(strLine);
+    
+    return CANAL_ERROR_SUCCESS;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // doCmdSetGUID
 //
 
@@ -1520,459 +1580,6 @@ int VscpTcpIf::doCmdShutDown( void )
 
 
 
-
-///////////////////////////////////////////////////////////////////////////////
-// doCmdBinary
-//
-
-int VscpTcpIf::doCmdBinary( void )
-{
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected'
-  
-    // If receive loop active terminate
-    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-        
-    m_psock->Write( _("BIN1\r\n"), 6 );
-    return checkReturnValue();
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// doBinaryNOOP
-//
-
-int VscpTcpIf::doBinaryNOOP( void )
-{
-    int rv = CANAL_ERROR_GENERIC;
-    unsigned char type;
-    unsigned short nRead;
-    char outbuf[2];
-    char rbuf[512];
-
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
-  
-    // If receive loop active terminate
-    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-    
-    outbuf[0] = CANAL_BINARY_COMMAND_NOOP;
-
-    if ( !Binary_WriteMsg( CANAL_BINARY_FRAME_TYPE_COMMAND, outbuf, 1 ) ) return CANAL_ERROR_GENERIC;
-
-    // Wait for ACK
-    if ( Binary_ReadMsg( &type, rbuf, sizeof( rbuf ), &nRead ) ) {
-        if ( ( CANAL_BINARY_FRAME_TYPE_ERROR == type ) && 
-                ( CANAL_BINARY_ERROR_NONE == rbuf[ 0 ] ) &&
-                ( 1 == nRead ) ) {
-            rv = true;
-        }
-    }
-
-    return rv;
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doBinaryClose
-//
-
-int VscpTcpIf::doBinaryClose( void )
-{
-    char outbuf[2];
-    
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
-  
-    // If receive loop active terminate
-    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-    
-    outbuf[0] = CANAL_BINARY_COMMAND_CLOSE;
-
-    if ( !Binary_WriteMsg( CANAL_BINARY_FRAME_TYPE_COMMAND, outbuf, 1 ) ) return CANAL_ERROR_GENERIC;
-    
-    return true;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doBinarySend
-//
-
-int VscpTcpIf::doBinarySend( vscpEvent *pEvent )
-{
-    unsigned short nRead;
-    unsigned char type;
-    char outbuf[512];
-    char rbuf[512];
-    int rv = CANAL_ERROR_GENERIC;
-    
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
-  
-    // If receive loop active terminate
-    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-    
-    outbuf[ 0 ] = pEvent->head;
-    outbuf[ 1 ] = ( pEvent->vscp_class >> 8 ) & 0xff;
-    outbuf[ 2 ] = pEvent->vscp_class & 0xff;
-    outbuf[ 3 ] = ( pEvent->vscp_type >> 8 ) & 0xff;
-    outbuf[ 4 ] = pEvent->vscp_type & 0xff;
-    memcpy( outbuf+5, pEvent->GUID, 16 );
-                            
-    // Handle data
-    if ( NULL != pEvent->pdata ) {					
-        
-        memcpy( outbuf+22, pEvent->pdata, pEvent->sizeData );
- 
-        if ( Binary_WriteMsg( CANAL_BINARY_FRAME_TYPE_VSCP, outbuf, pEvent->sizeData + 21 ) ) {
-            if ( Binary_ReadMsg( &type, rbuf, sizeof( rbuf ), &nRead ) ) {
-                if ( ( CANAL_BINARY_FRAME_TYPE_ERROR == type ) &&
-                        ( CANAL_BINARY_ERROR_NONE == rbuf[ 0 ] ) &&
-                        ( 1 == nRead ) ) {
-                    rv = true;
-                }
-            }
-        }
-    }
-
-    return rv;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doBinarySendEx
-//
-
-int VscpTcpIf::doBinarySendEx( vscpEventEx *pEvent )
-{
-    unsigned short nRead;
-    unsigned char type;
-    char outbuf[512];
-    char rbuf[512];
-    int rv = CANAL_ERROR_GENERIC;
-    
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
-  
-    // If receive loop active terminate
-    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-        
-    outbuf[ 0 ] = pEvent->head;
-    outbuf[ 1 ] = ( pEvent->vscp_class >> 8 ) & 0xff;
-    outbuf[ 2 ] = pEvent->vscp_class & 0xff;
-    outbuf[ 3 ] = ( pEvent->vscp_type >> 8 ) & 0xff;
-    outbuf[ 4 ] = pEvent->vscp_type & 0xff;
-    memcpy( outbuf+5, pEvent->GUID, 16 );
-                            
-    // Handle data
-    if ( pEvent->sizeData ) {					
-        
-        memcpy( outbuf+22, pEvent->data, pEvent->sizeData );
-
-        if ( Binary_WriteMsg( CANAL_BINARY_FRAME_TYPE_VSCP, outbuf, pEvent->sizeData + 21 ) ) {
-
-            if ( Binary_ReadMsg( &type, rbuf, sizeof( rbuf ), &nRead ) ) {
-                if ( ( CANAL_BINARY_FRAME_TYPE_ERROR == type ) &&
-                        ( CANAL_BINARY_ERROR_NONE == rbuf[ 0 ] ) &&
-                        ( 1 == nRead ) ) {
-                    rv = true;
-                }
-            }
-        }
-    }
-
-    return rv;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// doBinaryReceive
-//
-
-int VscpTcpIf::doBinaryReceive( vscpEvent *pEvent )
-{
-    int rv = CANAL_ERROR_GENERIC;
-    char outbuf[2];
-    char rbuf[512];
-    unsigned short nRead;
-    unsigned char type;
-    
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
-  
-    // If receive loop active terminate
-    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-    
-    // Request a frame
-    outbuf[0] = CANAL_BINARY_COMMAND_READ;
-    Binary_WriteMsg( CANAL_BINARY_FRAME_TYPE_COMMAND, outbuf, 1 );
-
-    pEvent->pdata = NULL;
-
-    if ( Binary_ReadMsg( &type, rbuf, sizeof( rbuf ), &nRead ) ) {
-        
-        if ( CANAL_BINARY_FRAME_TYPE_VSCP == type ) {
-
-            pEvent->head = rbuf[ 0 ];
-            pEvent->vscp_class = ( rbuf[1] << 8 ) + rbuf[3];
-            pEvent->vscp_type = ( rbuf[3] << 8 ) + rbuf[5];
-            memcpy( pEvent->GUID, rbuf + 5, 16 );
-
-            rv = true;
-            pEvent->sizeData = nRead - 21;
-
-            if ( pEvent->sizeData ) {
-                unsigned char *pData = new unsigned char[nRead - 21];
-                if ( NULL != pData ) {
-                    memcpy( pData, rbuf + 21, nRead - 21 );
-                    pEvent->pdata = pData;
-                }
-                else {
-                    // Unable to allocate space for data
-                    rv = CANAL_ERROR_GENERIC;
-                }	
-            }
-
-        } 
-        else if ( CANAL_BINARY_FRAME_TYPE_ERROR == rbuf[ 0 ] ) {
-
-            m_lastBinaryError = rbuf[ 1 ];
-            if ( CANAL_BINARY_ERROR_NO_DATA == rbuf[ 1 ] ) {
-                ;
-            }
-
-
-        }
-
-    }
-
-    return rv;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// doBinaryReceiveEx
-//
-
-int VscpTcpIf::doBinaryReceiveEx( vscpEventEx *pEvent )
-{
-    int rv = CANAL_ERROR_GENERIC;
-    char outbuf[2];
-    char rbuf[512];
-    unsigned short nRead;
-    unsigned char type;
-    
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
-  
-    // If receive loop active terminate
-    if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-    
-    // Request a frame
-    outbuf[0] = CANAL_BINARY_COMMAND_READ;
-    Binary_WriteMsg( CANAL_BINARY_FRAME_TYPE_COMMAND, outbuf, 1 );
-
-
-    if ( Binary_ReadMsg( &type, rbuf, sizeof( rbuf ), &nRead ) ) {
-        
-        if ( CANAL_BINARY_FRAME_TYPE_VSCP == type ) {
-
-            pEvent->head = rbuf[ 0 ];
-            pEvent->vscp_class = ( rbuf[1] << 8 ) + rbuf[3];
-            pEvent->vscp_type = ( rbuf[3] << 8 ) + rbuf[5];
-            memcpy( pEvent->GUID, rbuf + 5, 16 );
-            pEvent->sizeData = nRead - 21;
-
-            rv = true;
-            if ( pEvent->sizeData ) {
-                memcpy( pEvent->data, rbuf + 21, nRead - 21 );
-                
-            }
-            else {
-                // Unable to allocate space for data
-                rv = CANAL_ERROR_GENERIC;
-            }
-
-        } 
-        else if ( CANAL_BINARY_FRAME_TYPE_ERROR == type ) {
-
-            m_lastBinaryError = rbuf[0];
-            if ( CANAL_BINARY_ERROR_NO_DATA == rbuf[0] ) {
-                ;
-            }
-
-
-        }
-
-    }
-
-    return rv;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Binary_WriteMsg
-//
-
-int VscpTcpIf::Binary_WriteMsg( uint8_t type, const void *buffer, wxUint32 nbytes )
-{
-    wxUint32 total;
-    int error;
-    int old_flags;
-    unsigned char outbuf[ 1024 ];
-    wxUint32 msgcnt = 0;
-
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
-  
-  // If receive loop active terminate
-  if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-    
-    error = true;
-    total = 0;
-    old_flags = m_psock->GetFlags();
-    m_psock->SetFlags( ( m_psock->GetFlags() & wxSOCKET_BLOCK ) | wxSOCKET_WAITALL );
-
-    // SOF
-    outbuf[msgcnt++] = (unsigned char) 0x55;
-    outbuf[msgcnt++] = (unsigned char) 0xaa;
-
-    outbuf[msgcnt++] = type;
-
-    outbuf[msgcnt++] = (unsigned char) ((nbytes >> 8) & 0xff);
-    outbuf[msgcnt++] = (unsigned char) (nbytes & 0xff);
-
-    memcpy( outbuf + msgcnt, buffer, nbytes );
-    msgcnt += nbytes;
-
-    if ( ( m_psock->Write( outbuf, msgcnt ).LastCount() ) < msgcnt ) {
-        goto exit;
-    }
-
-    // everything was OK
-    error = CANAL_ERROR_GENERIC;
-
-exit:
-
-    m_psock->SetFlags( old_flags );
-    return !error;
-}
-
-// discard buffer
-#define MAX_DISCARD_SIZE (10 * 1024)
-
-///////////////////////////////////////////////////////////////////////////////
-// Binary_ReadMsg
-//
-
-int VscpTcpIf::Binary_ReadMsg( uint8_t *pType, void *buffer, wxUint32 nbytes, uint16_t *pnRead )
-{
-    wxUint32 len, len2, sig, total;
-    int error;
-    int old_flags;
-    struct {
-        unsigned char sig[2];
-        unsigned char type;
-        unsigned char len[2];
-    } msg;
-
-
-    if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
-    if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
-  
-  // If receive loop active terminate
-  if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
-        
-    // Check pointers
-    if ( NULL == pType ) return CANAL_ERROR_PARAMETER;
-    if ( NULL == buffer ) return CANAL_ERROR_PARAMETER;
-    if ( NULL == pnRead ) return CANAL_ERROR_PARAMETER;
-
-
-    *pnRead = 0;
-    total = 0;
-    error = true;
-    old_flags = m_psock->GetFlags();
-    m_psock->SetFlags( (old_flags & wxSOCKET_BLOCK) | wxSOCKET_WAITALL );
-
-    if ( m_psock->Read( &msg, sizeof( msg ) ).LastCount() != sizeof( msg ) ) {
-        goto exit;
-    }
-
-    // Set type
-    *pType = msg.type;
-
-    sig = (wxUint32)msg.sig[ 0 ];
-    sig |= (wxUint32)(msg.sig[ 1 ] << 8);
-
-    if ( sig != 0xaa55 ) {
-        wxLogWarning(_("wxSocket: invalid signature in ReadMsg."));
-        goto exit;
-    }
-
-    len = (wxUint16)msg.len[ 1 ];
-    len |= (wxUint16)(msg.len[ 0 ] << 8);
-
-    if ( len > nbytes ) {
-        len2 = len - nbytes;
-        len = nbytes;
-    }
-    else {
-        len2 = 0;
-    }
-
-    // Don't attemp to read if the msg was zero bytes long.
-    if ( len ) {
-        total = m_psock->Read( buffer, len ).LastCount();
-
-        if (total != len) {
-            goto exit;
-        }
-    }
-    if ( len2 ) {
-        char *discard_buffer = new char[MAX_DISCARD_SIZE];
-        long discard_len;
-
-        // NOTE: discarded bytes don't add to m_lcount.
-        do {
-
-            discard_len = ( ( len2 > MAX_DISCARD_SIZE)? MAX_DISCARD_SIZE : len2 );
-            discard_len = m_psock->Read(discard_buffer, (wxUint32)discard_len).LastCount();
-            len2 -= (wxUint32)discard_len;
-
-        } while ( ( discard_len > 0 ) && len2 );
-
-        delete [] discard_buffer;
-
-        if (len2 != 0) {
-            goto exit;
-        }
-
-    }
-
-    // everything was OK
-    error = CANAL_ERROR_GENERIC;
-    *pnRead = len; 
-
-exit:
-
-    m_psock->SetFlags( old_flags );
-
-    return !CANAL_ERROR_GENERIC;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// sendBinaryErrorFrame
-//
-
-void VscpTcpIf::sendBinaryErrorFrame( uint8_t error_code ) 
-{
-    char buf[2];
-  
-  // If receive loop active terminate
-  if ( m_bModeReceiveLoop ) return;
-    
-    buf[0] = error_code;
-    Binary_WriteMsg( CANAL_BINARY_FRAME_TYPE_ERROR, buf, 1 );
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // getVariableString
@@ -2284,7 +1891,7 @@ bool VscpTcpIf::setVariableEventEx( wxString& name, vscpEventEx *pEvent )
     wxString strCmd;
     wxString strValue;
 
-    writeVscpEventToStringEx( pEvent, strValue );
+    writeVscpEventExToString( pEvent, strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(",,,") + strValue + _("\r\n");
     m_psock->Write( strCmd.ToAscii(), strlen( strCmd.ToAscii() ) );
     if ( !checkReturnValue() ) return false;

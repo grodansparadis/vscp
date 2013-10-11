@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -60,7 +61,7 @@ enum _driver_levels {
 };
 
 class CClientItem;
-
+class cguid;
 
 WX_DECLARE_LIST ( canalMsg, CanalMsgOutList );
 
@@ -96,11 +97,19 @@ public:
 		Canal Driver Level
 	*/
 	uint32_t m_driverLevel;
+	
+	/// True if driver should be started.
+	bool m_bEnable;
 
 	/*!
 		termination control
 	*/
 	bool m_bQuit;
+	
+	/*!
+		GUID to use for driver interface if set
+	 */
+	cguid m_guid;
 
 	/*!
 		Worker thread for device
@@ -151,12 +160,16 @@ public:
     // VSCP driver methods
     LPFNDLL_VSCPOPEN			        m_proc_VSCPOpen;
 	LPFNDLL_VSCPCLOSE				    m_proc_VSCPClose;
+	LPFNDLL_VSCPBLOCKINGSEND			m_proc_VSCPBlockingSend;
+	LPFNDLL_VSCPBLOCKINGRECEIVE			m_proc_VSCPBlockingReceive;
     LPFNDLL_VSCPGETLEVEL				m_proc_VSCPGetLevel;
     LPFNDLL_VSCPGETVERSION			    m_proc_VSCPGetVersion;
 	LPFNDLL_VSCPGETDLLVERSION		    m_proc_VSCPGetDllVersion;
 	LPFNDLL_VSCPGETVENDORSTRING	        m_proc_VSCPGetVendorString;
     LPFNDLL_VSCPGETDRIVERINFO		    m_proc_VSCPGetdriverInfo;
-
+	LPFNDLL_VSCPGETWEBPAGETEMPLATE		m_proc_VSCPGetWebPageTemplate;
+	LPFNDLL_VSCPGETWEBPAGEINFO			m_proc_VSCPGetWebPageInfo;
+	LPFNDLL_VSCPWEBPAGEUPDATE			m_proc_VSCPWebPageupdate;
 };
 
 // List with device items
@@ -176,7 +189,8 @@ public:
 					        wxString strPath, 
 					        uint32_t flags,
 					        uint8_t *pGUID,
-                            uint8_t level = VSCP_DRIVER_LEVEL1 );
+                            uint8_t level = VSCP_DRIVER_LEVEL1,
+							bool bEnable = true );
 
 	/*!
 		Remove a driver item

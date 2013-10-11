@@ -48,6 +48,7 @@
         <in>controlobject.cpp</in>
         <in>controlobject.h</in>
         <in>crc.c</in>
+        <in>crc.h</in>
         <in>daemonvscp.cpp</in>
         <in>daemonvscp.h</in>
         <in>devicelist.cpp</in>
@@ -58,6 +59,7 @@
         <in>dlldrvobj.cpp</in>
         <in>dlldrvobj.h</in>
         <in>dllist.c</in>
+        <in>dllist.h</in>
         <in>dllwrapper.h</in>
         <in>dm.cpp</in>
         <in>dm.h</in>
@@ -66,9 +68,12 @@
         <in>interfacelist.cpp</in>
         <in>interfacelist.h</in>
         <in>md5.cpp</in>
+        <in>md5.h</in>
         <in>mdf.h</in>
         <in>options.h</in>
         <in>randPassword.cpp</in>
+        <in>register.h</in>
+        <in>selectdevice.h</in>
         <in>socketcandrv.cpp</in>
         <in>socketcandrv.h</in>
         <in>socketcanobj.cpp</in>
@@ -95,6 +100,10 @@
         <in>vscptcpif.h</in>
         <in>vscpvariable.cpp</in>
         <in>vscpvariable.h</in>
+        <in>web_css.h</in>
+        <in>web_js.h</in>
+        <in>web_template.h</in>
+        <in>webserver.h</in>
       </df>
       <df name="html">
       </df>

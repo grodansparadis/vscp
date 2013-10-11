@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2009 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2013 Ake Hedman, Grodans Paradis AB, 
+// <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -41,21 +42,21 @@
 // See vscpd.cpp for the implementation of this class
 //
 
-class VSCPApp
-{
+class VSCPApp {
+    
 public:
-	VSCPApp();
+    VSCPApp();
 
 public:
-	
-	/*!
-		Initialize the system
-	*/
-	BOOL init( wxString& strcfgfile );
-	
 
-// Implementation
-	
+    /*!
+            Initialize the system
+     */
+    BOOL init(wxString& strcfgfile);
+
+
+    // Implementation
+
 private:
 
 };

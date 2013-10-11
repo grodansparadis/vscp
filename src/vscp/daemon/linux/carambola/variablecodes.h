@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2011 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2013 
+// Ake Hedman, eurosource, <akhe@eurosource.se>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -36,7 +37,7 @@
 #define VSCP_DAEMON_VARIABLE_CODE_INTEGER                   3   // Integer value
 #define VSCP_DAEMON_VARIABLE_CODE_LONG                      4   // Long value
 #define VSCP_DAEMON_VARIABLE_CODE_DOUBLE                    5   // Floating point value
-#define VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT			    6   // VSCP data coding
+#define VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT			6   // VSCP data coding
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT                7   // VSCP event (Level II)
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID           8   // VSCP event GUID
 #define VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA           9   // VSCP event data
@@ -46,9 +47,9 @@
 #define VSCP_DAEMON_VARIABLE_CODE_DATETIME                  13  // Date + Time in iso format 
 
 // A non persistent variable is stored with the name as the hash value.
-// A persistent variable is stored with $ + its name as the hash value
-// A non persistent array is stored with @ + its name as hash value
-// A persistent array is stored with $ + @ + its name as hash value
+// A persistent variable is stored with $ + its name as the hash value.
+// A non persistent array is stored with @ + its name as hash value.
+// A persistent array is stored with $ + @ + its name as hash value.
 #define VSCP_DAEMON_VARIABLE_PREFIX_PERSISTENT              '$' // Prefix for persistent variablename
 #define VSCP_DAEMON_VARIABLE_PREFIX_ARRAY                   '@' // Prefix for persistent variablename
 

@@ -4,7 +4,8 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -65,6 +66,41 @@ cguid::~cguid()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// operator=
+//
+
+cguid& cguid::operator=( const cguid& guid )
+{
+	// Check for self-assignment!
+    if ( this == &guid ) {	// Same object?
+		return *this;		// Yes, so skip assignment, and just return *this.
+	}
+
+    memcpy( m_id, guid.m_id, 16 );
+
+    return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// operator==
+//
+
+bool cguid::operator==( const cguid &guid )
+{
+	if ( 0 != memcmp( m_id, guid.m_id, 16 ) ) return false;
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// operator!=
+//
+
+bool cguid::operator!=(const cguid &guid) 
+{
+	return !(*this == guid);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // getFromString
 //
  
@@ -90,6 +126,15 @@ cguid::~cguid()
     wxString str;
     str.FromAscii( pszGUID );
     getFromString( str );
+ }
+
+ ///////////////////////////////////////////////////////////////////////////////
+// getFromArray
+//
+
+ void cguid::getFromArray( uint8_t *pguid )
+ {
+	memcpy(m_id, pguid, 16 );
  }
 
 
@@ -118,4 +163,26 @@ bool cguid::isSameGUID( const unsigned char *pguid )
     if ( 0 != memcmp ( m_id, pguid, 16 ) ) return false;
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// isNULL
+//
+
+bool cguid::isNULL( void )
+{
+	for ( int i=0; i<16; i++ ) {
+		if ( m_id[ i ] ) return false;
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setGUID
+//
+
+void cguid::setGUID( uint8_t *pArray )
+{
+    memcpy(pArray, m_id, 16 );
 }

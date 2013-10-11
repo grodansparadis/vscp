@@ -7,7 +7,8 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -88,7 +89,7 @@ void *TcpClientListenThread::Entry()
     addr.Service ( m_pCtrlObject->m_tcpport );
 
 	// Normally listens on all interfaces of a multi interface machine
-	// by specifing an interface it will jsut listen on that
+	// by specifying an interface it will jnstead listen on that
 	// specific interface. Default is to listen on all.
 	if ( 0 != m_pCtrlObject->m_strTcpInterfaceAddress.Length() ) {
 		addr.Hostname( m_pCtrlObject->m_strTcpInterfaceAddress );
@@ -163,7 +164,7 @@ void TcpClientListenThread::OnExit()
         }
     }
 
-    // Second stage - Wait until thay terminates
+    // Second stage - Wait until they terminates
     for (iter = m_tcpclients.begin(); iter != m_tcpclients.end(); ++iter) {
         TcpClientThread *pThread = *iter;
         if ( ( NULL != pThread )  ) {
@@ -206,7 +207,6 @@ TcpClientThread::TcpClientThread( wxThreadKind kind )
     m_bUsername = false;            // No username entered
     m_bRun = true;                  // Yes run to the hills
     m_bBinaryMode = false;          // Standard ,mode
-    m_bCANMode = false;             // Not CAN Mode
 }
 
 
@@ -235,7 +235,7 @@ void *TcpClientThread::Entry()
     // Must be connected
     if ( m_pClientSocket->IsDisconnected() ) return NULL;
 
-    m_pCtrlObject->logMsg ( _T ( "TCP ClientThread: Start.\n" ), DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg(_T("TCP ClientThread: Start.\n"), DAEMON_LOGMSG_INFO);
 
     // We need to create a clientobject and add this object to the list
     m_pClientItem = new CClientItem;
@@ -274,13 +274,15 @@ void *TcpClientThread::Entry()
     else {
         // Send welcome message
         wxString str = _(MSG_WELCOME);
-        str += _(" Version: ");
-        str += VSCPD_DISPLAY_VERSION;
+        str += _("+OK Version: ");
+        str += _(VSCPD_DISPLAY_VERSION);
         str += _("\r\n");
-        str += _(MSG_COPYRIGHT);
+		str += _("+OK ");
+		str += _(VSCPD_COPYRIGHT);
+        //str += _(MSG_COPYRIGHT);
         str += _(MSG_OK);
 
-        m_pClientSocket->Write ( str.mb_str(), str.Length() );
+        m_pClientSocket->Write( str.mb_str(), str.Length() );
     }
 
 
@@ -298,6 +300,7 @@ void *TcpClientThread::Entry()
 
         // Check if command already in buffer
         if ( wxNOT_FOUND == ( pos4lf = wxstr.Find ( 0x0a ) ) ) {
+            
             // Read new data
             memset( rbuf, 0, sizeof( rbuf ) );                  // nil rbuf
             m_pClientSocket->Read ( rbuf, sizeof ( rbuf ) );    
@@ -354,17 +357,18 @@ void *TcpClientThread::Entry()
         // * * *  Check for a command  * * *
 
         else {
+            
             m_bOK = true;
 
             m_wxcmd = wxstr.Mid ( 0, pos4lf );
-            wxLogDebug( _("Command = ") + m_wxcmd );
+            //wxLogDebug( _("Command = ") + m_wxcmd );
             m_wxcmdUC = m_wxcmd.Upper();
             m_wxcmd.Trim();
             m_wxcmd.Trim( false );
             m_wxcmdUC.Trim();
             m_wxcmdUC.Trim( false );
             wxstr = wxstr.Mid ( pos4lf + 1 );
-            wxLogDebug( _("Argument = ") + m_wxcmdUC );
+            //wxLogDebug( _("Argument = ") + m_wxcmdUC );
 
 
             // *********************************************************************
@@ -484,14 +488,6 @@ void *TcpClientThread::Entry()
                 }
             }
 
-            //*********************************************************************
-            //                           Enter Binary Mode
-            //*********************************************************************
-            else if ( ( 0 == m_wxcmdUC.Find ( _( "FAST" ) ) ) ||
-                ( 0 == m_wxcmdUC.Find ( _( "BIN1" ) ) ) ||
-                ( 0 == m_wxcmdUC.Find ( _( "BIN2" ) ) ) ) {
-                if ( checkPrivilege( 4 ) ) handleBinaryMode();
-            }
 
             //*********************************************************************
             //                        + (repeat last command)
@@ -592,15 +588,6 @@ void *TcpClientThread::Entry()
             //*********************************************************************
             else if ( 0 == m_wxcmdUC.Find ( _( "SHUTDOWN" ) ) ) {
                 if ( checkPrivilege( 15 ) ) handleClientShutdown();
-            }
-
-            //*********************************************************************
-            //                               canmode
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "CANMODE" ) ) ) {
-                m_bCANMode = true;
-                m_pClientSocket->Write ( MSG_CAN_MODE,
-                    strlen ( MSG_CAN_MODE ) );
             }
 
 
@@ -737,8 +724,7 @@ void TcpClientThread::handleClientSend ( void )
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
-
-
+    
     // Get Type
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
@@ -771,7 +757,9 @@ void TcpClientThread::handleClientSend ( void )
 #ifdef WIN32
             event.timestamp = GetTickCount();
 #else
-            event.timestamp = 0;  // TODO
+			struct timespec ts;
+			clock_gettime(CLOCK_MONOTONIC, &ts);
+			event.timestamp = (unsigned long)ts.tv_sec * 1000000 + ts.tv_nsec/1000;  
 #endif
         }
     }
@@ -782,8 +770,6 @@ void TcpClientThread::handleClientSend ( void )
         return;	
     }
 
-
-
     // Get GUID
     wxString strGUID;
     if ( tkz.HasMoreTokens() ) {
@@ -791,8 +777,8 @@ void TcpClientThread::handleClientSend ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
-            strlen ( MSG_PARAMETER_ERROR ) );
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
+								strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
@@ -809,33 +795,19 @@ void TcpClientThread::handleClientSend ( void )
     if ( NULL != pEvent ) {
 
         // Check if i/f GUID should be used
-        if ( '-' == strGUID[0] ) {
+        if ( ( '-' == strGUID[0] ) || isGUIDEmpty( event.GUID ) ) {
             // Copy in the i/f GUID
-            memcpy ( event.GUID, m_pClientItem->m_GUID, 16 );
+            m_pClientItem->m_guid.setGUID( event.GUID );
         }
         else {
-
             getGuidFromString( &event, strGUID );
-
-            // Check if the GUID is all nill'd if so 
-            // use interface GUID
-            int sumGUID = 0;
-            for ( int i=0; i<16; i++ ) {
-                sumGUID += event.GUID[ i ];
-            }
-
-            if ( 0 == sumGUID) {
-                // Copy in the i/f GUID
-                memcpy ( event.GUID, m_pClientItem->m_GUID, 16 );
-            }
-
         }
 
-        // Copy message
+        // Copy event
         memcpy ( pEvent, &event, sizeof ( vscpEvent ) );
 
         // Save the originating clients id so
-        // this client dont get the message back
+        // this client don't get the message back
         pEvent->obid = m_pClientItem->m_clientID;
 
         wxString dbgStr = 
@@ -859,21 +831,31 @@ void TcpClientThread::handleClientSend ( void )
             pEvent->pdata = NULL;
         }
 
-        // Level II events betwen 512-1023 is recognized by the daemon and 
+        // Level II events between 512-1023 is recognised by the daemon and 
         // sent to the correct interface as Level I events if the interface  
         // is addressed by the client.
-        if ( !m_bCANMode && ( pEvent->vscp_class <= 1023 ) && 
+        if (( pEvent->vscp_class <= 1023 ) && 
             ( pEvent->vscp_class >= 512 ) && 
             ( pEvent->sizeData >= 16 )	) {
 
-                // This event shold be sent to the correct interface if it is
+                // This event should be sent to the correct interface if it is
                 // available on this machine. If not it should be sent to 
                 // the rest of the network as normal
 
-                unsigned char destGUID[16];
-                memcpy( destGUID, pEvent->pdata, 16 );	// get destination GUID
-                destGUID[0] = 0; // Interface GUID's have LSB bytes nilled
-                destGUID[1] = 0;
+                cguid destguid;
+                destguid.getFromArray( pEvent->pdata );
+
+                destguid.setAt(0,0);    // Interface GUID's have LSB bytes nilled
+                destguid.setAt(1,0);
+                
+                wxString dbgStr = 
+                    wxString::Format( _("Level I event over Level II dest = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
+                    destguid.getAt(15),destguid.getAt(14),destguid.getAt(13),destguid.getAt(12),
+                    destguid.getAt(11),destguid.getAt(10),destguid.getAt(9),destguid.getAt(8),
+                    destguid.getAt(7),destguid.getAt(6),destguid.getAt(5),destguid.getAt(4),
+                    destguid.getAt(3),destguid.getAt(2),destguid.getAt(1),destguid.getAt(0) );    
+                    m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
+                
 
                 m_pCtrlObject->m_wxClientMutex.Lock();
 
@@ -883,25 +865,42 @@ void TcpClientThread::handleClientSend ( void )
                 for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin(); 
                     iter != m_pCtrlObject->m_clientList.m_clientItemList.end(); 
                     ++iter) {
-
+                    
                         CClientItem *pItem = *iter;
-                        if ( isSameGUID( pItem->m_GUID, destGUID ) ) {
+                        dbgStr = 
+                            wxString::Format( _("Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
+                            pItem->m_guid.getAt(15),pItem->m_guid.getAt(14),pItem->m_guid.getAt(13),pItem->m_guid.getAt(12),
+                            pItem->m_guid.getAt(11),pItem->m_guid.getAt(10),pItem->m_guid.getAt(9),pItem->m_guid.getAt(8),
+                            pItem->m_guid.getAt(7),pItem->m_guid.getAt(6),pItem->m_guid.getAt(5),pItem->m_guid.getAt(4),
+                            pItem->m_guid.getAt(3),pItem->m_guid.getAt(2),pItem->m_guid.getAt(1),pItem->m_guid.getAt(0) );    
+                            dbgStr += _(" ");
+                            dbgStr += pItem->m_strDeviceName;
+                            m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
+                        
+                        
+                        if ( pItem->m_guid == destguid ) {
                             // Found
                             pDestClientItem = pItem;
-                            break;	
+							bSent = true;
+                            dbgStr = _("Match ");    
+                            m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
+							m_pCtrlObject->sendEventToClient( pItem, pEvent );
+                            break;
                         }
 
-                }				
+                }
 
+				m_pCtrlObject->m_wxClientMutex.Unlock();
 
+/*
                 if ( NULL != pDestClientItem ) {
-                    /*
+                    
                     // We must translate the data part of the event to standard format
-                    pEvent->sizeData = pEvent->sizeData - 16;
-                    memcpy( pEvent->pdata, pEvent->pdata + 16, pEvent->sizeData ); 
-
-                    pEvent->vscp_class = pEvent->vscp_class - 512;
-                    */     
+                    //pEvent->sizeData = pEvent->sizeData - 16;
+                    //memcpy( pEvent->pdata, pEvent->pdata + 16, pEvent->sizeData ); 
+					//
+                    //pEvent->vscp_class = pEvent->vscp_class - 512;
+                         
                     // Check if filtered out
                     if ( doLevel2Filter( pEvent, &pDestClientItem->m_filterVSCP ) ) {
 
@@ -940,7 +939,9 @@ void TcpClientThread::handleClientSend ( void )
 
                 m_pCtrlObject->m_wxClientMutex.Unlock();
 
+*/
         }
+
 
         if ( !bSent ) {
 
@@ -1065,6 +1066,7 @@ bool TcpClientThread::sendOneEventFromQueue( bool bStatusMsg )
 
         // Handle data
         if ( NULL != pEvent->pdata ) {
+
             strOut += _(",");
             for ( int i=0; i<pEvent->sizeData; i++ ) {
                 wxString wrk;
@@ -1252,7 +1254,8 @@ void TcpClientThread::handleClientSetChannelGUID ( void )
     }
 
     wxString str = m_wxcmdUC.Right( m_wxcmdUC.Length() - 5 ); // remove: command + space
-    getGuidFromStringToArray( m_pClientItem->m_GUID, str );
+    //getGuidFromStringToArray( m_pClientItem->m_GUID, str );
+    m_pClientItem->m_guid.getFromString(str);
     m_bOK = true;
     m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 }
@@ -1263,8 +1266,9 @@ void TcpClientThread::handleClientSetChannelGUID ( void )
 
 void TcpClientThread::handleClientGetChannelGUID ( void )
 {
-    char outbuf[ 1024 ];
-    char wrkbuf[ 20 ];
+    wxString strBuf;
+    //char outbuf[ 1024 ];
+    //char wrkbuf[ 20 ];
     int i;
 
     // Must be accredited to do this
@@ -1274,22 +1278,27 @@ void TcpClientThread::handleClientGetChannelGUID ( void )
         return;
     }
 
-    *outbuf = 0;
-
+    //*outbuf = 0;
+/*
     for ( i=0; i<16; i++ ) {
-        sprintf ( wrkbuf, "%d", m_pClientItem->m_GUID[ i ] );
+        sprintf ( wrkbuf, "%d", m_pClientItem->m_guid.getAt(i) );
         if ( 15 != i ) {
             strcat ( wrkbuf, ":" );
         }
 
         strcat ( outbuf, wrkbuf );
     }
+    strlen( strBuf.mb_str()
 
     strcat ( outbuf, "\r\n" );
     strcat ( outbuf, MSG_OK );
+    */
+    m_pClientItem->m_guid.toString( strBuf );
+    strBuf += _("\r\n");
+    strBuf += _(MSG_OK);
 
-    m_pClientSocket->Write ( outbuf,
-                                strlen ( outbuf ) );
+    m_pClientSocket->Write( strBuf.mb_str(),
+                                strlen( strBuf.mb_str() ) );
 
 }
 
@@ -1547,7 +1556,9 @@ bool TcpClientThread::handleClientPassword ( void )
 
     // Check if this user is allowed to connect from this location
     m_pCtrlObject->m_mutexUserList.Lock();
-    bool bValidHost = m_pCtrlObject->m_userList.checkRemote( m_pUserItem, remoteaddr.IPAddress() );
+    bool bValidHost = 
+            m_pCtrlObject->m_userList.checkRemote( m_pUserItem, 
+                                                    remoteaddr.IPAddress() );
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( !bValidHost ) {
@@ -1587,6 +1598,7 @@ void TcpClientThread::handleClientRcvLoop()
 
     // Loop until the connection is lost
     while ( !TestDestroy() && m_bRun && !m_pCtrlObject->m_bQuit ) {
+
         if ( m_pClientSocket->Error() &&
             ( wxSOCKET_NOERROR != ( m_err = m_pClientSocket->LastError() ) ) ) {
             if ( wxSOCKET_TIMEDOUT != m_err ) m_bRun = false;
@@ -1596,7 +1608,7 @@ void TcpClientThread::handleClientRcvLoop()
 
         // Wait for event
         if ( wxSEMA_TIMEOUT == 
-            m_pClientItem->m_semClientInputQueue.WaitTimeout( 2000 ) ) {
+            m_pClientItem->m_semClientInputQueue.WaitTimeout( 1000 ) ) {
                 m_pClientSocket->Write ( "+OK\r\n", 5 );
                 continue;
         }
@@ -1613,9 +1625,11 @@ void TcpClientThread::handleClientRcvLoop()
 // handleClientHelp
 //
 
-void TcpClientThread::handleClientHelp ( void )
+void TcpClientThread::handleClientHelp(void)
 {
-
+	m_pClientSocket->Write(MSG_OK,
+			strlen(MSG_OK));
+	return;
 }
 
 
@@ -1625,7 +1639,9 @@ void TcpClientThread::handleClientHelp ( void )
 
 void TcpClientThread::handleClientTest ( void )
 {
-    ;
+	m_pClientSocket->Write ( MSG_OK,
+        strlen ( MSG_OK ) );
+	return;
 }
 
 
@@ -1635,7 +1651,9 @@ void TcpClientThread::handleClientTest ( void )
 
 void TcpClientThread::handleClientRestart ( void )
 {
-
+	m_pClientSocket->Write ( MSG_OK,
+        strlen ( MSG_OK ) );
+	return;
 }
 
 
@@ -1661,7 +1679,7 @@ void TcpClientThread::handleClientShutdown ( void )
 
 void TcpClientThread::handleClientRemote( void )
 {
-
+	return;
 }
 
 
@@ -1701,7 +1719,7 @@ void TcpClientThread::handleClientInterface_List( void )
     wxString strGUID;
     wxString strBuf;
 
-    // Add the client to the Client List
+    // Display Interface List
     m_pCtrlObject->m_wxClientMutex.Lock();
     VSCPCLIENTLIST::iterator iter;
     for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin(); 
@@ -1709,7 +1727,8 @@ void TcpClientThread::handleClientInterface_List( void )
         ++iter) {
 
             CClientItem *pItem = *iter;
-            writeGuidArrayToString( pItem->m_GUID, strGUID );	// Get GUID
+            //writeGuidArrayToString( pItem->m_GUID, strGUID );	// Get GUID
+            pItem->m_guid.toString( strGUID );
             strBuf = wxString::Format(_("%d,"), pItem->m_clientID );
             strBuf += wxString::Format(_("%d,"), pItem->m_type );
             strBuf += strGUID;
@@ -2875,394 +2894,3 @@ void TcpClientThread::handleClientDriver( void )
 
 
 
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// **************************************************************************//
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// handleBinaryMode
-//
-
-void TcpClientThread::handleBinaryMode ( void )
-{
-    char rbuf[ 2048 ];
-
-    unsigned short nRead;
-    bool bAutoFrame = false;
-
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "BIN2" ) ) ) {
-        bAutoFrame = true;
-    }
-
-
-    // Must be accredited to do this
-    if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
-            strlen ( MSG_NOT_ACCREDITED ) );
-        return;
-    }
-
-    // Set binary mode
-    m_bBinaryMode = true;
-
-    m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
-
-
-    ////////////////////////////////////////////////////////
-    //				     Binary Mode Loop
-    ////////////////////////////////////////////////////////
-
-    bool bLocalRun = true;
-    unsigned char binaryFrameType;
-
-    while ( m_pClientSocket->IsConnected() &&
-				!TestDestroy() &&
-				m_bRun &&
-				bLocalRun ) {
-
-        // Read new data
-        if ( BINARY_ReadEvent ( rbuf,
-            sizeof ( rbuf ),
-            &nRead,
-            &binaryFrameType ) ) {
-
-            switch ( binaryFrameType ) {
-
-            case CANAL_BINARY_FRAME_TYPE_VSCP:
-                handleFastIncomingFrame ( rbuf, nRead );
-                break;
-
-            case CANAL_BINARY_FRAME_TYPE_ERROR:
-                // Stray error frame we do nothing
-                break;
-
-            case CANAL_BINARY_FRAME_TYPE_COMMAND:
-
-                switch ( rbuf[0] ) {
-
-                case CANAL_BINARY_COMMAND_NOOP:
-                    SendFastErrorFrame ( CANAL_BINARY_ERROR_NONE );
-                    break;
-
-                case CANAL_BINARY_COMMAND_READ:
-                    sendFastOutgoingFrame ( m_pClientItem );
-                    break;
-
-                case CANAL_BINARY_COMMAND_CLOSE:
-                    //m_pClientSocket->SetTimeout(1);
-                    bLocalRun = false;	// Go to standard i/f
-                    break;
-
-                default:
-                    SendFastErrorFrame ( CANAL_BINARY_ERROR_INVALID_CMD );
-                    break;
-                }
-                break;
-
-            case CANAL_BINARY_FRAME_TYPE_CAN:
-                // CAN frame we do nothing yet
-                break;
-
-            default:
-                // Don't know anything about this frame type
-                SendFastErrorFrame ( CANAL_BINARY_ERROR_UNKNOW_FRAME );
-                break;
-            }
-
-        }
-        else if ( m_pClientSocket->Error() &&
-            ( wxSOCKET_NOERROR !=
-            ( m_err = m_pClientSocket->LastError() ) ) ) {
-
-            switch ( m_err ) {
-
-            case wxSOCKET_IOERR:
-            case wxSOCKET_INVSOCK:
-                bLocalRun = false;	// socket error
-                break;
-
-
-            case wxSOCKET_TIMEDOUT:
-                SLEEP ( 200 );
-                break;
-
-            }
-
-        }
-        else if ( 0 == nRead ) {
-            bLocalRun = false; // No connection
-        }
-
-
-    } // while
-
-}
-
-//////////////////////////////////////////////////////////////////////////////
-// handleFastIncomingFrame
-//
-
-void TcpClientThread::handleFastIncomingFrame ( char *rbuf,
-                                               unsigned short nRead )
-{
-    vscpEvent event;
-    char data[512];
-    bool bOK = true;	// Optimistic approach
-
-    event.head = rbuf[ 0 ];
-    event.vscp_class = ( rbuf[1] << 8 ) + rbuf[2];
-    event.vscp_type = ( rbuf[3] << 8 ) + rbuf[4];
-    memcpy ( event.GUID, rbuf + 5, 16 );
-    memcpy ( data, rbuf + 21, nRead - 21 );
-    event.sizeData = nRead - 21;
-
-    vscpEvent *pEvent = new vscpEvent;          // Create new VSCP event
-
-    if ( NULL != pEvent ) {
-        // Save the originating clients id so
-        // this client dont get the message back
-        pEvent->obid = m_pClientItem->m_clientID;
-
-        // Copy message
-        memcpy ( pEvent, &event, sizeof ( vscpEvent ) );
-
-        // And data...
-        if ( pEvent->sizeData > 0 ) {
-            // Copy in data
-            pEvent->pdata = new uint8_t[ pEvent->sizeData ];
-            if ( NULL != pEvent->pdata ) {
-                memcpy ( pEvent->pdata, data ,pEvent->sizeData );
-            }
-        }
-        else {
-            // No data
-            pEvent->pdata = NULL;
-        }
-
-        // Statistics
-        m_pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
-        m_pClientItem->m_statistics.cntTransmitFrames++;
-
-        // There must be room in the send queue
-        if ( m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-            m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
-            m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-            m_pCtrlObject->m_clientOutputQueue.Append ( pEvent );
-            m_pCtrlObject->m_semClientOutputQueue.Post();
-            m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
-        }
-
-    }
-    else {
-        SendFastErrorFrame ( CANAL_BINARY_ERROR_MEMORY );
-        bOK = false;
-    }
-
-    if ( bOK ) {
-        SendFastErrorFrame ( CANAL_BINARY_ERROR_NONE );
-    }
-
-
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// sendFastOutgoingFrame
-//
-
-void TcpClientThread::sendFastOutgoingFrame ( CClientItem *pClientItem )
-{
-    unsigned char outbuf[ 512 ];
-    CLIENTEVENTLIST::compatibility_iterator nodeClient;
-
-    // Check if there is data to write
-    pClientItem->m_mutexClientInputQueue.Lock();
-
-    vscpEvent *pEvent = new vscpEvent;
-
-    // If something to send
-    if ( pClientItem->m_clientInputQueue.GetCount() ) {
-        pClientItem->m_mutexClientInputQueue.Lock();
-		{
-            nodeClient = pClientItem->m_clientInputQueue.GetFirst();
-            vscpEvent *pqueueEvent = nodeClient->GetData();
-
-            // Copy message
-            memcpy ( pEvent, pqueueEvent, sizeof ( vscpEvent ) );
-
-            // Remove the node
-            pClientItem->m_clientInputQueue.DeleteNode ( nodeClient );
-        }
-        pClientItem->m_mutexClientInputQueue.Unlock();
-
-        outbuf[ 0 ] = pEvent->head;
-        outbuf[ 1 ] = ( pEvent->vscp_class ) >> 8 & 0xff;
-        outbuf[ 2 ] = pEvent->vscp_class & 0xff;
-        outbuf[ 3 ] = ( pEvent->vscp_type ) >> 8 & 0xff;
-        outbuf[ 4 ] = pEvent->vscp_type & 0xff;
-        memcpy ( ( outbuf + 5 ), pEvent->GUID, 16 );
-
-        // Handle data
-        if ( NULL != pEvent->pdata ) {
-            memcpy ( ( outbuf + 21 ), pEvent->pdata, pEvent->sizeData );
-        }
-
-        // Remove the old data
-        if ( NULL != pEvent->pdata ) delete pEvent->pdata;
-        pEvent->pdata = NULL;	 // Data stored in message
-
-        BINARY_WriteEvent ( CANAL_BINARY_FRAME_TYPE_VSCP,
-            outbuf,
-            pEvent->sizeData + 21 );
-
-        delete pEvent;
-
-    }
-	else {
-        // No event(s) to read
-        SendFastErrorFrame ( CANAL_BINARY_ERROR_NO_DATA );
-    }
-
-    pClientItem->m_mutexClientInputQueue.Unlock();
-
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// SendFastErrorFrame
-//
-
-void TcpClientThread::SendFastErrorFrame ( unsigned char error_code )
-{
-    char buf[1];
-
-    buf[0] = error_code;
-    BINARY_WriteEvent ( CANAL_BINARY_FRAME_TYPE_ERROR, buf, 1 );
-}
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// BINARY_WriteEvent
-//
-
-bool TcpClientThread::BINARY_WriteEvent ( unsigned char type,
-                                         const void *buffer,
-                                         wxUint32 nbytes )
-{
-    //wxUint32 total;
-    bool error;
-    int old_flags;
-    unsigned char outbuf[ 1024 ];
-    wxUint32 msgcnt = 0;
-
-    error = true;
-
-    old_flags = m_pClientSocket->GetFlags();
-    m_pClientSocket->SetFlags (
-        ( m_pClientSocket->GetFlags() &
-        wxSOCKET_BLOCK ) | wxSOCKET_WAITALL );
-
-    // SOF
-    outbuf[msgcnt++] = ( unsigned char ) 0x55;
-    outbuf[msgcnt++] = ( unsigned char ) 0xaa;
-
-    outbuf[msgcnt++] = type;
-
-    outbuf[msgcnt++] = ( unsigned char ) ( ( nbytes >> 8 ) & 0xff );
-    outbuf[msgcnt++] = ( unsigned char ) ( nbytes & 0xff );
-
-    memcpy ( outbuf + msgcnt, buffer, nbytes );
-    msgcnt += nbytes;
-
-    if ( ( m_pClientSocket->Write ( outbuf, msgcnt ).LastCount() ) < msgcnt ) {
-        goto exit;
-    }
-
-    // everything was OK
-    error = false;
-
-exit:
-
-    m_pClientSocket->SetFlags ( old_flags );
-    return !error;
-}
-
-// discard buffer
-#define MAX_DISCARD_SIZE (10 * 1024)
-
-///////////////////////////////////////////////////////////////////////////////
-// BINARY_ReadEvent
-//
-
-bool TcpClientThread::BINARY_ReadEvent( void* buffer,
-                                        wxUint32 nbytes,
-                                        unsigned short *pnRead,
-                                        unsigned char *ptype )
-{
-    wxUint32 len,err;
-    bool error;
-    int old_flags;
-    unsigned char inbuf[1024];
-
-    *pnRead = 0;;
-    error = true;
-    old_flags = m_pClientSocket->GetFlags();
-    //m_pClientSocket->SetFlags( (old_flags & wxSOCKET_BLOCK) | wxSOCKET_WAITALL );
-
-    memset ( inbuf, 0, sizeof ( inbuf ) );
-
-    if ( ! ( *pnRead = m_pClientSocket->Read ( inbuf,
-        sizeof ( inbuf ) ).LastCount() ) ) {
-        goto exit;
-    }
-
-    if ( m_pClientSocket->Error() &&
-        ( wxSOCKET_NOERROR != ( err = m_pClientSocket->LastError() ) ) ) {
-        //if ( wxSOCKET_TIMEDOUT != err ) {
-        //	m_pClientSocket->Close();
-        //}
-        goto exit;
-    }
-
-
-    if ( ! ( ( 0x55 == inbuf[ 0 ] ) && ( 0xaa == inbuf[ 1 ] ) ) ) {
-        wxLogWarning ( _( "wxSocket: invalid signature in BINARY_ReadEvent." ) );
-        goto exit;
-    }
-
-    *ptype = inbuf[ 2 ];
-    if ( *ptype ) {
-        inbuf[0] = 1;
-    }
-
-    len = ( wxUint16 ) inbuf[ 4 ];
-    len |= ( wxUint16 ) ( inbuf[ 3 ] << 8 );
-
-    // Check for invalid length
-    if ( len > *pnRead ) goto exit;
-
-    memcpy ( buffer, inbuf + 5, len );
-
-    *pnRead -= 5;
-
-    // everything was OK
-
-    error = false;
-
-exit:
-
-    m_pClientSocket->SetFlags ( old_flags );
-
-    return !error;
-}

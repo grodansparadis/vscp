@@ -1150,15 +1150,17 @@ wxString& getDataCodingString(const unsigned char *pString,
 float getMeasurementAsFloat(const unsigned char *pNorm, 
                                     const unsigned char length)
 {
-	float value;
-	value = std::numeric_limits<float>::infinity();
+    float *pfloat;
+    
+	//float value;
+	//value = std::numeric_limits<float>::infinity();
 	if (length >= 5) {
-		float *pfloat = (float*)(pNorm + 1);
-		value = pfloat[0];
+		pfloat = (float*)(pNorm + 1);
+		//value = pfloat[0];
 		// please insert test for (!NaN || !INF)
 	}
     
-	return value;
+	return *pfloat;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1517,7 +1519,7 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 
 bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strValue)
 {
-    float value;
+    //float value;
     int offset = 0;
     
     // If class >= 512 and class <1024 we
@@ -1529,7 +1531,7 @@ bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strVal
     
     if (pEvent->sizeData-offset < 6) return false;
     
-	value = std::numeric_limits<float>::infinity();
+	//value = std::numeric_limits<float>::infinity();
 	float *pfloat = (float*)(pEvent->pdata+offset);
     strValue.Format( _("%f"), *pfloat );
     

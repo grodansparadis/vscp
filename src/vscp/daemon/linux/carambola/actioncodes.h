@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2011 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2013 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dm.cpp,v $                                       
-// $Date: 2005/08/30 11:00:04 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 
 
 // VSCP daemon action codes are defined in this file
@@ -178,10 +175,10 @@
 // timerid is any numerical id > 0
 #define VSCP_DAEMON_ACTION_CODE_WRITE_FILE					0x00000070  // Write file
 
-// Get URL
+// Get/Post URL
 // Format: url
 // 
-#define VSCP_DAEMON_ACTION_CODE_GET_URL						  0x00000075  // Get URL
+#define VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL			0x00000075  // Get/Post URL
 
 
 #endif
