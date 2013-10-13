@@ -63,9 +63,6 @@ clean:
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile	
 
-#test:  test.o $(PROJOBJS)
-#	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
-
 # Build the Linux DL
 %.so: %.o $(LMSENSOROBJ)
 	$(CXX) -o $@ vscp2drv_lmsensors.o $(LMSENSOROBJ) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
