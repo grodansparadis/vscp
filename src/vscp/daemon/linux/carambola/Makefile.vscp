@@ -89,7 +89,7 @@ define Package/$(PKG_NAME)/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/dm.xml_distro $(1)/etc/vscp/dm.xml
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/vscpd.conf_distro $(1)/etc/vscp/vscpd.conf
 	$(INSTALL_DIR) $(1)/etc/init.d 
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/vscpd.startup_script_debian $(1)/etc/init.d/vscpd
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/vscpd.startup_script_carambola $(1)/etc/init.d/vscpd
 	$(INSTALL_DIR) $(1)/srv
 	$(INSTALL_DIR) $(1)/srv/vscp
 	$(INSTALL_DIR) $(1)/srv/vscp/actions
@@ -101,6 +101,7 @@ endef
 
 define Package/$(PKG_NAME)/postinst
 	#!/bin/sh
+	chmod a+x /etc/init.d/vscpd
 	/etc/init.d/vscpd enable
 	/etc/init.d/vscpd start
 endef
