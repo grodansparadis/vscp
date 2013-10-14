@@ -42,7 +42,7 @@ PROJOBJS = lmsensors.o ../../../../../common/crc.o ../../../../common/vscptcpif.
 
 ### Targets: ###
 
-all: vscp2drv_lmsensors.so test
+all: vscp2drv_lmsensors.so
 
 install: all
 	$(INSTALL_PROGRAM) vscp2drv_lmsensors.so $(libdir)
