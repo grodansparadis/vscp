@@ -305,7 +305,7 @@ int main(int argc, char **argv)
     if (listen(listenSocket, 1) == -1) {
         error("listen failed");
     }
-    printf("opened %s:%d\n", inet_ntoa(local.sin_addr), ntohs(local.sin_port));
+    printf("opened %d:%d\n", inet_ntoa(local.sin_addr), ntohs(local.sin_port));
 
     while (TRUE) {
         struct sockaddr_in remote;
@@ -315,7 +315,7 @@ int main(int argc, char **argv)
             error("accept failed");
         }
 
-        printf("connected %s:%d\n", inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
+        printf("connected %d:%d\n", inet_ntoa(remote.sin_addr), ntohs(remote.sin_port));
         //clientWorker(clientSocket);
         printf("disconnected\n");
     }
