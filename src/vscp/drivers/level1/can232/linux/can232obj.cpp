@@ -111,7 +111,7 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
     p = strtok(NULL, ";");
     if (NULL != p) {
         if ((NULL != strstr(p, "0x")) || (NULL != strstr(p, "0X"))) {
-            sscanf(p + 2, "%x", &nMask);
+            sscanf(p + 2, "%lx", &nMask);
         } else {
             nMask = atol(p);
         }
@@ -121,7 +121,7 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
     p = strtok(NULL, ";");
     if (NULL != p) {
         if ((NULL != strstr(p, "0x")) || (NULL != strstr(p, "0X"))) {
-            sscanf(p + 2, "%x", &nFilter);
+            sscanf(p + 2, "%lx", &nFilter);
         } else {
             nFilter = atol(p);
         }
@@ -500,14 +500,14 @@ bool CCAN232Obj::setFilter(unsigned long filter, unsigned long mask)
     LOCK_MUTEX(m_can232ObjMutex);
 
     // Acceptance Code
-    sprintf(buf, "M%8.8X\r", filter);
+    sprintf(buf, "M%8.8lX\r", filter);
     m_can232obj.m_comm.comm_puts(buf, strlen(buf), true);
     *szCmd = 0;
     m_can232obj.m_comm.comm_gets(szCmd, sizeof( szCmd), 100000);
     printf("Open: Response: setFilter: [%s]\n", szCmd);
 
     // Acceptance Mask
-    sprintf(buf, "m%8.8X\r", mask);
+    sprintf(buf, "m%8.8lX\r", mask);
     m_can232obj.m_comm.comm_puts(buf, strlen(buf), true);
     *szCmd = 0;
     m_can232obj.m_comm.comm_gets(szCmd, sizeof( szCmd), 100000);
@@ -530,7 +530,7 @@ bool CCAN232Obj::setFilter(unsigned long filter)
     LOCK_MUTEX(m_can232ObjMutex);
 
     // Acceptance Code
-    sprintf(buf, "M%8.8X\r", filter);
+    sprintf(buf, "M%8.8lX\r", filter);
     m_can232obj.m_comm.comm_puts(buf, strlen(buf), true);
     *szCmd = 0;
     m_can232obj.m_comm.comm_gets(szCmd, sizeof( szCmd), 100000);
@@ -553,7 +553,7 @@ bool CCAN232Obj::setMask(unsigned long mask)
     LOCK_MUTEX(m_can232ObjMutex);
 
     // Acceptance Mask
-    sprintf(buf, "m%8.8X\r", mask);
+    sprintf(buf, "m%8.8lX\r", mask);
     m_can232obj.m_comm.comm_puts(buf, strlen(buf), true);
     *szCmd = 0;
     m_can232obj.m_comm.comm_gets(szCmd, sizeof( szCmd), 100000);
@@ -680,7 +680,7 @@ void *workThread(void *pObject)
                                     // Update statistics
                                     pcan232obj->m_can232obj.m_stat.cntReceiveData += pMsg->sizeData;
                                     pcan232obj->m_can232obj.m_stat.cntReceiveFrames += 1;
-                                    printf("workThread R - RcvFrames = [%d]\n\n", pcan232obj->m_can232obj.m_stat.cntReceiveFrames);
+                                    printf("workThread R - RcvFrames = [%ld]\n\n", pcan232obj->m_can232obj.m_stat.cntReceiveFrames);
                                 } else {
                                     // Failed to translate message
                                     printf("workThread R - Receive Failed to translate message\n");
@@ -735,18 +735,18 @@ void *workThread(void *pObject)
                 msg.id &= 0x1fffffff;
             }
 
-            // Curently there is a bug in ice old asm can232 tranceiver, and allow only smal hex digits
+            // Currently there is a bug in ice old asm can232 tranceiver, and allow only small hex digits
             if (msg.flags & CANAL_IDFLAG_EXTENDED) {
-                sprintf(buf, "T%08.8lx%i", msg.id, msg.sizeData);
+                sprintf(buf, "T%8.8lx%i", msg.id, msg.sizeData);
             } else {
-                sprintf(buf, "t%03.3lx%i", msg.id, msg.sizeData);
+                sprintf(buf, "t%3.3lx%i", msg.id, msg.sizeData);
             }
 
             if (msg.sizeData) {
                 char hex[5];
 
                 for (int i = 0; i < msg.sizeData; i++) {
-                    sprintf(hex, "%02.2X", msg.data[i]);
+                    sprintf(hex, "%2.2X", msg.data[i]);
                     //sprintf( hex, "%02.2x", msg.data[i] );
                     strcat(buf, hex);
                 }

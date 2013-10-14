@@ -3395,7 +3395,7 @@ CControlObject::websrv_get_session( struct MHD_Connection *connection )
             (unsigned int)random(),
             (unsigned int)random(),
             (unsigned int)t,
-            (unsigned int)random());
+            (unsigned int)random(), 1337 );
     
     ret->m_referenceCount++;
     ret->start = time(NULL);
