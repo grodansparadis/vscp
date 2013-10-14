@@ -133,8 +133,9 @@ char *Cmd5::digest( unsigned char *pstr )
   EVP_DigestFinal_ex( &mdctx, md_value, &md_len );
   EVP_MD_CTX_cleanup( &mdctx );
 
+    memset( m_szDigest, 0, sizeof(m_szDigest) );
 	sprintf( m_szDigest, 
-		"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\0",
+		"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
 		md_value[0],md_value[1],md_value[2],md_value[3],md_value[4],md_value[5],md_value[6],md_value[7],
 		md_value[8],md_value[9],md_value[10],md_value[11],md_value[12],md_value[13],md_value[14],md_value[15] ); 
 /*

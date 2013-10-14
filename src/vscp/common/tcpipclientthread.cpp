@@ -1125,7 +1125,7 @@ void TcpClientThread::handleClientDataAvailable ( void )
     }
 
     sprintf ( outbuf,
-        "%d\r\n%s",
+        "%ld\r\n%s",
         m_pClientItem->m_clientInputQueue.GetCount(),
         MSG_OK );
     m_pClientSocket->Write ( outbuf,
