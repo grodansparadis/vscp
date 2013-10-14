@@ -27,5 +27,5 @@ install:
 	$(INSTALL_PROGRAM) -b -m744 config_examples/mimetypes.xml_distro /etc/vscp/mimetypes.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro /etc/vscp/variables.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro /etc/vscp/dm.xml
-	$(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_distro /etc/vscp
+	$(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_distro /etc/vscp/vscpd.conf
 
