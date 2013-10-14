@@ -229,7 +229,7 @@
             <name>tcpiplink1</name>
             <path>/usr/local/lib/vscp2drv_tcpiplink.so</path>
             <config>192.168.1.2;9598;admin;secret</config>                 
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00<guid>
+            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
         <!-- Level II raw ethernet - driver is documented in 30.2 -->

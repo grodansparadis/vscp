@@ -1,7 +1,7 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME:=vscp
-PKG_RELEASE:=0.4.0
+PKG_RELEASE:=Fluorine
 PKG_VERSION:=0.4.0.10
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
@@ -22,7 +22,17 @@ define Package/$(PKG_NAME)
 	CATEGORY:=Utilities
 	TITLE:=$(PKG_NAME)
 	URL:=http://www.vscp.org
-	DEPENDS:= +uclibcxx +libwxbase +libexpat +libopenssl +libmicrohttpd +libwebsockets +libmosquitto-nossl 
+	DEPENDS:= +uclibcxx +libncurses +libpcap +libwxbase +libexpat +libopenssl +libmicrohttpd +libwebsockets +libmosquitto-nossl 
+endef
+
+define Package/conffiles
+	/etc/vscp/vscpd.conf
+	/etc/vscp/variables.xml
+	/etc/vscp/dm.xml
+	/etc/mimetypes.xml
+	/srv/vscp/actions/testaction
+	/srv/vscp/web/index.html
+	/srv/vscp/web/favicon.ico
 endef
 
 MAKE_FLAGS += \
@@ -47,12 +57,57 @@ define Build/Configure
 endef
 
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR)  $(MAKE_FLAGS);
+	$(MAKE) -C $(PKG_BUILD_DIR)  $(MAKE_FLAGS); 
+endef
+
+define Package/$(PKG_NAME)/preinst
+	#!/bin/sh
+	#	rm /usr/bin/vscpd
 endef
 
 define Package/$(PKG_NAME)/install
-	$(INSTALL_DIR) $(1)/bin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR) $(1)/bin/
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/daemon/linux/vscpd $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/vscpcmd/vscpcmd $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/mkpasswd/mkpasswd $(1)/usr/bin/
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/helperlib/linux/libvscphelper.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/linuxvscpl1/vscpl1.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level1/logger/linux/canallogger.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level1/can232/linux/can232drv.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level1/xap/linux/xapdrv.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level1/socketcan/linux/socketcandrv.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/lmsensors/linux/vscp2drv_lmsensors.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/logger/linux/vscpl2_loggerdrv.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/mqtt/linux/vscp2drv_mqtt.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/rawethernet/linux/vscp2drv_raweth.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/socketcan/linux/vscp2drv_socketcan.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/tcpdrv/linux/vscp2drv_tcpiplink.so $(1)/usr/lib/
+	$(INSTALL_DIR) $(1)/etc/vscp
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/mimetypes.xml_distro $(1)/etc/vscp/mimetypes.xml
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/variables.xml_distro $(1)/etc/vscp/variables.xml
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/dm.xml_distro $(1)/etc/vscp/dm.xml
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/vscpd.conf_distro $(1)/etc/vscp/vscpd.conf
+	$(INSTALL_DIR) $(1)/etc/init.d 
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/vscpd.startup_script_debian $(1)/etc/init.d/vscpd
+	$(INSTALL_DIR) $(1)/srv
+	$(INSTALL_DIR) $(1)/srv/vscp
+	$(INSTALL_DIR) $(1)/srv/vscp/actions
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/actions/* $(1)/srv/vscp/actions
+	$(INSTALL_DIR) $(1)/srv/vscp/web
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/web/index.html $(1)/srv/vscp/web
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/web/favicon.ico $(1)/srv/vscp/web
+endef
+
+define Package/$(PKG_NAME)/postinst
+	#!/bin/sh
+	/etc/init.d/vscpd enable
+	/etc/init.d/vscpd start
+endef
+
+define Package/$(PKG_NAME)/postrm
+	#!/bin/sh
+	rm /usr/bin/vscpd
 endef
 
 $(eval $(call BuildPackage,$(PKG_NAME)))
