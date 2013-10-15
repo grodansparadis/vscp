@@ -15,8 +15,8 @@ libwxbase
 
 
 libmosquitto
-/network/mosqwuitto
-/network/msowuitto-client
+/network/mosquitto
+/network/msouitto-client
 libusb
 libftdi
 libsensors ????
