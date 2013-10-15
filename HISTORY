@@ -1,6 +1,8 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-10-15 - AKHE 0.4.0.11
+2013-10-15 - AKHE carambola binary build added.
 2013-10-14 - AKHE Removes a bunch of non-critical warnings in ubuntu builds.
 2013-10-01 - AKHE Fixed compile problem on 64-bit platforms that caused
                   /usr/bin/ld: ../../../../../common/crc.o: relocation R_X86_64_32S against
