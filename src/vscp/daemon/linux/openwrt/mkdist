@@ -1,8 +1,8 @@
 #!/bin/sh
 
 
-mkdir /tmp/openwrtdist
-cp /home/akhe/development/carambola/bin/ramips/packages/vscp_0.4.0.10-Fluorine_ramips.ipk /tmp/openwrtdist
+mkdir -p /tmp/openwrtdist
+cp /home/akhe/development/carambola/bin/ramips/packages/vscp_0.4.0.11-Fluorine_ramips.ipk /tmp/openwrtdist
 cp /home/akhe/development/carambola/bin/ramips/packages/uclibcxx_0.2.4-1_ramips.ipk /tmp/openwrtdist
 cp /home/akhe/development/carambola/bin/ramips/packages/libncurses_5.7-5_ramips.ipk /tmp/openwrtdist
 cp /home/akhe/development/carambola/bin/ramips/packages/libwxbase_2.8.10-1_ramips.ipk /tmp/openwrtdist
@@ -11,7 +11,7 @@ cp /home/akhe/development/carambola/bin/ramips/packages/libopenssl_1.0.1c-1_rami
 cp /home/akhe/development/carambola/bin/ramips/packages/libmicrohttpd_0.9.19-1_ramips.ipk /tmp/openwrtdist
 cp /home/akhe/development/carambola/bin/ramips/packages/libwebsockets_2013-10-10-HEAD_ramips.ipk /tmp/openwrtdist
 cp /home/akhe/development/carambola/bin/ramips/packages/terminfo_5.7-5_ramips.ipk /tmp/openwrtdist
-cp /home/akhe/development/carambola/bin/ramips/packages/zlib_1.2.7-1_ramips.ipk /tmp/openwrtdist'
+cp /home/akhe/development/carambola/bin/ramips/packages/zlib_1.2.7-1_ramips.ipk /tmp/openwrtdist
 cp /home/akhe/development/carambola/bin/ramips/packages/libstdcpp_4.7-linaro-1_ramips.ipk /tmp/openwrtdist
 cp /home/akhe/development/carambola/bin/ramips/packages/libmosquitto-nossl_1.0.3-1_ramips.ipk /tmp/openwrtdist
 cp /home/akhe/development/carambola/bin/ramips/packages/libmosquitto_1.0.3-1_ramips.ipk /tmp/openwrtdist
