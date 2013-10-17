@@ -1179,9 +1179,20 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%event.class"), &str ) ) {
                 strResult +=  wxString::Format( wxT("%d"), pEvent->vscp_class );	
             }
+            // Check for class string  escape
+            else if ( str.StartsWith( wxT("%event.class.str"), &str ) ) {
+                VSCPInformation info;
+                strResult +=  info.getClassDescription( pEvent->vscp_class );	
+            }
             // Check for type escape
             else if ( str.StartsWith( wxT("%event.type"), &str ) ) {
                 strResult +=  wxString::Format( wxT("%d"), pEvent->vscp_type );	
+            }
+            // Check for type string escape
+            else if ( str.StartsWith( wxT("%event.type.str"), &str ) ) {
+                VSCPInformation info;
+                strResult +=  info.getTypeDescription( pEvent->vscp_class, 
+                                                    pEvent->vscp_type );	
             }
             // Check for data[n] escape
             else if ( str.StartsWith( wxT("%event.data["), &str ) ) {
@@ -1364,6 +1375,22 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             // Check for toliveafter
             else if ( str.StartsWith( wxT("%toliveafter"), &str ) ) {
                 strResult += wxT("Carpe diem quam minimum credula postero.");
+            }
+            // Check for measurement.float escape
+            else if ( str.StartsWith( wxT("%measurement.float"), &str ) ) {
+                wxString str;
+                getVSCPMeasurementAsString( pEvent, str );
+                strResult += str;
+            }
+            // Check for measurement.string escape
+            else if ( str.StartsWith( wxT("%measurement.string"), &str ) ) {
+                wxString str;
+                getVSCPMeasurementAsString( pEvent, str );
+                strResult += str;
+            }
+            // Check for eventdata.realtext escape
+            else if ( str.StartsWith( wxT("%eventdata.realtext"), &str ) ) {
+                strResult += getRealTextData( pEvent );
             }
 
             // Remove the escape.

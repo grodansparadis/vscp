@@ -1,6 +1,13 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-10-17 - AKHE Added new action parameter escapes. 
+					%event.class.str 	- Class as textstring
+					%event.type.str  	- Type as teststring
+					%measurement.float 	- measurement as a float
+					%measurement.string	- meaurements as a string
+					%eventdata.realtext	- Try to display event data in a
+											human readable form.
 2013-10-15 - AKHE 0.4.0.11
 2013-10-15 - AKHE carambola binary build added.
 2013-10-14 - AKHE Removes a bunch of non-critical warnings in ubuntu builds.

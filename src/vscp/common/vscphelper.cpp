@@ -1152,6 +1152,9 @@ float getMeasurementAsFloat(const unsigned char *pNorm,
 {
     float *pfloat;
     
+    // Check pointers
+    if ( NULL == pNorm ) return false;
+    
 	//float value;
 	//value = std::numeric_limits<float>::infinity();
 	if (length >= 5) {
@@ -1172,6 +1175,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 {
 	int i, j;
 	int offset = 0;
+    
+    // Check pointers
+    if ( NULL == pEvent ) return false;
 
 	strValue = wxT("");
 
@@ -1509,7 +1515,46 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 	}
 
 	return true;
+}
 
+///////////////////////////////////////////////////////////////////////////////
+// getVSCPMeasurementAsDouble
+//
+//
+
+bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
+{
+    wxString str;
+   
+    // Check pointers
+    if ( NULL == pEvent ) return false;
+    if ( NULL == pvalue ) return false;
+    
+    if ( (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || 
+             (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
+             (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || 
+             (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ) {
+        if ( !getVSCPMeasurementAsString( pEvent, str ) ) return false;
+        if ( !str.ToDouble( pvalue ) ) return false;
+    }
+    else if ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ){
+        if ( !getVSCPMeasurementFloat64AsString( pEvent, str ) ) return false;
+        if ( !str.ToDouble( pvalue ) ) return false;
+    }
+    else if ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ){
+        wxString str;
+        char buf[512];
+        
+        if ( 0 == pEvent->sizeData || NULL == pEvent->pdata ) return false;
+        memcpy( buf, pEvent->pdata + 4, pEvent->sizeData-4 );
+        str.FromAscii( buf );
+        str.ToDouble( pvalue );
+    }
+    else {
+        return false;
+    }
+    
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

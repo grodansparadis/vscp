@@ -82,7 +82,7 @@ extern "C" {
     };
 
     /*!
-      @brief This class holds nformation about VSCP events.
+      @brief This class holds information about VSCP events.
      */
 
     class VSCPInformation {
@@ -196,6 +196,16 @@ extern "C" {
       \return true on success, false on failure.
      */
     bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& str);
+    
+    /*!
+      Get data in the VSCP data coding format as a double. Works for
+	  CLASS1.MEAUREMENT, CLASS2_LEVEL1.MEASUREMENT, 
+      VSCP_CLASS1_MEASUREZONE, VSCP_CLASS1_SETVALUEZONE
+      \param pEvent Pointer to VSCP event.
+      \param pvalue Pointer to double that holds the result
+      \return true on success, false on failure.
+     */
+    bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue);
 	
 	/*!
       Get data in the VSCP data coding format to a string. Works for
@@ -208,7 +218,7 @@ extern "C" {
 	
 	/*!
 	  Convert a floating point measurement value into VSCP data with the
-	  first byte being the normaliser byte
+	  first byte being the normalizer byte
 	  CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
       \param value Floating point value to convert.
       \param pdata Pointer to beginning of VSCP returned event data.

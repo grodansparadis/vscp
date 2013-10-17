@@ -93,6 +93,11 @@
       </item>
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
