@@ -12,7 +12,7 @@ release notes for release 0.4.0 Fluorine
                     %measurement.convert.data - which convert all types
                         of measurement data into a VSCP_CLASS2_MEASUREMENT_STR
                         data coding which can be easier to directly interpret
-                        without code.
+                        without code. Fixes #19
 2013-10-17 - AKHE Added new action parameter escapes. 
 					%event.class.str 	- Class as textstring
 					%event.type.str  	- Type as teststring
