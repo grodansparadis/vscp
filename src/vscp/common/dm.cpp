@@ -1376,6 +1376,30 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%toliveafter"), &str ) ) {
                 strResult += wxT("Carpe diem quam minimum credula postero.");
             }
+            // Check for measurement.index escape
+            else if ( str.StartsWith( wxT("%measurement.index"), &str ) ) {
+                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                if ( -1 != data_coding_byte ) {
+                    strResult += wxString::Format( wxT("%d"), 
+                                    VSCP_DATACODING_INDEX( data_coding_byte ) );
+                }
+            }
+            // Check for measurement.unit escape
+            else if ( str.StartsWith( wxT("%measurement.unit"), &str ) ) {
+                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                if ( -1 != data_coding_byte ) {
+                    strResult += wxString::Format( wxT("%d"), 
+                                    VSCP_DATACODING_UNIT( data_coding_byte ) );
+                }
+            }
+            // Check for measurement.coding escape
+            else if ( str.StartsWith( wxT("%measurement.coding"), &str ) ) {
+                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                if ( -1 != data_coding_byte ) {
+                    strResult += wxString::Format( wxT("%d"), 
+                                    VSCP_DATACODING_TYPE( data_coding_byte ) );
+                }
+            }
             // Check for measurement.float escape
             else if ( str.StartsWith( wxT("%measurement.float"), &str ) ) {
                 wxString str;
@@ -1388,6 +1412,17 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 getVSCPMeasurementAsString( pEvent, str );
                 strResult += str;
             }
+            // Check for measurement.convert.data escape
+            else if ( str.StartsWith( wxT("%measurement.convert.data"), &str ) ) {
+                wxString str;
+                if ( getVSCPMeasurementAsString(pEvent, str ) ) {
+                    for ( int i=0; i<str.Length(); i++ ) {
+                        if (0!=i) strResult += ','; // Not at first location
+                        strResult += str.GetChar(i);
+                    }
+                }
+            }
+            
             // Check for eventdata.realtext escape
             else if ( str.StartsWith( wxT("%eventdata.realtext"), &str ) ) {
                 strResult += getRealTextData( pEvent );

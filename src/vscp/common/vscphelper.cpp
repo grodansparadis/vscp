@@ -1017,6 +1017,25 @@ void VSCPInformation::fillTypeDescriptions(wxControlWithItems *pctrl,
 // ***************************************************************************
 
 
+uint8_t getMeasurementDataCoding(const vscpEvent *pEvent)
+{
+    uint8_t datacoding_byte = -1;
+    
+    if ( NULL == pEvent ) return -1;
+    if ( NULL == pEvent->pdata ) return -1;
+    if ( pEvent->sizeData < 1 ) return -1;
+    
+    if ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) {
+        datacoding_byte = pEvent->pdata[0];
+    }
+    else if ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) {
+        if ( pEvent->sizeData >= 16 ) datacoding_byte = pEvent->pdata[16];
+    } 
+        
+    return datacoding_byte;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // getDataCodingBitArray
 //

@@ -160,6 +160,14 @@ extern "C" {
         /// Hash for types
         VSCPHashType m_hashType;
     };
+    
+    /*!
+        Fetch datacoding byte from measurement events
+        \param pEvent Pointer to VSCP event
+        \return Measurement datacoding byte or zero if its not an 
+            event with a datacoding.
+     */
+    uint8_t getMeasurementDataCoding(const vscpEvent *pEvent);
 
     /*!
       Get bitarray from coded event data

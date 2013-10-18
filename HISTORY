@@ -1,6 +1,18 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-10-18 - AKHE Added getMeasurementDataCoding to helper lib that 
+                    returns the datacoding byte for measurement classes 
+                    that have it. Use the VSCP_DATACODING_TYPE, VSCP_DATACODING_INDEX
+                    and VSCP_DATACODING_UNIT macros to get individual parts in it. 
+                  Added new action parameter escapes
+                    %measurement.index  - index for sensor (0-7)
+                    %measurement.unit   - measurement unit (0-3)
+                    %measurement.coding - datacoding       (0-7)
+                    %measurement.convert.data - which convert all types
+                        of measurement data into a VSCP_CLASS2_MEASUREMENT_STR
+                        data coding which can be easier to directly interpret
+                        without code.
 2013-10-17 - AKHE Added new action parameter escapes. 
 					%event.class.str 	- Class as textstring
 					%event.type.str  	- Type as teststring
