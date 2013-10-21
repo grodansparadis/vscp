@@ -375,31 +375,27 @@ CSocketCanWorkerTread::Entry()
                 vscpEvent *pEvent = new vscpEvent();
                 if (NULL != pEvent) {
 
-                    pEvent->pdata = new uint8_t[16 + frame.len];
+                    pEvent->pdata = new uint8_t[frame.len];
                     if (NULL == pEvent->pdata) {
                         delete pEvent;
                         continue;
                     }
-
-                    // Interface GUID is set to all nulls as
-                    // this event should be sent to all clients.
-                    memset(pEvent->pdata, 0, 16);
 
                     // GUID will be set to GUID of interface
                     // by driver interface with LSB set to nickname
                     memset(pEvent->GUID, 0, 16);
                     pEvent->GUID[0] = frame.can_id & 0xff;
 
-                    // Set VSCP class + 512
-                    pEvent->vscp_class = getVSCPclassFromCANid(frame.can_id) + 512;
+                    // Set VSCP class
+                    pEvent->vscp_class = getVSCPclassFromCANid(frame.can_id);
 
                     // Set VSCP type
                     pEvent->vscp_type = getVSCPtypeFromCANid(frame.can_id);
 
                     // Copy data if any
-                    pEvent->sizeData = frame.len + 16;
+                    pEvent->sizeData = frame.len;
                     if (frame.len) {
-                        memcpy(pEvent->pdata + 16, frame.data, frame.len);
+                        memcpy(pEvent->pdata, frame.data, frame.len);
                     }
 
                     if (doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {

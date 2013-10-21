@@ -21,26 +21,10 @@
       <itemPath>../../../../common/vscptcpif.h</itemPath>
     </logicalFolder>
     <df root="." name="0">
-      <df name="include">
-        <df name="linux">
-          <df name="can">
-            <in>raw.h</in>
-          </df>
-          <in>can.h</in>
-        </df>
-        <df name="socketcan">
-          <df name="can">
-            <in>raw.h</in>
-          </df>
-          <in>can.h</in>
-        </df>
-      </df>
       <in>readsock.c</in>
       <in>socketcan.cpp</in>
-      <in>socketcan.h</in>
       <in>test.c</in>
       <in>vscp2drv_socketcan.cpp</in>
-      <in>vscp2drv_socketcan.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -88,45 +72,24 @@
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
+              <Elem>__PIC__=2</Elem>
               <Elem>__WXGTK__</Elem>
+              <Elem>__pic__=2</Elem>
             </preprocessorList>
           </ccTool>
         </makeTool>
       </makefileType>
-      <item path="../../../../common/canal.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/canal_macro.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/canal_win32_ipc.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="../../../../common/guid.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/mdf.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp_class.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp_type.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
       </item>
-      <item path="../../../../common/vscphelper.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="../../../../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
       </item>
       <folder path="common">
         <ccTool>
@@ -135,14 +98,6 @@
           </incDir>
         </ccTool>
       </folder>
-      <item path="include/linux/can.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="include/linux/can/raw.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="include/socketcan/can.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="include/socketcan/can/raw.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="readsock.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
@@ -158,21 +113,21 @@
         <ccTool>
         </ccTool>
       </item>
-      <item path="socketcan.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="vscp2drv_socketcan.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="vscp2drv_socketcan.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

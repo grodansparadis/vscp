@@ -159,13 +159,15 @@ int BigGridTable::GetNumberRows( void )
 
 wxString BigGridTable::GetValue( int row, int col )
 {
-  static int last_row = 0;
+    static int last_row = 0;
 	static VscpRXObj *pRecord = NULL;
-  static wxString str;
+    static wxString str;
   
 	if ( ( 0 == last_row ) || ( row != last_row ) ) {
 		if ( NULL == ( pRecord = readEvent( row ) ) ) return wxString(_(""));
 	}	
+    
+    if ( NULL == pRecord ) return wxString(_(""));
   
 	// Save the row
 	last_row = row;
