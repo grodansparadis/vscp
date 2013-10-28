@@ -384,7 +384,7 @@ CSocketCanWorkerTread::Entry()
                     // GUID will be set to GUID of interface
                     // by driver interface with LSB set to nickname
                     memset(pEvent->GUID, 0, 16);
-                    pEvent->GUID[0] = frame.can_id & 0xff;
+                    pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
 
                     // Set VSCP class
                     pEvent->vscp_class = getVSCPclassFromCANid(frame.can_id);

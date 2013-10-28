@@ -945,26 +945,31 @@ void *deviceLevel2ReceiveThread::Entry()
         //      - Set interface GUID if no driver GUID defined.
         
         uint8_t ifguid[16]; 
-        uint8_t nickname_lsb = pEvent->GUID[0];
-        uint8_t nickname_msb = pEvent->GUID[1];
-        memcpy( ifguid, pEvent->GUID, 16 );
-        ifguid[0] = 0;
-        ifguid[1] = 0;
         
+        // Save nickname
+        uint8_t nickname_msb = pEvent->GUID[14];
+        uint8_t nickname_lsb = pEvent->GUID[15];
+        
+        // Set if to use
+        memcpy( ifguid, pEvent->GUID, 16 );
+        ifguid[14] = 0;
+        ifguid[15] = 0;
+        
+        // If if is set to zero use interface id
         if ( isGUIDEmpty( ifguid ) ) {
             
             // Set driver GUID if set
             if ( !m_pMainThreadObj->m_pDeviceItem->m_guid.isNULL() ) {
-                m_pMainThreadObj->m_pDeviceItem->m_guid.setGUID( pEvent->GUID);
+                m_pMainThreadObj->m_pDeviceItem->m_guid.writeGUID( pEvent->GUID );
             }
             else {
                 // If no driver GUID set use interface GUID
-                m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.setGUID( pEvent->GUID );
+                m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.writeGUID( pEvent->GUID );
             }
             
             // Preserve nickname
-            pEvent->GUID[1] = nickname_msb;
-            pEvent->GUID[0] = nickname_lsb;
+            pEvent->GUID[14] = nickname_msb;
+            pEvent->GUID[15] = nickname_lsb;
         
         }
         

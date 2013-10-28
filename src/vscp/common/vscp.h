@@ -262,6 +262,10 @@ typedef vscpEventEx *PVSCPEVENTEX;
 
 #define VSCP_CAN_ID_HARD_CODED	    0x02000000  // Hard coded bit in CAN frame id
 
+// GUID byte positions
+#define VSCP_GUID_MSB               0
+#define VSCP_GUID_LSB               15
+
 //
 // Filter structure for VSCP Level 2
 //

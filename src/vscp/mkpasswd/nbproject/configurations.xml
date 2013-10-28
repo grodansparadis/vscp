@@ -62,6 +62,10 @@
             </preprocessorList>
           </cTool>
           <ccTool>
+            <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
+            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
@@ -76,35 +80,17 @@
       </item>
       <item path="../../common/md5.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
         </ccTool>
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
-      <folder path="0">
+      <folder path="common">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
         </ccTool>
       </folder>
       <item path="mkpasswd.cpp" ex="false" tool="1" flavor2="4">

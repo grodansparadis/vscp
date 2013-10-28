@@ -1,6 +1,9 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-10-21 - AKHE Fixed bug in vscpd that set Level II send GUID's wrong.
+		  Socket CAN driver now send Level I events as expected 
+			instead of class2 Level I events.
 2013-10-18 - AKHE Added getMeasurementDataCoding to helper lib that 
                     returns the datacoding byte for measurement classes 
                     that have it. Use the VSCP_DATACODING_TYPE, VSCP_DATACODING_INDEX

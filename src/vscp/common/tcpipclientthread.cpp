@@ -797,7 +797,7 @@ void TcpClientThread::handleClientSend ( void )
         // Check if i/f GUID should be used
         if ( ( '-' == strGUID[0] ) || isGUIDEmpty( event.GUID ) ) {
             // Copy in the i/f GUID
-            m_pClientItem->m_guid.setGUID( event.GUID );
+            m_pClientItem->m_guid.writeGUID( event.GUID );
         }
         else {
             getGuidFromString( &event, strGUID );

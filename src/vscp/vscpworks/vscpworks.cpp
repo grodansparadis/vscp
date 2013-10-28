@@ -1707,7 +1707,8 @@ bool VscpworksApp::readConfiguration( void )
             }
 
 
-        } else if (child->GetName() == wxT("vscpclient")) {
+        } 
+        else if (child->GetName() == wxT("vscpclient")) {
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {

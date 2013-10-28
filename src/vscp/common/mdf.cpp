@@ -1254,13 +1254,13 @@ bool CMDF::parseMDF( wxString& path )
                             else if ( strType.IsSameAs(_("bool")) ) {
                                 pAbstraction->m_nType = type_boolval;
                             }
+                            else if ( strType.IsSameAs(_("char")) ) {
+                                pAbstraction->m_nType = type_int8_t;
+                            }
                             else if ( strType.IsSameAs(_("int8_t")) ) {
                                 pAbstraction->m_nType = type_int8_t;
                             }
                             else if ( strType.IsSameAs(_("byte")) ) {
-                                pAbstraction->m_nType = type_int8_t;
-                            }
-                            else if ( strType.IsSameAs(_("char")) ) {
                                 pAbstraction->m_nType = type_int8_t;
                             }
                             else if ( strType.IsSameAs(_("uint8_t")) ) {
@@ -1270,6 +1270,9 @@ bool CMDF::parseMDF( wxString& path )
                                 pAbstraction->m_nType = type_int16_t;
                             }
                             else if ( strType.IsSameAs(_("short")) ) {
+                                pAbstraction->m_nType = type_int16_t;
+                            }
+                            else if ( strType.IsSameAs(_("integer")) ) {
                                 pAbstraction->m_nType = type_int16_t;
                             }
                             else if ( strType.IsSameAs(_("uint16_t")) ) {
@@ -1304,6 +1307,42 @@ bool CMDF::parseMDF( wxString& path )
                             }
 							else if ( strType.IsSameAs(_("guid")) ) {
                                 pAbstraction->m_nType = type_guid;
+                            }
+                            else if ( strType.IsSameAs(_("index8_int16_t")) ) {
+                                pAbstraction->m_nType = type_index8_int16_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_uint16_t")) ) {
+                                pAbstraction->m_nType = type_index8_uint16_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_int32_t")) ) {
+                                pAbstraction->m_nType = type_guid;
+                            }
+                            else if ( strType.IsSameAs(_("index8_uint32_t")) ) {
+                                pAbstraction->m_nType = type_index8_uint32_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_int64_t")) ) {
+                                pAbstraction->m_nType = type_index8_int64_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_uint64_t")) ) {
+                                pAbstraction->m_nType = type_index8_uint64_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_float")) ) {
+                                pAbstraction->m_nType = type_index8_float;
+                            }
+                            else if ( strType.IsSameAs(_("index8_double")) ) {
+                                pAbstraction->m_nType = type_index8_double;
+                            }
+                            else if ( strType.IsSameAs(_("index8_date")) ) {
+                                pAbstraction->m_nType = type_index8_date;
+                            }
+                            else if ( strType.IsSameAs(_("index8_time")) ) {
+                                pAbstraction->m_nType = type_index8_time;
+                            }
+                            else if ( strType.IsSameAs(_("index8_guid")) ) {
+                                pAbstraction->m_nType = type_index8_guid;
+                            }
+                            else if ( strType.IsSameAs(_("index8_string")) ) {
+                                pAbstraction->m_nType = type_index8_string;
                             }
                             else {
                                 pAbstraction->m_nType = type_unknown;

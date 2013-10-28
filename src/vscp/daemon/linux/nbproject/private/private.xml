@@ -22,22 +22,27 @@
             </bookmark>
             <bookmark id="2">
                 <name/>
-                <line>2997</line>
+                <line>2996</line>
                 <key/>
             </bookmark>
             <bookmark id="4">
                 <name/>
-                <line>4043</line>
+                <line>4042</line>
                 <key/>
             </bookmark>
             <bookmark id="5">
                 <name/>
-                <line>5435</line>
+                <line>5434</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/clientlist.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/tcpipclientthread.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.h</file>
+        </group>
     </open-files>
 </project-private>

@@ -1949,7 +1949,7 @@ bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 		wxStringTokenizer tkz(strGUID, wxT(":"));
 		for (int i = 0; i < 16; i++) {
 			tkz.GetNextToken().ToULong(&val, 16);
-			pEvent->GUID[ 15-i ] = (uint8_t) val;
+			pEvent->GUID[ i ] = (uint8_t) val;
 			// If no tokens left no use to continue
 			if (!tkz.HasMoreTokens()) break;
 		}
@@ -1976,7 +1976,7 @@ bool getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
 		wxStringTokenizer tkz(strGUID, wxT(":"));
 		for (int i = 0; i < 16; i++) {
 			tkz.GetNextToken().ToULong(&val, 16);
-			pEvent->GUID[ 15-i ] = (uint8_t) val;
+			pEvent->GUID[ i ] = (uint8_t) val;
 			// If no tokens left no use to continue
 			if (!tkz.HasMoreTokens()) break;
 		}
@@ -1998,7 +1998,7 @@ bool getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID)
 	wxStringTokenizer tkz(strGUID, wxT(":"));
 	for (int i = 0; i < 16; i++) {
 		tkz.GetNextToken().ToULong(&val, 16);
-		pGUID[ 15-i ] = (uint8_t) val;
+		pGUID[ i ] = (uint8_t) val;
 		// If no tokens left no use to continue
 		if (!tkz.HasMoreTokens()) break;
 	}
@@ -2017,10 +2017,10 @@ bool writeGuidToString(const vscpEvent *pEvent, wxString& strGUID)
 	if (NULL == pEvent) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"),
-			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
-			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
-			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
-			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+			pEvent->GUID[0], pEvent->GUID[1], pEvent->GUID[2], pEvent->GUID[3],
+			pEvent->GUID[4], pEvent->GUID[5], pEvent->GUID[6], pEvent->GUID[7],
+			pEvent->GUID[8], pEvent->GUID[9], pEvent->GUID[10], pEvent->GUID[11],
+			pEvent->GUID[12], pEvent->GUID[13], pEvent->GUID[14], pEvent->GUID[15]);
 
 	return true;
 
@@ -2036,10 +2036,10 @@ bool writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID)
 	if (NULL == pEvent) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"),
-			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
-			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
-			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
-			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+			pEvent->GUID[0], pEvent->GUID[1], pEvent->GUID[2], pEvent->GUID[3],
+			pEvent->GUID[4], pEvent->GUID[5], pEvent->GUID[6], pEvent->GUID[7],
+			pEvent->GUID[8], pEvent->GUID[9], pEvent->GUID[10], pEvent->GUID[11],
+			pEvent->GUID[12], pEvent->GUID[13], pEvent->GUID[14], pEvent->GUID[15]);
 
 	return true;
 
@@ -2055,10 +2055,10 @@ bool writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID)
 	if (NULL == pEvent) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X"),
-			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
-			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
-			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
-			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+			pEvent->GUID[0], pEvent->GUID[1], pEvent->GUID[2], pEvent->GUID[3],
+			pEvent->GUID[4], pEvent->GUID[5], pEvent->GUID[6], pEvent->GUID[7],
+			pEvent->GUID[8], pEvent->GUID[9], pEvent->GUID[10], pEvent->GUID[11],
+			pEvent->GUID[12], pEvent->GUID[13], pEvent->GUID[14], pEvent->GUID[15]);
 
 	return true;
 }
@@ -2073,10 +2073,10 @@ bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID)
 	if (NULL == pEvent) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X"),
-			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
-			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
-			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
-			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+			pEvent->GUID[0], pEvent->GUID[1], pEvent->GUID[2], pEvent->GUID[3],
+			pEvent->GUID[4], pEvent->GUID[5], pEvent->GUID[6], pEvent->GUID[7],
+			pEvent->GUID[8], pEvent->GUID[9], pEvent->GUID[10], pEvent->GUID[11],
+			pEvent->GUID[12], pEvent->GUID[13], pEvent->GUID[14], pEvent->GUID[15]);
 
 	return true;
 }
@@ -2091,10 +2091,10 @@ bool writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID)
 	if (NULL == pGUID) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"),
-			pGUID[15], pGUID[14], pGUID[13], pGUID[12],
-			pGUID[11], pGUID[10], pGUID[9], pGUID[8],
-			pGUID[7], pGUID[6], pGUID[5], pGUID[4],
-			pGUID[3], pGUID[2], pGUID[1], pGUID[0]);
+			pGUID[0], pGUID[1], pGUID[2], pGUID[3],
+			pGUID[4], pGUID[5], pGUID[6], pGUID[7],
+			pGUID[8], pGUID[9], pGUID[10], pGUID[11],
+			pGUID[12], pGUID[13], pGUID[14], pGUID[15]);
 
 	return true;
 

@@ -1298,12 +1298,11 @@ void CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
     addIdToClientMap(pClientItem->m_clientID);
 
     // Set GUID for interface
-    //getIPAddress( m_guid );
     pClientItem->m_guid = m_guid;
-    pClientItem->m_guid.setAt( 0, 0);
-    pClientItem->m_guid.setAt( 1, 0);
-    pClientItem->m_guid.setAt( 2, pClientItem->m_clientID & 0xff );
-    pClientItem->m_guid.setAt( 3, (pClientItem->m_clientID >> 8) & 0xff );
+
+    pClientItem->m_guid.setNicknameID( 0 );
+    pClientItem->m_guid.setClientID( pClientItem->m_clientID );
+
 }
 
 

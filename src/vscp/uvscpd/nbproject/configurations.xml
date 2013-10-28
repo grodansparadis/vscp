@@ -14,6 +14,7 @@
       <itemPath>../../common/dllist.h</itemPath>
       <itemPath>../../common/md5.cpp</itemPath>
       <itemPath>../../common/md5.h</itemPath>
+      <itemPath>../common/mdf.h</itemPath>
       <itemPath>../../common/randPassword.cpp</itemPath>
       <itemPath>../../common/randPassword.h</itemPath>
       <itemPath>../common/version.h</itemPath>
@@ -27,7 +28,6 @@
       <in>base64_enc.c</in>
       <in>sha1.c</in>
       <in>uvscpd.c</in>
-      <in>uvscpd.h</in>
       <in>websocket.c</in>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -57,127 +57,73 @@
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
-          <ccTool>
+          <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
               <pElem>/usr/local/include/wx-2.8</pElem>
-              <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
-          </ccTool>
+          </cTool>
         </makeTool>
       </makefileType>
       <item path="../../common/configfile.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
       </item>
-      <item path="../../common/configfile.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
-      </item>
-      <item path="../../common/crc.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/dllist.c" ex="false" tool="0" flavor2="2">
         <cTool>
         </cTool>
       </item>
-      <item path="../../common/dllist.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../common/md5.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="../../common/md5.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/randPassword.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
       </item>
-      <item path="../../common/randPassword.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/canal.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/version.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/vscp.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/vscp_class.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/vscp_type.h" ex="false" tool="3" flavor2="0">
+      <item path="../common/mdf.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
       </item>
-      <item path="../common/vscphelper.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="base64_enc.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>_FILE_OFFSET_BITS=64</Elem>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-            <Elem>__WXGTK__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <folder path="common">
         <cTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>_FILE_OFFSET_BITS=64</Elem>
             <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
             <Elem>__WXGTK__</Elem>
           </preprocessorList>
-        </cTool>
+        </ccTool>
       </folder>
-      <item path="sha1.c" ex="false" tool="0" flavor2="0">
+      <item path="sha1.c" ex="false" tool="1" flavor2="0">
       </item>
       <item path="uvscpd.c" ex="false" tool="0" flavor2="2">
         <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>_FILE_OFFSET_BITS=64</Elem>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-            <Elem>__WXGTK__</Elem>
-          </preprocessorList>
         </cTool>
-      </item>
-      <item path="uvscpd.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="websocket.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>_FILE_OFFSET_BITS=64</Elem>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-            <Elem>__WXGTK__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
     </conf>
   </confs>

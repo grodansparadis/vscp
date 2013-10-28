@@ -467,7 +467,7 @@ CWrkTread::Entry()
                 pEvent->pdata = NULL;
                 pEvent->sizeData = 0;
 
-                m_guid.setGUID(pEvent->GUID);
+                m_guid.writeGUID(pEvent->GUID);
                 pEvent->vscp_class = m_vscpclass; // VSCP_CLASS1_MEASUREMENT;
                 pEvent->vscp_type = m_vscptype;
 

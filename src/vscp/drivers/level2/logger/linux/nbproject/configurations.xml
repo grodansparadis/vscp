@@ -96,6 +96,11 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
       </item>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">

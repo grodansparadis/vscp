@@ -72,7 +72,6 @@ CClientItem::CClientItem()
     m_bUDPReceiveChannel = false;
 
 	// Nill GUID
-	//memset( m_GUID, 0, 16 );
     m_guid.clear();
 
 	// Nill Level II mask (accept all)
@@ -121,7 +120,7 @@ CClientItem::~CClientItem()
 // CClientList
 //
 // The list is sorted numeric so that messages with higher priority is
-// fetched firts of the double linked list
+// fetched first of the double linked list
 //
 
 CClientList::CClientList()

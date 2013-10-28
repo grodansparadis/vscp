@@ -21,10 +21,8 @@
     </logicalFolder>
     <df root="." name="0">
       <in>mqtt.cpp</in>
-      <in>mqtt.h</in>
       <in>test.c</in>
       <in>vscp2drv_mqtt.cpp</in>
-      <in>vscp2drv_mqtt.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -62,7 +60,9 @@
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
+              <Elem>__PIC__=2</Elem>
               <Elem>__WXGTK__</Elem>
+              <Elem>__pic__=2</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
@@ -74,39 +74,18 @@
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
+              <Elem>__PIC__=2</Elem>
               <Elem>__WXGTK__</Elem>
+              <Elem>__pic__=2</Elem>
             </preprocessorList>
           </ccTool>
         </makeTool>
       </makefileType>
-      <item path="../../../../common/canal.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/canal_macro.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/canal_win32_ipc.h"
-            ex="false"
-            tool="3"
-            flavor2="0">
-      </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../../../common/guid.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/mdf.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp_class.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscp_type.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../../../common/vscphelper.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../../../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
       </item>
       <folder path="common">
         <ccTool>
@@ -117,13 +96,9 @@
       </folder>
       <item path="mqtt.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="mqtt.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="test.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="vscp2drv_mqtt.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="vscp2drv_mqtt.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>
