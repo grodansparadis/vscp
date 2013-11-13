@@ -3596,10 +3596,12 @@ void *deviceThread::Entry()
                     if (wxTHREAD_NO_ERROR != (err = m_pwriteThread->Run())) {
                         ::wxGetApp().logMsg(_("Unable to run device write worker thread."), DAEMON_LOGMSG_CRITICAL);
                     }
-                } else {
+                } 
+                else {
                     ::wxGetApp().logMsg(_("Unable to create device write worker thread."), DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+            else {
                 ::wxGetApp().logMsg(_("Unable to allocate memory for device write worker thread."), DAEMON_LOGMSG_CRITICAL);
             }
 
@@ -3616,10 +3618,12 @@ void *deviceThread::Entry()
                     if (wxTHREAD_NO_ERROR != (err = m_preceiveThread->Run())) {
                         ::wxGetApp().logMsg(_("Unable to run device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
                     }
-                } else {
+                } 
+                else {
                     ::wxGetApp().logMsg(_("Unable to create device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+            else {
                 ::wxGetApp().logMsg(_("Unable to allocate memory for device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
             }
 

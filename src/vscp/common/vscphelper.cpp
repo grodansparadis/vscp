@@ -2492,10 +2492,12 @@ bool convertCanalToEvent(vscpEvent *pvscpEvent,
 			// Assign size (max 8 bytes it's CAN... )
 			pvscpEvent->sizeData = pcanalMsg->sizeData;
 			memcpy(pvscpEvent->pdata, pcanalMsg->data, pcanalMsg->sizeData);
-		} else {
+		} 
+        else {
 			pvscpEvent->sizeData = 0;
 		}
-	} else {
+	} 
+    else {
 		pvscpEvent->pdata = NULL;
 		pvscpEvent->sizeData = 0;
 	}
@@ -2510,7 +2512,7 @@ bool convertCanalToEvent(vscpEvent *pvscpEvent,
 	pvscpEvent->timestamp = pcanalMsg->timestamp;
 
 	// Set nickname id
-	pvscpEvent->GUID[ 0 ] = (unsigned char) (0xff & pcanalMsg->id);
+	pvscpEvent->GUID[ 15 ] = (unsigned char) (0xff & pcanalMsg->id);
 
 	return true;
 }
@@ -2527,9 +2529,9 @@ bool convertCanalToEventEx(vscpEventEx *pvscpEvent,
 	vscpEvent *pEvent = new vscpEvent;
 	convertVSCPfromEx(pEvent, pvscpEvent );
 	bool rv = convertCanalToEvent(pEvent,
-		pcanalMsg,
-		pGUID,
-		bCAN);
+                                    pcanalMsg,
+                                    pGUID,
+                                    bCAN);
 	deleteVSCPevent(pEvent);
 	return rv;
 }

@@ -64,6 +64,8 @@
         </gdb_interceptlist>
         <gdb_options>
           <DebugOptions>
+            <option name="debug_command" value="vscpworks"/>
+            <option name="debug_dir" value="/home/akhe/vscp_software/src/vscp/vscpworks"/>
           </DebugOptions>
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>

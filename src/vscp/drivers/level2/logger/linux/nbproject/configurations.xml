@@ -71,14 +71,12 @@
           <cTool>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
@@ -92,11 +90,12 @@
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="0">
         <cTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
@@ -111,6 +110,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </cTool>
@@ -123,6 +123,7 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
@@ -130,11 +131,12 @@
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
           </preprocessorList>
@@ -143,11 +145,12 @@
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
           </preprocessorList>
@@ -156,11 +159,12 @@
       <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
           </preprocessorList>
@@ -169,11 +173,12 @@
       <item path="../common/log.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
           </preprocessorList>
@@ -193,6 +198,7 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
@@ -200,10 +206,11 @@
       <item path="test.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
           </preprocessorList>
@@ -212,10 +219,11 @@
       <item path="vscpl2_loggerdrv.cpp" ex="false" tool="1" flavor2="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
           </preprocessorList>
@@ -228,6 +236,7 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>

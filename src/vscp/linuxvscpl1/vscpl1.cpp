@@ -200,20 +200,17 @@ extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
 	wxStringTokenizer tkz(strDevice, _(";") );
 
 	// Get possible filter	
-	if ( str = tkz.GetNextToken() ) {
-		if ( 0 != str.Length() ) {
-			if ( str.ToULong( &filter ) ) {
-				bFilter = true;
-			}
+    str = tkz.GetNextToken();
+	if ( 0 != str.Length() ) {
+        if ( str.ToULong( &filter ) ) {
+			bFilter = true;
 		}
 	}
 
 	// Get possible mask
-	if ( str = tkz.GetNextToken() ) {
-		if ( 0 != str.Length() ) {
-			if ( str.ToULong( &mask ) ) {
-				bMask = true;
-			}
+	if ( 0 != str.Length() ) {
+		if ( str.ToULong( &mask ) ) {
+			bMask = true;
 		}
 	}
 	

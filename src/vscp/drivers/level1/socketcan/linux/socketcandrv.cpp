@@ -21,13 +21,7 @@
 // Boston, MA 02111-1307, USA.
 //
 //
-// Linux
-// =====
-// device1 = comport;baudrate;mask;filter;bus-speed;btr0;btr1
-//
-// WIN32
-// =====
-// device1 = comport;baudrate;mask;filter;bus-speed;btr0;btr1
+
 
 #include "socketcandrv.h"
 #include "stdio.h"
@@ -58,7 +52,8 @@ CSocketcanApp::CSocketcanApp()
 {
 	m_instanceCounter = 0;
 	pthread_mutex_init(&m_objMutex, NULL);
-	// Init the driver array
+    
+	// Init. the driver array
 	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
 		m_socketcanArray[ i ] = NULL;
 	}

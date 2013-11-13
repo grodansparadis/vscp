@@ -66,24 +66,24 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
               <Elem>__PIC__=2</Elem>
               <Elem>__WXGTK__</Elem>
@@ -94,21 +94,9 @@
       </makefileType>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="../../../../common/canaldlldef.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/clientlist.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="../../../../common/devicelist.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/devicethread.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../../../common/guid.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../../common/vscpdlldef.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/xapobj.cpp" ex="false" tool="1" flavor2="0">
       </item>
