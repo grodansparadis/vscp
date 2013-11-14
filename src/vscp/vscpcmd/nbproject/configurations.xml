@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="89">
+<configurationDescriptor version="90">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="common"
                    displayName="common"
@@ -21,9 +21,8 @@
       <itemPath>../common/vscptcpif.cpp</itemPath>
       <itemPath>../common/vscptcpif.h</itemPath>
     </logicalFolder>
-    <df root="." name="vscpcmd">
+    <df root="." name="0">
       <in>vscpcmd.cpp</in>
-      <in>vscpcmd.h</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -40,7 +39,6 @@
   <confs>
     <conf name="Default" type="0">
       <toolsSet>
-        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
         <compilerSet>default</compilerSet>
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
@@ -68,12 +66,12 @@
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-release-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
@@ -83,39 +81,17 @@
         <cTool>
         </cTool>
       </item>
-      <item path="../../common/crc.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/canal.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/canal_macro.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/canal_win32_ipc.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="../common/guid.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/mdf.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/vscp.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/vscp_class.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../common/vscp_type.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
       </item>
-      <item path="../common/vscphelper.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
         </ccTool>
-      </item>
-      <item path="../common/vscptcpif.h" ex="false" tool="3" flavor2="0">
       </item>
       <folder path="common">
         <ccTool>
@@ -125,8 +101,6 @@
         </ccTool>
       </folder>
       <item path="vscpcmd.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="vscpcmd.h" ex="false" tool="3" flavor2="0">
       </item>
     </conf>
   </confs>

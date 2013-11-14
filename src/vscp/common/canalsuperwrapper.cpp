@@ -1423,7 +1423,7 @@ bool CCanalSuperWrapper::loadMDF( wxWindow *pwnd,
                                     CMDF *pmdf )
 {
     bool rv = true;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
     wxString remoteFile;
     //uint8_t mdf_url[33];
 
@@ -1464,7 +1464,7 @@ bool CCanalSuperWrapper::loadMDF( wxWindow *pwnd,
         // Load MDF from local file
         wxFileDialog dlg( pwnd,
                             _("Choose file to load MDF from "),
-                            stdpaths.GetUserDataDir(),
+                            wxStandardPaths::Get().GetUserDataDir(),
                             _(""),
                             _("MSF Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
         if ( wxID_OK == dlg.ShowModal() ) {

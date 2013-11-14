@@ -5626,12 +5626,12 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event) {
             // Fetch MDF from local file or server
             if (m_chkMdfFromFile->GetValue()) {
 
-                wxStandardPaths stdpaths;
+                //wxStandardPaths stdpaths;
 
                 // Get MDF from local file
                 wxFileDialog dlg(this,
                         _("Choose file to load MDF from "),
-                        stdpaths.GetUserDataDir(),
+                        wxStandardPaths::Get().GetUserDataDir(),
                         _(""),
                         _("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
 
@@ -5824,12 +5824,12 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event) {
             // Fetch MDF from local file or server
             if (m_chkMdfFromFile->GetValue()) {
 
-                wxStandardPaths stdpaths;
+                //wxStandardPaths stdpaths;
 
                 // Get MDF from local file
                 wxFileDialog dlg(this,
                         _("Choose file to load MDF from "),
-                        stdpaths.GetUserDataDir(),
+                        wxStandardPaths::Get().GetUserDataDir(),
                         _(""),
                         _("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
 
@@ -8215,14 +8215,14 @@ void frmDeviceConfig::dmRowWizard(wxCommandEvent& event) {
 void frmDeviceConfig::OnMenuitemSaveRegistersClick(wxCommandEvent& event) {
 
     wxString str;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
 
     wxBusyCursor wait;
 
     // First find a path to save TX data to
     wxFileDialog dlg(this,
             _("Choose file to save register set to "),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("registerset"),
             _("Register set (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"),
             wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -8287,14 +8287,14 @@ void frmDeviceConfig::OnMenuitemSaveRegistersClick(wxCommandEvent& event) {
 void frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick(wxCommandEvent& event) {
 
     wxString str;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
 
     wxBusyCursor wait;
 
     // First find a path to save TX data to
     wxFileDialog dlg(this,
             _("Choose file to save register set to "),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("registerset"),
             _("Register set (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"),
             wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -8359,13 +8359,13 @@ void frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick(wxCommandEvent& event
 //
 
 void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
     wxXmlDocument doc;
 
     // First find a path to save register set data to
     wxFileDialog dlg(this,
             _("Choose file to load register set from "),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("registerset"),
             _("Register set Files (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
     if (wxID_OK == dlg.ShowModal()) {
@@ -8391,7 +8391,7 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
             if (child->GetName() == wxT("register")) {
 
                 wxString id =
-                        child->GetPropVal(wxT("id"), wxT("-1"));
+                        child->GetAttribute(wxT("id"), wxT("-1"));
                 reg = readStringValue(id);
                 if (-1 == reg) continue;
 
@@ -8570,14 +8570,14 @@ void frmDeviceConfig::OnMenuitemAddGuidsClick(wxCommandEvent& event) {
 
 void frmDeviceConfig::OnMenuitemSaveGuidsClick(wxCommandEvent& event) {
     wxString str;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
 
     wxBusyCursor wait;
 
     // First find a path to save TX data to
     wxFileDialog dlg(this,
             _("Choose file to GUID's to"),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("guidset"),
             _("GUID set Files (*.guid)|*.guid|All files (*.*)|*.*"),
             wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
@@ -8614,13 +8614,13 @@ void frmDeviceConfig::OnMenuitemSaveGuidsClick(wxCommandEvent& event) {
 //
 
 void frmDeviceConfig::OnMenuitemLoadGuidsClick(wxCommandEvent& event) {
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
     wxXmlDocument doc;
 
     // First find a path to save register set data to
     wxFileDialog dlg(this,
             _("Choose file to load register set from "),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("guidset"),
             _("GUID set Files (*.guid)|*.guid|All files (*.*)|*.*"));
 

@@ -192,10 +192,10 @@ void VscpworksApp::Init()
     }
     */
 
-	wxStandardPaths stdPath;
-	g_Config.m_strPathLogFile = stdPath.GetTempDir();
+	//wxStandardPaths stdPath;
+	g_Config.m_strPathLogFile = wxStandardPaths::Get().GetTempDir();
 	g_Config.m_strPathLogFile += _("/vscpworks.log");
-	g_Config.m_strPathTemp = stdPath.GetTempDir();
+	g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
 
     int i,j;
     for ( i=0; i<MAX_NUMBER_OF_NODES; i++ ) {
@@ -1483,15 +1483,15 @@ bool VscpworksApp::readConfiguration( void )
     unsigned long val;
     wxString strcfgfile;
     wxXmlDocument doc;
-    wxStandardPaths strpath;
+    //wxStandardPaths strpath;
 
-    strcfgfile = strpath.GetUserDataDir();
+    strcfgfile = wxStandardPaths::Get().GetUserDataDir();
     strcfgfile += _("/vscpworks.conf");
 
 
     if (!doc.Load( strcfgfile ) ) {
         // test global location
-        strcfgfile = strpath.GetConfigDir() + _("/vscp/vscpworks.conf");
+        strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpworks.conf");
         if (!doc.Load( strcfgfile ) ) {
             return false;
         }
@@ -1559,30 +1559,30 @@ bool VscpworksApp::readConfiguration( void )
 
                     g_Config.m_strPathTemp = subchild->GetNodeContent();
 					if ( 0 == g_Config.m_strPathTemp.Length() ) {
-						wxStandardPaths stdPath;
-						g_Config.m_strPathTemp = stdPath.GetTempDir();
+						//wxStandardPaths stdPath;
+						g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
 					}
 
                 }
                 else if (subchild->GetName() == wxT("path2logfile")) {
 
 					unsigned long val;
-					wxStandardPaths stdPath;
+					//wxStandardPaths stdPath;
 
 					g_Config.m_strPathLogFile = subchild->GetNodeContent();
 					if ( 0 == g_Config.m_strPathLogFile.Length() ) {
-						g_Config.m_strPathTemp = stdPath.GetTempDir();
+						g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
 					}
 
 					// enable/siable
-                    wxString enable = subchild->GetPropVal(wxT("enable"), wxT("false"));
+                    wxString enable = subchild->GetAttribute(wxT("enable"), wxT("false"));
                     if ( enable.IsSameAs(_("true"), false ) ) {
                         g_Config.m_bEnableLog = true;
                     }
 
                     // level
                     g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
-                    wxString level = subchild->GetPropVal(wxT("level"), wxT("0"));
+                    wxString level = subchild->GetAttribute(wxT("level"), wxT("0"));
 					level = level.Upper();
 					if ( wxNOT_FOUND  != level.Find(_("DEBUG")) ) {
 						g_Config.m_logLevel = DAEMON_LOGMSG_DEBUG;
@@ -1720,13 +1720,13 @@ bool VscpworksApp::readConfiguration( void )
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetPropVal(wxT("r"), wxT("0"));
+                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetPropVal(wxT("g"), wxT("0"));
+                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetPropVal(wxT("b"), wxT("0"));
+                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
                     bval = readStringValue( b );	
 
                     // Assign the colours
@@ -1738,13 +1738,13 @@ bool VscpworksApp::readConfiguration( void )
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetPropVal(wxT("r"), wxT("0"));
+                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetPropVal(wxT("g"), wxT("0"));
+                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetPropVal(wxT("b"), wxT("0"));
+                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
                     bval = readStringValue( b );
 
                     // Assign the colours
@@ -1756,13 +1756,13 @@ bool VscpworksApp::readConfiguration( void )
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetPropVal(wxT("r"), wxT("0"));
+                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetPropVal(wxT("g"), wxT("0"));
+                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetPropVal(wxT("b"), wxT("0"));
+                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
                     bval = readStringValue( b );
 
                     // Assign the colours
@@ -1774,13 +1774,13 @@ bool VscpworksApp::readConfiguration( void )
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetPropVal(wxT("r"), wxT("0"));
+                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetPropVal(wxT("g"), wxT("0"));
+                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetPropVal(wxT("b"), wxT("0"));
+                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
                     bval = readStringValue( b );
 
                     // Assign the colours
@@ -1792,13 +1792,13 @@ bool VscpworksApp::readConfiguration( void )
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetPropVal(wxT("r"), wxT("0"));
+                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetPropVal(wxT("g"), wxT("0"));
+                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetPropVal(wxT("b"), wxT("0"));
+                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
                     bval = readStringValue( b );
 
                     // Assign the colours
@@ -2177,18 +2177,18 @@ bool VscpworksApp::readConfiguration( void )
                             getGuidFromStringToArray( pVSCPif->m_GUID, str );
                         }
                         else if (subsubchild->GetName() == wxT("filter")) {
-                            pVSCPif->m_vscpfilter.filter_priority = readStringValue( subsubchild->GetPropVal( wxT( "priority" ), wxT("0") ) );
-                            pVSCPif->m_vscpfilter.filter_class = readStringValue( subsubchild->GetPropVal( wxT( "class" ), wxT("0") ) );
-                            pVSCPif->m_vscpfilter.filter_type = readStringValue( subsubchild->GetPropVal( wxT( "type" ), wxT("0") ) );
-                            wxString strGUID = subsubchild->GetPropVal ( wxT( "GUID" ), 
+                            pVSCPif->m_vscpfilter.filter_priority = readStringValue( subsubchild->GetAttribute( wxT( "priority" ), wxT("0") ) );
+                            pVSCPif->m_vscpfilter.filter_class = readStringValue( subsubchild->GetAttribute( wxT( "class" ), wxT("0") ) );
+                            pVSCPif->m_vscpfilter.filter_type = readStringValue( subsubchild->GetAttribute( wxT( "type" ), wxT("0") ) );
+                            wxString strGUID = subsubchild->GetAttribute ( wxT( "GUID" ), 
                                 wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                             getGuidFromStringToArray( pVSCPif->m_vscpfilter.filter_GUID, strGUID );
                         }
                         else if (subsubchild->GetName() == wxT("mask")) {
-                            pVSCPif->m_vscpfilter.mask_priority = readStringValue( subsubchild->GetPropVal( wxT( "priority" ), wxT("0") ) );
-                            pVSCPif->m_vscpfilter.mask_class = readStringValue( subsubchild->GetPropVal( wxT( "class" ), wxT("0") ) );
-                            pVSCPif->m_vscpfilter.mask_type = readStringValue( subsubchild->GetPropVal( wxT( "type" ), wxT("0") ) );
-                            wxString strGUID = subsubchild->GetPropVal ( wxT( "GUID" ), 
+                            pVSCPif->m_vscpfilter.mask_priority = readStringValue( subsubchild->GetAttribute( wxT( "priority" ), wxT("0") ) );
+                            pVSCPif->m_vscpfilter.mask_class = readStringValue( subsubchild->GetAttribute( wxT( "class" ), wxT("0") ) );
+                            pVSCPif->m_vscpfilter.mask_type = readStringValue( subsubchild->GetAttribute( wxT( "type" ), wxT("0") ) );
+                            wxString strGUID = subsubchild->GetAttribute ( wxT( "GUID" ), 
                                 wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                             getGuidFromStringToArray( pVSCPif->m_vscpfilter.mask_GUID, strGUID );
                         }
@@ -2230,9 +2230,9 @@ bool VscpworksApp::writeConfiguration( void )
     int i;
     wxString strcfgfile;
     wxString buf;
-    wxStandardPaths strpath;
+    //wxStandardPaths strpath;
 
-    strcfgfile = strpath.GetUserDataDir();
+    strcfgfile = wxStandardPaths::Get().GetUserDataDir();
     strcfgfile += _("/vscpworks.conf");
 
 	// Backup
@@ -3693,7 +3693,7 @@ bool VscpworksApp::loadMDF( wxWindow *pwnd,
                                 uint8_t *pid )
 {
     bool rv = true;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
     wxString remoteFile;
     uint8_t mdf_url[33];
 
@@ -3754,7 +3754,7 @@ bool VscpworksApp::loadMDF( wxWindow *pwnd,
         // Load MDF from local file
         wxFileDialog dlg( pwnd,
                             _("Choose file to load MDF from "),
-                            stdpaths.GetUserDataDir(),
+                            wxStandardPaths::Get().GetUserDataDir(),
                             _(""),
                             _("MSF Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
         if ( wxID_OK == dlg.ShowModal() ) {

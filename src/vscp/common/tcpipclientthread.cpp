@@ -299,7 +299,7 @@ void *TcpClientThread::Entry()
     while ( !TestDestroy() && m_bRun && !m_bQuit ) {
 
         // Check if command already in buffer
-        if ( wxNOT_FOUND == ( pos4lf = wxstr.Find ( 0x0a ) ) ) {
+        if ( wxNOT_FOUND == ( pos4lf = wxstr.Find ( (const char)0x0a ) ) ) {
             
             // Read new data
             memset( rbuf, 0, sizeof( rbuf ) );                  // nil rbuf
@@ -1534,14 +1534,14 @@ bool TcpClientThread::handleClientPassword ( void )
     if ( NULL == md5.getDigest() ) return false; 
     wxString md5Password = wxString( md5.getDigest(), wxConvUTF8 );
     m_pCtrlObject->m_mutexUserList.Lock();
-    ::wxLogDebug ( _("Username: ") + m_wxUserName );
-    ::wxLogDebug ( _("Password: ") + strPassword );
-    ::wxLogDebug ( _("MD5 of Password: ") + md5Password );
+    //::wxLogDebug( _("Username: ") + m_wxUserName );
+    //::wxLogDebug( _("Password: ") + strPassword );
+    //::wxLogDebug( _("MD5 of Password: ") + md5Password );
     m_pUserItem = m_pCtrlObject->m_userList.checkUser( m_wxUserName, md5Password );
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( NULL == m_pUserItem ) {
-        ::wxLogDebug ( _("Password/Username failure.") );
+        //::wxLogDebug ( _("Password/Username failure.") );
         m_pClientSocket->Write ( MSG_PASSWORD_ERROR,
             strlen ( MSG_PASSWORD_ERROR ) );
         return false;
@@ -2389,10 +2389,10 @@ void TcpClientThread::handleVariable_Load()
 void TcpClientThread::handleVariable_Save()
 {
     wxString path;
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default variable configuration path
-    path = stdPath.GetConfigDir();
+    path = wxStandardPaths::Get().GetConfigDir();
     path += _("/vscp/variable.xml");
 
     m_pCtrlObject->m_VSCP_Variables.save( path );

@@ -1393,12 +1393,12 @@ void frmMDFEditor::OnToolNewClick( wxCommandEvent& event )
 void frmMDFEditor::OnToolLoadClick( wxCommandEvent& event )
 {
     wxString localMDF;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
     
     // Load MDF from local file
     wxFileDialog dlg( this,
                         _("Choose file to load MDF from "),
-                        stdpaths.GetUserDataDir(),
+                        wxStandardPaths::Get().GetUserDataDir(),
                         _(""),
                         _("MSF Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
     if ( wxID_OK == dlg.ShowModal() ) {

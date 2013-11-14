@@ -132,7 +132,7 @@ void *actionThreadURL::Entry()
             wxstr += wxT("User-Agent: VSCPD/1.0\n");
             wxstr += wxT("Content-Type: application/x-www-form-urlencoded\n");
             wxstr += wxT("Content-Length: ");
-            wxstr += m_putdata.Length();
+            wxstr += wxString::Format(_("%d"),m_putdata.Length());
             wxstr += wxT("\n\n");
             wxstr += m_putdata;
             wxstr += wxT("\n");
@@ -1121,7 +1121,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 {
     int pos;
     wxString strResult;
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     while ( wxNOT_FOUND != ( pos = str.Find( wxT("%") ) ) ) {
 
@@ -1330,47 +1330,47 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for path_config escape
             else if ( str.StartsWith( wxT("%path_config"), &str ) ) {
-                strResult += stdPath.GetConfigDir();
+                strResult += wxStandardPaths::Get().GetConfigDir();
             }
             // Check for path_datadir escape
             else if ( str.StartsWith( wxT("%path_datadir"), &str ) ) {
-                strResult += stdPath.GetDataDir();
+                strResult += wxStandardPaths::Get().GetDataDir();
             }
             // Check for path_documentsdir escape
             else if ( str.StartsWith( wxT("%path_documentsdir"), &str ) ) {
-                strResult += stdPath.GetDocumentsDir();
+                strResult += wxStandardPaths::Get().GetDocumentsDir();
             }
             // Check for path_executable escape
             else if ( str.StartsWith( wxT("%path_executable"), &str ) ) {
-                strResult += stdPath.GetExecutablePath();
+                strResult += wxStandardPaths::Get().GetExecutablePath();
             }
             // Check for path_localdatadir escape
             else if ( str.StartsWith( wxT("%path_localdatadir"), &str ) ) {
-                strResult += stdPath.GetLocalDataDir();
+                strResult += wxStandardPaths::Get().GetLocalDataDir();
             }
             // Check for path_pluginsdir escape
             else if ( str.StartsWith( wxT("%path_pluginsdir"), &str ) ) {
-                strResult += stdPath.GetPluginsDir();
+                strResult += wxStandardPaths::Get().GetPluginsDir();
             }
             // Check for path_resourcedir escape
             else if ( str.StartsWith( wxT("%path_resourcedir"), &str ) ) {
-                strResult += stdPath.GetResourcesDir();
+                strResult += wxStandardPaths::Get().GetResourcesDir();
             }
             // Check for path_tempdir escape
             else if ( str.StartsWith( wxT("%path_tempdir"), &str ) ) {
-                strResult += stdPath.GetTempDir();
+                strResult += wxStandardPaths::Get().GetTempDir();
             }
             // Check for path_userconfigdir escape
             else if ( str.StartsWith( wxT("%path_userconfigdir"), &str ) ) {
-                strResult += stdPath.GetUserConfigDir();
+                strResult += wxStandardPaths::Get().GetUserConfigDir();
             }
             // Check for path_userdatadir escape
             else if ( str.StartsWith( wxT("%path_userdatadir"), &str ) ) {
-                strResult += stdPath.GetUserDataDir();
+                strResult += wxStandardPaths::Get().GetUserDataDir();
             }
             // Check for path_localdatadir escape
             else if ( str.StartsWith( wxT("%path_localdatadir"), &str ) ) {
-                strResult += stdPath.GetUserLocalDataDir();
+                strResult += wxStandardPaths::Get().GetUserLocalDataDir();
             }
             // Check for toliveafter
             else if ( str.StartsWith( wxT("%toliveafter"), &str ) ) {
@@ -2462,11 +2462,11 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
 CDM::CDM( CControlObject *ctrlObj )
 {
 #ifndef BUILD_VSCPD_SERVICE
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
 #ifdef WIN32	
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
 	m_configPath = _("/srv/vscp/dm.xml");
@@ -2594,10 +2594,10 @@ bool CDM::load ( void )
     m_configPath = stdPath.GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #endif
 
@@ -2643,7 +2643,7 @@ bool CDM::load ( void )
             bool bEnabled = false;
 
             // Check if row is enabled
-            wxString strEnabled = child->GetPropVal( wxT( "enabled" ), wxT("false") );
+            wxString strEnabled = child->GetAttribute( wxT( "enabled" ), wxT("false") );
             strEnabled.MakeUpper();
             if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
                 pDMitem->enable();
@@ -2654,7 +2654,7 @@ bool CDM::load ( void )
             }
 
             // Get group id
-            pDMitem->m_strGroupID = child->GetPropVal( wxT( "groupid" ), wxT("") );
+            pDMitem->m_strGroupID = child->GetAttribute( wxT( "groupid" ), wxT("") );
 
             // add the DM row to the matrix
             addElement ( pDMitem );
@@ -2664,25 +2664,25 @@ bool CDM::load ( void )
 
                 if ( subchild->GetName() == wxT ( "mask" ) ) {
                     wxString str;
-                    str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );
+                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
                     pDMitem->m_vscpfilter.mask_priority = readStringValue( str );
-                    str = subchild->GetPropVal( wxT( "class" ), wxT("0") );
+                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
                     pDMitem->m_vscpfilter.mask_class = readStringValue( str );
-                    str = subchild->GetPropVal( wxT( "type" ), wxT("0") );
+                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
                     pDMitem->m_vscpfilter.mask_type = readStringValue( str );
-                    wxString strGUID = subchild->GetPropVal( wxT( "GUID" ), 
+                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
                         wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "filter" ) ) {
                     wxString str;
-                    str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );
+                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
                     pDMitem->m_vscpfilter.filter_priority = readStringValue( str );
-                    str = subchild->GetPropVal( wxT( "class" ), wxT("0") );
+                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
                     pDMitem->m_vscpfilter.filter_class = readStringValue( str );
-                    str = subchild->GetPropVal( wxT( "type" ), wxT("0") );
+                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
                     pDMitem->m_vscpfilter.filter_type = readStringValue( str );
-                    wxString strGUID = subchild->GetPropVal( wxT( "GUID" ), 
+                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
                         wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
                 }
@@ -2723,7 +2723,7 @@ bool CDM::load ( void )
                 }
                 else if ( subchild->GetName() == wxT ( "index" ) ) {
                     wxString str;
-                    str = subchild->GetPropVal( wxT( "bMeasurement" ), wxT("false") );
+                    str = subchild->GetAttribute( wxT( "bMeasurement" ), wxT("false") );
                     str.MakeUpper();
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bMeasurement = true;
@@ -2771,10 +2771,10 @@ bool CDM::save ( void )
     m_configPath = stdPath.GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #endif
 

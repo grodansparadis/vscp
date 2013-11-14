@@ -4505,11 +4505,11 @@ frmMain::~frmMain()
 void frmMain::Init()
 {
     // Create local appdir if it does not exist yet
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
 
-    if ( !::wxDirExists( stdpaths.GetUserDataDir() ) ) {
-        if ( !::wxMkdir( stdpaths.GetUserDataDir() ) ) {
-            wxMessageBox(_("Failed to create directory. ") + stdpaths.GetUserDataDir() );
+    if ( !::wxDirExists( wxStandardPaths::Get().GetUserDataDir() ) ) {
+        if ( !::wxMkdir( wxStandardPaths::Get().GetUserDataDir() ) ) {
+            wxMessageBox(_("Failed to create directory. ") + wxStandardPaths::Get().GetUserDataDir() );
         }
     }
 

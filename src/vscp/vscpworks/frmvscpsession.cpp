@@ -1811,7 +1811,7 @@ void frmVSCPSession::OnSelectCell(wxGridEvent& event)
 void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
 {
     wxString str;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
     wxXmlDocument doc;
 
 
@@ -1837,7 +1837,7 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
     // First find a path to read RX data from
     wxFileDialog dlg(this,
             _("Choose file to load events from "),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("rxevents"),
             _("RX Data Files (*.txd)|*.rxd|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
     if (wxID_OK == dlg.ShowModal()) {
@@ -1964,12 +1964,12 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
 void frmVSCPSession::SaveRXEventList(wxCommandEvent& event)
 {
     wxString str;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
 
     // First find a path to save RX data to
     wxFileDialog dlg(this,
             _("Please choose a file to save received events to "),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("rxevents"),
             _("RX Data Files (*.txd)|*.rxd|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
     if (wxID_OK == dlg.ShowModal()) {
@@ -2583,7 +2583,7 @@ void frmVSCPSession::OnTxDeleteClick(wxCommandEvent& event)
 void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
 {
     wxString str;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
     wxXmlDocument doc;
 
     wxBusyCursor wait;
@@ -2613,7 +2613,7 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
     // First find a path to save TX data to
     wxFileDialog dlg(this,
             _("Choose file to load transmission set from "),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("txset"),
             _("TX Data Files (*.txd)|*.txd|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
     if (wxID_OK == dlg.ShowModal()) {
@@ -2662,7 +2662,7 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
                         str = subchild->GetNodeContent();
                         setVscpPriority(&pObj->m_Event, readStringValue(str));
                     } else if (subchild->GetName() == wxT("guid")) {
-                        wxString property = subchild->GetPropVal(wxT("default"), wxT("false"));
+                        wxString property = subchild->GetAttribute(wxT("default"), wxT("false"));
                         if (property.IsSameAs(_("true"), false)) {
                             pObj->m_bUseDefaultGUID = true;
                         } else {
@@ -2713,14 +2713,14 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
 void frmVSCPSession::OnTxSaveClick(wxCommandEvent& event)
 {
     wxString str;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
 
     wxBusyCursor wait;
 
     // First find a path to save TX data to
     wxFileDialog dlg(this,
             _("Choose file to save transmission set to "),
-            stdpaths.GetUserDataDir(),
+            wxStandardPaths::Get().GetUserDataDir(),
             _("txset"),
             _("TX Data Files (*.txd)|*.txd|XML Files (*.xml)|*.xml|All files (*.*)|*.*"),
             wxFD_SAVE | wxFD_OVERWRITE_PROMPT);

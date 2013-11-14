@@ -121,9 +121,9 @@ int main(int argc, char **argv)
 	
 	gpobj = new CControlObject();
 
-	wxStandardPaths strpath;
+	//wxStandardPaths *strpath = wxStandardPaths::Get();
 	//strcfgFile =  _("/etc/vscp/vscpd.conf" );     // default config path
-	strcfgfile = strpath.GetConfigDir() + _("/vscp/vscpd.conf");
+	strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpd.conf");
 	gbStopDaemon = false;
 
 
