@@ -1,6 +1,7 @@
 release notes for release 0.4.0 Fluorine
 ========================================
 
+2013-11-14 - AKHE VSCP & Friends now compiles with wxWidgets 3.0.0 also, the latest greatest.
 2013-10-21 - AKHE Fixed bug in vscpd that set Level II send GUID's wrong.
 		  Socket CAN driver now send Level I events as expected 
 			instead of class2 Level I events.
