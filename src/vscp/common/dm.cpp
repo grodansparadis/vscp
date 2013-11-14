@@ -2643,7 +2643,11 @@ bool CDM::load ( void )
             bool bEnabled = false;
 
             // Check if row is enabled
+#if wxCHECK_VERSION(3,0,0)            
             wxString strEnabled = child->GetAttribute( wxT( "enabled" ), wxT("false") );
+#else
+            wxString strEnabled = child->GetPropVal( wxT( "enabled" ), wxT("false") );            
+#endif             
             strEnabled.MakeUpper();
             if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
                 pDMitem->enable();
@@ -2654,8 +2658,12 @@ bool CDM::load ( void )
             }
 
             // Get group id
+#if wxCHECK_VERSION(3,0,0)            
             pDMitem->m_strGroupID = child->GetAttribute( wxT( "groupid" ), wxT("") );
-
+#else
+            pDMitem->m_strGroupID = child->GetPropVal( wxT( "groupid" ), wxT("") );            
+#endif
+            
             // add the DM row to the matrix
             addElement ( pDMitem );
 
@@ -2664,26 +2672,58 @@ bool CDM::load ( void )
 
                 if ( subchild->GetName() == wxT ( "mask" ) ) {
                     wxString str;
+#if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.mask_priority = readStringValue( str );
+#if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "class" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.mask_class = readStringValue( str );
+#if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "type" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.mask_type = readStringValue( str );
+#if wxCHECK_VERSION(3,0,0)                    
                     wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
-                        wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+#else
+                    wxString strGUID = subchild->GetPropVal( wxT( "GUID" ),            
+#endif                    
+                            wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "filter" ) ) {
                     wxString str;
+#if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.filter_priority = readStringValue( str );
+#if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "class" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.filter_class = readStringValue( str );
+#if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "type" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.filter_type = readStringValue( str );
+#if wxCHECK_VERSION(3,0,0)                    
                     wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
-                        wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+#else
+                    wxString strGUID = subchild->GetPropVal( wxT( "GUID" ),            
+#endif                    
+                            wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "control" ) ) {
@@ -2723,7 +2763,11 @@ bool CDM::load ( void )
                 }
                 else if ( subchild->GetName() == wxT ( "index" ) ) {
                     wxString str;
+#if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "bMeasurement" ), wxT("false") );
+#else
+                    str = subchild->GetPropVal( wxT( "bMeasurement" ), wxT("false") );            
+#endif                    
                     str.MakeUpper();
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bMeasurement = true;

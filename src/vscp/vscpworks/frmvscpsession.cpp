@@ -2662,7 +2662,11 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
                         str = subchild->GetNodeContent();
                         setVscpPriority(&pObj->m_Event, readStringValue(str));
                     } else if (subchild->GetName() == wxT("guid")) {
+#if wxCHECK_VERSION(3,0,0)                        
                         wxString property = subchild->GetAttribute(wxT("default"), wxT("false"));
+#else
+                        wxString property = subchild->GetPropVal(wxT("default"), wxT("false"));                        
+#endif                        
                         if (property.IsSameAs(_("true"), false)) {
                             pObj->m_bUseDefaultGUID = true;
                         } else {

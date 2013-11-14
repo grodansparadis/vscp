@@ -781,7 +781,11 @@ bool CVariableStorage::load( void )
             bArray = false;
 
             // Get variable type - String is default
+#if wxCHECK_VERSION(3,0,0)            
             pVar->setType( pVar->getVariableTypeFromString( child->GetAttribute( wxT("type"), wxT("string") ) ) );  
+#else
+            pVar->setType( pVar->getVariableTypeFromString( child->GetPropVal( wxT("type"), wxT("string") ) ) );
+#endif             
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {

@@ -8391,7 +8391,11 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
             if (child->GetName() == wxT("register")) {
 
                 wxString id =
+#if wxCHECK_VERSION(3,0,0)                        
                         child->GetAttribute(wxT("id"), wxT("-1"));
+#else
+                        child->GetPropVal(wxT("id"), wxT("-1"));
+#endif                       
                 reg = readStringValue(id);
                 if (-1 == reg) continue;
 

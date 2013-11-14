@@ -1498,20 +1498,20 @@ bool VscpworksApp::readConfiguration( void )
     }
 
     // start processing the XML file
-    if ( doc.GetRoot()->GetName() != wxT("vscpworksconfig") ) {
+    if ( doc.GetRoot()->GetName() != _("vscpworksconfig") ) {
         return false;
     }
 
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while (child) {
 
-        if (child->GetName() == wxT("general")) {
+        if (child->GetName() == _("general")) {
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
                 g_Config.m_strPathTemp = _("/tmp");
-                if (subchild->GetName() == wxT("width")) {
+                if (subchild->GetName() == _("width")) {
 
                     unsigned long val;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
@@ -1524,7 +1524,7 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("height")) {
+                else if (subchild->GetName() == _("height")) {
 
                     unsigned long val;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
@@ -1537,7 +1537,7 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("xpos")) {
+                else if (subchild->GetName() == _("xpos")) {
 
                     unsigned long val;
                     g_Config.m_xpos = 0;
@@ -1546,7 +1546,7 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("ypos")) {
+                else if (subchild->GetName() == _("ypos")) {
 
                     unsigned long val;
                     g_Config.m_ypos = 0;
@@ -1555,7 +1555,7 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("path2tempfiles")) {
+                else if (subchild->GetName() == _("path2tempfiles")) {
 
                     g_Config.m_strPathTemp = subchild->GetNodeContent();
 					if ( 0 == g_Config.m_strPathTemp.Length() ) {
@@ -1564,7 +1564,7 @@ bool VscpworksApp::readConfiguration( void )
 					}
 
                 }
-                else if (subchild->GetName() == wxT("path2logfile")) {
+                else if (subchild->GetName() == _("path2logfile")) {
 
 					unsigned long val;
 					//wxStandardPaths stdPath;
@@ -1574,15 +1574,23 @@ bool VscpworksApp::readConfiguration( void )
 						g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
 					}
 
-					// enable/siable
-                    wxString enable = subchild->GetAttribute(wxT("enable"), wxT("false"));
+					// enable/disable
+#if wxCHECK_VERSION(3,0,0)                      
+                    wxString enable = subchild->GetAttribute(_("enable"), _("false"));
+#else 
+                    wxString enable = subchild->GetPropVal(_("enable"), _("false"));
+#endif                    
                     if ( enable.IsSameAs(_("true"), false ) ) {
                         g_Config.m_bEnableLog = true;
                     }
 
                     // level
                     g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
-                    wxString level = subchild->GetAttribute(wxT("level"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString level = subchild->GetAttribute(_("level"), _("0"));
+#else 
+                    wxString level = subchild->GetPropVal(_("level"), _("0"));
+#endif                       
 					level = level.Upper();
 					if ( wxNOT_FOUND  != level.Find(_("DEBUG")) ) {
 						g_Config.m_logLevel = DAEMON_LOGMSG_DEBUG;
@@ -1613,7 +1621,7 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("RegisterReadResendTimeout")) {
+                else if (subchild->GetName() == _("RegisterReadResendTimeout")) {
 
                     unsigned long val;
                     g_Config.m_VscpRegisterReadResendTimeout = VSCP_REGISTER_READ_RESEND_TIMEOUT;
@@ -1622,7 +1630,7 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("RegisterReadErrorTimeout")) {
+                else if (subchild->GetName() == _("RegisterReadErrorTimeout")) {
 
                     unsigned long val;
                     g_Config.m_VscpRegisterReadErrorTimeout = VSCP_REGISTER_READ_ERROR_TIMEOUT;
@@ -1631,7 +1639,7 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("RegisterReadMaxRetries")) {
+                else if (subchild->GetName() == _("RegisterReadMaxRetries")) {
 
                     unsigned long val;
                     g_Config.m_VscpRegisterReadMaxRetries = VSCP_REGISTER_READ_MAX_TRIES;
@@ -1641,7 +1649,7 @@ bool VscpworksApp::readConfiguration( void )
 
                 }
 
-				else if (subchild->GetName() == wxT("NumberBase")) {
+				else if (subchild->GetName() == _("NumberBase")) {
 
                     g_Config.m_Numberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
 					wxString str = subchild->GetNodeContent();
@@ -1657,7 +1665,7 @@ bool VscpworksApp::readConfiguration( void )
 					}
 
                 }
-				else if (subchild->GetName() == wxT("ConfirmDelete")) {
+				else if (subchild->GetName() == _("ConfirmDelete")) {
 
                     g_Config.m_bConfirmDelete = true;
 					wxString str = subchild->GetNodeContent();
@@ -1670,7 +1678,7 @@ bool VscpworksApp::readConfiguration( void )
 					}
 
                 }
-				else if (subchild->GetName() == wxT("loglevel")) {
+				else if (subchild->GetName() == _("loglevel")) {
 
                     g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
 					wxString str = subchild->GetNodeContent();
@@ -1708,108 +1716,168 @@ bool VscpworksApp::readConfiguration( void )
 
 
         } 
-        else if (child->GetName() == wxT("vscpclient")) {
+        else if (child->GetName() == _("vscpclient")) {
 
             wxXmlNode *subchild = child->GetChildren();
             while ( subchild ) {
 
 
-                if (subchild->GetName() == wxT("VscpRcvFrameRxTextColour")) {
+                if (subchild->GetName() == _("VscpRcvFrameRxTextColour")) {
 
                     unsigned long rval = 0;
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString r = subchild->GetAttribute(_("r"), _("0"));
+#else 
+                    wxString r = subchild->GetPropVal(_("r"), _("0"));
+#endif                       
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString g = subchild->GetAttribute(_("g"), _("0"));
+#else 
+                    wxString g = subchild->GetPropVal(_("g"), _("0"));
+#endif                       
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString b = subchild->GetAttribute(_("b"), _("0"));
+#else 
+                    wxString b = subchild->GetPropVal(_("b"), _("0"));
+#endif                       
                     bval = readStringValue( b );	
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameRxTextColour = wxColour(rval, gval, bval );
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFrameRxBgColour")) {
+                else if (subchild->GetName() == _("VscpRcvFrameRxBgColour")) {
 
                     unsigned long rval = 0;
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString r = subchild->GetAttribute(_("r"), _("0"));
+#else 
+                    wxString r = subchild->GetPropVal(_("r"), _("0"));
+#endif                       
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString g = subchild->GetAttribute(_("g"), _("0"));
+#else 
+                    wxString g = subchild->GetPropVal(_("g"), _("0"));
+#endif                       
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString b = subchild->GetAttribute(_("b"), _("0"));
+#else 
+                    wxString b = subchild->GetPropVal(_("b"), _("0"));
+#endif                       
                     bval = readStringValue( b );
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameRxBgColour = wxColour(rval, gval, bval );          
                 }
-                if (subchild->GetName() == wxT("VscpRcvFrameTxTextColour")) {
+                if (subchild->GetName() == _("VscpRcvFrameTxTextColour")) {
 
                     unsigned long rval = 0;
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString r = subchild->GetAttribute(_("r"), _("0"));
+#else 
+                    wxString r = subchild->GetPropVal(_("r"), _("0"));
+#endif                       
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString g = subchild->GetAttribute(_("g"), _("0"));
+#else 
+                    wxString g = subchild->GetPropVal(_("g"), _("0"));
+#endif                       
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString b = subchild->GetAttribute(_("b"), _("0"));
+#else 
+                    wxString b = subchild->GetPropVal(_("b"), _("0"));
+#endif                       
                     bval = readStringValue( b );
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameTxTextColour = wxColour(rval, gval, bval );
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFrameTxBgColour")) {
+                else if (subchild->GetName() == _("VscpRcvFrameTxBgColour")) {
 
                     unsigned long rval = 0;
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString r = subchild->GetAttribute(_("r"), _("0"));
+#else 
+                    wxString r = subchild->GetPropVal(_("r"), _("0"));
+#endif                       
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString g = subchild->GetAttribute(_("g"), _("0"));
+#else 
+                    wxString g = subchild->GetPropVal(_("g"), _("0"));
+#endif                       
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString b = subchild->GetAttribute(_("b"), _("0"));
+#else 
+                    wxString b = subchild->GetPropVal(_("b"), _("0"));
+#endif                       
                     bval = readStringValue( b );
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameTxBgColour = wxColour(rval, gval, bval );          
                 }					
-                else if (subchild->GetName() == wxT("VscpRcvFrameLineColour")) {
+                else if (subchild->GetName() == _("VscpRcvFrameLineColour")) {
 
                     unsigned long rval = 0;
                     unsigned long gval = 0;
                     unsigned long bval = 0;
 
-                    wxString r = subchild->GetAttribute(wxT("r"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString r = subchild->GetAttribute(_("r"), _("0"));
+#else 
+                    wxString r = subchild->GetPropVal(_("r"), _("0"));
+#endif                       
                     rval = readStringValue( r );		
 
-                    wxString g = subchild->GetAttribute(wxT("g"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString g = subchild->GetAttribute(_("g"), _("0"));
+#else 
+                    wxString g = subchild->GetPropVal(_("g"), _("0"));
+#endif                       
                     gval = readStringValue( g );	
 
-                    wxString b = subchild->GetAttribute(wxT("b"), wxT("0"));
+#if wxCHECK_VERSION(3,0,0)                     
+                    wxString b = subchild->GetAttribute(_("b"), _("0"));
+#else 
+                    wxString b = subchild->GetPropVal(_("b"), _("0"));
+#endif                       
                     bval = readStringValue( b );
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameLineColour = wxColour(rval, gval, bval );          
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFrameFont")) {
+                else if (subchild->GetName() == _("VscpRcvFrameFont")) {
                     // 8, wxDEFAULT, wxNORMAL, wxBOLD
                     // size, family, style, weight
                     wxString str = subchild->GetNodeContent();
                 }
-                else if (subchild->GetName() == wxT("Autoscroll")) {
+                else if (subchild->GetName() == _("Autoscroll")) {
                     wxString str = subchild->GetNodeContent();
                     if ( wxNOT_FOUND != str.Find(_("true")) ) {
                         g_Config.m_bAutoscollRcv = true;
@@ -1818,7 +1886,7 @@ bool VscpworksApp::readConfiguration( void )
                         g_Config.m_bAutoscollRcv = false;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpRcvPyjamasStyle")) {
+                else if (subchild->GetName() == _("VscpRcvPyjamasStyle")) {
                     wxString str = subchild->GetNodeContent();
                     if ( wxNOT_FOUND != str.Find(_("true")) ) {
                         g_Config.m_VscpRcvFrameRxbPyamas = true;
@@ -1827,7 +1895,7 @@ bool VscpworksApp::readConfiguration( void )
                         g_Config.m_VscpRcvFrameRxbPyamas = false;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpUseSymbolicNames")) {
+                else if (subchild->GetName() == _("VscpUseSymbolicNames")) {
                     wxString str = subchild->GetNodeContent();
                     if ( wxNOT_FOUND != str.Find(_("true")) ) {
                         g_Config.m_UseSymbolicNames = true;
@@ -1836,7 +1904,7 @@ bool VscpworksApp::readConfiguration( void )
                         g_Config.m_UseSymbolicNames = false;
                     }
                 }          
-                else if (subchild->GetName() == wxT("VscpRcvRowLineHeight")) {
+                else if (subchild->GetName() == _("VscpRcvRowLineHeight")) {
 
                     unsigned long val;
                     g_Config.m_VscpRcvFrameRowLineHeight = VCSP_RSCV_FIELD_DEFAULT_HEIGHT;
@@ -1845,212 +1913,212 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("VscpRcvShowField0")) {
+                else if (subchild->GetName() == _("VscpRcvShowField0")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpRcvShowField[0] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpRcvShowField1")) {
+                else if (subchild->GetName() == _("VscpRcvShowField1")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpRcvShowField[1] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpRcvShowField2")) {
+                else if (subchild->GetName() == _("VscpRcvShowField2")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpRcvShowField[2] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpRcvShowField3")) {
+                else if (subchild->GetName() == _("VscpRcvShowField3")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpRcvShowField[3] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldText0")) {
+                else if (subchild->GetName() == _("VscpRcvFieldText0")) {
                     g_Config.m_VscpRcvFieldText[ 0 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpRcvFieldText[ 0 ].Length() ) {
                         g_Config.m_VscpRcvFieldText[ 0 ] = VCSP_RSCV_FIELD_TEXT_0;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldText1")) {
+                else if (subchild->GetName() == _("VscpRcvFieldText1")) {
                     g_Config.m_VscpRcvFieldText[ 1 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpRcvFieldText[ 1].Length() ) {
                         g_Config.m_VscpRcvFieldText[ 1 ] = VCSP_RSCV_FIELD_TEXT_1;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldText2")) {
+                else if (subchild->GetName() == _("VscpRcvFieldText2")) {
                     g_Config.m_VscpRcvFieldText[ 2 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpRcvFieldText[ 2 ].Length() ) {
                         g_Config.m_VscpRcvFieldText[ 2 ] = VCSP_RSCV_FIELD_TEXT_2;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldText3")) {
+                else if (subchild->GetName() == _("VscpRcvFieldText3")) {
                     g_Config.m_VscpRcvFieldText[ 3 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpRcvFieldText[ 3 ].Length() ) {
                         g_Config.m_VscpRcvFieldText[ 3 ] = VCSP_RSCV_FIELD_TEXT_3;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldOrder0")) {
+                else if (subchild->GetName() == _("VscpRcvFieldOrder0")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 0;
                     g_Config.m_VscpRcvFieldOrder[0] = val;
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldOrder1")) {
+                else if (subchild->GetName() == _("VscpRcvFieldOrder1")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 1;
                     g_Config.m_VscpRcvFieldOrder[1] = val;
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldOrder2")) {
+                else if (subchild->GetName() == _("VscpRcvFieldOrder2")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 2;
                     g_Config.m_VscpRcvFieldOrder[2] = val;
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldOrder3")) {
+                else if (subchild->GetName() == _("VscpRcvFieldOrder3")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 3;
                     g_Config.m_VscpRcvFieldOrder[3] = val;
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldWidth0")) {
+                else if (subchild->GetName() == _("VscpRcvFieldWidth0")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_RSCV_FIELD_WIDTH_0;
                     g_Config.m_VscpRcvFieldWidth[0] = val; 
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldWidth1")) {
+                else if (subchild->GetName() == _("VscpRcvFieldWidth1")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_RSCV_FIELD_WIDTH_1;
                     g_Config.m_VscpRcvFieldWidth[1] = val;
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldWidth2")) {
+                else if (subchild->GetName() == _("VscpRcvFieldWidth2")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_RSCV_FIELD_WIDTH_2;
                     g_Config.m_VscpRcvFieldWidth[2] = val;
                 }
-                else if (subchild->GetName() == wxT("VscpRcvFieldWidth3")) {
+                else if (subchild->GetName() == _("VscpRcvFieldWidth3")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_RSCV_FIELD_WIDTH_3;
                     g_Config.m_VscpRcvFieldWidth[3] = val;
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitShowField0")) {
+                else if (subchild->GetName() == _("VscpTrmitShowField0")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpTrmitShowField[0] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitShowField1")) {
+                else if (subchild->GetName() == _("VscpTrmitShowField1")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpTrmitShowField[1] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitShowField2")) {
+                else if (subchild->GetName() == _("VscpTrmitShowField2")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpTrmitShowField[2] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitShowField3")) {
+                else if (subchild->GetName() == _("VscpTrmitShowField3")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpTrmitShowField[3] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitShowField4")) {
+                else if (subchild->GetName() == _("VscpTrmitShowField4")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpTrmitShowField[4] =  ( val ? true : false);
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitShowField5")) {
+                else if (subchild->GetName() == _("VscpTrmitShowField5")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = true;
                     g_Config.m_VscpTrmitShowField[5] =  ( val ? true : false);
                 }          
-                else if (subchild->GetName() == wxT("VscpTrmitFieldText0")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldText0")) {
                     g_Config.m_VscpTrmitFieldText[ 0 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpTrmitFieldText[ 0 ].Length() ) {
                         g_Config.m_VscpTrmitFieldText[ 0 ] = VCSP_TRMIT_FIELD_TEXT_0;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldText1")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldText1")) {
                     g_Config.m_VscpTrmitFieldText[ 1 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpTrmitFieldText[ 1 ].Length() ) {
                         g_Config.m_VscpTrmitFieldText[ 1 ] = VCSP_TRMIT_FIELD_TEXT_1;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldText2")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldText2")) {
                     g_Config.m_VscpTrmitFieldText[ 2 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpTrmitFieldText[ 2 ].Length() ) {
                         g_Config.m_VscpTrmitFieldText[ 2 ] = VCSP_TRMIT_FIELD_TEXT_2;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldText3")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldText3")) {
                     g_Config.m_VscpTrmitFieldText[ 3 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpTrmitFieldText[ 3 ].Length() ) {
                         g_Config.m_VscpTrmitFieldText[ 3 ] = VCSP_TRMIT_FIELD_TEXT_3;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldText4")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldText4")) {
                     g_Config.m_VscpTrmitFieldText[ 4 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpTrmitFieldText[ 4 ].Length() ) {
                         g_Config.m_VscpTrmitFieldText[ 4 ] = VCSP_TRMIT_FIELD_TEXT_4;
                     }
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldText5")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldText5")) {
                     g_Config.m_VscpTrmitFieldText[ 5 ] = subchild->GetNodeContent();
                     if ( !g_Config.m_VscpTrmitFieldText[ 5 ].Length() ) {
                         g_Config.m_VscpTrmitFieldText[ 5 ] = VCSP_TRMIT_FIELD_TEXT_5;
                     }
                 }          
-                else if (subchild->GetName() == wxT("VscpTrmitFieldOrder0")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldOrder0")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 0;
                     g_Config.m_VscpTrmitFieldOrder[0] = val;  
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldOrder1")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldOrder1")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 1;
                     g_Config.m_VscpTrmitFieldOrder[1] = val;  
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldOrder2")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldOrder2")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 2;
                     g_Config.m_VscpTrmitFieldOrder[2] = val;  
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldOrder3")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldOrder3")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 3;
                     g_Config.m_VscpTrmitFieldOrder[3] = val;  
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldOrder4")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldOrder4")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 4;
                     g_Config.m_VscpTrmitFieldOrder[4] = val;  
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldOrder5")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldOrder5")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 5;
                     g_Config.m_VscpTrmitFieldOrder[5] = val;  
                 }          
-                else if (subchild->GetName() == wxT("VscpTrmitFieldWidth0")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldWidth0")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = 5;
                     g_Config.m_VscpTrmitFieldOrder[5] = val;  
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldWidth1")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldWidth1")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_TRMIT_FIELD_WIDTH_1;
                     g_Config.m_VscpTrmitFieldWidth[1] = val; 
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldWidth2")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldWidth2")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_TRMIT_FIELD_WIDTH_2;
                     g_Config.m_VscpTrmitFieldWidth[2] = val; 
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldWidth3")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldWidth3")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_TRMIT_FIELD_WIDTH_3;
                     g_Config.m_VscpTrmitFieldWidth[3] = val; 
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldWidth4")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldWidth4")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_TRMIT_FIELD_WIDTH_4;
                     g_Config.m_VscpTrmitFieldWidth[4] = val; 
                 }
-                else if (subchild->GetName() == wxT("VscpTrmitFieldWidth5")) {
+                else if (subchild->GetName() == _("VscpTrmitFieldWidth5")) {
                     wxString str = subchild->GetNodeContent();
                     if ( !str.ToULong( &val ) ) val = VCSP_TRMIT_FIELD_WIDTH_5;
                     g_Config.m_VscpTrmitFieldWidth[5] = val; 
@@ -2061,31 +2129,31 @@ bool VscpworksApp::readConfiguration( void )
             } // while
 
         } 
-        else if (child->GetName() == wxT("vscpinterface")) {
+        else if (child->GetName() == _("vscpinterface")) {
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                if (subchild->GetName() == wxT("canaldriver")) {
+                if (subchild->GetName() == _("canaldriver")) {
 
                     canal_interface *pCanalif = new canal_interface;
                     if ( NULL == pCanalif ) return false;
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     while (subsubchild) {
-                        if (subsubchild->GetName() == wxT("description")) {
+                        if (subsubchild->GetName() == _("description")) {
                             pCanalif->m_strDescription = subsubchild->GetNodeContent();
 
                         }
-                        else if (subsubchild->GetName() == wxT("path")) {
+                        else if (subsubchild->GetName() == _("path")) {
                             pCanalif->m_strPath = subsubchild->GetNodeContent();
                         }
-                        else if (subsubchild->GetName() == wxT("config")) {
+                        else if (subsubchild->GetName() == _("config")) {
 
                             pCanalif->m_strConfig = subsubchild->GetNodeContent();
 
                         }
-                        else if (subsubchild->GetName() == wxT("flags")) {
+                        else if (subsubchild->GetName() == _("flags")) {
 
                             unsigned long val;
                             pCanalif->m_flags = 0;
@@ -2109,7 +2177,7 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                 }
-                else if (subchild->GetName() == wxT("vscpdaemon")) {
+                else if (subchild->GetName() == _("vscpdaemon")) {
 
                     vscp_interface *pVSCPif = new vscp_interface;
                     if ( NULL == pVSCPif ) return false;
@@ -2118,16 +2186,16 @@ bool VscpworksApp::readConfiguration( void )
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     while (subsubchild) {
 
-                        if (subsubchild->GetName() == wxT("description")) {
+                        if (subsubchild->GetName() == _("description")) {
 
                             pVSCPif->m_strDescription = subsubchild->GetNodeContent();
 
                         }
-                        else if (subsubchild->GetName() == wxT("host")) {
+                        else if (subsubchild->GetName() == _("host")) {
                             pVSCPif->m_strHost = subsubchild->GetNodeContent();
                             pVSCPif->m_strHost.Trim(false);
                         }
-                        else if (subsubchild->GetName() == wxT("port")) {
+                        else if (subsubchild->GetName() == _("port")) {
 
                             unsigned long val;
                             pVSCPif->m_port = 9598;
@@ -2139,28 +2207,28 @@ bool VscpworksApp::readConfiguration( void )
                             }
 
                         }
-                        else if (subsubchild->GetName() == wxT("username")) {
+                        else if (subsubchild->GetName() == _("username")) {
 
                             pVSCPif->m_strUser = subsubchild->GetNodeContent().Trim();
                             pVSCPif->m_strUser.Trim(false);
                             pVSCPif->m_strUser.Trim();
 
                         }
-                        else if (subsubchild->GetName() == wxT("password")) {
+                        else if (subsubchild->GetName() == _("password")) {
 
                             pVSCPif->m_strPassword = subsubchild->GetNodeContent().Trim();
                             pVSCPif->m_strPassword.Trim(false);
                             pVSCPif->m_strPassword.Trim();
 
                         }
-						else if (subsubchild->GetName() == wxT("interfacename")) {
+						else if (subsubchild->GetName() == _("interfacename")) {
 
                             pVSCPif->m_strInterfaceName = subsubchild->GetNodeContent().Trim();
                             pVSCPif->m_strInterfaceName.Trim(false);
                             pVSCPif->m_strInterfaceName.Trim();
 
                         }
-						else if (subsubchild->GetName() == wxT("level2")) {
+						else if (subsubchild->GetName() == _("level2")) {
 
 							wxString str = subsubchild->GetNodeContent().Trim();
 							str = str.Upper();
@@ -2172,24 +2240,56 @@ bool VscpworksApp::readConfiguration( void )
 							}
 
                         }
-                        else if (subsubchild->GetName() == wxT("guid")) {
+                        else if (subsubchild->GetName() == _("guid")) {
                             wxString str = subsubchild->GetNodeContent();
                             getGuidFromStringToArray( pVSCPif->m_GUID, str );
                         }
-                        else if (subsubchild->GetName() == wxT("filter")) {
-                            pVSCPif->m_vscpfilter.filter_priority = readStringValue( subsubchild->GetAttribute( wxT( "priority" ), wxT("0") ) );
-                            pVSCPif->m_vscpfilter.filter_class = readStringValue( subsubchild->GetAttribute( wxT( "class" ), wxT("0") ) );
-                            pVSCPif->m_vscpfilter.filter_type = readStringValue( subsubchild->GetAttribute( wxT( "type" ), wxT("0") ) );
-                            wxString strGUID = subsubchild->GetAttribute ( wxT( "GUID" ), 
-                                wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                        else if (subsubchild->GetName() == _("filter")) {
+#if wxCHECK_VERSION(3,0,0)                             
+                            pVSCPif->m_vscpfilter.filter_priority = readStringValue( subsubchild->GetAttribute( _( "priority" ), _("0") ) );
+#else 
+                            pVSCPif->m_vscpfilter.filter_priority = readStringValue( subsubchild->GetPropVal( _( "priority" ), _("0") ) );
+#endif                               
+#if wxCHECK_VERSION(3,0,0)                             
+                            pVSCPif->m_vscpfilter.filter_class = readStringValue( subsubchild->GetAttribute( _( "class" ), _("0") ) );
+#else 
+                            pVSCPif->m_vscpfilter.filter_class = readStringValue( subsubchild->GetPropVal( _( "class" ), _("0") ) );
+#endif                               
+#if wxCHECK_VERSION(3,0,0)                             
+                            pVSCPif->m_vscpfilter.filter_type = readStringValue( subsubchild->GetAttribute( _( "type" ), _("0") ) );
+#else 
+                            pVSCPif->m_vscpfilter.filter_type = readStringValue( subsubchild->GetPropVal( _( "type" ), _("0") ) );
+#endif                               
+#if wxCHECK_VERSION(3,0,0)                                                         
+                            wxString strGUID = subsubchild->GetAttribute( _( "GUID" ), 
+#else 
+                            wxString strGUID = subsubchild->GetPropVal( _( "GUID" ), 
+#endif                                       
+                                _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                             getGuidFromStringToArray( pVSCPif->m_vscpfilter.filter_GUID, strGUID );
                         }
-                        else if (subsubchild->GetName() == wxT("mask")) {
-                            pVSCPif->m_vscpfilter.mask_priority = readStringValue( subsubchild->GetAttribute( wxT( "priority" ), wxT("0") ) );
-                            pVSCPif->m_vscpfilter.mask_class = readStringValue( subsubchild->GetAttribute( wxT( "class" ), wxT("0") ) );
-                            pVSCPif->m_vscpfilter.mask_type = readStringValue( subsubchild->GetAttribute( wxT( "type" ), wxT("0") ) );
-                            wxString strGUID = subsubchild->GetAttribute ( wxT( "GUID" ), 
-                                wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                        else if (subsubchild->GetName() == _("mask")) {
+#if wxCHECK_VERSION(3,0,0)                             
+                            pVSCPif->m_vscpfilter.mask_priority = readStringValue( subsubchild->GetAttribute( _( "priority" ), _("0") ) );
+#else 
+                            pVSCPif->m_vscpfilter.mask_priority = readStringValue( subsubchild->GetPropVal( _( "priority" ), _("0") ) );
+#endif                               
+#if wxCHECK_VERSION(3,0,0)                             
+                            pVSCPif->m_vscpfilter.mask_class = readStringValue( subsubchild->GetAttribute( _( "class" ), _("0") ) );
+#else 
+                            pVSCPif->m_vscpfilter.mask_class = readStringValue( subsubchild->GetPropVal( _( "class" ), _("0") ) );
+#endif                               
+#if wxCHECK_VERSION(3,0,0) 
+                            pVSCPif->m_vscpfilter.mask_type = readStringValue( subsubchild->GetAttribute( _( "type" ), _("0") ) );
+#else 
+                            pVSCPif->m_vscpfilter.mask_type = readStringValue( subsubchild->GetPropVal( _( "type" ), _("0") ) );
+#endif   
+#if wxCHECK_VERSION(3,0,0) 
+                            wxString strGUID = subsubchild->GetAttribute( _( "GUID" ), 
+#else 
+                            wxString strGUID = subsubchild->GetPropVal( _( "GUID" ),
+#endif   
+                                    _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                             getGuidFromStringToArray( pVSCPif->m_vscpfilter.mask_GUID, strGUID );
                         }
 
