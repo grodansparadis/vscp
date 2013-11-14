@@ -62,13 +62,14 @@
           <cTool>
             <incDir>
               <pElem>include</pElem>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
@@ -78,6 +79,7 @@
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
               <Elem>__PIC__=2</Elem>
               <Elem>__WXGTK__</Elem>
@@ -103,11 +105,11 @@
       <folder path="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -118,20 +120,17 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-          </preprocessorList>
         </ccTool>
       </folder>
       <folder path="src/vscp">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </folder>

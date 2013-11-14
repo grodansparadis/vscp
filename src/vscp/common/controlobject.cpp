@@ -3918,7 +3918,11 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                 pObject->m_dm.getRowCount(),
                 nCount,
                 nFrom,
-                wxstrlight/*.GetWriteBuf(wxstrlight.Length())*/ );
+#if wxCHECK_VERSION(3,0,0)                
+                wxstrlight );
+#else                
+                wxstrlight.GetWriteBuf(wxstrlight.Length()) );
+#endif        
         buildPage += _("<br>");
     } 
 
@@ -4133,7 +4137,11 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                 pObject->m_dm.getRowCount(),
                 nCount,
                 nFrom,
-                wxstrlight/*.GetWriteBuf(wxstrlight.Length())*/ );
+#if wxCHECK_VERSION(3,0,0)                
+                wxstrlight );
+#else                
+                wxstrlight.GetWriteBuf(wxstrlight.Length()) );
+#endif        
     }
      
     buildPage += _(WEB_COMMON_END);     // Common end code

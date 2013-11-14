@@ -2313,7 +2313,6 @@ bool CMDF::parseMDF( wxString& path )
 //  getNumberOfRegisters
 //  
 
-
 uint32_t CMDF::getNumberOfRegisters( uint32_t page ) 
 { 
 	uint32_t nregisters = 0;

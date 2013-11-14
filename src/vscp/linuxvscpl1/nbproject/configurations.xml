@@ -55,26 +55,28 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
               <Elem>__PIC__=2</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>__pic__=2</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
               <Elem>__PIC__=2</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>__pic__=2</Elem>
             </preprocessorList>
@@ -82,8 +84,6 @@
         </makeTool>
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../common/crc.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>

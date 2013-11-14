@@ -61,6 +61,7 @@
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
               <Elem>__PIC__=2</Elem>
               <Elem>__WXGTK__</Elem>
@@ -70,9 +71,13 @@
           <ccTool>
             <incDir>
               <pElem>include</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
             </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
@@ -91,11 +96,11 @@
       <folder path="0">
         <cTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </cTool>
       </folder>
@@ -106,18 +111,12 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-          </preprocessorList>
         </cTool>
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
@@ -128,24 +127,11 @@
       </item>
       <item path="vscp2drv_tcpip.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="vscp2drv_tcpiplink.cpp" ex="false" tool="1" flavor2="0">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-          </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>
@@ -154,12 +140,7 @@
       </item>
       <item path="vscptcpiplink.cpp" ex="false" tool="1" flavor2="0">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-          </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
             <Elem>__PIC__=2</Elem>
             <Elem>__pic__=2</Elem>

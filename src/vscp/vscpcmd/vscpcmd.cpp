@@ -73,7 +73,9 @@
 #include "wx/app.h"
 #include "wx/cmdline.h"
 #include "wx/tokenzr.h"
+#include <wx/version.h> 
 #include <math.h>
+
 
 #ifdef WIN32
 //#include "../common/controlobject.h"
@@ -94,7 +96,6 @@
 // Prototypes
 void setDataFromValue(uint8_t encoding, uint8_t type, wxString& wxstrval, uint8_t *msgdata, uint16_t *pnDataCnt);
 uint8_t setNormalizedValue(wxString& wxstrval, uint8_t *msgdata, uint8_t type);
-
 
 static const wxCmdLineEntryDesc cmdLineDesc[] = {
     {
@@ -573,10 +574,17 @@ uint8_t setNormalizedValue(wxString& wxstrval,
     msgdata[ 0 ] = (type | VSCP_DATACODING_NORMALIZED);
     pto = buf;
 
-
+#if wxCHECK_VERSION(3,0,0)
     while (wxstrval[pos].GetValue()) {
+#else
+    while (wxstrval.GetChar(pos)) {    
+#endif        
 
+#if wxCHECK_VERSION(3,0,0)
         switch ( wxstrval[pos].GetValue() ) {
+#else
+        switch ( wxstrval.GetChar(pos) ) {
+#endif 
 
         case '+':
             bNegative = false;
