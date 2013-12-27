@@ -1,17 +1,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 // dllist.h
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2013 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
 // notice must not be changed or removed and no warranty is either
 // expressed or implied by its publication or distribution.
 //
-// $RCSfile: dllist.h,v $                                       
-// $Date: 2006/03/14 21:32:47 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.6 $ 
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef H_DLLIST_H

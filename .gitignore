@@ -100,3 +100,5 @@ src/vscp/uvscpd/uvscpd
 src/vscp/vscpcmd/nbproject/private/launcher.properties
 src/vscp/vscpworks/nbproject/private/launcher.properties
 src/vscp/uvscpd/nbproject/private/launcher.properties
+*.properties
+
