@@ -2258,7 +2258,8 @@ CControlObject::callback_http(struct libwebsocket_context *context,
         if (libwebsockets_serve_http_file(context,
                 wsi,
                 path.ToAscii(),
-                mime.ToAscii())) {
+                mime.ToAscii()),
+                NULL ) {
             
             return -1;
         }
