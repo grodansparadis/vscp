@@ -1,3 +1,5 @@
+Check the more up to date version her also http://www.vscp.org/wiki/doku.php/howto/setup_linux
+
 To build VSCP and friends type 
 
 There are detailed build instructions in the VSCP wiki for a copuple of different platforms. Look gete http://www.vscp.org/wiki/doku.php/howto
@@ -15,9 +17,9 @@ and "make install" as root user.
 You can use ./configure --help to get help about available switches. Use --enable-debug to use the debug version of wxWidgets and use --enable-unicode to use the unicode version (default=. The use of the unicode version is recommended.
 
 To compile the package you need the wxWidgets libraries. The toolkit can be found at 
-http://www.wxwidgets.org. Either use the graphical version GTK2 of the library (if you want to build the graphical components == vscpworks) or the base verson.
+http://www.wxwidgets.org. Either use the graphical version GTK2 (libgtk2.0-dev) of the library (if you want to build the graphical components == vscpworks) or the base version.
 
-You also need the websockets package. The package can be found at http://git.warmcat.com. If you have problems with the installation fo the package please read the instructions here http://martinsikora.com/libwebsockets-compiling-libraries-and-projects. On my debian system I have to issue "reconfigure" to be able to buidl as stated here https://github.com/wayneeseguin/rvm/issues/553
+You also need the websockets package. The package can be found at http://git.warmcat.com. If you have problems with the installation for the package please read the instructions here http://martinsikora.com/libwebsockets-compiling-libraries-and-projects. On my Debian system I have to issue "reconfigure" to be able to build as stated here https://github.com/wayneeseguin/rvm/issues/553
 
 libwebsockets is needed to compile. Can be found here git://git.warmcat.com/libwebsockets
 
@@ -29,11 +31,11 @@ You also need libssl-dev, libmicrohttpd-dev, and optional libpcap-dev for raw et
 
 Configuration files should be located in /etc/vscp and there are samples of configuration files here in the config_examples folder in the distribution root. You need vscpd.conf, variables.xml, dm.xml and mimetypes.xml. 
 
-The names should be vscpd.conf for the daemon and vscpworks.conf for VSCP works. The daemon can be started with a path to a configuration file in anoter location using the -c switch.
+The names should be vscpd.conf for the daemon and vscpworks.conf for VSCP works. The daemon can be started with a path to a configuration file in another location using the -c switch.
 
 Notes on making your own applications
 -------------------------------------
-If you build GUI applicatin that use the vscp helper dll the wxUSE_GUI=1 should be in your preprocessor directives. 
+If you build GUI application that use the vscp helper dll the wxUSE_GUI=1 should be in your preprocessor directives. 
 If you build non-guid components define wxUSE_GUI=0
 
 Have Fun!
