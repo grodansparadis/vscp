@@ -427,7 +427,7 @@ public:
 
   /*!
   Get DM item as a realstring description.
-  @return A strng representation fo the item. This string is on the form 
+  @return A string representation for the item. This string is on the form 
   enabled,from,to,weekday,time,mask,filter,index,zone,subzone,control-code,action-code,action-param,comment,trig-counter,error-counter
   where mask is Priority;Class;Type;GUID an filter is Priority;Class;Type;GUID
   See the specification for a description of the from, to and weekday fields. 
@@ -476,7 +476,7 @@ public:
   bool isCheckSubZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
   
   /*!
-  Handle escape sequencys
+  Handle escape sequencies
   @param pEvent Event feed thru matrix
   @param str String to replace escapes in
   @return true on success, else false.

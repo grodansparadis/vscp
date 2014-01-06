@@ -167,8 +167,8 @@ void *daemonVSCPThread::Entry()
                         pnewEvent->vscp_class = 0;
                         pnewEvent->vscp_type = 28;
                         pnewEvent->sizeData = 8;
-                        //memcpy ( pnewEvent->GUID, pClientItem->m_GUID, 16 );
-                        pClientItem->m_guid.setGUID(pnewEvent->GUID);
+                        
+                        pClientItem->m_guid.writeGUID(pnewEvent->GUID);
 
                         pnewEvent->pdata = new unsigned char[ 8 ];
                         if ( NULL != pnewEvent->pdata ) {

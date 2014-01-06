@@ -113,7 +113,7 @@ int main()
 			
 			wxString str = wxString::FromAscii(buf);
 			str.ToLong(&lval);
-			printf("wxraw:%d %d\n", i, lval);
+			printf("wxraw:%ld %ld\n", i, lval);
 		}
 		
 	}

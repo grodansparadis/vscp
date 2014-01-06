@@ -44,7 +44,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
-    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;C:\Users\akhe\development\libmicrohttpd-0.9.17_win32\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>.\Debug\</OutDir>

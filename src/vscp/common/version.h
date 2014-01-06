@@ -27,9 +27,9 @@
 #define VSCPD_MAJOR_VERSION 	0
 #define VSCPD_MINOR_VERSION 	4
 #define VSCPD_SUB_VERSION   	0
-#define VSCPD_SUB_SUB_VERSION   9
+#define VSCPD_SUB_SUB_VERSION   12
 
-#define VSCPD_DISPLAY_VERSION "0.4.0.9 Fluorine"
+#define VSCPD_DISPLAY_VERSION "0.4.0.12 Fluorine"
 
 #define VSCPD_COPYRIGHT "Copyright (C) 2000-2013, Ake Hedman, Grodans Paradis AB, http://www.grodansparadis.com\n"
 

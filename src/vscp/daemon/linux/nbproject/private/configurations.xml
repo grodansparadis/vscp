@@ -1,104 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="89">
+<configurationDescriptor version="90">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
-    <df root="." name="linux">
-      <df name="carambola">
-        <df name="include">
-          <df name="linux">
-            <df name="can">
-              <in>bcm.h</in>
-              <in>core.h</in>
-              <in>dev.h</in>
-              <in>error.h</in>
-              <in>gw.h</in>
-              <in>isotp.h</in>
-              <in>netlink.h</in>
-              <in>raw.h</in>
-            </df>
-            <in>can.h</in>
-          </df>
-          <df name="socketcan">
-            <df name="can">
-              <in>bcm.h</in>
-              <in>error.h</in>
-              <in>gw.h</in>
-              <in>ioctl.h</in>
-              <in>isotp.h</in>
-              <in>netlink.h</in>
-              <in>raw.h</in>
-            </df>
-            <in>can.h</in>
-          </df>
-        </df>
-        <df name="pkg">
-        </df>
-        <df name="www">
-        </df>
-        <in>SelectDevice.h</in>
-        <in>actioncodes.h</in>
-        <in>canal.h</in>
-        <in>canal_macro.h</in>
-        <in>canal_unix_ipc.h</in>
-        <in>canal_win32_ipc.h</in>
-        <in>canaldlldef.h</in>
-        <in>canalsuperwrapper.h</in>
-        <in>clientlist.cpp</in>
-        <in>clientlist.h</in>
-        <in>configfile.cpp</in>
-        <in>controlobject.cpp</in>
-        <in>controlobject.h</in>
-        <in>crc.c</in>
-        <in>daemonvscp.cpp</in>
-        <in>daemonvscp.h</in>
-        <in>devicelist.cpp</in>
-        <in>devicelist.h</in>
-        <in>devicethread.cpp</in>
-        <in>devicethread.h</in>
-        <in>devitem.h</in>
-        <in>dlldrvobj.cpp</in>
-        <in>dlldrvobj.h</in>
-        <in>dllist.c</in>
-        <in>dllwrapper.h</in>
-        <in>dm.cpp</in>
-        <in>dm.h</in>
-        <in>guid.cpp</in>
-        <in>guid.h</in>
-        <in>interfacelist.cpp</in>
-        <in>interfacelist.h</in>
-        <in>md5.cpp</in>
-        <in>mdf.h</in>
-        <in>options.h</in>
-        <in>randPassword.cpp</in>
-        <in>socketcandrv.cpp</in>
-        <in>socketcandrv.h</in>
-        <in>socketcanobj.cpp</in>
-        <in>socketcanobj.h</in>
-        <in>stdafx.h</in>
-        <in>tcpipclientthread.cpp</in>
-        <in>tcpipclientthread.h</in>
-        <in>udpthread.cpp</in>
-        <in>udpthread.h</in>
-        <in>userlist.cpp</in>
-        <in>userlist.h</in>
-        <in>variablecodes.h</in>
-        <in>version.h</in>
-        <in>vscp.h</in>
-        <in>vscp_class.h</in>
-        <in>vscp_type.h</in>
-        <in>vscpclientthreads.h</in>
-        <in>vscpd.cpp</in>
-        <in>vscpd.h</in>
-        <in>vscpdlldef.h</in>
-        <in>vscphelper.cpp</in>
-        <in>vscphelper.h</in>
-        <in>vscptcpif.cpp</in>
-        <in>vscptcpif.h</in>
-        <in>vscpvariable.cpp</in>
-        <in>vscpvariable.h</in>
-      </df>
+    <df root="." name="0">
       <df name="html">
       </df>
       <df name="latex">
+      </df>
+      <df name="openwrt">
+        <df name="www">
+        </df>
       </df>
       <df name="xml">
       </df>

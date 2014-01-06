@@ -55,7 +55,19 @@ enum vscp_abstraction_type {
 	type_double,
     type_date,
     type_time,
-	type_guid
+	type_guid,
+    type_index8_int16_t,
+    type_index8_uint16_t,
+    type_index8_int32_t,
+    type_index8_uint32_t,
+    type_index8_int64_t,
+    type_index8_uint64_t,
+    type_index8_float,
+    type_index8_double,
+    type_index8_date,
+    type_index8_time,
+    type_index8_guid,
+    type_index8_string
 };
 
 

@@ -73,13 +73,17 @@
 #include "wx/app.h"
 #include "wx/cmdline.h"
 #include "wx/tokenzr.h"
+#include <wx/version.h> 
 #include <math.h>
 
+
 #ifdef WIN32
-#include "../common/controlobject.h"
+//#include "../common/controlobject.h"
 #else
 
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <wchar.h>
 #endif
 
@@ -92,7 +96,6 @@
 // Prototypes
 void setDataFromValue(uint8_t encoding, uint8_t type, wxString& wxstrval, uint8_t *msgdata, uint16_t *pnDataCnt);
 uint8_t setNormalizedValue(wxString& wxstrval, uint8_t *msgdata, uint8_t type);
-
 
 static const wxCmdLineEntryDesc cmdLineDesc[] = {
     {
@@ -153,23 +156,23 @@ static const wxCmdLineEntryDesc cmdLineDesc[] = {
     },
     {
         wxCMD_LINE_OPTION,
-        _T("z"),
-        _T("zone"),
-        _T("Zone for event."),
+        _("z"),
+        _("zone"),
+        _("Zone for event."),
         wxCMD_LINE_VAL_NUMBER,
         wxCMD_LINE_PARAM_OPTIONAL
     },
     {
         wxCMD_LINE_OPTION,
-        _T("s"),
-        _T("subzone"),
-        _T("Subzone for event."),
+        _("s"),
+        _("subzone"),
+        _("Subzone for event."),
         wxCMD_LINE_VAL_NUMBER,
         wxCMD_LINE_PARAM_OPTIONAL
     },
-    { wxCMD_LINE_SWITCH, _T("v"), _T("verbose"), _T("Vebose mode"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL},
-    { wxCMD_LINE_SWITCH, _T("t"), _T("test"), _T("Interface test mode (for vscpd developers only)."), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL},
-    { wxCMD_LINE_SWITCH, _T("h"), _T("help"), _T("Shows this message"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_OPTION_HELP},
+    { wxCMD_LINE_SWITCH, _("v"), _("verbose"), _("Vebose mode"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL},
+    { wxCMD_LINE_SWITCH, _("t"), _("test"), _("Interface test mode (for vscpd developers only)."), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL},
+    { wxCMD_LINE_SWITCH, _("h"), _("help"), _("Shows this message"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_OPTION_HELP},
     { wxCMD_LINE_NONE}
 };
 
@@ -553,7 +556,8 @@ void setDataFromValue(uint8_t encoding,
 //
 // returns count
 
-uint8_t setNormalizedValue(wxString& wxstrval, uint8_t *msgdata, uint8_t type)
+uint8_t setNormalizedValue(wxString& wxstrval, 
+                            uint8_t *msgdata, uint8_t type)
 {
     uint8_t *pto;
     unsigned char pos = 0;
@@ -570,10 +574,17 @@ uint8_t setNormalizedValue(wxString& wxstrval, uint8_t *msgdata, uint8_t type)
     msgdata[ 0 ] = (type | VSCP_DATACODING_NORMALIZED);
     pto = buf;
 
+#if wxCHECK_VERSION(3,0,0)
+    while (wxstrval[pos].GetValue()) {
+#else
+    while (wxstrval.GetChar(pos)) {    
+#endif        
 
-    while (wxstrval.GetChar(pos)) {
-
-        switch (wxstrval.GetChar(pos)) {
+#if wxCHECK_VERSION(3,0,0)
+        switch ( wxstrval[pos].GetValue() ) {
+#else
+        switch ( wxstrval.GetChar(pos) ) {
+#endif 
 
         case '+':
             bNegative = false;

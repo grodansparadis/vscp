@@ -58,6 +58,7 @@ public:
         Nill the GUID
     */
     void clear( void ) { memset( &m_id, 0, 16 ); };
+    
 
     /*!
         Get GUID from string
@@ -111,17 +112,25 @@ public:
 	/*!
         Set LSB GUID position
     */
-    void setLSB( const unsigned char value ) { m_id[ 0 ] = value; };
+    void setLSB( const unsigned char value ) { m_id[ 15 ] = value; };
 
 	/*!
         Get LSB GUID position
     */
-    uint8_t getLSB( void ) { return m_id[ 0 ]; };
+    uint8_t getLSB( void ) { return m_id[ 15 ]; };
+    
+    /*!
+		Fill array with GUID MSB first (STANDARD way)			
+	*/
+	void writeGUID( uint8_t *pArray );
+    
 
 	/*!
-		Fill array with GUID MSB first			
+		Fill array with GUID LSB first			
 	*/
-	void setGUID( uint8_t *pArray );
+	void writeGUID_reverse( uint8_t *pArray );
+    
+    
 
     /*!
         Check if same as supplied GUID
@@ -134,11 +143,24 @@ public:
 		@return True if all bytes of GUID is zero, else false.
 	*/
 	bool isNULL( void );
+    
+    /*!
+     *  Set Client ID in GUID
+     *  This is mostly for use by the VSCP daemon.
+     * @param clientid Client id ti write
+     */
+    void setClientID( uint16_t clientid );
+    
+    /*!
+     *  Set nickname ID in GUID
+     * @param clientid Client id ti write
+     */
+    void setNicknameID( uint16_t nicknameid );    
             
 
 //private:
   
-    // GUID id
+    // GUID id  MSB (index=0) -> LSB (index=15)
 	uint8_t m_id[16];
  	
 };

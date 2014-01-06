@@ -588,11 +588,11 @@ void CVSCPVariable::setFalse( void )
 CVariableStorage::CVariableStorage()
 {
 #ifndef BUILD_VSCPD_SERVICE
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
 #ifdef WIN32
-	m_configPath = stdPath.GetConfigDir();
+	m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variables.xml");
 #else	
     m_configPath = _("/srv/vscp/variables.xml");
@@ -764,7 +764,7 @@ bool CVariableStorage::load( void )
         return false;
     }
 
-    ::wxLogDebug ( _("Loading variables from: \n\t") + m_configPath );
+    //::wxLogDebug ( _("Loading variables from: \n\t") + m_configPath );
 
     // start processing the XML file
     if ( doc.GetRoot()->GetName() != wxT("persistent") ) {
@@ -781,7 +781,11 @@ bool CVariableStorage::load( void )
             bArray = false;
 
             // Get variable type - String is default
-            pVar->setType( pVar->getVariableTypeFromString( child->GetPropVal( wxT("type"), wxT("string") ) ) );  
+#if wxCHECK_VERSION(3,0,0)            
+            pVar->setType( pVar->getVariableTypeFromString( child->GetAttribute( wxT("type"), wxT("string") ) ) );  
+#else
+            pVar->setType( pVar->getVariableTypeFromString( child->GetPropVal( wxT("type"), wxT("string") ) ) );
+#endif             
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {

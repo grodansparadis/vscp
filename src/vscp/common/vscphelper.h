@@ -82,7 +82,7 @@ extern "C" {
     };
 
     /*!
-      @brief This class holds nformation about VSCP events.
+      @brief This class holds information about VSCP events.
      */
 
     class VSCPInformation {
@@ -160,6 +160,14 @@ extern "C" {
         /// Hash for types
         VSCPHashType m_hashType;
     };
+    
+    /*!
+        Fetch datacoding byte from measurement events
+        \param pEvent Pointer to VSCP event
+        \return Measurement datacoding byte or zero if its not an 
+            event with a datacoding.
+     */
+    uint8_t getMeasurementDataCoding(const vscpEvent *pEvent);
 
     /*!
       Get bitarray from coded event data
@@ -196,6 +204,16 @@ extern "C" {
       \return true on success, false on failure.
      */
     bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& str);
+    
+    /*!
+      Get data in the VSCP data coding format as a double. Works for
+	  CLASS1.MEAUREMENT, CLASS2_LEVEL1.MEASUREMENT, 
+      VSCP_CLASS1_MEASUREZONE, VSCP_CLASS1_SETVALUEZONE
+      \param pEvent Pointer to VSCP event.
+      \param pvalue Pointer to double that holds the result
+      \return true on success, false on failure.
+     */
+    bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue);
 	
 	/*!
       Get data in the VSCP data coding format to a string. Works for
@@ -207,17 +225,19 @@ extern "C" {
     bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& str);
 	
 	/*!
-		Convert a floating point measurement value into VSCP data with the
-	 first byte being the normaliser byte
+	  Convert a floating point measurement value into VSCP data with the
+	  first byte being the normalizer byte
 	  CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
       \param value Floating point value to convert.
-      \param pdata Pointer to beginning of VSCP event data.
+      \param pdata Pointer to beginning of VSCP returned event data.
+	  \param psize Pointer to size for returned data.
 	  \param unit Untit for the data. Zero is default.
 	  \param sensoridx Sensor index 0-7. Zero is default.
       \return true on success, false on failure.
      */
-	bool convertFloatToNormalizedEventData( float value, 
+	bool convertFloatToNormalizedEventData( double value, 
 												uint8_t *pdata,
+												uint16_t *psize,
 												uint8_t unit=0,
 												uint8_t sensoridx=0 );
 	
@@ -658,7 +678,7 @@ extern "C" {
 	    @param pmdf Optional pointer to CMDF class which gives more info
 				about the device if it is supplied.
 	 */
-	wxString getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
+	wxString& getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
 
 
 #ifdef __cplusplus

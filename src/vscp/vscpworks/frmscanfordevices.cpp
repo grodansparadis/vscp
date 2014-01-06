@@ -974,10 +974,10 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                 eventex.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
                 eventex.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
 
-                memset(eventex.GUID, 0, 16); // We use GUID for interface 
-                eventex.sizeData = 16 + 2; // Interface GUID + nodeid + register to read
+                memset(eventex.GUID, 0, 16);// We use GUID for interface 
+                eventex.sizeData = 16 + 2;  // Interface GUID + nodeid + register to read
 
-                m_ifguid.setGUID(eventex.data);
+                m_ifguid.writeGUID(eventex.data);
 
                 eventex.data[ 16 ] = i; // nodeid
                 eventex.data[ 17 ] = 0xd0; // Register to read

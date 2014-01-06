@@ -264,99 +264,98 @@ public:
 	bool fetchIterfaceGUID(void);
 
 
-	////@begin frmDeviceConfig event handler declarations
+////@begin frmDeviceConfig event handler declarations
+  /// wxEVT_CLOSE_WINDOW event handler for ID_FRMDEVICECONFIG
+  void OnCloseWindow( wxCloseEvent& event );
 
-	/// wxEVT_CLOSE_WINDOW event handler for ID_FRMDEVICECONFIG
-	void OnCloseWindow(wxCloseEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_REGSITERS
+  void OnMenuitemSaveRegistersClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_REGSITERS
-	void OnMenuitemSaveRegistersClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM
+  void OnMenuitemSaveSelectedRegistersClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM
-	void OnMenuitemSaveSelectedRegistersClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_LOAD_REGISTES
+  void OnMenuitemLoadRegistersClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_LOAD_REGISTES
-	void OnMenuitemLoadRegistersClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_ADD_GUIDS
+  void OnMenuitemAddGuidsClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_ADD_GUIDS
-	void OnMenuitemAddGuidsClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_GUIDS
+  void OnMenuitemSaveGuidsClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_GUIDS
-	void OnMenuitemSaveGuidsClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_LOAD_GUIDS
+  void OnMenuitemLoadGuidsClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_LOAD_GUIDS
-	void OnMenuitemLoadGuidsClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_EXIT
+  void OnMenuitemExitClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_EXIT
-	void OnMenuitemExitClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP
+  void OnMenuitemVscpHelpClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP
-	void OnMenuitemVscpHelpClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_FAQ
+  void OnMenuitemVscpFaqClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_FAQ
-	void OnMenuitemVscpFaqClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_KB_SHRTCUTS
+  void OnMenuitemVscpShortcutsClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_KB_SHRTCUTS
-	void OnMenuitemVscpShortcutsClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_THANKS
+  void OnMenuitemVscpThanksClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_THANKS
-	void OnMenuitemVscpThanksClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_CREDITS
+  void OnMenuitemVscpCreditsClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_CREDITS
-	void OnMenuitemVscpCreditsClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GO_VSCP_SITE
+  void OnMenuitemVscpVscpSiteClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GO_VSCP_SITE
-	void OnMenuitemVscpVscpSiteClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_ABOUT
+  void OnMenuitemVscpAboutClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_ABOUT
-	void OnMenuitemVscpAboutClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_COMBOBOX4
+  void OnComboNodeIDSelected( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_COMBOBOX4
-	void OnComboNodeIDSelected(wxCommandEvent& event);
+  /// wxEVT_COMMAND_TEXT_UPDATED event handler for ID_COMBOBOX4
+  void OnComboNodeIDUpdated( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_TEXT_UPDATED event handler for ID_COMBOBOX4
-	void OnComboNodeIDUpdated(wxCommandEvent& event);
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CHECK_LEVEL2
+  void OnBitmapbuttonTestDeviceClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CHECK_LEVEL2
-	void OnBitmapbuttonTestDeviceClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON1
+  void OnInterfaceActivate( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON1
-	void OnInterfaceActivate(wxCommandEvent& event);
+  /// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_GRID_REGISTERS
+  void OnCellLeftClick( wxGridEvent& event );
 
-	/// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_GRID_REGISTERS
-	void OnCellLeftClick(wxGridEvent& event);
+  /// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_GRID_REGISTERS
+  void OnCellRightClick( wxGridEvent& event );
 
-	/// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_GRID_REGISTERS
-	void OnCellRightClick(wxGridEvent& event);
+  /// wxEVT_GRID_CELL_LEFT_DCLICK event handler for ID_GRID_REGISTERS
+  void OnLeftDClick( wxGridEvent& event );
 
-	/// wxEVT_GRID_CELL_LEFT_DCLICK event handler for ID_GRID_REGISTERS
-	void OnLeftDClick(wxGridEvent& event);
+  /// wxEVT_GRID_CELL_CHANGE event handler for ID_GRID_REGISTERS
+  void OnRegisterEdited( wxGridEvent& event );
 
-	/// wxEVT_GRID_CELL_CHANGE event handler for ID_GRID_REGISTERS
-	void OnRegisterEdited(wxGridEvent& event);
+  /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW1
+  void OnHtmlwindowCellClicked( wxHtmlLinkEvent& event );
 
-	/// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW1
-	void OnHtmlwindowCellClicked(wxHtmlLinkEvent& event);
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON16
+  void OnButtonUpdateClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON16
-	void OnButtonUpdateClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON17
+  void OnButtonLoadDefaultsClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON17
-	void OnButtonLoadDefaultsClick(wxCommandEvent& event);
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON19
+  void OnButtonWizardClick( wxCommandEvent& event );
 
-	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON19
-	void OnButtonWizardClick(wxCommandEvent& event);
+////@end frmDeviceConfig event handler declarations
 
-	////@end frmDeviceConfig event handler declarations
+////@begin frmDeviceConfig member function declarations
 
-	////@begin frmDeviceConfig member function declarations
+  /// Retrieves bitmap resources
+  wxBitmap GetBitmapResource( const wxString& name );
 
-	/// Retrieves bitmap resources
-	wxBitmap GetBitmapResource(const wxString& name);
-
-	/// Retrieves icon resources
-	wxIcon GetIconResource(const wxString& name);
-	////@end frmDeviceConfig member function declarations
+  /// Retrieves icon resources
+  wxIcon GetIconResource( const wxString& name );
+  ////@end frmDeviceConfig member function declarations
 
 	// Array with GUID's
 	wxArrayString m_guidarray;
@@ -467,66 +466,67 @@ public:
 	/// Should we show tooltips?
 	static bool ShowToolTips();
 
-	////@begin frmDeviceConfig member variables
-	wxComboBox* m_comboNodeID;
-	wxCheckBox* m_bLevel2;
-	wxToggleButton* m_BtnActivateInterface;
-	wxToolbook* m_choiceBook;
-	wxPanel* m_panel0;
-	wxGrid* m_gridRegisters;
-	wxGrid* m_gridAbstractions;
-	wxGrid* m_gridDM;
-	wxHtmlWindow* m_StatusWnd;
-	wxCheckBox* m_chkFullUppdate;
-	wxCheckBox* m_chkMdfFromFile;
-	wxButton* m_ctrlButtonLoadMDF;
-	wxButton* m_ctrlButtonWizard;
-	/// Control identifiers
-
-	enum {
-		ID_FRMDEVICECONFIG = 19005,
-		ID_MENUITEM_SAVE_REGSITERS = 19000,
-		ID_MENUITEM = 10001,
-		ID_MENUITEM_LOAD_REGISTES = 19001,
-		ID_MENUITEM_ADD_GUIDS = 10003,
-		ID_MENUITEM_SAVE_GUIDS = 10146,
-		ID_MENUITEM_LOAD_GUIDS = 10002,
-		ID_MENUITEM_EXIT = 19002,
-		ID_MENUITEM_HELP = 19023,
-		ID_MENUITEM_FAQ = 19024,
-		ID_MENUITEM_KB_SHRTCUTS = 19025,
-		ID_MENUITEM_THANKS = 19026,
-		ID_MENUITEM_CREDITS = 19027,
-		ID_MENUITEM_GO_VSCP_SITE = 19028,
-		ID_MENUITEM_ABOUT = 19029,
-		ID_TOOLBAR_DEVICE_CONFIG = 19030,
-		ID_TOOL6 = 19031,
-		ID_TOOL7 = 19032,
-		ID_TOOL8 = 19033,
-		ID_TOOL9 = 19034,
-		ID_TOOL10 = 19035,
-		ID_TOOL11 = 19036,
-		ID_COMBOBOX4 = 19037,
-		ID_CHECK_LEVEL2 = 19038,
-		ID_CHECKBOX_LEVEL22 = 10144,
-		ID_TOGGLEBUTTON1 = 19039,
-		ID_PANEL_DEVICE_CONFIG = 19117,
-		ID_CHOICEBOOK = 19040,
-		ID_PANEL_REGISTERS = 19041,
-		ID_GRID_REGISTERS = 19042,
-		ID_PANEL_ABSTRACTIONS = 19107,
-		ID_GRID_ABSTRACTIONS = 19108,
-		ID_PANEL_DM = 19109,
-		ID_GRID_DM = 19110,
-		ID_HTMLWINDOW1 = 19111,
-		ID_CHECKBOX_FULL_UPDATE = 19112,
-		ID_CHECKBOX_MDF_FROM_FILE = 10000,
-		ID_BUTTON16 = 19113,
-		ID_BUTTON17 = 19114,
-		ID_BUTTON19 = 19116
-	};
-	////@end frmDeviceConfig member variables
+////@begin frmDeviceConfig member variables
+  wxComboBox* m_comboNodeID;
+  wxCheckBox* m_bLevel2;
+  wxToggleButton* m_BtnActivateInterface;
+  wxToolbook* m_choiceBook;
+  wxPanel* m_panel0;
+  wxGrid* m_gridRegisters;
+  wxGrid* m_gridAbstractions;
+  wxGrid* m_gridDM;
+  wxHtmlWindow* m_StatusWnd;
+  wxCheckBox* m_chkFullUppdate;
+  wxCheckBox* m_chkMdfFromFile;
+  wxButton* m_ctrlButtonLoadMDF;
+  wxButton* m_ctrlButtonWizard;
+  /// Control identifiers
+  enum {
+    ID_FRMDEVICECONFIG = 19005,
+    ID_MENUITEM_SAVE_REGSITERS = 19000,
+    ID_MENUITEM = 10001,
+    ID_MENUITEM_LOAD_REGISTES = 19001,
+    ID_MENUITEM_ADD_GUIDS = 10003,
+    ID_MENUITEM_SAVE_GUIDS = 10146,
+    ID_MENUITEM_LOAD_GUIDS = 10002,
+    ID_MENUITEM_EXIT = 19002,
+    ID_MENUITEM_HELP = 19023,
+    ID_MENUITEM_FAQ = 19024,
+    ID_MENUITEM_KB_SHRTCUTS = 19025,
+    ID_MENUITEM_THANKS = 19026,
+    ID_MENUITEM_CREDITS = 19027,
+    ID_MENUITEM_GO_VSCP_SITE = 19028,
+    ID_MENUITEM_ABOUT = 19029,
+    ID_TOOLBAR_DEVICE_CONFIG = 19030,
+    ID_TOOL6 = 19031,
+    ID_TOOL7 = 19032,
+    ID_TOOL8 = 19033,
+    ID_TOOL9 = 19034,
+    ID_TOOL10 = 19035,
+    ID_TOOL11 = 19036,
+    ID_COMBOBOX4 = 19037,
+    ID_CHECK_LEVEL2 = 19038,
+    ID_CHECKBOX_LEVEL22 = 10144,
+    ID_TOGGLEBUTTON1 = 19039,
+    ID_PANEL_DEVICE_CONFIG = 19117,
+    ID_CHOICEBOOK = 19040,
+    ID_PANEL_REGISTERS = 19041,
+    ID_GRID_REGISTERS = 19042,
+    ID_PANEL_ABSTRACTIONS = 19107,
+    ID_GRID_ABSTRACTIONS = 19108,
+    ID_PANEL_DM = 19109,
+    ID_GRID_DM = 19110,
+    ID_HTMLWINDOW1 = 19111,
+    ID_CHECKBOX_FULL_UPDATE = 19112,
+    ID_CHECKBOX_MDF_FROM_FILE = 10000,
+    ID_BUTTON16 = 19113,
+    ID_BUTTON17 = 19114,
+    ID_BUTTON19 = 19116
+  };
+////@end frmDeviceConfig member variables
 };
+
+
 
 #endif
 // _FRMDEVICECONFIG_H_

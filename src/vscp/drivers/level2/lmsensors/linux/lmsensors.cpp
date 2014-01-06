@@ -160,7 +160,7 @@ Clmsensors::open(const char *pUsername,
 	//
 
 	// Get configuration data
-	int varNumberOfSensors;
+	int varNumberOfSensors = 0;
 
 	wxString strNumberOfSensors = m_prefix +
 			wxString::FromAscii("_numberofsensors");
@@ -274,6 +274,66 @@ Clmsensors::open(const char *pUsername,
 						(const char *)m_prefix.ToAscii(),
 						i);
 			}
+            
+            // Get read offset
+			strVariableName = m_prefix +
+					wxString::FromAscii("_readoffset") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName,
+					&pthreadWork->m_readOffset)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _readoffset.",
+						(const char *)m_prefix.ToAscii(),
+						i);
+			}
+            
+            // Get index
+			strVariableName = m_prefix +
+					wxString::FromAscii("_index") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName,
+					&pthreadWork->m_index)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _index.",
+						(const char *)m_prefix.ToAscii(),
+						i);
+			}
+            
+            // Get zone
+			strVariableName = m_prefix +
+					wxString::FromAscii("_zone") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName,
+					&pthreadWork->m_zone)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _zone.",
+						(const char *)m_prefix.ToAscii(),
+						i);
+			}            
+            
+            // Get subzone
+			strVariableName = m_prefix +
+					wxString::FromAscii("_subzone") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName,
+					&pthreadWork->m_subzone)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _subzone.",
+						(const char *)m_prefix.ToAscii(),
+						i);
+			}
+            
+            // Get unit
+			strVariableName = m_prefix +
+					wxString::FromAscii("_unit") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName,
+					&pthreadWork->m_unit)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _unit.",
+						(const char *)m_prefix.ToAscii(),
+						i);
+			}
 
 			// start the workerthread
 			pthreadWork->m_pObj = this;
@@ -343,6 +403,10 @@ CWrkTread::CWrkTread()
 	m_datacoding = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
 	m_divideValue = 0;		// Zero means ignore
 	m_multiplyValue = 0;	// Zero means ignore
+    m_readOffset = 0;       // Read numerical at offset 0
+    m_index = 0;
+	m_zone = 0;
+	m_subzone = 0;
 }
 
 CWrkTread::~CWrkTread()
@@ -373,15 +437,15 @@ CWrkTread::Entry()
 	}
 
 	char buf[1024];
-	long val;
+	double val;
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
 
 		memset(buf, 0, sizeof(buf));
-		file.Seek(0);
+		file.Seek( m_readOffset );
 		if (wxInvalidOffset != file.Read(buf, sizeof(buf))) {
 
 			wxString str = wxString::FromAscii(buf);
-			str.ToLong(&val);
+            val = atof( buf );
 
 			if (m_divideValue) {
 				val = val / m_divideValue;
@@ -394,56 +458,227 @@ CWrkTread::Entry()
 			bool bNegative = false;
 			if (val < 0) {
 				bNegative = true;
-				val = abs(val);
-			}
+				val = (val< 0) ? -1.0 * val : val;
+            }
 
             vscpEvent *pEvent = new vscpEvent();
             if (NULL != pEvent) {
 
                 pEvent->pdata = NULL;
                 pEvent->sizeData = 0;
-                
-                m_guid.setGUID(pEvent->GUID);
-                pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+
+                m_guid.writeGUID(pEvent->GUID);
+                pEvent->vscp_class = m_vscpclass; // VSCP_CLASS1_MEASUREMENT;
                 pEvent->vscp_type = m_vscptype;
-                if (val < 0xff) {
-                    pEvent->sizeData = 2;
-                    pEvent->pdata = new uint8_t[2];
-                    if ( NULL != pEvent->pdata ) {
-                        pEvent->pdata[1] = val;
+
+                if (VSCP_CLASS1_MEASUREMENT == m_vscpclass) {
+
+                    switch (m_datacoding & VSCP_MASK_DATACODING_TYPE) {
+
+                    case VSCP_DATACODING_BIT:
+                    case VSCP_DATACODING_BYTE:
+                    case VSCP_DATACODING_INTEGER:
+                        if (val < 0xff) {
+                            pEvent->sizeData = 2;
+                            pEvent->pdata = new uint8_t[2];
+                            if (NULL != pEvent->pdata) {
+                                pEvent->pdata[1] = val;
+
+                                // Set data coding
+                                pEvent->pdata[0] = m_datacoding;
+                            } else {
+                                pEvent->sizeData = 0;
+                                pEvent->pdata = NULL;
+                            }
+                        }
+                        else if (val < 0xffff) {
+                            pEvent->sizeData = 3;
+                            pEvent->pdata = new uint8_t[3];
+                            if (NULL != pEvent->pdata) {
+                                long lval = val;
+                                pEvent->pdata[1] = (lval >> 8) & 0xff;
+                                pEvent->pdata[2] = lval & 0xff;
+
+                                // Set data coding
+                                pEvent->pdata[0] = m_datacoding;
+                            } else {
+                                pEvent->sizeData = 0;
+                                pEvent->pdata = NULL;
+                            }
+                        }
+                        else if (val < 0xffffff) {
+                            pEvent->sizeData = 4;
+                            pEvent->pdata = new uint8_t[4];
+                            if (NULL != pEvent->pdata) {
+                                long lval = val;
+                                pEvent->pdata[1] = (lval >> 16) & 0xff;
+                                pEvent->pdata[2] = (lval >> 8) & 0xff;
+                                pEvent->pdata[3] = lval & 0xff;
+
+                                // Set data coding
+                                pEvent->pdata[0] = m_datacoding;
+                            } else {
+                                pEvent->sizeData = 0;
+                                pEvent->pdata = NULL;
+                            }
+                        }
+                        else {
+                            pEvent->sizeData = 5;
+                            pEvent->pdata = new uint8_t[5];
+                            if (NULL != pEvent->pdata) {
+                                long lval = val;
+                                pEvent->pdata[1] = (lval >> 24) & 0xff;
+                                pEvent->pdata[2] = (lval >> 16) & 0xff;
+                                pEvent->pdata[3] = (lval >> 8) & 0xff;
+                                pEvent->pdata[4] = lval & 0xff;
+
+                                // Set data coding
+                                pEvent->pdata[0] = m_datacoding;
+                            } else {
+                                pEvent->sizeData = 0;
+                                pEvent->pdata = NULL;
+                            }
+                        }
+                        break;
+
+                    case VSCP_DATACODING_NORMALIZED:
+                    {
+                        uint8_t buf[8];
+                        uint16_t size;
+                        if ( convertFloatToNormalizedEventData(val,
+                                buf,
+                                &size,
+                                ((m_datacoding >> 3 & 3)),
+                                (m_datacoding & 7)) && (0 != size ) ) {
+                            
+                            pEvent->pdata = new uint8_t[size];
+                            if (NULL != pEvent->pdata) {
+                                pEvent->sizeData = size;
+                                memcpy( pEvent->pdata, buf, size);
+                            }
+                            else {
+                                pEvent->sizeData = 0;
+                                pEvent->pdata = NULL;
+                            }
+                        }
                     }
-                } 
-                else if (val < 0xffff) {
-                    pEvent->sizeData = 3;
-                    pEvent->pdata = new uint8_t[3];
-                    if ( NULL != pEvent->pdata ) {
-                        pEvent->pdata[1] = (val >> 8) & 0xff;
-                        pEvent->pdata[2] = val & 0xff;
+                        break;
+
+                    case VSCP_DATACODING_STRING:
+                    {
+                        pEvent->sizeData = 8;
+                        pEvent->pdata = new uint8_t[8];
+
+                        if (NULL != pEvent->pdata) {
+                            wxString str;
+                            str.Printf(_("%lf"), val);
+                            if (str.Length() > 7) {
+                                str = str.Left(7);
+                            }
+
+                            strcpy((char *) (pEvent->pdata + 1), str.ToAscii());
+
+                        } else {
+                            pEvent->sizeData = 0;
+                            pEvent->pdata = NULL;
+                        }
+
+                        // Set data coding
+                        pEvent->pdata[0] = m_datacoding;
+
                     }
-                } 
-                else if (val < 0xffffff) {
-                    pEvent->sizeData = 4;
-                    pEvent->pdata = new uint8_t[4];
-                    if ( NULL != pEvent->pdata ) {
-                        pEvent->pdata[1] = (val >> 16) & 0xff;
-                        pEvent->pdata[2] = (val >> 8) & 0xff;
-                        pEvent->pdata[3] = val & 0xff;
+                        break;
+
+                    case VSCP_DATACODING_SINGLE:
+                    {
+                        pEvent->sizeData = 7;
+                        pEvent->pdata = new uint8_t[7];
+
+                        if (NULL != pEvent->pdata) {
+                            uint8_t buf[6];
+                            float f = (float) val;
+                            uint8_t *p = (uint8_t *) & f;
+                            memcpy(buf, p, 6);
+                            // If on a little endian platform we
+                            // have to change byte order
+                            if (wxIsPlatformLittleEndian()) {
+                                for (int i = 0; i < 6; i++) {
+                                    pEvent->pdata[1 + i] = buf[5 - i];
+                                }
+                            } else {
+                                memcpy(pEvent->pdata + 1, buf, 6);
+                            }
+
+                            // Set data coding
+                            pEvent->pdata[0] = m_datacoding;
+                        } else {
+                            pEvent->sizeData = 0;
+                            pEvent->pdata = NULL;
+                        }
                     }
-                } 
-                else {
-                    pEvent->sizeData = 5;
-                    pEvent->pdata = new uint8_t[5];
-                    if ( NULL != pEvent->pdata ) {
-                        pEvent->pdata[1] = (val >> 24) & 0xff;
-                        pEvent->pdata[2] = (val >> 16) & 0xff;
-                        pEvent->pdata[3] = (val >> 8) & 0xff;
-                        pEvent->pdata[4] = val & 0xff;
+                        break;
+                    } // switch
+
+                }
+                else if ((VSCP_CLASS1_MEASUREZONE == m_vscpclass) ||
+                        (VSCP_CLASS1_SETVALUEZONE == m_vscpclass)) {
+
+                    // We pretend we are a standard measurement
+                    uint8_t buf[8];
+                    uint16_t size;
+                    convertFloatToNormalizedEventData(val,
+                            buf,
+                            &size,
+                            ((m_datacoding >> 3 & 3)),
+                            (m_datacoding & 7));
+
+                    pEvent->pdata = new uint8_t[size];
+                    if (NULL != pEvent->pdata) {
+                        if ( size <= 5 ) {
+                            pEvent->sizeData = size;
+                            memcpy(pEvent->pdata+3, buf, size);
+                        }
+                        else {
+                            delete pEvent->pdata;
+                            pEvent->sizeData = 0;
+                            pEvent->pdata = NULL;
+                        }
+                    } 
+                    else {
+                        pEvent->sizeData = 0;
+                        pEvent->pdata = NULL;
                     }
+                    
+                }
+                else if (VSCP_CLASS1_MEASUREMENT64 == m_vscpclass) {
+                    uint8_t buf[8];
+                    {
+                        uint8_t *p = (uint8_t *)&val;
+                        memcpy( buf, p, 8 );
+                        // If on a little endian platform we
+                        // have to change byte order
+                        if ( wxIsPlatformLittleEndian() ) {
+                            for ( int i=0; i<8; i++ ) {
+                                pEvent->pdata[i] = buf[7-i];
+                            }
+                        }
+                        else {
+                            memcpy( pEvent->pdata, buf, 8 );
+                        }
+                    }
+                }
+                else if (VSCP_CLASS2_MEASUREMENT_STR == m_vscpclass) {
+                    wxString str;
+                    str.Printf(_("%d,%d,%d,%lf"), 
+                                    m_index, 
+                                    m_zone, 
+                                    m_subzone, 
+                                    m_unit,
+                                    val );
+                    strcpy( (char *)pEvent->pdata, str.ToAscii() );
                 }
                 
-                if ( NULL != pEvent->pdata ) {
-                    pEvent->pdata[0] = m_datacoding;
-                }
+                
 
                 if (doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
                     m_pObj->m_mutexReceiveQueue.Lock();

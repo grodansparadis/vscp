@@ -10,9 +10,9 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@ -fPIC
-CPPFLAGS = @CPPFLAGS@ -fPIC
-CFLAGS = -fPIC
+CXXFLAGS = @CXXFLAGS@ -D__LINUX__ -fPIC
+CPPFLAGS = @CPPFLAGS@ -D__LINUX__ -fPIC
+CFLAGS = >-D__LINUX__ -fPIC
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 DLFLAGS = -g -shared -fPIC
@@ -42,7 +42,7 @@ PROJOBJS = lmsensors.o ../../../../../common/crc.o ../../../../common/vscptcpif.
 
 ### Targets: ###
 
-all: vscp2drv_lmsensors.so test
+all: vscp2drv_lmsensors.so
 
 install: all
 	$(INSTALL_PROGRAM) vscp2drv_lmsensors.so $(libdir)
@@ -62,9 +62,6 @@ clean:
 
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile	
-
-test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
 %.so: %.o $(LMSENSOROBJ)

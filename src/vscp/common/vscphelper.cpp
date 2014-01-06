@@ -20,7 +20,7 @@
 //
 
 // HISTORY:
-//    021107 - AKHE Started this filewww
+//    021107 - AKHE Started this file
 //
 
 #ifdef __GNUG__
@@ -644,7 +644,7 @@ VSCPInformation::VSCPInformation(void)
 	// Level II Display functionality Class=1030 (0x406)
 	m_hashType[ MAKE_CLASSTYPE_LONG(1030, 0) ] = _("DISPLAY_GENERAL");
     
-    // Level II Measurement class Class=1040 (0x410)
+    // Level II Measurement class string Class=1040 (0x410)
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 0) ] = _("MEASUREMENT_STR_GENERAL");
     m_hashType[ MAKE_CLASSTYPE_LONG(1040, 1) ] = _("COUNT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1040, 2) ] = _("LENGTH");
@@ -1017,6 +1017,25 @@ void VSCPInformation::fillTypeDescriptions(wxControlWithItems *pctrl,
 // ***************************************************************************
 
 
+uint8_t getMeasurementDataCoding(const vscpEvent *pEvent)
+{
+    uint8_t datacoding_byte = -1;
+    
+    if ( NULL == pEvent ) return -1;
+    if ( NULL == pEvent->pdata ) return -1;
+    if ( pEvent->sizeData < 1 ) return -1;
+    
+    if ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) {
+        datacoding_byte = pEvent->pdata[0];
+    }
+    else if ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) {
+        if ( pEvent->sizeData >= 16 ) datacoding_byte = pEvent->pdata[16];
+    } 
+        
+    return datacoding_byte;
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // getDataCodingBitArray
 //
@@ -1150,15 +1169,20 @@ wxString& getDataCodingString(const unsigned char *pString,
 float getMeasurementAsFloat(const unsigned char *pNorm, 
                                     const unsigned char length)
 {
-	float value;
-	value = std::numeric_limits<float>::infinity();
+    float *pfloat;
+    
+    // Check pointers
+    if ( NULL == pNorm ) return false;
+    
+	//float value;
+	//value = std::numeric_limits<float>::infinity();
 	if (length >= 5) {
-		float *pfloat = (float*)(pNorm + 1);
-		value = pfloat[0];
+		pfloat = (float*)(pNorm + 1);
+		//value = pfloat[0];
 		// please insert test for (!NaN || !INF)
 	}
     
-	return value;
+	return *pfloat;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1170,6 +1194,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 {
 	int i, j;
 	int offset = 0;
+    
+    // Check pointers
+    if ( NULL == pEvent ) return false;
 
 	strValue = wxT("");
 
@@ -1507,7 +1534,46 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 	}
 
 	return true;
+}
 
+///////////////////////////////////////////////////////////////////////////////
+// getVSCPMeasurementAsDouble
+//
+//
+
+bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
+{
+    wxString str;
+   
+    // Check pointers
+    if ( NULL == pEvent ) return false;
+    if ( NULL == pvalue ) return false;
+    
+    if ( (VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class) || 
+             (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
+             (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || 
+             (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ) {
+        if ( !getVSCPMeasurementAsString( pEvent, str ) ) return false;
+        if ( !str.ToDouble( pvalue ) ) return false;
+    }
+    else if ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ){
+        if ( !getVSCPMeasurementFloat64AsString( pEvent, str ) ) return false;
+        if ( !str.ToDouble( pvalue ) ) return false;
+    }
+    else if ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ){
+        wxString str;
+        char buf[512];
+        
+        if ( 0 == pEvent->sizeData || NULL == pEvent->pdata ) return false;
+        memcpy( buf, pEvent->pdata + 4, pEvent->sizeData-4 );
+        str.FromAscii( buf );
+        str.ToDouble( pvalue );
+    }
+    else {
+        return false;
+    }
+    
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1517,7 +1583,7 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 
 bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strValue)
 {
-    float value;
+    //float value;
     int offset = 0;
     
     // If class >= 512 and class <1024 we
@@ -1529,7 +1595,7 @@ bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strVal
     
     if (pEvent->sizeData-offset < 6) return false;
     
-	value = std::numeric_limits<float>::infinity();
+	//value = std::numeric_limits<float>::infinity();
 	float *pfloat = (float*)(pEvent->pdata+offset);
     strValue.Format( _("%f"), *pfloat );
     
@@ -1558,6 +1624,7 @@ bool getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strVa
     
     // We mimic a standard measurement
     vscpEvent eventMimic;
+	eventMimic.pdata = new uint8_t[pEvent->sizeData-offset-3];
     eventMimic.vscp_class = pEvent->vscp_class;
     eventMimic.vscp_type = pEvent->vscp_type;
     eventMimic.sizeData = pEvent->sizeData;
@@ -1567,16 +1634,21 @@ bool getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strVa
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// convertMeasurementFloatToNormalizedEventData
+// convertFloatToNormalizedEventData
 //
 
-bool convertMeasurementFloatToNormalizedEventData( double value, 
-                                                        uint8_t *pdata, 
-                                                        uint8_t unit,
-                                                        uint8_t sensoridx )
+bool convertFloatToNormalizedEventData( double value, 
+                                            uint8_t *pdata,
+                                            uint16_t *psize,
+                                            uint8_t unit,
+                                            uint8_t sensoridx )
 {
     // Check pointer
     if ( NULL == pdata ) return false;
+    if ( NULL == psize ) return false;
+    
+    // No data assigned yet
+    *psize = 0;
     
     unit &= 3;      // Mask of invalid bits
     unit <<= 3;     // Shift to correct position
@@ -1598,28 +1670,33 @@ bool convertMeasurementFloatToNormalizedEventData( double value,
     }
     
     modf( value, &intpart );
-    val64 = (uint64_t)(value * pow(10,ndigits));
+    val64 = (uint64_t)(value * pow(10.0,ndigits));
     wxUINT64_SWAP_ON_LE(val64);
     
     if ( val64 < ((double)0x80) ) {
+        *psize = 3;
         pdata[2] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x800) ) {
+        *psize = 4;
         pdata[2] = (val64 >> 8) & 0xff;
         pdata[3] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x800) ) {
+        *psize = 5;
         pdata[2] = (val64 >> 16) & 0xff;
         pdata[3] = (val64 >> 8) & 0xff;
         pdata[4] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x80000) ) {
+        *psize = 6;
         pdata[2] = (val64 >> 24) & 0xff;
         pdata[3] = (val64 >> 16) & 0xff;
         pdata[4] = (val64 >> 8) & 0xff;
         pdata[5] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x80000) ) {
+        *psize = 7;
         pdata[2] = (val64 >> 32) & 0xff;
         pdata[3] = (val64 >> 24) & 0xff;
         pdata[4] = (val64 >> 16) & 0xff;
@@ -1627,6 +1704,7 @@ bool convertMeasurementFloatToNormalizedEventData( double value,
         pdata[6] = val64 & 0xff;
     }
     else if ( val64 < ((double)0x80000) ) {
+        *psize = 8;
         pdata[2] = (val64 >> 40) & 0xff;
         pdata[3] = (val64 >> 32) & 0xff;
         pdata[4] = (val64 >> 24) & 0xff;
@@ -1871,7 +1949,7 @@ bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 		wxStringTokenizer tkz(strGUID, wxT(":"));
 		for (int i = 0; i < 16; i++) {
 			tkz.GetNextToken().ToULong(&val, 16);
-			pEvent->GUID[ 15-i ] = (uint8_t) val;
+			pEvent->GUID[ i ] = (uint8_t) val;
 			// If no tokens left no use to continue
 			if (!tkz.HasMoreTokens()) break;
 		}
@@ -1898,7 +1976,7 @@ bool getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
 		wxStringTokenizer tkz(strGUID, wxT(":"));
 		for (int i = 0; i < 16; i++) {
 			tkz.GetNextToken().ToULong(&val, 16);
-			pEvent->GUID[ 15-i ] = (uint8_t) val;
+			pEvent->GUID[ i ] = (uint8_t) val;
 			// If no tokens left no use to continue
 			if (!tkz.HasMoreTokens()) break;
 		}
@@ -1920,7 +1998,7 @@ bool getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID)
 	wxStringTokenizer tkz(strGUID, wxT(":"));
 	for (int i = 0; i < 16; i++) {
 		tkz.GetNextToken().ToULong(&val, 16);
-		pGUID[ 15-i ] = (uint8_t) val;
+		pGUID[ i ] = (uint8_t) val;
 		// If no tokens left no use to continue
 		if (!tkz.HasMoreTokens()) break;
 	}
@@ -1939,10 +2017,10 @@ bool writeGuidToString(const vscpEvent *pEvent, wxString& strGUID)
 	if (NULL == pEvent) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"),
-			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
-			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
-			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
-			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+			pEvent->GUID[0], pEvent->GUID[1], pEvent->GUID[2], pEvent->GUID[3],
+			pEvent->GUID[4], pEvent->GUID[5], pEvent->GUID[6], pEvent->GUID[7],
+			pEvent->GUID[8], pEvent->GUID[9], pEvent->GUID[10], pEvent->GUID[11],
+			pEvent->GUID[12], pEvent->GUID[13], pEvent->GUID[14], pEvent->GUID[15]);
 
 	return true;
 
@@ -1958,10 +2036,10 @@ bool writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID)
 	if (NULL == pEvent) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"),
-			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
-			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
-			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
-			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+			pEvent->GUID[0], pEvent->GUID[1], pEvent->GUID[2], pEvent->GUID[3],
+			pEvent->GUID[4], pEvent->GUID[5], pEvent->GUID[6], pEvent->GUID[7],
+			pEvent->GUID[8], pEvent->GUID[9], pEvent->GUID[10], pEvent->GUID[11],
+			pEvent->GUID[12], pEvent->GUID[13], pEvent->GUID[14], pEvent->GUID[15]);
 
 	return true;
 
@@ -1977,10 +2055,10 @@ bool writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID)
 	if (NULL == pEvent) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X"),
-			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
-			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
-			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
-			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+			pEvent->GUID[0], pEvent->GUID[1], pEvent->GUID[2], pEvent->GUID[3],
+			pEvent->GUID[4], pEvent->GUID[5], pEvent->GUID[6], pEvent->GUID[7],
+			pEvent->GUID[8], pEvent->GUID[9], pEvent->GUID[10], pEvent->GUID[11],
+			pEvent->GUID[12], pEvent->GUID[13], pEvent->GUID[14], pEvent->GUID[15]);
 
 	return true;
 }
@@ -1995,10 +2073,10 @@ bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID)
 	if (NULL == pEvent) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X\n%02X:%02X:%02X:%02X"),
-			pEvent->GUID[15], pEvent->GUID[14], pEvent->GUID[13], pEvent->GUID[12],
-			pEvent->GUID[11], pEvent->GUID[10], pEvent->GUID[9], pEvent->GUID[8],
-			pEvent->GUID[7], pEvent->GUID[6], pEvent->GUID[5], pEvent->GUID[4],
-			pEvent->GUID[3], pEvent->GUID[2], pEvent->GUID[1], pEvent->GUID[0]);
+			pEvent->GUID[0], pEvent->GUID[1], pEvent->GUID[2], pEvent->GUID[3],
+			pEvent->GUID[4], pEvent->GUID[5], pEvent->GUID[6], pEvent->GUID[7],
+			pEvent->GUID[8], pEvent->GUID[9], pEvent->GUID[10], pEvent->GUID[11],
+			pEvent->GUID[12], pEvent->GUID[13], pEvent->GUID[14], pEvent->GUID[15]);
 
 	return true;
 }
@@ -2013,10 +2091,10 @@ bool writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID)
 	if (NULL == pGUID) return false;
 
 	strGUID.Printf(_("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X"),
-			pGUID[15], pGUID[14], pGUID[13], pGUID[12],
-			pGUID[11], pGUID[10], pGUID[9], pGUID[8],
-			pGUID[7], pGUID[6], pGUID[5], pGUID[4],
-			pGUID[3], pGUID[2], pGUID[1], pGUID[0]);
+			pGUID[0], pGUID[1], pGUID[2], pGUID[3],
+			pGUID[4], pGUID[5], pGUID[6], pGUID[7],
+			pGUID[8], pGUID[9], pGUID[10], pGUID[11],
+			pGUID[12], pGUID[13], pGUID[14], pGUID[15]);
 
 	return true;
 
@@ -2414,10 +2492,12 @@ bool convertCanalToEvent(vscpEvent *pvscpEvent,
 			// Assign size (max 8 bytes it's CAN... )
 			pvscpEvent->sizeData = pcanalMsg->sizeData;
 			memcpy(pvscpEvent->pdata, pcanalMsg->data, pcanalMsg->sizeData);
-		} else {
+		} 
+        else {
 			pvscpEvent->sizeData = 0;
 		}
-	} else {
+	} 
+    else {
 		pvscpEvent->pdata = NULL;
 		pvscpEvent->sizeData = 0;
 	}
@@ -2432,7 +2512,7 @@ bool convertCanalToEvent(vscpEvent *pvscpEvent,
 	pvscpEvent->timestamp = pcanalMsg->timestamp;
 
 	// Set nickname id
-	pvscpEvent->GUID[ 0 ] = (unsigned char) (0xff & pcanalMsg->id);
+	pvscpEvent->GUID[ 15 ] = (unsigned char) (0xff & pcanalMsg->id);
 
 	return true;
 }
@@ -2449,9 +2529,9 @@ bool convertCanalToEventEx(vscpEventEx *pvscpEvent,
 	vscpEvent *pEvent = new vscpEvent;
 	convertVSCPfromEx(pEvent, pvscpEvent );
 	bool rv = convertCanalToEvent(pEvent,
-		pcanalMsg,
-		pGUID,
-		bCAN);
+                                    pcanalMsg,
+                                    pGUID,
+                                    bCAN);
 	deleteVSCPevent(pEvent);
 	return rv;
 }
@@ -2703,7 +2783,7 @@ bool writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 	// Check pointer
 	if (NULL == pEvent) return false;
 
-	str.Printf(_("%d,%d,%d,%d,%d"),
+	str.Printf(_("%d,%d,%d,%d,%d,"),
 			pEvent->head,
 			pEvent->vscp_class,
 			pEvent->vscp_type,
@@ -2890,9 +2970,9 @@ void makeHtml(wxString& str)
 // getDeviceHtmlStatusInfo
 //
 
-wxString getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
+wxString &getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 {
-    wxString strHTML;
+    static wxString strHTML;
     wxString str;
 
     strHTML = _("<html><body>");

@@ -111,7 +111,7 @@ bool cguid::operator!=(const cguid &guid)
     wxStringTokenizer tkz( strGUID, wxT ( ":" ) );
     for ( int i=0; i<16; i++ ) {
         tkz.GetNextToken().ToULong ( &val, 16 );
-        m_id[ 15-i ] = ( uint8_t ) val;
+        m_id[ i ] = ( uint8_t ) val;
         // If no tokens left no use to continue
         if ( !tkz.HasMoreTokens() ) break;
     }
@@ -145,10 +145,10 @@ bool cguid::operator!=(const cguid &guid)
 void cguid::toString( wxString& strGUID  )
 {
     strGUID.Printf( _( "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X" ),
-                    m_id[15], m_id[14], m_id[13], m_id[12],
-                    m_id[11], m_id[10], m_id[9], m_id[8],
-                    m_id[7], m_id[6], m_id[5], m_id[4],
-                    m_id[3], m_id[2], m_id[1], m_id[0] );
+                    m_id[0], m_id[1], m_id[2], m_id[3],
+                    m_id[4], m_id[5], m_id[6], m_id[7],
+                    m_id[8], m_id[9], m_id[10], m_id[11],
+                    m_id[12], m_id[13], m_id[14], m_id[15] );
 }
 
 
@@ -179,10 +179,47 @@ bool cguid::isNULL( void )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setGUID
+// writeGUID
 //
 
-void cguid::setGUID( uint8_t *pArray )
+void cguid::writeGUID( uint8_t *pArray )
 {
-    memcpy(pArray, m_id, 16 );
+    // Check pointer
+    if (NULL == pArray) return;
+    
+    memcpy( pArray, m_id, 16 );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// writeGUID_reverse
+//
+
+void cguid::writeGUID_reverse( uint8_t *pArray )
+{
+    // Check pointer
+    if (NULL == pArray) return;
+    
+    for ( int i=0; i<16; i++ ) {
+        pArray[ 15-i ] = m_id[ i ];
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setClientID
+//
+
+void cguid::setClientID( uint16_t clientid )
+{
+    m_id[12] = ( clientid >> 8 ) & 0xff;
+    m_id[13] = clientid & 0xff;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setNicknameID
+//
+
+void cguid::setNicknameID( uint16_t nicknameid )
+{
+    m_id[14] = ( nicknameid >> 8 ) & 0xff;
+    m_id[15] = nicknameid & 0xff;
 }

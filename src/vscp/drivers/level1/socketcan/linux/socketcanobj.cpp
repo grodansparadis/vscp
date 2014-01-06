@@ -86,7 +86,7 @@ CSocketcanObj::~CSocketcanObj()
 bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 {
 	int rv = true;
-	char devname[IFNAMSIZ + 1];
+	//char devname[IFNAMSIZ + 1];
 	fd_set rdfs;
 	struct timeval tv;
 	struct sockaddr_can addr;
@@ -99,7 +99,7 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 	//----------------------------------------------------------------------
 	//	Set default parameters
 	//----------------------------------------------------------------------
-	strcpy(devname, "vcan0");
+	strcpy(m_socketcanobj.m_devname, "vcan0");
 	unsigned long nMask = 0;
 	unsigned long nFilter = 0;
 
@@ -118,13 +118,13 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 	//----------------------------------------------------------------------
 	// Interface
 	char *p = strtok((char *) pDevice, ";");
-	if (NULL != p) strncpy(devname, p, strlen(p));
+	if (NULL != p) strncpy(m_socketcanobj.m_devname, p, strlen(p));
 
 	// Mask
 	p = strtok(NULL, ";");
 	if (NULL != p) {
 		if ((NULL != strstr(p, "0x")) || (NULL != strstr(p, "0X"))) {
-			sscanf(p + 2, "%x", &nMask);
+			sscanf(p + 2, "%lx", &nMask);
 		} else {
 			nMask = atol(p);
 		}
@@ -134,7 +134,7 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 	p = strtok(NULL, ";");
 	if (NULL != p) {
 		if ((NULL != strstr(p, "0x")) || (NULL != strstr(p, "0X"))) {
-			sscanf(p + 2, "%x", &nFilter);
+			sscanf(p + 2, "%lx", &nFilter);
 		} else {
 			nFilter = atol(p);
 		}

@@ -277,6 +277,7 @@ static struct websrv_Session *websrv_sessions;
 static struct Page pages[] = 
   {
     { "/vscp", "text/html",  &CControlObject::websrv_serve_mainpage, NULL },
+    { "/vscp/", "text/html",  &CControlObject::websrv_serve_mainpage, NULL },
     { "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_interfaces, NULL },
     { "/vscp/dm", "text/html", &CControlObject::websrv_serve_dmlist, NULL },
     { "/vscp/dmedit", "text/html", &CControlObject::websrv_serve_dmedit, NULL },
@@ -1155,7 +1156,8 @@ void CControlObject::sendEventToClient(CClientItem *pClientItem,
     // Create an event
     vscpEvent *pnewvscpEvent = new vscpEvent;
     if (NULL != pnewvscpEvent) {
-        // Copy in the new message
+        
+        // Copy in the new event
         memcpy(pnewvscpEvent, pEvent, sizeof( vscpEvent));
 
         // And data...
@@ -1296,12 +1298,11 @@ void CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
     addIdToClientMap(pClientItem->m_clientID);
 
     // Set GUID for interface
-    //getIPAddress( m_guid );
     pClientItem->m_guid = m_guid;
-    pClientItem->m_guid.setAt( 0, 0);
-    pClientItem->m_guid.setAt( 1, 0);
-    pClientItem->m_guid.setAt( 2, pClientItem->m_clientID & 0xff );
-    pClientItem->m_guid.setAt( 3, (pClientItem->m_clientID >> 8) & 0xff );
+
+    pClientItem->m_guid.setNicknameID( 0 );
+    pClientItem->m_guid.setClientID( pClientItem->m_clientID );
+
 }
 
 
@@ -1569,20 +1570,36 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_logLevel = readStringValue(str);
                     }
                 } else if (subchild->GetName() == wxT("tcpif")) {
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+#else
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+#endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bTCPInterface = false;
                     }
 
+#if wxCHECK_VERSION(3,0,0)
+                    property = subchild->GetAttribute(wxT("port"), wxT("9598"));
+#else
                     property = subchild->GetPropVal(wxT("port"), wxT("9598"));
+#endif                    
                     if (property.IsNumber()) {
                         m_TCPPort = readStringValue(property);
                     }
 
+#if wxCHECK_VERSION(3,0,0)                    
+                    m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("ifaddress"), wxT(""));
+#else
                     m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("ifaddress"), wxT(""));
+#endif                    
 
                 } else if (subchild->GetName() == wxT("canaldriver")) {
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+#else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+#endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bCanalDrivers = false;
                     } else {
@@ -1591,31 +1608,51 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 } 
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+#else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+#endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bDM = false;
                     }
 
                     // Get the path to the DM file
+#if wxCHECK_VERSION(3,0,0)                    
+                    m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
+#else 
                     m_dm.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
+#endif                    
                     m_dm.m_configPath.Trim();
                     m_dm.m_configPath.Trim(false);
                     
                 }                 
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+#else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+#endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bVariables = false;
                     }
 
                     // Get the path to the DM file
+#if wxCHECK_VERSION(3,0,0)                    
+                    m_VSCP_Variables.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
+#else 
                     m_VSCP_Variables.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
+#endif                    
                     m_VSCP_Variables.m_configPath.Trim();
                     m_VSCP_Variables.m_configPath.Trim(false);
 
                 } else if (subchild->GetName() == wxT("vscp")) {
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+#else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+#endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bVSCPDaemon = false;
                     }
@@ -1639,22 +1676,38 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_pathKey.Trim();
                     m_pathKey.Trim(false);
                 } else if (subchild->GetName() == wxT("websockets")) {
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+#else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+#endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bWebSockets = false;
                     }
 
+#if wxCHECK_VERSION(3,0,0)                    
+                    property = subchild->GetAttribute(wxT("port"), wxT("7681"));
+#else 
                     property = subchild->GetPropVal(wxT("port"), wxT("7681"));
+#endif                    
                     if (property.IsNumber()) {
                         m_portWebsockets = readStringValue(property);
                     }
                 } else if (subchild->GetName() == wxT("webserver")) {
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+#else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+#endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bWebServer = false;
                     }
 
+#if wxCHECK_VERSION(3,0,0)                    
+                    property = subchild->GetAttribute(wxT("port"), wxT("8080"));
+#else 
                     property = subchild->GetPropVal(wxT("port"), wxT("8080"));
+#endif                    
                     if (property.IsNumber()) {
                         m_portWebServer = readStringValue(property);
                     }
@@ -1701,36 +1754,68 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             privilege = subsubchild->GetNodeContent();
                         } else if (subsubchild->GetName() == wxT("filter")) {
                             bFilterPresent = true;
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
+#else 
                             wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
+#endif                            
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.filter_priority = val;
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
+#else 
                             wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
+#endif                            
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.filter_class = val;
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
+#else 
                             wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
+#endif                            
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.filter_type = val;
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
+#else 
                             wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
+#endif                                    
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
                         } else if (subsubchild->GetName() == wxT("mask")) {
                             bMaskPresent = true;
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
+#else 
                             wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
+#endif                            
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.mask_priority = val;
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
+#else 
                             wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
+#endif                            
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.mask_class = val;
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
+#else 
                             wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
+#endif                            
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.mask_type = val;
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
+#else 
                             wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
+#endif                                    
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
                         } else if (subsubchild->GetName() == wxT("allowfrom")) {
@@ -1825,7 +1910,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
+#else 
                     wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
+#endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         bEnabled = false;
                     }
@@ -1929,7 +2018,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
+#else 
                     wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
+#endif
                     if (property.IsSameAs(_("false"), false)) {
                         bEnabled = false;
                     }
@@ -2044,9 +2137,21 @@ bool CControlObject::readMimeTypes(wxString& path)
     while (child) {  
         
         if (child->GetName() == wxT("mimetype")) {
+#if wxCHECK_VERSION(3,0,0)             
+            wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));
+#else 
             wxString strEnable = child->GetPropVal(wxT("enable"), wxT("false"));
-            wxString strExt = child->GetPropVal(wxT("extension"), wxT(""));
-            wxString strType = child->GetPropVal(wxT("mime"), wxT(""));
+#endif 
+#if wxCHECK_VERSION(3,0,0)             
+            wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));
+#else 
+            wxString strExt = child->GetPropVal(wxT("extension"), wxT(""));            
+#endif
+#if wxCHECK_VERSION(3,0,0)             
+            wxString strType = child->GetAttribute(wxT("mime"), wxT(""));
+#else 
+            wxString strType = child->GetPropVal(wxT("mime"), wxT(""));            
+#endif            
             if ( strEnable.IsSameAs(_("true"),false )) {
                 m_hashMimeTypes[strExt] = strType;
             }
@@ -2153,7 +2258,8 @@ CControlObject::callback_http(struct libwebsocket_context *context,
         if (libwebsockets_serve_http_file(context,
                 wsi,
                 path.ToAscii(),
-                mime.ToAscii())) {
+                mime.ToAscii()),
+                NULL ) {
             
             return -1;
         }
@@ -3393,7 +3499,7 @@ CControlObject::websrv_get_session( struct MHD_Connection *connection )
             (unsigned int)random(),
             (unsigned int)random(),
             (unsigned int)t,
-            (unsigned int)random());
+            (unsigned int)random(), 1337 );
     
     ret->m_referenceCount++;
     ret->start = time(NULL);
@@ -3917,7 +4023,11 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                 pObject->m_dm.getRowCount(),
                 nCount,
                 nFrom,
+#if wxCHECK_VERSION(3,0,0)                
+                wxstrlight );
+#else                
                 wxstrlight.GetWriteBuf(wxstrlight.Length()) );
+#endif        
         buildPage += _("<br>");
     } 
 
@@ -4132,7 +4242,11 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                 pObject->m_dm.getRowCount(),
                 nCount,
                 nFrom,
+#if wxCHECK_VERSION(3,0,0)                
+                wxstrlight );
+#else                
                 wxstrlight.GetWriteBuf(wxstrlight.Length()) );
+#endif        
     }
      
     buildPage += _(WEB_COMMON_END);     // Common end code
@@ -4360,7 +4474,7 @@ CControlObject::websrv_serve_dmedit( const void *cls,
         
         // GUID
         if ( !bNew ) writeGuidArrayToString( pElement->m_vscpfilter.filter_GUID, str );
-        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Type:</td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"filter_vscpguid\">");
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">GUID:</td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"filter_vscpguid\">");
         if ( bNew ) {
             buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         }
@@ -5623,7 +5737,7 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
     
     buildPage += _(WEB_VAREDIT_BODY_START);
 
-    if ( !bNew && id < pObject->m_VSCP_Variables.m_listVariable.GetCount() ) {
+    if ( !bNew && ( id < pObject->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
         pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
     }
 
@@ -5694,20 +5808,23 @@ CControlObject::websrv_serve_variables_edit( const void *cls,
         }
         else if ( nType == VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) {
             
-            bool bValue;
-            pVariable->getValue( &bValue );
+            bool bValue = false;
+            if ( !bNew ) pVariable->getValue( &bValue );
+            
             buildPage += _("<input type=\"radio\" name=\"value_boolean\" value=\"true\" ");
-            if ( !bNew ) buildPage += wxString::Format(_("%s"), 
-                                        bValue ? _("checked >true ") : _(">true ") );
+            if ( !bNew ) 
+                buildPage += wxString::Format(_("%s"), 
+                                bValue ? _("checked >true ") : _(">true ") );
             else {
                 buildPage += _(">true ");
             }
             
             buildPage += _("<input type=\"radio\" name=\"value_boolean\" value=\"false\" ");
-            if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+            if ( !bNew ) 
+                buildPage += wxString::Format(_("%s"), 
                                         !bValue ? _("checked >false ") : _(">false ") );
             else {
-                buildPage += _(">checked >false ");
+                buildPage += _(">false ");
             }
         }
         else if ( nType == VSCP_DAEMON_VARIABLE_CODE_INTEGER ) {

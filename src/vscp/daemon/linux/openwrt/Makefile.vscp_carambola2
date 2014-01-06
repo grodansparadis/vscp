@@ -1,0 +1,114 @@
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=vscp
+PKG_RELEASE:=Fluorine
+PKG_VERSION:=0.4.0.12
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=https://github.com/grodansparadis/vscp_software.git
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
+#PKG_SOURCE_VERSION:=4eec440344efa18d03121f576002856e6b21363f
+PKG_SOURCE_VERSION:=HEAD
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION)-$(PKG_SOURCE_VERSION).tar.gz
+PKG_CAT:=zcat
+
+include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/host-build.mk
+
+define Package/$(PKG_NAME)
+	MAINTAINER:="Ake Hedman, Grodans Paradis AB" <akhe@grodansparadis.com>
+	SECTION:=utils
+	CATEGORY:=Utilities
+	TITLE:=$(PKG_NAME)
+	URL:=http://www.vscp.org
+	DEPENDS:= +uclibcxx +libncurses +libpcap +libwxbase +libexpat +libopenssl +libmicrohttpd +libwebsockets +libmosquitto-nossl 
+endef
+
+define Package/conffiles
+	/etc/vscp/vscpd.conf
+	/etc/vscp/variables.xml
+	/etc/vscp/dm.xml
+	/etc/mimetypes.xml
+	/srv/vscp/actions/testaction
+	/srv/vscp/web/index.html
+	/srv/vscp/web/favicon.ico
+endef
+
+MAKE_FLAGS += \
+	CFLAGS="$(TARGET_CFLAGS) -fPIC" \
+	CXXFLAGS="$(TARGET_CXXFLAGS) -fPIC -fno-builtin -fno-rtti -nostdinc++" \
+	CPPFLAGS="$(TARGET_CPPFLAGS) -fPIC -I$(STAGING_DIR)/usr/include/uClibc++ -I$(STAGING_DIR)/usr/lib/wx/include/mips-openwrt-linux-base-unicode-release-2.8 -I$/home/akhe/vscp_software/src/vscp/daemon/linux -I$(STAGING_DIR)/usr/include/wx-2.8 -I$(PKG_BUILD_DIR)/src/vscp/drivers/level1/socketcan/linux/include -I$(LINUX_DIR)/include -I$(BUILD_DIR)/mosquitto-nossl/mosquitto-1.0.3/lib/cpp" \
+	LDFLAGS="$(TARGET_LDFLAGS) $(LDFLAGS) -L$(BUILD_DIR)/mosquitto-nossl/mosquitto-1.0.3/lib/cpp" \
+	LIBS="$(TARGET_LIBS) -lm " \
+	DESTDIR="$(PKG_INSTALL_DIR)"
+
+#define Build/Prepare
+#	mkdir -p $(PKG_BUILD_DIR) -C$(PKG_BUILD_DIR)
+#	tar -zxvf $(PKG_SOURCE) 
+#	$(CP) $(PKG_SOURCES)/* $(PKG_BUILD_DIR)/
+#	mv $(PKG_BUILD_DIR)/vscp/daemon/linux/Makefile.carambola $(PKG_BUILD_DIR)/vscp/daemon/linux/Makefile
+#endef
+
+CONFIGURE_ARGS+=--with-wx-config=$(STAGING_DIR)/usr/bin/wx-config --enable-shared
+
+define Build/Configure
+	$(call Build/Configure/Default, --with-linux-headers=$(LINUX_DIR))
+endef
+
+define Build/Compile
+	$(MAKE) -C $(PKG_BUILD_DIR)  $(MAKE_FLAGS); 
+endef
+
+define Package/$(PKG_NAME)/preinst
+	#!/bin/sh
+	#	rm /usr/bin/vscpd
+endef
+
+define Package/$(PKG_NAME)/install
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/daemon/linux/vscpd $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/vscpcmd/vscpcmd $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/mkpasswd/mkpasswd $(1)/usr/bin/
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/helperlib/linux/libvscphelper.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/linuxvscpl1/vscpl1.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level1/logger/linux/canallogger.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level1/can232/linux/can232drv.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level1/xap/linux/xapdrv.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level1/socketcan/linux/socketcandrv.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/lmsensors/linux/vscp2drv_lmsensors.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/logger/linux/vscpl2_loggerdrv.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/mqtt/linux/vscp2drv_mqtt.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/rawethernet/linux/vscp2drv_raweth.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/socketcan/linux/vscp2drv_socketcan.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/vscp/drivers/level2/tcpdrv/linux/vscp2drv_tcpiplink.so $(1)/usr/lib/
+	$(INSTALL_DIR) $(1)/etc/vscp
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/mimetypes.xml_distro $(1)/etc/vscp/mimetypes.xml
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/variables.xml_distro $(1)/etc/vscp/variables.xml
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/dm.xml_distro $(1)/etc/vscp/dm.xml
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/vscpd.conf_distro $(1)/etc/vscp/vscpd.conf
+	$(INSTALL_DIR) $(1)/etc/init.d 
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/vscpd.startup_script_carambola $(1)/etc/init.d/vscpd
+	$(INSTALL_DIR) $(1)/srv
+	$(INSTALL_DIR) $(1)/srv/vscp
+	$(INSTALL_DIR) $(1)/srv/vscp/actions
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/actions/* $(1)/srv/vscp/actions
+	$(INSTALL_DIR) $(1)/srv/vscp/web
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/web/index.html $(1)/srv/vscp/web
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config_examples/web/favicon.ico $(1)/srv/vscp/web
+endef
+
+define Package/$(PKG_NAME)/postinst
+	#!/bin/sh
+	chmod a+x /etc/init.d/vscpd
+	/etc/init.d/vscpd enable
+	/etc/init.d/vscpd start
+endef
+
+define Package/$(PKG_NAME)/postrm
+	#!/bin/sh
+	rm /usr/bin/vscpd
+endef
+
+$(eval $(call BuildPackage,$(PKG_NAME)))

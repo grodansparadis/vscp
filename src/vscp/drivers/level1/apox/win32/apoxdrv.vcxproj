@@ -48,8 +48,8 @@
     <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ftdi);$(IncludePath)</IncludePath>
-    <LibraryPath>$(ftdi)\i386;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ftdi);$(ixxt)\Samples\C\Common;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ftdi)\i386;$(ixxt)\Samples\C\VC++\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

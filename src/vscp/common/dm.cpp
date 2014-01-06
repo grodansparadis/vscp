@@ -132,7 +132,7 @@ void *actionThreadURL::Entry()
             wxstr += wxT("User-Agent: VSCPD/1.0\n");
             wxstr += wxT("Content-Type: application/x-www-form-urlencoded\n");
             wxstr += wxT("Content-Length: ");
-            wxstr += m_putdata.Length();
+            wxstr += wxString::Format(_("%d"),m_putdata.Length());
             wxstr += wxT("\n\n");
             wxstr += m_putdata;
             wxstr += wxT("\n");
@@ -1121,7 +1121,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 {
     int pos;
     wxString strResult;
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     while ( wxNOT_FOUND != ( pos = str.Find( wxT("%") ) ) ) {
 
@@ -1179,9 +1179,20 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%event.class"), &str ) ) {
                 strResult +=  wxString::Format( wxT("%d"), pEvent->vscp_class );	
             }
+            // Check for class string  escape
+            else if ( str.StartsWith( wxT("%event.class.str"), &str ) ) {
+                VSCPInformation info;
+                strResult +=  info.getClassDescription( pEvent->vscp_class );	
+            }
             // Check for type escape
             else if ( str.StartsWith( wxT("%event.type"), &str ) ) {
                 strResult +=  wxString::Format( wxT("%d"), pEvent->vscp_type );	
+            }
+            // Check for type string escape
+            else if ( str.StartsWith( wxT("%event.type.str"), &str ) ) {
+                VSCPInformation info;
+                strResult +=  info.getTypeDescription( pEvent->vscp_class, 
+                                                    pEvent->vscp_type );	
             }
             // Check for data[n] escape
             else if ( str.StartsWith( wxT("%event.data["), &str ) ) {
@@ -1319,51 +1330,102 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for path_config escape
             else if ( str.StartsWith( wxT("%path_config"), &str ) ) {
-                strResult += stdPath.GetConfigDir();
+                strResult += wxStandardPaths::Get().GetConfigDir();
             }
             // Check for path_datadir escape
             else if ( str.StartsWith( wxT("%path_datadir"), &str ) ) {
-                strResult += stdPath.GetDataDir();
+                strResult += wxStandardPaths::Get().GetDataDir();
             }
             // Check for path_documentsdir escape
             else if ( str.StartsWith( wxT("%path_documentsdir"), &str ) ) {
-                strResult += stdPath.GetDocumentsDir();
+                strResult += wxStandardPaths::Get().GetDocumentsDir();
             }
             // Check for path_executable escape
             else if ( str.StartsWith( wxT("%path_executable"), &str ) ) {
-                strResult += stdPath.GetExecutablePath();
+                strResult += wxStandardPaths::Get().GetExecutablePath();
             }
             // Check for path_localdatadir escape
             else if ( str.StartsWith( wxT("%path_localdatadir"), &str ) ) {
-                strResult += stdPath.GetLocalDataDir();
+                strResult += wxStandardPaths::Get().GetLocalDataDir();
             }
             // Check for path_pluginsdir escape
             else if ( str.StartsWith( wxT("%path_pluginsdir"), &str ) ) {
-                strResult += stdPath.GetPluginsDir();
+                strResult += wxStandardPaths::Get().GetPluginsDir();
             }
             // Check for path_resourcedir escape
             else if ( str.StartsWith( wxT("%path_resourcedir"), &str ) ) {
-                strResult += stdPath.GetResourcesDir();
+                strResult += wxStandardPaths::Get().GetResourcesDir();
             }
             // Check for path_tempdir escape
             else if ( str.StartsWith( wxT("%path_tempdir"), &str ) ) {
-                strResult += stdPath.GetTempDir();
+                strResult += wxStandardPaths::Get().GetTempDir();
             }
             // Check for path_userconfigdir escape
             else if ( str.StartsWith( wxT("%path_userconfigdir"), &str ) ) {
-                strResult += stdPath.GetUserConfigDir();
+                strResult += wxStandardPaths::Get().GetUserConfigDir();
             }
             // Check for path_userdatadir escape
             else if ( str.StartsWith( wxT("%path_userdatadir"), &str ) ) {
-                strResult += stdPath.GetUserDataDir();
+                strResult += wxStandardPaths::Get().GetUserDataDir();
             }
             // Check for path_localdatadir escape
             else if ( str.StartsWith( wxT("%path_localdatadir"), &str ) ) {
-                strResult += stdPath.GetUserLocalDataDir();
+                strResult += wxStandardPaths::Get().GetUserLocalDataDir();
             }
             // Check for toliveafter
             else if ( str.StartsWith( wxT("%toliveafter"), &str ) ) {
                 strResult += wxT("Carpe diem quam minimum credula postero.");
+            }
+            // Check for measurement.index escape
+            else if ( str.StartsWith( wxT("%measurement.index"), &str ) ) {
+                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                if ( -1 != data_coding_byte ) {
+                    strResult += wxString::Format( wxT("%d"), 
+                                    VSCP_DATACODING_INDEX( data_coding_byte ) );
+                }
+            }
+            // Check for measurement.unit escape
+            else if ( str.StartsWith( wxT("%measurement.unit"), &str ) ) {
+                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                if ( -1 != data_coding_byte ) {
+                    strResult += wxString::Format( wxT("%d"), 
+                                    VSCP_DATACODING_UNIT( data_coding_byte ) );
+                }
+            }
+            // Check for measurement.coding escape
+            else if ( str.StartsWith( wxT("%measurement.coding"), &str ) ) {
+                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                if ( -1 != data_coding_byte ) {
+                    strResult += wxString::Format( wxT("%d"), 
+                                    VSCP_DATACODING_TYPE( data_coding_byte ) );
+                }
+            }
+            // Check for measurement.float escape
+            else if ( str.StartsWith( wxT("%measurement.float"), &str ) ) {
+                wxString str;
+                getVSCPMeasurementAsString( pEvent, str );
+                strResult += str;
+            }
+            // Check for measurement.string escape
+            else if ( str.StartsWith( wxT("%measurement.string"), &str ) ) {
+                wxString str;
+                getVSCPMeasurementAsString( pEvent, str );
+                strResult += str;
+            }
+            // Check for measurement.convert.data escape
+            else if ( str.StartsWith( wxT("%measurement.convert.data"), &str ) ) {
+                wxString str;
+                if ( getVSCPMeasurementAsString(pEvent, str ) ) {
+                    for ( int i=0; i<str.Length(); i++ ) {
+                        if (0!=i) strResult += ','; // Not at first location
+                        strResult += str.GetChar(i);
+                    }
+                }
+            }
+            
+            // Check for eventdata.realtext escape
+            else if ( str.StartsWith( wxT("%eventdata.realtext"), &str ) ) {
+                strResult += getRealTextData( pEvent );
             }
 
             // Remove the escape.
@@ -2400,11 +2462,11 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
 CDM::CDM( CControlObject *ctrlObj )
 {
 #ifndef BUILD_VSCPD_SERVICE
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
 #ifdef WIN32	
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
 	m_configPath = _("/srv/vscp/dm.xml");
@@ -2532,10 +2594,10 @@ bool CDM::load ( void )
     m_configPath = stdPath.GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #endif
 
@@ -2581,7 +2643,11 @@ bool CDM::load ( void )
             bool bEnabled = false;
 
             // Check if row is enabled
-            wxString strEnabled = child->GetPropVal( wxT( "enabled" ), wxT("false") );
+#if wxCHECK_VERSION(3,0,0)            
+            wxString strEnabled = child->GetAttribute( wxT( "enabled" ), wxT("false") );
+#else
+            wxString strEnabled = child->GetPropVal( wxT( "enabled" ), wxT("false") );            
+#endif             
             strEnabled.MakeUpper();
             if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
                 pDMitem->enable();
@@ -2592,8 +2658,12 @@ bool CDM::load ( void )
             }
 
             // Get group id
-            pDMitem->m_strGroupID = child->GetPropVal( wxT( "groupid" ), wxT("") );
-
+#if wxCHECK_VERSION(3,0,0)            
+            pDMitem->m_strGroupID = child->GetAttribute( wxT( "groupid" ), wxT("") );
+#else
+            pDMitem->m_strGroupID = child->GetPropVal( wxT( "groupid" ), wxT("") );            
+#endif
+            
             // add the DM row to the matrix
             addElement ( pDMitem );
 
@@ -2602,26 +2672,58 @@ bool CDM::load ( void )
 
                 if ( subchild->GetName() == wxT ( "mask" ) ) {
                     wxString str;
-                    str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.mask_priority = readStringValue( str );
-                    str = subchild->GetPropVal( wxT( "class" ), wxT("0") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "class" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.mask_class = readStringValue( str );
-                    str = subchild->GetPropVal( wxT( "type" ), wxT("0") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "type" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.mask_type = readStringValue( str );
-                    wxString strGUID = subchild->GetPropVal( wxT( "GUID" ), 
-                        wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
+#else
+                    wxString strGUID = subchild->GetPropVal( wxT( "GUID" ),            
+#endif                    
+                            wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "filter" ) ) {
                     wxString str;
-                    str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.filter_priority = readStringValue( str );
-                    str = subchild->GetPropVal( wxT( "class" ), wxT("0") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "class" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.filter_class = readStringValue( str );
-                    str = subchild->GetPropVal( wxT( "type" ), wxT("0") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
+#else
+                    str = subchild->GetPropVal( wxT( "type" ), wxT("0") );            
+#endif                    
                     pDMitem->m_vscpfilter.filter_type = readStringValue( str );
-                    wxString strGUID = subchild->GetPropVal( wxT( "GUID" ), 
-                        wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
+#else
+                    wxString strGUID = subchild->GetPropVal( wxT( "GUID" ),            
+#endif                    
+                            wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "control" ) ) {
@@ -2661,7 +2763,11 @@ bool CDM::load ( void )
                 }
                 else if ( subchild->GetName() == wxT ( "index" ) ) {
                     wxString str;
-                    str = subchild->GetPropVal( wxT( "bMeasurement" ), wxT("false") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    str = subchild->GetAttribute( wxT( "bMeasurement" ), wxT("false") );
+#else
+                    str = subchild->GetPropVal( wxT( "bMeasurement" ), wxT("false") );            
+#endif                    
                     str.MakeUpper();
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bMeasurement = true;
@@ -2709,10 +2815,10 @@ bool CDM::save ( void )
     m_configPath = stdPath.GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #endif
 
@@ -2936,7 +3042,7 @@ bool CDM::feedPeriodicEvent( void )
         EventSecond.sizeData = 0;								        // No data
         EventSecond.pdata = NULL;
         //memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
-        m_pCtrlObject->m_guid.setGUID( EventSecond.GUID );
+        m_pCtrlObject->m_guid.writeGUID( EventSecond.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal second event\n") );
         feed( &EventSecond );
 
@@ -2953,7 +3059,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomMinute.timestamp = makeTimeStamp();                      // Set timestamp
             EventRandomMinute.pdata = NULL;
             //memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventRandomMinute.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventRandomMinute.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random minute event\n")  );
             feed( &EventRandomMinute );
 
@@ -2972,7 +3078,7 @@ bool CDM::feedPeriodicEvent( void )
         EventMinute.sizeData = 0;									        // No data
         EventMinute.pdata = NULL;
         //memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
-        m_pCtrlObject->m_guid.setGUID( EventMinute.GUID );
+        m_pCtrlObject->m_guid.writeGUID( EventMinute.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal minute event\n") );
         m_rndMinute = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 60;
         feed( &EventMinute );
@@ -2987,7 +3093,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomHour.sizeData = 0;								    // No data
             EventRandomHour.pdata = NULL;
             //memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventRandomHour.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventRandomHour.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random hour event\n") );
             feed( &EventRandomHour );
 
@@ -3005,7 +3111,7 @@ bool CDM::feedPeriodicEvent( void )
         EventHour.sizeData = 0;									        // No data
         EventHour.pdata = NULL;
         //memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
-        m_pCtrlObject->m_guid.setGUID( EventHour.GUID );
+        m_pCtrlObject->m_guid.writeGUID( EventHour.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal hour event\n") );
         m_rndHour = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 24;
         feed( &EventHour );
@@ -3021,7 +3127,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomDay.sizeData = 0;								    // No data
             EventRandomDay.pdata = NULL;
             //memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventRandomDay.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventRandomDay.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random day event\n") );
             feed( &EventRandomDay );
 
@@ -3039,7 +3145,7 @@ bool CDM::feedPeriodicEvent( void )
         EventDay.sizeData = 0;									            // No data
         EventDay.pdata = NULL;
         //memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );		            // Server GUID
-        m_pCtrlObject->m_guid.setGUID( EventDay.GUID );
+        m_pCtrlObject->m_guid.writeGUID( EventDay.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal day event\n") );
         m_rndDay = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 7;
         feed( &EventDay );
@@ -3055,7 +3161,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomWeek.sizeData = 0;								    // No data
             EventRandomWeek.pdata = NULL;
             //memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventRandomWeek.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventRandomWeek.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random week event\n") );
             feed( &EventRandomWeek );
 
@@ -3074,7 +3180,7 @@ bool CDM::feedPeriodicEvent( void )
             EventWeek.sizeData = 0;										    // No data
             EventWeek.pdata = NULL;
             //memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 );		    // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventWeek.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventWeek.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal week event\n") );
             m_rndWeek = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 52;
             feed( &EventWeek );
@@ -3089,7 +3195,7 @@ bool CDM::feedPeriodicEvent( void )
                 EventRandomMonth.sizeData = 0;									// No data
                 EventRandomMonth.pdata = NULL;
                 //memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
-                m_pCtrlObject->m_guid.setGUID( EventRandomMonth.GUID );
+                m_pCtrlObject->m_guid.writeGUID( EventRandomMonth.GUID );
                 wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random month event\n") );
                 feed( &EventRandomMonth );
 
@@ -3107,7 +3213,7 @@ bool CDM::feedPeriodicEvent( void )
         EventMonth.sizeData = 0;										        // No data
         EventMonth.pdata = NULL;
         //memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );			        // Server GUID
-        m_pCtrlObject->m_guid.setGUID( EventMonth.GUID );
+        m_pCtrlObject->m_guid.writeGUID( EventMonth.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal month event\n") );
         m_rndMonth = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 12;
         feed( &EventMonth );
@@ -3122,7 +3228,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomYear.sizeData = 0;								        // No data
             EventRandomYear.pdata = NULL;
             //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventRandomYear.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventRandomYear.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random year event\n") );
             feed( &EventRandomYear );
 
@@ -3140,7 +3246,7 @@ bool CDM::feedPeriodicEvent( void )
         EventYear.sizeData = 0;									        // No data
         EventYear.pdata = NULL;
         //memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
-        m_pCtrlObject->m_guid.setGUID( EventYear.GUID );
+        m_pCtrlObject->m_guid.writeGUID( EventYear.GUID );
         wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal year event\n") );
         m_rndYear = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 365;
         feed( &EventYear );
@@ -3158,7 +3264,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3175,7 +3281,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3192,7 +3298,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.sizeData = 0;					                // No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 
@@ -3209,7 +3315,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
-            m_pCtrlObject->m_guid.setGUID( EventQuarter.GUID );
+            m_pCtrlObject->m_guid.writeGUID( EventQuarter.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal quarter event\n") );
             feed( &EventQuarter );
 

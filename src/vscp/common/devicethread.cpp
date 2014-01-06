@@ -21,7 +21,6 @@
 // Boston, MA 02111-1307, USA.
 //
 
-
 #include "wx/wxprec.h"
 #include "wx/wx.h"
 #include "wx/defs.h"
@@ -284,7 +283,6 @@ void *deviceThread::Entry()
 				m_pDeviceItem->m_proc_CanalGetdriverInfo = NULL;
 			}
 		}
-
 
 		// Open the device
 		m_pDeviceItem->m_openHandle =
@@ -765,35 +763,66 @@ void *deviceCanalReceiveThread::Entry()
 	if (NULL == m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingReceive) return NULL;
 
 	int rv;
-	while (!TestDestroy() && !m_bQuit) {
-        
-		if (CANAL_ERROR_SUCCESS ==
-			(rv = m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingReceive(
-                    m_pMainThreadObj->m_pDeviceItem->m_openHandle, &msg, 500))) {
-            
-			// There must be room in the receive queue
-			if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-				m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
+    while (!TestDestroy() && !m_bQuit) {
 
-				vscpEvent *pvscpEvent = new vscpEvent;
-				if (NULL != pvscpEvent) {
+        if (CANAL_ERROR_SUCCESS ==
+                (rv = m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingReceive(
+                m_pMainThreadObj->m_pDeviceItem->m_openHandle, &msg, 500))) {
 
-					// Convert CANAL message to VSCP event
-					convertCanalToEvent(pvscpEvent,
-						&msg,
-						m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.m_id);
+            // There must be room in the receive queue
+            if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
+                    m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
 
-					pvscpEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
+                vscpEvent *pvscpEvent = new vscpEvent;
+                if (NULL != pvscpEvent) {
 
-					m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-					m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append(pvscpEvent);
-					m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
-					m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
+                    // Convert CANAL message to VSCP event
+                    convertCanalToEvent(pvscpEvent,
+                            &msg,
+                            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.m_id);
 
-				}
-			}
-		}
-	}
+                    pvscpEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
+
+                    // If no GUID is set,
+                    //      - Set driver GUID if define
+                    //      - Set interface GUID if no driver GUID defined.
+
+                    uint8_t ifguid[16];
+
+                    // Save nickname
+                    uint8_t nickname_lsb = pvscpEvent->GUID[15];
+
+                    // Set if to use
+                    memcpy(ifguid, pvscpEvent->GUID, 16);
+                    ifguid[14] = 0;
+                    ifguid[15] = 0;
+
+                    // If if is set to zero use interface id
+                    if (isGUIDEmpty(ifguid)) {
+
+                        // Set driver GUID if set
+                        if (!m_pMainThreadObj->m_pDeviceItem->m_guid.isNULL()) {
+                            m_pMainThreadObj->m_pDeviceItem->m_guid.writeGUID(pvscpEvent->GUID);
+                        } 
+                        else {
+                            // If no driver GUID set use interface GUID
+                            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.writeGUID(pvscpEvent->GUID);
+                        }
+
+                        // Preserve nickname
+                        pvscpEvent->GUID[15] = nickname_lsb;
+
+                    }
+
+                    m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
+                    m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.Append(pvscpEvent);
+                    m_pMainThreadObj->m_pCtrlObject->m_semClientOutputQueue.Post();
+                    m_pMainThreadObj->m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
+
+                }
+            }
+        }
+    }
 
 	return NULL;
 }
@@ -944,16 +973,34 @@ void *deviceLevel2ReceiveThread::Entry()
         // If no GUID is set,
         //      - Set driver GUID if define
         //      - Set interface GUID if no driver GUID defined.
-        if ( isGUIDEmpty( pEvent->GUID ) ) {
+        
+        uint8_t ifguid[16]; 
+        
+        // Save nickname
+        uint8_t nickname_msb = pEvent->GUID[14];
+        uint8_t nickname_lsb = pEvent->GUID[15];
+        
+        // Set if to use
+        memcpy( ifguid, pEvent->GUID, 16 );
+        ifguid[14] = 0;
+        ifguid[15] = 0;
+        
+        // If if is set to zero use interface id
+        if ( isGUIDEmpty( ifguid ) ) {
             
             // Set driver GUID if set
             if ( !m_pMainThreadObj->m_pDeviceItem->m_guid.isNULL() ) {
-                m_pMainThreadObj->m_pDeviceItem->m_guid.setGUID( pEvent->GUID );
+                m_pMainThreadObj->m_pDeviceItem->m_guid.writeGUID( pEvent->GUID );
             }
             else {
                 // If no driver GUID set use interface GUID
-                m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.setGUID( pEvent->GUID );
+                m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.writeGUID( pEvent->GUID );
             }
+            
+            // Preserve nickname
+            pEvent->GUID[14] = nickname_msb;
+            pEvent->GUID[15] = nickname_lsb;
+        
         }
         
         /*
