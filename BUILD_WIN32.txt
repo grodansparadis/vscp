@@ -1,3 +1,23 @@
+From version 0.4.0 of VSCP & Friends the 
+
+vscp daemon
+vscpservice 
+xapdrv
+lircdrv
+rawethernet
+syslogdrv
+tellstickdrv
+vscpbtdetect driver
+vscplogger driver
+
+is not supported on windows anymore. Most of them will still compile however and will 
+maybe build after minor (or major) work. 
+
+vscpworkd, mkpasswd, vscpcmd the helper library and most level I drivers will still be built and
+maintained.
+
+
+
 Summary
 =======
 
@@ -35,16 +55,17 @@ VSCP Project (complete)
 This is the "original" project and includes all sub-projects.
 
 - to build the Vector CANAL driver the propritary Vector libs/includes is needed.
+- to build the peak CANAL drivr the propritary PEAK libs/includes is needed.
 - to build the ccs CANAL driver the propritary CCS libs/includes is needed.
 - to build the IXXAT CANAL driver the propritary IXXAT libs/includes is needed.
 
 
 
-1.) Define environment variable VSCP_HOME that points to the VSCP base folder (c:\development\m2m).
+1.) Define environment variable VSCP_HOME that points to the VSCP base folder (c:\development\vscp_software).
     define environment variable VSCP_FIRMWARE that points to VSCP firmware base folder 
-    (c:\development\m2m\firmware)
+    (c:\development\vscp_firmware)
 
-2.) Install and build wxWidgets 2.6.0 or higher. 2.8.12 Recommended but others will probably 
+2.) Install and build wxWidgets 2.6.0 or higher. 3.0.0 Recommended but others will probably 
     do to. You find the build files in the build folder of the wxWidgets project. 
 
 3.) Make an environment variable WXWIN that points to the wxWidgets installation directory.
@@ -62,7 +83,7 @@ This is the "original" project and includes all sub-projects.
 6.) Install OpenSLL from http://slproweb.com/products/Win32OpenSSL.html  	
 
 6.) To build the APOX driver and the tellstick driver the dxx driver whish is available from ftdi 
-    (http://www.ftdichip.com/) is needed. Make an environment variable named "ftdi" that points on 
+    (http://www.ftdichip.com) is needed. Make an environment variable named "ftdi" that points on 
 	this installation folder.
 
 7.) To build ccsdrv include must point to directory which contains can.h and LIB must point 
@@ -72,18 +93,23 @@ This is the "original" project and includes all sub-projects.
 8.) To build ixxatvcidrv you need to add the ixxat include directory and also add the ixxat
     lib directory to LIB( Xat11Reg.lib vci11un6.lib ) (tools->options->directories). Make sure the 
     IXXAT VCI driver version 2 is installed (http://www.ixxat.com/download_vci_en.html).
+
+9.) To build the CANAL PEAK driver you need to install the PEAK driver and support libraries 
+    from here http://www.peak-system.com/Support.55.0.html?&L=1 Yuou need the driver and the PCAN-Basic API.
+    Make an environment variable named PCANBASICAPI that points to the location where you unpack the
+    PCAN-BASIC API
         
-9.) lircdrv: expat is needed you build the lircdrv as well as winlirc. Set include in 
+10.) lircdrv: expat is needed you build the lircdrv as well as winlirc. Set include in 
     tools->options->directories to point to expat.h in <expat install dir>/source/lib and 
     LIB to expat lib <expat install dir>/StaticLibs.  Expat is available here 
     http://sourceforge.net/projects/expat/ and winlirc is here http://sourceforge.net/projects/winlirc/
         
-10.) To build the vector driver (vectordrv)  the INCLUDE and LIB paths must point to 
+11.) To build the vector driver (vectordrv)  the INCLUDE and LIB paths must point to 
     to the vector directories LIB and INCLUDE. The low level driver from Vector must be installed for 
     the CANAL driver to work. Current the old driver is used which can be found here 
     http://www.vector.com/downloads/drivers/canlib43.zip
 
-11.) To build the rawethernet driver the wpcap library and include files need to be installed on the system. A
+12.) To build the rawethernet driver the wpcap library and include files need to be installed on the system. A
 	environment variable named "pcap" should point to folder of the project (where the inlude and lib folders are).
 	install the latest wpdpack from http://www.winpcap.org/archive/ and point the environment variable to it.
 	wincap itself needs to be installed as well (http://www.winpcap.org).	

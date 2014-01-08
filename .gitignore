@@ -102,3 +102,23 @@ src/vscp/vscpworks/nbproject/private/launcher.properties
 src/vscp/uvscpd/nbproject/private/launcher.properties
 *.properties
 
+*.lnk
+
+*.user
+
+*.tlog
+*.obj
+*.sbr
+*.log
+*.bsc
+*.manifest
+/src/vscp/mkpasswd/BaseDebug/mkpasswd.exe.embed.manifest.res
+*.pdb
+*.cache
+*.lastbuildstate
+/src/vscp/mkpasswd/BaseDebug/mkpasswd_manifest.rc
+*.unsuccessfulbuild
+/src/vscp/vscp_project.sdf
+/src/vscp/vscp_project.suo
+/src/vscp/vscpcmd/BaseDebug/vscpcmd.exe.embed.manifest.res
+/src/vscp/vscpcmd/BaseDebug/vscpcmd_manifest.rc

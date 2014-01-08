@@ -11,7 +11,7 @@ CONFIG=release
 
 # release
 ifeq ($(CONFIG),release)
-WXWIN=C:/wxWidgets-2.8.12
+WXWIN=C:/wxWidgets-3.0.0
 GCCFLAGS=
 CXX=g++.exe
 LINKER=g++.exe
@@ -25,10 +25,10 @@ WARNINGFLAGS=-Wall -Wno-write-strings
 OPTFLAGS=-O2
 DEBUGFLAGS=
 LINKERFLAGS=-Wl,--subsystem,windows -mwindows
-LIBS= -lwxmsw28u_richtext -lwxmsw28u_aui -lwxmsw28u_media -lwxmsw28u_html -lwxmsw28u_xrc -lwxmsw28u_adv -lwxmsw28u_core -lwxbase28u -lwxbase28u_net -lwxbase28u_xml -lwxtiff -lwxjpeg -lwxpng -lwxzlib -lwxregexu -lwxexpat -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwinspool -lwinmm -lshell32 -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32
-CPPINC=-I"$(WXWIN)/include" -I"$(WXWIN)/contrib/include" -I"$(WXWIN)/lib/gcc_lib/mswu"
+LIBS= -lwxmsw30u_xrc -lwxmsw30u_richtext -lwxmsw30u_aui -lwxmsw30u_media -lwxmsw30u_html -lwxmsw30u_stc -lwxmsw30u_propgrid -lwxmsw30u_ribbon -lwxmsw30u_adv -lwxmsw30u_core -lwxbase30u -lwxbase30u_net -lwxbase30u_xml -lwxtiff -lwxjpeg -lwxpng -lwxzlib -lwxregexu -lwxexpat -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwinspool -lwinmm -lshell32 -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32
+CPPINC=-I"$(WXWIN)/lib/gcc_lib/mswu" -I"$(WXWIN)/include" -I"$(WXWIN)/contrib/include"
 LIBPATH=-L"$(WXWIN)/lib/gcc_lib"
-RESPATH=--include-dir "$(WXWIN)/include" --include-dir "$(WXWIN)/contrib/include" --include-dir "$(WXWIN)/lib/gcc_lib/mswu"
+RESPATH=--include-dir "$(WXWIN)/lib/gcc_lib/mswu" --include-dir "$(WXWIN)/include" --include-dir "$(WXWIN)/contrib/include"
 PROGRAM=vscpworks.exe
 RCFILEOBJ=vscpworks_rc.o
 RCFILESRC=vscpworks.rc
@@ -36,7 +36,7 @@ EXTRADEPENDENCIES=
 
 # debug
 else
-WXWIN=C:/wxWidgets-2.8.12
+WXWIN=C:/wxWidgets-3.0.0
 GCCFLAGS=
 CXX=g++.exe
 LINKER=g++.exe
@@ -50,17 +50,17 @@ WARNINGFLAGS=-Wall -Wno-write-strings
 OPTFLAGS=-O0
 DEBUGFLAGS=-D__WXDEBUG__ -ggdb
 LINKERFLAGS=-Wl,--subsystem,windows -mwindows
-LIBS= -lwxmsw28ud_richtext -lwxmsw28ud_aui -lwxmsw28ud_media -lwxmsw28ud_html -lwxmsw28ud_xrc -lwxmsw28ud_adv -lwxmsw28ud_core -lwxbase28ud -lwxbase28ud_net -lwxbase28ud_xml -lwxtiffd -lwxjpegd -lwxpngd -lwxzlibd -lwxregexud -lwxexpatd -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwinspool -lwinmm -lshell32 -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32
-CPPINC=-I"$(WXWIN)/include" -I"$(WXWIN)/contrib/include" -I"$(WXWIN)/lib/gcc_lib/mswud"
+LIBS= -lwxmsw30ud_xrc -lwxmsw30ud_richtext -lwxmsw30ud_aui -lwxmsw30ud_media -lwxmsw30ud_html -lwxmsw30ud_stc -lwxmsw30ud_propgrid -lwxmsw30ud_ribbon -lwxmsw30ud_adv -lwxmsw30ud_core -lwxbase30ud -lwxbase30ud_net -lwxbase30ud_xml -lwxtiffd -lwxjpegd -lwxpngd -lwxzlibd -lwxregexud -lwxexpatd -lkernel32 -luser32 -lgdi32 -lcomdlg32 -lwinspool -lwinmm -lshell32 -lcomctl32 -lole32 -loleaut32 -luuid -lrpcrt4 -ladvapi32 -lwsock32
+CPPINC=-I"$(WXWIN)/lib/gcc_lib/mswud" -I"$(WXWIN)/include" -I"$(WXWIN)/contrib/include"
 LIBPATH=-L"$(WXWIN)/lib/gcc_lib"
-RESPATH=--include-dir "$(WXWIN)/include" --include-dir "$(WXWIN)/contrib/include" --include-dir "$(WXWIN)/lib/gcc_lib/mswud"
+RESPATH=--include-dir "$(WXWIN)/lib/gcc_lib/mswud" --include-dir "$(WXWIN)/include" --include-dir "$(WXWIN)/contrib/include"
 PROGRAM=vscpworks.exe
 RCFILEOBJ=vscpworks_rc.o
 RCFILESRC=vscpworks.rc
 EXTRADEPENDENCIES=
 endif
 
-OBJECTS=$(OBJECTPATH)/crc.o $(OBJECTPATH)/canalsuperwrapper.o $(OBJECTPATH)/dllwrapper.o $(OBJECTPATH)/guid.o $(OBJECTPATH)/mdf.o $(OBJECTPATH)/vscphelper.o $(OBJECTPATH)/vscptcpif.o $(OBJECTPATH)/bootdevice.o $(OBJECTPATH)/bootdevice_pic1.o $(OBJECTPATH)/bootdevice_vscp.o $(OBJECTPATH)/devicebootloaderwizard.o $(OBJECTPATH)/dialogabstractionedit.o $(OBJECTPATH)/dialogeditlevelidmrow.o $(OBJECTPATH)/dialogsetfiltermask.o $(OBJECTPATH)/dlgabout.o $(OBJECTPATH)/dlgconfiguration.o $(OBJECTPATH)/dlgnewvscpsession.o $(OBJECTPATH)/dlgselectdaemoninterface.o $(OBJECTPATH)/dlgvscpfilter.o $(OBJECTPATH)/dlgvscpinterfacesettings.o $(OBJECTPATH)/dlgvscpmsg.o $(OBJECTPATH)/dlgvscptrmit.o $(OBJECTPATH)/frmdeviceconfig.o $(OBJECTPATH)/frmmain.o $(OBJECTPATH)/frmmdfeditor.o $(OBJECTPATH)/frmscanfordevices.o $(OBJECTPATH)/frmvscpsession.o $(OBJECTPATH)/gridtable.o $(OBJECTPATH)/readguid.o $(OBJECTPATH)/readmdffile.o $(OBJECTPATH)/readmsfurl.o $(OBJECTPATH)/readregister.o $(OBJECTPATH)/threadvscpwork.o $(OBJECTPATH)/vscptxobj.o $(OBJECTPATH)/vscpworks.o $(OBJECTPATH)/writeregister.o $(OBJECTPATH)/$(RCFILEOBJ)
+OBJECTS=$(OBJECTPATH)/crc.o $(OBJECTPATH)/canalsuperwrapper.o $(OBJECTPATH)/dllwrapper.o $(OBJECTPATH)/guid.o $(OBJECTPATH)/mdf.o $(OBJECTPATH)/register.o $(OBJECTPATH)/vscphelper.o $(OBJECTPATH)/vscptcpif.o $(OBJECTPATH)/bootdevice.o $(OBJECTPATH)/bootdevice_pic1.o $(OBJECTPATH)/bootdevice_vscp.o $(OBJECTPATH)/devicebootloaderwizard.o $(OBJECTPATH)/dialogabstractionedit.o $(OBJECTPATH)/dialogeditlevelidmrow.o $(OBJECTPATH)/dialogsetfiltermask.o $(OBJECTPATH)/dlgabout.o $(OBJECTPATH)/dlgconfiguration.o $(OBJECTPATH)/dlgnewvscpsession.o $(OBJECTPATH)/dlgselectdaemoninterface.o $(OBJECTPATH)/dlgvscpfilter.o $(OBJECTPATH)/dlgvscpinterfacesettings.o $(OBJECTPATH)/dlgvscpmsg.o $(OBJECTPATH)/dlgvscptrmit.o $(OBJECTPATH)/frmdaemondecisionmartrixeditor.o $(OBJECTPATH)/frmdaemonvariableeditor.o $(OBJECTPATH)/frmdeviceconfig.o $(OBJECTPATH)/frmmain.o $(OBJECTPATH)/frmmdfeditor.o $(OBJECTPATH)/frmscanfordevices.o $(OBJECTPATH)/frmsimpleuserinterfacegenerator.o $(OBJECTPATH)/frmvscpsession.o $(OBJECTPATH)/gridtable.o $(OBJECTPATH)/merlin.o $(OBJECTPATH)/readguid.o $(OBJECTPATH)/readmdffile.o $(OBJECTPATH)/readmsfurl.o $(OBJECTPATH)/readregister.o $(OBJECTPATH)/threadvscpwork.o $(OBJECTPATH)/vscptxobj.o $(OBJECTPATH)/vscpworks.o $(OBJECTPATH)/writeregister.o $(OBJECTPATH)/$(RCFILEOBJ)
 
 all:	$(BUILDPATHS) $(OUTPUTPATH)/$(PROGRAM)
 
@@ -84,7 +84,7 @@ $(OBJECTPATH)/$(RCFILEOBJ):	$(RCFILESRC)
 $(OBJECTPATH)/crc.o:	../../common/crc.c ../../common/crc.h
 	$(CC) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) ..\..\common\crc.c
 
-$(OBJECTPATH)/canalsuperwrapper.o:	../common/canalsuperwrapper.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h
+$(OBJECTPATH)/canalsuperwrapper.o:	../common/canalsuperwrapper.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) ..\common\canalsuperwrapper.cpp
 
 $(OBJECTPATH)/dllwrapper.o:	../common/dllwrapper.cpp ../common/dllwrapper.h ../common/canaldlldef.h ../common/canal.h
@@ -96,40 +96,43 @@ $(OBJECTPATH)/guid.o:	../common/guid.cpp ../common/guid.h ../common/vscp.h ../co
 $(OBJECTPATH)/mdf.o:	../common/mdf.cpp ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/vscphelper.h ../common/mdf.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) ..\common\mdf.cpp
 
-$(OBJECTPATH)/vscphelper.o:	../common/vscphelper.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/vscphelper.h
+$(OBJECTPATH)/register.o:	../common/register.cpp ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/vscphelper.h ../common/mdf.h ../common/register.h ../common/guid.h
+	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) ..\common\register.cpp
+
+$(OBJECTPATH)/vscphelper.o:	../common/vscphelper.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/mdf.h ../common/vscphelper.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) ..\common\vscphelper.cpp
 
 $(OBJECTPATH)/vscptcpif.o:	../common/vscptcpif.cpp ../common/canal_macro.h ../common/canal_win32_ipc.h ../common/canal.h ../common/vscptcpif.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/guid.h ../common/vscphelper.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) ..\common\vscptcpif.cpp
 
-$(OBJECTPATH)/bootdevice.o:	bootdevice.cpp bootdevice.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h vscpworks.h frmmain.h
+$(OBJECTPATH)/bootdevice.o:	bootdevice.cpp bootdevice.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h vscpworks.h frmmain.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) bootdevice.cpp
 
-$(OBJECTPATH)/bootdevice_pic1.o:	bootdevice_pic1.cpp bootdevice_pic1.h bootdevice.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h vscpworks.h frmmain.h
+$(OBJECTPATH)/bootdevice_pic1.o:	bootdevice_pic1.cpp bootdevice_pic1.h bootdevice.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h vscpworks.h frmmain.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) bootdevice_pic1.cpp
 
-$(OBJECTPATH)/bootdevice_vscp.o:	bootdevice_vscp.cpp bootdevice_vscp.h bootdevice.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h vscpworks.h frmmain.h
+$(OBJECTPATH)/bootdevice_vscp.o:	bootdevice_vscp.cpp bootdevice_vscp_defs.h bootdevice_vscp.h bootdevice.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h vscpworks.h frmmain.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) bootdevice_vscp.cpp
 
-$(OBJECTPATH)/devicebootloaderwizard.o:	devicebootloaderwizard.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h devicebootloaderwizard.h bootdevice.h bootdevice_pic1.h dlgnewvscpsession.h dlgnewvscpsession_symbols.h bootdevice_vscp.h
+$(OBJECTPATH)/devicebootloaderwizard.o:	devicebootloaderwizard.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h devicebootloaderwizard.h bootdevice.h bootdevice_pic1.h dlgnewvscpsession.h bootdevice_vscp.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) devicebootloaderwizard.cpp
 
-$(OBJECTPATH)/dialogabstractionedit.o:	dialogabstractionedit.cpp dialogabstractionedit.h ../common/mdf.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h dialogabstractionedit_symbols.h
+$(OBJECTPATH)/dialogabstractionedit.o:	dialogabstractionedit.cpp dialogabstractionedit.h ../common/mdf.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) dialogabstractionedit.cpp
 
-$(OBJECTPATH)/dialogeditlevelidmrow.o:	dialogeditlevelidmrow.cpp dialogsetfiltermask.h ../common/vscphelper.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h dialogsetfiltermask_symbols.h dialogeditlevelidmrow.h dialogeditlevelidmrow_symbols.h
+$(OBJECTPATH)/dialogeditlevelidmrow.o:	dialogeditlevelidmrow.cpp dialogsetfiltermask.h ../common/vscphelper.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h dialogeditlevelidmrow.h dialogeditlevelidmrow_symbols.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) dialogeditlevelidmrow.cpp
 
-$(OBJECTPATH)/dialogsetfiltermask.o:	dialogsetfiltermask.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/vscphelper.h dialogsetfiltermask.h dialogsetfiltermask_symbols.h
+$(OBJECTPATH)/dialogsetfiltermask.o:	dialogsetfiltermask.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/vscphelper.h dialogsetfiltermask.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) dialogsetfiltermask.cpp
 
 $(OBJECTPATH)/dlgabout.o:	dlgabout.cpp ../common/version.h dlgabout.h dlgabout_symbols.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) dlgabout.cpp
 
-$(OBJECTPATH)/dlgconfiguration.o:	dlgconfiguration.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h dlgconfiguration.h dlgconfiguration_symbols.h
+$(OBJECTPATH)/dlgconfiguration.o:	dlgconfiguration.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h dlgconfiguration.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) dlgconfiguration.cpp
 
-$(OBJECTPATH)/dlgnewvscpsession.o:	dlgnewvscpsession.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/vscphelper.h vscpworks.h frmmain.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../../common/dllist.h ../common/mdf.h dlgnewvscpsession.h dlgnewvscpsession_symbols.h dlgvscpinterfacesettings.h
+$(OBJECTPATH)/dlgnewvscpsession.o:	dlgnewvscpsession.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/vscphelper.h vscpworks.h frmmain.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/mdf.h ../../common/dllist.h dlgnewvscpsession.h dlgvscpinterfacesettings.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) dlgnewvscpsession.cpp
 
 $(OBJECTPATH)/dlgselectdaemoninterface.o:	dlgselectdaemoninterface.cpp dlgselectdaemoninterface.h
@@ -147,23 +150,35 @@ $(OBJECTPATH)/dlgvscpmsg.o:	dlgvscpmsg.cpp ../common/vscphelper.h ../common/vscp
 $(OBJECTPATH)/dlgvscptrmit.o:	dlgvscptrmit.cpp ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h ../common/vscphelper.h vscptxobj.h dlgvscptrmit.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) dlgvscptrmit.cpp
 
-$(OBJECTPATH)/frmdeviceconfig.o:	frmdeviceconfig.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h dlgabout.h dlgabout_symbols.h dialogeditlevelidmrow.h dialogeditlevelidmrow_symbols.h dialogabstractionedit.h dialogabstractionedit_symbols.h frmdeviceconfig.h
+$(OBJECTPATH)/frmdaemondecisionmartrixeditor.o:	frmdaemondecisionmartrixeditor.cpp frmdaemondecisionmartrixeditor.h
+	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) frmdaemondecisionmartrixeditor.cpp
+
+$(OBJECTPATH)/frmdaemonvariableeditor.o:	frmdaemonvariableeditor.cpp frmdaemonvariableeditor.h
+	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) frmdaemonvariableeditor.cpp
+
+$(OBJECTPATH)/frmdeviceconfig.o:	frmdeviceconfig.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h dlgabout.h dlgabout_symbols.h dialogeditlevelidmrow.h dialogeditlevelidmrow_symbols.h dialogabstractionedit.h readregister.h frmdeviceconfig.h ../common/register.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) frmdeviceconfig.cpp
 
-$(OBJECTPATH)/frmmain.o:	frmmain.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h dlgnewcanalsession.h dlgnewcanalsession_symbols.h dlgnewvscpsession.h dlgnewvscpsession_symbols.h frmcanalsession.h frmcanalsession_symbols.h frmvscpsession.h vscptxobj.h gridtable.h frmdeviceconfig.h frmscanfordevices.h dlgconfiguration.h dlgconfiguration_symbols.h dlgabout.h dlgabout_symbols.h frmmdfeditor.h devicebootloaderwizard.h bootdevice.h bootdevice_pic1.h
+$(OBJECTPATH)/frmmain.o:	frmmain.cpp merlin.h vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h dlgnewcanalsession.h dlgnewcanalsession_symbols.h dlgnewvscpsession.h frmcanalsession.h frmcanalsession_symbols.h frmvscpsession.h vscptxobj.h gridtable.h frmdeviceconfig.h ../common/register.h frmscanfordevices.h dlgconfiguration.h dlgabout.h dlgabout_symbols.h frmmdfeditor.h devicebootloaderwizard.h bootdevice.h bootdevice_pic1.h frmdaemondecisionmartrixeditor.h frmdaemonvariableeditor.h frmsimpleuserinterfacegenerator.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) frmmain.cpp
 
 $(OBJECTPATH)/frmmdfeditor.o:	frmmdfeditor.cpp frmmdfeditor.h ../common/mdf.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) frmmdfeditor.cpp
 
-$(OBJECTPATH)/frmscanfordevices.o:	frmscanfordevices.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h dlgabout.h dlgabout_symbols.h frmscanfordevices.h
+$(OBJECTPATH)/frmscanfordevices.o:	frmscanfordevices.cpp frmdeviceconfig.h vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h ../common/register.h dlgabout.h dlgabout_symbols.h frmscanfordevices.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) frmscanfordevices.cpp
 
-$(OBJECTPATH)/frmvscpsession.o:	frmvscpsession.cpp dlgconfiguration.h dlgconfiguration_symbols.h vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h vscptxobj.h dlgvscptrmit.h dlgabout.h dlgabout_symbols.h frmvscpsession.h gridtable.h
+$(OBJECTPATH)/frmsimpleuserinterfacegenerator.o:	frmsimpleuserinterfacegenerator.cpp frmsimpleuserinterfacegenerator.h
+	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) frmsimpleuserinterfacegenerator.cpp
+
+$(OBJECTPATH)/frmvscpsession.o:	frmvscpsession.cpp dlgconfiguration.h vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h vscptxobj.h dlgvscptrmit.h dlgabout.h dlgabout_symbols.h frmvscpsession.h gridtable.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) frmvscpsession.cpp
 
-$(OBJECTPATH)/gridtable.o:	gridtable.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h gridtable.h
+$(OBJECTPATH)/gridtable.o:	gridtable.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h gridtable.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) gridtable.cpp
+
+$(OBJECTPATH)/merlin.o:	merlin.cpp merlin.h
+	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) merlin.cpp
 
 $(OBJECTPATH)/readguid.o:	readguid.cpp readguid.h readguid_symbols.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) readguid.cpp
@@ -174,10 +189,10 @@ $(OBJECTPATH)/readmdffile.o:	readmdffile.cpp readmdffile.h readmdffile_symbols.h
 $(OBJECTPATH)/readmsfurl.o:	readmsfurl.cpp readmsfurl.h readmsfurl_symbols.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) readmsfurl.cpp
 
-$(OBJECTPATH)/readregister.o:	readregister.cpp readregiister.h readregister_symbols.h
+$(OBJECTPATH)/readregister.o:	readregister.cpp readregister.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) readregister.cpp
 
-$(OBJECTPATH)/threadvscpwork.o:	threadvscpwork.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../../common/dllist.h ../common/mdf.h threadvscpwork.h frmvscpsession.h vscptxobj.h gridtable.h
+$(OBJECTPATH)/threadvscpwork.o:	threadvscpwork.cpp vscpworks.h frmmain.h ../common/canal.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../../common/crc.h ../common/canalsuperwrapper.h ../common/devitem.h ../common/dllwrapper.h ../common/canaldlldef.h ../common/vscptcpif.h ../common/guid.h ../common/vscphelper.h ../common/mdf.h ../../common/dllist.h threadvscpwork.h frmvscpsession.h vscptxobj.h gridtable.h
 	$(CXX) -c -o $@ $(CPPFLAGS) $(GCCFLAGS) $(DEBUGFLAGS) $(OPTFLAGS) $(WARNINGFLAGS) $(CPPINC) threadvscpwork.cpp
 
 $(OBJECTPATH)/vscptxobj.o:	vscptxobj.cpp vscptxobj.h ../common/vscp.h ../common/vscp_class.h ../common/vscp_type.h ../common/canal.h ../../common/crc.h

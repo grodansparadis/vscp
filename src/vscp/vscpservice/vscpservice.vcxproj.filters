@@ -2,15 +2,15 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{30a2294d-5b7f-484b-b336-9d2fb8288684}</UniqueIdentifier>
+      <UniqueIdentifier>{3bc52e7d-729c-4a73-9801-b5d7550be224}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{ad6a17d2-bb38-41d8-9abb-07ba0ac9d881}</UniqueIdentifier>
+      <UniqueIdentifier>{dbf0f359-388b-4b97-ab18-c348f0c3d5ce}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
     <Filter Include="Resource Files">
-      <UniqueIdentifier>{cb2f657e-ca76-4af7-af65-d793fa11d312}</UniqueIdentifier>
+      <UniqueIdentifier>{ea846073-f6c4-480a-9128-e6f040d10235}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
   </ItemGroup>
@@ -67,18 +67,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\common\vscpvariable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\common\vscptcpif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\common\guid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\randPassword.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\gettimeofday.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

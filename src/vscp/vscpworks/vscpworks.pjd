@@ -23,7 +23,7 @@
     <bool name="generate_for_xrced">0</bool>
     <bool name="generate_virtual_eventhandlers">0</bool>
     <string name="current_platform">"__WXMSW__"</string>
-    <string name="target_wx_version">"2.8.11"</string>
+    <string name="target_wx_version">"3.0.0"</string>
     <string name="app_kind">"Standard"</string>
     <string name="cpp_header_comment">"/////////////////////////////////////////////////////////////////////////////
 // Name:        %HEADER-FILENAME%
@@ -188,7 +188,7 @@
     <string name="app_class_name">"Application"</string>
     <bool name="generate_app_class">0</bool>
     <string name="external_symbol_filenames">""</string>
-    <string name="configuration">"GCC Debug Unicode"</string>
+    <string name="configuration">"MinGW Debug"</string>
     <string name="source_encoding">"utf-8"</string>
     <string name="xrc_encoding">"utf-8"</string>
     <string name="project_encoding">"iso-8859-1"</string>
@@ -299,7 +299,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
@@ -378,7 +378,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
@@ -457,7 +457,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
@@ -536,7 +536,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
@@ -615,7 +615,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"MinGW"</string>
-          <bool name="dirty">1</bool>
+          <bool name="dirty">0</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"MinGW"</string>
           <string name="Build mode">"Release"</string>
@@ -686,7 +686,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"MinGW"</string>
-          <bool name="dirty">1</bool>
+          <bool name="dirty">0</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"MinGW"</string>
           <string name="Build mode">"Debug"</string>
@@ -757,7 +757,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"VC++ Project"</string>
-          <bool name="dirty">1</bool>
+          <bool name="dirty">0</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"VC++ Project"</string>
           <string name="Build mode">"Release"</string>
@@ -840,7 +840,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"VC++ Project"</string>
-          <bool name="dirty">1</bool>
+          <bool name="dirty">0</bool>
           <long name="makefile-last-written">-8519680</long>
           <string name="Compiler name">"VC++ Project"</string>
           <string name="Build mode">"Debug"</string>

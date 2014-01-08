@@ -2,14 +2,14 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="resources">
-      <UniqueIdentifier>{283949a4-e34d-47a4-85a7-9dd066031b80}</UniqueIdentifier>
+      <UniqueIdentifier>{7eb92bae-2813-4110-89d1-083bca3dce1e}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{6abd844d-44bb-41cc-b0e7-2301a924b770}</UniqueIdentifier>
+      <UniqueIdentifier>{d5237a16-9aeb-457b-947f-e41ad78ca7cd}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>
     </Filter>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{a47955b1-852f-4aae-b3e0-46f488ac2e40}</UniqueIdentifier>
+      <UniqueIdentifier>{c2c9d04c-8bf4-4de3-ba10-5d7909b35fe1}</UniqueIdentifier>
       <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
     </Filter>
   </ItemGroup>
@@ -53,6 +53,9 @@
     <ClInclude Include="..\..\common\interfacelist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\common\md5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -78,18 +81,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="vscpd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscphelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscpvariable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\variablecodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\guid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -140,21 +131,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\common\vscpvariable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\vscptcpif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\common\guid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\randPassword.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\gettimeofday.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\common\sha-1.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

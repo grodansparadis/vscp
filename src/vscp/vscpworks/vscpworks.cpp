@@ -1,13 +1,13 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        vscpworks.cpp
-// Purpose:     
+// Purpose:
 // Author:      Ake Hedman
-// Modified by: 
+// Modified by:
 // Created:     Thu 28 Jun 2007 10:05:16 CEST
-// RCS-ID:      
+// RCS-ID:
 // Copyright:   (C) 2007-2013 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
-// Licence:     
+// Licence:
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version

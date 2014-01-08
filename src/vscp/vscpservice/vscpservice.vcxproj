@@ -9,6 +9,10 @@
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|Win32">
+      <Configuration>Template</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <SccProjectName />
@@ -16,18 +20,24 @@
     <Keyword>MFCProj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <UseOfMfc>false</UseOfMfc>
+    <UseOfMfc>Dynamic</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -42,21 +52,11 @@
     <OutDir>.\debug\</OutDir>
     <IntDir>.\debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
-    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\dll\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\release\</OutDir>
     <IntDir>.\release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules />
-    <CodeAnalysisRuleAssemblies />
-    <IncludePath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(VSCP_HOME)\src\vscp\contrib\libwebsocket\dll\win32;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -95,15 +95,8 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>.\debug\vscpservice.exe</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>comctl32.lib;Ws2_32.lib;wsock32.lib;netapi32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;libwebsocketswin32.lib;zlib32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <CustomBuildStep>
-      <Command>echo on
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -115,7 +108,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;WIN32;WINVER=0x0500;BUILD_VSCPD_SERVICE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WIN32;_WIN32_WINNT=0x0500;WIN32;BUILD_VSCPD_SERVICE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\release\vscpservice.pch</PrecompiledHeaderOutputFile>
@@ -123,8 +116,8 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
       <ProgramDataBaseFileName>.\release\</ProgramDataBaseFileName>
     </ClCompile>
     <PostBuildEvent>
-      <Command>
-      </Command>
+      <Command>copy release\*.exe ..\delivery
+copy release\*.exe $(WINDIR)\system32</Command>
     </PostBuildEvent>
     <Midl>
       <TypeLibraryName>.\release\vscpservice.tlb</TypeLibraryName>
@@ -143,21 +136,10 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>.\release\vscpservice.exe</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>comctl32.lib;Ws2_32.lib;wsock32.lib;netapi32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;libwebsocketswin32.lib;zlib32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <CustomBuildStep>
-      <Command>echo on
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-echo "$(TargetPath)"  
-echo "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common\gettimeofday.c" />
-    <ClCompile Include="..\..\common\randPassword.cpp" />
     <ClCompile Include="..\common\clientlist.cpp" />
     <ClCompile Include="..\common\controlobject.cpp" />
     <ClCompile Include="..\..\common\crc.c" />
@@ -166,7 +148,6 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
     <ClCompile Include="..\common\devicethread.cpp" />
     <ClCompile Include="..\..\common\dllist.c" />
     <ClCompile Include="..\common\dm.cpp" />
-    <ClCompile Include="..\common\guid.cpp" />
     <ClCompile Include="..\common\interfacelist.cpp" />
     <ClCompile Include="..\..\common\md5.cpp" />
     <ClCompile Include="..\..\common\NTService.cpp" />
@@ -174,7 +155,6 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
     <ClCompile Include="..\common\udpthread.cpp" />
     <ClCompile Include="..\common\userlist.cpp" />
     <ClCompile Include="..\common\vscphelper.cpp" />
-    <ClCompile Include="..\common\vscptcpif.cpp" />
     <ClCompile Include="VSCPServApp.cpp" />
     <ClCompile Include="vscpservice.cpp" />
     <ClCompile Include="..\common\vscpvariable.cpp" />
@@ -204,8 +184,8 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\common\ntservmsg.rc">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">\Users\akhe\Documents\development\m2m\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">\Users\akhe\Documents\development\m2m\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">\Users\akhe\development\vscp_software\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">\Users\akhe\development\vscp_software\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <ResourceCompile Include="VSCPServApp.rc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
