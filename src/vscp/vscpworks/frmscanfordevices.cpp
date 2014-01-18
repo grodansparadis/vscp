@@ -952,7 +952,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
             ::wxSafeYield();
 
-        }// for
+        } // for
     }
     else { // Fast Algorithm
 
@@ -999,9 +999,9 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 							// Level I Read reply?
 							if ((VSCP_CLASS1_PROTOCOL == eventex.vscp_class) &&
 									(VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
-								if (eventex.data[ 1 ] == 0xd0) { // Requested register?
+								if ( 0xd0 == eventex.data[ 0 ] ) { // Requested register?
 									// Add nickname to list 
-									found_list.push_back( eventex.GUID[0] );
+									found_list.push_back( eventex.GUID[15] );
 								}	// Check for correct node
 							}		// Level II 512 Read reply?
 
@@ -1100,9 +1100,9 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 						// Level I Read reply?
 						if (/*ifGUID.isNULL() &&*/ (VSCP_CLASS1_PROTOCOL == eventex.vscp_class) &&
 								(VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
-							if (eventex.data[ 1 ] == 0xd0) { // Requested register?
+							if (eventex.data[ 0 ] == 0xd0) { // Requested register?
 								// Add nickname to list 
-								found_list.push_back( eventex.GUID[0] );
+								found_list.push_back( eventex.GUID[ 15 ] );
 							} // Check for correct node
 						}                        // Level II 512 Read reply?
 						else if (/*!m_ifguid.isNULL() && !bLevel2 &&*/
@@ -1113,7 +1113,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 							// Reg we requested?
 							if (0xd0 == eventex.data[ 16 ] ) {
 								// Add nickname to list 
-								found_list.push_back( eventex.GUID[0] );
+								found_list.push_back( eventex.GUID[ 15 ] );
 							}
 							//}
 
@@ -1132,7 +1132,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 							// Register we requested?
 							if (retreg == 0xffffffd0) {
 								// Add nickname to list 
-								found_list.push_back( eventex.data[ 0 ] );
+								found_list.push_back( eventex.data[ 15 ] );
 							}
 						}
 

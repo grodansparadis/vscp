@@ -386,12 +386,20 @@ int CCanalSuperWrapper::doCmdReceive( canalMsg *pMsg )
 
 int CCanalSuperWrapper::doCmdReceive( vscpEvent *pEvent )
 {	
+	int rv = 0;
+
 	if ( USE_DLL_INTERFACE == m_itemDevice.id ) {
-		return m_canalDll.doCmdReceive( pEvent );
+		canalMsg msg;
+		rv = m_canalDll.doCmdReceive( &msg );
+		uint8_t guid[16];
+		memset( guid, 0, 16 );
+		convertCanalToEvent( pEvent, &msg, guid );
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
-		return m_vscptcpif.doCmdReceive( pEvent );
+		rv = m_vscptcpif.doCmdReceive( pEvent );
 	}
+
+	return rv;
 }
 
 
@@ -401,12 +409,20 @@ int CCanalSuperWrapper::doCmdReceive( vscpEvent *pEvent )
 
 int CCanalSuperWrapper::doCmdReceive( vscpEventEx *pEventEx )
 {	
+	int rv = 0;
+
 	if ( USE_DLL_INTERFACE == m_itemDevice.id ) {
-		return m_canalDll.doCmdReceiveEx( pEventEx );
+		canalMsg msg;
+		rv =  m_canalDll.doCmdReceive( &msg );
+		uint8_t guid[16];
+		memset( guid, 0, 16 );
+		convertCanalToEventEx( pEventEx, &msg, guid );
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
-		return m_vscptcpif.doCmdReceiveEx( pEventEx );
+		rv =  m_vscptcpif.doCmdReceiveEx( pEventEx );
 	}
+
+	return rv;
 }
 
 

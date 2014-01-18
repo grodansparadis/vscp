@@ -2157,7 +2157,7 @@ bool reverseGUID(unsigned char *pGUID)
 
 bool convertVSCPtoEx(vscpEventEx *pEventEx, const vscpEvent *pEvent)
 {
-	// Check ponters
+	// Check pointers
 	if (NULL == pEvent) return false;
 	if (NULL == pEventEx) return false;
 
@@ -2186,6 +2186,10 @@ bool convertVSCPtoEx(vscpEventEx *pEventEx, const vscpEvent *pEvent)
 
 bool convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
 {
+	// Check pointers
+	if ( NULL == pEvent ) return false;
+	if ( NULL == pEventEx ) return false;
+	
 	if (pEventEx->sizeData > VSCP_LEVEL2_MAXDATA) return false;
 
 	if (pEventEx->sizeData) {
@@ -2521,18 +2525,22 @@ bool convertCanalToEvent(vscpEvent *pvscpEvent,
 // convertCanalToEvent
 //
 
-bool convertCanalToEventEx(vscpEventEx *pvscpEvent,
+bool convertCanalToEventEx(vscpEventEx *pvscpEventEx,
 		const canalMsg *pcanalMsg,
 		unsigned char *pGUID,
 		bool bCAN)
 {
 	vscpEvent *pEvent = new vscpEvent;
-	convertVSCPfromEx(pEvent, pvscpEvent );
 	bool rv = convertCanalToEvent(pEvent,
                                     pcanalMsg,
                                     pGUID,
                                     bCAN);
-	deleteVSCPevent(pEvent);
+	
+	if ( rv ) {	
+		convertVSCPtoEx(pvscpEventEx, pEvent );
+		deleteVSCPevent(pEvent);
+	}
+
 	return rv;
 }
 
