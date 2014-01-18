@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2013 
+// Copyright (C) 2000-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -31,6 +31,6 @@
 
 #define VSCPD_DISPLAY_VERSION "0.4.0.12 Fluorine"
 
-#define VSCPD_COPYRIGHT "Copyright (C) 2000-2013, Ake Hedman, Grodans Paradis AB, http://www.grodansparadis.com\n"
+#define VSCPD_COPYRIGHT "Copyright (C) 2000-2014, Ake Hedman, Grodans Paradis AB, http://www.grodansparadis.com\n"
 
 #endif

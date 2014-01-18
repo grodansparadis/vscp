@@ -192,19 +192,25 @@ Note: To build lircdrv and lirctest the additional library expat
 
 Notes on making your own applications
 -------------------------------------
-If you build GUI applicatin that use the vscp helper dll the wxUSE_GUI=1 should be in your preprocessor directives. 
+If you build GUI application that use the vscp helper dll the wxUSE_GUI=1 should be in your preprocessor directives. 
 If you build non-guid components define wxUSE_GUI=0
 
+Building libwebsockets on the windows platform
+----------------------------------------------
+Follow the instruction and use
 
-Firmware work (especially for the MPLAB)
-----------------------------------------
-All files are placed relative to a drive "J" which contains the root VSCP folder. This 
-driver can be created with the "subst" command as "subst J: path_to_VSCP_root". There is 
-a batch file "setenv_vscp.bat" in the root folder that do this for a system where the files 
-is placed in the folder "development" of the root folder.
-
+ cmake -DWITH_SSL=0 -G "Visual Studio 10" ..  
+ 
+ to generate the makefiles.
 
 
 ---
   The instructions for the VSCP Minimal project have been compiled by 
   Tom <tschulz !at| iprimus.com.au>.
+
+  
+  
+
+ 
+  
+  

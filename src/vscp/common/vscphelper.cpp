@@ -1,6 +1,6 @@
 // FILE: vscphelper.cpp
 //
-// Copyright (C) 2002-2013 
+// Copyright (C) 2002-2014 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is free software; you can redistribute it and/or

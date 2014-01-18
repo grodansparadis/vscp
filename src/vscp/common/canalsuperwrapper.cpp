@@ -4,7 +4,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2013 Ake Hedman, 
+// Copyright (C) 2000-2014 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
@@ -386,7 +386,12 @@ int CCanalSuperWrapper::doCmdReceive( canalMsg *pMsg )
 
 int CCanalSuperWrapper::doCmdReceive( vscpEvent *pEvent )
 {	
-	return m_vscptcpif.doCmdReceive( pEvent );
+	if ( USE_DLL_INTERFACE == m_itemDevice.id ) {
+		return m_canalDll.doCmdReceive( pEvent );
+	}
+	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
+		return m_vscptcpif.doCmdReceive( pEvent );
+	}
 }
 
 
@@ -396,7 +401,12 @@ int CCanalSuperWrapper::doCmdReceive( vscpEvent *pEvent )
 
 int CCanalSuperWrapper::doCmdReceive( vscpEventEx *pEventEx )
 {	
-	return m_vscptcpif.doCmdReceiveEx( pEventEx );
+	if ( USE_DLL_INTERFACE == m_itemDevice.id ) {
+		return m_canalDll.doCmdReceiveEx( pEventEx );
+	}
+	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
+		return m_vscptcpif.doCmdReceiveEx( pEventEx );
+	}
 }
 
 

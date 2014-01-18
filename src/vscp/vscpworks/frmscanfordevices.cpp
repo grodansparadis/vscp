@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     23/05/2009 17:40:41
 // RCS-ID:      
-// Copyright:   (C) 2009-2013 
+// Copyright:   (C) 2009-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -878,11 +878,13 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     m_DeviceTree->ExpandAll();
 
     // Fetch GUID for the interface
-    fetchIterfaceGUID();
+	if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+		fetchIterfaceGUID();
+	}
 
-    if (bSlowAlgorithm) {
+    if ( bSlowAlgorithm ) {
 
-        for (uint8_t i = scanFrom; i < scanTo; i++) {
+        for ( uint8_t i = scanFrom; i < scanTo; i++ ) {
 
             if (!progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i))) {
                 if (m_DeviceTree->GetCount()) {
@@ -893,7 +895,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                 break;
             }
 
-            if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+            if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
                 if (m_csw.readLevel1Register(i, 0xd0, &val, &progressDlg)) {
 
@@ -955,138 +957,220 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     else { // Fast Algorithm
 
         vscpEventEx eventex;
-            
-        // Read register at all nodes.
-        for (uint8_t i = scanFrom; i < scanTo; i++) {
-            
-            cguid destguid;
-            destguid.setLSB(i);
-                
-            eventex.head = VSCP_PRIORITY_NORMAL;
-            eventex.timestamp = 0;
-            eventex.obid = 0;
-                
-            // Check if a specific interface is used
-            if (!m_ifguid.isNULL()) {
 
-                progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i));
+		if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-                eventex.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
-                eventex.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+			// Read register at all nodes.
+			for ( uint8_t i = scanFrom; i < scanTo; i++ ) {
 
-                memset(eventex.GUID, 0, 16);// We use GUID for interface 
-                eventex.sizeData = 16 + 2;  // Interface GUID + nodeid + register to read
+				progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i));
 
-                m_ifguid.writeGUID(eventex.data);
+				eventex.vscp_class = VSCP_CLASS1_PROTOCOL;
+				eventex.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+				eventex.sizeData = 2;		// nodeid + register to read
+				eventex.data[ 0 ] = i;		// nodeid
+				eventex.data[ 1 ] = 0xd0;	// Register to read
+				m_csw.doCmdSend( &eventex );
+			}
 
-                eventex.data[ 16 ] = i; // nodeid
-                eventex.data[ 17 ] = 0xd0; // Register to read
 
-            }
-                
-            m_csw.doCmdSend( &eventex );
-            
-        } // for
-        
-        // Check for replies
-        wxLongLong resendTime = ::wxGetLocalTimeMillis();
+			// Check for replies
+				wxLongLong resendTime = ::wxGetLocalTimeMillis();
        
-        std::list<int> found_list;
-        bool bLevel2 = false;
-        uint8_t cnt = 0; 
-        while (true) {
+				std::list<int> found_list;
+				bool bLevel2 = false;
+				uint8_t cnt = 0; 
+				while (true) {
             
-            progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
+					progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
 
-            if (m_csw.doCmdDataAvailable()) { // Message available
+					if (m_csw.doCmdDataAvailable()) { // Message available
 
-                if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
+						if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
+                    
+#if 1                    
+							{
+							wxString str;
+								str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
+									eventex.vscp_class, eventex.vscp_type, eventex.sizeData, eventex.data[15], eventex.data[16] );
+								wxLogDebug(str);
+							}
+#endif                    
+							// Level I Read reply?
+							if ((VSCP_CLASS1_PROTOCOL == eventex.vscp_class) &&
+									(VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
+								if (eventex.data[ 1 ] == 0xd0) { // Requested register?
+									// Add nickname to list 
+									found_list.push_back( eventex.GUID[0] );
+								}	// Check for correct node
+							}		// Level II 512 Read reply?
+
+						} // valid event
+
+					} //Event is available
+
+					if ((::wxGetLocalTimeMillis() - resendTime) > 1000 ) {
+
+						// Take away duplicates
+						found_list.unique();
+                
+						wxTreeItemId newitem;
+						for( std::list<int>::iterator list_iter = found_list.begin(); 
+							    list_iter != found_list.end(); list_iter++) {
+                    
+							newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), *list_iter));
+							m_DeviceTree->ExpandAll();
+                    
+							scanElement *pElement = new scanElement;
+							if (NULL != pElement) {
+								pElement->m_bLoaded = false;
+								pElement->m_nodeid = *list_iter;
+								pElement->m_html = _("Right click on item to load info about node."); 
+								memset(pElement->m_reg, 0, 256);
+								m_DeviceTree->SetItemData(newitem, pElement);
+							}
+						}
+						break;
+
+					}
+
+			} // while
+
+		
+		} // CANAL
+		else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+            
+			// Read register at all nodes.
+			for ( uint8_t i = scanFrom; i < scanTo; i++ ) {
+            
+				cguid destguid;
+				destguid.setLSB(i);
+                
+				eventex.head = VSCP_PRIORITY_NORMAL;
+				eventex.timestamp = 0;
+				eventex.obid = 0;
+                
+				// Check if a specific interface is used
+				if ( !m_ifguid.isNULL() ) {
+
+					progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i));
+
+					eventex.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+					eventex.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+
+					memset(eventex.GUID, 0, 16);// We use GUID for interface 
+					eventex.sizeData = 16 + 2;  // Interface GUID + nodeid + register to read
+
+					m_ifguid.writeGUID(eventex.data);
+
+					eventex.data[ 16 ] = i; // nodeid
+					eventex.data[ 17 ] = 0xd0; // Register to read
+
+					m_csw.doCmdSend( &eventex );
+
+				}
+			
+			} // for
+                
+
+
+			// Check for replies
+			wxLongLong resendTime = ::wxGetLocalTimeMillis();
+       
+			std::list<int> found_list;
+			bool bLevel2 = false;
+			uint8_t cnt = 0; 
+			while (true) {
+            
+				progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
+
+				if (m_csw.doCmdDataAvailable()) { // Message available
+
+					if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
                     
 #if 0                    
-                    {
-                        wxString str;
-                        str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
-                            eventex.vscp_class, eventex.vscp_type, eventex.sizeData, eventex.data[15], eventex.data[16] );
-                        wxLogDebug(str);
-                    }
+							{
+							wxString str;
+								str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
+									eventex.vscp_class, eventex.vscp_type, eventex.sizeData, eventex.data[15], eventex.data[16] );
+								wxLogDebug(str);
+							}
 #endif                    
 
-                    // Level I Read reply?
-                    if (/*ifGUID.isNULL() &&*/ (VSCP_CLASS1_PROTOCOL == eventex.vscp_class) &&
-                            (VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
-                        if (eventex.data[ 1 ] == 0xd0) { // Requested register?
-                            // Add nickname to list 
-                            found_list.push_back( eventex.GUID[0] );
-                        } // Check for correct node
-                    }                        // Level II 512 Read reply?
-                    else if (/*!m_ifguid.isNULL() && !bLevel2 &&*/
-                            (VSCP_CLASS2_LEVEL1_PROTOCOL == eventex.vscp_class) &&
-                            (VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
+						// Level I Read reply?
+						if (/*ifGUID.isNULL() &&*/ (VSCP_CLASS1_PROTOCOL == eventex.vscp_class) &&
+								(VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
+							if (eventex.data[ 1 ] == 0xd0) { // Requested register?
+								// Add nickname to list 
+								found_list.push_back( eventex.GUID[0] );
+							} // Check for correct node
+						}                        // Level II 512 Read reply?
+						else if (/*!m_ifguid.isNULL() && !bLevel2 &&*/
+								(VSCP_CLASS2_LEVEL1_PROTOCOL == eventex.vscp_class) &&
+							(VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
 
-                        //if ( pdestGUID->isSameGUID( event.GUID ) ) {
-                        // Reg we requested?
-                        if (0xd0 == eventex.data[ 16 ] ) {
-                            // Add nickname to list 
-                            found_list.push_back( eventex.GUID[0] );
-                        }
-                        //}
+							//if ( pdestGUID->isSameGUID( event.GUID ) ) {
+							// Reg we requested?
+							if (0xd0 == eventex.data[ 16 ] ) {
+								// Add nickname to list 
+								found_list.push_back( eventex.GUID[0] );
+							}
+							//}
 
-                    }                        // Level II Read reply?
-                    else if (m_ifguid.isNULL() && bLevel2 &&
-                            (VSCP_CLASS2_PROTOCOL == eventex.vscp_class) &&
-                            (VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == 
-                            eventex.vscp_type)) {
+						}                        // Level II Read reply?
+						else if (m_ifguid.isNULL() && bLevel2 &&
+								(VSCP_CLASS2_PROTOCOL == eventex.vscp_class) &&
+								(VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == 
+							eventex.vscp_type)) {
 
-                        // from us
-                        uint32_t retreg = (eventex.data[ 0 ] << 24) +
-                                    (eventex.data[ 1 ] << 16) +
-                                    (eventex.data[ 2 ] << 8) +
-                                    eventex.data[ 3 ];
+							// from us
+							uint32_t retreg = (eventex.data[ 0 ] << 24) +
+												(eventex.data[ 1 ] << 16) +
+												(eventex.data[ 2 ] << 8) +
+												eventex.data[ 3 ];
 
-                        // Register we requested?
-                        if (retreg == 0xffffffd0) {
-                            // Add nickname to list 
-                            found_list.push_back( eventex.data[ 0 ] );
-                        }
-                    }
+							// Register we requested?
+							if (retreg == 0xffffffd0) {
+								// Add nickname to list 
+								found_list.push_back( eventex.data[ 0 ] );
+							}
+						}
 
-                } // valid event
+					} // valid event
 
-            } //Event is available
+				} //Event is available
 
-            if ((::wxGetLocalTimeMillis() - resendTime) >
-                    1000 ) {
+				if ((::wxGetLocalTimeMillis() - resendTime) > 1000 ) {
 
-               // Take away duplicates
-                found_list.unique();
+					// Take away duplicates
+					found_list.unique();
                 
-                wxTreeItemId newitem;
-                for( std::list<int>::iterator list_iter = found_list.begin(); 
-                        list_iter != found_list.end(); list_iter++) {
+					wxTreeItemId newitem;
+					for ( std::list<int>::iterator list_iter = found_list.begin(); 
+							list_iter != found_list.end(); list_iter++) {
                     
-                    newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), *list_iter));
-                    m_DeviceTree->ExpandAll();
+						newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), *list_iter));
+						m_DeviceTree->ExpandAll();
                     
-                    scanElement *pElement = new scanElement;
-                    if (NULL != pElement) {
-                        pElement->m_bLoaded = false;
-                        pElement->m_nodeid = *list_iter;
-                        pElement->m_html = _("Right click on item to load info about node."); 
-                        memset(pElement->m_reg, 0, 256);
-                        m_DeviceTree->SetItemData(newitem, pElement);
-                    }
-                }
-                
-                break;
-
-            }
-
-        } // while
+						scanElement *pElement = new scanElement;
+						if (NULL != pElement) {
+							pElement->m_bLoaded = false;
+							pElement->m_nodeid = *list_iter;
+							pElement->m_html = _("Right click on item to load info about node."); 
+							memset(pElement->m_reg, 0, 256);
+							m_DeviceTree->SetItemData(newitem, pElement);
+						}
+					}
+					break;
+            
+				} // while
         
+			}
         
+		} // TCP/IP i/f     
+		    
         
-        
-    }
+    }  // fast
 
     if (m_DeviceTree->GetCount()) {
         m_DeviceTree->SelectItem(m_DeviceTree->GetRootItem());

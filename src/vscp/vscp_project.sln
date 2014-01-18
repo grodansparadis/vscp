@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ccsdrv", "drivers\level1\cc
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscphelper", "helperlib\windows\VSCP helper dll.vcxproj", "{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpservice", "vscpservice\vscpservice.vcxproj", "{E5B04411-BC76-9386-F3D4-C8D0332F4037}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug DLL|Win32 = Debug DLL|Win32
@@ -298,6 +300,24 @@ Global
 		{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}.Template|Win32.ActiveCfg = Release|Win32
 		{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}.Template|Win32.Build.0 = Release|Win32
 		{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}.Template|x64.ActiveCfg = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Debug DLL|Win32.ActiveCfg = Debug|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Debug DLL|Win32.Build.0 = Debug|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Debug DLL|x64.ActiveCfg = Debug|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Debug|Win32.Build.0 = Debug|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Debug|x64.ActiveCfg = Debug|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release DLL|Win32.ActiveCfg = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release DLL|Win32.Build.0 = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release DLL|x64.ActiveCfg = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release Unicode|Win32.Build.0 = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release Unicode|x64.ActiveCfg = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release|Win32.ActiveCfg = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release|Win32.Build.0 = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Release|x64.ActiveCfg = Release|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Template|Win32.ActiveCfg = Template|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Template|Win32.Build.0 = Template|Win32
+		{E5B04411-BC76-9386-F3D4-C8D0332F4037}.Template|x64.ActiveCfg = Template|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
