@@ -1492,7 +1492,7 @@ void frmVSCPSession::CreateControls()
   m_ctrlGridReceive->SetBackgroundColour(wxColour(204, 244, 244));
   m_ctrlGridReceive->SetFont(wxFont(8, wxDEFAULT, wxNORMAL, wxBOLD, false, wxT("")));
   m_ctrlGridReceive->SetDefaultColSize(100);
-  m_ctrlGridReceive->SetDefaultRowSize(18);
+  m_ctrlGridReceive->SetDefaultRowSize(20);
   m_ctrlGridReceive->SetColLabelSize(18);
   m_ctrlGridReceive->SetRowLabelSize(30);
   itemBoxSizer67->Add(m_ctrlGridReceive, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
@@ -1773,7 +1773,7 @@ wxIcon frmVSCPSession::GetIconResource(const wxString& name)
     // Icon retrieval
     ////@begin frmVSCPSession icon retrieval
   wxUnusedVar(name);
-  if (name == _T("fatbee_v2.ico"))
+  if (name == _T("../../../docs/vscp/logo/fatbee_v2.ico"))
   {
     wxIcon icon(fatbee_v2_xpm);
     return icon;

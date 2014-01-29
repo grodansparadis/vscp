@@ -988,7 +988,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 						if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
                     
-#if 1                    
+#if 0                    
 							{
 							wxString str;
 								str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
@@ -1072,7 +1072,6 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 			
 			} // for
                 
-
 
 			// Check for replies
 			wxLongLong resendTime = ::wxGetLocalTimeMillis();
@@ -1229,32 +1228,60 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
                         this,
                         wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE  | wxPD_CAN_ABORT);
 
-        cguid destguid;
-        destguid.setLSB( pElement->m_nodeid );
-        
-        bool bregs = m_csw.readLevel2Registers( this,
-                                                    pElement->m_reg,
-                                                    m_ifguid,
-                                                    0,
-                                                    256,
-                                                    &destguid,
-                                                    &progressDlg,
-                                                    false );
-
-        uint8_t preg_url[33];
-        memset( preg_url, 0, sizeof(preg_url));
-        memcpy( preg_url, pElement->m_reg + 0xe0, 32 );
-        bool bmdf = m_csw.loadMDF( this,
-                                    preg_url,
-                                    url,
-                                    &mdf );
+		if (INTERFACE_CANAL == m_interfaceType) {
+		
+			bool bregs = m_csw.readLevel1Registers( this,
+														pElement->m_reg,
+														pElement->m_nodeid,
+														0,
+														256,
+														&progressDlg );
+		
+			uint8_t preg_url[33];
+		    memset( preg_url, 0, sizeof(preg_url));
+			memcpy( preg_url, pElement->m_reg + 0xe0, 32 );
+			bool bmdf = m_csw.loadMDF( this,
+				                        preg_url,
+					                    url,
+						                &mdf );
                 
-        pElement->m_html = getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
-        m_htmlWnd->SetPage(pElement->m_html);
+			pElement->m_html = getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
+			m_htmlWnd->SetPage(pElement->m_html);
         
-        // Mark as loaded
-        if ( bregs ) pElement->m_bLoaded = true;
-    }
+			// Mark as loaded
+			if ( bregs ) pElement->m_bLoaded = true;
+
+		} else if (INTERFACE_VSCP == m_interfaceType) {
+        
+			cguid destguid;
+			destguid.setLSB( pElement->m_nodeid );
+        
+			bool bregs = m_csw.readLevel2Registers( this,
+				                                        pElement->m_reg,
+					                                    m_ifguid,
+						                                0,
+							                            256,
+								                        &destguid,
+									                    &progressDlg,
+										                false );
+
+	        uint8_t preg_url[33];
+		    memset( preg_url, 0, sizeof(preg_url));
+			memcpy( preg_url, pElement->m_reg + 0xe0, 32 );
+			bool bmdf = m_csw.loadMDF( this,
+				                        preg_url,
+					                    url,
+						                &mdf );
+                
+			pElement->m_html = getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
+			m_htmlWnd->SetPage(pElement->m_html);
+        
+			// Mark as loaded
+			if ( bregs ) pElement->m_bLoaded = true;
+
+		}
+
+	}
 
     event.Skip(false);
 }

@@ -25,8 +25,6 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vectordrv", "drivers\level1
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zanthicdrv", "drivers\level1\zanthic\win32\zanthicdrv.vcxproj", "{C9996D0D-C8AC-6CE1-30EE-4DF64BA7C14A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ccsdrv", "drivers\level1\ccsdrv\win32\ccsdrv\ccsdrv.vcxproj", "{E03682CD-5586-EA15-A043-DA78D54D1E05}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscphelper", "helperlib\windows\VSCP helper dll.vcxproj", "{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpservice", "vscpservice\vscpservice.vcxproj", "{E5B04411-BC76-9386-F3D4-C8D0332F4037}"
@@ -264,24 +262,6 @@ Global
 		{C9996D0D-C8AC-6CE1-30EE-4DF64BA7C14A}.Template|Win32.ActiveCfg = Release|Win32
 		{C9996D0D-C8AC-6CE1-30EE-4DF64BA7C14A}.Template|Win32.Build.0 = Release|Win32
 		{C9996D0D-C8AC-6CE1-30EE-4DF64BA7C14A}.Template|x64.ActiveCfg = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Debug DLL|Win32.ActiveCfg = Debug|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Debug DLL|Win32.Build.0 = Debug|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Debug DLL|x64.ActiveCfg = Debug|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Debug|Win32.ActiveCfg = Debug|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Debug|Win32.Build.0 = Debug|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Debug|x64.ActiveCfg = Debug|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release DLL|Win32.ActiveCfg = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release DLL|Win32.Build.0 = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release DLL|x64.ActiveCfg = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release Unicode|Win32.ActiveCfg = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release Unicode|Win32.Build.0 = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release Unicode|x64.ActiveCfg = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release|Win32.ActiveCfg = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release|Win32.Build.0 = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Release|x64.ActiveCfg = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Template|Win32.ActiveCfg = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Template|Win32.Build.0 = Release|Win32
-		{E03682CD-5586-EA15-A043-DA78D54D1E05}.Template|x64.ActiveCfg = Release|Win32
 		{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}.Debug DLL|Win32.ActiveCfg = Debug|Win32
 		{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}.Debug DLL|Win32.Build.0 = Debug|Win32
 		{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}.Debug DLL|x64.ActiveCfg = Debug|Win32

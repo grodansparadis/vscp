@@ -122,3 +122,4 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/vscp_project.suo
 /src/vscp/vscpcmd/BaseDebug/vscpcmd.exe.embed.manifest.res
 /src/vscp/vscpcmd/BaseDebug/vscpcmd_manifest.rc
+/src/vscp/delivery

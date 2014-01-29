@@ -27,6 +27,10 @@
 // $Revision: 1.4 $ 
 ///////////////////////////////////////////////////////////////////////////////
 
+#ifdef VSCP_QT
+
+#else
+
 #ifdef __GNUG__
     //#pragma implementation
 #endif
@@ -47,6 +51,9 @@
 #endif
 
 #include <wx/tokenzr.h>
+
+#endif
+
 #include "guid.h"
 
 
@@ -104,8 +111,18 @@ bool cguid::operator!=(const cguid &guid)
 // getFromString
 //
  
- void cguid::getFromString( const wxString& strGUID )
- {
+#ifdef VSCP_QT
+void cguid::getFromString( const QString& strGUID )
+{
+    QStringList guidlist = strGUID.split(":");
+
+    for ( int i=0; i<std::min(16,guidlist.size()); i++ ) {
+        m_id[ i ] = (uint8_t)guidlist.at(i).toUShort();
+    }
+}
+#else
+void cguid::getFromString( const wxString& strGUID )
+{
     unsigned long val;
 
     wxStringTokenizer tkz( strGUID, wxT ( ":" ) );
@@ -115,33 +132,52 @@ bool cguid::operator!=(const cguid &guid)
         // If no tokens left no use to continue
         if ( !tkz.HasMoreTokens() ) break;
     }
- }
+}
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // getFromString
 //
 
+#ifdef VSCP_QT
+void cguid::getFromString( char *pszGUID )
+{
+  //QString str = pszGUID;
+  //getFromString( str );
+  getFromString( QString( pszGUID ) );
+}
+#else
  void cguid::getFromString( char *pszGUID )
  {
     wxString str;
     str.FromAscii( pszGUID );
     getFromString( str );
  }
+#endif
 
- ///////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 // getFromArray
 //
 
- void cguid::getFromArray( uint8_t *pguid )
- {
-	memcpy(m_id, pguid, 16 );
- }
-
+void cguid::getFromArray( uint8_t *pguid )
+{
+  memcpy(m_id, pguid, 16 );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // toString
 //
 
+#ifdef VSCP_QT
+void cguid::toString( QString& strGUID  )
+{
+  strGUID.sprintf( "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
+                      m_id[0], m_id[1], m_id[2], m_id[3],
+                      m_id[4], m_id[5], m_id[6], m_id[7],
+                      m_id[8], m_id[9], m_id[10], m_id[11],
+                      m_id[12], m_id[13], m_id[14], m_id[15] );
+}
+#else
 void cguid::toString( wxString& strGUID  )
 {
     strGUID.Printf( _( "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X" ),
@@ -150,6 +186,7 @@ void cguid::toString( wxString& strGUID  )
                     m_id[8], m_id[9], m_id[10], m_id[11],
                     m_id[12], m_id[13], m_id[14], m_id[15] );
 }
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////

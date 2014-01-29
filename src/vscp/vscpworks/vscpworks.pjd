@@ -188,7 +188,7 @@
     <string name="app_class_name">"Application"</string>
     <bool name="generate_app_class">0</bool>
     <string name="external_symbol_filenames">""</string>
-    <string name="configuration">"MinGW Debug"</string>
+    <string name="configuration">"VC++ Project Debug"</string>
     <string name="source_encoding">"utf-8"</string>
     <string name="xrc_encoding">"utf-8"</string>
     <string name="project_encoding">"iso-8859-1"</string>
@@ -3498,7 +3498,7 @@ to the clipboard"</string>
                     <long name="proxy-Rows">0</long>
                     <long name="proxy-Columns">4</long>
                     <long name="proxy-Column width">100</long>
-                    <long name="proxy-Row height">18</long>
+                    <long name="proxy-Row height">20</long>
                     <long name="proxy-Column label height">18</long>
                     <long name="proxy-Row label width">30</long>
                     <string name="proxy-Selection mode">"Rows"</string>

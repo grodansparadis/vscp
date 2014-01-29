@@ -26,7 +26,18 @@
 #if !defined(AFX_GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
 #define AFX_GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
+#ifdef VSCP_QT
+
+#include <QString>
+#include <QStringList>
+
+#else
+
 #include "wx/wx.h"
+
+#endif
+
+
 #include "vscp.h"
 
 class cguid  
@@ -64,7 +75,11 @@ public:
         Get GUID from string
         @param strGUID The GUID in string form
     */
+#ifdef VSCP_QT
+    void getFromString( const QString& strGUID );
+#else
     void getFromString( const wxString& strGUID );
+#endif
 
     /*!
         Get GUID from string
@@ -83,7 +98,11 @@ public:
         GUID to string
         @param pszGUID Zero terminated ASCII string pointing at GUID
     */
+#ifdef VSCP_QT
+    void toString( QString& strGUID  );
+#else
     void toString( wxString& strGUID  );
+#endif
 
     /*!
         Return pointer to GUID
@@ -109,40 +128,39 @@ public:
     */
     void setAt( const unsigned char n, const unsigned char value ) { int pos; pos = ( n & 0x0f ); m_id[ pos ] = value; };
 
-	/*!
+    /*!
         Set LSB GUID position
     */
     void setLSB( const unsigned char value ) { m_id[ 15 ] = value; };
 
-	/*!
+    /*!
         Get LSB GUID position
     */
     uint8_t getLSB( void ) { return m_id[ 15 ]; };
     
     /*!
-		Fill array with GUID MSB first (STANDARD way)			
-	*/
-	void writeGUID( uint8_t *pArray );
+        Fill array with GUID MSB first (STANDARD way)
+    */
+    void writeGUID( uint8_t *pArray );
     
 
-	/*!
-		Fill array with GUID LSB first			
-	*/
-	void writeGUID_reverse( uint8_t *pArray );
+    /*!
+        Fill array with GUID LSB first
+    */
+    void writeGUID_reverse( uint8_t *pArray );
     
     
-
     /*!
         Check if same as supplied GUID
         \return true if same.
     */
     bool isSameGUID( const unsigned char *pguid );
 
-	/*!
-		Check if GUID is all zero
-		@return True if all bytes of GUID is zero, else false.
-	*/
-	bool isNULL( void );
+    /*!
+        Check if GUID is all zero
+        @return True if all bytes of GUID is zero, else false.
+    */
+    bool isNULL( void );
     
     /*!
      *  Set Client ID in GUID
@@ -156,10 +174,7 @@ public:
      * @param clientid Client id ti write
      */
     void setNicknameID( uint16_t nicknameid );    
-            
-
-//private:
-  
+              
     // GUID id  MSB (index=0) -> LSB (index=15)
 	uint8_t m_id[16];
  	

@@ -803,7 +803,7 @@ bool CCanalSuperWrapper::writeLevel1Register( uint8_t nodeid,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// readAllLevel1Registers
+// readLevel1Registers
 //
 
 bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
