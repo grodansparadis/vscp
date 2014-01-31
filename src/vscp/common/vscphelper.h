@@ -33,11 +33,22 @@
 #if !defined(AFX_VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
 #define AFX_VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
+#ifdef VSCP_QT
+
+#include <QString>
+#include <QStringList>
+
+#else
+
+
 #include <wx/wx.h>
 #include <wx/hashmap.h>
 #ifndef WIN32
 #include <sys/times.h>
 #endif
+
+#endif
+
 #include "vscp.h"
 #include "vscp_class.h"
 #include "vscp_type.h"
@@ -69,6 +80,9 @@ extern "C" {
     };
     //@}
 
+#ifdef VSCP_QT	
+
+#else
     /// Hashtable for known event VSCP classes
     WX_DECLARE_HASH_MAP(unsigned long, wxString, wxIntegerHash, wxIntegerEqual, VSCPHashClass);
 
@@ -80,6 +94,7 @@ extern "C" {
     enum VSCPInformationFormat {
         DEFAULT, WITH_DECIMAL_PREFIX, WITH_HEX_PREFIX, WITH_DECIMAL_SUFFIX, WITH_HEX_SUFFIX
     };
+#endif	
 
     /*!
       @brief This class holds information about VSCP events.
@@ -105,12 +120,18 @@ extern "C" {
         /*!
           Get class description from class id
          */
+#ifdef VSCP_QT
+#else		 
         wxString& getClassDescription(int vscp_class);
+#endif		
 
         /*!
           Get type description from class id and type id
          */
+#ifdef VSCP_QT
+#else		 
         wxString& getTypeDescription(int vscp_class, int vscp_type);
+#endif		
 
 
         /*!
@@ -119,8 +140,14 @@ extern "C" {
             \param format Format for list. 0 is just description, 1 is
                 id + description
          */
-        void fillClassDescriptions(wxArrayString& strArray, VSCPInformationFormat format = DEFAULT);
+#ifdef VSCP_QT
+#else		 
+        void fillClassDescriptions( wxArrayString& strArray, VSCPInformationFormat format = DEFAULT );
+#endif		
 
+
+#ifdef VSCP_QT
+#else
         // We don't want the graphcal UI on apps that don't use it 
 #if ( wxUSE_GUI != 0 )
         /*!
@@ -132,16 +159,21 @@ extern "C" {
         void fillClassDescriptions(wxControlWithItems *pctrl, VSCPInformationFormat format = DEFAULT);
 
 #endif
-
+#endif
         /*!
             Fills a string array with type descriptions
             \param strArray String array to fill.
             \param format Format for list. 0 is just description, 1 is
                 id + description
          */
+#ifdef VSCP_QT
+#else		 
         void fillTypeDescriptions(wxArrayString& strArray, unsigned int vscp_class, VSCPInformationFormat format = DEFAULT);
+#endif		
 
         // We don't want the graphcal UI on apps that don't use it 
+#ifdef VSCP_QT
+#else		
 #if ( wxUSE_GUI != 0 )
         /*!
             Fills a combobox with type descriptions
@@ -152,7 +184,7 @@ extern "C" {
         void fillTypeDescriptions(wxControlWithItems *pctrl, unsigned int vscp_class, VSCPInformationFormat format = DEFAULT);
 
 #endif
-
+#endif
     private:
         /// Hash for classes
         VSCPHashClass m_hashClass;
