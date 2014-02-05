@@ -37,7 +37,7 @@
 
 #include <QString>
 #include <QStringList>
-
+#include <QtEndian>
 #else
 
 
@@ -80,118 +80,6 @@ extern "C" {
     };
     //@}
 
-#ifdef VSCP_QT	
-
-#else
-    /// Hashtable for known event VSCP classes
-    WX_DECLARE_HASH_MAP(unsigned long, wxString, wxIntegerHash, wxIntegerEqual, VSCPHashClass);
-
-    /// Hashtable for known event VSCP types
-    WX_DECLARE_HASH_MAP(unsigned long, wxString, wxIntegerHash, wxIntegerEqual, VSCPHashType);
-
-#define MAKE_CLASSTYPE_LONG( a, b ) ((((unsigned long)a)<<16) + b)
-
-    enum VSCPInformationFormat {
-        DEFAULT, WITH_DECIMAL_PREFIX, WITH_HEX_PREFIX, WITH_DECIMAL_SUFFIX, WITH_HEX_SUFFIX
-    };
-#endif	
-
-    /*!
-      @brief This class holds information about VSCP events.
-     */
-
-    class VSCPInformation {
-    public:
-
-        // Constructores/Destructors
-        VSCPInformation(void);
-        ~VSCPInformation(void);
-
-        /*!
-          Get a pointer to the VSCP class hashtable.
-         */
-        VSCPHashClass *getClassHashPointer(void);
-
-        /*!
-          Get a pointer to the VSCP type hashtable.
-         */
-        VSCPHashType *getTypeHashPointer(void);
-
-        /*!
-          Get class description from class id
-         */
-#ifdef VSCP_QT
-#else		 
-        wxString& getClassDescription(int vscp_class);
-#endif		
-
-        /*!
-          Get type description from class id and type id
-         */
-#ifdef VSCP_QT
-#else		 
-        wxString& getTypeDescription(int vscp_class, int vscp_type);
-#endif		
-
-
-        /*!
-            Fills a string  array with class descriptions
-            \param strArray String array to fill.
-            \param format Format for list. 0 is just description, 1 is
-                id + description
-         */
-#ifdef VSCP_QT
-#else		 
-        void fillClassDescriptions( wxArrayString& strArray, VSCPInformationFormat format = DEFAULT );
-#endif		
-
-
-#ifdef VSCP_QT
-#else
-        // We don't want the graphcal UI on apps that don't use it 
-#if ( wxUSE_GUI != 0 )
-        /*!
-            Fills a combobox with class descriptions
-            \param pctrl Pointer to control to fill.
-            \param format Format for list. 0 is just description, 1 is
-                id + description
-         */
-        void fillClassDescriptions(wxControlWithItems *pctrl, VSCPInformationFormat format = DEFAULT);
-
-#endif
-#endif
-        /*!
-            Fills a string array with type descriptions
-            \param strArray String array to fill.
-            \param format Format for list. 0 is just description, 1 is
-                id + description
-         */
-#ifdef VSCP_QT
-#else		 
-        void fillTypeDescriptions(wxArrayString& strArray, unsigned int vscp_class, VSCPInformationFormat format = DEFAULT);
-#endif		
-
-        // We don't want the graphcal UI on apps that don't use it 
-#ifdef VSCP_QT
-#else		
-#if ( wxUSE_GUI != 0 )
-        /*!
-            Fills a combobox with type descriptions
-            \param pctrl Pointer to control to fill.
-            \param format Format for list. 0 is just description, 1 is
-                id + description
-         */
-        void fillTypeDescriptions(wxControlWithItems *pctrl, unsigned int vscp_class, VSCPInformationFormat format = DEFAULT);
-
-#endif
-#endif
-    private:
-        /// Hash for classes
-        VSCPHashClass m_hashClass;
-
-        /// Hash for types
-        VSCPHashType m_hashType;
-    };
     
     /*!
         Fetch datacoding byte from measurement events
@@ -226,7 +114,11 @@ extern "C" {
       the first normalise byte.
       \return Returns unicode UTF-8 string of event data
      */
+#ifdef VSCP_QT	
+	QString& getDataCodingString(const unsigned char *pString, const unsigned char length);
+#else	 
     wxString& getDataCodingString(const unsigned char *pString, const unsigned char length);
+#endif	
 
     /*!
       Get data in the VSCP data coding format to a string. Works for
@@ -235,7 +127,11 @@ extern "C" {
       \param str String that holds the result
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getVSCPMeasurementAsString(const vscpEvent *pEvent, QString& str);
+#else	 
     bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& str);
+#endif	
     
     /*!
       Get data in the VSCP data coding format as a double. Works for
@@ -254,7 +150,11 @@ extern "C" {
       \param str String that holds the result
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, QString& str);
+#else	 
     bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& str);
+#endif	
 	
 	/*!
 	  Convert a floating point measurement value into VSCP data with the
@@ -281,7 +181,11 @@ extern "C" {
       \param str String that holds the result
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, QString& str);
+#else	 
     bool getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, wxString& str);
+#endif	
 
     /*!
       Get data in the VSCP data coding format to a float
@@ -293,10 +197,14 @@ extern "C" {
 
     /*!
       Replace backshlashes in a string with forward slashes
-      \param wxstr String that should be handled.
+      \param strval String that should be handled.
       \return Fixed string.
      */
-    wxString& replaceBackslash(wxString& wxstr);
+#ifdef VSCP_QT	
+    QString& replaceBackslash(QString& strval);
+#else	 
+    wxString& replaceBackslash(wxString& strval);
+#endif	
 
     /*!
       Read a numerical value from a string
@@ -304,7 +212,11 @@ extern "C" {
       \param strval wxString containing value to be converted
       \return Unsigned long containing value
      */
+#ifdef VSCP_QT	
+	uint32_t readStringValue(const QString& strval);
+#else	 
     uint32_t readStringValue(const wxString& strval);
+#endif	
 
     /*!
       Get VSCP priority
@@ -403,7 +315,11 @@ extern "C" {
       \param strGUID String with GUID (xx:yy:zz....)
       \return True on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getGuidFromString(vscpEvent *pEvent, const QString& strGUID);
+#else	 
     bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID);
+#endif	
     
         /*!
       Get GUID from string
@@ -412,12 +328,20 @@ extern "C" {
       \param strGUID String with GUID (xx:yy:zz....)
       \return True on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getGuidFromStringEx(vscpEventEx *pEventEx, const QString& strGUID);
+#else	 
     bool getGuidFromStringEx(vscpEventEx *pEventEx, const wxString& strGUID);
+#endif	
 
     /*!
       Fill event GUID from a string
      */
+#ifdef VSCP_QT	
+	bool getGuidFromStringToArray(unsigned char *pGUID, const QString& strGUID);
+#else	 
     bool getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID);
+#endif	
 	
 	/*!
       Write out GUID to string
@@ -426,7 +350,11 @@ extern "C" {
       \param strGUID Reference to string for written GUID
       \return True on success, false on failure.
     */
+#ifdef VSCP_QT	
+	bool writeGuidArrayToString(const unsigned char *pGUID, QString& strGUID);
+#else	
     bool writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID);
+#endif	
 
     /*!
       Write out GUID to string
@@ -435,7 +363,11 @@ extern "C" {
       \param strGUID Reference to string for written GUID
       \return True on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool writeGuidToString(const vscpEvent *pEvent, QString& strGUID);
+#else	 
     bool writeGuidToString(const vscpEvent *pEvent, wxString& strGUID);
+#endif	
     
         /*!
       Write out GUID to string
@@ -444,7 +376,11 @@ extern "C" {
       \param strGUID Reference to string for written GUID
       \return True on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool writeGuidToStringEx(const vscpEventEx *pEvent, QString& strGUID);
+#else	 
     bool writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID);
+#endif	
 
     /*!
       Write out GUID to string as four rows
@@ -453,7 +389,11 @@ extern "C" {
       \param strGUID Reference to string for written GUID
       \return True on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool writeGuidToString4Rows(const vscpEvent *pEvent, QString& strGUID);
+#else	 
     bool writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID);
+#endif	
     
         /*!
       Write out GUID to string as four rows
@@ -462,7 +402,11 @@ extern "C" {
       \param strGUID Reference to string for written GUID
       \return True on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, QString& strGUID);
+#else	 
     bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID);
+#endif	
 
 
     /*!
@@ -545,7 +489,11 @@ extern "C" {
                 filter-priority, filter-class, filter-type, filter-GUID
         \return true on success, fals eon failure.
      */
+#ifdef VSCP_QT	
+	bool readFilterFromString(vscpEventFilter *pFilter, QString& strFilter);
+#else	 
     bool readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter);
+#endif	
 
     /*!
         Read a mask from a string
@@ -554,7 +502,11 @@ extern "C" {
                 mask-priority, mask-class, mask-type, mask-GUID
         \return true on success, fals eon failure.
      */
+#ifdef VSCP_QT	
+	bool readMaskFromString(vscpEventFilter *pFilter, QString& strMask);
+#else	 
     bool readMaskFromString(vscpEventFilter *pFilter, wxString& strMask);
+#endif	
 
     /*!
       Convert an Event from a CANAL message
@@ -610,9 +562,15 @@ extern "C" {
       line break 
       \return True on success false on failure.
      */
+#ifdef VSCP_QT	
+	bool writeVscpDataToString(const vscpEvent *pEvent, 
+								QString& str, 
+								bool bUseHtmlBreak = false);
+#else	 
     bool writeVscpDataToString(const vscpEvent *pEvent, 
 								wxString& str, 
 								bool bUseHtmlBreak = false);
+#endif								
 
     /*!
       Write VSCP data to string
@@ -623,10 +581,17 @@ extern "C" {
       line break 
       \return True on success false on failure.
      */
+#ifdef VSCP_QT	
+	bool writeVscpDataWithSizeToString(const uint16_t sizeData,
+										const unsigned char *pData,
+										QString& str,
+										bool bUseHtmlBreak = false);
+#else	 
     bool writeVscpDataWithSizeToString(const uint16_t sizeData,
 										const unsigned char *pData,
 										wxString& str,
 										bool bUseHtmlBreak = false);
+#endif										
 
     /*!
       Get VSCP data from a string
@@ -635,7 +600,11 @@ extern "C" {
       or hexadecimal form. Data can span multiple lines.
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getVscpDataFromString(vscpEvent *pEvent, const QString& str);
+#else	 
     bool getVscpDataFromString(vscpEvent *pEvent, const wxString& str);
+#endif	
 
     /*!
       Get VSCP data from a string
@@ -645,9 +614,15 @@ extern "C" {
       or hexadecimal form. Data can span multiple lines.
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getVscpDataArrayFromString( uint8_t *pData, 
+										uint16_t *psizeData, 
+										const QString& str);
+#else	 
     bool getVscpDataArrayFromString( uint8_t *pData, 
 										uint16_t *psizeData, 
 										const wxString& str);
+#endif										
 
     /*!
       Write event to string.
@@ -656,7 +631,11 @@ extern "C" {
       \param str String that receive the result
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool writeVscpEventToString(vscpEvent *pEvent, QString& str);
+#else	 
     bool writeVscpEventToString(vscpEvent *pEvent, wxString& str);
+#endif	
 
     /*!
       Write event to string.
@@ -665,7 +644,11 @@ extern "C" {
       \param str String that receive the result
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool writeVscpEventExToString(vscpEventEx *pEvent, QString& str);
+#else	 
     bool writeVscpEventExToString(vscpEventEx *pEvent, wxString& str);
+#endif	
 
 
     /*!
@@ -675,7 +658,11 @@ extern "C" {
       \param str String that contain the event on string form
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getVscpEventFromString(vscpEvent *pEvent, const QString& str);
+#else	 
     bool getVscpEventFromString(vscpEvent *pEvent, const wxString& str);
+#endif	
 
     /*!
       Get event data from string format
@@ -684,7 +671,11 @@ extern "C" {
       \param str String that contain the event on string form
       \return true on success, false on failure.
      */
+#ifdef VSCP_QT	
+	bool getVscpEventExFromString(vscpEventEx *pEventEx, const QString& str);
+#else	 
     bool getVscpEventExFromString(vscpEventEx *pEventEx, const wxString& str);
+#endif	
 
     /*!
       Get Data in real text.
@@ -695,14 +686,22 @@ extern "C" {
       \return Text data representation of the event data or an empty string 
       if the class/type pair is not supported..
      */
+#ifdef VSCP_QT	
+	QString& getRealTextData(vscpEvent *pEvent);
+#else	 
     wxString& getRealTextData(vscpEvent *pEvent);
+#endif	
 
     /*!
       This function makes a HTML string from a standard string. LF is replaced
       with a '<BR>'.
       \param str String that should be HTML coded.
      */
+#ifdef VSCP_QT	
+	void makeHtml(QString& str);
+#else	 
     void makeHtml(wxString& str);
+#endif	
 
 	/*
 		Get device HTML status from device
@@ -710,7 +709,11 @@ extern "C" {
 	    @param pmdf Optional pointer to CMDF class which gives more info
 				about the device if it is supplied.
 	 */
+#ifdef VSCP_QT	
+	QString& getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
+#else	 
 	wxString& getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
+#endif	
 
 
 #ifdef __cplusplus
