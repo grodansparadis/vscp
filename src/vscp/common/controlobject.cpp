@@ -117,6 +117,7 @@
 #include "canal_macro.h"
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
+#include "../common/vscpeventhelper.h"
 #include "../../common/configfile.h"
 #include "../../common/crc.h"
 #include "../../common/md5.h"

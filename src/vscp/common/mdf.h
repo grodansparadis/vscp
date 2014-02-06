@@ -142,9 +142,9 @@ public:
 		@return Real text description of type.
 	*/
 #ifdef VSCP_QT
-    QString& getAbstractionValueType( void );
+    QString getAbstractionValueType( void );
 #else
-    wxString& getAbstractionValueType( void );
+    wxString getAbstractionValueType( void );
 #endif
 
 #ifdef VSCP_QT

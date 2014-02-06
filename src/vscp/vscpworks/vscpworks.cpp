@@ -88,6 +88,7 @@
 #include "platform.h"
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
+#include "../common/vscpeventhelper.h"
 #include "../common/mdf.h"
 #include "../common/vscp_class.h"
 #include "../common/vscp_type.h"

@@ -60,6 +60,7 @@
 
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
+#include "../common/vscpeventhelper.h"
 #include "dialogsetfiltermask.h"
 
 VSCPInformation geventinfo;

@@ -61,6 +61,7 @@
 #include <wx/tokenzr.h>
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
+#include "../common/vscpeventhelper.h"
 #include "vscptxobj.h"
 #include "dlgvscptrmit.h"
 

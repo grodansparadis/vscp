@@ -127,58 +127,57 @@ wxString CMDF_Abstraction::getAbstractionValueType( void )
 	switch ( m_nType ) {
 
 	case type_string: 
-		return( _("String") );
+		return( wxString(_("String")) );
 
 	case type_boolval:
-		return( _("Boolean") );
+		return( wxString(_("Boolean")) );
 
 	case type_bitfield:
-		return( _("Bitfield") );
+		return( wxString(_("Bitfield")) );
 
 	case type_int8_t:
-		return( _("Signed 8-bit integer") );
+		return( wxString(_("Signed 8-bit integer")) );
 
 	case type_uint8_t:
-		return( _("Unsigned 8-bit integer") );
+		return( wxString(_("Unsigned 8-bit integer")) );
 
 	case type_int16_t:
-		return( _("Signed 16-bit integer") );
+		return( wxString(_("Signed 16-bit integer")) );
 
 	case type_uint16_t:
-		return( _("Unsigned 16-bit integer") );
+		return( wxString(_("Unsigned 16-bit integer")) );
 
 	case type_int32_t:
-		return( _("Signed 32-bit integer") );
+		return( wxString(_("Signed 32-bit integer")) );
 
 
 	case type_uint32_t:
-		return( _("Unsigned 32-bit integer") );
+		return( wxString(_("Unsigned 32-bit integer")) );
 
 	case type_int64_t:
-		return( _("Signed 64-bit integer") );
+		return( wxString(_("Signed 64-bit integer")) );
 
 	case type_uint64_t:
-		return( _("Unsigned 64-bit integer") );
+		return( wxString(_("Unsigned 64-bit integer")) );
 
 	case type_float:
-		return( _("float") );
+		return( wxString(_("float")) );
 
 	case type_double:
-		return( _("double") );
+		return( wxString(_("double")) );
 
 	case type_date:
-		return( _("Date") );
+		return( wxString(_("Date")) );
 
 	case type_time:
-		return( _("Time") );
-
+		return( wxString(_("Time")) );
 
 	case type_guid:
-		return( _("GUID") );
+		return( wxString(_("GUID")) );
 
 	case type_unknown:
 	default:
-		return( _("Unknown Type") );
+		return( wxString(_("Unknown Type")) );
 	}
 }
 

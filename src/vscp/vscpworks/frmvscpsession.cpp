@@ -75,6 +75,7 @@
 #include "../common/canal.h"
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
+#include "../common/vscpeventhelper.h"
 
 extern appConfiguration g_Config; // Configuration data
 

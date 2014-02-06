@@ -88,6 +88,7 @@ extern "C" {
      */
 
     class VSCPInformation {
+        
     public:
 
         // Constructores/Destructors
@@ -176,9 +177,16 @@ extern "C" {
 					unsigned int vscp_class, 
 					VSCPInformationFormat format = DEFAULT);
 
-
+#endif
 #endif
 
+ private:
+        /// Hash for classes
+        VSCPHashClass m_hashClass;
+
+        /// Hash for types
+        VSCPHashType m_hashType;
+    };
 
 
 #ifdef __cplusplus

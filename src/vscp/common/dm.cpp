@@ -41,6 +41,7 @@
 
 #include "vscp.h"
 #include "vscphelper.h"
+#include "vscpeventhelper.h"
 #include "actioncodes.h"
 #include "vscpvariable.h"
 #include "controlobject.h"

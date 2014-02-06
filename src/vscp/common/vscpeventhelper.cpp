@@ -58,6 +58,7 @@
 #include "vscp.h"
 #include "../common/mdf.h"
 #include "vscphelper.h"
+#include "vscpeventhelper.h"
 
 
 
@@ -65,7 +66,7 @@
 // Constructor
 //
 
-VSCPInformation::VSCPInformation(void)
+VSCPInformation::VSCPInformation( void )
 {
 	m_hashClass[ 0 ] = _("CLASS1_PROTOCOL");
 	m_hashClass[ 1 ] = _("CLASS1_ALARM");

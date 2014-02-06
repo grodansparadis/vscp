@@ -849,7 +849,7 @@ public:
     //*****************************************************
 
 	/// Path to file holding mime types
-	wxString m_pathToMimeTypeFile;
+    wxString m_pathToMimeTypeFile;
 	
     // Path to filesystem root
     static wxString m_pathRoot;

@@ -71,6 +71,7 @@
 #endif
  
 #include "vscpworks.h"
+#include "../common/vscpeventhelper.h"
 #include "gridtable.h"   
 
 

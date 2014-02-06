@@ -58,6 +58,7 @@
 ////@end includes
 
 #include "../common/vscphelper.h"
+#include "../common/vscpeventhelper.h"
 #include "dlgvscpmsg.h"
 
 extern VSCPInformation g_vscpinfo;  // VSCP class type information
