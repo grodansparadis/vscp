@@ -127,6 +127,7 @@
 #include "devicelist.h"
 #include "devicethread.h"
 #include "dm.h"
+#include "vscpeventhelper.h"
 #include "controlobject.h"
 #include "../common/webserver.h"
 #ifndef WIN32

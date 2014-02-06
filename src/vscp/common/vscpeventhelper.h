@@ -30,8 +30,8 @@
  */
 
 
-#if !defined(AFX_VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
-#define AFX_VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
+#if !defined(VSCPEVENTHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
+#define VSCPEVENTHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
 #ifdef VSCP_QT
 
@@ -62,23 +62,6 @@ class CMDF;
 extern "C" {
 #endif
 
-    //@{
-
-    /*! 
-      \union vscp_value
-      \brief VSCP Data coding declaration
-     */
-    union vscp_value {
-        /// float value
-        double float_value;
-        /// Integer and long value and 
-        long long_value;
-        /// Integer value
-        int int_value;
-        /// Byte value
-        unsigned char byte_value;
-    };
-    //@}
 
 #ifdef VSCP_QT	
 
@@ -92,7 +75,11 @@ extern "C" {
 #define MAKE_CLASSTYPE_LONG( a, b ) ((((unsigned long)a)<<16) + b)
 
     enum VSCPInformationFormat {
-        DEFAULT, WITH_DECIMAL_PREFIX, WITH_HEX_PREFIX, WITH_DECIMAL_SUFFIX, WITH_HEX_SUFFIX
+        DEFAULT, 
+	WITH_DECIMAL_PREFIX, 
+	WITH_HEX_PREFIX, 
+	WITH_DECIMAL_SUFFIX, 
+	WITH_HEX_SUFFIX
     };
 #endif	
 
@@ -142,7 +129,8 @@ extern "C" {
          */
 #ifdef VSCP_QT
 #else		 
-        void fillClassDescriptions( wxArrayString& strArray, VSCPInformationFormat format = DEFAULT );
+        void fillClassDescriptions( wxArrayString& strArray, 
+					VSCPInformationFormat format = DEFAULT );
 #endif		
 
 
@@ -156,7 +144,8 @@ extern "C" {
             \param format Format for list. 0 is just description, 1 is
                 id + description
          */
-        void fillClassDescriptions(wxControlWithItems *pctrl, VSCPInformationFormat format = DEFAULT);
+        void fillClassDescriptions(wxControlWithItems *pctrl, 
+					VSCPInformationFormat format = DEFAULT);
 
 #endif
 #endif
@@ -168,7 +157,9 @@ extern "C" {
          */
 #ifdef VSCP_QT
 #else		 
-        void fillTypeDescriptions(wxArrayString& strArray, unsigned int vscp_class, VSCPInformationFormat format = DEFAULT);
+        void fillTypeDescriptions(wxArrayString& strArray, 
+					unsigned int vscp_class, 
+					VSCPInformationFormat format = DEFAULT);
 #endif		
 
         // We don't want the graphcal UI on apps that don't use it 
@@ -181,7 +172,19 @@ extern "C" {
             \param format Format for list. 0 is just description, 1 is
                 id + description
          */
-        void fillTypeDescriptions(wxControlWithItems *pctrl, unsigned int vscp_class, VSCPInformationFormat format = DEFAULT);
+        void fillTypeDescriptions(wxControlWithItems *pctrl, 
+					unsigned int vscp_class, 
+					VSCPInformationFormat format = DEFAULT);
+
 
 #endif
+
+
+
+#ifdef __cplusplus
+}
 #endif
+
+
+#endif // include define
+
