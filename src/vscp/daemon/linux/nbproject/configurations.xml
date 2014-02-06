@@ -49,6 +49,8 @@
       <itemPath>../../common/vscp_class.h</itemPath>
       <itemPath>../../common/vscp_type.h</itemPath>
       <itemPath>../../common/vscpdlldef.h</itemPath>
+      <itemPath>../../common/vscpeventhelper.cpp</itemPath>
+      <itemPath>../../common/vscpeventhelper.h</itemPath>
       <itemPath>../../common/vscphelper.cpp</itemPath>
       <itemPath>../../common/vscphelper.h</itemPath>
       <itemPath>../../common/vscptcpif.cpp</itemPath>
@@ -287,6 +289,20 @@
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
+      </item>
+      <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../common/vscpeventhelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
