@@ -243,6 +243,7 @@
     <ClCompile Include="..\common\guid.cpp" />
     <ClCompile Include="..\common\mdf.cpp" />
     <ClCompile Include="..\common\register.cpp" />
+    <ClCompile Include="..\common\vscpeventhelper.cpp" />
     <ClCompile Include="..\common\vscphelper.cpp" />
     <ClCompile Include="..\common\vscptcpif.cpp" />
     <ClCompile Include="bootdevice.cpp" />
