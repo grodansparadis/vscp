@@ -1191,7 +1191,6 @@ void frmVSCPSession::Init()
     m_pRXWorkerThread = NULL;
     m_pDeviceWorkerThread = NULL;
 
-    m_pProgressDlg = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1241,6 +1240,7 @@ void frmVSCPSession::startWorkerThreads(frmVSCPSession *pFrm)
         /////////////////////////////////////////////////////////////////////////////
         // Load controlobject control handler
         /////////////////////////////////////////////////////////////////////////////
+		
         m_pTXWorkerThread = new TXWorkerThread;
 
         if (NULL != m_pTXWorkerThread) {
@@ -1253,18 +1253,21 @@ void frmVSCPSession::startWorkerThreads(frmVSCPSession *pFrm)
                     ::wxGetApp().logMsg(_("Unable to run controlobject device thread."),
                             DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+			else {
                 ::wxGetApp().logMsg(_("Unable to create controlobject device thread."),
                         DAEMON_LOGMSG_CRITICAL);
             }
-        } else {
+        } 
+		else {
             ::wxGetApp().logMsg(_("Unable to allocate memory for controlobject device thread."), DAEMON_LOGMSG_CRITICAL);
         }
-
+		
 
         /////////////////////////////////////////////////////////////////////////////
         // Load controlobject client message handler
         /////////////////////////////////////////////////////////////////////////////
+
         m_pRXWorkerThread = new RXWorkerThread;
 
         if (NULL != m_pRXWorkerThread) {
@@ -1277,14 +1280,18 @@ void frmVSCPSession::startWorkerThreads(frmVSCPSession *pFrm)
                     ::wxGetApp().logMsg(_("Unable to run controlobject client thread."),
                             DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+			else {
                 ::wxGetApp().logMsg(_("Unable to create controlobject client thread."),
                         DAEMON_LOGMSG_CRITICAL);
             }
-        } else {
+        } 
+		else {
             ::wxGetApp().logMsg(_("Unable to allocate memory for controlobject client thread."), DAEMON_LOGMSG_CRITICAL);
         }
-    } else {
+    } 
+	else {
+
         /////////////////////////////////////////////////////////////////////////////
         // Load device handler
         /////////////////////////////////////////////////////////////////////////////
@@ -1299,10 +1306,12 @@ void frmVSCPSession::startWorkerThreads(frmVSCPSession *pFrm)
                 if (wxTHREAD_NO_ERROR != (err = m_pDeviceWorkerThread->Run())) {
                     ::wxGetApp().logMsg(_("Unable to run controlobject device thread."), DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+			else {
                 ::wxGetApp().logMsg(_("Unable to create controlobject device thread."), DAEMON_LOGMSG_CRITICAL);
             }
-        } else {
+        } 
+		else {
             ::wxGetApp().logMsg(_("Unable to allocate memory for controlobject device thread."), DAEMON_LOGMSG_CRITICAL);
         }
     }
@@ -1376,8 +1385,6 @@ void frmVSCPSession::OnInterfaceActivate(wxCommandEvent& event)
 
 void frmVSCPSession::CreateControls()
 {
-
-
     ////@begin frmVSCPSession content construction
   frmVSCPSession* itemFrame1 = this;
 
@@ -2978,18 +2985,8 @@ void frmVSCPSession::eventPrepareConnect(wxCommandEvent &event)
 {
     event.SetInt(1); // Avoid warning
     if (m_BtnActivateInterface->GetValue()) {
-        if (NULL != m_pProgressDlg) {
-            m_pProgressDlg->Update(100);
-            m_pProgressDlg = NULL;
-        }
-
-        m_pProgressDlg = new wxProgressDialog(_("TCP/IP session"),
-                _("Connecting to server..."),
-                100,
-                this,
-                wxPD_AUTO_HIDE | wxPD_APP_MODAL);
-        m_pProgressDlg->Update(80);
-    }
+		// Show status
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3000,10 +2997,7 @@ void frmVSCPSession::eventConnected(wxCommandEvent &event)
 {
     event.SetInt(1); // Avoid warning
     if (m_BtnActivateInterface->GetValue()) {
-        if (NULL != m_pProgressDlg) {
-            m_pProgressDlg->Update(100);
-            m_pProgressDlg = NULL;
-        }
+		// show progress
     }
 }
 
@@ -3014,14 +3008,9 @@ void frmVSCPSession::eventConnected(wxCommandEvent &event)
 void frmVSCPSession::eventLostCtrlIf(wxCommandEvent &event)
 {
     event.SetInt(1); // Avoid warning
+	//wxMessageBox(_("Uanble to connect to server!"));
 
-    if (NULL != m_pProgressDlg) {
-        m_pProgressDlg->Update(100);
-        m_pProgressDlg = NULL;
-        wxMessageBox(_("Uanble to connect to server!"));
-    }
-
-    if (m_BtnActivateInterface->GetValue()) {
+    if ( m_BtnActivateInterface->GetValue() ) {
         stopWorkerThreads();
     }
 }

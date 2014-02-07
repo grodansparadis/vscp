@@ -728,10 +728,7 @@ public:
   ctrlObj m_CtrlObject;
 
   /// Mutex that control the stopThreads method
-  wxMutex m_mutexStopThread;
-
-	/// Connection progress dialog
-	wxProgressDialog *m_pProgressDlg; 
+  wxMutex m_mutexStopThread; 
   
   // * * *   Threads  * * *
   
