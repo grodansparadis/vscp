@@ -24,7 +24,7 @@
 //
 
 #ifdef VSCP_QT
-
+#include <QTextStream>
 #else
 
 // For compilers that support precompilation, includes "wx.h".
@@ -51,7 +51,7 @@
 #include <string.h>
 #include <limits>
 #include <math.h>
-#include <QTextStream>
+
 
 #ifndef WIN32
 #include <sys/times.h>
