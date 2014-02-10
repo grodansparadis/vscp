@@ -1,6 +1,6 @@
 // testDriverDlg.h : header file
 //
-// Copyright (C) 2000-2013 
+// Copyright (C) 2000-2014
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #if !defined(AFX_TESTDRIVERDLG_H__C2A9C8BA_4FD0_4137_9408_3CF60AE86FD1__INCLUDED_)

@@ -1,7 +1,7 @@
 
 // can232drvTest.cpp : Defines the class behaviors for the application.
 //
-// Copyright (C) 2000-2013 
+// Copyright (C) 2000-2014
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #include "stdafx.h"

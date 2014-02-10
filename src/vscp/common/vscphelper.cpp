@@ -51,6 +51,7 @@
 #include <string.h>
 #include <limits>
 #include <math.h>
+#include <QTextStream>
 
 #ifndef WIN32
 #include <sys/times.h>
@@ -110,7 +111,7 @@ double getDataCodingNormalizedInteger(const unsigned char *pNorm,
 		const unsigned char length)
 {
 	uint8_t valarray[ 8 ];
-	uint8_t normbyte;
+    uint8_t normbyte;
 	uint8_t decibyte;
 	double value = 0;
 	bool bNegative = false; // set for negative number
@@ -224,7 +225,7 @@ wxString& getDataCodingString(const unsigned char *pString,
 #endif								
 {
 #ifdef VSCP_QT
-	QString str;
+    static QString str;
 #else
 	static wxString str;
 #endif	
@@ -345,7 +346,7 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 	case 1: // series of bytes
 		for (i = 1; i < (pEvent->sizeData-offset); i++) {
 #ifdef VSCP_QT
-			strValue += QString::sprintf( "%d", pEvent->pdata[ i+offset ] );
+            QTextStream( &strValue ) << pEvent->pdata[ i+offset ];
 #else		
 			strValue += wxString::Format(wxT("%d"), pEvent->pdata[ i+offset ]);
 #endif			
@@ -367,7 +368,7 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			strData[ i - 1 ] = pEvent->pdata[ i+offset ];
 		}
 #ifdef VSCP_QT
-		strValue = QString::FromAscii( strData );
+        strValue = strData;
 #else
 		strValue = wxString::FromAscii(strData);
 #endif		
@@ -537,8 +538,8 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 		}
 
 #ifdef VSCP_QT
-		Quint64 longVal = hi << 32 + lo;
-		strValue = longVal.ToString();
+        quint64  longVal = (hi << 32) + lo;
+        QTextStream( &strValue ) << longVal;
 #else		
 		wxLongLong longVal(hi, lo);
 		strValue = longVal.ToString();
@@ -682,12 +683,21 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 
 		}
 
+#ifdef VSCP_QT
+        quint64 val64 = (hi << 32) +  lo;
+        qreal dValue = val64;
+        uint8_t exponent = pEvent->pdata[ 1+offset ];
+
+        dValue = dValue * pow(10.0, exponent);
+        QTextStream( &strValue ) << dValue;
+#else
 		wxLongLong longVal(hi, lo);
 		wxDouble dValue = longVal.ToDouble();
 		char exponent = pEvent->pdata[ 1+offset ];
 
 		dValue = dValue * pow(10.0, exponent);
-		strValue.Printf(_("%f"), dValue);
+        strValue.Printf(_("%f"), dValue);
+#endif
 
 	}
 		break;
@@ -720,12 +730,21 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 		pEvent->pdata[ 1+offset ] = 0;
 		pEvent->pdata[ 2+offset ] &= 0x7f;
 
-		wxUint32 value = *((uint32_t *) (pEvent->pdata + 1 + offset));
-		value = wxUINT32_SWAP_ON_LE(value);
+#ifdef VSCP_QT
+        uint32_t value = *((uint32_t *) (pEvent->pdata + 1 + offset));
+        value = qFromLittleEndian(value);
 
-		wxDouble dValue = value;
+        qreal dValue = value;
 		dValue = sign * (dValue * pow(10.0, exponent));
-		strValue.Printf(_("%f"), dValue);
+        QTextStream( &strValue ) << dValue;
+#else
+        uint32_t value = *((uint32_t *) (pEvent->pdata + 1 + offset));
+        value = wxUINT32_SWAP_ON_LE(value);
+
+        wxDouble dValue = value;
+        dValue = sign * (dValue * pow(10.0, exponent));
+        strValue.Printf(_("%f"), dValue);
+#endif
 	}
 		break;
 
@@ -746,7 +765,11 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 
 bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
 {
+#ifdef VSCP_QT
+    QString str;
+#else
     wxString str;
+#endif
    
     // Check pointers
     if ( NULL == pEvent ) return false;
@@ -756,12 +779,22 @@ bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
              (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
              (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || 
              (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ) {
-        if ( !getVSCPMeasurementAsString( pEvent, str ) ) return false;
-        if ( !str.ToDouble( pvalue ) ) return false;
+#ifdef VSCP_QT
+            if ( !getVSCPMeasurementAsString( pEvent, str ) ) return false;
+            QTextStream( &str ) << *pvalue;
+#else
+            if ( !getVSCPMeasurementAsString( pEvent, str ) ) return false;
+            if ( !str.ToDouble( pvalue ) ) return false;
+#endif
     }
     else if ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ){
+#ifdef VSCP_QT
+        if ( !getVSCPMeasurementFloat64AsString( pEvent, str ) ) return false;
+        QTextStream( &str ) << *pvalue;
+#else
         if ( !getVSCPMeasurementFloat64AsString( pEvent, str ) ) return false;
         if ( !str.ToDouble( pvalue ) ) return false;
+#endif
     }
     else if ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ){
 #ifdef VSCP_QT
@@ -773,9 +806,9 @@ bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
         
         if ( 0 == pEvent->sizeData || NULL == pEvent->pdata ) return false;
         memcpy( buf, pEvent->pdata + 4, pEvent->sizeData-4 );
-        str.FromAscii( buf );
+        str = buf;
 #ifdef VSCP_QT		
-		str.toDouble( pvalue );
+        QTextStream( &str ) << *pvalue;
 #else
         str.ToDouble( pvalue );
 #endif		
@@ -813,7 +846,7 @@ bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strVal
 	//value = std::numeric_limits<float>::infinity();
 	float *pfloat = (float*)(pEvent->pdata+offset);
 #ifdef VSCP_QT
-	strValue = QString.sprintf( _("%f"), *pfloat );
+    QTextStream( &strValue ) << *pfloat;
 #else	
     strValue.Format( _("%f"), *pfloat );
 #endif	
@@ -879,7 +912,7 @@ bool convertFloatToNormalizedEventData( double value,
     sensoridx &= 7;   // Mask of invalid bits
     
     char buf[128];
-    bool bNegative = (value>0) ? false : true ;
+    //bool bNegative = (value>0) ? false : true ;
     int ndigits = 0;
     uint64_t val64;
     double intpart;
@@ -894,7 +927,11 @@ bool convertFloatToNormalizedEventData( double value,
     
     modf( value, &intpart );
     val64 = (uint64_t)(value * pow(10.0,ndigits));
+#ifdef VSCP_QT
+    val64 = qFromLittleEndian( val64 );
+#else
     wxUINT64_SWAP_ON_LE(val64);
+#endif
     
     if ( val64 < ((double)0x80) ) {
         *psize = 3;
@@ -949,6 +986,17 @@ bool convertFloatToNormalizedEventData( double value,
 // replaceBackslash
 //
 
+#ifdef VSCP_QT
+QString& replaceBackslash(QString& str)
+{
+    int pos;
+    while (-1 != (pos = str.indexOf('\\'))) {
+        str[ pos ] = '/';
+    }
+
+    return str;
+}
+#else
 wxString& replaceBackslash(wxString& wxstr)
 {
 	int pos;
@@ -958,10 +1006,28 @@ wxString& replaceBackslash(wxString& wxstr)
 
 	return wxstr;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////////
 // readStringValue
 
+#ifdef VSCP_QT
+uint32_t readStringValue(const QString& strval)
+{
+    unsigned long val;
+    QString str = strval;
+
+    str.toLower();
+    if ( -1 != str.indexOf("0x")) {
+        bool bOK;
+        val = str.toULong( &bOK, 16);
+    } else {
+        val = str.toULong();
+    }
+
+    return val;
+}
+#else
 uint32_t readStringValue(const wxString& strval)
 {
 	//static unsigned long val;
@@ -977,6 +1043,7 @@ uint32_t readStringValue(const wxString& strval)
 
 	return val;
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // getVscpPriority

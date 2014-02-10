@@ -1,6 +1,6 @@
 // can232drvTest.h : main header file for the CAN232DRVTEST application
 //
-// Copyright (C) 2000-2013 
+// Copyright (C) 2000-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #if !defined(AFX_CAN232DRVTEST_H__2A77A4CA_1307_496A_A139_BD0B2B3781CC__INCLUDED_)

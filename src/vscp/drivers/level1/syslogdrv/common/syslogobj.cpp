@@ -1,6 +1,6 @@
 // syslogobj.cpp: implementation of the CSysLogObj class.
 //
-// Copyright (C) 2000-2013 
+// Copyright (C) 2000-2014
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 

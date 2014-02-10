@@ -8,7 +8,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2013 
+// Copyright (C) 2000-2014
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Copyright (C) 2009 Gediminas Simanskis www.edevices.lt
 //

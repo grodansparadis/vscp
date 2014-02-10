@@ -1,6 +1,6 @@
 // dos_can.h
 //
-// Copyright (C) 2005-2013 
+// Copyright (C) 2005-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Version 0.0.1
 //

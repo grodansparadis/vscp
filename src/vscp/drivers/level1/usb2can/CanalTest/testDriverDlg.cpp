@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // testDriverDlg.cpp : implementation file
 //
-// Copyright (C) 2000-2013 
+// Copyright (C) 2000-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #include "stdafx.h"
