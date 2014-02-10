@@ -806,10 +806,12 @@ bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
         
         if ( 0 == pEvent->sizeData || NULL == pEvent->pdata ) return false;
         memcpy( buf, pEvent->pdata + 4, pEvent->sizeData-4 );
+
+#ifdef VSCP_QT
         str = buf;
-#ifdef VSCP_QT		
         QTextStream( &str ) << *pvalue;
 #else
+        str = wxString::FromAscii( buf );
         str.ToDouble( pvalue );
 #endif		
     }
