@@ -997,7 +997,7 @@ void TcpClientThread::handleClientReceive ( void )
 
 
     wxString str = m_wxcmd.Right( m_wxcmd.Length() - 4 );
-    cnt = readStringValue ( str );
+    cnt = readStringValue( str );
 
     if ( !cnt ) cnt++;	// No arg is "read one"
 
