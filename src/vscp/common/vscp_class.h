@@ -52,6 +52,7 @@
 #define VSCP_CLASS1_AOL                                 50
 #define VSCP_CLASS1_MEASUREMENT64						60
 #define VSCP_CLASS1_MEASUREZONE							65
+#define VSCP_CLASS1_MEASUREMENT32						70
 #define VSCP_CLASS1_SETVALUEZONE						85
 #define VSCP_CLASS1_PHONE                               100
 #define VSCP_CLASS1_LIN                                 101
@@ -80,6 +81,7 @@
 #define VSCP_CLASS2_LEVEL1_AOL                          ( 512 + 50 )
 #define VSCP_CLASS2_MEASUREMENT64						( 512 + 60 )
 #define VSCP_CLASS2_MEASUREZONE							( 512 + 65 )
+#define VSCP_CLASS2_MEASUREMENT32						( 512 + 70 )
 #define VSCP_CLASS2_SETVALUEZONE						( 512 + 85 )
 #define VSCP_CLASS2_LEVEL1_PHONE                        ( 512 + 100 )
 #define VSCP_CLASS2_LEVEL1_LIN                          ( 512 + 101 )
