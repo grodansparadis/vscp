@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="90">
+<configurationDescriptor version="94">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="common"
                    displayName="common"
@@ -27,6 +27,8 @@
       <itemPath>../common/vscp.h</itemPath>
       <itemPath>../common/vscp_class.h</itemPath>
       <itemPath>../common/vscp_type.h</itemPath>
+      <itemPath>../common/vscpeventhelper.cpp</itemPath>
+      <itemPath>../common/vscpeventhelper.h</itemPath>
       <itemPath>../common/vscphelper.cpp</itemPath>
       <itemPath>../common/vscphelper.h</itemPath>
       <itemPath>../common/vscptcpif.cpp</itemPath>
@@ -114,36 +116,24 @@
         </makeTool>
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-        </cTool>
       </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
       <item path="../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
       <item path="../common/mdf.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
       <item path="../common/register.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
+      </item>
+      <item path="../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../common/vscpeventhelper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
       <item path="../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
       <item path="bootdevice.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>

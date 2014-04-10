@@ -188,7 +188,7 @@
     <string name="app_class_name">"Application"</string>
     <bool name="generate_app_class">0</bool>
     <string name="external_symbol_filenames">""</string>
-    <string name="configuration">"VC++ Project Debug"</string>
+    <string name="configuration">"GCC Debug Unicode"</string>
     <string name="source_encoding">"utf-8"</string>
     <string name="xrc_encoding">"utf-8"</string>
     <string name="project_encoding">"iso-8859-1"</string>
@@ -230,7 +230,7 @@
         <long name="locked">0</long>
         <string name="template-name">""</string>
         <bool name="dirty">1</bool>
-        <long name="makefile-last-written">-8519680</long>
+        <long name="makefile-last-written">4286447616</long>
         <string name="Compiler name">""</string>
         <string name="Build mode">"Debug"</string>
         <string name="Unicode mode">"ANSI"</string>
@@ -299,8 +299,8 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">1</bool>
-          <long name="makefile-last-written">-8519680</long>
+          <bool name="dirty">0</bool>
+          <long name="makefile-last-written">4286447616</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
           <string name="Unicode mode">"ANSI"</string>
@@ -378,8 +378,8 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">1</bool>
-          <long name="makefile-last-written">-8519680</long>
+          <bool name="dirty">0</bool>
+          <long name="makefile-last-written">4286447616</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
           <string name="Unicode mode">"ANSI"</string>
@@ -457,8 +457,8 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">1</bool>
-          <long name="makefile-last-written">-8519680</long>
+          <bool name="dirty">0</bool>
+          <long name="makefile-last-written">4286447616</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -536,8 +536,8 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">1</bool>
-          <long name="makefile-last-written">-8519680</long>
+          <bool name="dirty">0</bool>
+          <long name="makefile-last-written">4286447616</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -615,8 +615,8 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"MinGW"</string>
-          <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-8519680</long>
+          <bool name="dirty">1</bool>
+          <long name="makefile-last-written">4286447616</long>
           <string name="Compiler name">"MinGW"</string>
           <string name="Build mode">"Release"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -686,8 +686,8 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"MinGW"</string>
-          <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-8519680</long>
+          <bool name="dirty">1</bool>
+          <long name="makefile-last-written">4286447616</long>
           <string name="Compiler name">"MinGW"</string>
           <string name="Build mode">"Debug"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -757,8 +757,8 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"VC++ Project"</string>
-          <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-8519680</long>
+          <bool name="dirty">1</bool>
+          <long name="makefile-last-written">4286447616</long>
           <string name="Compiler name">"VC++ Project"</string>
           <string name="Build mode">"Release"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -840,8 +840,8 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"VC++ Project"</string>
-          <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-8519680</long>
+          <bool name="dirty">1</bool>
+          <long name="makefile-last-written">4286447616</long>
           <string name="Compiler name">"VC++ Project"</string>
           <string name="Build mode">"Debug"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -3498,7 +3498,7 @@ to the clipboard"</string>
                     <long name="proxy-Rows">0</long>
                     <long name="proxy-Columns">4</long>
                     <long name="proxy-Column width">100</long>
-                    <long name="proxy-Row height">40</long>
+                    <long name="proxy-Row height">20</long>
                     <long name="proxy-Column label height">18</long>
                     <long name="proxy-Row label width">30</long>
                     <string name="proxy-Selection mode">"Rows"</string>
