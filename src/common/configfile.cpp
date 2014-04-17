@@ -2,25 +2,16 @@
 // config.cpp	
 //			class Config - Read parameters from config file.
 //
-// Copyright (C) 2000-2008 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
 // notice must not be changed or removed and no warranty is either
 // expressed or implied by its publication or distribution.
 //
-// $RCSfile: configfile.cpp,v $                                       
-// $Date: 2005/08/30 11:00:13 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.18 $ 
 //
 //  AH  000829  started this project.
 //
-//
-//		  $RCSfile: configfile.cpp,v $                                       
-//        $Date: 2005/08/30 11:00:13 $                                  
-//        $Author: akhe $                                              
-//        $Revision: 1.18 $  
 //
 
 #ifdef HAVE_CONFIG_H

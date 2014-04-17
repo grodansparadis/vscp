@@ -40,6 +40,13 @@
             <Elem>__LINUX__</Elem>
           </preprocessorList>
         </cTool>
+        <linkerTool>
+          <linkerLibItems>
+            <linkerLibStdlibItem>PosixThreads</linkerLibStdlibItem>
+            <linkerOptionItem>`pkg-config --libs zlib`</linkerOptionItem>
+            <linkerOptionItem>`pkg-config --libs libcrypto`</linkerOptionItem>
+          </linkerLibItems>
+        </linkerTool>
       </compileType>
       <item path="main.c" ex="false" tool="0" flavor2="0">
       </item>

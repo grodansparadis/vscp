@@ -38,6 +38,7 @@
 #include <signal.h>
 #include <stdint.h>
 #include <sys/types.h>
+#include <openssl/evp.h>
 
 #include "../../common/version.h"
 #include "../../common/vscp.h"
@@ -58,6 +59,50 @@ void *get_in_addr(struct sockaddr *sa)
 	}
 	
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
+}
+
+/*!
+	Perform MD5
+ * @param pDigest pointer to holder for digest >= 128 bytes
+	@param pstr string to encrypt.
+	@return Encrypted data.
+*/
+char *md5( char *pDigest, unsigned char *pstr )
+{
+	EVP_MD_CTX mdctx;
+	const EVP_MD *md;
+	unsigned char md_value[EVP_MAX_MD_SIZE];
+	unsigned int md_len;
+
+	OpenSSL_add_all_digests();
+
+	md = EVP_get_digestbyname("md5");
+	EVP_MD_CTX_init(&mdctx);
+	EVP_DigestInit_ex(&mdctx, md, NULL);
+	EVP_DigestUpdate(&mdctx, pstr, strlen((const char *) pstr));
+	EVP_DigestFinal_ex(&mdctx, md_value, &md_len);
+	EVP_MD_CTX_cleanup(&mdctx);
+
+	memset( pDigest, 0, sizeof(pDigest) );
+	sprintf( pDigest,
+		"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+		md_value[0], md_value[1], md_value[2], md_value[3], md_value[4], md_value[5], md_value[6], md_value[7],
+		md_value[8], md_value[9], md_value[10], md_value[11], md_value[12], md_value[13], md_value[14], md_value[15]);
+	/*
+		MD5_CTX *pctx;
+		if ( 0 == MD5_Init( pctx ) ) return NULL;
+		if ( 0 == MD5_Update( pctx, 
+															pstr,
+											strlen( (const char *)pstr ) ) ) return NULL;
+		unsigned char buf[ 17 ];
+		if ( 0 == MD5_Final( buf, pctx ) ) return NULL;	
+		sprintf( m_szDigest, 
+			"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\0",
+			buf[0],buf[1],buf[2],buf[3],buf[4],buf[5],buf[6],buf[7],
+			buf[8],buf[9],buf[10],buf[11],buf[12],buf[13],buf[14],buf[15] ); 
+	 */
+
+	return pDigest;
 }
 
 /*
