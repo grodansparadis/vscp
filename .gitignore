@@ -123,3 +123,5 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/vscpcmd/BaseDebug/vscpcmd.exe.embed.manifest.res
 /src/vscp/vscpcmd/BaseDebug/vscpcmd_manifest.rc
 /src/vscp/delivery
+/src/vscp/NewFolder/tcpipsim/build/
+/src/vscp/NewFolder/tcpipsim/dist/
