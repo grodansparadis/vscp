@@ -1227,7 +1227,30 @@ unsigned short vscp_calc_crc(vscpEvent *pEvent, short bSet)
 ///////////////////////////////////////////////////////////////////////////////
 // getGuidFromString
 //
+#ifdef VSCP_QT
+bool getGuidFromString(vscpEvent *pEvent, const QString& strGUID)
+{
+    unsigned long val;
 
+    // Check pointer
+    if (NULL == pEvent) return false;
+
+    if (0 == strGUID.Find(_("-"))) {
+        memset(pEvent->GUID, 0, 16);
+    } else {
+        wxStringTokenizer tkz(strGUID, wxT(":"));
+        for (int i = 0; i < 16; i++) {
+            tkz.GetNextToken().ToULong(&val, 16);
+            pEvent->GUID[ i ] = (uint8_t) val;
+            // If no tokens left no use to continue
+            if (!tkz.HasMoreTokens()) break;
+        }
+    }
+
+    return true;
+
+}
+#else
 bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 {
 	unsigned long val;
@@ -1250,6 +1273,7 @@ bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 	return true;
 
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // getGuidFromStringEx
