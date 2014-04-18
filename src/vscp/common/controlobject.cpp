@@ -121,7 +121,7 @@
 #include "../../common/configfile.h"
 #include "../../common/crc.h"
 #include "../../common/md5.h"
-#include "../../common/randPassword.h"
+#include "../../common/randpassword.h"
 #include "../common/version.h"
 #include "variablecodes.h"
 #include "actioncodes.h"

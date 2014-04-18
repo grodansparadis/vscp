@@ -25,7 +25,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "randPassword.h"
+#include "randpassword.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
