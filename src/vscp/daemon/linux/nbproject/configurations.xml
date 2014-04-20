@@ -37,6 +37,8 @@
       <itemPath>../../common/mdf.h</itemPath>
       <itemPath>../../../common/randPassword.cpp</itemPath>
       <itemPath>../../../common/randPassword.h</itemPath>
+      <itemPath>../../../common/randpassword.cpp</itemPath>
+      <itemPath>../../../common/randpassword.h</itemPath>
       <itemPath>../../common/tcpipclientthread.cpp</itemPath>
       <itemPath>../../common/tcpipclientthread.h</itemPath>
       <itemPath>../../common/udpthread.cpp</itemPath>
@@ -97,13 +99,14 @@
           <executablePath>vscpd</executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
@@ -157,99 +160,120 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+      <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/controlobject.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/daemonvscp.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/devicethread.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/interfacelist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -281,18 +305,19 @@
         </ccTool>
       </item>
       <item path="../../common/userlist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
@@ -319,37 +344,40 @@
         </ccTool>
       </item>
       <item path="../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpvariable.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <folder path="0">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>WXUSINGDLL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
