@@ -39,7 +39,7 @@ UVSCPD_OBJECTS =  uvscpd.o websocket.o base64_enc.o sha1.c \
 	../../common/crc.o \
 	../../common/md5.o \
 	../../common/configfile.o \
-	../../common/randPassword.o 
+	../../common/randpassword.o 
 
 
 ### Targets: ###
