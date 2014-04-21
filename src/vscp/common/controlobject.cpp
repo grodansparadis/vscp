@@ -2258,7 +2258,8 @@ CControlObject::callback_http(struct libwebsocket_context *context,
         }
 
         path += args;
-
+#ifdef LWS_FEATURE_SERVE_HTTP_FILE_HAS_OTHER_HEADERS_ARG	
+// This is fo version 1.3
         if (libwebsockets_serve_http_file(context,
                 wsi,
                 path.ToAscii(),
@@ -2267,6 +2268,15 @@ CControlObject::callback_http(struct libwebsocket_context *context,
             
             return -1;
         }
+#else
+	if (libwebsockets_serve_http_file(context,
+                wsi,
+                path.ToAscii(),
+                mime.ToAscii() ) ) {
+
+            return -1;
+        }
+#endif
 
     }
 
