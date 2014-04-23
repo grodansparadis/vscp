@@ -68,7 +68,7 @@
         <!-- traditional web-pages.                           -->
         <!-- Documented in specification 14.4.1               -->
 
-        <webrootpath>/src/web</webrootpath>
+        <webrootpath>/srv/vscp/web</webrootpath>
 
         <!-- Path to file holding mime types                  -->
         <!-- Documented in specification 14.4.1               -->
