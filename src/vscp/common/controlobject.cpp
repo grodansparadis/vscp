@@ -488,7 +488,7 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("Path = .") + m_pathToMimeTypeFile + _("\n"), DAEMON_LOGMSG_CRITICAL);
     }
     
-    str.Printf(_("Log Level = %d"), m_logLevel );
+    str.Printf(_("Log Level = %d\n"), m_logLevel );
     logMsg(str);
     //printf("Loglevel=%n\n",m_logLevel);
 
