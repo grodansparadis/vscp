@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     22/03/2012 21:03:29
 // RCS-ID:      
-// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -425,7 +426,7 @@ static const char *pdf_xpm[] = {
 };
 
 /* XPM */
-static char *help_xpm[] = {
+static const char *help_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "16 15 50 1",
 "j c #4E7FD0",

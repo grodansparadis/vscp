@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -71,7 +72,7 @@ CClientItem::CClientItem()
     m_bUDPReceiveChannel = false;
 
 	// Nill GUID
-	memset( m_GUID, 0, 16 );
+    m_guid.clear();
 
 	// Nill Level II mask (accept all)
 	clearVSCPFilter( &m_filterVSCP );
@@ -119,7 +120,7 @@ CClientItem::~CClientItem()
 // CClientList
 //
 // The list is sorted numeric so that messages with higher priority is
-// fetched firts of the double linked list
+// fetched first of the double linked list
 //
 
 CClientList::CClientList()

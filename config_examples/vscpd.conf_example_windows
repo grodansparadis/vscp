@@ -1,0 +1,90 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<!-- Version 0.0.1	2007-09-27 -->
+
+<vscpconfig>
+	
+	<general>
+		<udpport>9598</udpport>
+		<tcpport>9598</tcpport>
+		<loglevel>debug</loglevel>
+		<tcpif disable="false" /> <!-- It is possibel to disable the TCP/IP interface -->
+		<udpif disable="false" onlyincoming="false"/> <!-- It is possible to disable the UDP interface -->
+		<canaldriver disable="false"/>
+		<dm disable="false" path="C:\Documents and Settings\All Users\Application Data\vscp\dm.xml" />
+		<vscp disable="false"/>
+	</general>
+	
+	
+	
+	<remoteuser> <!-- Holds information about one (at least) or more users -->
+		<user>
+			<name>admin</name>
+			<password>5ebe2294ecd0e0f08eab7690d2a6ee69</password>
+			<privilege>admin</privilege>
+			<allowfrom>127.0.0.1,192.168.1.6,192.168.1.184</allowfrom>
+		</user>	
+		<user>
+			<name>user</name>
+			<password>5ebe2294ecd0e0f08eab7690d2a6ee69</password>
+			<privilege>admin</privilege>
+			<allowfrom>127.0.0.1,192.168.1.6,192.168.1.184</allowfrom>
+		</user>	
+	</remoteuser>
+	
+	
+	
+	<interfaces> <!-- Holds information about interfaces on the machine the daemon is run on -->
+		<interface> 
+			<ipaddress>192.168.1.184</ipaddress>
+			<macaddress>00:16:D4:5D:68:F6</macaddress>
+			<guid>01:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+		</interface> 
+	</interfaces>
+	
+	
+	
+	
+	<canaldriver>  <!-- Information about CANAL drivers --> 
+
+		<driver>
+		   <name>logger</name>
+		   <parameter>/var/log/canallog</parameter>
+		   <path>c:\windows\system32\canallogger.dll</path>
+		   <flags>1</flags>
+		</driver>
+		
+		<driver>
+			<name>communication</name>
+			<parameter>/dev/ttyS0</parameter>
+			<path>c:\windows\system32\canalcom.dll</path>
+			<flags>1</flags>
+		</driver>
+		
+		<driver>
+			<name>logger</name>
+			<parameter>/var/log/canallog</parameter>
+			<path>c:\windows\system32\canallogger.dll</path>
+			<flags>1</flags>
+		</driver>
+		
+		<driver>
+			<name>xap</name>
+			<parameter>1681;3639</parameter>
+			<path>c:\windows\system32\xapdrv.dll</path>
+			<flags>1</flags>
+		</driver>		
+		 
+	</canaldriver>
+	
+	<vscpdriver>	<!-- Information about Level II VSCP drivers --> 
+		
+		<driver>
+				<name>test</name>
+				<path>c:\windows\system32\test.dll</path>
+				<parameter>prefix;</parameter>
+		</driver>
+		
+	</vscpdriver>
+	
+</vscpconfig>

@@ -3,9 +3,9 @@
 // Purpose:     
 // Author:      Ake Hedman
 // Modified by: 
-// Created:     06/01/2009 17:24:28
+// Created:     Fri 28 Jun 2013 18:28:11 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright:   (C) 2007-2014 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -13,7 +13,7 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-// Copyright (C) 2000-20079 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright (C) 2000-2010 Ake Hedman, eurosource, <akhe@eurosource.se>
 // 
 // This file is distributed in the hope that it will be useful,
 //  but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -51,7 +51,6 @@
  */
 
 ////@begin includes
-#include "readregister_symbols.h"
 ////@end includes
 
 /*!
@@ -66,33 +65,33 @@
  */
 
 ////@begin control identifiers
-#define SYMBOL_READREGIISTER_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxDIALOG_MODAL|wxTAB_TRAVERSAL
-#define SYMBOL_READREGIISTER_TITLE _("Read Regiister")
-#define SYMBOL_READREGIISTER_IDNAME ID_READREGIISTER
-#define SYMBOL_READREGIISTER_SIZE wxSize(400, 300)
-#define SYMBOL_READREGIISTER_POSITION wxDefaultPosition
+#define SYMBOL_READREGISTER_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL
+#define SYMBOL_READREGISTER_TITLE _("Read Register")
+#define SYMBOL_READREGISTER_IDNAME ID_READREGISTER
+#define SYMBOL_READREGISTER_SIZE wxSize(400, 300)
+#define SYMBOL_READREGISTER_POSITION wxDefaultPosition
 ////@end control identifiers
 
 
 /*!
- * ReadRegiister class declaration
+ * ReadRegister class declaration
  */
 
-class ReadRegiister: public wxDialog
+class ReadRegister: public wxDialog
 {    
-  DECLARE_DYNAMIC_CLASS( ReadRegiister )
+  DECLARE_DYNAMIC_CLASS( ReadRegister )
   DECLARE_EVENT_TABLE()
 
 public:
   /// Constructors
-  ReadRegiister();
-  ReadRegiister( wxWindow* parent, wxWindowID id = SYMBOL_READREGIISTER_IDNAME, const wxString& caption = SYMBOL_READREGIISTER_TITLE, const wxPoint& pos = SYMBOL_READREGIISTER_POSITION, const wxSize& size = SYMBOL_READREGIISTER_SIZE, long style = SYMBOL_READREGIISTER_STYLE );
+  ReadRegister();
+  ReadRegister( wxWindow* parent, wxWindowID id = SYMBOL_READREGISTER_IDNAME, const wxString& caption = SYMBOL_READREGISTER_TITLE, const wxPoint& pos = SYMBOL_READREGISTER_POSITION, const wxSize& size = SYMBOL_READREGISTER_SIZE, long style = SYMBOL_READREGISTER_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_READREGIISTER_IDNAME, const wxString& caption = SYMBOL_READREGIISTER_TITLE, const wxPoint& pos = SYMBOL_READREGIISTER_POSITION, const wxSize& size = SYMBOL_READREGIISTER_SIZE, long style = SYMBOL_READREGIISTER_STYLE );
+  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_READREGISTER_IDNAME, const wxString& caption = SYMBOL_READREGISTER_TITLE, const wxPoint& pos = SYMBOL_READREGISTER_POSITION, const wxSize& size = SYMBOL_READREGISTER_SIZE, long style = SYMBOL_READREGISTER_STYLE );
 
   /// Destructor
-  ~ReadRegiister();
+  ~ReadRegister();
 
   /// Initialises member variables
   void Init();
@@ -100,28 +99,29 @@ public:
   /// Creates the controls and sizers
   void CreateControls();
 
-////@begin ReadRegiister event handler declarations
+////@begin ReadRegister event handler declarations
 
-////@end ReadRegiister event handler declarations
+////@end ReadRegister event handler declarations
 
-////@begin ReadRegiister member function declarations
+////@begin ReadRegister member function declarations
 
   /// Retrieves bitmap resources
   wxBitmap GetBitmapResource( const wxString& name );
 
   /// Retrieves icon resources
   wxIcon GetIconResource( const wxString& name );
-////@end ReadRegiister member function declarations
+////@end ReadRegister member function declarations
 
   /// Should we show tooltips?
   static bool ShowToolTips();
 
-////@begin ReadRegiister member variables
+////@begin ReadRegister member variables
   /// Control identifiers
   enum {
-    ID_READREGIISTER = 10000
+    ID_READREGISTER = 20000,
+    ID_PANEL37 = 20001
   };
-////@end ReadRegiister member variables
+////@end ReadRegister member variables
 };
 
 #endif

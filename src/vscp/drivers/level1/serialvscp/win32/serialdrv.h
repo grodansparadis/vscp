@@ -1,6 +1,7 @@
 // serialdrv.h
 //
-// Copyright Ake Hedman (c) 2005-2011 eurosource, Sweden
+// Copyright (C) 2000-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // cw debug test: C:\development\vscp\src\vscp\cw\Debug\cw.exe
 

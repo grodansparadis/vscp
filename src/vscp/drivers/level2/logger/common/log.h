@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,10 +20,7 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: log.h,v $                                       
-// $Date: 2005/10/14 16:49:49 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
+
 
 #if !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
 #define AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
@@ -59,97 +57,124 @@
 #include "../../../../../common/dllist.h"
 #include "../../../../common/vscptcpif.h"
 
-#define CANAL_DLL_LOGGER_OBJ_MUTEX	"___VSCP__DLL_LOGGER_OBJ_MUTEX____"
+#include <list>
+#include <string>
 
-#define CANAL_LOG_LIST_MAX_MSG		2048
+using namespace std;
+
+#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LOGGER_OBJ_MUTEX____"
+
+#define VSCP_LOG_LIST_MAX_MSG	2048
 
 // Flags
 #define LOG_FILE_OVERWRITE      1L  // Overwrite
 #define LOG_FILE_VSCP_WORKS     2L  // VSP Works format
 
 // List with VSCP events
-WX_DECLARE_LIST ( vscpEvent, VSCPEVENTLIST );
+WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST);
 
 // Forward declarations
 class CVSCPLogWrkTread;
 class VscpTcpIf;
 class wxFile;
 
-class CVSCPLog  
-{
-
+class CVSCPLog {
 public:
 
-	/// Constructor
-	CVSCPLog();
+    /// Constructor
+    CVSCPLog();
+
+    /// Destructor
+    virtual ~CVSCPLog();
 	
-	/// Destructor
-	virtual ~CVSCPLog();
 
-	
+    /*!
+        Filter message
+
+        @param pEvent Pointer to VSCP event
+        @return True if message is accepted false if rejected
+     */
+    bool doFilter(vscpEvent *pEvent);
+
+
+    /*!
+        Set Filter
+     */
+    void setFilter(vscpEvent *pFilter);
+
+
+    /*!
+        Set Mask
+     */
+    void setMask(vscpEvent *pMask);
+
+
+    /*! 
+        Open/create the logfile
+
+        @param Configuration string
+        @param flags 	
+                bit 1 = 0 Append, bit 
+                        1 = 1 Rewrite
+                bit 2,3 Format: 00 - Standard. 
+                                01 - VSCP works receive format.
+        @return True on success.
+     */
+    bool open(const char *pUsername,
+            const char *pPassword,
+            const char *pHost,
+            short port,
+            const char *pPrefix,
+            const char *pConfig );
+
+    /*!
+        Flush and close the log file
+     */
+    void close(void);
+
 	/*!
-		Filter message
-
-		@param pEvent Pointer to VSCP event
-		@return True if message is accepted false if rejected
-	*/
-	bool doFilter( vscpEvent *pEvent );
-
-	
-	/*!
-		Set Filter
-	*/
-	void setFilter( vscpEvent *pFilter );
-
-
-	/*!
-		Set Mask
-	*/
-	void setMask( vscpEvent *pMask );
-
-
-	/*! 
-		Open/create the logfile
-
-		@param Configuration string
-		@param flags 	bit 1 = 0 Append, bit 1 = 1 Rewrite
-            bit 2,3 Format: 00 - Standard. 01 - VSCP works receive format.
-		@return True on success.
-	*/
-	bool open( const char *pUsername,
-                const char *pPassword,
-                const char *pHost,
-                short port,
-                const char *pPrefix,
-                const char *pConfig, 
-                unsigned long flags = 0 );
-
-	/*!
-		Flush and close the log file
-	*/
-	void close( void );
-
-	/*!
-		Write an event out to the file
+		Add one event to the output queue 
 		\param pEvent Pointer to VSCP event
-		\return True on success.
-	*/
-	bool writeEvent( vscpEvent *pEvent );
+        \return True on success.S
+	 */
+	bool addEvent2Queue(const vscpEvent *pEvent);
+	
+    /*!
+        Write an event out to the file
+        \param pEvent Pointer to VSCP event
+        \return True on success.
+     */
+    bool writeEvent(vscpEvent *pEvent);
 
 
     /*!
         Open the log file
         \return true on success.
-    */
-    bool openFile( void );
+     */
+    bool openFile(void);
+	
+	/*!
+		Add event to send queue 
+	 */
+	bool addEvent2SendQueue(const vscpEvent *pEvent);
 
 
 public:
+	
+	//VSCPEVENTLIST m_outputQueue;
+	
+	/*!
+        Event object to indicate that there is an event in the output queue
+     */
+    //wxSemaphore m_semQueue;
+	
+	// Mutex to protect the output queue
+	//wxMutex m_mutexQueue;
 
-	/// Run flag
-	bool m_bQuit;
+    /// Run flag
+    bool m_bQuit;
 
-    /// Driver flags
+    /// Working flags
     unsigned long m_flags;
 
     /// Server supplied username
@@ -178,34 +203,48 @@ public:
 
     /// Pointer to worker thread
     CVSCPLogWrkTread *m_pthreadWork;
+    
+    /// Filter
+    vscpEventFilter m_Filter;
+	
+	// Queue
+	std::list<vscpEvent *> m_sendList;
+	//std::list<vscpEvent *> m_receiveList;
+	
+	/*!
+        Event object to indicate that there is an event in the output queue
+     */
+    wxSemaphore m_semSendQueue;			
+	//wxSemaphore m_semReceiveQueue;		
+	
+	// Mutex to protect the output queue
+	wxMutex m_mutexSendQueue;		
+	//wxMutex m_mutexReceiveQueue;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//						       Worker Tread
+//				Worker Tread
 ///////////////////////////////////////////////////////////////////////////////
 
-
-class CVSCPLogWrkTread : public wxThread 
-{
-
+class CVSCPLogWrkTread : public wxThread {
 public:
 
-	/// Constructor
-	CVSCPLogWrkTread();
+    /// Constructor
+    CVSCPLogWrkTread();
 
-	/// Destructor
-	~CVSCPLogWrkTread();
+    /// Destructor
+    ~CVSCPLogWrkTread();
 
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
+    /*!
+        Thread code entry point
+     */
+    virtual void *Entry();
 
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
- 	virtual void OnExit();
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+     */
+    virtual void OnExit();
 
     /// VSCP server interface
     VscpTcpIf m_srv;

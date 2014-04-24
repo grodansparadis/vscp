@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     Fri 26 Oct 2007 11:57:04 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -375,7 +376,7 @@ void dlgVscpInterfaceSettings::CreateControls()
 
 	////@end dlgVscpInterfaceSettings content construction
 
-
+  
 }
 
 
@@ -464,7 +465,7 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 
 	// If server username is given and no password is entered we ask for it.
 	if ( m_RemoteServerPassword->GetValue().IsEmpty() && !m_RemoteServerUsername->GetValue().IsEmpty() ) {
-		wxstr = ::wxGetTextFromUser( _("Please enter passeword"), 
+		wxstr = ::wxGetTextFromUser( _("Please enter password"), 
 			_("Connection Test") );
 	}
 	else {
@@ -483,7 +484,7 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 		rv = tcpif.doCmdNOOP();
 		tcpif.doCmdClose();
 		if ( CANAL_ERROR_SUCCESS == rv ) {
-			wxMessageBox(_("Successfull connect to server."), _("Connection Test"), wxICON_INFORMATION );
+			wxMessageBox(_("Successful connect to server."), _("Connection Test"), wxICON_INFORMATION );
 		}
 		else {
 			wxMessageBox(_("Failed do command on server (connected OK)."), _("Connection Test"), wxICON_STOP );
@@ -510,11 +511,12 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 
 	m_btnGetInterfaces->Enable( false );
 
+    
 	// If server username is given and no password is entered we ask for it.
 	if ( m_RemoteServerPassword->GetValue().IsEmpty() && 
 		!m_RemoteServerUsername->GetValue().IsEmpty() ) {
-			wxstr = ::wxGetTextFromUser( _("Please enter passeword"), 
-				_("Connection Test") );
+			wxstr = ::wxGetTextFromUser( _("Please enter password"), 
+				_("Password is needed") );
 	}
 	else {
 		wxstr = m_RemoteServerPassword->GetValue();
@@ -579,15 +581,15 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 					wxString strGUID = tkz.GetNextToken();
 
 					// Name of interface
-					wxString strName = tkz.GetNextToken();
+					wxString strifName = tkz.GetNextToken();
 					int pos;
-					if ( wxNOT_FOUND != ( pos = strName.Find(_(" ") ) ) ) {
-						strName = strName.Left( pos );
-						strName.Trim();
+					if ( wxNOT_FOUND != ( pos = strifName.Find(_(" ") ) ) ) {
+						strifName = strifName.Left( pos );
+						strifName.Trim();
 					}
 
-					m_RemoteInterfaceName->SetLabel( strName );
-
+					m_RemoteInterfaceName->ChangeValue( strifName );
+                    
 				}
 			}
 

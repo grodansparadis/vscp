@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     16/12/2009 22:26:09
 // RCS-ID:      
-// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //				(C) 2012 Dinesh Guleria
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -152,7 +153,7 @@ public:
 	 send  VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
 	 check response VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
 	*/
-	bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel2(  void  );
+	bool sendVSCPCommandSeqenceLevel2(  void  );
 
     /*!
 		Check for response from nodes (Level I).

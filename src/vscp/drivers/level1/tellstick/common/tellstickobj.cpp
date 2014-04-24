@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -918,9 +919,9 @@ int CTellstickWrkTread::createIkeaString( int systemCode,
 {
 	*pStrReturn = '\0';						// Make sure tx string is empty 
 
-	const char STARTCODE[] = "STTTTTTª";
+	const char STARTCODE[] = "STTTTTT\AA";
 	const char TT[]  = "TT";
-	const char A[]   = "ª";
+	const char A[]   = "\AA";
 	systemCode--;							// System 1..16
 	int DimStyle = bNiceDim ? 1 : 0;
 	int intCode      = 0;

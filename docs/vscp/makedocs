@@ -1,7 +1,0 @@
-#!/bin/sh
-
-docbook2html -d /usr/share/sgml/docbook/utils-0.6.14/docbook-utils.dsl#html -o html vscp_spec.docbook
-docbook2ps -d /usr/share/sgml/docbook/utils-0.6.14/docbook-utils.dsl vscp_spec.docbook
-ps2pdf vscp_spec.ps vscp.pdf
-
-

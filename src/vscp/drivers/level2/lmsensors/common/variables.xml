@@ -1,0 +1,111 @@
+
+<!-- ******************************************************** -->
+<!--          VSCP lmsensor Level II driver varaibles         -->
+<!-- ******************************************************** -->
+
+<!-- Number of sensors to read -->
+<variable type="int" >
+	<name>lmsensors__numberofsensors</name>         
+	<value>1</value>     
+</variable>
+
+<!-- ******************************************************** -->
+<!--           Variabled for temperature CPU core 0           -->
+<!-- ******************************************************** -->
+
+<!-- Interval for CPU core0 -->
+<variable type="int" >          
+	<name>lmsensors_interval0</name>         
+	<value>1</value>     
+</variable>
+
+<!-- VSCP GUID -->
+<variable type="guid" >         
+	<name>lmsensors_guid0</name>
+	<value>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>     
+</variable>
+
+<!-- Path to sensor data file for CPU core 0 --> 
+<variable type="string" >                  
+	<name>lmsensors_path0</name>         
+	<value>/sys/class/hwmon/hwmon1/device/temp2_input</value>     
+</variable>
+
+<!-- VSCP class value -->
+<variable type="int" >         
+	<name>lmsensors_vscpclass0</name>
+	<value>10</value>  // Measurement class    
+</variable>
+
+<!-- VSCP Type value -->
+<variable type="int" >         
+	<name>lmsensors_vscptype0</name>
+	<value>6</value>  // Temperature    
+</variable>
+
+<!-- Multiply value -->
+<variable type="int" >         
+	<name>lmsensors_multiply0</name>
+	<value>1</value>     
+</variable>
+
+<!-- Divide value -->
+<variable type="int" >         
+	<name>lmsensors_divide0</name>
+	<value>1</value>     
+</variable>
+
+<!-- ******************************************************** -->
+<!--           Variabled for temperature CPU core 0           -->
+<!-- ******************************************************** -->
+
+<!-- Interval for CPU core1 -->
+<variable type="int" >          
+	<name>lmsensors_interval1</name>         
+	<value>1</value>     
+</variable>
+
+<!-- VSCP GUID -->
+<variable type="guid" >         
+	<name>lmsensors_guid1</name>
+	<value>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>     
+</variable>
+
+<!-- Path to sensor data file for CPU core 1 --> 
+<variable type="string" >                  
+	<name>lmsensors_path1</name>         
+	<value>/sys/class/hwmon/hwmon1/device/temp3_input</value>     
+</variable>
+
+<!-- VSCP class value -->
+<variable type="int" >         
+	<name>lmsensors_vscpclass1</name>
+	<value>10</value>  // Measurement class    
+</variable>
+
+<!-- VSCP Type value -->
+<variable type="int" >         
+	<name>lmsensors_vscptype1</name>
+	<value>6</value>  // Temperature    
+</variable>
+
+<!-- VSCP datacoding value -->
+<variable type="int" >         
+	<name>lmsensors_datacoding</name>
+	<value>6</value>
+</variable>
+
+<!-- Multiply value -->
+<variable type="int" >         
+	<name>lmsensors_multiply1</name>
+	<value>1</value>     
+</variable>
+
+<!-- Divide value -->
+<variable type="int" >         
+	<name>lmsensors_divide1</name>
+	<value>1</value>     
+</variable>
+
+
+

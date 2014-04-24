@@ -4,7 +4,8 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -610,7 +611,7 @@ public:
 	*/    
 	bool readLevel2Register( cguid& ifGUID, 
 								uint32_t reg, 
-								uint8_t *pcontent = NULL,
+								uint8_t *pcontent,
 								cguid *pdestGUID = NULL,
 								wxProgressDialog *pdlg = NULL,
 								bool bLevel2 = false );
@@ -695,7 +696,23 @@ public:
 									bool bLevel2 = false,
 									bool bSilent = false );
 
-
+	/*!
+	 Get MDF from server or device
+	 @param pwnd Pointer to a window for GUI. If a windows pointer
+	 			is supplied a progress dialog will be shown.
+	 @param preg_url Pointer to a register array of 33 bytes that 
+						is a copy of the registers for the MDF url in
+						the device terminated with zeros. If a NULL pointer
+						is used here the URL to the MDF file must be supplied 
+						in string form.
+	 @oaram url	This is an alternative way to give the URL to the MDF file and
+					is used if preg_url is a NULL pointer. The form should be 
+					http://www.grodansparadis.com/smart2_001.mdf
+	 */
+	bool loadMDF( wxWindow *pwnd,
+					uint8_t *preg_url,
+					wxString& url,
+                    CMDF *pmdf );
 	/*!
 	Get Decision Matrix info for a Level I Node
 

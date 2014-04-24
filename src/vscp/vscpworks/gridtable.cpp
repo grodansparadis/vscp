@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     Thu 28 Jun 2007 10:05:16 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2011 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -39,7 +40,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "vscpworks.h"
+#pragma implementation "gridtable.h"
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -70,6 +71,7 @@
 #endif
  
 #include "vscpworks.h"
+#include "../common/vscpeventhelper.h"
 #include "gridtable.h"   
 
 
@@ -158,13 +160,15 @@ int BigGridTable::GetNumberRows( void )
 
 wxString BigGridTable::GetValue( int row, int col )
 {
-  static int last_row = 0;
+    static int last_row = 0;
 	static VscpRXObj *pRecord = NULL;
-  static wxString str;
+    static wxString str;
   
 	if ( ( 0 == last_row ) || ( row != last_row ) ) {
 		if ( NULL == ( pRecord = readEvent( row ) ) ) return wxString(_(""));
 	}	
+    
+    if ( NULL == pRecord ) return wxString(_(""));
   
 	// Save the row
 	last_row = row;
@@ -450,7 +454,7 @@ void BigGridTable::clearEventList( void )
 
 VscpRXObj *BigGridTable::readEvent( unsigned long pos )
 {
-  if ( pos >= m_rxList.GetCount() ) return false;
+  if ( pos >= m_rxList.GetCount() ) return NULL;
   
   return m_rxList.Item( pos )->GetData();
 

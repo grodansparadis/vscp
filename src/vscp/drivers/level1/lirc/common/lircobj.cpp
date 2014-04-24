@@ -1,6 +1,7 @@
 // LircInterface.cpp: implementation of the CLircObj class.
 //
-// Copyright: (c) 2004-2012 Ake Hedman <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //////////////////////////////////////////////////////////////////////
 
 #include "wx/wxprec.h"

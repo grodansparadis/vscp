@@ -1,6 +1,6 @@
 // FILE: mdf.cpp
 //
-// Copyright (C) 2002-2012 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2002-2014 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -127,58 +127,57 @@ wxString CMDF_Abstraction::getAbstractionValueType( void )
 	switch ( m_nType ) {
 
 	case type_string: 
-		return( _("String") );
+		return( wxString(_("String")) );
 
 	case type_boolval:
-		return( _("Boolean") );
+		return( wxString(_("Boolean")) );
 
 	case type_bitfield:
-		return( _("Bitfield") );
+		return( wxString(_("Bitfield")) );
 
 	case type_int8_t:
-		return( _("Signed 8-bit integer") );
+		return( wxString(_("Signed 8-bit integer")) );
 
 	case type_uint8_t:
-		return( _("Unsigned 8-bit integer") );
+		return( wxString(_("Unsigned 8-bit integer")) );
 
 	case type_int16_t:
-		return( _("Signed 16-bit integer") );
+		return( wxString(_("Signed 16-bit integer")) );
 
 	case type_uint16_t:
-		return( _("Unsigned 16-bit integer") );
+		return( wxString(_("Unsigned 16-bit integer")) );
 
 	case type_int32_t:
-		return( _("Signed 32-bit integer") );
+		return( wxString(_("Signed 32-bit integer")) );
 
 
 	case type_uint32_t:
-		return( _("Unsigned 32-bit integer") );
+		return( wxString(_("Unsigned 32-bit integer")) );
 
 	case type_int64_t:
-		return( _("Signed 64-bit integer") );
+		return( wxString(_("Signed 64-bit integer")) );
 
 	case type_uint64_t:
-		return( _("Unsigned 64-bit integer") );
+		return( wxString(_("Unsigned 64-bit integer")) );
 
 	case type_float:
-		return( _("float") );
+		return( wxString(_("float")) );
 
 	case type_double:
-		return( _("double") );
+		return( wxString(_("double")) );
 
 	case type_date:
-		return( _("Date") );
+		return( wxString(_("Date")) );
 
 	case type_time:
-		return( _("Time") );
-
+		return( wxString(_("Time")) );
 
 	case type_guid:
-		return( _("GUID") );
+		return( wxString(_("GUID")) );
 
 	case type_unknown:
 	default:
-		return( _("Unknown Type") );
+		return( wxString(_("Unknown Type")) );
 	}
 }
 
@@ -744,7 +743,7 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
 {
     char buf[ 64000 ];
     size_t cnt;
-    wxStandardPaths strpath;
+    //wxStandardPaths strpath;
     wxFile tempFile;
 
     tempFileName = wxFileName::CreateTempFileName( _("mdf"), &tempFile );
@@ -801,7 +800,7 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
 
 bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 {
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
 	wxString localFile = remoteFile;
 
 	if ( wxNOT_FOUND == remoteFile.Find( _("http://") ) ) {
@@ -823,7 +822,7 @@ bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 		// Load MDF from local file
         wxFileDialog dlg( NULL,
                             _("Choose file to load MDF from "),
-                            stdpaths.GetUserDataDir(),
+                            wxStandardPaths::Get().GetUserDataDir(),
                             _(""),
                             _("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
         if ( wxID_OK == dlg.ShowModal() ) {
@@ -1002,7 +1001,11 @@ bool CMDF::parseMDF( wxString& path )
                 }
                 else if ( child2->GetName() == wxT("description") ) {
                     wxString str;
-                    str = child2->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                    
+                    str = child2->GetAttribute( _( "lang" ), _("en") );
+#else 
+                    str = child2->GetPropVal( _( "lang" ), _("en") );
+#endif                     
                     if ( str == m_strLocale ) {
                         m_strModule_Description = child2->GetNodeContent();
                     }
@@ -1081,7 +1084,11 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("description") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pPhone->m_strDescription = child4->GetNodeContent();
                                     }
@@ -1109,7 +1116,11 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("description") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pFax->m_strDescription = child4->GetNodeContent();
                                     }
@@ -1136,7 +1147,11 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("description") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pEmail->m_strDescription = child4->GetNodeContent();
                                     }
@@ -1164,7 +1179,11 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("description") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pWeb->m_strDescription = child4->GetNodeContent();
                                     }
@@ -1186,18 +1205,47 @@ bool CMDF::parseMDF( wxString& path )
                 } // manufacturer
                 else if ( child2->GetName() == wxT("firmware") ) {
 
-                    m_firmware.m_strPath = child2->GetPropVal( wxT ( "path" ), _("") );
-                    m_firmware.m_size  = readStringValue( child2->GetPropVal( wxT ( "size" ), _("0") ) );
-                    wxString format = child2->GetPropVal( wxT ( "format" ), _("intelhex8") );
-                    m_firmware.m_version_major  = readStringValue( child2->GetPropVal( wxT ( "version_major" ), _("0") ) );
-                    m_firmware.m_version_minor  = readStringValue( child2->GetPropVal( wxT ( "version_minor" ), _("0") ) );
-                    m_firmware.m_version_subminor  = readStringValue( child2->GetPropVal( wxT ( "version_subminor" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)
+                    m_firmware.m_strPath = child2->GetAttribute( _( "path" ), _("") );
+#else 
+                    m_firmware.m_strPath = child2->GetPropVal( _( "path" ), _("") );
+#endif                    
+#if wxCHECK_VERSION(3,0,0)                    
+                    m_firmware.m_size  = readStringValue( child2->GetAttribute( _( "size" ), _("0") ) );
+#else 
+                    m_firmware.m_size  = readStringValue( child2->GetPropVal( _( "size" ), _("0") ) );
+#endif                    
+#if wxCHECK_VERSION(3,0,0)                    
+                    wxString format = child2->GetAttribute( _( "format" ), _("intelhex8") );
+#else 
+                    wxString format = child2->GetPropVal( _( "format" ), _("intelhex8") );
+#endif        
+#if wxCHECK_VERSION(3,0,0)                    
+                    m_firmware.m_version_major  = readStringValue( child2->GetAttribute( _( "version_major" ), _("0") ) );
+#else 
+                    m_firmware.m_version_major  = readStringValue( child2->GetPropVal( _( "version_major" ), _("0") ) );
+#endif                     
+#if wxCHECK_VERSION(3,0,0)                    
+                    m_firmware.m_version_minor  = readStringValue( child2->GetAttribute( _( "version_minor" ), _("0") ) );
+#else 
+                    m_firmware.m_version_minor  = readStringValue( child2->GetPropVal( _( "version_minor" ), _("0") ) );
+#endif                    
+#if wxCHECK_VERSION(3,0,0)                    
+                    m_firmware.m_version_subminor  = readStringValue( child2->GetAttribute( _( "version_subminor" ), _("0") ) );
+#else 
+                    m_firmware.m_version_subminor  = readStringValue( child2->GetPropVal( _( "version_subminor" ), _("0") ) );
+#endif                    
+                    
 
                     wxXmlNode *child3 = child2->GetChildren();
                     while ( child3 ) {
 
                         wxString str;
-                        str = child3->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                        
+                        str = child3->GetAttribute( _( "lang" ), _("en") );
+#else 
+                        str = child3->GetPropVal( _( "lang" ), _("en") );
+#endif                        
                         if ( str == m_strLocale ) {
                             m_firmware.m_description = child3->GetNodeContent();
                         }
@@ -1225,16 +1273,52 @@ bool CMDF::parseMDF( wxString& path )
                             wxASSERT( NULL != pAbstraction );
                             m_list_abstraction.Append( pAbstraction );
 
-                            pAbstraction->m_strID =  child3->GetPropVal ( wxT ( "id" ), _("") );
-                            pAbstraction->m_strDefault =  child3->GetPropVal ( wxT ( "default" ), _("") );
-                            pAbstraction->m_nPage =  readStringValue( child3->GetPropVal ( wxT ( "page" ), _("0") ) );
-                            pAbstraction->m_nOffset =  readStringValue( child3->GetPropVal ( wxT ( "offset" ), _("0") ) );
-                            pAbstraction->m_nBitnumber =  readStringValue( child3->GetPropVal ( wxT ( "bit" ), _("0") ) );
-                            pAbstraction->m_nWidth =  readStringValue( child3->GetPropVal ( wxT ( "width" ), _("0") ) );
-                            pAbstraction->m_nMax =  readStringValue( child3->GetPropVal ( wxT ( "max" ), _("0") ) );
-                            pAbstraction->m_nMin =  readStringValue( child3->GetPropVal ( wxT ( "min" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)                            
+                            pAbstraction->m_strID =  child3->GetAttribute( _( "id" ), _("") );
+#else 
+                            pAbstraction->m_strID =  child3->GetPropVal( _( "id" ), _("") );
+#endif                            
+#if wxCHECK_VERSION(3,0,0)                            
+                            pAbstraction->m_strDefault =  child3->GetAttribute( _( "default" ), _("") );
+#else 
+                            pAbstraction->m_strDefault =  child3->GetPropVal( _( "default" ), _("") );
+#endif                            
+#if wxCHECK_VERSION(3,0,0)
+                            pAbstraction->m_nPage =  readStringValue( child3->GetAttribute( _( "page" ), _("0") ) );
+#else 
+                            pAbstraction->m_nPage =  readStringValue( child3->GetPropVal( _( "page" ), _("0") ) );
+#endif                            
+#if wxCHECK_VERSION(3,0,0)                            
+                            pAbstraction->m_nOffset =  readStringValue( child3->GetAttribute( _( "offset" ), _("0") ) );
+#else 
+                            pAbstraction->m_nOffset =  readStringValue( child3->GetPropVal( _( "offset" ), _("0") ) );
+#endif                            
+#if wxCHECK_VERSION(3,0,0)                            
+                            pAbstraction->m_nBitnumber =  readStringValue( child3->GetAttribute( _( "bit" ), _("0") ) );
+#else 
+                            pAbstraction->m_nBitnumber =  readStringValue( child3->GetPropVal( _( "bit" ), _("0") ) );
+#endif                            
+#if wxCHECK_VERSION(3,0,0)                            
+                            pAbstraction->m_nWidth =  readStringValue( child3->GetAttribute( _( "width" ), _("0") ) );
+#else 
+                            pAbstraction->m_nWidth =  readStringValue( child3->GetPropVal( _( "width" ), _("0") ) );
+#endif                            
+#if wxCHECK_VERSION(3,0,0)                            
+                            pAbstraction->m_nMax =  readStringValue( child3->GetAttribute( _( "max" ), _("0") ) );
+#else 
+                            pAbstraction->m_nMax =  readStringValue( child3->GetPropVal( _( "max" ), _("0") ) );
+#endif                            
+#if wxCHECK_VERSION(3,0,0)                            
+                            pAbstraction->m_nMin =  readStringValue( child3->GetAttribute( _( "min" ), _("0") ) );
+#else 
+                            pAbstraction->m_nMin =  readStringValue( child3->GetPropVal( _( "min" ), _("0") ) );
+#endif                            
 
-							wxString stridx = child3->GetPropVal( wxT ( "indexed" ), _("false") );
+#if wxCHECK_VERSION(3,0,0)							
+                            wxString stridx = child3->GetAttribute( _( "indexed" ), _("false") );
+#else 
+                            wxString stridx = child3->GetPropVal( _( "indexed" ), _("false") );
+#endif                            
 							stridx.Lower();
 							if ( wxNOT_FOUND != stridx.Find(_("true")) ) {
 								pAbstraction->m_bIndexed = true;
@@ -1243,7 +1327,11 @@ bool CMDF::parseMDF( wxString& path )
 								pAbstraction->m_bIndexed = false;
 							}
 
-                            wxString strType =  child3->GetPropVal( wxT ( "type" ), _("") );
+#if wxCHECK_VERSION(3,0,0)                            
+                            wxString strType =  child3->GetAttribute( _( "type" ), _("") );
+#else 
+                            wxString strType =  child3->GetPropVal( _( "type" ), _("") );
+#endif                            
 
                             if ( strType.IsSameAs(_("string")) ) {
                                 pAbstraction->m_nType = type_string;
@@ -1254,13 +1342,13 @@ bool CMDF::parseMDF( wxString& path )
                             else if ( strType.IsSameAs(_("bool")) ) {
                                 pAbstraction->m_nType = type_boolval;
                             }
+                            else if ( strType.IsSameAs(_("char")) ) {
+                                pAbstraction->m_nType = type_int8_t;
+                            }
                             else if ( strType.IsSameAs(_("int8_t")) ) {
                                 pAbstraction->m_nType = type_int8_t;
                             }
                             else if ( strType.IsSameAs(_("byte")) ) {
-                                pAbstraction->m_nType = type_int8_t;
-                            }
-                            else if ( strType.IsSameAs(_("char")) ) {
                                 pAbstraction->m_nType = type_int8_t;
                             }
                             else if ( strType.IsSameAs(_("uint8_t")) ) {
@@ -1270,6 +1358,9 @@ bool CMDF::parseMDF( wxString& path )
                                 pAbstraction->m_nType = type_int16_t;
                             }
                             else if ( strType.IsSameAs(_("short")) ) {
+                                pAbstraction->m_nType = type_int16_t;
+                            }
+                            else if ( strType.IsSameAs(_("integer")) ) {
                                 pAbstraction->m_nType = type_int16_t;
                             }
                             else if ( strType.IsSameAs(_("uint16_t")) ) {
@@ -1305,6 +1396,42 @@ bool CMDF::parseMDF( wxString& path )
 							else if ( strType.IsSameAs(_("guid")) ) {
                                 pAbstraction->m_nType = type_guid;
                             }
+                            else if ( strType.IsSameAs(_("index8_int16_t")) ) {
+                                pAbstraction->m_nType = type_index8_int16_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_uint16_t")) ) {
+                                pAbstraction->m_nType = type_index8_uint16_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_int32_t")) ) {
+                                pAbstraction->m_nType = type_guid;
+                            }
+                            else if ( strType.IsSameAs(_("index8_uint32_t")) ) {
+                                pAbstraction->m_nType = type_index8_uint32_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_int64_t")) ) {
+                                pAbstraction->m_nType = type_index8_int64_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_uint64_t")) ) {
+                                pAbstraction->m_nType = type_index8_uint64_t;
+                            }
+                            else if ( strType.IsSameAs(_("index8_float")) ) {
+                                pAbstraction->m_nType = type_index8_float;
+                            }
+                            else if ( strType.IsSameAs(_("index8_double")) ) {
+                                pAbstraction->m_nType = type_index8_double;
+                            }
+                            else if ( strType.IsSameAs(_("index8_date")) ) {
+                                pAbstraction->m_nType = type_index8_date;
+                            }
+                            else if ( strType.IsSameAs(_("index8_time")) ) {
+                                pAbstraction->m_nType = type_index8_time;
+                            }
+                            else if ( strType.IsSameAs(_("index8_guid")) ) {
+                                pAbstraction->m_nType = type_index8_guid;
+                            }
+                            else if ( strType.IsSameAs(_("index8_string")) ) {
+                                pAbstraction->m_nType = type_index8_string;
+                            }
                             else {
                                 pAbstraction->m_nType = type_unknown;
                             }
@@ -1314,7 +1441,11 @@ bool CMDF::parseMDF( wxString& path )
 
                                 if ( child4->GetName() == wxT("name") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pAbstraction->m_strName = child4->GetNodeContent();
                                     }
@@ -1324,7 +1455,11 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("description") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pAbstraction->m_strDescription = child4->GetNodeContent();
                                         mdfDescriptionFormat( pAbstraction->m_strDescription );
@@ -1336,14 +1471,26 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("help") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pAbstraction->m_strHelp = child4->GetNodeContent();
-                                        pAbstraction->m_strHelpType = child4->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                        
+                                        pAbstraction->m_strHelpType = child4->GetAttribute( _( "type" ), _("text") );
+#else 
+                                        pAbstraction->m_strHelpType = child4->GetPropVal( _( "type" ), _("text") );
+#endif                                        
                                     }
                                     else if ( ( _("en") == str ) ) {
                                         pAbstraction->m_strHelp = child4->GetNodeContent();
-                                        pAbstraction->m_strHelpType = child4->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                        
+                                        pAbstraction->m_strHelpType = child4->GetAttribute( _( "type" ), _("text") );
+#else 
+                                        pAbstraction->m_strHelpType = child4->GetPropVal( _( "type" ), _("text") );
+#endif                                        
                                     }
                                 }                
                                 else if ( child4->GetName() == wxT("access") ) {
@@ -1373,14 +1520,22 @@ bool CMDF::parseMDF( wxString& path )
                                             wxASSERT( NULL != pValueItem );
                                             pAbstraction->m_list_value.Append( pValueItem );
 
-                                            pValueItem->m_strValue = child5->GetPropVal ( wxT ( "value" ), _("") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            pValueItem->m_strValue = child5->GetAttribute( _( "value" ), _("") );
+#else 
+                                            pValueItem->m_strValue = child5->GetPropVal( _( "value" ), _("") );
+#endif                                            
 
                                             wxXmlNode *child6 = child5->GetChildren();
                                             while (child6) {
 
                                                 if ( child6->GetName() == wxT("name") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pValueItem->m_strName = child6->GetNodeContent();
                                                     }
@@ -1390,7 +1545,11 @@ bool CMDF::parseMDF( wxString& path )
                                                 }
                                                 else if ( child6->GetName() == wxT("description") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pValueItem->m_strDescription = child6->GetNodeContent();
                                                     }
@@ -1400,14 +1559,26 @@ bool CMDF::parseMDF( wxString& path )
                                                 }
                                                 else if ( child6->GetName() == wxT("help") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pValueItem->m_strHelp = child6->GetNodeContent();
-                                                        pValueItem->m_strHelpType = child6->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                         
+                                                        pValueItem->m_strHelpType = child6->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                        pValueItem->m_strHelpType = child6->GetPropVal( _( "type" ), _("text") );
+#endif                                                        
                                                     }
                                                     else if ( ( _("en") == str ) ) {
                                                         pValueItem->m_strHelp = child6->GetNodeContent();
-                                                        pValueItem->m_strHelpType = child6->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                         
+                                                        pValueItem->m_strHelpType = child6->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                        pValueItem->m_strHelpType = child6->GetPropVal( _( "type" ), _("text") );
+#endif                                                        
                                                     }
                                                 }                        
 
@@ -1443,19 +1614,46 @@ bool CMDF::parseMDF( wxString& path )
                             wxASSERT( NULL != pRegister );
                             m_list_register.Append( pRegister );
 
-                            pRegister->m_nPage = readStringValue( child3->GetPropVal ( wxT( "page" ), wxT("0") ) );
-                            pRegister->m_nOffset = readStringValue( child3->GetPropVal ( wxT( "offset" ), wxT("0") ) );
-                            pRegister->m_nWidth = readStringValue( child3->GetPropVal ( wxT( "width" ), wxT("8") ) );
-                            pRegister->m_nMin = readStringValue( child3->GetPropVal ( wxT( "min" ), wxT("0") ) );
-                            pRegister->m_nMax = readStringValue( child3->GetPropVal ( wxT( "max" ), wxT("255") ) );
-                            pRegister->m_strDefault = child3->GetPropVal ( wxT( "default" ), wxT("UNDEF") );
-
+#if wxCHECK_VERSION(3,0,0)                            
+                            pRegister->m_nPage = readStringValue( child3->GetAttribute( wxT( "page" ), wxT("0") ) );
+#else 
+                            pRegister->m_nPage = readStringValue( child3->GetPropVal( wxT( "page" ), wxT("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                            
+                            pRegister->m_nOffset = readStringValue( child3->GetAttribute( wxT( "offset" ), wxT("0") ) );
+#else 
+                            pRegister->m_nOffset = readStringValue( child3->GetPropVal( wxT( "offset" ), wxT("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                            
+                            pRegister->m_nWidth = readStringValue( child3->GetAttribute( wxT( "width" ), wxT("8") ) );
+#else 
+                            pRegister->m_nWidth = readStringValue( child3->GetPropVal( wxT( "width" ), wxT("8") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                            
+                            pRegister->m_nWidth = readStringValue( child3->GetAttribute( wxT( "width" ), wxT("8") ) );
+#else 
+                            pRegister->m_nWidth = readStringValue( child3->GetPropVal( wxT( "width" ), wxT("8") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                            
+                            pRegister->m_nMax = readStringValue( child3->GetAttribute( wxT( "max" ), wxT("255") ) );
+#else 
+                            pRegister->m_nMax = readStringValue( child3->GetPropVal( wxT( "max" ), wxT("255") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                            
+                            pRegister->m_strDefault = child3->GetAttribute( wxT( "default" ), wxT("UNDEF") );
+#else 
+                            pRegister->m_strDefault = child3->GetPropVal( wxT( "default" ), wxT("UNDEF") );
+#endif
                             wxXmlNode *child4 = child3->GetChildren();
                             while (child4) {
 
                                 if ( child4->GetName() == wxT("name") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pRegister->m_strName = child4->GetNodeContent();
                                     }
@@ -1465,7 +1663,11 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("description") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pRegister->m_strDescription = child4->GetNodeContent();
                                         mdfDescriptionFormat( pRegister->m_strDescription );
@@ -1490,14 +1692,26 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("help") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pRegister->m_strHelp = child4->GetNodeContent();
-                                        pRegister->m_strHelpType = child4->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                        
+                                        pRegister->m_strHelpType = child4->GetAttribute( _( "type" ), _("text") );
+#else 
+                                        pRegister->m_strHelpType = child4->GetPropVal( _( "type" ), _("text") );
+#endif                                        
                                     }
                                     else if ( ( _("en") == str ) ) {
                                         pRegister->m_strHelp = child4->GetNodeContent();
-                                        pRegister->m_strHelpType = child4->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                        
+                                        pRegister->m_strHelpType = child4->GetAttribute( _( "type" ), _("text") );
+#else 
+                                        pRegister->m_strHelpType = child4->GetPropVal( _( "type" ), _("text") );
+#endif                                        
                                     }
                                 }                
                                 else if ( child4->GetName() == wxT("bitfield") ) {
@@ -1511,16 +1725,32 @@ bool CMDF::parseMDF( wxString& path )
                                             wxASSERT( NULL != pBit );
                                             pRegister->m_list_bit.Append( pBit );
 
-                                            pBit->m_nPos = readStringValue( child5->GetPropVal ( wxT ( "pos" ), _("0") ) );
-                                            pBit->m_nWidth = readStringValue( child5->GetPropVal ( wxT ( "width" ), _("0") ) );
-                                            pBit->m_nPos = readStringValue( child5->GetPropVal ( wxT ( "default" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            pBit->m_nPos = readStringValue( child5->GetAttribute( _( "pos" ), _("0") ) );
+#else 
+                                            pBit->m_nPos = readStringValue( child5->GetPropVal( _( "pos" ), _("0") ) );
+#endif 
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            pBit->m_nWidth = readStringValue( child5->GetAttribute( _( "width" ), _("0") ) );
+#else 
+                                            pBit->m_nWidth = readStringValue( child5->GetPropVal( _( "width" ), _("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            pBit->m_nPos = readStringValue( child5->GetAttribute( _( "default" ), _("0") ) );
+#else 
+                                            pBit->m_nPos = readStringValue( child5->GetPropVal( _( "default" ), _("0") ) );
+#endif                                            
 
                                             wxXmlNode *child6 = child5->GetChildren();
                                             while (child6) {
 
                                                 if ( child6->GetName() == wxT("name") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );   
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );   
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") ); 
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pBit->m_strName = child6->GetNodeContent();
                                                     }
@@ -1530,7 +1760,11 @@ bool CMDF::parseMDF( wxString& path )
                                                 }
                                                 else if ( child6->GetName() == wxT("description") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pBit->m_strDescription = child6->GetNodeContent();
                                                     }
@@ -1540,14 +1774,26 @@ bool CMDF::parseMDF( wxString& path )
                                                 }
                                                 else if ( child6->GetName() == wxT("help") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pBit->m_strHelp = child6->GetNodeContent();
-                                                        pBit->m_strHelpType = child6->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                        
+                                                        pBit->m_strHelpType = child6->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                        pBit->m_strHelpType = child6->GetPropVal( _( "type" ), _("text") );
+#endif                                                        
                                                     }
                                                     else if ( ( _("en") == str ) ) {
                                                         pBit->m_strHelp = child6->GetNodeContent();
-                                                        pBit->m_strHelpType = child6->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                        
+                                                        pBit->m_strHelpType = child6->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                        pBit->m_strHelpType = child6->GetPropVal( _( "type" ), _("text") );
+#endif                                                        
                                                     }
                                                 }                        
                                                 else if ( child6->GetName() == wxT("access") ) {
@@ -1588,14 +1834,22 @@ bool CMDF::parseMDF( wxString& path )
                                             wxASSERT( NULL != pValueItem );
                                             pRegister->m_list_value.Append( pValueItem );
 
-                                            pValueItem->m_strValue = child5->GetPropVal ( wxT ( "value" ), _("") );
+#if wxCHECK_VERSION(3,0,0)
+                                            pValueItem->m_strValue = child5->GetAttribute( _( "value" ), _("") );
+#else 
+                                            pValueItem->m_strValue = child5->GetPropVal( _( "value" ), _("") );
+#endif                                            
 
                                             wxXmlNode *child6 = child5->GetChildren();
                                             while (child6) {
 
                                                 if ( child6->GetName() == wxT("name") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pValueItem->m_strName = child6->GetNodeContent();
                                                     }
@@ -1605,7 +1859,11 @@ bool CMDF::parseMDF( wxString& path )
                                                 }
                                                 else if ( child6->GetName() == wxT("description") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pValueItem->m_strDescription = child6->GetNodeContent();
                                                     }
@@ -1615,14 +1873,26 @@ bool CMDF::parseMDF( wxString& path )
                                                 }
                                                 else if ( child6->GetName() == wxT("help") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pValueItem->m_strHelp = child6->GetNodeContent();
-                                                        pValueItem->m_strHelpType = child6->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                          
+                                                        pValueItem->m_strHelpType = child6->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                        pValueItem->m_strHelpType = child6->GetPropVal( _( "type" ), _("text") );                                                      
+#endif                                                        
                                                     }
                                                     else if ( ( _("en") == str ) ) {
                                                         pValueItem->m_strHelp = child6->GetNodeContent();
-                                                        pValueItem->m_strHelpType = child6->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                         
+                                                        pValueItem->m_strHelpType = child6->GetAttribute( _( "type" ), _("text") );                                                        
+#else 
+                                                        pValueItem->m_strHelpType = child6->GetPropVal( _( "type" ), _("text") ); 
+#endif                                                        
                                                     }
                                                 }
 
@@ -1659,10 +1929,22 @@ bool CMDF::parseMDF( wxString& path )
                             m_dmInfo.m_nLevel = readStringValue( child3->GetNodeContent() );
                         }
                         else if ( child3->GetName() == wxT("start") ) {
-                            m_dmInfo.m_nStartPage =  readStringValue( child3->GetPropVal ( wxT ( "page" ), _("0") ) );
-                            m_dmInfo.m_nStartOffset = readStringValue( child3->GetPropVal ( wxT ( "offset" ), _("0") ) );
-							
-							wxString stridx = child3->GetPropVal( wxT ( "indexed" ), _("false") );
+#if wxCHECK_VERSION(3,0,0)                            
+                            m_dmInfo.m_nStartPage =  readStringValue( child3->GetAttribute( _( "page" ), _("0") ) );
+#else 
+                            m_dmInfo.m_nStartPage =  readStringValue( child3->GetPropVal( _( "page" ), _("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                            
+                            m_dmInfo.m_nStartOffset = readStringValue( child3->GetAttribute( _( "offset" ), _("0") ) );							
+#else 
+                            m_dmInfo.m_nStartOffset = readStringValue( child3->GetPropVal( _( "offset" ), _("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                            
+							wxString stridx = child3->GetAttribute( _( "indexed" ), _("false") );
+#else 
+							wxString stridx = child3->GetPropVal( _( "indexed" ), _("false") );
+#endif                            
+                            
 							stridx.Lower();
 							if ( wxNOT_FOUND != stridx.Find(_("true")) ) {
 								m_dmInfo.m_bIndexed = true;
@@ -1684,14 +1966,22 @@ bool CMDF::parseMDF( wxString& path )
                             m_dmInfo.m_list_action.Append( pAction );
 
                             // Action parameters
-                            pAction->m_nCode = readStringValue( child3->GetPropVal ( wxT ( "code" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)                            
+                            pAction->m_nCode = readStringValue( child3->GetAttribute( _( "code" ), _("0") ) );
+#else 
+                            pAction->m_nCode = readStringValue( child3->GetPropVal( _( "code" ), _("0") ) );
+#endif                            
 
                             wxXmlNode *child4 = child3->GetChildren();
                             while ( child4 ) {
 
                                 if ( child4->GetName() == wxT("name") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pAction->m_strName = child4->GetNodeContent();
                                     }
@@ -1701,7 +1991,11 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("description") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pAction->m_strDescription = child4->GetNodeContent();
                                     }
@@ -1711,14 +2005,26 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("help") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                    
                                     if ( str == m_strLocale ) {
                                         pAction->m_strHelp = child4->GetNodeContent();
-                                        pAction->m_strHelpType = child4->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                        
+                                        pAction->m_strHelpType = child4->GetAttribute( _( "type" ), _("text") );
+#else 
+                                        pAction->m_strHelpType = child4->GetPropVal( _( "type" ), _("text") );
+#endif                                        
                                     }
                                     else if ( ( _("en") == str ) ) {
                                         pAction->m_strHelp = child4->GetNodeContent();
-                                        pAction->m_strHelpType = child4->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                        
+                                        pAction->m_strHelpType = child4->GetAttribute( _( "type" ), _("text") );
+#else 
+                                        pAction->m_strHelpType = child4->GetPropVal( _( "type" ), _("text") );
+#endif                                        
                                     }
                                 }
                                 else if ( child4->GetName() == wxT("param") ) {
@@ -1732,7 +2038,11 @@ bool CMDF::parseMDF( wxString& path )
 
                                         if ( child5->GetName() == wxT("name") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                            
                                             if ( str == m_strLocale ) {
                                                 pActionParameter->m_strName = child5->GetNodeContent();
                                             }
@@ -1742,7 +2052,11 @@ bool CMDF::parseMDF( wxString& path )
                                         }
                                         else if ( child5->GetName() == wxT("description") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                            
                                             if ( str == m_strLocale ) {
                                                 pActionParameter->m_strDescription = child5->GetNodeContent();
                                             }
@@ -1752,14 +2066,26 @@ bool CMDF::parseMDF( wxString& path )
                                         }
                                         else if ( child5->GetName() == wxT("help") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                            
                                             if ( str == m_strLocale ) {
                                                 pActionParameter->m_strHelp = child5->GetNodeContent();
-                                                pActionParameter->m_strHelpType = child5->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                 
+                                                pActionParameter->m_strHelpType = child5->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                pActionParameter->m_strHelpType = child5->GetPropVal( _( "type" ), _("text") );
+#endif                                                
                                             }
                                             else if ( ( _("en") == str ) ) {
                                                 pActionParameter->m_strHelp = child5->GetNodeContent();
-                                                pActionParameter->m_strHelpType = child5->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                 
+                                                pActionParameter->m_strHelpType = child5->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                pActionParameter->m_strHelpType = child5->GetPropVal( _( "type" ), _("text") );
+#endif                                                
                                             }
                                         }	
                                         else if ( child5->GetName() == wxT("bit") ) {
@@ -1768,17 +2094,37 @@ bool CMDF::parseMDF( wxString& path )
                                             wxASSERT( NULL != pBit );
                                             pActionParameter->m_list_bit.Append( pBit );	
 
-                                            pBit->m_nPos = readStringValue( child5->GetPropVal ( wxT ( "pos" ), _("0") ) );
-                                            pBit->m_nWidth = readStringValue( child5->GetPropVal ( wxT ( "width" ), _("0") ) );
-                                            pBit->m_nDefault = readStringValue( child5->GetPropVal ( wxT ( "default" ), _("0") ) );
-                                            pBit->m_nAccess = readStringValue( child5->GetPropVal ( wxT ( "access" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)
+                                            pBit->m_nPos = readStringValue( child5->GetAttribute( _( "pos" ), _("0") ) );
+#else 
+                                            pBit->m_nPos = readStringValue( child5->GetPropVal( _( "pos" ), _("0") ) );
+#endif                                            
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            pBit->m_nWidth = readStringValue( child5->GetAttribute( _( "width" ), _("0") ) );
+#else 
+                                            pBit->m_nWidth = readStringValue( child5->GetPropVal( _( "width" ), _("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            pBit->m_nDefault = readStringValue( child5->GetAttribute( _( "default" ), _("0") ) );
+#else 
+                                            pBit->m_nDefault = readStringValue( child5->GetPropVal( _( "default" ), _("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            pBit->m_nAccess = readStringValue( child5->GetAttribute( _( "access" ), _("0") ) );
+#else 
+                                            pBit->m_nAccess = readStringValue( child5->GetPropVal( _( "access" ), _("0") ) );
+#endif                                            
 
                                             wxXmlNode *child6 = child5->GetChildren();
                                             while ( child6 ) {
 
                                                 if ( child6->GetName() == wxT("name") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pBit->m_strName = child6->GetNodeContent();
                                                     }
@@ -1788,7 +2134,11 @@ bool CMDF::parseMDF( wxString& path )
                                                 }
                                                 else if ( child6->GetName() == wxT("description") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pBit->m_strDescription = child6->GetNodeContent();
                                                     }
@@ -1798,14 +2148,26 @@ bool CMDF::parseMDF( wxString& path )
                                                 }
                                                 else if ( child6->GetName() == wxT("help") ) {
                                                     wxString str;
-                                                    str = child6->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    str = child6->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                    str = child6->GetPropVal( _( "lang" ), _("en") );
+#endif                                                    
                                                     if ( str == m_strLocale ) {
                                                         pBit->m_strHelp = child6->GetNodeContent();
-                                                        pBit->m_strHelpType = child6->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                        
+                                                        pBit->m_strHelpType = child6->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                        pBit->m_strHelpType = child6->GetPropVal( _( "type" ), _("text") );
+#endif                                                        
                                                     }
                                                     else if ( ( _("en") == str ) ) {
                                                         pBit->m_strHelp = child6->GetNodeContent();
-                                                        pBit->m_strHelpType = child6->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                        
+                                                        pBit->m_strHelpType = child6->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                        pBit->m_strHelpType = child6->GetPropVal( _( "type" ), _("text") );
+#endif                                                        
                                                     }
                                                 }
 
@@ -1825,14 +2187,22 @@ bool CMDF::parseMDF( wxString& path )
                                                     wxASSERT( NULL != pValue );
                                                     pActionParameter->m_list_value.Append( pValue );
 
-                                                    pValue->m_strValue = child6->GetPropVal ( wxT ( "value" ), _("0") );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    pValue->m_strValue = child6->GetAttribute( _( "value" ), _("0") );
+#else 
+                                                    pValue->m_strValue = child6->GetPropVal( _( "value" ), _("0") );
+#endif                                                    
 
                                                     wxXmlNode *child7 = child6->GetChildren();
                                                     while ( child7 ) {
 
                                                         if ( child7->GetName() == wxT("name") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                            
                                                             if ( str == m_strLocale ) {
                                                                 pValue->m_strName = child7->GetNodeContent();
                                                             }
@@ -1842,7 +2212,11 @@ bool CMDF::parseMDF( wxString& path )
                                                         }
                                                         else if ( child7->GetName() == wxT("description") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                            
                                                             if ( str == m_strLocale ) {
                                                                 pValue->m_strDescription = child7->GetNodeContent();
                                                             }
@@ -1852,14 +2226,26 @@ bool CMDF::parseMDF( wxString& path )
                                                         }
                                                         else if ( child6->GetName() == wxT("help") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                            
                                                             if ( str == m_strLocale ) {
                                                                 pValue->m_strHelp = child7->GetNodeContent();
-                                                                pValue->m_strHelpType = child7->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                                 
+                                                                pValue->m_strHelpType = child7->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                                pValue->m_strHelpType = child7->GetPropVal( _( "type" ), _("text") );
+#endif                                                                 
                                                             }
                                                             else if ( ( _("en") == str ) ) {
                                                                 pValue->m_strHelp = child7->GetNodeContent();
-                                                                pValue->m_strHelpType = child7->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                                 
+                                                                pValue->m_strHelpType = child7->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                                pValue->m_strHelpType = child7->GetPropVal( _( "type" ), _("text") );
+#endif                                                                 
                                                             }
                                                         }
 
@@ -1905,16 +2291,32 @@ bool CMDF::parseMDF( wxString& path )
                             wxASSERT( NULL != pEvent );
                             m_list_event.Append( pEvent );
 
-                            pEvent->m_nClass = readStringValue( child3->GetPropVal ( wxT ( "class" ), _("0") ) );
-                            pEvent->m_nType = readStringValue( child3->GetPropVal ( wxT ( "type" ), _("0") ) );
-                            pEvent->m_nPriority = readStringValue( child3->GetPropVal ( wxT ( "priority" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)                            
+                            pEvent->m_nClass = readStringValue( child3->GetAttribute( _( "class" ), _("0") ) );
+#else 
+                            pEvent->m_nClass = readStringValue( child3->GetPropVal( _( "class" ), _("0") ) );
+#endif 
+#if wxCHECK_VERSION(3,0,0)                            
+                            pEvent->m_nType = readStringValue( child3->GetAttribute( _( "type" ), _("0") ) );
+#else 
+                            pEvent->m_nType = readStringValue( child3->GetPropVal( _( "type" ), _("0") ) );
+#endif 
+#if wxCHECK_VERSION(3,0,0)                            
+                            pEvent->m_nPriority = readStringValue( child3->GetAttribute( _( "priority" ), _("0") ) );
+#else 
+                            pEvent->m_nPriority = readStringValue( child3->GetPropVal( _( "priority" ), _("0") ) );
+#endif                             
 
                             wxXmlNode *child4 = child3->GetChildren();
                             while (child4) {
 
                                 if ( child4->GetName() == wxT("name") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                     
                                     if ( str == m_strLocale ) {
                                         pEvent->m_strName = child4->GetNodeContent();
                                     }
@@ -1924,7 +2326,11 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("description") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                     
                                     if ( str == m_strLocale ) {
                                         pEvent->m_strDescription = child4->GetNodeContent();
                                     }
@@ -1934,14 +2340,26 @@ bool CMDF::parseMDF( wxString& path )
                                 }
                                 else if ( child4->GetName() == wxT("help") ) {
                                     wxString str;
-                                    str = child4->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    str = child4->GetAttribute( _( "lang" ), _("en") );                                    
+#else                                     
+                                    str = child4->GetPropVal( _( "lang" ), _("en") );
+#endif                                     
                                     if ( str == m_strLocale ) {
                                         pEvent->m_strHelp = child4->GetNodeContent();
-                                        pEvent->m_strHelpType = child4->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                        
+                                        pEvent->m_strHelpType = child4->GetAttribute( _( "type" ), _("text") );
+#else 
+                                        pEvent->m_strHelpType = child4->GetPropVal( _( "type" ), _("text") );
+#endif                                         
                                     }
                                     else if ( ( _("en") == str ) ) {
                                         pEvent->m_strHelp = child4->GetNodeContent();
-                                        pEvent->m_strHelpType = child4->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                        
+                                        pEvent->m_strHelpType = child4->GetAttribute( _( "type" ), _("text") );
+#else 
+                                        pEvent->m_strHelpType = child4->GetPropVal( _( "type" ), _("text") );
+#endif                                         
                                     }
                                 }                
                                 else if ( child4->GetName() == wxT("data") ) {
@@ -1950,14 +2368,22 @@ bool CMDF::parseMDF( wxString& path )
                                     wxASSERT( NULL != pEventData );
                                     pEvent->m_list_eventdata.Append( pEventData );
 
-                                    pEventData->m_nOffset = readStringValue( child4->GetPropVal ( wxT ( "offset" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    pEventData->m_nOffset = readStringValue( child4->GetAttribute( _( "offset" ), _("0") ) );
+#else 
+                                    pEventData->m_nOffset = readStringValue( child4->GetPropVal( _( "offset" ), _("0") ) );
+#endif 
 
                                     wxXmlNode *child5 = child4->GetChildren();
                                     while (child5) {
 
                                         if ( child4->GetName() == wxT("name") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute ( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                             
                                             if ( str == m_strLocale ) {
                                                 pEventData->m_strName = child5->GetNodeContent();
                                             }
@@ -1967,7 +2393,11 @@ bool CMDF::parseMDF( wxString& path )
                                         }
                                         else if ( child4->GetName() == wxT("description") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                             
                                             if ( str == m_strLocale ) {
                                                 pEventData->m_strDescription = child5->GetNodeContent();
                                             }
@@ -1977,14 +2407,26 @@ bool CMDF::parseMDF( wxString& path )
                                         }
                                         else if ( child4->GetName() == wxT("help") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                             
                                             if ( str == m_strLocale ) {
                                                 pEventData->m_strHelp = child5->GetNodeContent();
-                                                pEventData->m_strHelpType = child5->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                
+                                                pEventData->m_strHelpType = child5->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                pEventData->m_strHelpType = child5->GetPropVal( _( "type" ), _("text") );
+#endif                                                 
                                             }
                                             else if ( ( _("en") == str ) ) {
                                                 pEventData->m_strHelp = child5->GetNodeContent();
-                                                pEventData->m_strHelpType = child5->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                
+                                                pEventData->m_strHelpType = child5->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                pEventData->m_strHelpType = child5->GetPropVal( _( "type" ), _("text") );
+#endif                                                 
                                             }
                                         }
                                         else if ( child5->GetName() == wxT("valuelist") ) {
@@ -1998,14 +2440,22 @@ bool CMDF::parseMDF( wxString& path )
                                                     wxASSERT( NULL != pValueItem );
                                                     pEventData->m_list_value.Append( pValueItem );
 
-                                                    pValueItem->m_strValue = child6->GetPropVal ( wxT ( "value" ), _("") );
+#if wxCHECK_VERSION(3,0,0)                                                   
+                                                    pValueItem->m_strValue = child6->GetAttribute( _( "value" ), _("") );
+#else 
+                                                    pValueItem->m_strValue = child6->GetPropVal( _( "value" ), _("") );
+#endif                                                     
 
                                                     wxXmlNode *child7 = child5->GetChildren();
                                                     while (child7) {
 
                                                         if ( child7->GetName() == wxT("name") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                             
                                                             if ( str == m_strLocale ) {
                                                                 pValueItem->m_strName = child7->GetNodeContent();
                                                             }
@@ -2015,7 +2465,11 @@ bool CMDF::parseMDF( wxString& path )
                                                         }
                                                         else if ( child7->GetName() == wxT("description") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                             
                                                             if ( str == m_strLocale ) {
                                                                 pValueItem->m_strDescription = child7->GetNodeContent();
                                                             }
@@ -2025,14 +2479,26 @@ bool CMDF::parseMDF( wxString& path )
                                                         }
                                                         else if ( child7->GetName() == wxT("help") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                             
                                                             if ( str == m_strLocale ) {
                                                                 pValueItem->m_strHelp = child7->GetNodeContent();
-                                                                pValueItem->m_strHelpType = child7->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                                 
+                                                                pValueItem->m_strHelpType = child7->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                                pValueItem->m_strHelpType = child7->GetPropVal( _( "type" ), _("text") );
+#endif                                                                
                                                             }
                                                             else if ( ( _("en") == str ) ) {
                                                                 pValueItem->m_strHelp = child7->GetNodeContent();
-                                                                pValueItem->m_strHelpType = child7->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                                 
+                                                                pValueItem->m_strHelpType = child7->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                                pValueItem->m_strHelpType = child7->GetPropVal( _( "type" ), _("text") );
+#endif                                                                
                                                             }
                                                         }
 
@@ -2058,16 +2524,32 @@ bool CMDF::parseMDF( wxString& path )
                                                     wxASSERT( NULL != pBit );
                                                     pEventData->m_list_bit.Append( pBit );
 
-                                                    pBit->m_nPos = readStringValue( child6->GetPropVal ( wxT ( "pos" ), _("0") ) );
-                                                    pBit->m_nWidth = readStringValue( child6->GetPropVal ( wxT ( "width" ), _("0") ) );
-                                                    pBit->m_nPos = readStringValue( child6->GetPropVal ( wxT ( "default" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    pBit->m_nPos = readStringValue( child6->GetAttribute( _( "pos" ), _("0") ) );
+#else 
+                                                    pBit->m_nPos = readStringValue( child6->GetPropVal( _( "pos" ), _("0") ) );
+#endif 
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    pBit->m_nWidth = readStringValue( child6->GetAttribute( _( "width" ), _("0") ) );
+#else 
+                                                    pBit->m_nWidth = readStringValue( child6->GetPropVal( _( "width" ), _("0") ) );
+#endif 
+#if wxCHECK_VERSION(3,0,0)                                                    
+                                                    pBit->m_nPos = readStringValue( child6->GetAttribute( _( "default" ), _("0") ) );
+#else 
+                                                    pBit->m_nPos = readStringValue( child6->GetPropVal( _( "default" ), _("0") ) );
+#endif                                                     
 
                                                     wxXmlNode *child7 = child6->GetChildren();
                                                     while (child7) {
 
                                                         if ( child7->GetName() == wxT("name") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                             
                                                             if ( str == m_strLocale ) {
                                                                 pBit->m_strName = child7->GetNodeContent();
                                                             }
@@ -2077,7 +2559,11 @@ bool CMDF::parseMDF( wxString& path )
                                                         }
                                                         else if ( child7->GetName() == wxT("description") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                             
                                                             if ( str == m_strLocale ) {
                                                                 pBit->m_strDescription = child7->GetNodeContent();
                                                             }
@@ -2087,14 +2573,26 @@ bool CMDF::parseMDF( wxString& path )
                                                         }
                                                         else if ( child7->GetName() == wxT("help") ) {
                                                             wxString str;
-                                                            str = child7->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                                            
+                                                            str = child7->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                                            str = child7->GetPropVal( _( "lang" ), _("en") );
+#endif                                                             
                                                             if ( str == m_strLocale ) {
                                                                 pBit->m_strHelp = child7->GetNodeContent();
-                                                                pBit->m_strHelpType = child7->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                                 
+                                                                pBit->m_strHelpType = child7->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                                pBit->m_strHelpType = child7->GetPropVal( _( "type" ), _("text") );
+#endif                                                                
                                                             }
                                                             else if ( ( _("en") == str ) ) {
                                                                 pBit->m_strHelp = child7->GetNodeContent();
-                                                                pBit->m_strHelpType = child7->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                                 
+                                                                pBit->m_strHelpType = child7->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                                pBit->m_strHelpType = child7->GetPropVal( _( "type" ), _("text") );
+#endif                                                                
                                                             }
                                                         }
                                                         else if ( child7->GetName() == wxT("access") ) {
@@ -2158,16 +2656,32 @@ bool CMDF::parseMDF( wxString& path )
                                     wxASSERT( NULL != pBit );
                                     m_list_alarmbits.Append( pBit );
 
-                                    pBit->m_nPos = readStringValue( child4->GetPropVal ( wxT ( "pos" ), _("0") ) );
-                                    pBit->m_nWidth = readStringValue( child4->GetPropVal ( wxT ( "width" ), _("0") ) );
-                                    pBit->m_nPos = readStringValue( child4->GetPropVal ( wxT ( "default" ), _("0") ) );
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    pBit->m_nPos = readStringValue( child4->GetAttribute( _( "pos" ), _("0") ) );
+#else 
+                                    pBit->m_nPos = readStringValue( child4->GetPropVal( _( "pos" ), _("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    pBit->m_nWidth = readStringValue( child4->GetAttribute( _( "width" ), _("0") ) );
+#else 
+                                    pBit->m_nWidth = readStringValue( child4->GetPropVal( _( "width" ), _("0") ) );
+#endif
+#if wxCHECK_VERSION(3,0,0)                                    
+                                    pBit->m_nPos = readStringValue( child4->GetAttribute( _( "default" ), _("0") ) );
+#else 
+                                    pBit->m_nPos = readStringValue( child4->GetPropVal( _( "default" ), _("0") ) );
+#endif                                    
 
                                     wxXmlNode *child5 = child4->GetChildren();
                                     while (child5) {
 
                                         if ( child5->GetName() == wxT("name") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                            
                                             if ( str == m_strLocale ) {
                                                 pBit->m_strName = child5->GetNodeContent();
                                             }
@@ -2177,7 +2691,11 @@ bool CMDF::parseMDF( wxString& path )
                                         }
                                         else if ( child5->GetName() == wxT("description") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                            
                                             if ( str == m_strLocale ) {
                                                 pBit->m_strDescription = child5->GetNodeContent();
                                             }
@@ -2187,14 +2705,26 @@ bool CMDF::parseMDF( wxString& path )
                                         }
                                         else if ( child5->GetName() == wxT("help") ) {
                                             wxString str;
-                                            str = child5->GetPropVal ( wxT ( "lang" ), _("en") );
+#if wxCHECK_VERSION(3,0,0)                                            
+                                            str = child5->GetAttribute( _( "lang" ), _("en") );
+#else 
+                                            str = child5->GetPropVal( _( "lang" ), _("en") );
+#endif                                            
                                             if ( str == m_strLocale ) {
                                                 pBit->m_strHelp = child5->GetNodeContent();
-                                                pBit->m_strHelpType = child5->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                
+                                                pBit->m_strHelpType = child5->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                pBit->m_strHelpType = child5->GetPropVal( _( "type" ), _("text") );
+#endif                                                
                                             }
                                             else if ( ( _("en") == str ) ) {
                                                 pBit->m_strHelp = child5->GetNodeContent();
-                                                pBit->m_strHelpType = child5->GetPropVal ( wxT ( "type" ), _("text") );
+#if wxCHECK_VERSION(3,0,0)                                                
+                                                pBit->m_strHelpType = child5->GetAttribute( _( "type" ), _("text") );
+#else 
+                                                pBit->m_strHelpType = child5->GetPropVal( _( "type" ), _("text") );
+#endif                                                
                                             }
                                         }                    
                                         else if ( child5->GetName() == wxT("access") ) {
@@ -2273,7 +2803,6 @@ bool CMDF::parseMDF( wxString& path )
 ///////////////////////////////////////////////////////////////////////////////
 //  getNumberOfRegisters
 //  
-
 
 uint32_t CMDF::getNumberOfRegisters( uint32_t page ) 
 { 

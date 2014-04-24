@@ -1,3 +1,5 @@
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+
         #include <stdio.h>
         #include <openssl/evp.h>
 

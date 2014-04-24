@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     Thu 28 Jun 2007 09:36:35 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2007-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -137,6 +138,9 @@ public:
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_REMOVE
   void OnButtonRemoveClick( wxCommandEvent& event );
 
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
+  void OnButtonCloneClick( wxCommandEvent& event );
+
 ////@end dlgNewVSCPSession event handler declarations
 
 ////@begin dlgNewVSCPSession member function declarations
@@ -162,7 +166,8 @@ public:
     ID_LISTBOX_INTERFACES = 14001,
     ID_BUTTON_ADD = 14002,
     ID_BUTTON_EDIT = 14003,
-    ID_BUTTON_REMOVE = 14004
+    ID_BUTTON_REMOVE = 14004,
+    ID_BUTTON = 14005
   };
 ////@end dlgNewVSCPSession member variables
 };

@@ -1,5 +1,7 @@
 // serialdrv.cpp : Defines the entry point for the DLL application.
 //
+// Copyright (C) 2000-2014
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #include "stdafx.h"
 #include <stdlib.h>

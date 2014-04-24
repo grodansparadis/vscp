@@ -1,5 +1,7 @@
 // ccsdrvTestDlg.h : header file
 //
+// Copyright (C) 2000-2014
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #if !defined(AFX_CCSDRVTESTDLG_H__DB07F138_0A91_4C67_9915_A72470AD5FED__INCLUDED_)
 #define AFX_CCSDRVTESTDLG_H__DB07F138_0A91_4C67_9915_A72470AD5FED__INCLUDED_

@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-XAPDRV_OBJECTS =  xapdrv.o ../common/xapobj.o
-PROJOBJS        =       ../../../../../common/dllist.o ../../../../common/devicelist.o
+XAPDRV_OBJECTS =  xapdrv.o ../common/xapobj.o 
+PROJOBJS        =     ../../../../common/guid.o  ../../../../../common/dllist.o ../../../../common/devicelist.o
 
 
 ### Targets: ###

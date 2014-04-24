@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -39,6 +40,7 @@
 #endif
 
 #include "../../vscp/common/vscp.h"
+#include "guid.h"
 #include "devicelist.h"
 
 
@@ -53,7 +55,7 @@ WX_DECLARE_LIST ( vscpEvent, CLIENTEVENTLIST );
 #define CLIENT_ITEM_INTERFACE_TYPE_NONE                 0
 #define CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL      1
 #define CLIENT_ITEM_INTERFACE_TYPE_DRIVER_CANAL         2
-#define CLIENT_ITEM_INTERFACE_TYPE_DRIVER_TCPIP         3
+#define CLIENT_ITEM_INTERFACE_TYPE_DRIVER_VSCP          3
 #define CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP         4
 
 // Both the UDP send and receive id clients use this is. This way
@@ -118,7 +120,7 @@ public:
 
         The GUID for a client have the following form MSB -> LSB
 
-        0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFD ip-address ip-address ip-address ip-address Client-ID Client-ID Client-ID Client-ID
+        0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFF 0xFD ip-address ip-address ip-address ip-address Client-ID Client-ID 0 0
 
         ip-address ver 4 interface IP address
         Client-ID mapped id for this client
@@ -126,7 +128,7 @@ public:
         This is the default address and it can be changed by the client application
 
     */
-    uint8_t m_GUID[ 16 ];
+	cguid m_guid;
 
     /*!
         Interface name

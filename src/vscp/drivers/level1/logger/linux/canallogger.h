@@ -8,7 +8,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2014 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -44,55 +45,53 @@
 // See loggerdll.cpp for the implementation of this class
 //
 
-class CLoggerdllApp
-{
-
+class CLoggerdllApp {
 public:
 
-	/// Constructor
-	CLoggerdllApp();
-	
-	/// Destructor
-	~CLoggerdllApp();
+    /// Constructor
+    CLoggerdllApp();
 
-/*!
-		Add a driver object
+    /// Destructor
+    ~CLoggerdllApp();
 
-		@parm plog Object to add
-		@return handle or 0 for error
-	*/
-	long addDriverObject( CLog *plog );
+    /*!
+                    Add a driver object
 
-	/*!
-		Get a driver object from its handle
+                    @parm plog Object to add
+                    @return handle or 0 for error
+     */
+    long addDriverObject(CLog *plog);
 
-		@param handle for object
-		@return pointer to object or NULL if invalid
-				handle.
-	*/
-	CLog *getDriverObject( long h );
+    /*!
+            Get a driver object from its handle
 
-	/*!
-		Remove a driver object
+            @param handle for object
+            @return pointer to object or NULL if invalid
+                            handle.
+     */
+    CLog *getDriverObject(long h);
 
-		@parm handle for object.
-	*/
-	void removeDriverObject( long h );
-	
-	/*!
-		The log file object
-		This is the array with driver objects (max 256 objects
-	*/
-	CLog *m_logArray[ CANAL_LOGGER_DRIVER_MAX_OPEN ];
-	
-	/// Mutex for open/close
-	pthread_mutex_t m_objMutex;
+    /*!
+            Remove a driver object
 
-	/// Counter for users of the interface
-	unsigned long m_instanceCounter;
+            @parm handle for object.
+     */
+    void removeDriverObject(long h);
+
+    /*!
+            The log file object
+            This is the array with driver objects (max 256 objects
+     */
+    CLog *m_logArray[ CANAL_LOGGER_DRIVER_MAX_OPEN ];
+
+    /// Mutex for open/close
+    pthread_mutex_t m_objMutex;
+
+    /// Counter for users of the interface
+    unsigned long m_instanceCounter;
 
 public:
-	BOOL InitInstance();
+    BOOL InitInstance();
 
 };
 
@@ -100,9 +99,8 @@ public:
 // CreateObject
 //
 
-extern "C"
-{
-	CLoggerdllApp *CreateObject( void );
+extern "C" {
+    CLoggerdllApp *CreateObject(void);
 }
 
 #endif // !defined(AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

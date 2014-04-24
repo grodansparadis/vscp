@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALLOGGER_OBJECTS =  canallogger.o ../common/log.o ../../../../../common/dllist.o ../../../../common/devicelist.o
-PROJOBJS        =       ../../../../../common/dllist.o ../../../../common/devicelist.o
+CANALLOGGER_OBJECTS =  canallogger.o ../common/log.o ../../../../common/guid.o ../../../../../common/dllist.o ../../../../common/devicelist.o
+PROJOBJS        =     ../../../../common/guid.o  ../../../../../common/dllist.o ../../../../common/devicelist.o
 
 
 ### Targets: ###

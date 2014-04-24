@@ -1,5 +1,7 @@
 // can232drvTestDlg.h : header file
 //
+// Copyright (C) 2000-2014
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 
 #if !defined(AFX_CAN232DRVTESTDLG_H__89C80B00_D749_40AE_9AB7_6DA29FD82BA7__INCLUDED_)
 #define AFX_CAN232DRVTESTDLG_H__89C80B00_D749_40AE_9AB7_6DA29FD82BA7__INCLUDED_

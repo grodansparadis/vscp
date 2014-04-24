@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     09/04/2009 11:05:11
 // RCS-ID:      
-// Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright:   (C) 2009-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -1392,12 +1393,12 @@ void frmMDFEditor::OnToolNewClick( wxCommandEvent& event )
 void frmMDFEditor::OnToolLoadClick( wxCommandEvent& event )
 {
     wxString localMDF;
-    wxStandardPaths stdpaths;
+    //wxStandardPaths stdpaths;
     
     // Load MDF from local file
     wxFileDialog dlg( this,
                         _("Choose file to load MDF from "),
-                        stdpaths.GetUserDataDir(),
+                        wxStandardPaths::Get().GetUserDataDir(),
                         _(""),
                         _("MSF Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
     if ( wxID_OK == dlg.ShowModal() ) {

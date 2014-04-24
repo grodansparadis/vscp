@@ -6,8 +6,10 @@
 // 2 of the License, or (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
-//
 // 
+// Copyright:   (C) 2007-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+//
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -18,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: IntelHex.h,v $                                       
-// $Date: 2005/01/05 12:50:58 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
 //////////////////////////////////////////////////////////////////////
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
@@ -465,8 +463,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
 
         // Read page register MSB
-        if ( !wxGetApp().readLevel1Register( m_pCanalSuperWrapper,
-            m_guid.m_id[ 0 ], 
+        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
             VSCP_REG_PAGE_SELECT_MSB, 
             &pageMSB ) ) {
                 return false;
@@ -474,8 +471,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
 
         // Read page register LSB
-        if ( !wxGetApp().readLevel1Register( m_pCanalSuperWrapper,
-            m_guid.m_id[ 0 ], 
+        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
             VSCP_REG_PAGE_SELECT_LSB, 
             &pageLSB ) ) {
                 return false;
@@ -483,8 +479,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
 
         // Read page register GUID0
-        if ( !wxGetApp().readLevel1Register( m_pCanalSuperWrapper,
-            m_guid.m_id[ 0 ], 
+        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
             VSCP_REG_GUID0, 
             &guid0 ) ) {
                 return false;
@@ -492,16 +487,14 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
 
         // Read page register GUID3
-        if ( !wxGetApp().readLevel1Register( m_pCanalSuperWrapper,
-            m_guid.m_id[ 0 ], 
+        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
             VSCP_REG_GUID3, 
             &guid3 ) ) {
                 return false;
         }
 
         // Read page register GUID5
-        if ( !wxGetApp().readLevel1Register( m_pCanalSuperWrapper,
-            m_guid.m_id[ 0 ], 
+        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
             VSCP_REG_GUID5, 
             &guid5 ) ) {
                 return false;
@@ -510,8 +503,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
 
         // Read page register GUID7
-        if ( !wxGetApp().readLevel1Register( m_pCanalSuperWrapper,
-            m_guid.m_id[ 0 ], 
+        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
             VSCP_REG_GUID7, 
             &guid7 ) ) {
                 return false;
@@ -921,8 +913,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
             // If we can read register we are ready
 			unsigned char val;
             if ( USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType() ) {
-                if ( wxGetApp().readLevel1Register( m_pCanalSuperWrapper,
-                                                        m_guid.m_id[ 0 ],
+                if ( m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ],
 					                                    VSCP_REG_PAGE_SELECT_MSB, 
 					                                    &val ) ) {
                     bReady = true;

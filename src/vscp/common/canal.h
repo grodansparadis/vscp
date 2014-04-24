@@ -4,7 +4,8 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,6 +23,12 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+// History
+// =======
+//
+// 2007-10-31 AKHE - Blocking and driver properties added
+// 2006-05-16 AKHE - Added fastmode defines.
+// 2005-08-09 AKHE - Added error info to canalStatus structure.
 
 #ifndef ___CANAL_H___
 #define ___CANAL_H___
@@ -559,12 +566,7 @@ const char * CanalGetDriverInfo( void );
 
 
 
-// History
-// =======
-//
-// 2007-10-31 AKHE - Blocking and driver properties added
-// 2006-05-16 AKHE - Added fastmode defines.
-// 2005-08-09 AKHE - Added error info to canalStatus structure.
+
 
 
 

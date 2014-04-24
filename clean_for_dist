@@ -11,6 +11,8 @@ rm -rf TODO~
 rm -rf BUILD~
 rm -rf BUILD_UNIX~
 rm -rf BUILD_WIN32.txt~
+rm config.status
+
 
 echo Removing Work directories...
 rm -rf src/vscp/Build

@@ -5,7 +5,8 @@
 // Modified by: 
 // Created:     Thu 18 Dec 2007 10:05:16 CEST
 // RCS-ID:      
-// Copyright:   (C) 2000-2011 Ake Hedman, eurosource, <ake@eurosource.se>
+// Copyright:   (C) 2000-2014 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -96,7 +97,7 @@ DEFINE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT)
 
 ctrlObj::ctrlObj()
 {
-  m_bQuit = false;      // Dont even think of quiting yet...
+  m_bQuit = false;      // Don't even think of quitting yet...
   m_errorControl = 0;   // No error
   m_errorReceive = 0;
 }

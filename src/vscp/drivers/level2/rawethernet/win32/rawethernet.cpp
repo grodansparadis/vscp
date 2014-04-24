@@ -1,5 +1,5 @@
 //
-// vscpbtdetect.cpp : Defines the entry point for the DLL application.
+// rawethernet.cpp : Defines the entry point for the DLL application.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -8,7 +8,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB,
+// <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -68,31 +69,31 @@ static CDllDrvObj *theApp = NULL;
 // DllMain
 //
 
-BOOL APIENTRY DllMain( HANDLE hInstDll, 
-                       DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved
-					 )
+BOOL APIENTRY DllMain(HANDLE hInstDll,
+		DWORD ul_reason_for_call,
+		LPVOID lpReserved
+		)
 {
-    switch( ul_reason_for_call ) {
+	switch (ul_reason_for_call) {
 
-	    case DLL_PROCESS_ATTACH:
-            ::wxInitialize();
-			hThisInstDll = hInstDll;
-			theApp = new CDllDrvObj();
-			theApp->InitInstance();
-			break;
+	case DLL_PROCESS_ATTACH:
+		::wxInitialize();
+		hThisInstDll = hInstDll;
+		theApp = new CDllDrvObj();
+		theApp->InitInstance();
+		break;
 
-		case DLL_THREAD_ATTACH:
-			if ( NULL == theApp ) delete theApp;
-			break;
+	case DLL_THREAD_ATTACH:
+		if (NULL == theApp) delete theApp;
+		break;
 
-		case DLL_THREAD_DETACH:
- 			break;
+	case DLL_THREAD_DETACH:
+		break;
 
-		case DLL_PROCESS_DETACH:
-			::wxUninitialize();
- 			break;
-   }
+	case DLL_PROCESS_DETACH:
+		::wxUninitialize();
+		break;
+	}
 
 	return TRUE;
 
@@ -113,41 +114,47 @@ BOOL APIENTRY DllMain( HANDLE hInstDll,
 //
 
 #ifdef WIN32
-extern "C" long WINAPI EXPORT VSCPOpen( const char *pUsername,
-                                            const char *pPassword,
-                                            const char *pHost,
-                                            short port,
-                                            const char *pPrefix,
-                                            const char *pParameter, 
-                                            unsigned long flags )
+extern "C" long WINAPI EXPORT VSCPOpen(const char *pUsername,
+		const char *pPassword,
+		const char *pHost,
+		short port,
+		const char *pPrefix,
+		const char *pParameter,
+		unsigned long flags)
 #else
-extern "C" long VSCPOpen( const char *pUsername,
-                                            const char *pPassword,
-                                            const char *pHost,
-                                            short port,
-                                            const char *pPrefix,
-                                            const char *pParameter, 
-                                            unsigned long flags )
+
+extern "C" long VSCPOpen(const char *pUsername,
+		const char *pPassword,
+		const char *pHost,
+		short port,
+		const char *pPrefix,
+		const char *pParameter,
+		unsigned long flags)
 #endif
 {
 	long h = 0;
-	
+
 	CRawEthernet *pdrvObj = new CRawEthernet();
-	if ( NULL != pdrvObj ) {
+	if (NULL != pdrvObj) {
 
-		if ( pdrvObj->open( pUsername, pPassword, pHost, port, pPrefix, pParameter, flags ) ){
+		if (pdrvObj->open(pUsername,
+				pPassword,
+				pHost,
+				port,
+				pPrefix,
+				pParameter,
+				flags)) {
 
-			if ( !( h = theApp->addDriverObject( pdrvObj ) ) ) {
+			if (!(h = theApp->addDriverObject(pdrvObj))) {
 				delete pdrvObj;
 			}
 
-		}
-		else {
+		} else {
 			delete pdrvObj;
 		}
 
 	}
- 
+
 	return h;
 }
 
@@ -157,17 +164,18 @@ extern "C" long VSCPOpen( const char *pUsername,
 // 
 
 #ifdef WIN32
-extern "C" int  WINAPI EXPORT VSCPClose( long handle )
+extern "C" int WINAPI EXPORT VSCPClose(long handle)
 #else
-extern "C" int VSCPClose( long handle )
+
+extern "C" int VSCPClose(long handle)
 #endif
 {
 	int rv = 0;
 
-	CRawEthernet *pdrvObj =  theApp->getDriverObject( handle );
-	if ( NULL == pdrvObj ) return 0;
+	CRawEthernet *pdrvObj = theApp->getDriverObject(handle);
+	if (NULL == pdrvObj) return 0;
 	pdrvObj->close();
-	theApp->removeDriverObject( handle );
+	theApp->removeDriverObject(handle);
 	rv = 1;
 	return CANAL_ERROR_SUCCESS;
 }
@@ -178,9 +186,10 @@ extern "C" int VSCPClose( long handle )
 // 
 
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT VSCPGetLevel( void )
+extern "C" unsigned long WINAPI EXPORT VSCPGetLevel(void)
 #else
-extern "C" unsigned long VSCPGetLevel( void )
+
+extern "C" unsigned long VSCPGetLevel(void)
 #endif
 {
 	return CANAL_LEVEL_USES_TCPIP;
@@ -192,9 +201,10 @@ extern "C" unsigned long VSCPGetLevel( void )
 //
 
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT VSCPGetDllVersion( void )
+extern "C" unsigned long WINAPI EXPORT VSCPGetDllVersion(void)
 #else
-extern "C" unsigned long VSCPGetDllVersion( void )
+
+extern "C" unsigned long VSCPGetDllVersion(void)
 #endif
 {
 	return DLL_VERSION;
@@ -206,9 +216,10 @@ extern "C" unsigned long VSCPGetDllVersion( void )
 //
 
 #ifdef WIN32
-extern "C" const char * WINAPI EXPORT VSCPGetVendorString( void )
+extern "C" const char * WINAPI EXPORT VSCPGetVendorString(void)
 #else
-extern "C" const char * VSCPGetVendorString( void )
+
+extern "C" const char * VSCPGetVendorString(void)
 #endif
 {
 	return VSCP_DLL_VENDOR;
@@ -220,9 +231,10 @@ extern "C" const char * VSCPGetVendorString( void )
 //
 
 #ifdef WIN32
-extern "C" const char * WINAPI EXPORT VSCPGetDriverInfo( void )
+extern "C" const char * WINAPI EXPORT VSCPGetDriverInfo(void)
 #else
-extern "C" const char * VSCPGetDriverInfo( void )
+
+extern "C" const char * VSCPGetDriverInfo(void)
 #endif
 {
 	return VSCP_LOGGER_DRIVERINFO;
@@ -242,40 +254,40 @@ extern "C" const char * VSCPGetDriverInfo( void )
 
 CRawEthernet::CRawEthernet()
 {
-    m_bQuit = false;
-    
-    m_pthreadWorkTx = NULL;
-    m_pthreadWorkRx = NULL;
-    
-    memset( m_localMac, 0, 16 );
+	m_bQuit = false;
 
-    // Initialize tx channel GUID
-    m_localGUIDtx.clear();
-    m_localGUIDtx.setAt( 0, 0xff );
-    m_localGUIDtx.setAt( 1, 0xff );
-    m_localGUIDtx.setAt( 2, 0xff );
-    m_localGUIDtx.setAt( 3, 0xff );
-    m_localGUIDtx.setAt( 4, 0xff );
-    m_localGUIDtx.setAt( 5, 0xff );
-    m_localGUIDtx.setAt( 6, 0xff );
-    m_localGUIDtx.setAt( 7, 0xfe );
-    m_localGUIDtx.setAt( 14, 0x00 );
-    m_localGUIDtx.setAt( 15, 0x00 );
+	m_pthreadWorkTx = NULL;
+	m_pthreadWorkRx = NULL;
+
+	memset(m_localMac, 0, 16);
+
+	// Initialize tx channel GUID
+	m_localGUIDtx.clear();
+	m_localGUIDtx.setAt(0, 0xff);
+	m_localGUIDtx.setAt(1, 0xff);
+	m_localGUIDtx.setAt(2, 0xff);
+	m_localGUIDtx.setAt(3, 0xff);
+	m_localGUIDtx.setAt(4, 0xff);
+	m_localGUIDtx.setAt(5, 0xff);
+	m_localGUIDtx.setAt(6, 0xff);
+	m_localGUIDtx.setAt(7, 0xfe);
+	m_localGUIDtx.setAt(14, 0x00);
+	m_localGUIDtx.setAt(15, 0x00);
 
 	// Initialize rx channel GUID
-    m_localGUIDrx.clear();
-    m_localGUIDrx.setAt( 0, 0xff );
-    m_localGUIDrx.setAt( 1, 0xff );
-    m_localGUIDrx.setAt( 2, 0xff );
-    m_localGUIDrx.setAt( 3, 0xff );
-    m_localGUIDrx.setAt( 4, 0xff );
-    m_localGUIDrx.setAt( 5, 0xff );
-    m_localGUIDrx.setAt( 6, 0xff );
-    m_localGUIDrx.setAt( 7, 0xfe );
-    m_localGUIDrx.setAt( 14, 0x00 );
-    m_localGUIDrx.setAt( 15, 0x01 );
+	m_localGUIDrx.clear();
+	m_localGUIDrx.setAt(0, 0xff);
+	m_localGUIDrx.setAt(1, 0xff);
+	m_localGUIDrx.setAt(2, 0xff);
+	m_localGUIDrx.setAt(3, 0xff);
+	m_localGUIDrx.setAt(4, 0xff);
+	m_localGUIDrx.setAt(5, 0xff);
+	m_localGUIDrx.setAt(6, 0xff);
+	m_localGUIDrx.setAt(7, 0xfe);
+	m_localGUIDrx.setAt(14, 0x00);
+	m_localGUIDrx.setAt(15, 0x01);
 
-    ::wxInitialize();
+	::wxInitialize();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -284,8 +296,8 @@ CRawEthernet::CRawEthernet()
 
 CRawEthernet::~CRawEthernet()
 {
-    close();
-    ::wxUninitialize();
+	close();
+	::wxUninitialize();
 }
 
 
@@ -293,71 +305,69 @@ CRawEthernet::~CRawEthernet()
 // open
 //
 
-bool CRawEthernet::open( const char *pUsername,
-                            const char *pPassword,
-                            const char *pHost,
-                            short port,
-                            const char *pPrefix,
-                            const char *pConfig, 
-                            unsigned long flags )
+bool CRawEthernet::open(const char *pUsername,
+		const char *pPassword,
+		const char *pHost,
+		short port,
+		const char *pPrefix,
+		const char *pConfig,
+		unsigned long flags)
 {
-    bool rv = true;
-    m_flags = flags;
-    wxString wxstr = pConfig;
+	bool rv = true;
+	m_flags = flags;
+	wxString wxstr = pConfig;
 
-    m_username = pUsername;
-    m_password = pPassword;
-    m_host = pHost;
-    m_port = port;
-    m_prefix = pPrefix;
+	m_username = pUsername;
+	m_password = pPassword;
+	m_host = pHost;
+	m_port = port;
+	m_prefix = pPrefix;
 
-    // Parse the configuration string. It should
-    // have the following form
-    // username;password;host;prefix;port;filename
-    wxStringTokenizer tkz( pConfig, ";\n" );
+	// Parse the configuration string. It should
+	// have the following form
+	// username;password;host;prefix;port;filename
+	wxStringTokenizer tkz(pConfig, ";\n");
 
-    // Interface
-    if ( tkz.HasMoreTokens() ) {
-         m_interface = tkz.GetNextToken();     
-    }
+	// Interface
+	if (tkz.HasMoreTokens()) {
+		m_interface = tkz.GetNextToken();
+	}
 
-    // Local Mac
-    wxString localMac;
-    if ( tkz.HasMoreTokens() ) {
-        localMac = tkz.GetNextToken();
-        localMac.MakeUpper();
-        wxStringTokenizer tkzmac( localMac, ":\n" );
-        for ( int i = 0; i < 6; i++ ) {
-            if ( !tkzmac.HasMoreTokens() ) break;
-            wxString str = _("0X") + tkzmac.GetNextToken();
-            m_localMac[ i ] = readStringValue( str );
-            m_localGUIDtx.setAt( ( 9  + i ), m_localMac[ i ] );
-            m_localGUIDrx.setAt( ( 9  + i ), m_localMac[ i ] );
-        }
-    }
+	// Local Mac
+	wxString localMac;
+	if (tkz.HasMoreTokens()) {
+		localMac = tkz.GetNextToken();
+		localMac.MakeUpper();
+		wxStringTokenizer tkzmac(localMac, ":\n");
+		for (int i = 0; i < 6; i++) {
+			if (!tkzmac.HasMoreTokens()) break;
+			wxString str = _("0X") + tkzmac.GetNextToken();
+			m_localMac[ i ] = readStringValue(str);
+			m_localGUIDtx.setAt((9 + i), m_localMac[ i ]);
+			m_localGUIDrx.setAt((9 + i), m_localMac[ i ]);
+		}
+	}
 
-    // start the workerthreads
-    m_pthreadWorkTx = new CRawEthernetTxTread();
-    if ( NULL != m_pthreadWorkTx ) {
-        m_pthreadWorkTx->m_pobj = this;
-        m_pthreadWorkTx->Create();
-        m_pthreadWorkTx->Run();
-    }
-    else {
-        rv = false;
-    }
+	// start the workerthreads
+	m_pthreadWorkTx = new CRawEthernetTxTread();
+	if (NULL != m_pthreadWorkTx) {
+		m_pthreadWorkTx->m_pobj = this;
+		m_pthreadWorkTx->Create();
+		m_pthreadWorkTx->Run();
+	} else {
+		rv = false;
+	}
 
-    wxSleep( 1 );
+	wxSleep(1);
 
-    m_pthreadWorkRx = new CRawEthernetRxTread();
-    if ( NULL != m_pthreadWorkRx ) {
-        m_pthreadWorkRx->m_pobj = this;
-        m_pthreadWorkRx->Create();
-        m_pthreadWorkRx->Run();
-    }
-    else {
-        rv = false;
-    }
+	m_pthreadWorkRx = new CRawEthernetRxTread();
+	if (NULL != m_pthreadWorkRx) {
+		m_pthreadWorkRx->m_pobj = this;
+		m_pthreadWorkRx->Create();
+		m_pthreadWorkRx->Run();
+	} else {
+		rv = false;
+	}
 
 
 	return rv;
@@ -367,13 +377,13 @@ bool CRawEthernet::open( const char *pUsername,
 // close
 //
 
-void CRawEthernet::close( void )
+void CRawEthernet::close(void)
 {
 	// Do nothing if already terminated
-	if ( m_bQuit ) return;
-	
-	m_bQuit = true;     // terminate the thread
-    wxSleep( 1 );       // Give the thread some time to terminate
+	if (m_bQuit) return;
+
+	m_bQuit = true; // terminate the thread
+	wxSleep(1); // Give the thread some time to terminate
 }
 
 
@@ -389,13 +399,10 @@ void CRawEthernet::close( void )
 //                            CRawEthernetTxTread
 ///////////////////////////////////////////////////////////////////////////////
 
-
-
 CRawEthernetTxTread::CRawEthernetTxTread()
 {
-    
-}
 
+}
 
 CRawEthernetTxTread::~CRawEthernetTxTread()
 {
@@ -409,144 +416,144 @@ CRawEthernetTxTread::~CRawEthernetTxTread()
 
 void *CRawEthernetTxTread::Entry()
 {
-    pcap_t *fp;
+	pcap_t *fp;
 	char errbuf[ PCAP_ERRBUF_SIZE ];
 	//uint8_t packet[ 512 ];
 
-    // First log on to the host and get configuration 
-    // variables
-    
-    if ( m_srv.doCmdOpen( m_pobj->m_host,
-                                m_pobj->m_port,
-                                m_pobj->m_username,
-                                m_pobj->m_password ) <= 0 ) {
-        return NULL;
-    }
+	// First log on to the host and get configuration 
+	// variables
 
-    // Find the channel id
-    m_srv.doCmdGetChannelID( &m_pobj->m_ChannelIDtx );
+	if (m_srv.doCmdOpen(m_pobj->m_host,
+			m_pobj->m_port,
+			m_pobj->m_username,
+			m_pobj->m_password) <= 0) {
+		return NULL;
+	}
 
-    // It is possible that there is configuration data the server holds 
-    // that we need to read in. 
-    // We look for 
-    //      prefix_interface Communication interface to work on
-    //      prefix_localmac MAC address to use for outgoing packets
-    //      prefix_filter to find a filter. A string is expected.
-    //      prefix_mask to find a mask. A string is expected.
+	// Find the channel id
+	m_srv.doCmdGetChannelID(&m_pobj->m_ChannelIDtx);
 
-    // Interface
-    wxString varInterface;
-    if ( m_srv.getVariableString( m_pobj->m_prefix + _T("_interface"), &varInterface ) ) {
-        m_pobj->m_interface = varInterface;     
-    }
+	// It is possible that there is configuration data the server holds 
+	// that we need to read in. 
+	// We look for 
+	//      prefix_interface Communication interface to work on
+	//      prefix_localmac MAC address to use for outgoing packets
+	//      prefix_filter to find a filter. A string is expected.
+	//      prefix_mask to find a mask. A string is expected.
 
-    wxString varLocalMac;
-    if ( m_srv.getVariableString( m_pobj->m_prefix + _T("_localmac"), &varLocalMac ) ) {
-        varLocalMac.MakeUpper();
-        wxStringTokenizer tkz( varLocalMac, ":\n" );
-        for ( int i = 0; i < 6; i++ ) {
-            if ( tkz.HasMoreTokens() ) break;
-            wxString str = _("0X") + tkz.GetNextToken();
-            m_pobj->m_localMac[ i ] = readStringValue( str );
-            m_pobj->m_localGUIDtx.setAt( ( 9  + i ), m_pobj->m_localMac[ i ] );
-            m_pobj->m_localGUIDrx.setAt( ( 9  + i ), m_pobj->m_localMac[ i ] );
-        }
-    }
+	// Interface
+	wxString varInterface;
+	if (m_srv.getVariableString(m_pobj->m_prefix + _T("_interface"), &varInterface)) {
+		m_pobj->m_interface = varInterface;
+	}
 
-    // We want to use our own Ethernet based GUID for this interface
-    wxString strGUID;
-    m_pobj->m_localGUIDtx.toString( strGUID );
-    m_srv.doCmdSetGUID( (char *)strGUID.ToAscii() );
+	wxString varLocalMac;
+	if (m_srv.getVariableString(m_pobj->m_prefix + _T("_localmac"), &varLocalMac)) {
+		varLocalMac.MakeUpper();
+		wxStringTokenizer tkz(varLocalMac, ":\n");
+		for (int i = 0; i < 6; i++) {
+			if (tkz.HasMoreTokens()) break;
+			wxString str = _("0X") + tkz.GetNextToken();
+			m_pobj->m_localMac[ i ] = readStringValue(str);
+			m_pobj->m_localGUIDtx.setAt((9 + i), m_pobj->m_localMac[ i ]);
+			m_pobj->m_localGUIDrx.setAt((9 + i), m_pobj->m_localMac[ i ]);
+		}
+	}
 
-    // Open the adapter 
-    if ( (fp = pcap_open_live( m_pobj->m_interface.ToAscii(),  // name of the device
-							    65536,			// portion of the packet to capture. It doesn't matter in this case 
-							    1,				// promiscuous mode (nonzero means promiscuous)
-							    1000,			// read timeout
-							    errbuf			// error buffer
-							 ) ) == NULL ) {
+	// We want to use our own Ethernet based GUID for this interface
+	wxString strGUID;
+	m_pobj->m_localGUIDtx.toString(strGUID);
+	m_srv.doCmdSetGUID((char *) strGUID.ToAscii());
+
+	// Open the adapter 
+	if ((fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
+			65536, // portion of the packet to capture. It doesn't matter in this case 
+			1, // promiscuous mode (nonzero means promiscuous)
+			1000, // read timeout
+			errbuf // error buffer
+			)) == NULL) {
 		//fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
 		return NULL;
 	}
 
-    int rv;
-    struct pcap_pkthdr *header;
-    const u_char *pkt_data;
+	int rv;
+	struct pcap_pkthdr *header;
+	const u_char *pkt_data;
 
-	while ( !TestDestroy() && 
-                !m_pobj->m_bQuit &&
-                ( rv = pcap_next_ex( fp, &header, &pkt_data ) ) >= 0 ) {
+	while (!TestDestroy() &&
+			!m_pobj->m_bQuit &&
+			(rv = pcap_next_ex(fp, &header, &pkt_data)) >= 0) {
 
-        // Check for timeout            
-        if ( 0 == rv ) continue;
+		// Check for timeout            
+		if (0 == rv) continue;
 
-        // Check if this is VSCP
-        if ( ( 0x25 == pkt_data[ 12 ] ) &&  
-                ( 0x7e == pkt_data[ 13 ] ) ) {
-            
-            // We have a packet - send it as a VSCP event    
-            vscpEventEx event;
+		// Check if this is VSCP
+		if ((0x25 == pkt_data[ 12 ]) &&
+				(0x7e == pkt_data[ 13 ])) {
 
-            event.head = pkt_data[ 15 ] & 0xe0;     // Priority
+			// We have a packet - send it as a VSCP event    
+			vscpEventEx event;
 
-            event.GUID[ 0 ] = 0xff;			        // Ethernet predefined  GUID
-            event.GUID[ 1 ] = 0xff;
-            event.GUID[ 2 ] = 0xff;
-            event.GUID[ 3 ] = 0xff;
-            event.GUID[ 4 ] = 0xff;
-            event.GUID[ 5 ] = 0xff;
-            event.GUID[ 6 ] = 0xff;
-            event.GUID[ 7 ] = 0xfe;
-            event.GUID[ 8 ] = pkt_data[ 6 ]; 	    // Source MAC address
-            event.GUID[ 9 ] = pkt_data[ 7 ];
-            event.GUID[ 10 ] = pkt_data[ 8 ];
-            event.GUID[ 11 ] = pkt_data[ 9 ];
-            event.GUID[ 12 ] = pkt_data[ 10 ];
-            event.GUID[ 13 ] = pkt_data[ 11 ];
-            event.GUID[ 14 ] = pkt_data[ 19 ];      // Device sub address
-            event.GUID[ 15 ] = pkt_data[ 20 ];
-           
-            event.timestamp = ( pkt_data[ 21 ] << 24 ) + 
-                              ( pkt_data[ 22 ] << 16 ) +
-                              ( pkt_data[ 23 ] << 8 ) +
-                                pkt_data[ 24 ] ;
+			event.head = pkt_data[ 15 ] & 0xe0; // Priority
 
-            event.obid = ( pkt_data[ 25 ] << 24 ) + 
-                         ( pkt_data[ 26 ] << 16 ) +
-                         ( pkt_data[ 27 ] << 8 ) +
-                           pkt_data[ 28 ];
-            
-            event.vscp_class = ( pkt_data[ 29 ] << 8 ) +
-                                 pkt_data[ 30 ];
+			event.GUID[ 0 ] = 0xff; // Ethernet predefined  GUID
+			event.GUID[ 1 ] = 0xff;
+			event.GUID[ 2 ] = 0xff;
+			event.GUID[ 3 ] = 0xff;
+			event.GUID[ 4 ] = 0xff;
+			event.GUID[ 5 ] = 0xff;
+			event.GUID[ 6 ] = 0xff;
+			event.GUID[ 7 ] = 0xfe;
+			event.GUID[ 8 ] = pkt_data[ 6 ]; // Source MAC address
+			event.GUID[ 9 ] = pkt_data[ 7 ];
+			event.GUID[ 10 ] = pkt_data[ 8 ];
+			event.GUID[ 11 ] = pkt_data[ 9 ];
+			event.GUID[ 12 ] = pkt_data[ 10 ];
+			event.GUID[ 13 ] = pkt_data[ 11 ];
+			event.GUID[ 14 ] = pkt_data[ 19 ]; // Device sub address
+			event.GUID[ 15 ] = pkt_data[ 20 ];
 
-            event.vscp_type = ( pkt_data[ 31 ] << 8 ) +
-                                pkt_data[ 32 ];
+			event.timestamp = (pkt_data[ 21 ] << 24) +
+					(pkt_data[ 22 ] << 16) +
+					(pkt_data[ 23 ] << 8) +
+					pkt_data[ 24 ];
 
-            event.sizeData = ( pkt_data[ 33 ] << 8 ) +
-                                pkt_data[ 34 ];
+			event.obid = (pkt_data[ 25 ] << 24) +
+					(pkt_data[ 26 ] << 16) +
+					(pkt_data[ 27 ] << 8) +
+					pkt_data[ 28 ];
 
-            // If the packet is smaller then the set datasize just 
-            // disregard it
-            if ( ( event.sizeData + 35 ) > (uint16_t)header->len ) continue;
+			event.vscp_class = (pkt_data[ 29 ] << 8) +
+					pkt_data[ 30 ];
 
-            for ( int i=0; i<event.sizeData; i++ ) {
-                event.data[ i ] = pkt_data[ 35 + i ];
-            }
+			event.vscp_type = (pkt_data[ 31 ] << 8) +
+					pkt_data[ 32 ];
 
-            m_srv.doCmdSendEx( &event );    // Send the event
+			event.sizeData = (pkt_data[ 33 ] << 8) +
+					pkt_data[ 34 ];
 
-        }
+			// If the packet is smaller then the set datasize just 
+			// disregard it
+			if ((event.sizeData + 35) > (uint16_t) header->len) continue;
+
+			for (int i = 0; i < event.sizeData; i++) {
+				event.data[ i ] = pkt_data[ 35 + i ];
+			}
+
+			m_srv.doCmdSendEx(&event); // Send the event
+
+		}
 
 
-    } // work loop   
- 
-    // Close listner
-    pcap_close( fp ); 
+	} // work loop   
 
-    // Close the channel
-    m_srv.doCmdClose();
+	// Close listner
+	pcap_close(fp);
 
-    return NULL;  
+	// Close the channel
+	m_srv.doCmdClose();
+
+	return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -555,7 +562,7 @@ void *CRawEthernetTxTread::Entry()
 
 void CRawEthernetTxTread::OnExit()
 {
-    
+
 }
 
 
@@ -565,15 +572,10 @@ void CRawEthernetTxTread::OnExit()
 //                            CRawEthernetRxTread
 ///////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
 CRawEthernetRxTread::CRawEthernetRxTread()
 {
-    
-}
 
+}
 
 CRawEthernetRxTread::~CRawEthernetRxTread()
 {
@@ -587,140 +589,140 @@ CRawEthernetRxTread::~CRawEthernetRxTread()
 
 void *CRawEthernetRxTread::Entry()
 {
-    pcap_t *fp;
+	pcap_t *fp;
 	char errbuf[ PCAP_ERRBUF_SIZE ];
 	uint8_t packet[ 512 ];
 
-    // First log on to the host and get configuration 
-    // variables
-    
-    if ( m_srv.doCmdOpen( m_pobj->m_host,
-                                m_pobj->m_port,
-                                m_pobj->m_username,
-                                m_pobj->m_password ) <= 0 ) {
-        return NULL;
-    }
+	// First log on to the host and get configuration 
+	// variables
 
-    // Find the channel id
-    uint32_t ChannelID;
-    m_srv.doCmdGetChannelID( &ChannelID );
+	if (m_srv.doCmdOpen(m_pobj->m_host,
+			m_pobj->m_port,
+			m_pobj->m_username,
+			m_pobj->m_password) <= 0) {
+		return NULL;
+	}
 
-    // We want to use our own Ethernet based  GUID for this interface
-    wxString strGUID;
-    m_pobj->m_localGUIDrx.toString( strGUID );
-    m_srv.doCmdSetGUID( (char *)strGUID.ToAscii() );
+	// Find the channel id
+	uint32_t ChannelID;
+	m_srv.doCmdGetChannelID(&ChannelID);
 
-    // Open the adapter 
-    if ( (fp = pcap_open_live( m_pobj->m_interface.ToAscii(),  // name of the device
-							    65536,			// portion of the packet to capture. It doesn't matter in this case 
-							    1,				// promiscuous mode (nonzero means promiscuous)
-							    1000,			// read timeout
-							    errbuf			// error buffer
-							 ) ) == NULL ) {
+	// We want to use our own Ethernet based  GUID for this interface
+	wxString strGUID;
+	m_pobj->m_localGUIDrx.toString(strGUID);
+	m_srv.doCmdSetGUID((char *) strGUID.ToAscii());
+
+	// Open the adapter 
+	if ((fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
+			65536, // portion of the packet to capture. It doesn't matter in this case 
+			1, // promiscuous mode (nonzero means promiscuous)
+			1000, // read timeout
+			errbuf // error buffer
+			)) == NULL) {
 		//fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
 		return NULL;
 	}
 
 
-    // Enter receive loop to start to log events
+	// Enter receive loop to start to log events
 	m_srv.doCmdEnterReceiveLoop();
 
-    int rv;
-    vscpEvent event;
-	while ( !TestDestroy() && !m_pobj->m_bQuit ) {
+	int rv;
+	vscpEvent event;
+	while (!TestDestroy() && !m_pobj->m_bQuit) {
 
-        if ( CANAL_ERROR_SUCCESS == 
-            ( rv = m_srv.doCmdBlockReceive( &event, 10 ) ) ) {
+		if (CANAL_ERROR_SUCCESS ==
+				(rv = m_srv.doCmdBlockReceive(&event, 10))) {
 
-            // As we are on a different VSCP interface we need to filter the events we sent out 
-            // ourselves.
-            if ( m_pobj->m_ChannelIDtx == event.obid ) {
-                continue;
-            }
-          
-            // Set mac destination to broadcast ff:ff:ff:ff:ff:ff 
-	        packet[ 0 ] = 0xff;
-	        packet[ 1 ] = 0xff;
-	        packet[ 2 ] = 0xff;
-	        packet[ 3 ] = 0xff;
-	        packet[ 4 ] = 0xff;
-	        packet[ 5 ] = 0xff;
-	
-	        // set mac source to configured value - 6..11
-            memcpy( packet + 6, m_pobj->m_localMac, 6 );
-	  
-            // Set the type - always 0x2574 (9598)
-            packet[ 12 ] = 0x25; 
-            packet[ 13 ] = 0x7e;
+			// As we are on a different VSCP interface we need to filter the events we sent out 
+			// ourselves.
+			if (m_pobj->m_ChannelIDtx == event.obid) {
+				continue;
+			}
 
-            // rawEthernet frame version
-            packet[ 14 ] = 0x00;
+			// Set mac destination to broadcast ff:ff:ff:ff:ff:ff 
+			packet[ 0 ] = 0xff;
+			packet[ 1 ] = 0xff;
+			packet[ 2 ] = 0xff;
+			packet[ 3 ] = 0xff;
+			packet[ 4 ] = 0xff;
+			packet[ 5 ] = 0xff;
 
-            // Head
-            packet[ 15 ] = ( event.head & VSCP_HEADER_PRIORITY_MASK ); 
-            packet[ 16 ] = 0x00;
-            packet[ 17 ] = 0x00;
-            packet[ 18 ] = 0x00;    // LSB
+			// set mac source to configured value - 6..11
+			memcpy(packet + 6, m_pobj->m_localMac, 6);
 
-            // VSCP sub source address For this interface it's 0x0000
-            packet[ 19 ] = 0x00;
-            packet[ 20 ] = 0x00;
+			// Set the type - always 0x2574 (9598)
+			packet[ 12 ] = 0x25;
+			packet[ 13 ] = 0x7e;
 
-            // Timestamp
-            uint32_t timestamp = event.timestamp;
-            packet[ 21 ] = ( timestamp & 0xff000000 ) >> 24;
-            packet[ 22 ] = ( timestamp & 0x00ff0000 ) >> 16;
-            packet[ 23 ] = ( timestamp & 0x0000ff00 ) >> 8;
-            packet[ 24 ] = ( timestamp & 0x000000ff );
+			// rawEthernet frame version
+			packet[ 14 ] = 0x00;
 
-            // obid
-            uint32_t obid = event.obid;
-            packet[ 25 ] = ( obid & 0xff000000 ) >> 24;
-            packet[ 26 ] = ( obid & 0x00ff0000 ) >> 16;
-            packet[ 27 ] = ( obid & 0x0000ff00 ) >> 8;
-            packet[ 28 ] = ( obid & 0x000000ff );
+			// Head
+			packet[ 15 ] = (event.head & VSCP_HEADER_PRIORITY_MASK);
+			packet[ 16 ] = 0x00;
+			packet[ 17 ] = 0x00;
+			packet[ 18 ] = 0x00; // LSB
 
-            // VSCP Class
-            uint16_t vscp_class = event.vscp_class;
-            packet[ 29 ] = ( vscp_class & 0xff00 ) >> 8;
-            packet[ 30 ] = ( vscp_class & 0xff );
+			// VSCP sub source address For this interface it's 0x0000
+			packet[ 19 ] = 0x00;
+			packet[ 20 ] = 0x00;
 
-            // VSCP Type
-            uint16_t vscp_type = event.vscp_type;
-            packet[ 31 ] = ( vscp_type & 0xff00 ) >> 8;
-            packet[ 32 ] = ( vscp_type & 0xff );
+			// Timestamp
+			uint32_t timestamp = event.timestamp;
+			packet[ 21 ] = (timestamp & 0xff000000) >> 24;
+			packet[ 22 ] = (timestamp & 0x00ff0000) >> 16;
+			packet[ 23 ] = (timestamp & 0x0000ff00) >> 8;
+			packet[ 24 ] = (timestamp & 0x000000ff);
 
-            // Size
-            packet[ 33 ] = event.sizeData >> 8;
-            packet[ 34 ] = event.sizeData & 0xff; 
+			// obid
+			uint32_t obid = event.obid;
+			packet[ 25 ] = (obid & 0xff000000) >> 24;
+			packet[ 26 ] = (obid & 0x00ff0000) >> 16;
+			packet[ 27 ] = (obid & 0x0000ff00) >> 8;
+			packet[ 28 ] = (obid & 0x000000ff);
 
-            // VSCP Data
-			memcpy( packet + 35, event.pdata, event.sizeData );
+			// VSCP Class
+			uint16_t vscp_class = event.vscp_class;
+			packet[ 29 ] = (vscp_class & 0xff00) >> 8;
+			packet[ 30 ] = (vscp_class & 0xff);
 
-            // Send the packet
-	        if ( 0 != pcap_sendpacket( fp, packet, 35 + event.sizeData ) ) {
-		        //fprintf(stderr,"\nError sending the packet: %s\n", pcap_geterr(fp));
-		        // An error sending the frame - we do nothing
-                // TODO: Send error frame back to daemon????
-	        }
+			// VSCP Type
+			uint16_t vscp_type = event.vscp_type;
+			packet[ 31 ] = (vscp_type & 0xff00) >> 8;
+			packet[ 32 ] = (vscp_type & 0xff);
 
-            // We are done with the event - remove data if any
-            if ( NULL != event.pdata ) {
-                delete [] event.pdata;
-                event.pdata = NULL;
-            }
+			// Size
+			packet[ 33 ] = event.sizeData >> 8;
+			packet[ 34 ] = event.sizeData & 0xff;
 
-        } // Event received
+			// VSCP Data
+			memcpy(packet + 35, event.pdata, event.sizeData);
 
-    } // work loop   
- 
-    // Close the ethernet interface
-    pcap_close( fp );
+			// Send the packet
+			if (0 != pcap_sendpacket(fp, packet, 35 + event.sizeData)) {
+				//fprintf(stderr,"\nError sending the packet: %s\n", pcap_geterr(fp));
+				// An error sending the frame - we do nothing
+				// TODO: Send error frame back to daemon????
+			}
 
-    // Close the channel
-    m_srv.doCmdClose();
+			// We are done with the event - remove data if any
+			if (NULL != event.pdata) {
+				delete [] event.pdata;
+				event.pdata = NULL;
+			}
 
-    return NULL;  
+		} // Event received
+
+	} // work loop   
+
+	// Close the ethernet interface
+	pcap_close(fp);
+
+	// Close the channel
+	m_srv.doCmdClose();
+
+	return NULL;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -729,5 +731,5 @@ void *CRawEthernetRxTread::Entry()
 
 void CRawEthernetRxTread::OnExit()
 {
-    
+
 }

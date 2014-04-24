@@ -1,0 +1,28 @@
+This is a Level II driver for the linux lmsensors interface
+
+The driver read the sensor values from the textfiles and convert the 
+values in it to events at periodic intervals. 
+
+Variables 
+=========
+A driver is opened with a supplied prefix. This prefix is added in front of
+the variable name described below. For example if a prefix "cpucore1" is 
+supplied the the variables read would be lmsensor1_numberffsensors, 
+cpucore1_guid0, cpucore1_path0 and so on.
+
+_numberofsensors - Type=integer. This is the number of sensors that the driver is supposed
+to read. Sensors are numbered staring from zero. 
+
+_guidn - Type=guid. GUID for sensor n. guid0, guid1, guid2 etc
+_pathn - Type=string. Path to value for example 
+          /sys/class/hwmon/hwmon0/temp1_input
+         which is CPU temp for core 1 on the system this is written at.
+_intervaln - Type=integer. Interval in Seconds the event should be sent out. Zero disables.
+_vscpclassn  - Type=integer. VSCP_CLASS Typically = 10, CLASS=10 Measurement
+_vscptypen   - Type=integer. VSCP_TYPE
+_datacodingn - Type=integer. Coding for the value (databyte 0). See section 8 in specification.
+_dividen     - Type=integer. Divide value with this integer. Default is 1.
+_multiplyn   - Type=integer. Multiply value with this integer. Default is 1.
+
+
+

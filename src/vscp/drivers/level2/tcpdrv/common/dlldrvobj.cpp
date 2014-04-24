@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB,
+// <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dlldrvobj.cpp,v $                                       
-// $Date: 2005/01/05 12:16:16 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 //
 // Linux
 // =====
@@ -35,7 +32,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "dlldrvobj.h"
-#include "tcpdrv.h"
+#include "rawethernet.h"
 
 #ifdef WIN32
 
@@ -81,7 +78,7 @@ CDllDrvObj::~CDllDrvObj()
 		
 		if ( NULL == m_drvObjArray[ i ] ) {
 			
-			Ctcpdrv *pdrvObj =  getDriverObject( i );
+			CRawEthernet *pdrvObj =  getDriverObject( i );
 			if ( NULL != pdrvObj ) { 
 				pdrvObj->close();	
 				delete m_drvObjArray[ i ];
@@ -110,7 +107,7 @@ CDllDrvObj::~CDllDrvObj()
 // addDriverObject
 //
 
-long CDllDrvObj::addDriverObject( Ctcpdrv *pdrvObj )
+long CDllDrvObj::addDriverObject( CRawEthernet *pdrvObj )
 {
 	long h = 0;
 
@@ -137,7 +134,7 @@ long CDllDrvObj::addDriverObject( Ctcpdrv *pdrvObj )
 // getDriverObject
 //
 
-Ctcpdrv * CDllDrvObj::getDriverObject( long h )
+CRawEthernet * CDllDrvObj::getDriverObject( long h )
 {
 	long idx = h - 1681;
 

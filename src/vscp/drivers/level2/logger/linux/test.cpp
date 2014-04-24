@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2011 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2014 Ake Hedman, 
+// eurosource, <akhe@eurosource.se>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -30,8 +31,6 @@
 #include <pthread.h>
 #include <dlfcn.h>
 
-#include "../../../common/devicelist.h"
-
 #define NUMBER_OF_THREADS 122
 
 // Prototypes
@@ -39,6 +38,7 @@ void *workThread( void *id );
 
 int main( void )
 {
+/*
 	int i;
 	pthread_t workthreads[ NUMBER_OF_THREADS ];
 	pthread_attr_t thread_attr;
@@ -65,14 +65,14 @@ int main( void )
 		int *rv;
 		pthread_join( workthreads[ i ], (void **)&rv );
 	}
-
+*/
 	return ( EXIT_SUCCESS );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // workThread
 //
-
+/*
 void *workThread( void *id )
 {
 	int rv = 0;
@@ -307,4 +307,4 @@ void *workThread( void *id )
 	pthread_exit( &rv );
 }
 
-
+*/

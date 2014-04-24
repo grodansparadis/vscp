@@ -3,9 +3,10 @@
 //  Purpose:     
 //  Author:      Ake Hedman
 //  Modified by: 
-//  Created:     Sun 04 May 2009 17:28:12 CEST
+//  Created:     Sun 04 May 2007 17:28:12 CEST
 //  RCS-ID:      
-//  Copyright:   (C) 2007-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+//  Copyright:   (C) 2007-2014 
+//  Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //  Licence:     
 //  This program is free software; you can redistribute it and/or
 //  modify it under the terms of the GNU General Public License
@@ -78,12 +79,11 @@
 #include "dlgabout.h"
 #include "dialogeditlevelidmrow.h"
 #include "dialogabstractionedit.h"
+#include "readregister.h"
 #include "frmdeviceconfig.h"
 
 extern appConfiguration g_Config;
 
-////@begin XPM images
-/* XPM */
 static const char *fatbee_v2_xpm[] = {
 /* columns rows colors chars-per-pixel */
 "32 32 253 2",
@@ -375,6 +375,7 @@ static const char *fatbee_v2_xpm[] = {
 "                                                                "
 };
 
+////@begin XPM images
 /* XPM */
 static char *open_xpm[] = {
 /* columns rows colors chars-per-pixel */
@@ -2627,96 +2628,71 @@ static const char *database_down_xpm[] = {
 // frmDeviceConfig type definition
 //
 
-IMPLEMENT_CLASS( frmDeviceConfig, wxFrame )
+IMPLEMENT_CLASS(frmDeviceConfig, wxFrame)
 
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// frmDeviceConfig event table definition
-	//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// frmDeviceConfig event table definition
+//
 
-	BEGIN_EVENT_TABLE( frmDeviceConfig, wxFrame )
+BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
 
-	////@begin frmDeviceConfig event table entries
+////@begin frmDeviceConfig event table entries
   EVT_CLOSE( frmDeviceConfig::OnCloseWindow )
-
   EVT_MENU( ID_MENUITEM_SAVE_REGSITERS, frmDeviceConfig::OnMenuitemSaveRegistersClick )
-
   EVT_MENU( ID_MENUITEM, frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick )
-
   EVT_MENU( ID_MENUITEM_LOAD_REGISTES, frmDeviceConfig::OnMenuitemLoadRegistersClick )
-
   EVT_MENU( ID_MENUITEM_ADD_GUIDS, frmDeviceConfig::OnMenuitemAddGuidsClick )
-
   EVT_MENU( ID_MENUITEM_SAVE_GUIDS, frmDeviceConfig::OnMenuitemSaveGuidsClick )
-
   EVT_MENU( ID_MENUITEM_LOAD_GUIDS, frmDeviceConfig::OnMenuitemLoadGuidsClick )
-
   EVT_MENU( ID_MENUITEM_EXIT, frmDeviceConfig::OnMenuitemExitClick )
-
   EVT_MENU( ID_MENUITEM_HELP, frmDeviceConfig::OnMenuitemVscpHelpClick )
-
   EVT_MENU( ID_MENUITEM_FAQ, frmDeviceConfig::OnMenuitemVscpFaqClick )
-
   EVT_MENU( ID_MENUITEM_KB_SHRTCUTS, frmDeviceConfig::OnMenuitemVscpShortcutsClick )
-
   EVT_MENU( ID_MENUITEM_THANKS, frmDeviceConfig::OnMenuitemVscpThanksClick )
-
   EVT_MENU( ID_MENUITEM_CREDITS, frmDeviceConfig::OnMenuitemVscpCreditsClick )
-
   EVT_MENU( ID_MENUITEM_GO_VSCP_SITE, frmDeviceConfig::OnMenuitemVscpVscpSiteClick )
-
   EVT_MENU( ID_MENUITEM_ABOUT, frmDeviceConfig::OnMenuitemVscpAboutClick )
-
   EVT_COMBOBOX( ID_COMBOBOX4, frmDeviceConfig::OnComboNodeIDSelected )
   EVT_TEXT( ID_COMBOBOX4, frmDeviceConfig::OnComboNodeIDUpdated )
-
   EVT_BUTTON( ID_CHECK_LEVEL2, frmDeviceConfig::OnBitmapbuttonTestDeviceClick )
-
   EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON1, frmDeviceConfig::OnInterfaceActivate )
-
   EVT_GRID_CELL_LEFT_CLICK( frmDeviceConfig::OnCellLeftClick )
   EVT_GRID_CELL_RIGHT_CLICK( frmDeviceConfig::OnCellRightClick )
   EVT_GRID_CELL_LEFT_DCLICK( frmDeviceConfig::OnLeftDClick )
   EVT_GRID_CELL_CHANGE( frmDeviceConfig::OnRegisterEdited )
-
   EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW1, frmDeviceConfig::OnHtmlwindowCellClicked )
-
   EVT_BUTTON( ID_BUTTON16, frmDeviceConfig::OnButtonUpdateClick )
-
   EVT_BUTTON( ID_BUTTON17, frmDeviceConfig::OnButtonLoadDefaultsClick )
-
   EVT_BUTTON( ID_BUTTON19, frmDeviceConfig::OnButtonWizardClick )
+////@end frmDeviceConfig event table entries
 
-	////@end frmDeviceConfig event table entries
+EVT_MENU(Menu_Popup_Read_Value, frmDeviceConfig::readValueSelectedRow)
+EVT_MENU(Menu_Popup_Write_Value, frmDeviceConfig::writeValueSelectedRow)
+EVT_MENU(Menu_Popup_Update, frmDeviceConfig::OnButtonUpdateClick)
+EVT_MENU(Menu_Popup_Load_MDF, frmDeviceConfig::OnButtonLoadDefaultsClick)
+EVT_MENU(Menu_Popup_Undo, frmDeviceConfig::undoValueSelectedRow)
+EVT_MENU(Menu_Popup_Default, frmDeviceConfig::defaultValueSelectedRow)
+EVT_MENU(Menu_Popup_go_VSCP, frmDeviceConfig::OnMenuitemVscpVscpSiteClick)
 
-	EVT_MENU( Menu_Popup_Read_Value, frmDeviceConfig::readValueSelectedRow )
-	EVT_MENU( Menu_Popup_Write_Value, frmDeviceConfig::writeValueSelectedRow )
-	EVT_MENU( Menu_Popup_Update, frmDeviceConfig::OnButtonUpdateClick )
-	EVT_MENU( Menu_Popup_Load_MDF, frmDeviceConfig::OnButtonLoadDefaultsClick )
-	EVT_MENU( Menu_Popup_Undo, frmDeviceConfig::undoValueSelectedRow )
-	EVT_MENU( Menu_Popup_Default, frmDeviceConfig::defaultValueSelectedRow )
-	EVT_MENU( Menu_Popup_go_VSCP, frmDeviceConfig::OnMenuitemVscpVscpSiteClick )
+EVT_MENU(Menu_Popup_dm_enable_row, frmDeviceConfig::dmEnableSelectedRow)
+EVT_MENU(Menu_Popup_dm_disable_row, frmDeviceConfig::dmDisableSelectedRow)
+EVT_MENU(Menu_Popup_dm_row_wizard, frmDeviceConfig::dmRowWizard)
 
-	EVT_MENU( Menu_Popup_dm_enable_row, frmDeviceConfig::dmEnableSelectedRow )
-	EVT_MENU( Menu_Popup_dm_disable_row, frmDeviceConfig::dmDisableSelectedRow )
-	EVT_MENU( Menu_Popup_dm_row_wizard, frmDeviceConfig::dmRowWizard )
-
-	END_EVENT_TABLE()
+END_EVENT_TABLE()
 
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	// frmDeviceConfig constructors
-	//
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// frmDeviceConfig constructors
+//
 
-	frmDeviceConfig::frmDeviceConfig()
-{
-	Init();
+frmDeviceConfig::frmDeviceConfig() {
+    Init();
 }
 
-frmDeviceConfig::frmDeviceConfig( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
-{
-	Init();
-	Create( parent, id, caption, pos, size, style );
+frmDeviceConfig::frmDeviceConfig(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style) {
+    Init();
+    Create(parent, id, caption, pos, size, style);
 }
 
 
@@ -2724,15 +2700,14 @@ frmDeviceConfig::frmDeviceConfig( wxWindow* parent, wxWindowID id, const wxStrin
 // frmDeviceConfig creator
 //
 
-bool frmDeviceConfig::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
-{
-	////@begin frmDeviceConfig creation
+bool frmDeviceConfig::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style) {
+    ////@begin frmDeviceConfig creation
   wxFrame::Create( parent, id, caption, pos, size, style );
 
   CreateControls();
   SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
-	////@end frmDeviceConfig creation
-	return true;
+    ////@end frmDeviceConfig creation
+    return true;
 }
 
 
@@ -2740,10 +2715,9 @@ bool frmDeviceConfig::Create( wxWindow* parent, wxWindowID id, const wxString& c
 // frmDeviceConfig destructor
 //
 
-frmDeviceConfig::~frmDeviceConfig()
-{
-	////@begin frmDeviceConfig destruction
-	////@end frmDeviceConfig destruction
+frmDeviceConfig::~frmDeviceConfig() {
+    ////@begin frmDeviceConfig destruction
+    ////@end frmDeviceConfig destruction
 }
 
 
@@ -2751,9 +2725,8 @@ frmDeviceConfig::~frmDeviceConfig()
 // Member initialisation
 //
 
-void frmDeviceConfig::Init()
-{
-	////@begin frmDeviceConfig member initialisation
+void frmDeviceConfig::Init() {
+    ////@begin frmDeviceConfig member initialisation
   m_comboNodeID = NULL;
   m_bLevel2 = NULL;
   m_BtnActivateInterface = NULL;
@@ -2767,14 +2740,13 @@ void frmDeviceConfig::Init()
   m_chkMdfFromFile = NULL;
   m_ctrlButtonLoadMDF = NULL;
   m_ctrlButtonWizard = NULL;
-	////@end frmDeviceConfig member initialisation
+    ////@end frmDeviceConfig member initialisation
 
-	m_lastLeftClickCol = 0;
-	m_lastLeftClickRow = 0;
+    m_lastLeftClickCol = 0;
+    m_lastLeftClickRow = 0;
 
-	// No interface
-	m_ifguid.clear();
-	m_interfaceName.Empty();
+    // No interface
+    m_ifguid.clear();
 }
 
 
@@ -2784,9 +2756,8 @@ void frmDeviceConfig::Init()
 // Control creation for frmDeviceConfig
 //
 
-void frmDeviceConfig::CreateControls()
-{    
-	////@begin frmDeviceConfig content construction
+void frmDeviceConfig::CreateControls() {
+    ////@begin frmDeviceConfig content construction
   frmDeviceConfig* itemFrame1 = this;
 
   wxMenuBar* menuBar = new wxMenuBar;
@@ -2845,7 +2816,7 @@ void frmDeviceConfig::CreateControls()
   itemToolBar25->AddControl(itemStaticText35);
   wxArrayString m_comboNodeIDStrings;
   m_comboNodeID = new wxComboBox;
-  m_comboNodeID->Create( itemToolBar25, ID_COMBOBOX4, wxEmptyString, wxDefaultPosition, wxSize(370, -1), m_comboNodeIDStrings, wxCB_DROPDOWN );
+  m_comboNodeID->Create( itemToolBar25, ID_COMBOBOX4, wxEmptyString, wxDefaultPosition, wxSize(410, -1), m_comboNodeIDStrings, wxCB_DROPDOWN );
   if (frmDeviceConfig::ShowToolTips())
     m_comboNodeID->SetToolTip(_("Set nickname or GUID for node here"));
   m_comboNodeID->SetBackgroundColour(wxColour(255, 255, 210));
@@ -3002,70 +2973,70 @@ void frmDeviceConfig::CreateControls()
   m_ctrlButtonWizard->Enable(false);
   itemBoxSizer63->Add(m_ctrlButtonWizard, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-	////@end frmDeviceConfig content construction
+    ////@end frmDeviceConfig content construction
 
-	// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-	// Register Page 0
-	m_gridRegisters->SetColSize( 0, m_constGridRegisterDefaultWidth );
-	m_gridRegisters->SetColLabelValue( 0, _("Register") );
+    // Register Page 0
+    m_gridRegisters->SetColSize(0, m_constGridRegisterDefaultWidth);
+    m_gridRegisters->SetColLabelValue(0, _("Register"));
 
-	m_gridRegisters->SetColSize( 1, m_constGridAccessRightDefaultWidth );
-	m_gridRegisters->SetColLabelValue( 1, _(" ") );
+    m_gridRegisters->SetColSize(1, m_constGridAccessRightDefaultWidth);
+    m_gridRegisters->SetColLabelValue(1, _(" "));
 
-	m_gridRegisters->SetColSize( 2, m_constGridContentdefaultWidth );
-	m_gridRegisters->SetColLabelValue( 2, _("Content") );
+    m_gridRegisters->SetColSize(2, m_constGridContentdefaultWidth);
+    m_gridRegisters->SetColLabelValue(2, _("Content"));
 
-	m_gridRegisters->SetColSize( 3, m_constGridDescriptionDefaultWidth );
-	m_gridRegisters->SetColLabelValue( 3, _("Description") );
+    m_gridRegisters->SetColSize(3, m_constGridDescriptionDefaultWidth);
+    m_gridRegisters->SetColLabelValue(3, _("Description"));
 
-	m_gridRegisters->DeleteRows( 0 );
+    m_gridRegisters->DeleteRows(0);
 
 
-	// Register Page Abstraction
-	m_gridAbstractions->SetColSize( 0, m_constGridAbstractionNameDefaultWidth );
-	m_gridAbstractions->SetColLabelValue( 0, _("Name") );
+    // Register Page Abstraction
+    m_gridAbstractions->SetColSize(0, m_constGridAbstractionNameDefaultWidth);
+    m_gridAbstractions->SetColLabelValue(0, _("Name"));
 
-	m_gridAbstractions->SetColSize( 1, m_constGridAbstractionTypeDefaultWidth );
-	m_gridAbstractions->SetColLabelValue( 1, _("Type") );
+    m_gridAbstractions->SetColSize(1, m_constGridAbstractionTypeDefaultWidth);
+    m_gridAbstractions->SetColLabelValue(1, _("Type"));
 
-	m_gridAbstractions->SetColSize( 2, m_constGridAbstractionAccessDefaultWidth );
-	m_gridAbstractions->SetColLabelValue( 2, _("Access") );
+    m_gridAbstractions->SetColSize(2, m_constGridAbstractionAccessDefaultWidth);
+    m_gridAbstractions->SetColLabelValue(2, _("Access"));
 
-	m_gridAbstractions->SetColSize( 3, m_constGridAbstractionContentdefaultWidth );
-	m_gridAbstractions->SetColLabelValue( 3, _("Content") );
+    m_gridAbstractions->SetColSize(3, m_constGridAbstractionContentdefaultWidth);
+    m_gridAbstractions->SetColLabelValue(3, _("Content"));
 
-	m_gridAbstractions->SetColSize( 4, m_constGridAbstractionDescriptionDefaultWidth );
-	m_gridAbstractions->SetColLabelValue( 4, _("Description") );
+    m_gridAbstractions->SetColSize(4, m_constGridAbstractionDescriptionDefaultWidth);
+    m_gridAbstractions->SetColLabelValue(4, _("Description"));
 
-	m_gridAbstractions->DeleteRows( 0 );	
+    m_gridAbstractions->DeleteRows(0);
 
-	// Register Page Decsion Matrix
-	m_gridDM->SetColSize( 0, m_constGridDMOrigAddressDefaultWidth );
-	m_gridDM->SetColLabelValue( 0, _("O-addr.") );
+    // Register Page Decsion Matrix
+    m_gridDM->SetColSize(0, m_constGridDMOrigAddressDefaultWidth);
+    m_gridDM->SetColLabelValue(0, _("O-addr."));
 
-	m_gridDM->SetColSize( 1, m_constGridDMFlagsDefaultWidth );
-	m_gridDM->SetColLabelValue( 1, _("Flags") );
+    m_gridDM->SetColSize(1, m_constGridDMFlagsDefaultWidth);
+    m_gridDM->SetColLabelValue(1, _("Flags"));
 
-	m_gridDM->SetColSize( 2, m_constGridDMMasksDefaultWidth );
-	m_gridDM->SetColLabelValue( 2, _("Class Mask") );
+    m_gridDM->SetColSize(2, m_constGridDMMasksDefaultWidth);
+    m_gridDM->SetColLabelValue(2, _("Class Mask"));
 
-	m_gridDM->SetColSize( 3, m_constGridDMMasksDefaultWidth );
-	m_gridDM->SetColLabelValue( 3, _("Class Filter") );
+    m_gridDM->SetColSize(3, m_constGridDMMasksDefaultWidth);
+    m_gridDM->SetColLabelValue(3, _("Class Filter"));
 
-	m_gridDM->SetColSize( 4, m_constGridDMMasksDefaultWidth );
-	m_gridDM->SetColLabelValue( 4, _("Type Mask") );
+    m_gridDM->SetColSize(4, m_constGridDMMasksDefaultWidth);
+    m_gridDM->SetColLabelValue(4, _("Type Mask"));
 
-	m_gridDM->SetColSize( 5, m_constGridDMMasksDefaultWidth );
-	m_gridDM->SetColLabelValue( 5, _("Type Filter") );
+    m_gridDM->SetColSize(5, m_constGridDMMasksDefaultWidth);
+    m_gridDM->SetColLabelValue(5, _("Type Filter"));
 
-	m_gridDM->SetColSize( 6, m_constGridDMActionDefaultWidth );
-	m_gridDM->SetColLabelValue( 6, _("Action") );
+    m_gridDM->SetColSize(6, m_constGridDMActionDefaultWidth);
+    m_gridDM->SetColLabelValue(6, _("Action"));
 
-	m_gridDM->SetColSize( 7, m_constGridDMActionParamDefaultWidth );
-	m_gridDM->SetColLabelValue( 7, _("Param.") );
+    m_gridDM->SetColSize(7, m_constGridDMActionParamDefaultWidth);
+    m_gridDM->SetColLabelValue(7, _("Param."));
 
-	m_gridDM->DeleteRows( 0 );		
+    m_gridDM->DeleteRows(0);
 
 }
 
@@ -3074,173 +3045,166 @@ void frmDeviceConfig::CreateControls()
 // OnCloseWindow
 //
 
-void frmDeviceConfig::OnCloseWindow( wxCloseEvent& event )
-{
-	wxBusyCursor wait;
+void frmDeviceConfig::OnCloseWindow(wxCloseEvent& event) {
+    wxBusyCursor wait;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-		_("Closing window..."),
-		100, 
-		this,
-		wxPD_ELAPSED_TIME | 
-		wxPD_AUTO_HIDE | 
-		wxPD_APP_MODAL );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Closing window..."),
+            100,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL);
 
-	progressDlg.Pulse( _("Closing communication interface...") );
+    progressDlg.Pulse(_("Closing communication interface..."));
 
-	// Close the communication channel
-	disableInterface();
+    // Close the communication channel
+    disableInterface();
 
-	progressDlg.Update( 100 );
-	progressDlg.Pulse( _("Done!") );
+    progressDlg.Update(100);
+    progressDlg.Pulse(_("Done!"));
 
-	// Hide window
-	Show( false );
+    // Hide window
+    Show(false);
 
-	// Destroy the window
-	Destroy();
+    // Destroy the window
+    Destroy();
 
-	event.Skip( false ); 
+    event.Skip(false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // enableInterface
 //
 
-bool frmDeviceConfig::enableInterface( void )
-{
-	bool rv = true;
+bool frmDeviceConfig::enableInterface(void) {
+    bool rv = true;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-		_("Opening interface..."),
-		100, 
-		this,
-		wxPD_ELAPSED_TIME | 
-		wxPD_AUTO_HIDE | 
-		wxPD_APP_MODAL );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Opening interface..."),
+            100,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL);
 
-	progressDlg.Pulse( _("opening interface...") );
+    progressDlg.Pulse(_("opening interface..."));
 
-	if ( 0 != m_csw.doCmdOpen() ) { 
+    if (0 != m_csw.doCmdOpen()) {
 
-		progressDlg.Pulse( _("Interface is open.") );
+        progressDlg.Pulse(_("Interface is open."));
 
-		if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+        if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-			progressDlg.Pulse( _("Checking if interface is working...") );
+            progressDlg.Pulse(_("Checking if interface is working..."));
 
-			// We use a dll.
-			//
-			// Verify that we have a connection with the interface
-			// We do that by using the status command.
-			canalStatus canalstatus;
-			if ( CANAL_ERROR_SUCCESS != m_csw.doCmdStatus( &canalstatus ) ) {
-				wxString strbuf;
-				strbuf.Printf(
-					_("Unable to open interface to driver. errorcode=%lu, suberrorcode=%lu, Description: %s"),
-					canalstatus.lasterrorcode,
-					canalstatus.lasterrorsubcode,
-					canalstatus.lasterrorstr );
-				wxLogStatus( strbuf );
+            // We use a dll.
+            //
+            // Verify that we have a connection with the interface
+            // We do that by using the status command.
+            canalStatus canalstatus;
+            if (CANAL_ERROR_SUCCESS != m_csw.doCmdStatus(&canalstatus)) {
+                wxString strbuf;
+                strbuf.Printf(
+                        _("Unable to open interface to driver. errorcode=%lu, suberrorcode=%lu, Description: %s"),
+                        canalstatus.lasterrorcode,
+                        canalstatus.lasterrorsubcode,
+                        canalstatus.lasterrorstr);
+                wxLogStatus(strbuf);
 
-				wxMessageBox( _("No response received from interface. May not work correctly!") );
-				rv = false;
-				goto error;
-			}
+                wxMessageBox(_("No response received from interface. May not work correctly!"));
+                rv = false;
+                goto error;
+            }
 
-		}
-		else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+        } 
+        else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
-			progressDlg.Pulse( _("Checking if interface is working...") );
+            progressDlg.Pulse(_("Checking if interface is working..."));
 
-			// Test
-			if ( CANAL_ERROR_SUCCESS != m_csw.doCmdNOOP() ) {
-				wxMessageBox( _("Interface test command failed. May not work correctly!") );
-				rv = false;
-				goto error;
-			}
+            // Test
+            if (CANAL_ERROR_SUCCESS != m_csw.doCmdNOOP()) {
+                wxMessageBox(_("Interface test command failed. May not work correctly!"));
+                rv = false;
+                goto error;
+            }
 
-			// TCP/IP interface
-			progressDlg.Pulse( _("TCP/IP Interface Open.") );
+            // TCP/IP interface
+            progressDlg.Pulse(_("TCP/IP Interface Open."));
 
-			// Should we fetch interface GUID
-			if ( m_interfaceName.Length() ) {
-			
-				progressDlg.Pulse( _("Fetching interace GUID.") );
+            // Should we fetch interface GUID
+            if (m_vscpif.m_strInterfaceName.Length()) {
 
-				if ( fetchIterfaceGUID() ) {
-				
-					progressDlg.Pulse( _("Interace GUID found.") );
+                progressDlg.Pulse(_("Fetching interface GUID."));
 
-					// Fill the combo
-					wxString str;
-					cguid guid = m_ifguid;
-                    for ( int i=1; i<256; i++ ) {
-						guid.setLSB( i );
-						guid.toString( str );
-                        m_comboNodeID->Append( str );
-					}
+                if (fetchIterfaceGUID()) {
 
-					guid.setLSB( 1 );
-					guid.toString( str );
-                    m_comboNodeID->SetValue( str );
+                    progressDlg.Pulse(_("Interface GUID found."));
 
-				}
-				else {
-					m_comboNodeID->SetValue( _("Enter full GUID of remote node here") );
-				}
+                    // Fill the combo
+                    wxString str;
+                    cguid guid = m_ifguid;
+                    for (int i = 1; i < 256; i++) {
+                        guid.setLSB(i);
+                        guid.toString(str);
+                        m_comboNodeID->Append(str);
+                    }
 
-			}
-			else {
+                    guid.setLSB(1);
+                    guid.toString(str);
+                    m_comboNodeID->SetValue(str);
 
-				// No interface selected
-				m_comboNodeID->SetValue( _("Enter full GUID of remote node here") );
+                } else {
+                    m_comboNodeID->SetValue(_("Enter full GUID of remote node here"));
+                }
 
-			}
+            } else {
 
-		}
-	}
-	else {
-		progressDlg.Pulse( _("Failed to open Interface.") );
-		wxMessageBox(_("Failed to Open Interface.") );
+                // No interface selected
+                m_comboNodeID->SetValue(_("Enter full GUID of remote node here"));
 
-		m_BtnActivateInterface->SetValue( false );
-		m_BtnActivateInterface->SetLabel(_("Disconnected"));
-		return false;
-	}
+            }
 
-	// Move to top of zorder
-	Raise();
+        }
+    } else {
+        progressDlg.Pulse(_("Failed to open Interface."));
+        wxMessageBox(_("Failed to Open Interface."));
 
-	// Needed on Windows to make the panels size correctly
-	int width;
-	int height;
-	GetSize( &width, &height );
-	SetSize( width + 10, height );
+        m_BtnActivateInterface->SetValue(false);
+        m_BtnActivateInterface->SetLabel(_("Disconnected"));
+        return false;
+    }
+
+    // Move to top of zorder
+    Raise();
+
+    // Needed on Windows to make the panels size correctly
+    int width;
+    int height;
+    GetSize(&width, &height);
+    SetSize(width + 10, height);
 
 error:
 
-	return rv;
+    return rv;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // disableInterface
 //
 
-bool frmDeviceConfig::disableInterface( void )
-{
-	m_csw.doCmdClose();
-	return true;
+bool frmDeviceConfig::disableInterface(void) {
+    m_csw.doCmdClose();
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemExitClick
 //
 
-void frmDeviceConfig::OnMenuitemExitClick( wxCommandEvent& event )
-{
-	Close();
-	event.Skip( false );  
+void frmDeviceConfig::OnMenuitemExitClick(wxCommandEvent& event) {
+    Close();
+    event.Skip(false);
 }
 
 
@@ -3248,10 +3212,9 @@ void frmDeviceConfig::OnMenuitemExitClick( wxCommandEvent& event )
 // OnMenuitemVscpHelpClick
 //
 
-void frmDeviceConfig::OnMenuitemVscpHelpClick( wxCommandEvent& event )
-{
-	::wxLaunchDefaultBrowser( _("http://www.vscp.org/wiki/doku.php/vscpworks/vscpw_docu"), wxBROWSER_NEW_WINDOW );
-	event.Skip( true ); //[wiki-url]
+void frmDeviceConfig::OnMenuitemVscpHelpClick(wxCommandEvent& event) {
+    ::wxLaunchDefaultBrowser(_("http://www.vscp.org/wiki/doku.php/vscpworks/vscpw_docu"), wxBROWSER_NEW_WINDOW);
+    event.Skip(true); //[wiki-url]
 }
 
 
@@ -3259,10 +3222,9 @@ void frmDeviceConfig::OnMenuitemVscpHelpClick( wxCommandEvent& event )
 // OnMenuitemVscpFaqClick
 //
 
-void frmDeviceConfig::OnMenuitemVscpFaqClick( wxCommandEvent& event )
-{
-	::wxLaunchDefaultBrowser( _("http://www.vscp.org/wiki/doku.php/vscp_faq"), wxBROWSER_NEW_WINDOW );
-	event.Skip( true ); //[wiki-url]
+void frmDeviceConfig::OnMenuitemVscpFaqClick(wxCommandEvent& event) {
+    ::wxLaunchDefaultBrowser(_("http://www.vscp.org/wiki/doku.php/vscp_faq"), wxBROWSER_NEW_WINDOW);
+    event.Skip(true); //[wiki-url]
 }
 
 
@@ -3270,10 +3232,9 @@ void frmDeviceConfig::OnMenuitemVscpFaqClick( wxCommandEvent& event )
 // OnMenuitemVscpShortcutsClick
 //
 
-void frmDeviceConfig::OnMenuitemVscpShortcutsClick( wxCommandEvent& event )
-{
-	::wxLaunchDefaultBrowser( _("http://www.vscp.org/wiki/doku.php/vscpworks/vscpw_shortcuts"), wxBROWSER_NEW_WINDOW );
-	event.Skip( true ); //[wiki-url]
+void frmDeviceConfig::OnMenuitemVscpShortcutsClick(wxCommandEvent& event) {
+    ::wxLaunchDefaultBrowser(_("http://www.vscp.org/wiki/doku.php/vscpworks/vscpw_shortcuts"), wxBROWSER_NEW_WINDOW);
+    event.Skip(true); //[wiki-url]
 }
 
 
@@ -3281,10 +3242,9 @@ void frmDeviceConfig::OnMenuitemVscpShortcutsClick( wxCommandEvent& event )
 // OnMenuitemVscpThanksClick
 //
 
-void frmDeviceConfig::OnMenuitemVscpThanksClick( wxCommandEvent& event )
-{
-	::wxLaunchDefaultBrowser( _("http://www.vscp.org/wiki/doku.php/who_why_where/vscp_thanks"), wxBROWSER_NEW_WINDOW );
-	event.Skip( true ); //[wiki-url]
+void frmDeviceConfig::OnMenuitemVscpThanksClick(wxCommandEvent& event) {
+    ::wxLaunchDefaultBrowser(_("http://www.vscp.org/wiki/doku.php/who_why_where/vscp_thanks"), wxBROWSER_NEW_WINDOW);
+    event.Skip(true); //[wiki-url]
 }
 
 
@@ -3292,10 +3252,9 @@ void frmDeviceConfig::OnMenuitemVscpThanksClick( wxCommandEvent& event )
 // OnMenuitemVscpCreditsClick
 //
 
-void frmDeviceConfig::OnMenuitemVscpCreditsClick( wxCommandEvent& event )
-{
-	::wxLaunchDefaultBrowser( _("http://www.vscp.org/wiki/doku.php/who_why_where/vscp_thanks#credits"), wxBROWSER_NEW_WINDOW );
-	event.Skip( true ); //[wiki-url]
+void frmDeviceConfig::OnMenuitemVscpCreditsClick(wxCommandEvent& event) {
+    ::wxLaunchDefaultBrowser(_("http://www.vscp.org/wiki/doku.php/who_why_where/vscp_thanks#credits"), wxBROWSER_NEW_WINDOW);
+    event.Skip(true); //[wiki-url]
 }
 
 
@@ -3303,10 +3262,9 @@ void frmDeviceConfig::OnMenuitemVscpCreditsClick( wxCommandEvent& event )
 // OnMenuitemVscpVscpSiteClick
 //
 
-void frmDeviceConfig::OnMenuitemVscpVscpSiteClick( wxCommandEvent& event )
-{
-	::wxLaunchDefaultBrowser( _("http://www.vscp.org"), wxBROWSER_NEW_WINDOW );
-	event.Skip( true ); //[wiki-url]
+void frmDeviceConfig::OnMenuitemVscpVscpSiteClick(wxCommandEvent& event) {
+    ::wxLaunchDefaultBrowser(_("http://www.vscp.org"), wxBROWSER_NEW_WINDOW);
+    event.Skip(true); //[wiki-url]
 }
 
 
@@ -3314,13 +3272,12 @@ void frmDeviceConfig::OnMenuitemVscpVscpSiteClick( wxCommandEvent& event )
 // OnMenuitemVscpAboutClick
 //
 
-void frmDeviceConfig::OnMenuitemVscpAboutClick( wxCommandEvent& event )
-{
-	dlgAbout dlg(this);
-	if ( wxID_OK == dlg.ShowModal() ) {
+void frmDeviceConfig::OnMenuitemVscpAboutClick(wxCommandEvent& event) {
+    dlgAbout dlg(this);
+    if (wxID_OK == dlg.ShowModal()) {
 
-	}
-	event.Skip();
+    }
+    event.Skip();
 }
 
 
@@ -3328,64 +3285,61 @@ void frmDeviceConfig::OnMenuitemVscpAboutClick( wxCommandEvent& event )
 // OnBitmapbuttonTestDeviceClick
 //
 
-void frmDeviceConfig::OnBitmapbuttonTestDeviceClick( wxCommandEvent& event )
-{
-	unsigned char nodeid;
+void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event) {
+    
+    unsigned char nodeid;
 
-	::wxBeginBusyCursor();
+    ::wxBeginBusyCursor();
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-									_("Testing if device is present"),
-									100, 
-									this,
-									wxPD_ELAPSED_TIME | 
-									wxPD_AUTO_HIDE | 
-									wxPD_APP_MODAL |
-									wxPD_CAN_ABORT );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Testing if device is present"),
+            100,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
 
-	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-		// Get Interface id
-		nodeid = readStringValue( m_comboNodeID->GetValue() );
+        // Get Interface id
+        nodeid = readStringValue(m_comboNodeID->GetValue());
 
-		if ( ( 0 == nodeid ) || ( nodeid > 254 )  ) {
-			wxMessageBox( _("Invalid Node ID! Must be between 1-254") );
-			::wxEndBusyCursor();
-			return;
-		}
+        if ((0 == nodeid) || (nodeid > 254)) {
+            wxMessageBox(_("Invalid Node ID! Must be between 1-254"));
+            ::wxEndBusyCursor();
+            return;
+        }
 
-		unsigned char val;
-		if ( m_csw.readLevel1Register( nodeid, 0xd0, &val ) ) {
-			wxMessageBox(_("Device found!"));
-		}
-		else {
-			wxMessageBox(_("Device was not found! Check nodeid."));
-		}
+        unsigned char val;
+        if (m_csw.readLevel1Register(nodeid, 0xd0, &val)) {
+            wxMessageBox(_("Device found!"));
+        } else {
+            wxMessageBox(_("Device was not found! Check nodeid."));
+        }
 
-	}
-	else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+    } else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
-		// Get the destination GUID
-		cguid destGUID;
-		destGUID.getFromString( m_comboNodeID->GetValue() );
+        // Get the destination GUID
+        cguid destGUID;
+        destGUID.getFromString(m_comboNodeID->GetValue());
 
-		unsigned char val;
-		if ( m_csw.readLevel2Register( m_ifguid, 
-										m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0, 
-										&val,
-										&destGUID,
-										&progressDlg,
-										m_bLevel2->GetValue() ) ) {
-			wxMessageBox( _("Device found!") );
-		}
-		else {
-			wxMessageBox(_("Device was not found! Check interface GUID + nodeid."));
-		}
+        unsigned char val;
+        if (m_csw.readLevel2Register(m_ifguid,
+                m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
+                &val,
+                &destGUID,
+                &progressDlg,
+                m_bLevel2->GetValue())) {
+            wxMessageBox(_("Device found!"));
+        } else {
+            wxMessageBox(_("Device was not found! Check interface GUID + nodeid."));
+        }
 
-	}
+    }
 
-	::wxEndBusyCursor();
-	event.Skip( false );
+    ::wxEndBusyCursor();
+    event.Skip(false);
 }
 
 
@@ -3393,23 +3347,21 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick( wxCommandEvent& event )
 // OnInterfaceActivate
 //
 
-void frmDeviceConfig::OnInterfaceActivate( wxCommandEvent& event )
-{
-	wxBusyCursor wait;
+void frmDeviceConfig::OnInterfaceActivate(wxCommandEvent& event) {
+    wxBusyCursor wait;
 
-	if ( !m_BtnActivateInterface->GetValue() ) {
-		disableInterface();
-		m_BtnActivateInterface->SetValue( false );
-		m_BtnActivateInterface->SetLabel(_("Disconnected"));
-	}
-	else {
-		if ( enableInterface() ) {
-			m_BtnActivateInterface->SetValue( true );
-			m_BtnActivateInterface->SetLabel(_("Connected"));
-		}
-	}
+    if (!m_BtnActivateInterface->GetValue()) {
+        disableInterface();
+        m_BtnActivateInterface->SetValue(false);
+        m_BtnActivateInterface->SetLabel(_("Disconnected"));
+    } else {
+        if (enableInterface()) {
+            m_BtnActivateInterface->SetValue(true);
+            m_BtnActivateInterface->SetLabel(_("Connected"));
+        }
+    }
 
-	event.Skip();
+    event.Skip();
 }
 
 
@@ -3417,24 +3369,23 @@ void frmDeviceConfig::OnInterfaceActivate( wxCommandEvent& event )
 // OnRegisterEdited
 //
 
-void frmDeviceConfig::OnRegisterEdited( wxGridEvent& event )
-{
-	uint8_t val;
-	wxString strBuf;
-	wxString str;
+void frmDeviceConfig::OnRegisterEdited(wxGridEvent& event) {
+    uint8_t val;
+    wxString strBuf;
+    wxString str;
 
-	if  ( 2 == event.GetCol() ) {
-		str = m_gridRegisters->GetCellValue( event.GetRow(), event.GetCol() );    
-		val = readStringValue( str );
-		strBuf.Printf( _("0x%02lx"), val );
-		m_gridRegisters->SetCellValue( event.GetRow(), event.GetCol(), strBuf );
+    if (2 == event.GetCol()) {
+        str = m_gridRegisters->GetCellValue(event.GetRow(), event.GetCol());
+        val = readStringValue(str);
+        strBuf.Printf(_("0x%02lx"), val);
+        m_gridRegisters->SetCellValue(event.GetRow(), event.GetCol(), strBuf);
 
-		m_gridRegisters->SetCellTextColour( event.GetRow(),
-			event.GetCol(),
-			*wxRED );
-	}
+        m_gridRegisters->SetCellTextColour(event.GetRow(),
+                event.GetCol(),
+                *wxRED);
+    }
 
-	event.Skip();
+    event.Skip();
 }
 
 
@@ -3442,26 +3393,23 @@ void frmDeviceConfig::OnRegisterEdited( wxGridEvent& event )
 // OnCellLeftClick
 //
 
-void frmDeviceConfig::OnCellLeftClick( wxGridEvent& event )
-{    
-	// Save clicked cell/row
-	m_lastLeftClickCol = event.GetCol();    
-	m_lastLeftClickRow = event.GetRow();
+void frmDeviceConfig::OnCellLeftClick(wxGridEvent& event) {
+    // Save clicked cell/row
+    m_lastLeftClickCol = event.GetCol();
+    m_lastLeftClickRow = event.GetRow();
 
-	if ( ID_GRID_REGISTERS == event.GetId() ) {
-		// Select the row
-		m_gridRegisters->SelectRow( m_lastLeftClickRow );
-	}
-	else if ( ID_GRID_ABSTRACTIONS == event.GetId() ) {
-		// Select the row
-		m_gridAbstractions->SelectRow( m_lastLeftClickRow );
-	}
-	else if ( ID_GRID_DM == event.GetId() ) {
-		// Select the row
-		m_gridDM->SelectRow( m_lastLeftClickRow );
-	}
+    if (ID_GRID_REGISTERS == event.GetId()) {
+        // Select the row
+        m_gridRegisters->SelectRow(m_lastLeftClickRow);
+    } else if (ID_GRID_ABSTRACTIONS == event.GetId()) {
+        // Select the row
+        m_gridAbstractions->SelectRow(m_lastLeftClickRow);
+    } else if (ID_GRID_DM == event.GetId()) {
+        // Select the row
+        m_gridDM->SelectRow(m_lastLeftClickRow);
+    }
 
-	event.Skip();
+    event.Skip();
 }
 
 
@@ -3469,19 +3417,17 @@ void frmDeviceConfig::OnCellLeftClick( wxGridEvent& event )
 // Should we show tooltips?
 //
 
-bool frmDeviceConfig::ShowToolTips()
-{
-	return true;
+bool frmDeviceConfig::ShowToolTips() {
+    return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Get bitmap resources
 //
 
-wxBitmap frmDeviceConfig::GetBitmapResource( const wxString& name )
-{
-	// Bitmap retrieval
-	////@begin frmDeviceConfig bitmap retrieval
+wxBitmap frmDeviceConfig::GetBitmapResource(const wxString& name) {
+    // Bitmap retrieval
+    ////@begin frmDeviceConfig bitmap retrieval
   wxUnusedVar(name);
   if (name == _T("open.xpm"))
   {
@@ -3519,17 +3465,16 @@ wxBitmap frmDeviceConfig::GetBitmapResource( const wxString& name )
     return bitmap;
   }
   return wxNullBitmap;
-	////@end frmDeviceConfig bitmap retrieval
+    ////@end frmDeviceConfig bitmap retrieval
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Get icon resources
 //
 
-wxIcon frmDeviceConfig::GetIconResource( const wxString& name )
-{
-	// Icon retrieval
-	////@begin frmDeviceConfig icon retrieval
+wxIcon frmDeviceConfig::GetIconResource(const wxString& name) {
+    // Icon retrieval
+////@begin frmDeviceConfig icon retrieval
   wxUnusedVar(name);
   if (name == _T("../../../docs/vscp/logo/fatbee_v2.ico"))
   {
@@ -3552,7 +3497,7 @@ wxIcon frmDeviceConfig::GetIconResource( const wxString& name )
     return icon;
   }
   return wxNullIcon;
-	////@end frmDeviceConfig icon retrieval
+////@end frmDeviceConfig icon retrieval
 }
 
 
@@ -3560,196 +3505,193 @@ wxIcon frmDeviceConfig::GetIconResource( const wxString& name )
 // writeChangedLevel1Registers
 //
 
-bool frmDeviceConfig::writeChangedLevel1Registers( unsigned char nodeid )
-{
-	int i;
-	unsigned char val;
-	bool rv = true;
-	int errors = 0;
-	wxString strBuf;
-	uint16_t page = 0xffff;
-	uint16_t newpage;
-	uint8_t reg;
+bool frmDeviceConfig::writeChangedLevel1Registers(unsigned char nodeid) {
+    int i;
+    unsigned char val;
+    bool rv = true;
+    int errors = 0;
+    wxString strBuf;
+    uint16_t page = 0xffff;
+    uint16_t newpage;
+    uint8_t reg;
 
-	// Nothing to the first time.
-	if ( m_bFirstRead ) return true;
+    // Nothing to the first time.
+    if (m_bFirstRead) return true;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-		_("Writing modified registers"),
-		256, 
-		this,
-		wxPD_ELAPSED_TIME | 
-		wxPD_AUTO_HIDE | 
-		wxPD_APP_MODAL |
-		wxPD_CAN_ABORT );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Writing modified registers"),
+            256,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
 
-	// *********************************
-	// Write data from changed registers
-	// *********************************
+    // *********************************
+    // Write data from changed registers
+    // *********************************
 
-	progressDlg.Pulse( _("Looking for changed registers...") );
+    progressDlg.Pulse(_("Looking for changed registers..."));
 
-	for ( i = 0; i < m_gridRegisters->GetNumberRows(); i++ ) {
+    for (i = 0; i < m_gridRegisters->GetNumberRows(); i++) {
 
-		if ( !progressDlg.Update( i ) ) {
-			rv = false;
-			break;
-		}
+        if (!progressDlg.Update(i)) {
+            rv = false;
+            break;
+        }
 
-		if ( *wxRED == m_gridRegisters->GetCellTextColour( i, 2 ) ) {
+        if (*wxRED == m_gridRegisters->GetCellTextColour(i, 2)) {
 
-			progressDlg.Pulse( wxString::Format(_("Writing register %d"), i) );
+            progressDlg.Pulse(wxString::Format(_("Writing register %d"), i));
 
-			reg = getRegFromCell( i );
-			newpage = getPageFromCell( i );
-			uint16_t savepage = m_csw.getRegisterPage( this, nodeid, &m_ifguid );	
+            reg = getRegFromCell(i);
+            newpage = getPageFromCell(i);
+            uint16_t savepage = m_csw.getRegisterPage(this, nodeid, &m_ifguid);
 
-			if ( newpage != savepage ) {
-				if ( !m_csw.setRegisterPage( nodeid, newpage ) ) {
-					wxMessageBox(_("Failed to write/set new page."));
-					break;
-				}			
-			}
+            if (newpage != savepage) {
+                if (!m_csw.setRegisterPage(nodeid, newpage)) {
+                    wxMessageBox(_("Failed to write/set new page."));
+                    break;
+                }
+            }
 
-			val = readStringValue( m_gridRegisters->GetCellValue( i, 2 ) );
-			if ( m_csw.writeLevel1Register( nodeid, reg, &val ) ) {
+            val = readStringValue(m_gridRegisters->GetCellValue(i, 2));
+            if (m_csw.writeLevel1Register(nodeid, reg, &val)) {
 
-				// Update display
-				strBuf = getFormattedValue( val );
-				m_gridRegisters->SetCellValue( i, 2,  strBuf );
-				m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, i, 2 );
-				m_gridRegisters->SetCellTextColour( i, 2, *wxBLUE );
-				m_gridRegisters->SelectRow( i );
-				m_gridRegisters->MakeCellVisible( i, 2 );
-				m_gridRegisters->Update();
+                // Update display
+                strBuf = getFormattedValue(val);
+                m_gridRegisters->SetCellValue(i, 2, strBuf);
+                m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, i, 2);
+                m_gridRegisters->SetCellTextColour(i, 2, *wxBLUE);
+                m_gridRegisters->SelectRow(i);
+                m_gridRegisters->MakeCellVisible(i, 2);
+                m_gridRegisters->Update();
 
-				// restore page if needed
-				if ( newpage != savepage ) {
-					if ( !m_csw.setRegisterPage( nodeid, savepage ) ) {
-						wxMessageBox(_("Failed to restore page."));	
-						break;
-					}			
-				}
+                // restore page if needed
+                if (newpage != savepage) {
+                    if (!m_csw.setRegisterPage(nodeid, savepage)) {
+                        wxMessageBox(_("Failed to restore page."));
+                        break;
+                    }
+                }
 
-				updateDmGridConditional( reg, newpage );
-				updateAbstractionGridConditional( reg, newpage );
+                updateDmGridConditional(reg, newpage);
+                updateAbstractionGridConditional(reg, newpage);
 
-			}
-			else {
-				wxMessageBox(_("Failed to write register."));	
-				break;
-			}
-		} // Changed register
-	} // for
+            } else {
+                wxMessageBox(_("Failed to write register."));
+                break;
+            }
+        } // Changed register
+    } // for
 
-	return rv;
+    return rv;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 // writeChangedLevel2Registers
 //
 
-bool frmDeviceConfig::writeChangedLevel2Registers( void )
-{
-	int i;
-	unsigned char val;
-	bool rv = true;
-	int errors = 0;
-	wxString strBuf;
-	uint32_t reg = 0;
-	uint16_t newpage = 0;
+bool frmDeviceConfig::writeChangedLevel2Registers(void) {
+    int i;
+    unsigned char val;
+    bool rv = true;
+    int errors = 0;
+    wxString strBuf;
+    uint32_t reg = 0;
+    uint16_t newpage = 0;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-									_("Writing Registers"),
-									256, 
-									this,
-									wxPD_ELAPSED_TIME | 
-									wxPD_AUTO_HIDE | 
-									wxPD_APP_MODAL |    
-									wxPD_CAN_ABORT );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Writing Registers"),
+            256,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
 
-	// *********************************
-	// Write data from changed registers
-	// *********************************
+    // *********************************
+    // Write data from changed registers
+    // *********************************
 
-	progressDlg.Pulse( _("Writing changed registers!") );
+    progressDlg.Pulse(_("Writing changed registers!"));
 
-	// Get the destination GUID
-	cguid destGUID;
-	uint8_t nodeid;
-	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+    // Get the destination GUID
+    cguid destGUID;
+    uint8_t nodeid;
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-		// Get Interface id
-		nodeid = readStringValue( m_comboNodeID->GetValue() );
-	
-	} 
-	else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-	
-		// Get Interface GUID
-		destGUID.getFromString( m_comboNodeID->GetValue() );
+        // Get Interface id
+        nodeid = readStringValue(m_comboNodeID->GetValue());
 
-	}
+    }
+    else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
-	for ( i = 0; i < m_gridRegisters->GetNumberRows(); i++ ) {
+        // Get Interface GUID
+        destGUID.getFromString(m_comboNodeID->GetValue());
 
-		if ( !progressDlg.Update( i ) ) {
-			rv = false;
-			break;
-		}
+    }
 
-		if ( *wxRED == m_gridRegisters->GetCellTextColour( i, 2 ) ) {
+    for (i = 0; i < m_gridRegisters->GetNumberRows(); i++) {
 
-			progressDlg.Pulse( wxString::Format(_("Writing register %d"), i) );
+        if (!progressDlg.Update(i)) {
+            rv = false;
+            break;
+        }
 
-			reg = getRegFromCell( i );
-			newpage = getPageFromCell( i );
-			uint16_t savepage = m_csw.getRegisterPage( this,
-														( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(),
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() );
+        if (*wxRED == m_gridRegisters->GetCellTextColour(i, 2)) {
 
-			// Set new page
-			if ( newpage != savepage ) {
-				if ( !m_csw.setRegisterPage( ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-												nodeid : destGUID.getLSB(), 
-												newpage, 
-												&m_ifguid,
-												&destGUID,
-												m_bLevel2->GetValue() ) ) {
-					wxMessageBox(_("Failed to write/set new page."));
-					break;
-				}			
-			}
+            progressDlg.Pulse(wxString::Format(_("Writing register %d"), i));
 
-			val = readStringValue( m_gridRegisters->GetCellValue( i, 2 ) );
+            reg = getRegFromCell(i);
+            newpage = getPageFromCell(i);
+            uint16_t savepage = m_csw.getRegisterPage(this,
+                    (USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                    nodeid : destGUID.getLSB(),
+                    &m_ifguid,
+                    &destGUID,
+                    m_bLevel2->GetValue());
 
-			if ( !m_csw.writeLevel2Register( m_ifguid, 
-												reg, 
-												&val,
-												destGUID,
-												&progressDlg,
-												m_bLevel2->GetValue() ) ) {
-				wxMessageBox(_("Failed to update data.") );
-			}
+            // Set new page
+            if (newpage != savepage) {
+                if (!m_csw.setRegisterPage((USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                        nodeid : destGUID.getLSB(),
+                        newpage,
+                        &m_ifguid,
+                        &destGUID,
+                        m_bLevel2->GetValue())) {
+                    wxMessageBox(_("Failed to write/set new page."));
+                    break;
+                }
+            }
 
-			// Update display
-			strBuf = getFormattedValue( val );
-			m_gridRegisters->SetCellValue( i, 2,  strBuf );
-			m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, i, 2 );
-			m_gridRegisters->SetCellTextColour( i, 2, *wxBLUE );
-			m_gridRegisters->SelectRow( i );
-			m_gridRegisters->MakeCellVisible( i, 2 );
-			m_gridRegisters->Update();    
+            val = readStringValue(m_gridRegisters->GetCellValue(i, 2));
 
-			updateDmGridConditional( reg, newpage );
-			updateAbstractionGridConditional( reg, newpage );
+            if (!m_csw.writeLevel2Register(m_ifguid,
+                    reg,
+                    &val,
+                    destGUID,
+                    &progressDlg,
+                    m_bLevel2->GetValue())) {
+                wxMessageBox(_("Failed to update data."));
+            }
 
-		} // Changed register
-	} // for
+            // Update display
+            strBuf = getFormattedValue(val);
+            m_gridRegisters->SetCellValue(i, 2, strBuf);
+            m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, i, 2);
+            m_gridRegisters->SetCellTextColour(i, 2, *wxBLUE);
+            m_gridRegisters->SelectRow(i);
+            m_gridRegisters->MakeCellVisible(i, 2);
+            m_gridRegisters->Update();
 
-	return rv;
+            updateDmGridConditional(reg, newpage);
+            updateAbstractionGridConditional(reg, newpage);
+
+        } // Changed register
+    } // for
+
+    return rv;
 }
 
 
@@ -3758,362 +3700,356 @@ bool frmDeviceConfig::writeChangedLevel2Registers( void )
 // writeStatusInfo
 //
 
-void frmDeviceConfig::writeStatusInfo( void )
-{
-	wxString strHTML;
-	wxString str;
-
-	strHTML = _("<html><body>");
-	strHTML += _("<h1>Node data</h1>");
-	strHTML += _("<font color=\"#009900\">");
-
-	strHTML += _("<b>Node id</b> : ");
-	str = wxString::Format(_("%d"), m_stdRegisters.getNickname() );
-	strHTML += str;
-	strHTML += _("<br>");
-
-	if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-		strHTML += _("<b>Daemon Interface</b> : ");
-		strHTML += m_comboNodeID->GetValue();
-		strHTML += _("<br>");
-	}
-
-	// we have to change the order for the fetched GUID so
-	// it match internal reprenentation
-	strHTML += _("<b>GUID</b>: ");
-	uint8_t guid[16];
-	memcpy( guid, m_stdRegisters.getGUID(), 16  );
-	reverseGUID( guid );
-	writeGuidArrayToString( m_stdRegisters.getGUID(), str );
-	strHTML += str;
-	strHTML += _("<br>");
-
-
-
-	strHTML += _("<b>MDF URL</b>: ");
-	strHTML += _("<a href=\"");
-	strHTML += m_stdRegisters.getMDF();
-	strHTML += _("\">");
-	strHTML += m_stdRegisters.getMDF();
-	strHTML += _("</a>");
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Alarm:</b> ");
-	if ( m_stdRegisters.getAlarm() ) {
-		strHTML += _("Yes");
-	}
-	else {
-		strHTML += _("No");
-	}
-	strHTML += _("<br>");
-
-
-	strHTML += _("<b>Node Control Flags:</b> ");
-	if ( m_stdRegisters.getNodeControl() & 0x10 ) {
-		strHTML += _("[Register Write Protect] ");
-	}
-	else {
-		strHTML += _("[Register Read/Write] ");
-	}
-
-	switch ( (m_stdRegisters.getNodeControl() & 0xC0) >> 6 ) {
-
-	case 1:
-		strHTML += _(" [Initialized] ");
-		break;
-
-	default:
-		strHTML += _(" [Uninitialized] ");
-		break;
-	}
-
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Firmware VSCP confirmance:</b> ");
-	strHTML += wxString::Format(_("%d.%d"), 
-		m_stdRegisters.getConfirmanceVersionMajor(), 
-		m_stdRegisters.getConfirmanceVersonMinor() );
-	strHTML += _("<br>");
-
-	strHTML += _("<b>User Device ID:</b> ");
-	strHTML += wxString::Format(_("%d.%d.%d.%d.%d"), 
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_ID ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_ID + 1 ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_ID + 2 ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_ID + 3 ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_ID + 3 ) );
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Manufacturer Device ID:</b> ");
-	strHTML += wxString::Format(_("0x%08X - %d.%d.%d,%d"), 
-		m_stdRegisters.getManufacturerDeviceID(), 
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_MANDEV_ID ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_MANDEV_ID + 1 ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_MANDEV_ID + 2 ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_MANDEV_ID + 3 ) );
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Manufacturer sub device ID:</b> ");
-	strHTML += wxString::Format(_("0x%08X - %d.%d.%d.%d"), 
-		m_stdRegisters.getManufacturerSubDeviceID(),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_MANSUBDEV_ID ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 1 ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 2 ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 3 )
-		);
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Page select:</b> ");
-	strHTML += wxString::Format(_("%d (MSB=%d LSB=%d)"), 
-		m_stdRegisters.getPage(), 
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_PAGE_SELECT_MSB ),
-		m_stdRegisters.getStandardReg( VSCP_STD_REGISTER_PAGE_SELECT_LSB ) );
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Firmware version:</b> ");
-	strHTML += m_stdRegisters.getFirmwareVersionString();
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Boot loader algorithm:</b> ");
-	strHTML += wxString::Format(_("%d - "),
-		m_stdRegisters.getBootloaderAlgorithm() );
-
-	switch( m_stdRegisters.getBootloaderAlgorithm() ) {
-
-	case 0x00:
-		strHTML += _("VSCP universal algorithm");
-		break;
-
-	case 0x01:
-		strHTML += _("Microchip PIC algorithm 0");
-		break;
-
-	case 0x10:
-		strHTML += _("Atmel AVR algorithm 0");
-		break;
-
-	case 0x20:
-		strHTML += _("NXP ARM algorithm 0");
-		break;
-
-	case 0x30:
-		strHTML += _("ST ARM algorithm 0");
-		break;
-
-	case 0xFF:
-		strHTML += _("No bootloader implemented.");
-		break;
-
-	default:
-		strHTML += _("Unknown algorithm.");
-		break;
-	}
-
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Buffer size:</b> ");
-	strHTML += wxString::Format(_("%d bytes. "), 
-		m_stdRegisters.getBufferSize() );
-
-	if ( ! m_stdRegisters.getBufferSize() ) strHTML += _(" ( == default size (8 or 487 bytes) )");
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Number of register pages:</b> ");
-	strHTML += wxString::Format(_("%d"), 
-		m_stdRegisters.getNumberOfRegisterPages() );
-	if ( m_stdRegisters.getNumberOfRegisterPages() > 22 ) {
-		strHTML += _(" (Note: VSCP Works display max 22 pages.) ");
-	}
-	strHTML += _("<br>");
-
-	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-
-		uint8_t data[8];
-		memset( data, 0, 8 );
-
-		if ( m_csw.getLevel1DmInfo( m_stdRegisters.getNickname(), data ) ) {
-			strHTML += _("<b>Decision Matrix:</b> Rows=");
-			strHTML += wxString::Format(_("%d "), data[0] );
-			strHTML += _(" Offset=");
-			strHTML += wxString::Format(_("%d (0x%02x)"), data[1], data[1] );
-			strHTML += _(" Page start=");
-			strHTML += wxString::Format(_("%d (0x%04x)"), 
-				( data[2] << 8 ) + data[3],
-				( data[2] << 8 ) + data[3] );
-			strHTML += _(" Page end=");
-			strHTML += wxString::Format(_("%d (0x%04x)"), 
-				( data[4] << 8 ) + data[5],
-				( data[4] << 8 ) + data[5] );
-			strHTML += _("<br>");
-		}
-		else {
-			strHTML += _("No Decision Matrix is available on this device.");
-			strHTML += _("<br>");
-		}
-
-	}
-	else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-
-		unsigned char data[ 8 ];
-		memset( data, 0, 8 );
-
-		if ( m_csw.getLevel2DmInfo( m_ifguid, data ) ) {
-			strHTML += _("<b>Decison Matrix:</b> Rows:");
-			strHTML += wxString::Format(_("%d "), data[0] );
-			strHTML += _(" <b>Offset:</b>");
-			strHTML += wxString::Format(_("%d 0x%02x"), data[1], data[1] );
-			strHTML += _(" Page start=");
-			strHTML += wxString::Format(_("%d 0x%04x"), 
-				( data[2] << 8 ) + data[3],
-				( data[2] << 8 ) + data[3] );
-			strHTML += _(" <b>Page end:</b>");
-			strHTML += wxString::Format(_("%d 0x%04x"), 
-				( data[4] << 8 ) + data[5],
-				( data[4] << 8 ) + data[5] );
-			strHTML += _("<br>");
-		}
-		else {
-			strHTML += _("No Decision Matrix is available on this device.");
-			strHTML += _("<br>");
-		}
-
-	} // tcp/ip connection
-
-	strHTML += _("</font>");
-
-	// MDF Info
-	strHTML += _("<h1>MDF Information</h1>");
-
-	strHTML += _("<font color=\"#009900\">");
-
-	// Manufacturer data
-	strHTML += _("<b>Module name :</b> ");
-	strHTML += m_mdf.m_strModule_Name;
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Module model:</b> ");
-	strHTML += m_mdf.m_strModule_Model;
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Module version:</b> ");
-	strHTML += m_mdf.m_strModule_Version;
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Module last change:</b> ");
-	strHTML += m_mdf.m_changeDate;
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Module description:</b> ");
-	strHTML += m_mdf.m_strModule_Description;
-	strHTML += _("<br>");
-
-	strHTML += _("<b>Module URL</b> : ");
-	strHTML += _("<a href=\"");
-	strHTML += m_mdf.m_strModule_InfoURL;
-	strHTML += _("\">");
-	strHTML += m_mdf.m_strModule_InfoURL;
-	strHTML += _("</a>");
-	strHTML += _("<br>");
-
-
-	MDF_MANUFACTURER_LIST::iterator iter;
-	for ( iter = m_mdf.m_list_manufacturer.begin(); 
-		iter != m_mdf.m_list_manufacturer.end(); ++iter ) {
-
-			strHTML += _("<hr><br>");
-
-			CMDF_Manufacturer *manufacturer = *iter;
-			strHTML += _("<b>Manufacturer:</b> ");
-			strHTML += manufacturer->m_strName;
-			strHTML += _("<br>");
-
-			MDF_ADDRESS_LIST::iterator iterAddr;
-			for ( iterAddr = manufacturer->m_list_Address.begin(); 
-				iterAddr != manufacturer->m_list_Address.end(); ++iterAddr ) {
-
-					CMDF_Address *address = *iterAddr;
-					strHTML += _("<h4>Address</h4>");
-					strHTML += _("<b>Street:</b> ");
-					strHTML += address->m_strStreet;
-					strHTML += _("<br>");
-					strHTML += _("<b>Town:</b> ");
-					strHTML += address->m_strTown;
-					strHTML += _("<br>");
-					strHTML += _("<b>City:</b> ");
-					strHTML += address->m_strCity;
-					strHTML += _("<br>");
-					strHTML += _("<b>Post Code:</b> ");
-					strHTML += address->m_strPostCode;
-					strHTML += _("<br>");
-					strHTML += _("<b>State:</b> ");
-					strHTML += address->m_strState;
-					strHTML += _("<br>");
-					strHTML += _("<b>Region:</b> ");
-					strHTML += address->m_strRegion;
-					strHTML += _("<br>");
-					strHTML += _("<b>Country:</b> ");
-					strHTML += address->m_strCountry;
-					strHTML += _("<br><br>");
-			}
-
-			MDF_ITEM_LIST::iterator iterPhone;
-			for ( iterPhone = manufacturer->m_list_Phone.begin(); 
-				iterPhone != manufacturer->m_list_Phone.end(); ++iterPhone ) {
-
-					CMDF_Item *phone = *iterPhone;
-					strHTML += _("<b>Phone:</b> ");
-					strHTML += phone->m_strItem;
-					strHTML += _(" ");
-					strHTML += phone->m_strDescription;
-					strHTML += _("<br>");
-			}
-
-			MDF_ITEM_LIST::iterator iterFax;
-			for ( iterFax = manufacturer->m_list_Fax.begin(); 
-				iterFax != manufacturer->m_list_Fax.end(); ++iterFax ) {
-
-					CMDF_Item *fax = *iterFax;
-					strHTML += _("<b>Fax:</b> ");
-					strHTML += fax->m_strItem;
-					strHTML += _(" ");
-					strHTML += fax->m_strDescription;
-					strHTML += _("<br>");
-			}
-
-			MDF_ITEM_LIST::iterator iterEmail;
-			for ( iterEmail = manufacturer->m_list_Email.begin(); 
-				iterEmail != manufacturer->m_list_Email.end(); ++iterEmail ) {
-
-					CMDF_Item *email = *iterEmail;
-					strHTML += _("<b>Email:</b> <a href=\"");
-					strHTML += email->m_strItem;
-					strHTML += _("\" >");
-					strHTML += email->m_strItem;
-					strHTML += _("</a> ");
-					strHTML += email->m_strDescription;
-					strHTML += _("<br>");
-			}
-
-			MDF_ITEM_LIST::iterator iterWeb;
-			for ( iterWeb = manufacturer->m_list_Web.begin(); 
-				iterWeb != manufacturer->m_list_Web.end(); ++iterWeb ) {
-
-					CMDF_Item *web = *iterWeb;
-					strHTML += _("<b>Web:</b> <a href=\"");
-					strHTML += web->m_strItem;
-					strHTML += _("\">");
-					strHTML += web->m_strItem;
-					strHTML += _("</a> ");
-					strHTML += web->m_strDescription;
-					strHTML += _("<br>");
-			}
-
-	} // manufacturer
-
-	strHTML += _("</font>");
-	strHTML += _("</body></html>");
-
-	m_StatusWnd->SetPage( strHTML );
+void frmDeviceConfig::writeStatusInfo(void) {
+    wxString strHTML;
+    wxString str;
+
+    strHTML = _("<html><body>");
+    strHTML += _("<h1>Node data</h1>");
+    strHTML += _("<font color=\"#009900\">");
+
+    strHTML += _("<b>Node id</b> : ");
+    str = wxString::Format(_("%d"), m_stdRegisters.getNickname());
+    strHTML += str;
+    strHTML += _("<br>");
+
+    if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+        strHTML += _("<b>Daemon Interface</b> : ");
+        strHTML += m_comboNodeID->GetValue();
+        strHTML += _("<br>");
+    }
+
+    // we have to change the order for the fetched GUID so
+    // it match internal reprenentation
+    strHTML += _("<b>GUID</b>: ");
+    uint8_t guid[16];
+    memcpy(guid, m_stdRegisters.getGUID(), 16);
+    reverseGUID(guid);
+    writeGuidArrayToString(m_stdRegisters.getGUID(), str);
+    strHTML += str;
+    strHTML += _("<br>");
+
+
+
+    strHTML += _("<b>MDF URL</b>: ");
+    strHTML += _("<a href=\"");
+    strHTML += m_stdRegisters.getMDF();
+    strHTML += _("\">");
+    strHTML += m_stdRegisters.getMDF();
+    strHTML += _("</a>");
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Alarm:</b> ");
+    if (m_stdRegisters.getAlarm()) {
+        strHTML += _("Yes");
+    } else {
+        strHTML += _("No");
+    }
+    strHTML += _("<br>");
+
+
+    strHTML += _("<b>Node Control Flags:</b> ");
+    if (m_stdRegisters.getNodeControl() & 0x10) {
+        strHTML += _("[Register Write Protect] ");
+    } else {
+        strHTML += _("[Register Read/Write] ");
+    }
+
+    switch ((m_stdRegisters.getNodeControl() & 0xC0) >> 6) {
+
+        case 1:
+            strHTML += _(" [Initialized] ");
+            break;
+
+        default:
+            strHTML += _(" [Uninitialized] ");
+            break;
+    }
+
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Firmware VSCP confirmance:</b> ");
+    strHTML += wxString::Format(_("%d.%d"),
+            m_stdRegisters.getConfirmanceVersionMajor(),
+            m_stdRegisters.getConfirmanceVersonMinor());
+    strHTML += _("<br>");
+
+    strHTML += _("<b>User Device ID:</b> ");
+    strHTML += wxString::Format(_("%d.%d.%d.%d.%d"),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_ID),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_ID + 1),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_ID + 2),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_ID + 3),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_ID + 3));
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Manufacturer Device ID:</b> ");
+    strHTML += wxString::Format(_("0x%08X - %d.%d.%d,%d"),
+            m_stdRegisters.getManufacturerDeviceID(),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_MANDEV_ID),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 1),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 2),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_MANDEV_ID + 3));
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Manufacturer sub device ID:</b> ");
+    strHTML += wxString::Format(_("0x%08X - %d.%d.%d.%d"),
+            m_stdRegisters.getManufacturerSubDeviceID(),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 1),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 2),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_USER_MANSUBDEV_ID + 3)
+            );
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Page select:</b> ");
+    strHTML += wxString::Format(_("%d (MSB=%d LSB=%d)"),
+            m_stdRegisters.getPage(),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_PAGE_SELECT_MSB),
+            m_stdRegisters.getStandardReg(VSCP_STD_REGISTER_PAGE_SELECT_LSB));
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Firmware version:</b> ");
+    strHTML += m_stdRegisters.getFirmwareVersionString();
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Boot loader algorithm:</b> ");
+    strHTML += wxString::Format(_("%d - "),
+            m_stdRegisters.getBootloaderAlgorithm());
+
+    switch (m_stdRegisters.getBootloaderAlgorithm()) {
+
+        case 0x00:
+            strHTML += _("VSCP universal algorithm");
+            break;
+
+        case 0x01:
+            strHTML += _("Microchip PIC algorithm 0");
+            break;
+
+        case 0x10:
+            strHTML += _("Atmel AVR algorithm 0");
+            break;
+
+        case 0x20:
+            strHTML += _("NXP ARM algorithm 0");
+            break;
+
+        case 0x30:
+            strHTML += _("ST ARM algorithm 0");
+            break;
+
+        case 0xFF:
+            strHTML += _("No bootloader implemented.");
+            break;
+
+        default:
+            strHTML += _("Unknown algorithm.");
+            break;
+    }
+
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Buffer size:</b> ");
+    strHTML += wxString::Format(_("%d bytes. "),
+            m_stdRegisters.getBufferSize());
+
+    if (!m_stdRegisters.getBufferSize()) strHTML += _(" ( == default size (8 or 487 bytes) )");
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Number of register pages:</b> ");
+    strHTML += wxString::Format(_("%d"),
+            m_stdRegisters.getNumberOfRegisterPages());
+    if (m_stdRegisters.getNumberOfRegisterPages() > 22) {
+        strHTML += _(" (Note: VSCP Works display max 22 pages.) ");
+    }
+    strHTML += _("<br>");
+
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+
+        uint8_t data[8];
+        memset(data, 0, 8);
+
+        if (m_csw.getLevel1DmInfo(m_stdRegisters.getNickname(), data)) {
+            strHTML += _("<b>Decision Matrix:</b> Rows=");
+            strHTML += wxString::Format(_("%d "), data[0]);
+            strHTML += _(" Offset=");
+            strHTML += wxString::Format(_("%d (0x%02x)"), data[1], data[1]);
+            strHTML += _(" Page start=");
+            strHTML += wxString::Format(_("%d (0x%04x)"),
+                    (data[2] << 8) + data[3],
+                    (data[2] << 8) + data[3]);
+            strHTML += _(" Page end=");
+            strHTML += wxString::Format(_("%d (0x%04x)"),
+                    (data[4] << 8) + data[5],
+                    (data[4] << 8) + data[5]);
+            strHTML += _("<br>");
+        } else {
+            strHTML += _("No Decision Matrix is available on this device.");
+            strHTML += _("<br>");
+        }
+
+    } else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+
+        unsigned char data[ 8 ];
+        memset(data, 0, 8);
+
+        if (m_csw.getLevel2DmInfo(m_ifguid, data)) {
+            strHTML += _("<b>Decison Matrix:</b> Rows:");
+            strHTML += wxString::Format(_("%d "), data[0]);
+            strHTML += _(" <b>Offset:</b>");
+            strHTML += wxString::Format(_("%d 0x%02x"), data[1], data[1]);
+            strHTML += _(" Page start=");
+            strHTML += wxString::Format(_("%d 0x%04x"),
+                    (data[2] << 8) + data[3],
+                    (data[2] << 8) + data[3]);
+            strHTML += _(" <b>Page end:</b>");
+            strHTML += wxString::Format(_("%d 0x%04x"),
+                    (data[4] << 8) + data[5],
+                    (data[4] << 8) + data[5]);
+            strHTML += _("<br>");
+        } else {
+            strHTML += _("No Decision Matrix is available on this device.");
+            strHTML += _("<br>");
+        }
+
+    } // tcp/ip connection
+
+    strHTML += _("</font>");
+
+    // MDF Info
+    strHTML += _("<h1>MDF Information</h1>");
+
+    strHTML += _("<font color=\"#009900\">");
+
+    // Manufacturer data
+    strHTML += _("<b>Module name :</b> ");
+    strHTML += m_mdf.m_strModule_Name;
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Module model:</b> ");
+    strHTML += m_mdf.m_strModule_Model;
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Module version:</b> ");
+    strHTML += m_mdf.m_strModule_Version;
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Module last change:</b> ");
+    strHTML += m_mdf.m_changeDate;
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Module description:</b> ");
+    strHTML += m_mdf.m_strModule_Description;
+    strHTML += _("<br>");
+
+    strHTML += _("<b>Module URL</b> : ");
+    strHTML += _("<a href=\"");
+    strHTML += m_mdf.m_strModule_InfoURL;
+    strHTML += _("\">");
+    strHTML += m_mdf.m_strModule_InfoURL;
+    strHTML += _("</a>");
+    strHTML += _("<br>");
+
+
+    MDF_MANUFACTURER_LIST::iterator iter;
+    for (iter = m_mdf.m_list_manufacturer.begin();
+            iter != m_mdf.m_list_manufacturer.end(); ++iter) {
+
+        strHTML += _("<hr><br>");
+
+        CMDF_Manufacturer *manufacturer = *iter;
+        strHTML += _("<b>Manufacturer:</b> ");
+        strHTML += manufacturer->m_strName;
+        strHTML += _("<br>");
+
+        MDF_ADDRESS_LIST::iterator iterAddr;
+        for (iterAddr = manufacturer->m_list_Address.begin();
+                iterAddr != manufacturer->m_list_Address.end(); ++iterAddr) {
+
+            CMDF_Address *address = *iterAddr;
+            strHTML += _("<h4>Address</h4>");
+            strHTML += _("<b>Street:</b> ");
+            strHTML += address->m_strStreet;
+            strHTML += _("<br>");
+            strHTML += _("<b>Town:</b> ");
+            strHTML += address->m_strTown;
+            strHTML += _("<br>");
+            strHTML += _("<b>City:</b> ");
+            strHTML += address->m_strCity;
+            strHTML += _("<br>");
+            strHTML += _("<b>Post Code:</b> ");
+            strHTML += address->m_strPostCode;
+            strHTML += _("<br>");
+            strHTML += _("<b>State:</b> ");
+            strHTML += address->m_strState;
+            strHTML += _("<br>");
+            strHTML += _("<b>Region:</b> ");
+            strHTML += address->m_strRegion;
+            strHTML += _("<br>");
+            strHTML += _("<b>Country:</b> ");
+            strHTML += address->m_strCountry;
+            strHTML += _("<br><br>");
+        }
+
+        MDF_ITEM_LIST::iterator iterPhone;
+        for (iterPhone = manufacturer->m_list_Phone.begin();
+                iterPhone != manufacturer->m_list_Phone.end(); ++iterPhone) {
+
+            CMDF_Item *phone = *iterPhone;
+            strHTML += _("<b>Phone:</b> ");
+            strHTML += phone->m_strItem;
+            strHTML += _(" ");
+            strHTML += phone->m_strDescription;
+            strHTML += _("<br>");
+        }
+
+        MDF_ITEM_LIST::iterator iterFax;
+        for (iterFax = manufacturer->m_list_Fax.begin();
+                iterFax != manufacturer->m_list_Fax.end(); ++iterFax) {
+
+            CMDF_Item *fax = *iterFax;
+            strHTML += _("<b>Fax:</b> ");
+            strHTML += fax->m_strItem;
+            strHTML += _(" ");
+            strHTML += fax->m_strDescription;
+            strHTML += _("<br>");
+        }
+
+        MDF_ITEM_LIST::iterator iterEmail;
+        for (iterEmail = manufacturer->m_list_Email.begin();
+                iterEmail != manufacturer->m_list_Email.end(); ++iterEmail) {
+
+            CMDF_Item *email = *iterEmail;
+            strHTML += _("<b>Email:</b> <a href=\"");
+            strHTML += email->m_strItem;
+            strHTML += _("\" >");
+            strHTML += email->m_strItem;
+            strHTML += _("</a> ");
+            strHTML += email->m_strDescription;
+            strHTML += _("<br>");
+        }
+
+        MDF_ITEM_LIST::iterator iterWeb;
+        for (iterWeb = manufacturer->m_list_Web.begin();
+                iterWeb != manufacturer->m_list_Web.end(); ++iterWeb) {
+
+            CMDF_Item *web = *iterWeb;
+            strHTML += _("<b>Web:</b> <a href=\"");
+            strHTML += web->m_strItem;
+            strHTML += _("\">");
+            strHTML += web->m_strItem;
+            strHTML += _("</a> ");
+            strHTML += web->m_strDescription;
+            strHTML += _("<br>");
+        }
+
+    } // manufacturer
+
+    strHTML += _("</font>");
+    strHTML += _("</body></html>");
+
+    m_StatusWnd->SetPage(strHTML);
 }
 
 
@@ -4121,60 +4057,57 @@ void frmDeviceConfig::writeStatusInfo( void )
 // OnComboNodeIDSelected
 //
 
-void frmDeviceConfig::OnComboNodeIDSelected( wxCommandEvent& event )
-{
-	// Clear all content
-	clearAllContent();
+void frmDeviceConfig::OnComboNodeIDSelected(wxCommandEvent& event) {
+    // Clear all content
+    clearAllContent();
 
-	event.Skip();
+    event.Skip();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OnComboNodeIDUpdated
 //
 
-void frmDeviceConfig::OnComboNodeIDUpdated( wxCommandEvent& event )
-{
-	// Clear all content
-	clearAllContent();
+void frmDeviceConfig::OnComboNodeIDUpdated(wxCommandEvent& event) {
+    // Clear all content
+    clearAllContent();
 
-	event.Skip();
+    event.Skip();
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 // clearAllContent
 //
 
-void frmDeviceConfig::clearAllContent( void )
-{
-	// Mark as first time
-	m_bFirstRead = true;
+void frmDeviceConfig::clearAllContent(void) {
+    // Mark as first time
+    m_bFirstRead = true;
 
-	// Clear register grid
-	if ( m_gridRegisters->GetNumberRows() ) {
-		m_gridRegisters->DeleteRows( 0, m_gridRegisters->GetNumberRows() );
-	}
+    // Clear register grid
+    if (m_gridRegisters->GetNumberRows()) {
+        m_gridRegisters->DeleteRows(0, m_gridRegisters->GetNumberRows());
+    }
 
-	// Clear abstraction grid
-	if ( m_gridAbstractions->GetNumberRows() ) {
-		m_gridAbstractions->DeleteRows( 0, m_gridAbstractions->GetNumberRows() );
-	}
+    // Clear abstraction grid
+    if (m_gridAbstractions->GetNumberRows()) {
+        m_gridAbstractions->DeleteRows(0, m_gridAbstractions->GetNumberRows());
+    }
 
-	// Clear DM grid
-	if ( m_gridDM->GetNumberRows() ) {
-		m_gridDM->DeleteRows( 0, m_gridDM->GetNumberRows() );
-	}
+    // Clear DM grid
+    if (m_gridDM->GetNumberRows()) {
+        m_gridDM->DeleteRows(0, m_gridDM->GetNumberRows());
+    }
 
 
-	// Clear the text area
-	m_StatusWnd->SetPage(_(""));
+    // Clear the text area
+    m_StatusWnd->SetPage(_(""));
 
-	// Diable the "extra buttons"
-	m_ctrlButtonLoadMDF->Enable( false );
-	m_ctrlButtonWizard->Enable( false );
+    // Diable the "extra buttons"
+    m_ctrlButtonLoadMDF->Enable(false);
+    m_ctrlButtonWizard->Enable(false);
 
-	// Clean po MDF storage
-	m_mdf.clearStorage();
+    // Clean po MDF storage
+    m_mdf.clearStorage();
 
 }
 
@@ -4183,1378 +4116,1461 @@ void frmDeviceConfig::clearAllContent( void )
 // fillStandardRegisters
 //
 
-void frmDeviceConfig::fillStandardRegisters()
-{
-	wxString strBuf;
-	wxString str;
-	int i,j;
-
-	wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
-	wxFont fontBold = defaultFont;
-	fontBold.SetStyle( wxFONTSTYLE_NORMAL );
-	fontBold.SetWeight( wxFONTWEIGHT_BOLD );
-
-	///////////////////////////////////
-	//       Standard Registers
-	///////////////////////////////////
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("80");
-	}
-	else {
-		strBuf = _("FFFFFF80");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0, strBuf  );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2, 
-		getFormattedValue( m_stdRegisters.getStandardReg(0x80) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Alarm Status Register") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("81");
-	}
-	else {
-		strBuf = _("FFFFFF81");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x81) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("VSCP Major version number") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {	
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("82");
-	}
-	else {
-		strBuf = _("FFFFFF82");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x82) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("VSCP Minor version number") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("83");
-	}
-	else {
-		strBuf = _("FFFFFF83");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("rw") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x83) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Node Control Flags\r test") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("84");
-	}
-	else {
-		strBuf = _("FFFFFF84");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("rw") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x84) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("User ID 0") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("85");
-	}
-	else {
-		strBuf = _("FFFFFF85");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("rw") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x85) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("User ID 1") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("86");
-	}
-	else {
-		strBuf = _("FFFFFF86");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("rw") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x86) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("User ID 2") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("87");
-	}
-	else {
-		strBuf = _("FFFFFF87");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("rw") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x87) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("User ID 3") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("88");
-	}
-	else {
-		strBuf = _("FFFFFF88");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("rw") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x88) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("User ID 4") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("89");
-	}
-	else {
-		strBuf = _("FFFFFF89");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		_("89") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Manufacturer device id 0") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("8A");
-	}
-	else {
-		strBuf = _("FFFFFF8A");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x8A) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Manufacturer device id 1") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("8B");
-	}
-	else {
-		strBuf = _("FFFFFF8B");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x8B) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Manufacturer device id 2") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("8C");
-	}
-	else {
-		strBuf = _("FFFFFF8C");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x8C) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Manufacturer device id 3") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("8D");
-	}
-	else {
-		strBuf = _("FFFFFF8D");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x8D) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Manufacturer sub device id 0") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("8E");
-	}
-	else {
-		strBuf = _("FFFFFF8E");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x8E) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Manufacturer sub device id 1") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("8F");
-	}
-	else {
-		strBuf = _("FFFFFF8F");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x8F) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Manufacturer sub device id 2") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("90");
-	}
-	else {
-		strBuf = _("FFFFFF90");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x90) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Manufacturer sub device id 3") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("91");
-	}
-	else {
-		strBuf = _("FFFFFF91");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x91) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Nickname id") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("92");
-	}
-	else {
-		strBuf = _("FFFFFF92");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("rw") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x92) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Page select register MSB") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("93");
-	}
-	else {
-		strBuf = _("FFFFFF93");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("rw") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x93) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Page select register LSB") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("94");
-	}
-	else {
-		strBuf = _("FFFFFF94");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x94) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Firmware major version number") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("95");
-	}
-	else {
-		strBuf = _("FFFFFF95");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x95) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Firmware minor version number") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("96");
-	}
-	else {
-		strBuf = _("FFFFFF96");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x96) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Firmware sub minor version number") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("97");
-	}
-	else {
-		strBuf = _("FFFFFF97");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x97) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Boot loader algorithm") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("98");
-	}
-	else {
-		strBuf = _("FFFFFF98");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x98) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Buffer Size") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0xd2));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("99");
-	}
-	else {
-		strBuf = _("FFFFFF99");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0x99) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Number of register pages used.") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D0");
-	}
-	else {
-		strBuf = _("FFFFFFD0");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD0) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 15 MSB") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-	// Write to grid also
-	writeGuidArrayToString( m_stdRegisters.getGUID(), str );
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 15, LSB\nGUID=") + str );
-
-	// Make all parts of the row visible
-	m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows()-1 );
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D1");
-	}
-	else {
-		strBuf = _("FFFFFFD1");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD1) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 14") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D2");
-	}
-	else {
-		strBuf = _("FFFFFFD2");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD2) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 13") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	strBuf.Printf(  _("0x%02lx"), 0xd3 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D3");
-	}
-	else {
-		strBuf = _("FFFFFFD3");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD3) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 12") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D4");
-	}
-	else {
-		strBuf = _("FFFFFFD4");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD4) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 11") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	strBuf.Printf( _("0x%02lx"), 0xd5 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D5");
-	}
-	else {
-		strBuf = _("FFFFFFD5");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD5) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 10") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D6");
-	}
-	else {
-		strBuf = _("FFFFFFD6");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD6) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 9") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D7");
-	}
-	else {
-		strBuf = _("FFFFFFD7");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD7) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 8") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	strBuf.Printf( _("0x%02lx"), 0xd8 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D8");
-	}
-	else {
-		strBuf = _("FFFFFFD8");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD8) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 7") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("D9");
-	}
-	else {
-		strBuf = _("FFFFFFD9");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1, _( "r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xD9) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 6") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("DA");
-	}
-	else {
-		strBuf = _("FFFFFFDA");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xDA) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 5") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("DB");
-	}
-	else {
-		strBuf = _("FFFFFFDB");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xDB) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 4") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("DC");
-	}
-	else {
-		strBuf = _("FFFFFFDC");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xDC) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 3") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("DD");
-	}
-	else {
-		strBuf = _("FFFFFFDD");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xDD) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 2") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("DE");
-	}
-	else {
-		strBuf = _("FFFFFFDE");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xDE) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 1") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	m_gridRegisters->AppendRows( 1 );
-	if ( !m_bLevel2->GetValue() ) {
-		strBuf = _("DF");
-	}
-	else {
-		strBuf = _("FFFFFFDF");
-	}
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-		2,  
-		getFormattedValue( m_stdRegisters.getStandardReg(0xDF) ) );
-	m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-	m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("GUID Byte 0, LSB") );
-	m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-	m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-	for ( i=0; i<4; i++ ) {
-		m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, i, wxColour(0xff, 0xff, 0x12));
-	}
-
-
-	// MDF
-	bool bFirstMDFrow = true;
-	uint32_t nFirstMDFrow = 0;
-	for ( i=0; i<32; i++ ) {
-
-		m_gridRegisters->AppendRows( 1 );
-
-		if ( bFirstMDFrow ) {
-			nFirstMDFrow = m_gridRegisters->GetNumberRows()-1;
-			bFirstMDFrow = false;
-		}
-
-		if ( !m_bLevel2->GetValue() ) {
-			strBuf.Printf( _("%02lX"), 0xe0 + i );
-		}
-		else {
-			strBuf.Printf( _("%08lX"), 0xFFFFFFE0 + i );
-		}
-		m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-		m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-		m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-		m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-
-		m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 1,  _("r-") );
-		m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 1 );
-		m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 1 );
-
-		m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-			2,  
-			getFormattedValue( m_stdRegisters.getStandardReg(0xE0 + i) ) );
-		m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-		m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-
-		if ( 0 == i ) {
-			str = _(", MSB");
-		}
-		else if ( 31 == i ) {
-			str = _(", LSB");
-		}
-		else {
-			str = _("");
-		}
-
-		m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 3,  _("Module Description File URL") + str );
-		m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 3, fontBold );
-		m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-		for ( j=0; j<4; j++ ) {
-			m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows()-1, 
-				j, wxColour(0xff, 0xff, 0xd2));
-		}
-
-	}
-
-	// Write to grid also
-	str = m_stdRegisters.getMDF();
-	m_gridRegisters->SetCellValue( nFirstMDFrow, 3,  _("Module Description File URL, MSB\n") + str );
-
-	// Make all parts of the row visible
-	m_gridRegisters->AutoSizeRow( nFirstMDFrow );
+void frmDeviceConfig::fillStandardRegisters() {
+    wxString strBuf;
+    wxString str;
+    int i, j;
+
+    wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
+    wxFont fontBold = defaultFont;
+    fontBold.SetStyle(wxFONTSTYLE_NORMAL);
+    fontBold.SetWeight(wxFONTWEIGHT_BOLD);
+
+    ///////////////////////////////////
+    //       Standard Registers
+    ///////////////////////////////////
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("80");
+    } else {
+        strBuf = _("FFFFFF80");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x80)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Alarm Status Register"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("81");
+    } else {
+        strBuf = _("FFFFFF81");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x81)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("VSCP Major version number"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("82");
+    } else {
+        strBuf = _("FFFFFF82");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x82)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("VSCP Minor version number"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("83");
+    } else {
+        strBuf = _("FFFFFF83");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x83)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Node Control Flags\r test"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("84");
+    } else {
+        strBuf = _("FFFFFF84");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x84)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 0"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("85");
+    } else {
+        strBuf = _("FFFFFF85");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x85)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 1"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("86");
+    } else {
+        strBuf = _("FFFFFF86");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x86)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 2"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("87");
+    } else {
+        strBuf = _("FFFFFF87");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x87)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 3"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("88");
+    } else {
+        strBuf = _("FFFFFF88");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x88)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("User ID 4"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("89");
+    } else {
+        strBuf = _("FFFFFF89");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            _("89"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 0"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("8A");
+    } else {
+        strBuf = _("FFFFFF8A");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x8A)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 1"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("8B");
+    } else {
+        strBuf = _("FFFFFF8B");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x8B)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 2"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("8C");
+    } else {
+        strBuf = _("FFFFFF8C");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x8C)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer device id 3"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("8D");
+    } else {
+        strBuf = _("FFFFFF8D");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x8D)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 0"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("8E");
+    } else {
+        strBuf = _("FFFFFF8E");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x8E)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 1"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("8F");
+    } else {
+        strBuf = _("FFFFFF8F");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x8F)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 2"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("90");
+    } else {
+        strBuf = _("FFFFFF90");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x90)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Manufacturer sub device id 3"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("91");
+    } else {
+        strBuf = _("FFFFFF91");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x91)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Nickname id"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("92");
+    } else {
+        strBuf = _("FFFFFF92");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x92)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Page select register MSB"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("93");
+    } else {
+        strBuf = _("FFFFFF93");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x93)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Page select register LSB"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("94");
+    } else {
+        strBuf = _("FFFFFF94");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x94)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware major version number"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("95");
+    } else {
+        strBuf = _("FFFFFF95");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x95)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware minor version number"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("96");
+    } else {
+        strBuf = _("FFFFFF96");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x96)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Firmware sub minor version number"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("97");
+    } else {
+        strBuf = _("FFFFFF97");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x97)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Boot loader algorithm"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("98");
+    } else {
+        strBuf = _("FFFFFF98");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x98)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Buffer Size"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("99");
+    } else {
+        strBuf = _("FFFFFF99");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0x99)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Number of register pages used."));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D0");
+    } else {
+        strBuf = _("FFFFFFD0");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD0)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 15 MSB"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+    // Write to grid also
+    writeGuidArrayToString(m_stdRegisters.getGUID(), str);
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 15, LSB\nGUID=") + str);
+
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D1");
+    } else {
+        strBuf = _("FFFFFFD1");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD1)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 14"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D2");
+    } else {
+        strBuf = _("FFFFFFD2");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD2)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 13"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    strBuf.Printf(_("0x%02lx"), 0xd3);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D3");
+    } else {
+        strBuf = _("FFFFFFD3");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD3)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 12"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D4");
+    } else {
+        strBuf = _("FFFFFFD4");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD4)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 11"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    strBuf.Printf(_("0x%02lx"), 0xd5);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D5");
+    } else {
+        strBuf = _("FFFFFFD5");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD5)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 10"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D6");
+    } else {
+        strBuf = _("FFFFFFD6");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD6)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 9"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D7");
+    } else {
+        strBuf = _("FFFFFFD7");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD7)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 8"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    strBuf.Printf(_("0x%02lx"), 0xd8);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D8");
+    } else {
+        strBuf = _("FFFFFFD8");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD8)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 7"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("D9");
+    } else {
+        strBuf = _("FFFFFFD9");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xD9)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 6"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("DA");
+    } else {
+        strBuf = _("FFFFFFDA");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xDA)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 5"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("DB");
+    } else {
+        strBuf = _("FFFFFFDB");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xDB)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 4"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("DC");
+    } else {
+        strBuf = _("FFFFFFDC");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xDC)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 3"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("DD");
+    } else {
+        strBuf = _("FFFFFFDD");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xDD)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 2"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("DE");
+    } else {
+        strBuf = _("FFFFFFDE");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xDE)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 1"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    m_gridRegisters->AppendRows(1);
+    if (!m_bLevel2->GetValue()) {
+        strBuf = _("DF");
+    } else {
+        strBuf = _("FFFFFFDF");
+    }
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+            2,
+            getFormattedValue(m_stdRegisters.getStandardReg(0xDF)));
+    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 0, LSB"));
+    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+    for (i = 0; i < 4; i++) {
+        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0x12));
+    }
+
+
+    // MDF
+    bool bFirstMDFrow = true;
+    uint32_t nFirstMDFrow = 0;
+    for (i = 0; i < 32; i++) {
+
+        m_gridRegisters->AppendRows(1);
+
+        if (bFirstMDFrow) {
+            nFirstMDFrow = m_gridRegisters->GetNumberRows() - 1;
+            bFirstMDFrow = false;
+        }
+
+        if (!m_bLevel2->GetValue()) {
+            strBuf.Printf(_("%02lX"), 0xe0 + i);
+        } else {
+            strBuf.Printf(_("%08lX"), 0xFFFFFFE0 + i);
+        }
+        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+        m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("r-"));
+        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+        m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                2,
+                getFormattedValue(m_stdRegisters.getStandardReg(0xE0 + i)));
+        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+        m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+        if (0 == i) {
+            str = _(", MSB");
+        } else if (31 == i) {
+            str = _(", LSB");
+        } else {
+            str = _("");
+        }
+
+        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("Module Description File URL") + str);
+        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+        m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+        
+        // Make all parts of the row visible
+        m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+        for (j = 0; j < 4; j++) {
+            m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1,
+                    j, wxColour(0xff, 0xff, 0xd2));
+        }
+
+    }
+
+    // Write to grid also
+    str = m_stdRegisters.getMDF();
+    m_gridRegisters->SetCellValue(nFirstMDFrow, 3, _("Module Description File URL, MSB\n") + str);
+
+    // Make all parts of the row visible
+    m_gridRegisters->AutoSizeRow(nFirstMDFrow);
 }
 
 
@@ -5562,508 +5578,544 @@ void frmDeviceConfig::fillStandardRegisters()
 // OnButtonUpdateClick
 //
 
-void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
-{
-	wxString strPath;
-	uint8_t nodeid = 0;
-	cguid destGUID;
-
-	::wxBeginBusyCursor();
-
-	// Check if we should do a full update
-	if ( m_chkFullUppdate->GetValue() ) {
-
-		// Update changed registers first
-		if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-			writeChangedLevel1Registers( nodeid );
-		}
-		else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-			writeChangedLevel2Registers();
-		}
-
-		clearAllContent();
-		m_bFirstRead = true;
-
-	}
-
-	wxProgressDialog progressDlg( _("VSCP Works"),
-									_("Fetching status and MDF"),
-									256, 
-									this,
-									wxPD_ELAPSED_TIME | 
-									wxPD_AUTO_HIDE | 
-									wxPD_APP_MODAL | 
-									wxPD_CAN_ABORT );
-
-	// Get nickname
-	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-		nodeid = readStringValue( m_comboNodeID->GetValue() );
-	}
-	else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-		destGUID.getFromString( m_comboNodeID->GetValue() );
-	}
-
-	if ( m_bFirstRead ) { 
-
-		if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-
-			// Feth MDF from local file or server
-			if ( m_chkMdfFromFile->GetValue() ) {
-
-				wxStandardPaths stdpaths;
-				
-				// Get MDF from local file
-				wxFileDialog dlg( this,
-					_("Choose file to load MDF from "),
-					stdpaths.GetUserDataDir(),
-					_(""),
-					_("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
-				
-				if ( wxID_OK == dlg.ShowModal() ) {
-					strPath = dlg.GetPath();
-				}
-
-			}
-			else {
-				// Get MDF from device
-				progressDlg.Pulse( _("Fetching MDF path from device.") );
-				strPath = m_csw.getMDFfromDevice1( nodeid );
-			}
-
-			// We need it to continue
-			if ( 0 == strPath.Length() ) {
-				::wxMessageBox( _("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR );
-				return;
-			}
-
-			// Load and parse the MDF
-			if ( !progressDlg.Pulse( _("Loading and parsing MDF.") ) ) return;
-			m_mdf.load( strPath, m_chkMdfFromFile->GetValue() );
-
-			// Get the standard registers
-			if ( !progressDlg.Pulse( _("Reading standard registers.") ) ) return;
-
-			// First part of standard registers
-			m_csw.readLevel1Registers( this, 
-										m_stdRegisters.m_reg, 
-										nodeid, 0x80, 26 );
-
-			if ( false == progressDlg.Pulse() ) return;
-			
-			// Second part of standard registers
-			m_csw.readLevel1Registers( this, 
-										( m_stdRegisters.m_reg + 0xD0 - 0x80 ), 
-										nodeid, 0xD0, 48 );
-
-			// Get the application registers
-			progressDlg.Pulse( _("Reading application registers.") );
-			if ( false == progressDlg.Update( 230 ) ) return;
-
-			SortedArrayLong pageArray;
-			uint32_t n = m_mdf.getPages( pageArray );
-
-			if ( false == progressDlg.Update( 235 ) ) return;
-
-			uint8_t tt = m_stdRegisters.getNickname();
-			n = m_mdf.getNumberOfRegisters( 0 );
-
-			if ( false == progressDlg.Update( 240 ) ) return;
-
-			uint8_t val;
-			wxString strBuf;
-			wxString str;
-
-			wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
-			wxFont fontBold = defaultFont;
-			fontBold.SetStyle( wxFONTSTYLE_NORMAL );
-			fontBold.SetWeight( wxFONTWEIGHT_BOLD );
-
-			// Fill in register descriptions
-			uint8_t progress = 0;
-			uint8_t progress_count;
-			if ( m_mdf.m_list_register.GetCount() ) progress_count = 256/m_mdf.m_list_register.GetCount();
-			MDF_REGISTER_LIST::iterator iter;
-			for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
-
-				CMDF_Register *reg = *iter;
-				int cnt = 0;
-				if ( reg->m_nPage < MAX_CONFIG_REGISTER_PAGE ) {
-
-					progressDlg.Pulse( _("Reading standard registers.") );
-					progress += progress_count;
-					progressDlg.Update( progress );
-
-					if ( false == progressDlg.Update( 256 - m_mdf.m_list_register.GetCount() + cnt  ) ) return;
-
-					// Add a new row
-					m_gridRegisters->AppendRows( 1 );
-
-					// Register
-					strBuf.Printf( _("%04X:%02X"), reg->m_nPage, reg->m_nOffset );
-					progressDlg.Pulse( _("Reading page:register: ") + strBuf );
-
-					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-					m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-					m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-					m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-
-					if ( m_csw.readLevel1Register( nodeid, reg->m_nOffset, &val ) ) {
-						reg->m_value = val;
-						getFormattedValue( val );
-						m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-							2,  
-							getFormattedValue( val ) );
-						m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-						m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 2, fontBold );
-					}
-					else {
-						m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-							2,  
-							_("Read error") );
-						m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows()-1, 2, wxALIGN_CENTRE, wxALIGN_CENTRE );
-						m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 2, fontBold );
-					}
-
-					str.Printf( reg->m_strName + 
-						_("\n") + 
-						reg->m_strDescription );
-					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-						3,  
-						str );
-					m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-					wxString strAccess;
-					if ( reg->m_nAccess & MDF_ACCESS_READ ) strAccess = _("r");
-					if ( reg->m_nAccess & MDF_ACCESS_WRITE ) {
-						strAccess += _("w");
-					}
-					else {
-						strAccess += _("-");
-					}
-
-					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-						1,  
-						strAccess );
-					// Protect cell if readonly
-					if ( wxNOT_FOUND == strAccess.Find( _("w") ) ) {
-						m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-					}        
-					m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows()-1, 1, wxALIGN_CENTRE, wxALIGN_CENTRE );
-
-					// Make all parts of the row visible
-					m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows()-1 );
-
-
-				}
-			}
-
-			if ( false == progressDlg.Update( 255 ) ) return;
-			
-			// Fill grid with standard registers
-			fillStandardRegisters();
-
-			if ( false == progressDlg.Update( 240 ) ) return;
-
-			// Write status
-			writeStatusInfo();
-
-			if ( false == progressDlg.Update( 255 ) ) return;
-
-			m_bFirstRead = false;
-
-		}
-		else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-
-			// Feth MDF from local file or server
-			if ( m_chkMdfFromFile->GetValue() ) {
-
-				wxStandardPaths stdpaths;
-				
-				// Get MDF from local file
-				wxFileDialog dlg( this,
-					_("Choose file to load MDF from "),
-					stdpaths.GetUserDataDir(),
-					_(""),
-					_("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
-				
-				if ( wxID_OK == dlg.ShowModal() ) {
-					strPath = dlg.GetPath();
-				}
-
-			}
-			else {
-				// Get MDF from device
-				progressDlg.Pulse( _("Fetching MDF path from device.") );
-				strPath = m_csw.getMDFfromDevice2( progressDlg,
-													m_ifguid,
-													destGUID,
-													m_bLevel2->GetValue() );
-			}
-
-			// We need it to continue
-			if ( 0 == strPath.Length() ) {
-				::wxMessageBox( _("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR );
-				return;
-			}
-
-			// Load and parse the MDF
-			if ( !progressDlg.Pulse( _("Loading and parsing MDF.") ) ) return ;
-
-			if (!m_mdf.load( strPath, m_chkMdfFromFile->GetValue() ) ) return;
-
-			// Get the standard registers
-			if ( !progressDlg.Pulse( _("Reading standard registers.") ) ) return;
-
-			// First part of standard registers
-			if ( !m_csw.readLevel2Registers( this, 
-										m_stdRegisters.m_reg,
-										m_ifguid, 
-										m_bLevel2->GetValue() ? 0xFFFFFF80 : 0x80, 
-										26,
-										&destGUID,
-										&progressDlg,
-										m_bLevel2->GetValue() ) ) return;
-
-			if ( false == progressDlg.Pulse() ) return;
-			
-			// Second part of standard registers
-			if ( !m_csw.readLevel2Registers( this, 
-										( m_stdRegisters.m_reg + ( 0xD0 - 0x80 ) ), 
-										m_ifguid,
-										m_bLevel2->GetValue() ? 0xFFFFFFD0 : 0xD0,
-										48,
-										&destGUID,
-										&progressDlg,
-										m_bLevel2->GetValue() ) ) return;
-			
-			// Get the application registers
-			if ( !progressDlg.Pulse( _("Reading application registers.") ) ) return;
-
-			SortedArrayLong pageArray;
-			uint32_t n = m_mdf.getPages( pageArray );
-
-			if ( !progressDlg.Pulse() ) return;
-
-			uint8_t tt = m_stdRegisters.getNickname();
-			n = m_mdf.getNumberOfRegisters( 0 );
-
-			if ( !progressDlg.Pulse() ) return;
-
-			uint8_t val;
-			wxString strBuf;
-			wxString str;
-
-			wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
-			wxFont fontBold = defaultFont;
-			fontBold.SetStyle( wxFONTSTYLE_NORMAL );
-			fontBold.SetWeight( wxFONTWEIGHT_BOLD );
-
-			// Fill in register descriptions
-			uint8_t progress = 0;
-			uint8_t progress_count;
-
-			if ( m_mdf.m_list_register.GetCount() ) progress_count = 256/m_mdf.m_list_register.GetCount();
-			MDF_REGISTER_LIST::iterator iter;
-			for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
-
-				CMDF_Register *reg = *iter;
-				int cnt = 0;
-				if ( reg->m_nPage < MAX_CONFIG_REGISTER_PAGE ) {
-
-					//if ( !progressDlg.Update( _("Reading standard registers %0X02"), 256 - m_mdf.m_list_register.GetCount() + cnt  ) ) return;
-
-					// Add a new row
-					m_gridRegisters->AppendRows( 1 );
-
-					// Register
-					strBuf.Printf( _("%04X:%X"), reg->m_nPage, reg->m_nOffset );
-					progressDlg.Pulse( _("Reading page:register: ") + strBuf );
-
-					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 0,  strBuf );
-					m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 0 );
-					m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 0, fontBold );
-					m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 0 );
-
-					if ( m_csw.readLevel2Register( m_ifguid, 
-													m_bLevel2->GetValue() ? ( 0xFFFFFFE0 + reg->m_nOffset ) : reg->m_nOffset, 
-													&val,
-													&destGUID,
-													&progressDlg,
-													m_bLevel2->GetValue() ) ) {
-						reg->m_value = val;
-						getFormattedValue( val );
-						m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-							2,  
-							getFormattedValue( val ) );
-						m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows()-1, 2 );
-						m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 2, fontBold );
-					}
-					else {
-						m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-							2,  
-							_("Read error") );
-						m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows()-1, 2, wxALIGN_CENTRE, wxALIGN_CENTRE );
-						m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows()-1, 2, fontBold );
-					}
-
-					str.Printf( reg->m_strName + 
-						_("\n") + 
-						reg->m_strDescription );
-					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-						3,  
-						str );
-					m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 3 );
-
-					wxString strAccess;
-					if ( reg->m_nAccess & MDF_ACCESS_READ ) strAccess = _("r");
-					if ( reg->m_nAccess & MDF_ACCESS_WRITE ) {
-						strAccess += _("w");
-					}
-					else {
-						strAccess += _("-");
-					}
-
-					m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows()-1, 
-						1,  
-						strAccess );
-					// Protect cell if readonly
-					if ( wxNOT_FOUND == strAccess.Find( _("w") ) ) {
-						m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows()-1, 2 );
-					}        
-					m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows()-1, 1, wxALIGN_CENTRE, wxALIGN_CENTRE );
-
-					// Make all parts of the row visible
-					m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows()-1 );
-
-				}
-			}
-
-			if ( !progressDlg.Pulse( _("Fill standard register information.") ) ) return;
-			
-			// Fill grid with standard registers
-			fillStandardRegisters();
-
-			if ( !progressDlg.Pulse( _("Fill status information.") ) ) return;
-
-			// Write status
-			writeStatusInfo();
-
-			if ( !progressDlg.Pulse() ) return;
-
-			m_bFirstRead = false;
-		}
-
-		if ( !progressDlg.Pulse( _("Update DM grid.") ) ) return;
-
-		// Update the DM grid    
-		updateDmGrid();
-
-		if ( !progressDlg.Pulse( _("Update abstraction grid.") ) ) return;
-
-		// Update abstractions
-		updateAbstractionGrid();
-
-		if ( !progressDlg.Pulse( _("Done.") ) ) return;
-
-		// Enable load defaults buttons
-		m_ctrlButtonLoadMDF->Enable( true );
-
-	}
-	// next read
-	else {
-
-		if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-			writeChangedLevel1Registers( nodeid );
-		}
-		else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-			writeChangedLevel2Registers();
-		}
-	}
-
-	::wxEndBusyCursor();
-
-	event.Skip( false );
+void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event) {
+    
+    wxString strPath;
+    uint8_t nodeid = 0;
+    cguid destGUID;
+
+    ::wxBeginBusyCursor();
+
+    // Check if we should do a full update
+    if (m_chkFullUppdate->GetValue()) {
+
+        // Update changed registers first
+        if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+            writeChangedLevel1Registers(nodeid);
+        } 
+        else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+            writeChangedLevel2Registers();
+        }
+
+        clearAllContent();
+        m_bFirstRead = true;
+
+    }
+
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Fetching status and MDF"),
+            256,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
+
+    // Get nickname
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+        nodeid = readStringValue(m_comboNodeID->GetValue());
+    } 
+    else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+        destGUID.getFromString(m_comboNodeID->GetValue());
+    }
+
+    if (m_bFirstRead) {
+
+        if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+
+            // Fetch MDF from local file or server
+            if (m_chkMdfFromFile->GetValue()) {
+
+                //wxStandardPaths stdpaths;
+
+                // Get MDF from local file
+                wxFileDialog dlg(this,
+                        _("Choose file to load MDF from "),
+                        wxStandardPaths::Get().GetUserDataDir(),
+                        _(""),
+                        _("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
+
+                if (wxID_OK == dlg.ShowModal()) {
+                    strPath = dlg.GetPath();
+                }
+
+            } 
+            else {
+                // Get MDF from device
+                progressDlg.Pulse(_("Fetching MDF path from device."));
+                strPath = m_csw.getMDFfromDevice1(nodeid);
+            }
+
+            // We need it to continue
+            if (0 == strPath.Length()) {
+                ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            // Load and parse the MDF
+            if (!progressDlg.Pulse(_("Loading and parsing MDF."))) {
+                ::wxEndBusyCursor();
+                return;
+            }
+            
+            m_mdf.load(strPath, m_chkMdfFromFile->GetValue());
+
+            // Get the standard registers
+            if (!progressDlg.Pulse(_("Reading standard registers."))) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            // First part of standard registers
+            m_csw.readLevel1Registers(this,
+                    m_stdRegisters.m_reg,
+                    nodeid, 0x80, 26);
+
+            if (false == progressDlg.Pulse()) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            // Second part of standard registers
+            m_csw.readLevel1Registers(this,
+                    (m_stdRegisters.m_reg + 0xD0 - 0x80),
+                    nodeid, 0xD0, 48);
+
+            // Get the application registers
+            progressDlg.Pulse(_("Reading application registers."));
+            if (false == progressDlg.Update(230)) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            SortedArrayLong pageArray;
+            uint32_t n = m_mdf.getPages(pageArray);
+
+            if (false == progressDlg.Update(235)) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            uint8_t tt = m_stdRegisters.getNickname();
+            n = m_mdf.getNumberOfRegisters(0);
+
+            if (false == progressDlg.Update(240)) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            uint8_t val;
+            wxString strBuf;
+            wxString str;
+
+            wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
+            wxFont fontBold = defaultFont;
+            fontBold.SetStyle(wxFONTSTYLE_NORMAL);
+            fontBold.SetWeight(wxFONTWEIGHT_BOLD);
+
+            // Fill in register descriptions
+            uint8_t progress = 0;
+            uint8_t progress_count;
+            if (m_mdf.m_list_register.GetCount()) progress_count = 256 / m_mdf.m_list_register.GetCount();
+            MDF_REGISTER_LIST::iterator iter;
+            for (iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter) {
+
+                CMDF_Register *reg = *iter;
+                int cnt = 0;
+                if (reg->m_nPage < MAX_CONFIG_REGISTER_PAGE) {
+
+                    progressDlg.Pulse(_("Reading standard registers."));
+                    progress += progress_count;
+                    progressDlg.Update(progress);
+
+                    if (false == progressDlg.Update(256 - m_mdf.m_list_register.GetCount() + cnt)) {
+                        ::wxEndBusyCursor();
+                        return;
+                    }
+
+                    // Add a new row
+                    m_gridRegisters->AppendRows(1);
+
+                    // Register
+                    strBuf.Printf(_("%04X:%02X"), reg->m_nPage, reg->m_nOffset);
+                    progressDlg.Pulse(_("Reading page:register: ") + strBuf);
+
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+                    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+                    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+                    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+
+                    if (m_csw.readLevel1Register(nodeid, reg->m_nOffset, &val)) {
+                        reg->m_value = val;
+                        getFormattedValue(val);
+                        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                                2,
+                                getFormattedValue(val));
+                        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+                        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
+                    } 
+                    else {
+                        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                                2,
+                                _("Read error"));
+                        m_gridRegisters->SetCellAlignment(m_gridRegisters->GetNumberRows() - 1, 2, wxALIGN_CENTRE, wxALIGN_CENTRE);
+                        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
+                    }
+
+                    str.Printf(reg->m_strName +
+                            _("\n") +
+                            reg->m_strDescription);
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                            3,
+                            str);
+                    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+
+                    wxString strAccess;
+                    if (reg->m_nAccess & MDF_ACCESS_READ) strAccess = _("r");
+                    if (reg->m_nAccess & MDF_ACCESS_WRITE) {
+                        strAccess += _("w");
+                    } 
+                    else {
+                        strAccess += _("-");
+                    }
+
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                            1,
+                            strAccess);
+                    // Protect cell if readonly
+                    if (wxNOT_FOUND == strAccess.Find(_("w"))) {
+                        m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+                    }
+                    m_gridRegisters->SetCellAlignment(m_gridRegisters->GetNumberRows() - 1, 1, wxALIGN_CENTRE, wxALIGN_CENTRE);
+
+                    // Make all parts of the row visible
+                    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+                }
+            }
+
+            if (false == progressDlg.Update(255)) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            // Fill grid with standard registers
+            fillStandardRegisters();
+
+            if (false == progressDlg.Update(240)) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            // Write status
+            writeStatusInfo();
+
+            if (false == progressDlg.Update(255)) {
+                ::wxEndBusyCursor();
+                return;
+            }
+            
+            m_bFirstRead = false;
+
+        } 
+        else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+
+            // Fetch MDF from local file or server
+            if (m_chkMdfFromFile->GetValue()) {
+
+                //wxStandardPaths stdpaths;
+
+                // Get MDF from local file
+                wxFileDialog dlg(this,
+                        _("Choose file to load MDF from "),
+                        wxStandardPaths::Get().GetUserDataDir(),
+                        _(""),
+                        _("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
+
+                if (wxID_OK == dlg.ShowModal()) {
+                    strPath = dlg.GetPath();
+                }
+
+            } 
+            else {
+                // Get MDF from device
+                progressDlg.Pulse(_("Fetching MDF path from device."));
+                strPath = m_csw.getMDFfromDevice2( progressDlg,
+                        m_ifguid,
+                        destGUID,
+                        m_bLevel2->GetValue());
+            }
+
+            // We need it to continue
+            if (0 == strPath.Length()) {
+                ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            // Load and parse the MDF
+            if (!progressDlg.Pulse(_("Loading and parsing MDF."))) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            if (!m_mdf.load(strPath, m_chkMdfFromFile->GetValue())) {
+                // We try to continue anyway
+            }
+
+            // Get the standard registers
+            if (!progressDlg.Pulse(_("Reading standard registers."))) {
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            // First part of standard registers
+            if (!m_csw.readLevel2Registers(this,
+                    m_stdRegisters.m_reg,
+                    m_ifguid,
+                    m_bLevel2->GetValue() ? 0xFFFFFF80 : 0x80,
+                    26,
+                    &destGUID,
+                    &progressDlg,
+                    m_bLevel2->GetValue())) return;
+
+            if (false == progressDlg.Pulse()) return;
+
+            // Second part of standard registers
+            if (!m_csw.readLevel2Registers(this,
+                    (m_stdRegisters.m_reg + (0xD0 - 0x80)),
+                    m_ifguid,
+                    m_bLevel2->GetValue() ? 0xFFFFFFD0 : 0xD0,
+                    48,
+                    &destGUID,
+                    &progressDlg,
+                    m_bLevel2->GetValue())) return;
+
+            // Get the application registers
+            if (!progressDlg.Pulse(_("Reading application registers."))) return;
+
+            SortedArrayLong pageArray;
+            uint32_t n = m_mdf.getPages(pageArray);
+
+            if (!progressDlg.Pulse()) return;
+
+            uint8_t tt = m_stdRegisters.getNickname();
+            n = m_mdf.getNumberOfRegisters(0);
+
+            if (!progressDlg.Pulse()) return;
+
+            uint8_t val;
+            wxString strBuf;
+            wxString str;
+
+            wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
+            wxFont fontBold = defaultFont;
+            fontBold.SetStyle(wxFONTSTYLE_NORMAL);
+            fontBold.SetWeight(wxFONTWEIGHT_BOLD);
+
+            // Fill in register descriptions
+            uint8_t progress = 0;
+            uint8_t progress_count;
+
+            if (m_mdf.m_list_register.GetCount()) progress_count = 256 / m_mdf.m_list_register.GetCount();
+            MDF_REGISTER_LIST::iterator iter;
+            for (iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter) {
+
+                CMDF_Register *reg = *iter;
+                int cnt = 0;
+                if (reg->m_nPage < MAX_CONFIG_REGISTER_PAGE) {
+
+                    //if ( !progressDlg.Update( _("Reading standard registers %0X02"), 256 - m_mdf.m_list_register.GetCount() + cnt  ) ) return;
+
+                    // Add a new row
+                    m_gridRegisters->AppendRows(1);
+
+                    // Register
+                    strBuf.Printf(_("%04X:%X"), reg->m_nPage, reg->m_nOffset);
+                    progressDlg.Pulse(_("Reading page:register: ") + strBuf);
+
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
+                    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+                    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+                    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+
+                    if (m_csw.readLevel2Register(m_ifguid,
+                            m_bLevel2->GetValue() ? (0xFFFFFFE0 + reg->m_nOffset) : reg->m_nOffset,
+                            &val,
+                            &destGUID,
+                            &progressDlg,
+                            m_bLevel2->GetValue())) {
+                        reg->m_value = val;
+                        getFormattedValue(val);
+                        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                                2,
+                                getFormattedValue(val));
+                        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+                        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
+                    } else {
+                        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                                2,
+                                _("Read error"));
+                        m_gridRegisters->SetCellAlignment(m_gridRegisters->GetNumberRows() - 1, 2, wxALIGN_CENTRE, wxALIGN_CENTRE);
+                        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
+                    }
+
+                    str.Printf(reg->m_strName +
+                            _("\n") +
+                            reg->m_strDescription);
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                            3,
+                            str);
+                    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+
+                    wxString strAccess;
+                    if (reg->m_nAccess & MDF_ACCESS_READ) strAccess = _("r");
+                    if (reg->m_nAccess & MDF_ACCESS_WRITE) {
+                        strAccess += _("w");
+                    } 
+                    else {
+                        strAccess += _("-");
+                    }
+
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                            1,
+                            strAccess);
+                    // Protect cell if readonly
+                    if (wxNOT_FOUND == strAccess.Find(_("w"))) {
+                        m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+                    }
+                    m_gridRegisters->SetCellAlignment(m_gridRegisters->GetNumberRows() - 1, 1, wxALIGN_CENTRE, wxALIGN_CENTRE);
+
+                    // Make all parts of the row visible
+                    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+                }
+            }
+
+            if (!progressDlg.Pulse(_("Fill standard register information."))) return;
+
+            // Fill grid with standard registers
+            fillStandardRegisters();
+
+            if (!progressDlg.Pulse(_("Fill status information."))) return;
+
+            // Write status
+            writeStatusInfo();
+
+            if (!progressDlg.Pulse()) return;
+
+            m_bFirstRead = false;
+        }
+
+        if (!progressDlg.Pulse(_("Update DM grid."))) return;
+
+        // Update the DM grid    
+        updateDmGrid();
+
+        if (!progressDlg.Pulse(_("Update abstraction grid."))) return;
+
+        // Update abstractions
+        updateAbstractionGrid();
+
+        if (!progressDlg.Pulse(_("Done."))) return;
+
+        // Enable load defaults buttons
+        m_ctrlButtonLoadMDF->Enable(true);
+
+    }        // next read
+    else {
+
+        if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+            writeChangedLevel1Registers(nodeid);
+        } else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+            writeChangedLevel2Registers();
+        }
+    }
+
+    ::wxEndBusyCursor();
+
+    event.Skip(false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OnButtonLoadDefaultsClick
 //
 
-void frmDeviceConfig::OnButtonLoadDefaultsClick( wxCommandEvent& event )
-{
-	wxString strBuf;
-	wxString str;
-	uint8_t val;
-	uint8_t nodeid = 0;
-	uint32_t row = 0;
+void frmDeviceConfig::OnButtonLoadDefaultsClick(wxCommandEvent& event) {
+    wxString strBuf;
+    wxString str;
+    uint8_t val;
+    uint8_t nodeid = 0;
+    uint32_t row = 0;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-		_("Fetching status and MDF"),
-		256, 
-		this,
-		wxPD_ELAPSED_TIME | 
-		wxPD_AUTO_HIDE | 
-		wxPD_APP_MODAL | 
-		wxPD_CAN_ABORT );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Fetching status and MDF"),
+            256,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
 
-	// Get nickname
-	nodeid = readStringValue( m_comboNodeID->GetValue() );
+    // Get nickname
+    nodeid = readStringValue(m_comboNodeID->GetValue());
 
-	wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
-	wxFont fontBold = defaultFont;
-	fontBold.SetStyle( wxFONTSTYLE_NORMAL );
-	fontBold.SetWeight( wxFONTWEIGHT_BOLD );
+    wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
+    wxFont fontBold = defaultFont;
+    fontBold.SetStyle(wxFONTSTYLE_NORMAL);
+    fontBold.SetWeight(wxFONTWEIGHT_BOLD);
 
-	// Fill in register descriptions
-	uint8_t progress = 0;
-	uint8_t progress_count;
-	if ( m_mdf.m_list_register.GetCount() ) progress_count = 256/m_mdf.m_list_register.GetCount();
-	MDF_REGISTER_LIST::iterator iter;
-	for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
+    // Fill in register descriptions
+    uint8_t progress = 0;
+    uint8_t progress_count;
+    if (m_mdf.m_list_register.GetCount()) progress_count = 256 / m_mdf.m_list_register.GetCount();
+    MDF_REGISTER_LIST::iterator iter;
+    for (iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter) {
 
-		CMDF_Register *reg = *iter;
-		int cnt = 0;
-		if ( reg->m_nPage < MAX_CONFIG_REGISTER_PAGE ) {
+        CMDF_Register *reg = *iter;
+        int cnt = 0;
+        if (reg->m_nPage < MAX_CONFIG_REGISTER_PAGE) {
 
-			progressDlg.Pulse( _("Reading standard registers.") );
-			progress += progress_count;
-			progressDlg.Update( progress );
+            progressDlg.Pulse(_("Reading standard registers."));
+            progress += progress_count;
+            progressDlg.Update(progress);
 
-			if ( wxNOT_FOUND == reg->m_strDefault.Find(_("UNDEF")) ) {
+            if (wxNOT_FOUND == reg->m_strDefault.Find(_("UNDEF"))) {
 
-				if ( false == progressDlg.Update( 256 - m_mdf.m_list_register.GetCount() + cnt  ) ) return;
+                if (false == progressDlg.Update(256 - m_mdf.m_list_register.GetCount() + cnt)) return;
 
-				val = readStringValue( reg->m_strDefault );
-				strBuf = getFormattedValue( val );
-				m_gridRegisters->SelectRow( row );
-				m_gridRegisters->SetCellValue( row, 2,  strBuf );
-				m_gridRegisters->MakeCellVisible( row, 2 );
-				m_gridRegisters->SetCellTextColour( row, 2, *wxRED );
-				m_gridRegisters->Update();
-			}
+                val = readStringValue(reg->m_strDefault);
+                strBuf = getFormattedValue(val);
+                m_gridRegisters->SelectRow(row);
+                m_gridRegisters->SetCellValue(row, 2, strBuf);
+                m_gridRegisters->MakeCellVisible(row, 2);
+                m_gridRegisters->SetCellTextColour(row, 2, *wxRED);
+                m_gridRegisters->Update();
+            }
 
-			// Make all parts of the row visible
-			m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows()-1 );
+            // Make all parts of the row visible
+            m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
 
-			row++;
-		}
+            row++;
+        }
 
-		if ( false == progressDlg.Update( 240 ) ) return;
+        if (false == progressDlg.Update(240)) return;
 
-	}
+    }
 
-	OnButtonUpdateClick( event );
+    OnButtonUpdateClick(event);
 
-	// Update the DM grid    
-	updateDmGrid();
+    // Update the DM grid    
+    updateDmGrid();
 
-	if ( false == progressDlg.Update( 250 ) ) return;
+    if (false == progressDlg.Update(250)) return;
 
-	// Update abstractions
-	updateAbstractionGrid();
+    // Update abstractions
+    updateAbstractionGrid();
 
 
-	event.Skip( false );
+    event.Skip(false);
 }
 
 
@@ -6071,10 +6123,9 @@ void frmDeviceConfig::OnButtonLoadDefaultsClick( wxCommandEvent& event )
 // OnButtonWizardClick
 //
 
-void frmDeviceConfig::OnButtonWizardClick( wxCommandEvent& event )
-{
-	wxMessageBox(_("The wizard is not implemented yet!"));
-	event.Skip();
+void frmDeviceConfig::OnButtonWizardClick(wxCommandEvent& event) {
+    wxMessageBox(_("The wizard is not implemented yet!"));
+    event.Skip();
 }
 
 
@@ -6082,44 +6133,41 @@ void frmDeviceConfig::OnButtonWizardClick( wxCommandEvent& event )
 // OnCellRightClick
 //
 
-void frmDeviceConfig::OnCellRightClick( wxGridEvent& event )
-{
-	wxMenu menu;
+void frmDeviceConfig::OnCellRightClick(wxGridEvent& event) {
+    wxMenu menu;
 
-	wxPoint pos = ClientToScreen( event.GetPosition() );
+    wxPoint pos = ClientToScreen(event.GetPosition());
 
-	if ( ID_GRID_REGISTERS == event.GetId() ) {
+    if (ID_GRID_REGISTERS == event.GetId()) {
 
-		menu.Append( Menu_Popup_Update, _T("Update"));
-		menu.AppendSeparator();
-		menu.Append( Menu_Popup_Read_Value, _T("Read value(s) for selected row(s)"));
-		menu.Append( Menu_Popup_Write_Value, _T("Write value(s) for selected row(s)"));
-		menu.AppendSeparator();
-		menu.Append( Menu_Popup_Undo, _T("Undo value(s) for selected row(s)"));
-		menu.Append( Menu_Popup_Default, _T("Write default for selected row(s)"));
-		menu.AppendSeparator();
-		menu.Append( /*Menu_Popup_Read_Value*/ Menu_Popup_go_VSCP, _T("Be Hungry - Stay Foolish!"));
+        menu.Append(Menu_Popup_Update, _T("Update"));
+        menu.AppendSeparator();
+        menu.Append(Menu_Popup_Read_Value, _T("Read value(s) for selected row(s)"));
+        menu.Append(Menu_Popup_Write_Value, _T("Write value(s) for selected row(s)"));
+        menu.AppendSeparator();
+        menu.Append(Menu_Popup_Undo, _T("Undo value(s) for selected row(s)"));
+        menu.Append(Menu_Popup_Default, _T("Write default for selected row(s)"));
+        menu.AppendSeparator();
+        menu.Append(/*Menu_Popup_Read_Value*/ Menu_Popup_go_VSCP, _T("Be Hungry - Stay Foolish!"));
 
-		PopupMenu( &menu );
+        PopupMenu(&menu);
 
-	}
-	else if ( ID_GRID_ABSTRACTIONS == event.GetId() ) {
+    } else if (ID_GRID_ABSTRACTIONS == event.GetId()) {
 
 
 
-	}
-	else if ( ID_GRID_DM == event.GetId() ) {
+    } else if (ID_GRID_DM == event.GetId()) {
 
-		menu.Append( Menu_Popup_dm_enable_row, _T("Enable row."));
-		menu.Append( Menu_Popup_dm_disable_row, _T("Disable row."));
-		menu.AppendSeparator();
-		menu.Append( Menu_Popup_dm_row_wizard, _T("Run DM setup wizard for this row..."));
+        menu.Append(Menu_Popup_dm_enable_row, _T("Enable row."));
+        menu.Append(Menu_Popup_dm_disable_row, _T("Disable row."));
+        menu.AppendSeparator();
+        menu.Append(Menu_Popup_dm_row_wizard, _T("Run DM setup wizard for this row..."));
 
-		PopupMenu( &menu );
+        PopupMenu(&menu);
 
-	}
+    }
 
-	event.Skip( false );
+    event.Skip(false);
 
 }
 
@@ -6127,507 +6175,490 @@ void frmDeviceConfig::OnCellRightClick( wxGridEvent& event )
 // readValueSelectedRow
 //
 
-void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
-{
-	wxString strBuf;
-	uint8_t nodeid = 0;
+void frmDeviceConfig::readValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
+    wxString strBuf;
+    uint8_t nodeid = 0;
 
-	wxBusyCursor wait;
+    wxBusyCursor wait;
 
-	// Select the row
-	m_gridRegisters->SelectRow( m_lastLeftClickRow );
+    // Select the row
+    m_gridRegisters->SelectRow(m_lastLeftClickRow);
 
-	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-		// Get Interface id
-		nodeid = readStringValue( m_comboNodeID->GetValue() );
-	}	
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+        // Get Interface id
+        nodeid = readStringValue(m_comboNodeID->GetValue());
+    }
 
-	if ( m_gridRegisters->GetNumberRows() ) {
-		wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
+    if (m_gridRegisters->GetNumberRows()) {
+        wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
-		if ( selrows.GetCount() ) {
+        if (selrows.GetCount()) {
 
-			for ( int i=selrows.GetCount()-1; i >= 0; i-- ) {
+            for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-				uint8_t val;
+                uint8_t val;
 
-				uint16_t page;
-				page = getPageFromCell( selrows[i] );
+                uint16_t page;
+                page = getPageFromCell(selrows[i]);
 
-				uint32_t reg;
-				reg = getRegFromCell( selrows[i] );
+                uint32_t reg;
+                reg = getRegFromCell(selrows[i]);
 
-				if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+                if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-					uint16_t savepage = m_csw.getRegisterPage( this, nodeid, &m_ifguid );			
+                    uint16_t savepage = m_csw.getRegisterPage(this, nodeid, &m_ifguid);
 
-					if ( m_csw.setRegisterPage( nodeid, page ) &&  
-						m_csw.readLevel1Register( nodeid, reg, &val ) ) {
+                    if (m_csw.setRegisterPage(nodeid, page) &&
+                            m_csw.readLevel1Register(nodeid, reg, &val)) {
 
-							// Update display
-							strBuf = getFormattedValue( val );
+                        // Update display
+                        strBuf = getFormattedValue(val);
 
-							m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
-							m_gridRegisters->SelectRow( selrows[i] );
-							m_gridRegisters->MakeCellVisible( selrows[i], 2 );
-							m_gridRegisters->Update();
+                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
+                        m_gridRegisters->SelectRow(selrows[i]);
+                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->Update();
 
-							// Set original page
-							m_csw.setRegisterPage( nodeid, savepage );
+                        // Set original page
+                        m_csw.setRegisterPage(nodeid, savepage);
 
-							updateDmGridConditional( reg, page );
-							updateAbstractionGridConditional( reg, page );
-					}
-					else {
-						wxMessageBox(_("Failed to read value."));
-					}
-				}
-				else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+                        updateDmGridConditional(reg, page);
+                        updateAbstractionGridConditional(reg, page);
+                    } else {
+                        wxMessageBox(_("Failed to read value."));
+                    }
+                } else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
-					// Get the destination GUID
-					cguid destGUID;
-					destGUID.getFromString( m_comboNodeID->GetValue() );
+                    // Get the destination GUID
+                    cguid destGUID;
+                    destGUID.getFromString(m_comboNodeID->GetValue());
 
-					if ( m_csw.readLevel2Register( m_ifguid, 
-													reg, 
-													&val,
-													&destGUID,
-													NULL,
-													m_bLevel2->GetValue() ) ) {
-							// Update display
-							strBuf.Printf( _("0x%02lx"), val );
-							m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
-							m_gridRegisters->SelectRow( selrows[i] );
-							m_gridRegisters->MakeCellVisible( selrows[i], 2 );
-							m_gridRegisters->Update();
+                    if (m_csw.readLevel2Register(m_ifguid,
+                            reg,
+                            &val,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue())) {
+                        // Update display
+                        strBuf.Printf(_("0x%02lx"), val);
+                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
+                        m_gridRegisters->SelectRow(selrows[i]);
+                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->Update();
 
-							updateDmGridConditional( reg, page );
-							updateAbstractionGridConditional( reg, page );
+                        updateDmGridConditional(reg, page);
+                        updateAbstractionGridConditional(reg, page);
 
-					}
-					else {
-						wxMessageBox(_("Failed to read value."));
-					}
-				} // Interface
-			}
+                    } else {
+                        wxMessageBox(_("Failed to read value."));
+                    }
+                } // Interface
+            }
 
-		}
-		else {
-			wxMessageBox(_("No rows selected!"));
-		}
-	}
+        } else {
+            wxMessageBox(_("No rows selected!"));
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // writeValueSelectedRow
 //
 
-void frmDeviceConfig::writeValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
-{
-	wxString strBuf;
-	uint8_t nodeid = 0;
+void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
+    wxString strBuf;
+    uint8_t nodeid = 0;
 
-	wxBusyCursor wait;
+    wxBusyCursor wait;
 
-	// Get the destination GUID
-	cguid destGUID;
-	
-
-	// Select the row
-	m_gridRegisters->SelectRow( m_lastLeftClickRow );
-
-	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-
-		// Get Interface id
-		nodeid = readStringValue( m_comboNodeID->GetValue() );
-	
-	} 
-	else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-	
-		// Get Interface GUID
-		destGUID.getFromString( m_comboNodeID->GetValue() );
-
-	}
+    // Get the destination GUID
+    cguid destGUID;
 
 
-	if ( m_gridRegisters->GetNumberRows() ) {
+    // Select the row
+    m_gridRegisters->SelectRow(m_lastLeftClickRow);
 
-		wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-		if ( selrows.GetCount() ) {
+        // Get Interface id
+        nodeid = readStringValue(m_comboNodeID->GetValue());
 
-			for ( int i=selrows.GetCount()-1; i >= 0; i-- ) {
+    }
+    else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
-				// Must be writable
-				wxString permissions = 
-					m_gridRegisters->GetCellValue( selrows[ i ], 1 );
-				if ( wxNOT_FOUND == permissions.Find( _("w") ) ) {
-					wxMessageBox(_("This register is not writable!"));
-				}
-				else {
-					uint8_t val =
-						readStringValue( m_gridRegisters->GetCellValue( selrows[i], 2 ) );
+        // Get Interface GUID
+        destGUID.getFromString(m_comboNodeID->GetValue());
 
-					uint16_t page;
-					page = getPageFromCell( selrows[i] );
+    }
 
-					uint32_t reg;
-					reg = getRegFromCell( selrows[i] );
 
-					uint16_t savepage = m_csw.getRegisterPage( this,
-														( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(),
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() );
+    if (m_gridRegisters->GetNumberRows()) {
 
-					// Set new page
-					if ( page != savepage ) {
-						if ( !m_csw.setRegisterPage( ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(), 
-														page, 
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() ) ) {
-							wxMessageBox(_("Failed to write/set new page."));
-						}			
-					}
+        wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
-					if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+        if (selrows.GetCount()) {
 
-						// We don't test for errors here as some registers have reserved bits
-						// etc and therefore will not read the same as written
+            for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-						m_csw.writeLevel1Register( nodeid, reg, &val );
+                // Must be writable
+                wxString permissions =
+                        m_gridRegisters->GetCellValue(selrows[ i ], 1);
+                if (wxNOT_FOUND == permissions.Find(_("w"))) {
+                    wxMessageBox(_("This register is not writable!"));
+                } else {
+                    uint8_t val =
+                            readStringValue(m_gridRegisters->GetCellValue(selrows[i], 2));
 
-						// Update display
-						strBuf = getFormattedValue( val );
+                    uint16_t page;
+                    page = getPageFromCell(selrows[i]);
 
-						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
+                    uint32_t reg;
+                    reg = getRegFromCell(selrows[i]);
 
-						m_gridRegisters->SelectRow( selrows[i] );
-						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
-						m_gridRegisters->SetCellTextColour( selrows[i], 2, *wxBLUE );
-						m_gridRegisters->Update();
+                    uint16_t savepage = m_csw.getRegisterPage(this,
+                            (USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                            nodeid : destGUID.getLSB(),
+                            &m_ifguid,
+                            &destGUID,
+                            m_bLevel2->GetValue());
 
-						updateDmGridConditional( reg, page );
-						updateAbstractionGridConditional( reg, page );
+                    // Set new page
+                    if (page != savepage) {
+                        if (!m_csw.setRegisterPage((USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                                nodeid : destGUID.getLSB(),
+                                page,
+                                &m_ifguid,
+                                &destGUID,
+                                m_bLevel2->GetValue())) {
+                            wxMessageBox(_("Failed to write/set new page."));
+                        }
+                    }
 
-					}
-					else {
+                    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-						// We don't test for errors here as some registers have reserved bits
-						// etc and therefore will not read the same as written
-						m_csw.writeLevel2Register( m_ifguid, 
-													reg, 
-													&val,
-													destGUID,
-													NULL,
-													m_bLevel2->GetValue() );
-						// Update display
-						strBuf.Printf( _("0x%02lx"), val );
-						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
+                        // We don't test for errors here as some registers have reserved bits
+                        // etc and therefore will not read the same as written
 
-						m_gridRegisters->SelectRow( selrows[i] );
-						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
-						m_gridRegisters->Update();
+                        m_csw.writeLevel1Register(nodeid, reg, &val);
 
-						updateDmGridConditional( reg, page );
-						updateAbstractionGridConditional( reg, page );
+                        // Update display
+                        strBuf = getFormattedValue(val);
 
-					}
+                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
 
-					// Restore page
-					if ( page != savepage ) {
-						if ( !m_csw.setRegisterPage( ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(), 
-														savepage, 
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() ) ) {
-							wxMessageBox(_("Failed to write/set new page."));
-						}			
-					}
-				}
+                        m_gridRegisters->SelectRow(selrows[i]);
+                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxBLUE);
+                        m_gridRegisters->Update();
 
-			}
+                        updateDmGridConditional(reg, page);
+                        updateAbstractionGridConditional(reg, page);
 
-		}
-		else {
-			wxMessageBox(_("No rows selected!"));
-		}
-	}
+                    } else {
+
+                        // We don't test for errors here as some registers have reserved bits
+                        // etc and therefore will not read the same as written
+                        m_csw.writeLevel2Register(m_ifguid,
+                                reg,
+                                &val,
+                                destGUID,
+                                NULL,
+                                m_bLevel2->GetValue());
+                        // Update display
+                        strBuf.Printf(_("0x%02lx"), val);
+                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
+
+                        m_gridRegisters->SelectRow(selrows[i]);
+                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->Update();
+
+                        updateDmGridConditional(reg, page);
+                        updateAbstractionGridConditional(reg, page);
+
+                    }
+
+                    // Restore page
+                    if (page != savepage) {
+                        if (!m_csw.setRegisterPage((USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                                nodeid : destGUID.getLSB(),
+                                savepage,
+                                &m_ifguid,
+                                &destGUID,
+                                m_bLevel2->GetValue())) {
+                            wxMessageBox(_("Failed to write/set new page."));
+                        }
+                    }
+                }
+
+            }
+
+        } else {
+            wxMessageBox(_("No rows selected!"));
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // undoValueSelectedRow
 //
 
-void frmDeviceConfig::undoValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
-{
-	wxString strBuf;
-	uint8_t nodeid = 0;
+void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
+    wxString strBuf;
+    uint8_t nodeid = 0;
 
-	wxBusyCursor wait;
+    wxBusyCursor wait;
 
-	// Get the destination GUID
-	cguid destGUID;
-	destGUID.getFromString( m_comboNodeID->GetValue() );
+    // Get the destination GUID
+    cguid destGUID;
+    destGUID.getFromString(m_comboNodeID->GetValue());
 
-	// Select the row
-	m_gridRegisters->SelectRow( m_lastLeftClickRow );
+    // Select the row
+    m_gridRegisters->SelectRow(m_lastLeftClickRow);
 
-	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-		// Get Interface id
-		nodeid = readStringValue( m_comboNodeID->GetValue() );
-	}
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+        // Get Interface id
+        nodeid = readStringValue(m_comboNodeID->GetValue());
+    }
 
-	if ( m_gridRegisters->GetNumberRows() ) {
+    if (m_gridRegisters->GetNumberRows()) {
 
-		wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
+        wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
-		if ( selrows.GetCount() ) {
+        if (selrows.GetCount()) {
 
-			for ( int i=selrows.GetCount()-1; i >= 0; i-- ) {
+            for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-				// Must be writable
-				wxString permissions = 
-					m_gridRegisters->GetCellValue( selrows[ i ], 1 );
-				if ( wxNOT_FOUND == permissions.Find( _("w") ) ) {
-					wxMessageBox(_("This register is not writable!"));
-				}
-				else {
+                // Must be writable
+                wxString permissions =
+                        m_gridRegisters->GetCellValue(selrows[ i ], 1);
+                if (wxNOT_FOUND == permissions.Find(_("w"))) {
+                    wxMessageBox(_("This register is not writable!"));
+                } else {
 
-					uint8_t val;
+                    uint8_t val;
 
-					uint8_t reg = getRegFromCell( i );
-					uint32_t page = getPageFromCell( i );
-					
+                    uint8_t reg = getRegFromCell(i);
+                    uint32_t page = getPageFromCell(i);
 
-					CMDF_Register *mdfRegs =  m_mdf.getMDFRegs( reg, page );
-					if ( NULL == mdfRegs ) {
-						wxMessageBox(_("Register is unkown. Report possible iternal problem."));
-						continue;
-					}
 
-					val = mdfRegs->m_value;
+                    CMDF_Register *mdfRegs = m_mdf.getMDFRegs(reg, page);
+                    if (NULL == mdfRegs) {
+                        wxMessageBox(_("Register is unkown. Report possible iternal problem."));
+                        continue;
+                    }
 
-					uint16_t savepage = m_csw.getRegisterPage( this,
-														( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(),
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() );
+                    val = mdfRegs->m_value;
 
-					// Set new page
-					if ( page != savepage ) {
-						if ( !m_csw.setRegisterPage( ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(), 
-														page, 
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() ) ) {
-							wxMessageBox(_("Failed to write/set new page."));
-						}			
-					}
+                    uint16_t savepage = m_csw.getRegisterPage(this,
+                            (USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                            nodeid : destGUID.getLSB(),
+                            &m_ifguid,
+                            &destGUID,
+                            m_bLevel2->GetValue());
 
-					if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+                    // Set new page
+                    if (page != savepage) {
+                        if (!m_csw.setRegisterPage((USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                                nodeid : destGUID.getLSB(),
+                                page,
+                                &m_ifguid,
+                                &destGUID,
+                                m_bLevel2->GetValue())) {
+                            wxMessageBox(_("Failed to write/set new page."));
+                        }
+                    }
 
-						// We don't test for errors here as some registers have reserved bits
-						// etc and therefore will not read the same as written
-						m_csw.writeLevel1Register( nodeid, reg, &val );
+                    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-						// Update display
-						strBuf = getFormattedValue( val );
+                        // We don't test for errors here as some registers have reserved bits
+                        // etc and therefore will not read the same as written
+                        m_csw.writeLevel1Register(nodeid, reg, &val);
 
-						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
-						m_gridRegisters->SelectRow( selrows[i] );
-						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
-						m_gridRegisters->SetCellTextColour( selrows[i], 2, *wxRED );
-						m_gridRegisters->Update();
+                        // Update display
+                        strBuf = getFormattedValue(val);
 
-						updateDmGridConditional( reg, page );
-						updateAbstractionGridConditional( reg, page );
+                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
+                        m_gridRegisters->SelectRow(selrows[i]);
+                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxRED);
+                        m_gridRegisters->Update();
 
-					}
-					else {
+                        updateDmGridConditional(reg, page);
+                        updateAbstractionGridConditional(reg, page);
 
-						// We don't test for errors here as some registers have reserved bits
-						// etc and therefore will not read the same as written
-						m_csw.writeLevel2Register( m_ifguid, 
-													reg, 
-													&val,
-													destGUID,
-													NULL,
-													m_bLevel2->GetValue() );
-						// Update display
-						strBuf.Printf( _("0x%02lx"), val );
-						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
-						m_gridRegisters->SelectRow( selrows[i] );
-						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
-						m_gridRegisters->SetCellTextColour( selrows[i], 2, *wxRED );
-						m_gridRegisters->Update();
+                    } else {
 
-						updateDmGridConditional( reg, page );
-						updateAbstractionGridConditional( reg, page );
+                        // We don't test for errors here as some registers have reserved bits
+                        // etc and therefore will not read the same as written
+                        m_csw.writeLevel2Register(m_ifguid,
+                                reg,
+                                &val,
+                                destGUID,
+                                NULL,
+                                m_bLevel2->GetValue());
+                        // Update display
+                        strBuf.Printf(_("0x%02lx"), val);
+                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
+                        m_gridRegisters->SelectRow(selrows[i]);
+                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxRED);
+                        m_gridRegisters->Update();
 
-					}
+                        updateDmGridConditional(reg, page);
+                        updateAbstractionGridConditional(reg, page);
 
-					// Restore page
-					if ( page != savepage ) {
-						if ( !m_csw.setRegisterPage( ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(), 
-														savepage, 
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() ) ) {
-							wxMessageBox(_("Failed to write/set new page."));
-						}			
-					}
+                    }
 
-				}
-			}
+                    // Restore page
+                    if (page != savepage) {
+                        if (!m_csw.setRegisterPage((USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                                nodeid : destGUID.getLSB(),
+                                savepage,
+                                &m_ifguid,
+                                &destGUID,
+                                m_bLevel2->GetValue())) {
+                            wxMessageBox(_("Failed to write/set new page."));
+                        }
+                    }
 
-		}
-		else {
-			wxMessageBox(_("No rows selected!"));
-		}
-	}  
+                }
+            }
+
+        } else {
+            wxMessageBox(_("No rows selected!"));
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // defaultValueSelectedRow
 //
 
-void frmDeviceConfig::defaultValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
-{
-	wxString strBuf;
-	uint8_t nodeid = 0;
+void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
+    wxString strBuf;
+    uint8_t nodeid = 0;
 
-	wxBusyCursor wait;
+    wxBusyCursor wait;
 
-	// Get the destination GUID
-	cguid destGUID;
-	destGUID.getFromString( m_comboNodeID->GetValue() );
+    // Get the destination GUID
+    cguid destGUID;
+    destGUID.getFromString(m_comboNodeID->GetValue());
 
-	// Select the row
-	m_gridRegisters->SelectRow( m_lastLeftClickRow );
+    // Select the row
+    m_gridRegisters->SelectRow(m_lastLeftClickRow);
 
-	if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-		// Get Interface id
-		nodeid = readStringValue( m_comboNodeID->GetValue() );
-	}
+    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+        // Get Interface id
+        nodeid = readStringValue(m_comboNodeID->GetValue());
+    }
 
-	if ( m_gridRegisters->GetNumberRows() ) {
+    if (m_gridRegisters->GetNumberRows()) {
 
-		wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
+        wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
-		if ( selrows.GetCount() ) {
+        if (selrows.GetCount()) {
 
-			for ( int i=selrows.GetCount()-1; i >= 0; i-- ) {
+            for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-				// Must be writable
-				wxString permissions = 
-					m_gridRegisters->GetCellValue( selrows[ i ], 1 );
-				if ( wxNOT_FOUND == permissions.Find( _("w") ) ) {
-					wxMessageBox(_("This register is not writable!"));
-				}
-				else {
+                // Must be writable
+                wxString permissions =
+                        m_gridRegisters->GetCellValue(selrows[ i ], 1);
+                if (wxNOT_FOUND == permissions.Find(_("w"))) {
+                    wxMessageBox(_("This register is not writable!"));
+                } else {
 
-					uint8_t val;
+                    uint8_t val;
 
-					uint8_t reg = getRegFromCell( i );
-					uint32_t page = getPageFromCell( i );
+                    uint8_t reg = getRegFromCell(i);
+                    uint32_t page = getPageFromCell(i);
 
-					CMDF_Register *mdfRegs =  m_mdf.getMDFRegs( reg, page );
-					if ( NULL == mdfRegs ) {
-						wxMessageBox(_("Register is unkown. Report possible iternal problem."));
-						continue;
-					}
+                    CMDF_Register *mdfRegs = m_mdf.getMDFRegs(reg, page);
+                    if (NULL == mdfRegs) {
+                        wxMessageBox(_("Register is unkown. Report possible iternal problem."));
+                        continue;
+                    }
 
-					val = readStringValue( mdfRegs->m_strDefault );
+                    val = readStringValue(mdfRegs->m_strDefault);
 
-					uint16_t savepage = m_csw.getRegisterPage( this,
-														( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(),
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() );
+                    uint16_t savepage = m_csw.getRegisterPage(this,
+                            (USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                            nodeid : destGUID.getLSB(),
+                            &m_ifguid,
+                            &destGUID,
+                            m_bLevel2->GetValue());
 
-					// Set new page
-					if ( page != savepage ) {
-						if ( !m_csw.setRegisterPage( ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(), 
-														page, 
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() ) ) {
-							wxMessageBox(_("Failed to write/set new page."));
-						}			
-					}
+                    // Set new page
+                    if (page != savepage) {
+                        if (!m_csw.setRegisterPage((USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                                nodeid : destGUID.getLSB(),
+                                page,
+                                &m_ifguid,
+                                &destGUID,
+                                m_bLevel2->GetValue())) {
+                            wxMessageBox(_("Failed to write/set new page."));
+                        }
+                    }
 
-					if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+                    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-						// We don't test for errors here as some registers have reserved bits
-						// etc and therefore will not read the same as written
-						m_csw.writeLevel1Register( nodeid, reg, &val );
+                        // We don't test for errors here as some registers have reserved bits
+                        // etc and therefore will not read the same as written
+                        m_csw.writeLevel1Register(nodeid, reg, &val);
 
-						// Update display
-						strBuf = getFormattedValue( val );
+                        // Update display
+                        strBuf = getFormattedValue(val);
 
-						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
-						m_gridRegisters->SelectRow( selrows[i] );
-						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
-						m_gridRegisters->SetCellTextColour( selrows[i], 2, *wxBLUE );
-						m_gridRegisters->Update();
+                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
+                        m_gridRegisters->SelectRow(selrows[i]);
+                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxBLUE);
+                        m_gridRegisters->Update();
 
-						updateDmGridConditional( reg, page );
-						updateAbstractionGridConditional( reg, page );
+                        updateDmGridConditional(reg, page);
+                        updateAbstractionGridConditional(reg, page);
 
-					}
-					else {
+                    } else {
 
-						// We don't test for errors here as some registers have reserved bits
-						// etc and therefore will not read the same as written
-						m_csw.writeLevel2Register( m_ifguid, 
-													reg, 
-													&val,
-													destGUID,
-													NULL,
-													m_bLevel2->GetValue() );
+                        // We don't test for errors here as some registers have reserved bits
+                        // etc and therefore will not read the same as written
+                        m_csw.writeLevel2Register(m_ifguid,
+                                reg,
+                                &val,
+                                destGUID,
+                                NULL,
+                                m_bLevel2->GetValue());
 
-						// Update display
-						strBuf.Printf( _("0x%02lx"), val );
-						m_gridRegisters->SetCellValue( selrows[i], 2,  strBuf );
-						m_gridRegisters->SelectRow( selrows[i] );
-						m_gridRegisters->MakeCellVisible( selrows[i], 2 );
-						m_gridRegisters->SetCellTextColour( selrows[i], 2, *wxBLUE );
-						m_gridRegisters->Update();
+                        // Update display
+                        strBuf.Printf(_("0x%02lx"), val);
+                        m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
+                        m_gridRegisters->SelectRow(selrows[i]);
+                        m_gridRegisters->MakeCellVisible(selrows[i], 2);
+                        m_gridRegisters->SetCellTextColour(selrows[i], 2, *wxBLUE);
+                        m_gridRegisters->Update();
 
-						updateDmGridConditional( reg, page );
-						updateAbstractionGridConditional( reg, page );
+                        updateDmGridConditional(reg, page);
+                        updateAbstractionGridConditional(reg, page);
 
-					}
+                    }
 
-					// Restore page
-					if ( page != savepage ) {
-						if ( !m_csw.setRegisterPage( ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) ? 
-														nodeid : destGUID.getLSB(), 
-														savepage, 
-														&m_ifguid,
-														&destGUID,
-														m_bLevel2->GetValue() ) ) {
-							wxMessageBox(_("Failed to write/set new page."));
-						}			
-					}
-				}
-			}
+                    // Restore page
+                    if (page != savepage) {
+                        if (!m_csw.setRegisterPage((USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
+                                nodeid : destGUID.getLSB(),
+                                savepage,
+                                &m_ifguid,
+                                &destGUID,
+                                m_bLevel2->GetValue())) {
+                            wxMessageBox(_("Failed to write/set new page."));
+                        }
+                    }
+                }
+            }
 
-		}
-		else {
-			wxMessageBox(_("No rows selected!"));
-		}
-	} 
+        } else {
+            wxMessageBox(_("No rows selected!"));
+        }
+    }
 }
 
 
@@ -6635,1033 +6666,1014 @@ void frmDeviceConfig::defaultValueSelectedRow( wxCommandEvent& WXUNUSED(event) )
 // OnLeftDClick
 //
 
-void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
-{
-	uint8_t reg;
-
-	cguid destGUID;
-	destGUID.getFromString( m_comboNodeID->GetValue() );
-
-	if ( ID_GRID_REGISTERS == event.GetId() ) {
-		m_gridRegisters->SelectRow( event.GetRow() );
-	}
-	else if ( ID_GRID_ABSTRACTIONS == event.GetId() ) {
-
-		uint8_t pos;
-		wxString strValue;
-		wxString strBuf;
-		uint8_t val = 0;
-
-		DialogAbstractionEdit dlg( this );
-		strValue = m_gridAbstractions->GetCellValue( event.GetRow(), 3 );
-		dlg.TransferDataToWindow( m_mdf.m_list_abstraction[ event.GetRow() ], 
-									strValue  );
-
-		m_gridAbstractions->SelectRow( event.GetRow() );
-
-		int row;
-		if ( wxID_OK == dlg.ShowModal() ) {
-
-			wxString newValue;
-			dlg.TransferDataFromWindow( newValue );
-			// If value is not changed do nothing.
-			if ( newValue == strValue ) goto error;
-			strValue = newValue;
-			m_gridAbstractions->SetCellValue( event.GetRow(), 3, newValue );
-
-			if ( -1 == ( row = 
-				getRegisterGridRow( m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-						 				m_mdf.m_list_abstraction[ event.GetRow() ]->m_nPage ) ) ) {
-				wxMessageBox(_("Register corresponding to abstraction not found. Error in mdf-file."));
-			}
-
-			switch ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_nType ) {
-
-			case type_string:
-
-				// Do visual part
-				if ( -1 != row ) {
-
-					// Handle indexed storage
-					if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-
-						strBuf = getFormattedValue( 0 );
-						m_gridRegisters->SetCellValue( 
-								row, 
-								2, 
-								strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-								row, 
-								2, *wxRED );
-					
-						strBuf = getFormattedValue( strValue[ 0 ] );
-						m_gridRegisters->SetCellValue( 
-								row + 1, 
-								2, 
-								strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-								row + 1, 
-								2, *wxRED );
-
-					}
-
-					// Handle linear storage
-					else {
-						
-						for ( pos=0; pos<strValue.Length(); pos++ ) {
-
-							strBuf = getFormattedValue( strValue[ pos ] );
-							m_gridRegisters->SetCellValue( 
-								row + pos, 
-								2, 
-								strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-								row + pos, 
-								2, *wxRED );
-
-							// Cant write more then allocated space
-							if ( pos > m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth ) break;
-
-						}
-
-					}
-				}
-				
-				// Update registers
-				m_csw.writeAbstractionString( this,
-											readStringValue( m_comboNodeID->GetValue() ),
-											m_mdf.m_list_abstraction[ event.GetRow() ],
-											strValue,
-											&m_ifguid,
-											&destGUID,
-											NULL,
-											m_bLevel2->GetValue() );
-				break;
-
-			case type_boolval:
-				{
-					long lv;
-					bool bval;
-					strValue.ToLong( &lv );
-					strValue= strValue.Upper();
-					if ( wxNOT_FOUND != strValue.Find( _("TRUE") ) ) {
-						bval = true;		
-					}
-					else if ( wxNOT_FOUND != strValue.Find( _("FALSE") ) ) {
-						bval = false;
-					}
-					else if ( lv ) {
-						bval = true;
-					}
-					else {
-						bval = false;
-					}
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						strBuf = bval ? _("1") : _("0");
-						m_gridRegisters->SetCellValue( 
-										row, 
-										2, 
-										strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-										row, 
-										2, *wxRED );
-
-					}
-				
-					// Update registers
-					m_csw.writeAbstractionBool( this,
-											readStringValue( m_comboNodeID->GetValue() ),
-											m_mdf.m_list_abstraction[ event.GetRow() ],
-											bval,
-											&m_ifguid,
-											&destGUID,
-											NULL,
-											m_bLevel2->GetValue() );
-				}
-				break;
-
-			case type_bitfield:
-				{
-					val = 0;
-
-					// Octet width is the number of bytes needed to store the bits
-					uint8_t octetwidth = 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth/8 + 
-							( m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth % 8 ) ? 1 : 0;
-
-					uint8_t *p;
-					p = new uint8_t[ octetwidth ];
-					memset( p, 0, octetwidth );
-
-					// Build byte array
-					wxString str = strValue;
-					for ( int i=0; i<m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth; i++ ) {
-						for ( int j=7; j>0; j-- ) {
-							if ( !str.Length() ) break; // Must be digits left
-							if ( _("1") == str.Left( 1 ) ) {
-								*(p+1) += (1 << j);
-							}
-							str = str.Right( str.Length() - 1 );
-						}
-					}
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						// Handle indexed storage
-						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-							
-							// Index
-							strBuf = getFormattedValue( 0 );
-							m_gridRegisters->SetCellValue( 
-								row, 
-								2, 
-								strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-								row, 
-								2, *wxRED );
-
-							// Value
-							strBuf = getFormattedValue( *p );
-							m_gridRegisters->SetCellValue( 
-								row + 1, 
-								2, 
-								strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-								row + 1, 
-								2, *wxRED );
-						}
-
-						// Handle linear storage
-						else {
-						
-							for ( pos=0; pos<strValue.Length(); pos++ ) {
-
-								strBuf = getFormattedValue( *(p + pos ) );
-								m_gridRegisters->SetCellValue( 
-									row + pos, 
-									2, 
-									strBuf );
-
-								m_gridRegisters->SetCellTextColour( 
-									row + pos, 
-									2, *wxRED );
-
-								// Cant write more then allocated space
-								if ( pos > octetwidth ) break;
-							}
-						}
-					}
-				
-					// Update registers
-					m_csw.writeAbstractionBitField( this,
-											readStringValue( m_comboNodeID->GetValue() ),
-											m_mdf.m_list_abstraction[ event.GetRow() ],
-											strValue,
-											&m_ifguid,
-											&destGUID,
-											NULL,
-											m_bLevel2->GetValue() );
-				}
-				break;
-
-			case type_int8_t:
-			case type_uint8_t:
-				{
-					uint8_t val;
-					val = readStringValue( strValue );
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						strBuf = getFormattedValue( val );
-						m_gridRegisters->SetCellValue( 
-							row, 
-							2, 
-							strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-							row, 
-							2, *wxRED );
-
-					}
-
-					// Update registers
-					m_csw.writeAbstraction8bitinteger( this,
-									readStringValue( m_comboNodeID->GetValue() ),
-									m_mdf.m_list_abstraction[ event.GetRow() ],
-									val,
-									&m_ifguid,
-									&destGUID,
-									NULL,
-									m_bLevel2->GetValue() );
-				}
-				break;
-
-
-			case type_int16_t:
-			case type_uint16_t:
-				{
-					uint16_t val;
-					val = readStringValue( strValue );
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						strBuf = getFormattedValue( ( ( val >> 8 ) & 0xff ) );
-						m_gridRegisters->SetCellValue( 
-							row, 
-							2, 
-							strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-							row, 
-							2, *wxRED );
-
-						strBuf = getFormattedValue( val & 0xff );
-						m_gridRegisters->SetCellValue( 
-							row + 1, 
-							2, 
-							strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-							row + 1, 
-							2, *wxRED );
-					}
-
-					// Update registers
-					m_csw.writeAbstraction16bitinteger( this,
-											readStringValue( m_comboNodeID->GetValue() ),
-											m_mdf.m_list_abstraction[ event.GetRow() ],
-											val,
-											&m_ifguid,
-											&destGUID,
-											NULL,
-											m_bLevel2->GetValue() );
-				}
-				break;
-
-			case type_int32_t:
-			case type_uint32_t:
-				{
-					long longVal;
-					strValue.ToLong( &longVal );
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						uint8_t *pVal = (uint8_t *)&longVal;
-
-						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-						
-							// index
-							strBuf = _("0");
-							m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, *wxRED );
-
-							// value
-							strBuf = getFormattedValue( pVal[ 0 ] );
-							m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, *wxRED );
-
-						}
-						else {
-
-							
-							for ( int i=0; i<4; i++ ) {
-
-								strBuf = getFormattedValue( pVal[ i ] );
-								m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, 
-									strBuf );
-
-								m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, *wxRED );
-							}
-						}
-					}
-
-					// Update registers
-					uint32_t val32 = longVal;
-					m_csw.writeAbstraction32bitinteger( this,
-											readStringValue( m_comboNodeID->GetValue() ),
-											m_mdf.m_list_abstraction[ event.GetRow() ],
-											val32,
-											&m_ifguid,
-											&destGUID,
-											NULL,
-											m_bLevel2->GetValue() );
-				}
-				break;
-
-			case type_int64_t:
-			case type_uint64_t:
-				{
-					wxLongLong_t  longlongVal;
-					strValue.ToLongLong( &longlongVal );
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						uint8_t *pVal = (uint8_t *)&longlongVal;
-
-						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-						
-							// index
-							strBuf = _("0");
-							m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, *wxRED );
-
-							// value
-							strBuf = getFormattedValue( pVal[ 0 ] );
-							m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, *wxRED );
-
-						}
-						else {
-							
-							for ( int i=0; i<8; i++ ) {
-
-								strBuf = getFormattedValue( pVal[ i ] );
-								m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, 
-									strBuf );
-
-								m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, *wxRED );
-							}
-						}
-					}
-
-					// Update register
-					uint64_t val64 = longlongVal;
-					m_csw.writeAbstraction64bitinteger( this,
-										readStringValue( m_comboNodeID->GetValue() ),
-										m_mdf.m_list_abstraction[ event.GetRow() ],
-										val64,
-										&m_ifguid,
-										&destGUID,
-										NULL,
-										m_bLevel2->GetValue() );
-
-				}
-				break;
-
-
-			case type_float:
-				{
-					double doubleVal;
-					strValue.ToDouble( &doubleVal );
-					float floatVal = doubleVal;
-
-					uint8_t *pVal = (uint8_t *)&floatVal;
-					// Do visual part
-					if ( -1 != row ) {
-
-						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-						
-							// index
-							strBuf = _("0");
-							m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, *wxRED );
-
-							// value
-							strBuf = getFormattedValue( pVal[ 0 ] );
-							m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, *wxRED );
-
-						}
-						else {
-
-							
-							for ( int i=0; i<4; i++ ) {
-
-								strBuf = getFormattedValue( pVal[ i ] );
-								m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, 
-									strBuf );
-
-								m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, *wxRED );
-							}
-						}
-					}
-
-					// Update register
-					m_csw.writeAbstractionFloat( this,
-								readStringValue( m_comboNodeID->GetValue() ),
-								m_mdf.m_list_abstraction[ event.GetRow() ],
-								floatVal,
-								&m_ifguid,
-								&destGUID,
-								NULL,
-								m_bLevel2->GetValue() );
-
-				}
-				break;
-
-			case type_double:
-				{
-					double doubleVal;
-					strValue.ToDouble( &doubleVal );
-
-					uint8_t *pVal = (uint8_t *)&doubleVal;
-					// Do visual part
-					if ( -1 != row ) {
-
-						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-						
-							// index
-							strBuf = _("0");
-							m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, *wxRED );
-
-							// value
-							strBuf = getFormattedValue( pVal[ 0 ] );
-							m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, *wxRED );
-
-						}
-						else {
-
-							
-							for ( int i=0; i<8; i++ ) {
-
-								strBuf = getFormattedValue( pVal[ i ] );
-								m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, 
-									strBuf );
-
-								m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, *wxRED );
-							}
-						}
-					}
-
-					// Update register
-					m_csw.writetAbstractionDouble( this,
-										readStringValue( m_comboNodeID->GetValue() ),
-										m_mdf.m_list_abstraction[ event.GetRow() ],
-										doubleVal,
-										&m_ifguid,
-										&destGUID,
-										NULL,
-										m_bLevel2->GetValue() );
-
-				}
-				break;
-
-			case type_date:
-				{
-					// Dates are stored as YYYY-MM-DD
-					// byte 0 - MSB of year
-					// byte 1 - LSB of year
-					// byte 2 - Month (1-12)
-					// byte 3 - Date (0-31)
-
-					uint8_t buf[ 4 ];
-					wxDateTime date;
-					
-					date.ParseDate( strValue );
-
-					uint16_t year = date.GetYear();
-					buf[ 0 ] = ( ( year >> 8 ) & 0xff );
-					buf[ 1 ] = ( year & 0xff ); 
-					buf[ 2 ] = date.GetMonth();
-					buf[ 3 ] = date.GetDay();
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-						
-							// index
-							strBuf = _("0");
-							m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, *wxRED );
-
-							// value
-							strBuf = getFormattedValue( buf[ 0 ] );
-							m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, *wxRED );
-
-						}
-						else {
-
-							for ( int i=0; i<4; i++ ) {
-
-								strBuf = getFormattedValue( buf[ i ] );
-								m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, 
-									strBuf );
-
-								m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, *wxRED );
-							}
-						}
-					}
-
-					// Update register
-					m_csw.writeAbstractionDate( this,
-								readStringValue( m_comboNodeID->GetValue() ),
-								m_mdf.m_list_abstraction[ event.GetRow() ],
-								date,
-								&m_ifguid,
-								&destGUID,
-								NULL,
-								m_bLevel2->GetValue() );
-
-				}
-				break;
-
-			case type_time:
-				{
-					// Dates are stored as HH:MM:SS
-					// byte 0 - Hours
-					// byte 1 - Minutes
-					// byte 2 - seconds
-					uint8_t buf[ 3 ];
-					wxDateTime time;
-					time.ParseTime( strValue );
-
-					buf[ 0 ] = time.GetHour();
-					buf[ 1 ] = time.GetMinute(); 
-					buf[ 2 ] = time.GetSecond();
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-						
-							// index
-							strBuf = _("0");
-							m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, *wxRED );
-
-							// value
-							strBuf = getFormattedValue( buf[ 0 ] );
-							m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, *wxRED );
-
-						}
-						else {
-
-							
-							for ( int i=0; i<3; i++ ) {
-
-								strBuf = getFormattedValue( buf[ i ] );
-								m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, 
-									strBuf );
-
-								m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, *wxRED );
-							}
-						}
-					}
-
-					// Update register
-					m_csw.writeAbstractionTime( this,
-									readStringValue( m_comboNodeID->GetValue() ),
-									m_mdf.m_list_abstraction[ event.GetRow() ],
-									time,
-									&m_ifguid,
-									&destGUID,
-									NULL,
-									m_bLevel2->GetValue() );
-
-				}
-				break;
-
-			case type_guid:
-				{
-					cguid guid;
-					guid.getFromString( strValue );
-
-					const uint8_t *p = guid.getGUID();
-
-					// Do visual part
-					if ( -1 != row ) {
-
-						if ( m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed ) {
-						
-							// index
-							strBuf = _("0");
-							m_gridRegisters->SetCellValue( 
-							m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset, 
-									2, *wxRED );
-
-							// value
-							strBuf = getFormattedValue( p[ 0 ] );
-							m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, 
-									strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1, 
-									2, *wxRED );
-
-						}
-						else {
-							
-							for ( int i=0; i<3; i++ ) {
-
-								strBuf = getFormattedValue( p[ i ] );
-								m_gridRegisters->SetCellValue( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, 
-									strBuf );
-
-								m_gridRegisters->SetCellTextColour( 
-									m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i, 
-									2, *wxRED );
-							}
-
-						}
-					}
-
-					// Update register
-					m_csw.writeAbstractionGUID( this,
-						readStringValue( m_comboNodeID->GetValue() ),
-						m_mdf.m_list_abstraction[ event.GetRow() ],
-						guid );
-				}
-				break;
-
-			case type_unknown:
-			default:
-				break;
-			} // case
-
-			// Update registers
-			OnButtonUpdateClick( event );
-
-		}
-
-	}
-	else if ( ID_GRID_DM == event.GetId() ) {
-
-		wxString str;
-		DialogEditLevelIDMrow dlg(this);
-
-		m_gridDM->SelectRow( event.GetRow() );
-
-		// Originating address
-		str = m_gridDM->GetCellValue( event.GetRow(), 0 );
-		dlg.m_oaddr->ChangeValue( str );
-
-		// flags
-		uint8_t flags  = readStringValue( m_gridDM->GetCellValue( event.GetRow(), 1 ) );
-		( flags & 0x80 ) ? dlg.m_chkEnableDMRow->SetValue( true ) : dlg.m_chkEnableDMRow->SetValue( false );
-		( flags & 0x40 ) ? dlg.m_chkCheckOAddr->SetValue( true ) : dlg.m_chkCheckOAddr->SetValue( false );
-		( flags & 0x20 ) ? dlg.m_chkHardOAddr->SetValue( true ) : dlg.m_chkHardOAddr->SetValue( false );
-		( flags & 0x10 ) ? dlg.m_chkMatchZone->SetValue( true ) : dlg.m_chkMatchZone->SetValue( false );
-		( flags & 0x08 ) ? dlg.m_chkMatchSubzone->SetValue( true ) : dlg.m_chkMatchSubzone->SetValue( false );
-
-		// Class Mask
-		reg = readStringValue( m_gridDM->GetCellValue( event.GetRow(), 2 ) ) +
-			( ( flags & 0x02 ) << 9 ); 
-		str = wxString::Format( _("%d"), reg );
-		dlg.m_classMask->ChangeValue( str );
-
-		// Class Filter
-		reg = readStringValue( m_gridDM->GetCellValue( event.GetRow(), 3 ) ) +
-			( ( flags & 0x01 ) << 9 );
-		str = wxString::Format( _("%d"), reg );
-		dlg.m_classFilter->ChangeValue( str );
-
-		// Type Mask
-		str = m_gridDM->GetCellValue( event.GetRow(), 4 );
-		dlg.m_typeMask->ChangeValue( str );
-
-		// Type Filter
-		str = m_gridDM->GetCellValue( event.GetRow(), 5 );
-		dlg.m_typeFilter->ChangeValue( str );
-
-		// Action
-		dlg.m_comboAction->Clear();
-		dlg.m_comboAction->Append( _("No operation") );
-		dlg.m_comboAction->SetClientData( 0, 0 );
-		dlg.m_comboAction->SetSelection( 0 );
-
-		reg = readStringValue( m_gridDM->GetCellValue( event.GetRow(), 6 ) );
-
-		MDF_ACTION_LIST::iterator iter;
-		for ( iter = m_mdf.m_dmInfo.m_list_action.begin(); 
-			iter != m_mdf.m_dmInfo.m_list_action.end(); ++iter ) {
-				CMDF_Action *action = *iter;
-				int idx = dlg.m_comboAction->Append( action->m_strName );
-				dlg.m_comboAction->SetClientData( idx, (void *)action->m_nCode );
-				if ( reg == action->m_nCode ) {
-					dlg.m_comboAction->SetSelection( idx );
-				}
-		}
-
-		// Action parameter
-		str = m_gridDM->GetCellValue( event.GetRow(), 7 );
-		dlg.m_actionParam->ChangeValue( str );
-
-		// Show the dialog
-		if ( wxID_OK == dlg.ShowModal() ) {
-
-			// OK Clicked 
-
-			wxString strBuf;
-
-			// O-addr
-			strBuf.Printf( _("0x%02lx"), readStringValue( dlg.m_oaddr->GetValue() ) );
-			m_gridRegisters->SetCellValue( m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											2, 
-											strBuf );
-
-			// class mask
-			uint16_t class_mask = readStringValue( dlg.m_classMask->GetValue() );
-			strBuf.Printf( _("0x%02lx"), class_mask & 0xff );
-			m_gridRegisters->SetCellValue( 2 + m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											2, 
-											strBuf );
-
-			// class filter
-			uint16_t class_filter = readStringValue( dlg.m_classFilter->GetValue() );
-			strBuf.Printf( _("0x%02lx"), class_filter & 0xff );
-			m_gridRegisters->SetCellValue( 3 + m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											2, 
-											strBuf );
-
-			// type mask
-			strBuf.Printf( _("0x%02lx"), readStringValue( dlg.m_typeMask->GetValue() ) );
-			m_gridRegisters->SetCellValue( 4 + m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											2, 
-											strBuf );
-
-			// type filter
-			strBuf.Printf( _("0x%02lx"), readStringValue( dlg.m_typeFilter->GetValue() ) );
-			m_gridRegisters->SetCellValue( 5 + m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											2, 
-											strBuf );
-
-			// flags
-			uint8_t flags = 0;
-
-			if ( 0x100 & class_mask ) flags |= 0x02;
-			if ( 0x100 & class_filter ) flags |= 0x01;
-			if ( dlg.m_chkEnableDMRow->GetValue() ) flags |= 0x80;
-			if ( dlg.m_chkCheckOAddr->GetValue() ) flags |= 0x40;
-			if ( dlg.m_chkHardOAddr->GetValue() ) flags |= 0x20;
-			if ( dlg.m_chkMatchZone->GetValue() ) flags |= 0x10;
-			if ( dlg.m_chkMatchSubzone->GetValue() ) flags |= 0x08;
-			strBuf.Printf( _("0x%02lx"), flags );
-			m_gridRegisters->SetCellValue( 1 + m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											2, 
-											strBuf );
-
-			// Action
-			int idx = 0;
-			if ( wxNOT_FOUND != ( idx = dlg.m_comboAction->GetSelection() ) ) {
-				uint32_t data = (uintptr_t)dlg.m_comboAction->GetClientData( idx );
-				strBuf.Printf( _("0x%02lx"), data );
-			}
-			else {
-				strBuf.Printf( _("0x%02lx"), 0 );
-			}
-			m_gridRegisters->SetCellValue( 6 + m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											2, 
-											strBuf );
-
-			// Action Parameter
-			strBuf.Printf( _("0x%02lx"), readStringValue( dlg.m_actionParam->GetValue() ) );
-			m_gridRegisters->SetCellValue( 7 + m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											2, 
-											strBuf );
-
-			int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset + 
-											m_mdf.m_dmInfo.m_nRowSize * event.GetRow(), 
-											m_mdf.m_dmInfo.m_nStartPage );
-
-			// Visual indication
-			if ( -1 != row ) {
-
-				for ( int i=0; i<m_mdf.m_dmInfo.m_nRowSize; i++ ) {
-				
-					if ( m_mdf.m_dmInfo.m_bIndexed ) {
-					
-						// Index
-						strBuf = getFormattedValue( 0 );
-						m_gridRegisters->SetCellValue( 
-								row, 
-								2, 
-								strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-								row, 
-								2, *wxRED );
-
-						// Value
-						strBuf = getFormattedValue( 
-									readStringValue( dlg.m_oaddr->GetValue() ) );
-						m_gridRegisters->SetCellValue( 
-												row + 1, 
-												2, 
-												strBuf );
-
-						m_gridRegisters->SetCellTextColour( 
-												row + 1, 
-												2, *wxRED );
-
-					}
-					else {
-
-						for ( int i=0; i<m_mdf.m_dmInfo.m_nRowSize; i++ ) {
-
-							// Index
-							strBuf =  getFormattedValue( readStringValue(
-								m_gridRegisters->GetCellValue( m_mdf.m_dmInfo.m_nStartOffset + 
-																m_mdf.m_dmInfo.m_nRowSize * 
-																event.GetRow() + i, 2 ) ) );
-							m_gridRegisters->SetCellValue( 
-												row + i, 
-												2, 
-												strBuf );
-
-							m_gridRegisters->SetCellTextColour( 
-												row + i, 
-												2, *wxRED );
-
-						}
-
-					}
-				}
-			}
-			else {
-				wxMessageBox(_("It's a problem with the MDF for this device. DM rows not in register definition."));
-			}
-
-			// Update registers
-			OnButtonUpdateClick( event );
-
-		}
-
-	}
-	else if ( ID_GRID_ABSTRACTIONS == event.GetId() ) {
-
-		// Update the DM grid    
-		updateDmGrid();
-
-		// Update abstractions
-		updateAbstractionGrid();
-
-	}
+void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
+    uint8_t reg;
+
+    cguid destGUID;
+    destGUID.getFromString(m_comboNodeID->GetValue());
+
+    if (ID_GRID_REGISTERS == event.GetId()) {
+        m_gridRegisters->SelectRow(event.GetRow());
+    } else if (ID_GRID_ABSTRACTIONS == event.GetId()) {
+
+        uint8_t pos;
+        wxString strValue;
+        wxString strBuf;
+        uint8_t val = 0;
+
+        DialogAbstractionEdit dlg(this);
+        strValue = m_gridAbstractions->GetCellValue(event.GetRow(), 3);
+        dlg.TransferDataToWindow(m_mdf.m_list_abstraction[ event.GetRow() ],
+                strValue);
+
+        m_gridAbstractions->SelectRow(event.GetRow());
+
+        int row;
+        if (wxID_OK == dlg.ShowModal()) {
+
+            wxString newValue;
+            dlg.TransferDataFromWindow(newValue);
+            // If value is not changed do nothing.
+            if (newValue == strValue) goto error;
+            strValue = newValue;
+            m_gridAbstractions->SetCellValue(event.GetRow(), 3, newValue);
+
+            if (-1 == (row =
+                    getRegisterGridRow(m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nPage))) {
+                wxMessageBox(_("Register corresponding to abstraction not found. Error in mdf-file."));
+            }
+
+            switch (m_mdf.m_list_abstraction[ event.GetRow() ]->m_nType) {
+
+                case type_string:
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        // Handle indexed storage
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            strBuf = getFormattedValue(0);
+                            m_gridRegisters->SetCellValue(
+                                    row,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    row,
+                                    2, *wxRED);
+
+                            strBuf = getFormattedValue(strValue[ 0 ]);
+                            m_gridRegisters->SetCellValue(
+                                    row + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    row + 1,
+                                    2, *wxRED);
+
+                        }
+                            // Handle linear storage
+                        else {
+
+                            for (pos = 0; pos < strValue.Length(); pos++) {
+
+                                strBuf = getFormattedValue(strValue[ pos ]);
+                                m_gridRegisters->SetCellValue(
+                                        row + pos,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        row + pos,
+                                        2, *wxRED);
+
+                                // Cant write more then allocated space
+                                if (pos > m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth) break;
+
+                            }
+
+                        }
+                    }
+
+                    // Update registers
+                    m_csw.writeAbstractionString(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            strValue,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+                    break;
+
+                case type_boolval:
+                {
+                    long lv;
+                    bool bval;
+                    strValue.ToLong(&lv);
+                    strValue = strValue.Upper();
+                    if (wxNOT_FOUND != strValue.Find(_("TRUE"))) {
+                        bval = true;
+                    } else if (wxNOT_FOUND != strValue.Find(_("FALSE"))) {
+                        bval = false;
+                    } else if (lv) {
+                        bval = true;
+                    } else {
+                        bval = false;
+                    }
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        strBuf = bval ? _("1") : _("0");
+                        m_gridRegisters->SetCellValue(
+                                row,
+                                2,
+                                strBuf);
+
+                        m_gridRegisters->SetCellTextColour(
+                                row,
+                                2, *wxRED);
+
+                    }
+
+                    // Update registers
+                    m_csw.writeAbstractionBool(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            bval,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+                }
+                    break;
+
+                case type_bitfield:
+                {
+                    val = 0;
+
+                    // Octet width is the number of bytes needed to store the bits
+                    uint8_t octetwidth =
+                            m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth / 8 +
+                            (m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth % 8) ? 1 : 0;
+
+                    uint8_t *p;
+                    p = new uint8_t[ octetwidth ];
+                    memset(p, 0, octetwidth);
+
+                    // Build byte array
+                    wxString str = strValue;
+                    for (int i = 0; i < m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth; i++) {
+                        for (int j = 7; j > 0; j--) {
+                            if (!str.Length()) break; // Must be digits left
+                            if (_("1") == str.Left(1)) {
+                                *(p + 1) += (1 << j);
+                            }
+                            str = str.Right(str.Length() - 1);
+                        }
+                    }
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        // Handle indexed storage
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            // Index
+                            strBuf = getFormattedValue(0);
+                            m_gridRegisters->SetCellValue(
+                                    row,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    row,
+                                    2, *wxRED);
+
+                            // Value
+                            strBuf = getFormattedValue(*p);
+                            m_gridRegisters->SetCellValue(
+                                    row + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    row + 1,
+                                    2, *wxRED);
+                        }
+                            // Handle linear storage
+                        else {
+
+                            for (pos = 0; pos < strValue.Length(); pos++) {
+
+                                strBuf = getFormattedValue(*(p + pos));
+                                m_gridRegisters->SetCellValue(
+                                        row + pos,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        row + pos,
+                                        2, *wxRED);
+
+                                // Cant write more then allocated space
+                                if (pos > octetwidth) break;
+                            }
+                        }
+                    }
+
+                    // Update registers
+                    m_csw.writeAbstractionBitField(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            strValue,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+                }
+                    break;
+
+                case type_int8_t:
+                case type_uint8_t:
+                {
+                    uint8_t val;
+                    val = readStringValue(strValue);
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        strBuf = getFormattedValue(val);
+                        m_gridRegisters->SetCellValue(
+                                row,
+                                2,
+                                strBuf);
+
+                        m_gridRegisters->SetCellTextColour(
+                                row,
+                                2, *wxRED);
+
+                    }
+
+                    // Update registers
+                    m_csw.writeAbstraction8bitinteger(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            val,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+                }
+                    break;
+
+
+                case type_int16_t:
+                case type_uint16_t:
+                {
+                    uint16_t val;
+                    val = readStringValue(strValue);
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        strBuf = getFormattedValue(((val >> 8) & 0xff));
+                        m_gridRegisters->SetCellValue(
+                                row,
+                                2,
+                                strBuf);
+
+                        m_gridRegisters->SetCellTextColour(
+                                row,
+                                2, *wxRED);
+
+                        strBuf = getFormattedValue(val & 0xff);
+                        m_gridRegisters->SetCellValue(
+                                row + 1,
+                                2,
+                                strBuf);
+
+                        m_gridRegisters->SetCellTextColour(
+                                row + 1,
+                                2, *wxRED);
+                    }
+
+                    // Update registers
+                    m_csw.writeAbstraction16bitinteger(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            val,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+                }
+                    break;
+
+                case type_int32_t:
+                case type_uint32_t:
+                {
+                    long longVal;
+                    strValue.ToLong(&longVal);
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        uint8_t *pVal = (uint8_t *) & longVal;
+
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            // index
+                            strBuf = _("0");
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2, *wxRED);
+
+                            // value
+                            strBuf = getFormattedValue(pVal[ 0 ]);
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2, *wxRED);
+
+                        } else {
+
+
+                            for (int i = 0; i < 4; i++) {
+
+                                strBuf = getFormattedValue(pVal[ i ]);
+                                m_gridRegisters->SetCellValue(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2, *wxRED);
+                            }
+                        }
+                    }
+
+                    // Update registers
+                    uint32_t val32 = longVal;
+                    m_csw.writeAbstraction32bitinteger(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            val32,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+                }
+                    break;
+
+                case type_int64_t:
+                case type_uint64_t:
+                {
+                    wxLongLong_t longlongVal;
+                    strValue.ToLongLong(&longlongVal);
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        uint8_t *pVal = (uint8_t *) & longlongVal;
+
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            // index
+                            strBuf = _("0");
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2, *wxRED);
+
+                            // value
+                            strBuf = getFormattedValue(pVal[ 0 ]);
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2, *wxRED);
+
+                        } else {
+
+                            for (int i = 0; i < 8; i++) {
+
+                                strBuf = getFormattedValue(pVal[ i ]);
+                                m_gridRegisters->SetCellValue(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2, *wxRED);
+                            }
+                        }
+                    }
+
+                    // Update register
+                    uint64_t val64 = longlongVal;
+                    m_csw.writeAbstraction64bitinteger(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            val64,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+
+                }
+                    break;
+
+
+                case type_float:
+                {
+                    double doubleVal;
+                    strValue.ToDouble(&doubleVal);
+                    float floatVal = doubleVal;
+
+                    uint8_t *pVal = (uint8_t *) & floatVal;
+                    // Do visual part
+                    if (-1 != row) {
+
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            // index
+                            strBuf = _("0");
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2, *wxRED);
+
+                            // value
+                            strBuf = getFormattedValue(pVal[ 0 ]);
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2, *wxRED);
+
+                        } else {
+
+
+                            for (int i = 0; i < 4; i++) {
+
+                                strBuf = getFormattedValue(pVal[ i ]);
+                                m_gridRegisters->SetCellValue(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2, *wxRED);
+                            }
+                        }
+                    }
+
+                    // Update register
+                    m_csw.writeAbstractionFloat(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            floatVal,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+
+                }
+                    break;
+
+                case type_double:
+                {
+                    double doubleVal;
+                    strValue.ToDouble(&doubleVal);
+
+                    uint8_t *pVal = (uint8_t *) & doubleVal;
+                    // Do visual part
+                    if (-1 != row) {
+
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            // index
+                            strBuf = _("0");
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2, *wxRED);
+
+                            // value
+                            strBuf = getFormattedValue(pVal[ 0 ]);
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2, *wxRED);
+
+                        } else {
+
+
+                            for (int i = 0; i < 8; i++) {
+
+                                strBuf = getFormattedValue(pVal[ i ]);
+                                m_gridRegisters->SetCellValue(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2, *wxRED);
+                            }
+                        }
+                    }
+
+                    // Update register
+                    m_csw.writetAbstractionDouble(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            doubleVal,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+
+                }
+                    break;
+
+                case type_date:
+                {
+                    // Dates are stored as YYYY-MM-DD
+                    // byte 0 - MSB of year
+                    // byte 1 - LSB of year
+                    // byte 2 - Month (1-12)
+                    // byte 3 - Date (0-31)
+
+                    uint8_t buf[ 4 ];
+                    wxDateTime date;
+
+                    date.ParseDate(strValue);
+
+                    uint16_t year = date.GetYear();
+                    buf[ 0 ] = ((year >> 8) & 0xff);
+                    buf[ 1 ] = (year & 0xff);
+                    buf[ 2 ] = date.GetMonth();
+                    buf[ 3 ] = date.GetDay();
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            // index
+                            strBuf = _("0");
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2, *wxRED);
+
+                            // value
+                            strBuf = getFormattedValue(buf[ 0 ]);
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2, *wxRED);
+
+                        } else {
+
+                            for (int i = 0; i < 4; i++) {
+
+                                strBuf = getFormattedValue(buf[ i ]);
+                                m_gridRegisters->SetCellValue(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2, *wxRED);
+                            }
+                        }
+                    }
+
+                    // Update register
+                    m_csw.writeAbstractionDate(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            date,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+
+                }
+                    break;
+
+                case type_time:
+                {
+                    // Dates are stored as HH:MM:SS
+                    // byte 0 - Hours
+                    // byte 1 - Minutes
+                    // byte 2 - seconds
+                    uint8_t buf[ 3 ];
+                    wxDateTime time;
+                    time.ParseTime(strValue);
+
+                    buf[ 0 ] = time.GetHour();
+                    buf[ 1 ] = time.GetMinute();
+                    buf[ 2 ] = time.GetSecond();
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            // index
+                            strBuf = _("0");
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2, *wxRED);
+
+                            // value
+                            strBuf = getFormattedValue(buf[ 0 ]);
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2, *wxRED);
+
+                        } else {
+
+
+                            for (int i = 0; i < 3; i++) {
+
+                                strBuf = getFormattedValue(buf[ i ]);
+                                m_gridRegisters->SetCellValue(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2, *wxRED);
+                            }
+                        }
+                    }
+
+                    // Update register
+                    m_csw.writeAbstractionTime(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            time,
+                            &m_ifguid,
+                            &destGUID,
+                            NULL,
+                            m_bLevel2->GetValue());
+
+                }
+                    break;
+
+                case type_guid:
+                {
+                    cguid guid;
+                    guid.getFromString(strValue);
+
+                    const uint8_t *p = guid.getGUID();
+
+                    // Do visual part
+                    if (-1 != row) {
+
+                        if (m_mdf.m_list_abstraction[ event.GetRow() ]->m_bIndexed) {
+
+                            // index
+                            strBuf = _("0");
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset,
+                                    2, *wxRED);
+
+                            // value
+                            strBuf = getFormattedValue(p[ 0 ]);
+                            m_gridRegisters->SetCellValue(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + 1,
+                                    2, *wxRED);
+
+                        } else {
+
+                            for (int i = 0; i < 3; i++) {
+
+                                strBuf = getFormattedValue(p[ i ]);
+                                m_gridRegisters->SetCellValue(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2,
+                                        strBuf);
+
+                                m_gridRegisters->SetCellTextColour(
+                                        m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
+                                        2, *wxRED);
+                            }
+
+                        }
+                    }
+
+                    // Update register
+                    m_csw.writeAbstractionGUID(this,
+                            readStringValue(m_comboNodeID->GetValue()),
+                            m_mdf.m_list_abstraction[ event.GetRow() ],
+                            guid);
+                }
+                    break;
+
+                case type_unknown:
+                default:
+                    break;
+            } // case
+
+            // Update registers
+            OnButtonUpdateClick(event);
+
+        }
+
+    } else if (ID_GRID_DM == event.GetId()) {
+
+        wxString str;
+        DialogEditLevelIDMrow dlg(this);
+
+        m_gridDM->SelectRow(event.GetRow());
+
+        // Originating address
+        str = m_gridDM->GetCellValue(event.GetRow(), 0);
+        dlg.m_oaddr->ChangeValue(str);
+
+        // flags
+        uint8_t flags = readStringValue(m_gridDM->GetCellValue(event.GetRow(), 1));
+        (flags & 0x80) ? dlg.m_chkEnableDMRow->SetValue(true) : dlg.m_chkEnableDMRow->SetValue(false);
+        (flags & 0x40) ? dlg.m_chkCheckOAddr->SetValue(true) : dlg.m_chkCheckOAddr->SetValue(false);
+        (flags & 0x20) ? dlg.m_chkHardOAddr->SetValue(true) : dlg.m_chkHardOAddr->SetValue(false);
+        (flags & 0x10) ? dlg.m_chkMatchZone->SetValue(true) : dlg.m_chkMatchZone->SetValue(false);
+        (flags & 0x08) ? dlg.m_chkMatchSubzone->SetValue(true) : dlg.m_chkMatchSubzone->SetValue(false);
+
+        // Class Mask
+        reg = readStringValue(m_gridDM->GetCellValue(event.GetRow(), 2)) +
+                ((flags & 0x02) << 9);
+        str = wxString::Format(_("%d"), reg);
+        dlg.m_classMask->ChangeValue(str);
+
+        // Class Filter
+        reg = readStringValue(m_gridDM->GetCellValue(event.GetRow(), 3)) +
+                ((flags & 0x01) << 9);
+        str = wxString::Format(_("%d"), reg);
+        dlg.m_classFilter->ChangeValue(str);
+
+        // Type Mask
+        str = m_gridDM->GetCellValue(event.GetRow(), 4);
+        dlg.m_typeMask->ChangeValue(str);
+
+        // Type Filter
+        str = m_gridDM->GetCellValue(event.GetRow(), 5);
+        dlg.m_typeFilter->ChangeValue(str);
+
+        // Action
+        dlg.m_comboAction->Clear();
+        dlg.m_comboAction->Append(_("No operation"));
+        dlg.m_comboAction->SetClientData(0, 0);
+        dlg.m_comboAction->SetSelection(0);
+
+        reg = readStringValue(m_gridDM->GetCellValue(event.GetRow(), 6));
+
+        MDF_ACTION_LIST::iterator iter;
+        for (iter = m_mdf.m_dmInfo.m_list_action.begin();
+                iter != m_mdf.m_dmInfo.m_list_action.end(); ++iter) {
+            CMDF_Action *action = *iter;
+            int idx = dlg.m_comboAction->Append(action->m_strName);
+            dlg.m_comboAction->SetClientData(idx, (void *)action->m_nCode); // Yes - ponter conversion
+            if (reg == action->m_nCode) {
+                dlg.m_comboAction->SetSelection(idx);
+            }
+        }
+
+        // Action parameter
+        str = m_gridDM->GetCellValue(event.GetRow(), 7);
+        dlg.m_actionParam->ChangeValue(str);
+
+        // Show the dialog
+        if (wxID_OK == dlg.ShowModal()) {
+
+            // OK Clicked 
+
+            wxString strBuf;
+
+            // O-addr
+            strBuf.Printf(_("0x%02lx"), readStringValue(dlg.m_oaddr->GetValue()));
+            m_gridRegisters->SetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    2,
+                    strBuf);
+
+            // class mask
+            uint16_t class_mask = readStringValue(dlg.m_classMask->GetValue());
+            strBuf.Printf(_("0x%02lx"), class_mask & 0xff);
+            m_gridRegisters->SetCellValue(2 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    2,
+                    strBuf);
+
+            // class filter
+            uint16_t class_filter = readStringValue(dlg.m_classFilter->GetValue());
+            strBuf.Printf(_("0x%02lx"), class_filter & 0xff);
+            m_gridRegisters->SetCellValue(3 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    2,
+                    strBuf);
+
+            // type mask
+            strBuf.Printf(_("0x%02lx"), readStringValue(dlg.m_typeMask->GetValue()));
+            m_gridRegisters->SetCellValue(4 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    2,
+                    strBuf);
+
+            // type filter
+            strBuf.Printf(_("0x%02lx"), readStringValue(dlg.m_typeFilter->GetValue()));
+            m_gridRegisters->SetCellValue(5 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    2,
+                    strBuf);
+
+            // flags
+            uint8_t flags = 0;
+
+            if (0x100 & class_mask) flags |= 0x02;
+            if (0x100 & class_filter) flags |= 0x01;
+            if (dlg.m_chkEnableDMRow->GetValue()) flags |= 0x80;
+            if (dlg.m_chkCheckOAddr->GetValue()) flags |= 0x40;
+            if (dlg.m_chkHardOAddr->GetValue()) flags |= 0x20;
+            if (dlg.m_chkMatchZone->GetValue()) flags |= 0x10;
+            if (dlg.m_chkMatchSubzone->GetValue()) flags |= 0x08;
+            strBuf.Printf(_("0x%02lx"), flags);
+            m_gridRegisters->SetCellValue(1 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    2,
+                    strBuf);
+
+            // Action
+            int idx = 0;
+            if (wxNOT_FOUND != (idx = dlg.m_comboAction->GetSelection())) {
+                uint32_t data = (uintptr_t) dlg.m_comboAction->GetClientData(idx);
+                strBuf.Printf(_("0x%02lx"), data);
+            } else {
+                strBuf.Printf(_("0x%02lx"), 0);
+            }
+            m_gridRegisters->SetCellValue(6 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    2,
+                    strBuf);
+
+            // Action Parameter
+            strBuf.Printf(_("0x%02lx"), readStringValue(dlg.m_actionParam->GetValue()));
+            m_gridRegisters->SetCellValue(7 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    2,
+                    strBuf);
+
+            int row = getRegisterGridRow(m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                    m_mdf.m_dmInfo.m_nStartPage);
+
+            // Visual indication
+            if (-1 != row) {
+
+                for (int i = 0; i < m_mdf.m_dmInfo.m_nRowSize; i++) {
+
+                    if (m_mdf.m_dmInfo.m_bIndexed) {
+
+                        // Index
+                        strBuf = getFormattedValue(0);
+                        m_gridRegisters->SetCellValue(
+                                row,
+                                2,
+                                strBuf);
+
+                        m_gridRegisters->SetCellTextColour(
+                                row,
+                                2, *wxRED);
+
+                        // Value
+                        strBuf = getFormattedValue(
+                                readStringValue(dlg.m_oaddr->GetValue()));
+                        m_gridRegisters->SetCellValue(
+                                row + 1,
+                                2,
+                                strBuf);
+
+                        m_gridRegisters->SetCellTextColour(
+                                row + 1,
+                                2, *wxRED);
+
+                    } else {
+
+                        for (int i = 0; i < m_mdf.m_dmInfo.m_nRowSize; i++) {
+
+                            // Index
+                            strBuf = getFormattedValue(readStringValue(
+                                    m_gridRegisters->GetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
+                                    m_mdf.m_dmInfo.m_nRowSize *
+                                    event.GetRow() + i, 2)));
+                            m_gridRegisters->SetCellValue(
+                                    row + i,
+                                    2,
+                                    strBuf);
+
+                            m_gridRegisters->SetCellTextColour(
+                                    row + i,
+                                    2, *wxRED);
+
+                        }
+
+                    }
+                }
+            } else {
+                wxMessageBox(_("It's a problem with the MDF for this device. DM rows not in register definition."));
+            }
+
+            // Update registers
+            OnButtonUpdateClick(event);
+
+        }
+
+    } else if (ID_GRID_ABSTRACTIONS == event.GetId()) {
+
+        // Update the DM grid    
+        updateDmGrid();
+
+        // Update abstractions
+        updateAbstractionGrid();
+
+    }
 
 error:
 
-	event.Skip();
+    event.Skip();
 }
 
 
@@ -7669,136 +7681,131 @@ error:
 // updateAbstractionGrid
 //
 
-void frmDeviceConfig::updateAbstractionGrid( void )
-{
-	wxString strBuf;
+void frmDeviceConfig::updateAbstractionGrid(void) {
+    wxString strBuf;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-									_("Updating abstraction grid"),
-									100, 
-									this,
-									wxPD_ELAPSED_TIME | 
-									wxPD_AUTO_HIDE | 
-									wxPD_APP_MODAL |
-									wxPD_CAN_ABORT );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Updating abstraction grid"),
+            100,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
 
-	cguid destGUID;
-	destGUID.getFromString( m_comboNodeID->GetValue() );
+    cguid destGUID;
+    destGUID.getFromString(m_comboNodeID->GetValue());
 
-	wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
-	wxFont fontBold = defaultFont;
-	fontBold.SetStyle( wxFONTSTYLE_NORMAL );
-	fontBold.SetWeight( wxFONTWEIGHT_BOLD );
+    wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
+    wxFont fontBold = defaultFont;
+    fontBold.SetStyle(wxFONTSTYLE_NORMAL);
+    fontBold.SetWeight(wxFONTWEIGHT_BOLD);
 
-	progressDlg.Pulse();
+    progressDlg.Pulse();
 
-	// Delete grid rows if there are any
-	m_gridAbstractions->ClearGrid();
-	if ( m_gridAbstractions->GetNumberRows() ) {
-		m_gridAbstractions->DeleteRows( 0, m_gridAbstractions->GetNumberRows() );
-	}
+    // Delete grid rows if there are any
+    m_gridAbstractions->ClearGrid();
+    if (m_gridAbstractions->GetNumberRows()) {
+        m_gridAbstractions->DeleteRows(0, m_gridAbstractions->GetNumberRows());
+    }
 
-	progressDlg.Pulse();
+    progressDlg.Pulse();
 
-	MDF_ABSTRACTION_LIST::iterator iter;
-	for ( iter = m_mdf.m_list_abstraction.begin(); 
-		iter != m_mdf.m_list_abstraction.end(); ++iter ) {
+    MDF_ABSTRACTION_LIST::iterator iter;
+    for (iter = m_mdf.m_list_abstraction.begin();
+            iter != m_mdf.m_list_abstraction.end(); ++iter) {
 
-			CMDF_Abstraction *abstraction = *iter;
+        CMDF_Abstraction *abstraction = *iter;
 
-			// Add a row
-			m_gridAbstractions->AppendRows( 1 );
+        // Add a row
+        m_gridAbstractions->AppendRows(1);
 
-			// Name
-			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-				0, 
-				_(" ") + abstraction->m_strName );
-			m_gridAbstractions->SetCellAlignment( wxALIGN_LEFT, 
-				m_gridAbstractions->GetNumberRows()-1, 
-				0 );
-			m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 0 );
-
-
-			// Type
-			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-				1, 
-				abstraction->m_strName );
-			m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER, 
-				m_gridAbstractions->GetNumberRows()-1, 
-				1 );
-			m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 1 );
+        // Name
+        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
+                0,
+                _(" ") + abstraction->m_strName);
+        m_gridAbstractions->SetCellAlignment(wxALIGN_LEFT,
+                m_gridAbstractions->GetNumberRows() - 1,
+                0);
+        m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 0);
 
 
-			// Access
-			strBuf = _("");
-			if ( abstraction->m_nAccess & MDF_ACCESS_READ ){
-				strBuf = _("r");
-			}
-			if ( abstraction->m_nAccess & MDF_ACCESS_WRITE ){
-				strBuf += _("w");
-			}
+        // Type
+        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
+                1,
+                abstraction->m_strName);
+        m_gridAbstractions->SetCellAlignment(wxALIGN_CENTER,
+                m_gridAbstractions->GetNumberRows() - 1,
+                1);
+        m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 1);
 
-			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-				2, 
-				strBuf );
-			m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER, 
-				m_gridAbstractions->GetNumberRows()-1, 
-				2 );
-			m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 2 );
 
-			// Description
-			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-				4, 
-				_(" ") + abstraction->m_strDescription );
+        // Access
+        strBuf = _("");
+        if (abstraction->m_nAccess & MDF_ACCESS_READ) {
+            strBuf = _("r");
+        }
+        if (abstraction->m_nAccess & MDF_ACCESS_WRITE) {
+            strBuf += _("w");
+        }
 
-			m_gridAbstractions->SetCellAlignment( wxALIGN_LEFT, 
-				m_gridAbstractions->GetNumberRows()-1, 
-				4 );
-			m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 4 );
-			m_gridRegisters->AutoSizeRow( 2 );
+        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
+                2,
+                strBuf);
+        m_gridAbstractions->SetCellAlignment(wxALIGN_CENTER,
+                m_gridAbstractions->GetNumberRows() - 1,
+                2);
+        m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 2);
 
-			wxString strValue;
-			wxString strType;
-			int pos = 0;	// Current character
+        
+        // Description
+        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
+                4,
+                _(" ") + abstraction->m_strDescription);
 
-			progressDlg.Pulse();
+        m_gridAbstractions->SetCellAlignment(wxALIGN_LEFT,
+                m_gridAbstractions->GetNumberRows() - 1,
+                4);
+        m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 4);
+        m_gridRegisters->AutoSizeRow(m_gridAbstractions->GetNumberRows() - 1);
 
-			strType = abstraction->getAbstractionValueType();
-			strValue = m_csw.getAbstractionValueAsString( this,
-														m_stdRegisters.getNickname(),
-														abstraction,
-														&m_ifguid,
-														&destGUID,
-														&progressDlg,
-														m_bLevel2->GetValue() );
+        wxString strValue;
+        wxString strType;
+        int pos = 0; // Current character
 
-			if ( _("ERROR") == strValue ) {
-				wxMessageBox(_("Unable to read abstraction value!"));
-				return;
-			}
+        progressDlg.Pulse();
 
-			progressDlg.Pulse();
+        strType = abstraction->getAbstractionValueType();
+        strValue = m_csw.getAbstractionValueAsString(this,
+                m_stdRegisters.getNickname(),
+                abstraction,
+                &m_ifguid,
+                &destGUID,
+                &progressDlg,
+                m_bLevel2->GetValue());
 
-			// Value
-			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-												3,
-												strValue );
+        progressDlg.Pulse();
 
-			m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER, 
-													m_gridAbstractions->GetNumberRows()-1, 
-													3 );
-			m_gridAbstractions->SetCellFont( m_gridAbstractions->GetNumberRows()-1, 3, fontBold );
-			m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows()-1, 3 );
+        // Value
+        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
+                3,
+                strValue);
 
-			// Type
-			m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
-												1, 
-												strType );
+        m_gridAbstractions->SetCellAlignment(wxALIGN_CENTER,
+                m_gridAbstractions->GetNumberRows() - 1,
+                3);
+        m_gridAbstractions->SetCellFont(m_gridAbstractions->GetNumberRows() - 1, 3, fontBold);
+        m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 3);
 
-			// Make all parts of the row visible
-			m_gridAbstractions->AutoSizeRow( m_gridAbstractions->GetNumberRows()-1 );
+        // Type
+        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
+                1,
+                strType);
 
-	}
+        // Make all parts of the row visible
+        m_gridAbstractions->AutoSizeRow(m_gridAbstractions->GetNumberRows() - 1);
+
+    }
 }
 
 
@@ -7807,411 +7814,387 @@ void frmDeviceConfig::updateAbstractionGrid( void )
 // updateDmGrid
 //
 
-void frmDeviceConfig::updateDmGrid( void )
-{
-	wxString strBuf;
-	uint8_t buf[ 512 ];
-	uint8_t *prow = buf;
+void frmDeviceConfig::updateDmGrid(void) {
+    wxString strBuf;
+    uint8_t buf[ 512 ];
+    uint8_t *prow = buf;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-									_("Updating DM grid"),
-									100, 
-									this,
-									wxPD_ELAPSED_TIME | 
-									wxPD_AUTO_HIDE | 
-									wxPD_APP_MODAL |
-									wxPD_CAN_ABORT );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Updating DM grid"),
+            100,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
 
-	cguid destGUID;
-	destGUID.getFromString( m_comboNodeID->GetValue() );
+    cguid destGUID;
+    destGUID.getFromString(m_comboNodeID->GetValue());
 
-	m_gridDM->ClearGrid();
+    m_gridDM->ClearGrid();
 
-	for ( int i=0; i<m_mdf.m_dmInfo.m_nRowCount; i++ ) {
+    for (int i = 0; i < m_mdf.m_dmInfo.m_nRowCount; i++) {
 
-		progressDlg.Pulse();
+        progressDlg.Pulse();
 
-		if ( m_csw.getDMRow( this,
-								m_stdRegisters.getNickname(),
-								&m_mdf.m_dmInfo,
-								i,
-								prow,
-								&m_ifguid,
-								&destGUID,
-								m_bLevel2->GetValue() ) ) {
+        if (m_csw.getDMRow(this,
+                m_stdRegisters.getNickname(),
+                &m_mdf.m_dmInfo,
+                i,
+                prow,
+                &m_ifguid,
+                &destGUID,
+                m_bLevel2->GetValue())) {
 
-				progressDlg.Pulse();
+            progressDlg.Pulse();
 
-				// Add a row
-				if ( !m_gridDM->AppendRows( 1 ) ) continue;
-				
-				// O-addr
-				strBuf = getFormattedValue( prow[ 0 ] );
-				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 0, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 0 );
-				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 0 );
-				
-				// Flags
-				strBuf = getFormattedValue( prow[ 1 ] );
-				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 1, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE,m_gridDM->GetNumberRows()-1, 1 );
-				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 1 );
-				
-				// Class Mask
-				strBuf = getFormattedValue( prow[ 2 ] );
-				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 2, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 2 );
-				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 2 );
+            // Add a row
+            if (!m_gridDM->AppendRows(1)) continue;
 
-				// Class Filter
-				strBuf = getFormattedValue( prow[ 3 ] );
-				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 3, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 3 );
-				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 3 );
+            // O-addr
+            strBuf = getFormattedValue(prow[ 0 ]);
+            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 0, strBuf);
+            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 0);
+            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 0);
 
-				// Type Mask
-				strBuf = getFormattedValue( prow[ 4 ] );
-				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 4, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 4 );
-				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 4 );
+            // Flags
+            strBuf = getFormattedValue(prow[ 1 ]);
+            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 1, strBuf);
+            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 1);
+            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 1);
 
-				// Type Filter
-				strBuf = getFormattedValue( prow[ 5 ] );
-				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 5, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 5 );
-				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 5 );
+            // Class Mask
+            strBuf = getFormattedValue(prow[ 2 ]);
+            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 2, strBuf);
+            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 2);
+            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 2);
 
-				// Action
-				strBuf = getFormattedValue( prow[ 6 ] );
-				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 6, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 6 );
-				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 6 );
+            // Class Filter
+            strBuf = getFormattedValue(prow[ 3 ]);
+            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 3, strBuf);
+            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 3);
+            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 3);
 
-				// Action Parameter
-				strBuf = getFormattedValue( prow[ 7 ] );
-				m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 7, strBuf );
-				m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 7 );
-				m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 7 );
+            // Type Mask
+            strBuf = getFormattedValue(prow[ 4 ]);
+            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 4, strBuf);
+            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 4);
+            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 4);
 
-				m_gridDM->Update();
+            // Type Filter
+            strBuf = getFormattedValue(prow[ 5 ]);
+            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 5, strBuf);
+            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 5);
+            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 5);
 
-				progressDlg.Pulse();
-		}
-		else {
-			wxMessageBox( _("Unable to read decision matrix row!") );
-			break;
-		}
+            // Action
+            strBuf = getFormattedValue(prow[ 6 ]);
+            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 6, strBuf);
+            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 6);
+            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 6);
 
-	}
+            // Action Parameter
+            strBuf = getFormattedValue(prow[ 7 ]);
+            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 7, strBuf);
+            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 7);
+            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 7);
+
+            m_gridDM->Update();
+
+            progressDlg.Pulse();
+        } else {
+            wxMessageBox(_("Unable to read decision matrix row!"));
+            break;
+        }
+
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // updateDmGridConditional
 //
 
-void frmDeviceConfig::updateDmGridConditional( uint16_t reg, uint32_t page )
-{
-	int row = getRegisterGridRow( reg, page );
-	if ( -1 == row ) return;
+void frmDeviceConfig::updateDmGridConditional(uint16_t reg, uint32_t page) {
+    int row = getRegisterGridRow(reg, page);
+    if (-1 == row) return;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-									_("Updating DM grid conditional"),
-									100, 
-									this,
-									wxPD_ELAPSED_TIME | 
-									wxPD_AUTO_HIDE | 
-									wxPD_APP_MODAL |
-									wxPD_CAN_ABORT );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Updating DM grid conditional"),
+            100,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
 
-	if ( m_mdf.m_dmInfo.m_bIndexed ) {
-		
-		// Can't be first row
-		if ( 0 == row ) return;
+    if (m_mdf.m_dmInfo.m_bIndexed) {
 
-		// Must write to data part for a change
-		// to take place
-		if ( ( reg = ( m_mdf.m_dmInfo.m_nStartOffset + 1 ) ) &&
-			( page == m_mdf.m_dmInfo.m_nStartPage )  ) {
+        // Can't be first row
+        if (0 == row) return;
 
-			progressDlg.Pulse();
+        // Must write to data part for a change
+        // to take place
+        if ((reg = (m_mdf.m_dmInfo.m_nStartOffset + 1)) &&
+                (page == m_mdf.m_dmInfo.m_nStartPage)) {
 
-			// Fetch index from grid
-			uint8_t index = readStringValue( m_gridRegisters->GetCellValue( row-1, 2 ) );
-			
-			// Fetch value from grid
-			uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
-			wxString strValue = getFormattedValue( value );
+            progressDlg.Pulse();
 
-			// Write it to the grid
-			m_gridDM->SetCellValue( strValue, index/m_mdf.m_dmInfo.m_nRowSize, index % 8 );
+            // Fetch index from grid
+            uint8_t index = readStringValue(m_gridRegisters->GetCellValue(row - 1, 2));
 
-			progressDlg.Pulse();
+            // Fetch value from grid
+            uint8_t value = readStringValue(m_gridRegisters->GetCellValue(row, 2));
+            wxString strValue = getFormattedValue(value);
 
-		}
+            // Write it to the grid
+            m_gridDM->SetCellValue(strValue, index / m_mdf.m_dmInfo.m_nRowSize, index % 8);
 
-	}
-	else {
+            progressDlg.Pulse();
 
-		// Must write to data part for a change
-		// to take place
-		if ( ( reg >= ( m_mdf.m_dmInfo.m_nStartOffset ) ) &&
-			( reg < ( m_mdf.m_dmInfo.m_nStartOffset + ( m_mdf.m_dmInfo.m_nRowCount * m_mdf.m_dmInfo.m_nRowSize ) ) ) &&
-			( page == m_mdf.m_dmInfo.m_nStartPage )  ) {
+        }
 
-			progressDlg.Pulse();
-		
-			// Fetch value from grid
-			uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
-			wxString strValue = getFormattedValue( value );
+    } else {
 
-			// Write it to the grid
-			m_gridDM->SetCellValue( strValue, 
-										(reg-m_mdf.m_dmInfo.m_nStartOffset)/m_mdf.m_dmInfo.m_nRowSize, 
-										(reg-m_mdf.m_dmInfo.m_nStartOffset) % 8 );
+        // Must write to data part for a change
+        // to take place
+        if ((reg >= (m_mdf.m_dmInfo.m_nStartOffset)) &&
+                (reg < (m_mdf.m_dmInfo.m_nStartOffset + (m_mdf.m_dmInfo.m_nRowCount * m_mdf.m_dmInfo.m_nRowSize))) &&
+                (page == m_mdf.m_dmInfo.m_nStartPage)) {
 
-			progressDlg.Pulse();
+            progressDlg.Pulse();
 
-		}
-	}
+            // Fetch value from grid
+            uint8_t value = readStringValue(m_gridRegisters->GetCellValue(row, 2));
+            wxString strValue = getFormattedValue(value);
+
+            // Write it to the grid
+            m_gridDM->SetCellValue(strValue,
+                    (reg - m_mdf.m_dmInfo.m_nStartOffset) / m_mdf.m_dmInfo.m_nRowSize,
+                    (reg - m_mdf.m_dmInfo.m_nStartOffset) % 8);
+
+            progressDlg.Pulse();
+
+        }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // updateAbstractionGridConditional
 //
 
-void frmDeviceConfig::updateAbstractionGridConditional( uint16_t reg, uint32_t page )
-{
-	uint16_t rowAbstraction = 0;
+void frmDeviceConfig::updateAbstractionGridConditional(uint16_t reg, uint32_t page) {
+    uint16_t rowAbstraction = 0;
 
-	wxProgressDialog progressDlg( _("VSCP Works"),
-									_("Updating Abstraction grid conditional"),
-									100, 
-									this,
-									wxPD_ELAPSED_TIME | 
-									wxPD_AUTO_HIDE | 
-									wxPD_APP_MODAL |
-									wxPD_CAN_ABORT );
+    wxProgressDialog progressDlg(_("VSCP Works"),
+            _("Updating Abstraction grid conditional"),
+            100,
+            this,
+            wxPD_ELAPSED_TIME |
+            wxPD_AUTO_HIDE |
+            wxPD_APP_MODAL |
+            wxPD_CAN_ABORT);
 
-	cguid destGUID;
-	destGUID.getFromString( m_comboNodeID->GetValue() );
+    cguid destGUID;
+    destGUID.getFromString(m_comboNodeID->GetValue());
 
-	int row = getRegisterGridRow( reg, page );
-	if ( -1 == row ) return;
+    int row = getRegisterGridRow(reg, page);
+    if (-1 == row) return;
 
-	// Iterate through abstractions to se if this regitser is used
-	MDF_ABSTRACTION_LIST::iterator iter;
-	for ( iter = m_mdf.m_list_abstraction.begin(); 
-		iter != m_mdf.m_list_abstraction.end(); ++iter ) {
+    // Iterate through abstractions to se if this regitser is used
+    MDF_ABSTRACTION_LIST::iterator iter;
+    for (iter = m_mdf.m_list_abstraction.begin();
+            iter != m_mdf.m_list_abstraction.end(); ++iter) {
 
-		progressDlg.Pulse();
+        progressDlg.Pulse();
 
-		CMDF_Abstraction *abstraction = *iter;
-		bool bIndexed = abstraction->m_bIndexed;
-		uint32_t regAbstraction = abstraction->m_nOffset;
-		uint16_t pageAbstraction = abstraction->m_nPage;
-		
-		uint32_t width;
+        CMDF_Abstraction *abstraction = *iter;
+        bool bIndexed = abstraction->m_bIndexed;
+        uint32_t regAbstraction = abstraction->m_nOffset;
+        uint16_t pageAbstraction = abstraction->m_nPage;
 
-		if ( abstraction->m_nType == type_string ) {
-			width = abstraction->m_nWidth;
-		}
-		else if ( abstraction->m_nType == type_bitfield ) {
-			width = abstraction->m_nWidth;
-		}
-        else if ( abstraction->m_nType == type_boolval ) {
-			width = 1;
+        uint32_t width;
+
+        if (abstraction->m_nType == type_string) {
+            width = abstraction->m_nWidth;
+        } else if (abstraction->m_nType == type_bitfield) {
+            width = abstraction->m_nWidth;
+        } else if (abstraction->m_nType == type_boolval) {
+            width = 1;
+        } else if (abstraction->m_nType == type_int8_t) {
+            width = 1;
+        } else if (abstraction->m_nType == type_uint8_t) {
+            width = 1;
+        } else if (abstraction->m_nType == type_int16_t) {
+            width = 2;
+        } else if (abstraction->m_nType == type_uint16_t) {
+            width = 2;
+        } else if (abstraction->m_nType == type_int32_t) {
+            width = 4;
+        } else if (abstraction->m_nType == type_uint32_t) {
+            width = 4;
+        } else if (abstraction->m_nType == type_int64_t) {
+            width = 8;
+        } else if (abstraction->m_nType == type_uint64_t) {
+            width = 8;
+        } else if (abstraction->m_nType == type_double) {
+            width = 8;
+        } else if (abstraction->m_nType == type_float) {
+            width = 4;
+        } else if (abstraction->m_nType == type_date) {
+            width = 4;
+        } else if (abstraction->m_nType == type_time) {
+            width = 3;
+        } else if (abstraction->m_nType == type_guid) {
+            width = 16;
+        } else {
+            width = 0;
         }
-        else if ( abstraction->m_nType == type_int8_t ) {
-			width = 1;
+
+        if (bIndexed) {
+
+            progressDlg.Pulse();
+
+            if ((reg == regAbstraction + 1) &&
+                    (page == pageAbstraction)) {
+
+                progressDlg.Pulse();
+
+                // Register is datapart of an abstraction (the second byte)
+                // and the abstraction should be updated.
+
+                // Fetch index from grid
+                uint8_t index = readStringValue(m_gridRegisters->GetCellValue(row - 1, 2));
+
+                progressDlg.Pulse();
+
+                // Fetch value from grid
+                //uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
+                //wxString strValue = getFormattedValue( value );
+                wxString strValue;
+                strValue = m_csw.getAbstractionValueAsString(this,
+                        m_stdRegisters.getNickname(),
+                        abstraction,
+                        &m_ifguid,
+                        &destGUID,
+                        &progressDlg,
+                        m_bLevel2->GetValue());
+
+                progressDlg.Pulse();
+
+                // Write it to the grid
+                m_gridAbstractions->SetCellValue(strValue,
+                        rowAbstraction,
+                        3);
+            }
+
+        } else {
+
+            if ((reg >= regAbstraction) &&
+                    (reg < (regAbstraction + width)) &&
+                    (page == pageAbstraction)) {
+
+                progressDlg.Pulse();
+
+                // Fetch value from grid
+                //uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
+                //wxString strValue = getFormattedValue( value );
+                wxString strValue;
+                strValue = m_csw.getAbstractionValueAsString(this,
+                        m_stdRegisters.getNickname(),
+                        abstraction,
+                        &m_ifguid,
+                        &destGUID,
+                        &progressDlg,
+                        m_bLevel2->GetValue());
+                // Write it to the grid
+                m_gridAbstractions->SetCellValue(strValue,
+                        rowAbstraction,
+                        3);
+
+                progressDlg.Pulse();
+
+            }
+
         }
-        else if ( abstraction->m_nType == type_uint8_t ) {
-			width = 1;
-        }
-        else if ( abstraction->m_nType == type_int16_t ) {
-			width = 2;
-        }
-        else if ( abstraction->m_nType == type_uint16_t ) {
-			width = 2;
-        }
-        else if ( abstraction->m_nType == type_int32_t ) {
-			width = 4;
-        }
-        else if ( abstraction->m_nType == type_uint32_t ) {
-			width = 4;
-        }
-        else if ( abstraction->m_nType == type_int64_t ) {
-			width = 8;
-        }
-        else if ( abstraction->m_nType == type_uint64_t ) {
-			width = 8;
-        }
-        else if ( abstraction->m_nType == type_double ) {
-			width = 8;
-        }
-        else if ( abstraction->m_nType == type_float ) {
-			width = 4;
-        }
-        else if ( abstraction->m_nType == type_date ) {
-			width =4;
-        }
-        else if ( abstraction->m_nType == type_time ) {
-			width = 3;
-        }
-		else if ( abstraction->m_nType == type_guid ) {
-			width = 16;
-        }
-        else {
-			width = 0;
-		}
 
-		if ( bIndexed ) {
+        rowAbstraction++;
 
-			progressDlg.Pulse();
-
-			if ( ( reg == regAbstraction + 1 ) &&
-				 ( page == pageAbstraction ) ) {
-
-				progressDlg.Pulse();
-
-				// Register is datapart of an abstraction (the second byte)
-				// and the abstraction should be updated.
-
-				// Fetch index from grid
-				uint8_t index = readStringValue( m_gridRegisters->GetCellValue( row-1, 2 ) );
-
-				progressDlg.Pulse();
-			
-				// Fetch value from grid
-				//uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
-				//wxString strValue = getFormattedValue( value );
-				wxString strValue;
-				strValue = m_csw.getAbstractionValueAsString( this,
-														m_stdRegisters.getNickname(),
-														abstraction,
-														&m_ifguid,
-														&destGUID,
-														&progressDlg,
-														m_bLevel2->GetValue() );
-
-				progressDlg.Pulse();
-
-				// Write it to the grid
-				m_gridAbstractions->SetCellValue( strValue, 
-													rowAbstraction, 
-													3 );
-			}
-
-		}
-		else {
-
-			if ( ( reg >= regAbstraction ) &&
-				 ( reg < ( regAbstraction + width ) ) &&
-				 ( page == pageAbstraction ) ) {
-
-				progressDlg.Pulse();
-
-				// Fetch value from grid
-				//uint8_t value = readStringValue( m_gridRegisters->GetCellValue( row, 2 ) );
-				//wxString strValue = getFormattedValue( value );
-				wxString strValue;
-				strValue = m_csw.getAbstractionValueAsString( this,
-														m_stdRegisters.getNickname(),
-														abstraction,
-														&m_ifguid,
-														&destGUID,
-														&progressDlg,
-														m_bLevel2->GetValue() );
-				// Write it to the grid
-				m_gridAbstractions->SetCellValue( strValue, 
-										rowAbstraction, 
-										3 );
-
-				progressDlg.Pulse();
-
-			}
-
-		}
-
-		rowAbstraction++;
-
-	}
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // dmEnableSelectedRow
 //
 
-void frmDeviceConfig::dmEnableSelectedRow( wxCommandEvent& event )
-{
-	wxString strBuf;
+void frmDeviceConfig::dmEnableSelectedRow(wxCommandEvent& event) {
+    wxString strBuf;
 
-	// Select the row
-	m_gridDM->SelectRow( m_lastLeftClickRow );
+    // Select the row
+    m_gridDM->SelectRow(m_lastLeftClickRow);
 
-	wxArrayInt selrows = m_gridDM->GetSelectedRows();
+    wxArrayInt selrows = m_gridDM->GetSelectedRows();
 
-	if ( selrows.GetCount() ) {
+    if (selrows.GetCount()) {
 
-		for ( int i=selrows.GetCount()-1; i >= 0; i-- ) {
+        for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-			uint8_t flags = readStringValue( m_gridDM->GetCellValue( selrows[i], 2 ) );
-			flags |= 0x80;  // Set enable bit
-			strBuf= getFormattedValue( flags );
-			m_gridRegisters->SetCellValue( 1 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * selrows[i], 
-				2, 
-				strBuf );   
+            uint8_t flags = readStringValue(m_gridDM->GetCellValue(selrows[i], 2));
+            flags |= 0x80; // Set enable bit
+            strBuf = getFormattedValue(flags);
+            m_gridRegisters->SetCellValue(1 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * selrows[i],
+                    2,
+                    strBuf);
 
-			m_gridRegisters->SetCellTextColour( 1 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * selrows[i], 
-				2, 
-				*wxRED );   
+            m_gridRegisters->SetCellTextColour(1 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * selrows[i],
+                    2,
+                    *wxRED);
 
-			// Update registers
-			OnButtonUpdateClick( event );
+            // Update registers
+            OnButtonUpdateClick(event);
 
 
-		}
+        }
 
-	}
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // dmDisableSelectedRow
 //
 
-void frmDeviceConfig::dmDisableSelectedRow( wxCommandEvent& event )
-{
-	wxString strBuf;
+void frmDeviceConfig::dmDisableSelectedRow(wxCommandEvent& event) {
+    wxString strBuf;
 
-	// Select the row
-	m_gridDM->SelectRow( m_lastLeftClickRow );
+    // Select the row
+    m_gridDM->SelectRow(m_lastLeftClickRow);
 
-	wxArrayInt selrows = m_gridDM->GetSelectedRows();
+    wxArrayInt selrows = m_gridDM->GetSelectedRows();
 
-	if ( selrows.GetCount() ) {
+    if (selrows.GetCount()) {
 
-		for ( int i=selrows.GetCount()-1; i >= 0; i-- ) {
+        for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-			uint8_t flags = readStringValue( m_gridDM->GetCellValue( selrows[i], 2 ) );
-			flags &= 0x7f;  // Reset enable bit
-			strBuf= getFormattedValue( flags );
-			m_gridRegisters->SetCellValue( 1 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * selrows[i], 
-				2, 
-				strBuf );   
+            uint8_t flags = readStringValue(m_gridDM->GetCellValue(selrows[i], 2));
+            flags &= 0x7f; // Reset enable bit
+            strBuf = getFormattedValue(flags);
+            m_gridRegisters->SetCellValue(1 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * selrows[i],
+                    2,
+                    strBuf);
 
-			m_gridRegisters->SetCellTextColour( 1 + m_mdf.m_dmInfo.m_nStartOffset + 
-				m_mdf.m_dmInfo.m_nRowSize * selrows[i], 
-				2, 
-				*wxRED );   
+            m_gridRegisters->SetCellTextColour(1 + m_mdf.m_dmInfo.m_nStartOffset +
+                    m_mdf.m_dmInfo.m_nRowSize * selrows[i],
+                    2,
+                    *wxRED);
 
-			// Update registers
-			OnButtonUpdateClick( event );
+            // Update registers
+            OnButtonUpdateClick(event);
 
-		}
+        }
 
-	}    
+    }
 }
 
 
@@ -8219,10 +8202,9 @@ void frmDeviceConfig::dmDisableSelectedRow( wxCommandEvent& event )
 // dmRowWizard
 //
 
-void frmDeviceConfig::dmRowWizard( wxCommandEvent& event )
-{
-	wxMessageBox(_("Still needs to be coded..."));
-	event.Skip();
+void frmDeviceConfig::dmRowWizard(wxCommandEvent& event) {
+    wxMessageBox(_("Still needs to be coded..."));
+    event.Skip();
 }
 
 
@@ -8230,70 +8212,69 @@ void frmDeviceConfig::dmRowWizard( wxCommandEvent& event )
 // wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_REGSITERS
 //
 
-void frmDeviceConfig::OnMenuitemSaveRegistersClick( wxCommandEvent& event )
-{
+void frmDeviceConfig::OnMenuitemSaveRegistersClick(wxCommandEvent& event) {
 
-	wxString str;
-	wxStandardPaths stdpaths;
+    wxString str;
+    //wxStandardPaths stdpaths;
 
-	wxBusyCursor wait;
+    wxBusyCursor wait;
 
-	// First find a path to save TX data to
-	wxFileDialog dlg( this,
-		_("Choose file to save register set to "),
-		stdpaths.GetUserDataDir(),
-		_("registerset"),
-		_("Register set (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"),
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
+    // First find a path to save TX data to
+    wxFileDialog dlg(this,
+            _("Choose file to save register set to "),
+            wxStandardPaths::Get().GetUserDataDir(),
+            _("registerset"),
+            _("Register set (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"),
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-	if ( wxID_OK == dlg.ShowModal() ) {
+    if (wxID_OK == dlg.ShowModal()) {
 
-		wxFFileOutputStream *pFileStream = new wxFFileOutputStream( dlg.GetPath() );
-		if ( NULL == pFileStream ) {
-			wxMessageBox(_("Failed to create file for configuration."));
-			return;
-		}
+        wxFFileOutputStream *pFileStream = new wxFFileOutputStream(dlg.GetPath());
+        if (NULL == pFileStream) {
+            wxMessageBox(_("Failed to create file for configuration."));
+            return;
+        }
 
-		pFileStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n", 
-			strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n") );
+        pFileStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+                strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
 
-		// Transmission set start
-		pFileStream->Write("<registerset>\n",strlen("<registerset>\n"));
+        // Transmission set start
+        pFileStream->Write("<registerset>\n", strlen("<registerset>\n"));
 
-		// We write the full register range including standard registers
-		// so we can use the dump for debug purposes. No need to read
-		// back standard registersor a standard user.
-		for (int i=0; i<256; i++ ) {
+        // We write the full register range including standard registers
+        // so we can use the dump for debug purposes. No need to read
+        // back standard registersor a standard user.
+        for (int i = 0; i < 256; i++) {
 
-			pFileStream->Write("<register id='",strlen("<register id='"));
-			str.Printf( _("%d"), i );
-			pFileStream->Write( str.mb_str(), strlen(str.mb_str()));
-			pFileStream->Write("'>\n",strlen("'>\n"));
+            pFileStream->Write("<register id='", strlen("<register id='"));
+            str.Printf(_("%d"), i);
+            pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+            pFileStream->Write("'>\n", strlen("'>\n"));
 
-			pFileStream->Write("<value>",strlen("<value>"));	
-			str = m_gridRegisters->GetCellValue( i, 2 );
-			pFileStream->Write( str.mb_str(), strlen(str.mb_str()));
-			pFileStream->Write("</value>\n",strlen("</value>\n"));
+            pFileStream->Write("<value>", strlen("<value>"));
+            str = m_gridRegisters->GetCellValue(i, 2);
+            pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+            pFileStream->Write("</value>\n", strlen("</value>\n"));
 
-			pFileStream->Write("<description>",strlen("<description>"));
-			str = m_gridRegisters->GetCellValue( i, 3 );
-			pFileStream->Write( str.mb_str(), strlen(str.mb_str()));
-			pFileStream->Write("</description>\n",strlen("</description>\n"));
+            pFileStream->Write("<description>", strlen("<description>"));
+            str = m_gridRegisters->GetCellValue(i, 3);
+            pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+            pFileStream->Write("</description>\n", strlen("</description>\n"));
 
-			pFileStream->Write("</register>\n",strlen("</register>\n"));
+            pFileStream->Write("</register>\n", strlen("</register>\n"));
 
-		}
+        }
 
-		// Transmission set end
-		pFileStream->Write("</registerset>\n",strlen("</registerset>\n"));
+        // Transmission set end
+        pFileStream->Write("</registerset>\n", strlen("</registerset>\n"));
 
-		// Close the file
-		pFileStream->Close();
+        // Close the file
+        pFileStream->Close();
 
-		// Clean up
-		delete pFileStream;
+        // Clean up
+        delete pFileStream;
 
-	}
+    }
 
 }
 
@@ -8303,73 +8284,72 @@ void frmDeviceConfig::OnMenuitemSaveRegistersClick( wxCommandEvent& event )
 // OnMenuitemSaveSelectedRegistersClick
 //
 
-void frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick( wxCommandEvent& event )
-{
+void frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick(wxCommandEvent& event) {
 
-	wxString str;
-	wxStandardPaths stdpaths;
+    wxString str;
+    //wxStandardPaths stdpaths;
 
-	wxBusyCursor wait;
+    wxBusyCursor wait;
 
-	// First find a path to save TX data to
-	wxFileDialog dlg( this,
-		_("Choose file to save register set to "),
-		stdpaths.GetUserDataDir(),
-		_("registerset"),
-		_("Register set (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"),
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
+    // First find a path to save TX data to
+    wxFileDialog dlg(this,
+            _("Choose file to save register set to "),
+            wxStandardPaths::Get().GetUserDataDir(),
+            _("registerset"),
+            _("Register set (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"),
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-	if ( wxID_OK == dlg.ShowModal() ) {
+    if (wxID_OK == dlg.ShowModal()) {
 
-		wxFFileOutputStream *pFileStream = new wxFFileOutputStream( dlg.GetPath() );
-		if ( NULL == pFileStream ) {
-			wxMessageBox(_("Failed to create file for configuration."));
-			return;
-		}
+        wxFFileOutputStream *pFileStream = new wxFFileOutputStream(dlg.GetPath());
+        if (NULL == pFileStream) {
+            wxMessageBox(_("Failed to create file for configuration."));
+            return;
+        }
 
-		pFileStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n", 
-			strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n") );
+        pFileStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+                strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
 
-		// Transmission set start
-		pFileStream->Write("<registerset>\n",strlen("<registerset>\n"));
+        // Transmission set start
+        pFileStream->Write("<registerset>\n", strlen("<registerset>\n"));
 
-		// We write the full register range including standard registers
-		// so we can use the dump for debug purposes. No need to read
-		// back standard registersor a standard user.
-		for (int i=0; i<256; i++ ) {
+        // We write the full register range including standard registers
+        // so we can use the dump for debug purposes. No need to read
+        // back standard registersor a standard user.
+        for (int i = 0; i < 256; i++) {
 
-			// If row is not selected ignore it
-			if ( !m_gridRegisters->IsInSelection( i, 2 ) ) continue;
+            // If row is not selected ignore it
+            if (!m_gridRegisters->IsInSelection(i, 2)) continue;
 
-			pFileStream->Write("<register id='",strlen("<register id='"));
-			str.Printf( _("%d"), i );
-			pFileStream->Write( str.mb_str(), strlen(str.mb_str()));
-			pFileStream->Write("'>\n",strlen("'>\n"));
+            pFileStream->Write("<register id='", strlen("<register id='"));
+            str.Printf(_("%d"), i);
+            pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+            pFileStream->Write("'>\n", strlen("'>\n"));
 
-			pFileStream->Write("<value>",strlen("<value>"));	
-			str = m_gridRegisters->GetCellValue( i, 2 );
-			pFileStream->Write( str.mb_str(), strlen(str.mb_str()));
-			pFileStream->Write("</value>\n",strlen("</value>\n"));
+            pFileStream->Write("<value>", strlen("<value>"));
+            str = m_gridRegisters->GetCellValue(i, 2);
+            pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+            pFileStream->Write("</value>\n", strlen("</value>\n"));
 
-			pFileStream->Write("<description>",strlen("<description>"));
-			str = m_gridRegisters->GetCellValue( i, 3 );
-			pFileStream->Write( str.mb_str(), strlen(str.mb_str()));
-			pFileStream->Write("</description>\n",strlen("</description>\n"));
+            pFileStream->Write("<description>", strlen("<description>"));
+            str = m_gridRegisters->GetCellValue(i, 3);
+            pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+            pFileStream->Write("</description>\n", strlen("</description>\n"));
 
-			pFileStream->Write("</register>\n",strlen("</register>\n"));
+            pFileStream->Write("</register>\n", strlen("</register>\n"));
 
-		}
+        }
 
-		// Transmission set end
-		pFileStream->Write("</registerset>\n",strlen("</registerset>\n"));
+        // Transmission set end
+        pFileStream->Write("</registerset>\n", strlen("</registerset>\n"));
 
-		// Close the file
-		pFileStream->Close();
+        // Close the file
+        pFileStream->Close();
 
-		// Clean up
-		delete pFileStream;
+        // Clean up
+        delete pFileStream;
 
-	}
+    }
 
 }
 
@@ -8378,108 +8358,107 @@ void frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick( wxCommandEvent& even
 // OnMenuitemLoadRegistersClick
 //
 
-void frmDeviceConfig::OnMenuitemLoadRegistersClick( wxCommandEvent& event )
-{
-	wxStandardPaths stdpaths;
-	wxXmlDocument doc;
+void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
+    //wxStandardPaths stdpaths;
+    wxXmlDocument doc;
 
-	// First find a path to save register set data to
-	wxFileDialog dlg( this,
-		_("Choose file to load register set from "),
-		stdpaths.GetUserDataDir(),
-		_("registerset"),
-		_("Register set Files (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*") );
-	if ( wxID_OK == dlg.ShowModal() ) { 
+    // First find a path to save register set data to
+    wxFileDialog dlg(this,
+            _("Choose file to load register set from "),
+            wxStandardPaths::Get().GetUserDataDir(),
+            _("registerset"),
+            _("Register set Files (*.reg)|*.reg|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
+    if (wxID_OK == dlg.ShowModal()) {
 
-		if ( !doc.Load ( dlg.GetPath() ) ) {
-			wxMessageDialog( this, 
-				_("Unable to load file!"),
-				_("Load error"),
-				wxICON_ERROR );
-			return;
-		}
+        if (!doc.Load(dlg.GetPath())) {
+            wxMessageDialog(this,
+                    _("Unable to load file!"),
+                    _("Load error"),
+                    wxICON_ERROR);
+            return;
+        }
 
-		// start processing the XML file
-		if ( doc.GetRoot()->GetName() != wxT("registerset") ) {
-			return;
-		}
+        // start processing the XML file
+        if (doc.GetRoot()->GetName() != wxT("registerset")) {
+            return;
+        }
 
-		wxXmlNode *child = doc.GetRoot()->GetChildren();
-		while (child) {
+        wxXmlNode *child = doc.GetRoot()->GetChildren();
+        while (child) {
 
-			long reg;
-			uint8_t value;
-			if ( child->GetName() == wxT("register") ) {
+            long reg;
+            uint8_t value;
+            if (child->GetName() == wxT("register")) {
 
-				wxString id = 
-					child->GetPropVal ( wxT ( "id" ), wxT ( "-1" ) );
-				reg = readStringValue( id );
-				if ( -1 == reg ) continue;
+                wxString id =
+#if wxCHECK_VERSION(3,0,0)                        
+                        child->GetAttribute(wxT("id"), wxT("-1"));
+#else
+                        child->GetPropVal(wxT("id"), wxT("-1"));
+#endif                       
+                reg = readStringValue(id);
+                if (-1 == reg) continue;
 
-				wxXmlNode *subchild = child->GetChildren();
-				while ( subchild ) {
-					if ( subchild->GetName() == wxT ( "value" ) ) {
-						wxString strSaveValue = m_gridRegisters->GetCellValue( reg, 2 ); 
-						wxString str = subchild->GetNodeContent();
-						value = readStringValue( str );
-						str.Printf( _("0x%02lx"), value );
-						if ( str != strSaveValue ) {
-							m_gridRegisters->SetCellValue( reg, 2, str );
-							m_gridRegisters->SetCellTextColour( reg, 2, *wxRED );
-						}
-					}
-					subchild = subchild->GetNext();
-				}
+                wxXmlNode *subchild = child->GetChildren();
+                while (subchild) {
+                    if (subchild->GetName() == wxT("value")) {
+                        wxString strSaveValue = m_gridRegisters->GetCellValue(reg, 2);
+                        wxString str = subchild->GetNodeContent();
+                        value = readStringValue(str);
+                        str.Printf(_("0x%02lx"), value);
+                        if (str != strSaveValue) {
+                            m_gridRegisters->SetCellValue(reg, 2, str);
+                            m_gridRegisters->SetCellTextColour(reg, 2, *wxRED);
+                        }
+                    }
+                    subchild = subchild->GetNext();
+                }
 
-			}
+            }
 
-			child = child->GetNext();
+            child = child->GetNext();
 
-		}
+        }
 
-	}
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // getRegFromCell
 //
 
-uint32_t frmDeviceConfig::getRegFromCell( int row )
-{
-	wxString token1, token2;
-	wxString str = m_gridRegisters->GetCellValue( row, 0 );
+uint32_t frmDeviceConfig::getRegFromCell(int row) {
+    wxString token1, token2;
+    wxString str = m_gridRegisters->GetCellValue(row, 0);
 
-	wxStringTokenizer tkz( str, _(":"));
-	if ( tkz.HasMoreTokens() ) {
-		token1 = tkz.GetNextToken(); // Page
-	}
-	else {
-		token1 = str;
-	}
+    wxStringTokenizer tkz(str, _(":"));
+    if (tkz.HasMoreTokens()) {
+        token1 = tkz.GetNextToken(); // Page
+    } else {
+        token1 = str;
+    }
 
-	// For a standard register this one will fail
-	if ( tkz.HasMoreTokens() ) {
-		token2 = tkz.GetNextToken(); // Register
-	}
-	else {
-		token2 = token1;
-	}
+    // For a standard register this one will fail
+    if (tkz.HasMoreTokens()) {
+        token2 = tkz.GetNextToken(); // Register
+    } else {
+        token2 = token1;
+    }
 
-	return readStringValue( _("0x") + token2.Trim() );
+    return readStringValue(_("0x") + token2.Trim());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // getPageFromCell
 //
 
-uint16_t frmDeviceConfig::getPageFromCell( int row )
-{
-	wxString str = m_gridRegisters->GetCellValue( row, 0 );
-	if ( wxNOT_FOUND != str.Find(_(":")) ) {
-		return readStringValue( _("0x") + m_gridRegisters->GetCellValue( row, 0 ).Trim() );
-	}
+uint16_t frmDeviceConfig::getPageFromCell(int row) {
+    wxString str = m_gridRegisters->GetCellValue(row, 0);
+    if (wxNOT_FOUND != str.Find(_(":"))) {
+        return readStringValue(_("0x") + m_gridRegisters->GetCellValue(row, 0).Trim());
+    }
 
-	return 0;
+    return 0;
 }
 
 
@@ -8487,96 +8466,90 @@ uint16_t frmDeviceConfig::getPageFromCell( int row )
 // getFormattedValue
 //
 
-wxString frmDeviceConfig::getFormattedValue( uint8_t val )
-{
-	if ( VSCP_DEVCONFIG_NUMBERBASE_HEX == 
-		g_Config.m_Numberbase ) {
-			return wxString::Format(_("0x%02X"), val );
-	}
-	else {
-		return wxString::Format(_("0x%02lx"), val );
-	}
+wxString frmDeviceConfig::getFormattedValue(uint8_t val) {
+    if (VSCP_DEVCONFIG_NUMBERBASE_HEX ==
+            g_Config.m_Numberbase) {
+        return wxString::Format(_("0x%02X"), val);
+    } else {
+        return wxString::Format(_("0x%02lx"), val);
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // getRegisterGridRow
 //
 
-int frmDeviceConfig::getRegisterGridRow( uint32_t reg, uint16_t page )
-{
-	for ( int i=0; i<m_gridRegisters->GetRows(); i++ ) {
-		if ( ( page == getPageFromCell( i ) ) && 
-				( reg == getRegFromCell( i ) ) ) {
-			return i;
-		}
-	}
+int frmDeviceConfig::getRegisterGridRow(uint32_t reg, uint16_t page) {
+    for (int i = 0; i < m_gridRegisters->GetRows(); i++) {
+        if ((page == getPageFromCell(i)) &&
+                (reg == getRegFromCell(i))) {
+            return i;
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // fetchIterfaceGUID
 //
 
-bool frmDeviceConfig::fetchIterfaceGUID( void )
-{
-	wxString str;
+bool frmDeviceConfig::fetchIterfaceGUID(void) {
+    wxString str;
 
-	if ( !m_csw.isOpen() ) {
-		wxMessageBox(_("TCP/IP connection to daemon must be open."));
-		return false;
-	}
+    if (!m_csw.isOpen()) {
+        wxMessageBox(_("TCP/IP connection to daemon must be open."));
+        return false;
+    }
 
-	if ( USE_TCPIP_INTERFACE != m_csw.getDeviceType() ) {
-		wxMessageBox(_("Interfaces can only be fetched from the VSCP daemon."));
-		return false;
-	}
+    if (USE_TCPIP_INTERFACE != m_csw.getDeviceType()) {
+        wxMessageBox(_("Interfaces can only be fetched from the VSCP daemon."));
+        return false;
+    }
 
-	// Get the interface list
-	wxArrayString ifarray;
-	if ( CANAL_ERROR_SUCCESS == 
-		m_csw.getTcpIpInterface()->doCmdInterfaceList( ifarray ) ) {
+    // Get the interface list
+    wxArrayString ifarray;
+    if (CANAL_ERROR_SUCCESS ==
+            m_csw.getTcpIpInterface()->doCmdInterfaceList(ifarray)) {
 
-		if ( ifarray.Count() ) {
+        if (ifarray.Count()) {
 
-			for ( unsigned int i=0; i<ifarray.Count(); i++ ) {
+            for (unsigned int i = 0; i < ifarray.Count(); i++) {
 
-				wxStringTokenizer tkz( ifarray[ i ], _(",") );
-				wxString strOrdinal = tkz.GetNextToken();
-				wxString strType = tkz.GetNextToken();
-				wxString strIfGUID = tkz.GetNextToken();			
-				wxString strDescription = tkz.GetNextToken();
-			
-				int pos;
-				wxString strName;
-				if ( wxNOT_FOUND != ( pos = strDescription.Find(_(" ") ) ) ) {
-					strName = strDescription.Left( pos );
-					strName.Trim();
-				}
+                wxStringTokenizer tkz(ifarray[ i ], _(","));
+                wxString strOrdinal = tkz.GetNextToken();
+                wxString strType = tkz.GetNextToken();
+                wxString strIfGUID = tkz.GetNextToken();
+                wxString strDescription = tkz.GetNextToken();
 
-				if ( strName.Upper() == m_interfaceName.Upper() ) { 
+                int pos;
+                wxString strName;
+                if (wxNOT_FOUND != (pos = strDescription.Find(_(" ")))) {
+                    strName = strDescription.Left(pos);
+                    strName.Trim();
+                }
 
-					// Save the name
-					m_interfaceName = strName;
+                if (strName.Upper() == m_vscpif.m_strInterfaceName.Upper()) {
 
-					// Save interface GUID;
-					m_ifguid.getFromString( strIfGUID );
+                    // Save the name
+                    //m_vscpif.m_strInterfaceName. = strName;
 
-					return true;
-				}
+                    // Save interface GUID;
+                    m_ifguid.getFromString(strIfGUID);
 
-			}
+                    return true;
+                }
 
-		}
-		else {
-			wxMessageBox(_("No interfaces found."));
-		}
-	}
-	else {
-		wxMessageBox(_("Unable to get interface list from VSCP daemon."));
-	}
+            }
 
-	return false;
+        } else {
+            wxMessageBox(_("No interfaces found."));
+        }
+    } else {
+        wxMessageBox(_("Unable to get interface list from VSCP daemon."));
+    }
+
+    return false;
 }
 
 
@@ -8585,14 +8558,13 @@ bool frmDeviceConfig::fetchIterfaceGUID( void )
 // OnMenuitemAddGuidsClick
 //
 
-void frmDeviceConfig::OnMenuitemAddGuidsClick( wxCommandEvent& event )
-{
-	wxString str = ::wxGetTextFromUser( _("Enter full GUID to add :"),
-										_("VSCP Works") );
-	m_guidarray.Add( str );
-	m_comboNodeID->Append( str );
+void frmDeviceConfig::OnMenuitemAddGuidsClick(wxCommandEvent& event) {
+    wxString str = ::wxGetTextFromUser(_("Enter full GUID to add :"),
+            _("VSCP Works"));
+    m_guidarray.Add(str);
+    m_comboNodeID->Append(str);
 
-	event.Skip( false );
+    event.Skip(false);
 }
 
 
@@ -8600,45 +8572,44 @@ void frmDeviceConfig::OnMenuitemAddGuidsClick( wxCommandEvent& event )
 // OnMenuitemSaveGuidsClick
 //
 
-void frmDeviceConfig::OnMenuitemSaveGuidsClick( wxCommandEvent& event )
-{
-	wxString str;
-	wxStandardPaths stdpaths;
+void frmDeviceConfig::OnMenuitemSaveGuidsClick(wxCommandEvent& event) {
+    wxString str;
+    //wxStandardPaths stdpaths;
 
-	wxBusyCursor wait;
+    wxBusyCursor wait;
 
-	// First find a path to save TX data to
-	wxFileDialog dlg( this,
-		_("Choose file to GUID's to"),
-		stdpaths.GetUserDataDir(),
-		_("guidset"),
-		_("GUID set Files (*.guid)|*.guid|All files (*.*)|*.*"),
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT );
+    // First find a path to save TX data to
+    wxFileDialog dlg(this,
+            _("Choose file to GUID's to"),
+            wxStandardPaths::Get().GetUserDataDir(),
+            _("guidset"),
+            _("GUID set Files (*.guid)|*.guid|All files (*.*)|*.*"),
+            wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
-	if ( wxID_OK == dlg.ShowModal() ) {
+    if (wxID_OK == dlg.ShowModal()) {
 
-		wxFFileOutputStream *pFileStream = new wxFFileOutputStream( dlg.GetPath() );
-		if ( NULL == pFileStream ) {
-			wxMessageBox(_("Failed to create file for configuration."));
-			return;
-		}
+        wxFFileOutputStream *pFileStream = new wxFFileOutputStream(dlg.GetPath());
+        if (NULL == pFileStream) {
+            wxMessageBox(_("Failed to create file for configuration."));
+            return;
+        }
 
-		for ( unsigned int i=0; i<m_comboNodeID->GetCount(); i++ ) {
-			wxString str =  m_comboNodeID->GetString( i ) + _("\r\n");
-			pFileStream->Write( str.mb_str(wxConvUTF8), str.Length() );
-		}
+        for (unsigned int i = 0; i < m_comboNodeID->GetCount(); i++) {
+            wxString str = m_comboNodeID->GetString(i) + _("\r\n");
+            pFileStream->Write(str.mb_str(wxConvUTF8), str.Length());
+        }
 
-		// Close the file
-		pFileStream->Close();
+        // Close the file
+        pFileStream->Close();
 
-		// Clean up
-		delete pFileStream;
-	}
+        // Clean up
+        delete pFileStream;
+    }
 
 
-	
 
-	event.Skip( false ); 
+
+    event.Skip(false);
 }
 
 
@@ -8646,50 +8617,49 @@ void frmDeviceConfig::OnMenuitemSaveGuidsClick( wxCommandEvent& event )
 // OnMenuitemLoadGuidsClick
 //
 
-void frmDeviceConfig::OnMenuitemLoadGuidsClick( wxCommandEvent& event )
-{
-	wxStandardPaths stdpaths;
-	wxXmlDocument doc;
+void frmDeviceConfig::OnMenuitemLoadGuidsClick(wxCommandEvent& event) {
+    //wxStandardPaths stdpaths;
+    wxXmlDocument doc;
 
-	// First find a path to save register set data to
-	wxFileDialog dlg( this,
-		_("Choose file to load register set from "),
-		stdpaths.GetUserDataDir(),
-		_("guidset"),
-		_("GUID set Files (*.guid)|*.guid|All files (*.*)|*.*") );
+    // First find a path to save register set data to
+    wxFileDialog dlg(this,
+            _("Choose file to load register set from "),
+            wxStandardPaths::Get().GetUserDataDir(),
+            _("guidset"),
+            _("GUID set Files (*.guid)|*.guid|All files (*.*)|*.*"));
 
-	if ( wxID_OK == dlg.ShowModal() ) { 
+    if (wxID_OK == dlg.ShowModal()) {
 
-		m_comboNodeID->Clear();
+        m_comboNodeID->Clear();
 
-		wxFFileInputStream *pFileStream = new wxFFileInputStream( dlg.GetPath() );
-		if ( NULL == pFileStream ) {
-			wxMessageBox(_("Failed to open GUID set file."));
-			return;
-		}
+        wxFFileInputStream *pFileStream = new wxFFileInputStream(dlg.GetPath());
+        if (NULL == pFileStream) {
+            wxMessageBox(_("Failed to open GUID set file."));
+            return;
+        }
 
-		char buf[ 2048 ];
-		wxString str;
+        char buf[ 2048 ];
+        wxString str;
 
-		while ( !pFileStream->Eof() ) {
-		
-			memset( buf, 0, sizeof( buf ) );
-			pFileStream->Read( buf, sizeof( buf )-1 );
-			str += wxString::FromAscii( buf );
+        while (!pFileStream->Eof()) {
 
-		}
+            memset(buf, 0, sizeof ( buf));
+            pFileStream->Read(buf, sizeof ( buf) - 1);
+            str += wxString::FromAscii(buf);
 
-		wxStringTokenizer tkz( str, _("\r\n") );
-		wxString strToken;
-		while ( tkz.HasMoreTokens() ) {
-			strToken = tkz.GetNextToken();
-			m_comboNodeID->Append( strToken );
-		}
+        }
 
-		if ( m_comboNodeID->GetCount() ) m_comboNodeID->Select( 0 );
-	}
+        wxStringTokenizer tkz(str, _("\r\n"));
+        wxString strToken;
+        while (tkz.HasMoreTokens()) {
+            strToken = tkz.GetNextToken();
+            m_comboNodeID->Append(strToken);
+        }
 
-	event.Skip( false );
+        if (m_comboNodeID->GetCount()) m_comboNodeID->Select(0);
+    }
+
+    event.Skip(false);
 
 }
 
@@ -8697,14 +8667,13 @@ void frmDeviceConfig::OnMenuitemLoadGuidsClick( wxCommandEvent& event )
 // OnHtmlwindowCellClicked
 //
 
-void frmDeviceConfig::OnHtmlwindowCellClicked( wxHtmlLinkEvent& event )
-{
-	if ( event.GetLinkInfo().GetHref().StartsWith( _("http://") ) ) {
-		wxLaunchDefaultBrowser( event.GetLinkInfo().GetHref() );
-		event.Skip( false );
-		return;
-	}
+void frmDeviceConfig::OnHtmlwindowCellClicked(wxHtmlLinkEvent& event) {
+    if (event.GetLinkInfo().GetHref().StartsWith(_("http://"))) {
+        wxLaunchDefaultBrowser(event.GetLinkInfo().GetHref());
+        event.Skip(false);
+        return;
+    }
 
-	event.Skip();
+    event.Skip();
 }
 

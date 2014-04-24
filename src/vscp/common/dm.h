@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dm.h,v $                                       
-// $Date: 2005/08/30 11:00:04 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 
 #if !defined(DM__INCLUDED_)
 #define DM__INCLUDED_
@@ -47,6 +44,12 @@ WX_DECLARE_HASH_MAP( int, dmTimer*, wxIntegerHash, wxIntegerEqual, DMTIMERS );
 WX_DECLARE_LIST ( wxDynamicLibrary, PLUGINLIST ); 	// List with DM plugins
 WX_DECLARE_LIST( int, ACTIONTIME );
 
+// Control bits
+#define DM_CONTROL_ENABLE				0x80000000
+#define DM_CONTROL_DONT_CONTINUE_SCAN	0x40000000
+#define DM_CONTROL_CHECK_INDEX			0x00000020
+#define DM_CONTROL_CHECK_ZONE			0x00000010 
+#define DM_CONTROL_CHECK_SUBZONE		0x00000008  
 
 // Forward declaration
 class CDM;
@@ -62,7 +65,7 @@ public:
     Constructor
     @param pCtrlObject Pointer to main object
     @param url URL to access
-    @param nAccessMethod 0 for GET and 1 for PUT
+    @param nAccessMethod 0 for GET, 1 for PUT and 2 for POST
     @param putdata Data if PUT is used as accessmethod.
     @param proxy Optional proxy to use on the form <hostname>:<port number>
     @param kind Threadtype.
@@ -308,10 +311,10 @@ public:
   ~actionTime();
 
   /*!
-  Set the weekdays that the action is allowed to occour at. The
+  Set the weekdays that the action is allowed to occur at. The
   string is on the form 'mtwtfss'  The day can be replaced with a
   '-' to indicate a none valid day.
-  @param actionTime strWeek on the format mtwtfss
+  @param actionTime strWeek on the format 'mtwtfss'
   @return True on success.
   */
   bool setWeekDays( const wxString& strWeek );
@@ -319,7 +322,7 @@ public:
 
   /*!
   Get the allowed weekdays as a wxWtring on the form 'mtwtfss' where
-  '-' is used to indicate a day when the event is not allowd to occure.
+  '-' is used to indicate a day when the event is not allowe to occur.
   @return A string with the allowed weekdays.
   */
   wxString getWeekDays( void );
@@ -424,7 +427,7 @@ public:
 
   /*!
   Get DM item as a realstring description.
-  @return A strng representation fo the item. This string is on the form 
+  @return A string representation for the item. This string is on the form 
   enabled,from,to,weekday,time,mask,filter,index,zone,subzone,control-code,action-code,action-param,comment,trig-counter,error-counter
   where mask is Priority;Class;Type;GUID an filter is Priority;Class;Type;GUID
   See the specification for a description of the from, to and weekday fields. 
@@ -435,23 +438,45 @@ public:
   /*!
   Enable item
   */
-  void enable( void )  { m_control |= 0x80000000; };
+  void enable( void )  { m_control |= DM_CONTROL_ENABLE; };
 
   /*!
   Disable item
   */
   void disable( void )  { m_control &= 0x7fffffff; };
 
-
   /*!
   Check if it is enabled
   @returns true if enabled false otherwise
   */
-  bool isEnabled( void ) { return ( ( m_control & 0x80000000 ) ? true : false ); };
-
+  bool isEnabled( void ) { return ( ( m_control & DM_CONTROL_ENABLE ) ? true : false ); };
+  
+  /*!
+  Check if scan should continue
+  @returns true if enabled false otherwise
+  */
+  bool isScanDontContinueSet( void ) { return ( ( m_control & DM_CONTROL_DONT_CONTINUE_SCAN ) ? true : false ); };
 
   /*!
-  Handle escape sequencys
+  Check if index should be checked
+  @returns true if enabled false otherwise
+  */
+  bool isCheckIndexSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_INDEX ) ? true : false ); };
+    
+  /*!
+  Check if zone should be checked
+  @returns true if enabled false otherwise
+  */
+  bool isCheckZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_ZONE ) ? true : false ); };
+  
+    /*!
+  Check if zone should be checked
+  @returns true if enabled false otherwise
+  */
+  bool isCheckSubZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
+  
+  /*!
+  Handle escape sequencies
   @param pEvent Event feed thru matrix
   @param str String to replace escapes in
   @return true on success, else false.
@@ -599,6 +624,18 @@ public:
 
   /// A counter that is updated each time an error occurs
   uint32_t m_errorCounter;
+  
+  /// If index should be checked this is the one
+  uint8_t m_index;
+  
+  /// Index should be masked so only the LSB tree bits are checked
+  bool m_bMeasurement;
+  
+  /// If zone should be checked this is the one
+  uint8_t m_zone;
+  
+  /// If subzone should be checked this is the one
+  uint8_t m_subzone;
 
   /// Description of last error
   wxString m_strLastError;
@@ -688,7 +725,7 @@ public:
   /*!
   Get number of rows in matrix
   */
-  unsigned short getRowCount( void );
+  unsigned short getRowCount( void ) { return m_DMList.GetCount(); };
 
   /*!
   Get a row from the matrix

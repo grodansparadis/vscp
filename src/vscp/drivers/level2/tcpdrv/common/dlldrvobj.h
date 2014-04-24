@@ -7,7 +7,8 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB,
+// <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,15 +20,11 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dlldrvobj.h,v $                                       
-// $Date: 2005/01/05 12:16:16 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 
 #if !defined(AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
 #define AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
 
-#include "tcpdrv.h"
+#include "rawethernet.h"
 
 // This is the version info for this DLL - Change to your own value
 #define DLL_VERSION		                0x000001
@@ -68,7 +65,7 @@ public:
 		@parm plog Object to add
 		@return handle or 0 for error
 	*/
-	long addDriverObject( Ctcpdrv *pObj );
+	long addDriverObject( CRawEthernet *pObj );
 
 	/*!
 		Get a driver object from its handle
@@ -77,7 +74,7 @@ public:
 		@return pointer to object or NULL if invalid
 				handle.
 	*/
-	Ctcpdrv *getDriverObject( long h );
+	CRawEthernet *getDriverObject( long h );
 
 	/*!
 		Remove a driver object
@@ -90,7 +87,7 @@ public:
 		The log file object
 		This is the array with driver objects 
 	*/
-	Ctcpdrv *m_drvObjArray[ VSCP_LOGGER_DRIVER_MAX_OPEN ];
+	CRawEthernet *m_drvObjArray[ VSCP_LOGGER_DRIVER_MAX_OPEN ];
 
 	/// Mutex for open/close
 #ifdef WIN32	

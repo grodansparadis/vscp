@@ -7,7 +7,8 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2012 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -57,6 +58,7 @@
 #include "../../common/dllist.h"
 #include "../../common/md5.h"
 #include "controlobject.h"
+#include "guid.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -165,7 +167,8 @@ void *daemonVSCPThread::Entry()
                         pnewEvent->vscp_class = 0;
                         pnewEvent->vscp_type = 28;
                         pnewEvent->sizeData = 8;
-                        memcpy ( pnewEvent->GUID, pClientItem->m_GUID, 16 );
+                        
+                        pClientItem->m_guid.writeGUID(pnewEvent->GUID);
 
                         pnewEvent->pdata = new unsigned char[ 8 ];
                         if ( NULL != pnewEvent->pdata ) {
