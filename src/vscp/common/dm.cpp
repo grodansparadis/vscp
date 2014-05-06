@@ -2751,16 +2751,44 @@ bool CDM::load ( void )
                     pDMitem->m_comment = pDMitem->m_comment.Trim(false);
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_from" ) ) {
-                    pDMitem->m_timeAllow.m_fromTime.ParseDateTime( subchild->GetNodeContent() );
+					wxString str = subchild->GetNodeContent();
+					str.Trim();
+					if ( 0 != str.Length() ) {
+						pDMitem->m_timeAllow.m_fromTime.ParseDateTime(str);
+					}
+					else {
+						pDMitem->m_timeAllow.m_fromTime.ParseDateTime( _("1970-01-01 00:00:00") );
+					}
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_to" ) ) {
-                    pDMitem->m_timeAllow.m_endTime.ParseDateTime( subchild->GetNodeContent() );
+					wxString str = subchild->GetNodeContent();
+					str.Trim();
+					if ( 0 != str.Length() ) {
+						pDMitem->m_timeAllow.m_endTime.ParseDateTime(str);
+					}
+					else {
+						pDMitem->m_timeAllow.m_endTime.ParseDateTime( _("2199-12-31 23:59:59") );
+					}
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_weekdays" ) ) {
-                    pDMitem->m_timeAllow.setWeekDays( subchild->GetNodeContent() );
+					wxString str = subchild->GetNodeContent();
+					str.Trim();
+					if ( 0 != str.Length() ) {
+						pDMitem->m_timeAllow.setWeekDays(str);
+					}
+					else {
+						pDMitem->m_timeAllow.setWeekDays( _("mtwtfss") );
+					}
                 }
                 else if ( subchild->GetName() == wxT ( "allowed_time" ) ) {
-                    pDMitem->m_timeAllow.parseActionTime( subchild->GetNodeContent() );
+					wxString str = subchild->GetNodeContent();
+					str.Trim();
+					if ( 0 != str.Length() ) {
+						pDMitem->m_timeAllow.parseActionTime(str);
+					}
+					else {
+						pDMitem->m_timeAllow.parseActionTime(_("*:*:*" ));
+					}
                 }
                 else if ( subchild->GetName() == wxT ( "index" ) ) {
                     wxString str;
