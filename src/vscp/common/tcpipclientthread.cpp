@@ -1919,6 +1919,7 @@ void TcpClientThread::handleVariable_List()
                 else {
                     str += _(",false,");
                 }
+				
                 pVariable->writeVariableToString( strWork );
                 str += strWork;
                 str += _("\r\n");
@@ -2126,7 +2127,7 @@ void TcpClientThread::handleVariable_Write()
         wxstr.Trim();
         wxstr.Trim( false );
         if ( wxstr.Length() ) {
-            type = readStringValue( tkz.GetNextToken() );
+            type = readStringValue( wxstr );
         }
     }
     else {
