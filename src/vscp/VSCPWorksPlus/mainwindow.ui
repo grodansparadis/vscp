@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>676</width>
+    <height>544</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QGraphicsView" name="graphicsView">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>50</y>
+      <width>481</width>
+      <height>371</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>676</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuVSCP">
+    <property name="title">
+     <string>VSCP</string>
+    </property>
+    <addaction name="actionClient_Window"/>
+    <addaction name="actionDevice_Configuration_Window"/>
+    <addaction name="actionMDF_Editor"/>
+    <addaction name="separator"/>
+    <addaction name="actionDecision_Matrix_Editor_daemon"/>
+    <addaction name="actionVariable_Editor"/>
+    <addaction name="separator"/>
+    <addaction name="actionScan_for_devices"/>
+    <addaction name="actionBoot_loader_wizard"/>
+    <addaction name="separator"/>
+    <addaction name="actionSimple_UI_Designer"/>
+    <addaction name="actionMerlin_Interface_Designer"/>
+   </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionConfiguration"/>
+    <addaction name="actionMDF_Editor_2"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionVSCP_Works_Help"/>
+    <addaction name="actionFrquently_Asked_Questions"/>
+    <addaction name="actionKeyboard_Shortcuts"/>
+    <addaction name="actionThanks"/>
+    <addaction name="actionCredits"/>
+    <addaction name="actionGoto_VSCP_Site"/>
+    <addaction name="actionAbout"/>
+   </widget>
+   <addaction name="menuVSCP"/>
+   <addaction name="menuTools"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionClient_Window">
+   <property name="text">
+    <string>Client Window...</string>
+   </property>
+  </action>
+  <action name="actionDevice_Configuration_Window">
+   <property name="text">
+    <string>Device Configuration Window</string>
+   </property>
+  </action>
+  <action name="actionMDF_Editor">
+   <property name="text">
+    <string>MDF Editor</string>
+   </property>
+  </action>
+  <action name="actionDecision_Matrix_Editor_daemon">
+   <property name="text">
+    <string>Decision Matrix Editor (daemon)...</string>
+   </property>
+  </action>
+  <action name="actionVariable_Editor">
+   <property name="text">
+    <string>Variable Editor....</string>
+   </property>
+  </action>
+  <action name="actionScan_for_devices">
+   <property name="text">
+    <string>Scan for devices...</string>
+   </property>
+  </action>
+  <action name="actionBoot_loader_wizard">
+   <property name="text">
+    <string>Boot loader wizard...</string>
+   </property>
+  </action>
+  <action name="actionSimple_UI_Designer">
+   <property name="text">
+    <string>Simple UI Designer...</string>
+   </property>
+  </action>
+  <action name="actionMerlin_Interface_Designer">
+   <property name="text">
+    <string>Merlin Interface Designer...</string>
+   </property>
+  </action>
+  <action name="actionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionConfiguration">
+   <property name="text">
+    <string>Configuration...</string>
+   </property>
+  </action>
+  <action name="actionMDF_Editor_2">
+   <property name="text">
+    <string>MDF Editor...</string>
+   </property>
+  </action>
+  <action name="actionVSCP_Works_Help">
+   <property name="text">
+    <string>VSCP Works Help</string>
+   </property>
+  </action>
+  <action name="actionFrquently_Asked_Questions">
+   <property name="text">
+    <string>Frquently Asked Questions</string>
+   </property>
+  </action>
+  <action name="actionKeyboard_Shortcuts">
+   <property name="text">
+    <string>Keyboard Shortcuts</string>
+   </property>
+  </action>
+  <action name="actionThanks">
+   <property name="text">
+    <string>Thanks...</string>
+   </property>
+  </action>
+  <action name="actionCredits">
+   <property name="text">
+    <string>Credits...</string>
+   </property>
+  </action>
+  <action name="actionGoto_VSCP_Site">
+   <property name="text">
+    <string>Goto VSCP Site</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>

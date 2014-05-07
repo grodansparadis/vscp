@@ -1,5 +1,6 @@
 NDIS Driver - contains the source and compiled driver for the NDIS Protocol Driver
 
-RawEthernet - contains the source and compiled application to send packets using the NDIS Driver
+RawEthernet - contains the source and compiled application to send packets using the 
+NDIS Driver
 
 --Miah

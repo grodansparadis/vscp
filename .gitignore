@@ -125,3 +125,7 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/delivery
 /src/vscp/NewFolder/tcpipsim/build/
 /src/vscp/NewFolder/tcpipsim/dist/
+/src/vscp/build-VSCPWorksPlus-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/Makefile.Debug
+/src/vscp/build-VSCPWorksPlus-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/Makefile.Release
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/Makefile.Debug
+/src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/Makefile.Release
