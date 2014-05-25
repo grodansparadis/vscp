@@ -1,23 +1,23 @@
 // Copyright (c) 2014 Cesanta Software Limited
 // All rights reserved
 //
-// This library is dual-licensed: you can redistribute it and/or modify
+// This software is dual-licensed: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation. For the terms of this
 // license, see <http://www.gnu.org/licenses/>.
 //
-// You are free to use this library under the terms of the GNU General
+// You are free to use this software under the terms of the GNU General
 // Public License, but WITHOUT ANY WARRANTY; without even the implied
 // warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU General Public License for more details.
 //
-// Alternatively, you can license this library under a commercial
+// Alternatively, you can license this software under a commercial
 // license, as set out in <http://cesanta.com/>.
 
 #ifndef NS_SKELETON_HEADER_INCLUDED
 #define NS_SKELETON_HEADER_INCLUDED
 
-#define NS_SKELETON_VERSION "1.0"
+#define NS_SKELETON_VERSION "1.1"
 
 #undef UNICODE                  // Use ANSI WinAPI functions
 #undef _UNICODE                 // Use multibyte encoding on Windows
@@ -69,6 +69,7 @@
 #endif // MINGW #defines va_copy
 #define snprintf _snprintf
 #define vsnprintf _vsnprintf
+#define sleep(x) Sleep((x) * 1000)
 #define to64(x) _atoi64(x)
 typedef int socklen_t;
 typedef unsigned char uint8_t;
@@ -181,21 +182,28 @@ struct ns_connection {
 #define NSF_CONNECTING              (1 << 3)
 #define NSF_CLOSE_IMMEDIATELY       (1 << 4)
 #define NSF_ACCEPTED                (1 << 5)
-#define NSF_USER_1                  (1 << 6)
-#define NSF_USER_2                  (1 << 7)
-#define NSF_USER_3                  (1 << 8)
-#define NSF_USER_4                  (1 << 9)
+#define NSF_WANT_READ               (1 << 6)
+#define NSF_WANT_WRITE              (1 << 7)
+
+#define NSF_USER_1                  (1 << 26)
+#define NSF_USER_2                  (1 << 27)
+#define NSF_USER_3                  (1 << 28)
+#define NSF_USER_4                  (1 << 29)
+#define NSF_USER_5                  (1 << 30)
+#define NSF_USER_6                  (1 << 31)
 };
 
 void ns_server_init(struct ns_server *, void *server_data, ns_callback_t);
 void ns_server_free(struct ns_server *);
 int ns_server_poll(struct ns_server *, int milli);
 void ns_server_wakeup(struct ns_server *);
+void ns_server_wakeup_ex(struct ns_server *, ns_callback_t, void *, size_t);
 void ns_iterate(struct ns_server *, ns_callback_t cb, void *param);
 struct ns_connection *ns_add_sock(struct ns_server *, sock_t sock, void *p);
 
 int ns_bind(struct ns_server *, const char *addr);
 int ns_set_ssl_cert(struct ns_server *, const char *ssl_cert);
+int ns_set_ssl_ca_cert(struct ns_server *, const char *ssl_ca_cert);
 struct ns_connection *ns_connect(struct ns_server *, const char *host,
                                  int port, int ssl, void *connection_param);
 

@@ -1,9 +1,9 @@
 /*! 
  *	\file Comm.h
  *  \brief interface for the Linux comm class.
- *  \author Ake Hedman, eurosource, 
- *  \author akhe@users.sourceforge.net 
- *  \date   2002-2005
+ *  \author Ake Hedman, Grodans Paradis AB, 
+ *  \author <akhe@grodansparadis.com>
+ *  \date   2002-2014
  *
 */
 
@@ -14,17 +14,13 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2008 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
 // notice must not be changed or removed and no warranty is either
 // expressed or implied by its publication or distribution.
 //
-// $RCSfile: com_win32.h,v $                                       
-// $Date: 2005/08/30 11:00:13 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
 ///////////////////////////////////////////////////////////////////////////////
 
 #if !defined(AFX_COMCOMM_H__E2F5A961_FF34_437B_91E1_8D7DEA1E94C9__INCLUDED_)

@@ -1,11 +1,11 @@
 /*! 
  *	\file com.h
  *  \brief interface for the Linux comm class.
- *  \author Ake Hedman, CC Systems AB, 
- *  \author akhe@users.sourceforge.net 
- *  \date    2002-2003
+ *  \author Ake Hedman, Grodans Paradis AB, 
+ *  \author <akhe@grodansparadis.com>
+ *  \date   2002-2014
  *
-// Copyright (C) 2000-2008 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
@@ -22,10 +22,6 @@
  *
  */
 
-// $RCSfile: com.h,v $                                       
-// $Date: 2005/08/30 11:00:13 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.3 $ 
 
 #ifndef H_COM_H
 #define H_COM_H

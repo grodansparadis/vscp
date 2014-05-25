@@ -1,17 +1,17 @@
 // Copyright (c) 2014 Cesanta Software Limited
 // All rights reserved
 //
-// This library is dual-licensed: you can redistribute it and/or modify
+// This software is dual-licensed: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License version 2 as
 // published by the Free Software Foundation. For the terms of this
 // license, see <http://www.gnu.org/licenses/>.
 //
-// You are free to use this library under the terms of the GNU General
+// You are free to use this software under the terms of the GNU General
 // Public License, but WITHOUT ANY WARRANTY; without even the implied
 // warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU General Public License for more details.
 //
-// Alternatively, you can license this library under a commercial
+// Alternatively, you can license this software under a commercial
 // license, as set out in <http://cesanta.com/>.
 
 #include "net_skeleton.h"
@@ -27,6 +27,11 @@
 #ifndef NS_FREE
 #define NS_FREE free
 #endif
+
+struct ctl_msg {
+  ns_callback_t callback;
+  char message[1024 * 8];
+};
 
 void iobuf_init(struct iobuf *iobuf, size_t size) {
   iobuf->len = iobuf->size = 0;
@@ -287,10 +292,15 @@ static int ns_parse_port_string(const char *str, union socket_address *sa) {
 // 'sa' must be an initialized address to bind to
 static sock_t ns_open_listening_socket(union socket_address *sa) {
   socklen_t len = sizeof(*sa);
-  sock_t on = 1, sock = INVALID_SOCKET;
+  sock_t sock = INVALID_SOCKET;
+#ifndef _WIN32
+  int on = 1;
+#endif
 
   if ((sock = socket(sa->sa.sa_family, SOCK_STREAM, 6)) != INVALID_SOCKET &&
+#ifndef _WIN32
       !setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (void *) &on, sizeof(on)) &&
+#endif
       !bind(sock, &sa->sa, sa->sa.sa_family == AF_INET ?
             sizeof(sa->sin) : sizeof(sa->sa)) &&
       !listen(sock, SOMAXCONN)) {
@@ -305,6 +315,20 @@ static sock_t ns_open_listening_socket(union socket_address *sa) {
   return sock;
 }
 
+// Certificate generation script is at
+// https://github.com/cesanta/net_skeleton/blob/master/examples/gen_certs.sh
+int ns_set_ssl_ca_cert(struct ns_server *server, const char *cert) {
+#ifdef NS_ENABLE_SSL
+  STACK_OF(X509_NAME) *list = SSL_load_client_CA_file(cert);
+  if (cert != NULL && server->ssl_ctx != NULL && list != NULL) {
+    SSL_CTX_set_client_CA_list(server->ssl_ctx, list);
+    SSL_CTX_set_verify(server->ssl_ctx, SSL_VERIFY_PEER |
+                       SSL_VERIFY_FAIL_IF_NO_PEER_CERT, NULL);
+    return 0;
+  }
+#endif
+  return server != NULL && cert == NULL ? 0 : -1;
+}
 
 int ns_set_ssl_cert(struct ns_server *server, const char *cert) {
 #ifdef NS_ENABLE_SSL
@@ -316,11 +340,10 @@ int ns_set_ssl_cert(struct ns_server *server, const char *cert) {
     return -2;
   } else {
     SSL_CTX_use_certificate_chain_file(server->ssl_ctx, cert);
+    return 0;
   }
-  return 0;
-#else
-  return server != NULL && cert == NULL ? 0 : -3;
 #endif
+  return server != NULL && cert == NULL ? 0 : -3;
 }
 
 int ns_bind(struct ns_server *server, const char *str) {
@@ -447,10 +470,13 @@ static void ns_read_from_socket(struct ns_connection *conn) {
     if (ret == 0 && ok == 0 && conn->ssl != NULL) {
       int res = SSL_connect(conn->ssl);
       int ssl_err = SSL_get_error(conn->ssl, res);
-      DBG(("%p res %d %d", conn, res, ssl_err));
+      DBG(("%p %d wres %d %d", conn, conn->flags, res, ssl_err));
+      if (ssl_err == SSL_ERROR_WANT_READ) conn->flags |= NSF_WANT_READ;
+      if (ssl_err == SSL_ERROR_WANT_WRITE) conn->flags |= NSF_WANT_WRITE;
       if (res == 1) {
-        conn->flags = NSF_SSL_HANDSHAKE_DONE;
-      } else if (res == 0 || ssl_err == 2 || ssl_err == 3) {
+        conn->flags |= NSF_SSL_HANDSHAKE_DONE;
+      } else if (ssl_err == SSL_ERROR_WANT_READ ||
+                 ssl_err == SSL_ERROR_WANT_WRITE) {
         return; // Call us again
       } else {
         ok = 1;
@@ -473,10 +499,13 @@ static void ns_read_from_socket(struct ns_connection *conn) {
     } else {
       int res = SSL_accept(conn->ssl);
       int ssl_err = SSL_get_error(conn->ssl, res);
-      DBG(("%p res %d %d", conn, res, ssl_err));
+      DBG(("%p %d rres %d %d", conn, conn->flags, res, ssl_err));
+      if (ssl_err == SSL_ERROR_WANT_READ) conn->flags |= NSF_WANT_READ;
+      if (ssl_err == SSL_ERROR_WANT_WRITE) conn->flags |= NSF_WANT_WRITE;
       if (res == 1) {
         conn->flags |= NSF_SSL_HANDSHAKE_DONE;
-      } else if (res == 0 || ssl_err == 2 || ssl_err == 3) {
+      } else if (ssl_err == SSL_ERROR_WANT_READ ||
+                 ssl_err == SSL_ERROR_WANT_WRITE) {
         return; // Call us again
       } else {
         conn->flags |= NSF_CLOSE_IMMEDIATELY;
@@ -489,8 +518,7 @@ static void ns_read_from_socket(struct ns_connection *conn) {
     n = recv(conn->sock, buf, sizeof(buf), 0);
   }
 
-  DBG(("%p <- %d bytes [%.*s%s]",
-       conn, n, n < 40 ? n : 40, buf, n < 40 ? "" : "..."));
+  DBG(("%p %d <- %d bytes", conn, conn->flags, n));
 
   if (ns_is_error(n)) {
     conn->flags |= NSF_CLOSE_IMMEDIATELY;
@@ -520,8 +548,7 @@ static void ns_write_to_socket(struct ns_connection *conn) {
 #endif
   { n = send(conn->sock, io->buf, io->len, 0); }
 
-  DBG(("%p -> %d bytes [%.*s%s]", conn, n, io->len < 40 ? io->len : 40,
-       io->buf, io->len < 40 ? "" : "..."));
+  DBG(("%p %d -> %d bytes", conn, conn->flags, n));
 
   ns_call(conn, NS_SEND, &n);
   if (ns_is_error(n)) {
@@ -567,13 +594,17 @@ int ns_server_poll(struct ns_server *server, int milli) {
   for (conn = server->active_connections; conn != NULL; conn = tmp_conn) {
     tmp_conn = conn->next;
     ns_call(conn, NS_POLL, &current_time);
-    ns_add_to_set(conn->sock, &read_set, &max_fd);
-    if (conn->flags & NSF_CONNECTING) {
+    if (!(conn->flags & NSF_WANT_WRITE)) {
+      //DBG(("%p read_set", conn));
+      ns_add_to_set(conn->sock, &read_set, &max_fd);
+    }
+    if (((conn->flags & NSF_CONNECTING) && !(conn->flags & NSF_WANT_READ)) ||
+        (conn->send_iobuf.len > 0 && !(conn->flags & NSF_CONNECTING) &&
+         !(conn->flags & NSF_BUFFER_BUT_DONT_SEND))) {
+      //DBG(("%p write_set", conn));
       ns_add_to_set(conn->sock, &write_set, &max_fd);
     }
-    if (conn->send_iobuf.len > 0 && !(conn->flags & NSF_BUFFER_BUT_DONT_SEND)) {
-      ns_add_to_set(conn->sock, &write_set, &max_fd);
-    } else if (conn->flags & NSF_CLOSE_IMMEDIATELY) {
+    if (conn->flags & NSF_CLOSE_IMMEDIATELY) {
       ns_close_conn(conn);
     }
   }
@@ -593,12 +624,15 @@ int ns_server_poll(struct ns_server *server, int milli) {
       }
     }
 
-    // Read possible wakeup calls
+    // Read wakeup messages
     if (server->ctl[1] != INVALID_SOCKET &&
         FD_ISSET(server->ctl[1], &read_set)) {
-      unsigned char ch;
-      recv(server->ctl[1], &ch, 1, 0);
-      send(server->ctl[1], &ch, 1, 0);
+      struct ctl_msg ctl_msg;
+      int len = recv(server->ctl[1], &ctl_msg, sizeof(ctl_msg), 0);
+      send(server->ctl[1], ctl_msg.message, 1, 0);
+      if (len >= (int) sizeof(ctl_msg.callback) && ctl_msg.callback != NULL) {
+        ns_iterate(server, ctl_msg.callback, ctl_msg.message);
+      }
     }
 
     for (conn = server->active_connections; conn != NULL; conn = tmp_conn) {
@@ -705,12 +739,20 @@ void ns_iterate(struct ns_server *server, ns_callback_t cb, void *param) {
   }
 }
 
-void ns_server_wakeup(struct ns_server *server) {
-  unsigned char ch = 0;
-  if (server->ctl[0] != INVALID_SOCKET) {
-    send(server->ctl[0], &ch, 1, 0);
-    recv(server->ctl[0], &ch, 1, 0);
+void ns_server_wakeup_ex(struct ns_server *server, ns_callback_t cb,
+                         void *data, size_t len) {
+  struct ctl_msg ctl_msg;
+  if (server->ctl[0] != INVALID_SOCKET && data != NULL &&
+      len < sizeof(ctl_msg.message)) {
+    ctl_msg.callback = cb;
+    memcpy(ctl_msg.message, data, len);
+    send(server->ctl[0], &ctl_msg, offsetof(struct ctl_msg, message) + len, 0);
+    recv(server->ctl[0], &len, 1, 0);
   }
+}
+
+void ns_server_wakeup(struct ns_server *server) {
+  ns_server_wakeup_ex(server, NULL, (void *) "", 0);
 }
 
 void ns_server_init(struct ns_server *s, void *server_data, ns_callback_t cb) {
@@ -729,7 +771,7 @@ void ns_server_init(struct ns_server *s, void *server_data, ns_callback_t cb) {
 
 #ifndef NS_DISABLE_SOCKETPAIR
   do {
-    ns_socketpair(s->ctl);
+    ns_socketpair2(s->ctl, SOCK_DGRAM);
   } while (s->ctl[0] == INVALID_SOCKET);
 #endif
 
