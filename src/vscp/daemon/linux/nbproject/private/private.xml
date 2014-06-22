@@ -32,7 +32,7 @@
             </bookmark>
             <bookmark id="5">
                 <name/>
-                <line>5547</line>
+                <line>5550</line>
                 <key/>
             </bookmark>
         </file>
@@ -40,11 +40,12 @@
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
             <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/vscpvariable.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/dm.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/tcpipclientthread.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/vscpvariable.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/daemon/linux/Makefile.in</file>
             <file>file:/home/akhe/vscp_software/src/vscp/daemon/linux/Makefile</file>
-            <file>file:/home/akhe/vscp_software/src/common/md5.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/dm.cpp</file>
         </group>

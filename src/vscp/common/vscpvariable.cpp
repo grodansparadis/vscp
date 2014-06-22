@@ -366,7 +366,7 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
     wxString strName;			      // Name of variable
     wxString strValue;				  // Variable value
     int		 typeVariable;			  // Type of variable;
-    bool	 bPersistent = false;	// Persitence of variable		
+    bool	 bPersistent = false;	  // Persistence of variable		
 
     wxStringTokenizer tkz( strVariable, _(",") );
 
@@ -386,7 +386,7 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
         return false;	
     }
 
-    // Get the persistance of the variable
+    // Get the persistence of the variable
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
         str = str.Upper();
@@ -411,7 +411,7 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
     m_type = typeVariable;
     m_bPersistent = bPersistent;
     setName( strName );
-    setValueFromString( typeVariable, strVariable );
+    setValueFromString( typeVariable, strValue );
 
     return true;
 
@@ -653,15 +653,15 @@ CVSCPVariable * CVariableStorage::find( const wxString& name )
 
 bool CVariableStorage::add( const wxString& varName, const wxString& value, uint8_t type, bool bPersistent )
 {
-    // Name is always upper case
+	// Name is always upper case
     wxString name = varName.Upper();
-  name.Trim( true );
-  name.Trim( false );
+	name.Trim( true );
+	name.Trim( false );
 
     CVSCPVariable *pVar = new CVSCPVariable;
-  if ( NULL == pVar ) return false;
+	if ( NULL == pVar ) return false;
 
-  pVar->setType( type );			// Store the type
+	pVar->setType( type );			// Store the type
 
     // Store persistence
     if ( bPersistent ) {
@@ -710,17 +710,19 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
 
     if ( NULL != find( pVar->getName() ) ) {
         
-        // The variable is there already - remove so we could add the new
-    remove( pVar->getName() );
+		// The variable is there already - remove so we could add the new
+		//remove( pVar->getName() );
+		m_listVariable.DeleteObject( m_hashVariable[ pVar->getName() ] );
+		m_hashVariable.erase( pVar->getName() );
 
-        // New variable
-    m_hashVariable[ pVar->getName() ] = pVar;
+		// New variable
+		m_hashVariable[ pVar->getName() ] = pVar;
         m_listVariable.Append( pVar );
 
     }
     else {
         // New variable
-    m_hashVariable[ pVar->getName() ] = pVar;
+		m_hashVariable[ pVar->getName() ] = pVar;
         m_listVariable.Append( pVar );
     }
 

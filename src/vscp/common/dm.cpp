@@ -1959,10 +1959,13 @@ bool dmElement::doActionGetURL( vscpEvent *pDMEvent )
 bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
 {
     // Write in possible escapes
+	CVSCPVariable *pVar;
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-    CVSCPVariable *pVar = new CVSCPVariable;
+	//if ( !m_pDM->m_pCtrlObject->m_VSCP_Variables.find( pVar ) ) {
+	//pVar = 
+    pVar = new CVSCPVariable;
     if ( NULL == pVar ) {
         // must be a variable	
         wxString wxstrErr = wxT("[Action] Store Variable: Could not allocate variable ");

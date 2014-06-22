@@ -1016,7 +1016,7 @@ wxString& replaceBackslash(wxString& wxstr)
 #ifdef VSCP_QT
 uint32_t readStringValue(const QString& strval)
 {
-    unsigned long val;
+    static unsigned long val;
     QString str = strval;
 
     str.toLower();
@@ -1032,8 +1032,7 @@ uint32_t readStringValue(const QString& strval)
 #else
 uint32_t readStringValue(const wxString& strval)
 {
-	//static unsigned long val;
-    unsigned long val;
+	static unsigned long val;
 	wxString str = strval;
 
 	str.MakeLower();

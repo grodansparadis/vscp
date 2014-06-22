@@ -4626,9 +4626,9 @@ CControlObject::websrv_serve_dmedit( const void *cls,
             buildPage += _("yyyy-mm-dd hh:mm:ss");
         }
         else {
-            buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
+            buildPage += pElement->m_timeAllow.m_endTime.FormatISODate();
             buildPage += _(" ");
-            buildPage += pElement->m_timeAllow.m_fromTime.FormatISOTime();
+            buildPage += pElement->m_timeAllow.m_endTime.FormatISOTime();
         }
         buildPage += _("</textarea>");
        
@@ -4959,27 +4959,30 @@ CControlObject::websrv_serve_dmpost( const void *cls,
         
     int filter_priority = -1;
     const char *str_filter_priority = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "filter_priority");
-    if ( NULL != str_filter_priority ) filter_priority == wxString::FromAscii(str_filter_priority);
+    if ( NULL != str_filter_priority ) filter_priority = readStringValue( wxString::FromAscii(str_filter_priority ) );
          
     int mask_priority = 0;    
     const char *str_mask_priority = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "mask_priority");
-    if ( NULL != str_mask_priority ) mask_priority == wxString::FromAscii(str_mask_priority);
+    if ( NULL != str_mask_priority ) mask_priority = readStringValue( wxString::FromAscii(str_mask_priority ) );
     
     uint16_t filter_vscpclass = -1;
     const char *str_filter_vscpclass = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "filter_vscpclass");
-    if ( NULL != str_filter_vscpclass ) filter_vscpclass == wxString::FromAscii(str_filter_vscpclass);
+    if ( NULL != str_filter_vscpclass ) {
+		wxString wrkstr = wxString::FromAscii( str_filter_vscpclass );
+		filter_vscpclass = readStringValue( wrkstr );
+	}
     
     uint16_t mask_vscpclass = 0;
     const char *str_mask_vscpclass = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "mask_vscpclass");
-    if ( NULL != str_mask_vscpclass ) mask_vscpclass == wxString::FromAscii(str_mask_vscpclass);
+    if ( NULL != str_mask_vscpclass ) mask_vscpclass = readStringValue( wxString::FromAscii( str_mask_vscpclass ) );
     
     uint16_t filter_vscptype = 0;
     const char *str_filter_vscptype = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "filter_vscptype");
-    if ( NULL != str_filter_vscptype ) filter_vscptype == wxString::FromAscii(str_filter_vscptype);
+    if ( NULL != str_filter_vscptype ) filter_vscptype = readStringValue( wxString::FromAscii(str_filter_vscptype) );
     
     uint16_t mask_vscptype = 0;
     const char *str_mask_vscptype = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "mask_vscptype");
-    if ( NULL != str_mask_vscptype ) mask_vscptype == wxString::FromAscii(str_mask_vscptype);
+    if ( NULL != str_mask_vscptype ) mask_vscptype = readStringValue( wxString::FromAscii(str_mask_vscptype ) );
     
     wxString strFilterGuid;
     const char *str_filter_vscpguid = MHD_lookup_connection_value(connection, MHD_GET_ARGUMENT_KIND, "filter_vscpguid");
@@ -5125,8 +5128,8 @@ CControlObject::websrv_serve_dmpost( const void *cls,
                     pElement->m_vscpfilter.filter_class = 0;
                 } 
                 else {
-                    pElement->m_vscpfilter.mask_class = mask_vscptype;
-                    pElement->m_vscpfilter.filter_class = filter_vscptype;
+                    pElement->m_vscpfilter.mask_class = mask_vscpclass;
+                    pElement->m_vscpfilter.filter_class = filter_vscpclass;
                 }
 
                 if (-1 == filter_vscptype) {
