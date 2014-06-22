@@ -375,7 +375,7 @@ void *TcpClientThread::Entry()
             //                                 QUIT
             // *********************************************************************
             if ( 0 == m_wxcmdUC.Find ( _( "QUIT" ) ) ) {
-                m_pClientSocket->Write ( MSG_GOODBY, strlen ( MSG_GOODBY ) );
+                m_pClientSocket->Write( MSG_GOODBY, strlen ( MSG_GOODBY ) );
                 break;
             }
 
@@ -383,7 +383,7 @@ void *TcpClientThread::Entry()
             //                            No Operation
             //*********************************************************************
             else if ( 0 == m_wxcmdUC.Find ( _( "NOOP" ) ) ) {
-                m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
+                m_pClientSocket->Write( MSG_OK, strlen ( MSG_OK ) );
             }
 
             //*********************************************************************
@@ -596,7 +596,7 @@ void *TcpClientThread::Entry()
             //*********************************************************************
             else {
 
-                m_pClientSocket->Write ( MSG_UNKNOWN_COMMAND,
+                m_pClientSocket->Write( MSG_UNKNOWN_COMMAND,
                     strlen ( MSG_UNKNOWN_COMMAND ) );
             }
 
@@ -644,7 +644,7 @@ bool TcpClientThread::isVerified( void )
 { 
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return false;
     }
@@ -660,19 +660,19 @@ bool TcpClientThread::checkPrivilege( unsigned char reqiredPrivilege )
 {
     // Must be loged on
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return false;
     }
 
     if ( NULL == m_pUserItem ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return false;
     }
 
     if ( (m_pUserItem->m_userRights & 0xf) < reqiredPrivilege ) {
-        m_pClientSocket->Write ( MSG_LOW_PRIVILEGE_ERROR,
+        m_pClientSocket->Write( MSG_LOW_PRIVILEGE_ERROR,
             strlen ( MSG_LOW_PRIVILEGE_ERROR ) );
         return false;	
     }
@@ -693,7 +693,7 @@ void TcpClientThread::handleClientSend ( void )
 
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -708,7 +708,7 @@ void TcpClientThread::handleClientSend ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -720,7 +720,7 @@ void TcpClientThread::handleClientSend ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -732,7 +732,7 @@ void TcpClientThread::handleClientSend ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -744,7 +744,7 @@ void TcpClientThread::handleClientSend ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -765,7 +765,7 @@ void TcpClientThread::handleClientSend ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -964,7 +964,7 @@ void TcpClientThread::handleClientSend ( void )
                 m_pClientItem->m_statistics.cntOverruns++;
 
                 deleteVSCPevent( pEvent );
-                m_pClientSocket->Write ( MSG_BUFFER_FULL,
+                m_pClientSocket->Write( MSG_BUFFER_FULL,
                     strlen ( MSG_BUFFER_FULL ) );
             }
 
@@ -973,7 +973,7 @@ void TcpClientThread::handleClientSend ( void )
     } // Valid pEvent
 
     if ( m_bOK ) {
-        m_pClientSocket->Write ( MSG_OK,
+        m_pClientSocket->Write( MSG_OK,
             strlen ( MSG_OK ) );
     }
 }
@@ -988,7 +988,7 @@ void TcpClientThread::handleClientReceive ( void )
 
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1020,7 +1020,7 @@ void TcpClientThread::handleClientReceive ( void )
     } // while
 
     if ( m_bOK ) {
-        m_pClientSocket->Write ( MSG_OK,
+        m_pClientSocket->Write( MSG_OK,
             strlen ( MSG_OK ) );
     }
 
@@ -1082,7 +1082,7 @@ bool TcpClientThread::sendOneEventFromQueue( bool bStatusMsg )
         }
 
         strOut += _("\r\n");
-        m_pClientSocket->Write ( strOut.mb_str(),
+        m_pClientSocket->Write( strOut.mb_str(),
             strlen ( strOut.mb_str() ) );
 
         // Remove the old data
@@ -1095,7 +1095,7 @@ bool TcpClientThread::sendOneEventFromQueue( bool bStatusMsg )
     }
     else {
         if ( bStatusMsg ) {
-            m_pClientSocket->Write ( MSG_NO_MSG,
+            m_pClientSocket->Write( MSG_NO_MSG,
                 strlen ( MSG_NO_MSG ) );
         }
 
@@ -1119,7 +1119,7 @@ void TcpClientThread::handleClientDataAvailable ( void )
 
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1128,7 +1128,7 @@ void TcpClientThread::handleClientDataAvailable ( void )
         "%ld\r\n%s",
         m_pClientItem->m_clientInputQueue.GetCount(),
         MSG_OK );
-    m_pClientSocket->Write ( outbuf,
+    m_pClientSocket->Write( outbuf,
         strlen ( outbuf ) );
 
 
@@ -1142,7 +1142,7 @@ void TcpClientThread::handleClientClearInputQueue ( void )
 {
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1151,7 +1151,7 @@ void TcpClientThread::handleClientClearInputQueue ( void )
     m_pClientItem->m_clientInputQueue.Clear();
     m_pClientItem->m_mutexClientInputQueue.Unlock();
 
-    m_pClientSocket->Write ( MSG_QUEUE_CLEARED,
+    m_pClientSocket->Write( MSG_QUEUE_CLEARED,
         strlen ( MSG_QUEUE_CLEARED ) );
 }
 
@@ -1166,7 +1166,7 @@ void TcpClientThread::handleClientGetStatistics ( void )
 
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1182,8 +1182,7 @@ void TcpClientThread::handleClientGetStatistics ( void )
         MSG_OK );
 
 
-    m_pClientSocket->Write ( outbuf,
-        strlen ( outbuf ) );
+    m_pClientSocket->Write( outbuf, strlen ( outbuf ) );
 
 }
 
@@ -1197,7 +1196,7 @@ void TcpClientThread::handleClientGetStatus ( void )
 
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1209,8 +1208,7 @@ void TcpClientThread::handleClientGetStatus ( void )
         m_pClientItem->m_status.lasterrorstr,
         MSG_OK );
 
-    m_pClientSocket->Write ( outbuf,
-                                strlen ( outbuf ) );
+    m_pClientSocket->Write( outbuf, strlen ( outbuf ) );
 
 
 }
@@ -1225,7 +1223,7 @@ void TcpClientThread::handleClientGetChannelID ( void )
 
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1234,8 +1232,7 @@ void TcpClientThread::handleClientGetChannelID ( void )
         (unsigned long)m_pClientItem->m_clientID, MSG_OK );
 
 
-    m_pClientSocket->Write ( outbuf,
-        strlen ( outbuf ) );
+    m_pClientSocket->Write( outbuf, strlen ( outbuf ) );
 
 }
 
@@ -1257,7 +1254,7 @@ void TcpClientThread::handleClientSetChannelGUID ( void )
     //getGuidFromStringToArray( m_pClientItem->m_GUID, str );
     m_pClientItem->m_guid.getFromString(str);
     m_bOK = true;
-    m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
+    m_pClientSocket->Write( MSG_OK, strlen ( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1312,7 +1309,7 @@ void TcpClientThread::handleClientGetVersion ( void )
 
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1325,8 +1322,7 @@ void TcpClientThread::handleClientGetVersion ( void )
                 VSCPD_SUB_VERSION,
                 MSG_OK );
 
-    m_pClientSocket->Write ( outbuf,
-                                strlen ( outbuf ) );
+    m_pClientSocket->Write( outbuf, strlen ( outbuf ) );
 
 }
 
@@ -1338,7 +1334,7 @@ void TcpClientThread::handleClientSetFilter ( void )
 {
     // Must be accredited to do this
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_NOT_ACCREDITED,
+        m_pClientSocket->Write( MSG_NOT_ACCREDITED,
             strlen ( MSG_NOT_ACCREDITED ) );
         return;
     }
@@ -1353,7 +1349,7 @@ void TcpClientThread::handleClientSetFilter ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -1365,7 +1361,7 @@ void TcpClientThread::handleClientSetFilter ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -1378,7 +1374,7 @@ void TcpClientThread::handleClientSetFilter ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -1423,7 +1419,7 @@ void TcpClientThread::handleClientSetMask ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -1435,7 +1431,7 @@ void TcpClientThread::handleClientSetMask ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -1448,7 +1444,7 @@ void TcpClientThread::handleClientSetMask ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -1460,13 +1456,12 @@ void TcpClientThread::handleClientSetMask ( void )
     }
     else {
         m_bOK = false;
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
             strlen ( MSG_PARAMETER_ERROR ) );
         return;	
     }
 
-    m_pClientSocket->Write ( MSG_OK,
-        strlen ( MSG_OK ) );
+    m_pClientSocket->Write( MSG_OK, strlen ( MSG_OK ) );
 
 }
 
@@ -1477,7 +1472,7 @@ void TcpClientThread::handleClientSetMask ( void )
 void TcpClientThread::handleClientUser ( void )
 {
     if ( m_bVerified ) {
-        m_pClientSocket->Write ( MSG_OK,
+        m_pClientSocket->Write( MSG_OK,
             strlen ( MSG_OK ) );
         return;
     }
@@ -1505,7 +1500,7 @@ void TcpClientThread::handleClientUser ( void )
 bool TcpClientThread::handleClientPassword ( void )
 {
     if ( m_bVerified ) {
-        m_pClientSocket->Write ( MSG_OK,
+        m_pClientSocket->Write( MSG_OK,
             strlen ( MSG_OK ) );
         return true;
     }
@@ -1542,7 +1537,7 @@ bool TcpClientThread::handleClientPassword ( void )
 
     if ( NULL == m_pUserItem ) {
         //::wxLogDebug ( _("Password/Username failure.") );
-        m_pClientSocket->Write ( MSG_PASSWORD_ERROR,
+        m_pClientSocket->Write( MSG_PASSWORD_ERROR,
             strlen ( MSG_PASSWORD_ERROR ) );
         return false;
     }
@@ -1574,7 +1569,7 @@ bool TcpClientThread::handleClientPassword ( void )
 
 
     m_bVerified = true;
-    m_pClientSocket->Write ( MSG_OK,
+    m_pClientSocket->Write( MSG_OK,
         strlen ( MSG_OK ) );
 
     // Copy in user filter
@@ -1593,7 +1588,7 @@ bool TcpClientThread::handleClientPassword ( void )
 
 void TcpClientThread::handleClientRcvLoop()
 {
-    m_pClientSocket->Write ( MSG_RECEIVE_LOOP,
+    m_pClientSocket->Write( MSG_RECEIVE_LOOP,
         strlen ( MSG_RECEIVE_LOOP ) );
 
     // Loop until the connection is lost
@@ -1609,7 +1604,7 @@ void TcpClientThread::handleClientRcvLoop()
         // Wait for event
         if ( wxSEMA_TIMEOUT == 
             m_pClientItem->m_semClientInputQueue.WaitTimeout( 1000 ) ) {
-                m_pClientSocket->Write ( "+OK\r\n", 5 );
+                m_pClientSocket->Write( "+OK\r\n", 5 );
                 continue;
         }
 
@@ -1627,8 +1622,7 @@ void TcpClientThread::handleClientRcvLoop()
 
 void TcpClientThread::handleClientHelp(void)
 {
-	m_pClientSocket->Write(MSG_OK,
-			strlen(MSG_OK));
+	m_pClientSocket->Write( MSG_OK, strlen(MSG_OK));
 	return;
 }
 
@@ -1639,8 +1633,7 @@ void TcpClientThread::handleClientHelp(void)
 
 void TcpClientThread::handleClientTest ( void )
 {
-	m_pClientSocket->Write ( MSG_OK,
-        strlen ( MSG_OK ) );
+	m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 	return;
 }
 
@@ -1651,8 +1644,7 @@ void TcpClientThread::handleClientTest ( void )
 
 void TcpClientThread::handleClientRestart ( void )
 {
-	m_pClientSocket->Write ( MSG_OK,
-        strlen ( MSG_OK ) );
+	m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 	return;
 }
 
@@ -1664,8 +1656,7 @@ void TcpClientThread::handleClientRestart ( void )
 void TcpClientThread::handleClientShutdown ( void )
 {
     if ( !m_bVerified ) {
-        m_pClientSocket->Write ( MSG_OK,
-            strlen ( MSG_OK ) );
+        m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
     }
 
     m_pCtrlObject->m_bQuit = true;
@@ -1741,8 +1732,7 @@ void TcpClientThread::handleClientInterface_List( void )
 
     }
 
-    m_pClientSocket->Write( MSG_OK,
-								strlen ( MSG_OK ) );
+    m_pClientSocket->Write( MSG_OK, strlen ( MSG_OK ) );
 
     m_pCtrlObject->m_wxClientMutex.Unlock();
 }
@@ -1878,6 +1868,7 @@ void TcpClientThread::handleVariable_List()
     wxString str;
     wxString strWork;
     listVscpVariable::iterator it;
+	static int l;
 
     m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length()-5 );    // remove "LIST "
     m_wxcmd = m_wxcmd.Right( m_wxcmd.Length()-5 );          // remove "LIST "
@@ -1924,8 +1915,10 @@ void TcpClientThread::handleVariable_List()
                 str += strWork;
                 str += _("\r\n");
 
-                m_pClientSocket->Write( str, str.Length() );
-
+				l = str.Length();
+                m_pClientSocket->Write( str.mb_str(), str.Length() );
+				l = m_pClientSocket->LastCount();
+				l = 1;
         }
 
         m_pCtrlObject->m_variableMutex.Unlock();
@@ -2034,7 +2027,7 @@ void TcpClientThread::handleVariable_List()
                                     str += strWork;
                                     str += _("\r\n");
 
-                                    m_pClientSocket->Write( str, str.Length() );
+                                    m_pClientSocket->Write( str.mb_str(), str.Length() );
 
                             }
 
@@ -2073,7 +2066,7 @@ void TcpClientThread::handleVariable_List()
                             str += strWork;
                             str += _("\r\n");
 
-                            m_pClientSocket->Write( str, str.Length() );
+                            m_pClientSocket->Write( str.mb_str(), str.Length() );
 
                         }
 
@@ -2087,8 +2080,7 @@ void TcpClientThread::handleVariable_List()
 
     }
 
-    m_pClientSocket->Write( MSG_OK,
-								strlen ( MSG_OK ) );
+    m_pClientSocket->Write( MSG_OK, strlen ( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2116,7 +2108,7 @@ void TcpClientThread::handleVariable_Write()
         strName.MakeUpper();
     }
     else {
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
                                     strlen( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -2131,7 +2123,7 @@ void TcpClientThread::handleVariable_Write()
         }
     }
     else {
-        m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+        m_pClientSocket->Write( MSG_PARAMETER_ERROR,
                                     strlen( MSG_PARAMETER_ERROR ) );
         return;	
     }
@@ -2264,7 +2256,7 @@ void TcpClientThread::handleVariable_ReadReset()
 
     pVariable->writeVariableToString( str );
     str += _("\r\n");
-    m_pClientSocket->Write( str, str.Length() );
+    m_pClientSocket->Write( str.ToAscii(), str.Length() );
 
     handleVariable_Reset();
 }
@@ -2320,7 +2312,7 @@ void TcpClientThread::handleVariable_ReadRemove()
 
     pVariable->writeVariableToString( str );
     str += _("\r\n");
-    m_pClientSocket->Write( str, str.Length() );
+    m_pClientSocket->Write( str.ToAscii(), str.Length() );
 
     handleVariable_Remove();
 }
@@ -2711,8 +2703,7 @@ void TcpClientThread::handleDM_Delete( void )
 
     }
 
-    m_pClientSocket->Write ( MSG_OK,
-        strlen ( MSG_OK ) );
+    m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2724,8 +2715,7 @@ void TcpClientThread::handleDM_Reset( void )
     m_pCtrlObject->stopDaemonWorkerThread();
     m_pCtrlObject->startDaemonWorkerThread();
 
-    m_pClientSocket->Write( MSG_OK,
-							strlen( MSG_OK ) );
+    m_pClientSocket->Write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2759,8 +2749,7 @@ void TcpClientThread::handleDM_Trigger()
 
     }
 
-    m_pClientSocket->Write( MSG_OK,
-							strlen( MSG_OK ) );
+    m_pClientSocket->Write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2798,7 +2787,7 @@ void TcpClientThread::handleDM_ClearTriggerCount()
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
             if ( pos > ( m_pCtrlObject->m_dm.m_DMList.GetCount() - 1 ) ) {
-                m_pClientSocket->Write ( MSG_PARAMETER_ERROR,
+                m_pClientSocket->Write( MSG_PARAMETER_ERROR,
                     strlen ( MSG_PARAMETER_ERROR ) );
                 m_pCtrlObject->m_dm.m_mutexDM.Unlock();
                 return;
@@ -2814,8 +2803,7 @@ void TcpClientThread::handleDM_ClearTriggerCount()
 
     }
 
-    m_pClientSocket->Write( MSG_OK,
-							strlen( MSG_OK ) );
+    m_pClientSocket->Write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2869,8 +2857,7 @@ void TcpClientThread::handleDM_ClearErrorCount()
 
     }
 
-    m_pClientSocket->Write( MSG_OK,
-							strlen( MSG_OK ) );
+    m_pClientSocket->Write( MSG_OK, strlen( MSG_OK ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2879,8 +2866,7 @@ void TcpClientThread::handleDM_ClearErrorCount()
 
 void TcpClientThread::handleClientList( void )
 {
-    m_pClientSocket->Write ( MSG_OK,
-        strlen ( MSG_OK ) );
+    m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 }
 
 

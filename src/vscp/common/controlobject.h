@@ -99,9 +99,6 @@ enum websocket_protocols {
 };
 
 
-
-
-
 WX_DECLARE_LIST(canalMsg, CanalMsgList);
 WX_DECLARE_LIST(vscpEvent, VSCPEventList);
 
