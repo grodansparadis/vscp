@@ -4611,7 +4611,7 @@ CControlObject::websrv_serve_dmedit( const void *cls,
         buildPage += _("<h4>Allowed From:</h4>");
         buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedfrom\">");
         if ( bNew ) {
-            buildPage += _("yy-mm-dd hh:mm:ss");
+            buildPage += _("yyyy-mm-dd hh:mm:ss");
         }
         else {
             buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
@@ -4623,19 +4623,19 @@ CControlObject::websrv_serve_dmedit( const void *cls,
         buildPage += _("<h4>Allowed To:</h4>");
         buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedto\">");
         if ( bNew ) {
-            buildPage += _("yy-mm-dd hh:mm:ss");
+            buildPage += _("yyyy-mm-dd hh:mm:ss");
         }
         else {
-            buildPage += pElement->m_timeAllow.m_endTime.FormatISODate();
-            buildPage += _("yy-mm-dd hh:mm:ss");
-            buildPage += pElement->m_timeAllow.m_endTime.FormatISOTime();
+            buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
+            buildPage += _(" ");
+            buildPage += pElement->m_timeAllow.m_fromTime.FormatISOTime();
         }
         buildPage += _("</textarea>");
        
         buildPage += _("<h4>Allowed time:</h4>");
         buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedtime\">");
         if ( bNew ) {
-            buildPage += _("yy-mm-dd hh:mm:ss");
+            buildPage += _("yyyy-mm-dd hh:mm:ss");
         }
         else {
             buildPage += pElement->m_timeAllow.getActionTimeAsString();
