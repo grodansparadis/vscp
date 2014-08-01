@@ -67,8 +67,8 @@
     <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\akhe\Documents\development\ixxat\VCI 2.18\samples\C\Common;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\akhe\Documents\development\ixxat\VCI 2.18\samples\C\VC++\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>($ixxat2)\samples\C\Common;$(IncludePath)</IncludePath>
+    <LibraryPath>($ixxat2)\samples\C\VC++\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>.\Debug\</OutDir>
@@ -81,8 +81,8 @@
     <OutDir>.\Release\</OutDir>
     <IntDir>.\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\akhe\Documents\development\ixxat\VCI 2.18\samples\C\Common;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\akhe\Documents\development\ixxat\VCI 2.18\samples\C\VC++\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>($ixxat2)\samples\C\Common;$(IncludePath)</IncludePath>
+    <LibraryPath>($ixxat2)\samples\C\VC++\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>.\Release\</OutDir>

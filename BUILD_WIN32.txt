@@ -65,7 +65,7 @@ This is the "original" project and includes all sub-projects.
     define environment variable VSCP_FIRMWARE that points to VSCP firmware base folder 
     (c:\development\vscp_firmware)
 
-2.) Install and build wxWidgets 2.6.0 or higher. 3.0.0 Recommended but others will probably 
+2.) Install and build wxWidgets 2.6.0 or higher. 2.8.12 recommended but others will probably 
     do to. You find the build files in the build folder of the wxWidgets project. 
 
 3.) Make an environment variable WXWIN that points to the wxWidgets installation directory.

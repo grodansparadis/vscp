@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/new/pictures">
+        <file>resources/vscp_new.png</file>
+        <file>resources/vscp_new_v2.png</file>
+        <file>resources/fatbee_v2.ico</file>
+        <file>resources/vscp_bumblebee.jpg</file>
+    </qresource>
+</RCC>

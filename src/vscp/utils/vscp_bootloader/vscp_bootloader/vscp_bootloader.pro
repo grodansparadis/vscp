@@ -17,4 +17,11 @@ SOURCES += main.cpp\
 
 HEADERS  += wndbootloader.h
 
-FORMS    += wndbootloader.ui
+FORMS    += \
+    wndbootloader1.ui \
+    wndbootloader2.ui \
+    wndbootloader3.ui \
+    wndbootloader4.ui \
+    wndbootloader5.ui
+
+RESOURCES += resources.qrc
