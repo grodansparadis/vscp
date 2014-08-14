@@ -960,10 +960,12 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 		if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-			// Read register at all nodes.
+			// Send read register to all nodes.
 			for ( uint8_t i = scanFrom; i < scanTo; i++ ) {
 
+#ifdef WIN32				
 				progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i));
+#endif				
 
 				eventex.vscp_class = VSCP_CLASS1_PROTOCOL;
 				eventex.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
@@ -975,18 +977,18 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 
 			// Check for replies
-				wxLongLong resendTime = ::wxGetLocalTimeMillis();
+			wxLongLong resendTime = ::wxGetLocalTimeMillis();
        
-				std::list<int> found_list;
-				bool bLevel2 = false;
-				uint8_t cnt = 0; 
-				while (true) {
+			std::list<int> found_list;
+			bool bLevel2 = false;
+			uint8_t cnt = 0; 
+			while (true) {
             
-					progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
+				progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
 
-					if (m_csw.doCmdDataAvailable()) { // Message available
+				if (m_csw.doCmdDataAvailable()) { // Message available
 
-						if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
+					if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
                     
 #if 0                    
 							{
