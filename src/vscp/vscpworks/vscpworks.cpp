@@ -143,6 +143,7 @@ END_EVENT_TABLE()
 VscpworksApp::VscpworksApp()
 {
 	// Fix for menu problems in UBUNTU
+	// http://trac.wxwidgets.org/ticket/14302
 	wxSetEnv(wxT("UBUNTU_MENUPROXY"), wxT("0"));
 	
     Init();

@@ -96,6 +96,9 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 	char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
 	const int canfd_on = 1;
 	
+	// No device name
+	memset(m_socketcanobj.m_devname, 0, sizeof(m_socketcanobj.m_devname) );
+	
 	//----------------------------------------------------------------------
 	//	Set default parameters
 	//----------------------------------------------------------------------
@@ -118,7 +121,10 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 	//----------------------------------------------------------------------
 	// Interface
 	char *p = strtok((char *) pDevice, ";");
-	if (NULL != p) strncpy(m_socketcanobj.m_devname, p, strlen(p));
+	if (NULL != p) {
+		memset(m_socketcanobj.m_devname, 0, sizeof(m_socketcanobj.m_devname) );
+		strncpy(m_socketcanobj.m_devname, p, strlen(p));
+	}
 
 	// Mask
 	p = strtok(NULL, ";");
@@ -362,10 +368,8 @@ void *workThread(void *pObject)
 	struct timeval tv;
 	struct sockaddr_can addr;
 	struct ifreq ifr;
-	struct cmsghdr *cmsg;
-	struct canfd_frame frame;
-	char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-	const int canfd_on = 1;
+	struct can_frame frame;
+
 
 	CSocketcanObj * psocketcanobj = (CSocketcanObj *) pObject;
 	if (NULL == psocketcanobj) {
@@ -380,9 +384,9 @@ void *workThread(void *pObject)
 		return NULL;
 	}
 
-	strcpy(ifr.ifr_name, psocketcanobj->m_socketcanobj.m_devname);
+	strcpy(ifr.ifr_name, psocketcanobj->m_socketcanobj.m_devname );
 	ioctl(sock, SIOCGIFINDEX, &ifr);
-
+	
 	addr.can_family = AF_CAN;
 	addr.can_ifindex = ifr.ifr_ifindex;
 
@@ -390,19 +394,14 @@ void *workThread(void *pObject)
 	printf("using interface name '%s'.\n", ifr.ifr_name);
 #endif
 
-	// try to switch the socket into CAN FD mode 
-	setsockopt(sock,
-			SOL_CAN_RAW,
-			CAN_RAW_FD_FRAMES,
-			&canfd_on,
-			sizeof(canfd_on));
-
-	if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+	
+	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "CReadSocketCanTread: Error in socket bind. Terminating!");
 		return NULL;
 	}
+	
 
 	while (psocketcanobj->m_socketcanobj.m_bRun) {
 
@@ -419,7 +418,7 @@ void *workThread(void *pObject)
 		FD_SET(sock, &rdfs);
 
 		tv.tv_sec = 0;
-		tv.tv_usec = 5000; // 50ms timeout 
+		tv.tv_usec = 50; // 50ms timeout 5000
 
 		int ret;
 		if ((ret = select(sock+1, &rdfs, NULL, NULL, &tv)) < 0) {
@@ -431,7 +430,6 @@ void *workThread(void *pObject)
 		if (ret) {
 
 			// There is data to read
-
 			ret = read(sock, &frame, sizeof(struct can_frame));
 			if (ret < 0) {
 				psocketcanobj->m_socketcanobj.m_bRun = true;
@@ -458,8 +456,8 @@ void *workThread(void *pObject)
 						else {
 							pMsg->id = frame.can_id & CAN_SFF_MASK;
 						}
-						pMsg->sizeData = frame.len;
-						memcpy(pMsg->data,frame.data,frame.len);
+						pMsg->sizeData = frame.can_dlc;
+						memcpy(pMsg->data,frame.data,frame.can_dlc);
 						dll_addNode(&psocketcanobj->m_socketcanobj.m_rcvList, pNode);
 						
 						// Update statistics
@@ -492,14 +490,15 @@ void *workThread(void *pObject)
 			memcpy(&msg, psocketcanobj->m_socketcanobj.m_sndList.pHead->pObject, sizeof( canalMsg));
 			dll_removeNode(&psocketcanobj->m_socketcanobj.m_sndList, psocketcanobj->m_socketcanobj.m_sndList.pHead);
 			
+			memset(&frame, 0, sizeof(struct can_frame));
 			frame.can_id = msg.id;
-			frame.len = msg.sizeData;
-			memcpy(msg.data,frame.data,frame.len);
-			if (msg.flags & CANAL_IDFLAG_EXTENDED ) frame.can_id |= CAN_EFF_FLAG;
-			if (msg.flags & CANAL_IDFLAG_EXTENDED ) frame.can_id |= CAN_EFF_FLAG;
+			frame.can_id |= CAN_EFF_FLAG; // Always extended
+			frame.can_dlc = msg.sizeData;
+
+			memcpy(frame.data, msg.data, msg.sizeData);
 			
 			// Write the data
-			int nbytes = write(sock, &frame, sizeof(struct can_frame));
+			int nbytes = write( sock, &frame, sizeof(struct can_frame) );
 
 			// Update statistics
 			psocketcanobj->m_socketcanobj.m_stat.cntTransmitData += msg.sizeData;

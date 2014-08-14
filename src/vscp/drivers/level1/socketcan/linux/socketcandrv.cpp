@@ -112,7 +112,7 @@ CSocketcanApp::addDriverObject(CSocketcanObj *plog)
 	LOCK_MUTEX(m_objMutex);
 	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_socketcanArray[ i ]) {
+		if ( NULL == m_socketcanArray[ i ] ) {
 
 			m_socketcanArray[ i ] = plog;
 			h = i + 1681;
