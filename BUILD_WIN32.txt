@@ -82,7 +82,7 @@ This is the "original" project and includes all sub-projects.
 
 6.) Install OpenSLL from http://slproweb.com/products/Win32OpenSSL.html  	
 
-6.) To build the APOX driver and the tellstick driver the dxx driver whish is available from ftdi 
+6.) To build the APOX driver and the tellstick driver the dxx driver which is available from ftdi 
     (http://www.ftdichip.com) is needed. Make an environment variable named "ftdi" that points on 
 	this installation folder.
 
@@ -92,7 +92,7 @@ This is the "original" project and includes all sub-projects.
 
 8.) To build ixxatvcidrv you need to add the ixxat include directory and also add the ixxat
     lib directory to LIB( Xat11Reg.lib vci11un6.lib ) (tools->options->directories). Make sure the 
-    IXXAT VCI driver version 2 is installed (http://www.ixxat.com/download_vci_en.html).
+    IXXAT VCI driver version 2 is installed (http://www.ixxat.com/download_vci_en.html).   C:\Program Files\IXXAT\VCI 2.20
 
 9.) To build the CANAL PEAK driver you need to install the PEAK driver and support libraries 
     from here http://www.peak-system.com/Support.55.0.html?&L=1 Yuou need the driver and the PCAN-Basic API.

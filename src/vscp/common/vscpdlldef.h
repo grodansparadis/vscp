@@ -68,6 +68,7 @@ typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETVERSION) ( void );
 typedef unsigned long ( __stdcall * LPFNDLL_VSCPGETDLLVERSION) ( void );
 typedef const char * ( __stdcall * LPFNDLL_VSCPGETVENDORSTRING) ( void );
 typedef const char * ( __stdcall * LPFNDLL_VSCPGETDRIVERINFO) ( void );
+typedef const char * ( __stdcall * LPFNDLL_VSCPGETSTATUS) ( unsigned long* pStatusCode );
 
 #else
 
@@ -83,6 +84,7 @@ typedef unsigned long ( *LPFNDLL_VSCPGETVERSION ) (  void );
 typedef unsigned long ( *LPFNDLL_VSCPGETDLLVERSION ) (  void );
 typedef const char *( *LPFNDLL_VSCPGETVENDORSTRING ) (  void );
 typedef const char *( *LPFNDLL_VSCPGETDRIVERINFO ) (  void );
+typedef const char *( *LPFNDLL_VSCPGETSTATUS) ( unsigned long* pStatusCode );
 
 #endif
 

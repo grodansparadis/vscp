@@ -66,8 +66,9 @@
 
 
 // Canal Levels
-#define CANAL_LEVEL_STANDARD                 1
-#define CANAL_LEVEL_USES_TCPIP               2
+#define CANAL_LEVEL_STANDARD                 1	// Level I driver
+#define CANAL_LEVEL_NO_TCPIP				 2	// Limited Level II Driver
+#define CANAL_LEVEL_USES_TCPIP               3	// Full Level II Driver
 
 // VSCP daemon version information positions
 #define POS_VSCPD_MAJOR_VERSION              1

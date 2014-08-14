@@ -299,7 +299,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-1</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
@@ -378,7 +378,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-1</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
@@ -457,7 +457,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-1</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
@@ -536,7 +536,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">-1</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
@@ -56827,6 +56827,18 @@ click the cancel button."</string>
           <long name="title-mode">1</long>
           <long name="locked">0</long>
           <string name="created">"26/6/2008"</string>
+          <string name="language">""</string>
+        </document>
+        <document>
+          <string name="title">"vscpeventhelper.cpp"</string>
+          <string name="type">"source-editor-document"</string>
+          <string name="filename">"../common/vscpeventhelper.cpp"</string>
+          <string name="icon-name">"source-editor"</string>
+          <long name="is-transient">0</long>
+          <long name="owns-file">0</long>
+          <long name="title-mode">1</long>
+          <long name="locked">0</long>
+          <string name="created">"1/8/2014"</string>
           <string name="language">""</string>
         </document>
         <document>
