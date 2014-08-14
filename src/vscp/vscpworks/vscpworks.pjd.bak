@@ -188,7 +188,7 @@
     <string name="app_class_name">"Application"</string>
     <bool name="generate_app_class">0</bool>
     <string name="external_symbol_filenames">""</string>
-    <string name="configuration">"VC++ Project Debug"</string>
+    <string name="configuration">"GCC Debug Unicode"</string>
     <string name="source_encoding">"utf-8"</string>
     <string name="xrc_encoding">"utf-8"</string>
     <string name="project_encoding">"iso-8859-1"</string>
@@ -230,7 +230,7 @@
         <long name="locked">0</long>
         <string name="template-name">""</string>
         <bool name="dirty">1</bool>
-        <long name="makefile-last-written">-1</long>
+        <long name="makefile-last-written">4303437953</long>
         <string name="Compiler name">""</string>
         <string name="Build mode">"Debug"</string>
         <string name="Unicode mode">"ANSI"</string>
@@ -300,7 +300,7 @@
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
           <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-1</long>
+          <long name="makefile-last-written">4303437953</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
           <string name="Unicode mode">"ANSI"</string>
@@ -379,7 +379,7 @@
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
           <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-1</long>
+          <long name="makefile-last-written">4303437953</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
           <string name="Unicode mode">"ANSI"</string>
@@ -458,7 +458,7 @@
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
           <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-1</long>
+          <long name="makefile-last-written">4303437953</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -537,7 +537,7 @@
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
           <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-1</long>
+          <long name="makefile-last-written">4303437953</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -616,7 +616,7 @@
           <long name="locked">0</long>
           <string name="template-name">"MinGW"</string>
           <bool name="dirty">1</bool>
-          <long name="makefile-last-written">-1</long>
+          <long name="makefile-last-written">4303437953</long>
           <string name="Compiler name">"MinGW"</string>
           <string name="Build mode">"Release"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -687,7 +687,7 @@
           <long name="locked">0</long>
           <string name="template-name">"MinGW"</string>
           <bool name="dirty">1</bool>
-          <long name="makefile-last-written">-1</long>
+          <long name="makefile-last-written">4303437953</long>
           <string name="Compiler name">"MinGW"</string>
           <string name="Build mode">"Debug"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -758,7 +758,7 @@
           <long name="locked">0</long>
           <string name="template-name">"VC++ Project"</string>
           <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-1</long>
+          <long name="makefile-last-written">4303437953</long>
           <string name="Compiler name">"VC++ Project"</string>
           <string name="Build mode">"Release"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -841,7 +841,7 @@
           <long name="locked">0</long>
           <string name="template-name">"VC++ Project"</string>
           <bool name="dirty">0</bool>
-          <long name="makefile-last-written">-1</long>
+          <long name="makefile-last-written">4303437953</long>
           <string name="Compiler name">"VC++ Project"</string>
           <string name="Build mode">"Debug"</string>
           <string name="Unicode mode">"Unicode"</string>
@@ -42923,7 +42923,7 @@ to the clipboard"</string>
           <string name="proxy-XRC filename">""</string>
           <string name="proxy-Title">"VSCP Transmission Event"</string>
           <bool name="proxy-Centre">1</bool>
-          <string name="proxy-Icon">"../../../docs/vscp/logo/fatbee_v2.ico"</string>
+          <string name="proxy-Icon">"fatbee_v2.ico"</string>
           <bool name="proxy-Dialog units">0</bool>
           <string name="proxy-Help text">""</string>
           <string name="proxy-Tooltip text">""</string>
@@ -42971,7 +42971,7 @@ to the clipboard"</string>
           <long name="proxy-X">-1</long>
           <long name="proxy-Y">-1</long>
           <long name="proxy-Width">400</long>
-          <long name="proxy-Height">300</long>
+          <long name="proxy-Height">340</long>
           <bool name="proxy-AUI manager">0</bool>
           <string name="proxy-Event sources">""</string>
           <document>
@@ -42987,14 +42987,6 @@ to the clipboard"</string>
             <string name="proxy-type">"wbBoxSizerProxy"</string>
             <string name="proxy-Orientation">"Vertical"</string>
             <string name="proxy-Member variable name">""</string>
-            <string name="proxy-AlignH">"Centre"</string>
-            <string name="proxy-AlignV">"Centre"</string>
-            <long name="proxy-Stretch factor">0</long>
-            <long name="proxy-Border">5</long>
-            <bool name="proxy-wxLEFT">1</bool>
-            <bool name="proxy-wxRIGHT">1</bool>
-            <bool name="proxy-wxTOP">1</bool>
-            <bool name="proxy-wxBOTTOM">1</bool>
             <bool name="proxy-wxSHAPED">0</bool>
             <bool name="proxy-wxADJUST_MINSIZE">0</bool>
             <bool name="proxy-wxFIXED_MINSIZE">0</bool>
@@ -45790,7 +45782,7 @@ Hexadecimal values should be preceded with '0x'."</string>
                     <long name="proxy-Height">-1</long>
                     <string name="proxy-AlignH">"Expand"</string>
                     <string name="proxy-AlignV">"Top"</string>
-                    <long name="proxy-Stretch factor">2</long>
+                    <long name="proxy-Stretch factor">5</long>
                     <long name="proxy-Border">1</long>
                     <bool name="proxy-wxLEFT">1</bool>
                     <bool name="proxy-wxRIGHT">1</bool>
@@ -56830,6 +56822,18 @@ click the cancel button."</string>
           <string name="language">""</string>
         </document>
         <document>
+          <string name="title">"vscpeventhelper.cpp"</string>
+          <string name="type">"source-editor-document"</string>
+          <string name="filename">"../common/vscpeventhelper.cpp"</string>
+          <string name="icon-name">"source-editor"</string>
+          <long name="is-transient">0</long>
+          <long name="owns-file">0</long>
+          <long name="title-mode">1</long>
+          <long name="locked">0</long>
+          <string name="created">"1/8/2014"</string>
+          <string name="language">""</string>
+        </document>
+        <document>
           <string name="title">"vscphelper.cpp"</string>
           <string name="type">"source-editor-document"</string>
           <string name="filename">"../common/vscphelper.cpp"</string>
@@ -61320,6 +61324,17 @@ click the cancel button."</string>
           <string name="title">"word.png"</string>
           <string name="type">"image-document"</string>
           <string name="filename">"icons/png/32x32/word.png"</string>
+          <string name="icon-name">"image"</string>
+          <long name="is-transient">0</long>
+          <long name="owns-file">0</long>
+          <long name="title-mode">0</long>
+          <long name="locked">0</long>
+          <long name="zoom-level">100</long>
+        </document>
+        <document>
+          <string name="title">"fatbee_v2.ico"</string>
+          <string name="type">"image-document"</string>
+          <string name="filename">"fatbee_v2.ico"</string>
           <string name="icon-name">"image"</string>
           <long name="is-transient">0</long>
           <long name="owns-file">0</long>
