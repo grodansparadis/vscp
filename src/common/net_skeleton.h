@@ -28,7 +28,9 @@
 #define _XOPEN_SOURCE 600       // For flockfile() on Linux
 #define __STDC_FORMAT_MACROS    // <inttypes.h> wants this for C++
 #define __STDC_LIMIT_MACROS     // C++ wants that for INT64_MAX
+#ifndef _LARGEFILE_SOURCE
 #define _LARGEFILE_SOURCE       // Enable fseeko() and ftello() functions
+#endif
 #define _FILE_OFFSET_BITS 64    // Enable 64-bit file offsets
 
 #ifdef _MSC_VER
@@ -50,7 +52,9 @@
 #include <signal.h>
 
 #ifdef _WIN32
+#ifdef _MSC_VER
 #pragma comment(lib, "ws2_32.lib")    // Linking with winsock library
+#endif
 #include <windows.h>
 #include <process.h>
 #ifndef EINPROGRESS
@@ -78,6 +82,9 @@ typedef unsigned short uint16_t;
 typedef unsigned __int64 uint64_t;
 typedef __int64   int64_t;
 typedef SOCKET sock_t;
+#ifndef S_ISDIR
+#define S_ISDIR(x) ((x) & _S_IFDIR)
+#endif
 #else
 #include <errno.h>
 #include <fcntl.h>
@@ -124,6 +131,8 @@ union socket_address {
   struct sockaddr_in sin;
 #ifdef NS_ENABLE_IPV6
   struct sockaddr_in6 sin6;
+#else
+  struct sockaddr sin6;
 #endif
 };
 
@@ -161,7 +170,7 @@ struct ns_server {
   struct ns_connection *active_connections;
   ns_callback_t callback;
   SSL_CTX *ssl_ctx;
-  SSL_CTX *client_ssl_ctx;
+  const char *hexdump_file;
   sock_t ctl[2];
 };
 
@@ -173,6 +182,7 @@ struct ns_connection {
   struct iobuf recv_iobuf;
   struct iobuf send_iobuf;
   SSL *ssl;
+  SSL_CTX *client_ssl_ctx;
   void *connection_data;
   time_t last_io_time;
   unsigned int flags;
@@ -196,16 +206,16 @@ struct ns_connection {
 void ns_server_init(struct ns_server *, void *server_data, ns_callback_t);
 void ns_server_free(struct ns_server *);
 int ns_server_poll(struct ns_server *, int milli);
-void ns_server_wakeup(struct ns_server *);
 void ns_server_wakeup_ex(struct ns_server *, ns_callback_t, void *, size_t);
-void ns_iterate(struct ns_server *, ns_callback_t cb, void *param);
+struct ns_connection *ns_next(struct ns_server *, struct ns_connection *);
 struct ns_connection *ns_add_sock(struct ns_server *, sock_t sock, void *p);
 
 int ns_bind(struct ns_server *, const char *addr);
 int ns_set_ssl_cert(struct ns_server *, const char *ssl_cert);
 int ns_set_ssl_ca_cert(struct ns_server *, const char *ssl_ca_cert);
-struct ns_connection *ns_connect(struct ns_server *, const char *host,
-                                 int port, int ssl, void *connection_param);
+struct ns_connection *ns_connect2(struct ns_server *server, const char *host,
+                                  int port, int use_ssl, const char *ssl_cert,
+                                  const char *ca_cert, void *param);
 
 int ns_send(struct ns_connection *, const void *buf, int len);
 int ns_printf(struct ns_connection *, const char *fmt, ...);
@@ -218,6 +228,14 @@ int ns_socketpair2(sock_t [2], int sock_type);  // SOCK_STREAM or SOCK_DGRAM
 void ns_set_close_on_exec(sock_t);
 void ns_sock_to_str(sock_t sock, char *buf, size_t len, int flags);
 int ns_hexdump(const void *buf, int len, char *dst, int dst_len);
+int ns_avprintf(char **buf, size_t size, const char *fmt, va_list ap);
+int ns_resolve(const char *domain_name, char *ip_addr_buf, size_t buf_len);
+
+// Deprecated functions
+void ns_server_wakeup(struct ns_server *);  // DEPRECATED
+void ns_iterate(struct ns_server *, ns_callback_t cb, void *param);  // DEP
+struct ns_connection *ns_connect(struct ns_server *, const char *,
+                                 int, int, void *);
 
 #ifdef __cplusplus
 }
