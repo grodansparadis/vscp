@@ -12,7 +12,7 @@
         <group>
             <file>file:/home/akhe/vscp_software/src/vscp/drivers/level1/socketcan/linux/socketcandrv.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/drivers/level1/socketcan/linux/socketcanobj.cpp</file>
-            <file>file:/home/akhe/vscp_software/src/vscp/drivers/level1/socketcan/linux/Makefile</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/drivers/level1/socketcan/linux/socketcanobj.h</file>
         </group>
     </open-files>
 </project-private>
