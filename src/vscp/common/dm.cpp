@@ -3019,6 +3019,10 @@ bool CDM::feed( vscpEvent *pEvent )
     for ( it = m_DMList.begin(); it != m_DMList.end(); ++it ) {
 
         dmElement *pDMitem = *it;
+		
+		// Skip if disabled
+		if ( !pDMitem->isEnabled() ) continue;
+
         if ( doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) && 
             pDMitem->m_timeAllow.ShouldWeDoAction() ) { 
             
