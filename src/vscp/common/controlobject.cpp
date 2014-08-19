@@ -47,12 +47,17 @@
 //#pragma implementation
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
 #pragma hdrstop
 #endif
+
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
@@ -64,7 +69,7 @@
 #include <wx/xml/xml.h>
 
 #ifdef WIN32
-
+#include <winsock2.h>
 //#include <winsock.h>
 #include "canal_win32_ipc.h"
 
@@ -132,9 +137,9 @@
 #include "controlobject.h"
 #include "../common/webserver.h"
 #ifndef WIN32
-#include <microhttpd.h>
+//#include <microhttpd.h>
 #endif
-#include <libwebsockets.h>
+//#include <libwebsockets.h>
 
 // List for websocket triggers
 WX_DEFINE_LIST(TRIGGERLIST);
@@ -167,6 +172,8 @@ WSADATA wsaData; // WSA functions
 //		     WEBSOCKETS
 ///////////////////////////////////////////////////
 
+#ifdef WIN32
+#else
 
 static int gbClose;
 
@@ -253,14 +260,15 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
     }
 };
 
-
+#endif
 
 
 ///////////////////////////////////////////////////
 //		          WEBSERVER
 ///////////////////////////////////////////////////
 
-
+#ifdef WIN32
+#else
 
 
 /**
@@ -300,6 +308,7 @@ static struct Page pages[] =
     { NULL, NULL, &CControlObject::websrv_not_found_page, NULL } /* 404 */
   };
 
+#endif
 
 WX_DEFINE_LIST(CanalMsgList);
 WX_DEFINE_LIST(VSCPEventList);
@@ -621,13 +630,16 @@ bool CControlObject::run(void)
     int opts = 0;
     unsigned int oldus = 0;
 
-    //char interface_name[ 128 ] = "";
+    
+
+#ifdef WIN32
+	/*
+	//char interface_name[ 128 ] = "";
     const char *websockif = NULL;
     struct libwebsocket_context *pcontext;
     unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
             LWS_SEND_BUFFER_POST_PADDING ];
 
-#ifdef WIN32
     m_context = libwebsocket_create_context(m_portWebsockets,
             websockif,
             protocols,
@@ -637,7 +649,15 @@ bool CControlObject::run(void)
             -1,
             -1,
             opts);
+	*/
 #else
+	//char interface_name[ 128 ] = "";
+    const char *websockif = NULL;
+    struct libwebsocket_context *pcontext;
+    unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
+            LWS_SEND_BUFFER_POST_PADDING ];
+
+
     lws_context_creation_info info;
     info.port = m_portWebsockets;
     info.iface = websockif;
@@ -663,6 +683,8 @@ bool CControlObject::run(void)
 
 #endif
     
+#ifdef WIN32
+#else
     // Web server
     struct MHD_Daemon *pwebserver;
 
@@ -678,12 +700,17 @@ bool CControlObject::run(void)
             MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)(120 /* seconds */),
             MHD_OPTION_NOTIFY_COMPLETED, &websrv_request_callback_completed, NULL,
             MHD_OPTION_END);
+#endif
     
     // DM Loop
     while (!m_bQuit) {
 
+#ifdef WIN32
+		clock_t t;
+#else
         struct timeval tv;
         gettimeofday(&tv, NULL);
+#endif
 
         // Feed possible perodic event
         m_dm.feedPeriodicEvent();
@@ -709,6 +736,9 @@ bool CControlObject::run(void)
                 }
             }
         }
+
+#ifdef WIN32
+#else
 
         /*
          * This broadcasts to all dumb-increment-protocol connections
@@ -742,8 +772,10 @@ bool CControlObject::run(void)
             }
             oldus = tv.tv_usec;
         }
+#endif
 
-
+#ifdef WIN32
+#else
         /*
          * This html server does not fork or create a thread for
          * websocket service, it all runs in this single loop.  So,
@@ -755,6 +787,7 @@ bool CControlObject::run(void)
          */
 
         if ( m_bWebSockets ) libwebsocket_service(pcontext, 50);
+#endif
 
         // Wait for event
         if (wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout(10)) {
@@ -803,7 +836,10 @@ bool CControlObject::run(void)
     removeClient(pClientItem);
     m_wxClientMutex.Unlock();
 
+#ifdef WIN32
+#else
     if ( m_bWebSockets ) libwebsocket_context_destroy(pcontext);
+#endif
 
     wxLogDebug(_("ControlObject: Done"));
     return true;
@@ -2174,6 +2210,10 @@ bool CControlObject::readMimeTypes(wxString& path)
 ///////////////////////
 
 
+#ifdef WIN32
+#else
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // callback_http
 //
@@ -3088,7 +3128,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 }
 
-
+#endif
 
 
 
@@ -3101,7 +3141,8 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 
 
-
+#ifdef WIN32
+#else
 
 
 
@@ -6830,7 +6871,7 @@ CControlObject::websrv_request_callback_completed(void *cls,
     free(request);
 }
 
-
+#endif
 
 
 

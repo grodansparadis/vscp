@@ -47,8 +47,8 @@
 extern "C" {
 #ifndef WIN32
 #include <microhttpd.h>	
-#endif
 #include <libwebsockets.h>
+#endif
 }
 
 // List used for websocket triggers
@@ -367,7 +367,9 @@ public:
 	/////////////////////////////////////////////////
     //                 WEB SERVER
     /////////////////////////////////////////////////
-	
+
+#ifdef WIN32
+#else
 	static int
 	websrv_callback_check_address( void *cls,
 									const struct sockaddr *addr,
@@ -690,7 +692,7 @@ public:
 							const char *content_type,
 							const char *transfer_encoding,
 							const char *data, uint64_t off, size_t size);
-	
+#endif	
 
 
 public:
