@@ -119,6 +119,11 @@
 #include "web_js.h"
 #include "web_template.h"
 
+#ifdef WIN32
+#include "../../common/net_skeleton.h"
+#include "../../common/mongoose.h"
+#endif
+
 #include "canal_macro.h"
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
@@ -706,7 +711,9 @@ bool CControlObject::run(void)
     while (!m_bQuit) {
 
 #ifdef WIN32
+		// CLOCKS_PER_SEC 
 		clock_t t;
+		t = clock();
 #else
         struct timeval tv;
         gettimeofday(&tv, NULL);
