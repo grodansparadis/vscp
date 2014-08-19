@@ -120,6 +120,8 @@
 #include "web_template.h"
 
 #ifdef WIN32
+#include "../../common/slre.h"
+#include "../../common/frozen.h"
 #include "../../common/net_skeleton.h"
 #include "../../common/mongoose.h"
 #endif
@@ -273,6 +275,10 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
 ///////////////////////////////////////////////////
 
 #ifdef WIN32
+
+// Structure for webserver
+struct mg_server *webserver;
+
 #else
 
 
@@ -561,6 +567,14 @@ bool CControlObject::init(wxString& strcfgfile)
     }
     
     if ( m_bWebServer ) {
+		
+		// Create the server
+		webserver = mg_create_server( NULL, CControlObject::websrv_event_handler );
+		
+		// Set options
+		mg_set_option( webserver, "document_root", ".");      // Serve current directory
+		mg_set_option( webserver, "listening_port", "8080");  // Open port 8080
+
         logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
     }
     else {
@@ -688,9 +702,11 @@ bool CControlObject::run(void)
 
 #endif
     
+	// Web server
 #ifdef WIN32
+	
 #else
-    // Web server
+    
     struct MHD_Daemon *pwebserver;
 
     pwebserver = MHD_start_daemon(
@@ -745,6 +761,7 @@ bool CControlObject::run(void)
         }
 
 #ifdef WIN32
+		mg_poll_server( webserver, 10 );
 #else
 
         /*
@@ -858,6 +875,9 @@ bool CControlObject::run(void)
 
 bool CControlObject::cleanup(void)
 {
+	// Kill wéb server
+	mg_destroy_server( &webserver );
+
     stopDeviceWorkerThreads();
     stopTcpWorkerThread();
     stopClientWorkerThread();
@@ -3149,6 +3169,37 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 
 #ifdef WIN32
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_event_handler
+//
+
+int 
+CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
+{
+	switch (ev) {
+
+		case MG_AUTH: 
+			return MG_TRUE;
+
+		case MG_REQUEST:
+			return MG_FALSE;
+
+		case MG_POLL:
+			return MG_FALSE;
+
+		case MG_HTTP_ERROR:
+			return MG_FALSE;
+
+		case MG_CLOSE:
+			return MG_TRUE;
+
+		default: 
+			return MG_FALSE;
+	}
+}
+
+
 #else
 
 

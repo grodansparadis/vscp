@@ -32,6 +32,10 @@
 
 #include <wx/thread.h>
 
+#ifdef WIN32
+#include "../../common/mongoose.h"
+#endif
+
 #include "devicelist.h"
 #include "clientlist.h"
 #include "interfacelist.h"
@@ -369,7 +373,15 @@ public:
     /////////////////////////////////////////////////
 
 #ifdef WIN32
+
+	/**
+		Web server event handler
+		@param 
+	*/
+	static int 
+	websrv_event_handler( struct mg_connection *conn, enum mg_event ev );
 #else
+
 	static int
 	websrv_callback_check_address( void *cls,
 									const struct sockaddr *addr,
