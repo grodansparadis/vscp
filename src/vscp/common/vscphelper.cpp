@@ -257,7 +257,7 @@ wxString& getDataCodingString(const unsigned char *pString,
 float getMeasurementAsFloat(const unsigned char *pNorm, 
                                     const unsigned char length)								
 {
-    float *pfloat;
+    float *pfloat = NULL;
     
     // Check pointers
     if ( NULL == pNorm ) return false;
@@ -2862,9 +2862,14 @@ wxString& getRealTextData(vscpEvent *pEvent)
 		}
 			break;
 		case 0xA0: // float format
-			float msrmt = getMeasurementAsFloat(pEvent->pdata+offset, 
-					pEvent->sizeData-offset);
-			str += wxString::Format(_("[float] = %g "), msrmt);
+			if ( (pEvent->sizeData-offset) >= 5 ) {
+				float msrmt = getMeasurementAsFloat(pEvent->pdata+offset, 
+						pEvent->sizeData-offset);
+				str += wxString::Format(_("[float] = %g "), msrmt);
+			}
+			else {
+				str += _("[float] = invalid event format ");
+			}
 			break;
 		}
 
