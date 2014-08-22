@@ -1266,7 +1266,7 @@ void TcpClientThread::handleClientGetChannelGUID ( void )
     wxString strBuf;
     //char outbuf[ 1024 ];
     //char wrkbuf[ 20 ];
-    int i;
+    //int i;
 
     // Must be accredited to do this
     if ( !m_bVerified ) {

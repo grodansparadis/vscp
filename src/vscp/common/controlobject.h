@@ -374,12 +374,151 @@ public:
 
 #ifdef WIN32
 
+	
 	/**
 		Web server event handler
-		@param 
+		@param conn Webserver connection handle
+		@param ev Weberserver event
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
 	*/
 	static int 
 	websrv_event_handler( struct mg_connection *conn, enum mg_event ev );
+
+	/**
+		websrv_mainpage - Web server main page renderer.
+		@param conn Webserver connection handle.
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	static int
+	websrv_mainpage( struct mg_connection *conn );
+
+	/**
+	 * websrv_interfaces -  that displays the available interfaces.
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_interfaces( struct mg_connection *conn );	
+	
+	/**
+	 * websrv_dmlist -  that displays the decision matrix list 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_dmlist( struct mg_connection *conn );
+	
+	/**
+	 * websrv_dmedit - edit of one decision matrix entry 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_dmedit( struct mg_connection *conn );
+	
+	/**
+	 * websrv_dmpost - post of one decision matrix entry 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_dmpost( struct mg_connection *conn );
+	
+	/**
+	 * websrv_dmdelete - Delete DMe entries 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_dmdelete( struct mg_connection *conn );
+	
+	/**
+	 * websrv_variables_list - that displays the variable list 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_variables_list( struct mg_connection *conn );
+	
+	/**
+	 * websrv_variables_edit -  edit of one variable entry 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_variables_edit( struct mg_connection *conn );
+	
+	/**
+	 * websrv_variables_post -  post of one variable entry 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_variables_post( struct mg_connection *conn );
+	
+   /**
+	 * websrv_variables_new - New variable initial type selection state 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_variables_new( struct mg_connection *conn );
+	
+	/**
+	 * websrv_variables_delete - Delete DMe entries 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_variables_delete( struct mg_connection *conn );
+
+	/**
+	 * websrv_render_variables_delete - Discover nodes 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_discovery( struct mg_connection *conn );
+
+	/**
+	 * websrv_session - Communication session
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_session( struct mg_connection *conn );
+
+	/**
+	 * websrv_configure - Server configuration
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_configure( struct mg_connection *conn );
+
+	/**
+	 * websrv_bootload - Device bootload
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_bootload( struct mg_connection *conn );
+
+
 #else
 
 	static int
