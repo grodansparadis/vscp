@@ -17,27 +17,30 @@
             </bookmark>
             <bookmark id="1">
                 <name/>
-                <line>657</line>
+                <line>658</line>
                 <key/>
             </bookmark>
             <bookmark id="2">
                 <name/>
-                <line>3101</line>
+                <line>3103</line>
                 <key/>
             </bookmark>
             <bookmark id="4">
                 <name/>
-                <line>4151</line>
+                <line>4153</line>
                 <key/>
             </bookmark>
             <bookmark id="5">
                 <name/>
-                <line>5550</line>
+                <line>5552</line>
                 <key/>
             </bookmark>
         </file>
     </editor-bookmarks>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
-        <group/>
+        <group>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/vscphelper.cpp</file>
+        </group>
     </open-files>
 </project-private>

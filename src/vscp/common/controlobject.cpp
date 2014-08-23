@@ -655,11 +655,13 @@ bool CControlObject::run(void)
     info.ka_probes = 0;
     info.ka_interval = 0;
 
-    pcontext = libwebsocket_create_context(&info);
-    if (NULL == pcontext) {
-        logMsg(_("Unable to initialize websockets. Terminating!\n"), DAEMON_LOGMSG_CRITICAL);
-        return FALSE;
-    }
+	if ( m_bWebSockets ) {	
+		pcontext = libwebsocket_create_context(&info);
+		if (NULL == pcontext) {
+			logMsg(_("Unable to initialize websockets. Terminating!\n"), DAEMON_LOGMSG_CRITICAL);
+			return FALSE;
+		}
+	}
 
 #endif
     
