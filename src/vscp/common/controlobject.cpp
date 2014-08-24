@@ -4502,16 +4502,31 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
     wxString strAllowedFrom;
 	if ( mg_get_var( conn, "allowedfrom", buf, sizeof( buf ) ) > 0 ) {
 		strAllowedFrom = wxString::FromAscii( buf );	
+		strAllowedFrom.Trim( true );
+		strAllowedFrom.Trim( false );
+		if ( "*" == strAllowedFrom ) {
+			strAllowedFrom = _("0000-01-01 00:00:00");
+		}
 	}
     
     wxString strAllowedTo;
 	if ( mg_get_var( conn, "allowedto", buf, sizeof( buf ) ) > 0 ) {
-		strAllowedTo = wxString::FromAscii( buf );
+		strAllowedTo = wxString::FromAscii( buf );	
+		strAllowedTo.Trim( true );
+		strAllowedTo.Trim( false );
+		if ( "*" == strAllowedTo ) {
+			strAllowedTo = _("9999-12-31 23:59:59");
+		}
 	}
     
     wxString strAllowedTime;
 	if ( mg_get_var( conn, "allowedtime", buf, sizeof( buf ) ) > 0 ) {
-		strAllowedTime = wxString::FromAscii( buf );
+		strAllowedTime = wxString::FromAscii( buf );  	
+		strAllowedTime.Trim( true );
+		strAllowedTime.Trim( false );
+		if ( "*" == strAllowedTime ) {
+			strAllowedTime = _("* *");
+		}
 	}
     
     bool bCheckMonday = false;
@@ -4649,9 +4664,9 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
                 if (bCheckZone) pElement->m_control |= DM_CONTROL_CHECK_ZONE;
                 if (bCheckSubZone) pElement->m_control |= DM_CONTROL_CHECK_SUBZONE;
 
-                pElement->m_timeAllow.m_fromTime.ParseDateTime(strAllowedFrom);
-                pElement->m_timeAllow.m_endTime.ParseDateTime(strAllowedTo);
-                pElement->m_timeAllow.parseActionTime(strAllowedTime);
+                pElement->m_timeAllow.m_fromTime.ParseDateTime( strAllowedFrom );
+                pElement->m_timeAllow.m_endTime.ParseDateTime( strAllowedTo );
+                pElement->m_timeAllow.parseActionTime( strAllowedTime );
 
                 wxString weekdays;
 

@@ -366,10 +366,10 @@ actionTime::actionTime()
     }
 
     // Allow from the beginning of time
-    m_fromTime.ParseDateTime( _("1970-01-01 00:00:00") );
+    m_fromTime.ParseDateTime( _("0000-01-01 00:00:00") );
 
     // to the end of time
-    m_endTime.ParseDateTime( _("2099-12-31 23:59:59") );
+    m_endTime.ParseDateTime( _("9999-12-31 23:59:59") );
 
     // Just leave the ACTIONTIME lists empty as 
     // that is no care.
@@ -600,6 +600,7 @@ bool actionTime::getMultiItem( const wxString& items, ACTIONTIME *pList )
 
 bool actionTime::parseActionTime( const wxString& actionTime )
 {
+	wxString buf = actionTime;
     wxString strDate;
     wxString strYear;
     wxString strMonth;
@@ -610,11 +611,15 @@ bool actionTime::parseActionTime( const wxString& actionTime )
     wxString strMinute;
     wxString strSecond;
 
+	buf.Trim();
+	buf.Trim(false);
+
     // Formats:
     // YYYY-MM-SS HH:MM:SS
     // * *
-    // YYYY-0/1/4/5-SS HH:MM:SS
-    wxStringTokenizer tkzFull( actionTime, _(" ") );
+	// *-*-* *:*:*
+    // YYYY-0/1/4/5-DD HH:MM:SS or variants of it
+    wxStringTokenizer tkzFull( buf, _(" ") );
     if ( tkzFull.CountTokens() < 2 ) return false;	// Wrong format
 
     // Get date
@@ -653,6 +658,33 @@ bool actionTime::parseActionTime( const wxString& actionTime )
         getMultiItem( strDay, &m_actionDay );
 
     }
+	else {
+		ACTIONTIME::iterator iter;
+		for (iter = m_actionYear.begin(); iter != m_actionYear.end(); ++iter) {
+			if ( NULL != *iter ) {
+				delete *iter;
+			}
+		}
+
+		m_actionYear.Clear();
+
+		for (iter = m_actionMonth.begin(); iter != m_actionMonth.end(); ++iter) {
+			if ( NULL != *iter ) {
+				delete *iter;
+			}
+		}
+
+		m_actionMonth.Clear();
+
+		for (iter = m_actionDay.begin(); iter != m_actionDay.end(); ++iter) {
+			if ( NULL != *iter ) {
+				delete *iter;
+			}
+		}
+
+		m_actionDay.Clear();
+
+	}
 
     // Time
     if ( !strTime.IsSameAs( _("*") ) ) {
@@ -680,6 +712,32 @@ bool actionTime::parseActionTime( const wxString& actionTime )
         getMultiItem( strSecond, &m_actionSecond );
 
     }
+	else {
+		ACTIONTIME::iterator iter;
+		for (iter = m_actionHour.begin(); iter != m_actionHour.end(); ++iter) {
+			if ( NULL != *iter ) {
+				delete *iter;
+			}	
+		}
+
+		m_actionHour.Clear();
+
+		for (iter = m_actionMinute.begin(); iter != m_actionMinute.end(); ++iter) {
+			if ( NULL != *iter ) {
+				delete *iter;
+			}
+		}
+
+		m_actionMinute.Clear();
+
+		for (iter = m_actionSecond.begin(); iter != m_actionSecond.end(); ++iter) {
+			if ( NULL != *iter ) {
+				delete *iter;
+			}
+		}
+
+		m_actionSecond.Clear();
+	}
 
     return true;
 
