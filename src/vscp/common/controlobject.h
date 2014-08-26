@@ -75,6 +75,7 @@ WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
 #define MAX_ITEMS_SEND_QUEUE                    1021
 #define MAX_ITEMS_CLIENT_RECEIVE_QUEUE          8191
 
+
 /*
  * The websocket server shows how to use libwebsockets for one or more
  * websocket protocols in the same server
@@ -373,6 +374,47 @@ public:
     /////////////////////////////////////////////////
 
 #ifdef WIN32
+
+	/*!
+		Check web server password
+		@param method
+		@param ha1
+		@param uri
+		@param nonce
+		@param nc
+		@param cnonce
+		@param qop
+		@param reponse
+		@return MG_FALSE on failure to validate user or MG_TRUE on success
+	*/
+	static int 
+	websrv_check_password( const char *method, const char *ha1, const char *uri,
+								const char *nonce, const char *nc, const char *cnonce,
+								const char *qop, const char *response );
+
+	/*!
+		Return the session handle for this connection, or 
+		create one if this is a new user.
+	*/
+	static struct websrv_Session *
+	websrv_get_session( struct mg_connection *conn );
+
+	/**
+	 * Add header to response to set a session cookie.
+	 *
+	 * @param session session to use
+	 * @param response response to modify
+	 */
+	static void
+	websrv_add_session_cookie( struct mg_connection *conn,
+								struct MHD_Response *response );
+	
+	/**
+		Clean up handles of sessions that have been idle for
+		too long.
+	*/
+	static void
+	websrv_expire_sessions( void );
 
 	
 	/**

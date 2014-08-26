@@ -64,6 +64,71 @@
 
 
 // ***************************************************************************
+//                                General Helpers
+// ***************************************************************************
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vhlp_lowercase
+//
+
+int vhlp_lowercase(const char *s) 
+{
+	return tolower(* (const unsigned char *) s);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vhlp_strcasecmp
+//
+
+int vhlp_strcasecmp(const char *s1, const char *s2) 
+{
+	int diff;
+
+	do {
+		diff = vhlp_lowercase(s1++) - vhlp_lowercase(s2++);
+	} while (diff == 0 && s1[-1] != '\0');
+
+	return diff;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vhlp_strncasecmp
+//
+
+int vhlp_strncasecmp(const char *s1, const char *s2, size_t len) 
+{
+	int diff = 0;
+
+	if ( len > 0 ) {
+		do {
+			diff = vhlp_lowercase(s1++) - vhlp_lowercase(s2++);
+		} while (diff == 0 && s1[-1] != '\0' && --len > 0);
+	}
+
+	return diff;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vhlp_bin2str
+//
+
+void vhlp_bin2str(char *to, const unsigned char *p, size_t len  ) 
+{
+	static const char *hex = "0123456789abcdef";
+
+	for (; len--; p++) {
+		*to++ = hex[p[0] >> 4];
+		*to++ = hex[p[0] & 0x0f];
+	}
+
+	*to = '\0';
+}
+
+
+// ***************************************************************************
 //                                Data Coding Helpers
 // ***************************************************************************
 

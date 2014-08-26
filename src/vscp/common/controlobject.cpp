@@ -167,10 +167,6 @@ typedef struct _ASTAT_ {
 
 ASTAT Adapter;
 
-#endif
-
-
-#ifdef WIN32
 
 WORD wVersionRequested = MAKEWORD(1, 1); // WSA functions
 WSADATA wsaData; // WSA functions
@@ -276,24 +272,19 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
 //		          WEBSERVER
 ///////////////////////////////////////////////////
 
+/**
+ * Linked list of all active sessions.  
+ * webserv.h
+ */
+static struct websrv_Session *websrv_sessions;
+
+
 #ifdef WIN32
 
 // Structure for webserver
 struct mg_server *webserver;
 
 #else
-
-
-/**
- * Linked list of all active sessions.  Yes, O(n) but a
- * hash table would be overkill for a simple example...
- */
-static struct websrv_Session *websrv_sessions;
-
-
-
-
-
 
 
 // List of all pages served by this HTTP server.
@@ -328,8 +319,11 @@ WX_DEFINE_LIST(VSCPEventList);
 
 
 // Initialize statics
+#ifdef WIN32
+wxString CControlObject::m_pathRoot = _("/programdata/vscp/www");
+#else
 wxString CControlObject::m_pathRoot = _("/srv/vscp/www");
-
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -577,8 +571,8 @@ bool CControlObject::init(wxString& strcfgfile)
 		webserver = mg_create_server( gpctrlObj, CControlObject::websrv_event_handler );
 		
 		// Set options
-		mg_set_option( webserver, "document_root", ".");      // Serve current directory
-		mg_set_option( webserver, "listening_port", "8080");  // Open port 8080
+		mg_set_option( webserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );     // Serve current directory
+		mg_set_option( webserver, "listening_port", "8080");		// Open port 8080
 
         logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
     }
@@ -709,6 +703,7 @@ bool CControlObject::run(void)
     
 	// Web server
 #ifdef WIN32
+
 	
 #else
     
@@ -2237,9 +2232,9 @@ bool CControlObject::readMimeTypes(wxString& path)
 }
 
 
-////////////////////////
-// websocket callbaks
-///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//                               WEBSOCKET
+///////////////////////////////////////////////////////////////////////////////
 
 
 #ifdef WIN32
@@ -2631,14 +2626,14 @@ CControlObject::callback_lws_mirror(struct libwebsocket_context *context,
 //
 
 int
-CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
-        struct libwebsocket *wsi,
-        enum libwebsocket_callback_reasons reason,
-        void *user,
-        void *in,
-        size_t len)
+CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
+										struct libwebsocket *wsi,
+										enum libwebsocket_callback_reasons reason,
+										void *user,
+										void *in,
+										size_t len)
 {
-    wxString str;
+	wxString str;
     struct per_session_data__lws_vscp *pss = (per_session_data__lws_vscp *) user;
 
     switch (reason) {
@@ -3172,38 +3167,171 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 ///////////////////////////////////////////////////////////////////////////////
 
 
-/*
-// List of all pages served by this HTTP server.
-// If URL is NULL a coded page should be delivered. If it's there a
-// static page is delivered
-static struct Page pages[] = 
-  {
-    { "/vscp", "text/html",  &CControlObject::websrv_serve_mainpage, NULL },
-    { "/vscp/", "text/html",  &CControlObject::websrv_serve_mainpage, NULL },
-	{ "/vscp/interfaces", "text/html", &CControlObject::websrv_serve_interfaces, NULL },
-    { "/vscp/dm", "text/html", &CControlObject::websrv_serve_dmlist, NULL },
-    { "/vscp/dmedit", "text/html", &CControlObject::websrv_serve_dmedit, NULL },
-    { "/vscp/dmpost", "text/html", &CControlObject::websrv_serve_dmpost, NULL },
-    { "/vscp/dmdelete", "text/html", &CControlObject::websrv_serve_dmdelete, NULL },
-
-	{ "/vscp/variables", "text/html", &CControlObject::websrv_serve_variables_list, NULL },
-    { "/vscp/varedit", "text/html", &CControlObject::websrv_serve_variables_edit, NULL },
-    { "/vscp/varpost", "text/html", &CControlObject::websrv_serve_variables_post, NULL },
-    { "/vscp/vardelete", "text/html", &CControlObject::websrv_serve_variables_delete, NULL },
-    { "/vscp/varnew", "text/html", &CControlObject::websrv_serve_variables_new, NULL },
-	
 
 
-	{ "/vscp/discovery", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
-    { "/vscp/session", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
-    { "/vscp/configure", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE }, 
-    { "/vscp/bootload", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
-    { "/m2m", "text/html", &CControlObject::websrv_serve_simple_page, NEXTVERSION_PAGE },
-*/
 
 
 #ifdef WIN32
 
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_get_session
+//
+
+struct websrv_Session *
+CControlObject::websrv_get_session( struct mg_connection *conn )
+{
+    struct websrv_Session *ret;
+    const char *cookie;
+/*
+    cookie = MHD_lookup_connection_value( connection,
+                                            MHD_COOKIE_KIND,
+                                            WEBSERVER_COOKIE_NAME);
+ */   
+    if (cookie != NULL) {
+        
+        // find existing session 
+        ret = websrv_sessions;
+        while (NULL != ret) {
+            if (0 == strcmp(cookie, ret->m_sid))
+                break;
+            ret = ret->m_next;
+        }
+        
+        if (NULL != ret) {
+            ret->m_referenceCount++;
+            return ret;
+        }
+    }
+    
+    // create fresh session 
+    ret = (struct websrv_Session *)calloc(1, sizeof(struct websrv_Session));
+    if (NULL == ret) {
+#ifndef WIN32
+        syslog( LOG_ERR, "calloc error: %s\n", strerror(errno));
+#endif
+        return NULL;
+    }
+/*    
+    // Generate a random session ID
+    time_t t;
+    t = time( NULL );
+	//mg_md5(buf, random, user, NULL);
+    snprintf( ret->m_sid,
+				sizeof(ret->m_sid),
+				"__VSCP__DAEMON_%X%X%X%X_be_hungry_stay_foolish_%X%X",
+				(unsigned int)random(),
+				(unsigned int)random(),
+				(unsigned int)random(),
+				(unsigned int)t,
+				(unsigned int)random(), 
+				1337 );
+    
+    ret->m_referenceCount++;
+    ret->start = time(NULL);
+    ret->m_next = websrv_sessions;
+    websrv_sessions = ret;*/
+    
+    return ret;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_add_session_cookie
+//
+
+void
+CControlObject::websrv_add_session_cookie( struct mg_connection *conn,
+                                            struct MHD_Response *response)
+{/*
+    char cstr[256];
+    snprintf(cstr,
+            sizeof(cstr),
+            "%s=%s",
+            WEBSERVER_COOKIE_NAME,
+            session->m_sid);
+    
+    if (MHD_NO ==
+            MHD_add_response_header(response,
+            MHD_HTTP_HEADER_SET_COOKIE,
+            cstr)) {
+        syslog(LOG_ERR,
+                "Failed to set session cookie header!\n");
+    }*/
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_expire_sessions
+//
+
+void
+CControlObject::websrv_expire_sessions( void )
+{
+    struct websrv_Session *pos;
+    struct websrv_Session *prev;
+    struct websrv_Session *next;
+    time_t now;
+
+    now = time( NULL );
+    prev = NULL;
+    pos = websrv_sessions;
+    
+    while (NULL != pos) {
+        
+        next = pos->m_next;
+        
+        if (now - pos->start > 60 * 60) {
+        
+            // expire sessions after 1h 
+            if ( NULL == prev ) {
+                websrv_sessions = pos->m_next;
+            }
+            else {
+                prev->m_next = next;
+            }
+            
+            free(pos);
+            
+        } 
+        else {
+            prev = pos;
+        }
+        
+        pos = next;
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_check_password
+//
+
+int 
+CControlObject::websrv_check_password( const char *method, 
+											const char *ha1, 
+											const char *uri,
+											const char *nonce, 
+											const char *nc, 
+											const char *cnonce,
+											const char *qop, 
+											const char *response )
+{
+	char ha2[32 + 1], expected_response[32 + 1];
+
+#if 0
+  // Check for authentication timeout
+  if ((unsigned long) time(NULL) - (unsigned long) to64(nonce) > 3600 * 2) {
+    return 0;
+  }
+#endif
+
+	mg_md5(ha2, method, ":", uri, NULL);
+	mg_md5(expected_response, ha1, ":", nonce, ":", nc,
+					":", cnonce, ":", qop, ":", ha2, NULL);
+
+	return ( vhlp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
+
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3221,15 +3349,46 @@ static const char *html_form =
 int 
 CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
 {
+	const char *hdr;
+	char line[256], f_user[256], ha1[256], f_domain[256], user[100], nonce[100],
+       uri[512], cnonce[100], resp[100], qop[100], nc[100];
+	CUserItem *pUser;
 	//const struct mg_request_info *request_info = mg_get_request_info( conn );
 	CControlObject *pObject = (CControlObject *)conn->server_param;
+	const struct mg_request_info *request_info; // = mg_get_request_info( conn );
 
 	switch (ev) {
 
 		case MG_AUTH: 
-			return MG_TRUE;
+			if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
+					( vhlp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
+				return MG_FALSE;
+			}
+			if (!mg_parse_header(hdr, "username", user, sizeof(user))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "cnonce", cnonce, sizeof(cnonce))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "response", resp, sizeof(resp))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "uri", uri, sizeof(uri))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "qop", qop, sizeof(qop))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "nc", nc, sizeof(nc))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "nonce", nonce, sizeof(nonce))) return MG_FALSE;
+
+			// Check if user is valid
+			pUser = pObject->m_userList.getUser( wxString::FromAscii( user ) );
+			if ( NULL == pUser ) return MG_FALSE;
+
+			// Check if remote ip is valid
+			//pObject->m_mutexUserList.Lock();
+			//bool bValidHost = 
+			//        pObject->m_userList.checkRemote( m_pUserItem, 
+			//											wxString( conn->remote_port ) );
+			//pObject->m_mutexUserList.Unlock();
+			char h1[33];
+			//vhlp_bin2str( h1, (const unsigned char *)pUser->m_md5Password.c_str(), 16 );
+			strcpy( h1, "d50c3180375c27927c22e42a379c3f67" );
+			return websrv_check_password( conn->request_method, pUser->m_md5Password.c_str(), uri, nonce, nc, cnonce, qop, resp );
 
 		case MG_REQUEST:
+
 			if ( 0 == strcmp(conn->uri, "/vscp") ) {
 				return websrv_mainpage( conn );
 			}
@@ -3268,16 +3427,16 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 				return websrv_variables_new( conn );
 			}
 			else if ( 0 == strcmp(conn->uri, "/vscp/discovery") ) {
-				
+				return websrv_discovery( conn );
 			}
 			else if ( 0 == strcmp(conn->uri, "/vscp/session") ) {
-				
+				return websrv_session( conn );
 			}
 			else if ( 0 == strcmp(conn->uri, "/vscp/configure") ) {
-				
+				return websrv_configure( conn );
 			}
 			else if ( 0 == strcmp(conn->uri, "/vscp/bootload") ) {
-				
+				return websrv_bootload( conn );
 			}
 			
 			return MG_FALSE;
@@ -5593,7 +5752,6 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
     wxString str;
     VSCPInformation vscpinfo;
     CControlObject *pObject = (CControlObject *)conn->server_param;
-    struct MHD_Response *response;
     CVSCPVariable *pVariable = NULL;
     
     
@@ -5926,7 +6084,7 @@ CControlObject::websrv_variables_new( struct mg_connection *conn )
 
 	// Server data
 	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
-    
+     
 	return MG_TRUE;	
 }
 
@@ -5956,7 +6114,7 @@ CControlObject::websrv_variables_delete( struct mg_connection *conn )
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
     buildPage += _(WEB_COMMON_JS);      // Common Javascript code
-    buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=%s/vscp/variables");
+    buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp/variables");
     buildPage += wxString::Format(_("?from=%d"), id + 1 );
     buildPage += _("\">");
     buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
@@ -5978,6 +6136,143 @@ CControlObject::websrv_variables_delete( struct mg_connection *conn )
     }
     
     buildPage += _(WEB_COMMON_END);     // Common end code
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_discovery
+//
+
+int
+CControlObject::websrv_discovery( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+	 buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp");
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+	buildPage += _("<b>Device discovery functionality is not yet implemented!</b>");
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_session
+//
+
+int
+CControlObject::websrv_session( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+	 buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp");
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+	buildPage += _("<b>Session functionality is not yet implemented!</b>");
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_configure
+//
+
+int
+CControlObject::websrv_configure( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+	 buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp");
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+	buildPage += _("<b>Configuration functionality is not yet implemented!</b>");
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_bootload
+//
+
+int
+CControlObject::websrv_bootload( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+	 buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp");
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+	buildPage += _("<b>Bootload functionality is not yet implemented!</b>");
     
 	// Server data
 	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );

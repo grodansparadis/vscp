@@ -60,6 +60,7 @@ public:
 	*/
 	char *getDigest( void ) { return m_szDigest; };
 
+
 private:
 	
 	/*!

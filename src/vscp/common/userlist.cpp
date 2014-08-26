@@ -173,6 +173,23 @@ bool CUserList::addUser(const wxString& user,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// getUser
+//
+
+CUserItem * CUserList::getUser( const wxString& user )
+{
+    int i = 1;
+    i = i + 2;
+
+    VSCPUSERHASH::iterator it;
+
+    if ((it = m_userhashmap.find(user)) ==
+            m_userhashmap.end()) return NULL;
+
+    return it->second;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // checkUser
 //
 
@@ -207,14 +224,13 @@ bool CUserList::checkRemote(const CUserItem *pItem, const wxString& remote)
     wxIPV4address ipaddr;
     if (!ipaddr.Hostname(remote)) return false;
 
-    // If empty all host allowed
+    // If empty all host allowed, This is "*.*.*.*"
     if (pItem->m_listAllowedRemotes.IsEmpty()) return true;
 
     for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
         wxLogDebug(pItem->m_listAllowedRemotes[ i ]);
         if (pItem->m_listAllowedRemotes[ i ].IsSameAs(remote)) return true;
     }
-
 
     wxStringTokenizer tkz(ipaddr.IPAddress(), wxT("."));
     wxString ip1 = tkz.GetNextToken();

@@ -556,6 +556,8 @@
     <ClInclude Include="..\..\common\dm.h" />
     <ClInclude Include="..\..\common\interfacelist.h" />
     <ClInclude Include="..\..\..\common\md5.h" />
+    <ClInclude Include="..\..\common\vscpeventhelper.h" />
+    <ClInclude Include="..\..\common\vscphelper.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\common\tcpipclientthread.h" />
     <ClInclude Include="..\..\common\udpthread.h" />

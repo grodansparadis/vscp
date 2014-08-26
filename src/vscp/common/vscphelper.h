@@ -80,6 +80,48 @@ extern "C" {
     };
     //@}
 
+
+	// ***************************************************************************
+	//                                General Helpers
+	// ***************************************************************************
+
+	/*!
+		Convert string to lowercase
+	*/
+	int vhlp_lowercase(const char *s);
+
+	/*!
+		String non case compare
+		@param s1 String1 to compare
+		@param s2 String2 to compare
+		@return 0 if strings are the same
+	*/
+	int vhlp_strcasecmp(const char *s1, const char *s2);
+
+	/*!
+		String non case compare with length
+		@param s1 String1 to compare
+		@param s2 String2 to compare
+		@param len Number of byte to compare
+		@return 0 if strings are the same
+	*/
+	int vhlp_strncasecmp(const char *s1, const char *s2, size_t len);
+
+
+	/*!
+		Stringify binary data. 	
+		@param to Pointer output buffer that holds the result. 
+			Output buffer must be twice as big as input,
+			because each byte takes 2 bytes in string representation
+		@param p Pointer to digest.
+		@param len Digest len
+	*/
+	void vhlp_bin2str( char *to, const unsigned char *p, size_t len ); 
+
+	// ***************************************************************************
+	//                                Data Coding Helpers
+	// ***************************************************************************
+
     
     /*!
         Fetch datacoding byte from measurement events
