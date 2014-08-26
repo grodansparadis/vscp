@@ -354,6 +354,9 @@ CControlObject::CControlObject()
     // Set default UDP port
     m_UDPPort = VSCP_LEVEL2_UDP_PORT;
 
+	// Loal doamin
+	m_authDomain = _("mydomain.com");
+
     // Set Default Log Level
     m_logLevel = 0;
 
@@ -571,8 +574,10 @@ bool CControlObject::init(wxString& strcfgfile)
 		webserver = mg_create_server( gpctrlObj, CControlObject::websrv_event_handler );
 		
 		// Set options
-		mg_set_option( webserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );     // Serve current directory
-		mg_set_option( webserver, "listening_port", "8080");		// Open port 8080
+		mg_set_option( webserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
+		str = wxString::Format("%i", m_portWebServer );
+		mg_set_option( webserver, "listening_port", str.mb_str( wxConvUTF8 ) );				// Open web server port
+		mg_set_option( webserver, "auth_domain", m_authDomain.mb_str( wxConvUTF8 ) );
 
         logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
     }
@@ -1733,7 +1738,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 } else if (subchild->GetName() == wxT("webrootpath")) {
                     CControlObject::m_pathRoot = subchild->GetNodeContent();
                     CControlObject::m_pathRoot.Trim();
-                    CControlObject::m_pathRoot.Trim(false);
+                    CControlObject::m_pathRoot.Trim(false); 
+				} else if (subchild->GetName() == wxT("authdoamin")) {
+                    CControlObject::m_authDomain = subchild->GetNodeContent();
+                    CControlObject::m_authDomain.Trim();
+                    CControlObject::m_authDomain.Trim(false);
                 } else if (subchild->GetName() == wxT("pathcert")) {
                     m_pathCert = subchild->GetNodeContent();
                     m_pathCert.Trim();
@@ -3353,6 +3362,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 	char line[256], f_user[256], ha1[256], f_domain[256], user[100], nonce[100],
        uri[512], cnonce[100], resp[100], qop[100], nc[100];
 	CUserItem *pUser;
+	bool bValidHost;
 	//const struct mg_request_info *request_info = mg_get_request_info( conn );
 	CControlObject *pObject = (CControlObject *)conn->server_param;
 	const struct mg_request_info *request_info; // = mg_get_request_info( conn );
@@ -3377,14 +3387,16 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 			if ( NULL == pUser ) return MG_FALSE;
 
 			// Check if remote ip is valid
-			//pObject->m_mutexUserList.Lock();
-			//bool bValidHost = 
-			//        pObject->m_userList.checkRemote( m_pUserItem, 
-			//											wxString( conn->remote_port ) );
-			//pObject->m_mutexUserList.Unlock();
+			pObject->m_mutexUserList.Lock();
+			bValidHost = 
+			        pObject->m_userList.checkRemote( pUser, 
+														wxString::FromAscii( conn->remote_port ) );
+			pObject->m_mutexUserList.Unlock();
+			if (!bValidHost) return MG_FALSE;
+
 			char h1[33];
 			//vhlp_bin2str( h1, (const unsigned char *)pUser->m_md5Password.c_str(), 16 );
-			strcpy( h1, "d50c3180375c27927c22e42a379c3f67" );
+			//strcpy( h1, "d50c3180375c27927c22e42a379c3f67" );
 			return websrv_check_password( conn->request_method, pUser->m_md5Password.c_str(), uri, nonce, nc, cnonce, qop, resp );
 
 		case MG_REQUEST:

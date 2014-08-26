@@ -228,10 +228,7 @@ public:
      */
     bool stopClientWorkerThread(void);
 
-    /*!
-        Save persistent data
-     */
-    void saveRegistryData(void);
+    
 
 
     /*!
@@ -272,6 +269,12 @@ public:
         @return Returns true on success false on failure.
      */
     bool readConfiguration(wxString& strcfgfile);
+
+	/*!
+         Save configuration data
+     */
+    bool saveConfiguration(void);
+
 	
 	/*!
 		Read in mime types
@@ -1052,9 +1055,10 @@ public:
     // websocket port
     uint16_t m_portWebsockets;		// defaults to 7681
 	
-	/*!
-        webserver port 
-     */
+	// Domain for webserver and other net services
+	wxString m_authDomain;
+
+    // webserver port 
     unsigned short m_portWebServer;	// defaults to 8080
 	
 	// Enable/disable full webserver
