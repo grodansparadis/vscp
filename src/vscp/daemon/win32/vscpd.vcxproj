@@ -261,7 +261,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;WIN32;_CONSOLE;WINVER=0x400;_WIN32_WINNT=0x0400;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOEMBED_NET_SKELETON;_CRT_SECURE_NO_WARNINGS;_DEBUG;WIN32;_CONSOLE;WINVER=0x400;_WIN32_WINNT=0x0400;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\vscpd.pch</PrecompiledHeaderOutputFile>
@@ -571,6 +571,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\common\frozen.c" />
     <ClCompile Include="..\..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\..\common\net_skeleton.c" />
     <ClCompile Include="..\..\..\common\randpassword.cpp" />
     <ClCompile Include="..\..\..\common\slre.c" />
     <ClCompile Include="..\..\..\common\strtokenizer.cpp" />

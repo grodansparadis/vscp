@@ -408,9 +408,8 @@ public:
 	 * @param session session to use
 	 * @param response response to modify
 	 */
-	static void
-	websrv_add_session_cookie( struct mg_connection *conn,
-								struct MHD_Response *response );
+	static websrv_Session *
+	websrv_add_session_cookie( struct mg_connection *conn, const char * pUser );
 	
 	/**
 		Clean up handles of sessions that have been idle for
@@ -419,6 +418,14 @@ public:
 	static void
 	websrv_expire_sessions( void );
 
+
+	/*!
+		Handle websocket message
+		@param conn Webserver connection handle
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	static int 
+	websrv_handle_websocket_message( struct mg_connection *conn );
 	
 	/**
 		Web server event handler
