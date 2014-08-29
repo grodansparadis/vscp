@@ -321,6 +321,8 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(20, 47) ] = _("END_OF_RECORD");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20, 48) ] = _("PRESET_ACTIVE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20, 49) ] = _("DETECT");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20, 50) ] = _("OVERLOW");
+	m_hashType[ MAKE_CLASSTYPE_LONG(20, 51) ] = _("BIG_LEVEL_CHANGE");
 
 	// class 30 (0x1E) -- CONTROL
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 0) ] = _("CONTROL_GENERAL");
@@ -353,6 +355,7 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 30) ] = _("TIMED_PULSE_ON");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 31) ] = _("TIMED_PULSE_OFF");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 32) ] = _("SET_COUNTRY_LANGUAGE");
+	m_hashType[ MAKE_CLASSTYPE_LONG(30, 33) ] = _("BIG_CHANGE_LEVEL");
 
 	// class 40 (0x28) -- MULTIMEDIA
 	m_hashType[ MAKE_CLASSTYPE_LONG(40, 0) ] = _("MULTIMEDIA_GENERAL");

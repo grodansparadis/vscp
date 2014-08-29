@@ -858,8 +858,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     
     bSlowAlgorithm = m_slowAlgorithm->GetValue();
     
-    uint8_t scanFrom = readStringValue(m_ctrlEditFrom->GetValue());
-    uint8_t scanTo = readStringValue(m_ctrlEditTo->GetValue());
+    uint8_t scanFrom = vscp_readStringValue(m_ctrlEditFrom->GetValue());
+    uint8_t scanTo = vscp_readStringValue(m_ctrlEditTo->GetValue());
     
     if ( scanFrom >=  scanTo ) {
         wxMessageBox(_("Node to scan from must be less then to"));
@@ -1247,7 +1247,7 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
 					                    url,
 						                &mdf );
                 
-			pElement->m_html = getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
+			pElement->m_html = vscp_getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
 			m_htmlWnd->SetPage(pElement->m_html);
         
 			// Mark as loaded
@@ -1275,7 +1275,7 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
 					                    url,
 						                &mdf );
                 
-			pElement->m_html = getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
+			pElement->m_html = vscp_getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
 			m_htmlWnd->SetPage(pElement->m_html);
         
 			// Mark as loaded
@@ -1354,12 +1354,12 @@ void frmScanforDevices::openConfiguration(wxCommandEvent& event)
         // Fill the combo
         for (int i = 1; i < 256; i++) {
             GUID[0] = i;
-            writeGuidArrayToString(GUID, str);
+            vscp_writeGuidArrayToString(GUID, str);
             subframe->m_comboNodeID->Append(str);
         }
 
         GUID[0] = 0x01;
-        writeGuidArrayToString(GUID, str);
+        vscp_writeGuidArrayToString(GUID, str);
         subframe->m_comboNodeID->SetValue(str);
 
         subframe->SetTitle(_("VSCP Registers (TCP/IP)- ") +

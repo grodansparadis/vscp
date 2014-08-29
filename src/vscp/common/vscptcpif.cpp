@@ -635,13 +635,13 @@ bool VscpTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEvent )
     while ( strTokens.HasMoreTokens() && ( pEvent->sizeData < 512 ) ) {
 
         strWrk = strTokens.GetNextToken();
-        data[ pEvent->sizeData ] = readStringValue( strWrk );
+        data[ pEvent->sizeData ] = vscp_readStringValue( strWrk );
         pEvent->sizeData++;
 
     }
 
     // Continue to handle GUID
-    getGuidFromString( pEvent, strGUID );
+    vscp_getGuidFromString( pEvent, strGUID );
   
 
     // Copy in the data
@@ -736,12 +736,12 @@ int VscpTcpIf::doCmdReceiveEx( vscpEventEx *pEventEx )
   
     if ( !getEventFromLine( strLine, pEvent ) ) return CANAL_ERROR_PARAMETER;
   
-    if ( !convertVSCPtoEx( pEventEx, pEvent ) ) {
-        deleteVSCPevent( pEvent );
+    if ( !vscp_convertVSCPtoEx( pEventEx, pEvent ) ) {
+        vscp_deleteVSCPevent( pEvent );
         return CANAL_ERROR_PARAMETER;
     }
     
-    deleteVSCPevent( pEvent );
+    vscp_deleteVSCPevent( pEvent );
   
     return CANAL_ERROR_SUCCESS;
 
@@ -1838,7 +1838,7 @@ bool VscpTcpIf::getVariableEvent( wxString& name, vscpEvent *pEvent )
     wxStringTokenizer tkz( m_strReply, _("\r\n") );
     if ( !tkz.HasMoreTokens() ) return false;
 
-    getVscpEventFromString( pEvent, tkz.GetNextToken() );
+    vscp_getVscpEventFromString( pEvent, tkz.GetNextToken() );
 
     return true;
 }
@@ -1852,7 +1852,7 @@ bool VscpTcpIf::setVariableEvent( wxString& name, vscpEvent *pEvent )
     wxString strCmd;
     wxString strValue;
 
-    writeVscpEventToString( pEvent, strValue );
+    vscp_writeVscpEventToString( pEvent, strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(",,,") + strValue + _("\r\n");
     m_psock->Write( strCmd.ToAscii(), strlen( strCmd.ToAscii() ) );
     if ( !checkReturnValue() ) return false;
@@ -1877,7 +1877,7 @@ bool VscpTcpIf::getVariableEventEx( wxString& name, vscpEventEx *pEvent )
     wxStringTokenizer tkz( m_strReply, _("\r\n") );
     if ( !tkz.HasMoreTokens() ) return false;
 
-    getVscpEventExFromString( pEvent, tkz.GetNextToken() );
+    vscp_getVscpEventExFromString( pEvent, tkz.GetNextToken() );
 
     return true;
 }
@@ -1891,7 +1891,7 @@ bool VscpTcpIf::setVariableEventEx( wxString& name, vscpEventEx *pEvent )
     wxString strCmd;
     wxString strValue;
 
-    writeVscpEventExToString( pEvent, strValue );
+    vscp_writeVscpEventExToString( pEvent, strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(",,,") + strValue + _("\r\n");
     m_psock->Write( strCmd.ToAscii(), strlen( strCmd.ToAscii() ) );
     if ( !checkReturnValue() ) return false;
@@ -1952,7 +1952,7 @@ bool VscpTcpIf::getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_
     wxStringTokenizer tkz( m_strReply, _("\r\n") );
     if ( !tkz.HasMoreTokens() ) return false;
 
-    getVscpDataArrayFromString( pData, psizeData, tkz.GetNextToken() );
+    vscp_getVscpDataArrayFromString( pData, psizeData, tkz.GetNextToken() );
 
     return true;
 }
@@ -1966,7 +1966,7 @@ bool VscpTcpIf::setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t 
     wxString strCmd;
     wxString strValue;
 
-    writeVscpDataWithSizeToString( sizeData, pData, strValue );
+    vscp_writeVscpDataWithSizeToString( sizeData, pData, strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(",,,") + strValue + _("\r\n");
     m_psock->Write( strCmd.ToAscii(), strlen( strCmd.ToAscii() ) );
     if ( !checkReturnValue() ) return false;
@@ -2195,7 +2195,7 @@ void *VSCPTCPIP_RX_WorkerThread::Entry()
             ( rv = tcpifReceive.doCmdBlockReceive( pEvent ) ) ) {
             
             if ( m_pCtrlObject->m_bFilterOwnTx && ( m_pCtrlObject->m_txChannelID == pEvent->obid ) )  {
-                deleteVSCPevent( pEvent );
+                vscp_deleteVSCPevent( pEvent );
                 continue;
             }
 

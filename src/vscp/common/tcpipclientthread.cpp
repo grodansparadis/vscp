@@ -287,7 +287,7 @@ void *TcpClientThread::Entry()
 
 
     // Clear the filter (Allow everything )
-    clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
 
 
     ///////////
@@ -704,7 +704,7 @@ void TcpClientThread::handleClientSend ( void )
     // Get head
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        event.head = readStringValue( str );
+        event.head = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -716,7 +716,7 @@ void TcpClientThread::handleClientSend ( void )
     // Get Class
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        event.vscp_class = readStringValue( str );
+        event.vscp_class = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -728,7 +728,7 @@ void TcpClientThread::handleClientSend ( void )
     // Get Type
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        event.vscp_type = readStringValue( str );
+        event.vscp_type = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -740,7 +740,7 @@ void TcpClientThread::handleClientSend ( void )
     // Get OBID  -  Kept here to be compatible with receive
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        event.obid = readStringValue( str );
+        event.obid = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -752,7 +752,7 @@ void TcpClientThread::handleClientSend ( void )
     // Get Timestamp
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        event.timestamp = readStringValue( str );
+        event.timestamp = vscp_readStringValue( str );
         if ( !event.timestamp ) {
 #ifdef WIN32
             event.timestamp = GetTickCount();
@@ -787,7 +787,7 @@ void TcpClientThread::handleClientSend ( void )
     char data[ 512 ];
     while ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        data[ event.sizeData ] = readStringValue( str );
+        data[ event.sizeData ] = vscp_readStringValue( str );
         event.sizeData++;
     }
 
@@ -795,12 +795,12 @@ void TcpClientThread::handleClientSend ( void )
     if ( NULL != pEvent ) {
 
         // Check if i/f GUID should be used
-        if ( ( '-' == strGUID[0] ) || isGUIDEmpty( event.GUID ) ) {
+        if ( ( '-' == strGUID[0] ) || vscp_isGUIDEmpty( event.GUID ) ) {
             // Copy in the i/f GUID
             m_pClientItem->m_guid.writeGUID( event.GUID );
         }
         else {
-            getGuidFromString( &event, strGUID );
+            vscp_getGuidFromString( &event, strGUID );
         }
 
         // Copy event
@@ -963,7 +963,7 @@ void TcpClientThread::handleClientSend ( void )
 
                 m_pClientItem->m_statistics.cntOverruns++;
 
-                deleteVSCPevent( pEvent );
+                vscp_deleteVSCPevent( pEvent );
                 m_pClientSocket->Write( MSG_BUFFER_FULL,
                     strlen ( MSG_BUFFER_FULL ) );
             }
@@ -997,7 +997,7 @@ void TcpClientThread::handleClientReceive ( void )
 
 
     wxString str = m_wxcmd.Right( m_wxcmd.Length() - 4 );
-    cnt = readStringValue( str );
+    cnt = vscp_readStringValue( str );
 
     if ( !cnt ) cnt++;	// No arg is "read one"
 
@@ -1061,7 +1061,7 @@ bool TcpClientThread::sendOneEventFromQueue( bool bStatusMsg )
                             pEvent->timestamp );
 
         wxString strGUID;
-        writeGuidToString( pEvent, strGUID );
+        vscp_writeGuidToString( pEvent, strGUID );
         strOut += strGUID;
 
         // Handle data
@@ -1345,7 +1345,7 @@ void TcpClientThread::handleClientSetFilter ( void )
     // Get priority
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        m_pClientItem->m_filterVSCP.filter_priority = readStringValue( str );
+        m_pClientItem->m_filterVSCP.filter_priority = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -1357,7 +1357,7 @@ void TcpClientThread::handleClientSetFilter ( void )
     // Get Class
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        m_pClientItem->m_filterVSCP.filter_class = readStringValue( str );
+        m_pClientItem->m_filterVSCP.filter_class = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -1370,7 +1370,7 @@ void TcpClientThread::handleClientSetFilter ( void )
     // Get Type
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        m_pClientItem->m_filterVSCP.filter_type = readStringValue( str );
+        m_pClientItem->m_filterVSCP.filter_type = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -1382,7 +1382,7 @@ void TcpClientThread::handleClientSetFilter ( void )
     // Get GUID
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        getGuidFromStringToArray( m_pClientItem->m_filterVSCP.filter_GUID, str );
+        vscp_getGuidFromStringToArray( m_pClientItem->m_filterVSCP.filter_GUID, str );
     }
     else {
         m_bOK = false;
@@ -1415,7 +1415,7 @@ void TcpClientThread::handleClientSetMask ( void )
     // Get priority
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        m_pClientItem->m_filterVSCP.mask_priority = readStringValue( str );
+        m_pClientItem->m_filterVSCP.mask_priority = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -1427,7 +1427,7 @@ void TcpClientThread::handleClientSetMask ( void )
     // Get Class
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        m_pClientItem->m_filterVSCP.mask_class = readStringValue( str );
+        m_pClientItem->m_filterVSCP.mask_class = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -1440,7 +1440,7 @@ void TcpClientThread::handleClientSetMask ( void )
     // Get Type
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        m_pClientItem->m_filterVSCP.mask_type = readStringValue( str );
+        m_pClientItem->m_filterVSCP.mask_type = vscp_readStringValue( str );
     }
     else {
         m_bOK = false;
@@ -1452,7 +1452,7 @@ void TcpClientThread::handleClientSetMask ( void )
     // Get GUID
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        getGuidFromStringToArray( m_pClientItem->m_filterVSCP.mask_GUID, str );
+        vscp_getGuidFromStringToArray( m_pClientItem->m_filterVSCP.mask_GUID, str );
     }
     else {
         m_bOK = false;
@@ -1748,7 +1748,7 @@ void TcpClientThread::handleClientInterface_Unique( void )
 
     // Get GUID
     m_wxcmdUC.Trim( false );
-    getGuidFromStringToArray( ifGUID, m_wxcmdUC );
+    vscp_getGuidFromStringToArray( ifGUID, m_wxcmdUC );
 
     // Add the client to the Client List
     // TODO
@@ -2119,7 +2119,7 @@ void TcpClientThread::handleVariable_Write()
         wxstr.Trim();
         wxstr.Trim( false );
         if ( wxstr.Length() ) {
-            type = readStringValue( wxstr );
+            type = vscp_readStringValue( wxstr );
         }
     }
     else {
@@ -2517,7 +2517,7 @@ void TcpClientThread::handleDM_Disable( void )
         wxStringTokenizer tkz( m_wxcmdUC, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
-            pos = readStringValue( tkz.GetNextToken() );
+            pos = vscp_readStringValue( tkz.GetNextToken() );
 
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2593,7 +2593,7 @@ void TcpClientThread::handleDM_List( void )
         wxStringTokenizer tok( m_wxcmdUC, _(",") );
         while ( tok.HasMoreTokens() ) {
             
-            int n = readStringValue( tok.GetNextToken() );
+            int n = vscp_readStringValue( tok.GetNextToken() );
             rowArray.Add( n );
 
         }
@@ -2616,29 +2616,29 @@ void TcpClientThread::handleDM_Add( void )
     wxStringTokenizer tkz( m_wxcmdUC, _(",") );
 
     // Priority
-    pDMItem->m_vscpfilter.mask_priority = readStringValue( tkz.GetNextToken() );
-    pDMItem->m_vscpfilter.filter_priority = readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.mask_priority = vscp_readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.filter_priority = vscp_readStringValue( tkz.GetNextToken() );
 
     // Class
-    pDMItem->m_vscpfilter.mask_class = readStringValue( tkz.GetNextToken() );
-    pDMItem->m_vscpfilter.filter_class = readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.mask_class = vscp_readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.filter_class = vscp_readStringValue( tkz.GetNextToken() );
 
     // Type
-    pDMItem->m_vscpfilter.mask_type = readStringValue( tkz.GetNextToken() );
-    pDMItem->m_vscpfilter.filter_type = readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.mask_type = vscp_readStringValue( tkz.GetNextToken() );
+    pDMItem->m_vscpfilter.filter_type = vscp_readStringValue( tkz.GetNextToken() );
 
     // GUID
     wxString strGUID;
     strGUID =tkz.GetNextToken();
-    getGuidFromStringToArray( pDMItem->m_vscpfilter.mask_GUID, strGUID );	
+    vscp_getGuidFromStringToArray( pDMItem->m_vscpfilter.mask_GUID, strGUID );	
     strGUID = tkz.GetNextToken();
-    getGuidFromStringToArray( pDMItem->m_vscpfilter.filter_GUID, strGUID );	
+    vscp_getGuidFromStringToArray( pDMItem->m_vscpfilter.filter_GUID, strGUID );	
 
     // control
-    pDMItem->m_control = readStringValue( tkz.GetNextToken() );
+    pDMItem->m_control = vscp_readStringValue( tkz.GetNextToken() );
 
     // action code
-    pDMItem->m_action = readStringValue( tkz.GetNextToken() );
+    pDMItem->m_action = vscp_readStringValue( tkz.GetNextToken() );
 
     // action parameters
     pDMItem->m_actionparam = tkz.GetNextToken();
@@ -2681,7 +2681,7 @@ void TcpClientThread::handleDM_Delete( void )
         wxStringTokenizer tkz( m_wxcmdUC, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
-            pos = readStringValue( tkz.GetNextToken() );
+            pos = vscp_readStringValue( tkz.GetNextToken() );
 
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2730,7 +2730,7 @@ void TcpClientThread::handleDM_Trigger()
     wxStringTokenizer tkz( m_wxcmdUC, _(",") );
     while ( tkz.HasMoreTokens() ) {
 
-        pos = readStringValue( tkz.GetNextToken() );
+        pos = vscp_readStringValue( tkz.GetNextToken() );
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2782,7 +2782,7 @@ void TcpClientThread::handleDM_ClearTriggerCount()
         wxStringTokenizer tkz( m_wxcmdUC, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
-            pos = readStringValue( tkz.GetNextToken() );
+            pos = vscp_readStringValue( tkz.GetNextToken() );
 
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2836,7 +2836,7 @@ void TcpClientThread::handleDM_ClearErrorCount()
         wxStringTokenizer tkz( m_wxcmdUC, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
-            pos = readStringValue( tkz.GetNextToken() );
+            pos = vscp_readStringValue( tkz.GetNextToken() );
 
             m_pCtrlObject->m_dm.m_mutexDM.Lock();
 

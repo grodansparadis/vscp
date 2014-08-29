@@ -384,7 +384,7 @@ void *deviceThread::Entry()
 							if (NULL != pvscpEvent) {
 
 								// Convert CANAL message to VSCP event
-								convertCanalToEvent(pvscpEvent,
+								vscp_convertCanalToEvent(pvscpEvent,
 									&msg,
 									m_pDeviceItem->m_pClientItem->m_guid.m_id );
 
@@ -418,7 +418,7 @@ void *deviceThread::Entry()
 					m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
 					canalMsg canalMsg;
-					convertEventToCanal(&canalMsg, pqueueEvent);
+					vscp_convertEventToCanal(&canalMsg, pqueueEvent);
 					if (CANAL_ERROR_SUCCESS ==
 						m_pDeviceItem->m_proc_CanalSend(m_pDeviceItem->m_openHandle, &canalMsg)) {
 						// Remove the node
@@ -427,7 +427,7 @@ void *deviceThread::Entry()
 					} else {
 						// Another try
 						//m_pCtrlObject->m_semClientOutputQueue.Post();
-						deleteVSCPevent(pqueueEvent);
+						vscp_deleteVSCPevent(pqueueEvent);
 						m_pDeviceItem->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
 					}
 
@@ -777,7 +777,7 @@ void *deviceCanalReceiveThread::Entry()
                 if (NULL != pvscpEvent) {
 
                     // Convert CANAL message to VSCP event
-                    convertCanalToEvent(pvscpEvent,
+                    vscp_convertCanalToEvent(pvscpEvent,
                             &msg,
                             m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.m_id);
 
@@ -798,7 +798,7 @@ void *deviceCanalReceiveThread::Entry()
                     ifguid[15] = 0;
 
                     // If if is set to zero use interface id
-                    if (isGUIDEmpty(ifguid)) {
+                    if (vscp_isGUIDEmpty(ifguid)) {
 
                         // Set driver GUID if set
                         if (!m_pMainThreadObj->m_pDeviceItem->m_guid.isNULL()) {
@@ -890,11 +890,11 @@ void *deviceCanalWriteThread::Entry()
 			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
 			canalMsg canalMsg;
-			convertEventToCanal(&canalMsg, pqueueEvent);
+			vscp_convertEventToCanal(&canalMsg, pqueueEvent);
 			if (CANAL_ERROR_SUCCESS ==
 				m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingSend(m_pMainThreadObj->m_pDeviceItem->m_openHandle, &canalMsg, 300)) {
 				// Remove the node
-				deleteVSCPevent(pqueueEvent);
+				vscp_deleteVSCPevent(pqueueEvent);
 				m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
 			} else {
 				// Give it another try
@@ -986,7 +986,7 @@ void *deviceLevel2ReceiveThread::Entry()
         ifguid[15] = 0;
         
         // If if is set to zero use interface id
-        if ( isGUIDEmpty( ifguid ) ) {
+        if ( vscp_isGUIDEmpty( ifguid ) ) {
             
             // Set driver GUID if set
             if ( !m_pMainThreadObj->m_pDeviceItem->m_guid.isNULL() ) {
@@ -1028,7 +1028,7 @@ void *deviceLevel2ReceiveThread::Entry()
 
 		}
         else {
-            if (NULL == pEvent) deleteVSCPevent(pEvent);
+            if (NULL == pEvent) vscp_deleteVSCPevent(pEvent);
         }
  
 	}

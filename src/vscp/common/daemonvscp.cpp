@@ -201,7 +201,7 @@ void *daemonVSCPThread::Entry()
             } // High End Probe
 
             // Remove the event
-            deleteVSCPevent( pEvent );
+            vscp_deleteVSCPevent( pEvent );
 
         } // event in queue
 

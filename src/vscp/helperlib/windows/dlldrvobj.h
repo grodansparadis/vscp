@@ -29,7 +29,7 @@
 #define DLL_VERSION		0x000001
 
 // This is the vendor string - Change to your own value
-#define CANAL_DLL_VENDOR "eurosource, Sweden, http://www.grodanspaadis.com"
+#define CANAL_DLL_VENDOR "Paradise of the Frog, Sweden, http://www.paradiseofthefrog.com"
 							
 
 // Max number of open connections

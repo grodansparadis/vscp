@@ -64,14 +64,14 @@ CDllWrapper::~CDllWrapper()
 int CDllWrapper::initialize( wxString& strPath )
 {
 	// Check that the file exists
-  if ( !( ::wxFileExists( strPath ) ) ) return CANAL_ERROR_PARAMETER;  
+	if ( !( ::wxFileExists( strPath ) ) ) return CANAL_ERROR_PARAMETER;  
   
-  // Save the path
-  m_strPath = strPath;
+	// Save the path
+	m_strPath = strPath;
 
-  // Load dynamic library
+	// Load dynamic library
 	if ( ! m_wxdll.Load( strPath, wxDL_LAZY ) ) {
-    wxLogStatus( _("Unable to load dynamic library."));
+		wxLogStatus( _("Unable to load dynamic library."));
 		return CANAL_ERROR_PARAMETER;
 	}
 

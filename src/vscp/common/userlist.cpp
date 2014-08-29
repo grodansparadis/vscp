@@ -56,7 +56,7 @@
 CUserItem::CUserItem(void)
 {
     // Let all events thru
-    clearVSCPFilter(&m_filterVSCP);
+    vscp_clearVSCPFilter(&m_filterVSCP);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -439,7 +439,7 @@ CControlObject::~CControlObject()
     for (iterVSCP = m_clientOutputQueue.begin();
             iterVSCP != m_clientOutputQueue.end(); ++iterVSCP) {
         vscpEvent *pEvent = *iterVSCP;
-        deleteVSCPevent(pEvent);
+        vscp_deleteVSCPevent(pEvent);
     }
 
     m_clientOutputQueue.Clear();
@@ -843,13 +843,13 @@ bool CControlObject::run(void)
 
             if (NULL != pEvent) {
 
-                if (doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
+                if (vscp_doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
                     // Feed event through matrix
                     m_dm.feed(pEvent);
                 }
 
                 // Remove the event
-                deleteVSCPevent(pEvent);
+                vscp_deleteVSCPevent(pEvent);
 
             } // Valid pEvent pointer
 
@@ -1602,11 +1602,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 // Deprecated <==============
                 if (subchild->GetName() == wxT("tcpport")) {
                     wxString str = subchild->GetNodeContent();
-                    m_TCPPort = readStringValue(str);
+                    m_TCPPort = vscp_readStringValue(str);
                 }// Deprecated <==============
                 else if (subchild->GetName() == wxT("udpport")) {
                     wxString str = subchild->GetNodeContent();
-                    m_UDPPort = readStringValue(str);
+                    m_UDPPort = vscp_readStringValue(str);
                 } else if (subchild->GetName() == wxT("loglevel")) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
@@ -1639,10 +1639,10 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_logLevel = DAEMON_LOGMSG_DEBUG;
                     }
                     else {
-                        m_logLevel = readStringValue(str);
+                        m_logLevel = vscp_readStringValue(str);
                     }
                 } else if (subchild->GetName() == wxT("tcpif")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1651,23 +1651,23 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_bTCPInterface = false;
                     }
 
-#if wxCHECK_VERSION(3,0,0)
+#if wxMAJOR_VERSION > 3
                     property = subchild->GetAttribute(wxT("port"), wxT("9598"));
 #else
                     property = subchild->GetPropVal(wxT("port"), wxT("9598"));
 #endif                    
                     if (property.IsNumber()) {
-                        m_TCPPort = readStringValue(property);
+                        m_TCPPort = vscp_readStringValue(property);
                     }
 
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("ifaddress"), wxT(""));
 #else
                     m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("ifaddress"), wxT(""));
 #endif                    
 
                 } else if (subchild->GetName() == wxT("canaldriver")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1680,7 +1680,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 } 
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1690,7 +1690,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
 
                     // Get the path to the DM file
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
 #else 
                     m_dm.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
@@ -1701,7 +1701,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }                 
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1711,7 +1711,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
 
                     // Get the path to the DM file
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     m_VSCP_Variables.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
 #else 
                     m_VSCP_Variables.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
@@ -1720,7 +1720,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_VSCP_Variables.m_configPath.Trim(false);
 
                 } else if (subchild->GetName() == wxT("vscp")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1734,7 +1734,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_guid.getFromString(str);
                 } else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();
-                    m_maxItemsInClientReceiveQueue = readStringValue(str);
+                    m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
                 } else if (subchild->GetName() == wxT("webrootpath")) {
                     CControlObject::m_pathRoot = subchild->GetNodeContent();
                     CControlObject::m_pathRoot.Trim();
@@ -1752,7 +1752,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_pathKey.Trim();
                     m_pathKey.Trim(false);
                 } else if (subchild->GetName() == wxT("websockets")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1761,16 +1761,16 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_bWebSockets = false;
                     }
 
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     property = subchild->GetAttribute(wxT("port"), wxT("7681"));
 #else 
                     property = subchild->GetPropVal(wxT("port"), wxT("7681"));
 #endif                    
                     if (property.IsNumber()) {
-                        m_portWebsockets = readStringValue(property);
+                        m_portWebsockets = vscp_readStringValue(property);
                     }
                 } else if (subchild->GetName() == wxT("webserver")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1779,13 +1779,13 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_bWebServer = false;
                     }
 
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     property = subchild->GetAttribute(wxT("port"), wxT("8080"));
 #else 
                     property = subchild->GetPropVal(wxT("port"), wxT("8080"));
 #endif                    
                     if (property.IsNumber()) {
-                        m_portWebServer = readStringValue(property);
+                        m_portWebServer = vscp_readStringValue(property);
                     }
                 }
                 else if (subchild->GetName() == wxT("pathtomimetypes")) {
@@ -1814,7 +1814,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 wxString allowevent;
                 bool bUser = false;
 
-                clearVSCPFilter(&VSCPFilter); // Allow all frames
+                vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
 
                 if (subchild->GetName() == wxT("user")) {
 
@@ -1830,7 +1830,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             privilege = subsubchild->GetNodeContent();
                         } else if (subsubchild->GetName() == wxT("filter")) {
                             bFilterPresent = true;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
 #else 
                             wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
@@ -1838,7 +1838,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.filter_priority = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
 #else 
                             wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
@@ -1846,7 +1846,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.filter_class = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
 #else 
                             wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
@@ -1854,16 +1854,16 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.filter_type = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
 #else 
                             wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
 #endif                                    
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
-                            getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
+                            vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
                         } else if (subsubchild->GetName() == wxT("mask")) {
                             bMaskPresent = true;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
 #else 
                             wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
@@ -1871,7 +1871,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.mask_priority = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
 #else 
                             wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
@@ -1879,7 +1879,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.mask_class = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
 #else 
                             wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
@@ -1887,13 +1887,13 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.mask_type = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
 #else 
                             wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
 #endif                                    
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
-                            getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
+                            vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
                         } else if (subsubchild->GetName() == wxT("allowfrom")) {
                             allowfrom = subsubchild->GetNodeContent();
                         } else if (subsubchild->GetName() == wxT("allowevent")) {
@@ -1986,7 +1986,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
@@ -2020,7 +2020,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         } 
                         else if (subsubchild->GetName() == wxT("flags")) {
                             wxString str = subsubchild->GetNodeContent();
-                            flags = readStringValue(str);
+                            flags = vscp_readStringValue(str);
                         } 
                         else if (subsubchild->GetName() == wxT("guid")) {
                             strGUID = subsubchild->GetNodeContent();
@@ -2042,7 +2042,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 memset(GUID, 0, 16);
 
                 if (strGUID.Length()) {
-                    getGuidFromStringToArray(GUID, strGUID);
+                    vscp_getGuidFromStringToArray(GUID, strGUID);
                 }
 
                 // Add the device
@@ -2094,7 +2094,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
@@ -2146,7 +2146,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 memset(GUID, 0, 16);
 
                 if (strGUID.Length()) {
-                    getGuidFromStringToArray(GUID, strGUID);
+                    vscp_getGuidFromStringToArray(GUID, strGUID);
                 }
 
                 // Add the device
@@ -2213,17 +2213,17 @@ bool CControlObject::readMimeTypes(wxString& path)
     while (child) {  
         
         if (child->GetName() == wxT("mimetype")) {
-#if wxCHECK_VERSION(3,0,0)             
+#if wxMAJOR_VERSION > 3             
             wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));
 #else 
             wxString strEnable = child->GetPropVal(wxT("enable"), wxT("false"));
 #endif 
-#if wxCHECK_VERSION(3,0,0)             
+#if wxMAJOR_VERSION > 3             
             wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));
 #else 
             wxString strExt = child->GetPropVal(wxT("extension"), wxT(""));            
 #endif
-#if wxCHECK_VERSION(3,0,0)             
+#if wxMAJOR_VERSION > 3             
             wxString strType = child->GetAttribute(wxT("mime"), wxT(""));
 #else 
             wxString strType = child->GetPropVal(wxT("mime"), wxT(""));            
@@ -3316,6 +3316,8 @@ CControlObject::websrv_expire_sessions( void )
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_check_password
 //
+// http://en.wikipedia.org/wiki/Digest_access_authentication
+//
 
 int 
 CControlObject::websrv_check_password( const char *method, 
@@ -3340,7 +3342,7 @@ CControlObject::websrv_check_password( const char *method,
 	mg_md5(expected_response, ha1, ":", nonce, ":", nc,
 					":", cnonce, ":", qop, ":", ha2, NULL);
 
-	return ( vhlp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
+	return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
 
 }
 
@@ -3351,7 +3353,7 @@ CControlObject::websrv_check_password( const char *method,
 
 int 
 CControlObject::websrv_handle_websocket_message( struct mg_connection *conn )
-{
+{/*
 	struct conn_data *d = (struct conn_data *) conn->connection_param;
 	struct mg_connection *c;
 
@@ -3374,6 +3376,8 @@ CControlObject::websrv_handle_websocket_message( struct mg_connection *conn )
 									conn->content_len - 4, conn->content + 4);
 		}
 	}
+	*/
+	return 1;
 }
 
 
@@ -3396,7 +3400,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 	char buf[512];
 	struct websrv_Session * pSession;
 	char line[256], f_user[256], ha1[256], f_domain[256], user[100], nonce[100],
-       uri[512], cnonce[100], resp[100], qop[100], nc[100];
+       uri[32768], cnonce[100], resp[100], qop[100], nc[100];
 	CUserItem *pUser;
 	bool bValidHost;
 	//const struct mg_request_info *request_info = mg_get_request_info( conn );
@@ -3407,7 +3411,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 
 		case MG_AUTH: 
 			if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
-					( vhlp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
+					( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
 				return MG_FALSE;
 			}
 			if (!mg_parse_header(hdr, "username", user, sizeof(user))) return MG_FALSE;
@@ -3450,7 +3454,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 				if ( NULL == ( pSession =  websrv_get_session( conn ) ) ) {
 
 					if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
-						( vhlp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
+						( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
 						return MG_FALSE;
 					}
 				
@@ -3519,8 +3523,8 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 
 		case MG_WS_CONNECT:
 			// New websocket connection. Send connection ID back to the client.
-			conn->connection_param = calloc( 1, sizeof( struct conn_data ) );
-			mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "id %p", conn );
+			//conn->connection_param = calloc( 1, sizeof( struct conn_data ) );
+			//mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "id %p", conn );
 			return MG_FALSE;
 
 		case MG_POLL:
@@ -3531,7 +3535,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 			return MG_FALSE;
 
 		case MG_CLOSE:
-			free( conn->connection_param );
+			//free( conn->connection_param );
 			return MG_TRUE;
 
 		default: 
@@ -3946,7 +3950,7 @@ CControlObject::websrv_dmlist( struct mg_connection *conn )
                 buildPage += _("]<br>");
 
                 buildPage += _(" <b>Filter_GUID: </b>");
-                writeGuidArrayToString(pElement->m_vscpfilter.filter_GUID, strGUID);
+                vscp_writeGuidArrayToString(pElement->m_vscpfilter.filter_GUID, strGUID);
                 buildPage += strGUID;
 
                 buildPage += _("<br>");
@@ -3961,7 +3965,7 @@ CControlObject::websrv_dmlist( struct mg_connection *conn )
                 buildPage += wxString::Format(_("%d "), pElement->m_vscpfilter.mask_type);
 
                 buildPage += _("<b>Mask_GUID: </b>");
-                writeGuidArrayToString(pElement->m_vscpfilter.mask_GUID, strGUID);
+                vscp_writeGuidArrayToString(pElement->m_vscpfilter.mask_GUID, strGUID);
                 buildPage += strGUID;
 
                 buildPage += _("<br>");
@@ -4226,7 +4230,7 @@ CControlObject::websrv_dmedit( struct mg_connection *conn )
         buildPage += _("</td></tr>"); 
         
         // GUID
-        if ( !bNew ) writeGuidArrayToString( pElement->m_vscpfilter.filter_GUID, str );
+        if ( !bNew ) vscp_writeGuidArrayToString( pElement->m_vscpfilter.filter_GUID, str );
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">GUID:</td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"filter_vscpguid\">");
         if ( bNew ) {
             buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
@@ -4236,7 +4240,7 @@ CControlObject::websrv_dmedit( struct mg_connection *conn )
         }
         buildPage += _("</textarea></td>");
         
-        if ( !bNew ) writeGuidArrayToString( pElement->m_vscpfilter.mask_GUID, str );
+        if ( !bNew ) vscp_writeGuidArrayToString( pElement->m_vscpfilter.mask_GUID, str );
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\"> </td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"mask_vscpguid\">");
         if ( bNew ) {
             buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
@@ -4659,33 +4663,33 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
         
     int filter_priority = -1;
 	if ( mg_get_var( conn, "filter_priority", buf, sizeof( buf ) ) > 0 ) {
-		filter_priority = readStringValue( wxString::FromAscii( buf ) );
+		filter_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
          
     int mask_priority = 0;    
 	if ( mg_get_var( conn, "mask_priority", buf, sizeof( buf ) ) > 0 ) {
-		mask_priority = readStringValue( wxString::FromAscii( buf ) );
+		mask_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint16_t filter_vscpclass = -1;
 	if ( mg_get_var( conn, "filter_vscpclass", buf, sizeof( buf ) ) > 0 ) {
 		wxString wrkstr = wxString::FromAscii( buf );
-		filter_vscpclass = readStringValue( wrkstr );
+		filter_vscpclass = vscp_readStringValue( wrkstr );
 	}
     
     uint16_t mask_vscpclass = 0;
 	if ( mg_get_var( conn, "mask_vscpclass", buf, sizeof( buf ) ) > 0 ) {
-		mask_vscpclass = readStringValue( wxString::FromAscii( buf ) );
+		mask_vscpclass = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint16_t filter_vscptype = 0;
 	if ( mg_get_var( conn, "filter_vscptype", buf, sizeof( buf ) ) > 0 ) {
-		filter_vscptype = readStringValue( wxString::FromAscii( buf ) );
+		filter_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint16_t mask_vscptype = 0;
 	if ( mg_get_var( conn, "mask_vscptype", buf, sizeof( buf ) ) > 0 ) {
-		mask_vscptype = readStringValue( wxString::FromAscii( buf ) );
+		mask_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     wxString strFilterGuid;
@@ -4704,17 +4708,17 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
     
     uint8_t index = 0;
 	if ( mg_get_var( conn, "vscpindex", buf, sizeof( buf ) ) > 0 ) {
-		index = readStringValue( wxString::FromAscii( buf ) );
+		index = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint8_t zone = 0;
 	if ( mg_get_var( conn, "vscpzone", buf, sizeof( buf ) ) > 0 ) {
-		zone = readStringValue( wxString::FromAscii( buf ) );
+		zone = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint8_t subzone = 0;
 	if ( mg_get_var( conn, "vscpsubzone", buf, sizeof( buf ) ) > 0 ) {
-		subzone = readStringValue( wxString::FromAscii( buf ) );
+		subzone = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     bool bEnableRow = false;
@@ -4809,7 +4813,7 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
     
     uint32_t action = 0;
 	if ( mg_get_var( conn, "action", buf, sizeof( buf ) ) > 0 ) {
-		action = readStringValue( wxString::FromAscii( buf ) );
+		action = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     wxString strActionParameter;
@@ -4890,9 +4894,9 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
                     }
                 } 
                 else {
-                    getGuidFromStringToArray(pElement->m_vscpfilter.mask_GUID,
+                    vscp_getGuidFromStringToArray(pElement->m_vscpfilter.mask_GUID,
                             strMaskGuid);
-                    getGuidFromStringToArray(pElement->m_vscpfilter.filter_GUID,
+                    vscp_getGuidFromStringToArray(pElement->m_vscpfilter.filter_GUID,
                             strFilterGuid);
                 }
 
@@ -5555,7 +5559,7 @@ CControlObject::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString strGUID;
-                writeGuidArrayToString( pVariable->m_event.GUID, strGUID );
+                vscp_writeGuidArrayToString( pVariable->m_event.GUID, strGUID );
                 buildPage += wxString::Format(_("%s"), strGUID.GetData() );
             }
             
@@ -5653,7 +5657,7 @@ CControlObject::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString strData;
-                writeVscpDataToString( &pVariable->m_event, strData );
+                vscp_writeVscpDataToString( &pVariable->m_event, strData );
                 buildPage += wxString::Format(_("%s"), strData.GetData() );
             }
             
@@ -5686,7 +5690,7 @@ CControlObject::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString strData;
-                writeVscpDataToString( &pVariable->m_event, strData );
+                vscp_writeVscpDataToString( &pVariable->m_event, strData );
                 buildPage += strData.GetData();
             }
             
@@ -5883,13 +5887,13 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
     int value_integer = 0;
 	if ( mg_get_var( conn, "value_integer", buf, sizeof( buf ) ) > 0 ) {
 		str = wxString::FromAscii( buf );
-		value_integer = readStringValue( str );
+		value_integer = vscp_readStringValue( str );
 	}
        
     long value_long = 0;
 	if ( mg_get_var( conn, "value_long", buf, sizeof( buf ) ) > 0 ) {
 		str = wxString::FromAscii( buf );
-		value_long = readStringValue( str );
+		value_long = vscp_readStringValue( str );
 	}
     
     double value_double = 0;
@@ -5904,12 +5908,12 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
     
     uint16_t value_class = 0;
 	if ( mg_get_var( conn, "value_class", buf, sizeof( buf ) ) > 0 ) {
-		value_class = readStringValue( wxString::FromAscii( buf ) );
+		value_class = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint16_t value_type = 0;
 	if ( mg_get_var( conn, "value_type", buf, sizeof( buf ) ) > 0 ) {
-		value_type = readStringValue( wxString::FromAscii( buf ) );
+		value_type = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     wxString strGUID;
@@ -5919,27 +5923,27 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
     
     uint32_t value_timestamp = 0;
 	if ( mg_get_var( conn, "value_timestamp", buf, sizeof( buf ) ) > 0 ) {
-		value_timestamp = readStringValue( wxString::FromAscii( buf ) );
+		value_timestamp = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint32_t value_obid = 0;
 	if ( mg_get_var( conn, "value_obid", buf, sizeof( buf ) ) > 0 ) {
-		value_obid = readStringValue( wxString::FromAscii( buf ) );
+		value_obid = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint8_t value_head = 0;
 	if ( mg_get_var( conn, "value_head", buf, sizeof( buf ) ) > 0 ) {
-		value_head = readStringValue( wxString::FromAscii( buf ) );
+		value_head = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint32_t value_crc = 0;
 	if ( mg_get_var( conn, "value_crc", buf, sizeof( buf ) ) > 0 ) {
-		value_crc = readStringValue( wxString::FromAscii( buf ) );
+		value_crc = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     uint16_t value_sizedata = 0;
 	if ( mg_get_var( conn, "value_sizedata", buf, sizeof( buf ) ) > 0 ) {
-		value_sizedata = readStringValue( wxString::FromAscii( buf ) );
+		value_sizedata = vscp_readStringValue( wxString::FromAscii( buf ) );
 	}
     
     wxString strData;
@@ -6016,7 +6020,7 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
                     uint16_t size;
-                    getVscpDataArrayFromString( pVariable->m_normInteger, 
+                    vscp_getVscpDataArrayFromString( pVariable->m_normInteger, 
                                                     &size,
                                                     strMeasurement );
                     pVariable->m_normIntSize = size;
@@ -6025,8 +6029,8 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
                     pVariable->m_event.vscp_class = value_class;
                     pVariable->m_event.vscp_type = value_type;
-                    getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
-                    getVscpDataFromString( &pVariable->m_event,
+                    vscp_getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
+                    vscp_getVscpDataFromString( &pVariable->m_event,
                                             strData );
                     pVariable->m_event.crc = value_crc;
                     pVariable->m_event.head = value_head;
@@ -6035,11 +6039,11 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-                    getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
+                    vscp_getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-                    getVscpDataFromString( &pVariable->m_event,
+                    vscp_getVscpDataFromString( &pVariable->m_event,
                                             strData );
                     break;
 
@@ -7299,7 +7303,7 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                 pObject->m_dm.getRowCount(),
                 nCount,
                 nFrom,
-#if wxCHECK_VERSION(3,0,0)                
+#if wxMAJOR_VERSION > 3                
                 wxstrlight );
 #else                
                 wxstrlight.GetWriteBuf(wxstrlight.Length()) );
@@ -7518,7 +7522,7 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                 pObject->m_dm.getRowCount(),
                 nCount,
                 nFrom,
-#if wxCHECK_VERSION(3,0,0)                
+#if wxMAJOR_VERSION > 3                
                 wxstrlight );
 #else                
                 wxstrlight.GetWriteBuf(wxstrlight.Length()) );
@@ -10161,7 +10165,7 @@ void *clientMsgWorkerThread::Entry()
             } // Valid event
 
             // Delete the event
-            if (NULL != pvscpEvent) deleteVSCPevent(pvscpEvent);
+            if (NULL != pvscpEvent) vscp_deleteVSCPevent(pvscpEvent);
 
         } // while
 

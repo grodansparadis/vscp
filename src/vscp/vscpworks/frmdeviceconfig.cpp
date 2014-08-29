@@ -3303,7 +3303,7 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event) {
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
         // Get Interface id
-        nodeid = readStringValue(m_comboNodeID->GetValue());
+        nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
 
         if ((0 == nodeid) || (nodeid > 254)) {
             wxMessageBox(_("Invalid Node ID! Must be between 1-254"));
@@ -3376,7 +3376,7 @@ void frmDeviceConfig::OnRegisterEdited(wxGridEvent& event) {
 
     if (2 == event.GetCol()) {
         str = m_gridRegisters->GetCellValue(event.GetRow(), event.GetCol());
-        val = readStringValue(str);
+        val = vscp_readStringValue(str);
         strBuf.Printf(_("0x%02lx"), val);
         m_gridRegisters->SetCellValue(event.GetRow(), event.GetCol(), strBuf);
 
@@ -3555,7 +3555,7 @@ bool frmDeviceConfig::writeChangedLevel1Registers(unsigned char nodeid) {
                 }
             }
 
-            val = readStringValue(m_gridRegisters->GetCellValue(i, 2));
+            val = vscp_readStringValue(m_gridRegisters->GetCellValue(i, 2));
             if (m_csw.writeLevel1Register(nodeid, reg, &val)) {
 
                 // Update display
@@ -3622,7 +3622,7 @@ bool frmDeviceConfig::writeChangedLevel2Registers(void) {
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
         // Get Interface id
-        nodeid = readStringValue(m_comboNodeID->GetValue());
+        nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
 
     }
     else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
@@ -3665,7 +3665,7 @@ bool frmDeviceConfig::writeChangedLevel2Registers(void) {
                 }
             }
 
-            val = readStringValue(m_gridRegisters->GetCellValue(i, 2));
+            val = vscp_readStringValue(m_gridRegisters->GetCellValue(i, 2));
 
             if (!m_csw.writeLevel2Register(m_ifguid,
                     reg,
@@ -3724,8 +3724,8 @@ void frmDeviceConfig::writeStatusInfo(void) {
     strHTML += _("<b>GUID</b>: ");
     uint8_t guid[16];
     memcpy(guid, m_stdRegisters.getGUID(), 16);
-    reverseGUID(guid);
-    writeGuidArrayToString(m_stdRegisters.getGUID(), str);
+    vscp_reverseGUID(guid);
+    vscp_writeGuidArrayToString(m_stdRegisters.getGUID(), str);
     strHTML += str;
     strHTML += _("<br>");
 
@@ -5006,7 +5006,7 @@ void frmDeviceConfig::fillStandardRegisters() {
     }
 
     // Write to grid also
-    writeGuidArrayToString(m_stdRegisters.getGUID(), str);
+    vscp_writeGuidArrayToString(m_stdRegisters.getGUID(), str);
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 15, LSB\nGUID=") + str);
 
     // Make all parts of the row visible
@@ -5613,7 +5613,7 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event) {
 
     // Get nickname
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
-        nodeid = readStringValue(m_comboNodeID->GetValue());
+        nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
     } 
     else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
         destGUID.getFromString(m_comboNodeID->GetValue());
@@ -6059,7 +6059,7 @@ void frmDeviceConfig::OnButtonLoadDefaultsClick(wxCommandEvent& event) {
             wxPD_CAN_ABORT);
 
     // Get nickname
-    nodeid = readStringValue(m_comboNodeID->GetValue());
+    nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
 
     wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
     wxFont fontBold = defaultFont;
@@ -6085,7 +6085,7 @@ void frmDeviceConfig::OnButtonLoadDefaultsClick(wxCommandEvent& event) {
 
                 if (false == progressDlg.Update(256 - m_mdf.m_list_register.GetCount() + cnt)) return;
 
-                val = readStringValue(reg->m_strDefault);
+                val = vscp_readStringValue(reg->m_strDefault);
                 strBuf = getFormattedValue(val);
                 m_gridRegisters->SelectRow(row);
                 m_gridRegisters->SetCellValue(row, 2, strBuf);
@@ -6186,7 +6186,7 @@ void frmDeviceConfig::readValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
 
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
         // Get Interface id
-        nodeid = readStringValue(m_comboNodeID->GetValue());
+        nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
     }
 
     if (m_gridRegisters->GetNumberRows()) {
@@ -6281,7 +6281,7 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
         // Get Interface id
-        nodeid = readStringValue(m_comboNodeID->GetValue());
+        nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
 
     }
     else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
@@ -6307,7 +6307,7 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
                     wxMessageBox(_("This register is not writable!"));
                 } else {
                     uint8_t val =
-                            readStringValue(m_gridRegisters->GetCellValue(selrows[i], 2));
+                            vscp_readStringValue(m_gridRegisters->GetCellValue(selrows[i], 2));
 
                     uint16_t page;
                     page = getPageFromCell(selrows[i]);
@@ -6417,7 +6417,7 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
 
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
         // Get Interface id
-        nodeid = readStringValue(m_comboNodeID->GetValue());
+        nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
     }
 
     if (m_gridRegisters->GetNumberRows()) {
@@ -6549,7 +6549,7 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
 
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
         // Get Interface id
-        nodeid = readStringValue(m_comboNodeID->GetValue());
+        nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
     }
 
     if (m_gridRegisters->GetNumberRows()) {
@@ -6578,7 +6578,7 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
                         continue;
                     }
 
-                    val = readStringValue(mdfRegs->m_strDefault);
+                    val = vscp_readStringValue(mdfRegs->m_strDefault);
 
                     uint16_t savepage = m_csw.getRegisterPage(this,
                             (USE_DLL_INTERFACE == m_csw.getDeviceType()) ?
@@ -6760,7 +6760,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update registers
                     m_csw.writeAbstractionString(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             strValue,
                             &m_ifguid,
@@ -6802,7 +6802,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update registers
                     m_csw.writeAbstractionBool(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             bval,
                             &m_ifguid,
@@ -6888,7 +6888,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update registers
                     m_csw.writeAbstractionBitField(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             strValue,
                             &m_ifguid,
@@ -6902,7 +6902,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                 case type_uint8_t:
                 {
                     uint8_t val;
-                    val = readStringValue(strValue);
+                    val = vscp_readStringValue(strValue);
 
                     // Do visual part
                     if (-1 != row) {
@@ -6921,7 +6921,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update registers
                     m_csw.writeAbstraction8bitinteger(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             val,
                             &m_ifguid,
@@ -6936,7 +6936,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                 case type_uint16_t:
                 {
                     uint16_t val;
-                    val = readStringValue(strValue);
+                    val = vscp_readStringValue(strValue);
 
                     // Do visual part
                     if (-1 != row) {
@@ -6964,7 +6964,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update registers
                     m_csw.writeAbstraction16bitinteger(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             val,
                             &m_ifguid,
@@ -7030,7 +7030,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                     // Update registers
                     uint32_t val32 = longVal;
                     m_csw.writeAbstraction32bitinteger(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             val32,
                             &m_ifguid,
@@ -7095,7 +7095,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                     // Update register
                     uint64_t val64 = longlongVal;
                     m_csw.writeAbstraction64bitinteger(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             val64,
                             &m_ifguid,
@@ -7161,7 +7161,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update register
                     m_csw.writeAbstractionFloat(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             floatVal,
                             &m_ifguid,
@@ -7225,7 +7225,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update register
                     m_csw.writetAbstractionDouble(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             doubleVal,
                             &m_ifguid,
@@ -7301,7 +7301,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update register
                     m_csw.writeAbstractionDate(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             date,
                             &m_ifguid,
@@ -7373,7 +7373,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update register
                     m_csw.writeAbstractionTime(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             time,
                             &m_ifguid,
@@ -7438,7 +7438,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                     // Update register
                     m_csw.writeAbstractionGUID(this,
-                            readStringValue(m_comboNodeID->GetValue()),
+                            vscp_readStringValue(m_comboNodeID->GetValue()),
                             m_mdf.m_list_abstraction[ event.GetRow() ],
                             guid);
                 }
@@ -7466,7 +7466,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
         dlg.m_oaddr->ChangeValue(str);
 
         // flags
-        uint8_t flags = readStringValue(m_gridDM->GetCellValue(event.GetRow(), 1));
+        uint8_t flags = vscp_readStringValue(m_gridDM->GetCellValue(event.GetRow(), 1));
         (flags & 0x80) ? dlg.m_chkEnableDMRow->SetValue(true) : dlg.m_chkEnableDMRow->SetValue(false);
         (flags & 0x40) ? dlg.m_chkCheckOAddr->SetValue(true) : dlg.m_chkCheckOAddr->SetValue(false);
         (flags & 0x20) ? dlg.m_chkHardOAddr->SetValue(true) : dlg.m_chkHardOAddr->SetValue(false);
@@ -7474,13 +7474,13 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
         (flags & 0x08) ? dlg.m_chkMatchSubzone->SetValue(true) : dlg.m_chkMatchSubzone->SetValue(false);
 
         // Class Mask
-        reg = readStringValue(m_gridDM->GetCellValue(event.GetRow(), 2)) +
+        reg = vscp_readStringValue(m_gridDM->GetCellValue(event.GetRow(), 2)) +
                 ((flags & 0x02) << 9);
         str = wxString::Format(_("%d"), reg);
         dlg.m_classMask->ChangeValue(str);
 
         // Class Filter
-        reg = readStringValue(m_gridDM->GetCellValue(event.GetRow(), 3)) +
+        reg = vscp_readStringValue(m_gridDM->GetCellValue(event.GetRow(), 3)) +
                 ((flags & 0x01) << 9);
         str = wxString::Format(_("%d"), reg);
         dlg.m_classFilter->ChangeValue(str);
@@ -7499,7 +7499,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
         dlg.m_comboAction->SetClientData(0, 0);
         dlg.m_comboAction->SetSelection(0);
 
-        reg = readStringValue(m_gridDM->GetCellValue(event.GetRow(), 6));
+        reg = vscp_readStringValue(m_gridDM->GetCellValue(event.GetRow(), 6));
 
         MDF_ACTION_LIST::iterator iter;
         for (iter = m_mdf.m_dmInfo.m_list_action.begin();
@@ -7524,14 +7524,14 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
             wxString strBuf;
 
             // O-addr
-            strBuf.Printf(_("0x%02lx"), readStringValue(dlg.m_oaddr->GetValue()));
+            strBuf.Printf(_("0x%02lx"), vscp_readStringValue(dlg.m_oaddr->GetValue()));
             m_gridRegisters->SetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
                     strBuf);
 
             // class mask
-            uint16_t class_mask = readStringValue(dlg.m_classMask->GetValue());
+            uint16_t class_mask = vscp_readStringValue(dlg.m_classMask->GetValue());
             strBuf.Printf(_("0x%02lx"), class_mask & 0xff);
             m_gridRegisters->SetCellValue(2 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
@@ -7539,7 +7539,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                     strBuf);
 
             // class filter
-            uint16_t class_filter = readStringValue(dlg.m_classFilter->GetValue());
+            uint16_t class_filter = vscp_readStringValue(dlg.m_classFilter->GetValue());
             strBuf.Printf(_("0x%02lx"), class_filter & 0xff);
             m_gridRegisters->SetCellValue(3 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
@@ -7547,14 +7547,14 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                     strBuf);
 
             // type mask
-            strBuf.Printf(_("0x%02lx"), readStringValue(dlg.m_typeMask->GetValue()));
+            strBuf.Printf(_("0x%02lx"), vscp_readStringValue(dlg.m_typeMask->GetValue()));
             m_gridRegisters->SetCellValue(4 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
                     strBuf);
 
             // type filter
-            strBuf.Printf(_("0x%02lx"), readStringValue(dlg.m_typeFilter->GetValue()));
+            strBuf.Printf(_("0x%02lx"), vscp_readStringValue(dlg.m_typeFilter->GetValue()));
             m_gridRegisters->SetCellValue(5 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
@@ -7590,7 +7590,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                     strBuf);
 
             // Action Parameter
-            strBuf.Printf(_("0x%02lx"), readStringValue(dlg.m_actionParam->GetValue()));
+            strBuf.Printf(_("0x%02lx"), vscp_readStringValue(dlg.m_actionParam->GetValue()));
             m_gridRegisters->SetCellValue(7 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
@@ -7620,7 +7620,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
 
                         // Value
                         strBuf = getFormattedValue(
-                                readStringValue(dlg.m_oaddr->GetValue()));
+                                vscp_readStringValue(dlg.m_oaddr->GetValue()));
                         m_gridRegisters->SetCellValue(
                                 row + 1,
                                 2,
@@ -7635,7 +7635,7 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event) {
                         for (int i = 0; i < m_mdf.m_dmInfo.m_nRowSize; i++) {
 
                             // Index
-                            strBuf = getFormattedValue(readStringValue(
+                            strBuf = getFormattedValue(vscp_readStringValue(
                                     m_gridRegisters->GetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
                                     m_mdf.m_dmInfo.m_nRowSize *
                                     event.GetRow() + i, 2)));
@@ -7940,10 +7940,10 @@ void frmDeviceConfig::updateDmGridConditional(uint16_t reg, uint32_t page) {
             progressDlg.Pulse();
 
             // Fetch index from grid
-            uint8_t index = readStringValue(m_gridRegisters->GetCellValue(row - 1, 2));
+            uint8_t index = vscp_readStringValue(m_gridRegisters->GetCellValue(row - 1, 2));
 
             // Fetch value from grid
-            uint8_t value = readStringValue(m_gridRegisters->GetCellValue(row, 2));
+            uint8_t value = vscp_readStringValue(m_gridRegisters->GetCellValue(row, 2));
             wxString strValue = getFormattedValue(value);
 
             // Write it to the grid
@@ -7964,7 +7964,7 @@ void frmDeviceConfig::updateDmGridConditional(uint16_t reg, uint32_t page) {
             progressDlg.Pulse();
 
             // Fetch value from grid
-            uint8_t value = readStringValue(m_gridRegisters->GetCellValue(row, 2));
+            uint8_t value = vscp_readStringValue(m_gridRegisters->GetCellValue(row, 2));
             wxString strValue = getFormattedValue(value);
 
             // Write it to the grid
@@ -8063,7 +8063,7 @@ void frmDeviceConfig::updateAbstractionGridConditional(uint16_t reg, uint32_t pa
                 // and the abstraction should be updated.
 
                 // Fetch index from grid
-                uint8_t index = readStringValue(m_gridRegisters->GetCellValue(row - 1, 2));
+                uint8_t index = vscp_readStringValue(m_gridRegisters->GetCellValue(row - 1, 2));
 
                 progressDlg.Pulse();
 
@@ -8138,7 +8138,7 @@ void frmDeviceConfig::dmEnableSelectedRow(wxCommandEvent& event) {
 
         for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-            uint8_t flags = readStringValue(m_gridDM->GetCellValue(selrows[i], 2));
+            uint8_t flags = vscp_readStringValue(m_gridDM->GetCellValue(selrows[i], 2));
             flags |= 0x80; // Set enable bit
             strBuf = getFormattedValue(flags);
             m_gridRegisters->SetCellValue(1 + m_mdf.m_dmInfo.m_nStartOffset +
@@ -8176,7 +8176,7 @@ void frmDeviceConfig::dmDisableSelectedRow(wxCommandEvent& event) {
 
         for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-            uint8_t flags = readStringValue(m_gridDM->GetCellValue(selrows[i], 2));
+            uint8_t flags = vscp_readStringValue(m_gridDM->GetCellValue(selrows[i], 2));
             flags &= 0x7f; // Reset enable bit
             strBuf = getFormattedValue(flags);
             m_gridRegisters->SetCellValue(1 + m_mdf.m_dmInfo.m_nStartOffset +
@@ -8396,7 +8396,7 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
 #else
                         child->GetPropVal(wxT("id"), wxT("-1"));
 #endif                       
-                reg = readStringValue(id);
+                reg = vscp_readStringValue(id);
                 if (-1 == reg) continue;
 
                 wxXmlNode *subchild = child->GetChildren();
@@ -8404,7 +8404,7 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
                     if (subchild->GetName() == wxT("value")) {
                         wxString strSaveValue = m_gridRegisters->GetCellValue(reg, 2);
                         wxString str = subchild->GetNodeContent();
-                        value = readStringValue(str);
+                        value = vscp_readStringValue(str);
                         str.Printf(_("0x%02lx"), value);
                         if (str != strSaveValue) {
                             m_gridRegisters->SetCellValue(reg, 2, str);
@@ -8445,7 +8445,7 @@ uint32_t frmDeviceConfig::getRegFromCell(int row) {
         token2 = token1;
     }
 
-    return readStringValue(_("0x") + token2.Trim());
+    return vscp_readStringValue(_("0x") + token2.Trim());
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -8455,7 +8455,7 @@ uint32_t frmDeviceConfig::getRegFromCell(int row) {
 uint16_t frmDeviceConfig::getPageFromCell(int row) {
     wxString str = m_gridRegisters->GetCellValue(row, 0);
     if (wxNOT_FOUND != str.Find(_(":"))) {
-        return readStringValue(_("0x") + m_gridRegisters->GetCellValue(row, 0).Trim());
+        return vscp_readStringValue(_("0x") + m_gridRegisters->GetCellValue(row, 0).Trim());
     }
 
     return 0;

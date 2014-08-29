@@ -1404,12 +1404,12 @@ void WizardPage1::OnButtonSelectInterfaceClick( wxCommandEvent& event )
                             // Fill the combo
                             for ( int i=1; i<256; i++ ) {
                                 GUID[0] = i;
-                                writeGuidArrayToString( GUID, str );
+                                vscp_writeGuidArrayToString( GUID, str );
                                 ((DeviceBootloaderwizard *)GetParent())->m_pgSelecDeviceId->m_comboNodeID->Append( str );
                             }
 
                             GUID[0] = 0x01;
-                            writeGuidArrayToString( GUID, str );
+                            vscp_writeGuidArrayToString( GUID, str );
                             ((DeviceBootloaderwizard *)GetParent())->m_pgSelecDeviceId->m_comboNodeID->SetValue( str );
 
                             // Set the selected interface
@@ -1607,10 +1607,10 @@ void WizardPage3::OnButtonAlgorithmFromMdfClick( wxCommandEvent& event )
 
     // Get the device nickname/GUID
     if ( USE_DLL_INTERFACE == ((DeviceBootloaderwizard *)GetParent())->m_csw.getDeviceType() ) {
-        *id = readStringValue( strID );
+        *id = vscp_readStringValue( strID );
     }
     else if ( USE_TCPIP_INTERFACE == ((DeviceBootloaderwizard *)GetParent())->m_csw.getDeviceType() ) {
-        getGuidFromStringToArray ( id, strID );
+        vscp_getGuidFromStringToArray ( id, strID );
     }
 
     // Open the interface
@@ -1671,10 +1671,10 @@ void WizardPage2::OnButtonLoadFileFromMdfClick( wxCommandEvent& event )
 
         // Get the device nickname/GUID
         if ( USE_DLL_INTERFACE == pblw->m_csw.getDeviceType() ) {
-            *id = readStringValue( strID );
+            *id = vscp_readStringValue( strID );
         }
         else if ( USE_TCPIP_INTERFACE == pblw->m_csw.getDeviceType() ) {
-            getGuidFromStringToArray ( id, strID );
+            vscp_getGuidFromStringToArray ( id, strID );
         }
 
         // Open the interface
@@ -1772,10 +1772,10 @@ void WizardPage7::OnButtonProgramClick( wxCommandEvent& event )
     // Get the device nickname/GUID
     if ( USE_DLL_INTERFACE == pblw->m_csw.getDeviceType() ) {
         pblw->m_pBootCtrl->m_guid.m_id[ 0 ] = 
-            readStringValue( pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() );
+            vscp_readStringValue( pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() );
     }
     else if ( USE_TCPIP_INTERFACE == pblw->m_csw.getDeviceType() ) {
-        getGuidFromStringToArray ( pblw->m_pBootCtrl->m_guid.m_id, 
+        vscp_getGuidFromStringToArray ( pblw->m_pBootCtrl->m_guid.m_id, 
                                     pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() );
     }
 

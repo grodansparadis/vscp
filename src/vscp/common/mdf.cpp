@@ -1020,7 +1020,7 @@ bool CMDF::parseMDF( wxString& path )
                     m_changeDate = child2->GetNodeContent();
                 }
                 else if ( child2->GetName() == wxT("buffersize") ) {
-                    m_Module_buffersize = readStringValue( child2->GetNodeContent() );
+                    m_Module_buffersize = vscp_readStringValue( child2->GetNodeContent() );
                 }
                 else if ( child2->GetName() == wxT("manufacturer") ) {
 
@@ -1211,7 +1211,7 @@ bool CMDF::parseMDF( wxString& path )
                     m_firmware.m_strPath = child2->GetPropVal( _( "path" ), _("") );
 #endif                    
 #if wxCHECK_VERSION(3,0,0)                    
-                    m_firmware.m_size  = readStringValue( child2->GetAttribute( _( "size" ), _("0") ) );
+                    m_firmware.m_size  = vscp_readStringValue( child2->GetAttribute( _( "size" ), _("0") ) );
 #else 
                     m_firmware.m_size  = readStringValue( child2->GetPropVal( _( "size" ), _("0") ) );
 #endif                    
@@ -1221,17 +1221,17 @@ bool CMDF::parseMDF( wxString& path )
                     wxString format = child2->GetPropVal( _( "format" ), _("intelhex8") );
 #endif        
 #if wxCHECK_VERSION(3,0,0)                    
-                    m_firmware.m_version_major  = readStringValue( child2->GetAttribute( _( "version_major" ), _("0") ) );
+                    m_firmware.m_version_major  = vscp_readStringValue( child2->GetAttribute( _( "version_major" ), _("0") ) );
 #else 
                     m_firmware.m_version_major  = readStringValue( child2->GetPropVal( _( "version_major" ), _("0") ) );
 #endif                     
 #if wxCHECK_VERSION(3,0,0)                    
-                    m_firmware.m_version_minor  = readStringValue( child2->GetAttribute( _( "version_minor" ), _("0") ) );
+                    m_firmware.m_version_minor  = vscp_readStringValue( child2->GetAttribute( _( "version_minor" ), _("0") ) );
 #else 
                     m_firmware.m_version_minor  = readStringValue( child2->GetPropVal( _( "version_minor" ), _("0") ) );
 #endif                    
 #if wxCHECK_VERSION(3,0,0)                    
-                    m_firmware.m_version_subminor  = readStringValue( child2->GetAttribute( _( "version_subminor" ), _("0") ) );
+                    m_firmware.m_version_subminor  = vscp_readStringValue( child2->GetAttribute( _( "version_subminor" ), _("0") ) );
 #else 
                     m_firmware.m_version_subminor  = readStringValue( child2->GetPropVal( _( "version_subminor" ), _("0") ) );
 #endif                    
@@ -1284,34 +1284,34 @@ bool CMDF::parseMDF( wxString& path )
                             pAbstraction->m_strDefault =  child3->GetPropVal( _( "default" ), _("") );
 #endif                            
 #if wxCHECK_VERSION(3,0,0)
-                            pAbstraction->m_nPage =  readStringValue( child3->GetAttribute( _( "page" ), _("0") ) );
+                            pAbstraction->m_nPage =  vscp_readStringValue( child3->GetAttribute( _( "page" ), _("0") ) );
 #else 
-                            pAbstraction->m_nPage =  readStringValue( child3->GetPropVal( _( "page" ), _("0") ) );
+                            pAbstraction->m_nPage =  vscp_readStringValue( child3->GetPropVal( _( "page" ), _("0") ) );
 #endif                            
 #if wxCHECK_VERSION(3,0,0)                            
-                            pAbstraction->m_nOffset =  readStringValue( child3->GetAttribute( _( "offset" ), _("0") ) );
+                            pAbstraction->m_nOffset =  vscp_readStringValue( child3->GetAttribute( _( "offset" ), _("0") ) );
 #else 
-                            pAbstraction->m_nOffset =  readStringValue( child3->GetPropVal( _( "offset" ), _("0") ) );
+                            pAbstraction->m_nOffset =  vscp_readStringValue( child3->GetPropVal( _( "offset" ), _("0") ) );
 #endif                            
 #if wxCHECK_VERSION(3,0,0)                            
-                            pAbstraction->m_nBitnumber =  readStringValue( child3->GetAttribute( _( "bit" ), _("0") ) );
+                            pAbstraction->m_nBitnumber =  vscp_readStringValue( child3->GetAttribute( _( "bit" ), _("0") ) );
 #else 
-                            pAbstraction->m_nBitnumber =  readStringValue( child3->GetPropVal( _( "bit" ), _("0") ) );
+                            pAbstraction->m_nBitnumber =  vscp_readStringValue( child3->GetPropVal( _( "bit" ), _("0") ) );
 #endif                            
 #if wxCHECK_VERSION(3,0,0)                            
-                            pAbstraction->m_nWidth =  readStringValue( child3->GetAttribute( _( "width" ), _("0") ) );
+                            pAbstraction->m_nWidth =  vscp_readStringValue( child3->GetAttribute( _( "width" ), _("0") ) );
 #else 
-                            pAbstraction->m_nWidth =  readStringValue( child3->GetPropVal( _( "width" ), _("0") ) );
+                            pAbstraction->m_nWidth =  vscp_readStringValue( child3->GetPropVal( _( "width" ), _("0") ) );
 #endif                            
 #if wxCHECK_VERSION(3,0,0)                            
-                            pAbstraction->m_nMax =  readStringValue( child3->GetAttribute( _( "max" ), _("0") ) );
+                            pAbstraction->m_nMax =  vscp_readStringValue( child3->GetAttribute( _( "max" ), _("0") ) );
 #else 
-                            pAbstraction->m_nMax =  readStringValue( child3->GetPropVal( _( "max" ), _("0") ) );
+                            pAbstraction->m_nMax =  vscp_readStringValue( child3->GetPropVal( _( "max" ), _("0") ) );
 #endif                            
 #if wxCHECK_VERSION(3,0,0)                            
-                            pAbstraction->m_nMin =  readStringValue( child3->GetAttribute( _( "min" ), _("0") ) );
+                            pAbstraction->m_nMin =  vscp_readStringValue( child3->GetAttribute( _( "min" ), _("0") ) );
 #else 
-                            pAbstraction->m_nMin =  readStringValue( child3->GetPropVal( _( "min" ), _("0") ) );
+                            pAbstraction->m_nMin =  vscp_readStringValue( child3->GetPropVal( _( "min" ), _("0") ) );
 #endif                            
 
 #if wxCHECK_VERSION(3,0,0)							
@@ -1726,19 +1726,19 @@ bool CMDF::parseMDF( wxString& path )
                                             pRegister->m_list_bit.Append( pBit );
 
 #if wxCHECK_VERSION(3,0,0)                                            
-                                            pBit->m_nPos = readStringValue( child5->GetAttribute( _( "pos" ), _("0") ) );
+                                            pBit->m_nPos = vscp_readStringValue( child5->GetAttribute( _( "pos" ), _("0") ) );
 #else 
-                                            pBit->m_nPos = readStringValue( child5->GetPropVal( _( "pos" ), _("0") ) );
+                                            pBit->m_nPos = vscp_readStringValue( child5->GetPropVal( _( "pos" ), _("0") ) );
 #endif 
 #if wxCHECK_VERSION(3,0,0)                                            
-                                            pBit->m_nWidth = readStringValue( child5->GetAttribute( _( "width" ), _("0") ) );
+                                            pBit->m_nWidth = vscp_readStringValue( child5->GetAttribute( _( "width" ), _("0") ) );
 #else 
-                                            pBit->m_nWidth = readStringValue( child5->GetPropVal( _( "width" ), _("0") ) );
+                                            pBit->m_nWidth = vscp_readStringValue( child5->GetPropVal( _( "width" ), _("0") ) );
 #endif
 #if wxCHECK_VERSION(3,0,0)                                            
-                                            pBit->m_nPos = readStringValue( child5->GetAttribute( _( "default" ), _("0") ) );
+                                            pBit->m_nPos = vscp_readStringValue( child5->GetAttribute( _( "default" ), _("0") ) );
 #else 
-                                            pBit->m_nPos = readStringValue( child5->GetPropVal( _( "default" ), _("0") ) );
+                                            pBit->m_nPos = vscp_readStringValue( child5->GetPropVal( _( "default" ), _("0") ) );
 #endif                                            
 
                                             wxXmlNode *child6 = child5->GetChildren();

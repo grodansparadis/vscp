@@ -75,7 +75,7 @@ CClientItem::CClientItem()
     m_guid.clear();
 
 	// Nill Level II mask (accept all)
-	clearVSCPFilter( &m_filterVSCP );
+	vscp_clearVSCPFilter( &m_filterVSCP );
 	
 	m_statistics.cntReceiveFrames = 0;      // # of receive frames
 	m_statistics.cntTransmitFrames = 0;     // # of transmitted frames
@@ -103,7 +103,7 @@ CClientItem::~CClientItem()
 	for ( iter = m_clientInputQueue.begin(); 
             iter != m_clientInputQueue.end(); ++iter ) {
 		vscpEvent *pEvent = *iter;
-		deleteVSCPevent( pEvent );
+		vscp_deleteVSCPevent( pEvent );
 	}
 
 	m_clientInputQueue.Clear();

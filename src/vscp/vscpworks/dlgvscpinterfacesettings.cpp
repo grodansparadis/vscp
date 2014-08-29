@@ -173,7 +173,7 @@ void dlgVscpInterfaceSettings::Init()
 	////@end dlgVscpInterfaceSettings member initialisation
 
 	// Init filter
-	clearVSCPFilter( &m_vscpfilter );
+	vscp_clearVSCPFilter( &m_vscpfilter );
 
 }
 

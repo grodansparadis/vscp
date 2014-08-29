@@ -259,7 +259,7 @@ actionThreadVSCPSrv::actionThreadVSCPSrv( CControlObject *pCtrlObject,
     m_port = port;
     m_strUsername = strUsername;
     m_strPassword = strPassword;
-    getVscpEventExFromString( &m_eventThe, strEvent );
+    vscp_getVscpEventExFromString( &m_eventThe, strEvent );
 }
 
 actionThreadVSCPSrv::~actionThreadVSCPSrv()
@@ -1067,7 +1067,7 @@ wxString actionTime::getActionTimeAsString( void )
 // Constructor
 dmElement::dmElement()
 {
-    clearVSCPFilter( &m_vscpfilter );
+    vscp_clearVSCPFilter( &m_vscpfilter );
     m_control = 0;
     m_action = 0;
     m_triggCounter = 0;
@@ -1129,7 +1129,7 @@ wxString dmElement::getAsRealText( void )
 
     // GUID mask
     wxString strGUID;
-    writeGuidArrayToString( m_vscpfilter.mask_GUID, strGUID );
+    vscp_writeGuidArrayToString( m_vscpfilter.mask_GUID, strGUID );
     strRow += strGUID;
     strRow += _(",");
 
@@ -1144,7 +1144,7 @@ wxString dmElement::getAsRealText( void )
     strRow += wxString::Format(_("0x%X,"), m_vscpfilter.filter_type );
 
     // GUID filter
-    writeGuidArrayToString( m_vscpfilter.filter_GUID, strGUID );
+    vscp_writeGuidArrayToString( m_vscpfilter.filter_GUID, strGUID );
     strRow += strGUID;
     strRow += _(",");
 
@@ -1289,7 +1289,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%event.data"), &str ) ) {
                 if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
                     wxString wxstr;
-                    writeVscpDataToString( pEvent, wxstr, false );
+                    vscp_writeVscpDataToString( pEvent, wxstr, false );
                     strResult +=  wxstr;
                 }
                 else {
@@ -1299,7 +1299,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             // Check for guid escape
             else if ( str.StartsWith( wxT("%event.guid"), &str ) ) {
                 wxString strGUID;
-                writeGuidToString ( pEvent, strGUID );
+                vscp_writeGuidToString ( pEvent, strGUID );
                 strResult +=  strGUID;
             }
             // Check for obid escape
@@ -1313,7 +1313,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             // Check for event escape
             else if ( str.StartsWith( wxT("%event"), &str ) ) {
                 wxString strEvent;
-                writeVscpEventToString( pEvent, strEvent );
+                vscp_writeVscpEventToString( pEvent, strEvent );
                 strResult += strEvent;	
             }
             // Check for isodate escape
@@ -1437,7 +1437,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for measurement.index escape
             else if ( str.StartsWith( wxT("%measurement.index"), &str ) ) {
-                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                uint8_t data_coding_byte = vscp_getMeasurementDataCoding( pEvent ); 
                 if ( -1 != data_coding_byte ) {
                     strResult += wxString::Format( wxT("%d"), 
                                     VSCP_DATACODING_INDEX( data_coding_byte ) );
@@ -1445,7 +1445,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for measurement.unit escape
             else if ( str.StartsWith( wxT("%measurement.unit"), &str ) ) {
-                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                uint8_t data_coding_byte = vscp_getMeasurementDataCoding( pEvent ); 
                 if ( -1 != data_coding_byte ) {
                     strResult += wxString::Format( wxT("%d"), 
                                     VSCP_DATACODING_UNIT( data_coding_byte ) );
@@ -1453,7 +1453,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             }
             // Check for measurement.coding escape
             else if ( str.StartsWith( wxT("%measurement.coding"), &str ) ) {
-                uint8_t data_coding_byte = getMeasurementDataCoding( pEvent ); 
+                uint8_t data_coding_byte = vscp_getMeasurementDataCoding( pEvent ); 
                 if ( -1 != data_coding_byte ) {
                     strResult += wxString::Format( wxT("%d"), 
                                     VSCP_DATACODING_TYPE( data_coding_byte ) );
@@ -1462,19 +1462,19 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             // Check for measurement.float escape
             else if ( str.StartsWith( wxT("%measurement.float"), &str ) ) {
                 wxString str;
-                getVSCPMeasurementAsString( pEvent, str );
+                vscp_getVSCPMeasurementAsString( pEvent, str );
                 strResult += str;
             }
             // Check for measurement.string escape
             else if ( str.StartsWith( wxT("%measurement.string"), &str ) ) {
                 wxString str;
-                getVSCPMeasurementAsString( pEvent, str );
+                vscp_getVSCPMeasurementAsString( pEvent, str );
                 strResult += str;
             }
             // Check for measurement.convert.data escape
             else if ( str.StartsWith( wxT("%measurement.convert.data"), &str ) ) {
                 wxString str;
-                if ( getVSCPMeasurementAsString(pEvent, str ) ) {
+                if ( vscp_getVSCPMeasurementAsString(pEvent, str ) ) {
                     for ( int i=0; i<str.Length(); i++ ) {
                         if (0!=i) strResult += ','; // Not at first location
                         strResult += str.GetChar(i);
@@ -1484,7 +1484,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             
             // Check for eventdata.realtext escape
             else if ( str.StartsWith( wxT("%eventdata.realtext"), &str ) ) {
-                strResult += getRealTextData( pEvent );
+                strResult += vscp_getRealTextData( pEvent );
             }
 
             // Remove the escape.
@@ -1663,7 +1663,7 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
             vscpEvent *pEvent = new vscpEvent;
             if ( NULL != pEvent ) {
 
-                getVscpEventFromString( pEvent, m_actionparam );
+                vscp_getVscpEventFromString( pEvent, m_actionparam );
 
                 m_pDM->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
                 m_pDM->m_pCtrlObject->m_clientOutputQueue.Append ( pEvent );
@@ -1749,7 +1749,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
 
         wxString strEvent = tkz.GetNextToken();
 
-        if ( !getVscpEventFromString( pEvent, strEvent ) ) {
+        if ( !vscp_getVscpEventFromString( pEvent, strEvent ) ) {
             // Could not parse evenet data
             wxString wxstrErr = wxT("[Action] Conditional event: Unable to parse event ");
             wxstrErr += wxstr;
@@ -1848,19 +1848,19 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
                 while ( subchild ) {
 
                     if ( subchild->GetName() == wxT ( "head" ) ) {
-                        pEvent->head = readStringValue( subchild->GetNodeContent() );
+                        pEvent->head = vscp_readStringValue( subchild->GetNodeContent() );
                     }
                     else if ( subchild->GetName() == wxT ( "class" ) ) {
-                        pEvent->vscp_class = readStringValue( subchild->GetNodeContent() );
+                        pEvent->vscp_class = vscp_readStringValue( subchild->GetNodeContent() );
                     }
                     else if ( subchild->GetName() == wxT ( "type" ) ) {
-                        pEvent->vscp_type = readStringValue( subchild->GetNodeContent() );
+                        pEvent->vscp_type = vscp_readStringValue( subchild->GetNodeContent() );
                     }
                     else if ( subchild->GetName() == wxT ( "guid" ) ) {
-                        getGuidFromString( pEvent, subchild->GetNodeContent() );
+                        vscp_getGuidFromString( pEvent, subchild->GetNodeContent() );
                     }
                     if ( subchild->GetName() == wxT ( "data" ) ) {
-                        getVscpDataFromString( pEvent, subchild->GetNodeContent() );
+                        vscp_getVscpDataFromString( pEvent, subchild->GetNodeContent() );
                     }
 
                 }
@@ -1888,7 +1888,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
                 }
 
                 // Remove the event
-                deleteVSCPevent( pEvent );
+                vscp_deleteVSCPevent( pEvent );
 
             }
 
@@ -1930,7 +1930,7 @@ bool dmElement::doActionWriteFile( vscpEvent *pDMEvent )
 
     // Handle append/overwrite flag
     if ( tkz.HasMoreTokens() ) {
-        if ( !readStringValue( tkz.GetNextToken() ) ) {
+        if ( !vscp_readStringValue( tkz.GetNextToken() ) ) {
             bAppend = false;
         }
     }
@@ -2076,7 +2076,7 @@ bool dmElement::doActionAddVariable( vscpEvent *pDMEvent )
     wxString strval = wxstr.AfterFirst( wxChar(';') );
 
     if ( wxNOT_FOUND == strval.Find( wxChar('.') ) ) {
-        val = readStringValue( strval );
+        val = vscp_readStringValue( strval );
     }
     else {
         strval.ToDouble( &floatval );
@@ -2158,7 +2158,7 @@ bool dmElement::doActionSubtractVariable( vscpEvent *pDMEvent )
     wxString strval = wxstr.AfterFirst( wxChar(';') );
 
     if ( wxNOT_FOUND == strval.Find( wxChar('.') ) ) {
-        val = readStringValue( strval );
+        val = vscp_readStringValue( strval );
     }
     else {
         strval.ToDouble( &floatval );
@@ -2240,7 +2240,7 @@ bool dmElement::doActionMultiplyVariable( vscpEvent *pDMEvent )
     wxString strval = wxstr.AfterFirst( wxChar(';') );
 
     if ( wxNOT_FOUND == strval.Find( wxChar('.') ) ) {
-        val = readStringValue( strval );
+        val = vscp_readStringValue( strval );
     }
     else {
         strval.ToDouble( &floatval );
@@ -2322,7 +2322,7 @@ bool dmElement::doActionDivideVariable( vscpEvent *pDMEvent )
     wxString strval = wxstr.AfterFirst( wxChar(';') );
 
     if ( wxNOT_FOUND == strval.Find( wxChar('.') ) ) {
-        val = readStringValue( strval );
+        val = vscp_readStringValue( strval );
     }
     else {
         strval.ToDouble( &floatval );
@@ -2403,7 +2403,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
     }
 
     // Get timer id
-    uint32_t id = readStringValue( tkz.GetNextToken() );
+    uint32_t id = vscp_readStringValue( tkz.GetNextToken() );
 
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter	
@@ -2427,7 +2427,7 @@ bool dmElement::doActionStartTimer( vscpEvent *pDMEvent )
     }
 
     // Get delay
-    uint32_t delay = readStringValue( tkz.GetNextToken() );
+    uint32_t delay = vscp_readStringValue( tkz.GetNextToken() );
 
     if ( !tkz.HasMoreTokens() ) {
         // Strange action parameter	
@@ -2471,7 +2471,7 @@ bool dmElement::doActionPauseTimer( vscpEvent *pDMEvent )
     }
 
     // Get timer id
-    uint32_t id = readStringValue( tkz.GetNextToken() );
+    uint32_t id = vscp_readStringValue( tkz.GetNextToken() );
 
     m_pDM->stopTimer( id );
 
@@ -2538,7 +2538,7 @@ CDM::CDM( CControlObject *ctrlObj )
     m_pCtrlObject = ctrlObj;
 
     // Default is to feed all events through the matrix
-    clearVSCPFilter( &m_DM_Table_filter );
+    vscp_clearVSCPFilter( &m_DM_Table_filter );
 
     srand( wxDateTime::Now().GetYear()+ wxDateTime::Now().GetSecond() );
     m_rndMinute = (uint8_t)( (double)rand() / ((double)(RAND_MAX) + (double)(1)) ) * 60;
@@ -2701,7 +2701,7 @@ bool CDM::load ( void )
             pDMitem->m_index = 0;
             pDMitem->m_zone = 0;
             pDMitem->m_subzone = 0;
-            clearVSCPFilter( &pDMitem->m_vscpfilter );
+            vscp_clearVSCPFilter( &pDMitem->m_vscpfilter );
             bool bEnabled = false;
 
             // Check if row is enabled
@@ -2739,26 +2739,26 @@ bool CDM::load ( void )
 #else
                     str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );            
 #endif                    
-                    pDMitem->m_vscpfilter.mask_priority = readStringValue( str );
+                    pDMitem->m_vscpfilter.mask_priority = vscp_readStringValue( str );
 #if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
 #else
                     str = subchild->GetPropVal( wxT( "class" ), wxT("0") );            
 #endif                    
-                    pDMitem->m_vscpfilter.mask_class = readStringValue( str );
+                    pDMitem->m_vscpfilter.mask_class = vscp_readStringValue( str );
 #if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
 #else
                     str = subchild->GetPropVal( wxT( "type" ), wxT("0") );            
 #endif                    
-                    pDMitem->m_vscpfilter.mask_type = readStringValue( str );
+                    pDMitem->m_vscpfilter.mask_type = vscp_readStringValue( str );
 #if wxCHECK_VERSION(3,0,0)                    
                     wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
 #else
                     wxString strGUID = subchild->GetPropVal( wxT( "GUID" ),            
 #endif                    
                             wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                    getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
+                    vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "filter" ) ) {
                     wxString str;
@@ -2767,29 +2767,29 @@ bool CDM::load ( void )
 #else
                     str = subchild->GetPropVal( wxT( "priority" ), wxT("0") );            
 #endif                    
-                    pDMitem->m_vscpfilter.filter_priority = readStringValue( str );
+                    pDMitem->m_vscpfilter.filter_priority = vscp_readStringValue( str );
 #if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
 #else
                     str = subchild->GetPropVal( wxT( "class" ), wxT("0") );            
 #endif                    
-                    pDMitem->m_vscpfilter.filter_class = readStringValue( str );
+                    pDMitem->m_vscpfilter.filter_class = vscp_readStringValue( str );
 #if wxCHECK_VERSION(3,0,0)                    
                     str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
 #else
                     str = subchild->GetPropVal( wxT( "type" ), wxT("0") );            
 #endif                    
-                    pDMitem->m_vscpfilter.filter_type = readStringValue( str );
+                    pDMitem->m_vscpfilter.filter_type = vscp_readStringValue( str );
 #if wxCHECK_VERSION(3,0,0)                    
                     wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
 #else
                     wxString strGUID = subchild->GetPropVal( wxT( "GUID" ),            
 #endif                    
                             wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                    getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
+                    vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "control" ) ) {
-                    pDMitem->m_control = readStringValue( subchild->GetNodeContent() );
+                    pDMitem->m_control = vscp_readStringValue( subchild->GetNodeContent() );
                     // Main property overrides enable bit if set
                     if (bEnabled ) {
                         pDMitem->m_control |=  DM_CONTROL_ENABLE;
@@ -2799,7 +2799,7 @@ bool CDM::load ( void )
                     }
                 }
                 else if ( subchild->GetName() == wxT ( "action" ) ) {
-                    pDMitem->m_action = readStringValue( subchild->GetNodeContent() );
+                    pDMitem->m_action = vscp_readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "param" ) ){
                     pDMitem->m_actionparam = subchild->GetNodeContent();
@@ -2862,13 +2862,13 @@ bool CDM::load ( void )
                     if ( wxNOT_FOUND != str.Find(_("TRUE"))) {
                         pDMitem->m_bMeasurement = true;
                     }
-                    pDMitem->m_index = readStringValue( subchild->GetNodeContent() );
+                    pDMitem->m_index =vscp_readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "zone" ) ) {
-                    pDMitem->m_zone = readStringValue( subchild->GetNodeContent() );
+                    pDMitem->m_zone = vscp_readStringValue( subchild->GetNodeContent() );
                 }
                 else if ( subchild->GetName() == wxT ( "subzone" ) ) {
-                    pDMitem->m_subzone = readStringValue( subchild->GetNodeContent() );
+                    pDMitem->m_subzone = vscp_readStringValue( subchild->GetNodeContent() );
                 }
 
                 subchild = subchild->GetNext();
@@ -2956,7 +2956,7 @@ bool CDM::save ( void )
             pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
             
             wxString strGUID;
-            writeGuidArrayToString( pDMitem->m_vscpfilter. mask_GUID, strGUID );
+            vscp_writeGuidArrayToString( pDMitem->m_vscpfilter. mask_GUID, strGUID );
             pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
             pFileStream->Write( "\" > ", strlen( "\" > " ) );
             pFileStream->Write( "</mask>\n", strlen( "</mask>\n" ) );
@@ -2970,7 +2970,7 @@ bool CDM::save ( void )
             pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
             buf.Printf( _( " GUID=\" " ) );
             pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
-            writeGuidArrayToString( pDMitem->m_vscpfilter.filter_GUID, strGUID );
+            vscp_writeGuidArrayToString( pDMitem->m_vscpfilter.filter_GUID, strGUID );
             pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
             pFileStream->Write( "\" > ", strlen( "\" > " ) );
             pFileStream->Write( "</filter>\n", strlen( "</filter>\n" ) );
@@ -3081,7 +3081,7 @@ bool CDM::feed( vscpEvent *pEvent )
 		// Skip if disabled
 		if ( !pDMitem->isEnabled() ) continue;
 
-        if ( doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) && 
+        if ( vscp_doLevel2Filter( pEvent, &pDMitem->m_vscpfilter ) && 
             pDMitem->m_timeAllow.ShouldWeDoAction() ) { 
             
                 if ( pDMitem->isCheckIndexSet() ) {
@@ -3132,7 +3132,7 @@ bool CDM::feedPeriodicEvent( void )
         EventSecond.vscp_class = VSCP_CLASS2_VSCPD;
         EventSecond.vscp_type = VSCP2_TYPE_VSCPD_SECOND;		        // Internal Second Event
         EventSecond.head = VSCP_PRIORITY_NORMAL;				        // Set priority
-        EventSecond.timestamp = makeTimeStamp();                        // Set timestamp
+        EventSecond.timestamp = vscp_makeTimeStamp();                   // Set timestamp
         EventSecond.sizeData = 0;								        // No data
         EventSecond.pdata = NULL;
         //memcpy( EventSecond.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
@@ -3150,7 +3150,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomMinute.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_MINUTE;	    // Internal Random-Minute Event
             EventRandomMinute.head = VSCP_PRIORITY_NORMAL;					    // Set priority
             EventRandomMinute.sizeData = 0;									    // No data
-            EventRandomMinute.timestamp = makeTimeStamp();                      // Set timestamp
+            EventRandomMinute.timestamp = vscp_makeTimeStamp();                 // Set timestamp
             EventRandomMinute.pdata = NULL;
             //memcpy( EventRandomMinute.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventRandomMinute.GUID );
@@ -3168,7 +3168,7 @@ bool CDM::feedPeriodicEvent( void )
         EventMinute.vscp_class = VSCP_CLASS2_VSCPD;
         EventMinute.vscp_type = VSCP2_TYPE_VSCPD_MINUTE;			        // Internal Minute Event
         EventMinute.head = VSCP_PRIORITY_NORMAL;					        // Set priority
-        EventMinute.timestamp = makeTimeStamp();                            // Set timestamp
+        EventMinute.timestamp = vscp_makeTimeStamp();                       // Set timestamp
         EventMinute.sizeData = 0;									        // No data
         EventMinute.pdata = NULL;
         //memcpy( EventMinute.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
@@ -3183,7 +3183,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomHour.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomHour.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_HOUR;       // Internal Random-Hour Event
             EventRandomHour.head = VSCP_PRIORITY_NORMAL;				    // Set priority
-            EventRandomHour.timestamp = makeTimeStamp();                    // Set timestamp
+            EventRandomHour.timestamp = vscp_makeTimeStamp();               // Set timestamp
             EventRandomHour.sizeData = 0;								    // No data
             EventRandomHour.pdata = NULL;
             //memcpy( EventRandomHour.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
@@ -3201,8 +3201,8 @@ bool CDM::feedPeriodicEvent( void )
         EventHour.vscp_class = VSCP_CLASS2_VSCPD;
         EventHour.vscp_type = VSCP2_TYPE_VSCPD_HOUR;				        // Internal Hour Event
         EventHour.head = VSCP_PRIORITY_NORMAL;						        // Set priority
-        EventHour.timestamp = makeTimeStamp();                             // Set timestamp
-        EventHour.sizeData = 0;									        // No data
+        EventHour.timestamp = vscp_makeTimeStamp();                         // Set timestamp
+        EventHour.sizeData = 0;												// No data
         EventHour.pdata = NULL;
         //memcpy( EventtHour.GUID, m_pCtrlObject->m_GUID, 16 );		        // Server GUID
         m_pCtrlObject->m_guid.writeGUID( EventHour.GUID );
@@ -3217,7 +3217,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomDay.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomDay.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_DAY;		    // Internal Random-Day Event
             EventRandomDay.head = VSCP_PRIORITY_NORMAL;					    // Set priority
-            EventRandomDay.timestamp = makeTimeStamp();                     // Set timestamp
+            EventRandomDay.timestamp = vscp_makeTimeStamp();                // Set timestamp
             EventRandomDay.sizeData = 0;								    // No data
             EventRandomDay.pdata = NULL;
             //memcpy( EventRandomDay.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
@@ -3235,7 +3235,7 @@ bool CDM::feedPeriodicEvent( void )
         EventDay.vscp_class = VSCP_CLASS2_VSCPD;
         EventDay.vscp_type = VSCP2_TYPE_VSCPD_MIDNIGHT;			            // Internal Midnight Event
         EventDay.head = VSCP_PRIORITY_NORMAL;					            // Set priority
-        EventDay.timestamp = makeTimeStamp();                               // Set timestamp
+        EventDay.timestamp = vscp_makeTimeStamp();                          // Set timestamp
         EventDay.sizeData = 0;									            // No data
         EventDay.pdata = NULL;
         //memcpy( EventDay.GUID, m_pCtrlObject->m_GUID, 16 );		            // Server GUID
@@ -3251,7 +3251,7 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomWeek.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomWeek.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_WEEK;       // Internal Random-Week Event
             EventRandomWeek.head = VSCP_PRIORITY_NORMAL;				    // Set priority
-            EventRandomWeek.timestamp = makeTimeStamp();                    // Set timestamp
+            EventRandomWeek.timestamp = vscp_makeTimeStamp();               // Set timestamp
             EventRandomWeek.sizeData = 0;								    // No data
             EventRandomWeek.pdata = NULL;
             //memcpy( EventRandomWeek.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
@@ -3270,7 +3270,7 @@ bool CDM::feedPeriodicEvent( void )
             EventWeek.vscp_class = VSCP_CLASS2_VSCPD;
             EventWeek.vscp_type = VSCP2_TYPE_VSCPD_WEEK; 	                // Internal Week Event
             EventWeek.head = VSCP_PRIORITY_NORMAL;						    // Set priority
-            EventWeek.timestamp = makeTimeStamp();                          // Set timestamp
+            EventWeek.timestamp = vscp_makeTimeStamp();                     // Set timestamp
             EventWeek.sizeData = 0;										    // No data
             EventWeek.pdata = NULL;
             //memcpy( EventWeek.GUID, m_pCtrlObject->m_GUID, 16 );		    // Server GUID
@@ -3285,7 +3285,7 @@ bool CDM::feedPeriodicEvent( void )
                 EventRandomMonth.vscp_class = VSCP_CLASS2_VSCPD;
                 EventRandomMonth.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_MONTH;     // Internal Random-Month Event
                 EventRandomMonth.head = VSCP_PRIORITY_NORMAL;					// Set priority
-                EventRandomMonth.timestamp = makeTimeStamp();                   // Set timestamp
+                EventRandomMonth.timestamp = vscp_makeTimeStamp();              // Set timestamp
                 EventRandomMonth.sizeData = 0;									// No data
                 EventRandomMonth.pdata = NULL;
                 //memcpy( EventRandomMonth.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
@@ -3303,7 +3303,7 @@ bool CDM::feedPeriodicEvent( void )
         EventMonth.vscp_class = VSCP_CLASS2_VSCPD;
         EventMonth.vscp_type = VSCP2_TYPE_VSCPD_MONTH; 	                        // Internal Month Event
         EventMonth.head = VSCP_PRIORITY_NORMAL;							        // Set priority
-        EventMonth.timestamp = makeTimeStamp();                                 // Set timestamp
+        EventMonth.timestamp = vscp_makeTimeStamp();                            // Set timestamp
         EventMonth.sizeData = 0;										        // No data
         EventMonth.pdata = NULL;
         //memcpy( EventMonth.GUID, m_pCtrlObject->m_GUID, 16 );			        // Server GUID
@@ -3318,10 +3318,10 @@ bool CDM::feedPeriodicEvent( void )
             EventRandomYear.vscp_class = VSCP_CLASS2_VSCPD;
             EventRandomYear.vscp_type = VSCP2_TYPE_VSCPD_RANDOM_YEAR;	        // Internal Random-Minute Event 
             EventRandomYear.head = VSCP_PRIORITY_NORMAL;				        // Set priority
-            EventRandomYear.timestamp = makeTimeStamp();                        // Set timestamp
+            EventRandomYear.timestamp = vscp_makeTimeStamp();                   // Set timestamp
             EventRandomYear.sizeData = 0;								        // No data
             EventRandomYear.pdata = NULL;
-            //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
+            //memcpy( EventRandomYear.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
             m_pCtrlObject->m_guid.writeGUID( EventRandomYear.GUID );
             wxLogTrace( _("wxTRACE_vscpd_dm"), _("Internal random year event\n") );
             feed( &EventRandomYear );
@@ -3336,7 +3336,7 @@ bool CDM::feedPeriodicEvent( void )
         EventYear.vscp_class = VSCP_CLASS2_VSCPD;
         EventYear.vscp_type = VSCP2_TYPE_VSCPD_YEAR; 			        // Internal Year Event
         EventYear.head = VSCP_PRIORITY_NORMAL;					        // Set priority
-        EventYear.timestamp = makeTimeStamp();                          // Set timestamp
+        EventYear.timestamp = vscp_makeTimeStamp();                     // Set timestamp
         EventYear.sizeData = 0;									        // No data
         EventYear.pdata = NULL;
         //memcpy( EventYear.GUID, m_pCtrlObject->m_GUID, 16 );	        // Server GUID
@@ -3354,7 +3354,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
             EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER; 	        // Internal Quarter Event
             EventQuarter.head = VSCP_PRIORITY_NORMAL;					// Set priority
-            EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
+            EventQuarter.timestamp = vscp_makeTimeStamp();              // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
@@ -3371,7 +3371,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
             EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER; 	        // Internal Quarter Event
             EventQuarter.head = VSCP_PRIORITY_NORMAL;	                // Set priority
-            EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
+            EventQuarter.timestamp = vscp_makeTimeStamp();              // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );	    // Server GUID
@@ -3388,7 +3388,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
             EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER; 	        // Internal Quarter Event
             EventQuarter.head = VSCP_PRIORITY_NORMAL;					// Set priority
-            EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
+            EventQuarter.timestamp = vscp_makeTimeStamp();              // Set timestamp
             EventQuarter.sizeData = 0;					                // No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID
@@ -3405,7 +3405,7 @@ bool CDM::feedPeriodicEvent( void )
             EventQuarter.vscp_class = VSCP_CLASS2_VSCPD;
             EventQuarter.vscp_type = VSCP2_TYPE_VSCPD_QUARTER; 	        // Internal Quarter Event
             EventQuarter.head = VSCP_PRIORITY_NORMAL;			        // Set priority
-            EventQuarter.timestamp = makeTimeStamp();                   // Set timestamp
+            EventQuarter.timestamp = vscp_makeTimeStamp();              // Set timestamp
             EventQuarter.sizeData = 0;									// No data
             EventQuarter.pdata = NULL;
             //memcpy( EventQuarter.GUID, m_pCtrlObject->m_GUID, 16 );     // Server GUID

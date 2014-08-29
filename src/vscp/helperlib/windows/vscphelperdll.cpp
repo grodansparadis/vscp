@@ -27,7 +27,7 @@
 //#include <windows.h>
 //#include <stdlib.h>
 
-#include "dlldrvobj.h"
+//#include "dlldrvobj.h"
 
 
 #ifdef WIN32
@@ -46,8 +46,6 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 #include <wx/utils.h>
-
-
 
 #include "../../common/vscphelper.h"
 #include "../../common/vscptcpif.h"

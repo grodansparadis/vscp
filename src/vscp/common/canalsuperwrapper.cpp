@@ -25,7 +25,9 @@
 
 #include "wx/wx.h"
 #include "wx/defs.h"
+#if wxUSE_GUI != 0
 #include <wx/progdlg.h>
+#endif
 #include <wx/stdpaths.h>
 
 #include "vscp.h"

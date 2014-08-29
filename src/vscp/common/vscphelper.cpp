@@ -72,7 +72,7 @@
 // vhlp_lowercase
 //
 
-int vhlp_lowercase(const char *s) 
+int vscp_lowercase(const char *s) 
 {
 	return tolower(* (const unsigned char *) s);
 }
@@ -82,12 +82,12 @@ int vhlp_lowercase(const char *s)
 // vhlp_strcasecmp
 //
 
-int vhlp_strcasecmp(const char *s1, const char *s2) 
+int vscp_strcasecmp(const char *s1, const char *s2) 
 {
 	int diff;
 
 	do {
-		diff = vhlp_lowercase(s1++) - vhlp_lowercase(s2++);
+		diff = vscp_lowercase(s1++) - vscp_lowercase(s2++);
 	} while (diff == 0 && s1[-1] != '\0');
 
 	return diff;
@@ -97,13 +97,13 @@ int vhlp_strcasecmp(const char *s1, const char *s2)
 // vhlp_strncasecmp
 //
 
-int vhlp_strncasecmp(const char *s1, const char *s2, size_t len) 
+int vscp_strncasecmp(const char *s1, const char *s2, size_t len) 
 {
 	int diff = 0;
 
 	if ( len > 0 ) {
 		do {
-			diff = vhlp_lowercase(s1++) - vhlp_lowercase(s2++);
+			diff = vscp_lowercase(s1++) - vscp_lowercase(s2++);
 		} while (diff == 0 && s1[-1] != '\0' && --len > 0);
 	}
 
@@ -115,7 +115,7 @@ int vhlp_strncasecmp(const char *s1, const char *s2, size_t len)
 // vhlp_bin2str
 //
 
-void vhlp_bin2str(char *to, const unsigned char *p, size_t len  ) 
+void vscp_bin2str(char *to, const unsigned char *p, size_t len  ) 
 {
 	static const char *hex = "0123456789abcdef";
 
@@ -133,7 +133,7 @@ void vhlp_bin2str(char *to, const unsigned char *p, size_t len  )
 // ***************************************************************************
 
 
-uint8_t getMeasurementDataCoding(const vscpEvent *pEvent)
+uint8_t vscp_getMeasurementDataCoding(const vscpEvent *pEvent)
 {
     uint8_t datacoding_byte = -1;
     
@@ -158,7 +158,7 @@ uint8_t getMeasurementDataCoding(const vscpEvent *pEvent)
 
 // TODO should be uint64_t
 
-uint32_t getDataCodingBitArray(const unsigned char *pNorm,
+uint32_t vscp_getDataCodingBitArray(const unsigned char *pNorm,
                                 const unsigned char length)
 {
 	uint32_t bitArray = 0;
@@ -172,7 +172,7 @@ uint32_t getDataCodingBitArray(const unsigned char *pNorm,
 // getDataCodingNormalizedInteger
 //
 
-double getDataCodingNormalizedInteger(const unsigned char *pNorm,
+double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm,
 		const unsigned char length)
 {
 	uint8_t valarray[ 8 ];
@@ -205,47 +205,27 @@ double getDataCodingNormalizedInteger(const unsigned char *pNorm,
 
 	case 2: // 16-bit
 		memcpy((char *) &valarray, (pNorm + 2), (length - 2));
-#ifdef VSCP_QT
-		value = qFromLittleEndian( *((int16_t *)valarray) );
-#else		
-		value = wxINT16_SWAP_ON_LE(* ((int16_t *) valarray));
-#endif		
+		value = wxINT16_SWAP_ON_LE(* ((int16_t *) valarray));	
 		break;
 
 	case 3: // 24-bit
-		memcpy(((char *) &valarray + 1), (pNorm + 2), (length - 2));
-#ifdef VSCP_QT
-		value = qFromLittleEndian( *((int32_t *)valarray) );
-#else			
-		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));
-#endif		
+		memcpy(((char *) &valarray + 1), (pNorm + 2), (length - 2));		
+		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));	
 		break;
 
 	case 4: // 32-bit
-		memcpy((char *) &valarray, (pNorm + 2), (length - 2));
-#ifdef VSCP_QT
-		value = qFromLittleEndian( *((int32_t *)valarray) );
-#else		
-		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));
-#endif		
+		memcpy((char *) &valarray, (pNorm + 2), (length - 2));	
+		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));	
 		break;
 
 	case 5: // 40-bit
-		memcpy(((char *) &valarray + 3), (pNorm + 2), (length - 2));
-#ifdef VSCP_QT
-		value = qFromLittleEndian( *((int64_t *)valarray) );
-#else		
-		value = *((int64_t *) valarray);
-#endif		
+		memcpy(((char *) &valarray + 3), (pNorm + 2), (length - 2));	
+		value = *((int64_t *) valarray);		
 		break;
 
 	case 6: // 48-bit
-		memcpy(((char *) &valarray + 2), (pNorm + 2), (length - 2));
-#ifdef VSCP_QT
-		value = qFromLittleEndian( *((int64_t *)valarray) );
-#else		
-		value = *((int64_t *) valarray);
-#endif		
+		memcpy(((char *) &valarray + 2), (pNorm + 2), (length - 2));	
+		value = *((int64_t *) valarray);	
 		break;
 	}
 
@@ -281,35 +261,24 @@ double getDataCodingNormalizedInteger(const unsigned char *pNorm,
 // getDataCodingString
 //
 
-#ifdef VSCP_QT
-QString& getDataCodingString(const unsigned char *pString,
-                                const unsigned char length)
-#else
-wxString& getDataCodingString(const unsigned char *pString,
-                                const unsigned char length)
-#endif								
+
+wxString& vscp_getDataCodingString(const unsigned char *pString,
+                                const unsigned char length)							
 {
-#ifdef VSCP_QT
-    static QString str;
-#else
 	static wxString str;
-#endif	
+	
 	char buf[ 8 ];
 
-#ifdef VSCP_QT
-    str.clear();
-#else
+
 	str.Empty();
-#endif
+
 
 	if (NULL != pString) {
 		memset(buf, 0, sizeof( buf));
 		memcpy(buf, pString, length - 1);
-#ifdef VSCP_QT
-		str = buf;
-#else		
+	
 		str = wxString::FromUTF8(buf);
-#endif		
+		
 	}
 
 	return str;
@@ -319,7 +288,7 @@ wxString& getDataCodingString(const unsigned char *pString,
 // getMeasurementAsFloat
 //
 
-float getMeasurementAsFloat(const unsigned char *pNorm, 
+float vscp_getMeasurementAsFloat(const unsigned char *pNorm, 
                                     const unsigned char length)								
 {
     float *pfloat;
@@ -343,11 +312,9 @@ float getMeasurementAsFloat(const unsigned char *pNorm,
 //
 //
 
-#ifdef VSCP_QT
-bool getVSCPMeasurementAsString(const vscpEvent *pEvent, QString& strValue)
-#else
-bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
-#endif
+
+bool vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
+
 {
 	int i, j;
 	int offset = 0;
@@ -355,11 +322,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
     // Check pointers
     if ( NULL == pEvent ) return false;
 
-#ifdef VSCP_QT
-	strValue.clear();
-#else
+
 	strValue.Empty();
-#endif	
+
 
 	// Check pointers
 	if (NULL == pEvent) return false;
@@ -384,25 +349,19 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			for (j = 7; j > 0; j--) {
 
 				if (pEvent->pdata[ i+offset ] & (2 ^ j)) {
-#ifdef VSCP_QT
-					strValue += "true";
-#else				
+			
 					strValue += wxT("true");
-#endif					
+				
 				} else {
-#ifdef VSCP_QT
-					strValue += "false";
-#else				
+		
 					strValue += wxT("false");
-#endif					
+				
 				}
 
 				if ((i != (pEvent->sizeData - 1 - offset)) && (j != 0)) {
-#ifdef VSCP_QT
-					strValue += ",";
-#else
+
 					strValue += wxT(",");
-#endif
+
 				}
 			}
 		}
@@ -410,17 +369,13 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 
 	case 1: // series of bytes
 		for (i = 1; i < (pEvent->sizeData-offset); i++) {
-#ifdef VSCP_QT
-            QTextStream( &strValue ) << pEvent->pdata[ i+offset ];
-#else		
+
 			strValue += wxString::Format(wxT("%d"), pEvent->pdata[ i+offset ]);
-#endif			
+		
 			if (i != (pEvent->sizeData - 1 - offset)) {
-#ifdef VSCP_QT
-				strValue += ",";
-#else
+
 				strValue += wxT(",");
-#endif
+
 			}
 		}
 		break;
@@ -432,21 +387,15 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 		for (i = 1; i < (pEvent->sizeData-offset); i++) {
 			strData[ i - 1 ] = pEvent->pdata[ i+offset ];
 		}
-#ifdef VSCP_QT
-        strValue = strData;
-#else
+
 		strValue = wxString::FromAscii(strData);
-#endif		
+	
 	}
 		break;
 
 	case 3: // integer
 	{
-#ifdef VSCP_QT
-		quint32 hi = 0, lo = 0;
-#else
-		wxUint32 hi = 0, lo = 0;
-#endif		
+		wxUint32 hi = 0, lo = 0;	
 		unsigned char construct[ 4 ];
 
 		switch ( pEvent->sizeData-offset ) {
@@ -462,12 +411,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			// 8-bit integer or 1 byte
 			memset(construct, 0, sizeof( construct));
 			construct[ 3 ] = pEvent->pdata[ 1+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif			
+			
 		}
 			break;
 
@@ -477,12 +423,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			memset(construct, 0, sizeof( construct));
 			construct[ 2 ] = pEvent->pdata[ 1+offset ];
 			construct[ 3 ] = pEvent->pdata[ 2+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -493,12 +436,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 1+offset ];
 			construct[ 2 ] = pEvent->pdata[ 2+offset ];
 			construct[ 3 ] = pEvent->pdata[ 3+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);			
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -510,12 +450,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 2+offset ];
 			construct[ 2 ] = pEvent->pdata[ 3+offset ];
 			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -527,21 +464,14 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 2+offset ];
 			construct[ 2 ] = pEvent->pdata[ 3+offset ];
 			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
 
 			memset(construct, 0, sizeof( construct));
 			construct[ 3 ] = pEvent->pdata[ 1+offset ];
-			hi = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			hi = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -553,22 +483,15 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 2+offset ];
 			construct[ 2 ] = pEvent->pdata[ 3+offset ];
 			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
 
 			memset(construct, 0, sizeof( construct));
 			construct[ 2 ] = pEvent->pdata[ 1+offset ];
 			construct[ 3 ] = pEvent->pdata[ 2+offset ];
-			hi = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			hi = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -580,46 +503,31 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 2+offset ];
 			construct[ 2 ] = pEvent->pdata[ 3+offset ];
 			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);			
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
 
 			memset(construct, 0, sizeof( construct));
 			construct[ 1 ] = pEvent->pdata[ 1+offset ];
 			construct[ 2 ] = pEvent->pdata[ 2+offset ];
 			construct[ 3 ] = pEvent->pdata[ 3+offset ];
-			hi = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			hi = *((long *) construct);			
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
 		}
 			break;
 
 		}
-
-#ifdef VSCP_QT
-        quint64  longVal = (hi << 32) + lo;
-        QTextStream( &strValue ) << longVal;
-#else		
+		
 		wxLongLong longVal(hi, lo);
 		strValue = longVal.ToString();
-#endif		
+		
 
 	}
 		break;
 
 	case 4: // normalized integer
 	{
-#ifdef VSCP_QT
-		quint32 hi = 0, lo = 0;
-#else	
-		wxUint32 hi = 0, lo = 0;
-#endif		
+	
+		wxUint32 hi = 0, lo = 0;		
 		unsigned char construct[ 4 ];
 
 		switch ( pEvent->sizeData-offset ) {
@@ -636,12 +544,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			// 8-bit integer or 1 byte
 			memset(construct, 0, sizeof( construct));
 			construct[ 3 ] = pEvent->pdata[ 1+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);			
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -651,12 +556,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			memset(construct, 0, sizeof( construct));
 			construct[ 2 ] = pEvent->pdata[ 1+offset ];
 			construct[ 3 ] = pEvent->pdata[ 2+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);			
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -667,12 +569,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 1+offset ];
 			construct[ 2 ] = pEvent->pdata[ 2+offset ];
 			construct[ 3 ] = pEvent->pdata[ 3+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -684,12 +583,9 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 2+offset ];
 			construct[ 2 ] = pEvent->pdata[ 3+offset ];
 			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -701,21 +597,14 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 2+offset ];
 			construct[ 2 ] = pEvent->pdata[ 3+offset ];
 			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);			
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
 
 			memset(construct, 0, sizeof( construct));
 			construct[ 3 ] = pEvent->pdata[ 1+offset ];
-			hi = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			hi = *((long *) construct);			
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
@@ -727,42 +616,27 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 			construct[ 1 ] = pEvent->pdata[ 2+offset ];
 			construct[ 2 ] = pEvent->pdata[ 3+offset ];
 			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			lo = *((long *) construct);			
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
 
 			memset(construct, 0, sizeof( construct));
 			construct[ 2 ] = pEvent->pdata[ 1+offset ];
 			construct[ 3 ] = pEvent->pdata[ 2+offset ];
-			hi = *((long *) construct);
-#ifdef VSCP_QT
-			lo = qFromLittleEndian( lo );
-#else			
+			hi = *((long *) construct);		
 			lo = wxUINT32_SWAP_ON_LE(lo);
-#endif
+
 		}
 			break;
 
 		}
 
-#ifdef VSCP_QT
-        quint64 val64 = (hi << 32) +  lo;
-        qreal dValue = val64;
-        uint8_t exponent = pEvent->pdata[ 1+offset ];
-
-        dValue = dValue * pow(10.0, exponent);
-        QTextStream( &strValue ) << dValue;
-#else
 		wxLongLong longVal(hi, lo);
 		wxDouble dValue = longVal.ToDouble();
 		char exponent = pEvent->pdata[ 1+offset ];
 
 		dValue = dValue * pow(10.0, exponent);
         strValue.Printf(_("%f"), dValue);
-#endif
+
 
 	}
 		break;
@@ -795,21 +669,13 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 		pEvent->pdata[ 1+offset ] = 0;
 		pEvent->pdata[ 2+offset ] &= 0x7f;
 
-#ifdef VSCP_QT
-        uint32_t value = *((uint32_t *) (pEvent->pdata + 1 + offset));
-        value = qFromLittleEndian(value);
-
-        qreal dValue = value;
-		dValue = sign * (dValue * pow(10.0, exponent));
-        QTextStream( &strValue ) << dValue;
-#else
         uint32_t value = *((uint32_t *) (pEvent->pdata + 1 + offset));
         value = wxUINT32_SWAP_ON_LE(value);
 
         wxDouble dValue = value;
         dValue = sign * (dValue * pow(10.0, exponent));
         strValue.Printf(_("%f"), dValue);
-#endif
+
 	}
 		break;
 
@@ -828,13 +694,10 @@ bool getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue)
 //
 //
 
-bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
+bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
 {
-#ifdef VSCP_QT
-    QString str;
-#else
+
     wxString str;
-#endif
    
     // Check pointers
     if ( NULL == pEvent ) return false;
@@ -844,41 +707,28 @@ bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
              (VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class) ||
              (VSCP_CLASS1_MEASUREZONE == pEvent->vscp_class) || 
              (VSCP_CLASS1_SETVALUEZONE == pEvent->vscp_class) ) {
-#ifdef VSCP_QT
-            if ( !getVSCPMeasurementAsString( pEvent, str ) ) return false;
-            QTextStream( &str ) << *pvalue;
-#else
-            if ( !getVSCPMeasurementAsString( pEvent, str ) ) return false;
+
+            if ( !vscp_getVSCPMeasurementAsString( pEvent, str ) ) return false;
             if ( !str.ToDouble( pvalue ) ) return false;
-#endif
+
     }
     else if ( VSCP_CLASS1_MEASUREMENT64 == pEvent->vscp_class ){
-#ifdef VSCP_QT
-        if ( !getVSCPMeasurementFloat64AsString( pEvent, str ) ) return false;
-        QTextStream( &str ) << *pvalue;
-#else
-        if ( !getVSCPMeasurementFloat64AsString( pEvent, str ) ) return false;
+
+        if ( !vscp_getVSCPMeasurementFloat64AsString( pEvent, str ) ) return false;
         if ( !str.ToDouble( pvalue ) ) return false;
-#endif
+
     }
     else if ( VSCP_CLASS2_MEASUREMENT_STR == pEvent->vscp_class ){
-#ifdef VSCP_QT
-		QString str;
-#else	
-        wxString str;
-#endif		
+	
+        wxString str;		
         char buf[512];
         
         if ( 0 == pEvent->sizeData || NULL == pEvent->pdata ) return false;
         memcpy( buf, pEvent->pdata + 4, pEvent->sizeData-4 );
 
-#ifdef VSCP_QT
-        str = buf;
-        QTextStream( &str ) << *pvalue;
-#else
         str = wxString::FromAscii( buf );
         str.ToDouble( pvalue );
-#endif		
+		
     }
     else {
         return false;
@@ -892,11 +742,7 @@ bool getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
 //
 //
 
-#ifdef VSCP_QT
-bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, QString& strValue)
-#else
-bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strValue)
-#endif
+bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strValue)
 {
     //float value;
     int offset = 0;
@@ -912,12 +758,8 @@ bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strVal
     
 	//value = std::numeric_limits<float>::infinity();
 	float *pfloat = (float*)(pEvent->pdata+offset);
-#ifdef VSCP_QT
-    QTextStream( &strValue ) << *pfloat;
-#else	
     strValue.Format( _("%f"), *pfloat );
-#endif	
-    
+
     return true;
 }
 
@@ -927,11 +769,7 @@ bool getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strVal
 //
 //
 
-#ifdef VSCP_QT
-bool getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, QString& strValue)
-#else
-bool getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strValue)
-#endif
+bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strValue)
 {
     int offset;
     
@@ -960,7 +798,7 @@ bool getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strVa
 // convertFloatToNormalizedEventData
 //
 
-bool convertFloatToNormalizedEventData( double value, 
+bool vscp_convertFloatToNormalizedEventData( double value, 
                                             uint8_t *pdata,
                                             uint16_t *psize,
                                             uint8_t unit,
@@ -994,11 +832,8 @@ bool convertFloatToNormalizedEventData( double value,
     
     modf( value, &intpart );
     val64 = (uint64_t)(value * pow(10.0,ndigits));
-#ifdef VSCP_QT
-    val64 = qFromLittleEndian( val64 );
-#else
+
     wxUINT64_SWAP_ON_LE(val64);
-#endif
     
     if ( val64 < ((double)0x80) ) {
         *psize = 3;
@@ -1053,18 +888,7 @@ bool convertFloatToNormalizedEventData( double value,
 // replaceBackslash
 //
 
-#ifdef VSCP_QT
-QString& replaceBackslash(QString& str)
-{
-    int pos;
-    while (-1 != (pos = str.indexOf('\\'))) {
-        str[ pos ] = '/';
-    }
-
-    return str;
-}
-#else
-wxString& replaceBackslash(wxString& wxstr)
+wxString& vscp_replaceBackslash(wxString& wxstr)
 {
 	int pos;
 	while (-1 != (pos = wxstr.Find('\\'))) {
@@ -1073,29 +897,12 @@ wxString& replaceBackslash(wxString& wxstr)
 
 	return wxstr;
 }
-#endif
+
 
 ////////////////////////////////////////////////////////////////////////////////////
 // readStringValue
 
-#ifdef VSCP_QT
-uint32_t readStringValue(const QString& strval)
-{
-    static unsigned long val;
-    QString str = strval;
-
-    str.toLower();
-    if ( -1 != str.indexOf("0x")) {
-        bool bOK;
-        val = str.toULong( &bOK, 16);
-    } else {
-        val = str.toULong();
-    }
-
-    return val;
-}
-#else
-uint32_t readStringValue(const wxString& strval)
+uint32_t vscp_readStringValue(const wxString& strval)
 {
 	static unsigned long val;
 	wxString str = strval;
@@ -1109,12 +916,12 @@ uint32_t readStringValue(const wxString& strval)
 
 	return val;
 }
-#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getVscpPriority
 
-unsigned char getVscpPriority(const vscpEvent *pEvent)
+unsigned char vscp_getVscpPriority(const vscpEvent *pEvent)
 {
 	// Must be a valid message pointer
 	if (NULL == pEvent) return 0;
@@ -1125,7 +932,7 @@ unsigned char getVscpPriority(const vscpEvent *pEvent)
 ///////////////////////////////////////////////////////////////////////////////
 // getVscpPriorityEx
 
-unsigned char getVscpPriorityEx(const vscpEventEx *pEvent)
+unsigned char vscp_getVscpPriorityEx(const vscpEventEx *pEvent)
 {
 	// Must be a valid message pointer
 	if (NULL == pEvent) return 0;
@@ -1136,7 +943,7 @@ unsigned char getVscpPriorityEx(const vscpEventEx *pEvent)
 ///////////////////////////////////////////////////////////////////////////////
 // setVscpPriority
 
-void setVscpPriority(vscpEvent *pEvent, unsigned char priority)
+void vscp_setVscpPriority(vscpEvent *pEvent, unsigned char priority)
 {
 	// Must be a valid message pointer
 	if (NULL == pEvent) return;
@@ -1149,7 +956,7 @@ void setVscpPriority(vscpEvent *pEvent, unsigned char priority)
 ///////////////////////////////////////////////////////////////////////////////
 // setVscpPriorityEx
 
-void setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority)
+void vscp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority)
 {
 	// Must be a valid message pointer
 	if (NULL == pEvent) return;
@@ -1163,7 +970,7 @@ void setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority)
 // getVSCPheadFromCANid
 //
 
-unsigned char getVSCPheadFromCANid(const uint32_t id)
+unsigned char vscp_getVSCPheadFromCANid(const uint32_t id)
 {
 	return(unsigned char) (0xf0 & (id >> 21)); // Shift 26-5  1110 0000
 }
@@ -1172,7 +979,7 @@ unsigned char getVSCPheadFromCANid(const uint32_t id)
 // getVSCPclassFromCANid
 //
 
-uint16_t getVSCPclassFromCANid(const uint32_t id)
+uint16_t vscp_getVSCPclassFromCANid(const uint32_t id)
 {
 	return(uint16_t) (0x1ff & (id >> 16));
 }
@@ -1181,7 +988,7 @@ uint16_t getVSCPclassFromCANid(const uint32_t id)
 // getVSCPtypeFromCANid
 //
 
-uint16_t getVSCPtypeFromCANid(const uint32_t id)
+uint16_t vscp_getVSCPtypeFromCANid(const uint32_t id)
 {
 	return(uint16_t) (0xff & (id >> 8));
 }
@@ -1190,7 +997,7 @@ uint16_t getVSCPtypeFromCANid(const uint32_t id)
 // getVSCPnicknameFromCANid
 //
 
-uint16_t getVSCPnicknameFromCANid(const uint32_t id)
+uint16_t vscp_getVSCPnicknameFromCANid(const uint32_t id)
 {
 	return( id & 0xff);
 }
@@ -1199,7 +1006,7 @@ uint16_t getVSCPnicknameFromCANid(const uint32_t id)
 // getCANidFromVSCPdata
 //
 
-uint32_t getCANidFromVSCPdata(const unsigned char priority, 
+uint32_t vscp_getCANidFromVSCPdata(const unsigned char priority, 
 		const uint16_t vscp_class, 
 		const uint16_t vscp_type)
 {
@@ -1216,9 +1023,9 @@ uint32_t getCANidFromVSCPdata(const unsigned char priority,
 // getCANidFromVSCPevent
 //
 
-uint32_t getCANidFromVSCPevent(const vscpEvent *pEvent)
+uint32_t vscp_getCANidFromVSCPevent(const vscpEvent *pEvent)
 {
-	return( ((unsigned long) getVscpPriority(pEvent) << 26) |
+	return( ((unsigned long) vscp_getVscpPriority(pEvent) << 26) |
 			((unsigned long) pEvent->vscp_class << 16) |
 			((unsigned long) pEvent->vscp_type << 8) |
 			0);
@@ -1228,9 +1035,9 @@ uint32_t getCANidFromVSCPevent(const vscpEvent *pEvent)
 // getCANidFromVSCPeventEx
 //
 
-uint32_t getCANidFromVSCPeventEx(const vscpEventEx *pEvent)
+uint32_t vscp_getCANidFromVSCPeventEx(const vscpEventEx *pEvent)
 {
-	return( ((unsigned long) getVscpPriorityEx(pEvent) << 26) |
+	return( ((unsigned long) vscp_getVscpPriorityEx(pEvent) << 26) |
 			((unsigned long) pEvent->vscp_class << 16) |
 			((unsigned long) pEvent->vscp_type << 8) |
 			0);
@@ -1243,7 +1050,7 @@ uint32_t getCANidFromVSCPeventEx(const vscpEventEx *pEvent)
 // crc into the packet.
 //
 
-unsigned short vscp_calc_crc(vscpEvent *pEvent, short bSet)
+unsigned short vscp_vscp_calc_crc(vscpEvent *pEvent, short bSet)
 {
 	unsigned short crc = 0;
 	unsigned char *p;
@@ -1291,31 +1098,8 @@ unsigned short vscp_calc_crc(vscpEvent *pEvent, short bSet)
 ///////////////////////////////////////////////////////////////////////////////
 // getGuidFromString
 //
-#ifdef VSCP_QT
-bool getGuidFromString(vscpEvent *pEvent, const QString& strGUID)
-{
-    unsigned long val;
 
-    // Check pointer
-    if (NULL == pEvent) return false;
-
-    if (0 == strGUID.Find(_("-"))) {
-        memset(pEvent->GUID, 0, 16);
-    } else {
-        wxStringTokenizer tkz(strGUID, wxT(":"));
-        for (int i = 0; i < 16; i++) {
-            tkz.GetNextToken().ToULong(&val, 16);
-            pEvent->GUID[ i ] = (uint8_t) val;
-            // If no tokens left no use to continue
-            if (!tkz.HasMoreTokens()) break;
-        }
-    }
-
-    return true;
-
-}
-#else
-bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
+bool vscp_getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 {
 	unsigned long val;
 
@@ -1337,13 +1121,13 @@ bool getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 	return true;
 
 }
-#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getGuidFromStringEx
 //
 
-bool getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
+bool vscp_getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
 {
 	unsigned long val;
 
@@ -1371,7 +1155,7 @@ bool getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
 // getGuidFromStringToArray
 //
 
-bool getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID)
+bool vscp_getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID)
 {
 	unsigned long val;
 
@@ -1391,7 +1175,7 @@ bool getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID)
 // writeGuidToString
 //
 
-bool writeGuidToString(const vscpEvent *pEvent, wxString& strGUID)
+bool vscp_writeGuidToString(const vscpEvent *pEvent, wxString& strGUID)
 {
 	// Check pointer
 	if (NULL == pEvent) return false;
@@ -1410,7 +1194,7 @@ bool writeGuidToString(const vscpEvent *pEvent, wxString& strGUID)
 // writeGuidToStringEx
 //
 
-bool writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID)
+bool vscp_writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID)
 {
 	// Check pointer
 	if (NULL == pEvent) return false;
@@ -1429,7 +1213,7 @@ bool writeGuidToStringEx(const vscpEventEx *pEvent, wxString& strGUID)
 // writeGuidToString4Rows
 //
 
-bool writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID)
+bool vscp_writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID)
 {
 	// Check pointer
 	if (NULL == pEvent) return false;
@@ -1447,7 +1231,7 @@ bool writeGuidToString4Rows(const vscpEvent *pEvent, wxString& strGUID)
 // writeGuidToString4RowsEx
 //
 
-bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID)
+bool vscp_writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID)
 {
 	// Check pointer
 	if (NULL == pEvent) return false;
@@ -1465,7 +1249,7 @@ bool writeGuidToString4RowsEx(const vscpEventEx *pEvent, wxString& strGUID)
 // writeGuidToString
 //
 
-bool writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID)
+bool vscp_writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID)
 {
 	// Check pointer
 	if (NULL == pGUID) return false;
@@ -1484,7 +1268,7 @@ bool writeGuidArrayToString(const unsigned char *pGUID, wxString& strGUID)
 // isGUIDEmpty
 //
 
-bool isGUIDEmpty(const unsigned char *pGUID)
+bool vscp_isGUIDEmpty(const unsigned char *pGUID)
 {
 	// Check pointers
 	if (NULL == pGUID) return false;
@@ -1500,7 +1284,7 @@ bool isGUIDEmpty(const unsigned char *pGUID)
 // isSameGUID
 //
 
-bool isSameGUID(const unsigned char *pGUID1, const unsigned char *pGUID2)
+bool vscp_isSameGUID(const unsigned char *pGUID1, const unsigned char *pGUID2)
 {
 	// First check pointers
 	if (NULL == pGUID1) return false;
@@ -1516,7 +1300,7 @@ bool isSameGUID(const unsigned char *pGUID1, const unsigned char *pGUID2)
 // reverseGUID
 //
 
-bool reverseGUID(unsigned char *pGUID)
+bool vscp_reverseGUID(unsigned char *pGUID)
 {
 	uint8_t copyGUID[ 16 ];
 
@@ -1535,7 +1319,7 @@ bool reverseGUID(unsigned char *pGUID)
 ////////////////////////////////////////////////////////////////////////////////////
 // convertVSCPtoEx
 
-bool convertVSCPtoEx(vscpEventEx *pEventEx, const vscpEvent *pEvent)
+bool vscp_convertVSCPtoEx(vscpEventEx *pEventEx, const vscpEvent *pEvent)
 {
 	// Check pointers
 	if (NULL == pEvent) return false;
@@ -1564,7 +1348,7 @@ bool convertVSCPtoEx(vscpEventEx *pEventEx, const vscpEvent *pEvent)
 // convertVSCPfromEx
 //
 
-bool convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
+bool vscp_convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
 {
 	// Check pointers
 	if ( NULL == pEvent ) return false;
@@ -1600,7 +1384,7 @@ bool convertVSCPfromEx(vscpEvent *pEvent, const vscpEventEx *pEventEx)
 ////////////////////////////////////////////////////////////////////////////////////
 // copyVSCPEvent
 
-bool copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
+bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 {
 	// Check pointers
 	if (NULL == pEventTo) return false;
@@ -1637,7 +1421,7 @@ bool copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 // deleteVSCPevent
 //
 
-void deleteVSCPevent(vscpEvent *pEvent)
+void vscp_deleteVSCPevent(vscpEvent *pEvent)
 {
 	if (pEvent->sizeData) delete [] pEvent->pdata;
 	delete pEvent;
@@ -1647,7 +1431,7 @@ void deleteVSCPevent(vscpEvent *pEvent)
 // deleteVSCPevent
 //
 
-void deleteVSCPeventEx(vscpEventEx *pEventEx)
+void vscp_deleteVSCPeventEx(vscpEventEx *pEventEx)
 {
 	delete pEventEx;
 }
@@ -1671,7 +1455,7 @@ void deleteVSCPeventEx(vscpEventEx *pEventEx)
 // So a nill mask will let everything through
 //
 
-bool doLevel2Filter(const vscpEvent *pEvent,
+bool vscp_doLevel2Filter(const vscpEvent *pEvent,
 		const vscpEventFilter *pFilter)
 {
 	// Must be a valid client
@@ -1695,14 +1479,14 @@ bool doLevel2Filter(const vscpEvent *pEvent,
 	}
 
 	// Test priority
-	if (0xff != (uint8_t) (~(pFilter->filter_priority ^ getVscpPriority(pEvent)) |
+	if (0xff != (uint8_t) (~(pFilter->filter_priority ^ vscp_getVscpPriority(pEvent)) |
 			~pFilter->mask_priority)) return false;
 
 	return true;
 }
 
 
-bool doLevel2FilterEx( const vscpEventEx *pEventEx,
+bool vscp_doLevel2FilterEx( const vscpEventEx *pEventEx,
                         const vscpEventFilter *pFilter )
 {
 	// Must be a valid client
@@ -1726,7 +1510,7 @@ bool doLevel2FilterEx( const vscpEventEx *pEventEx,
 	}
 
 	// Test priority
-	if (0xff != (uint8_t) (~(pFilter->filter_priority ^ getVscpPriorityEx(pEventEx)) |
+	if (0xff != (uint8_t) (~(pFilter->filter_priority ^ vscp_getVscpPriorityEx(pEventEx)) |
 			~pFilter->mask_priority)) return false;
 
 	return true;
@@ -1736,7 +1520,7 @@ bool doLevel2FilterEx( const vscpEventEx *pEventEx,
 // ClearVSCPFilter
 //
 
-void clearVSCPFilter(vscpEventFilter *pFilter)
+void vscp_clearVSCPFilter(vscpEventFilter *pFilter)
 {
 	// Validate pointer
 	if (NULL == pFilter) return;
@@ -1755,7 +1539,7 @@ void clearVSCPFilter(vscpEventFilter *pFilter)
 // readFilterFromString
 //
 
-bool readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 {
 	wxString strTok;
 
@@ -1767,7 +1551,7 @@ bool readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Get filter priority
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
-		pFilter->filter_priority = readStringValue(strTok);
+		pFilter->filter_priority = vscp_readStringValue(strTok);
 	} else {
 		return false;
 	}
@@ -1775,7 +1559,7 @@ bool readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Get filter class
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
-		pFilter->filter_class = readStringValue(strTok);
+		pFilter->filter_class = vscp_readStringValue(strTok);
 	} else {
 		return false;
 	}
@@ -1783,7 +1567,7 @@ bool readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Get filter type
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
-		pFilter->filter_type = readStringValue(strTok);
+		pFilter->filter_type = vscp_readStringValue(strTok);
 	} else {
 		return false;
 	}
@@ -1791,7 +1575,7 @@ bool readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Get filter GUID
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
-		getGuidFromStringToArray(pFilter->filter_GUID,
+		vscp_getGuidFromStringToArray(pFilter->filter_GUID,
 				strTok);
 	} else {
 		return false;
@@ -1804,7 +1588,7 @@ bool readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 // readMaskFromString
 //
 
-bool readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
+bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 {
 	wxString strTok;
 
@@ -1816,7 +1600,7 @@ bool readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Get filter priority
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
-		pFilter->mask_priority = readStringValue(strTok);
+		pFilter->mask_priority = vscp_readStringValue(strTok);
 	} else {
 		return false;
 	}
@@ -1824,7 +1608,7 @@ bool readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Get filter class
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
-		pFilter->mask_class = readStringValue(strTok);
+		pFilter->mask_class = vscp_readStringValue(strTok);
 	} else {
 		return false;
 	}
@@ -1832,7 +1616,7 @@ bool readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Get filter type
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
-		pFilter->mask_type = readStringValue(strTok);
+		pFilter->mask_type = vscp_readStringValue(strTok);
 	} else {
 		return false;
 	}
@@ -1840,7 +1624,7 @@ bool readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 	// Get filter GUID
 	if (tkz.HasMoreTokens()) {
 		strTok = tkz.GetNextToken();
-		getGuidFromStringToArray(pFilter->mask_GUID,
+		vscp_getGuidFromStringToArray(pFilter->mask_GUID,
 				strTok);
 	} else {
 		return false;
@@ -1853,7 +1637,7 @@ bool readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 // convertCanalToEvent
 //
 
-bool convertCanalToEvent(vscpEvent *pvscpEvent,
+bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
 		const canalMsg *pcanalMsg,
 		unsigned char *pGUID,
 		bool bCAN)
@@ -1887,10 +1671,10 @@ bool convertCanalToEvent(vscpEvent *pvscpEvent,
 	}
 
 	// Build ID
-	pvscpEvent->head = getVSCPheadFromCANid(pcanalMsg->id);
+	pvscpEvent->head = vscp_getVSCPheadFromCANid(pcanalMsg->id);
 	if (pcanalMsg->id & 0x02000000) pvscpEvent->head |= VSCP_HEADER_HARD_CODED;
-	pvscpEvent->vscp_class = getVSCPclassFromCANid(pcanalMsg->id);
-	pvscpEvent->vscp_type = getVSCPtypeFromCANid(pcanalMsg->id);
+	pvscpEvent->vscp_class = vscp_getVSCPclassFromCANid(pcanalMsg->id);
+	pvscpEvent->vscp_type = vscp_getVSCPtypeFromCANid(pcanalMsg->id);
 
 	// Timestamp
 	pvscpEvent->timestamp = pcanalMsg->timestamp;
@@ -1905,20 +1689,20 @@ bool convertCanalToEvent(vscpEvent *pvscpEvent,
 // convertCanalToEvent
 //
 
-bool convertCanalToEventEx(vscpEventEx *pvscpEventEx,
+bool vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx,
 		const canalMsg *pcanalMsg,
 		unsigned char *pGUID,
 		bool bCAN)
 {
 	vscpEvent *pEvent = new vscpEvent;
-	bool rv = convertCanalToEvent(pEvent,
+	bool rv = vscp_convertCanalToEvent(pEvent,
                                     pcanalMsg,
                                     pGUID,
                                     bCAN);
 	
 	if ( rv ) {	
-		convertVSCPtoEx(pvscpEventEx, pEvent );
-		deleteVSCPevent(pEvent);
+		vscp_convertVSCPtoEx(pvscpEventEx, pEvent );
+		vscp_deleteVSCPevent(pEvent);
 	}
 
 	return rv;
@@ -1928,7 +1712,7 @@ bool convertCanalToEventEx(vscpEventEx *pvscpEventEx,
 // convertEventToCanal
 //
 
-bool convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
+bool vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
 {
 	unsigned char nodeid = 0;
 	short sizeData = pvscpEvent->sizeData;
@@ -1990,7 +1774,7 @@ bool convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
 // convertEventExToCanal
 //
 
-bool convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx)
+bool vscp_convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx)
 {
 	bool rv;
 
@@ -2000,14 +1784,14 @@ bool convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx)
 	vscpEvent *pEvent = new vscpEvent();
 	if (NULL == pEvent) return false;
 
-	if (!convertVSCPfromEx(pEvent, pvscpEventEx)) {
-		deleteVSCPevent(pEvent);
+	if (!vscp_convertVSCPfromEx(pEvent, pvscpEventEx)) {
+		vscp_deleteVSCPevent(pEvent);
 		return false;
 	}
 
-	rv = convertEventToCanal(pcanalMsg, pEvent);
+	rv = vscp_convertEventToCanal(pcanalMsg, pEvent);
 
-	deleteVSCPevent(pEvent);
+	vscp_deleteVSCPevent(pEvent);
 
 	return rv;
 }
@@ -2016,7 +1800,7 @@ bool convertEventExToCanal(canalMsg *pcanalMsg, const vscpEventEx *pvscpEventEx)
 // writeVscpDataToString
 //
 
-bool writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUseHtmlBreak)
+bool vscp_writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUseHtmlBreak)
 {
 	wxString wrk, strBreak;
 
@@ -2050,7 +1834,7 @@ bool writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUseHtml
 // writeVscpDataWithSizeToString
 //
 
-bool writeVscpDataWithSizeToString(const uint16_t sizeData,
+bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
                                     const unsigned char *pData,
                                     wxString& str,
                                     bool bUseHtmlBreak)
@@ -2090,7 +1874,7 @@ bool writeVscpDataWithSizeToString(const uint16_t sizeData,
 // getVscpDataFromString
 //
 
-bool getVscpDataFromString(vscpEvent *pEvent, const wxString& str)
+bool vscp_getVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 {
 	// Check pointers
 	if (NULL == pEvent) return false;
@@ -2102,7 +1886,7 @@ bool getVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 	pEvent->sizeData = 0;
 	while (tkz.HasMoreTokens()) {
 		wxString token = tkz.GetNextToken();
-		data[ pEvent->sizeData ] = readStringValue(token);
+		data[ pEvent->sizeData ] = vscp_readStringValue(token);
 		pEvent->sizeData++;
 		if (pEvent->sizeData >= VSCP_MAX_DATA) break;
 	}
@@ -2124,7 +1908,7 @@ bool getVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 // getVscpDataArrayFromString
 //
 
-bool getVscpDataArrayFromString(uint8_t *pData, 
+bool vscp_getVscpDataArrayFromString(uint8_t *pData, 
                                     uint16_t *psizeData, 
                                     const wxString& str)
 {
@@ -2137,7 +1921,7 @@ bool getVscpDataArrayFromString(uint8_t *pData,
 
 	while (tkz.HasMoreTokens()) {
 		wxString token = tkz.GetNextToken();
-		pData[ *psizeData ] = readStringValue( token );
+		pData[ *psizeData ] = vscp_readStringValue( token );
 		(*psizeData)++;
 		if (*psizeData >= VSCP_MAX_DATA) break;
 	}
@@ -2150,7 +1934,7 @@ bool getVscpDataArrayFromString(uint8_t *pData,
 // makeTimeStamp
 //
 
-unsigned long makeTimeStamp(void)
+unsigned long vscp_makeTimeStamp(void)
 {
 #ifdef WIN32
 	return GetTickCount();
@@ -2166,7 +1950,7 @@ unsigned long makeTimeStamp(void)
 // head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool writeVscpEventToString(vscpEvent *pEvent, wxString& str)
+bool vscp_writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 {
 	// Check pointer
 	if (NULL == pEvent) return false;
@@ -2179,13 +1963,13 @@ bool writeVscpEventToString(vscpEvent *pEvent, wxString& str)
             pEvent->timestamp );
 
 	wxString strGUID;
-	writeGuidToString(pEvent, strGUID);
+	vscp_writeGuidToString(pEvent, strGUID);
 	str += strGUID;
 	if (pEvent->sizeData) {
 		str += wxT(",");
 
 		wxString strData;
-		writeVscpDataToString(pEvent, strData);
+		vscp_writeVscpDataToString(pEvent, strData);
 		str += strData;
 	}
 
@@ -2198,7 +1982,7 @@ bool writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 // head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
+bool vscp_writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
 {
 	vscpEvent Event;
 
@@ -2206,9 +1990,9 @@ bool writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
 	if (NULL == pEventEx) return false;
 
 	Event.pdata = NULL;
-	convertVSCPfromEx(&Event, pEventEx);
-	writeVscpEventToString(&Event, str);
-	deleteVSCPevent(&Event);
+	vscp_convertVSCPfromEx(&Event, pEventEx);
+	vscp_writeVscpEventToString(&Event, str);
+	vscp_deleteVSCPevent(&Event);
 
 	return true;
 }
@@ -2220,7 +2004,7 @@ bool writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
 //		head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
+bool vscp_getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 {
 	// Check pointer
 	if (NULL == pEvent) {
@@ -2234,7 +2018,7 @@ bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	// Get head
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
-		pEvent->head = readStringValue(str);
+		pEvent->head = vscp_readStringValue(str);
 	} else {
 		return false;
 	}
@@ -2242,7 +2026,7 @@ bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	// Get Class
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
-		pEvent->vscp_class = readStringValue(str);
+		pEvent->vscp_class = vscp_readStringValue(str);
 	} else {
 		return false;
 	}
@@ -2251,7 +2035,7 @@ bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	// Get Type
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
-		pEvent->vscp_type = readStringValue(str);
+		pEvent->vscp_type = vscp_readStringValue(str);
 	} else {
 		return false;
 	}
@@ -2259,7 +2043,7 @@ bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	// Get OBID  -  Kept here to be compatible with receive
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
-		pEvent->obid = readStringValue(str);
+		pEvent->obid = vscp_readStringValue(str);
 	} else {
 		return false;
 	}
@@ -2267,7 +2051,7 @@ bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	// Get Timestamp
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
-		pEvent->timestamp = readStringValue(str);
+		pEvent->timestamp = vscp_readStringValue(str);
 		if (!pEvent->timestamp) {
 #ifdef WIN32
 			pEvent->timestamp = GetTickCount();
@@ -2283,7 +2067,7 @@ bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	wxString strGUID;
 	if (tkz.HasMoreTokens()) {
 		strGUID = tkz.GetNextToken();
-		getGuidFromString(pEvent, strGUID);
+		vscp_getGuidFromString(pEvent, strGUID);
 	} else {
 		return false;
 	}
@@ -2293,7 +2077,7 @@ bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	char data[ 512 ];
 	while (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
-		data[ pEvent->sizeData ] = readStringValue(str);
+		data[ pEvent->sizeData ] = vscp_readStringValue(str);
 		pEvent->sizeData++;
 	}
 
@@ -2318,15 +2102,15 @@ bool getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 //		head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool getVscpEventExFromString(vscpEventEx *pEventEx, const wxString& strEvent)
+bool vscp_getVscpEventExFromString(vscpEventEx *pEventEx, const wxString& strEvent)
 {
 	bool rv;
 	vscpEvent event;
 
 	// Parse the string data
-	rv = getVscpEventFromString(&event, strEvent);
+	rv = vscp_getVscpEventFromString(&event, strEvent);
 
-	convertVSCPtoEx(pEventEx, &event);
+	vscp_convertVSCPtoEx(pEventEx, &event);
 
 	// Remove possible data
 	if (event.sizeData) delete [] event.pdata;
@@ -2339,7 +2123,7 @@ bool getVscpEventExFromString(vscpEventEx *pEventEx, const wxString& strEvent)
 //
 //
 
-void makeHtml(wxString& str)
+void vscp_makeHtml(wxString& str)
 {
 	wxString strOriginal = str;
 
@@ -2358,7 +2142,7 @@ void makeHtml(wxString& str)
 // getDeviceHtmlStatusInfo
 //
 
-wxString &getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
+wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 {
     static wxString strHTML;
     wxString str;
@@ -2373,7 +2157,7 @@ wxString &getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
     strHTML += _("<br>");
 
     strHTML += _("GUID = ");
-    writeGuidArrayToString(registers + 0xd0, str);
+    vscp_writeGuidArrayToString(registers + 0xd0, str);
     strHTML += str;
     strHTML += _("<br>");
 
@@ -2673,7 +2457,7 @@ wxString &getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 //
 //
 
-wxString& getRealTextData(vscpEvent *pEvent)
+wxString& vscp_getRealTextData(vscpEvent *pEvent)
 {
 	int offset=0;
 	static wxString str;
@@ -2898,36 +2682,36 @@ wxString& getRealTextData(vscpEvent *pEvent)
 			str += _("[bit] = ");
 			//char sth[8];
 			str += wxString::Format(wxT("%X"), 
-					(long) getDataCodingBitArray(pEvent->pdata+offset, 
+					(long) vscp_getDataCodingBitArray(pEvent->pdata+offset, 
 					pEvent->sizeData-offset));
 		}
 			break;
 		case 0x20: // byte format
-            getVSCPMeasurementAsString( pEvent, wrkstr1 );
+            vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
 			str += _("[byte] = ?");
             str += wrkstr1;
 			break;
 		case 0x40: // string format
 		{
 			str += _("[string] = ");
-			str += getDataCodingString(pEvent->pdata+offset, 
+			str += vscp_getDataCodingString(pEvent->pdata+offset, 
 										pEvent->sizeData-offset);
 		}
 			break;
 		case 0x60: // int format
-            getVSCPMeasurementAsString( pEvent, wrkstr1 );
+            vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
 			str += _("[int] = ");
             str += wrkstr1;
 			break;
 		case 0x80: // normalized int format
 		{
-			double temp = getDataCodingNormalizedInteger(pEvent->pdata+offset, 
+			double temp = vscp_getDataCodingNormalizedInteger(pEvent->pdata+offset, 
 					pEvent->sizeData-offset);
 			str += wxString::Format(_("[nint] = %f "), temp);
 		}
 			break;
 		case 0xA0: // float format
-			float msrmt = getMeasurementAsFloat(pEvent->pdata+offset, 
+			float msrmt = vscp_getMeasurementAsFloat(pEvent->pdata+offset, 
 					pEvent->sizeData-offset);
 			str += wxString::Format(_("[float] = %g "), msrmt);
 			break;
