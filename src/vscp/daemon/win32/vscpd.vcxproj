@@ -564,8 +564,6 @@
     <ClInclude Include="..\..\common\userlist.h" />
     <ClInclude Include="..\..\common\version.h" />
     <ClInclude Include="..\..\common\vscp.h" />
-    <ClInclude Include="..\..\common\vscp_classes.h" />
-    <ClInclude Include="..\..\common\vscp_types.h" />
     <ClInclude Include="vscpd.h" />
   </ItemGroup>
   <ItemGroup>

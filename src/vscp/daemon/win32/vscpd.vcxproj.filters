@@ -74,12 +74,6 @@
     <ClInclude Include="..\..\common\vscp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\common\vscp_classes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\common\vscp_types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="vscpd.h">
       <Filter>Header Files</Filter>
     </ClInclude>

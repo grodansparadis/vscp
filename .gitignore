@@ -133,3 +133,5 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/daemon/win32/vscpd_vc2010.suo
 /src/vscp/utils/vscp_bootloader/vscp_bootloader/vscp_bootloader.pro.user.1203ce1
 /new  1.txt
+/src/vscp/drivers/level1/logger/win32/canallogger.sdf
+/src/vscp/drivers/level1/logger/win32/canallogger.suo

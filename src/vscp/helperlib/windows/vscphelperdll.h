@@ -21,6 +21,11 @@
 // Boston, MA 02111-1307, USA.
 //
 
+// How to use wxGUI from dll
+// http://svn.wxwidgets.org/viewvc/wx/wxWidgets/trunk/samples/dll/
+
+
+
 /*!
 	\file "VSCP helper dll.h"	
 	\mainpage VSCP helper dll.h

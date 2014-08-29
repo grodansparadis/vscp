@@ -333,7 +333,7 @@ int CCanalSuperWrapper::doCmdSend( const vscpEvent *pEvent )
 	canalMsg msg;
 
 	if ( USE_DLL_INTERFACE == m_itemDevice.id ) {
-		convertEventToCanal( &msg, pEvent );
+		vscp_convertEventToCanal( &msg, pEvent );
 		return doCmdSend( &msg );
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
@@ -353,9 +353,9 @@ int CCanalSuperWrapper::doCmdSend( const vscpEventEx *pEventEx )
 
 	if ( USE_DLL_INTERFACE == m_itemDevice.id ) {
 		vscpEvent *pevent = new vscpEvent;
-		convertVSCPfromEx( pevent, pEventEx );
+		vscp_convertVSCPfromEx( pevent, pEventEx );
 		rv = doCmdSend( pevent );
-		deleteVSCPevent( pevent );
+		vscp_deleteVSCPevent( pevent );
 		return rv;
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
@@ -395,7 +395,7 @@ int CCanalSuperWrapper::doCmdReceive( vscpEvent *pEvent )
 		rv = m_canalDll.doCmdReceive( &msg );
 		uint8_t guid[16];
 		memset( guid, 0, 16 );
-		convertCanalToEvent( pEvent, &msg, guid );
+		vscp_convertCanalToEvent( pEvent, &msg, guid );
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
 		rv = m_vscptcpif.doCmdReceive( pEvent );
@@ -418,7 +418,7 @@ int CCanalSuperWrapper::doCmdReceive( vscpEventEx *pEventEx )
 		rv =  m_canalDll.doCmdReceive( &msg );
 		uint8_t guid[16];
 		memset( guid, 0, 16 );
-		convertCanalToEventEx( pEventEx, &msg, guid );
+		vscp_convertCanalToEventEx( pEventEx, &msg, guid );
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id ) {
 		rv =  m_vscptcpif.doCmdReceiveEx( pEventEx );

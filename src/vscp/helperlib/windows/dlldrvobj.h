@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014
+// Copyright (C) 2000-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -21,35 +21,37 @@
 // Boston, MA 02111-1307, USA.
 //
 
-#if !defined(AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
-#define AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
+#if !defined(CHELPDLLOBJ__INCLUDED_)
+#define CHELPDLLOBJ__INCLUDED_
 
 
 // This is the version info for this DLL - Change to your own value
 #define DLL_VERSION		0x000001
 
 // This is the vendor string - Change to your own value
-#define CANAL_DLL_VENDOR "Paradise of the Frog, Sweden, http://www.paradiseofthefrog.com"
+#define DLL_VENDOR "Paradise of the Frog, Sweden, http://www.paradiseofthefrog.com"
 							
-
 // Max number of open connections
-#define CANAL_CAN4VSCP_DRIVER_MAX_OPEN	256
+#define VSCP_HELPER_MAX_OPEN	256
+
+#include "../../common/canal_macro.h"
+#include "../../common/canalsuperwrapper.h"
 
 /////////////////////////////////////////////////////////////////////////////
-// CDllDrvObj
-// See loggerdll.cpp for the implementation of this class
+// CHelpDllObj
+// 
 //
 
-class CDllDrvObj
+class CHelpDllObj
 {
 
 public:
 
 	/// Constructor
-	CDllDrvObj();
+	CHelpDllObj();
 	
 	/// Destructor
-	~CDllDrvObj();
+	~CHelpDllObj();
 
 	/*!
 		Add a driver object
@@ -57,7 +59,7 @@ public:
 		@parm plog Object to add
 		@return handle or 0 for error
 	*/
-	long addDriverObject( CCan4VSCPObj *pObj );
+	long addDriverObject( CCanalSuperWrapper *pObj );
 
 	/*!
 		Get a driver object from its handle
@@ -66,7 +68,7 @@ public:
 		@return pointer to object or NULL if invalid
 				handle.
 	*/
-	CCan4VSCPObj *getDriverObject( long h );
+	CCanalSuperWrapper *getDriverObject( long h );
 
 	/*!
 		Remove a driver object
@@ -79,14 +81,10 @@ public:
 		The log file object
 		This is the array with driver objects (max 256 objects
 	*/
-	CCan4VSCPObj *m_drvObjArray[ CANAL_CAN4VSCP_DRIVER_MAX_OPEN ];
+	CCanalSuperWrapper *m_drvObjArray[ VSCP_HELPER_MAX_OPEN ];
 
-	/// Mutex for open/close
-#ifdef WIN32	
+	/// Mutex for open/close	
 	HANDLE m_objMutex;
-#else
-	pthread_mutex_t m_objMutex;
-#endif
 
 	/// Counter for users of the interface
 	unsigned long m_instanceCounter;
