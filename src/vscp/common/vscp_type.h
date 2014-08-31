@@ -244,6 +244,7 @@
 #define VSCP_TYPE_INFORMATION_PRESET_ACTIVE               48
 #define VSCP_TYPE_INFORMATION_DETECT                      49
 #define VSCP_TYPE_INFORMATION_OVERFLOW                    50
+#define VSCP_TYPE_INFORMATION_BIG_LEVEL_CHANGED           51
 
 // class 30 (0x1E) -- CONTROL
 #define VSCP_TYPE_CONTROL_GENERAL                         0
@@ -276,6 +277,7 @@
 #define VSCP_TYPE_CONTROL_TIMED_PULE_ON                   30
 #define VSCP_TYPE_CONTROL_TIMED_PULSE_OFF                 31
 #define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE	          32
+#define VSCP_TYPE_CONTROL_BIG_CHANGE_LEVEL                33
 
 // class 40 (0x28) -- MULTIMEDIA
 #define VSCP_TYPE_MULTIMEDIA_GENERAL                      0

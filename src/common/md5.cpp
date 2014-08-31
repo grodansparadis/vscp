@@ -151,3 +151,5 @@ char *Cmd5::digest(unsigned char *pstr)
 	return m_szDigest;
 
 }
+
+

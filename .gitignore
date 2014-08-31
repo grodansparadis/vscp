@@ -131,3 +131,7 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/utils/vscp_bootloader/build-vscp_bootloader-Desktop_Qt_5_2_1_MSVC2010_32bit-Debug/Makefile.Release
 /src/vscp/daemon/win32/vscpd_vc2010.sdf
 /src/vscp/daemon/win32/vscpd_vc2010.suo
+/src/vscp/utils/vscp_bootloader/vscp_bootloader/vscp_bootloader.pro.user.1203ce1
+/new  1.txt
+/src/vscp/drivers/level1/logger/win32/canallogger.sdf
+/src/vscp/drivers/level1/logger/win32/canallogger.suo

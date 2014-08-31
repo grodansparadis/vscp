@@ -32,6 +32,10 @@
 
 #include <wx/thread.h>
 
+#ifdef WIN32
+#include "../../common/mongoose.h"
+#endif
+
 #include "devicelist.h"
 #include "clientlist.h"
 #include "interfacelist.h"
@@ -47,8 +51,8 @@
 extern "C" {
 #ifndef WIN32
 #include <microhttpd.h>	
-#endif
 #include <libwebsockets.h>
+#endif
 }
 
 // List used for websocket triggers
@@ -70,6 +74,7 @@ WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
 #define MAX_ITEMS_RECEIVE_QUEUE                 1021
 #define MAX_ITEMS_SEND_QUEUE                    1021
 #define MAX_ITEMS_CLIENT_RECEIVE_QUEUE          8191
+
 
 /*
  * The websocket server shows how to use libwebsockets for one or more
@@ -223,10 +228,7 @@ public:
      */
     bool stopClientWorkerThread(void);
 
-    /*!
-        Save persistent data
-     */
-    void saveRegistryData(void);
+    
 
 
     /*!
@@ -267,6 +269,12 @@ public:
         @return Returns true on success false on failure.
      */
     bool readConfiguration(wxString& strcfgfile);
+
+	/*!
+         Save configuration data
+     */
+    bool saveConfiguration(void);
+
 	
 	/*!
 		Read in mime types
@@ -310,6 +318,7 @@ public:
     /////////////////////////////////////////////////
     //                  WEBSOCKETS
     /////////////////////////////////////////////////
+
 
     static void
     dump_handshake_info(struct lws_tokens *lwst);
@@ -362,12 +371,210 @@ public:
             struct libwebsocket *wsi,
             struct per_session_data__lws_vscp *pss,
             const char *pCommand);
-	
+
+
 	
 	/////////////////////////////////////////////////
     //                 WEB SERVER
     /////////////////////////////////////////////////
+
+#ifdef WIN32
+
+	/*!
+		Check web server password
+		@param method
+		@param ha1
+		@param uri
+		@param nonce
+		@param nc
+		@param cnonce
+		@param qop
+		@param reponse
+		@return MG_FALSE on failure to validate user or MG_TRUE on success
+	*/
+	static int 
+	websrv_check_password( const char *method, const char *ha1, const char *uri,
+								const char *nonce, const char *nc, const char *cnonce,
+								const char *qop, const char *response );
+
+	/*!
+		Return the session handle for this connection, or 
+		create one if this is a new user.
+	*/
+	static struct websrv_Session *
+	websrv_get_session( struct mg_connection *conn );
+
+	/**
+	 * Add header to response to set a session cookie.
+	 *
+	 * @param session session to use
+	 * @param response response to modify
+	 */
+	static websrv_Session *
+	websrv_add_session_cookie( struct mg_connection *conn, const char * pUser );
 	
+	/**
+		Clean up handles of sessions that have been idle for
+		too long.
+	*/
+	static void
+	websrv_expire_sessions( void );
+
+
+	/*!
+		Handle websocket message
+		@param conn Webserver connection handle
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	static int 
+	websrv_handle_websocket_message( struct mg_connection *conn );
+	
+	/**
+		Web server event handler
+		@param conn Webserver connection handle
+		@param ev Weberserver event
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	static int 
+	websrv_event_handler( struct mg_connection *conn, enum mg_event ev );
+
+	/**
+		websrv_mainpage - Web server main page renderer.
+		@param conn Webserver connection handle.
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	static int
+	websrv_mainpage( struct mg_connection *conn );
+
+	/**
+	 * websrv_interfaces -  that displays the available interfaces.
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_interfaces( struct mg_connection *conn );	
+	
+	/**
+	 * websrv_dmlist -  that displays the decision matrix list 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_dmlist( struct mg_connection *conn );
+	
+	/**
+	 * websrv_dmedit - edit of one decision matrix entry 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_dmedit( struct mg_connection *conn );
+	
+	/**
+	 * websrv_dmpost - post of one decision matrix entry 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_dmpost( struct mg_connection *conn );
+	
+	/**
+	 * websrv_dmdelete - Delete DMe entries 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_dmdelete( struct mg_connection *conn );
+	
+	/**
+	 * websrv_variables_list - that displays the variable list 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_variables_list( struct mg_connection *conn );
+	
+	/**
+	 * websrv_variables_edit -  edit of one variable entry 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int
+	websrv_variables_edit( struct mg_connection *conn );
+	
+	/**
+	 * websrv_variables_post -  post of one variable entry 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_variables_post( struct mg_connection *conn );
+	
+   /**
+	 * websrv_variables_new - New variable initial type selection state 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_variables_new( struct mg_connection *conn );
+	
+	/**
+	 * websrv_variables_delete - Delete DMe entries 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_variables_delete( struct mg_connection *conn );
+
+	/**
+	 * websrv_render_variables_delete - Discover nodes 
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_discovery( struct mg_connection *conn );
+
+	/**
+	 * websrv_session - Communication session
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_session( struct mg_connection *conn );
+
+	/**
+	 * websrv_configure - Server configuration
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_configure( struct mg_connection *conn );
+
+	/**
+	 * websrv_bootload - Device bootload
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+	static int 
+	websrv_bootload( struct mg_connection *conn );
+
+
+#else
+
 	static int
 	websrv_callback_check_address( void *cls,
 									const struct sockaddr *addr,
@@ -690,7 +897,7 @@ public:
 							const char *content_type,
 							const char *transfer_encoding,
 							const char *data, uint64_t off, size_t size);
-	
+#endif	
 
 
 public:
@@ -857,9 +1064,10 @@ public:
     // websocket port
     uint16_t m_portWebsockets;		// defaults to 7681
 	
-	/*!
-        webserver port 
-     */
+	// Domain for webserver and other net services
+	wxString m_authDomain;
+
+    // webserver port 
     unsigned short m_portWebServer;	// defaults to 8080
 	
 	// Enable/disable full webserver

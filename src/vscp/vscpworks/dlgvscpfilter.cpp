@@ -1065,48 +1065,48 @@ void dlgVSCPFilter::setFilter( vscpEventFilter *pFilter )
 
 void dlgVSCPFilter::getFilter( vscpEventFilter *pFilter )
 {
-    pFilter->filter_class = readStringValue( m_CLassFilter->GetValue() );
-    pFilter->mask_class = readStringValue( m_ClassMask->GetValue() );
+    pFilter->filter_class = vscp_readStringValue( m_CLassFilter->GetValue() );
+    pFilter->mask_class = vscp_readStringValue( m_ClassMask->GetValue() );
     
-    pFilter->filter_type = readStringValue( m_TypeFilter->GetValue() );
-    pFilter->mask_type = readStringValue( m_TypeMask->GetValue() );
+    pFilter->filter_type = vscp_readStringValue( m_TypeFilter->GetValue() );
+    pFilter->mask_type = vscp_readStringValue( m_TypeMask->GetValue() );
 
-		pFilter->filter_priority = readStringValue( m_PriorityFilter->GetValue() );
-    pFilter->mask_priority = readStringValue( m_PriorityMask->GetValue() );
+		pFilter->filter_priority = vscp_readStringValue( m_PriorityFilter->GetValue() );
+    pFilter->mask_priority = vscp_readStringValue( m_PriorityMask->GetValue() );
 
-		pFilter->filter_GUID[ 0 ] = readStringValue( m_filterGUID0->GetValue() );
-		pFilter->filter_GUID[ 1 ] = readStringValue( m_filterGUID1->GetValue() );
-		pFilter->filter_GUID[ 2 ] = readStringValue( m_filterGUID2->GetValue() );
-		pFilter->filter_GUID[ 3 ] = readStringValue( m_filterGUID3->GetValue() );
-		pFilter->filter_GUID[ 4 ] = readStringValue( m_filterGUID4->GetValue() );
-		pFilter->filter_GUID[ 5 ] = readStringValue( m_filterGUID5->GetValue() );
-		pFilter->filter_GUID[ 6 ] = readStringValue( m_filterGUID6->GetValue() );
-		pFilter->filter_GUID[ 7 ] = readStringValue( m_filterGUID7->GetValue() );
-		pFilter->filter_GUID[ 8 ] = readStringValue( m_filterGUID8->GetValue() );
-		pFilter->filter_GUID[ 9 ] = readStringValue( m_filterGUID9->GetValue() );
-		pFilter->filter_GUID[ 10 ] = readStringValue( m_filterGUID10->GetValue() );
-		pFilter->filter_GUID[ 11 ] = readStringValue( m_filterGUID11->GetValue() );
-		pFilter->filter_GUID[ 12 ] = readStringValue( m_filterGUID12->GetValue() );
-		pFilter->filter_GUID[ 13 ] = readStringValue( m_filterGUID13->GetValue() );
-		pFilter->filter_GUID[ 14 ] = readStringValue( m_filterGUID14->GetValue() );
-		pFilter->filter_GUID[ 15 ] = readStringValue( m_filterGUID15->GetValue() );
+		pFilter->filter_GUID[ 0 ] = vscp_readStringValue( m_filterGUID0->GetValue() );
+		pFilter->filter_GUID[ 1 ] = vscp_readStringValue( m_filterGUID1->GetValue() );
+		pFilter->filter_GUID[ 2 ] = vscp_readStringValue( m_filterGUID2->GetValue() );
+		pFilter->filter_GUID[ 3 ] = vscp_readStringValue( m_filterGUID3->GetValue() );
+		pFilter->filter_GUID[ 4 ] = vscp_readStringValue( m_filterGUID4->GetValue() );
+		pFilter->filter_GUID[ 5 ] = vscp_readStringValue( m_filterGUID5->GetValue() );
+		pFilter->filter_GUID[ 6 ] = vscp_readStringValue( m_filterGUID6->GetValue() );
+		pFilter->filter_GUID[ 7 ] = vscp_readStringValue( m_filterGUID7->GetValue() );
+		pFilter->filter_GUID[ 8 ] = vscp_readStringValue( m_filterGUID8->GetValue() );
+		pFilter->filter_GUID[ 9 ] = vscp_readStringValue( m_filterGUID9->GetValue() );
+		pFilter->filter_GUID[ 10 ] = vscp_readStringValue( m_filterGUID10->GetValue() );
+		pFilter->filter_GUID[ 11 ] = vscp_readStringValue( m_filterGUID11->GetValue() );
+		pFilter->filter_GUID[ 12 ] = vscp_readStringValue( m_filterGUID12->GetValue() );
+		pFilter->filter_GUID[ 13 ] = vscp_readStringValue( m_filterGUID13->GetValue() );
+		pFilter->filter_GUID[ 14 ] = vscp_readStringValue( m_filterGUID14->GetValue() );
+		pFilter->filter_GUID[ 15 ] = vscp_readStringValue( m_filterGUID15->GetValue() );
 
-		pFilter->mask_GUID[ 0 ] = readStringValue( m_maskGUID0->GetValue() );
-		pFilter->mask_GUID[ 1 ] = readStringValue( m_maskGUID1->GetValue() );
-		pFilter->mask_GUID[ 2 ] = readStringValue( m_maskGUID2->GetValue() );
-		pFilter->mask_GUID[ 3 ] = readStringValue( m_maskGUID3->GetValue() );
-		pFilter->mask_GUID[ 4 ] = readStringValue( m_maskGUID4->GetValue() );
-		pFilter->mask_GUID[ 5 ] = readStringValue( m_maskGUID5->GetValue() );
-		pFilter->mask_GUID[ 6 ] = readStringValue( m_maskGUID6->GetValue() );
-		pFilter->mask_GUID[ 7 ] = readStringValue( m_maskGUID7->GetValue() );
-		pFilter->mask_GUID[ 8 ] = readStringValue( m_maskGUID8->GetValue() );
-		pFilter->mask_GUID[ 9 ] = readStringValue( m_maskGUID9->GetValue() );
-		pFilter->mask_GUID[ 10 ] = readStringValue( m_maskGUID10->GetValue() );
-		pFilter->mask_GUID[ 11 ] = readStringValue( m_maskGUID11->GetValue() );
-		pFilter->mask_GUID[ 12 ] = readStringValue( m_maskGUID12->GetValue() );
-		pFilter->mask_GUID[ 13 ] = readStringValue( m_maskGUID13->GetValue() );
-		pFilter->mask_GUID[ 14 ] = readStringValue( m_maskGUID14->GetValue() );
-		pFilter->mask_GUID[ 15 ] = readStringValue( m_maskGUID15->GetValue() );
+		pFilter->mask_GUID[ 0 ] = vscp_readStringValue( m_maskGUID0->GetValue() );
+		pFilter->mask_GUID[ 1 ] = vscp_readStringValue( m_maskGUID1->GetValue() );
+		pFilter->mask_GUID[ 2 ] = vscp_readStringValue( m_maskGUID2->GetValue() );
+		pFilter->mask_GUID[ 3 ] = vscp_readStringValue( m_maskGUID3->GetValue() );
+		pFilter->mask_GUID[ 4 ] = vscp_readStringValue( m_maskGUID4->GetValue() );
+		pFilter->mask_GUID[ 5 ] = vscp_readStringValue( m_maskGUID5->GetValue() );
+		pFilter->mask_GUID[ 6 ] = vscp_readStringValue( m_maskGUID6->GetValue() );
+		pFilter->mask_GUID[ 7 ] = vscp_readStringValue( m_maskGUID7->GetValue() );
+		pFilter->mask_GUID[ 8 ] = vscp_readStringValue( m_maskGUID8->GetValue() );
+		pFilter->mask_GUID[ 9 ] = vscp_readStringValue( m_maskGUID9->GetValue() );
+		pFilter->mask_GUID[ 10 ] = vscp_readStringValue( m_maskGUID10->GetValue() );
+		pFilter->mask_GUID[ 11 ] = vscp_readStringValue( m_maskGUID11->GetValue() );
+		pFilter->mask_GUID[ 12 ] = vscp_readStringValue( m_maskGUID12->GetValue() );
+		pFilter->mask_GUID[ 13 ] = vscp_readStringValue( m_maskGUID13->GetValue() );
+		pFilter->mask_GUID[ 14 ] = vscp_readStringValue( m_maskGUID14->GetValue() );
+		pFilter->mask_GUID[ 15 ] = vscp_readStringValue( m_maskGUID15->GetValue() );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

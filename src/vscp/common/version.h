@@ -32,5 +32,6 @@
 #define VSCPD_DISPLAY_VERSION "0.4.0.16 Fluorine"
 
 #define VSCPD_COPYRIGHT "Copyright (C) 2000-2014, Ake Hedman, Grodans Paradis AB, http://www.grodansparadis.com\n"
+#define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2014, <a href=\"mailto:akhe@paradiseofthefrog.com\">Ake Hedman</a>, Paradise of the Frog, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>\n"
 
 #endif

@@ -47,12 +47,17 @@
 //#pragma implementation
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
 #ifdef __BORLANDC__
 #pragma hdrstop
 #endif
+
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
@@ -64,7 +69,7 @@
 #include <wx/xml/xml.h>
 
 #ifdef WIN32
-
+#include <winsock2.h>
 //#include <winsock.h>
 #include "canal_win32_ipc.h"
 
@@ -114,6 +119,13 @@
 #include "web_js.h"
 #include "web_template.h"
 
+#ifdef WIN32
+#include "../../common/slre.h"
+#include "../../common/frozen.h"
+#include "../../common/net_skeleton.h"
+#include "../../common/mongoose.h"
+#endif
+
 #include "canal_macro.h"
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
@@ -132,9 +144,14 @@
 #include "controlobject.h"
 #include "../common/webserver.h"
 #ifndef WIN32
-#include <microhttpd.h>
+//#include <microhttpd.h>
 #endif
 #include <libwebsockets.h>
+
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 
 // List for websocket triggers
 WX_DEFINE_LIST(TRIGGERLIST);
@@ -153,10 +170,6 @@ typedef struct _ASTAT_ {
 
 ASTAT Adapter;
 
-#endif
-
-
-#ifdef WIN32
 
 WORD wVersionRequested = MAKEWORD(1, 1); // WSA functions
 WSADATA wsaData; // WSA functions
@@ -260,19 +273,19 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
 //		          WEBSERVER
 ///////////////////////////////////////////////////
 
-
-
-
 /**
- * Linked list of all active sessions.  Yes, O(n) but a
- * hash table would be overkill for a simple example...
+ * Linked list of all active sessions.  
+ * webserv.h
  */
 static struct websrv_Session *websrv_sessions;
 
 
+#ifdef WIN32
 
+// Structure for webserver
+struct mg_server *webserver;
 
-
+#else
 
 
 // List of all pages served by this HTTP server.
@@ -300,14 +313,18 @@ static struct Page pages[] =
     { NULL, NULL, &CControlObject::websrv_not_found_page, NULL } /* 404 */
   };
 
+#endif
 
 WX_DEFINE_LIST(CanalMsgList);
 WX_DEFINE_LIST(VSCPEventList);
 
 
 // Initialize statics
+#ifdef WIN32
+wxString CControlObject::m_pathRoot = _("/programdata/vscp/www");
+#else
 wxString CControlObject::m_pathRoot = _("/srv/vscp/www");
-
+#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -338,9 +355,11 @@ CControlObject::CControlObject()
     // Set default UDP port
     m_UDPPort = VSCP_LEVEL2_UDP_PORT;
 
+	// Loal doamin
+	m_authDomain = _("mydomain.com");
+
     // Set Default Log Level
     m_logLevel = 0;
-
 
     // Control TCP/IP Interface
     m_bTCPInterface = true;
@@ -395,7 +414,7 @@ CControlObject::CControlObject()
 
 #endif // windows service
 
-    CControlObject::m_pathRoot = _("c:\\temp");
+    CControlObject::m_pathRoot = _("c:/programdata/vscp/www");
 
 #else
 
@@ -408,6 +427,10 @@ CControlObject::CControlObject()
 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Destructor
+//
+
 CControlObject::~CControlObject()
 {
     // Remove objects in Client send queue
@@ -417,7 +440,7 @@ CControlObject::~CControlObject()
     for (iterVSCP = m_clientOutputQueue.begin();
             iterVSCP != m_clientOutputQueue.end(); ++iterVSCP) {
         vscpEvent *pEvent = *iterVSCP;
-        deleteVSCPevent(pEvent);
+        vscp_deleteVSCPevent(pEvent);
     }
 
     m_clientOutputQueue.Clear();
@@ -547,6 +570,16 @@ bool CControlObject::init(wxString& strcfgfile)
     }
     
     if ( m_bWebServer ) {
+		
+		// Create the server
+		webserver = mg_create_server( gpctrlObj, CControlObject::websrv_event_handler );
+		
+		// Set options
+		mg_set_option( webserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
+		str = wxString::Format("%i", m_portWebServer );
+		mg_set_option( webserver, "listening_port", str.mb_str( wxConvUTF8 ) );				// Open web server port
+		mg_set_option( webserver, "auth_domain", m_authDomain.mb_str( wxConvUTF8 ) );
+
         logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
     }
     else {
@@ -621,13 +654,21 @@ bool CControlObject::run(void)
     int opts = 0;
     unsigned int oldus = 0;
 
-    //char interface_name[ 128 ] = "";
+    
+
+#ifdef WIN32
+
+	struct websocket_data {
+		
+	};
+
+	/*
+	//char interface_name[ 128 ] = "";
     const char *websockif = NULL;
     struct libwebsocket_context *pcontext;
     unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
             LWS_SEND_BUFFER_POST_PADDING ];
 
-#ifdef WIN32
     m_context = libwebsocket_create_context(m_portWebsockets,
             websockif,
             protocols,
@@ -637,7 +678,15 @@ bool CControlObject::run(void)
             -1,
             -1,
             opts);
+	*/
 #else
+	//char interface_name[ 128 ] = "";
+    const char *websockif = NULL;
+    struct libwebsocket_context *pcontext;
+    unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
+            LWS_SEND_BUFFER_POST_PADDING ];
+
+
     lws_context_creation_info info;
     info.port = m_portWebsockets;
     info.iface = websockif;
@@ -665,7 +714,12 @@ bool CControlObject::run(void)
 
 #endif
     
-    // Web server
+	// Web server
+#ifdef WIN32
+
+	
+#else
+    
     struct MHD_Daemon *pwebserver;
 
     pwebserver = MHD_start_daemon(
@@ -680,12 +734,19 @@ bool CControlObject::run(void)
             MHD_OPTION_CONNECTION_TIMEOUT, (unsigned int)(120 /* seconds */),
             MHD_OPTION_NOTIFY_COMPLETED, &websrv_request_callback_completed, NULL,
             MHD_OPTION_END);
+#endif
     
     // DM Loop
     while (!m_bQuit) {
 
+#ifdef WIN32
+		// CLOCKS_PER_SEC 
+		clock_t t;
+		t = clock();
+#else
         struct timeval tv;
         gettimeofday(&tv, NULL);
+#endif
 
         // Feed possible perodic event
         m_dm.feedPeriodicEvent();
@@ -711,6 +772,10 @@ bool CControlObject::run(void)
                 }
             }
         }
+
+#ifdef WIN32
+		mg_poll_server( webserver, 10 );
+#else
 
         /*
          * This broadcasts to all dumb-increment-protocol connections
@@ -744,8 +809,10 @@ bool CControlObject::run(void)
             }
             oldus = tv.tv_usec;
         }
+#endif
 
-
+#ifdef WIN32
+#else
         /*
          * This html server does not fork or create a thread for
          * websocket service, it all runs in this single loop.  So,
@@ -757,6 +824,7 @@ bool CControlObject::run(void)
          */
 
         if ( m_bWebSockets ) libwebsocket_service(pcontext, 50);
+#endif
 
         // Wait for event
         if (wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout(10)) {
@@ -783,13 +851,13 @@ bool CControlObject::run(void)
 
             if (NULL != pEvent) {
 
-                if (doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
+                if (vscp_doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
                     // Feed event through matrix
                     m_dm.feed(pEvent);
                 }
 
                 // Remove the event
-                deleteVSCPevent(pEvent);
+                vscp_deleteVSCPevent(pEvent);
 
             } // Valid pEvent pointer
 
@@ -805,7 +873,10 @@ bool CControlObject::run(void)
     removeClient(pClientItem);
     m_wxClientMutex.Unlock();
 
+#ifdef WIN32
+#else
     if ( m_bWebSockets ) libwebsocket_context_destroy(pcontext);
+#endif
 
     wxLogDebug(_("ControlObject: Done"));
     return true;
@@ -817,6 +888,9 @@ bool CControlObject::run(void)
 
 bool CControlObject::cleanup(void)
 {
+	// Kill wéb server
+	mg_destroy_server( &webserver );
+
     stopDeviceWorkerThreads();
     stopTcpWorkerThread();
     stopClientWorkerThread();
@@ -1325,7 +1399,6 @@ void CControlObject::removeClient(CClientItem *pClientItem)
     m_clientList.removeClient(pClientItem);
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //  getMacAddress
 //
@@ -1536,11 +1609,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 // Deprecated <==============
                 if (subchild->GetName() == wxT("tcpport")) {
                     wxString str = subchild->GetNodeContent();
-                    m_TCPPort = readStringValue(str);
+                    m_TCPPort = vscp_readStringValue(str);
                 }// Deprecated <==============
                 else if (subchild->GetName() == wxT("udpport")) {
                     wxString str = subchild->GetNodeContent();
-                    m_UDPPort = readStringValue(str);
+                    m_UDPPort = vscp_readStringValue(str);
                 } else if (subchild->GetName() == wxT("loglevel")) {
                     wxString str = subchild->GetNodeContent();
                     str.Trim();
@@ -1573,10 +1646,10 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_logLevel = DAEMON_LOGMSG_DEBUG;
                     }
                     else {
-                        m_logLevel = readStringValue(str);
+                        m_logLevel = vscp_readStringValue(str);
                     }
                 } else if (subchild->GetName() == wxT("tcpif")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1585,23 +1658,23 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_bTCPInterface = false;
                     }
 
-#if wxCHECK_VERSION(3,0,0)
+#if wxMAJOR_VERSION > 3
                     property = subchild->GetAttribute(wxT("port"), wxT("9598"));
 #else
                     property = subchild->GetPropVal(wxT("port"), wxT("9598"));
 #endif                    
                     if (property.IsNumber()) {
-                        m_TCPPort = readStringValue(property);
+                        m_TCPPort = vscp_readStringValue(property);
                     }
 
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("ifaddress"), wxT(""));
 #else
                     m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("ifaddress"), wxT(""));
 #endif                    
 
                 } else if (subchild->GetName() == wxT("canaldriver")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1614,7 +1687,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 } 
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1624,7 +1697,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
 
                     // Get the path to the DM file
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
 #else 
                     m_dm.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
@@ -1635,7 +1708,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }                 
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1645,7 +1718,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
 
                     // Get the path to the DM file
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     m_VSCP_Variables.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
 #else 
                     m_VSCP_Variables.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
@@ -1654,7 +1727,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_VSCP_Variables.m_configPath.Trim(false);
 
                 } else if (subchild->GetName() == wxT("vscp")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1668,11 +1741,15 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_guid.getFromString(str);
                 } else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();
-                    m_maxItemsInClientReceiveQueue = readStringValue(str);
+                    m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
                 } else if (subchild->GetName() == wxT("webrootpath")) {
                     CControlObject::m_pathRoot = subchild->GetNodeContent();
                     CControlObject::m_pathRoot.Trim();
-                    CControlObject::m_pathRoot.Trim(false);
+                    CControlObject::m_pathRoot.Trim(false); 
+				} else if (subchild->GetName() == wxT("authdoamin")) {
+                    CControlObject::m_authDomain = subchild->GetNodeContent();
+                    CControlObject::m_authDomain.Trim();
+                    CControlObject::m_authDomain.Trim(false);
                 } else if (subchild->GetName() == wxT("pathcert")) {
                     m_pathCert = subchild->GetNodeContent();
                     m_pathCert.Trim();
@@ -1682,7 +1759,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_pathKey.Trim();
                     m_pathKey.Trim(false);
                 } else if (subchild->GetName() == wxT("websockets")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1691,16 +1768,16 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_bWebSockets = false;
                     }
 
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     property = subchild->GetAttribute(wxT("port"), wxT("7681"));
 #else 
                     property = subchild->GetPropVal(wxT("port"), wxT("7681"));
 #endif                    
                     if (property.IsNumber()) {
-                        m_portWebsockets = readStringValue(property);
+                        m_portWebsockets = vscp_readStringValue(property);
                     }
                 } else if (subchild->GetName() == wxT("webserver")) {
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
@@ -1709,13 +1786,13 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_bWebServer = false;
                     }
 
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     property = subchild->GetAttribute(wxT("port"), wxT("8080"));
 #else 
                     property = subchild->GetPropVal(wxT("port"), wxT("8080"));
 #endif                    
                     if (property.IsNumber()) {
-                        m_portWebServer = readStringValue(property);
+                        m_portWebServer = vscp_readStringValue(property);
                     }
                 }
                 else if (subchild->GetName() == wxT("pathtomimetypes")) {
@@ -1744,7 +1821,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 wxString allowevent;
                 bool bUser = false;
 
-                clearVSCPFilter(&VSCPFilter); // Allow all frames
+                vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
 
                 if (subchild->GetName() == wxT("user")) {
 
@@ -1760,7 +1837,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             privilege = subsubchild->GetNodeContent();
                         } else if (subsubchild->GetName() == wxT("filter")) {
                             bFilterPresent = true;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
 #else 
                             wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
@@ -1768,7 +1845,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.filter_priority = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
 #else 
                             wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
@@ -1776,7 +1853,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.filter_class = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
 #else 
                             wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
@@ -1784,16 +1861,16 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.filter_type = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
 #else 
                             wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
 #endif                                    
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
-                            getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
+                            vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
                         } else if (subsubchild->GetName() == wxT("mask")) {
                             bMaskPresent = true;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
 #else 
                             wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
@@ -1801,7 +1878,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.mask_priority = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
 #else 
                             wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
@@ -1809,7 +1886,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.mask_class = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
 #else 
                             wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
@@ -1817,13 +1894,13 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.mask_type = val;
-#if wxCHECK_VERSION(3,0,0)                            
+#if wxMAJOR_VERSION > 3                            
                             wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
 #else 
                             wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
 #endif                                    
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
-                            getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
+                            vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
                         } else if (subsubchild->GetName() == wxT("allowfrom")) {
                             allowfrom = subsubchild->GetNodeContent();
                         } else if (subsubchild->GetName() == wxT("allowevent")) {
@@ -1916,7 +1993,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
@@ -1950,7 +2027,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         } 
                         else if (subsubchild->GetName() == wxT("flags")) {
                             wxString str = subsubchild->GetNodeContent();
-                            flags = readStringValue(str);
+                            flags = vscp_readStringValue(str);
                         } 
                         else if (subsubchild->GetName() == wxT("guid")) {
                             strGUID = subsubchild->GetNodeContent();
@@ -1972,7 +2049,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 memset(GUID, 0, 16);
 
                 if (strGUID.Length()) {
-                    getGuidFromStringToArray(GUID, strGUID);
+                    vscp_getGuidFromStringToArray(GUID, strGUID);
                 }
 
                 // Add the device
@@ -2024,7 +2101,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     
-#if wxCHECK_VERSION(3,0,0)                    
+#if wxMAJOR_VERSION > 3                    
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
                     wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
@@ -2076,7 +2153,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 memset(GUID, 0, 16);
 
                 if (strGUID.Length()) {
-                    getGuidFromStringToArray(GUID, strGUID);
+                    vscp_getGuidFromStringToArray(GUID, strGUID);
                 }
 
                 // Add the device
@@ -2128,7 +2205,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 bool CControlObject::readMimeTypes(wxString& path)
 {
-    unsigned long val;
+    //unsigned long val;
     wxXmlDocument doc;
     if (!doc.Load(path)) {
         return false;
@@ -2143,17 +2220,17 @@ bool CControlObject::readMimeTypes(wxString& path)
     while (child) {  
         
         if (child->GetName() == wxT("mimetype")) {
-#if wxCHECK_VERSION(3,0,0)             
+#if wxMAJOR_VERSION > 3             
             wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));
 #else 
             wxString strEnable = child->GetPropVal(wxT("enable"), wxT("false"));
 #endif 
-#if wxCHECK_VERSION(3,0,0)             
+#if wxMAJOR_VERSION > 3             
             wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));
 #else 
             wxString strExt = child->GetPropVal(wxT("extension"), wxT(""));            
 #endif
-#if wxCHECK_VERSION(3,0,0)             
+#if wxMAJOR_VERSION > 3             
             wxString strType = child->GetAttribute(wxT("mime"), wxT(""));
 #else 
             wxString strType = child->GetPropVal(wxT("mime"), wxT(""));            
@@ -2171,9 +2248,12 @@ bool CControlObject::readMimeTypes(wxString& path)
 }
 
 
-////////////////////////
-// websocket callbaks
-///////////////////////
+///////////////////////////////////////////////////////////////////////////////
+//                               WEBSOCKET
+///////////////////////////////////////////////////////////////////////////////
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2423,7 +2503,10 @@ CControlObject::callback_dumb_increment(struct libwebsocket_context *context,
         n = libwebsocket_write(wsi, p, n, LWS_WRITE_TEXT);
 
         if (n < 0) {
+#ifdef WIN32
+#else
             syslog(LOG_ERR, "ERROR writing to socket");
+#endif
             return 1;
         }
 
@@ -2495,7 +2578,10 @@ CControlObject::callback_lws_mirror(struct libwebsocket_context *context,
                     mirrorws_ringbuffer[ pss->ringbuffer_tail ].len,
                     LWS_WRITE_TEXT);
             if (n < 0) {
+#ifdef WIN32
+#else
                 syslog(LOG_ERR, "ERROR writing to socket");
+#endif
             }
 
             if (pss->ringbuffer_tail == (MAX_MIRROR_MESSAGE_QUEUE - 1))
@@ -2561,14 +2647,14 @@ CControlObject::callback_lws_mirror(struct libwebsocket_context *context,
 //
 
 int
-CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
-        struct libwebsocket *wsi,
-        enum libwebsocket_callback_reasons reason,
-        void *user,
-        void *in,
-        size_t len)
+CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
+										struct libwebsocket *wsi,
+										enum libwebsocket_callback_reasons reason,
+										void *user,
+										void *in,
+										size_t len)
 {
-    wxString str;
+	wxString str;
     struct per_session_data__lws_vscp *pss = (per_session_data__lws_vscp *) user;
 
     switch (reason) {
@@ -2586,7 +2672,7 @@ CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
         // Create client
         pss->pClientItem = new CClientItem();
         // Clear filter
-        clearVSCPFilter(&pss->pClientItem->m_filterVSCP);
+        vscp_clearVSCPFilter(&pss->pClientItem->m_filterVSCP);
 
         // Initialize session variables
         pss->bTrigger = false;
@@ -2664,7 +2750,10 @@ CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
                     strlen((char *) buf),
                     LWS_WRITE_TEXT);
             if (n < 0) {
+#ifdef WIN32
+#else
                 syslog(LOG_ERR, "ERROR writing to socket");
+#endif
             }
 
             libwebsocket_callback_on_writable(context, wsi);
@@ -2685,9 +2774,9 @@ CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
 
             if (NULL != pEvent) {
 
-                if (doLevel2Filter(pEvent, &pss->pClientItem->m_filterVSCP)) {
+                if (vscp_doLevel2Filter(pEvent, &pss->pClientItem->m_filterVSCP)) {
 
-                    if (writeVscpEventToString(pEvent, str)) {
+                    if (vscp_writeVscpEventToString(pEvent, str)) {
 
                         // Write it out
                         char buf[ 512 ];
@@ -2699,13 +2788,16 @@ CControlObject::callback_lws_vscp(struct libwebsocket_context *context,
                                 strlen((char *) buf),
                                 LWS_WRITE_TEXT);
                         if (n < 0) {
+#ifdef WIN32
+#else
                             syslog(LOG_ERR, "ERROR writing to socket");
+#endif
                         }
                     }
                 }
 
                 // Remove the event
-                deleteVSCPevent(pEvent);
+                vscp_deleteVSCPevent(pEvent);
 
             } // Valid pEvent pointer
 
@@ -2759,7 +2851,7 @@ CControlObject::handleWebSocketReceive(struct libwebsocket_context *context,
         p++; // Point beyond initial info "E;"
         vscpEvent vscp_event;
         str = wxString::FromAscii(p);
-        if (getVscpEventFromString(&vscp_event, str)) {
+        if (vscp_getVscpEventFromString(&vscp_event, str)) {
 
             vscp_event.obid = pss->pClientItem->m_clientID;
             if (handleWebSocketSendEvent(&vscp_event)) {
@@ -2830,7 +2922,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
         if (NULL != pDestClientItem) {
 
             // Check if filtered out
-            if (doLevel2Filter(pEvent, &pDestClientItem->m_filterVSCP)) {
+            if (vscp_doLevel2Filter(pEvent, &pDestClientItem->m_filterVSCP)) {
 
                 // If the client queue is full for this client then the
                 // client will not receive the message
@@ -2841,7 +2933,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
                     vscpEvent *pnewEvent = new vscpEvent;
                     if (NULL != pnewEvent) {
 
-                        copyVSCPEvent(pnewEvent, pEvent);
+                        vscp_copyVSCPEvent(pnewEvent, pEvent);
 
                         // Add the new event to the inputqueue
                         pDestClientItem->m_mutexClientInputQueue.Lock();
@@ -2854,7 +2946,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
 
                 } else {
                     // Overun - No room for event
-                    deleteVSCPevent(pEvent);
+                    vscp_deleteVSCPevent(pEvent);
                     bSent = true;
                     rv = false;
                 }
@@ -2877,7 +2969,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
             vscpEvent *pnewEvent = new vscpEvent;
             if (NULL != pnewEvent) {
 
-                copyVSCPEvent(pnewEvent, pEvent);
+                vscp_copyVSCPEvent(pnewEvent, pEvent);
 
                 m_mutexClientOutputQueue.Lock();
                 m_clientOutputQueue.Append(pnewEvent);
@@ -2886,7 +2978,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
             }
 
         } else {
-            deleteVSCPevent(pEvent);
+            vscp_deleteVSCPevent(pEvent);
             rv = false;
         }
     }
@@ -2938,7 +3030,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
         // Get filter
         if (tkz.HasMoreTokens()) {
             strTok = tkz.GetNextToken();
-            if (!readFilterFromString(&pss->pClientItem->m_filterVSCP,
+            if (!vscp_readFilterFromString(&pss->pClientItem->m_filterVSCP,
                     strTok)) {
                 pss->pMessageList->Add(_("-;1;Syntax error"));
                 return;
@@ -2951,7 +3043,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
         // Get mask
         if (tkz.HasMoreTokens()) {
             strTok = tkz.GetNextToken();
-            if (!readMaskFromString(&pss->pClientItem->m_filterVSCP,
+            if (!vscp_readMaskFromString(&pss->pClientItem->m_filterVSCP,
                     strTok)) {
                 pss->pMessageList->Add(_("-;1;Syntax error"));
                 return;
@@ -2973,7 +3065,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
         for (iterVSCP = pss->pClientItem->m_clientInputQueue.begin();
                 iterVSCP != pss->pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
             vscpEvent *pEvent = *iterVSCP;
-            deleteVSCPevent(pEvent);
+            vscp_deleteVSCPevent(pEvent);
         }
 
         pss->pClientItem->m_clientInputQueue.Clear();
@@ -3036,12 +3128,12 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
         // Get variable type
         if (tkz.HasMoreTokens()) {
-            type = readStringValue(tkz.GetNextToken());
+            type = vscp_readStringValue(tkz.GetNextToken());
         }
 
         // Get variable Persistent
         if (tkz.HasMoreTokens()) {
-            int val = readStringValue(tkz.GetNextToken());
+            int val = vscp_readStringValue(tkz.GetNextToken());
         }
 
         // Add the variable
@@ -3104,6 +3196,3192 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 
 
+
+
+#ifdef WIN32
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_get_session
+//
+
+struct websrv_Session *
+CControlObject::websrv_get_session( struct mg_connection *conn )
+{
+	char buf[512];
+    struct websrv_Session *ret = NULL;
+    const char *cookie = NULL;
+
+	// Get the session cookie
+	const char *pheader = mg_get_header( conn, "cookie" ); 
+	if ( NULL == pheader) return NULL;
+
+	if ( MG_FALSE == mg_parse_header( pheader, "session", buf, sizeof( buf ) ) ) return NULL;
+	cookie = buf;
+	
+    if (cookie != NULL) {
+        
+        // find existing session 
+        ret = websrv_sessions;
+        while (NULL != ret) {
+            if (0 == strcmp(cookie, ret->m_sid))
+                break;
+            ret = ret->m_next;
+        }
+        
+        if (NULL != ret) {
+            ret->m_referenceCount++;
+            return ret;
+        }
+    }
+        
+    return ret;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_add_session_cookie
+//
+
+websrv_Session *
+CControlObject::websrv_add_session_cookie( struct mg_connection *conn, const char * pUser )
+{
+	char buf[512];
+	struct websrv_Session *ret;
+
+	// create fresh session 
+    ret = (struct websrv_Session *)calloc(1, sizeof(struct websrv_Session));
+    if  (NULL == ret ) {
+#ifndef WIN32
+        syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
+#endif
+        return NULL;
+    }
+
+	// Generate a random session ID
+    time_t t;
+    t = time( NULL );
+    sprintf( buf,
+				"__VSCP__DAEMON_%X%X%X%X_be_hungry_stay_foolish_%X%X",
+				(unsigned int)rand(),
+				(unsigned int)rand(),
+				(unsigned int)rand(),
+				(unsigned int)t,
+				(unsigned int)rand(), 
+				1337 );
+
+	Cmd5 md5( (unsigned char *)buf );
+	strcpy( ret->m_sid, md5.getDigest() );
+	
+	sprintf( buf, "session=%s; max-age=3600; http-only", ret->m_sid );
+	mg_send_header( conn, "Set-Cookie", buf );
+	
+	sprintf( buf, "user=%s", pUser );
+	mg_send_header( conn, "Set-Cookie", buf );
+
+	strcpy( buf, "original_url=/; max-age=0" );
+	mg_send_header( conn, "Set-Cookie", buf );	
+	
+    // Add to linked list
+    ret->m_referenceCount++;
+    ret->start = time(NULL);
+    ret->m_next = websrv_sessions;
+	websrv_sessions = ret;
+
+    return ret;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_expire_sessions
+//
+
+void
+CControlObject::websrv_expire_sessions( void )
+{
+    struct websrv_Session *pos;
+    struct websrv_Session *prev;
+    struct websrv_Session *next;
+    time_t now;
+
+    now = time( NULL );
+    prev = NULL;
+    pos = websrv_sessions;
+    
+    while (NULL != pos) {
+        
+        next = pos->m_next;
+        
+        if (now - pos->start > 60 * 60) {
+        
+            // expire sessions after 1h 
+            if ( NULL == prev ) {
+                websrv_sessions = pos->m_next;
+            }
+            else {
+                prev->m_next = next;
+            }
+            
+            free(pos);
+            
+        } 
+        else {
+            prev = pos;
+        }
+        
+        pos = next;
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_check_password
+//
+// http://en.wikipedia.org/wiki/Digest_access_authentication
+//
+
+int 
+CControlObject::websrv_check_password( const char *method, 
+											const char *ha1, 
+											const char *uri,
+											const char *nonce, 
+											const char *nc, 
+											const char *cnonce,
+											const char *qop, 
+											const char *response )
+{
+	char ha2[32 + 1], expected_response[32 + 1];
+
+#if 0
+  // Check for authentication timeout
+  if ((unsigned long) time(NULL) - (unsigned long) to64(nonce) > 3600 * 2) {
+    return 0;
+  }
+#endif
+
+	mg_md5(ha2, method, ":", uri, NULL);
+	mg_md5(expected_response, ha1, ":", nonce, ":", nc,
+					":", cnonce, ":", qop, ":", ha2, NULL);
+
+	return ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_handle_websocket_message
+//
+
+int 
+CControlObject::websrv_handle_websocket_message( struct mg_connection *conn )
+{/*
+	struct conn_data *d = (struct conn_data *) conn->connection_param;
+	struct mg_connection *c;
+
+	printf("[%.*s]\n", (int) conn->content_len, conn->content);
+	if (conn->content_len > 5 && !memcmp(conn->content, "join ", 5)) {
+		// Client joined new room
+		d->room = conn->content[5];
+	} 
+	else if (conn->content_len > 4 && 
+				!memcmp(conn->content, "msg ", 4) &&
+				d->room != 0 && 
+				d->room != '?') {
+		// Client has sent a message. Push this message to all clients
+		// that are subscribed to the same room as client
+		for (c = mg_next(s_server, NULL); c != NULL; c = mg_next(s_server, c)) {
+			struct conn_data *d2 = (struct conn_data *) c->connection_param;
+			if (!c->is_websocket || d2->room != d->room) continue;
+			mg_websocket_printf(c, WEBSOCKET_OPCODE_TEXT, "msg %c %p %.*s",
+									(char) d->room, conn,
+									conn->content_len - 4, conn->content + 4);
+		}
+	}
+	*/
+	return 1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_event_handler
+//
+
+static const char *html_form =
+  "<html><body>POST example."
+  "<form method=\"POST\" action=\"/handle_post_request\">"
+  "Input 1: <input type=\"text\" name=\"input_1\" /> <br/>"
+  "Input 2: <input type=\"text\" name=\"input_2\" /> <br/>"
+  "<input type=\"submit\" />"
+  "</form></body></html>";
+
+int 
+CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
+{
+	const char *hdr;
+	struct websrv_Session * pSession;
+	char user[100], nonce[100],
+       uri[32768], cnonce[100], resp[100], qop[100], nc[100];
+	CUserItem *pUser;
+	bool bValidHost;
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+
+	switch (ev) {
+
+		case MG_AUTH: 
+			if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
+					( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
+				return MG_FALSE;
+			}
+			if (!mg_parse_header(hdr, "username", user, sizeof(user))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "cnonce", cnonce, sizeof(cnonce))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "response", resp, sizeof(resp))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "uri", uri, sizeof(uri))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "qop", qop, sizeof(qop))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "nc", nc, sizeof(nc))) return MG_FALSE;
+			if (!mg_parse_header(hdr, "nonce", nonce, sizeof(nonce))) return MG_FALSE;
+
+			// Check if user is vali			
+			pUser = pObject->m_userList.getUser( wxString::FromAscii( user ) );
+			if ( NULL == pUser ) return MG_FALSE;
+
+			// Check if remote ip is valid
+			pObject->m_mutexUserList.Lock();
+			bValidHost = 
+			        pObject->m_userList.checkRemote( pUser, 
+														wxString::FromAscii( conn->remote_ip ) );
+			pObject->m_mutexUserList.Unlock();
+			if (!bValidHost) return MG_FALSE;
+
+			if ( MG_TRUE != 
+				websrv_check_password( conn->request_method, pUser->m_md5Password.c_str(), uri, nonce, nc, cnonce, qop, resp ) ) 
+					return MG_FALSE;
+
+			websrv_add_session_cookie( conn, user );
+
+			return MG_TRUE;
+
+		case MG_REQUEST:
+
+			if (conn->is_websocket) {
+				//webswock_handle_message( conn );
+				return MG_TRUE;
+			} 
+			else {
+
+				// Get session
+				if ( NULL == ( pSession =  websrv_get_session( conn ) ) ) {
+
+					if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
+						( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
+						return MG_FALSE;
+					}
+				
+					if (!mg_parse_header(hdr, "username", user, sizeof(user))) {
+						return MG_FALSE;
+					}
+					// Add session cookie
+					pSession = websrv_add_session_cookie( conn, user );
+				}
+
+				mg_send_header(conn, "Content-Type", "text/html");
+				mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+										 "pre-check=0, no-store, no-cache, must-revalidate");
+
+				if ( 0 == strcmp(conn->uri, "/vscp") ) {
+					return websrv_mainpage( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/test") ) {
+					mg_send_data( conn, html_form, strlen(html_form) );
+					return MG_TRUE;
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/interfaces") ) {
+					return websrv_interfaces( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/dm") ) {
+					return websrv_dmlist( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/dmedit") ) {
+					return websrv_dmedit( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/dmpost") ) {
+					return websrv_dmpost( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/dmdelete") ) {
+					return websrv_dmdelete( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/variables") ) {
+					return websrv_variables_list( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/varedit") ) {
+					return websrv_variables_edit( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/varpost") ) {
+					return websrv_variables_post( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/vardelete") ) {
+					return websrv_variables_delete( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/varnew") ) {
+					return websrv_variables_new( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/discovery") ) {
+					return websrv_discovery( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/session") ) {
+					return websrv_session( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/configure") ) {
+					return websrv_configure( conn );
+				}
+				else if ( 0 == strcmp(conn->uri, "/vscp/bootload") ) {
+					return websrv_bootload( conn );
+				}
+			}
+			return MG_FALSE;
+
+		case MG_WS_CONNECT:
+			// New websocket connection. Send connection ID back to the client.
+			//conn->connection_param = calloc( 1, sizeof( struct websocket_data ) );
+			//mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "id %p", conn );
+			return MG_FALSE;
+
+		case MG_POLL:
+			websrv_expire_sessions();
+			return MG_FALSE;
+
+		case MG_HTTP_ERROR:
+			return MG_FALSE;
+
+		case MG_CLOSE:
+			//free( conn->connection_param );
+			return MG_TRUE;
+
+		default: 
+			return MG_FALSE;
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_mainpage
+//
+
+int
+CControlObject::websrv_mainpage( struct mg_connection *conn )
+{
+	// Get hostname
+    wxString strHost = mg_get_header( conn, "Host"); // conn->local_ip; //_("http://localhost:8080");
+
+    wxString buildPage;
+	mg_send_status( conn, 200 );
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Control"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+	// Insert server url into navigation menu   
+    buildPage += _(WEB_COMMON_MENU);
+        
+    buildPage += _("<span align=\"center\">");
+    buildPage += _("<h4> Welcome to the VSCP daemon control interface.</h4>");
+    buildPage += _("</span>");
+	buildPage += _("<span style=\"text-indent:50px;\"><p>");
+	buildPage += _("<img src=\"http://vscp.org/images/vscp_logo.jpg\" width=\"100\">");
+	buildPage += _("</p></span>");
+    buildPage += _("<span style=\"text-indent:50px;\"><p>");
+    buildPage += _(" <b>Version:</b> ");
+    buildPage += _(VSCPD_DISPLAY_VERSION);
+    buildPage += _("</p><p>");
+    buildPage += _(VSCPD_COPYRIGHT_HTML);
+    buildPage += _("</p></span>");
+            
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_interfaces
+//
+
+int 
+CControlObject::websrv_interfaces( struct mg_connection *conn )
+{
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+
+    wxString buildPage;
+	mg_send_status( conn, 200 );
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Control"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+	// Insert server url into navigation menu   
+    buildPage += _(WEB_COMMON_MENU);
+    
+    buildPage += _(WEB_IFLIST_BODY_START);
+    buildPage += _(WEB_IFLIST_TR_HEAD);
+
+    wxString strGUID;  
+    wxString strBuf;
+
+    // Display Interface List
+    pObject->m_wxClientMutex.Lock();
+    VSCPCLIENTLIST::iterator iter;
+    for (iter = pObject->m_clientList.m_clientItemList.begin();
+            iter != pObject->m_clientList.m_clientItemList.end();
+            ++iter) {
+
+        CClientItem *pItem = *iter;
+        pItem->m_guid.toString(strGUID);
+
+        buildPage += _(WEB_IFLIST_TR);
+
+        // Client id
+        buildPage += _(WEB_IFLIST_TD_CENTERED);
+        buildPage += wxString::Format(_("%d"), pItem->m_clientID);
+        buildPage += _("</td>");
+
+        // Interface type
+        buildPage += _(WEB_IFLIST_TD_CENTERED);
+        buildPage += wxString::Format(_("%d"), pItem->m_type);
+        buildPage += _("</td>");
+
+        // GUID
+        buildPage += _(WEB_IFLIST_TD_GUID);
+        buildPage += strGUID.Left(23);
+        buildPage += _("<br>");
+        buildPage += strGUID.Right(23);
+        buildPage += _("</td>");
+
+        // Interface name
+        buildPage += _("<td>");
+        buildPage += pItem->m_strDeviceName.Left(pItem->m_strDeviceName.Length() - 30);
+        buildPage += _("</td>");
+
+        // Start date
+        buildPage += _("<td>");
+        buildPage += pItem->m_strDeviceName.Right(19);
+        buildPage += _("</td>");
+
+        buildPage += _("</tr>");
+
+    }
+    
+    pObject->m_wxClientMutex.Unlock();
+    
+    buildPage += _(WEB_IFLIST_TABLE_END);
+    
+    buildPage += _("<br>All interfaces to the daemon is listed here. This is drivers as well as clients on one of the daemons interfaces. It is possible to see events coming in on a on a specific interface and send events on just one of the interfaces. This is mostly used on the driver interfaces but is possible on all interfacs<br>");
+    
+    buildPage += _("<br><b>Interface Types</b><br>");
+    buildPage += _("0 - Unknown (you should not see this).<br>");
+    buildPage += _("1 - Internal daemon client.<br>");
+    buildPage += _("2 - Level I (CANAL) Driver.<br>");
+    buildPage += _("3 - Level II Driver.<br>");
+    buildPage += _("4 - TCP/IP Client.<br>");
+
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+    
+	buildPage += _(WEB_COMMON_END);     // Common end code
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_dmlist
+//
+
+int
+CControlObject::websrv_dmlist( struct mg_connection *conn )
+{
+	char buf[80];
+    VSCPInformation vscpinfo;
+    long upperLimit = 50;
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+        
+    // light
+    bool bLight = false;
+	if ( mg_get_var( conn, "light", buf, sizeof( buf ) ) <= 0 ) { 
+		if ( strlen( buf ) && (NULL != strstr( "true", buf ) ) ) bLight = true;
+	}
+    
+    // From
+    long nFrom = 0;
+	if ( mg_get_var( conn, "from", buf, sizeof( buf ) ) > 0 ) { 
+		nFrom = atoi( buf );
+	}
+  
+    // Check limits
+    if (nFrom > pObject->m_dm.getRowCount()) nFrom = 0;
+    
+    // Count
+    uint16_t nCount = 50;
+	if ( mg_get_var( conn, "count", buf, sizeof( buf ) ) > 0 ) { 
+		nCount = atoi( buf );
+	}
+    
+    // Check limits
+    if ((nFrom + nCount) > pObject->m_dm.getRowCount()) {
+        upperLimit = pObject->m_dm.getRowCount()-nFrom;
+    }
+    else {
+        upperLimit = nFrom+nCount;
+    }
+    
+    // Navigation button
+	if ( mg_get_var( conn, "navbtn", buf, sizeof( buf ) ) > 0 ) { 
+	
+		if (NULL != strstr("previous", buf) ) {
+        
+			if ( 0 != nFrom ) {    
+            
+				nFrom -= nCount;
+				upperLimit = nFrom + nCount;
+            
+				if ( nFrom < 0 ) {
+					nFrom = 0;
+					if ((nFrom-nCount) < 0) {
+						upperLimit = pObject->m_dm.getRowCount()- nFrom;
+					}
+					else {
+						upperLimit = nFrom-nCount;
+					}
+				}
+            
+				if (upperLimit < 0) {
+					upperLimit = nCount;
+				}
+			}
+        }        
+		else if (NULL != strstr("next",buf)) {
+
+			if ( upperLimit < pObject->m_dm.getRowCount() ) {
+				nFrom += nCount;
+				if (nFrom >= pObject->m_dm.getRowCount()) {
+					nFrom = pObject->m_dm.getRowCount() - nCount;
+					if ( nFrom < 0 ) nFrom = 0;
+				}
+        
+				if ((nFrom+nCount) > pObject->m_dm.getRowCount()) {
+					upperLimit = pObject->m_dm.getRowCount();
+				}
+				else {
+					upperLimit = nFrom+nCount;
+				}
+			}
+
+		}
+		else if (NULL != strstr("last",buf)) {
+			
+			nFrom = pObject->m_dm.getRowCount() - nCount;
+			if ( nFrom < 0 ) {
+				nFrom = 0;
+				upperLimit = pObject->m_dm.getRowCount();
+			}
+			else {
+				upperLimit = pObject->m_dm.getRowCount();
+			}
+
+		}
+		else if ( NULL != strstr("first",buf) ) {
+
+			nFrom = 0;
+			if ((nFrom+nCount) > pObject->m_dm.getRowCount()) {
+				upperLimit = pObject->m_dm.getRowCount()-nFrom;
+			}
+			else {
+				upperLimit = nFrom+nCount;
+			}
+		}
+
+	}
+	else {  // No vaid navigation value
+
+		//nFrom = 0;
+        if ( (nFrom+nCount) > pObject->m_dm.getRowCount() ) {
+            upperLimit = pObject->m_dm.getRowCount()-nFrom;
+        }
+        else {
+            upperLimit = nFrom + nCount;
+        }
+		
+    }    
+
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    buildPage += _(WEB_COMMON_MENU);;  
+    buildPage += _(WEB_DMLIST_BODY_START);
+    
+    {
+		//wxString wxstrurl = wxString::Format( _("%s/vscp/dm"), conn->local_ip );
+        wxString wxstrlight = ((bLight) ? _("true") : _("false"));
+        buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
+                "/vscp/dm", //wxstrurl.GetData(),
+                nFrom,
+                ((nFrom + nCount) < pObject->m_dm.getRowCount()) ? 
+                    nFrom + nCount - 1 : pObject->m_dm.getRowCount() - 1,
+                pObject->m_dm.getRowCount(),
+                nCount,
+                nFrom,
+#if wxMAJOR_VERSION > 3 
+                wxstrlight );
+#else                
+                wxstrlight.GetWriteBuf(wxstrlight.Length()) );
+#endif        
+        buildPage += _("<br>");
+    } 
+
+    wxString strGUID;  
+    wxString strBuf;
+
+    // Display DM List
+    
+    if ( 0 == pObject->m_dm.getRowCount() ) {
+        buildPage += _("<br>Decision Matrix is empty!<br>");
+    }
+    else {
+        buildPage += _(WEB_DMLIST_TR_HEAD);
+    }
+    
+    if (nFrom < 0) nFrom = 0;
+    
+    for ( int i=nFrom;i<upperLimit;i++) {
+        
+        dmElement *pElement = pObject->m_dm.getRow(i);
+        
+        {
+            wxString url_dmedit = 
+                    wxString::Format(_("/vscp/dmedit?id=%d"),
+										//conn->local_ip,
+                                        i );
+            wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
+                                                url_dmedit.GetData() );
+            buildPage += str;
+        }
+
+        // Client id    
+        buildPage += _(WEB_IFLIST_TD_CENTERED);
+        buildPage += wxString::Format(_("<form name=\"input\" action=\"/vscp/dmdelete?id=%d\" method=\"get\">%d<input type=\"submit\" value=\"x\"><input type=\"hidden\" name=\"id\"value=\"%d\"></form>"), 
+										i, i, i );
+        buildPage += _("</td>");
+
+        // DM entry
+        buildPage += _("<td>");
+        
+        if (NULL != pElement) {
+
+            buildPage += _("<div id=\"small\">");
+
+            // Group
+            buildPage += _("<b>Group:</b> ");
+            buildPage += pElement->m_strGroupID;
+            buildPage += _("<br>");
+            
+            buildPage += _("<b>Comment:</b> ");
+            buildPage += pElement->m_comment;
+            buildPage += _("<br><hr width=\"90%\">");
+
+            buildPage += _("<b>Control:</b> ");
+
+            // Control - Enabled
+            if (pElement->isEnabled()) {
+                buildPage += _("[Row is enabled] ");
+            } 
+            else {
+                buildPage += _("[Row is disabled] ");
+            }
+
+            // Control - End scan
+            if (pElement->isScanDontContinueSet()) {
+                buildPage += _("[End scan after this row] ");
+            }
+
+            // Control - Check index
+            if (pElement->isCheckIndexSet()) {
+                if (pElement->m_bMeasurement) {
+                    buildPage += _("[Check Measurement Index] ");
+                } 
+                else {
+                    buildPage += _("[Check Index] ");
+                }
+            } 
+
+            // Control - Check zone
+            if (pElement->isCheckZoneSet()) {
+                buildPage += _("[Check Zone] ");
+            }
+
+            // Control - Check subzone
+            if (pElement->isCheckSubZoneSet()) {
+                buildPage += _("[Check Subzone] ");
+            }
+
+            buildPage += _("<br>");
+
+            if (!bLight) {
+
+                // * Filter
+
+                buildPage += _("<b>Filter_priority: </b>");
+                buildPage += wxString::Format(_("%d "),
+                        pElement->m_vscpfilter.filter_priority);
+
+                buildPage += _("<b>Filter_class: </b>");
+                buildPage += wxString::Format(_("%d "),
+                        pElement->m_vscpfilter.filter_class);
+                buildPage += _(" [");
+                buildPage += vscpinfo.getClassDescription(
+                        pElement->m_vscpfilter.filter_class);
+                buildPage += _("] ");
+
+                buildPage += _(" <b>Filter_type: </b>");
+                buildPage += wxString::Format(_("%d "),
+                        pElement->m_vscpfilter.filter_type);
+                buildPage += _(" [");
+                buildPage += vscpinfo.getTypeDescription(
+                        pElement->m_vscpfilter.filter_class,
+                        pElement->m_vscpfilter.filter_type);
+                buildPage += _("]<br>");
+
+                buildPage += _(" <b>Filter_GUID: </b>");
+                vscp_writeGuidArrayToString(pElement->m_vscpfilter.filter_GUID, strGUID);
+                buildPage += strGUID;
+
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Mask_priority: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_vscpfilter.mask_priority);
+
+                buildPage += _("<b>Mask_class: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_vscpfilter.mask_class);
+
+                buildPage += _("<b>Mask_type: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_vscpfilter.mask_type);
+
+                buildPage += _("<b>Mask_GUID: </b>");
+                vscp_writeGuidArrayToString(pElement->m_vscpfilter.mask_GUID, strGUID);
+                buildPage += strGUID;
+
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Index: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_index);
+
+                buildPage += _("<b>Zone: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_zone);
+
+                buildPage += _("<b>Subzone: </b>");
+                buildPage += wxString::Format(_("%d "), pElement->m_subzone);
+
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Allowed from:</b> ");
+                buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
+                buildPage += _(" ");
+                buildPage += pElement->m_timeAllow.m_fromTime.FormatISOTime();
+
+                buildPage += _(" <b>Allowed to:</b> ");
+                buildPage += pElement->m_timeAllow.m_endTime.FormatISODate();
+                buildPage += _(" ");
+                buildPage += pElement->m_timeAllow.m_endTime.FormatISOTime();
+
+                buildPage += _(" <b>Weekdays:</b> ");
+                buildPage += pElement->m_timeAllow.getWeekDays();
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Allowed time:</b> ");
+                buildPage += pElement->m_timeAllow.getActionTimeAsString();
+                buildPage += _("<br>");
+
+            } // mini
+
+            buildPage += _("<b>Action:</b> ");
+            buildPage += wxString::Format(_("%d "), pElement->m_action);
+
+            buildPage += _(" <b>Action parameters:</b> ");
+            buildPage += pElement->m_actionparam;
+            buildPage += _("<br>");
+
+            if (!bLight) {
+
+                buildPage += _("<b>Trigger Count:</b> ");
+                buildPage += wxString::Format(_("%d "), pElement->m_triggCounter);
+
+                buildPage += _("<b>Error Count:</b> ");
+                buildPage += wxString::Format(_("%d "), pElement->m_errorCounter);
+                buildPage += _("<br>");
+
+                buildPage += _("<b>Last Error String:</b> ");
+                buildPage += pElement->m_strLastError;
+
+            } // mini
+
+            buildPage += _("</div>");
+
+        } 
+        else {
+            buildPage += _("Internal error: Non existent DM entry.");
+        }
+
+        buildPage += _("</td>");
+        buildPage += _("</tr>");
+
+    }
+       
+    buildPage += _(WEB_DMLIST_TABLE_END);
+    
+    {
+        wxString wxstrurl = _("/vscp/dm");
+        wxString wxstrlight = ((bLight) ? _("true") : _("false"));
+        buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
+				wxstrurl,
+                nFrom,
+                ((nFrom + nCount) < pObject->m_dm.getRowCount()) ? 
+                    nFrom + nCount - 1 : pObject->m_dm.getRowCount() - 1,
+                pObject->m_dm.getRowCount(),
+                nCount,
+                nFrom,
+#if (wxMAJOR_VERSION > 3)
+                wxstrlight );
+#else                
+                wxstrlight.GetWriteBuf( wxstrlight.Length() ) );
+#endif        
+    }
+     
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_dmedit
+//
+
+int 
+CControlObject::websrv_dmedit( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    dmElement *pElement = NULL;
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+
+    // id
+    long id = -1;
+	if ( mg_get_var( conn, "id", buf, sizeof( buf ) ) > 0 ) {
+		id = atoi(buf);
+	}
+    
+    // Flag for new DM row
+    bool bNew = false;
+	if ( mg_get_var( conn, "new", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bNew = true;
+	}
+    
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix Edit"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    buildPage += _(WEB_COMMON_MENU);;
+    buildPage += _(WEB_DMEDIT_BODY_START);
+
+    if ( !bNew && id < pObject->m_dm.getRowCount() ) {
+        pElement = pObject->m_dm.getRow(id);
+    }
+
+    if (bNew || (NULL != pElement)) {
+        
+        if ( bNew ) {
+            buildPage += _("<span id=\"optiontext\">New record.</span><br>");
+        }
+        else {
+            buildPage += wxString::Format(_("<span id=\"optiontext\">Record = %d.</span><br>"), id);
+        }
+        
+        buildPage += _("<br><form method=\"get\" action=\"");
+        buildPage += _("/vscp/dmpost");
+        buildPage += _("\" name=\"dmedit\">");
+        
+        buildPage += wxString::Format(_("<input name=\"id\" value=\"%d\" type=\"hidden\"></input>"), id );
+        
+        if (bNew) {
+            buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\"></input>");
+        }
+        else {
+            buildPage += _("<input name=\"new\" value=\"false\" type=\"hidden\"></input>");
+        }
+        
+        buildPage += _("<h4>Group id:</h4>");
+        buildPage += _("<textarea cols=\"20\" rows=\"1\" name=\"groupid\">");
+        if ( !bNew ) buildPage += pElement->m_strGroupID;
+        buildPage += _("</textarea><br>");
+        
+        
+        buildPage += _("<h4>Event:</h4> <span id=\"optiontext\">(leave items blank for don't care)</span><br>");
+
+        buildPage += _("<table class=\"invisable\"><tbody><tr class=\"invisable\">");
+
+        buildPage += _("<td class=\"invisable\">Priority:</td><td class=\"tbalign\">");
+
+        // Priority
+        buildPage += _("<select name=\"filter_priority\">");
+        buildPage += _("<option value=\"-1\" ");
+        if (bNew) buildPage += _(" selected ");
+        buildPage += _(">Don't care</option>");
+
+        if ( !bNew ) str = (0 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"0\" %s>0 - Highest</option>"),
+                str.GetData());
+
+        if ( !bNew ) str = (1 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"1\" %s>1 - Very High</option>"),
+                str.GetData());
+
+        if ( !bNew ) str = (2 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"2\" %s>2 - High</option>"),
+                str.GetData());
+
+        if ( !bNew ) str = (3 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"3\" %s>3 - Normal</option>"),
+                str.GetData());
+
+        if ( !bNew ) str = (4 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"4\" %s>4 - Low</option>"),
+                str.GetData());
+
+        if ( !bNew ) str = (5 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"5\" %s>5 - Lower</option>"),
+                str.GetData());
+
+        if ( !bNew ) str = (6 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"6\" %s>6 - Very Low</option>"),
+                str.GetData());
+
+        if ( !bNew ) str = (7 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
+        buildPage += wxString::Format(_("<option value=\"7\" %s>7 - Lowest</option>"),
+                str.GetData());
+
+        buildPage += _("</select>");
+        // Priority mask
+        buildPage += _("</td><td><textarea cols=\"5\" rows=\"1\" name=\"mask_priority\">");
+        if ( bNew ) {
+            buildPage += _("0x00");
+        }
+        else {
+            buildPage += wxString::Format(_("%X"), pElement->m_vscpfilter.mask_priority );
+        }
+        buildPage += _("</textarea>");
+        
+        buildPage += _("</td></tr>");
+
+        // Class
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Class:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"filter_vscpclass\">");
+        if ( bNew ) {
+            buildPage += _("");;
+        }
+        else {
+            buildPage += wxString::Format(_("0x%X"), pElement->m_vscpfilter.filter_class);
+        }
+        buildPage += _("</textarea>");
+        
+        buildPage += _("</td><td> <textarea cols=\"10\" rows=\"1\" name=\"mask_vscpclass\">");
+        if ( bNew ) {
+            buildPage += _("0xFFFF");
+        }
+        else {
+            buildPage += wxString::Format(_("0x%04x"), pElement->m_vscpfilter.mask_class);
+        }
+        buildPage += _("</textarea>");
+        
+        buildPage += _("</td></tr>");
+        
+        // Type
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Type:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"filter_vscptype\">");
+        if ( bNew ) {
+            buildPage += _("");;
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_type);
+        }
+        buildPage += _("</textarea>");
+        
+        buildPage += _("</td><td> <textarea cols=\"10\" rows=\"1\" name=\"mask_vscptype\">");
+        if ( bNew ) {
+            buildPage += _("0xFFFF");;
+        }
+        else {
+            buildPage += wxString::Format(_("0x%04x"), pElement->m_vscpfilter.mask_type);
+        }
+        buildPage += _("</textarea>");
+        
+        buildPage += _("</td></tr>"); 
+        
+        // GUID
+        if ( !bNew ) vscp_writeGuidArrayToString( pElement->m_vscpfilter.filter_GUID, str );
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">GUID:</td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"filter_vscpguid\">");
+        if ( bNew ) {
+            buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
+        }
+        else {
+            buildPage += wxString::Format(_("%s"), str.GetData() );
+        }
+        buildPage += _("</textarea></td>");
+        
+        if ( !bNew ) vscp_writeGuidArrayToString( pElement->m_vscpfilter.mask_GUID, str );
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\"> </td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"mask_vscpguid\">");
+        if ( bNew ) {
+            buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
+        }
+        else {
+            buildPage += wxString::Format(_("%s"), str.GetData() );
+        }
+        buildPage += _("</textarea></td>");
+        
+        buildPage += _("</tr>");
+        
+        // Index
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Index:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpindex\">");
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), pElement->m_index );
+        }
+        buildPage += _("</textarea></td></tr>");
+
+        // Zone
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Zone:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpzone\">");
+        if ( bNew ) {
+            buildPage += _("0");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), pElement->m_zone );
+        }
+        buildPage += _("</textarea></td></tr>");
+        
+        // Subzone
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Subzone:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpsubzone\">");
+        if ( bNew ) {
+            buildPage += _("0");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), pElement->m_subzone );
+        }
+        buildPage += _("</textarea>");
+        buildPage += _("</td></tr>");
+        
+        buildPage += _("</tbody></table><br>");
+        
+        // Control
+        buildPage += _("<h4>Control:</h4>");
+        
+        // Enable row
+        buildPage += _("<input name=\"check_enablerow\" value=\"true\" ");
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%s"), 
+            pElement->isEnabled() ? _("checked") : _("") );
+        }
+        buildPage += _(" type=\"checkbox\">");            
+        buildPage += _("<span id=\"optiontext\">Enable row</span>&nbsp;&nbsp;"); 
+
+        // End scan on this row
+        buildPage += _("<input name=\"check_endscan\" value=\"true\"");
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), 
+                                            pElement->isScanDontContinueSet() ? _("checked") : _("") );
+        }
+        buildPage += _(" type=\"checkbox\">");           
+        buildPage += _("<span id=\"optiontext\">End scan on this row</span>&nbsp;&nbsp;");
+
+        //buildPage += _("<br>");
+
+        // Check Index
+        buildPage += _("<input name=\"check_index\" value=\"true\"");
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), 
+                                            pElement->isCheckIndexSet() ? _("checked") : _("") );
+        }
+        buildPage += _(" type=\"checkbox\">"); 
+        buildPage += _("<span id=\"optiontext\">Check Index</span>&nbsp;&nbsp;");
+
+        // Check Zone
+        buildPage += _("<input name=\"check_zone\" value=\"true\"");
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), 
+                                            pElement->isCheckZoneSet() ? _("checked") : _("") );
+        }
+        buildPage += _(" type=\"checkbox\">"); 
+        buildPage += _("<span id=\"optiontext\">Check Zone</span>&nbsp;&nbsp;"); 
+
+        // Check subzone
+        buildPage += _("<input name=\"check_subzone\" value=\"true\"");
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%d"), 
+                                            pElement->isCheckSubZoneSet() ? _("checked") : _("") );
+        }
+        buildPage += _(" type=\"checkbox\">"); 
+        buildPage += _("<span id=\"optiontext\">Check Subzone</span>&nbsp;&nbsp;");
+        buildPage += _("<br><br><br>");
+        
+        buildPage += _("<h4>Allowed From:</h4>");
+		buildPage += _("<i>Enter * for beginning of time.</i><br>");
+        buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedfrom\">");
+        if ( bNew ) {
+            buildPage += _("yyyy-mm-dd hh:mm:ss");
+        }
+        else {
+            buildPage += pElement->m_timeAllow.m_fromTime.FormatISODate();
+            buildPage += _(" ");
+            buildPage += pElement->m_timeAllow.m_fromTime.FormatISOTime();
+        }
+        buildPage += _("</textarea>");
+
+        buildPage += _("<h4>Allowed To:</h4>");
+		buildPage += _("<i>Enter * for end of time (always).</i><br>");
+        buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedto\">");
+        if ( bNew ) {
+            buildPage += _("yyyy-mm-dd hh:mm:ss");
+        }
+        else {
+            buildPage += pElement->m_timeAllow.m_endTime.FormatISODate();
+            buildPage += _(" ");
+            buildPage += pElement->m_timeAllow.m_endTime.FormatISOTime();
+        }
+        buildPage += _("</textarea>");
+       
+        buildPage += _("<h4>Allowed time:</h4>");
+		buildPage += _("<i>Enter * for always.</i><br>");
+        buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"allowedtime\">");
+        if ( bNew ) {
+            buildPage += _("yyyy-mm-dd hh:mm:ss");
+        }
+        else {
+            buildPage += pElement->m_timeAllow.getActionTimeAsString();
+        }
+        buildPage += _("</textarea>");
+        
+        buildPage += _("<h4>Allowed days:</h4>");
+        buildPage += _("<input name=\"monday\" value=\"true\" ");
+        
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[0] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Monday ");
+
+        buildPage += _("<input name=\"tuesday\" value=\"true\" ");
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[1] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Tuesday ");
+
+        buildPage += _("<input name=\"wednesday\" value=\"true\" ");
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[2] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Wednesday ");
+
+        buildPage += _("<input name=\"thursday\" value=\"true\" ");
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[3] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Thursday ");
+         
+        buildPage += _("<input name=\"friday\" value=\"true\" ");
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[4] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Friday ");
+
+        buildPage += _("<input name=\"saturday\" value=\"true\" ");
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[5] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Saturday ");
+
+        buildPage += _("<input name=\"sunday\" value=\"true\" ");
+        if ( !bNew ) buildPage += wxString::Format(_("%s"), 
+                                        pElement->m_timeAllow.m_weekDay[6] ? _("checked") : _("") );
+        buildPage += _(" type=\"checkbox\">Sunday ");
+        buildPage += _("<br>");
+        
+        buildPage += _("<h4>Action:</h4>");
+        
+        buildPage += _("<select name=\"action\">");
+        buildPage += _("<option value=\"0\" ");
+        if (bNew) buildPage += _(" selected ");
+        buildPage += _(">No Operation</option>");
+
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x10 == pElement->m_action ) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x10\" %s>Execute external program</option>"),
+                str.GetData());
+
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x12 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x12\" %s>Execute internal procedure</option>"),
+                str.GetData());
+
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x30 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x30\" %s>Execute library procedure</option>"),
+                str.GetData());
+
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x40 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x40\" %s>Send event</option>"),
+                str.GetData());
+
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x41 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x41\" %s>Send event Conditional</option>"),
+                str.GetData());
+
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x42 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x42\" %s>Send event(s) from file</option>"),
+                str.GetData());
+
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x43 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x43\" %s>Send event(s) to remote VSCP server</option>"),
+                str.GetData());
+
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x50 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x50\" %s>Store in variable</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x51 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x51\" %s>Store in array</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x52 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x52\" %s>Add to variable</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x53 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x53\" %s>Subtract from variable</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x54 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x54\" %s>Multiply variable</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x55 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x55\" %s>Divide variable</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x60 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x60\" %s>Start timer</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x61 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x61\" %s>Pause timer</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x62 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x62\" %s>Stop timer</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x63 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x63\" %s>Resume timer</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else {
+            str = (0x70 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x70\" %s>Write file</option>"),
+                str.GetData());
+        
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x75 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x75\" %s>Get/Put/Post URL</option>"),
+                str.GetData());
+
+        buildPage += _("</select>");
+             
+        buildPage += _("<h4>Action parameter:</h4>");
+        buildPage += _("<textarea cols=\"80\" rows=\"1\" name=\"actionparameter\">");
+        if ( !bNew ) buildPage += pElement->m_actionparam;
+        buildPage += _("</textarea>");
+
+        buildPage += _("<h4>Comment:</h4>");
+        buildPage += _("<textarea cols=\"80\" rows=\"5\" name=\"comment\">");
+        if ( !bNew ) buildPage += pElement->m_comment;
+        buildPage += _("</textarea>");
+    } 
+    else {
+        buildPage += _("<br><b>Error: Non existent id</b>");
+    }
+    
+    buildPage += _(WEB_DMEDIT_SUBMIT);  
+    buildPage += _("</form>");
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_dmpost
+//
+
+int 
+CControlObject::websrv_dmpost( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    dmElement *pElement = NULL;
+    
+    // id
+    long id = -1;
+	if ( mg_get_var( conn, "id", buf, sizeof( buf ) ) > 0 ) {
+		id = atoi( buf );
+	}
+    
+    // Flag for new DM row
+    bool bNew = false;
+	if ( mg_get_var( conn, "new", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bNew = true;
+	}
+
+    wxString strGroupID;
+	if ( mg_get_var( conn, "groupid", buf, sizeof( buf ) ) > 0 ) {
+		strGroupID = wxString::FromAscii(buf);
+	}
+        
+    int filter_priority = -1;
+	if ( mg_get_var( conn, "filter_priority", buf, sizeof( buf ) ) > 0 ) {
+		filter_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+         
+    int mask_priority = 0;    
+	if ( mg_get_var( conn, "mask_priority", buf, sizeof( buf ) ) > 0 ) {
+		mask_priority = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint16_t filter_vscpclass = -1;
+	if ( mg_get_var( conn, "filter_vscpclass", buf, sizeof( buf ) ) > 0 ) {
+		wxString wrkstr = wxString::FromAscii( buf );
+		filter_vscpclass = vscp_readStringValue( wrkstr );
+	}
+    
+    uint16_t mask_vscpclass = 0;
+	if ( mg_get_var( conn, "mask_vscpclass", buf, sizeof( buf ) ) > 0 ) {
+		mask_vscpclass = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint16_t filter_vscptype = 0;
+	if ( mg_get_var( conn, "filter_vscptype", buf, sizeof( buf ) ) > 0 ) {
+		filter_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint16_t mask_vscptype = 0;
+	if ( mg_get_var( conn, "mask_vscptype", buf, sizeof( buf ) ) > 0 ) {
+		mask_vscptype = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    wxString strFilterGuid;
+	if ( mg_get_var( conn, "filter_vscpguid", buf, sizeof( buf ) ) > 0 ) {
+		strFilterGuid = wxString::FromAscii( buf );
+		strFilterGuid = strFilterGuid.Trim();
+		strFilterGuid = strFilterGuid.Trim(false);
+	}
+    
+    wxString strMaskGuid;
+	if ( mg_get_var( conn, "mask_vscpguid", buf, sizeof( buf ) ) > 0 ) {
+		strMaskGuid = wxString::FromAscii( buf );
+		strMaskGuid = strMaskGuid.Trim();
+		strMaskGuid = strMaskGuid.Trim(false);
+	}
+    
+    uint8_t index = 0;
+	if ( mg_get_var( conn, "vscpindex", buf, sizeof( buf ) ) > 0 ) {
+		index = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint8_t zone = 0;
+	if ( mg_get_var( conn, "vscpzone", buf, sizeof( buf ) ) > 0 ) {
+		zone = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint8_t subzone = 0;
+	if ( mg_get_var( conn, "vscpsubzone", buf, sizeof( buf ) ) > 0 ) {
+		subzone = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    bool bEnableRow = false;
+	if ( mg_get_var( conn, "check_enablerow", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bEnableRow = true;
+	}
+        
+    bool bEndScan = false;
+	if ( mg_get_var( conn, "check_endscan", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bEndScan = true;
+	}
+    
+    bool bCheckIndex = false;
+	if ( mg_get_var( conn, "check_index", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckIndex = true;
+	}
+    
+    bool bCheckZone = false;
+	if ( mg_get_var( conn, "check_zone", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckZone = true;
+	}
+    
+    bool bCheckSubZone = false;
+	if ( mg_get_var( conn, "check_subzone", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckSubZone = true;
+	}
+    
+    wxString strAllowedFrom;
+	if ( mg_get_var( conn, "allowedfrom", buf, sizeof( buf ) ) > 0 ) {
+		strAllowedFrom = wxString::FromAscii( buf );	
+		strAllowedFrom.Trim( true );
+		strAllowedFrom.Trim( false );
+		if ( "*" == strAllowedFrom ) {
+			strAllowedFrom = _("0000-01-01 00:00:00");
+		}
+	}
+    
+    wxString strAllowedTo;
+	if ( mg_get_var( conn, "allowedto", buf, sizeof( buf ) ) > 0 ) {
+		strAllowedTo = wxString::FromAscii( buf );	
+		strAllowedTo.Trim( true );
+		strAllowedTo.Trim( false );
+		if ( "*" == strAllowedTo ) {
+			strAllowedTo = _("9999-12-31 23:59:59");
+		}
+	}
+    
+    wxString strAllowedTime;
+	if ( mg_get_var( conn, "allowedtime", buf, sizeof( buf ) ) > 0 ) {
+		strAllowedTime = wxString::FromAscii( buf );  	
+		strAllowedTime.Trim( true );
+		strAllowedTime.Trim( false );
+		if ( "*" == strAllowedTime ) {
+			strAllowedTime = _("* *");
+		}
+	}
+    
+    bool bCheckMonday = false;
+	if ( mg_get_var( conn, "monday", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckMonday = true;
+	}
+    
+    bool bCheckTuesday = false;
+	if ( mg_get_var( conn, "tuesday", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckTuesday = true;
+	}
+    
+    bool bCheckWednesday = false;
+	if ( mg_get_var( conn, "wednesday", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckWednesday = true;
+	}
+    
+    bool bCheckThursday = false;
+	if ( mg_get_var( conn, "thursday", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckThursday = true;
+	}
+    
+    bool bCheckFriday = false;
+	if ( mg_get_var( conn, "friday", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckFriday = true;
+	}
+    
+    bool bCheckSaturday = false;
+	if ( mg_get_var( conn, "saturday", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckSaturday = true;
+	}
+    
+    bool bCheckSunday = false;
+	if ( mg_get_var( conn, "sunday", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bCheckSunday = true;
+	}
+    
+    uint32_t action = 0;
+	if ( mg_get_var( conn, "action", buf, sizeof( buf ) ) > 0 ) {
+		action = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    wxString strActionParameter;
+	if ( mg_get_var( conn, "actionparameter", buf, sizeof( buf ) ) > 0 ) {
+		strActionParameter = wxString::FromAscii( buf );
+	}
+    
+    wxString strComment;
+	if ( mg_get_var( conn, "comment", buf, sizeof( buf ) ) > 0 ) {
+		strComment = wxString::FromAscii( buf );
+	}
+    
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix Post"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
+    buildPage += wxString::Format(_("?from=%d"), id );
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Insert server url into navigation menu 
+    wxString navstr = _(WEB_COMMON_MENU);
+    int pos;
+    while ( wxNOT_FOUND != ( pos = navstr.Find(_("%s")))) {
+        buildPage += navstr.Left( pos );
+        navstr = navstr.Right(navstr.Length() - pos - 2);
+    }
+    buildPage += navstr;
+    
+    buildPage += _(WEB_DMPOST_BODY_START);
+        
+    if (bNew) {
+        pElement = new dmElement;
+    }
+
+    if ( bNew || ( id >= 0 ) ) {
+
+        if ( bNew || ((0 == id) && !bNew) || ( id < pObject->m_dm.getRowCount() ) ) {
+
+            if (!bNew) pElement = pObject->m_dm.getRow(id);
+
+            if (NULL != pElement) {
+
+                if (-1 == filter_priority) {
+                    pElement->m_vscpfilter.mask_priority = 0;
+                    pElement->m_vscpfilter.filter_priority = 0;
+                } 
+                else {
+                    pElement->m_vscpfilter.mask_priority = mask_priority;
+                    pElement->m_vscpfilter.filter_priority = filter_priority;
+                }
+
+                if (-1 == filter_vscpclass) {
+                    pElement->m_vscpfilter.mask_class = 0;
+                    pElement->m_vscpfilter.filter_class = 0;
+                } 
+                else {
+                    pElement->m_vscpfilter.mask_class = mask_vscpclass;
+                    pElement->m_vscpfilter.filter_class = filter_vscpclass;
+                }
+
+                if (-1 == filter_vscptype) {
+                    pElement->m_vscpfilter.mask_type = 0;
+                    pElement->m_vscpfilter.filter_type = 0;
+                } 
+                else {
+                    pElement->m_vscpfilter.mask_type = mask_vscptype;
+                    pElement->m_vscpfilter.filter_type = filter_vscptype;
+                }
+
+                if (0 == strFilterGuid.Length()) {
+                    for (int i = 0; i < 16; i++) {
+                        pElement->m_vscpfilter.mask_GUID[i] = 0;
+                        pElement->m_vscpfilter.filter_GUID[i] = 0;
+                    }
+                } 
+                else {
+                    vscp_getGuidFromStringToArray(pElement->m_vscpfilter.mask_GUID,
+                            strMaskGuid);
+                    vscp_getGuidFromStringToArray(pElement->m_vscpfilter.filter_GUID,
+                            strFilterGuid);
+                }
+
+                pElement->m_index = index;
+                pElement->m_zone = zone;
+                pElement->m_subzone = subzone;
+
+                pElement->m_control = 0;
+                if (bEnableRow) pElement->m_control |= DM_CONTROL_ENABLE;
+                if (bEndScan) pElement->m_control |= DM_CONTROL_DONT_CONTINUE_SCAN;
+                if (bCheckIndex) pElement->m_control |= DM_CONTROL_CHECK_INDEX;
+                if (bCheckZone) pElement->m_control |= DM_CONTROL_CHECK_ZONE;
+                if (bCheckSubZone) pElement->m_control |= DM_CONTROL_CHECK_SUBZONE;
+
+                pElement->m_timeAllow.m_fromTime.ParseDateTime( strAllowedFrom );
+                pElement->m_timeAllow.m_endTime.ParseDateTime( strAllowedTo );
+                pElement->m_timeAllow.parseActionTime( strAllowedTime );
+
+                wxString weekdays;
+
+                if (bCheckMonday) weekdays = _("m"); else weekdays = _("-");
+                if (bCheckTuesday) weekdays += _("t"); else weekdays += _("-");
+                if (bCheckWednesday) weekdays += _("w"); else weekdays += _("-");
+                if (bCheckThursday) weekdays += _("t"); else weekdays += _("-");
+                if (bCheckFriday) weekdays += _("f"); else weekdays += _("-");
+                if (bCheckSaturday) weekdays += _("s"); else weekdays += _("-");
+                if (bCheckSunday) weekdays += _("s"); else weekdays += _("-");
+                pElement->m_timeAllow.setWeekDays(weekdays);
+
+                pElement->m_action = action;
+
+                pElement->m_actionparam = strActionParameter;
+                pElement->m_comment = strComment;
+                
+                pElement->m_strGroupID = strGroupID;
+
+                pElement->m_triggCounter = 0;
+                pElement->m_errorCounter = 0;
+
+                if ( bNew ) {
+                    // add the DM row to the matrix
+                    pObject->m_dm.addElement(pElement);
+                }
+
+                // Save decision matrix
+                pObject->m_dm.save();
+
+                buildPage += wxString::Format(_("<br><br>DM Entry has been saved. id=%d"), id);
+            } 
+			else {
+                buildPage += wxString::Format(_("<br><br>Memory problem id=%d. Unable to save record"), id);
+            }
+
+        } else {
+            buildPage += wxString::Format(_("<br><br>Record id=%d is to large. Unable to save record"), id);
+        }
+    } else {
+        buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id);
+    }
+
+    buildPage += _(WEB_COMMON_END); // Common end code 
+
+    // Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_dmdelete
+//
+
+int 
+CControlObject::websrv_dmdelete( struct mg_connection *conn )
+{
+	char buf[80];
+	wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    dmElement *pElement = NULL;
+   
+    // id
+    long id = -1;
+	if ( mg_get_var( conn, "id", buf, sizeof( buf ) ) > 0 ) {
+		id = atoi( buf );
+	}
+        
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Decision Matrix Delete"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
+    buildPage += wxString::Format(_("?from=%d"), id + 1 );
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+    
+    buildPage += _(WEB_DMEDIT_BODY_START);
+    
+    if ( pObject->m_dm.removeRow( id ) ) {
+        buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
+        // Save decision matrix
+        pObject->m_dm.save();
+    }
+    else {
+        buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
+    }
+    
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    // Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+    
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_variables_list
+//
+
+int
+CControlObject::websrv_variables_list( struct mg_connection *conn )
+{
+	char buf[80];
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    VSCPInformation vscpinfo;
+    unsigned long upperLimit = 50;
+              
+    // From
+    unsigned long nFrom = 0;
+	if ( mg_get_var( conn, "from", buf, sizeof( buf ) ) > 0 ) {
+		
+		atoi( buf );
+
+		// Check limits
+		if (nFrom > pObject->m_VSCP_Variables.m_listVariable.GetCount()) nFrom = 0;
+	}
+    
+    
+    // Count
+    uint16_t nCount = 50;
+	if ( mg_get_var( conn, "count", buf, sizeof( buf ) ) > 0 ) {
+		
+		nCount = atoi( buf );
+		
+		// Check limits
+		if ( (nFrom+nCount) > pObject->m_VSCP_Variables.m_listVariable.GetCount() ) {
+			upperLimit = pObject->m_VSCP_Variables.m_listVariable.GetCount()-nFrom;
+		}
+		else {
+			upperLimit = nFrom+nCount;
+		}
+	}
+    
+    // Navigation button
+    if ( mg_get_var( conn, "navbtn", buf, sizeof( buf ) ) > 0 ) {
+        //nFrom = 0;
+        if ((nFrom+nCount) > pObject->m_VSCP_Variables.m_listVariable.GetCount()) {
+            upperLimit = pObject->m_VSCP_Variables.m_listVariable.GetCount()-nFrom;
+        }
+        else {
+            upperLimit = nFrom+nCount;
+        }
+    }
+    else if (NULL != strstr("first", buf )) {
+        nFrom = 0;
+        if ((nFrom+nCount) > pObject->m_VSCP_Variables.m_listVariable.GetCount()) {
+            upperLimit = pObject->m_VSCP_Variables.m_listVariable.GetCount()-nFrom;
+        }
+        else {
+            upperLimit = nFrom+nCount;
+        }
+    }
+    else if (NULL != strstr("previous", buf ) ) {
+        
+        if ( 0 != nFrom ) {    
+            
+            nFrom -= nCount;
+            upperLimit = nFrom+nCount;
+            
+            if ( nFrom < 0 ) {
+                nFrom = 0;
+                if ((nFrom-nCount) < 0) {
+                    upperLimit = pObject->m_VSCP_Variables.m_listVariable.GetCount()- nFrom;
+                }
+                else {
+                    upperLimit = nFrom-nCount;
+                }
+            }
+            
+            if (upperLimit < 0) {
+                upperLimit = nCount;
+            }
+        }
+        
+    }
+    else if (NULL != strstr("next", buf )) {
+
+        if ( upperLimit < pObject->m_VSCP_Variables.m_listVariable.GetCount() ) {
+            nFrom += nCount;
+            if (nFrom >= pObject->m_VSCP_Variables.m_listVariable.GetCount()) {
+                nFrom = pObject->m_VSCP_Variables.m_listVariable.GetCount() - nCount;
+                if ( nFrom < 0 ) nFrom = 0;
+            }
+        
+            if ((nFrom+nCount) > pObject->m_VSCP_Variables.m_listVariable.GetCount()) {
+                upperLimit = pObject->m_VSCP_Variables.m_listVariable.GetCount();
+            }
+            else {
+                upperLimit = nFrom+nCount;
+            }
+        }
+
+    }
+    else if (NULL != strstr("last", buf )) {
+        nFrom = pObject->m_VSCP_Variables.m_listVariable.GetCount() - nCount;
+        if ( nFrom < 0 ) {
+            nFrom = 0;
+            upperLimit = pObject->m_VSCP_Variables.m_listVariable.GetCount();
+        }
+        else {
+            upperLimit = pObject->m_VSCP_Variables.m_listVariable.GetCount();
+        }
+    }
+
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variables"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+    
+    buildPage += _(WEB_VARLIST_BODY_START);
+    
+    {
+        wxString wxstrurl = _("/vscp/variables");
+        buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
+                wxstrurl.GetData(),
+                nFrom,
+                ((nFrom + nCount) < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ? 
+                    nFrom + nCount - 1 : pObject->m_VSCP_Variables.m_listVariable.GetCount() - 1,
+                pObject->m_VSCP_Variables.m_listVariable.GetCount(),
+                nCount,
+                nFrom,
+                _("false" ) );
+        buildPage += _("<br>");
+    } 
+
+    wxString strBuf;
+
+    // Display Variables List
+    
+    if ( 0 == pObject->m_VSCP_Variables.m_listVariable.GetCount() ) {
+        buildPage += _("<br>Variables list is empty!<br>");
+    }
+    else {
+        buildPage += _(WEB_VARLIST_TR_HEAD);
+    }
+    
+    if (nFrom < 0) nFrom = 0;
+    
+    for ( unsigned int i=nFrom;i<upperLimit;i++) {
+        
+        CVSCPVariable *pVariable = 
+                pObject->m_VSCP_Variables.m_listVariable.Item( i )->GetData();
+        
+        {
+            wxString url_dmedit = 
+                    wxString::Format(_("/vscp/varedit?id=%d"),
+                                        i );
+            wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
+                                                url_dmedit.GetData() );
+            buildPage += str;
+        }
+
+        // Client id    
+        buildPage += _(WEB_IFLIST_TD_CENTERED);
+        buildPage += wxString::Format(_("<form name=\"input\" action=\"/vscp/vardelete?id=%d\" method=\"get\">%d<input type=\"submit\" value=\"x\"><input type=\"hidden\" name=\"id\"value=\"%d\"></form>"), 
+                        i, i, i );
+        buildPage += _("</td>");
+        
+        if (NULL != pVariable) {
+
+            // Variable type
+            buildPage += _("<td>");
+            switch (pVariable->getType()) {
+
+            case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
+                buildPage += _("Unassigned");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_STRING:
+                buildPage += _("String");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
+                buildPage += _("Boolean");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
+                buildPage += _("Integer");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_LONG:
+                buildPage += _("Long");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
+                buildPage += _("Double");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+                buildPage += _("Measurement");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+                buildPage += _("Event");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+                buildPage += _("GUID");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+                buildPage += _("Event data");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+                buildPage += _("Event class");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+                buildPage += _("Event type");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+                buildPage += _("Event timestamp");
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
+                buildPage += _("Date and time");
+                break;
+
+            default:
+                buildPage += _("Unknown type");
+                break;
+
+            }
+            buildPage += _("</td>");
+
+            
+            // Variable entry
+            buildPage += _("<td>");
+
+            buildPage += _("<div id=\"small\">");
+
+            buildPage += _("<h4>");
+            buildPage += pVariable->getName();
+            buildPage += _("</h4>");
+            
+            wxString str;
+            pVariable->writeVariableToString(str);
+            buildPage += _("<b>Value:</b> ");
+            buildPage += str;
+            
+            buildPage += _("<br>");
+            buildPage += _("<b>Note:</b> ");
+            buildPage += pVariable->getNote();
+            
+            buildPage += _("<br>");
+            buildPage += _("<b>Persistent: </b> ");
+            if ( pVariable->isPersistent() ) {
+                buildPage += _("yes");
+            }
+            else {
+                buildPage += _("no");
+            }
+
+            buildPage += _("</div>");
+
+        }
+        else {
+            buildPage += _("Internal error: Non existent variable entry.");
+        }
+
+        buildPage += _("</td>");
+        buildPage += _("</tr>");
+
+    }
+       
+    buildPage += _(WEB_DMLIST_TABLE_END);
+    
+    {
+        wxString wxstrurl = _("/vscp/variables");
+        buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
+                wxstrurl.GetData(),
+                nFrom,
+                ((nFrom + nCount) < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ? 
+                    nFrom + nCount - 1 : pObject->m_VSCP_Variables.m_listVariable.GetCount() - 1,
+                pObject->m_VSCP_Variables.m_listVariable.GetCount(),
+                nCount,
+                nFrom,
+                _("false") );
+    }
+     
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+    
+
+	return MG_TRUE;	
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_variables_edit
+//
+
+int
+CControlObject::websrv_variables_edit( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+        CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+        
+    // id
+    long id = -1;
+	if ( mg_get_var( conn, "id", buf, sizeof( buf ) ) > 0 ) {
+		id = atoi( buf );
+	}
+    
+    // type
+    uint8_t nType = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
+	if ( mg_get_var( conn, "type", buf, sizeof( buf ) ) > 0 ) {
+		nType = atoi( buf );
+	}
+    
+    // Flag for new variable row
+    bool bNew = false;
+	if ( mg_get_var( conn, "new", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bNew = true;
+	}
+    
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variable Edit"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+    
+    buildPage += _(WEB_VAREDIT_BODY_START);
+
+    if ( !bNew && ( id < (long)pObject->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
+        pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
+    }
+
+    if (bNew || (NULL != pVariable)) {
+        
+        if ( bNew ) {
+            buildPage += _("<br><span id=\"optiontext\">New record.</span><br>");
+        }
+        else {
+            buildPage += wxString::Format(_("<br><span id=\"optiontext\">Record = %d.</span><br>"), id);
+        }
+        
+        buildPage += _("<br><form method=\"get\" action=\"");
+        buildPage += _("/vscp/varpost");
+        buildPage += _("\" name=\"varedit\">");
+        
+        // Hidden id
+        buildPage += wxString::Format(_("<input name=\"id\" value=\"%d\" type=\"hidden\">"), id );
+        
+        if (bNew) {     
+            // Hidden new
+            buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\">");
+        }
+        else {
+            // Hidden new
+            buildPage += _("<input name=\"new\" value=\"false\" type=\"hidden\">");
+        }
+        
+        // Hidden type
+        buildPage += _("<input name=\"type\" value=\"");
+        buildPage += wxString::Format(_("%d"), ( bNew ? nType : pVariable->getType()) );
+        buildPage += _("\" type=\"hidden\"></input>");
+        
+        buildPage += _("<h4>Variable:</h4> <span id=\"optiontext\"></span><br>");
+
+        buildPage += _("<table class=\"invisable\"><tbody><tr class=\"invisable\">");
+
+        buildPage += _("<td class=\"invisable\">Name:</td><td class=\"invisable\">");
+        if ( !bNew ) {
+            buildPage += pVariable->getName();
+            buildPage += _("<input name=\"value_name\" value=\"");
+            buildPage += pVariable->getName();
+            buildPage += _("\" type=\"hidden\">");
+        }
+        else {
+            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_name\"></textarea>");
+        }
+        buildPage += _("</td></tr><tr>");
+        buildPage += _("<td class=\"invisable\">Value:</td><td class=\"invisable\">");
+        
+        if (!bNew ) nType = pVariable->getType();
+        
+        if ( nType  == VSCP_DAEMON_VARIABLE_CODE_STRING ) {
+            
+            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_string\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString str;
+                pVariable->getValue( &str );
+                buildPage += str;
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) {
+            
+            bool bValue = false;
+            if ( !bNew ) pVariable->getValue( &bValue );
+            
+            buildPage += _("<input type=\"radio\" name=\"value_boolean\" value=\"true\" ");
+            if ( !bNew ) 
+                buildPage += wxString::Format(_("%s"), 
+                                bValue ? _("checked >true ") : _(">true ") );
+            else {
+                buildPage += _(">true ");
+            }
+            
+            buildPage += _("<input type=\"radio\" name=\"value_boolean\" value=\"false\" ");
+            if ( !bNew ) 
+                buildPage += wxString::Format(_("%s"), 
+                                        !bValue ? _("checked >false ") : _(">false ") );
+            else {
+                buildPage += _(">false ");
+            }
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_INTEGER ) {
+            
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_integer\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                int val;
+                pVariable->getValue( &val );
+                buildPage += wxString::Format(_("%d"), val );
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_LONG ) {
+            
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_long\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                long val;
+                pVariable->getValue( &val );
+                buildPage += wxString::Format(_("%ld"), val );
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_DOUBLE ) {
+            
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_double\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                double val;
+                pVariable->getValue( &val );
+                buildPage += wxString::Format(_("%f"), val );
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT ) {
+            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_measurement\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString str;
+                pVariable->writeVariableToString( str );
+                buildPage += str;
+            }
+            
+            buildPage += _("</textarea>");
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT ) {
+            
+            buildPage += _("<table>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("VSCP class");
+             buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_class\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_class );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("VSCP type: ");
+            buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_type\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                buildPage += wxString::Format(_("0x%x"), pVariable->m_event.vscp_type );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("GUID: ");
+            buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString strGUID;
+                vscp_writeGuidArrayToString( pVariable->m_event.GUID, strGUID );
+                buildPage += wxString::Format(_("%s"), strGUID.GetData() );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("Timestamp: ");
+            buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_timestamp\">");
+            if ( bNew ) {
+                buildPage += _("0");
+            }
+            else {
+                buildPage += wxString::Format(_("0x%x"), pVariable->m_event.timestamp );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("OBID: ");
+            buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_obid\">");
+            if ( bNew ) {
+                buildPage += _("0");
+            }
+            else {
+                buildPage += wxString::Format(_("0x%X"), pVariable->m_event.obid );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("Head: ");
+            buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_head\">");
+            if ( bNew ) {
+                buildPage += _("0");
+            }
+            else {
+                buildPage += wxString::Format(_("0x%02x"), pVariable->m_event.head );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("CRC: ");
+            buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_crc\">");
+            if ( bNew ) {
+                buildPage += _("0");
+            }
+            else {
+                buildPage += wxString::Format(_("0x%08x"), pVariable->m_event.crc );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("Data size: ");
+            buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_sizedata\">");
+            if ( bNew ) {
+                buildPage += _("0");
+            }
+            else {
+                buildPage += wxString::Format(_("%d"), pVariable->m_event.sizeData );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("<tr><td>");
+            buildPage += _("Data: ");
+            buildPage += _("</td><td>");
+            buildPage += _("<textarea cols=\"50\" rows=\"4\" name=\"value_data\">");
+            if ( bNew ) {
+                buildPage += _("0");
+            }
+            else {
+                wxString strData;
+                vscp_writeVscpDataToString( &pVariable->m_event, strData );
+                buildPage += wxString::Format(_("%s"), strData.GetData() );
+            }
+            
+            buildPage += _("</textarea>");
+            buildPage += _("</td></tr>");
+            
+            buildPage += _("</table>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID ) {
+            
+            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_guid\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString strGUID;
+                pVariable->writeVariableToString(strGUID);
+                buildPage += strGUID;
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA ) {
+            
+            buildPage += _("<textarea cols=\"50\" rows=\"5\" name=\"value_data\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString strData;
+                vscp_writeVscpDataToString( &pVariable->m_event, strData );
+                buildPage += strData.GetData();
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS ) {
+            
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_class\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString str;
+                pVariable->writeVariableToString( str );
+                buildPage += str;
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE ) {
+            
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_type\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString str;
+                pVariable->writeVariableToString( str );
+                buildPage += str;
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP ) {
+            
+            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_timestamp\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString str;
+                pVariable->writeVariableToString( str );
+                buildPage += str;
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else if ( nType == VSCP_DAEMON_VARIABLE_CODE_DATETIME ) {
+            
+            buildPage += _("<textarea cols=\"20\" rows=\"1\" name=\"value_date_time\">");
+            if ( bNew ) {
+                buildPage += _("");
+            }
+            else {
+                wxString str;
+                pVariable->writeVariableToString( str );
+                buildPage += str;
+            }
+            
+            buildPage += _("</textarea>");
+            
+        }
+        else {
+            // Invalid type
+            buildPage += _("Invalid type - Something is very wrong!");
+        }
+        
+        
+        buildPage += _("</tr><tr><td>Persistence: </td><td>");
+
+        buildPage += _("<input type=\"radio\" name=\"persistent\" value=\"true\" ");
+        
+        if ( !bNew ) {
+            buildPage += wxString::Format(_("%s"), 
+                pVariable->isPersistent() ? _("checked >Persistent ") : _(">Persistent ") );
+        }
+        else {
+            buildPage += _("checked >Persistent ");
+        }
+        
+         buildPage += _("<input type=\"radio\" name=\"persistent\" value=\"false\" ");
+         
+        if ( !bNew ) {
+            buildPage += wxString::Format(_("%s"), 
+                !pVariable->isPersistent() ? _("checked >Non persistent ") : _(">Non persistent ") );
+        }
+        else {
+            buildPage += _(">Non persistent ");
+        }
+        
+        buildPage += _("</td></tr>");
+        
+        
+        buildPage += _("</tr><tr><td>Note: </td><td>");
+        buildPage += _("<textarea cols=\"50\" rows=\"5\" name=\"note\">");
+        if (bNew) {
+            buildPage += _("");
+        } 
+        else {
+            buildPage += pVariable->getNote();
+        }
+
+        buildPage += _("</textarea>");
+
+        buildPage += _("</td></tr></table>");
+
+        buildPage += _(WEB_VAREDIT_TABLE_END);
+
+    } 
+    else {
+        buildPage += _("<br><b>Error: Non existent id</b>");
+    }
+    
+    
+    wxString wxstrurl = _("/vscp/varpost");
+    buildPage += wxString::Format( _(WEB_VAREDIT_SUBMIT),
+                                    wxstrurl.GetData() );
+    
+    buildPage += _("</form>");
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_variables_post
+//
+
+int
+CControlObject::websrv_variables_post( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+    
+    
+    // id
+    long id = -1;
+	if ( mg_get_var( conn, "id", buf, sizeof( buf ) ) > 0 ) {
+		id = atoi( buf );
+	}
+    
+    uint8_t nType = VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED;
+	if ( mg_get_var( conn, "type", buf, sizeof( buf ) ) > 0 ) {
+		nType = atoi( buf );
+	}
+    
+    wxString strName;
+	if ( mg_get_var( conn, "value_name", buf, sizeof( buf ) ) > 0 ) {
+		strName = wxString::FromAscii( buf );
+	}
+    
+    // Flag for new variable row
+    bool bNew = false;
+	if ( mg_get_var( conn, "new", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bNew = true;
+	}
+    
+    // Flag for persistence
+    bool bPersistent = true;
+	if ( mg_get_var( conn, "persistent", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "false", buf ) ) bPersistent = false;
+	}
+
+    wxString strNote;
+	if ( mg_get_var( conn, "note", buf, sizeof( buf ) ) > 0 ) {
+		strNote = wxString::FromAscii( buf );
+	}
+    
+    wxString strValueString;
+	if ( mg_get_var( conn, "value_string", buf, sizeof( buf ) ) > 0 ) {
+		strValueString = wxString::FromAscii( buf );
+	}
+               
+    bool bValueBoolean = false;
+	if ( mg_get_var( conn, "value_boolean", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bValueBoolean = true;
+	}
+    
+    int value_integer = 0;
+	if ( mg_get_var( conn, "value_integer", buf, sizeof( buf ) ) > 0 ) {
+		str = wxString::FromAscii( buf );
+		value_integer = vscp_readStringValue( str );
+	}
+       
+    long value_long = 0;
+	if ( mg_get_var( conn, "value_long", buf, sizeof( buf ) ) > 0 ) {
+		str = wxString::FromAscii( buf );
+		value_long = vscp_readStringValue( str );
+	}
+    
+    double value_double = 0;
+	if ( mg_get_var( conn, "value_double", buf, sizeof( buf ) ) > 0 ) {
+		value_double = atof( buf );
+	}
+    
+    wxString strMeasurement;
+	if ( mg_get_var( conn, "value_measurement", buf, sizeof( buf ) ) > 0 ) {
+		strMeasurement = wxString::FromAscii( buf );
+	}
+    
+    uint16_t value_class = 0;
+	if ( mg_get_var( conn, "value_class", buf, sizeof( buf ) ) > 0 ) {
+		value_class = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint16_t value_type = 0;
+	if ( mg_get_var( conn, "value_type", buf, sizeof( buf ) ) > 0 ) {
+		value_type = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    wxString strGUID;
+	if ( mg_get_var( conn, "value_guid", buf, sizeof( buf ) ) > 0 ) {
+		strGUID = wxString::FromAscii( buf );
+	}
+    
+    uint32_t value_timestamp = 0;
+	if ( mg_get_var( conn, "value_timestamp", buf, sizeof( buf ) ) > 0 ) {
+		value_timestamp = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint32_t value_obid = 0;
+	if ( mg_get_var( conn, "value_obid", buf, sizeof( buf ) ) > 0 ) {
+		value_obid = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint8_t value_head = 0;
+	if ( mg_get_var( conn, "value_head", buf, sizeof( buf ) ) > 0 ) {
+		value_head = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint32_t value_crc = 0;
+	if ( mg_get_var( conn, "value_crc", buf, sizeof( buf ) ) > 0 ) {
+		value_crc = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    uint16_t value_sizedata = 0;
+	if ( mg_get_var( conn, "value_sizedata", buf, sizeof( buf ) ) > 0 ) {
+		value_sizedata = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+    
+    wxString strData;
+	if ( mg_get_var( conn, "value_data", buf, sizeof( buf ) ) > 0 ) {
+		strData = wxString::FromAscii( buf );
+	}
+    
+    wxString strDateTime;
+	if ( mg_get_var( conn, "value_date_time", buf, sizeof( buf ) ) > 0 ) {
+		strDateTime = wxString::FromAscii( buf );
+	}
+    
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variable Post"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp/variables");
+    buildPage += wxString::Format(_("?from=%d"), id );
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+    
+    buildPage += _(WEB_VARPOST_BODY_START);
+        
+    if (bNew) {
+        pVariable = new CVSCPVariable;
+    }
+
+    if (bNew || (id >= 0)) {
+
+        if (bNew || 
+                ((0 == id) && !bNew) || 
+                (id < (long)pObject->m_VSCP_Variables.m_listVariable.GetCount()) ) {
+
+            if (!bNew) pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
+
+            if (NULL != pVariable) {
+
+                // Set the type
+                pVariable->setPersistent( bPersistent );
+                pVariable->setType( nType );
+                pVariable->m_note = strNote;
+                pVariable->setName( strName );
+                
+                switch ( nType ) {
+
+                case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
+                    buildPage += _("Error: Variable code is unassigned.<br>");
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_STRING:
+                    pVariable->setValue( strValueString );
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
+                    pVariable->setValue( bValueBoolean );
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
+                    pVariable->setValue( value_integer );
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_LONG:
+                    pVariable->setValue( value_long );
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
+                    pVariable->setValue( value_double );
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+                    uint16_t size;
+                    vscp_getVscpDataArrayFromString( pVariable->m_normInteger, 
+                                                    &size,
+                                                    strMeasurement );
+                    pVariable->m_normIntSize = size;
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+                    pVariable->m_event.vscp_class = value_class;
+                    pVariable->m_event.vscp_type = value_type;
+                    vscp_getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
+                    vscp_getVscpDataFromString( &pVariable->m_event,
+                                            strData );
+                    pVariable->m_event.crc = value_crc;
+                    pVariable->m_event.head = value_head;
+                    pVariable->m_event.obid = value_obid;
+                    pVariable->m_event.timestamp = value_timestamp;        
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+                    vscp_getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+                    vscp_getVscpDataFromString( &pVariable->m_event,
+                                            strData );
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+                    pVariable->m_event.vscp_class = value_class;
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+                    pVariable->m_event.vscp_type = value_type;
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+                    pVariable->m_event.timestamp = value_timestamp;
+                    break;
+
+                case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
+                    pVariable->m_timestamp.ParseDateTime( strDateTime );
+                    break;
+
+                default:
+                    buildPage += _("Error: Variable code is unknown.<br>");
+                    break;
+
+                }
+                
+                // If new variable add it
+                if (bNew ) {
+                    pObject->m_VSCP_Variables.add( pVariable );
+                }
+
+                // Save variables
+                pObject->m_VSCP_Variables.save();
+                
+                buildPage += wxString::Format(_("<br><br>Variable has been saved. id=%d"), id);
+
+            }
+            else {
+                buildPage += wxString::Format(_("<br><br>Memory problem id=%d. Unable to save record"), id);
+            }
+
+        } 
+        else {
+            buildPage += wxString::Format(_("<br><br>Record id=%d is to large. Unable to save record"), id);
+        }
+    } 
+    else {
+        buildPage += wxString::Format(_("<br><br>Record id=%d is wrong. Unable to save record"), id);
+    }
+
+
+    buildPage += _(WEB_COMMON_END); // Common end code 
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_variables_new
+//
+
+int
+CControlObject::websrv_variables_new( struct mg_connection *conn )
+{
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+         
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - New variable"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // Navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+    
+    buildPage += _(WEB_VAREDIT_BODY_START);
+
+    buildPage += _("<br><div style=\"text-align:center\">");
+    
+    buildPage += _("<br><form method=\"get\" action=\"");
+    buildPage += _("/vscp/varedit");
+    buildPage += _("\" name=\"varnewstep1\">");
+    
+    buildPage += _("<input name=\"new\" value=\"true\" type=\"hidden\">");
+    
+    buildPage += _("<select name=\"type\">");
+    buildPage += _("<option value=\"1\">String value</option>");
+    buildPage += _("<option value=\"2\">Boolean value</option>");
+    buildPage += _("<option value=\"3\">Integer value</option>");
+    buildPage += _("<option value=\"4\">Long value</option>");
+    buildPage += _("<option value=\"5\">Floating point value</option>");
+    buildPage += _("<option value=\"6\">VSCP data coding</option>");
+    buildPage += _("<option value=\"7\">VSCP event (Level II)</option>");
+    buildPage += _("<option value=\"8\">VSCP event GUID</option>");
+    buildPage += _("<option value=\"9\">VSCP event data</option>");
+    buildPage += _("<option value=\"10\">VSCP event class</option>");
+    buildPage += _("<option value=\"11\">VSCP event type</option>");
+    buildPage += _("<option value=\"12\">VSCP event timestamp</option>");
+    buildPage += _("<option value=\"13\">Date + Time in iso format</option>");
+    buildPage += _("</select>");
+    
+    buildPage += _("<br></div>");
+    buildPage += _(WEB_VARNEW_SUBMIT);
+    //wxString wxstrurl = wxString::Format(_("%s/vscp/varedit?new=true"), 
+    //                                            strHost.GetData() );
+    //buildPage += wxString::Format( _(WEB_VARNEW_SUBMIT),
+    //                                wxstrurl.GetData() );
+    
+    buildPage += _("</form>");
+    
+    buildPage += _(WEB_COMMON_END); // Common end code
+    
+    char *ppage = new char[ buildPage.Length() + 1 ];
+    memset(ppage, 0, buildPage.Length() + 1 );
+    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
+
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+     
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_variables_delete
+//
+
+int
+CControlObject::websrv_variables_delete( struct mg_connection *conn )
+{
+	char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+    // id
+    long id = -1;
+	if ( mg_get_var( conn, "id", buf, sizeof( buf ) ) > 0 ) {
+		id = atoi( buf );
+	}
+        
+    wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Variable Delete"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp/variables");
+    buildPage += wxString::Format(_("?from=%d"), id + 1 );
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+    
+    buildPage += _(WEB_VAREDIT_BODY_START);
+    
+    wxlistVscpVariableNode *node = 
+            pObject->m_VSCP_Variables.m_listVariable.Item( id );
+    if ( pObject->m_VSCP_Variables.m_listVariable.DeleteNode( node )  ) {
+        buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
+        // Save variables
+        pObject->m_VSCP_Variables.save();
+    }
+    else {
+        buildPage += wxString::Format(_("<br>Failed to remove record id = %d"), id);
+    }
+    
+    buildPage += _(WEB_COMMON_END);     // Common end code
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_discovery
+//
+
+int
+CControlObject::websrv_discovery( struct mg_connection *conn )
+{
+	//char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+	 buildPage += _("<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+	buildPage += _("<b>Device discovery functionality is not yet implemented!</b>");
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_session
+//
+
+int
+CControlObject::websrv_session( struct mg_connection *conn )
+{
+	//char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+	 buildPage += _("<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+	buildPage += _("<b>Session functionality is not yet implemented!</b>");
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_configure
+//
+
+int
+CControlObject::websrv_configure( struct mg_connection *conn )
+{
+	//char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+	 buildPage += _("<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+	buildPage += _("<b>Configuration functionality is not yet implemented!</b>");
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_bootload
+//
+
+int
+CControlObject::websrv_bootload( struct mg_connection *conn )
+{
+	//char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    CVSCPVariable *pVariable = NULL;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+	 buildPage += _("<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
+    buildPage += _("\">");
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+	buildPage += _("<b>Bootload functionality is not yet implemented!</b>");
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+#else
 
 
 
@@ -4039,7 +7317,7 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                 pObject->m_dm.getRowCount(),
                 nCount,
                 nFrom,
-#if wxCHECK_VERSION(3,0,0)                
+#if wxMAJOR_VERSION > 3                
                 wxstrlight );
 #else                
                 wxstrlight.GetWriteBuf(wxstrlight.Length()) );
@@ -4258,7 +7536,7 @@ CControlObject::websrv_serve_dmlist( const void *cls,
                 pObject->m_dm.getRowCount(),
                 nCount,
                 nFrom,
-#if wxCHECK_VERSION(3,0,0)                
+#if wxMAJOR_VERSION > 3                
                 wxstrlight );
 #else                
                 wxstrlight.GetWriteBuf(wxstrlight.Length()) );
@@ -6832,6 +10110,8 @@ CControlObject::websrv_request_callback_completed(void *cls,
     free(request);
 }
 
+#endif
+
 
 
 
@@ -6901,7 +10181,7 @@ void *clientMsgWorkerThread::Entry()
             } // Valid event
 
             // Delete the event
-            if (NULL != pvscpEvent) deleteVSCPevent(pvscpEvent);
+            if (NULL != pvscpEvent) vscp_deleteVSCPevent(pvscpEvent);
 
         } // while
 

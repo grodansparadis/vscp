@@ -46,7 +46,9 @@ events.
 #include "canal.h"
 #include "devitem.h"
 
+#if wxUSE_GUI
 #include <wx/progdlg.h>
+#endif
 
 // Default values for read/write register functions
 // used in device config and scan.

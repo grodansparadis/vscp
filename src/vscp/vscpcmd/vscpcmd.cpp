@@ -320,7 +320,7 @@ int main(int argc, char **argv)
             // Flag event parameter
             bEventParam = true;
 
-            getVscpEventExFromString(&event, wxstr);
+            vscp_getVscpEventExFromString(&event, wxstr);
         }
 
         // * * * Value * * *
@@ -335,7 +335,7 @@ int main(int argc, char **argv)
 
             // Get encoding
             wxstr = tok.GetNextToken();
-            encoding = (uint8_t) readStringValue(wxstr);
+            encoding = (uint8_t) vscp_readStringValue(wxstr);
             if (!tok.HasMoreTokens()) {
                 wxString wxstr;
                 wxstr.Printf(_("Invalid format for value. Should be {encoding,type,value}\n"));
@@ -343,7 +343,7 @@ int main(int argc, char **argv)
 
             // Get type
             wxstr = tok.GetNextToken();
-            type = readStringValue(wxstr);
+            type = vscp_readStringValue(wxstr);
             if (!tok.HasMoreTokens()) {
                 wxString wxstr;
                 wxstr.Printf(_("Invalid format for value. Should be {encoding,type,value}\n"));
@@ -453,7 +453,7 @@ void setDataFromValue(uint8_t encoding,
         while ((idx < (512 - 25)) && tok.HasMoreTokens()) {
 
             wxString wxstrbuf = tok.GetNextToken();
-            msgdata[ idx ] = readStringValue(wxstrbuf);
+            msgdata[ idx ] = vscp_readStringValue(wxstrbuf);
             idx++;
 
         }
@@ -474,7 +474,7 @@ void setDataFromValue(uint8_t encoding,
         while ((idx < (512 - 25)) && tok.HasMoreTokens()) {
 
             wxString wxstrbuf = tok.GetNextToken();
-            msgdata[ idx ] = readStringValue(wxstrbuf);
+            msgdata[ idx ] = vscp_readStringValue(wxstrbuf);
             idx++;
 
         }
@@ -493,7 +493,7 @@ void setDataFromValue(uint8_t encoding,
     {
         msgdata[ 0 ] |= VSCP_DATACODING_INTEGER;
 
-        uint32_t intval = readStringValue(wxstrval);
+        uint32_t intval = vscp_readStringValue(wxstrval);
         if (intval > 0x00ffffff) {
             *pnDataCnt = 5;
             msgdata[ 1 ] = (intval >> 24) & 0xff;

@@ -207,6 +207,14 @@ public:
 		const wxString& allowedRemotes = _(""),
 		const wxString& allowedEvents = _(""));
 
+
+	/*!
+		Get user 
+		@param user Username
+		@return Ponter to user if available else NULL
+	*/
+	CUserItem * getUser( const wxString& user );
+
 	/*!
 	  Check if a username i available.
 	  @param user Username to test.

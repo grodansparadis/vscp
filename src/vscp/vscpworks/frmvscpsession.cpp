@@ -1913,22 +1913,22 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
                         pObj->m_time.ParseDateTime(str);
                     } else if (subchild->GetName() == wxT("class")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_pEvent->vscp_class = readStringValue(str);
+                        pObj->m_pEvent->vscp_class = vscp_readStringValue(str);
                     } else if (subchild->GetName() == wxT("type")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_pEvent->vscp_type = readStringValue(str);
+                        pObj->m_pEvent->vscp_type = vscp_readStringValue(str);
                     } else if (subchild->GetName() == wxT("head")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_pEvent->head = (uint8_t) readStringValue(str);
+                        pObj->m_pEvent->head = (uint8_t) vscp_readStringValue(str);
                     } else if (subchild->GetName() == wxT("guid")) {
                         str = subchild->GetNodeContent();
-                        getGuidFromString(pObj->m_pEvent, str);
+                        vscp_getGuidFromString(pObj->m_pEvent, str);
                     } else if (subchild->GetName() == wxT("data")) {
                         str = subchild->GetNodeContent();
-                        getVscpDataFromString(pObj->m_pEvent, str);
+                        vscp_getVscpDataFromString(pObj->m_pEvent, str);
                     } else if (subchild->GetName() == wxT("timestamp")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_pEvent->timestamp = readStringValue(str);
+                        pObj->m_pEvent->timestamp = vscp_readStringValue(str);
                     } else if (subchild->GetName() == wxT("period")) {
                         pObj->m_wxStrNote = subchild->GetNodeContent();
                     }
@@ -2038,7 +2038,7 @@ void frmVSCPSession::SaveRXEventList(wxCommandEvent& event)
             pFileStream->Write("</type>\n", strlen("</type>\n"));
 
             pFileStream->Write("<guid>", strlen("<guid>"));
-            writeGuidToString(pobj->m_pEvent, str);
+            vscp_writeGuidToString(pobj->m_pEvent, str);
             pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
             pFileStream->Write("</guid>\n", strlen("</guid>\n"));
 
@@ -2049,7 +2049,7 @@ void frmVSCPSession::SaveRXEventList(wxCommandEvent& event)
 
             if (0 != pobj->m_pEvent->sizeData) {
                 pFileStream->Write("<data>", strlen("<data>"));
-                writeVscpDataToString(pobj->m_pEvent, str);
+                vscp_writeVscpDataToString(pobj->m_pEvent, str);
                 pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
                 pFileStream->Write("</data>\n", strlen("</data>\n"));
             }
@@ -2179,17 +2179,17 @@ void frmVSCPSession::fillRxHtmlInfo(VscpRXObj *pRecord)
     ;
     str += _("</tt></font><br>");
     str += _("<font color=\"rgb(0, 0, 153);\"><tt>");
-    writeVscpDataToString(pRecord->m_pEvent, wrkstr, true);
+    vscp_writeVscpDataToString(pRecord->m_pEvent, wrkstr, true);
     str += wrkstr;
     str += _("</tt></font><br>");
     str += _("<font color=\"rgb(0, 0, 153);\">");
-    wrkstr = getRealTextData(pRecord->m_pEvent);
-    makeHtml(wrkstr);
+    wrkstr = vscp_getRealTextData(pRecord->m_pEvent);
+    vscp_makeHtml(wrkstr);
     str += wrkstr;
     str += _("</font><br><br>");
     str += _("<b>From GUID:</b><br>");
     str += _("<font color=\"rgb(0, 0, 153);\"><tt>");
-    writeGuidToString4Rows(pRecord->m_pEvent, wrkstr);
+    vscp_writeGuidToString4Rows(pRecord->m_pEvent, wrkstr);
     str += wrkstr;
     str += _("</tt></font><br><br>");
     str += _("<b>Head:</b> ");
@@ -2462,7 +2462,7 @@ void frmVSCPSession::OnTxSendClick(wxCommandEvent& event)
                 m_CtrlObject.m_mutexOutQueue.Lock();
                 vscpEvent *pEvent = new vscpEvent;
                 if (NULL != pEvent) {
-                    copyVSCPEvent(pEvent, &obj->m_Event);
+                    vscp_copyVSCPEvent(pEvent, &obj->m_Event);
                     pEvent->head = 0x00;
                     pEvent->timestamp = 0x00L;
                     m_CtrlObject.m_outQueue.Append(pEvent);
@@ -2662,13 +2662,13 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
                         pObj->m_wxStrName = subchild->GetNodeContent();
                     } else if (subchild->GetName() == wxT("class")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_Event.vscp_class = readStringValue(str);
+                        pObj->m_Event.vscp_class = vscp_readStringValue(str);
                     } else if (subchild->GetName() == wxT("type")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_Event.vscp_type = readStringValue(str);
+                        pObj->m_Event.vscp_type = vscp_readStringValue(str);
                     } else if (subchild->GetName() == wxT("priority")) {
                         str = subchild->GetNodeContent();
-                        setVscpPriority(&pObj->m_Event, readStringValue(str));
+                        vscp_setVscpPriority(&pObj->m_Event, vscp_readStringValue(str));
                     } else if (subchild->GetName() == wxT("guid")) {
 #if wxCHECK_VERSION(3,0,0)                        
                         wxString property = subchild->GetAttribute(wxT("default"), wxT("false"));
@@ -2681,19 +2681,19 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
                             pObj->m_bUseDefaultGUID = false;
                         }
                         str = subchild->GetNodeContent();
-                        getGuidFromString(&pObj->m_Event, str);
+                        vscp_getGuidFromString(&pObj->m_Event, str);
                     } else if (subchild->GetName() == wxT("data")) {
                         str = subchild->GetNodeContent();
-                        getVscpDataFromString(&pObj->m_Event, str);
+                        vscp_getVscpDataFromString(&pObj->m_Event, str);
                     } else if (subchild->GetName() == wxT("count")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_count = readStringValue(str);
+                        pObj->m_count = vscp_readStringValue(str);
                     } else if (subchild->GetName() == wxT("period")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_period = readStringValue(str);
+                        pObj->m_period = vscp_readStringValue(str);
                     } else if (subchild->GetName() == wxT("trigger")) {
                         str = subchild->GetNodeContent();
-                        pObj->m_trigger = readStringValue(str);
+                        pObj->m_trigger = vscp_readStringValue(str);
                     }
 
                     subchild = subchild->GetNext();
@@ -2781,7 +2781,7 @@ void frmVSCPSession::OnTxSaveClick(wxCommandEvent& event)
             pFileStream->Write("</type>\n", strlen("</type>\n"));
 
             pFileStream->Write("<priority>", strlen("<priority>"));
-            str.Printf(_("%d"), getVscpPriority(&obj->m_Event));
+            str.Printf(_("%d"), vscp_getVscpPriority(&obj->m_Event));
             pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
             pFileStream->Write("</priority>\n", strlen("</priority>\n"));
 
@@ -2793,7 +2793,7 @@ void frmVSCPSession::OnTxSaveClick(wxCommandEvent& event)
             }
 
             pFileStream->Write("\" >", strlen("\" >"));
-            writeGuidToString(&obj->m_Event, str);
+            vscp_writeGuidToString(&obj->m_Event, str);
             pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
             pFileStream->Write("</guid>\n", strlen("</guid>\n"));
 
@@ -2804,7 +2804,7 @@ void frmVSCPSession::OnTxSaveClick(wxCommandEvent& event)
 
             if (0 != obj->m_Event.sizeData) {
                 pFileStream->Write("<data>", strlen("<data>"));
-                writeVscpDataToString(&obj->m_Event, str);
+                vscp_writeVscpDataToString(&obj->m_Event, str);
                 pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
                 pFileStream->Write("</data>\n", strlen("</data>\n"));
             }
@@ -3191,7 +3191,7 @@ void *TXWorkerThread::Entry()
         pEvent = node->GetData();
         tcpifControl.doCmdSend(pEvent);
         m_pCtrlObject->m_outQueue.DeleteNode(node);
-        deleteVSCPevent(pEvent);
+        vscp_deleteVSCPevent(pEvent);
         m_pCtrlObject->m_mutexOutQueue.Unlock();
     } // while
 
@@ -3299,7 +3299,7 @@ void *RXWorkerThread::Entry()
                     vscpEvent *pEvent = new vscpEvent;
                     if (NULL != pEvent) {
 
-                        copyVSCPEvent(pEvent, &event);
+                        vscp_copyVSCPEvent(pEvent, &event);
 
                         pRecord->m_pEvent = pEvent;
                         pRecord->m_wxStrNote.Empty();
@@ -3652,7 +3652,7 @@ void *deviceThread::Entry()
                     if (NULL != pEvent) {
 
                         // Convert CANAL message to VSCP event
-                        convertCanalToEvent(pEvent,
+                        vscp_convertCanalToEvent(pEvent,
                                 &msg,
                                 m_pCtrlObject->m_GUID);
 
@@ -3690,7 +3690,7 @@ void *deviceThread::Entry()
                     vscpEvent *pEvent = node->GetData();
 
                     canalMsg canalMsg;
-                    convertEventToCanal(&canalMsg, pEvent);
+                    vscp_convertEventToCanal(&canalMsg, pEvent);
                     if (CANAL_ERROR_SUCCESS ==
                             m_pCtrlObject->m_proc_CanalSend(m_pCtrlObject->m_openHandle, &canalMsg)) {
 
@@ -3812,7 +3812,7 @@ void *deviceReceiveThread::Entry()
             if (NULL != pEvent) {
 
                 // Convert CANAL message to VSCP event
-                convertCanalToEvent(pEvent,
+                vscp_convertCanalToEvent(pEvent,
                         &msg,
                         m_pMainThreadObj->m_pCtrlObject->m_GUID);
 
@@ -3902,7 +3902,7 @@ void *deviceWriteThread::Entry()
         pEvent = node->GetData();
 
         canalMsg canalMsg;
-        convertEventToCanal(&canalMsg, pEvent);
+        vscp_convertEventToCanal(&canalMsg, pEvent);
         if (CANAL_ERROR_SUCCESS ==
                 m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingSend(m_pMainThreadObj->m_pCtrlObject->m_openHandle, &canalMsg, 300)) {
 

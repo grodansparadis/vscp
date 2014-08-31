@@ -17,6 +17,9 @@
 // log.cpp: implementation for the log class
 //
 
+#include "log.h"
+
+
 namespace mflogger {
 
 Log::Log(const std::string& Logfilename, const bool& append):

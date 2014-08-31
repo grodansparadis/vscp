@@ -1348,18 +1348,18 @@ bool dlgVSCPTrmitElement::getEventData( VscpTXObj *pObj )
     pObj->m_wxStrName = m_wxStrName->GetValue(); 
     pObj->m_bUseDefaultGUID = m_wxChkDefaultGUID->GetValue();
     str = m_wxStrCount->GetValue();
-    pObj->m_count = readStringValue( str );  
+    pObj->m_count = vscp_readStringValue( str );  
     str = m_wxStrPeriod->GetValue();
-    pObj->m_period = readStringValue( str ); 
+    pObj->m_period = vscp_readStringValue( str ); 
     str = m_wxComboTrigger->GetValue();
-    pObj->m_trigger = readStringValue( str );  
+    pObj->m_trigger = vscp_readStringValue( str );  
   
 	pObj->m_Event.head = ( m_wxChoicePriority->GetCurrentSelection() << 5 );
 
     pObj->m_Event.timestamp = 0;
     if ( wxNOT_FOUND == m_wxComboClass->GetSelection() ) {
         str = m_wxComboClass->GetValue();
-        pObj->m_Event.vscp_class = readStringValue( str );
+        pObj->m_Event.vscp_class = vscp_readStringValue( str );
     }
     else {
         pObj->m_Event.vscp_class = 
@@ -1368,7 +1368,7 @@ bool dlgVSCPTrmitElement::getEventData( VscpTXObj *pObj )
   
     if ( wxNOT_FOUND == m_wxComboType->GetSelection() ) {
         str = m_wxComboType->GetValue();
-        pObj->m_Event.vscp_type = readStringValue( str );
+        pObj->m_Event.vscp_type = vscp_readStringValue( str );
     }
     else {
         pObj->m_Event.vscp_type = 
@@ -1387,43 +1387,43 @@ bool dlgVSCPTrmitElement::getEventData( VscpTXObj *pObj )
     }
     else {
         str = m_wxStrGUID0->GetValue();
-        pObj->m_Event.GUID[ 0 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 0 ] = vscp_readStringValue( str );
         str = m_wxStrGUID1->GetValue();
-        pObj->m_Event.GUID[ 1 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 1 ] = vscp_readStringValue( str );
         str = m_wxStrGUID2->GetValue();
-        pObj->m_Event.GUID[ 2 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 2 ] = vscp_readStringValue( str );
         str = m_wxStrGUID3->GetValue();
-        pObj->m_Event.GUID[ 3 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 3 ] = vscp_readStringValue( str );
         str = m_wxStrGUID4->GetValue();
-        pObj->m_Event.GUID[ 4 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 4 ] = vscp_readStringValue( str );
         str = m_wxStrGUID5->GetValue();
-        pObj->m_Event.GUID[ 5 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 5 ] = vscp_readStringValue( str );
         str = m_wxStrGUID6->GetValue();
-        pObj->m_Event.GUID[ 6 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 6 ] = vscp_readStringValue( str );
         str = m_wxStrGUID7->GetValue();
-        pObj->m_Event.GUID[ 7 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 7 ] = vscp_readStringValue( str );
         str = m_wxStrGUID8->GetValue();
-        pObj->m_Event.GUID[ 8 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 8 ] = vscp_readStringValue( str );
         str = m_wxStrGUID9->GetValue();
-        pObj->m_Event.GUID[ 9 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 9 ] = vscp_readStringValue( str );
         str = m_wxStrGUID10->GetValue();
-        pObj->m_Event.GUID[ 10 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 10 ] = vscp_readStringValue( str );
         str = m_wxStrGUID11->GetValue();
-        pObj->m_Event.GUID[ 11 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 11 ] = vscp_readStringValue( str );
         str = m_wxStrGUID12->GetValue();
-        pObj->m_Event.GUID[ 12 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 12 ] = vscp_readStringValue( str );
         str = m_wxStrGUID13->GetValue();
-        pObj->m_Event.GUID[ 13 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 13 ] = vscp_readStringValue( str );
         str = m_wxStrGUID14->GetValue();
-        pObj->m_Event.GUID[ 14 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 14 ] = vscp_readStringValue( str );
         str = m_wxStrGUID15->GetValue();
-        pObj->m_Event.GUID[ 15 ] = readStringValue( str );
+        pObj->m_Event.GUID[ 15 ] = vscp_readStringValue( str );
     }
   
     // Data is allowed to scan multiple lines and to be in hex
     // or decimal form
     str = m_wxStrData->GetValue();
-    getVscpDataFromString( &pObj->m_Event, str );
+    vscp_getVscpDataFromString( &pObj->m_Event, str );
   
     return true;
 }
@@ -1520,7 +1520,7 @@ bool dlgVSCPTrmitElement::writeEventData( VscpTXObj *pObj )
 	// Data is allowed to scan multiple lines and to be in hex
 	// or decimal form
     str.Empty();
-	writeVscpDataToString( &pObj->m_Event, str );
+	vscp_writeVscpDataToString( &pObj->m_Event, str );
 	m_wxStrData->SetValue( str );
   
 	return true;

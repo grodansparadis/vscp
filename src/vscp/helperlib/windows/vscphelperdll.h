@@ -21,6 +21,11 @@
 // Boston, MA 02111-1307, USA.
 //
 
+// How to use wxGUI from dll
+// http://svn.wxwidgets.org/viewvc/wx/wxWidgets/trunk/samples/dll/
+
+
+
 /*!
 	\file "VSCP helper dll.h"	
 	\mainpage VSCP helper dll.h
@@ -36,10 +41,6 @@
 
 #pragma once
 
-#ifndef __AFXWIN_H__
-	#error "include 'stdafx.h' before including this file for PCH"
-#endif
-
 #include "resource.h"		// main symbols
 #include "../../common/canalsuperwrapper.h"
 
@@ -50,6 +51,7 @@
 	See VSCP helper dll.cpp for the implementation of this class.
 */
 
+/*
 class CVSCPhelperdllApp : public CWinApp
 {
 public:
@@ -64,8 +66,7 @@ public:
 
 public:
 
-    /*!
-        VSCP Interface
-    */
+    // VSCP Interface
     CCanalSuperWrapper m_vscpif;
 };
+*/

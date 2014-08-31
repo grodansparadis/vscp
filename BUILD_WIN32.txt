@@ -99,10 +99,9 @@ This is the "original" project and includes all sub-projects.
     Make an environment variable named PCANBASICAPI that points to the location where you unpack the
     PCAN-BASIC API
         
-10.) lircdrv: expat is needed you build the lircdrv as well as winlirc. Set include in 
-    tools->options->directories to point to expat.h in <expat install dir>/source/lib and 
-    LIB to expat lib <expat install dir>/StaticLibs.  Expat is available here 
-    http://sourceforge.net/projects/expat/ and winlirc is here http://sourceforge.net/projects/winlirc/
+10.) expat is needed you build the daemon. Create an environment variable that points to the
+    libexpat root folder. Expat is available here http://sourceforge.net/projects/expat/  
+	Expat is also needed for the level I lirc driver which interfaces http://winlirc.sourceforge.net/ 
         
 11.) To build the vector driver (vectordrv)  the INCLUDE and LIB paths must point to 
     to the vector directories LIB and INCLUDE. The low level driver from Vector must be installed for 

@@ -21,6 +21,11 @@
 // Boston, MA 02111-1307, USA.
 //
 
+
+#define WEBSRV_MAX_SESSIONS						1000	// Max web server active sessions
+#define WEBSRV_NAL_USERNAMELEN					128		// Max length for userdname
+
+
 /**
  * Invalid method page.
  */

@@ -72,6 +72,11 @@
 
         <!-- Path to file holding mime types                  -->
         <!-- Documented in specification 14.4.1               -->
+		
+		<!-- authDomain is the domain name that will be used  -->
+		<!-- when the internal server talks to clients doing  -->
+		<!-- authentications and other things.                -->
+		<autdomain>mydomain.com</auathdomain>
 
         <pathtomimetypes>/etc/vscp/mimetypes.xml</pathtomimetypes>
 

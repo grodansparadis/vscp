@@ -27,7 +27,7 @@
 
 // * * * M e n u * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"%s/vscp/configure\">Configuration File</a></li><li><a href=\"%s/vscp/variables\">Variable - List</a></li><li><a href=\"%s/vscp/varnew\">Variable - New</a></li><li><a href=\"%s/vscp/dm\">DM - list</a></li><li><a href=\"%s/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"%s/vscp/session\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"%s/vscp/discovery\">Discovery</a></li><li><a href=\"%s/vscp/interfaces\">Interfaces</a></li><li><a href=\"%s/vscp/configure\">Configure</a></li><li><a href=\"%s/vscp/bootload\">Update firmware</a></li></ul><li><a href=\"#\">Help</a><ul><li><a href=\"http://www.vscp.org/wiki/doku.php\" target=\"moon\">VSCP wiki</a></li><li><a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a></li></ul></li></ul>"
+#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"/vscp/configure\">Configuration File</a></li><li><a href=\"/vscp/variables\">Variable - List</a></li><li><a href=\"/vscp/varnew\">Variable - New</a></li><li><a href=\"/vscp/dm\">DM - list</a></li><li><a href=\"/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"/vscp/session\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"/vscp/discovery\">Discovery</a></li><li><a href=\"/vscp/interfaces\">Interfaces</a></li><li><a href=\"/vscp/configure\">Configure</a></li><li><a href=\"/vscp/bootload\">Update firmware</a></li></ul><li><a href=\"#\">Help</a><ul><li><a href=\"http://www.vscp.org/wiki/doku.php\" target=\"moon\">VSCP wiki</a></li><li><a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a></li></ul></li></ul>"
 
 
 // * * * C o m m o n * * *
@@ -40,7 +40,7 @@
 #define WEB_COMMON_HEAD_END_BODY_START "</head><body>"
 
 // End with footer
-#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; 2000-2014 VSCP & Friends,<a href=\"mailto:info@grodansparadis.com\">Ake Hedman</a><a href=\"http://www.grodansparadis.com\"> Grodans Paradis AB.</a></div></div></body></html>"
+#define WEB_COMMON_END "<br><br><br><br><div id=\"footer\"> Copyright &copy; 2000-2014 VSCP & Friends,<a href=\"mailto:info@paradiseofthefrog.com\">Ake Hedman</a><a href=\"http://www.paradiseofthefrog.com\"> Paradise of the Frog.</a></div></div></body></html>"
 
 // List navigation - 
 // Action url			- string

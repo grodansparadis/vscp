@@ -24,37 +24,19 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "dlldrvobj.h"
-#include "can4vscpobj.h"
 
-#ifdef WIN32
 
-#else
-
-void _init() __attribute__((constructor));
-void _fini() __attribute__((destructor));
-
-void _init() {printf("initializing\n");}
-void _fini() {printf("finishing\n");}
-
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CDllDrvObj
 
 ////////////////////////////////////////////////////////////////////////////
-// CDllDrvObj construction
+// CHelpDllObj construction
 
-CDllDrvObj::CDllDrvObj()
+CHelpDllObj::CHelpDllObj()
 {
 	m_instanceCounter = 0;
-#ifdef WIN32
-	m_objMutex = CreateMutex( NULL, true, "__CANAL_CAN4VSCP_MUTEX__" );
-#else
-	pthread_mutex_init( &m_objMutex, NULL );
-#endif
+	m_objMutex = CreateMutex( NULL, true, "__HELPER_DLL_MUTEX__" );
 
 	// Init the driver array
-	for ( int i = 0; i<CANAL_CAN4VSCP_DRIVER_MAX_OPEN; i++ ) {
+	for ( int i = 0; i<VSCP_HELPER_MAX_OPEN; i++ ) {
 		m_drvObjArray[ i ] = NULL;
 	}
 
@@ -62,17 +44,17 @@ CDllDrvObj::CDllDrvObj()
 }
 
 
-CDllDrvObj::~CDllDrvObj()
+CHelpDllObj::~CHelpDllObj()
 {
 	LOCK_MUTEX( m_objMutex );
 	
-	for ( int i = 0; i<CANAL_CAN4VSCP_DRIVER_MAX_OPEN; i++ ) {
+	for ( int i = 0; i<VSCP_HELPER_MAX_OPEN; i++ ) {
 		
 		if ( NULL == m_drvObjArray[ i ] ) {
 			
-			CCan4VSCPObj *pdrvObj =  getDriverObject( i );
+			CCanalSuperWrapper *pdrvObj =  getDriverObject( i );
 			if ( NULL != pdrvObj ) { 
-				pdrvObj->close();	
+				pdrvObj->doCmdClose();	
 				delete m_drvObjArray[ i ];
 				m_drvObjArray[ i ] = NULL; 
 			}
@@ -81,17 +63,13 @@ CDllDrvObj::~CDllDrvObj()
 
 	UNLOCK_MUTEX( m_objMutex );
 
-#ifdef WIN32
 	CloseHandle( m_objMutex );
-#else	
-	pthread_mutex_destroy( &m_objMutex );
-#endif
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CDllDrvObjgerdllApp object
 
-//CDllDrvObj theApp;
+CHelpDllObj theApp;
 
 
 
@@ -99,12 +77,12 @@ CDllDrvObj::~CDllDrvObj()
 // addDriverObject
 //
 
-long CDllDrvObj::addDriverObject( CCan4VSCPObj *pdrvObj )
+long CHelpDllObj::addDriverObject( CCanalSuperWrapper *pdrvObj )
 {
 	long h = 0;
 
 	LOCK_MUTEX( m_objMutex );
-	for ( int i=0; i<CANAL_CAN4VSCP_DRIVER_MAX_OPEN; i++ ) {
+	for ( int i=0; i<VSCP_HELPER_MAX_OPEN; i++ ) {
 	
 		if ( NULL == m_drvObjArray[ i ] ) {
 		
@@ -126,13 +104,13 @@ long CDllDrvObj::addDriverObject( CCan4VSCPObj *pdrvObj )
 // getDriverObject
 //
 
-CCan4VSCPObj * CDllDrvObj::getDriverObject( long h )
+CCanalSuperWrapper * CHelpDllObj::getDriverObject( long h )
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
 	if ( idx < 0 ) return NULL;
-	if ( idx >= CANAL_CAN4VSCP_DRIVER_MAX_OPEN ) return NULL;
+	if ( idx >= VSCP_HELPER_MAX_OPEN ) return NULL;
 	return m_drvObjArray[ idx ];
 }
 
@@ -141,13 +119,13 @@ CCan4VSCPObj * CDllDrvObj::getDriverObject( long h )
 // removeDriverObject
 //
 
-void CDllDrvObj::removeDriverObject( long h )
+void CHelpDllObj::removeDriverObject( long h )
 {
 	long idx = h - 1681;
 
 	// Check if valid handle
 	if ( idx < 0 ) return;
-	if ( idx >= CANAL_CAN4VSCP_DRIVER_MAX_OPEN ) return;
+	if ( idx >= VSCP_HELPER_MAX_OPEN ) return;
 
 	LOCK_MUTEX( m_objMutex );
 	if ( NULL != m_drvObjArray[ idx ] ) delete m_drvObjArray[ idx ];
@@ -158,7 +136,7 @@ void CDllDrvObj::removeDriverObject( long h )
 ///////////////////////////////////////////////////////////////////////////////
 // InitInstance
 
-BOOL CDllDrvObj::InitInstance() 
+BOOL CHelpDllObj::InitInstance() 
 {
 	m_instanceCounter++;
 	return TRUE;

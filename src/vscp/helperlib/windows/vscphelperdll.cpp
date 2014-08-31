@@ -21,22 +21,15 @@
 // Boston, MA 02111-1307, USA.
 //
 
+//#include "stdafx.h"
 //#define WIN32_LEAN_AND_MEAN
 #include "wx/wxprec.h"
 #include "wx/wx.h"
-//#include <windows.h>
-//#include <stdlib.h>
 
-#include "dlldrvobj.h"
+//#include "dlldrvobj.h"
 
-
-#ifdef WIN32
 #include <stdio.h>
 #include <stdlib.h>
-//#include "winsock.h"
-//#include <winsock2.h>
-
-#endif
 
 #include "wx/defs.h"
 #include "wx/app.h"
@@ -47,14 +40,13 @@
 #include <wx/datetime.h>
 #include <wx/utils.h>
 
-
-
 #include "../../common/vscphelper.h"
 #include "../../common/vscptcpif.h"
+#include "dlldrvobj.h"
 #include "vscphelperdll.h"
 
 static HANDLE hThisInstDll = NULL;
-static CDllDrvObj *theApp = NULL;
+static CHelpDllObj *theApp = NULL;
 
 // CVSCPhelperdllApp
 /*
@@ -91,9 +83,133 @@ BOOL CVSCPhelperdllApp::InitInstance()
 }
 */
 
+
 ///////////////////////////////////////////////////////////////////////////////
-//                             V S C P -  A P I
-///////////////////////////////////////////////////////////////////////////////
+// DllMain
+//
+
+BOOL APIENTRY DllMain( HANDLE hInstDll, 
+                       DWORD  ul_reason_for_call, 
+                       LPVOID lpReserved )
+{
+	switch( ul_reason_for_call ) {
+
+		case DLL_PROCESS_ATTACH:
+			hThisInstDll = hInstDll;
+			theApp = new CHelpDllObj();
+			theApp->InitInstance();
+			break;
+
+		case DLL_THREAD_ATTACH:
+			break;
+
+		case DLL_THREAD_DETACH:
+ 			break;
+
+		case DLL_PROCESS_DETACH:
+			if ( NULL == theApp ) delete theApp;
+ 			break;
+   }
+
+	return TRUE;
+
+}
+
+
+/*
+CVSCPLApp::CVSCPLApp()
+{
+    m_instanceCounter = 0;
+    pthread_mutex_init(&m_objMutex, NULL);
+
+    // Init. the driver array
+    for (int i = 0; i < VSCP_INTERFACE_MAX_OPEN; i++) {
+        m_pvscpifArray[ i ] = NULL;
+    }
+
+    UNLOCK_MUTEX(m_objMutex);
+}
+
+CVSCPLApp::~CVSCPLApp()
+{
+    LOCK_MUTEX(m_objMutex);
+
+    for (int i = 0; i < VSCP_INTERFACE_MAX_OPEN; i++) {
+
+        if (NULL == m_pvscpifArray[ i ]) {
+
+            CCanalSuperWrapper *pvscpif = getDriverObject(i);
+            if (NULL != pvscpif) {
+                pvscpif->doCmdClose();
+                delete m_pvscpifArray[ i ];
+                m_pvscpifArray[ i ] = NULL;
+            }
+        }
+    }
+
+    UNLOCK_MUTEX(m_objMutex);
+    pthread_mutex_destroy(&m_objMutex);
+}
+*/
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+//						 T C P / I P  I N T E R F A C E
+//-----------------------------------------------------------------------------
+
+
+
+
+
+
+//-------------------------------------------------------------------------
+//
+// To use any of the methods below this point you have to 
+// obtain a handle first with vscphlp_gethandle and remember 
+// to release it with vscphlp_releasehandle when you are done.
+//
+//-------------------------------------------------------------------------
+
+/*!
+    \fn long vscphlp_gethandle(void)
+    \brief Initialise the library. This is only needed
+            if you use methods which has a handle in them that is
+            methods that talk to the VSCP daemon TCP/IP interface.
+    \return The handle for the TCP/IP server object or
+            zero if the initialisation failed. 
+ */
+
+extern "C" long vscphlp_gethandle(void)
+{
+	if ( NULL == theApp ) return NULL;
+
+    CCanalSuperWrapper *pvscpif = new CCanalSuperWrapper;
+    if (NULL == pvscpif) return 0;
+
+    return theApp->addDriverObject( pvscpif );
+}
+
+/*!
+    \fn void vscphlp_releasehandle(long handle)
+    \brief Clean up the library. This is only needed
+            if you use methods which has a handle in them that is
+            methods that talk to the VSCP daemon TCP/IP interface.
+    \return The handle for the TCP/IP server object or
+            zero if the initialisation failed. 
+ */
+
+extern "C" void vscphlp_releasehandle(long handle)
+{
+
+    CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+    if (NULL != pvscpif) pvscpif->doCmdClose();
+
+    theApp->removeDriverObject(handle);
+}
 
 
 /*!	
@@ -107,11 +223,15 @@ BOOL CVSCPhelperdllApp::InitInstance()
     \param pUserName Username to use as credentials for login.
     \param pPassword Password to use as credentials for login.
 */
-extern "C" void WINAPI EXPORT vscp_setInterfaceTcp( const char *pHost, 
+extern "C" BOOL WINAPI EXPORT vscp_setInterfaceTcp( long handle,
+														const char *pHost, 
                                                         const short port,
                                                         const char *pUsername,
                                                         const char *pPassword )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString strHost;
     strHost.FromAscii( pHost );
 
@@ -121,10 +241,12 @@ extern "C" void WINAPI EXPORT vscp_setInterfaceTcp( const char *pHost,
     wxString strPassword;
     strHost.FromAscii( pPassword );
 
-    theApp.m_vscpif.setInterface( strHost, 
+    pvscpif->setInterface( strHost, 
                                     port,
                                     strUsername,
                                     strPassword );
+
+	return TRUE;
 }
 
 
@@ -139,13 +261,17 @@ extern "C" void WINAPI EXPORT vscp_setInterfaceTcp( const char *pHost,
     \brief Set the interface to talk to a Level I interface (previously called 
 	CANAL interface).
 */
-extern "C" void WINAPI EXPORT vscp_setInterfaceDll( const char *pName,
+extern "C" BOOL WINAPI EXPORT vscp_setInterfaceDll( long handle,
+														const char *pName,
                                                         const char *pPath,
                                                         const char *pParameters,
                                                         unsigned long flags,
                                                         unsigned long filter,
                                                         unsigned long mask )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString strName;
     strName.FromAscii( pName );
 
@@ -155,12 +281,14 @@ extern "C" void WINAPI EXPORT vscp_setInterfaceDll( const char *pName,
     wxString strParameters;
     strParameters.FromAscii( pParameters );
 
-    theApp.m_vscpif.setInterface( strName,
+    pvscpif->setInterface( strName,
                                     strPath,
                                     strParameters,
                                     flags,
                                     filter,
                                     mask );
+
+	return TRUE;
 }
 
 
@@ -172,13 +300,17 @@ extern "C" void WINAPI EXPORT vscp_setInterfaceDll( const char *pName,
     \brief Open interface
 */
 
-extern "C" long WINAPI EXPORT vscp_doCmdOpen( const char *pInterface,
+extern "C" long WINAPI EXPORT vscp_doCmdOpen( long handle,
+												const char *pInterface,
                                                 unsigned long flags )
-{
+{	
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
     wxString strInterface;
     strInterface.FromAscii( pInterface );
 
-    return theApp.m_vscpif.doCmdOpen( strInterface, flags );
+    return pvscpif->doCmdOpen( strInterface, flags );
 }
 
 /*!
@@ -187,9 +319,12 @@ extern "C" long WINAPI EXPORT vscp_doCmdOpen( const char *pInterface,
 	\return true if the close was successful.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdClose( void )
+extern "C" int WINAPI EXPORT vscp_doCmdClose( long handle )
 {
-    return theApp.m_vscpif.doCmdClose();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdClose();
 }
 
 /*!
@@ -198,9 +333,12 @@ extern "C" int WINAPI EXPORT vscp_doCmdClose( void )
 	\return true if success false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdNoop( void )
+extern "C" int WINAPI EXPORT vscp_doCmdNoop( long handle )
 {
-    return theApp.m_vscpif.doCmdClose();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdClose();
 }
 
 /*!
@@ -212,9 +350,12 @@ extern "C" int WINAPI EXPORT vscp_doCmdNoop( void )
 	level.
 */
 
-extern "C" unsigned long WINAPI EXPORT vscp_doCmdGetLevel( void )
+extern "C" unsigned long WINAPI EXPORT vscp_doCmdGetLevel( long handle )
 {
-    return theApp.m_vscpif.doCmdGetLevel();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdGetLevel();
 }
 
 /*!
@@ -223,9 +364,13 @@ extern "C" unsigned long WINAPI EXPORT vscp_doCmdGetLevel( void )
 	\return true if success false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdSendCanal( canalMsg *pMsg )
+extern "C" int WINAPI EXPORT vscp_doCmdSendCanal( long handle,
+													canalMsg *pMsg )
 {
-    return theApp.m_vscpif.doCmdSend( pMsg );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdSend( pMsg );
 }
 
 /*!
@@ -234,9 +379,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdSendCanal( canalMsg *pMsg )
 	\return true if success false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdSendEvent( const vscpEvent *pEvent )
+extern "C" int WINAPI EXPORT vscp_doCmdSendEvent( long handle,
+													const vscpEvent *pEvent )
 {
-    return theApp.m_vscpif.doCmdSend( pEvent );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdSend( pEvent );
 }
 
 /*!
@@ -245,9 +394,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdSendEvent( const vscpEvent *pEvent )
 	\return true if success false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdSendEventEx( const vscpEventEx *pEvent )
+extern "C" int WINAPI EXPORT vscp_doCmdSendEventEx( long handle,
+														const vscpEventEx *pEvent )
 {
-    return theApp.m_vscpif.doCmdSend( pEvent );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdSend( pEvent );
 }
 
 
@@ -257,9 +410,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdSendEventEx( const vscpEventEx *pEvent )
 	\return True if success false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdReceiveCanal( canalMsg *pMsg )
+extern "C" int WINAPI EXPORT vscp_doCmdReceiveCanal( long handle,
+														canalMsg *pMsg )
 {
-    return theApp.m_vscpif.doCmdReceive( pMsg );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdReceive( pMsg );
 }
 
 
@@ -269,9 +426,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdReceiveCanal( canalMsg *pMsg )
 	\return True if success false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdReceiveEvent( vscpEvent *pEvent )
+extern "C" int WINAPI EXPORT vscp_doCmdReceiveEvent( long handle,
+														vscpEvent *pEvent )
 {
-    return theApp.m_vscpif.doCmdReceive( pEvent );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdReceive( pEvent );
 }
 
 /*!
@@ -280,9 +441,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdReceiveEvent( vscpEvent *pEvent )
 	\return True if success false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdReceiveEventEx( vscpEventEx *pEvent )
+extern "C" int WINAPI EXPORT vscp_doCmdReceiveEventEx( long handle,
+														vscpEventEx *pEvent )
 {
-    return theApp.m_vscpif.doCmdReceive( pEvent );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdReceive( pEvent );
 }
 
 /*!
@@ -292,9 +457,12 @@ extern "C" int WINAPI EXPORT vscp_doCmdReceiveEventEx( vscpEventEx *pEvent )
         an error code.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdDataAvailable( void )
+extern "C" int WINAPI EXPORT vscp_doCmdDataAvailable( long handle )
 {
-    return theApp.m_vscpif.doCmdDataAvailable();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdDataAvailable();
 }
 
 /*!
@@ -303,9 +471,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdDataAvailable( void )
 	\return True if success, false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdStatus( canalStatus *pStatus )
+extern "C" int WINAPI EXPORT vscp_doCmdStatus( long handle,
+													canalStatus *pStatus )
 {
-    return theApp.m_vscpif.doCmdStatus( pStatus );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdStatus( pStatus );
 }
 
 /*!
@@ -314,9 +486,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdStatus( canalStatus *pStatus )
 	\return True if success, false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdStatistics( canalStatistics *pStatistics )
+extern "C" int WINAPI EXPORT vscp_doCmdStatistics( long handle,
+														canalStatistics *pStatistics )
 {
-    return theApp.m_vscpif.doCmdStatistics( pStatistics );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdStatistics( pStatistics );
 }
 
 /*!
@@ -325,9 +501,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdStatistics( canalStatistics *pStatistics 
 	\return True if success, false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdFilter( unsigned long filter )
+extern "C" int WINAPI EXPORT vscp_doCmdFilter( long handle,
+													unsigned long filter )
 {
-    return theApp.m_vscpif.doCmdFilter( filter );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) NULL;
+
+    return pvscpif->doCmdFilter( filter );
 }
 
 
@@ -337,9 +517,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdFilter( unsigned long filter )
 	\return True if success, false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdMask( unsigned long mask )
+extern "C" int WINAPI EXPORT vscp_doCmdMask( long handle,
+												unsigned long mask )
 {
-    return theApp.m_vscpif.doCmdMask( mask );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) NULL;
+
+    return pvscpif->doCmdMask( mask );
 }
 
 /*!
@@ -348,9 +532,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdMask( unsigned long mask )
 	\return True if success, false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdVscpFilter( const vscpEventFilter *pFilter )
+extern "C" int WINAPI EXPORT vscp_doCmdVscpFilter( long handle,
+														const vscpEventFilter *pFilter )
 {
-   return theApp.m_vscpif.doCmdVscpFilter( pFilter );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+   return pvscpif->doCmdVscpFilter( pFilter );
 }
 
 /*!
@@ -359,9 +547,13 @@ extern "C" int WINAPI EXPORT vscp_doCmdVscpFilter( const vscpEventFilter *pFilte
 	\return True if success, false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdBaudrate( unsigned long baudrate )
+extern "C" int WINAPI EXPORT vscp_doCmdBaudrate( long handle,
+													unsigned long baudrate )
 {
-    return theApp.m_vscpif.doCmdBaudrate( baudrate );
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdBaudrate( baudrate );
 }
 
 /*!
@@ -370,9 +562,12 @@ extern "C" int WINAPI EXPORT vscp_doCmdBaudrate( unsigned long baudrate )
 	\return Return the interface version.
 */
 
-extern "C" unsigned long WINAPI EXPORT vscp_doCmdVersion( void  )
+extern "C" unsigned long WINAPI EXPORT vscp_doCmdVersion( long handle  )
 {
-    return theApp.m_vscpif.doCmdVersion();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdVersion();
 }
 
 /*!
@@ -381,9 +576,12 @@ extern "C" unsigned long WINAPI EXPORT vscp_doCmdVersion( void  )
 	\return Return the interface dll version.
 */
 
-extern "C" unsigned long WINAPI EXPORT vscp_doCmdDLLVersion( void )
+extern "C" unsigned long WINAPI EXPORT vscp_doCmdDLLVersion( long handle )
 {
-    return theApp.m_vscpif.doCmdDLLVersion();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdDLLVersion();
 }
 
 /*!
@@ -392,9 +590,12 @@ extern "C" unsigned long WINAPI EXPORT vscp_doCmdDLLVersion( void )
 	\return Pointer to vendor string.
 */
 
-extern "C"  const char * WINAPI EXPORT vscp_doCmdVendorString( void )
+extern "C"  const char * WINAPI EXPORT vscp_doCmdVendorString( long handle )
 {
-    return theApp.m_vscpif.doCmdVendorString();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) NULL;
+
+    return pvscpif->doCmdVendorString();
 }
 
 /*!
@@ -403,9 +604,12 @@ extern "C"  const char * WINAPI EXPORT vscp_doCmdVendorString( void )
 	\return Pointer to driver information string.
 */
 
-extern "C"  const char * WINAPI EXPORT vscp_doCmdGetDriverInfo( void )
+extern "C"  const char * WINAPI EXPORT vscp_doCmdGetDriverInfo( long handle )
 {
-    return theApp.m_vscpif.doCmdGetDriverInfo();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) NULL;
+
+    return pvscpif->doCmdGetDriverInfo();
 }
 
 /*!
@@ -415,9 +619,12 @@ extern "C"  const char * WINAPI EXPORT vscp_doCmdGetDriverInfo( void )
             USE_TCPIP_INTERFACE	if TCP/IP interface active.
 */
 
-extern "C" int WINAPI EXPORT vscp_getDeviceType( void )
+extern "C" int WINAPI EXPORT vscp_getDeviceType( long handle )
 {
-    return theApp.m_vscpif.getDeviceType();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
+    return pvscpif->getDeviceType();
 }
 
 /*!
@@ -426,9 +633,12 @@ extern "C" int WINAPI EXPORT vscp_getDeviceType( void )
 	\return True of open, false if not.
 */
 
-extern "C" bool WINAPI EXPORT vscp_isOpen( void )
+extern "C" BOOL WINAPI EXPORT vscp_isOpen( long handle )
 {
-    return theApp.m_vscpif.isOpen();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
+    return pvscpif->isOpen();
 }
 
 /*!
@@ -437,457 +647,32 @@ extern "C" bool WINAPI EXPORT vscp_isOpen( void )
 	\return True if success, false if not.
 */
 
-extern "C" int WINAPI EXPORT vscp_doCmdShutDown( void )
+extern "C" int WINAPI EXPORT vscp_doCmdShutDown( long handle )
 {
-    return theApp.m_vscpif.doCmdShutDown();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) 0;
+
+    return pvscpif->doCmdShutDown();
 }
 
 /*!
-    \fn VscpTcpIf  vscp_getTcpIpInterface( void )
+    \fn CCanalSuperWrapper  vscp_getTcpIpInterface( void )
     \brief Get pointer to TCP/IP interface object.
 	\return Pointer to the TCP/IP interface object if OK, 
 		NULL if failure.
 */
 
-extern "C" VscpTcpIf * WINAPI EXPORT vscp_getTcpIpInterface( void )
+extern "C" VscpTcpIf * WINAPI EXPORT vscp_getTcpIpInterface( long handle )
 {
-    return theApp.m_vscpif.getTcpIpInterface();
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) NULL;
+
+    return pvscpif->getTcpIpInterface();
 }
 
 
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-//                              H E L P E R S
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-/*!
-    \fn long vscp_readStringValue( const char * pStrValue )
-    \brief Read a value (decimal or hex) from a string.
-	\return The converted number.
-*/
-
-extern "C" unsigned long WINAPI EXPORT vscp_readStringValue( const char * pStrValue )
-{
-    wxString strVal;
-    strVal.FromAscii( pStrValue );
-
-    return readStringValue( strVal );
-}
-
-
-
-/*!
-    \fn unsigned char vscp_getVscpPriority( const vscpEvent *pEvent )
-    \brief Get VSCP priority.
-*/
-
-extern "C" unsigned char WINAPI EXPORT vscp_getVscpPriority( const vscpEvent *pEvent )
-{
-    return getVscpPriority( pEvent );
-}
-
-/*!
-    \fn void vscp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
-    \brief Set VSCP priority.
-*/
-
-extern "C" void WINAPI EXPORT vscp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
-{
-    setVscpPriority( pEvent, priority );
-}
-
-
-/*!
-    \fn vscp_getVSCPheadFromCANid( const unsigned long id )
-    \brief Get the VSCP head from a CANAL message id (CAN id).
-*/
-
-extern "C" unsigned char WINAPI EXPORT vscp_getVSCPheadFromCANid( const unsigned long id )
-{
-    return  getVSCPheadFromCANid( id );
-}
-
-/*!
-    \fn vscp_getVSCPclassFromCANid( const unsigned long id )
-    \brief Get the VSCP class from a CANAL message id (CAN id).
-*/
-
-extern "C" unsigned short WINAPI EXPORT vscp_getVSCPclassFromCANid( const unsigned long id )
-{
-    return getVSCPclassFromCANid( id );
-}
-
-
-/*!
-    \fn unsigned short vscp_getVSCPtypeFromCANid( const unsigned long id )
-    \brief Get the VSCP type from a a CANAL message id (CAN id).
-*/
-
-extern "C" unsigned short WINAPI EXPORT vscp_getVSCPtypeFromCANid( const unsigned long id )
-{
-    return getVSCPtypeFromCANid( id );
-}
-
-/*!
-    \fn unsigned short vscp_getVSCPnicknameFromCANid( const unsigned long id )
-    \brief Get the VSCP nickname from a a CANAL message id (CAN id).
-*/
-
-extern "C" unsigned short WINAPI EXPORT vscp_getVSCPnicknameFromCANid( const unsigned long id )
-{
-    return getVSCPnicknameFromCANid( id );
-}
-
-/*!
-    \fn unsigned long vscp_getCANidFromVSCPdata( const unsigned char priority, 
-                                                    const unsigned short vscp_class, 
-                                                    const unsigned short vscp_type )
-    \brief Construct a CANAL id (CAN id ) from VSCP.
-*/
-
-extern "C" unsigned long WINAPI EXPORT vscp_getCANidFromVSCPdata( const unsigned char priority, 
-                                                                    const unsigned short vscp_class, 
-                                                                    const unsigned short vscp_type )
-{
-    return  getCANidFromVSCPdata( priority, vscp_class, vscp_type );
-}
-
-/*!
-    \fn unsigned long vscp_getCANidFromVSCPevent( const vscpEvent *pEvent )
-    \brief Get CANAL id (CAN id) from VSCP event.
-*/
-
-extern "C" unsigned long WINAPI EXPORT vscp_getCANidFromVSCPevent( const vscpEvent *pEvent )
-{
-    return getCANidFromVSCPevent( pEvent );
-}
-
-/*!
-    \fn unsigned short vscp_calcCRC( vscpEvent *pEvent, short bSet )
-    \brief Calculate VSCP crc.
-*/
-
-extern "C" unsigned short WINAPI EXPORT vscp_calcCRC( vscpEvent *pEvent, short bSet )
-{
-    return vscp_calc_crc( pEvent, bSet );
-}
-
-
-/*!
-    \fn bool vscp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
-    \brief Write GUID into VSCP event from string.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
-{
-    wxString strGUID = wxString::FromAscii( pGUID );
-    return  getGuidFromString( pEvent, strGUID );
-}
-
-/*!
-    \fn bool vscp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
-    \brief Write GUID from string into array.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
-{
-    wxString strGUID = wxString::FromAscii( pStr );
-    return getGuidFromStringToArray( pGUID, strGUID );
-}
-
-/*!
-    \fn bool vscp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
-    \brief Write GUID froom VSCP event to string.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
-{
-    bool rv;
-
-    wxString strGUID;
-    rv = writeGuidToString( pEvent, strGUID );
-    strcpy( pStr, strGUID.ToAscii() );
-    return rv;
-}
-
-
-/*!
-    \fn bool vscp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                            wxString& strGUID )
-    \brief Write GUID from VSCP event to string with four bytes on each
-    row seperated by \r\n. 
-*/
-
-extern "C" bool WINAPI EXPORT vscp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                                                wxString& strGUID )
-{
-    return writeGuidToString4Rows( pEvent, strGUID );
-}
-
-/*!
-    \fn bool vscp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                            wxString& strGUID )
-    \brief Write GUID from byte array to string.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                                                wxString& strGUID )
-{
-    return writeGuidArrayToString( pGUID, strGUID );
-}
-
-/*!
-    \fn bool vscp_isGUIDEmpty( unsigned char *pGUID )
-    \brief Check if GUID is empty (all nills).
-*/
-
-extern "C" bool WINAPI EXPORT vscp_isGUIDEmpty( unsigned char *pGUID )
-{
-    return isGUIDEmpty( pGUID );
-}
-
-/*!
-    \fn bool vscp_isSameGUID( const unsigned char *pGUID1, 
-                                const unsigned char *pGUID2 )
-    \brief Check if two GUID's is equal to each other.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_isSameGUID( const unsigned char *pGUID1, 
-                                                const unsigned char *pGUID2 )
-{
-    return isSameGUID( pGUID1, pGUID2 );
-}
-
-/*!
-    \fn bool vscp_convertVSCPtoEx( vscpEventEx *pEventEx, 
-                                    const vscpEvent *pEvent )
-    \brief Convert VSCP standard event form to ex. form.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_convertVSCPtoEx( vscpEventEx *pEventEx, 
-                                                        const vscpEvent *pEvent )
-{
-    return convertVSCPtoEx( pEventEx, pEvent );
-}
-
-/*!
-    \fn bool vscp_convertVSCPfromEx( vscpEvent *pEvent, 
-                                        const vscpEventEx *pEventEx )
-    \brief Convert VSCP ex. event form to standard form.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_convertVSCPfromEx( vscpEvent *pEvent, 
-                                                        const vscpEventEx *pEventEx )
-{
-    return convertVSCPfromEx( pEvent, pEventEx );
-}
-
-
-/*!
-    \fn void vscp_deleteVSCPevent( vscpEvent *pEvent )
-    \brief Delete VSCP event.
-*/
-
-extern "C" void WINAPI EXPORT vscp_deleteVSCPevent( vscpEvent *pEvent )
-{
-    return deleteVSCPevent( pEvent );
-}
-
-/*!
-    \fn void vscp_deleteVSCPeventEx( vscpEventEx *pEventEx )
-    \brief Delete VSCP event ex.
-*/
-
-extern "C" void WINAPI EXPORT vscp_deleteVSCPeventEx( vscpEventEx *pEventEx )
-{
-    return deleteVSCPeventEx( pEventEx );
-}
-
-/*!
-    \fn void vscp_clearVSCPFilter( vscpEventFilter *pFilter )
-    \brief Clear VSCP filter.
-*/
-
-extern "C" void WINAPI EXPORT vscp_clearVSCPFilter( vscpEventFilter *pFilter )
-{
-    return clearVSCPFilter( pFilter );
-}
-
-/*!
-    \fn bool readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
-    \brief Read a filter from a string
-	\param pFilter Filter structure to write filter to.
-	\param strFilter Filter in string form 
-				filter-priority, filter-class, filter-type, filter-GUID
-	\return true on success, fals eon failure.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
-{
-	return readFilterFromString( pFilter, strFilter );
-}
-
-/*!
-    \fn bool readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
-    \brief Read a mask from a string
-	\param pFilter Filter structure to write mask to.
-	\param strMask Mask in string form 
-				mask-priority, mask-class, mask-type, mask-GUID
-	\return true on success, fals eon failure.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
-{
-	return readMaskFromString( pFilter, strMask );
-}
-
-/*!
-    \fn bool vscp_doLevel2Filter( const vscpEvent *pEvent,
-                                    const vscpEventFilter *pFilter )
-    \brief Check VSCP filter condition.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_doLevel2Filter( const vscpEvent *pEvent,
-                                                    const vscpEventFilter *pFilter )
-{
-    return  doLevel2Filter( pEvent, pFilter );
-}
-
-
-/*!
-    \fn bool vscp_convertCanalToEvent( vscpEvent *pvscpEvent,
-                                            const canalMsg *pcanalMsg,
-                                            unsigned char *pGUID,
-                                            bool bCAN )
-    \brief Convert CANAL message to VSCP event.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_convertCanalToEvent( vscpEvent *pvscpEvent,
-                                                            const canalMsg *pcanalMsg,
-                                                            unsigned char *pGUID,
-                                                            bool bCAN )
-{
-    return convertCanalToEvent( pvscpEvent,
-                                    pcanalMsg,
-                                    pGUID,
-                                    bCAN );
-}
-
-
-/*!
-    \fn bool vscp_convertEventToCanal( canalMsg *pcanalMsg,
-                                        const vscpEvent *pvscpEvent )
-    \brief Convert VSCP event to CANAL message.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_convertEventToCanal( canalMsg *pcanalMsg,
-                                                            const vscpEvent *pvscpEvent )
-{
-    return  convertEventToCanal( pcanalMsg,
-                                    pvscpEvent );
-}
-
-
-/*!
-    \fn bool vscp_convertEventExToCanal( canalMsg *pcanalMsg,
-                                            const vscpEventEx *pvscpEventEx )
-    \brief Convert VSCP event ex. to CANAL message.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_convertEventExToCanal( canalMsg *pcanalMsg,
-                                                            const vscpEventEx *pvscpEventEx )
-{
-    return  convertEventExToCanal( pcanalMsg,
-                                    pvscpEventEx );
-}
-
-/*!
-    \fn unsigned long vscp_getTimeStamp( void )
-    \brief Get VSCP timestamp.
-*/
-
-extern "C" unsigned long WINAPI EXPORT vscp_getTimeStamp( void )
-{
-    return makeTimeStamp();
-}
-
-/*!
-    \fn bool vscp_copyVSCPEvent( vscpEvent *pEventTo, 
-                                    const vscpEvent *pEventFrom )
-    \brief Copy VSCP event.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_copyVSCPEvent( vscpEvent *pEventTo, 
-                                                    const vscpEvent *pEventFrom )
-{
-    return copyVSCPEvent( pEventTo, pEventFrom );
-}
-
-/*!
-    \fn bool vscp_writeVscpDataToString( const vscpEvent *pEvent, 
-                                            wxString& str, 
-                                            bool bUseHtmlBreak )
-    \brief Write VSCP data in readable form to a (multiline) string.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_writeVscpDataToString( const vscpEvent *pEvent, 
-                                                            wxString& str, 
-                                                            bool bUseHtmlBreak )
-{
-    return writeVscpDataToString( pEvent, 
-                                    str, 
-                                    bUseHtmlBreak );
-}
-
-
-/*!
-    \fn bool vscp_getVscpDataFromString( vscpEvent *pEvent, 
-                                            const wxString& str )
-    \brief Set data in VSCP event from a string.
-*/
-extern "C" bool WINAPI EXPORT vscp_getVscpDataFromString( vscpEvent *pEvent, 
-                                                                const wxString& str )
-{
-    return getVscpDataFromString( pEvent, str );
-}
-
-/*!
-    \fn bool vscp_writeVscpEventToString( vscpEvent *pEvent, 
-                                            char *p )
-    \brief Write VSCP data to a string.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_writeVscpEventToString( vscpEvent *pEvent, 
-                                                                char *p )
-{
-    bool rv;
-
-    wxString str = wxString::FromAscii( p );
-    if ( ( rv =  writeVscpEventToString( pEvent, str ) ) ) {
-        strcpy( p, str.ToAscii() );
-    }
-    return rv;
-}
-
-/*!
-    \fn bool vscp_getVscpEventFromString( vscpEvent *pEvent, 
-                                            const char *p )
-    \brief Get VSCP event from string.
-*/
-
-extern "C" bool WINAPI EXPORT vscp_getVscpEventFromString( vscpEvent *pEvent, 
-                                                                const char *p )
-{
-    wxString str = wxString::FromAscii( p );
-    return getVscpEventFromString( pEvent, str ); 
-}
-
-
+//-------------------------------------------------------------------------
+//                                Variables 
 //-------------------------------------------------------------------------
 
 
@@ -898,13 +683,16 @@ extern "C" bool WINAPI EXPORT vscp_getVscpEventFromString( vscpEvent *pEvent,
     \param pointer to string that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableString( const char *pName, char *pValue ) 
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue ) 
 { 
     bool rv;
 
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
-    if ( ( rv = theApp.m_vscpif.getVariableString( name, &strValue ) ) ) {
+    if ( ( rv = pvscpif->getVariableString( name, &strValue ) ) ) {
         strcpy( pValue, strValue.ToAscii() );
     }
 
@@ -918,9 +706,12 @@ extern "C" bool WINAPI EXPORT vscp_getVariableString( const char *pName, char *p
     \param pointer to string that contains the string.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableString( const char *pName, char *pValue ) 
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableString( long handle, const char *pName, char *pValue ) 
 { 
     bool rv;
+
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
 
     // Check pointers
     if ( NULL == pName ) return false;
@@ -928,7 +719,7 @@ extern "C" bool WINAPI EXPORT vscp_setVariableString( const char *pName, char *p
 
     wxString name = wxString::FromAscii( pName );
     wxString strValue = wxString::FromAscii( pValue );
-    return theApp.m_vscpif.setVariableString( name, strValue );
+    return pvscpif->setVariableString( name, strValue );
 
     return rv;
 }
@@ -940,10 +731,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableString( const char *pName, char *p
     \param pointer to boolean variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableBool( const char *pName, bool *bValue )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, bool *bValue )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableBool( name, bValue ); 
+    return pvscpif->getVariableBool( name, bValue ); 
 };
 
 
@@ -954,10 +748,13 @@ extern "C" bool WINAPI EXPORT vscp_getVariableBool( const char *pName, bool *bVa
     \param pointer to boolean variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableBool( const char *pName, bool bValue )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, bool bValue )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableBool( name, bValue ); 
+    return pvscpif->setVariableBool( name, bValue ); 
 };
 
 
@@ -968,10 +765,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableBool( const char *pName, bool bVal
     \param pointer to integer variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableInt( const char *pName, int *value )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableInt( long handle, const char *pName, int *value )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableInt( name, value ); 
+    return pvscpif->getVariableInt( name, value ); 
 };
 
 
@@ -982,10 +782,13 @@ extern "C" bool WINAPI EXPORT vscp_getVariableInt( const char *pName, int *value
     \param pointer to integer variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableInt( const char *pName, int value )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableInt( long handle, const char *pName, int value )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableInt( name, value ); 
+    return pvscpif->setVariableInt( name, value ); 
 };
 
 /*!
@@ -995,10 +798,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableInt( const char *pName, int value 
     \param pointer to long variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableLong( const char *pName, long *value )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableLong( long handle, const char *pName, long *value )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableLong( name, value ); 
+    return pvscpif->getVariableLong( name, value ); 
 };
 
 /*!
@@ -1008,10 +814,13 @@ extern "C" bool WINAPI EXPORT vscp_getVariableLong( const char *pName, long *val
     \param pointer to long variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableLong( const char *pName, long value )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *pName, long value )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableLong( name, value ); 
+    return pvscpif->setVariableLong( name, value ); 
 };
 
 /*!
@@ -1021,10 +830,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableLong( const char *pName, long valu
     \param pointer to double variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableDouble( const char *pName, double *value )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char *pName, double *value )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableDouble( name, value ); 
+    return pvscpif->getVariableDouble( name, value ); 
 };
 
 /*!
@@ -1034,10 +846,13 @@ extern "C" bool WINAPI EXPORT vscp_getVariableDouble( const char *pName, double 
     \param pointer to double variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableDouble( const char *pName, double value )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char *pName, double value )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableDouble( name, value ); 
+    return pvscpif->setVariableDouble( name, value ); 
 };
 
 /*!
@@ -1048,13 +863,16 @@ extern "C" bool WINAPI EXPORT vscp_setVariableDouble( const char *pName, double 
     value of the measurement.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableMeasurement( const char *pName, char *pValue )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue )
 { 
     bool rv;
 
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
-    if ( rv = theApp.m_vscpif.getVariableMeasurement( name, strValue ) ) {
+    if ( rv = pvscpif->getVariableMeasurement( name, strValue ) ) {
         strcpy( pValue, strValue.ToAscii() );
     }
 
@@ -1069,13 +887,16 @@ extern "C" bool WINAPI EXPORT vscp_getVariableMeasurement( const char *pName, ch
     value of the measurement.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableMeasurement( const char *pName, char *pValue )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue )
 { 
     bool rv;
 
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
-    return theApp.m_vscpif.setVariableMeasurement( name, strValue );
+    return pvscpif->setVariableMeasurement( name, strValue );
 
     return rv;
 };
@@ -1087,10 +908,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableMeasurement( const char *pName, ch
     \param pointer to event variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableEvent( const char *pName, vscpEvent *pEvent )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableEvent( name, pEvent ); 
+    return pvscpif->getVariableEvent( name, pEvent ); 
 }
 
 /*!
@@ -1100,10 +924,13 @@ extern "C" bool WINAPI EXPORT vscp_getVariableEvent( const char *pName, vscpEven
     \param pointer to event variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableEvent( const char *pName, vscpEvent *pEvent )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableEvent( name, pEvent ); 
+    return pvscpif->setVariableEvent( name, pEvent ); 
 }
 
 /*!
@@ -1113,10 +940,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableEvent( const char *pName, vscpEven
     \param pointer to event variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableEventEx( const char *pName, vscpEventEx *pEvent )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableEventEx( name, pEvent ); 
+    return pvscpif->getVariableEventEx( name, pEvent ); 
 }
 
 /*!
@@ -1126,10 +956,13 @@ extern "C" bool WINAPI EXPORT vscp_getVariableEventEx( const char *pName, vscpEv
     \param pointer to event variable that get the value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableEventEx( const char *pName, vscpEventEx *pEvent )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableEventEx( name, pEvent ); 
+    return pvscpif->setVariableEventEx( name, pEvent ); 
 }
 
 /*!
@@ -1139,10 +972,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableEventEx( const char *pName, vscpEv
     \param pointer to event variable that get the value of the GUID variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableGUID( const char *pName, cguid& GUID )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableGUID( long handle, const char *pName, cguid& GUID )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableGUID( name, GUID ); 
+    return pvscpif->getVariableGUID( name, GUID ); 
 }
 
 /*!
@@ -1152,10 +988,13 @@ extern "C" bool WINAPI EXPORT vscp_getVariableGUID( const char *pName, cguid& GU
     \param pointer to event variable that get the value of the GUID variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableGUID( const char *pName, cguid& GUID )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableGUID( long handle, const char *pName, cguid& GUID )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableGUID( name, GUID ); 
+    return pvscpif->setVariableGUID( name, GUID ); 
 }
 
 /*!
@@ -1167,10 +1006,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableGUID( const char *pName, cguid& GU
     value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableVSCPdata( const char *pName, uint16_t *psizeData, uint8_t *pData )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableVSCPdata( long handle, const char *pName, uint16_t *psizeData, uint8_t *pData )
 { 
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableVSCPdata( name, psizeData, pData ); 
+    return pvscpif->getVariableVSCPdata( name, psizeData, pData ); 
 }
 
 /*!
@@ -1182,10 +1024,13 @@ extern "C" bool WINAPI EXPORT vscp_getVariableVSCPdata( const char *pName, uint1
     value of the string variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableVSCPdata( const char *pName, uint16_t sizeData, uint8_t *pData )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableVSCPdata( long handle, const char *pName, uint16_t sizeData, uint8_t *pData )
 { 
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableVSCPdata( name, sizeData, pData ); 
+    return pvscpif->setVariableVSCPdata( name, sizeData, pData ); 
 }
 
 /*!
@@ -1195,10 +1040,13 @@ extern "C" bool WINAPI EXPORT vscp_setVariableVSCPdata( const char *pName, uint1
     \param pointer to int that get the value of the class variable.
     \return true if the variable is of type string.
 */
-extern "C"  bool WINAPI EXPORT vscp_getVariableVSCPclass( const char *pName, uint16_t *vscp_class )
+extern "C"  BOOL WINAPI EXPORT vscphlp_getVariableVSCPclass( long handle, const char *pName, uint16_t *vscp_class )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableVSCPclass( name, vscp_class ); 
+    return pvscpif->getVariableVSCPclass( name, vscp_class ); 
 }
 
 /*!
@@ -1208,10 +1056,13 @@ extern "C"  bool WINAPI EXPORT vscp_getVariableVSCPclass( const char *pName, uin
     \param pointer to int that get the value of the class variable.
     \return true if the variable is of type string.
 */
-extern "C"  bool WINAPI EXPORT vscp_setVariableVSCPclass( const char *pName, uint16_t vscp_class )
+extern "C"  BOOL WINAPI EXPORT vscphlp_setVariableVSCPclass( long handle, const char *pName, uint16_t vscp_class )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableVSCPclass( name, vscp_class ); 
+    return pvscpif->setVariableVSCPclass( name, vscp_class ); 
 }
 
 /*!
@@ -1221,10 +1072,13 @@ extern "C"  bool WINAPI EXPORT vscp_setVariableVSCPclass( const char *pName, uin
     \param pointer to int that get the value of the type variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_getVariableVSCPtype( const char *pName, uint8_t *vscp_type )
+extern "C" BOOL WINAPI EXPORT vscphlp_getVariableVSCPtype( long handle, const char *pName, uint8_t *vscp_type )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.getVariableVSCPtype( name, vscp_type ); 
+    return pvscpif->getVariableVSCPtype( name, vscp_type ); 
 }
 
 /*!
@@ -1234,8 +1088,447 @@ extern "C" bool WINAPI EXPORT vscp_getVariableVSCPtype( const char *pName, uint8
     \param pointer to int that get the value of the type variable.
     \return true if the variable is of type string.
 */
-extern "C" bool WINAPI EXPORT vscp_setVariableVSCPtype( const char *pName, uint8_t vscp_type )
+extern "C" BOOL WINAPI EXPORT vscphlp_setVariableVSCPtype( long handle, const char *pName, uint8_t vscp_type )
 {
+	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
+	if ( NULL == pvscpif ) FALSE;
+
     wxString name = wxString::FromAscii( pName );
-    return theApp.m_vscpif.setVariableVSCPtype( name, vscp_type ); 
+    return pvscpif->setVariableVSCPtype( name, vscp_type ); 
 }
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                              H E L P E R S
+////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+/*!
+    \fn long vscp_readStringValue( const char * pStrValue )
+    \brief Read a value (decimal or hex) from a string.
+	\return The converted number.
+*/
+
+extern "C" unsigned long WINAPI EXPORT vscphlp_readStringValue( const char * pStrValue )
+{
+    wxString strVal;
+    strVal.FromAscii( pStrValue );
+
+    return vscp_readStringValue( strVal );
+}
+
+
+
+/*!
+    \fn unsigned char vscp_getVscpPriority( const vscpEvent *pEvent )
+    \brief Get VSCP priority.
+*/
+
+extern "C" unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent )
+{
+    return vscp_getVscpPriority( pEvent );
+}
+
+/*!
+    \fn void vscp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+    \brief Set VSCP priority.
+*/
+
+extern "C" void WINAPI EXPORT vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+{
+    vscp_setVscpPriority( pEvent, priority );
+}
+
+
+/*!
+    \fn vscp_getVSCPheadFromCANid( const unsigned long id )
+    \brief Get the VSCP head from a CANAL message id (CAN id).
+*/
+
+extern "C" unsigned char WINAPI EXPORT vscphlp_getVSCPheadFromCANid( const unsigned long id )
+{
+    return  vscp_getVSCPheadFromCANid( id );
+}
+
+/*!
+    \fn vscp_getVSCPclassFromCANid( const unsigned long id )
+    \brief Get the VSCP class from a CANAL message id (CAN id).
+*/
+
+extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPclassFromCANid( const unsigned long id )
+{
+    return vscp_getVSCPclassFromCANid( id );
+}
+
+
+/*!
+    \fn unsigned short vscp_getVSCPtypeFromCANid( const unsigned long id )
+    \brief Get the VSCP type from a a CANAL message id (CAN id).
+*/
+
+extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPtypeFromCANid( const unsigned long id )
+{
+    return vscp_getVSCPtypeFromCANid( id );
+}
+
+/*!
+    \fn unsigned short vscp_getVSCPnicknameFromCANid( const unsigned long id )
+    \brief Get the VSCP nickname from a a CANAL message id (CAN id).
+*/
+
+extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPnicknameFromCANid( const unsigned long id )
+{
+    return vscp_getVSCPnicknameFromCANid( id );
+}
+
+/*!
+    \fn unsigned long vscp_getCANidFromVSCPdata( const unsigned char priority, 
+                                                    const unsigned short vscp_class, 
+                                                    const unsigned short vscp_type )
+    \brief Construct a CANAL id (CAN id ) from VSCP.
+*/
+
+extern "C" unsigned long WINAPI EXPORT vscphlp_getCANidFromVSCPdata( const unsigned char priority, 
+                                                                    const unsigned short vscp_class, 
+                                                                    const unsigned short vscp_type )
+{
+    return  vscp_getCANidFromVSCPdata( priority, vscp_class, vscp_type );
+}
+
+/*!
+    \fn unsigned long vscp_getCANidFromVSCPevent( const vscpEvent *pEvent )
+    \brief Get CANAL id (CAN id) from VSCP event.
+*/
+
+extern "C" unsigned long WINAPI EXPORT vscphlp_getCANidFromVSCPevent( const vscpEvent *pEvent )
+{
+    return vscp_getCANidFromVSCPevent( pEvent );
+}
+
+/*!
+    \fn unsigned short vscp_calcCRC( vscpEvent *pEvent, short bSet )
+    \brief Calculate VSCP crc.
+*/
+
+extern "C" unsigned short WINAPI EXPORT vscphlp_calcCRC( vscpEvent *pEvent, short bSet )
+{
+    return vscp_vscp_calc_crc( pEvent, bSet );
+}
+
+
+/*!
+    \fn bool vscp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+    \brief Write GUID into VSCP event from string.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+{
+    wxString strGUID = wxString::FromAscii( pGUID );
+    return  vscp_getGuidFromString( pEvent, strGUID );
+}
+
+/*!
+    \fn bool vscp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+    \brief Write GUID from string into array.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+{
+    wxString strGUID = wxString::FromAscii( pStr );
+    return vscp_getGuidFromStringToArray( pGUID, strGUID );
+}
+
+/*!
+    \fn bool vscp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
+    \brief Write GUID froom VSCP event to string.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
+{
+    bool rv;
+
+    wxString strGUID;
+    rv = vscp_writeGuidToString( pEvent, strGUID );
+    strcpy( pStr, strGUID.ToAscii() );
+    return rv;
+}
+
+
+/*!
+    \fn bool vscp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                            wxString& strGUID )
+    \brief Write GUID from VSCP event to string with four bytes on each
+    row seperated by \r\n. 
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                                                wxString& strGUID )
+{
+    return vscp_writeGuidToString4Rows( pEvent, strGUID );
+}
+
+/*!
+    \fn bool vscp_writeGuidArrayToString( const unsigned char * pGUID, 
+                                            wxString& strGUID )
+    \brief Write GUID from byte array to string.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
+                                                                wxString& strGUID )
+{
+    return vscp_writeGuidArrayToString( pGUID, strGUID );
+}
+
+/*!
+    \fn bool vscp_isGUIDEmpty( unsigned char *pGUID )
+    \brief Check if GUID is empty (all nills).
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_isGUIDEmpty( unsigned char *pGUID )
+{
+    return vscp_isGUIDEmpty( pGUID );
+}
+
+/*!
+    \fn bool vscp_isSameGUID( const unsigned char *pGUID1, 
+                                const unsigned char *pGUID2 )
+    \brief Check if two GUID's is equal to each other.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_isSameGUID( const unsigned char *pGUID1, 
+                                                const unsigned char *pGUID2 )
+{
+    return vscp_isSameGUID( pGUID1, pGUID2 );
+}
+
+/*!
+    \fn bool vscp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+                                    const vscpEvent *pEvent )
+    \brief Convert VSCP standard event form to ex. form.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+                                                        const vscpEvent *pEvent )
+{
+    return vscp_convertVSCPtoEx( pEventEx, pEvent );
+}
+
+/*!
+    \fn bool vscp_convertVSCPfromEx( vscpEvent *pEvent, 
+                                        const vscpEventEx *pEventEx )
+    \brief Convert VSCP ex. event form to standard form.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_convertVSCPfromEx( vscpEvent *pEvent, 
+                                                        const vscpEventEx *pEventEx )
+{
+    return vscp_convertVSCPfromEx( pEvent, pEventEx );
+}
+
+
+/*!
+    \fn void vscp_deleteVSCPevent( vscpEvent *pEvent )
+    \brief Delete VSCP event.
+*/
+
+extern "C" void WINAPI EXPORT vscphlp_deleteVSCPevent( vscpEvent *pEvent )
+{
+    return vscp_deleteVSCPevent( pEvent );
+}
+
+/*!
+    \fn void vscp_deleteVSCPeventEx( vscpEventEx *pEventEx )
+    \brief Delete VSCP event ex.
+*/
+
+extern "C" void WINAPI EXPORT vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )
+{
+    return vscp_deleteVSCPeventEx( pEventEx );
+}
+
+/*!
+    \fn void vscp_clearVSCPFilter( vscpEventFilter *pFilter )
+    \brief Clear VSCP filter.
+*/
+
+extern "C" void WINAPI EXPORT vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
+{
+    return vscp_clearVSCPFilter( pFilter );
+}
+
+/*!
+    \fn bool readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
+    \brief Read a filter from a string
+	\param pFilter Filter structure to write filter to.
+	\param strFilter Filter in string form 
+				filter-priority, filter-class, filter-type, filter-GUID
+	\return true on success, fals eon failure.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
+{
+	return vscp_readFilterFromString( pFilter, strFilter );
+}
+
+/*!
+    \fn bool readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
+    \brief Read a mask from a string
+	\param pFilter Filter structure to write mask to.
+	\param strMask Mask in string form 
+				mask-priority, mask-class, mask-type, mask-GUID
+	\return true on success, fals eon failure.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
+{
+	return vscp_readMaskFromString( pFilter, strMask );
+}
+
+/*!
+    \fn bool vscp_doLevel2Filter( const vscpEvent *pEvent,
+                                    const vscpEventFilter *pFilter )
+    \brief Check VSCP filter condition.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_doLevel2Filter( const vscpEvent *pEvent,
+                                                    const vscpEventFilter *pFilter )
+{
+    return  vscp_doLevel2Filter( pEvent, pFilter );
+}
+
+
+/*!
+    \fn bool vscp_convertCanalToEvent( vscpEvent *pvscpEvent,
+                                            const canalMsg *pcanalMsg,
+                                            unsigned char *pGUID,
+                                            bool bCAN )
+    \brief Convert CANAL message to VSCP event.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_convertCanalToEvent( vscpEvent *pvscpEvent,
+                                                            const canalMsg *pcanalMsg,
+                                                            unsigned char *pGUID,
+                                                            bool bCAN )
+{
+    return vscp_convertCanalToEvent( pvscpEvent,
+                                    pcanalMsg,
+                                    pGUID,
+                                    bCAN );
+}
+
+
+/*!
+    \fn bool vscp_convertEventToCanal( canalMsg *pcanalMsg,
+                                        const vscpEvent *pvscpEvent )
+    \brief Convert VSCP event to CANAL message.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
+                                                            const vscpEvent *pvscpEvent )
+{
+    return  vscp_convertEventToCanal( pcanalMsg,
+                                    pvscpEvent );
+}
+
+
+/*!
+    \fn bool vscp_convertEventExToCanal( canalMsg *pcanalMsg,
+                                            const vscpEventEx *pvscpEventEx )
+    \brief Convert VSCP event ex. to CANAL message.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
+                                                            const vscpEventEx *pvscpEventEx )
+{
+    return  vscp_convertEventExToCanal( pcanalMsg,
+                                    pvscpEventEx );
+}
+
+/*!
+    \fn unsigned long vscp_getTimeStamp( void )
+    \brief Get VSCP timestamp.
+*/
+
+extern "C" unsigned long WINAPI EXPORT vscphlp_getTimeStamp( void )
+{
+    return vscp_makeTimeStamp();
+}
+
+/*!
+    \fn bool vscp_copyVSCPEvent( vscpEvent *pEventTo, 
+                                    const vscpEvent *pEventFrom )
+    \brief Copy VSCP event.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_copyVSCPEvent( vscpEvent *pEventTo, 
+                                                    const vscpEvent *pEventFrom )
+{
+    return vscp_copyVSCPEvent( pEventTo, pEventFrom );
+}
+
+/*!
+    \fn bool vscp_writeVscpDataToString( const vscpEvent *pEvent, 
+                                            wxString& str, 
+                                            bool bUseHtmlBreak )
+    \brief Write VSCP data in readable form to a (multiline) string.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
+                                                            wxString& str, 
+                                                            bool bUseHtmlBreak )
+{
+    return vscp_writeVscpDataToString( pEvent, 
+                                    str, 
+                                    bUseHtmlBreak );
+}
+
+
+/*!
+    \fn bool vscp_getVscpDataFromString( vscpEvent *pEvent, 
+                                            const wxString& str )
+    \brief Set data in VSCP event from a string.
+*/
+extern "C" bool WINAPI EXPORT vscphlp_getVscpDataFromString( vscpEvent *pEvent, 
+                                                                const wxString& str )
+{
+    return vscp_getVscpDataFromString( pEvent, str );
+}
+
+/*!
+    \fn bool vscp_writeVscpEventToString( vscpEvent *pEvent, 
+                                            char *p )
+    \brief Write VSCP data to a string.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_writeVscpEventToString( vscpEvent *pEvent, 
+                                                                char *p )
+{
+    bool rv;
+
+    wxString str = wxString::FromAscii( p );
+    if ( ( rv =  vscp_writeVscpEventToString( pEvent, str ) ) ) {
+        strcpy( p, str.ToAscii() );
+    }
+    return rv;
+}
+
+/*!
+    \fn bool vscp_getVscpEventFromString( vscpEvent *pEvent, 
+                                            const char *p )
+    \brief Get VSCP event from string.
+*/
+
+extern "C" bool WINAPI EXPORT vscphlp_getVscpEventFromString( vscpEvent *pEvent, 
+                                                                const char *p )
+{
+    wxString str = wxString::FromAscii( p );
+    return vscp_getVscpEventFromString( pEvent, str ); 
+}
+
+

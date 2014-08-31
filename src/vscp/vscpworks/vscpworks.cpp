@@ -1738,21 +1738,21 @@ bool VscpworksApp::readConfiguration( void )
 #else 
                     wxString r = subchild->GetPropVal(_("r"), _("0"));
 #endif                       
-                    rval = readStringValue( r );		
+                    rval = vscp_readStringValue( r );		
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString g = subchild->GetAttribute(_("g"), _("0"));
 #else 
                     wxString g = subchild->GetPropVal(_("g"), _("0"));
 #endif                       
-                    gval = readStringValue( g );	
+                    gval = vscp_readStringValue( g );	
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString b = subchild->GetAttribute(_("b"), _("0"));
 #else 
                     wxString b = subchild->GetPropVal(_("b"), _("0"));
 #endif                       
-                    bval = readStringValue( b );	
+                    bval = vscp_readStringValue( b );	
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameRxTextColour = wxColour(rval, gval, bval );
@@ -1768,21 +1768,21 @@ bool VscpworksApp::readConfiguration( void )
 #else 
                     wxString r = subchild->GetPropVal(_("r"), _("0"));
 #endif                       
-                    rval = readStringValue( r );		
+                    rval = vscp_readStringValue( r );		
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString g = subchild->GetAttribute(_("g"), _("0"));
 #else 
                     wxString g = subchild->GetPropVal(_("g"), _("0"));
 #endif                       
-                    gval = readStringValue( g );	
+                    gval = vscp_readStringValue( g );	
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString b = subchild->GetAttribute(_("b"), _("0"));
 #else 
                     wxString b = subchild->GetPropVal(_("b"), _("0"));
 #endif                       
-                    bval = readStringValue( b );
+                    bval = vscp_readStringValue( b );
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameRxBgColour = wxColour(rval, gval, bval );          
@@ -1798,21 +1798,21 @@ bool VscpworksApp::readConfiguration( void )
 #else 
                     wxString r = subchild->GetPropVal(_("r"), _("0"));
 #endif                       
-                    rval = readStringValue( r );		
+                    rval = vscp_readStringValue( r );		
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString g = subchild->GetAttribute(_("g"), _("0"));
 #else 
                     wxString g = subchild->GetPropVal(_("g"), _("0"));
 #endif                       
-                    gval = readStringValue( g );	
+                    gval = vscp_readStringValue( g );	
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString b = subchild->GetAttribute(_("b"), _("0"));
 #else 
                     wxString b = subchild->GetPropVal(_("b"), _("0"));
 #endif                       
-                    bval = readStringValue( b );
+                    bval = vscp_readStringValue( b );
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameTxTextColour = wxColour(rval, gval, bval );
@@ -1828,21 +1828,21 @@ bool VscpworksApp::readConfiguration( void )
 #else 
                     wxString r = subchild->GetPropVal(_("r"), _("0"));
 #endif                       
-                    rval = readStringValue( r );		
+                    rval = vscp_readStringValue( r );		
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString g = subchild->GetAttribute(_("g"), _("0"));
 #else 
                     wxString g = subchild->GetPropVal(_("g"), _("0"));
 #endif                       
-                    gval = readStringValue( g );	
+                    gval = vscp_readStringValue( g );	
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString b = subchild->GetAttribute(_("b"), _("0"));
 #else 
                     wxString b = subchild->GetPropVal(_("b"), _("0"));
 #endif                       
-                    bval = readStringValue( b );
+                    bval = vscp_readStringValue( b );
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameTxBgColour = wxColour(rval, gval, bval );          
@@ -1858,21 +1858,21 @@ bool VscpworksApp::readConfiguration( void )
 #else 
                     wxString r = subchild->GetPropVal(_("r"), _("0"));
 #endif                       
-                    rval = readStringValue( r );		
+                    rval = vscp_readStringValue( r );		
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString g = subchild->GetAttribute(_("g"), _("0"));
 #else 
                     wxString g = subchild->GetPropVal(_("g"), _("0"));
 #endif                       
-                    gval = readStringValue( g );	
+                    gval = vscp_readStringValue( g );	
 
 #if wxCHECK_VERSION(3,0,0)                     
                     wxString b = subchild->GetAttribute(_("b"), _("0"));
 #else 
                     wxString b = subchild->GetPropVal(_("b"), _("0"));
 #endif                       
-                    bval = readStringValue( b );
+                    bval = vscp_readStringValue( b );
 
                     // Assign the colours
                     g_Config.m_VscpRcvFrameLineColour = wxColour(rval, gval, bval );          
@@ -2186,7 +2186,7 @@ bool VscpworksApp::readConfiguration( void )
 
                     vscp_interface *pVSCPif = new vscp_interface;
                     if ( NULL == pVSCPif ) return false;
-                    clearVSCPFilter( &pVSCPif->m_vscpfilter );
+                    vscp_clearVSCPFilter( &pVSCPif->m_vscpfilter );
 
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     while (subsubchild) {
@@ -2247,21 +2247,21 @@ bool VscpworksApp::readConfiguration( void )
                         }
                         else if (subsubchild->GetName() == _("guid")) {
                             wxString str = subsubchild->GetNodeContent();
-                            getGuidFromStringToArray( pVSCPif->m_GUID, str );
+                            vscp_getGuidFromStringToArray( pVSCPif->m_GUID, str );
                         }
                         else if (subsubchild->GetName() == _("filter")) {
 #if wxCHECK_VERSION(3,0,0)                             
-                            pVSCPif->m_vscpfilter.filter_priority = readStringValue( subsubchild->GetAttribute( _( "priority" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.filter_priority = vscp_readStringValue( subsubchild->GetAttribute( _( "priority" ), _("0") ) );
 #else 
                             pVSCPif->m_vscpfilter.filter_priority = readStringValue( subsubchild->GetPropVal( _( "priority" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0)                             
-                            pVSCPif->m_vscpfilter.filter_class = readStringValue( subsubchild->GetAttribute( _( "class" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.filter_class = vscp_readStringValue( subsubchild->GetAttribute( _( "class" ), _("0") ) );
 #else 
                             pVSCPif->m_vscpfilter.filter_class = readStringValue( subsubchild->GetPropVal( _( "class" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0)                             
-                            pVSCPif->m_vscpfilter.filter_type = readStringValue( subsubchild->GetAttribute( _( "type" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.filter_type = vscp_readStringValue( subsubchild->GetAttribute( _( "type" ), _("0") ) );
 #else 
                             pVSCPif->m_vscpfilter.filter_type = readStringValue( subsubchild->GetPropVal( _( "type" ), _("0") ) );
 #endif                               
@@ -2271,21 +2271,21 @@ bool VscpworksApp::readConfiguration( void )
                             wxString strGUID = subsubchild->GetPropVal( _( "GUID" ), 
 #endif                                       
                                 _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                            getGuidFromStringToArray( pVSCPif->m_vscpfilter.filter_GUID, strGUID );
+                            vscp_getGuidFromStringToArray( pVSCPif->m_vscpfilter.filter_GUID, strGUID );
                         }
                         else if (subsubchild->GetName() == _("mask")) {
 #if wxCHECK_VERSION(3,0,0)                             
-                            pVSCPif->m_vscpfilter.mask_priority = readStringValue( subsubchild->GetAttribute( _( "priority" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.mask_priority = vscp_readStringValue( subsubchild->GetAttribute( _( "priority" ), _("0") ) );
 #else 
                             pVSCPif->m_vscpfilter.mask_priority = readStringValue( subsubchild->GetPropVal( _( "priority" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0)                             
-                            pVSCPif->m_vscpfilter.mask_class = readStringValue( subsubchild->GetAttribute( _( "class" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.mask_class = vscp_readStringValue( subsubchild->GetAttribute( _( "class" ), _("0") ) );
 #else 
                             pVSCPif->m_vscpfilter.mask_class = readStringValue( subsubchild->GetPropVal( _( "class" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0) 
-                            pVSCPif->m_vscpfilter.mask_type = readStringValue( subsubchild->GetAttribute( _( "type" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.mask_type = vscp_readStringValue( subsubchild->GetAttribute( _( "type" ), _("0") ) );
 #else 
                             pVSCPif->m_vscpfilter.mask_type = readStringValue( subsubchild->GetPropVal( _( "type" ), _("0") ) );
 #endif   
@@ -2295,7 +2295,7 @@ bool VscpworksApp::readConfiguration( void )
                             wxString strGUID = subsubchild->GetPropVal( _( "GUID" ),
 #endif   
                                     _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
-                            getGuidFromStringToArray( pVSCPif->m_vscpfilter.mask_GUID, strGUID );
+                            vscp_getGuidFromStringToArray( pVSCPif->m_vscpfilter.mask_GUID, strGUID );
                         }
 
                         subsubchild = subsubchild->GetNext();
@@ -2769,7 +2769,7 @@ bool VscpworksApp::writeConfiguration( void )
 
             // interface GUID
             pFileStream->Write("<guid>",strlen("<guid>"));
-            writeGuidArrayToString( pIf->m_GUID, buf );	
+            vscp_writeGuidArrayToString( pIf->m_GUID, buf );	
             pFileStream->Write( buf.mb_str(),strlen(buf.mb_str()));	
             pFileStream->Write("</guid>\n",strlen("</guid>\n"));
 
@@ -2783,7 +2783,7 @@ bool VscpworksApp::writeConfiguration( void )
             pFileStream->Write ( buf.mb_str(), strlen( buf.mb_str() ) );
             buf.Printf( _( " GUID=\"" ) );
             pFileStream->Write ( buf.mb_str(), strlen( buf.mb_str() ) );
-            writeGuidArrayToString( pIf->m_vscpfilter.filter_GUID, strGUID );
+            vscp_writeGuidArrayToString( pIf->m_vscpfilter.filter_GUID, strGUID );
             pFileStream->Write( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
             pFileStream->Write( "\">",strlen ( "\">" ) );
             pFileStream->Write( "</filter>\n",strlen ( "</filter>\n" ) );
@@ -2798,7 +2798,7 @@ bool VscpworksApp::writeConfiguration( void )
             pFileStream->Write ( buf.mb_str(), strlen( buf.mb_str() ) );
             buf.Printf( _( " GUID=\"" ) );
             pFileStream->Write ( buf.mb_str(), strlen( buf.mb_str() ) );
-            writeGuidArrayToString( pIf->m_vscpfilter.mask_GUID, strGUID );
+            vscp_writeGuidArrayToString( pIf->m_vscpfilter.mask_GUID, strGUID );
             pFileStream->Write ( strGUID.mb_str(), strlen( strGUID.mb_str() ) );
             pFileStream->Write ( "\">",strlen ( "\">" ) );
             pFileStream->Write ( "</mask>\n",strlen ( "</mask>\n" ) );
@@ -3131,7 +3131,7 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
 					( VSCP_CLASS2_LEVEL1_PROTOCOL == event.vscp_class ) && 
                     ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
 
-					if ( isSameGUID( pdestGUID, event.GUID ) ) {
+					if ( vscp_isSameGUID( pdestGUID, event.GUID ) ) {
 						// Reg we requested?
 						if ( event.data[ 0 ] == reg ) {
 							// OK get the data
@@ -3149,7 +3149,7 @@ bool VscpworksApp::readLevel2Register( CCanalSuperWrapper *pcsw,
                     ( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == event.vscp_type ) ) { 
 					
 					// from us
-					if ( isSameGUID( pdestGUID, event.GUID ) ) {	
+					if ( vscp_isSameGUID( pdestGUID, event.GUID ) ) {	
 						
 						uint32_t retreg = ( event.data[ 0 ]  << 24 ) +
 										  (	event.data[ 1 ]  << 16 ) +

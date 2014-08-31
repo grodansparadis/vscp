@@ -219,19 +219,19 @@ bool CVSCPVariable::writeVariableToString( wxString& strVariable )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-            writeVscpDataWithSizeToString( m_normIntSize, m_normInteger, strVariable );
+            vscp_writeVscpDataWithSizeToString( m_normIntSize, m_normInteger, strVariable );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-            writeVscpEventToString( &m_event, strVariable );
+            vscp_writeVscpEventToString( &m_event, strVariable );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-            writeGuidToString( &m_event, strVariable );
+            vscp_writeGuidToString( &m_event, strVariable );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-            writeVscpDataToString( &m_event, strVariable );
+            vscp_writeVscpDataToString( &m_event, strVariable );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
@@ -293,11 +293,11 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-            m_longValue = readStringValue( strValue );
+            m_longValue = vscp_readStringValue( strValue );
             break;
             
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
-            m_longValue = readStringValue( strValue );
+            m_longValue = vscp_readStringValue( strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
@@ -308,7 +308,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
             {
                 uint8_t data[ VSCP_MAX_DATA ];
                 uint16_t sizeData = 0;
-                getVscpDataArrayFromString( data, &sizeData, strValue );
+                vscp_getVscpDataArrayFromString( data, &sizeData, strValue );
                 if ( sizeData > 8 ) sizeData = 8;
                 if (sizeData) memcpy( m_normInteger, data, sizeData );
                 m_normIntSize = sizeData;
@@ -316,27 +316,27 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-            getVscpEventFromString( &m_event, strValue );
+            vscp_getVscpEventFromString( &m_event, strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-            getGuidFromString( &m_event, strValue );
+            vscp_getGuidFromString( &m_event, strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-            getVscpDataFromString( &m_event, strValue );
+            vscp_getVscpDataFromString( &m_event, strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-            m_event.vscp_class = readStringValue( strValue );
+            m_event.vscp_class = vscp_readStringValue( strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
-            m_event.vscp_type = readStringValue( strValue );
+            m_event.vscp_type = vscp_readStringValue( strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-            m_event.timestamp = readStringValue( strValue );
+            m_event.timestamp = vscp_readStringValue( strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
@@ -861,6 +861,7 @@ bool CVariableStorage::save( wxString& path )
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream( path );
     if ( NULL == pFileStream ) return false;
+	if ( !pFileStream->IsOk() ) return false;
 
     pFileStream->Write("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n", 
                         strlen("<?xml version=\"1.0\" encoding=\"utf-8\" ?>\n\n") );
@@ -1207,7 +1208,7 @@ bool CVariableStorage::save( wxString& path )
 
                     str.Printf( _("  <variable type=\"datetime\">\n") );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-                    writeGuidToString( &pVariable->m_event, str );
+                    vscp_writeGuidToString( &pVariable->m_event, str );
 
                     // Write name
                     pFileStream->Write( "    <name>", strlen("    <name>") );
