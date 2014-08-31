@@ -45779,7 +45779,7 @@ Hexadecimal values should be preceded with '0x'."</string>
                     <long name="proxy-X">-1</long>
                     <long name="proxy-Y">-1</long>
                     <long name="proxy-Width">-1</long>
-                    <long name="proxy-Height">-1</long>
+                    <long name="proxy-Height">50</long>
                     <string name="proxy-AlignH">"Expand"</string>
                     <string name="proxy-AlignV">"Top"</string>
                     <long name="proxy-Stretch factor">5</long>
@@ -45992,7 +45992,7 @@ when triggered or doubleclicked."</string>
                     <long name="proxy-X">-1</long>
                     <long name="proxy-Y">-1</long>
                     <long name="proxy-Width">60</long>
-                    <long name="proxy-Height">-1</long>
+                    <long name="proxy-Height">25</long>
                     <string name="proxy-AlignH">"Left"</string>
                     <string name="proxy-AlignV">"Top"</string>
                     <long name="proxy-Stretch factor">2</long>
@@ -46149,7 +46149,7 @@ The transmission event period is  interval between automatically sent events."</
                     <long name="proxy-X">-1</long>
                     <long name="proxy-Y">-1</long>
                     <long name="proxy-Width">60</long>
-                    <long name="proxy-Height">-1</long>
+                    <long name="proxy-Height">25</long>
                     <string name="proxy-AlignH">"Left"</string>
                     <string name="proxy-AlignV">"Top"</string>
                     <long name="proxy-Stretch factor">2</long>
@@ -46287,7 +46287,7 @@ The transmission event period is  interval between automatically sent events."</
                     <long name="proxy-X">-1</long>
                     <long name="proxy-Y">-1</long>
                     <long name="proxy-Width">200</long>
-                    <long name="proxy-Height">-1</long>
+                    <long name="proxy-Height">25</long>
                     <string name="proxy-AlignH">"Left"</string>
                     <string name="proxy-AlignV">"Centre"</string>
                     <long name="proxy-Stretch factor">0</long>

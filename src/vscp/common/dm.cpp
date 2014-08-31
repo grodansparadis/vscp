@@ -1475,7 +1475,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%measurement.convert.data"), &str ) ) {
                 wxString str;
                 if ( vscp_getVSCPMeasurementAsString(pEvent, str ) ) {
-                    for ( int i=0; i<str.Length(); i++ ) {
+                    for ( unsigned int i=0; i<str.Length(); i++ ) {
                         if (0!=i) strResult += ','; // Not at first location
                         strResult += str.GetChar(i);
                     }
@@ -2634,7 +2634,7 @@ bool CDM::removeRow( unsigned short pos )
 dmElement *CDM::getRow( short row ) 
 { 
     if (row < 0) return NULL;
-    if ( row >= m_DMList.GetCount() ) return NULL;
+    if ( (unsigned short)row >= m_DMList.GetCount() ) return NULL;
     
     return m_DMList.Item( row )->GetData(); 
 }
@@ -3087,7 +3087,7 @@ bool CDM::feed( vscpEvent *pEvent )
                 if ( pDMitem->isCheckIndexSet() ) {
                     if ( pDMitem->m_bMeasurement ) {
                         if ( ( 0 == pEvent->sizeData ) || 
-                                ( pEvent->pdata[0] & 7 != pDMitem->m_index ) ) continue;
+                                ( ( pEvent->pdata[0] & 7 ) != pDMitem->m_index ) ) continue;
                     }
                     else {
                         if ( ( 0 == pEvent->sizeData ) || 

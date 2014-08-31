@@ -319,6 +319,7 @@ public:
     //                  WEBSOCKETS
     /////////////////////////////////////////////////
 
+
     static void
     dump_handshake_info(struct lws_tokens *lwst);
 
@@ -370,7 +371,8 @@ public:
             struct libwebsocket *wsi,
             struct per_session_data__lws_vscp *pss,
             const char *pCommand);
-	
+
+
 	
 	/////////////////////////////////////////////////
     //                 WEB SERVER

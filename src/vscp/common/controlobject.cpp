@@ -146,9 +146,12 @@
 #ifndef WIN32
 //#include <microhttpd.h>
 #endif
-//#include <libwebsockets.h>
+#include <libwebsockets.h>
 
+#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
+#endif
+
 
 // List for websocket triggers
 WX_DEFINE_LIST(TRIGGERLIST);
@@ -177,8 +180,6 @@ WSADATA wsaData; // WSA functions
 //		     WEBSOCKETS
 ///////////////////////////////////////////////////
 
-#ifdef WIN32
-#else
 
 static int gbClose;
 
@@ -265,7 +266,7 @@ struct libwebsocket_extension libwebsocket_internal_extensions[] = {
     }
 };
 
-#endif
+
 
 
 ///////////////////////////////////////////////////
@@ -656,6 +657,11 @@ bool CControlObject::run(void)
     
 
 #ifdef WIN32
+
+	struct websocket_data {
+		
+	};
+
 	/*
 	//char interface_name[ 128 ] = "";
     const char *websockif = NULL;
@@ -1390,7 +1396,6 @@ void CControlObject::removeClient(CClientItem *pClientItem)
     // Remove the client
     m_clientList.removeClient(pClientItem);
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //  getMacAddress
@@ -2246,8 +2251,7 @@ bool CControlObject::readMimeTypes(wxString& path)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#ifdef WIN32
-#else
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2497,7 +2501,10 @@ CControlObject::callback_dumb_increment(struct libwebsocket_context *context,
         n = libwebsocket_write(wsi, p, n, LWS_WRITE_TEXT);
 
         if (n < 0) {
+#ifdef WIN32
+#else
             syslog(LOG_ERR, "ERROR writing to socket");
+#endif
             return 1;
         }
 
@@ -2569,7 +2576,10 @@ CControlObject::callback_lws_mirror(struct libwebsocket_context *context,
                     mirrorws_ringbuffer[ pss->ringbuffer_tail ].len,
                     LWS_WRITE_TEXT);
             if (n < 0) {
+#ifdef WIN32
+#else
                 syslog(LOG_ERR, "ERROR writing to socket");
+#endif
             }
 
             if (pss->ringbuffer_tail == (MAX_MIRROR_MESSAGE_QUEUE - 1))
@@ -2660,7 +2670,7 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
         // Create client
         pss->pClientItem = new CClientItem();
         // Clear filter
-        clearVSCPFilter(&pss->pClientItem->m_filterVSCP);
+        vscp_clearVSCPFilter(&pss->pClientItem->m_filterVSCP);
 
         // Initialize session variables
         pss->bTrigger = false;
@@ -2738,7 +2748,10 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
                     strlen((char *) buf),
                     LWS_WRITE_TEXT);
             if (n < 0) {
+#ifdef WIN32
+#else
                 syslog(LOG_ERR, "ERROR writing to socket");
+#endif
             }
 
             libwebsocket_callback_on_writable(context, wsi);
@@ -2759,9 +2772,9 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 
             if (NULL != pEvent) {
 
-                if (doLevel2Filter(pEvent, &pss->pClientItem->m_filterVSCP)) {
+                if (vscp_doLevel2Filter(pEvent, &pss->pClientItem->m_filterVSCP)) {
 
-                    if (writeVscpEventToString(pEvent, str)) {
+                    if (vscp_writeVscpEventToString(pEvent, str)) {
 
                         // Write it out
                         char buf[ 512 ];
@@ -2773,13 +2786,16 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
                                 strlen((char *) buf),
                                 LWS_WRITE_TEXT);
                         if (n < 0) {
+#ifdef WIN32
+#else
                             syslog(LOG_ERR, "ERROR writing to socket");
+#endif
                         }
                     }
                 }
 
                 // Remove the event
-                deleteVSCPevent(pEvent);
+                vscp_deleteVSCPevent(pEvent);
 
             } // Valid pEvent pointer
 
@@ -2833,7 +2849,7 @@ CControlObject::handleWebSocketReceive(struct libwebsocket_context *context,
         p++; // Point beyond initial info "E;"
         vscpEvent vscp_event;
         str = wxString::FromAscii(p);
-        if (getVscpEventFromString(&vscp_event, str)) {
+        if (vscp_getVscpEventFromString(&vscp_event, str)) {
 
             vscp_event.obid = pss->pClientItem->m_clientID;
             if (handleWebSocketSendEvent(&vscp_event)) {
@@ -2904,7 +2920,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
         if (NULL != pDestClientItem) {
 
             // Check if filtered out
-            if (doLevel2Filter(pEvent, &pDestClientItem->m_filterVSCP)) {
+            if (vscp_doLevel2Filter(pEvent, &pDestClientItem->m_filterVSCP)) {
 
                 // If the client queue is full for this client then the
                 // client will not receive the message
@@ -2915,7 +2931,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
                     vscpEvent *pnewEvent = new vscpEvent;
                     if (NULL != pnewEvent) {
 
-                        copyVSCPEvent(pnewEvent, pEvent);
+                        vscp_copyVSCPEvent(pnewEvent, pEvent);
 
                         // Add the new event to the inputqueue
                         pDestClientItem->m_mutexClientInputQueue.Lock();
@@ -2928,7 +2944,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
 
                 } else {
                     // Overun - No room for event
-                    deleteVSCPevent(pEvent);
+                    vscp_deleteVSCPevent(pEvent);
                     bSent = true;
                     rv = false;
                 }
@@ -2951,7 +2967,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
             vscpEvent *pnewEvent = new vscpEvent;
             if (NULL != pnewEvent) {
 
-                copyVSCPEvent(pnewEvent, pEvent);
+                vscp_copyVSCPEvent(pnewEvent, pEvent);
 
                 m_mutexClientOutputQueue.Lock();
                 m_clientOutputQueue.Append(pnewEvent);
@@ -2960,7 +2976,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
             }
 
         } else {
-            deleteVSCPevent(pEvent);
+            vscp_deleteVSCPevent(pEvent);
             rv = false;
         }
     }
@@ -3012,7 +3028,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
         // Get filter
         if (tkz.HasMoreTokens()) {
             strTok = tkz.GetNextToken();
-            if (!readFilterFromString(&pss->pClientItem->m_filterVSCP,
+            if (!vscp_readFilterFromString(&pss->pClientItem->m_filterVSCP,
                     strTok)) {
                 pss->pMessageList->Add(_("-;1;Syntax error"));
                 return;
@@ -3025,7 +3041,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
         // Get mask
         if (tkz.HasMoreTokens()) {
             strTok = tkz.GetNextToken();
-            if (!readMaskFromString(&pss->pClientItem->m_filterVSCP,
+            if (!vscp_readMaskFromString(&pss->pClientItem->m_filterVSCP,
                     strTok)) {
                 pss->pMessageList->Add(_("-;1;Syntax error"));
                 return;
@@ -3047,7 +3063,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
         for (iterVSCP = pss->pClientItem->m_clientInputQueue.begin();
                 iterVSCP != pss->pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
             vscpEvent *pEvent = *iterVSCP;
-            deleteVSCPevent(pEvent);
+            vscp_deleteVSCPevent(pEvent);
         }
 
         pss->pClientItem->m_clientInputQueue.Clear();
@@ -3110,12 +3126,12 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
         // Get variable type
         if (tkz.HasMoreTokens()) {
-            type = readStringValue(tkz.GetNextToken());
+            type = vscp_readStringValue(tkz.GetNextToken());
         }
 
         // Get variable Persistent
         if (tkz.HasMoreTokens()) {
-            int val = readStringValue(tkz.GetNextToken());
+            int val = vscp_readStringValue(tkz.GetNextToken());
         }
 
         // Add the variable
@@ -3164,7 +3180,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 }
 
-#endif
+
 
 
 
@@ -3268,7 +3284,9 @@ CControlObject::websrv_add_session_cookie( struct mg_connection *conn, const cha
     ret->m_referenceCount++;
     ret->start = time(NULL);
     ret->m_next = websrv_sessions;
-    websrv_sessions = ret;
+	websrv_sessions = ret;
+
+    return ret;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3397,15 +3415,12 @@ int
 CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
 {
 	const char *hdr;
-	char buf[512];
 	struct websrv_Session * pSession;
-	char line[256], f_user[256], ha1[256], f_domain[256], user[100], nonce[100],
+	char user[100], nonce[100],
        uri[32768], cnonce[100], resp[100], qop[100], nc[100];
 	CUserItem *pUser;
 	bool bValidHost;
-	//const struct mg_request_info *request_info = mg_get_request_info( conn );
 	CControlObject *pObject = (CControlObject *)conn->server_param;
-	const struct mg_request_info *request_info; // = mg_get_request_info( conn );
 
 	switch (ev) {
 
@@ -3445,7 +3460,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 		case MG_REQUEST:
 
 			if (conn->is_websocket) {
-				websrv_handle_websocket_message( conn );
+				//webswock_handle_message( conn );
 				return MG_TRUE;
 			} 
 			else {
@@ -3523,7 +3538,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 
 		case MG_WS_CONNECT:
 			// New websocket connection. Send connection ID back to the client.
-			//conn->connection_param = calloc( 1, sizeof( struct conn_data ) );
+			//conn->connection_param = calloc( 1, sizeof( struct websocket_data ) );
 			//mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "id %p", conn );
 			return MG_FALSE;
 
@@ -5029,10 +5044,10 @@ CControlObject::websrv_variables_list( struct mg_connection *conn )
 	char buf[80];
     CControlObject *pObject = (CControlObject *)conn->server_param;
     VSCPInformation vscpinfo;
-    long upperLimit = 50;
+    unsigned long upperLimit = 50;
               
     // From
-    long nFrom = 0;
+    unsigned long nFrom = 0;
 	if ( mg_get_var( conn, "from", buf, sizeof( buf ) ) > 0 ) {
 		
 		atoi( buf );
@@ -5168,7 +5183,7 @@ CControlObject::websrv_variables_list( struct mg_connection *conn )
     
     if (nFrom < 0) nFrom = 0;
     
-    for ( int i=nFrom;i<upperLimit;i++) {
+    for ( unsigned int i=nFrom;i<upperLimit;i++) {
         
         CVSCPVariable *pVariable = 
                 pObject->m_VSCP_Variables.m_listVariable.Item( i )->GetData();
@@ -5261,7 +5276,6 @@ CControlObject::websrv_variables_list( struct mg_connection *conn )
             // Variable entry
             buildPage += _("<td>");
 
-
             buildPage += _("<div id=\"small\">");
 
             buildPage += _("<h4>");
@@ -5337,7 +5351,6 @@ CControlObject::websrv_variables_edit( struct mg_connection *conn )
     wxString str;
     VSCPInformation vscpinfo;
         CControlObject *pObject = (CControlObject *)conn->server_param;
-    struct MHD_Response *response;
     CVSCPVariable *pVariable = NULL;
         
     // id
@@ -5371,7 +5384,7 @@ CControlObject::websrv_variables_edit( struct mg_connection *conn )
     
     buildPage += _(WEB_VAREDIT_BODY_START);
 
-    if ( !bNew && ( id < pObject->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
+    if ( !bNew && ( id < (long)pObject->m_VSCP_Variables.m_listVariable.GetCount() ) ) {
         pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
     }
 
@@ -5980,7 +5993,7 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
 
         if (bNew || 
                 ((0 == id) && !bNew) || 
-                (id < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ) {
+                (id < (long)pObject->m_VSCP_Variables.m_listVariable.GetCount()) ) {
 
             if (!bNew) pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
 
@@ -6110,7 +6123,6 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
 int
 CControlObject::websrv_variables_new( struct mg_connection *conn )
 {
-	char buf[80]; 
     wxString str;
     VSCPInformation vscpinfo;
     CControlObject *pObject = (CControlObject *)conn->server_param;
@@ -6237,7 +6249,7 @@ CControlObject::websrv_variables_delete( struct mg_connection *conn )
 int
 CControlObject::websrv_discovery( struct mg_connection *conn )
 {
-	char buf[80];
+	//char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
     CControlObject *pObject = (CControlObject *)conn->server_param;
@@ -6271,7 +6283,7 @@ CControlObject::websrv_discovery( struct mg_connection *conn )
 int
 CControlObject::websrv_session( struct mg_connection *conn )
 {
-	char buf[80];
+	//char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
     CControlObject *pObject = (CControlObject *)conn->server_param;
@@ -6305,7 +6317,7 @@ CControlObject::websrv_session( struct mg_connection *conn )
 int
 CControlObject::websrv_configure( struct mg_connection *conn )
 {
-	char buf[80];
+	//char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
     CControlObject *pObject = (CControlObject *)conn->server_param;
@@ -6340,7 +6352,7 @@ CControlObject::websrv_configure( struct mg_connection *conn )
 int
 CControlObject::websrv_bootload( struct mg_connection *conn )
 {
-	char buf[80];
+	//char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
     CControlObject *pObject = (CControlObject *)conn->server_param;
@@ -10097,6 +10109,8 @@ CControlObject::websrv_request_callback_completed(void *cls,
 }
 
 #endif
+
+
 
 
 
