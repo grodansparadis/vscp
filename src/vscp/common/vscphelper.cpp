@@ -23,9 +23,6 @@
 //    021107 - AKHE Started this file
 //
 
-#ifdef VSCP_QT
-#include <QTextStream>
-#else
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
@@ -45,7 +42,6 @@
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
 
-#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -168,6 +164,15 @@ uint32_t vscp_getDataCodingBitArray(const unsigned char *pNorm,
 	return bitArray;
 }
 
+
+#define Swap8Bytes(val) \
+	 ( (((val) >> 56) & 0x00000000000000FF) | (((val) >> 40) & 0x000000000000FF00) | \
+	   (((val) >> 24) & 0x0000000000FF0000) | (((val) >>  8) & 0x00000000FF000000) | \
+	   (((val) <<  8) & 0x000000FF00000000) | (((val) << 24) & 0x0000FF0000000000) | \
+	   (((val) << 40) & 0x00FF000000000000) | (((val) << 56) & 0xFF00000000000000) )
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 // getDataCodingNormalizedInteger
 //
@@ -178,6 +183,7 @@ double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm,
 	uint8_t valarray[ 8 ];
     uint8_t normbyte;
 	uint8_t decibyte;
+	int64_t value64;
 	double value = 0;
 	bool bNegative = false; // set for negative number
 
@@ -185,14 +191,15 @@ double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm,
 	if (NULL == pNorm) return 0;
 
 	// Check character count
-	if ((length > 7) || (length < 2)) return 0;
+	if ((length > 8) || (length < 2)) return 0;
 
 	memset(valarray, 0, sizeof( valarray));
 	normbyte = *pNorm;
 	decibyte = *(pNorm + 1);
 
 	// Check if this is a negative number
-	if (*(pNorm + 2) & 0x80) {
+	uint8_t ttt = (*(pNorm + 2));
+	if ( (*(pNorm + 2)) & 0x80) {
 		bNegative = true;
 	}
 
@@ -204,35 +211,51 @@ double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm,
 		break;
 
 	case 2: // 16-bit
-		memcpy((char *) &valarray, (pNorm + 2), (length - 2));
+		memcpy((char *) &valarray, (pNorm + 2), (length - 2));	
 		value = wxINT16_SWAP_ON_LE(* ((int16_t *) valarray));	
 		break;
 
 	case 3: // 24-bit
-		memcpy(((char *) &valarray + 1), (pNorm + 2), (length - 2));		
+		memcpy(((char *) &valarray + 1), (pNorm + 2), (length - 2));
+		if ( bNegative ) *valarray = 0xff; // First byte must be 0xff			
 		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));	
 		break;
 
 	case 4: // 32-bit
 		memcpy((char *) &valarray, (pNorm + 2), (length - 2));	
-		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));	
+		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));
 		break;
 
 	case 5: // 40-bit
-		memcpy(((char *) &valarray + 3), (pNorm + 2), (length - 2));	
-		value = *((int64_t *) valarray);		
+		memcpy(((char *) &valarray + 3), (pNorm + 2), (length - 2));
+		if ( bNegative ) {			
+			*valarray = 0xff; // First byte must be 0xff
+			*(valarray+1) = 0xff;
+			*(valarray+2) = 0xff;
+		}
+	
+#ifdef  WORDS_BIGENDIAN		
+		value = *((int64_t *) valarray);
+#else
+		value64 = Swap8Bytes( *((int64_t *) valarray) );
+		value = value64;
+#endif				
 		break;
 
 	case 6: // 48-bit
-		memcpy(((char *) &valarray + 2), (pNorm + 2), (length - 2));	
-		value = *((int64_t *) valarray);	
-		break;
-	}
+		memcpy(((char *) &valarray + 2), (pNorm + 2), (length - 2));
+		if ( bNegative ) {			
+			*valarray = 0xff; // First byte must be 0xff
+			*(valarray+1) = 0xff;
+		}
 
-	if (bNegative) {
-		value = !value; // Fix two's complement value
-		value++;
-		value *= -1; // Fix sign
+#ifdef  WORDS_BIGENDIAN			
+		value = *((int64_t *) valarray);
+#else
+		value64 = Swap8Bytes( *((int64_t *) valarray) );
+		value = value64;
+#endif			
+		break;
 	}
 
 	// Bring back decimal points
@@ -254,6 +277,30 @@ double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm,
     }
 #endif
 	return value;
+
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// getDataCodingString
+//
+
+
+wxString& getDataCodingString(const unsigned char *pString,
+                                const unsigned char length)							
+{
+
+	static wxString str;
+	char buf[ 8 ];
+
+	str.Empty();
+
+	if (NULL != pString) {
+		memset(buf, 0, sizeof( buf));
+		memcpy(buf, pString, length - 1);
+		str = wxString::FromUTF8(buf);
+	}
+
+	return str;
 
 }
 
@@ -291,7 +338,7 @@ wxString& vscp_getDataCodingString(const unsigned char *pString,
 float vscp_getMeasurementAsFloat(const unsigned char *pNorm, 
                                     const unsigned char length)								
 {
-    float *pfloat;
+    float *pfloat = NULL;
     
     // Check pointers
     if ( NULL == pNorm ) return false;
@@ -2705,15 +2752,21 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			break;
 		case 0x80: // normalized int format
 		{
-			double temp = vscp_getDataCodingNormalizedInteger(pEvent->pdata+offset, 
-					pEvent->sizeData-offset);
+			double temp = 
+				vscp_getDataCodingNormalizedInteger(pEvent->pdata+offset, 
+												pEvent->sizeData-offset);
 			str += wxString::Format(_("[nint] = %f "), temp);
 		}
 			break;
 		case 0xA0: // float format
-			float msrmt = vscp_getMeasurementAsFloat(pEvent->pdata+offset, 
-					pEvent->sizeData-offset);
-			str += wxString::Format(_("[float] = %g "), msrmt);
+			if ( (pEvent->sizeData-offset) >= 5 ) {
+				float msrmt = vscp_getMeasurementAsFloat(pEvent->pdata+offset, 
+						pEvent->sizeData-offset);
+				str += wxString::Format(_("[float] = %g "), msrmt);
+			}
+			else {
+				str += _("[float] = invalid event format ");
+			}
 			break;
 		}
 
