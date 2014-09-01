@@ -67,7 +67,7 @@ TcpClientListenThread::TcpClientListenThread()
 
 TcpClientListenThread::~TcpClientListenThread()
 {
-
+	;
 }
 
 
