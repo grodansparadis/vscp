@@ -135,3 +135,7 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /new  1.txt
 /src/vscp/drivers/level1/logger/win32/canallogger.sdf
 /src/vscp/drivers/level1/logger/win32/canallogger.suo
+/src/vscp/daemon/win32/ReleaseDll/vscpd.exe
+/src/vscp/daemon/win32/ReleaseDll/vscpd.exe.embed.manifest.res
+/src/vscp/daemon/win32/ReleaseDll/vscpd.ilk
+/src/vscp/daemon/win32/ReleaseDll/vscpd_manifest.rc

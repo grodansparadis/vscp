@@ -23,7 +23,11 @@
 
 #include <signal.h>
 
-#include "wx/wxprec.h"
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
+//#include "wx/wxprec.h"
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"

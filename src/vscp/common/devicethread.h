@@ -28,7 +28,18 @@
 #if !defined(DEVICETHREAD_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
 #define DEVICETHREAD_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
 
+#ifdef WIN32
+#if _MSC_VER > 1000
+#pragma once
+#endif // _MSC_VER > 1000
 
+#endif
+
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
+#include "wx/wx.h"
 #include <wx/thread.h>
 #include <wx/socket.h>
 #include <wx/dynlib.h>

@@ -47,6 +47,7 @@
 //#pragma implementation
 #endif
 
+
 #ifdef WIN32
 #include <winsock2.h>
 #endif
@@ -58,12 +59,11 @@
 #pragma hdrstop
 #endif
 
-
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
 #endif
 
-
+#include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
 #include <wx/xml/xml.h>
@@ -119,7 +119,7 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#ifdef WIN32
+#ifdef ENABLE_WEBSERVER
 #include "../../common/slre.h"
 #include "../../common/frozen.h"
 #include "../../common/net_skeleton.h"
@@ -146,56 +146,36 @@
 #ifndef WIN32
 //#include <microhttpd.h>
 #endif
-#include <libwebsockets.h>
+
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-
-// List for websocket triggers
-WX_DEFINE_LIST(TRIGGERLIST);
-
-//#define DEBUGPRINT
-
-static CControlObject *gpctrlObj;
-
-#ifdef WIN32
-
-typedef struct _ASTAT_ {
-    ADAPTER_STATUS adapt;
-    NAME_BUFFER NameBuff [30];
-
-} ASTAT, * PASTAT;
-
-ASTAT Adapter;
-
-
-WORD wVersionRequested = MAKEWORD(1, 1); // WSA functions
-WSADATA wsaData; // WSA functions
-
-#endif
-
 ///////////////////////////////////////////////////
-//		     WEBSOCKETS
+//					WEBSOCKETS
 ///////////////////////////////////////////////////
 
+#ifdef ENABLE_WEBSOCKET
+
+
+// The web socket context handles over to handlers
+static struct libwebsocket_context *pcontext = NULL;
 
 static int gbClose;
 
-// lws http
-
+// lws http session data
 struct per_session_data__http {
     int fd;
 };
 
+// lws dumb increment session data
 struct per_session_data__dumb_increment {
     int number;
 };
 
-// lws-mirror_protocol 
-
-#define MAX_MIRROR_MESSAGE_QUEUE 64
+// lws-mirror_protocol session data
+#define MAX_MIRROR_MESSAGE_QUEUE	64
 
 struct per_session_data__lws_mirror {
     struct libwebsocket *wsi;
@@ -214,27 +194,31 @@ static int mirrorws_ringbuffer_head;
 
 #define MAX_VSCPWS_MESSAGE_QUEUE 512
 
+
 struct per_session_data__lws_vscp {
-    struct libwebsocket *wsi; // The websocket.
-    wxArrayString *pMessageList; // Messages (not events) to client.
-    CClientItem *pClientItem; // Client structure for websocket in VSCP world
-    bool bTrigger; // True to activate trigger functionality.
-    uint32_t triggerTimeout; // Time out before trigg (or errror) must occur.
-    TRIGGERLIST listTriggerOK; // List with positive triggers.
-    TRIGGERLIST listTriggerERR; // List with negative triggers.
+    struct libwebsocket *wsi;		// The websocket.
+    wxArrayString *pMessageList;	// Messages (not events) to client.
+    CClientItem *pClientItem;		// Client structure for websocket in VSCP world
+    bool bTrigger;					// True to activate trigger functionality.
+    uint32_t triggerTimeout;		// Time out before trigg (or errror) must occur.
+    TRIGGERLIST listTriggerOK;		// List with positive triggers.
+    TRIGGERLIST listTriggerERR;		// List with negative triggers.
 };
+
 
 
 // list of supported websocket protocols and callbacks 
 
-static struct libwebsocket_protocols protocols[] = {
+
+/*
+static struct libwebsocket_protocols websocket_protocols[] = {
 
     // first protocol must always be HTTP handler 
 
     {
-        "http-only", // name 
-        CControlObject::callback_http, // callback 
-        sizeof(struct per_session_data__http), // per_session_data_size 
+        "http-only",							// name 
+        CControlObject::callback_http,			// callback 
+        sizeof(struct per_session_data__http),	// per_session_data_size 
         0, // max frame size / rx buffer 
     },
     {
@@ -253,40 +237,43 @@ static struct libwebsocket_protocols protocols[] = {
         "very-simple-control-protocol",
         CControlObject::callback_lws_vscp,
         sizeof( struct per_session_data__lws_vscp),
-        128
+        128,
     },
     {
         NULL, NULL, 0, 0 // End of list 
     }
 };
+*/
+
+
+
 
 struct libwebsocket_extension libwebsocket_internal_extensions[] = {
-    { /* terminator */
-        NULL, NULL, 0
+    { 
+        NULL, NULL, 0	/* terminator */
     }
 };
 
 
+#endif
 
 
 ///////////////////////////////////////////////////
 //		          WEBSERVER
 ///////////////////////////////////////////////////
 
-/**
- * Linked list of all active sessions.  
- * webserv.h
- */
+
+
+// Linked list of all active sessions. (webserv.h)
 static struct websrv_Session *websrv_sessions;
 
 
-#ifdef WIN32
+#ifdef ENABLE_WEBSERVER
 
 // Structure for webserver
 struct mg_server *webserver;
 
 #else
-
 
 // List of all pages served by this HTTP server.
 // If URL is NULL a coded page should be delivered. If it's there a
@@ -315,6 +302,30 @@ static struct Page pages[] =
 
 #endif
 
+// List for websocket triggers
+WX_DEFINE_LIST(TRIGGERLIST);
+
+//#define DEBUGPRINT
+
+static CControlObject *gpctrlObj;
+
+#ifdef WIN32
+
+typedef struct _ASTAT_ {
+    ADAPTER_STATUS adapt;
+    NAME_BUFFER NameBuff [30];
+
+} ASTAT, * PASTAT;
+
+ASTAT Adapter;
+
+
+WORD wVersionRequested = MAKEWORD(1, 1);	// WSA functions
+WSADATA wsaData;							// WSA functions
+
+#endif
+
+
 WX_DEFINE_LIST(CanalMsgList);
 WX_DEFINE_LIST(VSCPEventList);
 
@@ -333,13 +344,12 @@ wxString CControlObject::m_pathRoot = _("/srv/vscp/www");
 CControlObject::CControlObject()
 {
     int i;
-    m_bQuit = false; // true if we should quit
-    gpctrlObj = this; // needed by websocket static callbacks
+    m_bQuit = false;	// true if we should quit
+    gpctrlObj = this;	// needed by websocket static callbacks
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
     // Nill the GUID
-    //memset(m_GUID, 0, 16);
     m_guid.clear();
 
     // Initialize the client map
@@ -424,6 +434,33 @@ CControlObject::CControlObject()
 
     // Initialize the CRC
     crcInit();
+
+	memset( m_websocket_protocols, 0, sizeof(struct libwebsocket_protocols) * 5 );
+    m_websocket_protocols[PROTOCOL_HTTP].name = "http-only";
+    m_websocket_protocols[PROTOCOL_HTTP].callback = CControlObject::callback_http; 
+    m_websocket_protocols[PROTOCOL_HTTP].per_session_data_size = sizeof(struct per_session_data__http);
+    m_websocket_protocols[PROTOCOL_HTTP].rx_buffer_size = 0;
+
+    m_websocket_protocols[PROTOCOL_DUMB_INCREMENT].name = "dumb-increment-protocol",
+    m_websocket_protocols[PROTOCOL_DUMB_INCREMENT].callback = CControlObject::callback_dumb_increment,
+    m_websocket_protocols[PROTOCOL_DUMB_INCREMENT].per_session_data_size = sizeof( struct per_session_data__dumb_increment),
+    m_websocket_protocols[PROTOCOL_DUMB_INCREMENT].rx_buffer_size = 10,
+
+    m_websocket_protocols[PROTOCOL_LWS_MIRROR].name = "lws-mirror-protocol",
+    m_websocket_protocols[PROTOCOL_LWS_MIRROR].callback = CControlObject::callback_lws_mirror,
+    m_websocket_protocols[PROTOCOL_LWS_MIRROR].per_session_data_size = sizeof(struct per_session_data__lws_mirror),
+    m_websocket_protocols[PROTOCOL_LWS_MIRROR].rx_buffer_size = 128,
+ 
+    m_websocket_protocols[PROTOCOL_VSCP].name = "very-simple-control-protocol",
+    m_websocket_protocols[PROTOCOL_VSCP].callback = CControlObject::callback_lws_vscp,
+    m_websocket_protocols[PROTOCOL_VSCP].per_session_data_size = sizeof( struct per_session_data__lws_vscp),
+    m_websocket_protocols[PROTOCOL_VSCP].rx_buffer_size = 128,
+
+    m_websocket_protocols[WEBSOCKET_PROTOCOL_COUNT].name = NULL;
+	m_websocket_protocols[WEBSOCKET_PROTOCOL_COUNT].callback = NULL;
+	m_websocket_protocols[WEBSOCKET_PROTOCOL_COUNT].per_session_data_size = 0;
+	m_websocket_protocols[WEBSOCKET_PROTOCOL_COUNT].rx_buffer_size = 0;
+
 
 }
 
@@ -576,7 +613,7 @@ bool CControlObject::init(wxString& strcfgfile)
 		
 		// Set options
 		mg_set_option( webserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
-		str = wxString::Format("%i", m_portWebServer );
+		str = wxString::Format(  _("%i"), m_portWebServer );
 		mg_set_option( webserver, "listening_port", str.mb_str( wxConvUTF8 ) );				// Open web server port
 		mg_set_option( webserver, "auth_domain", m_authDomain.mb_str( wxConvUTF8 ) );
 
@@ -651,63 +688,89 @@ bool CControlObject::run(void)
     m_dm.feed(&EventStartUp);
 
     // Initialize websockets
-    int opts = 0;
-    unsigned int oldus = 0;
-
     
+#ifdef ENABLE_WEBSOCKET
 
+/*
+// ----------------------------------------------------------------------------
+
+char cert_path[1024];
+	char key_path[1024];
+	int n = 0;
+	int use_ssl = 0;
+	int opts = 0;
+	char interface_name[128] = "";
+	const char *iface = NULL;
+
+info.iface = iface;
+	info.protocols = protocols;
+#ifndef LWS_NO_EXTENSIONS
+	info.extensions = libwebsocket_get_internal_extensions();
+#endif
+	if (!use_ssl) {
+		info.ssl_cert_filepath = NULL;
+		info.ssl_private_key_filepath = NULL;
+	} else {
+		if (strlen(resource_path) > sizeof(cert_path) - 32) {
+			lwsl_err("resource path too long\n");
+			return -1;
+		}
+		sprintf(cert_path, "%s/libwebsockets-test-server.pem",
+								resource_path);
+		if (strlen(resource_path) > sizeof(key_path) - 32) {
+			lwsl_err("resource path too long\n");
+			return -1;
+		}
+		sprintf(key_path, "%s/libwebsockets-test-server.key.pem",
+								resource_path);
+
+		info.ssl_cert_filepath = cert_path;
+		info.ssl_private_key_filepath = key_path;
+	}
+	info.gid = -1;
+	info.uid = -1;
+	info.options = opts;
+// ----------------------------------------------------------------------------
+	
+*/
+	int websocket_opts = 0;
 #ifdef WIN32
-
-	struct websocket_data {
-		
-	};
-
-	/*
-	//char interface_name[ 128 ] = "";
-    const char *websockif = NULL;
-    struct libwebsocket_context *pcontext;
-    unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
-            LWS_SEND_BUFFER_POST_PADDING ];
-
-    m_context = libwebsocket_create_context(m_portWebsockets,
-            websockif,
-            protocols,
-            libwebsocket_internal_extensions,
-            NULL,
-            NULL,
-            -1,
-            -1,
-            opts);
-	*/
+	clock_t oldus = 0;
 #else
-	//char interface_name[ 128 ] = "";
+    unsigned int oldus = 0;
+#endif
     const char *websockif = NULL;
-    struct libwebsocket_context *pcontext;
-    unsigned char buf[ LWS_SEND_BUFFER_PRE_PADDING + 1024 +
-            LWS_SEND_BUFFER_POST_PADDING ];
-
-
-    lws_context_creation_info info;
-    info.port = m_portWebsockets;
-    info.iface = websockif;
-    info.protocols = protocols;
+    struct lws_context_creation_info info;
+    memset( &info, 0, sizeof( info ) );
+	
+	info.port = m_portWebsockets;
+    info.iface = NULL; // websockif;
+    info.protocols = m_websocket_protocols;
     info.extensions = libwebsocket_get_internal_extensions();
-    info.ssl_ca_filepath = NULL;
+    //info.ssl_ca_filepath = NULL;
     info.ssl_cert_filepath = NULL;
-    info.ssl_cipher_list = NULL;
+    //info.ssl_cipher_list = NULL;
     info.ssl_private_key_filepath = NULL;
     info.gid = -1;
     info.uid = -1;
-    info.options = opts;
+    info.options = websocket_opts;
     info.user = NULL;
     info.ka_time = 0;
     info.ka_probes = 0;
     info.ka_interval = 0;
 
+	info.token_limits = NULL;
+	info.ssl_private_key_password = NULL;
+	info.ssl_cert_filepath = NULL;
+	info.ssl_private_key_filepath = NULL;
+	info.ssl_ca_filepath = NULL;
+	info.ssl_cipher_list = NULL;
+	info.http_proxy_address = NULL;
+
 	if ( m_bWebSockets ) {	
-		pcontext = libwebsocket_create_context(&info);
+		pcontext = libwebsocket_create_context( &info );
 		if (NULL == pcontext) {
-			logMsg(_("Unable to initialize websockets. Terminating!\n"), DAEMON_LOGMSG_CRITICAL);
+			logMsg( _("Unable to initialize websockets. Terminating!\n"), DAEMON_LOGMSG_CRITICAL );
 			return FALSE;
 		}
 	}
@@ -715,10 +778,7 @@ bool CControlObject::run(void)
 #endif
     
 	// Web server
-#ifdef WIN32
-
-	
-#else
+#ifndef ENABLE_WEBSERVER
     
     struct MHD_Daemon *pwebserver;
 
@@ -741,8 +801,8 @@ bool CControlObject::run(void)
 
 #ifdef WIN32
 		// CLOCKS_PER_SEC 
-		clock_t t;
-		t = clock();
+		clock_t ticks;
+		ticks = clock();
 #else
         struct timeval tv;
         gettimeofday(&tv, NULL);
@@ -773,9 +833,11 @@ bool CControlObject::run(void)
             }
         }
 
-#ifdef WIN32
+#ifdef ENABLE_WEBSERVER
 		mg_poll_server( webserver, 10 );
-#else
+#endif
+
+#ifdef ENABLE_WEBSOCKET
 
         /*
          * This broadcasts to all dumb-increment-protocol connections
@@ -789,9 +851,12 @@ bool CControlObject::run(void)
          *
          * We take care of pre-and-post padding allocation.
          */
-
-        if (((unsigned int) tv.tv_usec - oldus) > 50000) {
-            
+#ifdef WIN32
+		if ( (ticks - oldus) > 50000) 	
+#else
+        if ( ( (unsigned int)tv.tv_usec - oldus) > 50000) 
+#endif
+		{     
             if (m_bWebSockets) {
                 /*
                     libwebsockets_broadcast( &protocols[ PROTOCOL_DUMB_INCREMENT ],
@@ -802,17 +867,21 @@ bool CControlObject::run(void)
                                     1 );
                  */
                 libwebsocket_callback_on_writable_all_protocol(
-                        &protocols[ PROTOCOL_DUMB_INCREMENT ]);
+                        &m_websocket_protocols[ PROTOCOL_DUMB_INCREMENT ]);
 
                 libwebsocket_callback_on_writable_all_protocol(
-                        &protocols[ PROTOCOL_VSCP ]);
+                        &m_websocket_protocols[ PROTOCOL_VSCP ]);
             }
-            oldus = tv.tv_usec;
-        }
-#endif
 
 #ifdef WIN32
+			oldus = clock();
 #else
+            oldus = tv.tv_usec;
+#endif
+
+        }
+
+
         /*
          * This html server does not fork or create a thread for
          * websocket service, it all runs in this single loop.  So,
@@ -873,10 +942,7 @@ bool CControlObject::run(void)
     removeClient(pClientItem);
     m_wxClientMutex.Unlock();
 
-#ifdef WIN32
-#else
-    if ( m_bWebSockets ) libwebsocket_context_destroy(pcontext);
-#endif
+    if ( m_bWebSockets ) libwebsocket_context_destroy( pcontext );
 
     wxLogDebug(_("ControlObject: Done"));
     return true;
@@ -888,7 +954,7 @@ bool CControlObject::run(void)
 
 bool CControlObject::cleanup(void)
 {
-	// Kill wéb server
+	// Kill wï¿½b server
 	mg_destroy_server( &webserver );
 
     stopDeviceWorkerThreads();
@@ -1228,7 +1294,7 @@ void CControlObject::sendEventToClient(CClientItem *pClientItem,
     // client will not receive the message
     if (pClientItem->m_clientInputQueue.GetCount() >
             m_maxItemsInClientReceiveQueue) {
-        // Overun
+        // Overrun
         pClientItem->m_statistics.cntOverruns++;
         return;
     }
@@ -1250,7 +1316,7 @@ void CControlObject::sendEventToClient(CClientItem *pClientItem,
             pnewvscpEvent->pdata = NULL;
         }
 
-        // Add the new event to the inputqueue
+        // Add the new event to the input queue
         pClientItem->m_mutexClientInputQueue.Lock();
         pClientItem->m_clientInputQueue.Append(pnewvscpEvent);
         pClientItem->m_semClientInputQueue.Post();
@@ -1650,9 +1716,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
                 } else if (subchild->GetName() == wxT("tcpif")) {
 #if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else
-                    wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
 #endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bTCPInterface = false;
@@ -1675,9 +1741,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 } else if (subchild->GetName() == wxT("canaldriver")) {
 #if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
-                    wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
 #endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bCanalDrivers = false;
@@ -1688,9 +1754,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
 #if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
-                    wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
 #endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bDM = false;
@@ -1709,9 +1775,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
 #if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
-                    wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
 #endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bVariables = false;
@@ -1728,41 +1794,48 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 } else if (subchild->GetName() == wxT("vscp")) {
 #if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
-                    wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
 #endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bVSCPDaemon = false;
                     }
-                } else if (subchild->GetName() == wxT("guid")) {
+                } 
+				else if (subchild->GetName() == wxT("guid")) {
                     wxString str = subchild->GetNodeContent();
                     //getGuidFromStringToArray(m_GUID, str);
                     m_guid.getFromString(str);
-                } else if (subchild->GetName() == wxT("clientbuffersize")) {
+                } 
+				else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
-                } else if (subchild->GetName() == wxT("webrootpath")) {
+                } 
+				else if (subchild->GetName() == wxT("webrootpath")) {
                     CControlObject::m_pathRoot = subchild->GetNodeContent();
                     CControlObject::m_pathRoot.Trim();
                     CControlObject::m_pathRoot.Trim(false); 
-				} else if (subchild->GetName() == wxT("authdoamin")) {
+				} 
+				else if (subchild->GetName() == wxT("authdoamin")) {
                     CControlObject::m_authDomain = subchild->GetNodeContent();
                     CControlObject::m_authDomain.Trim();
                     CControlObject::m_authDomain.Trim(false);
-                } else if (subchild->GetName() == wxT("pathcert")) {
+                } 
+				else if (subchild->GetName() == wxT("pathcert")) {
                     m_pathCert = subchild->GetNodeContent();
                     m_pathCert.Trim();
                     m_pathCert.Trim(false);
-                } else if (subchild->GetName() == wxT("pathkey")) {
+                } 
+				else if (subchild->GetName() == wxT("pathkey")) {
                     m_pathKey = subchild->GetNodeContent();
                     m_pathKey.Trim();
                     m_pathKey.Trim(false);
-                } else if (subchild->GetName() == wxT("websockets")) {
+                } 
+				else if (subchild->GetName() == wxT("websockets")) {
 #if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
-                    wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
 #endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bWebSockets = false;
@@ -1776,11 +1849,12 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     if (property.IsNumber()) {
                         m_portWebsockets = vscp_readStringValue(property);
                     }
-                } else if (subchild->GetName() == wxT("webserver")) {
+                } 
+				else if (subchild->GetName() == wxT("webserver")) {
 #if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
 #else 
-                    wxString property = subchild->GetPropVal(wxT("enabled"), wxT("true"));
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
 #endif                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bWebServer = false;
@@ -1901,9 +1975,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 #endif                                    
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
-                        } else if (subsubchild->GetName() == wxT("allowfrom")) {
+                        } 
+						else if (subsubchild->GetName() == wxT("allowfrom")) {
                             allowfrom = subsubchild->GetNodeContent();
-                        } else if (subsubchild->GetName() == wxT("allowevent")) {
+                        } 
+						else if (subsubchild->GetName() == wxT("allowevent")) {
                             allowevent = subsubchild->GetNodeContent();
                         }
 
@@ -1918,7 +1994,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                     if (bFilterPresent && bMaskPresent) {
                         m_userList.addUser(name, md5, privilege, &VSCPFilter, allowfrom, allowevent);
-                    } else {
+                    } 
+					else {
                         m_userList.addUser(name, md5, privilege, NULL, allowfrom, allowevent);
                     }
 
@@ -2170,7 +2247,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                                 strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
                         //wxLogDebug(errMsg);
-                    } else {
+                    } 
+					else {
                         wxString errMsg = _("Level II driver added. - [ ") +
                                 strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
@@ -2253,7 +2331,7 @@ bool CControlObject::readMimeTypes(wxString& path)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-
+#ifdef ENABLE_WEBSOCKET
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2263,16 +2341,20 @@ bool CControlObject::readMimeTypes(wxString& path)
 //
 
 int
-CControlObject::callback_http(struct libwebsocket_context *context,
-        struct libwebsocket *wsi,
-        enum libwebsocket_callback_reasons reason,
-        void *user,
-        void *in,
-        size_t len)
+CControlObject::callback_http( struct libwebsocket_context *context,
+								struct libwebsocket *wsi,
+								enum libwebsocket_callback_reasons reason,
+								void *user,
+								void *in,
+								size_t len )
 {
     char client_name[ 128 ];
     char client_ip[ 128 ];
+	struct per_session_data__http *pss =
+			(struct per_session_data__http *)user;
     wxString path;
+
+	return 0;
 
     switch (reason) {
 
@@ -2303,39 +2385,56 @@ CControlObject::callback_http(struct libwebsocket_context *context,
         // Add some extra common mime types if non found
         if (fname.GetExt() == _("")) {
             mime = _("text/plain");
-        } else if (fname.GetExt() == _("txt")) {
+        } 
+		else if (fname.GetExt() == _("txt")) {
             mime = _("text/plain");
-        } else if (fname.GetExt() == _("cfg")) {
+        } 
+		else if (fname.GetExt() == _("cfg")) {
             mime = _("text/plain");
-        } else if (fname.GetExt() == _("conf")) {
+        } 
+		else if (fname.GetExt() == _("conf")) {
             mime = _("text/plain");
-        } else if (fname.GetExt() == _("js")) {
+        } 
+		else if (fname.GetExt() == _("js")) {
             mime = _("application/javascript");
-        } else if (fname.GetExt() == _("json")) {
+        } 
+		else if (fname.GetExt() == _("json")) {
             mime = _("application/json");
-        } else if (fname.GetExt() == _("xml")) {
+        } 
+		else if (fname.GetExt() == _("xml")) {
             mime = _("application/xml");
-        } else if (fname.GetExt() == _("htm")) {
+        } 
+		else if (fname.GetExt() == _("htm")) {
             mime = _("text/html");
-        } else if (fname.GetExt() == _("html")) {
+        } 
+		else if (fname.GetExt() == _("html")) {
             mime = _("text/html");
-        } else if (fname.GetExt() == _("css")) {
+        } 
+		else if (fname.GetExt() == _("css")) {
             mime = _("text/css");
-        } else if (fname.GetExt() == _("ico")) {
+        } 
+		else if (fname.GetExt() == _("ico")) {
             mime = _("image/x-icon");
-        } else if (fname.GetExt() == _("gif")) {
+        } 
+		else if (fname.GetExt() == _("gif")) {
             mime = _("image/x-gif");
-        } else if (fname.GetExt() == _("png")) {
+        } 
+		else if (fname.GetExt() == _("png")) {
             mime = _("image/x-png");
-        } else if (fname.GetExt() == _("bmp")) {
+        } 
+		else if (fname.GetExt() == _("bmp")) {
             mime = _("image/x-bmp");
-        } else if (fname.GetExt() == _("jpg")) {
+        } 
+		else if (fname.GetExt() == _("jpg")) {
             mime = _("image/x-jpeg");
-        } else if (fname.GetExt() == _("jpeg")) {
+        } 
+		else if (fname.GetExt() == _("jpeg")) {
             mime = _("image/x-jpeg");
-        } else if (fname.GetExt() == _("jpe")) {
+        } 
+		else if (fname.GetExt() == _("jpe")) {
             mime = _("image/x-jpeg");
-        } else {
+        } 
+		else {
             mime = _("text/plain");
         }
 
@@ -3183,7 +3282,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 }
 
 
-
+#endif
 
 
 
@@ -3198,7 +3297,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 
 
-#ifdef WIN32
+#ifdef ENABLE_WEBSERVER
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3452,8 +3551,8 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 			if (!bValidHost) return MG_FALSE;
 
 			if ( MG_TRUE != 
-				websrv_check_password( conn->request_method, pUser->m_md5Password.c_str(), uri, nonce, nc, cnonce, qop, resp ) ) 
-					return MG_FALSE;
+				websrv_check_password( conn->request_method, (const char *)pUser->m_md5Password.mb_str(), uri, nonce, nc, cnonce, qop, resp ) ) 
+				return MG_FALSE;
 
 			websrv_add_session_cookie( conn, user );
 
@@ -3568,8 +3667,11 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 int
 CControlObject::websrv_mainpage( struct mg_connection *conn )
 {
+	wxString strHost;
+	
 	// Get hostname
-    wxString strHost = mg_get_header( conn, "Host"); // conn->local_ip; //_("http://localhost:8080");
+	const char *p = mg_get_header( conn, "Host" ); // conn->local_ip; //_("http://localhost:8080");
+    strHost.FromAscii( p );
 
     wxString buildPage;
 	mg_send_status( conn, 200 );
@@ -3848,8 +3950,9 @@ CControlObject::websrv_dmlist( struct mg_connection *conn )
                 nFrom,
 #if wxMAJOR_VERSION > 3 
                 wxstrlight );
-#else                
-                wxstrlight.GetWriteBuf(wxstrlight.Length()) );
+#else           
+				wxstrlight.c_str() );
+                //wxstrlight.GetWriteBuf( wxstrlight.Length() ) );
 #endif        
         buildPage += _("<br>");
     } 
@@ -4054,10 +4157,10 @@ CControlObject::websrv_dmlist( struct mg_connection *conn )
     buildPage += _(WEB_DMLIST_TABLE_END);
     
     {
-        wxString wxstrurl = _("/vscp/dm");
+        //wxString wxstrurl = _("/vscp/dm");
         wxString wxstrlight = ((bLight) ? _("true") : _("false"));
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
-				wxstrurl,
+				"/vscp/dm", // wxstrurl,
                 nFrom,
                 ((nFrom + nCount) < pObject->m_dm.getRowCount()) ? 
                     nFrom + nCount - 1 : pObject->m_dm.getRowCount() - 1,
@@ -4066,8 +4169,9 @@ CControlObject::websrv_dmlist( struct mg_connection *conn )
                 nFrom,
 #if (wxMAJOR_VERSION > 3)
                 wxstrlight );
-#else                
-                wxstrlight.GetWriteBuf( wxstrlight.Length() ) );
+#else             
+				wxstrlight.c_str() );
+                //wxstrlight.GetWriteBuf( wxstrlight.Length() ) );
 #endif        
     }
      
@@ -4768,7 +4872,7 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
 		strAllowedFrom = wxString::FromAscii( buf );	
 		strAllowedFrom.Trim( true );
 		strAllowedFrom.Trim( false );
-		if ( "*" == strAllowedFrom ) {
+		if ( _("*") == strAllowedFrom ) {
 			strAllowedFrom = _("0000-01-01 00:00:00");
 		}
 	}
@@ -4778,7 +4882,7 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
 		strAllowedTo = wxString::FromAscii( buf );	
 		strAllowedTo.Trim( true );
 		strAllowedTo.Trim( false );
-		if ( "*" == strAllowedTo ) {
+		if ( _("*") == strAllowedTo ) {
 			strAllowedTo = _("9999-12-31 23:59:59");
 		}
 	}
@@ -4788,7 +4892,7 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
 		strAllowedTime = wxString::FromAscii( buf );  	
 		strAllowedTime.Trim( true );
 		strAllowedTime.Trim( false );
-		if ( "*" == strAllowedTime ) {
+		if ( _("*") == strAllowedTime ) {
 			strAllowedTime = _("* *");
 		}
 	}
@@ -10200,5 +10304,4 @@ void clientMsgWorkerThread::OnExit()
 {
     ;
 }
-
 

@@ -134,16 +134,31 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
         else if ( 0 == str.Find( _("GUID") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID;
         }
-        else if ( 0 == str.Find( _("DATA") ) ) {
+		else if ( 0 == str.Find( _("EVENTGUID") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID;
+        }
+		else if ( 0 == str.Find( _("DATA") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA;
+        }
+        else if ( 0 == str.Find( _("EVENTDATA") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA;
         }
         else if ( 0 == str.Find( _("CLASS") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
         }
+		else if ( 0 == str.Find( _("EVENTCLASS") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
+        }
         else if ( 0 == str.Find( _("TYPE") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
         }
+		else if ( 0 == str.Find( _("EVENTTYPE") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
+        }
         else if ( 0 == str.Find( _("TIMESTAMP") ) ) {
+            type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP;
+        }
+		else if ( 0 == str.Find( _("EVENTTIMESTAMP") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP;
         }
         else if ( 0 == str.Find( _("DATETIME") ) ) {
@@ -1249,6 +1264,5 @@ bool CVariableStorage::save( wxString& path )
 
     return true;
 }
-
 
 

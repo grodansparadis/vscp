@@ -30,10 +30,18 @@
 #endif // _MSC_VER > 1000
 #endif
 
+#define ENABLE_WEBSERVER	// Webserver functionality activated
+#define ENABLE_WEBSOCKET	// Sebsocket functionality enabled
+
+#include "wx/wx.h"
 #include <wx/thread.h>
 
-#ifdef WIN32
+#ifdef ENABLE_WEBSERVER
 #include "../../common/mongoose.h"
+#endif
+
+#ifdef ENABLE_WEBSOCKET
+#include <libwebsockets.h>
 #endif
 
 #include "devicelist.h"
@@ -48,12 +56,10 @@
 #include "dm.h"
 #include "vscp.h"
 
-extern "C" {
-#ifndef WIN32
-#include <microhttpd.h>	
-#include <libwebsockets.h>
-#endif
-}
+
+
+//#include <microhttpd.h>	
+
 
 // List used for websocket triggers
 WX_DECLARE_LIST(vscpEventFilter, TRIGGERLIST);
@@ -89,18 +95,23 @@ WX_DECLARE_STRING_HASH_MAP( wxString, HashString );
  *
  *  lws-mirror-protocol: copies any received packet to every connection also
  *				using this protocol, including the sender
+ *
+ *  The VSCP command protocol
+ *
  */
 
-enum websocket_protocols {
-    /* always first */
+enum websocket_handlers {
+    
+	// always first 
     PROTOCOL_HTTP = 0,
 
     PROTOCOL_DUMB_INCREMENT,
     PROTOCOL_LWS_MIRROR,
     PROTOCOL_VSCP,
 
-    /* always last */
-    DEMO_PROTOCOL_COUNT
+    // always last 
+    WEBSOCKET_PROTOCOL_COUNT
+
 };
 
 
@@ -144,6 +155,11 @@ public:
     CControlObject *m_pCtrlObject;
 
 };
+
+
+/*!
+	This is the class that does the main work in the daemon.
+*/
 
 class CControlObject {
 public:
@@ -319,6 +335,7 @@ public:
     //                  WEBSOCKETS
     /////////////////////////////////////////////////
 
+#ifdef ENABLE_WEBSOCKET
 
     static void
     dump_handshake_info(struct lws_tokens *lwst);
@@ -372,13 +389,14 @@ public:
             struct per_session_data__lws_vscp *pss,
             const char *pCommand);
 
+#endif
 
 	
 	/////////////////////////////////////////////////
     //                 WEB SERVER
     /////////////////////////////////////////////////
 
-#ifdef WIN32
+#ifdef ENABLE_WEBSERVER
 
 	/*!
 		Check web server password
@@ -1057,6 +1075,8 @@ public:
 	
     // Path to filesystem root
     static wxString m_pathRoot;
+
+	struct libwebsocket_protocols m_websocket_protocols[5];
 
     // Enable disable web socket interface
     bool m_bWebSockets;
