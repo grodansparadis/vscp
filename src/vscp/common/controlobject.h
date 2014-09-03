@@ -296,21 +296,47 @@ public:
 
 #ifdef ENABLE_WEBSOCKET
 
-    void
-    handleWebSocketReceive(struct libwebsocket_context *context,
-            struct libwebsocket *wsi,
-            struct per_session_data__lws_vscp *pss,
-            void *in,
-            size_t len);
+	/*!
+		Handle web socket receive
+	*/
+    static void
+    handleWebSocketReceive( struct mg_connection *conn );
 
-    bool
+	/*!
+		Handle websocket send event
+	*/
+    static bool
     handleWebSocketSendEvent(vscpEvent *pEvent);
 
-    void
-    handleWebSocketCommand(struct libwebsocket_context *context,
-            struct libwebsocket *wsi,
-            struct per_session_data__lws_vscp *pss,
-            const char *pCommand);
+	/*!
+		Authenticate client
+	*/
+	static int
+	websrv_handle_websocket_authentication( struct mg_connection *conn, wxString& strCmd );
+
+	/*!
+		Handle incoming websocket command
+	*/
+    static int
+    websrv_handle_websocket_Command( struct mg_connection *conn,wxString& strCommand );
+
+	/*!
+		Create a new websocket session
+		@param conn Webserver connection handle
+		@param pKey Sec-WebSocket-Key
+		@param pVer Sec-WebSocket-Version
+		@return websock object or NULL if failure
+	*/
+	static struct websock_session *
+	websock_new_session( struct mg_connection *conn, const char * pKey, const char * pVer );
+
+	/*!
+		Get new websocket session structure
+		@param conn Webserver connection handle
+		@return websock object or NULL if failure.
+	*/
+	static struct websock_session *
+	websock_get_session( struct mg_connection *conn );
 
 #endif
 
@@ -348,6 +374,7 @@ public:
 	/**
 	 * Add header to response to set a session cookie.
 	 *
+	 * @param conn Webserver connection handle
 	 * @param session session to use
 	 * @param response response to modify
 	 */

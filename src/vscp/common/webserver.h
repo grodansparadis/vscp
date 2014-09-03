@@ -61,6 +61,15 @@
  */
 #define WEBSERVER_COOKIE_NAME "____vscp_session____"
 
+
+static const char *html_form =
+  "<html><body>POST example."
+  "<form method=\"POST\" action=\"/handle_post_request\">"
+  "Input 1: <input type=\"text\" name=\"input_1\" /> <br/>"
+  "Input 2: <input type=\"text\" name=\"input_2\" /> <br/>"
+  "<input type=\"submit\" />"
+  "</form></body></html>";
+
 /**
  * Type of handler that generates a reply.
  *
@@ -221,4 +230,66 @@ const char key_pem[] =
 #define WEBSERVER_MAGIC_HEADER_SIZE (16 * 1024)
 
 
+//******************************************************************************
+//                                     WEBSOCKETS
+//******************************************************************************
 
+#define MAX_VSCPWS_MESSAGE_QUEUE 512
+
+// Authentication states
+enum {
+	WEBSOCK_AUTH_STAGE_START = 0,
+	WEBSOCK_AUTH_STAGE_SERVER_HASH,
+	WEBSOCK_AUTH_STAGE_CLIENT_HASH
+};
+
+enum {
+	WEBSOCK_ERROR_NO_ERROR = 0,			// Everything is OK.			
+	WEBSOCK_ERROR_SYNTAX_ERROR,			// Syntax error.
+	WEBSOCK_ERROR_UNKNOWN_COMMAND,		// Unknown command.
+	WEBSOCK_ERROR_TX_BUFFER_FULL,		// Transmit buffer full.
+	WEBSOCK_ERROR_VARIABLE_DEFINED,		// Variable is already defined.
+	WEBSOCK_ERROR_VARIABLE_UNKNOWN,		// Cant find variable
+	WEBSOCK_ERROR_NOT_AUTHORIZED,		// Not authorized
+};
+
+#define	WEBSOCK_STR_ERROR_NO_ERROR				"Everything is OK"			
+#define WEBSOCK_STR_ERROR_SYNTAX_ERROR			"Syntax error"
+#define WEBSOCK_STR_ERROR_UNKNOWN_COMMAND		"Unknown command"
+#define WEBSOCK_STR_ERROR_TX_BUFFER_FULL		"Transmit buffer full"
+#define WEBSOCK_STR_ERROR_VARIABLE_DEFINED		"Variable is already defined"
+#define WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN		"Unable to find variable"
+#define WEBSOCK_STR_ERROR_NOT_AUTHORIZED		"Not authorized"
+
+
+struct websock_session {
+	// We keep all sessions in a linked list.
+	struct websock_session *m_next;
+
+	// Unique ID for this session. 
+	char m_key[33];		// Sec-WebSocket-Key
+
+	// Generated hash for this session
+	char m_sid[33];
+
+	// Prorocol version
+	int m_version;		// Sec-WebSocket-Key
+
+	// Reference counter giving the number of connections
+	// currently using this session.
+	unsigned int m_referenceCount;
+
+	// This variable is true when the logon process
+	// is valid and the usr is logged in.
+	bool bAuthenticated;
+
+	// Time when this session was last active.
+	time_t start;
+    
+	wxArrayString *pMessageList;	// Messages (not events) to client.
+    CClientItem *pClientItem;		// Client structure for websocket in VSCP world
+    bool bTrigger;					// True to activate trigger functionality.
+    uint32_t triggerTimeout;		// Time out before trigg (or error) must occur.
+    TRIGGERLIST listTriggerOK;		// List with positive triggers.
+    TRIGGERLIST listTriggerERR;		// List with negative triggers.
+};
