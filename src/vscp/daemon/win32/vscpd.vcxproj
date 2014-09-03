@@ -134,8 +134,8 @@
     <OutDir>.\ReleaseDll\</OutDir>
     <IntDir>.\ReleaseDll\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(LIBWEBSOCKETS)\lib;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LIBWEBSOCKETS)\build\lib\release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'">
     <OutDir>.\ReleaseDll\</OutDir>
@@ -146,8 +146,8 @@
     <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(LIBWEBSOCKETS)\lib;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LIBWEBSOCKETS)\build\lib\debug;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>.\Debug\</OutDir>
@@ -216,7 +216,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>.\ReleaseDll\vscpd.exe</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(libexpat)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>websockets.lib;ZLIB.lib;libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'">
@@ -301,7 +301,7 @@
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>.\Debug\vscpd.exe</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(libexpat)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>websockets.lib;ZLIB.lib;libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;odbc32.lib;odbccp32.lib;MSVCRTD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;odbc32.lib;odbccp32.lib;MSVCRTD.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
