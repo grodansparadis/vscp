@@ -203,9 +203,6 @@ public:
      */
     bool stopClientWorkerThread(void);
 
-    
-
-
     /*!
         Add a new client to the clinet list
 
@@ -299,26 +296,39 @@ public:
 	/*!
 		Handle web socket receive
 	*/
-    static void
-    handleWebSocketReceive( struct mg_connection *conn );
+    //void
+    //handleWebSocketReceive( struct mg_connection *conn );
 
 	/*!
 		Handle websocket send event
 	*/
-    static bool
-    handleWebSocketSendEvent(vscpEvent *pEvent);
+    int
+    websock_sendevent( struct mg_connection *conn, 
+							struct websock_session *pSession, 
+							vscpEvent *pEvent );
 
 	/*!
 		Authenticate client
+		@param conn Webserver connection handle
+		@param strUser Username
+		@param strKey hash of 
+			"user:standard vscp password hash:Sec-WebSocket-Key:session-hash"
+			VSCP standard password hash =
+			"admin:mydomain.com:secret" = 5ebe2294ecd0e0f08eab7690d2a6ee69
 	*/
-	static int
-	websrv_handle_websocket_authentication( struct mg_connection *conn, wxString& strCmd );
+	int
+	websock_authentication( struct mg_connection *conn, 
+								struct websock_session *pSession, 
+								wxString& strUser, wxString& strKey );
 
 	/*!
 		Handle incoming websocket command
+		@param conn Webserver connection handle
 	*/
-    static int
-    websrv_handle_websocket_Command( struct mg_connection *conn,wxString& strCommand );
+    int
+    websock_command( struct mg_connection *conn, 
+						struct websock_session *pSession, 
+						wxString& strCommand );
 
 	/*!
 		Create a new websocket session
@@ -327,7 +337,7 @@ public:
 		@param pVer Sec-WebSocket-Version
 		@return websock object or NULL if failure
 	*/
-	static struct websock_session *
+	struct websock_session *
 	websock_new_session( struct mg_connection *conn, const char * pKey, const char * pVer );
 
 	/*!
@@ -338,12 +348,19 @@ public:
 	static struct websock_session *
 	websock_get_session( struct mg_connection *conn );
 
+	/*!
+		Remove staled sessions
+	*/
+	void
+	websock_expire_sessions( struct mg_connection *conn );
+
 #endif
 
 	
 	/////////////////////////////////////////////////
     //                 WEB SERVER
     /////////////////////////////////////////////////
+
 
 #ifdef ENABLE_WEBSERVER
 
@@ -359,7 +376,7 @@ public:
 		@param reponse
 		@return MG_FALSE on failure to validate user or MG_TRUE on success
 	*/
-	static int 
+	int 
 	websrv_check_password( const char *method, const char *ha1, const char *uri,
 								const char *nonce, const char *nc, const char *cnonce,
 								const char *qop, const char *response );
@@ -368,7 +385,7 @@ public:
 		Return the session handle for this connection, or 
 		create one if this is a new user.
 	*/
-	static struct websrv_Session *
+	struct websrv_Session *
 	websrv_get_session( struct mg_connection *conn );
 
 	/**
@@ -378,15 +395,15 @@ public:
 	 * @param session session to use
 	 * @param response response to modify
 	 */
-	static websrv_Session *
+	websrv_Session *
 	websrv_add_session_cookie( struct mg_connection *conn, const char * pUser );
 	
 	/**
 		Clean up handles of sessions that have been idle for
 		too long.
 	*/
-	static void
-	websrv_expire_sessions( void );
+	void
+	websrv_expire_sessions( struct mg_connection *conn );
 
 
 	/*!
@@ -394,8 +411,8 @@ public:
 		@param conn Webserver connection handle
 		@return MG_TRUE ocn sucess or MG_FALSE on failure.
 	*/
-	static int 
-	websrv_handle_websocket_message( struct mg_connection *conn );
+	int 
+	websrv_websocket_message( struct mg_connection *conn );
 	
 	/**
 		Web server event handler
@@ -411,7 +428,7 @@ public:
 		@param conn Webserver connection handle.
 		@return MG_TRUE ocn sucess or MG_FALSE on failure.
 	*/
-	static int
+	int
 	websrv_mainpage( struct mg_connection *conn );
 
 	/**
@@ -420,7 +437,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int
+	int
 	websrv_interfaces( struct mg_connection *conn );	
 	
 	/**
@@ -429,7 +446,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int
+	int
 	websrv_dmlist( struct mg_connection *conn );
 	
 	/**
@@ -438,7 +455,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int
+	int
 	websrv_dmedit( struct mg_connection *conn );
 	
 	/**
@@ -447,7 +464,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_dmpost( struct mg_connection *conn );
 	
 	/**
@@ -456,7 +473,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_dmdelete( struct mg_connection *conn );
 	
 	/**
@@ -465,7 +482,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int
+	int
 	websrv_variables_list( struct mg_connection *conn );
 	
 	/**
@@ -474,7 +491,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int
+	int
 	websrv_variables_edit( struct mg_connection *conn );
 	
 	/**
@@ -483,7 +500,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_variables_post( struct mg_connection *conn );
 	
    /**
@@ -492,7 +509,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_variables_new( struct mg_connection *conn );
 	
 	/**
@@ -501,7 +518,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_variables_delete( struct mg_connection *conn );
 
 	/**
@@ -510,7 +527,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_discovery( struct mg_connection *conn );
 
 	/**
@@ -519,7 +536,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_session( struct mg_connection *conn );
 
 	/**
@@ -528,7 +545,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_configure( struct mg_connection *conn );
 
 	/**
@@ -537,7 +554,7 @@ public:
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
-	static int 
+	int 
 	websrv_bootload( struct mg_connection *conn );
 
 #endif
@@ -704,7 +721,10 @@ public:
     bool m_bWebSockets;
 
     // websocket port
-    uint16_t m_portWebsockets;		// defaults to 7681
+    //uint16_t m_portWebsockets;		// defaults to 7681
+
+	// websocket authentivcation is needed  (if true)
+	bool m_bAuthWebsockets;
 	
 	// Domain for webserver and other net services
 	wxString m_authDomain;

@@ -70,46 +70,6 @@ static const char *html_form =
   "<input type=\"submit\" />"
   "</form></body></html>";
 
-/**
- * Type of handler that generates a reply.
- *
- * @param cls content for the page (handler-specific)
- * @param mime mime type to use
- * @param session session information
- * @param connection connection to process
- * @param MHD_YES on success, MHD_NO on failure
- */
-typedef int (*PageHandler)(const void *cls,
-                            const char *mime,
-                            struct websrv_Session *session,
-                            struct MHD_Connection *connection);
-
-/**
- * Entry we generate for each page served.
- */ 
-struct Page
-{
-  /**
-   * Acceptable URL for this page.
-   */
-  const char *url;
-
-  /**
-   * Mime type to set for the page.
-   */
-  const char *mime;
-
-  /**
-   * Handler to call to generate response.
-   */
-  PageHandler handler;
-
-  /**
-   * Extra argument to handler.
-   */ 
-  const void *handler_cls;
-};
-
 
 /**
  * State we keep for each user/session/browser.
@@ -129,10 +89,13 @@ struct websrv_Session
   unsigned int m_referenceCount;
 
   // Time when this session was last active.
-  time_t start;
+  time_t lastActiveTime;
 
   // Client item for this session
   CClientItem *m_pClientItem;
+
+  // User
+  CUserItem *m_pUserItem;
     
   // String submitted via form.
   char value_1[64];
@@ -146,32 +109,7 @@ struct websrv_Session
 };
 
 
-/**
- * Data kept per request.
- */
-struct websrv_Request
-{
 
-  /**
-   * Associated session.
-   */
-  struct websrv_Session *session;
-
-  /**
-   * Post processor handling form data (IF this is
-   * a POST request).
-   */
-  struct MHD_PostProcessor *pp;
-
-  /**
-   * URL to serve in response to this POST (if this request 
-   * was a 'POST')
-   */
-  const char *post_url;
-  
-  //int aptr;
-
-};
 
 
 /* Test Certificate */
@@ -261,7 +199,6 @@ enum {
 #define WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN		"Unable to find variable"
 #define WEBSOCK_STR_ERROR_NOT_AUTHORIZED		"Not authorized"
 
-
 struct websock_session {
 	// We keep all sessions in a linked list.
 	struct websock_session *m_next;
@@ -284,10 +221,16 @@ struct websock_session {
 	bool bAuthenticated;
 
 	// Time when this session was last active.
-	time_t start;
+	time_t lastActiveTime;
     
-	wxArrayString *pMessageList;	// Messages (not events) to client.
-    CClientItem *pClientItem;		// Client structure for websocket in VSCP world
+	//wxArrayString *pMessageList;	// Messages (not events) to client.
+
+	// Client structure for websocket
+    CClientItem *pClientItem;		
+
+	// User structure for websocket
+	CUserItem *m_pUserItem;
+
     bool bTrigger;					// True to activate trigger functionality.
     uint32_t triggerTimeout;		// Time out before trigg (or error) must occur.
     TRIGGERLIST listTriggerOK;		// List with positive triggers.

@@ -81,11 +81,11 @@
         <pathtomimetypes>/etc/vscp/mimetypes.xml</pathtomimetypes>
 
         <!-- Enable disable the websocket interface.          -->
-        <!-- Set the port to use for the websockets interface -->
-        <!-- default is 7681.                                 -->
+        <!-- Set if authentication should be used for the     -->
+		<!-- websockets interface. Default is true == yes     -->
         <!-- Documented in specification 14.4.1               -->
         
-        <websockets enable="true" port="7681" />
+        <websockets enable="true" auth="true" />
 
         <!-- Enable disable the webserver interface.          -->
         <!-- Set the port to use for the webserver interface  -->
