@@ -33,6 +33,8 @@
 #define ENABLE_WEBSERVER	// Webserver functionality activated
 #define ENABLE_WEBSOCKET	// Sebsocket functionality enabled
 
+// NS_ENABLE_SSL		// Enable webserver SSL functionality
+
 #include "wx/wx.h"
 #include <wx/thread.h>
 

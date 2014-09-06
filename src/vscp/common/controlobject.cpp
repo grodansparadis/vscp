@@ -474,8 +474,10 @@ bool CControlObject::init(wxString& strcfgfile)
 		// Set options
 		mg_set_option( webserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
 		str = wxString::Format(  _("%i"), m_portWebServer );
-		mg_set_option( webserver, "listening_port", str.mb_str( wxConvUTF8 ) );				// Open web server port
+		mg_set_option( webserver, "listening_port", "8080" /*str.mb_str( wxConvUTF8 )*/ );				// Open web server port
 		mg_set_option( webserver, "auth_domain", m_authDomain.mb_str( wxConvUTF8 ) );
+		mg_set_option( webserver, "ssl_certificate", m_pathCert.mb_str( wxConvUTF8 ) );		// SSL certificat
+		
 
         logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
     }
@@ -3771,17 +3773,16 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 					return pObject->websrv_bootload( conn );
 				}
 				else {
-					return MG_TRUE;
+					return MG_FALSE;
 				}
 			}
 			return MG_FALSE;
 
-		case MG_WS_CONNECT:
-			// New websocket connection. Send connection ID back to the client.
-			if ( conn->is_websocket ) {
-
-				/*
-
+		case MG_WS_HANDSHAKE:
+			if ( NULL != ( hdr = mg_get_header( conn, "Sec-WebSocket-Protocol") ) ) {
+					if ( 0 == vscp_strncasecmp( hdr, "very-simple-control-protocol", 28 ) ) {
+						//mg_send_header( conn, "Set-Sec-WebSocket-Protocol", "very-simple-control-protocol" );
+					/*	
 				Currently it is impossible to request a specific protocol
 				This is what would be needed to do so.
 				
@@ -3808,6 +3809,15 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 						 
 					}		
 				}*/
+						return MG_FALSE;
+					}
+			}
+			return MG_FALSE;
+
+		case MG_WS_CONNECT:
+
+			// New websocket connection. Send connection ID back to the client.
+			if ( conn->is_websocket ) {
 
 				// Get session
 				pWebSockSession = websock_get_session( conn );
