@@ -425,6 +425,34 @@ public:
 	static int 
 	websrv_event_handler( struct mg_connection *conn, enum mg_event ev );
 
+
+	//////////////////////////////////////////////////////////////////////////////
+	//							 REST INTERFACE                                 //
+	//////////////////////////////////////////////////////////////////////////////
+
+
+	/*!
+		websrv_rest_session - Create new rest session
+		@param conn Webserver connection handle.
+		@return pointer to session or NULL if session is not found.
+	*/
+	struct websrv_rest_session *
+	websrv_new_rest_session( struct mg_connection *conn, CUserItem *pUser );
+
+	/**
+		websrv_restapi - REST interface main handler
+		@param conn Webserver connection handle.
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	websrv_restapi( struct mg_connection *conn );
+
+
+	//////////////////////////////////////////////////////////////////////////////
+	//							 ADMIN INTERFACE                                //
+	//////////////////////////////////////////////////////////////////////////////
+
+
 	/**
 		websrv_mainpage - Web server main page renderer.
 		@param conn Webserver connection handle.

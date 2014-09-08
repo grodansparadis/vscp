@@ -187,9 +187,9 @@ typedef struct  {
     // CRC should be calculated from
     // here to end + datablock
 	uint16_t head;          // Bit 16   GUID is IP v.6 address.
-							// bit 765  prioriy, Priority 0-7 where 0 is highest.
-                            // bit 4 = hardcoded, true for a hardcoded device.
-                            // bit 3 = Dont calculate CRC, false for CRC usage.
+							// bit 765  priority, Priority 0-7 where 0 is highest.
+                            // bit 4 = hard coded, true for a hard coded device.
+                            // bit 3 = Don't calculate CRC, false for CRC usage.
                             // bit 2 = Reserved.
                             // bit 1 = Reserved.
                             // bit 0 = Reserved.

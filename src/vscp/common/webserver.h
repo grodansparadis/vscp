@@ -82,10 +82,8 @@ struct websrv_Session
   // Unique ID for this session. 
   char m_sid[33];
 
-  /**
-   * Reference counter giving the number of connections
-   * currently using this session.
-   */
+  // Reference counter giving the number of connections
+  // currently using this session.
   unsigned int m_referenceCount;
 
   // Time when this session was last active.
@@ -210,7 +208,7 @@ struct websock_session {
 	char m_sid[33];
 
 	// Prorocol version
-	int m_version;		// Sec-WebSocket-Key
+	int m_version;		// Sec-WebSocket-Verision
 
 	// Reference counter giving the number of connections
 	// currently using this session.
@@ -226,7 +224,7 @@ struct websock_session {
 	//wxArrayString *pMessageList;	// Messages (not events) to client.
 
 	// Client structure for websocket
-    CClientItem *pClientItem;		
+    CClientItem *m_pClientItem;		
 
 	// User structure for websocket
 	CUserItem *m_pUserItem;
@@ -235,4 +233,36 @@ struct websock_session {
     uint32_t triggerTimeout;		// Time out before trigg (or error) must occur.
     TRIGGERLIST listTriggerOK;		// List with positive triggers.
     TRIGGERLIST listTriggerERR;		// List with negative triggers.
+};
+
+
+//******************************************************************************
+//                                      REST
+//******************************************************************************
+
+
+/**
+ * Session varaibles we keep for each user/session/browser.
+ */
+struct websrv_rest_session
+{
+  // We keep all sessions in a linked list.
+  struct websrv_rest_session *m_next;
+
+  // Unique ID for this session. 
+  char m_sid[33];
+
+  // Reference counter giving the number of connections
+  // currently using this session.
+  unsigned int m_referenceCount;
+
+  // Time when this session was last active.
+  time_t lastActiveTime;
+
+  // Client item for this session
+  CClientItem *m_pClientItem;
+
+  // User
+  CUserItem *m_pUserItem;
+      
 };

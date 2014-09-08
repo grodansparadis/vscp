@@ -160,37 +160,27 @@ WX_DEFINE_LIST(TRIGGERLIST);
 WX_DEFINE_LIST(CanalMsgList);
 WX_DEFINE_LIST(VSCPEventList);
 
-///////////////////////////////////////////////////
-//					WEBSOCKETS
-///////////////////////////////////////////////////
 
-#ifdef ENABLE_WEBSOCKET
-
-// vscp websocket_protocol
-
-
-
-// Linked list of websocket sessions
-static struct websock_session *websock_sessions;
-
-#endif
-
-
+#ifdef ENABLE_WEBSERVER
 
 ///////////////////////////////////////////////////
 //		          WEBSERVER
 ///////////////////////////////////////////////////
 
-
+struct mg_server *webserver;
 
 // Linked list of all active sessions. (webserv.h)
 static struct websrv_Session *websrv_sessions;
 
+// Session structure for REST API
+struct websrv_rest_session *websrv_rest_sessions;
 
-#ifdef ENABLE_WEBSERVER
+///////////////////////////////////////////////////
+//					WEBSOCKETS
+///////////////////////////////////////////////////
 
-// Structure for webserver
-struct mg_server *webserver;
+// Linked list of websocket sessions
+static struct websock_session *websock_sessions;
 
 #endif
 
@@ -2639,62 +2629,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 
 
-///////////////////////////////////////////////////////////////////////////////
-// websock_authentication
-//
-// client sends
-//		"AUTH;user;hash"
-//	where the hash is based on
-//		"user:standard vscp password hash:server generated hash(sid)"
-//	"user;hash" is reeived in strKey
 
-int
-CControlObject::websock_authentication( struct mg_connection *conn, 
-											struct websock_session *pSession, 
-											wxString& strUser, 
-											wxString& strKey )
-{
-	int rv = MG_FALSE;
-	char response[32 + 1];
-	char expected_response[32 + 1];
-	bool bValidHost = false;
-
-	memset( response, 0, sizeof( response ) );
-	memset( expected_response, 0, sizeof( expected_response ) );
-
-	// Check pointer
-    if (NULL == conn) return MG_FALSE;
-	if (NULL == pSession) return MG_FALSE;
-	
-	CControlObject *pObject = (CControlObject *)conn->server_param;
-	if (NULL == pObject) return MG_FALSE;
-
-	if ( m_bAuthWebsockets ) {
-
-		// Check if user is valid			
-		CUserItem *pUser = pObject->m_userList.getUser( strUser );
-		if ( NULL == pUser ) return MG_FALSE;
-
-		// Check if remote ip is valid
-		pObject->m_mutexUserList.Lock();
-		bValidHost = pObject->m_userList.checkRemote( pUser, 
-														wxString::FromAscii( conn->remote_ip ) );
-		pObject->m_mutexUserList.Unlock();
-		if (!bValidHost) return MG_FALSE;
-
-		strncpy( response, strKey.mb_str(), min( sizeof(response), strKey.Length() ) );
-
-		mg_md5( expected_response,
-					strUser.mb_str(), ":",
-					pUser->m_md5Password.mb_str(), ":",
-					pSession->m_sid, NULL );
-
-		rv = ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
-
-	}
-
-	return rv;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // websock_command
@@ -2768,7 +2703,7 @@ CControlObject::websock_command( struct mg_connection *conn,
 			return MG_TRUE;	// We still leave channel open
 		}
 
-        pSession->pClientItem->m_bOpen = true;
+        pSession->m_pClientItem->m_bOpen = true;
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;OPEN" );
     } 
 	else if (0 == strTok.Find(_("CLOSE"))) {
@@ -2783,7 +2718,7 @@ CControlObject::websock_command( struct mg_connection *conn,
 			return MG_TRUE;	// We still leave channel open
 		}
 
-        pSession->pClientItem->m_bOpen = false;
+        pSession->m_pClientItem->m_bOpen = false;
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;CLOSE" );
 		rv = MG_FALSE;
     } 
@@ -2806,7 +2741,7 @@ CControlObject::websock_command( struct mg_connection *conn,
         // Get filter
         if (tkz.HasMoreTokens()) {
             strTok = tkz.GetNextToken();
-            if (!vscp_readFilterFromString( &pSession->pClientItem->m_filterVSCP, strTok ) ) {
+            if (!vscp_readFilterFromString( &pSession->m_pClientItem->m_filterVSCP, strTok ) ) {
                 mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s", 
 									WEBSOCK_ERROR_SYNTAX_ERROR, 
@@ -2825,7 +2760,7 @@ CControlObject::websock_command( struct mg_connection *conn,
         // Get mask
         if (tkz.HasMoreTokens()) {
             strTok = tkz.GetNextToken();
-            if (!vscp_readMaskFromString( &pSession->pClientItem->m_filterVSCP, strTok)) {
+            if (!vscp_readMaskFromString( &pSession->m_pClientItem->m_filterVSCP, strTok)) {
                 mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s", 
 									WEBSOCK_ERROR_SYNTAX_ERROR, 
@@ -2859,15 +2794,15 @@ CControlObject::websock_command( struct mg_connection *conn,
 			return MG_TRUE;	// We still leave channel open
 		}
 
-        pSession->pClientItem->m_mutexClientInputQueue.Lock();
-        for (iterVSCP = pSession->pClientItem->m_clientInputQueue.begin();
-                iterVSCP != pSession->pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
+        pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+        for (iterVSCP = pSession->m_pClientItem->m_clientInputQueue.begin();
+                iterVSCP != pSession->m_pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
             vscpEvent *pEvent = *iterVSCP;
             vscp_deleteVSCPevent(pEvent);
         }
 
-        pSession->pClientItem->m_clientInputQueue.Clear();
-        pSession->pClientItem->m_mutexClientInputQueue.Unlock();
+        pSession->m_pClientItem->m_clientInputQueue.Clear();
+        pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;CLRQUE" );
     } 
@@ -3260,7 +3195,7 @@ CControlObject::websrv_websocket_message( struct mg_connection *conn )
 			str = wxString::FromAscii( p );
 			if (vscp_getVscpEventFromString( &vscp_event, str ) ) {
 
-				vscp_event.obid = pSession->pClientItem->m_clientID;
+				vscp_event.obid = pSession->m_pClientItem->m_clientID;
 				if ( pObject->websock_sendevent( conn, pSession, &vscp_event ) ) {
 					mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;EVENT" );
 				} 
@@ -3282,6 +3217,64 @@ CControlObject::websrv_websocket_message( struct mg_connection *conn )
     }
 
 	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websock_authentication
+//
+// client sends
+//		"AUTH;user;hash"
+//	where the hash is based on
+//		"user:standard vscp password hash:server generated hash(sid)"
+//	"user;hash" is reeived in strKey
+
+int
+CControlObject::websock_authentication( struct mg_connection *conn, 
+											struct websock_session *pSession, 
+											wxString& strUser, 
+											wxString& strKey )
+{
+	int rv = MG_FALSE;
+	char response[32 + 1];
+	char expected_response[32 + 1];
+	bool bValidHost = false;
+
+	memset( response, 0, sizeof( response ) );
+	memset( expected_response, 0, sizeof( expected_response ) );
+
+	// Check pointer
+    if (NULL == conn) return MG_FALSE;
+	if (NULL == pSession) return MG_FALSE;
+	
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return MG_FALSE;
+
+	if ( m_bAuthWebsockets ) {
+
+		// Check if user is valid			
+		CUserItem *pUser = pObject->m_userList.getUser( strUser );
+		if ( NULL == pUser ) return MG_FALSE;
+
+		// Check if remote ip is valid
+		pObject->m_mutexUserList.Lock();
+		bValidHost = pObject->m_userList.checkRemote( pUser, 
+														wxString::FromAscii( conn->remote_ip ) );
+		pObject->m_mutexUserList.Unlock();
+		if (!bValidHost) return MG_FALSE;
+
+		strncpy( response, strKey.mb_str(), min( sizeof(response), strKey.Length() ) );
+
+		mg_md5( expected_response,
+					strUser.mb_str(), ":",
+					pUser->m_md5Password.mb_str(), ":",
+					pSession->m_sid, NULL );
+
+		rv = ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
+
+	}
+
+	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3327,29 +3320,31 @@ CControlObject::websock_new_session( struct mg_connection *conn, const char * pK
 
 	Cmd5 md5( (unsigned char *)buf );
 	strcpy( ret->m_sid, md5.getDigest() );
+
+
 		
 	// Init
 	strcpy( ret->m_key, pKey );				// Save key
 	ret->bAuthenticated = false;			// Not authenticated in yet
 	ret->m_version = atoi( pVer );			// Store protocol version
 	ret->m_pUserItem = NULL;				// Is set when authenticated
-    ret->pClientItem = new CClientItem();	// Create client        
-    vscp_clearVSCPFilter(&ret->pClientItem->m_filterVSCP); // // Clear filter
+    ret->m_pClientItem = new CClientItem();	// Create client        
+    vscp_clearVSCPFilter(&ret->m_pClientItem->m_filterVSCP); // // Clear filter
 	ret->bTrigger = false;
 	ret->triggerTimeout = 0;
 
 	// This is an active client
-    ret->pClientItem->m_bOpen = false;
-    ret->pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
-    ret->pClientItem->m_strDeviceName = _("Internal daemon websocket client. Started at ");
+    ret->m_pClientItem->m_bOpen = false;
+    ret->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
+    ret->m_pClientItem->m_strDeviceName = _("Internal daemon websocket client. Started at ");
     wxDateTime now = wxDateTime::Now();
-    ret->pClientItem->m_strDeviceName += now.FormatISODate();
-    ret->pClientItem->m_strDeviceName += _(" ");
-    ret->pClientItem->m_strDeviceName += now.FormatISOTime();
+    ret->m_pClientItem->m_strDeviceName += now.FormatISODate();
+    ret->m_pClientItem->m_strDeviceName += _(" ");
+    ret->m_pClientItem->m_strDeviceName += now.FormatISOTime();
 
 	// Add the client to the Client List
     pObject->m_wxClientMutex.Lock();
-    pObject->addClient(ret->pClientItem);
+    pObject->addClient(ret->m_pClientItem);
     pObject->m_wxClientMutex.Unlock();
 
     // Add to linked list
@@ -3442,7 +3437,7 @@ CControlObject::websock_expire_sessions( struct mg_connection *conn  )
             }
             
 			pObject->m_wxClientMutex.Lock();
-			pObject->removeClient( pos->pClientItem );
+			pObject->removeClient( pos->m_pClientItem );
 			pObject->m_wxClientMutex.Unlock();
 
 			// Free session data
@@ -3456,6 +3451,14 @@ CControlObject::websock_expire_sessions( struct mg_connection *conn  )
         pos = next;
     }
 }
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                     WEBSERVER SESSION HANDLINO
+///////////////////////////////////////////////////////////////////////////////
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_get_session
@@ -3664,6 +3667,12 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 				return MG_TRUE;	// Always accept websocket connections
 			}
 
+			
+			// Validate REST interface user.
+			if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
+				return MG_TRUE;	// Always accept websocket connections
+			}
+
 			if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
 					( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
 				return MG_FALSE;
@@ -3771,6 +3780,9 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/bootload") ) {
 					return pObject->websrv_bootload( conn );
+				}
+				else if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
+					return pObject->websrv_restapi( conn );
 				}
 				else {
 					return MG_FALSE;
@@ -3880,6 +3892,175 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 			return MG_FALSE;
 	}
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_get_rest_session
+//
+
+struct websrv_rest_session *
+CControlObject::websrv_new_rest_session( struct mg_connection *conn,
+												CUserItem *pUser )
+{
+	char buf[2048];
+	struct websrv_rest_session *ret = NULL;
+
+	// Check pointer
+    if (NULL == conn) return NULL;
+	
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return NULL;
+
+	// create fresh session 
+    ret = (struct websrv_rest_session *)calloc(1, sizeof(struct websrv_rest_session));
+    if  (NULL == ret ) {
+#ifndef WIN32
+        syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
+#endif
+        return NULL;
+    }
+
+	// Generate a random session ID
+    time_t t;
+    t = time( NULL );
+    sprintf( buf,
+				"__VSCP__DAEMON_REST%X%X%X%X_be_hungry_stay_foolish_%X%X",
+				(unsigned int)rand(),
+				(unsigned int)rand(),
+				(unsigned int)rand(),
+				(unsigned int)t,
+				(unsigned int)rand(), 
+				1337 );
+
+	Cmd5 md5( (unsigned char *)buf );
+	strcpy( ret->m_sid, md5.getDigest() );
+
+	// New client
+	ret->m_pClientItem = new CClientItem();	// Create client        
+    vscp_clearVSCPFilter(&ret->m_pClientItem->m_filterVSCP); // // Clear filter
+    ret->m_pClientItem->m_bOpen = false;
+    ret->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
+    ret->m_pClientItem->m_strDeviceName = _("Internal daemon websocket client. Started at ");
+    wxDateTime now = wxDateTime::Now();
+    ret->m_pClientItem->m_strDeviceName += now.FormatISODate();
+    ret->m_pClientItem->m_strDeviceName += _(" ");
+    ret->m_pClientItem->m_strDeviceName += now.FormatISOTime();
+
+	// Add the client to the Client List
+    pObject->m_wxClientMutex.Lock();
+    pObject->addClient(ret->m_pClientItem);
+    pObject->m_wxClientMutex.Unlock();
+
+	ret->m_pUserItem = pUser;
+	ret->m_pClientItem = NULL;
+	
+    // Add to linked list
+    ret->m_referenceCount++;
+    ret->lastActiveTime = time(NULL);
+    ret->m_next = websrv_rest_sessions;
+	websrv_rest_sessions = ret;
+
+	return ret;
+}
+
+
+// Hash with key value pairs
+WX_DECLARE_STRING_HASH_MAP( wxString, hashArgs );
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_restapi
+//
+
+int
+CControlObject::websrv_restapi( struct mg_connection *conn )
+{
+	int rv = MG_FALSE;
+	wxString str;
+	hashArgs keypairs;
+
+	// Check pointer
+    if (NULL == conn) return MG_FALSE;
+	
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return MG_FALSE;
+
+	// First remove the "/vscp/rest?" from the 
+	//strncpy( buf, conn->uri + 11, min( sizeof(buf), ( strlen(conn->uri)-11 ) ) );
+	//wrkString.FromAscii( conn->uri + 11 );
+	wxStringTokenizer tkz( wxString::FromAscii( conn->query_string ), _("&") );
+	while ( tkz.HasMoreTokens() ) {
+		int pos;
+		str = tkz.GetNextToken();
+		if ( wxNOT_FOUND != ( pos = str.Find('=') ) ) {
+			keypairs[ str.Left(pos).Upper() ] = str.Right( str.Length()-pos-1 ); 
+		}
+	}
+
+	// Check if user is valid			
+	CUserItem *pUser = pObject->m_userList.getUser( keypairs[_("user")] );
+	if ( NULL == pUser ) return MG_FALSE;
+
+	// Check if remote ip is valid
+	bool bValidHost;
+	pObject->m_mutexUserList.Lock();
+	bValidHost = pObject->m_userList.checkRemote( pUser, 
+													wxString::FromAscii( conn->remote_ip ) );
+	pObject->m_mutexUserList.Unlock();
+	if (!bValidHost) return MG_FALSE;
+
+	// Is this an authorized user?
+	if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) return MG_FALSE;
+
+	// If we have a session key we try to find the session
+	if ( _("SESSION") == keypairs[_("op")] ) {
+		
+	}
+
+
+	// Status (hold session open)
+	if ( ( '0' == keypairs[_("op")] ) ||  ( _("STATUS") == keypairs[_("op")] ) ) {
+		
+	}
+	// open session
+	else if ( ( '1' == keypairs[_("op")] ) || ( _("OPEN") == keypairs[_("op")] ) ) {
+	
+	}
+	// close session
+	else if ( ( '2' == keypairs[_("op")] ) || ( _("CLOSE") == keypairs[_("op")] ) ) {
+	
+	}
+	// Send event
+	else if ( ( '3' == keypairs[_("op")] ) || ( _("SENDEVENT") == keypairs[_("op")] ) ) {
+	
+	}
+	// Read event
+	else if ( ( '4' == keypairs[_("op")] ) || ( _("READEVENT") == keypairs[_("op")] ) ) {
+	
+	}
+	// Set read filter
+	else if ( ( '5' == keypairs[_("op")] ) || ( _("SETFILTER") == keypairs[_("op")] ) ) {
+	
+	}
+	// read variable value
+	else if ( ( '6' == keypairs[_("op")] ) || ( _("READVAR") == keypairs[_("op")] ) ) {
+	
+	}
+	// Write variable value
+	else if ( ( '7' == keypairs[_("op")] ) || ( _("WRITEVAR") == keypairs[_("op")] ) ) {
+	
+	}
+	// Send measurement
+	else if ( ( '8' == keypairs[_("op")] ) || ( _("MEASUREMENT") == keypairs[_("op")] ) ) {
+	
+	}
+	// Table read
+	else if ( ( '9' == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")] ) ) {
+	
+	}
+
+	return rv;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
