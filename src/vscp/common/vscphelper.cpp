@@ -123,6 +123,15 @@ void vscp_bin2str(char *to, const unsigned char *p, size_t len  )
 	*to = '\0';
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// vscp_getTimeString
+//
+
+void vscp_getTimeString( char *buf, size_t buf_len, time_t *t ) 
+{
+	strftime(buf, buf_len, "%a, %d %b %Y %H:%M:%S GMT", gmtime( t ) );
+}
+
 
 // ***************************************************************************
 //                                Data Coding Helpers

@@ -118,6 +118,11 @@ extern "C" {
 	*/
 	void vscp_bin2str( char *to, const unsigned char *p, size_t len ); 
 
+	/*!
+		Get GMT time // http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
+	*/
+	void vscp_getTimeString( char *buf, size_t buf_len, time_t *t ); 
+
 	// ***************************************************************************
 	//                                Data Coding Helpers
 	// ***************************************************************************

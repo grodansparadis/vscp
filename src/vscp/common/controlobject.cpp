@@ -167,7 +167,7 @@ WX_DEFINE_LIST(VSCPEventList);
 //		          WEBSERVER
 ///////////////////////////////////////////////////
 
-struct mg_server *webserver;
+
 
 // Linked list of all active sessions. (webserv.h)
 static struct websrv_Session *websrv_sessions;
@@ -205,13 +205,6 @@ WSADATA wsaData;							// WSA functions
 
 #endif
 
-
-// Initialize statics
-#ifdef WIN32
-wxString CControlObject::m_pathRoot = _("/programdata/vscp/www");
-#else
-wxString CControlObject::m_pathRoot = _("/srv/vscp/www");
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -282,6 +275,12 @@ CControlObject::CControlObject()
     m_portWebServer = 8080;
     m_bWebServer = true;
 
+#ifdef WIN32
+	m_pathRoot = _("/programdata/vscp/www");
+#else
+	m_pathRoot = _("/srv/vscp/www");
+#endif
+
     // Set control object
     m_dm.setControlObject(this);
 
@@ -300,12 +299,6 @@ CControlObject::CControlObject()
     }
 
 #endif // windows service
-
-    CControlObject::m_pathRoot = _("c:/programdata/vscp/www");
-
-#else
-
-    CControlObject::m_pathRoot = _("/srv/vscp/www");
 
 #endif
 
@@ -459,14 +452,14 @@ bool CControlObject::init(wxString& strcfgfile)
     if ( m_bWebServer ) {
 		
 		// Create the server
-		webserver = mg_create_server( gpctrlObj, CControlObject::websrv_event_handler );
+		m_pwebserver = mg_create_server( gpctrlObj, CControlObject::websrv_event_handler );
 		
 		// Set options
-		mg_set_option( webserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
+		mg_set_option( m_pwebserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
 		str = wxString::Format(  _("%i"), m_portWebServer );
-		mg_set_option( webserver, "listening_port", "8080" /*str.mb_str( wxConvUTF8 )*/ );				// Open web server port
-		mg_set_option( webserver, "auth_domain", m_authDomain.mb_str( wxConvUTF8 ) );
-		mg_set_option( webserver, "ssl_certificate", m_pathCert.mb_str( wxConvUTF8 ) );		// SSL certificat
+		mg_set_option( m_pwebserver, "listening_port", "8080" /*str.mb_str( wxConvUTF8 )*/ );				// Open web server port
+		mg_set_option( m_pwebserver, "auth_domain", m_authDomain.mb_str( wxConvUTF8 ) );
+		mg_set_option( m_pwebserver, "ssl_certificate", m_pathCert.mb_str( wxConvUTF8 ) );		// SSL certificat
 		
 
         logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
@@ -590,7 +583,8 @@ bool CControlObject::run(void)
         }
 
 #ifdef ENABLE_WEBSERVER
-		mg_poll_server( webserver, 10 );
+		mg_poll_server( m_pwebserver, 10 );
+		websock_post_incomingEvents();
 #endif
 
 #ifdef ENABLE_WEBSOCKET
@@ -687,7 +681,7 @@ bool CControlObject::run(void)
 bool CControlObject::cleanup(void)
 {
 	// Kill w�b server
-	mg_destroy_server( &webserver );
+	mg_destroy_server( &m_pwebserver );
 
     stopDeviceWorkerThreads();
     stopTcpWorkerThread();
@@ -2620,14 +2614,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 
 
-
-
-
 #ifdef ENABLE_WEBSERVER
-
-
-
-
 
 
 
@@ -3078,16 +3065,19 @@ CControlObject::websock_sendevent( struct mg_connection *conn,
 
                         // Add the new event to the inputqueue
                         pDestClientItem->m_mutexClientInputQueue.Lock();
-                        pDestClientItem->m_clientInputQueue.Append(pEvent);
+                        pDestClientItem->m_clientInputQueue.Append(pnewEvent);
                         pDestClientItem->m_semClientInputQueue.Post();
                         pDestClientItem->m_mutexClientInputQueue.Unlock();
-                    }
 
-                    bSent = true;
+						bSent = true;
+                    }
+					else {
+						bSent = false;
+					}
 
                 } else {
                     // Overun - No room for event
-                    vscp_deleteVSCPevent(pEvent);
+                    //vscp_deleteVSCPevent(pEvent);
                     bSent = true;
                     rv = false;
                 }
@@ -3119,7 +3109,7 @@ CControlObject::websock_sendevent( struct mg_connection *conn,
             }
 
         } else {
-            vscp_deleteVSCPevent(pEvent);
+            //vscp_deleteVSCPevent(pEvent);
             rv = false;
         }
     }
@@ -3453,6 +3443,63 @@ CControlObject::websock_expire_sessions( struct mg_connection *conn  )
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// websock_post_incomingEvent
+//
+
+void
+CControlObject::websock_post_incomingEvents( void )
+{
+	struct mg_connection *conn;
+
+	// Iterate over all connections, and push current time message to websocket ones.
+	for (conn = mg_next( m_pwebserver, NULL); conn != NULL; conn = mg_next(m_pwebserver, conn)) {
+		
+		if ( conn->is_websocket ) {
+
+			websock_session *pSession = websock_get_session( conn );
+			if ( NULL == pSession) continue;
+
+			if ( pSession->m_pClientItem->m_bOpen &&
+					pSession->m_pClientItem->m_clientInputQueue.GetCount()) {
+
+				CLIENTEVENTLIST::compatibility_iterator nodeClient;
+				vscpEvent *pEvent;
+
+				pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+				nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+				pEvent = nodeClient->GetData();
+				pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+				pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+
+				if (NULL != pEvent) {
+
+					if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+
+						wxString str;
+						if (vscp_writeVscpEventToString(pEvent, str)) {
+
+							// Write it out
+							char buf[ 512 ];
+							memset((char *) buf, 0, sizeof( buf));
+							strcpy((char *) buf, (const char*) "E;");
+							strcat((char *) buf, (const char*) str.mb_str(wxConvUTF8));
+							mg_websocket_write(conn, 1, buf, strlen(buf) );
+							
+						}
+					}
+
+					// Remove the event
+					vscp_deleteVSCPevent(pEvent);
+
+				} // Valid pEvent pointer
+			} // events available
+		} // websocket
+	} // for
+}
+	
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //                     WEBSERVER SESSION HANDLINO
@@ -3560,6 +3607,41 @@ CControlObject::websrv_add_session_cookie( struct mg_connection *conn, const cha
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// websrv_GetCreateSession
+//
+
+struct websrv_Session * 
+CControlObject::websrv_GetCreateSession( struct mg_connection *conn )
+{
+	const char *hdr;
+	char user[256];
+	struct websrv_Session *rv = NULL;
+
+	// Check pointer
+	if (NULL == conn) return NULL;
+
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return NULL;
+
+	if ( NULL == ( rv =  pObject->websrv_get_session( conn ) ) ) {
+
+		if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
+						( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
+			return NULL;
+		}
+				
+		if (!mg_parse_header(hdr, "username", user, sizeof(user))) {
+			return NULL;
+		}
+
+		// Add session cookie
+		rv = pObject->websrv_add_session_cookie( conn, user );
+	}
+
+	return rv;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // websrv_expire_sessions
 //
 
@@ -3636,6 +3718,7 @@ CControlObject::websrv_check_password( const char *method,
 
 
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_event_handler
 //
@@ -3648,8 +3731,8 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 	const char *hdr;
 	struct websock_session *pWebSockSession;
 	struct websrv_Session * pWebSrvSession;
-	char user[100], nonce[100],
-			uri[32768], cnonce[100], resp[100], qop[100], nc[100];
+	char user[256], nonce[256],
+			uri[32768], cnonce[256], resp[256], qop[256], nc[256];
 	CUserItem *pUser;
 	bool bValidHost;
 
@@ -3712,73 +3795,117 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 			} 
 			else {
 
-				// Get session
-				if ( NULL == ( pWebSrvSession =  pObject->websrv_get_session( conn ) ) ) {
-
-					if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
-						( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
-						return MG_FALSE;
-					}
-				
-					if (!mg_parse_header(hdr, "username", user, sizeof(user))) {
-						return MG_FALSE;
-					}
-
-					// Add session cookie
-					pWebSrvSession = pObject->websrv_add_session_cookie( conn, user );
-				}
-
-				mg_send_header(conn, "Content-Type", "text/html");
-				mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
-										 "pre-check=0, no-store, no-cache, must-revalidate");
-
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_mainpage( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/test") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					mg_send_data( conn, html_form, strlen(html_form) );
 					return MG_TRUE;
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/interfaces") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_interfaces( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dm") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_dmlist( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmedit") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_dmedit( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmpost") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_dmpost( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmdelete") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_dmdelete( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/variables") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_variables_list( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varedit") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_variables_edit( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varpost") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_variables_post( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/vardelete") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_variables_delete( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varnew") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_variables_new( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/discovery") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_discovery( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/session") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_session( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/configure") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_configure( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/bootload") ) {
+					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->websrv_bootload( conn );
 				}
 				else if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
@@ -3882,7 +4009,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 				conn->connection_param = NULL;
 				pWebSockSession = websock_get_session( conn );
 				if ( NULL != pWebSockSession ) {
-					pWebSockSession->lastActiveTime  = time(NULL) + 60 * 60 + 777;  // Mark as staled
+					pWebSockSession->lastActiveTime  = 0; // time(NULL) + 60 * 60 + 777;  // Mark as staled
 					pObject->websock_expire_sessions( conn );
 				}
 			}
@@ -3937,14 +4064,14 @@ CControlObject::websrv_new_rest_session( struct mg_connection *conn,
 
 	// New client
 	ret->m_pClientItem = new CClientItem();	// Create client        
-    vscp_clearVSCPFilter(&ret->m_pClientItem->m_filterVSCP); // // Clear filter
-    ret->m_pClientItem->m_bOpen = false;
-    ret->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET;
+    vscp_clearVSCPFilter(&ret->m_pClientItem->m_filterVSCP); // Clear filter
+    ret->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB;
     ret->m_pClientItem->m_strDeviceName = _("Internal daemon websocket client. Started at ");
     wxDateTime now = wxDateTime::Now();
     ret->m_pClientItem->m_strDeviceName += now.FormatISODate();
     ret->m_pClientItem->m_strDeviceName += _(" ");
     ret->m_pClientItem->m_strDeviceName += now.FormatISOTime();
+	ret->m_pClientItem->m_bOpen = true;		// Open client
 
 	// Add the client to the Client List
     pObject->m_wxClientMutex.Lock();
@@ -3955,7 +4082,6 @@ CControlObject::websrv_new_rest_session( struct mg_connection *conn,
 	ret->m_pClientItem = NULL;
 	
     // Add to linked list
-    ret->m_referenceCount++;
     ret->lastActiveTime = time(NULL);
     ret->m_next = websrv_rest_sessions;
 	websrv_rest_sessions = ret;
@@ -3964,8 +4090,118 @@ CControlObject::websrv_new_rest_session( struct mg_connection *conn,
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// websrv_get_rest_session
+//
+
+struct websrv_rest_session *
+CControlObject::websrv_get_rest_session( struct mg_connection *conn,
+												wxString &SessionId )
+{
+	struct websrv_rest_session *ret = NULL;
+
+	// Check pointers
+	if ( NULL == conn) return NULL;
+        
+	// find existing session 
+	ret = websrv_rest_sessions;
+    while (NULL != ret) {
+		if  (0 == strcmp( SessionId.mb_str(), ret->m_sid) )  break;
+        ret = ret->m_next;
+	}
+        
+	if (NULL != ret) {
+		ret->lastActiveTime = time( NULL );
+        return ret;
+	}
+    
+	return ret;
+}
+
+void
+CControlObject::websrv_expire_rest_sessions( struct mg_connection *conn )
+{
+	struct websrv_rest_session *pos;
+    struct websrv_rest_session *prev;
+    struct websrv_rest_session *next;
+    time_t now;
+
+	// Check pointer
+    if (NULL == conn) return;
+	
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return;
+
+    now = time( NULL );
+    prev = NULL;
+    pos = websrv_rest_sessions;
+    
+    while (NULL != pos) {
+        
+        next = pos->m_next;
+        
+        if (now - pos->lastActiveTime > 10 * 60) {	// Ten minutes
+        
+            // expire sessions after 1h 
+            if ( NULL == prev ) {
+                websrv_rest_sessions = pos->m_next;
+            }
+            else {
+                prev->m_next = next;
+            }
+            
+			pObject->m_wxClientMutex.Lock();
+			pObject->removeClient( pos->m_pClientItem );
+			pObject->m_wxClientMutex.Unlock();
+
+            free( pos );
+            
+        } 
+        else {
+            prev = pos;
+        }
+        
+        pos = next;
+    }
+}
+
+
 // Hash with key value pairs
 WX_DECLARE_STRING_HASH_MAP( wxString, hashArgs );
+
+
+///////////////////////////////////////////////////////////////////////////////
+// make_chunk
+//
+
+static void webserv_util_make_chunk( char *obuf, const char *buf, int len) {
+  char chunk_size[512];
+#ifdef WIN32
+  int n = _snprintf( chunk_size, sizeof(chunk_size), "%X\r\n", len);
+#else
+  int n = snprintf( chunk_size, sizeof(chunk_size), "%X\r\n", len);
+#endif
+  strncat( obuf, chunk_size, n);
+  strncat( obuf, buf, len);
+  strncat( obuf, "\r\n", 2);
+}
+
+
+static void webserv_util_sendheader( struct mg_connection *conn, const int returncode, const char *content )
+{
+	char date[64];
+	time_t curtime = time(NULL);
+	vscp_getTimeString( date, sizeof(date), &curtime );
+
+	mg_send_status( conn, returncode );
+	mg_send_header( conn, "Content-Type", content );
+	mg_send_header( conn, "Date", date );
+	mg_send_header( conn, "Connection", "keep-alive" );
+	mg_send_header( conn, "Transfer-Encoding", "chunked" );
+	mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+												"pre-check=0, no-store, no-cache, must-revalidate");
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_restapi
@@ -3974,9 +4210,17 @@ WX_DECLARE_STRING_HASH_MAP( wxString, hashArgs );
 int
 CControlObject::websrv_restapi( struct mg_connection *conn )
 {
+	char buf[2048];
+	char date[64];
 	int rv = MG_FALSE;
 	wxString str;
+	time_t curtime = time(NULL);
+	long format = REST_FORMAT_PLAIN;
 	hashArgs keypairs;
+	struct websrv_rest_session *pSession = NULL;
+
+	// Make string with GMT time
+	vscp_getTimeString( date, sizeof(date), &curtime );
 
 	// Check pointer
     if (NULL == conn) return MG_FALSE;
@@ -3984,9 +4228,9 @@ CControlObject::websrv_restapi( struct mg_connection *conn )
 	CControlObject *pObject = (CControlObject *)conn->server_param;
 	if (NULL == pObject) return MG_FALSE;
 
-	// First remove the "/vscp/rest?" from the 
-	//strncpy( buf, conn->uri + 11, min( sizeof(buf), ( strlen(conn->uri)-11 ) ) );
-	//wrkString.FromAscii( conn->uri + 11 );
+	vscp_getTimeString( date, sizeof(date), &curtime );
+
+	// get parameters
 	wxStringTokenizer tkz( wxString::FromAscii( conn->query_string ), _("&") );
 	while ( tkz.HasMoreTokens() ) {
 		int pos;
@@ -3997,7 +4241,7 @@ CControlObject::websrv_restapi( struct mg_connection *conn )
 	}
 
 	// Check if user is valid			
-	CUserItem *pUser = pObject->m_userList.getUser( keypairs[_("user")] );
+	CUserItem *pUser = pObject->m_userList.getUser( keypairs[_("USER")] );
 	if ( NULL == pUser ) return MG_FALSE;
 
 	// Check if remote ip is valid
@@ -4009,59 +4253,858 @@ CControlObject::websrv_restapi( struct mg_connection *conn )
 	if (!bValidHost) return MG_FALSE;
 
 	// Is this an authorized user?
+	wxString str3 = keypairs[_("PASSWORD")];
 	if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) return MG_FALSE;
 
-	// If we have a session key we try to find the session
-	if ( _("SESSION") == keypairs[_("op")] ) {
+	// Get format
+	if ( _("PLAIN") == keypairs[_("FORMAT")].Upper() ) {
+		format = REST_FORMAT_PLAIN;
+	}
+	else if ( _("CSV") == keypairs[_("FORMAT")].Upper() ) {
+		format = REST_FORMAT_CSV;
+	}
+	else if ( _("XML") == keypairs[_("FORMAT")].Upper() ) {
+		format = REST_FORMAT_XML;
+	}
+	else if ( _("JSON") == keypairs[_("FORMAT")].Upper() ) {
+		format = REST_FORMAT_JSON;
+	}
+	else if ( _("JSONP") == keypairs[_("FORMAT")].Upper() ) {
+		format = REST_FORMAT_JSONP;
+	}
+	else if ( _("") != keypairs[_("FORMAT")].Upper() ) {
+		keypairs[_("FORMAT")].ToLong( &format );
+	}
+	else {
+		webserv_util_sendheader( conn, 400, "text/plain" );
+
+		mg_write( conn, "\r\n", 2 );		// head/body Separator
+		memset( buf, 0, sizeof( buf ) );
+		webserv_util_make_chunk( buf, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
+		mg_write( conn, buf, strlen( buf ) );
+
+		mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
+		return MG_TRUE;
+	}
+
+	// If we have a session key we try to get the session
+	if ( _("") != keypairs[_("SESSION")] ) {
+		pSession = websrv_get_rest_session( conn, keypairs[_("SESSION")] );
+	}
+
+	//   *************************************************************
+	//   * * * * * * * *  Status (hold session open)   * * * * * * * *
+	//   *************************************************************
+	if ( ( '0' == keypairs[_("OP")] ) ||  ( _("STATUS") == keypairs[_("OP")] ) ) {
+		rv = webserv_rest_doStatus( conn, pSession, format );
+	}
+
+	//  ********************************************
+	//  * * * * * * * * open session * * * * * * * *
+	//  ********************************************
+	else if ( ( '1' == keypairs[_("OP")] ) || ( _("OPEN") == keypairs[_("OP")] ) ) {
+		rv = webserv_rest_doOpen( conn, pSession, pUser, format );		
+	}
+
+	//   **********************************************
+	//   * * * * * * * * close session  * * * * * * * *
+	//   **********************************************
+	else if ( ( '2' == keypairs[_("OP")] ) || ( _("CLOSE") == keypairs[_("OP")] ) ) {
+		rv = webserv_rest_doOpen( conn, pSession, pUser, format );
+	}
+
+	//  ********************************************
+	//   * * * * * * * * Send event  * * * * * * * *
+	//  ********************************************
+	else if ( ( '3' == keypairs[_("OP")] ) || ( _("SENDEVENT") == keypairs[_("OP")] ) ) {
+		vscpEvent vscpevent;
+		if ( _("") != keypairs[_("VSCPEVENT")] ) {
+			;
+			vscp_getVscpEventFromString( &vscpevent, keypairs[_("VSCPEVENT")] ); 
+			rv = webserv_rest_doSendEvent( conn, pSession, format, &vscpevent );
+		}
+		else {
+			// Parameter missing - No Event
+			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+
+		}
+	}
+
+	//  ********************************************
+	//   * * * * * * * * Read event  * * * * * * * *
+	//  ********************************************
+	else if ( ( '4' == keypairs[_("OP")] ) || ( _("READEVENT") == keypairs[_("OP")] ) ) {
+		long count = 1;
+		if ( _("") != keypairs[_("COUNT")].Upper() ) {
+			keypairs[_("COUNT")].ToLong( &count );
+		}
+		rv = webserv_rest_doReceiveEvent( conn, pSession, format, count );
+	}
+
+	//   **************************************************
+	//   * * * * * * * * Set (read) filter  * * * * * * * *
+	//   **************************************************
+	else if ( ( '5' == keypairs[_("OP")] ) || ( _("SETFILTER") == keypairs[_("OP")] ) ) {
+		vscpEventFilter vscpfilter;
+		if ( _("") != keypairs[_("VSCPFILTER")] ) {
+			;
+			vscp_readFilterFromString( &vscpfilter, keypairs[_("VSCPFILTER")] ); 
+			rv = webserv_rest_doSetFilter( conn, pSession, format, vscpfilter );
+		}
+		else {
+		
+		}
+	}
+
+	//   ****************************************************
+	//   * * * * * * * * read variable value  * * * * * * * *
+	//   ****************************************************
+	else if ( ( '6' == keypairs[_("OP")] ) || ( _("READVAR") == keypairs[_("OP")] ) ) {
 		
 	}
 
-
-	// Status (hold session open)
-	if ( ( '0' == keypairs[_("op")] ) ||  ( _("STATUS") == keypairs[_("op")] ) ) {
+	//   *****************************************************
+	//   * * * * * * * * Write variable value  * * * * * * * *
+	//   *****************************************************
+	else if ( ( '7' == keypairs[_("OP")] ) || ( _("WRITEVAR") == keypairs[_("OP")] ) ) {
 		
 	}
-	// open session
-	else if ( ( '1' == keypairs[_("op")] ) || ( _("OPEN") == keypairs[_("op")] ) ) {
-	
+
+	//   *************************************************
+	//   * * * * * * * * Send measurement  * * * * * * * *
+	//   *************************************************
+	else if ( ( '8' == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")] ) ) {
+		
 	}
-	// close session
-	else if ( ( '2' == keypairs[_("op")] ) || ( _("CLOSE") == keypairs[_("op")] ) ) {
-	
-	}
-	// Send event
-	else if ( ( '3' == keypairs[_("op")] ) || ( _("SENDEVENT") == keypairs[_("op")] ) ) {
-	
-	}
-	// Read event
-	else if ( ( '4' == keypairs[_("op")] ) || ( _("READEVENT") == keypairs[_("op")] ) ) {
-	
-	}
-	// Set read filter
-	else if ( ( '5' == keypairs[_("op")] ) || ( _("SETFILTER") == keypairs[_("op")] ) ) {
-	
-	}
-	// read variable value
-	else if ( ( '6' == keypairs[_("op")] ) || ( _("READVAR") == keypairs[_("op")] ) ) {
-	
-	}
-	// Write variable value
-	else if ( ( '7' == keypairs[_("op")] ) || ( _("WRITEVAR") == keypairs[_("op")] ) ) {
-	
-	}
-	// Send measurement
-	else if ( ( '8' == keypairs[_("op")] ) || ( _("MEASUREMENT") == keypairs[_("op")] ) ) {
-	
-	}
-	// Table read
+
+	//   *******************************************
+	//   * * * * * * * * Table read  * * * * * * * *
+	//   *******************************************
 	else if ( ( '9' == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")] ) ) {
-	
+		
 	}
 
 	return rv;
 }
 
 
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_error
+//
+
+void
+CControlObject::webserv_rest_error( struct mg_connection *conn, 
+										struct websrv_rest_session *pSession, 
+										int format,
+										int errorcode)
+{
+	char buf[2048];
+
+	if ( REST_FORMAT_PLAIN == format ) {
+		webserv_util_sendheader( conn, 400, "text/plain" );
+
+				
+		mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+		memset( buf, 0, sizeof( buf ));
+		webserv_util_make_chunk( buf, rest_errors[errorcode][REST_FORMAT_PLAIN], strlen( rest_errors[errorcode][REST_FORMAT_PLAIN] ) );
+		mg_write( conn, buf, strlen( buf ) );
+
+		mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+		return;
+	}
+	else if ( REST_FORMAT_CSV == format ) {
+		webserv_util_sendheader( conn, 400, "text/plain" );
+	
+		mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+		memset( buf, 0, sizeof( buf ));
+		webserv_util_make_chunk( buf, rest_errors[errorcode][REST_FORMAT_CSV], strlen( rest_errors[errorcode][REST_FORMAT_CSV] ) );
+		mg_write( conn, buf, strlen( buf ) );
+
+		mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+		return;
+	}
+	else if ( REST_FORMAT_XML == format ) {
+		webserv_util_sendheader( conn, 400, "application/xml" );
+
+		mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+		memset( buf, 0, sizeof( buf ) );
+		webserv_util_make_chunk( buf, XML_HEADER, strlen( XML_HEADER ) );
+		mg_write( conn, buf, strlen( buf ) );
+				
+		memset( buf, 0, sizeof( buf ) );				
+		webserv_util_make_chunk( buf, rest_errors[errorcode][REST_FORMAT_XML], strlen( rest_errors[errorcode][REST_FORMAT_XML] ) );
+		mg_write( conn, buf, strlen( buf ) );
+				
+		mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
+		return;
+	}
+	else if ( REST_FORMAT_JSON == format ) {
+		webserv_util_sendheader( conn, 400, "application/json" );
+
+		mg_write( conn, "\r\n", 2 );		// head/body Separator
+		memset( buf, 0, sizeof( buf ) );
+		webserv_util_make_chunk( buf, rest_errors[errorcode][REST_FORMAT_JSON], strlen( rest_errors[errorcode][REST_FORMAT_JSON] ) );
+		mg_write( conn, buf, strlen( buf ) );
+
+		mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
+		return;
+	}
+	else if ( REST_FORMAT_JSONP == format ) {
+		webserv_util_sendheader( conn, 400, "text/javascript" );
+
+		mg_write( conn, "\r\n", 2 );		// head/body Separator
+		memset( buf, 0, sizeof( buf ) );
+		webserv_util_make_chunk( buf, rest_errors[errorcode][REST_FORMAT_JSONP], strlen( rest_errors[errorcode][REST_FORMAT_JSONP] ) );
+		mg_write( conn, buf, strlen( buf ) );
+
+		mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
+		return;
+	}
+	else {
+		webserv_util_sendheader( conn, 400, "text/plain" );
+
+		mg_write( conn, "\r\n", 2 );		// head/body Separator
+		memset( buf, 0, sizeof( buf ) );
+		webserv_util_make_chunk( buf, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
+		mg_write( conn, buf, strlen( buf ) );
+
+		mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
+		return;
+	}	
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doStatus
+//
+
+int
+CControlObject::webserv_rest_doSendEvent( struct mg_connection *conn, 
+											struct websrv_rest_session *pSession, 
+											int format, 
+											vscpEvent *pEvent )
+{
+	bool bSent = false;
+
+	// Check pointer
+    if (NULL == conn) return MG_FALSE;
+	
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return MG_FALSE;
+
+	if ( NULL != pSession ) {
+
+		// Level II events betwen 512-1023 is recognized by the daemon and 
+		// sent to the correct interface as Level I events if the interface  
+		// is addressed by the client.
+		if ((pEvent->vscp_class <= 1023) &&
+			    (pEvent->vscp_class >= 512) &&
+				(pEvent->sizeData >= 16)) {
+
+			// This event shold be sent to the correct interface if it is
+			// available on this machine. If not it should be sent to 
+			// the rest of the network as normal
+
+			cguid destguid;
+			destguid.getFromArray(pEvent->pdata);
+			destguid.setAt(0,0);
+			destguid.setAt(1,0);
+
+			if (NULL != pSession->m_pClientItem ) {
+
+				// Set client id 
+				pEvent->obid = pSession->m_pClientItem->m_clientID;
+
+				// Check if filtered out
+				if (vscp_doLevel2Filter( pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+
+					// Lock client
+					pObject->m_wxClientMutex.Lock();
+
+					// If the client queue is full for this client then the
+					// client will not receive the message
+					if (pSession->m_pClientItem->m_clientInputQueue.GetCount() <=
+							pObject->m_maxItemsInClientReceiveQueue) {
+
+						vscpEvent *pNewEvent = new( vscpEvent );
+						if ( NULL != pNewEvent ) {
+
+							vscp_copyVSCPEvent(pNewEvent, pEvent);
+
+							// Add the new event to the inputqueue
+							pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+							pSession->m_pClientItem->m_clientInputQueue.Append( pNewEvent );
+							pSession->m_pClientItem->m_semClientInputQueue.Post();
+
+							bSent = true;
+						}
+						else {
+							bSent = false;
+						}
+
+					} 
+					else {
+						// Overun - No room for event
+						//vscp_deleteVSCPevent( pEvent );
+						bSent = true;
+					}
+
+					// Unlock client
+					pObject->m_wxClientMutex.Unlock();
+
+				} // filter
+
+			} // Client found
+		}
+
+		if (!bSent) {
+
+			if (NULL != pSession->m_pClientItem ) {
+
+				// Set client id 
+				pEvent->obid = pSession->m_pClientItem->m_clientID;
+
+				// There must be room in the send queue
+				if (pObject->m_maxItemsInClientReceiveQueue >
+						pObject->m_clientOutputQueue.GetCount()) {
+
+					vscpEvent *pNewEvent = new( vscpEvent );
+					if ( NULL != pNewEvent ) {
+						vscp_copyVSCPEvent(pNewEvent, pEvent);
+					
+						pObject->m_mutexClientOutputQueue.Lock();
+						pObject->m_clientOutputQueue.Append(pNewEvent);
+						pObject->m_semClientOutputQueue.Post();
+						pObject->m_mutexClientOutputQueue.Unlock();					
+
+						bSent = true;
+					}
+					else {
+						bSent = false;
+					}
+				}
+				else {
+					vscp_deleteVSCPevent( pEvent );
+					bSent = false;
+				}
+
+			}
+			else {
+				vscp_deleteVSCPevent( pEvent );
+				bSent = false;
+			}
+
+		}
+	}
+	else {
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+		bSent = false;
+	}
+
+	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doReadEvent
+//
+
+int
+CControlObject::webserv_rest_doReceiveEvent( struct mg_connection *conn, 
+											struct websrv_rest_session *pSession, 
+											int format,
+											long count )
+{
+	// Check pointer
+    if (NULL == conn) return MG_FALSE;
+	
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return MG_FALSE;
+
+	if ( NULL != pSession ) {
+
+		if ( !pSession->m_pClientItem->m_clientInputQueue.empty() ) {
+				
+		}
+		else {	// Que is empty
+			webserv_rest_error( conn, pSession, format, RESR_ERROR_CODE_INPUT_QUEUE_EMPTY );
+		}
+
+	}
+	else {
+		if ( REST_FORMAT_PLAIN == format ) {
+			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+		}
+	}
+
+	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doSetFilter
+//
+
+int
+CControlObject::webserv_rest_doSetFilter( struct mg_connection *conn, 
+											struct websrv_rest_session *pSession, 
+											int format,
+											vscpEventFilter& vscpfilter )
+{
+	if ( NULL != pSession ) {
+
+	}
+	else {
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doStatus
+//
+
+int
+CControlObject::webserv_rest_doStatus( struct mg_connection *conn, 
+											struct websrv_rest_session *pSession, 
+											int format )
+{
+	char buf[2048];
+	char wrkbuf[256];
+
+	if ( NULL != pSession ) {
+
+		pSession->lastActiveTime = time(NULL);
+
+		if ( REST_FORMAT_PLAIN == format ) {
+			webserv_util_sendheader( conn, 200, "text/plain" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+			webserv_util_make_chunk( buf, REST_PLAIN_ERROR_SUCCESS, strlen( REST_PLAIN_ERROR_SUCCESS ) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_CSV == format ) {
+			webserv_util_sendheader( conn, 200, "text/csv" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%d", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%d", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_XML == format ) {
+			webserv_util_sendheader( conn, 200, "application/xml" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%d</nEvents></vscp-rest>", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%d</nEvents></vscp-rest>", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_JSON == format ) {
+			webserv_util_sendheader( conn, 200, "application/json" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d}", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d}", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+			
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_JSONP == format ) {
+			webserv_util_sendheader( conn, 200, "text/javascript" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d});", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d});", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+			
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else {
+			webserv_util_sendheader( conn, 400, "text/plain" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+			memset( buf, 0, sizeof( buf ) );
+			webserv_util_make_chunk( buf, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
+			return MG_TRUE;
+		}
+			
+	} // No session
+	else {	
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doOpen
+//
+
+int
+CControlObject::webserv_rest_doOpen( struct mg_connection *conn, 
+										struct websrv_rest_session *pSession,
+										CUserItem *pUser,
+										int format )
+{
+	char buf[2048];
+	char wrkbuf[256];
+
+	pSession = websrv_new_rest_session( conn, pUser );
+	if ( NULL != pSession ) {
+		
+		// New session created
+
+		if ( REST_FORMAT_PLAIN == format ) {
+			webserv_util_sendheader( conn, 200, "text/plain" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+			webserv_util_make_chunk( buf, REST_PLAIN_ERROR_SUCCESS, strlen( REST_PLAIN_ERROR_SUCCESS ) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_CSV == format ) {
+			webserv_util_sendheader( conn, 200, "text/csv" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%d", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%d", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_XML == format ) {
+			webserv_util_sendheader( conn, 200, "application/xml" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%d</nEvents></vscp-rest>", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%d</nEvents></vscp-rest>", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_JSON == format ) {
+			webserv_util_sendheader( conn, 200, "application/json" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d}", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d}", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+			
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_JSONP == format ) {
+			webserv_util_sendheader( conn, 200, "text/javascript" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d});", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#else
+			int n = snprintf( wrkbuf, 
+					sizeof(wrkbuf), 
+					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d});", 
+					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+			
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else {
+			webserv_util_sendheader( conn, 400, "text/plain" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+			memset( buf, 0, sizeof( buf ) );
+			webserv_util_make_chunk( buf, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
+			return MG_TRUE;
+		}
+	}
+	else {		// Unable to create session	
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doClose
+//
+
+int
+CControlObject::webserv_rest_doClose( struct mg_connection *conn, 
+											struct websrv_rest_session *pSession, 
+											int format )
+{
+	char buf[2048];
+	char wrkbuf[256];
+
+	if ( NULL != pSession ) {
+
+		char sid[32 + 1 ];
+		memset( sid, 0, sizeof( sid ) );
+		memcpy( sid, pSession->m_sid, sizeof( sid ) );
+
+		// We should close the session
+		pSession->m_pClientItem->m_bOpen = false;
+		pSession->lastActiveTime = 0;
+		websrv_expire_rest_sessions( conn );
+
+		if ( REST_FORMAT_PLAIN == format ) {
+			webserv_util_sendheader( conn, 200, "text/plain" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+			webserv_util_make_chunk( buf, REST_PLAIN_ERROR_SUCCESS, strlen( REST_PLAIN_ERROR_SUCCESS ) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), REST_PLAIN_ERROR_SUCCESS );
+#else
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), REST_PLAIN_ERROR_SUCCESS );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_CSV == format ) {
+			webserv_util_sendheader( conn, 200, "text/csv" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), REST_CSV_ERROR_SUCCESS );
+#else
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), REST_CSV_ERROR_SUCCESS );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_XML == format ) {
+			webserv_util_sendheader( conn, 200, "application/xml" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), REST_XML_ERROR_SUCCESS );
+#else
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), REST_XML_ERROR_SUCCESS );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_JSON == format ) {
+			webserv_util_sendheader( conn, 200, "application/json" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), REST_JSON_ERROR_SUCCESS );
+#else
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), REST_JSON_ERROR_SUCCESS );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+			
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else if ( REST_FORMAT_JSONP == format ) {
+			webserv_util_sendheader( conn, 200, "text/javascript" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+				
+			memset( buf, 0, sizeof( buf ));
+#ifdef WIN32
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), REST_JSONP_ERROR_SUCCESS );
+#else
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), REST_JSONP_ERROR_SUCCESS );
+#endif
+			webserv_util_make_chunk( buf, wrkbuf, n );
+			mg_write( conn, buf, strlen( buf ) );
+			
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+			return MG_TRUE;
+		}
+		else {
+			webserv_util_sendheader( conn, 400, "text/plain" );
+
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+			memset( buf, 0, sizeof( buf ) );
+			webserv_util_make_chunk( buf, REST_PLAIN_ERROR_UNSUPPORTED_FORMAT, strlen( REST_PLAIN_ERROR_UNSUPPORTED_FORMAT ) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
+			return MG_TRUE;
+		}
+
+	}
+	else {	// session not found
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_mainpage

@@ -356,6 +356,12 @@ public:
 	void
 	websock_expire_sessions( struct mg_connection *conn );
 
+	/*!
+		Post incomming event on open websockets
+	*/
+	void 
+	websock_post_incomingEvents( void );
+
 #endif
 
 	
@@ -399,6 +405,14 @@ public:
 	 */
 	websrv_Session *
 	websrv_add_session_cookie( struct mg_connection *conn, const char * pUser );
+
+	/*!
+		Get/Create web session
+		@param session session to use
+		@return Pointer to session or NULL if failure to get or create session 
+	*/
+	struct websrv_Session * 
+	websrv_GetCreateSession( struct mg_connection *conn );
 	
 	/**
 		Clean up handles of sessions that have been idle for
@@ -432,12 +446,29 @@ public:
 
 
 	/*!
-		websrv_rest_session - Create new rest session
+		websrv_new_rest_session - Create new rest session
 		@param conn Webserver connection handle.
 		@return pointer to session or NULL if session is not found.
 	*/
 	struct websrv_rest_session *
 	websrv_new_rest_session( struct mg_connection *conn, CUserItem *pUser );
+
+	/*!
+		websrv_get_rest_session - fetch rest sesson if it is available	
+		@param conn Webserver connection handle.
+		@param SessinId Identifier for the session.
+		@return pointer to session or NULL if session is not found.
+	*/
+	struct websrv_rest_session *
+	websrv_get_rest_session( struct mg_connection *conn, wxString &SessionId );
+
+	/*!
+		websrv_expire_rest_sessions - expire staled rest sesson(s)
+		@param conn Webserver connection handle.
+		@return pointer to session or NULL if session is not found.
+	*/
+	void
+	websrv_expire_rest_sessions( struct mg_connection *conn );
 
 	/**
 		websrv_restapi - REST interface main handler
@@ -447,13 +478,101 @@ public:
 	int
 	websrv_restapi( struct mg_connection *conn );
 
+	/*!
+		webserv_rest_doStatus - Get session ststua
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doStatus( struct mg_connection *conn, struct websrv_rest_session *pSession, int format );
+
+	/*!
+		webserv_rest_doOpen - Open session
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doOpen( struct mg_connection *conn, struct websrv_rest_session *pSession, CUserItem *pUser, int format );
+
+
+	/*!
+		webserv_rest_doOpen - Close session
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doClose( struct mg_connection *conn, struct websrv_rest_session *pSession, int format );
+
+
+	/*!
+		webserv_rest_doSendEvent - Send VSCP event
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@param pEvent Pointer to VSCP event to send. The framework handels deletion of
+						this pointer.
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doSendEvent( struct mg_connection *conn, 
+											struct websrv_rest_session *pSession, 
+											int format,
+											vscpEvent *pEvent );
+
+	/*!
+		webserv_rest_doReceiveEvent - Receive VSCP event
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@param count Number of events to read.
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doReceiveEvent( struct mg_connection *conn, 
+											struct websrv_rest_session *pSession, 
+											int format,
+											long count=1 );
+
+												/*!
+		webserv_rest_doSendEvent - Send VSCP event
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doSetFilter( struct mg_connection *conn, 
+											struct websrv_rest_session *pSession, 
+											int format,
+											vscpEventFilter& vscpfilter );
+
+	/*!
+		webserv_rest_error - Display error
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@param errorcode Code for error.
+	*/
+	void
+	webserv_rest_error( struct mg_connection *conn, 
+										struct websrv_rest_session *pSession, 
+										int format,
+										int errorcode);
+
+
 
 	//////////////////////////////////////////////////////////////////////////////
 	//							 ADMIN INTERFACE                                //
 	//////////////////////////////////////////////////////////////////////////////
 
 
-	/**
+	/*!
 		websrv_mainpage - Web server main page renderer.
 		@param conn Webserver connection handle.
 		@return MG_TRUE ocn sucess or MG_FALSE on failure.
@@ -741,11 +860,13 @@ public:
     //            websocket/webserver interface
     //*****************************************************
 
+	struct mg_server *m_pwebserver;
+
 	/// Path to file holding mime types
     wxString m_pathToMimeTypeFile;
 	
     // Path to filesystem root
-    static wxString m_pathRoot;
+    wxString m_pathRoot;
 
     // Enable disable web socket interface
     bool m_bWebSockets;

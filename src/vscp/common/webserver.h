@@ -246,23 +246,94 @@ struct websock_session {
  */
 struct websrv_rest_session
 {
-  // We keep all sessions in a linked list.
-  struct websrv_rest_session *m_next;
+	// We keep all sessions in a linked list.
+	struct websrv_rest_session *m_next;
 
-  // Unique ID for this session. 
-  char m_sid[33];
+	// Unique ID for this session. 
+	char m_sid[33];
 
-  // Reference counter giving the number of connections
-  // currently using this session.
-  unsigned int m_referenceCount;
+	// Time when this session was last active.
+	time_t lastActiveTime;
 
-  // Time when this session was last active.
-  time_t lastActiveTime;
+	// Client item for this session
+	CClientItem *m_pClientItem;
 
-  // Client item for this session
-  CClientItem *m_pClientItem;
-
-  // User
-  CUserItem *m_pUserItem;
+	// User
+	CUserItem *m_pUserItem;
       
 };
+
+// REST formats
+enum {
+	REST_FORMAT_PLAIN = 0,
+	REST_FORMAT_CSV,			// http://tools.ietf.org/html/rfc4180
+	REST_FORMAT_XML,
+	REST_FORMAT_JSON,
+	REST_FORMAT_JSONP,
+	REST_FORMAT_COUNT
+};
+
+// Clear text Error messages
+#define REST_PLAIN_ERROR_SUCCESS				"1 1 Success"
+#define REST_PLAIN_ERROR_GENERAL_FAILURE		"0 -1 Failure \r\n\r\nGeneral failure."
+#define REST_PLAIN_ERROR_INVALID_SESSION		"0 -2 Invalid session \r\n\r\nThe session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out."
+#define REST_PLAIN_ERROR_UNSUPPORTED_FORMAT		"0 -3 Unsupported format \r\n\r\nFormat can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP´."
+#define REST_PLAIN_ERROR_COULD_NOT_OPEN_SESSION "0 -4 Unable to create session \r\n\r\nA new session could not be created."
+#define REST_PLAIN_ERROR_MISSING_DATA			"0 -5 Missing data/parameter \r\n\r\nA needed parameter or data is missing to be able to perform operation."
+#define REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY		"0 -6 Input queue empty \r\n\r\nThe input queue is empty."
+
+#define REST_CSV_ERROR_SUCCESS					"success-code,error-code,message,description\r\n1,1,Success,Success."
+#define REST_CSV_ERROR_GENERAL_FAILURE			"success-code,error-code,message,description\r\n0,-1,Failure,General failure."
+#define REST_CSV_ERROR_INVALID_SESSION			"success-code,error-code,message,description\r\n0,-2,Invalid session,The session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out."
+#define REST_CSV_ERROR_UNSUPPORTED_FORMAT		"success-code,error-code,message,description\r\n0,-3,Unsupported format,Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP."
+#define REST_CSV_ERROR_COULD_NOT_OPEN_SESSION	"success-code,error-code,message,description\r\n0,-4,Unable to create session,A new session could not be created."
+#define REST_CSV_ERROR_MISSING_DATA				"success-code,error-code,message,description\r\n0,-5,Missing data/parameter,A needed parameter or data is missing to be able to perform operation."
+#define REST_CSV_ERROR_INPUT_QUEUE_EMPTY		"success-code,error-code,message,description\r\n0,-6,Input queue empty,The input queue is empty."
+
+#define XML_HEADER	"<?xml version = \"1.0\" encoding = \"UTF-8\" ?>"
+#define REST_XML_ERROR_SUCCESS					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success\" description = \"Success.\" />"
+#define REST_XML_ERROR_GENERAL_FAILURE			"<vscp-rest success = \"false\" code = \"-1\" massage = \"Failure\" description = \"General failure.\" />"
+#define REST_XML_ERROR_INVALID_SESSION			"<vscp-rest success = \"false\" code = \"-2\" massage = \"Invalid session\" description = \"The session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out.\" />"
+#define REST_XML_ERROR_UNSUPPORTED_FORMAT		"<vscp-rest success = \"false\" code = \"-3\" massage = \"Unsupported format\" description = \"Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP´.\" />"
+#define REST_XML_ERROR_COULD_NOT_OPEN_SESSION	"<vscp-rest success = \"false\" code = \"-4\" massage = \"Unable to create session\" description = \"A new session could not be created.\" />"
+#define REST_XML_ERROR_MISSING_DATA			    "<vscp-rest success = \"false\" code = \"-5\" massage = \"Missing data/parameter\" description = \"A needed parameter or data is missing to be able to perform operation.\" />"
+#define REST_XML_ERROR_INPUT_QUEUE_EMPTY		"<vscp-rest success = \"false\" code = \"-6\" massage = \"Input queue empty\" description = \"The input queue is empty.\" />"
+
+
+#define REST_JSON_ERROR_SUCCESS					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"}"
+#define REST_JSON_ERROR_GENERAL_FAILURE			"{\"success\":false,\"code\":-1,\"message\":\"Failure\",\"description\":\"General failure.\"}"
+#define REST_JSON_ERROR_INVALID_SESSION			"{\"success\":false,\"code\":-2,\"message\":\"Invalid session\",\"description\":\"The session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out.\"}"
+#define REST_JSON_ERROR_UNSUPPORTED_FORMAT		"{\"success\":false,\"code\":-3,\"message\":\"Unsupported format\",\"description\":\"Unsupported format. Format can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP´.\"}"
+#define REST_JSON_ERROR_COULD_NOT_OPEN_SESSION	"{\"success\":false,\"code\":-4,\"message\":\"Unable to create session\",\"description\":\"A new session could not be created.\"}"
+#define REST_JSON_ERROR_MISSING_DATA			"{\"success\":false,\"code\":-5,\"message\":\"Missing data/parameter\",\"description\":\"A needed parameter or data is missing to be able to perform operation.\"}"
+#define REST_JSON_ERROR_INPUT_QUEUE_EMPTY		"{\"success\":false,\"code\":-6,\"message\":\"Input queue empty\",\"description\":\"The input queue is empty.\"}"
+
+#define REST_JSONP_ERROR_SUCCESS				"func("REST_JSON_ERROR_SUCCESS");"
+#define REST_JSONP_ERROR_GENERAL_FAILURE		"func("REST_JSON_ERROR_GENERAL_FAILURE");"
+#define REST_JSONP_ERROR_INVALID_SESSION		"func("REST_JSON_ERROR_INVALID_SESSION");"
+#define REST_JSONP_ERROR_UNSUPPORTED_FORMAT		"func("REST_JSON_ERROR_UNSUPPORTED_FORMAT");"
+#define REST_JSONP_ERROR_COULD_NOT_OPEN_SESSION "func("REST_JSON_ERROR_COULD_NOT_OPEN_SESSION");"
+#define REST_JSONP_ERROR_MISSING_DATA			"func("REST_JSON_ERROR_MISSING_DATA");"
+#define REST_JSONP_ERROR_INPUT_QUEUE_EMPTY		"func("REST_JSON_ERROR_INPUT_QUEUE_EMPTY");"
+
+enum {	
+	REST_ERROR_CODE_SUCCESS = 0,
+	REST_ERROR_CODE_GENERAL_FAILURE,
+	REST_ERROR_CODE_INVALID_SESSION,
+	REST_ERROR_CODE_UNSUPPORTED_FORMAT,
+	REST_ERROR_CODE_COULD_NOT_OPEN_SESSION,
+	REST_ERROR_CODE_MISSING_DATA,
+	RESR_ERROR_CODE_INPUT_QUEUE_EMPTY,
+	REST_ERROR_CODE_COUNT,
+};
+
+const char* rest_errors[][REST_FORMAT_COUNT+1] = {
+	{REST_PLAIN_ERROR_SUCCESS, REST_CSV_ERROR_SUCCESS,REST_XML_ERROR_SUCCESS,REST_JSON_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS},
+	{REST_PLAIN_ERROR_GENERAL_FAILURE,REST_CSV_ERROR_GENERAL_FAILURE,REST_XML_ERROR_GENERAL_FAILURE,REST_JSON_ERROR_GENERAL_FAILURE,REST_JSONP_ERROR_GENERAL_FAILURE,REST_JSONP_ERROR_GENERAL_FAILURE,},
+	{REST_PLAIN_ERROR_INVALID_SESSION,REST_CSV_ERROR_INVALID_SESSION,REST_XML_ERROR_INVALID_SESSION,REST_JSON_ERROR_INVALID_SESSION,REST_JSONP_ERROR_INVALID_SESSION,REST_JSONP_ERROR_INVALID_SESSION,},
+	{REST_PLAIN_ERROR_UNSUPPORTED_FORMAT,REST_CSV_ERROR_UNSUPPORTED_FORMAT,REST_XML_ERROR_UNSUPPORTED_FORMAT,REST_JSON_ERROR_UNSUPPORTED_FORMAT,REST_JSONP_ERROR_UNSUPPORTED_FORMAT,REST_JSONP_ERROR_UNSUPPORTED_FORMAT,},
+	{REST_PLAIN_ERROR_COULD_NOT_OPEN_SESSION,REST_CSV_ERROR_COULD_NOT_OPEN_SESSION,REST_XML_ERROR_COULD_NOT_OPEN_SESSION,REST_JSON_ERROR_COULD_NOT_OPEN_SESSION,REST_JSONP_ERROR_COULD_NOT_OPEN_SESSION,REST_JSONP_ERROR_COULD_NOT_OPEN_SESSION,},
+	{REST_PLAIN_ERROR_MISSING_DATA,REST_CSV_ERROR_MISSING_DATA,REST_XML_ERROR_MISSING_DATA,REST_JSON_ERROR_MISSING_DATA,REST_JSONP_ERROR_MISSING_DATA,REST_JSONP_ERROR_MISSING_DATA},
+	{REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY,REST_CSV_ERROR_INPUT_QUEUE_EMPTY,REST_XML_ERROR_INPUT_QUEUE_EMPTY,REST_JSON_ERROR_INPUT_QUEUE_EMPTY,REST_JSONP_ERROR_INPUT_QUEUE_EMPTY,REST_JSONP_ERROR_INPUT_QUEUE_EMPTY}
+};	
+			
