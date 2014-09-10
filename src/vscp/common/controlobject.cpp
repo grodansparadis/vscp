@@ -120,12 +120,10 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#ifdef ENABLE_WEBSERVER
 #include "../../common/slre.h"
 #include "../../common/frozen.h"
 #include "../../common/net_skeleton.h"
 #include "../../common/mongoose.h"
-#endif
 
 #include "canal_macro.h"
 #include "../common/vscp.h"
@@ -161,8 +159,6 @@ WX_DEFINE_LIST(CanalMsgList);
 WX_DEFINE_LIST(VSCPEventList);
 
 
-#ifdef ENABLE_WEBSERVER
-
 ///////////////////////////////////////////////////
 //		          WEBSERVER
 ///////////////////////////////////////////////////
@@ -182,7 +178,7 @@ struct websrv_rest_session *websrv_rest_sessions;
 // Linked list of websocket sessions
 static struct websock_session *websock_sessions;
 
-#endif
+
 
 
 //#define DEBUGPRINT
@@ -531,19 +527,6 @@ bool CControlObject::run(void)
 
     // Feed startup event
     m_dm.feed(&EventStartUp);
-
-    // Initialize websockets   
-#ifdef ENABLE_WEBSOCKET
-
-
-
-#endif
-    
-	// Initialize Web server
-#ifndef ENABLE_WEBSERVER
-    
-
-#endif
     
     // DM Loop
     while (!m_bQuit) {
@@ -582,12 +565,9 @@ bool CControlObject::run(void)
             }
         }
 
-#ifdef ENABLE_WEBSERVER
 		mg_poll_server( m_pwebserver, 10 );
 		websock_post_incomingEvents();
-#endif
 
-#ifdef ENABLE_WEBSOCKET
 
         /*
          * This broadcasts to all dumb-increment-protocol connections
@@ -620,8 +600,6 @@ bool CControlObject::run(void)
 
         }
 
-
-#endif
 
         // Wait for event
         if (wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout(10)) {
@@ -2066,7 +2044,7 @@ bool CControlObject::readMimeTypes(wxString& path)
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#ifdef ENABLE_WEBSOCKET
+
 
 
 /*
@@ -2602,7 +2580,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 }
 */
 
-#endif
+
 
 
 
@@ -2614,7 +2592,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 
 
 
-#ifdef ENABLE_WEBSERVER
+
 
 
 
@@ -2728,13 +2706,16 @@ CControlObject::websock_command( struct mg_connection *conn,
         // Get filter
         if (tkz.HasMoreTokens()) {
             strTok = tkz.GetNextToken();
+			pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
             if (!vscp_readFilterFromString( &pSession->m_pClientItem->m_filterVSCP, strTok ) ) {
+				pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s", 
 									WEBSOCK_ERROR_SYNTAX_ERROR, 
 									WEBSOCK_STR_ERROR_SYNTAX_ERROR );
                 return MG_TRUE;
             }
+			pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
         } 
 		else {
             mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
@@ -2747,11 +2728,14 @@ CControlObject::websock_command( struct mg_connection *conn,
         // Get mask
         if (tkz.HasMoreTokens()) {
             strTok = tkz.GetNextToken();
+			pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
             if (!vscp_readMaskFromString( &pSession->m_pClientItem->m_filterVSCP, strTok)) {
+				pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s", 
 									WEBSOCK_ERROR_SYNTAX_ERROR, 
 									WEBSOCK_STR_ERROR_SYNTAX_ERROR );
+				pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 return MG_TRUE;
             }
         } 
@@ -3996,6 +3980,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 			if ( ( cleanupTime - time(NULL) ) > 60 ) {
 				pObject->websrv_expire_sessions( conn );
 				pObject->websock_expire_sessions( conn );
+				pObject->websrv_expire_rest_sessions( conn );
 				cleanupTime = time(NULL);
 			}
 			return MG_FALSE;
@@ -4346,6 +4331,7 @@ CControlObject::websrv_restapi( struct mg_connection *conn )
 	//   * * * * * * * * Set (read) filter  * * * * * * * *
 	//   **************************************************
 	else if ( ( '5' == keypairs[_("OP")] ) || ( _("SETFILTER") == keypairs[_("OP")] ) ) {
+		
 		vscpEventFilter vscpfilter;
 		if ( _("") != keypairs[_("VSCPFILTER")] ) {
 			;
@@ -4353,36 +4339,76 @@ CControlObject::websrv_restapi( struct mg_connection *conn )
 			rv = webserv_rest_doSetFilter( conn, pSession, format, vscpfilter );
 		}
 		else {
-		
+			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
 		}
 	}
 
 	//   ****************************************************
+	//   * * * * * * * *  clear input queue   * * * * * * * *
+	//   ****************************************************
+	else if ( ( '6' == keypairs[_("OP")] ) || ( _("CLEARQUEUE") == keypairs[_("OP")] ) ) {
+		webserv_rest_doClearQueue( conn, pSession, format );
+	}
+	
+	//   ****************************************************
 	//   * * * * * * * * read variable value  * * * * * * * *
 	//   ****************************************************
-	else if ( ( '6' == keypairs[_("OP")] ) || ( _("READVAR") == keypairs[_("OP")] ) ) {
-		
+	else if ( ( '7' == keypairs[_("OP")] ) || ( _("READVAR") == keypairs[_("OP")] ) ) {
+		if ( _("") != keypairs[_("VARIABLE")] ) {
+			rv = webserv_rest_doReadVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
+		}
+		else {
+			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+		}
 	}
 
 	//   *****************************************************
 	//   * * * * * * * * Write variable value  * * * * * * * *
 	//   *****************************************************
-	else if ( ( '7' == keypairs[_("OP")] ) || ( _("WRITEVAR") == keypairs[_("OP")] ) ) {
-		
+	else if ( ( '8' == keypairs[_("OP")] ) || ( _("WRITEVAR") == keypairs[_("OP")] ) ) {
+
+		if ( _("") != keypairs[_("VARIABLE")] ) {
+			rv = webserv_rest_doWriteVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
+		}
+		else {
+			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+		}	
 	}
 
 	//   *************************************************
 	//   * * * * * * * * Send measurement  * * * * * * * *
 	//   *************************************************
-	else if ( ( '8' == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")] ) ) {
-		
+	//	 value,unit=0,sensor=0
+	//
+	else if ( ( '9' == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")] ) ) {
+
+		if ( ( _("") != keypairs[_("MEASUREMENT")] ) && (_("") != keypairs[_("TYPE")]) ) {
+			
+			rv = webserv_rest_doWriteMeasurement( conn, pSession, format, 
+													keypairs[_("TYPE")],
+													keypairs[_("MEASUREMENT")],
+													keypairs[_("UNIT")],
+													keypairs[_("SENSORIDX")] );
+		}
+		else {
+			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+		}	
 	}
 
 	//   *******************************************
 	//   * * * * * * * * Table read  * * * * * * * *
 	//   *******************************************
-	else if ( ( '9' == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")] ) ) {
-		
+	else if ( ( '10' == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")] ) ) {
+		if ( _("") != keypairs[_("NAME")] ) {
+			
+			rv = webserv_rest_doGetTableData( conn, pSession, format, 
+													keypairs[_("NAME")],
+													keypairs[_("FROM")],
+													keypairs[_("TO")] );
+		}
+		else {
+			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+		}		
 	}
 
 	return rv;
@@ -4403,8 +4429,7 @@ CControlObject::webserv_rest_error( struct mg_connection *conn,
 	char buf[2048];
 
 	if ( REST_FORMAT_PLAIN == format ) {
-		webserv_util_sendheader( conn, 400, "text/plain" );
-
+		webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
 				
 		mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4416,7 +4441,7 @@ CControlObject::webserv_rest_error( struct mg_connection *conn,
 		return;
 	}
 	else if ( REST_FORMAT_CSV == format ) {
-		webserv_util_sendheader( conn, 400, "text/plain" );
+		webserv_util_sendheader( conn, 400, REST_MIME_TYPE_CSV );
 	
 		mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4428,7 +4453,7 @@ CControlObject::webserv_rest_error( struct mg_connection *conn,
 		return;
 	}
 	else if ( REST_FORMAT_XML == format ) {
-		webserv_util_sendheader( conn, 400, "application/xml" );
+		webserv_util_sendheader( conn, 400, REST_MIME_TYPE_XML );
 
 		mg_write( conn, "\r\n", 2 );		// head/body Separator
 
@@ -4445,7 +4470,7 @@ CControlObject::webserv_rest_error( struct mg_connection *conn,
 		return;
 	}
 	else if ( REST_FORMAT_JSON == format ) {
-		webserv_util_sendheader( conn, 400, "application/json" );
+		webserv_util_sendheader( conn, 400, REST_MIME_TYPE_JSON );
 
 		mg_write( conn, "\r\n", 2 );		// head/body Separator
 		memset( buf, 0, sizeof( buf ) );
@@ -4457,7 +4482,7 @@ CControlObject::webserv_rest_error( struct mg_connection *conn,
 		return;
 	}
 	else if ( REST_FORMAT_JSONP == format ) {
-		webserv_util_sendheader( conn, 400, "text/javascript" );
+		webserv_util_sendheader( conn, 400, REST_MIME_TYPE_JSONP );
 
 		mg_write( conn, "\r\n", 2 );		// head/body Separator
 		memset( buf, 0, sizeof( buf ) );
@@ -4469,7 +4494,7 @@ CControlObject::webserv_rest_error( struct mg_connection *conn,
 		return;
 	}
 	else {
-		webserv_util_sendheader( conn, 400, "text/plain" );
+		webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
 
 		mg_write( conn, "\r\n", 2 );		// head/body Separator
 		memset( buf, 0, sizeof( buf ) );
@@ -4621,9 +4646,9 @@ CControlObject::webserv_rest_doSendEvent( struct mg_connection *conn,
 
 int
 CControlObject::webserv_rest_doReceiveEvent( struct mg_connection *conn, 
-											struct websrv_rest_session *pSession, 
-											int format,
-											long count )
+												struct websrv_rest_session *pSession, 
+												int format,
+												long count )
 {
 	// Check pointer
     if (NULL == conn) return MG_FALSE;
@@ -4634,7 +4659,470 @@ CControlObject::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 	if ( NULL != pSession ) {
 
 		if ( !pSession->m_pClientItem->m_clientInputQueue.empty() ) {
+
+			char buf[32000];
+			char wrkbuf[32000];
+			wxString out;
+
+			if ( REST_FORMAT_PLAIN == format ) {
+
+				webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
 				
+				mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+				if ( pSession->m_pClientItem->m_bOpen &&
+					pSession->m_pClientItem->m_clientInputQueue.GetCount()) {
+
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, "1 1 Success \r\n");
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, 
+								"%d events requested of %d available (unfiltered) %d will be retrived\r\n", 
+								count, 
+								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
+								min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+
+					for ( unsigned int i=0; i<min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+
+						CLIENTEVENTLIST::compatibility_iterator nodeClient;
+						vscpEvent *pEvent;
+
+						pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+						nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+						pEvent = nodeClient->GetData();
+						pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+						pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+
+						if (NULL != pEvent) {
+
+							if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+
+								wxString str;
+								if (vscp_writeVscpEventToString(pEvent, str)) {
+
+									// Write it out
+									memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
+									strcpy((char *) wrkbuf, (const char*) "- ");
+									strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
+									strcat((char *) wrkbuf, "/r/n" );
+									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+									mg_write( conn, buf, strlen( buf ) );
+							
+								}	
+								else {
+									memset( buf, 0, sizeof( buf ) );
+									strcpy((char *) wrkbuf, "- Malformed event (intenal error)/r/n" );
+									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+									mg_write( conn, buf, strlen( buf ) );
+								}
+							}
+							else {
+								memset( buf, 0, sizeof( buf ) );
+								strcpy((char *) wrkbuf, "- Event filtered out/r/n" );
+								webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+								mg_write( conn, buf, strlen( buf ) );
+							}
+
+							// Remove the event
+							vscp_deleteVSCPevent(pEvent);
+
+						} // Valid pEvent pointer
+						else {
+							memset( buf, 0, sizeof( buf ) );
+							strcpy((char *) wrkbuf, "- Event could not be fetched (intenal error)/r/n" );
+							webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+							mg_write( conn, buf, strlen( buf ) );
+						}
+					} // for
+				}	 
+				else {   // no events available
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY"\r\n");
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+				}
+					
+			}
+			else if ( REST_FORMAT_CSV == format ) {
+				webserv_util_sendheader( conn, 400, REST_MIME_TYPE_CSV );
+				
+				mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+				if ( pSession->m_pClientItem->m_bOpen &&
+					pSession->m_pClientItem->m_clientInputQueue.GetCount()) {
+
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, "success-code,error-code,message,description,Event\r\n1,1,Success,Success.,NULL\r\n");
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, 
+								"1,2,Info,%d events requested of %d available (unfiltered) %d will be retrived,NULL\r\n", 
+								count, 
+								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
+								min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+
+					for ( unsigned int i=0; i<min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+
+						CLIENTEVENTLIST::compatibility_iterator nodeClient;
+						vscpEvent *pEvent;
+
+						pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+						nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+						pEvent = nodeClient->GetData();
+						pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+						pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+
+						if (NULL != pEvent) {
+
+							if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+
+								wxString str;
+								if (vscp_writeVscpEventToString(pEvent, str)) {
+
+									// Write it out
+									memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
+									strcpy((char *) wrkbuf, (const char*) "1,3,Data,Event.,");
+									strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
+									strcat((char *) wrkbuf, "/r/n" );
+									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+									mg_write( conn, buf, strlen( buf ) );
+							
+								}	
+								else {
+									memset( buf, 0, sizeof( buf ) );
+									strcpy((char *) wrkbuf, "1,2,Info,Malformed event (intenal error)/r/n" );
+									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+									mg_write( conn, buf, strlen( buf ) );
+								}
+							}
+							else {
+								memset( buf, 0, sizeof( buf ) );
+								strcpy((char *) wrkbuf, "1,2,Info,Event filtered out/r/n" );
+								webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+								mg_write( conn, buf, strlen( buf ) );
+							}
+
+							// Remove the event
+							vscp_deleteVSCPevent(pEvent);
+
+						} // Valid pEvent pointer
+						else {
+							memset( buf, 0, sizeof( buf ) );
+							strcpy((char *) wrkbuf, "1,2,Info,Event could not be fetched (intenal error)/r/n" );
+							webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+							mg_write( conn, buf, strlen( buf ) );
+						}
+					} // for
+				}	 
+				else {   // no events available
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, REST_CSV_ERROR_INPUT_QUEUE_EMPTY"\r\n");
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+				}
+
+			}
+			else if ( REST_FORMAT_XML == format ) {
+
+				int filtered = 0;
+				int errors = 0;
+
+				webserv_util_sendheader( conn, 400, REST_MIME_TYPE_XML );
+				
+				mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+				if ( pSession->m_pClientItem->m_bOpen &&
+					pSession->m_pClientItem->m_clientInputQueue.GetCount()) {
+
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" massage = \"Success\" description = \"Success.\" >");
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, 
+								"<info>%d events requested of %d available (unfiltered) %d will be retrived</info>", 
+								count, 
+								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
+								min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+
+					for ( unsigned int i=0; i<min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+
+						CLIENTEVENTLIST::compatibility_iterator nodeClient;
+						vscpEvent *pEvent;
+
+						pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+						nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+						pEvent = nodeClient->GetData();
+						pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+						pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+
+						if (NULL != pEvent) {
+
+							if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+
+								wxString str;
+
+								// Write it out
+								memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
+								strcpy((char *) wrkbuf, (const char*) "<event>");
+
+								strcpy((char *) wrkbuf, (const char*) "<head>");
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->head ).mb_str() );
+								strcpy((char *) wrkbuf, (const char*) "</head>");
+
+								strcpy((char *) wrkbuf, (const char*) "<class>");
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->vscp_class ).mb_str() );
+								strcpy((char *) wrkbuf, (const char*) "</class>");
+
+								strcpy((char *) wrkbuf, (const char*) "<type>");
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->vscp_type ).mb_str() );
+								strcpy((char *) wrkbuf, (const char*) "</type>");
+
+								strcpy((char *) wrkbuf, (const char*) "<obid>");
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->obid ).mb_str() );
+								strcpy((char *) wrkbuf, (const char*) "</obid>");
+
+								strcpy((char *) wrkbuf, (const char*) "<timestamp>");
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->timestamp ).mb_str() );
+								strcpy((char *) wrkbuf, (const char*) "</timestamp>");
+
+								strcpy((char *) wrkbuf, (const char*) "<guid>");
+								vscp_writeGuidToString( pEvent, str);
+								strcpy((char *) wrkbuf, str.mbc_str() );
+								strcpy((char *) wrkbuf, (const char*) "</guid>");
+
+								strcpy((char *) wrkbuf, (const char*) "<sizedata>");
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->sizeData ).mb_str() );
+								strcpy((char *) wrkbuf, (const char*) "</sizedata>");
+
+								strcpy((char *) wrkbuf, (const char*) "<data>");
+								vscp_writeVscpDataToString( pEvent, str);
+								strcpy((char *) wrkbuf, str.mbc_str() );
+								strcpy((char *) wrkbuf, (const char*) "</data>");
+
+								strcat((char *) wrkbuf, "</event>" );
+								webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+								mg_write( conn, buf, strlen( buf ) );
+
+								if (vscp_writeVscpEventToString(pEvent, str)) {
+
+									// Write it out
+									memset((char *) wrkbuf, 0, sizeof( wrkbuf ));
+									strcpy((char *) wrkbuf, (const char*) "<event>");
+									strcat((char *) wrkbuf, (const char*) str.mb_str(wxConvUTF8));
+									strcat((char *) wrkbuf, "</event>" );
+									webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+									mg_write( conn, buf, strlen( buf ) );
+							
+								}	
+								else {
+									errors++;
+								}
+							}
+							else {
+								filtered++;
+							}
+
+							// Remove the event
+							vscp_deleteVSCPevent(pEvent);
+
+						} // Valid pEvent pointer
+						else {
+							errors++;
+						}
+					} // for
+
+					strcpy((char *) wrkbuf, (const char*) "<filtered>");
+					strcpy((char *) wrkbuf, wxString::Format( _("%d"), filtered ).mb_str() );
+					strcpy((char *) wrkbuf, (const char*) "</filtered>");
+
+					strcpy((char *) wrkbuf, (const char*) "<errors>");
+					strcpy((char *) wrkbuf, wxString::Format( _("%d"), errors ).mb_str() );
+					strcpy((char *) wrkbuf, (const char*) "</errors>");
+
+					// End tag
+					memset( buf, 0, sizeof( buf ) );
+					strcpy((char *) wrkbuf, "</vscp-rest>" );
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+
+				}	 
+				else {   // no events available
+					memset( buf, 0, sizeof( buf ));
+					sprintf( wrkbuf, REST_XML_ERROR_INPUT_QUEUE_EMPTY"\r\n");
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+				}
+
+			}
+			else if ( ( REST_FORMAT_JSON == format ) && ( REST_FORMAT_JSONP == format ) ) {
+				
+				int filtered = 0;
+				int errors = 0;
+				char *p = buf;
+				webserv_util_sendheader( conn, 400, REST_MIME_TYPE_JSON );
+				
+				mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+				if ( pSession->m_pClientItem->m_bOpen &&
+						pSession->m_pClientItem->m_clientInputQueue.GetCount() ) {
+
+					if ( REST_FORMAT_JSONP == format ) {
+						p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "func(" );
+					}
+
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," );
+					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "info" );
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
+					sprintf( wrkbuf, 
+								"%d events requested of %d available (unfiltered) %d will be retrived", 
+								count, 
+								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
+								min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wrkbuf );
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "event");
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":[" );
+
+					webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
+					mg_write( conn, buf, strlen( wrkbuf ) );
+					memset( buf, 0, sizeof( buf ) );
+					p = buf;
+
+					for ( unsigned int i=0; i<min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+
+						CLIENTEVENTLIST::compatibility_iterator nodeClient;
+						vscpEvent *pEvent;
+
+						pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+						nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+						pEvent = nodeClient->GetData();
+						pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+						pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+
+						if (NULL != pEvent) {
+
+							if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+
+								wxString str;
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "{" );
+								
+								// head
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "head");
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
+								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->head );
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								
+								// class
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "class");
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
+								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->vscp_class );
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								
+								// type
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "type");
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
+								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->vscp_type );
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								
+								// timestamp
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "timestamp");
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
+								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->timestamp );
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								
+								// GUID
+								vscp_writeGuidToString( pEvent, str);
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "guid");
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, str.mb_str() );
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								
+								// SizeData
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "sizedata");
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
+								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->sizeData );
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								
+								// Data
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "data");
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":[" );
+								for ( unsigned int j=0; j<pEvent->sizeData; j++ ) {
+									p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->pdata[j] );
+									p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								}
+								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "]}," );
+
+								webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
+								mg_write( conn, buf, strlen( wrkbuf ) );
+								memset( buf, 0, sizeof( buf ) );
+								p = buf;
+
+							}
+							else {
+								filtered++;;
+							}
+
+							// Remove the event
+							vscp_deleteVSCPevent(pEvent);
+
+						} // Valid pEvent pointer
+						else {
+							errors++;
+						}
+
+						// Buffer overflow
+						if ( 0 == p ) break;
+
+					} // for
+
+					// Mark end
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "]," );
+					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "filtered");
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
+					p += json_emit_int( p, &buf[sizeof(buf)] - p, filtered );
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "errors");
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
+					p += json_emit_int( p, &buf[sizeof(buf)] - p, errors );
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "}" );
+
+					if ( REST_FORMAT_JSONP == format ) {
+						p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ");" );
+					}
+
+					webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
+					mg_write( conn, buf, strlen( wrkbuf ) );
+
+				}	 
+				else {   // no events available
+					memset( buf, 0, sizeof( buf ));
+					if ( REST_FORMAT_JSON == format ) {
+						sprintf( wrkbuf, REST_JSON_ERROR_INPUT_QUEUE_EMPTY"\r\n");
+					}
+					else {
+						sprintf( wrkbuf, REST_JSONP_ERROR_INPUT_QUEUE_EMPTY"\r\n");
+					}
+					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+					mg_write( conn, buf, strlen( buf ) );
+				}
+					
+			}
+			
+			mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+
 		}
 		else {	// Que is empty
 			webserv_rest_error( conn, pSession, format, RESR_ERROR_CODE_INPUT_QUEUE_EMPTY );
@@ -4662,7 +5150,144 @@ CControlObject::webserv_rest_doSetFilter( struct mg_connection *conn,
 											vscpEventFilter& vscpfilter )
 {
 	if ( NULL != pSession ) {
+		pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+		memcpy( &pSession->m_pClientItem->m_filterVSCP, &vscpfilter, sizeof( vscpEventFilter ) );
+		pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+	}
+	else {
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
 
+	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doClearQueue
+//
+
+int
+CControlObject::webserv_rest_doClearQueue( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format )
+{
+	if ( NULL != pSession ) {
+
+		CLIENTEVENTLIST::iterator iterVSCP;
+
+		pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+        
+		for (iterVSCP = pSession->m_pClientItem->m_clientInputQueue.begin();
+                iterVSCP != pSession->m_pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
+            vscpEvent *pEvent = *iterVSCP;
+            vscp_deleteVSCPevent(pEvent);
+        }
+
+        pSession->m_pClientItem->m_clientInputQueue.Clear();
+        pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+		
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+	}
+	else {
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doReadVariable
+//
+
+int
+CControlObject::webserv_rest_doReadVariable( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format,
+												wxString& strVariableName )
+{
+	if ( NULL != pSession ) {
+
+
+		
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+	}
+	else {
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doWriteVariable
+//
+
+int
+CControlObject::webserv_rest_doWriteVariable( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format,
+												wxString& strVariable )
+{
+	if ( NULL != pSession ) {
+
+
+		
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+	}
+	else {
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doWriteMeasurement
+//
+
+int
+CControlObject::webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
+													struct websrv_rest_session *pSession, 
+													int format,
+													wxString& strType,
+													wxString& strMeasurement,
+													wxString& strUnit,
+													wxString& strSensorIdx )
+{
+	if ( NULL != pSession ) {
+
+
+		
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+	}
+	else {
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doGetTableData
+//
+
+int
+CControlObject::webserv_rest_doGetTableData( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format,
+												wxString& strName,
+												wxString& strFrom,
+												wxString& strTo )
+{
+	if ( NULL != pSession ) {
+
+
+		
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
 	}
 	else {
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
@@ -4688,7 +5313,7 @@ CControlObject::webserv_rest_doStatus( struct mg_connection *conn,
 		pSession->lastActiveTime = time(NULL);
 
 		if ( REST_FORMAT_PLAIN == format ) {
-			webserv_util_sendheader( conn, 200, "text/plain" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4709,7 +5334,7 @@ CControlObject::webserv_rest_doStatus( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_CSV == format ) {
-			webserv_util_sendheader( conn, 200, "text/csv" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
@@ -4732,7 +5357,7 @@ CControlObject::webserv_rest_doStatus( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_XML == format ) {
-			webserv_util_sendheader( conn, 200, "application/xml" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4755,7 +5380,7 @@ CControlObject::webserv_rest_doStatus( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_JSON == format ) {
-			webserv_util_sendheader( conn, 200, "application/json" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4778,7 +5403,7 @@ CControlObject::webserv_rest_doStatus( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_JSONP == format ) {
-			webserv_util_sendheader( conn, 200, "text/javascript" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4801,7 +5426,7 @@ CControlObject::webserv_rest_doStatus( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else {
-			webserv_util_sendheader( conn, 400, "text/plain" );
+			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 			memset( buf, 0, sizeof( buf ) );
@@ -4841,7 +5466,7 @@ CControlObject::webserv_rest_doOpen( struct mg_connection *conn,
 		// New session created
 
 		if ( REST_FORMAT_PLAIN == format ) {
-			webserv_util_sendheader( conn, 200, "text/plain" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4862,7 +5487,7 @@ CControlObject::webserv_rest_doOpen( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_CSV == format ) {
-			webserv_util_sendheader( conn, 200, "text/csv" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
@@ -4885,7 +5510,7 @@ CControlObject::webserv_rest_doOpen( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_XML == format ) {
-			webserv_util_sendheader( conn, 200, "application/xml" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4908,7 +5533,7 @@ CControlObject::webserv_rest_doOpen( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_JSON == format ) {
-			webserv_util_sendheader( conn, 200, "application/json" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON);
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4931,7 +5556,7 @@ CControlObject::webserv_rest_doOpen( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_JSONP == format ) {
-			webserv_util_sendheader( conn, 200, "text/javascript" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP);
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -4954,7 +5579,7 @@ CControlObject::webserv_rest_doOpen( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else {
-			webserv_util_sendheader( conn, 400, "text/plain" );
+			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 			memset( buf, 0, sizeof( buf ) );
@@ -4997,7 +5622,7 @@ CControlObject::webserv_rest_doClose( struct mg_connection *conn,
 		websrv_expire_rest_sessions( conn );
 
 		if ( REST_FORMAT_PLAIN == format ) {
-			webserv_util_sendheader( conn, 200, "text/plain" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_PLAIN );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -5018,7 +5643,7 @@ CControlObject::webserv_rest_doClose( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_CSV == format ) {
-			webserv_util_sendheader( conn, 200, "text/csv" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_CSV );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
@@ -5035,7 +5660,7 @@ CControlObject::webserv_rest_doClose( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_XML == format ) {
-			webserv_util_sendheader( conn, 200, "application/xml" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_XML );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -5052,7 +5677,7 @@ CControlObject::webserv_rest_doClose( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_JSON == format ) {
-			webserv_util_sendheader( conn, 200, "application/json" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSON );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -5069,7 +5694,7 @@ CControlObject::webserv_rest_doClose( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else if ( REST_FORMAT_JSONP == format ) {
-			webserv_util_sendheader( conn, 200, "text/javascript" );
+			webserv_util_sendheader( conn, 200, REST_MIME_TYPE_JSONP );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 				
@@ -5086,7 +5711,7 @@ CControlObject::webserv_rest_doClose( struct mg_connection *conn,
 			return MG_TRUE;
 		}
 		else {
-			webserv_util_sendheader( conn, 400, "text/plain" );
+			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
 
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 			memset( buf, 0, sizeof( buf ) );
@@ -8006,7 +8631,7 @@ CControlObject::websrv_bootload( struct mg_connection *conn )
 	return MG_TRUE;	
 }
 
-#endif
+
 
 
 

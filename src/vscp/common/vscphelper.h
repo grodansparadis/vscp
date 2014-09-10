@@ -343,6 +343,8 @@ extern "C" {
 
     // Helpers
 
+
+
     /*!
       Get GUID from string
 

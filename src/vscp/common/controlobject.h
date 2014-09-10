@@ -30,17 +30,12 @@
 #endif // _MSC_VER > 1000
 #endif
 
-#define ENABLE_WEBSERVER	// Webserver functionality activated
-#define ENABLE_WEBSOCKET	// Sebsocket functionality enabled
-
 // NS_ENABLE_SSL		// Enable webserver SSL functionality
 
 #include "wx/wx.h"
 #include <wx/thread.h>
 
-#ifdef ENABLE_WEBSERVER
 #include "../../common/mongoose.h"
-#endif
 
 #include "devicelist.h"
 #include "clientlist.h"
@@ -293,7 +288,7 @@ public:
     //                  WEBSOCKETS
     /////////////////////////////////////////////////
 
-#ifdef ENABLE_WEBSOCKET
+
 
 	/*!
 		Handle web socket receive
@@ -362,7 +357,6 @@ public:
 	void 
 	websock_post_incomingEvents( void );
 
-#endif
 
 	
 	/////////////////////////////////////////////////
@@ -370,7 +364,6 @@ public:
     /////////////////////////////////////////////////
 
 
-#ifdef ENABLE_WEBSERVER
 
 	/*!
 		Check web server password
@@ -539,11 +532,12 @@ public:
 											int format,
 											long count=1 );
 
-												/*!
+	/*!
 		webserv_rest_doSendEvent - Send VSCP event
 		@param conn Webserver connection handle.
 		@param pSession Active session or NULL if no session active
 		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@param vscpfilter Filter to set.
 		@return MG_TRUE ocn sucess or MG_FALSE on failure.
 	*/
 	int
@@ -551,6 +545,83 @@ public:
 											struct websrv_rest_session *pSession, 
 											int format,
 											vscpEventFilter& vscpfilter );
+
+	/*!
+		webserv_rest_doSendEvent - Send VSCP event
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doClearQueue( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format );
+
+	/*!
+		webserv_rest_doReadVariable - Read a variable value
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@param strVariableName Name of variable to read
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doReadVariable( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format,
+												wxString& strVariableName );	
+
+	/*!
+		webserv_rest_doWriteVariable - Write a variable value
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doWriteVariable( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format,
+												wxString& strVariable );
+
+	/*!
+		webserv_rest_doWriteVariable - Write a variable value
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@param strType Measurement type
+		@param strMeasurement Measurement value (integer/long/float)
+		@param strUnit Measurement unit
+		@param strSensorIdx Sensor Index 
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format,
+												wxString& strType,
+												wxString& strMeasurement,
+												wxString& strUnit,
+												wxString& strSensorIdx );
+
+	/*!
+		webserv_rest_doWriteVariable - Write a variable value
+		@param conn Webserver connection handle.
+		@param pSession Active session or NULL if no session active
+		@param format The format output should be formated in, plain, csv, xml, json, jsonp
+		@param name Name of table
+		@param from Date/time from which data should be collected
+		@param to Date/time to which data should be collected
+		@return MG_TRUE ocn sucess or MG_FALSE on failure.
+	*/
+	int
+	webserv_rest_doGetTableData( struct mg_connection *conn, 
+												struct websrv_rest_session *pSession, 
+												int format,
+												wxString& strName,
+												wxString& strFrom,
+												wxString& strTo );
 
 	/*!
 		webserv_rest_error - Display error
@@ -566,6 +637,7 @@ public:
 										int errorcode);
 
 
+	
 
 	//////////////////////////////////////////////////////////////////////////////
 	//							 ADMIN INTERFACE                                //
@@ -706,7 +778,6 @@ public:
 	int 
 	websrv_bootload( struct mg_connection *conn );
 
-#endif
 
 public:
 

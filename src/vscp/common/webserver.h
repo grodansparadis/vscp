@@ -263,6 +263,17 @@ struct websrv_rest_session
       
 };
 
+enum {	
+	REST_ERROR_CODE_SUCCESS = 0,
+	REST_ERROR_CODE_GENERAL_FAILURE,
+	REST_ERROR_CODE_INVALID_SESSION ,
+	REST_ERROR_CODE_UNSUPPORTED_FORMAT,
+	REST_ERROR_CODE_COULD_NOT_OPEN_SESSION,
+	REST_ERROR_CODE_MISSING_DATA,
+	RESR_ERROR_CODE_INPUT_QUEUE_EMPTY,
+	REST_ERROR_CODE_COUNT,
+};
+
 // REST formats
 enum {
 	REST_FORMAT_PLAIN = 0,
@@ -273,8 +284,20 @@ enum {
 	REST_FORMAT_COUNT
 };
 
+enum {
+	REST_SUCCESS_CODE_SUCCESS = 1,	// All is OK		message="succss"
+	REST_SUCCESS_CODE_INFO,			// This is info		message="info"
+	REST_SUCCESS_CODE_DATA			// This is data		message="data"
+};
+
+#define REST_MIME_TYPE_PLAIN		"text/plain"
+#define REST_MIME_TYPE_CSV			"text/csv"
+#define REST_MIME_TYPE_XML			"application/xml"
+#define REST_MIME_TYPE_JSON			"application/json"
+#define REST_MIME_TYPE_JSONP		"text/javascript"
+
 // Clear text Error messages
-#define REST_PLAIN_ERROR_SUCCESS				"1 1 Success"
+#define REST_PLAIN_ERROR_SUCCESS				"1 1 Success \r\n\r\nBe Hungry - Stay Foolish."
 #define REST_PLAIN_ERROR_GENERAL_FAILURE		"0 -1 Failure \r\n\r\nGeneral failure."
 #define REST_PLAIN_ERROR_INVALID_SESSION		"0 -2 Invalid session \r\n\r\nThe session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out."
 #define REST_PLAIN_ERROR_UNSUPPORTED_FORMAT		"0 -3 Unsupported format \r\n\r\nFormat can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP´."
@@ -316,16 +339,7 @@ enum {
 #define REST_JSONP_ERROR_MISSING_DATA			"func("REST_JSON_ERROR_MISSING_DATA");"
 #define REST_JSONP_ERROR_INPUT_QUEUE_EMPTY		"func("REST_JSON_ERROR_INPUT_QUEUE_EMPTY");"
 
-enum {	
-	REST_ERROR_CODE_SUCCESS = 0,
-	REST_ERROR_CODE_GENERAL_FAILURE,
-	REST_ERROR_CODE_INVALID_SESSION,
-	REST_ERROR_CODE_UNSUPPORTED_FORMAT,
-	REST_ERROR_CODE_COULD_NOT_OPEN_SESSION,
-	REST_ERROR_CODE_MISSING_DATA,
-	RESR_ERROR_CODE_INPUT_QUEUE_EMPTY,
-	REST_ERROR_CODE_COUNT,
-};
+
 
 const char* rest_errors[][REST_FORMAT_COUNT+1] = {
 	{REST_PLAIN_ERROR_SUCCESS, REST_CSV_ERROR_SUCCESS,REST_XML_ERROR_SUCCESS,REST_JSON_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS},
