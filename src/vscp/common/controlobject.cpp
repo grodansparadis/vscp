@@ -129,6 +129,7 @@
 #include "../common/vscp.h"
 #include "../common/vscphelper.h"
 #include "../common/vscpeventhelper.h"
+#include "../common/tables.h"
 #include "../../common/configfile.h"
 #include "../../common/crc.h"
 #include "../../common/md5.h"
@@ -300,6 +301,9 @@ CControlObject::CControlObject()
 
     // Initialize the CRC
     crcInit();
+
+
+	CVSCPTable testtable( "c:/tmp/test.tbl" );
 
 }
 
@@ -5172,6 +5176,13 @@ CControlObject::webserv_rest_doClearQueue( struct mg_connection *conn,
 												struct websrv_rest_session *pSession, 
 												int format )
 {
+	// Check pointer
+    if (NULL == conn) return MG_FALSE;
+	
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return MG_FALSE;
+
+
 	if ( NULL != pSession ) {
 
 		CLIENTEVENTLIST::iterator iterVSCP;
@@ -5207,11 +5218,176 @@ CControlObject::webserv_rest_doReadVariable( struct mg_connection *conn,
 												int format,
 												wxString& strVariableName )
 {
+	char buf[512];
+	char wrkbuf[512];
+
+	// Check pointer
+    if (NULL == conn) return MG_FALSE;
+	
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return MG_FALSE;
+
 	if ( NULL != pSession ) {
 
+		CVSCPVariable *pvar;
+        wxString strvalue;
 
+        if ( NULL == (pvar = pObject->m_VSCP_Variables.find( strVariableName ) ) ) {
+			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
+            return MG_TRUE;
+        }
+
+        pvar->writeVariableToString( strvalue );
+
+		// Get variable value
+		wxString strVariableValue;
+		pvar->writeVariableToString( strVariableValue );
 		
-		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+		if ( REST_FORMAT_PLAIN == format ) {
+
+				webserv_util_sendheader( conn, 400, REST_MIME_TYPE_PLAIN );
+				
+				mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+				memset( buf, 0, sizeof( buf ));
+				sprintf( wrkbuf, "1 1 Success \r\n");
+				webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+				mg_write( conn, buf, strlen( buf ) );
+
+				
+
+				memset( buf, 0, sizeof( buf ));
+				sprintf( wrkbuf, 
+								"variable=%s type=%d persistent=%s value=%s note=%s\r\n", 
+								pvar->getName().mb_str(), 
+								pvar->getType(),
+								pvar->isPersistent() ? "true" : "false", 
+								strVariableValue,
+								pvar->getNote() );
+				webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+				mg_write( conn, buf, strlen( buf ) );
+
+										
+		}
+		else if ( REST_FORMAT_CSV == format ) {
+			
+			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_CSV );
+				
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+			memset( buf, 0, sizeof( buf ));
+			sprintf( wrkbuf, 
+				"success-code,error-code,message,description,Variable,Type, Value,Persistent,Note\r\n1,1,Success,Success.,%s,%d\r\n",
+				strVariableName, 
+				pvar->getType(),
+				strVariableValue,
+				pvar->isPersistent() ? "true" : "false", 
+				pvar->getNote() );
+			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
+			mg_write( conn, buf, strlen( buf ) );
+
+		}
+		else if ( REST_FORMAT_XML == format ) {
+
+			int filtered = 0;
+			int errors = 0;
+
+			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_XML );
+				
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+			memset( buf, 0, sizeof( buf ));
+			sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" massage = \"Success\" description = \"Success.\" >");
+			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			memset( buf, 0, sizeof( buf ));
+			sprintf( wrkbuf, 
+						XML_HEADER"<variable type=%d(%s) persistent=%s >",
+						pvar->getType(),
+						pvar->getVariableTypeAsString( pvar->getType() ),
+						pvar->isPersistent() ? "true" : "false" );
+			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			memset( buf, 0, sizeof( buf ) );
+			sprintf((char *) wrkbuf, 
+							"<name>%s</name><value>%s</value><note>%s</note>",
+							pvar->getName(),
+							strVariableValue,
+							pvar->getNote() );
+			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			// End tag
+			memset( buf, 0, sizeof( buf ) );
+			strcpy((char *) wrkbuf, "</variable>" );
+			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+			mg_write( conn, buf, strlen( buf ) );
+
+			// End tag
+			memset( buf, 0, sizeof( buf ) );
+			strcpy((char *) wrkbuf, "</vscp-rest>" );
+			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
+			mg_write( conn, buf, strlen( buf ) );
+
+		}
+		else if ( ( REST_FORMAT_JSON == format ) && ( REST_FORMAT_JSONP == format ) ) {
+				
+			char *p = buf;
+			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_JSON );
+				
+			mg_write( conn, "\r\n", 2 );		// head/body Separator
+
+			if ( pSession->m_pClientItem->m_bOpen &&
+				pSession->m_pClientItem->m_clientInputQueue.GetCount() ) {
+
+				if ( REST_FORMAT_JSONP == format ) {
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "func(" );
+				}
+
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," );
+					
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-name" );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getName().mb_str() );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type" );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getVariableTypeAsString( pvar->getType() ) );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type-code" );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
+				p += json_emit_int( p, &buf[sizeof(buf)] - p, pvar->getType() );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-persistence" );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->isPersistent() ? "true" : "false" );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-calue" );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, strVariableValue.mb_str() );
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+
+				// Mark end
+				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "}" );
+
+				if ( REST_FORMAT_JSONP == format ) {
+					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ");" );
+				}
+
+				webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
+				mg_write( conn, buf, strlen( wrkbuf ) );
+
+			}	 					
+		}
+
+		mg_write( conn, "0\r\n\r\n", 5);	// Terminator
+		
 	}
 	else {
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
@@ -5227,15 +5403,44 @@ CControlObject::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 int
 CControlObject::webserv_rest_doWriteVariable( struct mg_connection *conn, 
-												struct websrv_rest_session *pSession, 
-												int format,
-												wxString& strVariable )
+													struct websrv_rest_session *pSession, 
+													int format,
+													wxString& strVariable )
 {
-	if ( NULL != pSession ) {
+	wxString strName;
+    wxString strValue;
+	wxStringTokenizer tkz( strVariable, _(";") );
 
+	CControlObject *pObject = (CControlObject *)conn->server_param;
 
-		
+	if ( ( NULL == conn ) && ( NULL == pObject )  && ( NULL != pSession )  ) {
+
+        // Get variablename
+        if ( tkz.HasMoreTokens() ) {
+
+            CVSCPVariable *pvar;
+            strName = tkz.GetNextToken();
+            if ( NULL == (pvar = pObject->m_VSCP_Variables.find( strName ) ) ) {
+				webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
+				return MG_TRUE;
+            }
+
+            // Get variable value
+            if (tkz.HasMoreTokens()) {
+                strValue = tkz.GetNextToken();
+                if (!pvar->setValueFromString( pvar->getType(), strValue ) ) {
+                   webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+                   return MG_TRUE;
+                }
+            } 
+			else {
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+                return MG_TRUE;
+            }
+		}
+
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+
 	}
 	else {
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );

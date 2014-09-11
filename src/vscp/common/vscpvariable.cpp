@@ -175,6 +175,61 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
 // setName
 //
 
+const char * CVSCPVariable::getVariableTypeAsString( int type )
+{
+	switch ( type ) {
+
+		case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
+			return "Unassigned";
+
+		case VSCP_DAEMON_VARIABLE_CODE_STRING:
+			return "String";
+
+		case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
+			return "Boolean";
+
+		case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
+			return "Integer";
+
+		case VSCP_DAEMON_VARIABLE_CODE_LONG:
+			return "Long";
+
+		case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
+			return "Double";
+
+		case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
+			return "Measurement";
+
+		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
+			return "VscpEvent";
+
+		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
+			return "VscpGuid";
+
+		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
+			return "VscpData";
+
+		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
+			return "VscpClass";
+
+		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
+			return "VscpType";
+
+		case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
+			return "Timestamp";
+
+		case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
+			return "DateTime";
+
+		default:
+			return "Unknown";
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setName
+//
+
 void CVSCPVariable::setName( const wxString& strName )
 {
     wxString str = strName;

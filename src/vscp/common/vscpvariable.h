@@ -53,6 +53,13 @@ public:
 	 */
 	void setName(const wxString& strName);
 
+	/*!
+		Get variable type as string
+		@param type Variable numerical type
+		@return Variable type as a string.
+	*/
+	static const char * getVariableTypeAsString( int type );
+
 	/*
 	Get variable name
 	@return Variable name.
