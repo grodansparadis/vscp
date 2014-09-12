@@ -21,7 +21,6 @@
 //
 
 
-
 #ifdef __GNUG__
     //#pragma implementation
 #endif
@@ -54,56 +53,41 @@
 #include "variablecodes.h"
 #include "tables.h"
 
-//WX_DEFINE_LIST( listVscpTables );
+
+// This list holds the tables for vscpd
+WX_DEFINE_LIST( listVSCPTables );
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Constructor
 //
 
 // Constructor for nmormal table
-CVSCPTable::CVSCPTable( const char * fileMain )
+CVSCPTable::CVSCPTable( const char *fileMain, int type, uint32_t size )
 {
 	m_pathMain = wxString::FromAscii( fileMain );
     
-	m_type = VSCP_TABLE_NORMAL;
-	
-	memset( &m_mainFileHead, 0, sizeof( m_mainFileHead ) );
-	strcpy( m_mainFileHead.m_nameTable, "Table" );
-	strcpy( m_mainFileHead.m_nameXLabel, "X Label" );
-	strcpy( m_mainFileHead.m_nameYLabel, "Y Label" );
-
-	// Next pos to write at for a new static file
-	m_mainFileHead.pos_static = sizeof( m_mainFileHead );
-
-	m_ftMain = NULL;
-
-	init();
-}
-
-// Constructor for static table
-CVSCPTable::CVSCPTable(const char * fileMain, uint32_t size )
-{
-	m_pathMain = wxString::FromAscii( fileMain );
-    
-	m_type = VSCP_TABLE_STATIC;
-
-	memset( &m_mainFileHead, 0, sizeof( m_mainFileHead ) );
-	strcpy( m_mainFileHead.m_nameTable, "Table" );
-	strcpy( m_mainFileHead.m_nameXLabel, "X Label" );
-	strcpy( m_mainFileHead.m_nameYLabel, "Y Label" );
-
-	// Next pos to write at for a new static file
-	m_mainFileHead.pos_static = sizeof( m_mainFileHead );
-
-	m_ftMain = NULL;
-
-	// Timestamps for file limits
+	m_number_of_records = 0;
 	m_timestamp_first = 0;
 	m_timestamp_last = 0;
-	m_number_of_records = 0;
+
+	m_vscpFileHead.type = type;
+	
+	memset( &m_vscpFileHead, 0, sizeof( m_vscpFileHead ) );
+	strcpy( m_vscpFileHead.nameTable, "Table" );
+	strcpy( m_vscpFileHead.nameXLabel, "X Label" );
+	strcpy( m_vscpFileHead.nameYLabel, "Y Label" );
+
+	// Next pos to write at for a new static file
+	m_vscpFileHead.posStaticRead = sizeof( m_vscpFileHead );
+	m_vscpFileHead.posStaticWrite = sizeof( m_vscpFileHead );
+	m_vscpFileHead.staticSize = size;
+
+	m_ft = NULL;
 
 	init();
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Destructor
@@ -111,7 +95,7 @@ CVSCPTable::CVSCPTable(const char * fileMain, uint32_t size )
 
 CVSCPTable::~CVSCPTable( void )
 {
-	fclose( m_ftMain );
+	fclose( m_ft );
 }
 
 
@@ -122,34 +106,54 @@ CVSCPTable::~CVSCPTable( void )
 int CVSCPTable::init() 
 {
 	int rv;
+	struct _vscpFileRecord record;
 
 	// Open/create main file
 	if ( fileExists( m_pathMain.mbc_str() ) ) {
-		m_ftMain = fopen( m_pathMain.mbc_str(), "r+b") ;	// binary Read Write
-		if ( NULL == m_ftMain ) return errno;				// Failed to open file
+		m_ft = fopen( m_pathMain.mbc_str(), "r+b") ;	// binary Read Write
+		if ( NULL == m_ft ) return errno;				// Failed to open file
 	}
 	else {
 		// Create file
-		m_ftMain = fopen( m_pathMain.mbc_str(), "w+b") ;	// binary Read Write		
-		if ( NULL == m_ftMain ) return errno;				// Failed to create file
+		m_ft = fopen( m_pathMain.mbc_str(), "w+b") ;	// binary Read Write		
+		if ( NULL == m_ft ) return errno;				// Failed to create file
 		
-		if ( VSCP_TABLE_NORMAL == m_mainFileHead.type ) {
-			m_mainFileHead.id[0] = 0x55;
-			m_mainFileHead.id[0] = 0xAA;
+		if ( VSCP_TABLE_NORMAL == m_vscpFileHead.type ) {
+			m_vscpFileHead.id[0] = 0x55;
+			m_vscpFileHead.id[0] = 0xAA;
 		}
 		else {
-			m_mainFileHead.id[0] = 0xAA;
-			m_mainFileHead.id[0] = 0x55;
+			m_vscpFileHead.id[0] = 0xAA;
+			m_vscpFileHead.id[0] = 0x55;
 		}
 		
 		// Write header
-		if ( sizeof( m_mainFileHead ) != 
-			fwrite( &m_mainFileHead , 1, sizeof(m_mainFileHead), m_ftMain ) ) return errno;
+		if ( sizeof( m_vscpFileHead ) != 
+			fwrite( &m_vscpFileHead , 1, sizeof(m_vscpFileHead), m_ft ) ) return errno;
+
+		// If we have a static table we initiate it
+		if ( VSCP_TABLE_STATIC == m_vscpFileHead.type ) {
+			_vscpFileRecord rec;
+			memset( &rec, 0, sizeof(_vscpFileRecord) ); 
+			fwrite( &rec, m_vscpFileHead.staticSize, sizeof(_vscpFileRecord), m_ft );
+		}
 	}
 
-	rv = writeMainHeader();
+	rv = readMainHeader();
 
-	long size = fdGetFileSize( m_pathMain.mbc_str() ) - sizeof( m_mainFileHead );
+	m_number_of_records = ( fdGetFileSize( m_pathMain.mbc_str() ) - sizeof( m_vscpFileHead ))/sizeof(_vscpFileRecord);
+	if ( m_number_of_records ) {
+
+		// Go to last pos
+		fseek( m_ft, sizeof( m_vscpFileHead ) + (m_number_of_records-1) * sizeof(_vscpFileRecord) , SEEK_SET );							
+		fread( &record, 1, sizeof(record), m_ft );
+		m_timestamp_last = record.timestamp;
+
+		// Go to firts pos
+		fseek( m_ft, sizeof( m_vscpFileHead ), SEEK_SET );							
+		fread( &record, 1, sizeof(record), m_ft );
+		m_timestamp_first = record.timestamp;
+	}
 
 	return rv; 
 }
@@ -159,6 +163,7 @@ int CVSCPTable::init()
 //
 
 int CVSCPTable::setTableInfo( const char *tableName, 
+									const char *tableDescription,
 									const char *xAxisLabel, 
 									const char *yAxisLabel,
 									uint16_t vscp_class, 
@@ -167,12 +172,13 @@ int CVSCPTable::setTableInfo( const char *tableName,
 {
 	int rv;
 
-	strncpy( m_mainFileHead.m_nameTable, tableName, sizeof( m_mainFileHead.m_nameTable ) );
-	strncpy( m_mainFileHead.m_nameXLabel, xAxisLabel, sizeof( m_mainFileHead.m_nameXLabel ) );
-	strncpy( m_mainFileHead.m_nameYLabel, yAxisLabel, sizeof( m_mainFileHead.m_nameYLabel) );
-	m_mainFileHead.vscp_class = vscp_class;
-	m_mainFileHead.vscp_type = vscp_type;
-	m_mainFileHead.vscp_unit = vscp_unit;
+	strncpy( m_vscpFileHead.nameTable, tableName, sizeof( m_vscpFileHead.nameTable ) );
+	strncpy( m_vscpFileHead.descriptionTable, tableDescription, sizeof( m_vscpFileHead.descriptionTable ) );
+	strncpy( m_vscpFileHead.nameXLabel, xAxisLabel, sizeof( m_vscpFileHead.nameXLabel ) );
+	strncpy( m_vscpFileHead.nameYLabel, yAxisLabel, sizeof( m_vscpFileHead.nameYLabel) );
+	m_vscpFileHead.vscp_class = vscp_class;
+	m_vscpFileHead.vscp_type = vscp_type;
+	m_vscpFileHead.vscp_unit = vscp_unit;
 
 	// Write header
 	rv = writeMainHeader();		
@@ -209,9 +215,9 @@ int CVSCPTable::readMainHeader( void )
 {
 	int rv;
 
-	rv = fseek( m_ftMain, 0, SEEK_SET );									// Go to beginning of file
+	rv = fseek( m_ft, 0, SEEK_SET );									// Go to beginning of file
 	if ( rv ) return errno;
-	rv = fread( &m_mainFileHead, 1, sizeof(m_mainFileHead), m_ftMain );		// Read structure
+	rv = fread( &m_vscpFileHead, 1, sizeof(m_vscpFileHead), m_ft );		// Read structure
 	if ( rv ) return errno;
 
 	return rv;
@@ -225,9 +231,9 @@ int CVSCPTable::writeMainHeader( void )
 {
 	int rv;
 
-	rv = fseek( m_ftMain, 0, SEEK_SET );									// Go to beginning of file
+	rv = fseek( m_ft, 0, SEEK_SET );									// Go to beginning of file
 	if ( rv ) return errno;
-	rv = fwrite( &m_mainFileHead, 1, sizeof(m_mainFileHead), m_ftMain );	// Read structure
+	rv = fwrite( &m_vscpFileHead, 1, sizeof(m_vscpFileHead), m_ft );	// Read structure
 	if ( rv ) return errno;
 
 	return rv;
@@ -240,93 +246,209 @@ int CVSCPTable::writeMainHeader( void )
 int CVSCPTable::logData( time_t timestamp, double measurement )
 {
 	int rv;
-	struct _mainFileRecord record;
+	struct _vscpFileRecord record;
 
 	record.timestamp = timestamp;
 	record.measurement = measurement;
 
-	if ( VSCP_TABLE_NORMAL == m_mainFileHead.type ) {
+	if ( VSCP_TABLE_NORMAL == m_vscpFileHead.type ) {
 
 		// Go to end of main file
-		rv = fseek( m_ftMain, 0, SEEK_END );
+		rv = fseek( m_ft, 0, SEEK_END );
 		if ( rv ) return errno;
 
-		long pos =  ftell( m_ftMain );
+		long pos =  ftell( m_ft );
 
 		// Write record
 		if ( sizeof( record ) != 
-			fwrite( &record , 1, sizeof(record), m_ftMain ) ) return errno;
+			fwrite( &record , 1, sizeof(record), m_ft ) ) return errno;
 
 		m_number_of_records++;	// Another record
 		if ( 0 == m_timestamp_first ) m_timestamp_first = timestamp; // If first 
 		m_timestamp_last = timestamp;
 
 	}
-	else if ( VSCP_TABLE_STATIC == m_mainFileHead.type ) {
-	
+	else if ( VSCP_TABLE_STATIC == m_vscpFileHead.type ) {
+		
+		fseek( m_ft, m_vscpFileHead.posStaticWrite, SEEK_SET );
+		fwrite( &record, 1, sizeof(record), m_ft );
+		// Check if we have gone past the end
+		if ( ftell( m_ft ) > (long)( m_vscpFileHead.staticSize * sizeof( _vscpFileRecord ) + sizeof( _vscpFileHead ) ) ) {
+			m_vscpFileHead.posStaticWrite = sizeof( _vscpFileHead );
+		}
+
 	}
 
 	return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeMainHeader
+// GetRangeOfData
 //
 
 long CVSCPTable::GetRangeOfData( time_t from, time_t to, void *buf, uint16_t size )
 {
-	int rv;
-	struct _mainFileRecord record;
-	long startpos = sizeof(_mainFileHead);
-	long searchpos;
-	long nRecs = m_number_of_records / 2;
-	
-	// Set initial searchpos to middle of file.
-	searchpos = sizeof(_mainFileHead) + nRecs * sizeof(_mainFileRecord);
+	long  returnCount = 0;
+	bool bFound = false;
+	struct _vscpFileRecord record;
+	long startSearchPos;
+	long startRecord = 0;
+	long endRecord = m_number_of_records-1;
+	long midRecord;
+	struct _vscpFileRecord *p = (struct _vscpFileRecord *)buf;
 
-	// If there is nothing to do do nothing
+	// Just work for normal files
+	if ( VSCP_TABLE_NORMAL != m_vscpFileHead.type ) return 0;
+
+	// Set size to filesize if no buffer is supplied.
+	if ( 0 == buf ) size = m_number_of_records * sizeof( struct _vscpFileRecord ) + sizeof(_vscpFileHead);
+
+	// If there is nothing to do - do nothing
 	if ( to < from ) return 0;
 
 	if ( m_timestamp_first >= from ) {
-		// We can start to read from the beginning
-		rv = fseek( m_ftMain, sizeof(_mainFileHead), SEEK_SET );
+		// Set initial searchpos to start.
+		startSearchPos = sizeof(_vscpFileHead);
 	}
 	else {
-		if ( m_number_of_records > 25 ) {
+		while ( endRecord >= startRecord ) {
 
-			while ( 1 ) {
+			midRecord = startRecord + (endRecord - startRecord) / 2;
 
-				// Seek the pos
-				rv = fseek( m_ftMain, searchpos, SEEK_SET );
-				
-				// read record
-				if ( sizeof(_mainFileRecord) != fread( &record, 1, sizeof(_mainFileRecord), m_ftMain ) ) {
-					// We start from the beginning as something went wrong
-					startpos = sizeof(_mainFileHead);
-					break;
-				}
+			// Seek the pos
+			startSearchPos = sizeof(_vscpFileHead) + midRecord*sizeof(_vscpFileRecord);
+			fseek( m_ft, startSearchPos, SEEK_SET );
 
-				if ( record.timestamp == from  )  {
-					// Exact match
-					startpos = searchpos;
-					break;
-				}
-				else if ( record.timestamp > from ) {
-					// Go halfways back to beginning
-					nRecs /= 2;
-					searchpos = sizeof(_mainFileHead) + nRecs * sizeof(_mainFileRecord);					
-				}
-				else {
-					// Test upper half
-					long incRecs = nRecs /2;
-					nRecs += incRecs;
-					searchpos = sizeof(_mainFileHead) + nRecs * sizeof(_mainFileRecord);	
-				}
-
+			// read record
+			if ( sizeof(_vscpFileRecord) != fread( &record, 1, sizeof(_vscpFileRecord), m_ft ) ) {
+				// Set initial searchpos to start.
+				startSearchPos = sizeof(_vscpFileHead);
+				break;
 			}
+
+			if ( record.timestamp == from ) {
+				bFound = true;
+				break;
+			}
+			// determine which subarray to search
+			else if (record.timestamp < from ) {
+				// change min index to search upper subarray
+				startRecord = midRecord + 1;
+			}
+			else {        
+				// change max index to search lower subarray
+				endRecord = midRecord - 1;
+			}
+		} // while
+
+		if ( bFound ) {
+			startSearchPos = sizeof(_vscpFileHead) + midRecord*sizeof(_vscpFileRecord);
 		}
-		
+		else {
+			if ( midRecord ) midRecord--;	// Start search befor current mid
+			startSearchPos = sizeof(_vscpFileHead) + midRecord*sizeof(_vscpFileRecord);
+		}
 	}
 
-	return rv;
+	// Position at search pos
+	fseek( m_ft, startSearchPos, SEEK_SET );
+
+	while ( size > sizeof(_vscpFileRecord) && !feof(m_ft) ) {
+		
+		// read record
+		if ( sizeof(_vscpFileRecord) != fread( &record, 1, sizeof(_vscpFileRecord), m_ft ) ) {
+				break;
+		}
+
+		// Break if we are ready
+		if ( record.timestamp > to ) break;
+
+		if ( record.timestamp >= from ) {
+			if ( NULL != buf ) {
+				memcpy( p++, &record, sizeof(_vscpFileRecord) );
+				size -= sizeof(_vscpFileRecord);
+			}
+		
+			returnCount++;
+		}
+
+	}
+
+	return returnCount;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// GetStaticData
+//
+
+long CVSCPTable::GetStaticData( void *buf, uint16_t size )
+{
+	// Just work for static files
+	if ( VSCP_TABLE_STATIC != m_vscpFileHead.type ) return 0;
+
+	// The size of he buf must fit the data
+	if ( ( m_vscpFileHead.staticSize * sizeof( _vscpFileRecord ) ) > size ) return 0;
+
+	// read records
+	if ( sizeof(_vscpFileRecord) != fread( buf, m_vscpFileHead.staticSize, sizeof(_vscpFileRecord), m_ft ) ) {
+		return 0;
+	}
+
+	return m_vscpFileHead.staticSize;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// GetStaticData
+//
+
+long CVSCPTable::GetStaticRequiredBuffSize( void )
+{
+	return ( m_vscpFileHead.staticSize * sizeof( _vscpFileRecord ) );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// getInfo
+//
+
+int CVSCPTable::getInfo( struct _vscptableInfo *pInfo, time_t from, time_t to )
+{
+	bool bFirst =true;
+	_vscpFileRecord record;
+
+	if ( NULL == pInfo ) return 0;
+
+	memset( pInfo, 0, sizeof( struct _vscptableInfo ) ); 
+
+	fseek( m_ft, 0, SEEK_SET ); // Go to beginning of file
+
+	while ( !m_ft ) {
+
+		// read record
+		if ( sizeof(_vscpFileRecord) != fread( &record, 1, sizeof(_vscpFileRecord), m_ft ) ) {
+			return 0;
+		}
+
+		if ( bFirst ) {
+				// Store reference values on first run.
+				pInfo->minValue = record.measurement;
+				pInfo->maxValue = record.measurement;
+				pInfo->minTime = record.timestamp;
+				pInfo->maxTime = record.timestamp;
+				bFirst = false;
+		}
+
+		if ( 0 == (from+to) || ( (record.timestamp >= from ) && ( record.timestamp <= to ) ) ) {
+				pInfo->nRecords++;
+				if ( record.measurement < pInfo->minValue ) pInfo->minValue = record.measurement;
+				if ( record.measurement > pInfo->maxValue ) pInfo->maxValue = record.measurement;
+				if ( record.timestamp < pInfo->minTime ) pInfo->minTime = record.timestamp;
+				if ( record.timestamp > pInfo->maxTime ) pInfo->maxTime = record.timestamp;
+				pInfo->meanValue = (record.measurement + pInfo->meanValue)/2;
+		}
+
+	}
+
+	return pInfo->nRecords;
 }

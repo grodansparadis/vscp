@@ -302,8 +302,20 @@ CControlObject::CControlObject()
     // Initialize the CRC
     crcInit();
 
-
 	CVSCPTable testtable( "c:/tmp/test.tbl" );
+/*
+	testtable.logData( 1, 100 );
+	testtable.logData( 8, 800 );
+	testtable.logData( 12, 1200 );
+	testtable.logData( 19, 2000 );
+	testtable.logData( 20, 2000 );
+	testtable.logData( 21, 2100 );
+	testtable.logData( 30, 3000 );
+	testtable.logData( 48, 4800 );
+*/
+	long size = testtable.GetRangeOfData( 22, 48, NULL, 0 );
+	size = testtable.GetRangeOfData( 1, 8, NULL, 0 );
+	size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
 
 }
 
@@ -1977,6 +1989,54 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }
 
                 // Next driver
+                subchild = subchild->GetNext();
+
+            }
+
+        }
+		// <table name="jhjhdjhsdjh" description="jsjdsjhdhsjh" xaxis="lfdlfldk" yaxis="dfddfd" path="path" type="normal|static" size="n" class="n" type="n" unit="n" />
+		else if (child->GetName() == wxT("tables")) {
+
+            wxXmlNode *subchild = child->GetChildren();
+            while (subchild) {
+
+                wxString tbl_name;
+                wxString tbl_description;
+                wxString tbl_xaxis;
+				wxString tbl_yaxis;
+				wxString tbl_path;
+				int tbl_type;
+				long tbl_size;
+				uint16_t tbl_vscpclass;
+				uint16_t tbl_vscptype;
+				int tbl_unit;
+
+                bool bTable = false;
+
+                if (subchild->GetName() == wxT("table")) {
+
+					tbl_name = subchild->GetAttribute(wxT("name"), wxT(""));
+					tbl_description = subchild->GetAttribute(wxT("description"), wxT(""));
+					tbl_xaxis = subchild->GetAttribute(wxT("xaxis"), wxT(""));
+					tbl_yaxis = subchild->GetAttribute(wxT("yaxis"), wxT(""));
+					tbl_path = subchild->GetAttribute(wxT("path"), wxT(""));
+					tbl_type = vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0")/*VSCP_TABLE_NORMAL*/ ) );
+					tbl_size = vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) );
+					tbl_vscpclass = vscp_readStringValue( subchild->GetAttribute( wxT("class"), wxT("10") ) );
+					tbl_vscptype = vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) );
+					tbl_unit = vscp_readStringValue( subchild->GetAttribute( wxT("unit"), wxT("0") ) );
+					bTable = true;
+                }
+
+                // Add table
+                if (bTable) {
+					CVSCPTable *pTable = new CVSCPTable( tbl_path.mbc_str(), tbl_type, tbl_size);
+					if ( NULL != pTable ) {
+						m_listTables.Append( pTable ) ;
+					}
+                    bTable = false;
+                }
+
                 subchild = subchild->GetNext();
 
             }

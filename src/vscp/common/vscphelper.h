@@ -33,13 +33,6 @@
 #if !defined(VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
 #define VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
-#ifdef VSCP_QT
-
-#include <QString>
-#include <QStringList>
-#include <QtEndian>
-#else
-
 
 #include <wx/wx.h>
 #include <wx/hashmap.h>
@@ -47,7 +40,6 @@
 #include <sys/times.h>
 #endif
 
-#endif
 
 #include "vscp.h"
 #include "vscp_class.h"
@@ -84,6 +76,15 @@ extern "C" {
 	// ***************************************************************************
 	//                                General Helpers
 	// ***************************************************************************
+
+	/*!
+      Read a numerical value from a string
+      The string value can be set as a hex or a decimal value.
+      \param strval wxString containing value to be converted
+      \return Unsigned long containing value
+     */
+ 
+    uint32_t vscp_readStringValue(const wxString& strval);
 
 	/*!
 		Convert string to lowercase
@@ -242,15 +243,6 @@ extern "C" {
  
     wxString& vscp_replaceBackslash(wxString& strval);
 
-
-    /*!
-      Read a numerical value from a string
-      The string value can be set as a hex or a decimal value.
-      \param strval wxString containing value to be converted
-      \return Unsigned long containing value
-     */
- 
-    uint32_t vscp_readStringValue(const wxString& strval);
 
 
     /*!

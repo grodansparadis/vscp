@@ -163,9 +163,6 @@
     <ClCompile Include="..\..\common\vscpeventhelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\common\strtokenizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\common\mongoose.c">
       <Filter>Source Files</Filter>
     </ClCompile>

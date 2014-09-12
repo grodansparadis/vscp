@@ -41,6 +41,7 @@
 #include "clientlist.h"
 #include "interfacelist.h"
 #include "userlist.h"
+#include "tables.h"
 #include "../../vscp/common/vscp.h"
 #include "vscpvariable.h"
 #include "tcpipclientthread.h"
@@ -999,6 +1000,11 @@ public:
     CUserList m_userList;
     wxMutex m_mutexUserList;
 
+	/*!
+		This is a list with defined tables
+	*/
+	listVSCPTables m_listTables;
+	wxMutex m_mutexTableList;
 
     // *************************************************************************
 

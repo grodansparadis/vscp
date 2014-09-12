@@ -581,7 +581,6 @@
     <ClCompile Include="..\..\..\common\mongoose.c" />
     <ClCompile Include="..\..\..\common\randpassword.cpp" />
     <ClCompile Include="..\..\..\common\slre.c" />
-    <ClCompile Include="..\..\..\common\strtokenizer.cpp" />
     <ClCompile Include="..\..\common\clientlist.cpp" />
     <ClCompile Include="..\..\common\controlobject.cpp" />
     <ClCompile Include="..\..\..\common\crc.c" />

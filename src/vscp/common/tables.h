@@ -44,31 +44,48 @@ ab+		binary Write Create
 */
 
 
+#if !defined(VSCPTABLE_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
+#define VSCPTABLE_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_
 
 // Table types
-enum {
+enum  {
 	VSCP_TABLE_NORMAL = 0,
 	VSCP_TABLE_STATIC
 };
 
 
+
 // Thuis structure is located at the start of the main file.
-struct _mainFileHead {
+struct _vscpFileHead {
 	uint8_t id[2];			// File id (mail: 0x55,0xaa  index 0xaa,0x55
 	uint8_t type;			// VSCP_TABLE_NORMAL/VSCP_TABLE_STATIC/VSCP_TABLE_INDEX
-	char m_nameTable[64];	// NAme of table
-	char m_nameXLabel[64];	// Label for X-axis
-	char m_nameYLabel[64];	// Label for Y-axis
+	char nameTable[64];		// Name of table - Used to reference it
+	char descriptionTable[512];	// Description of table
+	char nameXLabel[128];	// Label for X-axis
+	char nameYLabel[128];	// Label for Y-axis
 	uint16_t vscp_class;	// Should be 10 but in future can be 11/12/13...		
 	uint16_t vscp_type;		// Measurement type: temp, current etc
-	uint8_t vscp_unit;		// Measurement unit: Celsius/Fahrenheit/Kelvin
-	fpos_t pos_static;		// Next write position for static file
+	uint8_t vscp_unit;		// Measurement unit: e.g. Celsius(1)/Fahrenheit(2)/Kelvin(0) for temperature class=10/Type=6
+
+	fpos_t posStaticRead;	// Next read position for static file
+	fpos_t posStaticWrite;	// Next write position for static file
+
+	long staticSize;		// Number of records in static file
 };
 
 // All data is written with this record type
-struct _mainFileRecord {
+struct _vscpFileRecord {
 	time_t timestamp;
 	double measurement;
+};
+
+struct _vscptableInfo {
+	double minValue;
+	double maxValue;
+	time_t minTime;
+	time_t maxTime;
+	double meanValue;
+	uint32_t nRecords;
 };
 
 
@@ -77,11 +94,8 @@ struct _mainFileRecord {
 class CVSCPTable {
 public:
 
-	/// Constructor dynamic table
-	CVSCPTable( const char *fileMain );
-
-	/// Constructor for static table
-	CVSCPTable( const char *fileMain, uint32_t size );
+	/// Constructor dtable
+	CVSCPTable( const char *file, int type = VSCP_TABLE_NORMAL, uint32_t size = 0 );
 
 	// Destructor
 	virtual ~CVSCPTable(void);
@@ -100,6 +114,7 @@ public:
 		@return zero on succss
 	*/
 	int setTableInfo( const char * tableName, 
+						const char * tableDescription,
 						const char *  xAxisLabel, 
 						const char * yAxisLabel,
 						uint16_t vscp_class, 
@@ -151,27 +166,49 @@ public:
 		@param size Size of bugger in bytes
 		@return Number of records read.
 	*/
-	long GetRangeOfData( time_t from, time_t to, void *buf, uint16_t size );
+	long GetRangeOfData( time_t from, time_t to, void *buf = NULL, uint16_t size = 0 );
+
+	/*!
+		Get static dataset
+		@param buf Buffer that holds the result
+		@param size of buffer
+		@return Number of records in buffer or zero on error
+	*/
+	long GetStaticData( void *buf, uint16_t size );
+
+	/*!
+		Get required buffer size for static file
+		@return Returns the number of bytes needed to hold the
+				static file.
+	*/
+	long GetStaticRequiredBuffSize( void );
+
+	/*!
+		Get statistics for a range for a range
+	*/
+	int getInfo( struct _vscptableInfo *pInfo, time_t from = 0, time_t to = 0 );
+
+	/*!
+		Calculate mean over a range
+	*/
+	double calculatMean( time_t from, time_t to );
 
 private:
 	
 	/// File handel for mainfile
-	FILE * m_ftMain;
+	FILE * m_ft;
 
 	/// Table type
-	int m_type;
+	//int m_type;
 
 	/// Size for round robin table
-	uint32_t m_sizeStaticTable;
+	//uint32_t m_sizeStaticTable;
 
 	/// Path to main file
 	wxString m_pathMain;
 
-	/// Path to index file
-	wxString m_pathIndex;
-
 	/// Main file head structure
-	struct _mainFileHead m_mainFileHead;
+	struct _vscpFileHead m_vscpFileHead;
 
 	/// Timestamp for first record
 	time_t m_timestamp_first;
@@ -182,3 +219,10 @@ private:
 	/// Current number of records in database
 	long m_number_of_records;
 };
+
+
+WX_DECLARE_LIST( CVSCPTable, listVSCPTables );
+
+
+
+#endif
