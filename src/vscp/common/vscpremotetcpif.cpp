@@ -159,7 +159,7 @@ long VscpTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
 {
     //int pos;
     bool bUsePassword = false;
-    short port = VSCP_LEVEL2_TCP_PORT;
+    short port = 9598; // VSCP_LEVEL2_TCP_PORT;
 
     wxString wxstr;
     wxString strUsername;
@@ -2087,7 +2087,7 @@ ctrlObjVscpTcpIf::ctrlObjVscpTcpIf()
     m_strUsername = _("admin");
     m_strPassword = _("secret");
     m_strHost = _("localhost");
-    m_port = VSCP_LEVEL2_TCP_PORT;
+    m_port = 9598;						// VSCP_LEVEL2_TCP_PORT;
     m_rxState = RX_TREAD_STATE_NONE;
     m_bQuit = false; 	 				// Dont even think of quiting yet...
     m_error = 0;      				    // No error
