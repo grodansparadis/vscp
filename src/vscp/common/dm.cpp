@@ -49,7 +49,7 @@
 #include "actioncodes.h"
 #include "vscpvariable.h"
 #include "controlobject.h"
-#include "vscptcpif.h"
+#include "vscpremotetcpif.h"
 #include "dm.h"
 
 

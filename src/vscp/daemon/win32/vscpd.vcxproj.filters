@@ -110,6 +110,9 @@
     <ClInclude Include="..\..\common\vscpwebserver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\common\vscpremotetcpif.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\common\clientlist.cpp">
@@ -163,9 +166,6 @@
     <ClCompile Include="..\..\..\common\randpassword.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\common\vscptcpif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\common\vscpeventhelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -182,6 +182,9 @@
       <Filter>Header Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\common\vscpwebserver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\vscpremotetcpif.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

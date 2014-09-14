@@ -77,6 +77,348 @@ typedef struct {
 	wxProcess *m_pfnCommand;            // Function to execute
 } structCommand;
 
+
+
+/*!
+	This class implement the listen thread for
+	the vscpd connections on the TCP interface
+*/
+
+class VSCPClientThread : public wxThread
+{
+
+public:
+	
+	/// Constructor
+	VSCPClientThread();
+
+	/// Destructor
+	~VSCPClientThread();
+
+	/*!
+		Thread code entry point
+	*/
+	virtual void *Entry();
+
+	/*!
+		TCP/IP handler
+	*/
+	static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
+
+	/*!
+		When a comman is received on the TCP/IP interface the command handelr is called.
+	*/
+	void CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, const char *pCommand );
+
+	/*! 
+		called when the thread exits - whether it terminates normally or is
+		stopped with Delete() (but not when it is Kill()ed!)
+	*/
+	virtual void OnExit();
+
+	
+		/*!
+		Check if a user has been verified
+		@return true if verified, else false.
+	*/
+	bool isVerified( void );
+
+	/*!
+		Check if a user has enough privilege
+		@return true if yes, else false.
+	*/
+	bool checkPrivilege( unsigned char reqiredPrivilege );
+
+
+	/*!
+		Client send event
+	*/	
+	void handleClientSend( void );
+
+	/*!
+		Client receive
+	*/	
+	void handleClientReceive( void  );
+
+	/*!
+		sendOneEventFromQueue
+		@param 	bStatusMsg True if response messages (+OK/-OK) should be sent. Default.
+		@return True on success/false on failue.
+	*/
+	bool sendOneEventFromQueue( bool bStatusMsg = true );
+
+	/*!
+		Client DataAvailable
+	*/	
+	void handleClientDataAvailable ( void );
+
+	/*!
+		Client Clear Input queue
+	*/
+	void handleClientClearInputQueue();
+
+	/*!
+		Client Get statistics
+	*/
+	void handleClientGetStatistics( void );
+
+	/*!
+		Client get status
+	*/
+	void handleClientGetStatus ( void );
+
+	/*!
+		Client get channel GUID
+	*/
+	void handleClientGetChannelGUID ( void );
+
+	/*!
+		Client set channel ID
+	*/
+	void handleClientSetChannelGUID ( void );
+
+	/*!
+		Client get version
+	*/
+	void handleClientGetVersion( void );
+
+	/*!
+		Client set filter
+	*/
+	void handleClientSetFilter( void );
+
+	/*!
+		Client set mask
+	*/
+	void handleClientSetMask( void );
+
+	/*!
+		Client issue user
+	*/
+	void handleClientUser( void );
+
+	/*!
+	Client issue password
+	*/
+	bool handleClientPassword ( void );
+
+	/*!
+		Client Get channel ID
+	*/
+	void handleClientGetChannelID ( void );
+
+	/*!
+		Handle RcvLoop
+	*/
+	void handleClientRcvLoop( void );
+
+  /*!
+		Client Help
+	*/
+	void handleClientHelp ( void );
+
+  /*!
+		Client Test
+	*/
+	void handleClientTest ( void );
+
+  /*!
+		Client Restart
+	*/
+	void handleClientRestart ( void );
+
+  /*!
+		Client Shutdown
+	*/
+	void handleClientShutdown ( void );
+
+	/*!
+		Client REMOTE command
+	*/
+	void handleClientRemote( void );
+
+	/*!
+		Client CLIENT/INTERFACE command
+	*/
+	void handleClientInterface( void );
+
+	/*!
+		Client INTERFACE LIST command
+	*/
+	void handleClientInterface_List( void );
+
+	/*!
+		Client INTERFACE UNIQUE command
+	*/
+	void handleClientInterface_Unique( void );
+
+	/*!
+		Client INTERFACE NORMAL command
+	*/
+	void handleClientInterface_Normal( void );
+
+	/*!
+		Client INTERFACE CLOSE command
+	*/
+	void handleClientInterface_Close( void );
+
+	/*!
+		Client UDP command
+	*/
+	void handleClientUdp( void );
+
+	/*!
+		Client FILE command
+	*/
+	void handleClientFile( void );
+
+	/*!
+		Client VARIABLE command
+	*/
+	void handleClientVariable( void );
+
+	/*!
+		Variable List
+	*/
+	void handleVariable_List();
+
+	/*!
+		Variable Write
+	*/
+	void handleVariable_Write();
+
+	/*!
+		Variable Read
+        @param bOKResponse OK response will be given if true (default).
+	*/
+	void handleVariable_Read( bool bOKResponse = true );
+
+	/*!
+		Variable ReadReset
+	*/
+	void handleVariable_ReadReset();
+
+	/*!
+		Variable Write
+	*/
+	void handleVariable_Reset();
+
+	/*!
+		Variable Remove
+	*/
+	void handleVariable_Remove();
+
+    /*!
+        Variable Read/remove
+    */
+    void handleVariable_ReadRemove();
+
+	/*!
+		Variable Length
+	*/
+	void handleVariable_Length();
+
+	/*!
+		Variable Load
+	*/
+	void handleVariable_Load();
+
+	/*!
+		Variable Save
+	*/
+	void handleVariable_Save();
+
+	/*!
+		Client DM command
+	*/
+	void handleClientDm( void );
+
+	/*!
+		Enable DM row
+	*/
+	void handleDM_Enable( void );
+
+	/*!
+		Disable DM row
+	*/
+	void handleDM_Disable( void );
+
+	/*!
+		List DM 
+	*/
+	void handleDM_List( void );
+
+	/*!
+		Add DM row
+	*/
+	void handleDM_Add( void );
+
+	/*!
+		Delete DM row
+	*/
+	void handleDM_Delete( void );
+
+	/*!
+		Do action for row
+	*/
+	void handleDM_Trigger();
+	
+	/*!
+		Delete DM row trigger counter
+	*/
+	void handleDM_ClearTriggerCount();
+
+	/*!
+		Delete DM row error counter
+	*/
+	void handleDM_ClearErrorCount();
+
+	/*!
+		Reset DM
+	*/
+	void handleDM_Reset( void );
+
+	/*!
+		Client LIST command
+	*/
+	void handleClientList( void );
+
+	/*!
+		Client DRIVER command
+	*/
+	void handleClientDriver( void );
+
+// --- Member variables ---
+
+	/*!
+		Termination control
+	*/
+	bool m_bQuit;
+
+	wxString m_lastCommand;
+	wxString m_currentCommand;
+	wxString m_currentCommandUC;
+
+	/*!
+		Pointer to ower owner
+	*/
+	CControlObject *m_pCtrlObject;
+
+	/*!
+		Number of clients currently connected
+	*/
+	//int m_numClients;
+
+	/*!
+		List of client threads
+	*/
+  //TCPCLIENTS m_tcpclients; 
+
+};
+
+
+
+
 /*!
 	This class implement the Client thread for
 	the vscpd TCP interface
@@ -459,63 +801,6 @@ public:
 
 // List with clientitems
 WX_DECLARE_LIST ( TcpClientThread, TCPCLIENTS );
-
-
-/*!
-	This class implement the listen thread for
-	the vscpd connections on the TCP interface
-*/
-
-class TcpClientListenThread : public wxThread
-{
-
-public:
-	
-	/// Constructor
-	TcpClientListenThread();
-
-	/// Destructor
-	~TcpClientListenThread();
-
-	/*!
-		Thread code entry point
-	*/
-	virtual void *Entry();
-
-
-	/*! 
-		called when the thread exits - whether it terminates normally or is
-		stopped with Delete() (but not when it is Kill()ed!)
-	*/
-  virtual void OnExit();
-
-
-// --- Member variables ---
-
-	/*!
-		Termination control
-	*/
-	bool m_bQuit;
-
-	/*!
-		Pointer to ower owner
-	*/
-	CControlObject *m_pCtrlObject;
-
-	/*!
-		Number of clients currently connected
-	*/
-	int m_numClients;
-
-	/*!
-		List of client threads
-	*/
-  TCPCLIENTS m_tcpclients; 
-
-};
-
-
-
 
 
 #endif

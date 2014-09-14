@@ -45,6 +45,7 @@
 #include "vscphelper.h"
 #include "../../common/dllist.h"
 #include "../../common/md5.h"
+#include "../../common/net_skeleton.h"
 #include "version.h"
 #include "controlobject.h"
 
@@ -52,14 +53,18 @@
 WX_DEFINE_LIST(TCPCLIENTS);
 
 
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
-// TcpClientListenThread
+// VSCPWebServerThread
 //
 // This thread listens for conection on a TCP socket and starts a new thread
 // to handle client requests
 //
 
-TcpClientListenThread::TcpClientListenThread()
+VSCPClientThread::VSCPClientThread()
 : wxThread(wxTHREAD_JOINABLE)
 {
     //OutputDebugString( "TCP ClientThread: Create");
@@ -69,7 +74,7 @@ TcpClientListenThread::TcpClientListenThread()
 }
 
 
-TcpClientListenThread::~TcpClientListenThread()
+VSCPClientThread::~VSCPClientThread()
 {
 	;
 }
@@ -79,8 +84,10 @@ TcpClientListenThread::~TcpClientListenThread()
 // Entry
 //
 
-void *TcpClientListenThread::Entry()
+void *VSCPClientThread::Entry()
 {
+
+/*
     //OutputDebugString( "TCP ListenThread: Start");
     wxSocketServer *server;
 
@@ -146,7 +153,23 @@ void *TcpClientListenThread::Entry()
 
     delete server;
 
-    m_pCtrlObject->logMsg ( _T ( "TCP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
+*/
+	struct ns_mgr mgr;
+	const char *port1 = "1234", *port2 = "127.0.0.1:17000";
+
+	ns_mgr_init( &mgr, this->m_pCtrlObject, VSCPClientThread::ev_handler );
+	
+	ns_bind( &mgr, port1, NULL );
+	ns_bind( &mgr, port2, NULL );
+
+	while ( !TestDestroy() && !m_bQuit ) {
+		ns_mgr_poll(&mgr, 1000);
+	}
+
+	// release the server
+	ns_mgr_free( &mgr );
+
+    m_pCtrlObject->logMsg( _T ( "TCP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
 
     return NULL;
 }
@@ -156,7 +179,7 @@ void *TcpClientListenThread::Entry()
 // OnExit
 //
 
-void TcpClientListenThread::OnExit()
+void VSCPClientThread::OnExit()
 {
     TCPCLIENTS::iterator iter;
 
@@ -181,462 +204,354 @@ void TcpClientListenThread::OnExit()
 
 }
 
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
-//****************************************************************************
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// TcpClientThread
-//
-// This thread communicates with a specific client.
+// ev_handler
 //
 
-TcpClientThread::TcpClientThread( wxThreadKind kind )
-    : wxThread ( kind )
+void 
+VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
 {
-    m_bQuit = false;
+	char *p;
+	struct iobuf *io = &conn->recv_iobuf;
+	CControlObject *pCtrlObject = (CControlObject *)pUser;
 
-    m_pCtrlObject = NULL;
-    m_pClientSocket = NULL;		
-    m_pUserItem = NULL;             // No user
-    m_bOK = false;
-    m_bVerified = false;            // No user verified
-    m_bUsername = false;            // No username entered
-    m_bRun = true;                  // Yes run to the hills
-    m_bBinaryMode = false;          // Standard ,mode
+	switch (ev) {
+	
+		case NS_CONNECT: // connect() succeeded or failed. int *success_status
+			break;
+
+		case NS_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
+			{
+				pCtrlObject->logMsg(_T("TCP Client: Accept.\n"), DAEMON_LOGMSG_INFO);
+
+				
+
+				// We need to create a clientobject and add this object to the list
+				CClientItem *pClientItem = new CClientItem;
+				if ( NULL == pClientItem ) {
+					pCtrlObject->logMsg ( _T ( "[TCP/IP Clinet] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
+					conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+					return;
+				}
+
+				// save the client item
+				conn->connection_data = pClientItem;
+
+				// This is now an active Client
+				pClientItem->m_bOpen = true; 
+				pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
+				pClientItem->m_strDeviceName = _("Remote TCP/IP Client connected at ");
+				wxDateTime now = wxDateTime::Now(); 
+				pClientItem->m_strDeviceName += now.FormatISODate();
+				pClientItem->m_strDeviceName += _(" ");
+				pClientItem->m_strDeviceName += now.FormatISOTime();
+
+				// Add the client to the Client List
+				pCtrlObject->m_wxClientMutex.Lock();
+				pCtrlObject->addClient( pClientItem );
+				pCtrlObject->m_wxClientMutex.Unlock();
+
+				// Send welcome message
+				wxString str = _(MSG_WELCOME);
+				str += _("+OK Version: ");
+				str += _(VSCPD_DISPLAY_VERSION);
+				str += _("\r\n");
+				str += _("+OK ");
+				str += _(VSCPD_COPYRIGHT);
+				str += _(MSG_OK);
+				ns_send( conn, str.mbc_str(), str.Length() );
+
+				// Clear the filter (Allow everything )
+				vscp_clearVSCPFilter( &pClientItem->m_filterVSCP );
+			}
+			break;
+
+		case NS_CLOSE:
+			break;
+
+		case NS_RECV:
+			//ns_send(conn, io->buf, io->len);  // Echo message back
+			//iobuf_remove(io, io->len);        // Discard message from recv buffer
+			p = strstr( io->buf, "\r\n" );
+			if ( NULL != p ) {
+				*p = 0;
+				pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, p );
+				iobuf_remove( io, strlen(p) + 2);
+			}
+			break;
+
+		case NS_SEND:
+			break;
+
+		case NS_POLL:
+			break;
+
+		default:
+			break;
+	}
 }
 
 
-TcpClientThread::~TcpClientThread()
-{
-    m_pCtrlObject = NULL;           // Mark us as deleted
-}
-
-
 ///////////////////////////////////////////////////////////////////////////////
-// Entry
+// CommandHandler
 //
 
-void *TcpClientThread::Entry()
+void 
+VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, const char *pCommand )
 {
-    char rbuf[ 2048 ];
-    wxString wxstr;
-    int pos4lf;
+	
 
-    // Must have a valid pointer to the control object
-    if ( NULL == m_pCtrlObject ) return NULL;
+	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	
+	if ( NULL == pClientItem ) {
+		pCtrlObject->logMsg ( _T ( "[TCP/IP Clinet] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
+		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+	}
 
-    // Must have a socket
-    if ( NULL == m_pClientSocket ) return NULL;
+	if ( NULL == pCtrlObject ) {
+		pCtrlObject->logMsg ( _T ( "[TCP/IP Clinet] ControlObject pointer is NULL in command handeler.\n" ), DAEMON_LOGMSG_ERROR );
+		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+	}
 
-    // Must be connected
-    if ( m_pClientSocket->IsDisconnected() ) return NULL;
+	//m_bOK = true;
+	m_currentCommand.FromAscii( pCommand );
+	m_currentCommandUC = currentCommand.Upper();
+    m_currentCommand.Trim();
+    m_currentCommand.Trim( false );
+    m_currentCommandUC.Trim();
+    m_currentCommandUC.Trim( false );
+	//wxLogDebug( _("Argument = ") + m_currentCommandUC );
 
-    m_pCtrlObject->logMsg(_T("TCP ClientThread: Start.\n"), DAEMON_LOGMSG_INFO);
 
-    // We need to create a clientobject and add this object to the list
-    m_pClientItem = new CClientItem;
-    if ( NULL == m_pClientItem ) {
-        return NULL;
+    // *********************************************************************
+    //                                 QUIT
+    // *********************************************************************
+    if ( 0 == m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
+		m_pClientSocket->Write( MSG_GOODBY, strlen ( MSG_GOODBY ) );
+        break;
     }
 
-    //OutputDebugString( "TCP ClientThread: Start all pointers OK");
-
-    // This is now an active Client
-    m_pClientItem->m_bOpen = true; 
-    m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
-    m_pClientItem->m_strDeviceName = _("Remote TCP/IP Client connected at ");
-    wxDateTime now = wxDateTime::Now(); 
-    m_pClientItem->m_strDeviceName += now.FormatISODate();
-    m_pClientItem->m_strDeviceName += _(" ");
-    m_pClientItem->m_strDeviceName += now.FormatISOTime();
-
-    // Add the client to the Client List
-    m_pCtrlObject->m_wxClientMutex.Lock();
-    m_pCtrlObject->addClient( m_pClientItem );
-    m_pCtrlObject->m_wxClientMutex.Unlock();
-
-    m_pClientSocket->SetTimeout( 1 );
-    //m_pClientSocket->SetFlags( wxSOCKET_BLOCK | wxSOCKET_WAITALL );
-    m_pClientSocket->SetFlags( wxSOCKET_BLOCK );
-
-
-    if ( *m_pmumClients > VSCP_TCP_MAX_CLIENTS ) {
-
-        m_pClientSocket->Write( MSG_MAX_NUMBER_OF_CLIENTS,
-            strlen ( MSG_MAX_NUMBER_OF_CLIENTS ) );
-        m_bRun = false;
-
+    //*********************************************************************
+    //                            No Operation
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "NOOP" ) ) ) {
+	    m_pClientSocket->Write( MSG_OK, strlen ( MSG_OK ) );
     }
-    else {
-        // Send welcome message
-        wxString str = _(MSG_WELCOME);
-        str += _("+OK Version: ");
-        str += _(VSCPD_DISPLAY_VERSION);
-        str += _("\r\n");
-		str += _("+OK ");
-		str += _(VSCPD_COPYRIGHT);
-        //str += _(MSG_COPYRIGHT);
-        str += _(MSG_OK);
 
-        m_pClientSocket->Write( str.mb_str(), str.Length() );
+	//*********************************************************************
+    //                             Send event
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "SEND " ) ) ) {
+        if ( checkPrivilege( 4 ) ) handleClientSend();
+    }
+
+    //*********************************************************************
+    //                            Read event
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "RETR" ) ) ) {
+        if ( checkPrivilege( 2 ) ) handleClientReceive();
+    }
+
+    //*********************************************************************
+    //                            Data Available
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "CDTA" ) ) ) {
+        if ( checkPrivilege( 1 ) ) handleClientDataAvailable();
+    }
+
+    //*********************************************************************
+    //                          Clear input queue
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "CLRA" ) ) ) {
+        if ( checkPrivilege( 1 ) ) handleClientClearInputQueue();
     }
 
 
-    // Clear the filter (Allow everything )
-    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+    //*********************************************************************
+    //                           Get Statistics
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "STAT" ) ) ) {
+         if ( checkPrivilege( 1 ) ) handleClientGetStatistics();
+    }
 
+    //*********************************************************************
+    //                            Get Status
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "INFO" ) ) ) {
+        if ( checkPrivilege( 1 ) ) handleClientGetStatus();
+    }
 
-    ///////////
-    // LOOP  //
-    ///////////
+    //*********************************************************************
+    //                           Get Channel ID
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "CHID" ) ) ) {
+        if ( checkPrivilege( 1 ) ) handleClientGetChannelID();
+    }
 
+    //*********************************************************************
+    //                          Set Channel GUID
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "SGID" ) ) ) {
+        if ( checkPrivilege( 6 ) ) handleClientSetChannelGUID();
+    }
 
-    wxString wxLastCommand;
-    while ( !TestDestroy() && m_bRun && !m_bQuit ) {
+    //*********************************************************************
+    //                          Get Channel GUID
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "GGID" ) ) ) {
+        if ( checkPrivilege( 1 ) ) handleClientGetChannelGUID();
+    }
 
-        // Check if command already in buffer
-        if ( wxNOT_FOUND == ( pos4lf = wxstr.Find ( (const char)0x0a ) ) ) {
-            
-            // Read new data
-            memset( rbuf, 0, sizeof( rbuf ) );                  // nil rbuf
-            m_pClientSocket->Read ( rbuf, sizeof ( rbuf ) );    
+    //*********************************************************************
+    //                             Get Version
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "VERS" ) ) ) {
+        handleClientGetVersion();
+    }
 
-            if ( m_pClientSocket->Error() &&
-                ( wxSOCKET_NOERROR != ( m_err = m_pClientSocket->LastError() ) ) ) {
-                switch ( m_err ) {
+    //*********************************************************************
+    //                             Set Filter
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "SFLT" ) ) ) {
+        if ( checkPrivilege( 4 ) ) handleClientSetFilter();
+    }
 
-                    case wxSOCKET_IOERR:
-                    case wxSOCKET_INVSOCK:
-                        m_bRun = false;	// socket error
-                        break;
+    //*********************************************************************
+    //                             Set Mask
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "SMSK" ) ) ) {
+        if ( checkPrivilege( 4 ) ) handleClientSetMask();
+    }
 
-                    case wxSOCKET_TIMEDOUT:
-                        wxMilliSleep( 200 );
+    //*********************************************************************
+    //                               Username
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "USER " ) ) ) {
+        handleClientUser();
+    }
 
-                        continue;
-                        break;
-
-                }
-
-            }
-            else if ( 0 == m_pClientSocket->LastCount() ) {
-                m_bRun = false; // No connection
-            }
-            else {
-                rbuf[ m_pClientSocket->LastCount() ] = 0;
-                wxstr += wxString ( rbuf, wxConvUTF8 );
-            }
-            /*
-
-            if ( wxSOCKET_TIMEDOUT == m_err ) {
-                continue;
-            }
-            else {
-                m_bRun = false;
-                m_pClientSocket->Close();
-            }
-
-            }
-            else if ( 0 == m_pClientSocket->LastCount() ) {
-                m_bRun = false;
-                m_pClientSocket->Close();
-            }
-            else {
-                rbuf[ m_pClientSocket->LastCount() ] = 0;
-                wxstr += wxString ( rbuf, wxConvUTF8 );
-            }
-
-            */
+    //*********************************************************************
+    //                             Password
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "PASS " ) ) ) {
+        if ( !handleClientPassword() ) {
+            break; // Disconnect
         }
+    }  
+
+    //*********************************************************************
+    //                        + (repeat last command)
+    //*********************************************************************
+    else if ( 0 == m_currentCommandUC.Find ( _( "+" ) ) ) {
+        // Repeat last command
+        wxstr = wxLastCommand + _("\n") + wxstr;
+        m_currentCommandUC = wxLastCommand;
+        continue;
+    }
+
+	//*********************************************************************
+	//                               Rcvloop
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "RCVLOOP" ) ) ) {
+		if ( checkPrivilege( 2 ) ) handleClientRcvLoop();
+	}
+
+	//*********************************************************************
+	//                              Help
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "HELP" ) ) ) {
+		handleClientHelp();
+	}
+
+	//*********************************************************************
+	//                              Restart
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "RESTART" ) ) ) {
+		if ( checkPrivilege( 15 ) ) handleClientRestart();
+	}
+
+	//*********************************************************************
+	//                              Driver
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "DRIVER " ) ) ) {
+		if ( checkPrivilege( 15 ) ) handleClientDriver();
+	}
+
+	//*********************************************************************
+	//                               DM
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "DM " ) ) ) {
+		if ( checkPrivilege( 15 ) ) handleClientDm();
+	}
+
+	//*********************************************************************
+	//                             Variable
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "VARIABLE " ) ) ) {
+		if ( checkPrivilege( 15 ) ) handleClientVariable();
+	}
+
+	//*********************************************************************
+	//                               File
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "FILE " ) ) ) {
+		if ( checkPrivilege( 15 ) ) handleClientFile();
+	}
+
+	//*********************************************************************
+	//                               UDP
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "UDP " ) ) ) {
+		if ( checkPrivilege( 15 ) ) handleClientUdp();
+	}
+
+	//*********************************************************************
+	//                         Client/interface
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "CLIENT " ) ) ) {
+		m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-7 ); // Remove "CLIENT "
+		if ( checkPrivilege( 15 ) ) handleClientInterface();
+	}
+	else if ( 0 == m_currentCommandUC.Find ( _( "INTERFACE " ) ) ) {
+		m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-10 ); // Remove "INTERFACE "
+		if ( checkPrivilege( 15 ) ) handleClientInterface();
+	}
+
+	//*********************************************************************
+	//                               User
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "USER " ) ) ) {
+		handleClientUser();
+	}
+
+	//*********************************************************************
+	//                               Test
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "TEST" ) ) ) {
+		if ( checkPrivilege( 15 ) ) handleClientTest();
+	}
 
 
-        // * * *  Check for a command  * * *
-
-        else {
-            
-            m_bOK = true;
-
-            m_wxcmd = wxstr.Mid ( 0, pos4lf );
-            //wxLogDebug( _("Command = ") + m_wxcmd );
-            m_wxcmdUC = m_wxcmd.Upper();
-            m_wxcmd.Trim();
-            m_wxcmd.Trim( false );
-            m_wxcmdUC.Trim();
-            m_wxcmdUC.Trim( false );
-            wxstr = wxstr.Mid ( pos4lf + 1 );
-            //wxLogDebug( _("Argument = ") + m_wxcmdUC );
+	//*********************************************************************
+	//                               Shutdown
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "SHUTDOWN" ) ) ) {
+		if ( checkPrivilege( 15 ) ) handleClientShutdown();
+	}
 
 
-            // *********************************************************************
-            //                                 QUIT
-            // *********************************************************************
-            if ( 0 == m_wxcmdUC.Find ( _( "QUIT" ) ) ) {
-                m_pClientSocket->Write( MSG_GOODBY, strlen ( MSG_GOODBY ) );
-                break;
-            }
+	//*********************************************************************
+	//                               Que?
+	//*********************************************************************
+	else {
 
-            //*********************************************************************
-            //                            No Operation
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "NOOP" ) ) ) {
-                m_pClientSocket->Write( MSG_OK, strlen ( MSG_OK ) );
-            }
+		m_pClientSocket->Write( MSG_UNKNOWN_COMMAND,
+			strlen ( MSG_UNKNOWN_COMMAND ) );
+	}
 
-            //*********************************************************************
-            //                             Send event
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "SEND " ) ) ) {
-                if ( checkPrivilege( 4 ) ) handleClientSend();
-            }
-
-            //*********************************************************************
-            //                            Read event
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "RETR" ) ) ) {
-                if ( checkPrivilege( 2 ) ) handleClientReceive();
-            }
-
-            //*********************************************************************
-            //                            Data Available
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "CDTA" ) ) ) {
-                if ( checkPrivilege( 1 ) ) handleClientDataAvailable();
-            }
+	wxLastCommand = m_currentCommandUC;
 
 
-            //*********************************************************************
-            //                          Clear input queue
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "CLRA" ) ) ) {
-                if ( checkPrivilege( 1 ) ) handleClientClearInputQueue();
-            }
-
-
-            //*********************************************************************
-            //                           Get Statistics
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "STAT" ) ) ) {
-                if ( checkPrivilege( 1 ) ) handleClientGetStatistics();
-            }
-
-            //*********************************************************************
-            //                            Get Status
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "INFO" ) ) ) {
-                if ( checkPrivilege( 1 ) ) handleClientGetStatus();
-            }
-
-            //*********************************************************************
-            //                           Get Channel ID
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "CHID" ) ) ) {
-                if ( checkPrivilege( 1 ) ) handleClientGetChannelID();
-            }
-
-            //*********************************************************************
-            //                          Set Channel GUID
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "SGID" ) ) ) {
-                if ( checkPrivilege( 6 ) ) handleClientSetChannelGUID();
-            }
-
-            //*********************************************************************
-            //                          Get Channel GUID
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "GGID" ) ) ) {
-                if ( checkPrivilege( 1 ) ) handleClientGetChannelGUID();
-            }
-
-            //*********************************************************************
-            //                             Get Version
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "VERS" ) ) ) {
-                handleClientGetVersion();
-            }
-
-            //*********************************************************************
-            //                             Set Filter
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "SFLT" ) ) ) {
-                if ( checkPrivilege( 4 ) ) handleClientSetFilter();
-            }
-
-            //*********************************************************************
-            //                             Set Mask
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "SMSK" ) ) ) {
-                if ( checkPrivilege( 4 ) ) handleClientSetMask();
-            }
-
-            //*********************************************************************
-            //                               Username
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "USER " ) ) ) {
-                handleClientUser();
-            }
-
-            //*********************************************************************
-            //                             Password
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "PASS " ) ) ) {
-                if ( !handleClientPassword() ) {
-                    break; // Disconnect
-                }
-            }
-
-
-            //*********************************************************************
-            //                        + (repeat last command)
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "+" ) ) ) {
-                // Repeat last command
-                wxstr = wxLastCommand + _("\n") + wxstr;
-                m_wxcmdUC = wxLastCommand;
-                continue;
-            }
-
-            //*********************************************************************
-            //                               Rcvloop
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "RCVLOOP" ) ) ) {
-                if ( checkPrivilege( 2 ) ) handleClientRcvLoop();
-            }
-
-            //*********************************************************************
-            //                              Help
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "HELP" ) ) ) {
-                handleClientHelp();
-            }
-
-            //*********************************************************************
-            //                              Restart
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "RESTART" ) ) ) {
-                if ( checkPrivilege( 15 ) ) handleClientRestart();
-            }
-
-            //*********************************************************************
-            //                              Driver
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "DRIVER " ) ) ) {
-                if ( checkPrivilege( 15 ) ) handleClientDriver();
-            }
-
-
-            //*********************************************************************
-            //                               DM
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "DM " ) ) ) {
-                if ( checkPrivilege( 15 ) ) handleClientDm();
-            }
-
-            //*********************************************************************
-            //                             Variable
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "VARIABLE " ) ) ) {
-                if ( checkPrivilege( 15 ) ) handleClientVariable();
-            }
-
-            //*********************************************************************
-            //                               File
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "FILE " ) ) ) {
-                if ( checkPrivilege( 15 ) ) handleClientFile();
-            }
-
-            //*********************************************************************
-            //                               UDP
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "UDP " ) ) ) {
-                if ( checkPrivilege( 15 ) ) handleClientUdp();
-            }
-
-            //*********************************************************************
-            //                         Client/interface
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "CLIENT " ) ) ) {
-                m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length()-7 ); // Remove "CLIENT "
-                if ( checkPrivilege( 15 ) ) handleClientInterface();
-            }
-            else if ( 0 == m_wxcmdUC.Find ( _( "INTERFACE " ) ) ) {
-                m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length()-10 ); // Remove "INTERFACE "
-                if ( checkPrivilege( 15 ) ) handleClientInterface();
-            }
-
-            //*********************************************************************
-            //                               User
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "USER " ) ) ) {
-                handleClientUser();
-            }
-
-            //*********************************************************************
-            //                               Test
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "TEST" ) ) ) {
-                if ( checkPrivilege( 15 ) ) handleClientTest();
-            }
-
-
-            //*********************************************************************
-            //                               Shutdown
-            //*********************************************************************
-            else if ( 0 == m_wxcmdUC.Find ( _( "SHUTDOWN" ) ) ) {
-                if ( checkPrivilege( 15 ) ) handleClientShutdown();
-            }
-
-
-            //*********************************************************************
-            //                               Que?
-            //*********************************************************************
-            else {
-
-                m_pClientSocket->Write( MSG_UNKNOWN_COMMAND,
-                    strlen ( MSG_UNKNOWN_COMMAND ) );
-            }
-
-            wxLastCommand = m_wxcmdUC;
-
-
-        } // command
-
-    } // while
-
-    // Remove messages in the client queues
-    m_pCtrlObject->m_wxClientMutex.Lock();
-    m_pCtrlObject->removeClient ( m_pClientItem );
-    m_pCtrlObject->m_wxClientMutex.Unlock();
-
-    ( *m_pmumClients )--; // One client less
-
-    m_pClientSocket->Close();
-    m_pClientSocket->Destroy();
-
-    m_pCtrlObject->logMsg ( _T ( "TCP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
-
-    m_bQuit = true;
-
-    return NULL;
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void TcpClientThread::OnExit()
-{
-    ;
 }
 
 
@@ -644,7 +559,7 @@ void TcpClientThread::OnExit()
 // isVerified
 //
 
-bool TcpClientThread::isVerified( void )
+bool VSCPClientThread::isVerified( void )
 { 
     // Must be accredited to do this
     if ( !m_bVerified ) {
@@ -660,7 +575,7 @@ bool TcpClientThread::isVerified( void )
 // checkPrivilege
 //
 
-bool TcpClientThread::checkPrivilege( unsigned char reqiredPrivilege )
+bool VSCPClientThread::checkPrivilege( unsigned char reqiredPrivilege )
 {
     // Must be loged on
     if ( !m_bVerified ) {
@@ -689,7 +604,7 @@ bool TcpClientThread::checkPrivilege( unsigned char reqiredPrivilege )
 // handleClientSend
 //
 
-void TcpClientThread::handleClientSend ( void )
+void VSCPClientThread::handleClientSend ( void )
 {
     bool bSent = false;
     vscpEvent event;
@@ -986,7 +901,7 @@ void TcpClientThread::handleClientSend ( void )
 // handleClientReceive
 //
 
-void TcpClientThread::handleClientReceive ( void )
+void VSCPClientThread::handleClientReceive ( void )
 {
     unsigned short cnt=1;	// # of messages to read
 
@@ -1034,7 +949,7 @@ void TcpClientThread::handleClientReceive ( void )
 // sendOneEventFromQueue
 //
 
-bool TcpClientThread::sendOneEventFromQueue( bool bStatusMsg )
+bool VSCPClientThread::sendOneEventFromQueue( bool bStatusMsg )
 {
     wxString strOut;
 
@@ -1117,7 +1032,7 @@ bool TcpClientThread::sendOneEventFromQueue( bool bStatusMsg )
 // handleClientDataAvailable
 //
 
-void TcpClientThread::handleClientDataAvailable ( void )
+void VSCPClientThread::handleClientDataAvailable ( void )
 {
     char outbuf[ 1024 ];
 
@@ -1142,7 +1057,7 @@ void TcpClientThread::handleClientDataAvailable ( void )
 // handleClientClearInputQueue
 //
 
-void TcpClientThread::handleClientClearInputQueue ( void )
+void VSCPClientThread::handleClientClearInputQueue ( void )
 {
     // Must be accredited to do this
     if ( !m_bVerified ) {
@@ -1164,7 +1079,7 @@ void TcpClientThread::handleClientClearInputQueue ( void )
 // handleClientGetStatistics
 //
 
-void TcpClientThread::handleClientGetStatistics ( void )
+void VSCPClientThread::handleClientGetStatistics ( void )
 {
     char outbuf[ 1024 ];
 
@@ -1194,7 +1109,7 @@ void TcpClientThread::handleClientGetStatistics ( void )
 // handleClientGetStatus
 //
 
-void TcpClientThread::handleClientGetStatus ( void )
+void VSCPClientThread::handleClientGetStatus ( void )
 {
     char outbuf[ 1024 ];
 
@@ -1221,7 +1136,7 @@ void TcpClientThread::handleClientGetStatus ( void )
 // handleClientGetChannelID
 //
 
-void TcpClientThread::handleClientGetChannelID ( void )
+void VSCPClientThread::handleClientGetChannelID ( void )
 {
     char outbuf[ 1024 ];
 
@@ -1245,7 +1160,7 @@ void TcpClientThread::handleClientGetChannelID ( void )
 // handleClientSetChannelGUID
 //
 
-void TcpClientThread::handleClientSetChannelGUID ( void )
+void VSCPClientThread::handleClientSetChannelGUID ( void )
 {
     // Must be accredited to do this
     if ( !m_bVerified ) {
@@ -1254,7 +1169,7 @@ void TcpClientThread::handleClientSetChannelGUID ( void )
         return;
     }
 
-    wxString str = m_wxcmdUC.Right( m_wxcmdUC.Length() - 5 ); // remove: command + space
+    wxString str = m_currentCommandUC.Right( m_currentCommandUC.Length() - 5 ); // remove: command + space
     //getGuidFromStringToArray( m_pClientItem->m_GUID, str );
     m_pClientItem->m_guid.getFromString(str);
     m_bOK = true;
@@ -1265,7 +1180,7 @@ void TcpClientThread::handleClientSetChannelGUID ( void )
 // handleClientGetChannelGUID
 //
 
-void TcpClientThread::handleClientGetChannelGUID ( void )
+void VSCPClientThread::handleClientGetChannelGUID ( void )
 {
     wxString strBuf;
     //char outbuf[ 1024 ];
@@ -1307,7 +1222,7 @@ void TcpClientThread::handleClientGetChannelGUID ( void )
 // handleClientGetVersion
 //
 
-void TcpClientThread::handleClientGetVersion ( void )
+void VSCPClientThread::handleClientGetVersion ( void )
 {
     char outbuf[ 1024 ];
 
@@ -1334,7 +1249,7 @@ void TcpClientThread::handleClientGetVersion ( void )
 // handleClientSetFilter
 //
 
-void TcpClientThread::handleClientSetFilter ( void )
+void VSCPClientThread::handleClientSetFilter ( void )
 {
     // Must be accredited to do this
     if ( !m_bVerified ) {
@@ -1404,7 +1319,7 @@ void TcpClientThread::handleClientSetFilter ( void )
 // handleClientSetMask
 //
 
-void TcpClientThread::handleClientSetMask ( void )
+void VSCPClientThread::handleClientSetMask ( void )
 {
     // Must be accredited to do this
     if ( !m_bVerified ) {
@@ -1473,7 +1388,7 @@ void TcpClientThread::handleClientSetMask ( void )
 // handleClientUser
 //
 
-void TcpClientThread::handleClientUser ( void )
+void VSCPClientThread::handleClientUser ( void )
 {
     if ( m_bVerified ) {
         m_pClientSocket->Write( MSG_OK,
@@ -1501,7 +1416,7 @@ void TcpClientThread::handleClientUser ( void )
 // handleClientPassword
 //
 
-bool TcpClientThread::handleClientPassword ( void )
+bool VSCPClientThread::handleClientPassword ( void )
 {
     if ( m_bVerified ) {
         m_pClientSocket->Write( MSG_OK,
@@ -1590,7 +1505,7 @@ bool TcpClientThread::handleClientPassword ( void )
 // handleClientRcvLoop
 //
 
-void TcpClientThread::handleClientRcvLoop()
+void VSCPClientThread::handleClientRcvLoop()
 {
     m_pClientSocket->Write( MSG_RECEIVE_LOOP,
         strlen ( MSG_RECEIVE_LOOP ) );
@@ -1624,7 +1539,7 @@ void TcpClientThread::handleClientRcvLoop()
 // handleClientHelp
 //
 
-void TcpClientThread::handleClientHelp(void)
+void VSCPClientThread::handleClientHelp(void)
 {
 	m_pClientSocket->Write( MSG_OK, strlen(MSG_OK));
 	return;
@@ -1635,7 +1550,7 @@ void TcpClientThread::handleClientHelp(void)
 // handleClientTest
 //
 
-void TcpClientThread::handleClientTest ( void )
+void VSCPClientThread::handleClientTest ( void )
 {
 	m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 	return;
@@ -1646,7 +1561,7 @@ void TcpClientThread::handleClientTest ( void )
 // handleClientRestart
 //
 
-void TcpClientThread::handleClientRestart ( void )
+void VSCPClientThread::handleClientRestart ( void )
 {
 	m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 	return;
@@ -1657,7 +1572,7 @@ void TcpClientThread::handleClientRestart ( void )
 // handleClientShutdown
 //
 
-void TcpClientThread::handleClientShutdown ( void )
+void VSCPClientThread::handleClientShutdown ( void )
 {
     if ( !m_bVerified ) {
         m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
@@ -1672,7 +1587,7 @@ void TcpClientThread::handleClientShutdown ( void )
 // handleClientRemote
 //
 
-void TcpClientThread::handleClientRemote( void )
+void VSCPClientThread::handleClientRemote( void )
 {
 	return;
 }
@@ -1686,21 +1601,21 @@ void TcpClientThread::handleClientRemote( void )
 // normal 	Normal access to interfaces. Full format is INTERFACE NORMAL id
 // close		Close interfaces. Full format is INTERFACE CLOSE id
 
-void TcpClientThread::handleClientInterface( void )
+void VSCPClientThread::handleClientInterface( void )
 {
-    m_pCtrlObject->logMsg ( m_wxcmdUC, DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg ( m_currentCommandUC, DAEMON_LOGMSG_INFO );
 
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "LIST" ) ) )	{
+    if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "LIST" ) ) )	{
         handleClientInterface_List();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "UNIQUE " ) ) )	{
-        m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length()-7 );            // Remove "UNIQUE "
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "UNIQUE " ) ) )	{
+        m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-7 );            // Remove "UNIQUE "
         handleClientInterface_Unique();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "NORMAL" ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "NORMAL" ) ) )	{
         handleClientInterface_Normal();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "CLOSE" ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "CLOSE" ) ) )	{
         handleClientInterface_Close();
     }
 }
@@ -1709,7 +1624,7 @@ void TcpClientThread::handleClientInterface( void )
 // handleClientInterface_List
 //
 
-void TcpClientThread::handleClientInterface_List( void )
+void VSCPClientThread::handleClientInterface_List( void )
 {
     wxString strGUID;
     wxString strBuf;
@@ -1745,14 +1660,14 @@ void TcpClientThread::handleClientInterface_List( void )
 // handleClientInterface_Unique
 //
 
-void TcpClientThread::handleClientInterface_Unique( void )
+void VSCPClientThread::handleClientInterface_Unique( void )
 {
     unsigned char ifGUID[ 16 ];
     memset( ifGUID, 0, 16 );
 
     // Get GUID
-    m_wxcmdUC.Trim( false );
-    vscp_getGuidFromStringToArray( ifGUID, m_wxcmdUC );
+    m_currentCommandUC.Trim( false );
+    vscp_getGuidFromStringToArray( ifGUID, m_currentCommandUC );
 
     // Add the client to the Client List
     // TODO
@@ -1766,7 +1681,7 @@ void TcpClientThread::handleClientInterface_Unique( void )
 // handleClientInterface_Normal
 //
 
-void TcpClientThread::handleClientInterface_Normal( void )
+void VSCPClientThread::handleClientInterface_Normal( void )
 {
     // TODO
 }
@@ -1775,7 +1690,7 @@ void TcpClientThread::handleClientInterface_Normal( void )
 // handleClientInterface_Close
 //
 
-void TcpClientThread::handleClientInterface_Close( void )
+void VSCPClientThread::handleClientInterface_Close( void )
 {
     // TODO
 }
@@ -1785,7 +1700,7 @@ void TcpClientThread::handleClientInterface_Close( void )
 // handleClientUdp
 //
 
-void TcpClientThread::handleClientUdp( void )
+void VSCPClientThread::handleClientUdp( void )
 {
     // TODO
 }
@@ -1795,7 +1710,7 @@ void TcpClientThread::handleClientUdp( void )
 // handleClientFile
 //
 
-void TcpClientThread::handleClientFile( void )
+void VSCPClientThread::handleClientFile( void )
 {
     // TODO
 }
@@ -1805,49 +1720,49 @@ void TcpClientThread::handleClientFile( void )
 // handleClientVariable
 //
 
-void TcpClientThread::handleClientVariable( void )
+void VSCPClientThread::handleClientVariable( void )
 {
-    m_pCtrlObject->logMsg ( m_wxcmdUC, DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg ( m_currentCommandUC, DAEMON_LOGMSG_INFO );
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length()-9 );    // remove "VARIABLE "
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-9 );    // remove "VARIABLE "
     m_wxcmd = m_wxcmd.Right( m_wxcmd.Length()-9 );          // remove "VARIABLE "
-    m_wxcmdUC.Trim( false );
+    m_currentCommandUC.Trim( false );
     m_wxcmd.Trim( false );
 
-    if ( 0 == m_wxcmdUC.Find ( wxT( "LIST " ) ) )	{
+    if ( 0 == m_currentCommandUC.Find ( wxT( "LIST " ) ) )	{
         handleVariable_List();
     }
     // Hack to handle "variable list"
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "LIST" ) ) )	{
-        m_wxcmdUC += _(" ");
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "LIST" ) ) )	{
+        m_currentCommandUC += _(" ");
         m_wxcmd += _(" ");
         handleVariable_List();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "WRITE " ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "WRITE " ) ) )	{
         handleVariable_Write();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "READ " ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "READ " ) ) )	{
         handleVariable_Read();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "READRESET " ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "READRESET " ) ) )	{
         handleVariable_ReadReset();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "RESET" ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "RESET" ) ) )	{
         handleVariable_Reset();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "REMOVE " ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "REMOVE " ) ) )	{
         handleVariable_Remove();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "READREMOVE " ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "READREMOVE " ) ) )	{
         handleVariable_ReadRemove();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "LENGTH " ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "LENGTH " ) ) )	{
         handleVariable_Length();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "LOAD" ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "LOAD" ) ) )	{
         handleVariable_Load();
     }
-    else if ( 0 == m_wxcmdUC.Find ( wxT( "SAVE" ) ) )	{
+    else if ( 0 == m_currentCommandUC.Find ( wxT( "SAVE" ) ) )	{
         handleVariable_Save();
     }
     else {
@@ -1866,7 +1781,7 @@ void TcpClientThread::handleClientVariable( void )
 // variable list name*	- Name with wildcard.
 //
 
-void TcpClientThread::handleVariable_List()
+void VSCPClientThread::handleVariable_List()
 {
     CVSCPVariable *pVariable;
     wxString str;
@@ -1874,27 +1789,27 @@ void TcpClientThread::handleVariable_List()
     listVscpVariable::iterator it;
 	static int l;
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length()-5 );    // remove "LIST "
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-5 );    // remove "LIST "
     m_wxcmd = m_wxcmd.Right( m_wxcmd.Length()-5 );          // remove "LIST "
-    m_wxcmdUC.Trim();
-    m_wxcmdUC.Trim( false );
+    m_currentCommandUC.Trim();
+    m_currentCommandUC.Trim( false );
     m_wxcmd.Trim();
     m_wxcmd.Trim( false );
 
     // if "variable list" we add "all"
-    if ( 0 == m_wxcmdUC.Length() ) {
-        m_wxcmdUC +=  _("ALL");
+    if ( 0 == m_currentCommandUC.Length() ) {
+        m_currentCommandUC +=  _("ALL");
         m_wxcmd += _("all");
     }
 
     // If "*" wildcard we add "all"
     if ( ( 1 == m_wxcmd.Length() ) && 
-        ( 0 == m_wxcmdUC.Find ( _( "*" ) ) ) ) {
-            m_wxcmdUC += _("ALL");
+        ( 0 == m_currentCommandUC.Find ( _( "*" ) ) ) ) {
+            m_currentCommandUC += _("ALL");
             m_wxcmd += _("all");	
     }
 
-    if ( ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ALL" ) ) ) )	{
+    if ( ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ALL" ) ) ) )	{
 
         m_pCtrlObject->m_variableMutex.Lock();
 
@@ -1932,7 +1847,7 @@ void TcpClientThread::handleVariable_List()
 
         // variables (or wildcards) to list are separated
         // with spaces
-        wxStringTokenizer tkz( m_wxcmdUC, _(" ") );
+        wxStringTokenizer tkz( m_currentCommandUC, _(" ") );
 
         while ( tkz.HasMoreTokens() ) {
 
@@ -2091,14 +2006,14 @@ void TcpClientThread::handleVariable_List()
 // handleVariable_Write
 //
 
-void TcpClientThread::handleVariable_Write()
+void VSCPClientThread::handleVariable_Write()
 {
     wxString strName;
     wxString strValue;
     int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
     bool bPersistence = false;
 
-    m_pCtrlObject->logMsg( m_wxcmdUC, DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg( m_currentCommandUC, DAEMON_LOGMSG_INFO );
 
     m_wxcmd = m_wxcmd.Right( m_wxcmd.Length() - 6 ); // remove "WRITE "
     m_wxcmd.Trim( false );
@@ -2168,17 +2083,17 @@ void TcpClientThread::handleVariable_Write()
 // handleVariable_Read
 //
 
-void TcpClientThread::handleVariable_Read( bool bOKResponse )
+void VSCPClientThread::handleVariable_Read( bool bOKResponse )
 {
     wxString str;
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length() - 5 ); // remove "READ "
-    m_wxcmdUC.Trim( false );
-    m_wxcmdUC.Trim( true );
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length() - 5 ); // remove "READ "
+    m_currentCommandUC.Trim( false );
+    m_currentCommandUC.Trim( true );
 
     CVSCPVariable * pVariable;
 
-    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
         m_pClientSocket->Write( MSG_VARIABLE_NOT_DEFINED,
                                 strlen ( MSG_VARIABLE_NOT_DEFINED ) );
         return;
@@ -2196,27 +2111,27 @@ void TcpClientThread::handleVariable_Read( bool bOKResponse )
 // handleVariable_Reset
 //
 
-void TcpClientThread::handleVariable_Reset()
+void VSCPClientThread::handleVariable_Reset()
 {
 
     wxString str;
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length() - 10 ); // remove "READRESET "
-    m_wxcmdUC.Trim( false );
-    m_wxcmdUC.Trim( true );
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length() - 10 ); // remove "READRESET "
+    m_currentCommandUC.Trim( false );
+    m_currentCommandUC.Trim( true );
 
     CVSCPVariable * pVariable;
 
-    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
 
         // Must create the variable
-        m_pCtrlObject->m_VSCP_Variables.add( m_wxcmdUC, 
+        m_pCtrlObject->m_VSCP_Variables.add( m_currentCommandUC, 
                                                 _(""), 
                                                 VSCP_DAEMON_VARIABLE_CODE_STRING, 
                                                 false );
 
         // Try again, Should be possible to find now
-        if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+        if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
             m_pClientSocket->Write( MSG_PARAMETER_ERROR,
                                         strlen ( MSG_PARAMETER_ERROR ) );
             return;
@@ -2233,25 +2148,25 @@ void TcpClientThread::handleVariable_Reset()
 // handleVariable_ReadReset
 //
 
-void TcpClientThread::handleVariable_ReadReset()
+void VSCPClientThread::handleVariable_ReadReset()
 {
     wxString str;
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length() - 10 ); // remove "READRESET "
-    m_wxcmdUC.Trim( false );
-    m_wxcmdUC.Trim( true );
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length() - 10 ); // remove "READRESET "
+    m_currentCommandUC.Trim( false );
+    m_currentCommandUC.Trim( true );
 
     CVSCPVariable * pVariable;
 
-    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
 
         // Must create the variable
-        m_pCtrlObject->m_VSCP_Variables.add( m_wxcmdUC, 
+        m_pCtrlObject->m_VSCP_Variables.add( m_currentCommandUC, 
                                                 _(""), 
                                                 VSCP_DAEMON_VARIABLE_CODE_STRING, 
                                                 false );
         // Try again, Should be possible to find now
-        if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+        if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
             m_pClientSocket->Write( MSG_PARAMETER_ERROR,
                 strlen ( MSG_PARAMETER_ERROR ) );
             return;
@@ -2270,15 +2185,15 @@ void TcpClientThread::handleVariable_ReadReset()
 // handleVariable_Remove
 //
 
-void TcpClientThread::handleVariable_Remove()
+void VSCPClientThread::handleVariable_Remove()
 {
     wxString str;
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length() - 7 ); // remove "REMOVE "
-    m_wxcmdUC.Trim( false );
-    m_wxcmdUC.Trim( true );
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length() - 7 ); // remove "REMOVE "
+    m_currentCommandUC.Trim( false );
+    m_currentCommandUC.Trim( true );
 
-    m_pCtrlObject->m_VSCP_Variables.remove( m_wxcmdUC );
+    m_pCtrlObject->m_VSCP_Variables.remove( m_currentCommandUC );
 
     m_pClientSocket->Write( MSG_OK,
                                 strlen( MSG_OK ) );
@@ -2289,25 +2204,25 @@ void TcpClientThread::handleVariable_Remove()
 // handleVariable_ReadRemove
 //
 
-void TcpClientThread::handleVariable_ReadRemove()
+void VSCPClientThread::handleVariable_ReadRemove()
 {
     wxString str;
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length() - 11 ); // remove "READREMOVE "
-    m_wxcmdUC.Trim( false );
-    m_wxcmdUC.Trim( true );
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length() - 11 ); // remove "READREMOVE "
+    m_currentCommandUC.Trim( false );
+    m_currentCommandUC.Trim( true );
 
     CVSCPVariable * pVariable;
 
-    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
 
         // Must create the variable
-        m_pCtrlObject->m_VSCP_Variables.add( m_wxcmdUC, 
+        m_pCtrlObject->m_VSCP_Variables.add( m_currentCommandUC, 
                                                 _(""), 
                                                 VSCP_DAEMON_VARIABLE_CODE_STRING, 
                                                 false );
         // Try again, Should be possible to find now
-        if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+        if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
             m_pClientSocket->Write( MSG_PARAMETER_ERROR,
                                         strlen ( MSG_PARAMETER_ERROR ) );
             return;
@@ -2325,25 +2240,25 @@ void TcpClientThread::handleVariable_ReadRemove()
 // handleVariable_Length
 //
 
-void TcpClientThread::handleVariable_Length()
+void VSCPClientThread::handleVariable_Length()
 {
     wxString str;
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length() - 7 ); // remove "LENGTH "
-    m_wxcmdUC.Trim( false );
-    m_wxcmdUC.Trim( true );
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length() - 7 ); // remove "LENGTH "
+    m_currentCommandUC.Trim( false );
+    m_currentCommandUC.Trim( true );
 
     CVSCPVariable * pVariable;
 
-    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+    if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
 
         // Must create the variable
-        m_pCtrlObject->m_VSCP_Variables.add( m_wxcmdUC, 
+        m_pCtrlObject->m_VSCP_Variables.add( m_currentCommandUC, 
                                                 _(""), 
                                                 VSCP_DAEMON_VARIABLE_CODE_STRING, 
                                                 false );
         // Try again, Should be possible to find now
-        if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_wxcmdUC ) ) ) {
+        if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
             m_pClientSocket->Write( MSG_PARAMETER_ERROR,
                                         strlen( MSG_PARAMETER_ERROR ) );
             return;
@@ -2370,7 +2285,7 @@ void TcpClientThread::handleVariable_Length()
 // handleVariable_Load
 //
 
-void TcpClientThread::handleVariable_Load()
+void VSCPClientThread::handleVariable_Load()
 {
     m_pCtrlObject->m_VSCP_Variables.load();
 
@@ -2383,7 +2298,7 @@ void TcpClientThread::handleVariable_Load()
 // handleVariable_Save
 //
 
-void TcpClientThread::handleVariable_Save()
+void VSCPClientThread::handleVariable_Save()
 {
     wxString path;
     //wxStandardPaths stdPath;
@@ -2409,38 +2324,38 @@ void TcpClientThread::handleVariable_Save()
 // handleClientDm
 //
 
-void TcpClientThread::handleClientDm( void )
+void VSCPClientThread::handleClientDm( void )
 {
-    m_pCtrlObject->logMsg ( m_wxcmdUC, DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg ( m_currentCommandUC, DAEMON_LOGMSG_INFO );
 
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length()-3 );
-    m_wxcmdUC.Trim( false );
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-3 );
+    m_currentCommandUC.Trim( false );
 
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ENABLE " ) ) )	{
+    if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ENABLE " ) ) )	{
         handleDM_Enable();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "DISABLE " ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "DISABLE " ) ) )	{
         handleDM_Enable();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "LIST" ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "LIST" ) ) )	{
         handleDM_List();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ADD " ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ADD " ) ) )	{
         handleDM_Add();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "DELETE " ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "DELETE " ) ) )	{
         handleDM_Delete();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "RESET" ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "RESET" ) ) )	{
         handleDM_Reset();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "TRIG " ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "TRIG " ) ) )	{
         handleDM_Trigger();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "CLRTRIG " ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "CLRTRIG " ) ) )	{
         handleDM_ClearTriggerCount();
     }
-    else if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "CLRERR " ) ) )	{
+    else if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "CLRERR " ) ) )	{
         handleDM_ClearErrorCount();
     }
 }
@@ -2449,11 +2364,11 @@ void TcpClientThread::handleClientDm( void )
 // handleDM_Enable
 //
 
-void TcpClientThread::handleDM_Enable( void )
+void VSCPClientThread::handleDM_Enable( void )
 {
     unsigned short pos;
 
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ALL" ) ) )	{
+    if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ALL" ) ) )	{
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2496,11 +2411,11 @@ void TcpClientThread::handleDM_Enable( void )
 // handleDM_Disable
 //
 
-void TcpClientThread::handleDM_Disable( void )
+void VSCPClientThread::handleDM_Disable( void )
 {
     unsigned short pos;
 
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ALL" ) ) )	{
+    if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ALL" ) ) )	{
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2518,7 +2433,7 @@ void TcpClientThread::handleDM_Disable( void )
     else {
 
         // Get the position
-        wxStringTokenizer tkz( m_wxcmdUC, _(",") );
+        wxStringTokenizer tkz( m_currentCommandUC, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -2549,7 +2464,7 @@ void TcpClientThread::handleDM_Disable( void )
 // handleDM_List
 //
 
-void TcpClientThread::handleDM_List( void )
+void VSCPClientThread::handleDM_List( void )
 {
     // Valid commands at this point
     // dm list
@@ -2559,16 +2474,16 @@ void TcpClientThread::handleDM_List( void )
     // dm list 1,2,3,4,98
 
     // Remove "LIST"
-    m_wxcmdUC = m_wxcmdUC.Right( m_wxcmdUC.Length() - 4 );
-    m_wxcmdUC.Trim( false );
+    m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length() - 4 );
+    m_currentCommandUC.Trim( false );
 
     // if "list" add "all"
-    if ( 0 == m_wxcmdUC.Length() ) {
-        m_wxcmdUC = _("ALL");
+    if ( 0 == m_currentCommandUC.Length() ) {
+        m_currentCommandUC = _("ALL");
     }
 
-    if ( ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ALL" ) ) ) ||
-            ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "*" ) ) ) )	{
+    if ( ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ALL" ) ) ) ||
+            ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "*" ) ) ) )	{
     
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2594,7 +2509,7 @@ void TcpClientThread::handleDM_List( void )
         //      first parse the argument to get the rows
         //WX_DEFINE_ARRAY_INT( int, ArrayOfSortedInts );
         wxArrayInt rowArray;
-        wxStringTokenizer tok( m_wxcmdUC, _(",") );
+        wxStringTokenizer tok( m_currentCommandUC, _(",") );
         while ( tok.HasMoreTokens() ) {
             
             int n = vscp_readStringValue( tok.GetNextToken() );
@@ -2613,11 +2528,11 @@ void TcpClientThread::handleDM_List( void )
 // handleDM_Add
 //
 
-void TcpClientThread::handleDM_Add( void )
+void VSCPClientThread::handleDM_Add( void )
 {
     dmElement *pDMItem = new dmElement;
 
-    wxStringTokenizer tkz( m_wxcmdUC, _(",") );
+    wxStringTokenizer tkz( m_currentCommandUC, _(",") );
 
     // Priority
     pDMItem->m_vscpfilter.mask_priority = vscp_readStringValue( tkz.GetNextToken() );
@@ -2660,11 +2575,11 @@ void TcpClientThread::handleDM_Add( void )
 // handleDM_Delete
 //
 
-void TcpClientThread::handleDM_Delete( void )
+void VSCPClientThread::handleDM_Delete( void )
 {
     unsigned short pos;
 
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ALL" ) ) )	{
+    if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ALL" ) ) )	{
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2682,7 +2597,7 @@ void TcpClientThread::handleDM_Delete( void )
     else {
 
         // Get the position
-        wxStringTokenizer tkz( m_wxcmdUC, _(",") );
+        wxStringTokenizer tkz( m_currentCommandUC, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -2714,7 +2629,7 @@ void TcpClientThread::handleDM_Delete( void )
 // handleDM_Reset
 //
 
-void TcpClientThread::handleDM_Reset( void )
+void VSCPClientThread::handleDM_Reset( void )
 {
     m_pCtrlObject->stopDaemonWorkerThread();
     m_pCtrlObject->startDaemonWorkerThread();
@@ -2726,12 +2641,12 @@ void TcpClientThread::handleDM_Reset( void )
 // handleDM_Trigger
 //
 
-void TcpClientThread::handleDM_Trigger()
+void VSCPClientThread::handleDM_Trigger()
 {
     unsigned short pos;
 
     // Get the position
-    wxStringTokenizer tkz( m_wxcmdUC, _(",") );
+    wxStringTokenizer tkz( m_currentCommandUC, _(",") );
     while ( tkz.HasMoreTokens() ) {
 
         pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -2761,11 +2676,11 @@ void TcpClientThread::handleDM_Trigger()
 //
 
 
-void TcpClientThread::handleDM_ClearTriggerCount()
+void VSCPClientThread::handleDM_ClearTriggerCount()
 {
     unsigned short pos;
 
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ALL" ) ) )	{
+    if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ALL" ) ) )	{
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2783,7 +2698,7 @@ void TcpClientThread::handleDM_ClearTriggerCount()
     else {
 
         // Get the position
-        wxStringTokenizer tkz( m_wxcmdUC, _(",") );
+        wxStringTokenizer tkz( m_currentCommandUC, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -2815,11 +2730,11 @@ void TcpClientThread::handleDM_ClearTriggerCount()
 //
 
 
-void TcpClientThread::handleDM_ClearErrorCount()
+void VSCPClientThread::handleDM_ClearErrorCount()
 {
     unsigned short pos;
 
-    if ( wxNOT_FOUND != m_wxcmdUC.Find ( _( "ALL" ) ) )	{
+    if ( wxNOT_FOUND != m_currentCommandUC.Find ( _( "ALL" ) ) )	{
 
         m_pCtrlObject->m_dm.m_mutexDM.Lock();
 
@@ -2837,7 +2752,7 @@ void TcpClientThread::handleDM_ClearErrorCount()
     else {
 
         // Get the position
-        wxStringTokenizer tkz( m_wxcmdUC, _(",") );
+        wxStringTokenizer tkz( m_currentCommandUC, _(",") );
         while ( tkz.HasMoreTokens() ) {
 
             pos = vscp_readStringValue( tkz.GetNextToken() );
@@ -2868,7 +2783,7 @@ void TcpClientThread::handleDM_ClearErrorCount()
 // handleClientList
 //
 
-void TcpClientThread::handleClientList( void )
+void VSCPClientThread::handleClientList( void )
 {
     m_pClientSocket->Write ( MSG_OK, strlen ( MSG_OK ) );
 }
@@ -2878,10 +2793,472 @@ void TcpClientThread::handleClientList( void )
 // handleClientDriver
 //
 
-void TcpClientThread::handleClientDriver( void )
+void VSCPClientThread::handleClientDriver( void )
 {
 
 }
 
 
 
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//****************************************************************************
+///////////////////////////////////////////////////////////////////////////////
+
+
+/*
+
+
+///////////////////////////////////////////////////////////////////////////////
+// TcpClientThread
+//
+// This thread communicates with a specific client.
+//
+
+TcpClientThread::TcpClientThread( wxThreadKind kind )
+    : wxThread ( kind )
+{
+    m_bQuit = false;
+
+    m_pCtrlObject = NULL;
+    m_pClientSocket = NULL;		
+    m_pUserItem = NULL;             // No user
+    m_bOK = false;
+    m_bVerified = false;            // No user verified
+    m_bUsername = false;            // No username entered
+    m_bRun = true;                  // Yes run to the hills
+    m_bBinaryMode = false;          // Standard ,mode
+}
+
+
+TcpClientThread::~TcpClientThread()
+{
+    m_pCtrlObject = NULL;           // Mark us as deleted
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+
+void *TcpClientThread::Entry()
+{
+    char rbuf[ 2048 ];
+    wxString wxstr;
+    int pos4lf;
+
+    // Must have a valid pointer to the control object
+    if ( NULL == m_pCtrlObject ) return NULL;
+
+    // Must have a socket
+    if ( NULL == m_pClientSocket ) return NULL;
+
+    // Must be connected
+    if ( m_pClientSocket->IsDisconnected() ) return NULL;
+
+    m_pCtrlObject->logMsg(_T("TCP ClientThread: Start.\n"), DAEMON_LOGMSG_INFO);
+
+    // We need to create a clientobject and add this object to the list
+    m_pClientItem = new CClientItem;
+    if ( NULL == m_pClientItem ) {
+        return NULL;
+    }
+
+    //OutputDebugString( "TCP ClientThread: Start all pointers OK");
+
+    // This is now an active Client
+    m_pClientItem->m_bOpen = true; 
+    m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
+    m_pClientItem->m_strDeviceName = _("Remote TCP/IP Client connected at ");
+    wxDateTime now = wxDateTime::Now(); 
+    m_pClientItem->m_strDeviceName += now.FormatISODate();
+    m_pClientItem->m_strDeviceName += _(" ");
+    m_pClientItem->m_strDeviceName += now.FormatISOTime();
+
+    // Add the client to the Client List
+    m_pCtrlObject->m_wxClientMutex.Lock();
+    m_pCtrlObject->addClient( m_pClientItem );
+    m_pCtrlObject->m_wxClientMutex.Unlock();
+
+    m_pClientSocket->SetTimeout( 1 );
+    //m_pClientSocket->SetFlags( wxSOCKET_BLOCK | wxSOCKET_WAITALL );
+    m_pClientSocket->SetFlags( wxSOCKET_BLOCK );
+
+
+    if ( *m_pmumClients > VSCP_TCP_MAX_CLIENTS ) {
+
+        m_pClientSocket->Write( MSG_MAX_NUMBER_OF_CLIENTS,
+            strlen ( MSG_MAX_NUMBER_OF_CLIENTS ) );
+        m_bRun = false;
+
+    }
+    else {
+        // Send welcome message
+        wxString str = _(MSG_WELCOME);
+        str += _("+OK Version: ");
+        str += _(VSCPD_DISPLAY_VERSION);
+        str += _("\r\n");
+		str += _("+OK ");
+		str += _(VSCPD_COPYRIGHT);
+        //str += _(MSG_COPYRIGHT);
+        str += _(MSG_OK);
+
+        m_pClientSocket->Write( str.mb_str(), str.Length() );
+    }
+
+
+    // Clear the filter (Allow everything )
+    vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
+
+
+    ///////////
+    // LOOP  //
+    ///////////
+
+
+    wxString wxLastCommand;
+    while ( !TestDestroy() && m_bRun && !m_bQuit ) {
+
+        // Check if command already in buffer
+        if ( wxNOT_FOUND == ( pos4lf = wxstr.Find ( (const char)0x0a ) ) ) {
+            
+            // Read new data
+            memset( rbuf, 0, sizeof( rbuf ) );                  // nil rbuf
+            m_pClientSocket->Read ( rbuf, sizeof ( rbuf ) );    
+
+            if ( m_pClientSocket->Error() &&
+                ( wxSOCKET_NOERROR != ( m_err = m_pClientSocket->LastError() ) ) ) {
+                switch ( m_err ) {
+
+                    case wxSOCKET_IOERR:
+                    case wxSOCKET_INVSOCK:
+                        m_bRun = false;	// socket error
+                        break;
+
+                    case wxSOCKET_TIMEDOUT:
+                        wxMilliSleep( 200 );
+
+                        continue;
+                        break;
+
+                }
+
+            }
+            else if ( 0 == m_pClientSocket->LastCount() ) {
+                m_bRun = false; // No connection
+            }
+            else {
+                rbuf[ m_pClientSocket->LastCount() ] = 0;
+                wxstr += wxString ( rbuf, wxConvUTF8 );
+            }
+            /*
+
+            if ( wxSOCKET_TIMEDOUT == m_err ) {
+                continue;
+            }
+            else {
+                m_bRun = false;
+                m_pClientSocket->Close();
+            }
+
+            }
+            else if ( 0 == m_pClientSocket->LastCount() ) {
+                m_bRun = false;
+                m_pClientSocket->Close();
+            }
+            else {
+                rbuf[ m_pClientSocket->LastCount() ] = 0;
+                wxstr += wxString ( rbuf, wxConvUTF8 );
+            }
+
+            */
+        }
+
+
+        // * * *  Check for a command  * * *
+
+        else {
+            
+            m_bOK = true;
+
+            m_wxcmd = wxstr.Mid ( 0, pos4lf );
+            //wxLogDebug( _("Command = ") + m_wxcmd );
+            m_currentCommandUC = m_wxcmd.Upper();
+            m_wxcmd.Trim();
+            m_wxcmd.Trim( false );
+            m_currentCommandUC.Trim();
+            m_currentCommandUC.Trim( false );
+            wxstr = wxstr.Mid ( pos4lf + 1 );
+            //wxLogDebug( _("Argument = ") + m_currentCommandUC );
+
+
+            // *********************************************************************
+            //                                 QUIT
+            // *********************************************************************
+            if ( 0 == m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
+                m_pClientSocket->Write( MSG_GOODBY, strlen ( MSG_GOODBY ) );
+                break;
+            }
+
+            //*********************************************************************
+            //                            No Operation
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "NOOP" ) ) ) {
+                m_pClientSocket->Write( MSG_OK, strlen ( MSG_OK ) );
+            }
+
+            //*********************************************************************
+            //                             Send event
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "SEND " ) ) ) {
+                if ( checkPrivilege( 4 ) ) handleClientSend();
+            }
+
+            //*********************************************************************
+            //                            Read event
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "RETR" ) ) ) {
+                if ( checkPrivilege( 2 ) ) handleClientReceive();
+            }
+
+            //*********************************************************************
+            //                            Data Available
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "CDTA" ) ) ) {
+                if ( checkPrivilege( 1 ) ) handleClientDataAvailable();
+            }
+
+
+            //*********************************************************************
+            //                          Clear input queue
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "CLRA" ) ) ) {
+                if ( checkPrivilege( 1 ) ) handleClientClearInputQueue();
+            }
+
+
+            //*********************************************************************
+            //                           Get Statistics
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "STAT" ) ) ) {
+                if ( checkPrivilege( 1 ) ) handleClientGetStatistics();
+            }
+
+            //*********************************************************************
+            //                            Get Status
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "INFO" ) ) ) {
+                if ( checkPrivilege( 1 ) ) handleClientGetStatus();
+            }
+
+            //*********************************************************************
+            //                           Get Channel ID
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "CHID" ) ) ) {
+                if ( checkPrivilege( 1 ) ) handleClientGetChannelID();
+            }
+
+            //*********************************************************************
+            //                          Set Channel GUID
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "SGID" ) ) ) {
+                if ( checkPrivilege( 6 ) ) handleClientSetChannelGUID();
+            }
+
+            //*********************************************************************
+            //                          Get Channel GUID
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "GGID" ) ) ) {
+                if ( checkPrivilege( 1 ) ) handleClientGetChannelGUID();
+            }
+
+            //*********************************************************************
+            //                             Get Version
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "VERS" ) ) ) {
+                handleClientGetVersion();
+            }
+
+            //*********************************************************************
+            //                             Set Filter
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "SFLT" ) ) ) {
+                if ( checkPrivilege( 4 ) ) handleClientSetFilter();
+            }
+
+            //*********************************************************************
+            //                             Set Mask
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "SMSK" ) ) ) {
+                if ( checkPrivilege( 4 ) ) handleClientSetMask();
+            }
+
+            //*********************************************************************
+            //                               Username
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "USER " ) ) ) {
+                handleClientUser();
+            }
+
+            //*********************************************************************
+            //                             Password
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "PASS " ) ) ) {
+                if ( !handleClientPassword() ) {
+                    break; // Disconnect
+                }
+            }
+
+
+            //*********************************************************************
+            //                        + (repeat last command)
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "+" ) ) ) {
+                // Repeat last command
+                wxstr = wxLastCommand + _("\n") + wxstr;
+                m_currentCommandUC = wxLastCommand;
+                continue;
+            }
+
+            //*********************************************************************
+            //                               Rcvloop
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "RCVLOOP" ) ) ) {
+                if ( checkPrivilege( 2 ) ) handleClientRcvLoop();
+            }
+
+            //*********************************************************************
+            //                              Help
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "HELP" ) ) ) {
+                handleClientHelp();
+            }
+
+            //*********************************************************************
+            //                              Restart
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "RESTART" ) ) ) {
+                if ( checkPrivilege( 15 ) ) handleClientRestart();
+            }
+
+            //*********************************************************************
+            //                              Driver
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "DRIVER " ) ) ) {
+                if ( checkPrivilege( 15 ) ) handleClientDriver();
+            }
+
+
+            //*********************************************************************
+            //                               DM
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "DM " ) ) ) {
+                if ( checkPrivilege( 15 ) ) handleClientDm();
+            }
+
+            //*********************************************************************
+            //                             Variable
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "VARIABLE " ) ) ) {
+                if ( checkPrivilege( 15 ) ) handleClientVariable();
+            }
+
+            //*********************************************************************
+            //                               File
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "FILE " ) ) ) {
+                if ( checkPrivilege( 15 ) ) handleClientFile();
+            }
+
+            //*********************************************************************
+            //                               UDP
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "UDP " ) ) ) {
+                if ( checkPrivilege( 15 ) ) handleClientUdp();
+            }
+
+            //*********************************************************************
+            //                         Client/interface
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "CLIENT " ) ) ) {
+                m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-7 ); // Remove "CLIENT "
+                if ( checkPrivilege( 15 ) ) handleClientInterface();
+            }
+            else if ( 0 == m_currentCommandUC.Find ( _( "INTERFACE " ) ) ) {
+                m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-10 ); // Remove "INTERFACE "
+                if ( checkPrivilege( 15 ) ) handleClientInterface();
+            }
+
+            //*********************************************************************
+            //                               User
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "USER " ) ) ) {
+                handleClientUser();
+            }
+
+            //*********************************************************************
+            //                               Test
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "TEST" ) ) ) {
+                if ( checkPrivilege( 15 ) ) handleClientTest();
+            }
+
+
+            //*********************************************************************
+            //                               Shutdown
+            //*********************************************************************
+            else if ( 0 == m_currentCommandUC.Find ( _( "SHUTDOWN" ) ) ) {
+                if ( checkPrivilege( 15 ) ) handleClientShutdown();
+            }
+
+
+            //*********************************************************************
+            //                               Que?
+            //*********************************************************************
+            else {
+
+                m_pClientSocket->Write( MSG_UNKNOWN_COMMAND,
+                    strlen ( MSG_UNKNOWN_COMMAND ) );
+            }
+
+            wxLastCommand = m_currentCommandUC;
+
+
+        } // command
+
+    } // while
+
+    // Remove messages in the client queues
+    m_pCtrlObject->m_wxClientMutex.Lock();
+    m_pCtrlObject->removeClient ( m_pClientItem );
+    m_pCtrlObject->m_wxClientMutex.Unlock();
+
+    ( *m_pmumClients )--; // One client less
+
+    m_pClientSocket->Close();
+    m_pClientSocket->Destroy();
+
+    m_pCtrlObject->logMsg ( _T ( "TCP ClientThread: Quit.\n" ), DAEMON_LOGMSG_INFO );
+
+    m_bQuit = true;
+
+    return NULL;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void TcpClientThread::OnExit()
+{
+    ;
+}
+
+
+*/

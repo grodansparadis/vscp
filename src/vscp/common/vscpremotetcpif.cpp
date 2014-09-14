@@ -57,7 +57,7 @@
 #include "canal_macro.h"
 #include "canal_win32_ipc.h"
 #include "../common/canal.h"
-#include "vscptcpif.h"
+#include "vscpremotetcpif.h"
 
 WX_DEFINE_LIST( EVENT_RX_QUEUE );
 WX_DEFINE_LIST( EVENT_TX_QUEUE );

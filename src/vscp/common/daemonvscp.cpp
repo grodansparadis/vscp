@@ -178,8 +178,8 @@ void *daemonVSCPThread::Entry()
                             pnewEvent->pdata[ 3 ] = ( localaddr[ i ] >> 16 );
                             pnewEvent->pdata[ 4 ] = ( localaddr[ i ] >> 8 );
                             pnewEvent->pdata[ 5 ] = ( localaddr[ i ] & 0xff );
-                            pnewEvent->pdata[ 6 ] = ( m_pCtrlObject->m_tcpport >> 8 );
-                            pnewEvent->pdata[ 7 ] = ( m_pCtrlObject->m_tcpport & 0xff );
+                            pnewEvent->pdata[ 6 ] = 0x25;	// TODO Change can be multiple servers
+                            pnewEvent->pdata[ 7 ] = 0x7E;
                         }
 
                         // Statistics
