@@ -568,6 +568,7 @@
     <ClInclude Include="..\..\common\tables.h" />
     <ClInclude Include="..\..\common\vscpeventhelper.h" />
     <ClInclude Include="..\..\common\vscphelper.h" />
+    <ClInclude Include="..\..\common\vscpwebserver.h" />
     <ClInclude Include="..\..\common\webserver.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\common\tcpipclientthread.h" />
@@ -598,6 +599,7 @@
     <ClCompile Include="..\..\common\userlist.cpp" />
     <ClCompile Include="..\..\common\vscpeventhelper.cpp" />
     <ClCompile Include="..\..\common\vscptcpif.cpp" />
+    <ClCompile Include="..\..\common\vscpwebserver.cpp" />
     <ClCompile Include="vscpd.cpp" />
     <ClCompile Include="..\..\common\vscphelper.cpp" />
     <ClCompile Include="..\..\common\vscpvariable.cpp" />

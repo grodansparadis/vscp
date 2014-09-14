@@ -2556,12 +2556,13 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 	wxString tblName;
 	time_t timestamp;
 	double value;
+	bool bFound = false;
 
 	// Write in possible escapes
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
-	wxString wxstrErr = wxT("[Action] Write Table: Wrong action parameter ");
+	wxString wxstrErr = _( "[Action] Write Table: Wrong action parameter. Parameter= ");
     wxstrErr += wxstr;
     wxstrErr += _("\n");
 
@@ -2596,10 +2597,21 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 		CVSCPTable *pTable = *iter;
 		if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
 			pTable->logData( timestamp, value );
+			bFound = true;
 			break;
 		}
 	}
 	m_pDM->m_pCtrlObject->m_mutexTableList.Unlock();
+
+	if ( !bFound ) {
+		wxString wxstrErr = 
+			wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "), 
+			tblName, wxstr );
+		wxstrErr += wxstr;
+		wxstrErr += _("\n");
+		m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+		return false; 
+	}
 
 	return true;
 }

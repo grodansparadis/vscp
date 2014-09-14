@@ -1,4 +1,4 @@
-// ControlObject.cpp: implementation of the CControlObject class.
+// vscpwebserver.cpp
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -7,8 +7,8 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
-// Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2014 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -19,28 +19,6 @@
 // along with this file see the file COPYING.  If not, write to
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
-//
-// As a special exception, if other files instantiate templates or use macros
-// or inline functions from this file, or you compile this file and link it
-// with other works to produce a work based on this file, this file does not
-// by itself cause the resulting work to be covered by the GNU General Public
-// License. However the source code for this file must still be made available
-// in accordance with section (3) of the GNU General Public License.
-//
-// This exception does not invalidate any other reasons why a work based on
-// this file might be covered by the GNU General Public License.
-//
-// Alternative licenses for VSCP & Friends may be arranged by contacting
-// Grodans Paradis AB at http://www.grodansparadis.com
-//
-//
-// TraceMasks:
-// ===========
-//
-//   wxTRACE_doWorkLoop - Workloop messages 
-//   wxTRACE_vscpd_Msg - Received messages.
-//   wxTRACE_vscpd_ReceiveMutex  - Mutex lock
-//   wxTRACE_VSCP_Msg - VSCP message mechanism
 //
 
 #ifdef __GNUG__
@@ -143,23 +121,13 @@
 #include "vscpeventhelper.h"
 #include "vscpwebserver.h"
 #include "controlobject.h"
-#ifdef TTT
-//#include "../common/webserver.h"
-#endif
+#include "../common/webserver.h"
 
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-
-// List for websocket triggers
-WX_DEFINE_LIST(TRIGGERLIST);
-
-WX_DEFINE_LIST(CanalMsgList);
-WX_DEFINE_LIST(VSCPEventList);
-
-#ifdef TTT
 ///////////////////////////////////////////////////
 //		          WEBSERVER
 ///////////////////////////////////////////////////
@@ -179,1948 +147,93 @@ struct websrv_rest_session *websrv_rest_sessions;
 // Linked list of websocket sessions
 static struct websock_session *websock_sessions;
 
-#endif
+///////////////////////////////////////////////////////////////////////////////
+// TcpClientListenThread
+//
+// This thread listens for conection on a TCP socket and starts a new thread
+// to handle client requests
+//
 
-
-//#define DEBUGPRINT
-
-static CControlObject *gpctrlObj;
-
-#ifdef WIN32
-
-typedef struct _ASTAT_ {
-    ADAPTER_STATUS adapt;
-    NAME_BUFFER NameBuff [30];
-
-} ASTAT, * PASTAT;
-
-ASTAT Adapter;
-
-
-WORD wVersionRequested = MAKEWORD(1, 1);	// WSA functions
-WSADATA wsaData;							// WSA functions
-
-#endif
-
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-CControlObject::CControlObject()
+VSCPWebServerThread::VSCPWebServerThread()
+: wxThread(wxTHREAD_JOINABLE)
 {
-    int i;
-    m_bQuit = false;	// true if we should quit
-    gpctrlObj = this;	// needed by websocket static callbacks
-
-    m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
-
-    // Nill the GUID
-    m_guid.clear();
-
-    // Initialize the client map
-    // to all unused
-    for (i = 0; i < VSCP_MAX_CLIENTS; i++) {
-        m_clientMap[ i ] = 0;
-    }
-
-
-    // Set default TCP Port
-    m_tcpport = VSCP_LEVEL2_TCP_PORT;
-
-    // Set default UDP port
-    m_UDPPort = VSCP_LEVEL2_UDP_PORT;
-
-	// Loal doamin
-	m_authDomain = _("mydomain.com");
-
-    // Set Default Log Level
-    m_logLevel = 0;
-
-    // Control TCP/IP Interface
-    m_bTCPInterface = true;
-
-    // Default TCP/IP interface
-    m_strTcpInterfaceAddress = _("");
-
-    // Canaldriver
-    m_bCanalDrivers = true;
-
-    // Control VSCP
-    m_bVSCPDaemon = true;
-
-    // Control DM
-    m_bDM = true;
-
-    // Use variables
-    m_bVariables = true;
-
-    m_pclientMsgWorkerThread = NULL;
-    m_pTcpClientListenThread = NULL;
-    m_pdaemonVSCPThread = NULL;
-	m_pwebServerThread = NULL;
-    m_pudpSendThread = NULL;
-    m_pudpReceiveThread = NULL;
-    
-    // Websocket interface
-    //m_portWebsockets = 7681;	// Deprecated
-    m_bWebSockets = true;		// websocket interface ia active
-	m_bAuthWebsockets = true;	// Authentication is needed
-    m_pathCert.Empty();
-    m_pathKey.Empty();
-    
-    // Webserver interface
-    m_portWebServer = 8080;
-    m_bWebServer = true;
-
-#ifdef WIN32
-	m_pathRoot = _("/programdata/vscp/www");
-#else
-	m_pathRoot = _("/srv/vscp/www");
-#endif
-
-    // Set control object
-    m_dm.setControlObject(this);
-
-#ifdef WIN32
-
-    // Initialize winsock layer
-    WSAStartup(wVersionRequested, &wsaData);
-
-    // Also for wx
-    wxSocketBase::Initialize();
-
-#ifdef BUILD_VSCPD_SERVICE
-    if (!m_hEventSource) {
-        m_hEvntSource = ::RegisterEventSource(NULL, // local machine
-                _("vscpservice")); // source name
-    }
-
-#endif // windows service
-
-#endif
-
-    // Initialize the CRC
-    crcInit();
-
-	CVSCPTable testtable( "c:/tmp/test.tbl" );
-/*
-	testtable.logData( 1, 100 );
-	testtable.logData( 8, 800 );
-	testtable.logData( 12, 1200 );
-	testtable.logData( 19, 2000 );
-	testtable.logData( 20, 2000 );
-	testtable.logData( 21, 2100 );
-	testtable.logData( 30, 3000 );
-	testtable.logData( 48, 4800 );
-*/
-	long size = testtable.GetRangeOfData( 22, 48, NULL, 0 );
-	size = testtable.GetRangeOfData( 1, 8, NULL, 0 );
-	size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
-
+    //OutputDebugString( "TCP ClientThread: Create");
+    m_bQuit = false;
+    m_pCtrlObject = NULL;
 }
+
+
+VSCPWebServerThread::~VSCPWebServerThread()
+{
+	;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
-// Destructor
+// Entry
 //
 
-CControlObject::~CControlObject()
+void *VSCPWebServerThread::Entry()
 {
-    // Remove objects in Client send queue
-    VSCPEventList::iterator iterVSCP;
+	clock_t ticks,oldus;
 
-    m_mutexClientOutputQueue.Lock();
-    for (iterVSCP = m_clientOutputQueue.begin();
-            iterVSCP != m_clientOutputQueue.end(); ++iterVSCP) {
-        vscpEvent *pEvent = *iterVSCP;
-        vscp_deleteVSCPevent(pEvent);
-    }
+    		
+	// Create the server
+	m_pCtrlObject->m_pwebserver = mg_create_server( m_pCtrlObject, VSCPWebServerThread::websrv_event_handler );
+		
+	// Set options
+	mg_set_option( m_pCtrlObject->m_pwebserver, 
+						"document_root", 
+						m_pCtrlObject->m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
+	wxString str = wxString::Format(  _("%i"), m_pCtrlObject->m_portWebServer );
+	mg_set_option( m_pCtrlObject->m_pwebserver, 
+						"listening_port", 
+						"8080" /*str.mb_str( wxConvUTF8 )*/ );					// Open web server port
+	mg_set_option( m_pCtrlObject->m_pwebserver, 
+						"auth_domain", 
+						m_pCtrlObject->m_authDomain.mb_str( wxConvUTF8 ) );
+	mg_set_option( m_pCtrlObject->m_pwebserver, 
+						"ssl_certificate", 
+						m_pCtrlObject->m_pathCert.mb_str( wxConvUTF8 ) );		// SSL certificat
+		
 
-    m_clientOutputQueue.Clear();
-    m_mutexClientOutputQueue.Unlock();
-
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// init
-
-bool CControlObject::init(wxString& strcfgfile)
-{
-    //wxLog::AddTraceMask( "wxTRACE_doWorkLoop" );
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
-    wxLog::AddTraceMask(_("wxTRACE_vscpd_Msg"));
-    wxLog::AddTraceMask(_("wxTRACE_VSCP_Msg"));
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_ReceiveMutex"));
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_sendMutexLevel1"));
-    //wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
-    //wxLog::AddTraceMask( _( "wxTRACE_vscpd_dm" ) );
-
-    wxString str = _("VSCP Daemon started\n");
-    str += _("Version: ");
-    str += _(VSCPD_DISPLAY_VERSION);
-    str += _("\n");
-    str += _(VSCPD_COPYRIGHT);
-    str += _("\n");
-    logMsg(str);
-
-    // A configuration file must be available
-    if (!wxFile::Exists(strcfgfile)) {
-        logMsg(_("No configuration file given. Can't initialise!.\n"), DAEMON_LOGMSG_CRITICAL);
-        logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
-        return FALSE;
-    }
-
-    //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
-    
-    // Generate username and password for drivers
-    char buf[ 64 ];
-    randPassword pw(3);
-
-    pw.generatePassword(32, buf);
-    m_driverUsername = wxString::FromAscii(buf);
-    pw.generatePassword(32, buf);
-    Cmd5 md5((unsigned char *) buf);
-    m_driverPassword = wxString::FromAscii(buf);
-
-    m_userList.addUser(m_driverUsername,
-            wxString::FromAscii(md5.getDigest()),
-            _T("admin"),
-            NULL,
-            _T(""),
-            _T(""));
-
-    // Read configuration
-    if (!readConfiguration(strcfgfile)) {
-        logMsg(_("Unable to open/parse configuration file. Can't initialize!.\n"), DAEMON_LOGMSG_CRITICAL);
-        logMsg(_("Path = .") + strcfgfile + _("\n"), DAEMON_LOGMSG_CRITICAL);
-        return FALSE;
-    }
-    
-    // Read mime types
-    if (!readMimeTypes(m_pathToMimeTypeFile)) {
-        logMsg(_("Unable to open/parse mime type file.\n"), DAEMON_LOGMSG_CRITICAL);
-        logMsg(_("Path = .") + m_pathToMimeTypeFile + _("\n"), DAEMON_LOGMSG_CRITICAL);
-    }
-    
-    str.Printf(_("Log Level = %d\n"), m_logLevel );
-    logMsg(str);
-    //printf("Loglevel=%n\n",m_logLevel);
-
-    // Get GUID
-    if ( m_guid.isNULL() ) {
-        if (!getMacAddress(m_guid)) {
-            // We failed to create GUID from MAC address use
-            // 'localhost' IP instead as the base.
-            getIPAddress(m_guid);
-        }
-    }
-
-    // Load decision matrix if mechanism is enabled
-    if (m_bDM) {
-        logMsg(_("DM enabled.\n"), DAEMON_LOGMSG_INFO);
-        m_dm.load();
-    }
-    else {
-        logMsg(_("DM disabled.\n"), DAEMON_LOGMSG_INFO);
-    }
-
-    // Load variables if mechanism is enabled
-    if (m_bVariables) {
-        logMsg(_("Variables enabled.\n"), DAEMON_LOGMSG_INFO);
-        m_VSCP_Variables.load();
-    }
-    else {
-        logMsg(_("Variables disabled.\n"), DAEMON_LOGMSG_INFO);
-    }
-
-    startClientWorkerThread();
-
-    if (m_bCanalDrivers) {
-        logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
-        startDeviceWorkerThreads();
-    }
-    else {
-        logMsg(_("Level I drivers disabled.\n"), DAEMON_LOGMSG_INFO);
-    }
-
-    if (m_bTCPInterface) {
-        logMsg(_("TCP/IP interface enabled.\n"), DAEMON_LOGMSG_INFO);
-        startTcpWorkerThread();
-    }
-    else {
-        logMsg(_("TCP/IP interface disabled.\n"), DAEMON_LOGMSG_INFO);
-    }
+	while ( !TestDestroy() && !m_bQuit ) {
 	
-	startDaemonWorkerThread();
-
-
-	if (m_bWebSockets) {
-        logMsg(_("WebSerber interface active.\n"), DAEMON_LOGMSG_INFO);
-        startWebServerThread();
-    }
-    else {
-        logMsg(_("WebServer interface disabled.\n"), DAEMON_LOGMSG_INFO);
-    }
-
-#ifdef TTT
-    if ( m_bWebSockets ) {
-        logMsg(_("WebSocket interface active.\n"), DAEMON_LOGMSG_INFO);
-    }
-    else {
-        logMsg(_("WebSocket interface disabled.\n"), DAEMON_LOGMSG_INFO);
-    }
-    
-    if ( m_bWebServer ) {
-		
-		// Create the server
-		m_pwebserver = mg_create_server( gpctrlObj, CControlObject::websrv_event_handler );
-		
-		// Set options
-		mg_set_option( m_pwebserver, "document_root", m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
-		str = wxString::Format(  _("%i"), m_portWebServer );
-		mg_set_option( m_pwebserver, "listening_port", "8080" /*str.mb_str( wxConvUTF8 )*/ );	// Open web server port
-		mg_set_option( m_pwebserver, "auth_domain", m_authDomain.mb_str( wxConvUTF8 ) );
-		mg_set_option( m_pwebserver, "ssl_certificate", m_pathCert.mb_str( wxConvUTF8 ) );		// SSL certificat
-		
-
-        logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
-    }
-    else {
-        logMsg(_("WebServer interface disabled.\n"), DAEMON_LOGMSG_INFO);
-    }
-#endif
-
-    return true;
-
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// run - Program main loop
-//
-// Most work is done in the threads at the moment
-//
-
-bool CControlObject::run(void)
-{
-    CLIENTEVENTLIST::compatibility_iterator nodeClient;
-
-    vscpEvent EventLoop;
-    EventLoop.vscp_class = VSCP_CLASS2_VSCPD;
-    EventLoop.vscp_type = VSCP2_TYPE_VSCPD_LOOP;
-    EventLoop.sizeData = 0;
-    EventLoop.pdata = NULL;
-
-    vscpEvent EventStartUp;
-    EventStartUp.vscp_class = VSCP_CLASS2_VSCPD;
-    EventStartUp.vscp_type = VSCP2_TYPE_VSCPD_STARTING_UP;
-    EventStartUp.sizeData = 0;
-    EventStartUp.pdata = NULL;
-
-    vscpEvent EventShutDown;
-    EventShutDown.vscp_class = VSCP_CLASS2_VSCPD;
-    EventShutDown.vscp_type = VSCP2_TYPE_VSCPD_SHUTTING_DOWN;
-    EventShutDown.sizeData = 0;
-    EventShutDown.pdata = NULL;
-
-
-	// Init table files
-	listVSCPTables::iterator iter;
-	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
-	{
-		CVSCPTable *pTable = *iter;
-		pTable->init();
-	}
-
-    // We need to create a clientItem and add this object to the list
-    CClientItem *pClientItem = new CClientItem;
-    if (NULL == pClientItem) {
-        wxLogDebug(_("ControlObject: Unable to allocate Client item, Ending"));
-        logMsg(_("Unable to allocate Client item, Ending."), DAEMON_LOGMSG_CRITICAL);
-        return false;
-    }
-
-    // Save a pointer to the client item
-    m_dm.m_pClientItem = pClientItem;
-
-    // Set Filter/Mask for full DM table
-    memcpy(&pClientItem->m_filterVSCP, &m_dm.m_DM_Table_filter, sizeof( vscpEventFilter));
-
-    // This is an active client
-    pClientItem->m_bOpen = true;
-    pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = _("Internal Daemon DM Client. Started at ");
-    wxDateTime now = wxDateTime::Now();
-    pClientItem->m_strDeviceName += now.FormatISODate();
-    pClientItem->m_strDeviceName += _(" ");
-    pClientItem->m_strDeviceName += now.FormatISOTime();
-
-    // Add the client to the Client List
-    m_wxClientMutex.Lock();
-    addClient(pClientItem);
-    m_wxClientMutex.Unlock();
-
-    // Feed startup event
-    m_dm.feed(&EventStartUp);
-    
-    // DM Loop
-    while (!m_bQuit) {
-
 #ifdef WIN32
 		// CLOCKS_PER_SEC 
-		clock_t ticks,oldus;
+		
 		oldus = ticks = clock();
 #else
         struct timeval tv;
         gettimeofday(&tv, NULL);
 #endif
-
-        // Feed possible perodic event
-        m_dm.feedPeriodicEvent();
-
-        // Put the LOOP event on the queue
-        // Garanties at least one lop event between every other
-        // event feed to the queue
-        m_dm.feed(&EventLoop);
-
-        // tcp/ip clients uses joinable treads and therefor does not
-        // delete themseves.  This is a garbage collect for unterminated 
-        // tcp/ip connection threads.
-        TCPCLIENTS::iterator iter;
-        for (iter = m_pTcpClientListenThread->m_tcpclients.begin();
-                iter != m_pTcpClientListenThread->m_tcpclients.end(); ++iter) {
-
-            TcpClientThread *pThread = *iter;
-            if ((NULL != pThread)) {
-                if (pThread->m_bQuit) {
-                    pThread->Wait();
-                    m_pTcpClientListenThread->m_tcpclients.remove(pThread);
-                    delete pThread;
-                    break;
-                }
-            }
-        }
-
-#if TTT
-		mg_poll_server( m_pwebserver, 10 );
+		
+		mg_poll_server( m_pCtrlObject->m_pwebserver, 50 );
 		websock_post_incomingEvents();
-#endif
 
-        /*
-         * This broadcasts to all dumb-increment-protocol connections
-         * at 20Hz.
-         *
-         * We're just sending a character 'x', in these examples the
-         * callbacks send their own per-connection content.
-         *
-         * You have to send something with nonzero length to get the
-         * callback actions delivered.
-         *
-         * We take care of pre-and-post padding allocation.
-         */
-
-#ifdef WIN32
-		if ( (ticks - oldus) > 50000) 	
-#else
-        if ( ( (unsigned int)tv.tv_usec - oldus) > 50000) 
-#endif
-		{     
-            if (m_bWebSockets) {
-   
-            }
-
-#ifdef WIN32
+		#ifdef WIN32
 			oldus = clock();
 #else
             oldus = tv.tv_usec;
 #endif
 
-        }
-
-
-        // Wait for event
-        if (wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout(10)) {
-
-            // Put the LOOP event on the queue
-            m_dm.feed( &EventLoop );
-            continue;
-
-        }
-
-        //---------------------------------------------------------------------------
-        //                         Event received here
-        //---------------------------------------------------------------------------
-
-        if (pClientItem->m_clientInputQueue.GetCount()) {
-
-            vscpEvent *pEvent;
-
-            pClientItem->m_mutexClientInputQueue.Lock();
-            nodeClient = pClientItem->m_clientInputQueue.GetFirst();
-            pEvent = nodeClient->GetData();
-            pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
-            pClientItem->m_mutexClientInputQueue.Unlock();
-
-            if (NULL != pEvent) {
-
-                if (vscp_doLevel2Filter(pEvent, &m_dm.m_DM_Table_filter)) {
-                    // Feed event through matrix
-                    m_dm.feed(pEvent);
-                }
-
-                // Remove the event
-                vscp_deleteVSCPevent(pEvent);
-
-            } // Valid pEvent pointer
-
-        } // Event in queue
-
-    }  // LOOP
-
-    // Do shutdown event
-    m_dm.feed(&EventShutDown);
-
-    // Remove messages in the client queues
-    m_wxClientMutex.Lock();
-    removeClient(pClientItem);
-    m_wxClientMutex.Unlock();
-
-    wxLogDebug(_("ControlObject: Done"));
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// cleanup
-
-bool CControlObject::cleanup(void)
-{
-#ifdef TTT
-	// Kill web server
-	mg_destroy_server( &m_pwebserver );
-#endif
-    stopDeviceWorkerThreads();
-    stopTcpWorkerThread();
-	stopWebServerThread();
-    stopClientWorkerThread();
-    stopDaemonWorkerThread();
-
-	// kill table files
-	listVSCPTables::iterator iter;
-	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
-	{
-		CVSCPTable *pTable = *iter;
-		delete pTable;
 	}
-	
 
-    wxLogDebug(_("ControlObject: Cleanup done"));
-    return true;
-}
+	// Kill web server
+	mg_destroy_server( & m_pCtrlObject->m_pwebserver );
 
-/////////////////////////////////////////////////////////////////////////////
-// logMsg
-//
-
-void CControlObject::logMsg(const wxString& wxstr, unsigned char level)
-{
-
-    wxString wxdebugmsg = wxstr;
-
-#ifdef WIN32
-#ifdef BUILD_VSCPD_SERVICE
-
-    const char* ps[3];
-    ps[ 0 ] = wxstr;
-    ps[ 1 ] = NULL;
-    ps[ 2 ] = NULL;
-
-    int iStr = 0;
-    for (int i = 0; i < 3; i++) {
-        if (ps[i] != NULL) {
-            iStr++;
-        }
-    }
-
-    ::ReportEvent(m_hEventSource,
-            EVENTLOG_INFORMATION_TYPE,
-            0,
-            (1L << 30),
-            NULL, // sid
-            iStr,
-            0,
-            ps,
-            NULL);
-#else
-    //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
-    if (m_logLevel >= level) {
-        wxPrintf(wxdebugmsg);
-    }
-#endif
-#else
-
-    //::wxLogDebug(wxdebugmsg);
-
-    if (m_logLevel >= level) {
-        wxPrintf(wxdebugmsg);
-    }
-
-    switch (level) {
-    case DAEMON_LOGMSG_DEBUG:
-        syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_INFO:
-        syslog(LOG_INFO, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_NOTICE:
-        syslog(LOG_NOTICE, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_WARNING:
-        syslog(LOG_WARNING, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_ERROR:
-        syslog(LOG_ERR, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_CRITICAL:
-        syslog(LOG_CRIT, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_ALERT:
-        syslog(LOG_ALERT, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_EMERGENCY:
-        syslog(LOG_EMERG, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    };
-#endif
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// startClientWorkerThread
-//
-
-bool CControlObject::startClientWorkerThread(void)
-{
-    /////////////////////////////////////////////////////////////////////////////
-    // Load controlobject client message handler
-    /////////////////////////////////////////////////////////////////////////////
-    m_pclientMsgWorkerThread = new clientMsgWorkerThread;
-
-    if (NULL != m_pclientMsgWorkerThread) {
-        m_pclientMsgWorkerThread->m_pCtrlObject = this;
-        wxThreadError err;
-        if (wxTHREAD_NO_ERROR == (err = m_pclientMsgWorkerThread->Create())) {
-            //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-            if (wxTHREAD_NO_ERROR != (err = m_pclientMsgWorkerThread->Run())) {
-                logMsg(_("Unable to run controlobject client thread."), DAEMON_LOGMSG_CRITICAL);
-            }
-        } else {
-            logMsg(_("Unable to create controlobject client thread."), DAEMON_LOGMSG_CRITICAL);
-        }
-    } else {
-        logMsg(_("Unable to allocate memory for controlobject client thread."), DAEMON_LOGMSG_CRITICAL);
-    }
-
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// stopTcpWorkerThread
-//
-
-bool CControlObject::stopClientWorkerThread(void)
-{
-    if (NULL != m_pclientMsgWorkerThread) {
-        m_mutexclientMsgWorkerThread.Lock();
-        m_pclientMsgWorkerThread->m_bQuit = true;
-        m_pclientMsgWorkerThread->Wait();
-        delete m_pclientMsgWorkerThread;
-        m_mutexclientMsgWorkerThread.Unlock();
-    }
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// startTcpWorkerThread
-//
-
-bool CControlObject::startTcpWorkerThread(void)
-{
-    /////////////////////////////////////////////////////////////////////////////
-    // Run the TCP server thread   --   TODO - multiport
-    /////////////////////////////////////////////////////////////////////////////
-    if (m_bTCPInterface) {
-        
-        m_pTcpClientListenThread = new TcpClientListenThread;
-
-        if (NULL != m_pTcpClientListenThread) {
-            m_pTcpClientListenThread->m_pCtrlObject = this;
-            wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = m_pTcpClientListenThread->Create())) {
-                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if (wxTHREAD_NO_ERROR != (err = m_pTcpClientListenThread->Run())) {
-                    logMsg(_("Unable to run TCP thread."), DAEMON_LOGMSG_CRITICAL);
-                }
-            } else {
-                logMsg(_("Unable to create TCP thread."), DAEMON_LOGMSG_CRITICAL);
-            }
-        } else {
-            logMsg(_("Unable to allocate memory for TCP thread."), DAEMON_LOGMSG_CRITICAL);
-        }
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// stopTcpWorkerThread
-//
-
-bool CControlObject::stopTcpWorkerThread(void)
-{
-    if (NULL != m_pTcpClientListenThread) {
-        m_mutexTcpClientListenThread.Lock();
-        m_pTcpClientListenThread->m_bQuit = true;
-        m_pTcpClientListenThread->Wait();
-        delete m_pTcpClientListenThread;
-        m_mutexTcpClientListenThread.Unlock();
-    }
-    return true;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// startWebServerThread
-//
-
-bool CControlObject::startWebServerThread(void)
-{
-    /////////////////////////////////////////////////////////////////////////////
-    // Run the WebServer server thread  
-    /////////////////////////////////////////////////////////////////////////////
-    if (m_bWebServer) {
-        
-        m_pwebServerThread = new VSCPWebServerThread;
-
-        if (NULL != m_pwebServerThread) {
-            m_pwebServerThread->m_pCtrlObject = this;
-            wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = m_pwebServerThread->Create())) {
-                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
-                if (wxTHREAD_NO_ERROR != (err = m_pwebServerThread->Run())) {
-                    logMsg(_("Unable to run WeServer thread."), DAEMON_LOGMSG_CRITICAL);
-                }
-            } else {
-                logMsg(_("Unable to create WebServer thread."), DAEMON_LOGMSG_CRITICAL);
-            }
-        } else {
-            logMsg(_("Unable to allocate memory for WebServer thread."), DAEMON_LOGMSG_CRITICAL);
-        }
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
-// stopWebServerThread
-//
-
-bool CControlObject::stopWebServerThread(void)
-{
-    if (NULL != m_pwebServerThread) {
-        m_mutexwebServerThread.Lock();
-        m_pwebServerThread->m_bQuit = true;
-        m_pwebServerThread->Wait();
-        delete m_pwebServerThread;
-        m_mutexwebServerThread.Unlock();
-    }
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// startDaemonWorkerThread
-//
-
-bool CControlObject::startDaemonWorkerThread(void)
-{
-    /////////////////////////////////////////////////////////////////////////////
-    // Run the VSCP daemon thread
-    /////////////////////////////////////////////////////////////////////////////
-    if (m_bVSCPDaemon) {
-
-        m_pdaemonVSCPThread = new daemonVSCPThread;
-
-        if (NULL != m_pdaemonVSCPThread) {
-            m_pdaemonVSCPThread->m_pCtrlObject = this;
-
-            wxThreadError err;
-            if (wxTHREAD_NO_ERROR == (err = m_pdaemonVSCPThread->Create())) {
-                m_pdaemonVSCPThread->SetPriority(WXTHREAD_DEFAULT_PRIORITY);
-                if (wxTHREAD_NO_ERROR != (err = m_pdaemonVSCPThread->Run())) {
-                    logMsg(_("Unable to start TCP VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
-                }
-            } else {
-                logMsg(_("Unable to create TCP VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
-            }
-        } else {
-            logMsg(_("Unable to start VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
-        }
-
-    } // daemon enabled
-
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// stopDaemonWorkerThread
-//
-
-bool CControlObject::stopDaemonWorkerThread(void)
-{
-    if (NULL != m_pdaemonVSCPThread) {
-        m_mutexdaemonVSCPThread.Lock();
-        m_pdaemonVSCPThread->m_bQuit = true;
-        m_pdaemonVSCPThread->Wait();
-        delete m_pdaemonVSCPThread;
-        m_mutexdaemonVSCPThread.Unlock();
-    }
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-//  
-//
-
-bool CControlObject::startDeviceWorkerThreads(void)
-{
-    CDeviceItem *pDeviceItem;
-
-    VSCPDEVICELIST::iterator iter;
-    for (iter = m_deviceList.m_devItemList.begin();
-            iter != m_deviceList.m_devItemList.end();
-            ++iter) {
-
-        pDeviceItem = *iter;
-        if (NULL != pDeviceItem) {
-
-            // Just start if enabled
-            if ( !pDeviceItem->m_bEnable ) continue;
-                
-            // *****************************************
-            //  Create the worker thread for the device
-            // *****************************************
-
-            pDeviceItem->m_pdeviceThread = new deviceThread();
-            if (NULL != pDeviceItem->m_pdeviceThread) {
-
-                pDeviceItem->m_pdeviceThread->m_pCtrlObject = this;
-                pDeviceItem->m_pdeviceThread->m_pDeviceItem = pDeviceItem;
-
-                wxThreadError err;
-                if (wxTHREAD_NO_ERROR == (err = pDeviceItem->m_pdeviceThread->Create())) {
-                    if (wxTHREAD_NO_ERROR != (err = pDeviceItem->m_pdeviceThread->Run())) {
-                        logMsg(_("Unable to create DeviceThread."), DAEMON_LOGMSG_CRITICAL);
-                    }
-                } else {
-                    logMsg(_("Unable to run DeviceThread."), DAEMON_LOGMSG_CRITICAL);
-                }
-
-            } else {
-                logMsg(_("Unable to allocate memory for DeviceThread."), DAEMON_LOGMSG_CRITICAL);
-            }
-
-        } // Valid device item
-    }
-
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// stopDeviceWorkerThreads
-//
-
-bool CControlObject::stopDeviceWorkerThreads(void)
-{
-    CDeviceItem *pDeviceItem;
-
-    VSCPDEVICELIST::iterator iter;
-    for (iter = m_deviceList.m_devItemList.begin();
-            iter != m_deviceList.m_devItemList.end();
-            ++iter) {
-
-        pDeviceItem = *iter;
-        if (NULL != pDeviceItem) {
-
-            if (NULL != pDeviceItem->m_pdeviceThread) {
-                pDeviceItem->m_mutexdeviceThread.Lock();
-                pDeviceItem->m_bQuit = true;
-                pDeviceItem->m_pdeviceThread->Wait();
-                pDeviceItem->m_mutexdeviceThread.Unlock();
-                delete pDeviceItem->m_pdeviceThread;
-            }
-
-        }
-
-    }
-
-    return true;
+    return NULL;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// sendEventToClient
+// OnExit
 //
 
-void CControlObject::sendEventToClient(CClientItem *pClientItem,
-        vscpEvent *pEvent)
+void VSCPWebServerThread::OnExit()
 {
-    // Must be valid pointers
-    if (NULL == pClientItem) return;
-    if (NULL == pEvent) return;
-
-    // Check if filtered out
-    //if (!doLevel2Filter(pEvent, &pClientItem->m_filterVSCP)) return;
-
-    // If the client queue is full for this client then the
-    // client will not receive the message
-    if (pClientItem->m_clientInputQueue.GetCount() >
-            m_maxItemsInClientReceiveQueue) {
-        // Overrun
-        pClientItem->m_statistics.cntOverruns++;
-        return;
-    }
-
-    // Create an event
-    vscpEvent *pnewvscpEvent = new vscpEvent;
-    if (NULL != pnewvscpEvent) {
-        
-        // Copy in the new event
-        memcpy(pnewvscpEvent, pEvent, sizeof( vscpEvent));
-
-        // And data...
-        if ((pEvent->sizeData > 0) && (NULL != pEvent->pdata)) {
-            // Copy in data
-            pnewvscpEvent->pdata = new uint8_t[ pEvent->sizeData ];
-            memcpy(pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData);
-        } else {
-            // No data
-            pnewvscpEvent->pdata = NULL;
-        }
-
-        // Add the new event to the input queue
-        pClientItem->m_mutexClientInputQueue.Lock();
-        pClientItem->m_clientInputQueue.Append(pnewvscpEvent);
-        pClientItem->m_semClientInputQueue.Post();
-        pClientItem->m_mutexClientInputQueue.Unlock();
-
-    }
+	;
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// sendEventAllClients
-//
-
-void CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
-{
-    CClientItem *pClientItem;
-    VSCPCLIENTLIST::iterator it;
-
-    wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
-            _(" ControlObject: event %d, excludeid = %d"),
-            pEvent->obid, excludeID);
-
-    if (NULL == pEvent) return;
-
-    m_wxClientMutex.Lock();
-    for (it = m_clientList.m_clientItemList.begin(); it != m_clientList.m_clientItemList.end(); ++it) {
-        pClientItem = *it;
-
-        wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
-                _(" ControlObject: clientid = %d"),
-                pClientItem->m_clientID);
-
-        if ((NULL != pClientItem) && (excludeID != pClientItem->m_clientID)) {
-            sendEventToClient(pClientItem, pEvent);
-            wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
-                    _(" ControlObject: Sent to client %d"),
-                    pClientItem->m_clientID);
-        }
-    }
-
-    m_wxClientMutex.Unlock();
-
-}
-
-
-
-//
-// The clientmap holds free client id's in an array
-// They are aquired when a client connects and released when a
-// client disconnects.
-//
-// Interfaces can be fetched by investigating the map. 
-//
-// Not used at the moment.
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  getClientMapFromId
-//
-
-uint32_t CControlObject::getClientMapFromId(uint32_t clid)
-{
-    for (uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++) {
-        if (clid == m_clientMap[ i ]) return i;
-    }
-
-    return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  getClientMapFromIndex
-//
-
-uint32_t CControlObject::getClientMapFromIndex(uint32_t idx)
-{
-    return m_clientMap[ idx ];
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  addIdToClientMap
-//
-
-uint32_t CControlObject::addIdToClientMap(uint32_t clid)
-{
-    for (uint32_t i = 1; i < VSCP_MAX_CLIENTS; i++) {
-        if (0 == m_clientMap[ i ]) {
-            m_clientMap[ i ] = clid;
-            return clid;
-        }
-    }
-
-    return 0;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  removeIdFromClientMap
-//
-
-bool CControlObject::removeIdFromClientMap(uint32_t clid)
-{
-    for (uint32_t i = 0; i < VSCP_MAX_CLIENTS; i++) {
-        if (clid == m_clientMap[ i ]) {
-            m_clientMap[ i ] = 0;
-            return true;
-        }
-    }
-
-    return false;
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// addClient
-//
-
-void CControlObject::addClient(CClientItem *pClientItem, uint32_t id)
-{
-    // Add client to client list
-    m_clientList.addClient(pClientItem, id);
-
-    // Add mapped item
-    addIdToClientMap(pClientItem->m_clientID);
-
-    // Set GUID for interface
-    pClientItem->m_guid = m_guid;
-
-    pClientItem->m_guid.setNicknameID( 0 );
-    pClientItem->m_guid.setClientID( pClientItem->m_clientID );
-}
-
-
-//////////////////////////////////////////////////////////////////////////////
-// removeClient
-//
-
-void CControlObject::removeClient(CClientItem *pClientItem)
-{
-    // Remove the mapped item
-    removeIdFromClientMap(pClientItem->m_clientID);
-
-    // Remove the client
-    m_clientList.removeClient(pClientItem);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//  getMacAddress
-//
-
-bool CControlObject::getMacAddress(cguid& guid)
-{
-#ifdef WIN32
-
-    bool rv = false;
-    NCB Ncb;
-    UCHAR uRetCode;
-    LANA_ENUM lenum;
-    int i;
-
-    // Clear the GUID
-    guid.clear();
-
-    memset(&Ncb, 0, sizeof( Ncb));
-    Ncb.ncb_command = NCBENUM;
-    Ncb.ncb_buffer = (UCHAR *) & lenum;
-    Ncb.ncb_length = sizeof( lenum);
-    uRetCode = Netbios(&Ncb);
-    //printf( "The NCBENUM return code is: 0x%x \n", uRetCode );
-
-    for (i = 0; i < lenum.length; i++) {
-        memset(&Ncb, 0, sizeof( Ncb));
-        Ncb.ncb_command = NCBRESET;
-        Ncb.ncb_lana_num = lenum.lana[i];
-
-        uRetCode = Netbios(&Ncb);
-
-        memset(&Ncb, 0, sizeof( Ncb));
-        Ncb.ncb_command = NCBASTAT;
-        Ncb.ncb_lana_num = lenum.lana[i];
-
-        strcpy((char *) Ncb.ncb_callname, "*               ");
-        Ncb.ncb_buffer = (unsigned char *) &Adapter;
-        Ncb.ncb_length = sizeof( Adapter);
-
-        uRetCode = Netbios(&Ncb);
-
-        if (uRetCode == 0) {
-            guid.setAt( 15, 0xff );
-            guid.setAt( 14, 0xff );
-            guid.setAt( 13, 0xff );
-            guid.setAt( 12, 0xff );
-            guid.setAt( 11, 0xff );
-            guid.setAt( 10, 0xff );
-            guid.setAt( 9, 0xff );
-            guid.setAt( 8, 0xfe );
-            guid.setAt( 7, Adapter.adapt.adapter_address[ 0 ] );
-            guid.setAt( 6, Adapter.adapt.adapter_address[ 1 ] );
-            guid.setAt( 5, Adapter.adapt.adapter_address[ 2 ] );
-            guid.setAt( 4, Adapter.adapt.adapter_address[ 3 ] );
-            guid.setAt( 3, Adapter.adapt.adapter_address[ 4 ] );
-            guid.setAt( 2, Adapter.adapt.adapter_address[ 5 ] );
-            guid.setAt( 1, 0 );
-            guid.setAt( 0, 0 );
-#ifdef __WXDEBUG__
-            char buf[256];
-            sprintf(buf, "The Ethernet MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
-                    guid.getAt(2),
-                    guid.getAt(3),
-                    guid.getAt(4),
-                    guid.getAt(5),
-                    guid.getAt(6),
-                    guid.getAt(7));
-
-            wxString str = wxString::FromUTF8(buf);
-            wxLogDebug(str);
-#endif
-
-            rv = true;
-        }
-    }
-
-    return rv;
-
-#else
-
-    bool rv = true;
-    struct ifreq ifr;
-    int fd;
-
-    // Clear the GUID
-    guid.clear();
-
-    fd = socket(PF_INET, SOCK_RAW, htons(ETH_P_ALL));
-    memset(&ifr, 0, sizeof( ifr));
-    strncpy(ifr.ifr_name, "eth0", sizeof( ifr.ifr_name));
-    if (ioctl(fd, SIOCGIFHWADDR, &ifr) >= 0) {
-        unsigned char *ptr;
-        ptr = (unsigned char *) &ifr.ifr_ifru.ifru_hwaddr.sa_data[ 0 ];
-        logMsg(wxString::Format(_(" Ethernet MAC address: %02x:%02x:%02x:%02x:%02x:%02x\n"),
-                *ptr,
-                *(ptr + 1),
-                *(ptr + 2),
-                *(ptr + 3),
-                *(ptr + 4),
-                *(ptr + 5)), DAEMON_LOGMSG_INFO);
-        guid.setAt( 15, 0xff );
-        guid.setAt( 14, 0xff );
-        guid.setAt( 13, 0xff );
-        guid.setAt( 12, 0xff );
-        guid.setAt( 11, 0xff );
-        guid.setAt( 10, 0xff );
-        guid.setAt( 9, 0xff );
-        guid.setAt( 8, 0xfe );
-        guid.setAt( 7, *ptr );
-        guid.setAt( 6, *(ptr + 1) );
-        guid.setAt( 5, *(ptr + 2) );
-        guid.setAt( 4, *(ptr + 3) );
-        guid.setAt( 3, *(ptr + 4));
-        guid.setAt( 2, *(ptr + 5) );
-        guid.setAt( 1, 0 );
-        guid.setAt( 0, 0 );
-    } else {
-        logMsg(_("Failed to get hardware address (must be root?).\n"), DAEMON_LOGMSG_WARNING);
-        rv = false;
-    }
-
-    return rv;
-
-
-#endif
-
-}
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-//  getIPAddress
-//
-
-bool CControlObject::getIPAddress(cguid& guid)
-{
-    // Clear the GUID
-    guid.clear();
-
-    guid.setAt( 15, 0xff );
-    guid.setAt( 14, 0xff );
-    guid.setAt( 13, 0xff );
-    guid.setAt( 12, 0xff );
-    guid.setAt( 11, 0xff );
-    guid.setAt( 10, 0xff );
-    guid.setAt( 9, 0xff );
-    guid.setAt( 8, 0xfd );
-
-    char szName[ 128 ];
-    gethostname(szName, sizeof( szName));
-#ifdef WIN32
-    LPHOSTENT lpLocalHostEntry;
-#else
-    struct hostent *lpLocalHostEntry;
-#endif
-    lpLocalHostEntry = gethostbyname(szName);
-    if (NULL == lpLocalHostEntry) {
-        return false;
-    }
-
-    // Get all local addresses
-    int idx = -1;
-    void *pAddr;
-    unsigned long localaddr[ 16 ]; // max 16 local addresses
-    do {
-        idx++;
-        localaddr[ idx ] = 0;
-        pAddr = lpLocalHostEntry->h_addr_list[ idx ];
-        if (NULL != pAddr) localaddr[ idx ] = *((unsigned long *) pAddr);
-    } while ((NULL != pAddr) && (idx < 16));
-
-    guid.setAt( 7, (localaddr[ 0 ] >> 24) & 0xff );
-    guid.setAt( 6, (localaddr[ 0 ] >> 16) & 0xff );
-    guid.setAt( 5, (localaddr[ 0 ] >> 8) & 0xff );
-    guid.setAt( 4, localaddr[ 0 ] & 0xff );
-    
-    return true;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// readConfiguration
-//
-// Read the configuration XML file
-//
-
-bool CControlObject::readConfiguration(wxString& strcfgfile)
-{
-    unsigned long val;
-    wxXmlDocument doc;
-    if (!doc.Load(strcfgfile)) {
-        return false;
-    }
-
-    // start processing the XML file
-    if (doc.GetRoot()->GetName() != wxT("vscpconfig")) {
-        return false;
-    }
-
-    wxXmlNode *child = doc.GetRoot()->GetChildren();
-    while (child) {
-
-        if (child->GetName() == wxT("general")) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
-
-                // Deprecated <==============
-                if (subchild->GetName() == wxT("tcpport")) {
-                    wxString str = subchild->GetNodeContent();
-                    m_TCPPort = vscp_readStringValue(str);
-                }// Deprecated <==============
-                else if (subchild->GetName() == wxT("udpport")) {
-                    wxString str = subchild->GetNodeContent();
-                    m_UDPPort = vscp_readStringValue(str);
-                } else if (subchild->GetName() == wxT("loglevel")) {
-                    wxString str = subchild->GetNodeContent();
-                    str.Trim();
-                    str.Trim(false);
-                    if ( str.IsSameAs(_("NONE"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NONE;
-                    }
-                    else if ( str.IsSameAs(_("INFO"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_INFO;
-                    }
-                    else if ( str.IsSameAs(_("NOTICE"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NOTICE;
-                    }
-                    else if ( str.IsSameAs(_("WARNING"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_WARNING;
-                    }
-                    else if ( str.IsSameAs(_("ERROR"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_ERROR;
-                    }
-                    else if ( str.IsSameAs(_("CRITICAL"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_CRITICAL;
-                    }
-                    else if ( str.IsSameAs(_("ALERT"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_ALERT;
-                    }
-                    else if ( str.IsSameAs(_("EMERGENCY"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_EMERGENCY;
-                    }
-                    else if ( str.IsSameAs(_("DEBUG"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_DEBUG;
-                    }
-                    else {
-                        m_logLevel = vscp_readStringValue(str);
-                    }
-                } else if (subchild->GetName() == wxT("tcpif")) {
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bTCPInterface = false;
-                    }
-
-#if wxMAJOR_VERSION > 3
-                    property = subchild->GetAttribute(wxT("port"), wxT("9598"));
-#else
-                    property = subchild->GetPropVal(wxT("port"), wxT("9598"));
-#endif                    
-                    if (property.IsNumber()) {
-                        m_TCPPort = vscp_readStringValue(property);
-                    }
-
-#if wxMAJOR_VERSION > 3                    
-                    m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("ifaddress"), wxT(""));
-#else
-                    m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("ifaddress"), wxT(""));
-#endif                    
-
-                } else if (subchild->GetName() == wxT("canaldriver")) {
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bCanalDrivers = false;
-                    } else {
-                        m_bCanalDrivers = true;
-                    }
-                } 
-                else if (subchild->GetName() == wxT("dm")) {
-                    // Should the internal DM be disabled
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bDM = false;
-                    }
-
-                    // Get the path to the DM file
-#if wxMAJOR_VERSION > 3                    
-                    m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
-#else 
-                    m_dm.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
-#endif                    
-                    m_dm.m_configPath.Trim();
-                    m_dm.m_configPath.Trim(false);
-                    
-                }                 
-                else if (subchild->GetName() == wxT("variables")) {
-                    // Should the internal DM be disabled
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bVariables = false;
-                    }
-
-                    // Get the path to the DM file
-#if wxMAJOR_VERSION > 3                    
-                    m_VSCP_Variables.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
-#else 
-                    m_VSCP_Variables.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
-#endif                    
-                    m_VSCP_Variables.m_configPath.Trim();
-                    m_VSCP_Variables.m_configPath.Trim(false);
-
-                } else if (subchild->GetName() == wxT("vscp")) {
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bVSCPDaemon = false;
-                    }
-                } 
-				else if (subchild->GetName() == wxT("guid")) {
-                    wxString str = subchild->GetNodeContent();
-                    //getGuidFromStringToArray(m_GUID, str);
-                    m_guid.getFromString(str);
-                } 
-				else if (subchild->GetName() == wxT("clientbuffersize")) {
-                    wxString str = subchild->GetNodeContent();
-                    m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
-                } 
-				else if (subchild->GetName() == wxT("webrootpath")) {
-                    CControlObject::m_pathRoot = subchild->GetNodeContent();
-                    CControlObject::m_pathRoot.Trim();
-                    CControlObject::m_pathRoot.Trim(false); 
-				} 
-				else if (subchild->GetName() == wxT("authdoamin")) {
-                    CControlObject::m_authDomain = subchild->GetNodeContent();
-                    CControlObject::m_authDomain.Trim();
-                    CControlObject::m_authDomain.Trim(false);
-                } 
-				else if (subchild->GetName() == wxT("pathcert")) {
-                    m_pathCert = subchild->GetNodeContent();
-                    m_pathCert.Trim();
-                    m_pathCert.Trim(false);
-                } 
-				else if (subchild->GetName() == wxT("pathkey")) {
-                    m_pathKey = subchild->GetNodeContent();
-                    m_pathKey.Trim();
-                    m_pathKey.Trim(false);
-                } 
-				else if (subchild->GetName() == wxT("websockets")) {
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bWebSockets = false;
-                    }
-
-#if wxMAJOR_VERSION > 3                    
-                    property = subchild->GetAttribute(wxT("port"), wxT("7681"));
-#else 
-                    property = subchild->GetPropVal(wxT("port"), wxT("7681"));
-#endif                    
-                    if (property.IsNumber()) {
-                        //m_portWebsockets = vscp_readStringValue(property);
-                    }
-
-#if wxMAJOR_VERSION > 3                    
-                    property = subchild->GetAttribute(wxT("auth"), wxT("true"));
-#else 
-                    property = subchild->GetPropVal(wxT("auth"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bAuthWebsockets = false;
-                    }
-
-                } 
-				else if (subchild->GetName() == wxT("webserver")) {
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bWebServer = false;
-                    }
-
-#if wxMAJOR_VERSION > 3                    
-                    property = subchild->GetAttribute(wxT("port"), wxT("8080"));
-#else 
-                    property = subchild->GetPropVal(wxT("port"), wxT("8080"));
-#endif                    
-                    if (property.IsNumber()) {
-                        m_portWebServer = vscp_readStringValue(property);
-                    }
-                }
-                else if (subchild->GetName() == wxT("pathtomimetypes")) {
-                    m_pathToMimeTypeFile = subchild->GetNodeContent();
-                    m_pathToMimeTypeFile.Trim();
-                    m_pathToMimeTypeFile.Trim(false);
-                } 
-
-                subchild = subchild->GetNext();
-            }
-
-            wxString content = child->GetNodeContent();
-
-        } 
-        else if (child->GetName() == wxT("remoteuser")) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
-                vscpEventFilter VSCPFilter;
-                bool bFilterPresent = false;
-                bool bMaskPresent = false;
-                wxString name;
-                wxString md5;
-                wxString privilege;
-                wxString allowfrom;
-                wxString allowevent;
-                bool bUser = false;
-
-                vscp_clearVSCPFilter(&VSCPFilter); // Allow all frames
-
-                if (subchild->GetName() == wxT("user")) {
-
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-
-                    while (subsubchild) {
-                        if (subsubchild->GetName() == wxT("name")) {
-                            name = subsubchild->GetNodeContent();
-                            bUser = true;
-                        } else if (subsubchild->GetName() == wxT("password")) {
-                            md5 = subsubchild->GetNodeContent();
-                        } else if (subsubchild->GetName() == wxT("privilege")) {
-                            privilege = subsubchild->GetNodeContent();
-                        } else if (subsubchild->GetName() == wxT("filter")) {
-                            bFilterPresent = true;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
-#else 
-                            wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
-#endif                            
-                            val = 0;
-                            str_vscp_priority.ToULong(&val);
-                            VSCPFilter.filter_priority = val;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
-#else 
-                            wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
-#endif                            
-                            val = 0;
-                            str_vscp_class.ToULong(&val);
-                            VSCPFilter.filter_class = val;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
-#else 
-                            wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
-#endif                            
-                            val = 0;
-                            str_vscp_type.ToULong(&val);
-                            VSCPFilter.filter_type = val;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
-#else 
-                            wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
-#endif                                    
-                                    wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
-                            vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
-                        } else if (subsubchild->GetName() == wxT("mask")) {
-                            bMaskPresent = true;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
-#else 
-                            wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
-#endif                            
-                            val = 0;
-                            str_vscp_priority.ToULong(&val);
-                            VSCPFilter.mask_priority = val;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
-#else 
-                            wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
-#endif                            
-                            val = 0;
-                            str_vscp_class.ToULong(&val);
-                            VSCPFilter.mask_class = val;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
-#else 
-                            wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
-#endif                            
-                            val = 0;
-                            str_vscp_type.ToULong(&val);
-                            VSCPFilter.mask_type = val;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
-#else 
-                            wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
-#endif                                    
-                                    wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
-                            vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
-                        } 
-						else if (subsubchild->GetName() == wxT("allowfrom")) {
-                            allowfrom = subsubchild->GetNodeContent();
-                        } 
-						else if (subsubchild->GetName() == wxT("allowevent")) {
-                            allowevent = subsubchild->GetNodeContent();
-                        }
-
-                        subsubchild = subsubchild->GetNext();
-
-                    }
-
-                }
-
-                // Add user
-                if (bUser) {
-
-                    if (bFilterPresent && bMaskPresent) {
-                        m_userList.addUser(name, md5, privilege, &VSCPFilter, allowfrom, allowevent);
-                    } 
-					else {
-                        m_userList.addUser(name, md5, privilege, NULL, allowfrom, allowevent);
-                    }
-
-                    bUser = false;
-                    bFilterPresent = false;
-                    bMaskPresent = false;
-
-                }
-
-                subchild = subchild->GetNext();
-
-            }
-
-        } 
-        else if (child->GetName() == wxT("interfaces")) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
-
-                wxString ip;
-                wxString mac;
-                wxString guid;
-                bool bInterface = false;
-
-                if (subchild->GetName() == wxT("interface")) {
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-
-                    while (subsubchild) {
-
-                        if (subsubchild->GetName() == wxT("ipaddress")) {
-                            ip = subsubchild->GetNodeContent();
-                            bInterface = true;
-                        } 
-                        else if (subsubchild->GetName() == wxT("macaddress")) {
-                            mac = subsubchild->GetNodeContent();
-                        } 
-                        else if (subsubchild->GetName() == wxT("guid")) {
-                            guid = subsubchild->GetNodeContent();
-                        }
-
-                        subsubchild = subsubchild->GetNext();
-
-                    }
-
-                }
-
-                // Add interface
-                if (bInterface) {
-                    m_interfaceList.addInterface(ip, mac, guid);
-                    bInterface = false;
-                }
-
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-            // Level I driver
-        else if (child->GetName() == wxT("canaldriver")) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
-                wxString strName;
-                wxString strConfig;
-                wxString strPath;
-                unsigned long flags;
-                wxString strGUID;
-                bool bEnabled = true;
-                bool bCanalDriver = false;
-
-                if (subchild->GetName() == wxT("driver")) {
-                    
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-                    
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        bEnabled = false;
-                    }
-                    
-                    while (subsubchild) {
-                        if (subsubchild->GetName() == wxT("name")) {
-                            strName = subsubchild->GetNodeContent();
-                            strName.Trim();
-                            strName.Trim(false);
-                            // Replace spaces in name with underscore
-                            int pos;
-                            while (wxNOT_FOUND != (pos = strName.Find(_(" ")))) {
-                                strName.SetChar(pos, wxChar('_'));
-                            }
-                            bCanalDriver = true;
-                        } 
-                        else if (subsubchild->GetName() == wxT("config") ||
-                                subsubchild->GetName() == wxT("parameter")) {
-                            strConfig = subsubchild->GetNodeContent();
-                            strConfig.Trim();
-                            strConfig.Trim(false);
-                        } 
-                        else if (subsubchild->GetName() == wxT("path")) {
-                            strPath = subsubchild->GetNodeContent();
-                            strPath.Trim();
-                            strPath.Trim(false);
-                        } 
-                        else if (subsubchild->GetName() == wxT("flags")) {
-                            wxString str = subsubchild->GetNodeContent();
-                            flags = vscp_readStringValue(str);
-                        } 
-                        else if (subsubchild->GetName() == wxT("guid")) {
-                            strGUID = subsubchild->GetNodeContent();
-                            strGUID.Trim();
-                            strGUID.Trim(false);
-                        }
-
-                        // Next driver item
-                        subsubchild = subsubchild->GetNext();
-
-                    }
-
-                }
-
-                // Configuration data for one driver loaded
-                uint8_t GUID[ 16 ];
-
-                // Nill the GUID
-                memset(GUID, 0, 16);
-
-                if (strGUID.Length()) {
-                    vscp_getGuidFromStringToArray(GUID, strGUID);
-                }
-
-                // Add the device
-                if (bCanalDriver) {
-
-                    if (!m_deviceList.addItem( strName,
-                                                strConfig,
-                                                strPath,
-                                                flags,
-                                                GUID,
-                                                VSCP_DRIVER_LEVEL1,
-                                                bEnabled ) ) {
-                        wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
-                                strPath + _(" ]\n");
-                        logMsg(errMsg, DAEMON_LOGMSG_ERROR);
-                        //wxLogDebug(errMsg);
-                    } 
-                    else {
-                        wxString errMsg = _("Level I driver added. - [ ") +
-                                strPath + _(" ]\n");
-                        logMsg(errMsg, DAEMON_LOGMSG_INFO);
-                    }
-
-                    bCanalDriver = false;
-
-                }
-
-                // Next driver
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-            // Level II driver
-        else if (child->GetName() == wxT("vscpdriver")) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            
-            while (subchild) {
-                
-                wxString strName;
-                wxString strConfig;
-                wxString strPath;
-                wxString strGUID;
-                bool bEnabled = true;
-                bool bLevel2Driver = false;
-
-                if (subchild->GetName() == wxT("driver")) {
-                    
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-                    
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif
-                    if (property.IsSameAs(_("false"), false)) {
-                        bEnabled = false;
-                    }
-                    
-                    while (subsubchild) {
-                        if (subsubchild->GetName() == wxT("name")) {
-                            strName = subsubchild->GetNodeContent();
-                            strName.Trim();
-                            strName.Trim(false);
-                            // Replace spaces in name with underscore
-                            int pos;
-                            while (wxNOT_FOUND != (pos = strName.Find(_(" ")))) {
-                                strName.SetChar(pos, wxChar('_'));
-                            }
-                            bLevel2Driver = true;
-                        } 
-                        else if (subsubchild->GetName() == wxT("config") ||
-                                subsubchild->GetName() == wxT("parameter")) {
-                            strConfig = subsubchild->GetNodeContent();
-                            strConfig.Trim();
-                            strConfig.Trim(false);
-                        } 
-                        else if (subsubchild->GetName() == wxT("path")) {
-                            strPath = subsubchild->GetNodeContent();
-                            strPath.Trim();
-                            strPath.Trim(false);
-                        } 
-                        else if (subsubchild->GetName() == wxT("guid")) {
-                            strGUID = subsubchild->GetNodeContent();
-                            strGUID.Trim();
-                            strGUID.Trim(false);
-                        }
-
-                        // Next driver item
-                        subsubchild = subsubchild->GetNext();
-
-                    }
-
-                }
-
-                // Configuration data for one driver loaded
-                uint8_t GUID[ 16 ];
-
-                // Nill the GUID
-                memset(GUID, 0, 16);
-
-                if (strGUID.Length()) {
-                    vscp_getGuidFromStringToArray(GUID, strGUID);
-                }
-
-                // Add the device
-                if (bLevel2Driver) {
-
-                    if (!m_deviceList.addItem(strName,
-                                                strConfig,
-                                                strPath,
-                                                0,
-                                                GUID,
-                                                VSCP_DRIVER_LEVEL2,
-                                                bEnabled )) {
-                        wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
-                                strPath + _(" ]\n");
-                        logMsg(errMsg, DAEMON_LOGMSG_INFO);
-                        //wxLogDebug(errMsg);
-                    } 
-					else {
-                        wxString errMsg = _("Level II driver added. - [ ") +
-                                strPath + _(" ]\n");
-                        logMsg(errMsg, DAEMON_LOGMSG_INFO);
-                    }
-
-
-                    bLevel2Driver = false;
-
-                }
-
-                // Next driver
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-		// <table name="jhjhdjhsdjh" description="jsjdsjhdhsjh" xaxis="lfdlfldk" yaxis="dfddfd" path="path" type="normal|static" size="n" class="n" type="n" unit="n" />
-		else if (child->GetName() == wxT("tables")) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
-
-                bool bTable = false;
-
-                if (subchild->GetName() == wxT("table")) {
-
-					CVSCPTable *pTable = new CVSCPTable();
-					if ( NULL != pTable ) {
-						memset( pTable, 0, sizeof(CVSCPTable) );
-						pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
-													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
-													subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(), 
-													subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
-													subchild->GetAttribute( wxT("xaxis"), wxT("") ).mbc_str(), 
-													subchild->GetAttribute( wxT("yaxis"), wxT("") ).mbc_str(),
-													vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) ),
-													vscp_readStringValue( subchild->GetAttribute( wxT("class"), wxT("10") ) ), 
-													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
-													vscp_readStringValue( subchild->GetAttribute( wxT("unit"), wxT("0") ) ) );
-						m_listTables.Append( pTable ) ;
-					}
-                }
-
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-
-
-        child = child->GetNext();
-
-    }
-
-    return true;
-
-}
-
-
 
 
 
@@ -2131,7 +244,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 // Read the Mime Types XML file 
 //
 
-bool CControlObject::readMimeTypes(wxString& path)
+bool VSCPWebServerThread::readMimeTypes(wxString& path)
 {
     //unsigned long val;
     wxXmlDocument doc;
@@ -2176,11 +289,6 @@ bool CControlObject::readMimeTypes(wxString& path)
 }
 
 
-
-#ifdef TTT
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //                               WEBSOCKET
 ///////////////////////////////////////////////////////////////////////////////
@@ -2191,7 +299,7 @@ bool CControlObject::readMimeTypes(wxString& path)
 
 /*
 int
-CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
+VSCPWebServerThread::callback_lws_vscp( struct libwebsocket_context *context,
 										struct libwebsocket *wsi,
 										enum libwebsocket_callback_reasons reason,
 										void *user,
@@ -2357,7 +465,7 @@ CControlObject::callback_lws_vscp( struct libwebsocket_context *context,
 //
 
 void
-CControlObject::handleWebSocketReceive(struct libwebsocket_context *context,
+VSCPWebServerThread::handleWebSocketReceive(struct libwebsocket_context *context,
         struct libwebsocket *wsi,
         struct per_session_data__lws_vscp *pss,
         void *in,
@@ -2415,7 +523,7 @@ CControlObject::handleWebSocketReceive(struct libwebsocket_context *context,
 //
 
 bool
-CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
+VSCPWebServerThread::handleWebSocketSendEvent(vscpEvent *pEvent)
 {
     bool bSent = false;
     bool rv = true;
@@ -2530,7 +638,7 @@ CControlObject::handleWebSocketSendEvent(vscpEvent *pEvent)
 //
 
 void
-CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
+VSCPWebServerThread::handleWebSocketCommand(struct libwebsocket_context *context,
                                         struct libwebsocket *wsi,
                                         struct per_session_data__lws_vscp *pss,
                                         const char *pCommand)
@@ -2743,7 +851,7 @@ CControlObject::handleWebSocketCommand(struct libwebsocket_context *context,
 //
 
 int
-CControlObject::websock_command( struct mg_connection *conn, 
+VSCPWebServerThread::websock_command( struct mg_connection *conn, 
 										struct websock_session *pSession,
 										wxString& strCmd )
 {
@@ -2786,7 +894,7 @@ CControlObject::websock_command( struct mg_connection *conn,
 	else if (0 == strTok.Find(_("AUTH"))) {
 		wxString strUser = tkz.GetNextToken();
 		wxString strKey = tkz.GetNextToken();
-		if ( MG_TRUE == pObject->websock_authentication( conn, pSession, strUser, strKey ) ) {
+		if ( MG_TRUE == pObject->getWebServer()->websock_authentication( conn, pSession, strUser, strKey ) ) {
 			mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;AUTH1" );
 			pSession->bAuthenticated = true;	// Authenticated
 		}
@@ -3121,7 +1229,7 @@ CControlObject::websock_command( struct mg_connection *conn,
 //
 
 int
-CControlObject::websock_sendevent( struct mg_connection *conn, 
+VSCPWebServerThread::websock_sendevent( struct mg_connection *conn, 
 										struct websock_session *pSession,
 										vscpEvent *pEvent )
 {
@@ -3249,7 +1357,7 @@ CControlObject::websock_sendevent( struct mg_connection *conn,
 //
 
 int 
-CControlObject::websrv_websocket_message( struct mg_connection *conn )
+VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
 {
 	wxString str;
     char buf[ 2048 ];
@@ -3288,7 +1396,7 @@ CControlObject::websrv_websocket_message( struct mg_connection *conn )
 			p++;
 			p++; // Point beyond initial info "C;"
 			str = wxString::FromAscii( p );
-			pObject->websock_command( conn, pSession, str );
+			websock_command( conn, pSession, str );
 			break;
 
         // Event | 'E' ; head(byte) , vscp_class(unsigned short) , vscp_type(unsigned
@@ -3312,7 +1420,7 @@ CControlObject::websrv_websocket_message( struct mg_connection *conn )
 			if (vscp_getVscpEventFromString( &vscp_event, str ) ) {
 
 				vscp_event.obid = pSession->m_pClientItem->m_clientID;
-				if ( pObject->websock_sendevent( conn, pSession, &vscp_event ) ) {
+				if ( pObject->getWebServer()->websock_sendevent( conn, pSession, &vscp_event ) ) {
 					mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;EVENT" );
 				} 
 				else {
@@ -3346,7 +1454,7 @@ CControlObject::websrv_websocket_message( struct mg_connection *conn )
 //	"user;hash" is reeived in strKey
 
 int
-CControlObject::websock_authentication( struct mg_connection *conn, 
+VSCPWebServerThread::websock_authentication( struct mg_connection *conn, 
 											struct websock_session *pSession, 
 											wxString& strUser, 
 											wxString& strKey )
@@ -3366,7 +1474,7 @@ CControlObject::websock_authentication( struct mg_connection *conn,
 	CControlObject *pObject = (CControlObject *)conn->server_param;
 	if (NULL == pObject) return MG_FALSE;
 
-	if ( m_bAuthWebsockets ) {
+	if ( pObject->m_bAuthWebsockets ) {
 
 		// Check if user is valid			
 		CUserItem *pUser = pObject->m_userList.getUser( strUser );
@@ -3398,7 +1506,7 @@ CControlObject::websock_authentication( struct mg_connection *conn,
 //
 
 websock_session *
-CControlObject::websock_new_session( struct mg_connection *conn, const char * pKey, const char * pVer )
+VSCPWebServerThread::websock_new_session( struct mg_connection *conn, const char * pKey, const char * pVer )
 {
 	char buf[512];
 	struct websock_session *ret;
@@ -3478,7 +1586,7 @@ CControlObject::websock_new_session( struct mg_connection *conn, const char * pK
 //
 
 struct websock_session *
-CControlObject::websock_get_session( struct mg_connection *conn )
+VSCPWebServerThread::websock_get_session( struct mg_connection *conn )
 {
     struct websock_session *ret = NULL;
 
@@ -3512,7 +1620,7 @@ CControlObject::websock_get_session( struct mg_connection *conn )
     }
      
 	// Return new session
-    return pObject->websock_new_session( conn, pKey, pVer );
+    return pObject->getWebServer()->websock_new_session( conn, pKey, pVer );
 }
 
 
@@ -3521,7 +1629,7 @@ CControlObject::websock_get_session( struct mg_connection *conn )
 //
 
 void
-CControlObject::websock_expire_sessions( struct mg_connection *conn  )
+VSCPWebServerThread::websock_expire_sessions( struct mg_connection *conn  )
 {
     struct websock_session *pos;
     struct websock_session *prev;
@@ -3574,12 +1682,12 @@ CControlObject::websock_expire_sessions( struct mg_connection *conn  )
 //
 
 void
-CControlObject::websock_post_incomingEvents( void )
+VSCPWebServerThread::websock_post_incomingEvents( void )
 {
 	struct mg_connection *conn;
 
 	// Iterate over all connections, and push current time message to websocket ones.
-	for (conn = mg_next( m_pwebserver, NULL); conn != NULL; conn = mg_next(m_pwebserver, conn)) {
+	for (conn = mg_next( m_pCtrlObject->m_pwebserver, NULL); conn != NULL; conn = mg_next(m_pCtrlObject->m_pwebserver, conn)) {
 		
 		if ( conn->is_websocket ) {
 
@@ -3638,7 +1746,7 @@ CControlObject::websock_post_incomingEvents( void )
 //
 
 struct websrv_Session *
-CControlObject::websrv_get_session( struct mg_connection *conn )
+VSCPWebServerThread::websrv_get_session( struct mg_connection *conn )
 {
 	char buf[512];
     struct websrv_Session *ret = NULL;
@@ -3677,7 +1785,7 @@ CControlObject::websrv_get_session( struct mg_connection *conn )
 //
 
 websrv_Session *
-CControlObject::websrv_add_session_cookie( struct mg_connection *conn, const char *pUser )
+VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *conn, const char *pUser )
 {
 	char buf[512];
 	struct websrv_Session *ret;
@@ -3737,7 +1845,7 @@ CControlObject::websrv_add_session_cookie( struct mg_connection *conn, const cha
 //
 
 struct websrv_Session * 
-CControlObject::websrv_GetCreateSession( struct mg_connection *conn )
+VSCPWebServerThread::websrv_GetCreateSession( struct mg_connection *conn )
 {
 	const char *hdr;
 	char user[256];
@@ -3749,7 +1857,7 @@ CControlObject::websrv_GetCreateSession( struct mg_connection *conn )
 	CControlObject *pObject = (CControlObject *)conn->server_param;
 	if (NULL == pObject) return NULL;
 
-	if ( NULL == ( rv =  pObject->websrv_get_session( conn ) ) ) {
+	if ( NULL == ( rv =  pObject->getWebServer()->websrv_get_session( conn ) ) ) {
 
 		if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
 						( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
@@ -3761,7 +1869,7 @@ CControlObject::websrv_GetCreateSession( struct mg_connection *conn )
 		}
 
 		// Add session cookie
-		rv = pObject->websrv_add_session_cookie( conn, user );
+		rv = pObject->getWebServer()->websrv_add_session_cookie( conn, user );
 	}
 
 	return rv;
@@ -3772,7 +1880,7 @@ CControlObject::websrv_GetCreateSession( struct mg_connection *conn )
 //
 
 void
-CControlObject::websrv_expire_sessions( struct mg_connection *conn )
+VSCPWebServerThread::websrv_expire_sessions( struct mg_connection *conn )
 {
     struct websrv_Session *pos;
     struct websrv_Session *prev;
@@ -3816,7 +1924,7 @@ CControlObject::websrv_expire_sessions( struct mg_connection *conn )
 //
 
 int 
-CControlObject::websrv_check_password( const char *method, 
+VSCPWebServerThread::websrv_check_password( const char *method, 
 											const char *ha1, 
 											const char *uri,
 											const char *nonce, 
@@ -3850,7 +1958,7 @@ CControlObject::websrv_check_password( const char *method,
 //
 
 int 
-CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
+VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
 {
 	//char buf[2048];
 	static time_t cleanupTime = time(NULL);
@@ -3907,29 +2015,31 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 			if (!bValidHost) return MG_FALSE;
 
 			if ( MG_TRUE != 
-				pObject->websrv_check_password( conn->request_method, (const char *)pUser->m_md5Password.mb_str(), uri, nonce, nc, cnonce, qop, resp ) ) 
+				pObject->getWebServer()->websrv_check_password( conn->request_method, 
+																	(const char *)pUser->m_md5Password.mb_str(), 
+																	uri, nonce, nc, cnonce, qop, resp ) ) 
 				return MG_FALSE;
 
-			pObject->websrv_add_session_cookie( conn, user );
+			pObject->getWebServer()->websrv_add_session_cookie( conn, user );
 
 			return MG_TRUE;
 
 		case MG_REQUEST:
 
 			if (conn->is_websocket) {
-				return pObject->websrv_websocket_message( conn );
+				return pObject->getWebServer()->websrv_websocket_message( conn );
 			} 
 			else {
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_mainpage( conn );
+					return pObject->getWebServer()->websrv_mainpage( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/test") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
@@ -3937,105 +2047,105 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 					return MG_TRUE;
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/interfaces") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_interfaces( conn );
+					return pObject->getWebServer()->websrv_interfaces( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dm") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_dmlist( conn );
+					return pObject->getWebServer()->websrv_dmlist( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmedit") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_dmedit( conn );
+					return pObject->getWebServer()->websrv_dmedit( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmpost") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_dmpost( conn );
+					return pObject->getWebServer()->websrv_dmpost( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmdelete") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_dmdelete( conn );
+					return pObject->getWebServer()->websrv_dmdelete( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/variables") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_variables_list( conn );
+					return pObject->getWebServer()->websrv_variables_list( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varedit") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_variables_edit( conn );
+					return pObject->getWebServer()->websrv_variables_edit( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varpost") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_variables_post( conn );
+					return pObject->getWebServer()->websrv_variables_post( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/vardelete") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_variables_delete( conn );
+					return pObject->getWebServer()->websrv_variables_delete( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varnew") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_variables_new( conn );
+					return pObject->getWebServer()->websrv_variables_new( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/discovery") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_discovery( conn );
+					return pObject->getWebServer()->websrv_discovery( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/session") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_session( conn );
+					return pObject->getWebServer()->websrv_session( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/configure") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_configure( conn );
+					return pObject->getWebServer()->websrv_configure( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/bootload") ) {
-					if ( NULL == ( pWebSrvSession = pObject->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
-					return pObject->websrv_bootload( conn );
+					return pObject->getWebServer()->websrv_bootload( conn );
 				}
 				else if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
-					return pObject->websrv_restapi( conn );
+					return pObject->getWebServer()->websrv_restapi( conn );
 				}
 				else {
 					return MG_FALSE;
@@ -4120,9 +2230,9 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 
 		case MG_POLL:
 			if ( ( cleanupTime - time(NULL) ) > 60 ) {
-				pObject->websrv_expire_sessions( conn );
-				pObject->websock_expire_sessions( conn );
-				pObject->websrv_expire_rest_sessions( conn );
+				pObject->getWebServer()->websrv_expire_sessions( conn );
+				pObject->getWebServer()->websock_expire_sessions( conn );
+				pObject->getWebServer()->websrv_expire_rest_sessions( conn );
 				cleanupTime = time(NULL);
 			}
 			return MG_FALSE;
@@ -4137,7 +2247,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 				pWebSockSession = websock_get_session( conn );
 				if ( NULL != pWebSockSession ) {
 					pWebSockSession->lastActiveTime  = 0; // time(NULL) + 60 * 60 + 777;  // Mark as staled
-					pObject->websock_expire_sessions( conn );
+					pObject->getWebServer()->websock_expire_sessions( conn );
 				}
 			}
 			return MG_TRUE;
@@ -4153,7 +2263,7 @@ CControlObject::websrv_event_handler( struct mg_connection *conn, enum mg_event 
 //
 
 struct websrv_rest_session *
-CControlObject::websrv_new_rest_session( struct mg_connection *conn,
+VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *conn,
 												CUserItem *pUser )
 {
 	char buf[2048];
@@ -4222,7 +2332,7 @@ CControlObject::websrv_new_rest_session( struct mg_connection *conn,
 //
 
 struct websrv_rest_session *
-CControlObject::websrv_get_rest_session( struct mg_connection *conn,
+VSCPWebServerThread::websrv_get_rest_session( struct mg_connection *conn,
 												wxString &SessionId )
 {
 	struct websrv_rest_session *ret = NULL;
@@ -4246,7 +2356,7 @@ CControlObject::websrv_get_rest_session( struct mg_connection *conn,
 }
 
 void
-CControlObject::websrv_expire_rest_sessions( struct mg_connection *conn )
+VSCPWebServerThread::websrv_expire_rest_sessions( struct mg_connection *conn )
 {
 	struct websrv_rest_session *pos;
     struct websrv_rest_session *prev;
@@ -4335,7 +2445,7 @@ static void webserv_util_sendheader( struct mg_connection *conn, const int retur
 //
 
 int
-CControlObject::websrv_restapi( struct mg_connection *conn )
+VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 {
 	char buf[2048];
 	char date[64];
@@ -4563,7 +2673,7 @@ CControlObject::websrv_restapi( struct mg_connection *conn )
 //
 
 void
-CControlObject::webserv_rest_error( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_error( struct mg_connection *conn, 
 										struct websrv_rest_session *pSession, 
 										int format,
 										int errorcode)
@@ -4656,7 +2766,7 @@ CControlObject::webserv_rest_error( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doSendEvent( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn, 
 											struct websrv_rest_session *pSession, 
 											int format, 
 											vscpEvent *pEvent )
@@ -4787,7 +2897,7 @@ CControlObject::webserv_rest_doSendEvent( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doReceiveEvent( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn, 
 												struct websrv_rest_session *pSession, 
 												int format,
 												long count )
@@ -5286,7 +3396,7 @@ CControlObject::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doSetFilter( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *conn, 
 											struct websrv_rest_session *pSession, 
 											int format,
 											vscpEventFilter& vscpfilter )
@@ -5310,7 +3420,7 @@ CControlObject::webserv_rest_doSetFilter( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doClearQueue( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *conn, 
 												struct websrv_rest_session *pSession, 
 												int format )
 {
@@ -5351,7 +3461,7 @@ CControlObject::webserv_rest_doClearQueue( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doReadVariable( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn, 
 												struct websrv_rest_session *pSession, 
 												int format,
 												wxString& strVariableName )
@@ -5540,7 +3650,7 @@ CControlObject::webserv_rest_doReadVariable( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doWriteVariable( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *conn, 
 													struct websrv_rest_session *pSession, 
 													int format,
 													wxString& strVariable )
@@ -5593,7 +3703,7 @@ CControlObject::webserv_rest_doWriteVariable( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
 													struct websrv_rest_session *pSession, 
 													int format,
 													wxString& strType,
@@ -5619,7 +3729,7 @@ CControlObject::webserv_rest_doWriteMeasurement( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doGetTableData( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn, 
 												struct websrv_rest_session *pSession, 
 												int format,
 												wxString& strName,
@@ -5657,7 +3767,7 @@ CControlObject::webserv_rest_doGetTableData( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doStatus( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn, 
 											struct websrv_rest_session *pSession, 
 											int format )
 {
@@ -5808,7 +3918,7 @@ CControlObject::webserv_rest_doStatus( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doOpen( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn, 
 										struct websrv_rest_session *pSession,
 										CUserItem *pUser,
 										int format )
@@ -5959,7 +4069,7 @@ CControlObject::webserv_rest_doOpen( struct mg_connection *conn,
 //
 
 int
-CControlObject::webserv_rest_doClose( struct mg_connection *conn, 
+VSCPWebServerThread::webserv_rest_doClose( struct mg_connection *conn, 
 											struct websrv_rest_session *pSession, 
 											int format )
 {
@@ -6092,7 +4202,7 @@ CControlObject::webserv_rest_doClose( struct mg_connection *conn,
 //
 
 int
-CControlObject::websrv_mainpage( struct mg_connection *conn )
+VSCPWebServerThread::websrv_mainpage( struct mg_connection *conn )
 {
 	wxString strHost;
 
@@ -6145,7 +4255,7 @@ CControlObject::websrv_mainpage( struct mg_connection *conn )
 //
 
 int 
-CControlObject::websrv_interfaces( struct mg_connection *conn )
+VSCPWebServerThread::websrv_interfaces( struct mg_connection *conn )
 {
     // Check pointer
 	if (NULL == conn) return MG_FALSE;
@@ -6250,7 +4360,7 @@ CControlObject::websrv_interfaces( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_dmlist( struct mg_connection *conn )
+VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
 {
 	char buf[80];
     VSCPInformation vscpinfo;
@@ -6632,7 +4742,7 @@ CControlObject::websrv_dmlist( struct mg_connection *conn )
 //
 
 int 
-CControlObject::websrv_dmedit( struct mg_connection *conn )
+VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
 {
 	char buf[80];
     wxString str;
@@ -7206,7 +5316,7 @@ CControlObject::websrv_dmedit( struct mg_connection *conn )
 //
 
 int 
-CControlObject::websrv_dmpost( struct mg_connection *conn )
+VSCPWebServerThread::websrv_dmpost( struct mg_connection *conn )
 {
 	char buf[80];
     wxString str;
@@ -7546,7 +5656,7 @@ CControlObject::websrv_dmpost( struct mg_connection *conn )
 //
 
 int 
-CControlObject::websrv_dmdelete( struct mg_connection *conn )
+VSCPWebServerThread::websrv_dmdelete( struct mg_connection *conn )
 {
 	char buf[80];
 	wxString str;
@@ -7604,7 +5714,7 @@ CControlObject::websrv_dmdelete( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_variables_list( struct mg_connection *conn )
+VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
 {
 	char buf[80];
     VSCPInformation vscpinfo;
@@ -7915,7 +6025,7 @@ CControlObject::websrv_variables_list( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_variables_edit( struct mg_connection *conn )
+VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
 {
 	char buf[80];
     wxString str;
@@ -8420,7 +6530,7 @@ CControlObject::websrv_variables_edit( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_variables_post( struct mg_connection *conn )
+VSCPWebServerThread::websrv_variables_post( struct mg_connection *conn )
 {
 	char buf[80];
     wxString str;
@@ -8700,7 +6810,7 @@ CControlObject::websrv_variables_post( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_variables_new( struct mg_connection *conn )
+VSCPWebServerThread::websrv_variables_new( struct mg_connection *conn )
 {
     wxString str;
     VSCPInformation vscpinfo;
@@ -8776,7 +6886,7 @@ CControlObject::websrv_variables_new( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_variables_delete( struct mg_connection *conn )
+VSCPWebServerThread::websrv_variables_delete( struct mg_connection *conn )
 {
 	char buf[80];
     wxString str;
@@ -8836,7 +6946,7 @@ CControlObject::websrv_variables_delete( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_discovery( struct mg_connection *conn )
+VSCPWebServerThread::websrv_discovery( struct mg_connection *conn )
 {
 	//char buf[80];
     wxString str;
@@ -8875,7 +6985,7 @@ CControlObject::websrv_discovery( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_session( struct mg_connection *conn )
+VSCPWebServerThread::websrv_session( struct mg_connection *conn )
 {
 	//char buf[80];
     wxString str;
@@ -8914,7 +7024,7 @@ CControlObject::websrv_session( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_configure( struct mg_connection *conn )
+VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
 {
 	//char buf[80];
     wxString str;
@@ -8954,7 +7064,7 @@ CControlObject::websrv_configure( struct mg_connection *conn )
 //
 
 int
-CControlObject::websrv_bootload( struct mg_connection *conn )
+VSCPWebServerThread::websrv_bootload( struct mg_connection *conn )
 {
 	//char buf[80];
     wxString str;
@@ -8987,94 +7097,4 @@ CControlObject::websrv_bootload( struct mg_connection *conn )
 	return MG_TRUE;	
 }
 
-
-#endif
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// clientMsgWorkerThread
-//
-
-clientMsgWorkerThread::clientMsgWorkerThread()
-: wxThread(wxTHREAD_JOINABLE)
-{
-    m_bQuit = false;
-    m_pCtrlObject = NULL;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// deviceWorkerThread
-//
-
-clientMsgWorkerThread::~clientMsgWorkerThread()
-{
-    ;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// Entry
-//
-// Is there any messages to send from Level II clients. Send it/them to all
-// devices/clients except for itself.
-//
-
-void *clientMsgWorkerThread::Entry()
-{
-    VSCPEventList::compatibility_iterator nodeVSCP;
-    vscpEvent *pvscpEvent = NULL;
-
-    // Must be a valid control object pointer
-    if (NULL == m_pCtrlObject) return NULL;
-
-    while (!TestDestroy() && !m_bQuit) {
-        // Wait for event
-        if (wxSEMA_TIMEOUT ==
-                m_pCtrlObject->m_semClientOutputQueue.WaitTimeout(500)) continue;
-
-        if (m_pCtrlObject->m_clientOutputQueue.GetCount()) {
-            
-            m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-            nodeVSCP = m_pCtrlObject->m_clientOutputQueue.GetFirst();
-            pvscpEvent = nodeVSCP->GetData();
-            m_pCtrlObject->m_clientOutputQueue.DeleteNode(nodeVSCP);
-            m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
-
-            if ((NULL != pvscpEvent)) {
-                // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                // * * * * Send event to all Level II clients (not to ourself )  * * * *
-                // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-
-                m_pCtrlObject->sendEventAllClients(pvscpEvent, pvscpEvent->obid);
-
-            } // Valid event
-
-            // Delete the event
-            if (NULL != pvscpEvent) vscp_deleteVSCPevent(pvscpEvent);
-
-        } // while
-
-    } // while
-
-    return NULL;
-
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-// OnExit
-//
-
-void clientMsgWorkerThread::OnExit()
-{
-    ;
-}
 
