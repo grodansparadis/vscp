@@ -2018,17 +2018,6 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                /*wxString tbl_name;
-                wxString tbl_description;
-                wxString tbl_xaxis;
-				wxString tbl_yaxis;
-				wxString tbl_path;
-				int tbl_type;
-				long tbl_size;
-				uint16_t tbl_vscpclass;
-				uint16_t tbl_vscptype;
-				int tbl_unit;*/
-
                 bool bTable = false;
 
                 if (subchild->GetName() == wxT("table")) {
@@ -2038,7 +2027,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 						memset( pTable, 0, sizeof(CVSCPTable) );
 						pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
 													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
-													subchild->GetAttribute( wxT("name"), wxT("") ).mbc_str(), 
+													subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(), 
 													subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
 													subchild->GetAttribute( wxT("xaxis"), wxT("") ).mbc_str(), 
 													subchild->GetAttribute( wxT("yaxis"), wxT("") ).mbc_str(),

@@ -2553,9 +2553,53 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
 
 bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 {
+	wxString tblName;
+	time_t timestamp;
+	double value;
+
 	// Write in possible escapes
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
+
+	wxString wxstrErr = wxT("[Action] Write Table: Wrong action parameter ");
+    wxstrErr += wxstr;
+    wxstrErr += _("\n");
+
+	wxStringTokenizer tkz( wxstr, wxT(";") );
+    
+	if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter	
+        m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+        return false;  
+    }
+	tblName = tkz.GetNextToken();
+	tblName.MakeUpper(); // Make sure it's upercase
+
+	if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter	
+        m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+        return false;  
+    }
+	timestamp = vscp_readStringValue( tkz.GetNextToken() );
+
+	if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter	
+        m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+        return false;  
+    }
+	value = atof( tkz.GetNextToken().mbc_str() );
+
+	m_pDM->m_pCtrlObject->m_mutexTableList.Lock();
+	listVSCPTables::iterator iter;
+	for (iter = m_pDM->m_pCtrlObject->m_listTables.begin(); iter != m_pDM->m_pCtrlObject->m_listTables.end(); ++iter)
+	{
+		CVSCPTable *pTable = *iter;
+		if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
+			pTable->logData( timestamp, value );
+			break;
+		}
+	}
+	m_pDM->m_pCtrlObject->m_mutexTableList.Unlock();
 
 	return true;
 }
