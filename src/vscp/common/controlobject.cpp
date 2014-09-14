@@ -513,6 +513,15 @@ bool CControlObject::run(void)
     EventShutDown.sizeData = 0;
     EventShutDown.pdata = NULL;
 
+
+	// Init table files
+	listVSCPTables::iterator iter;
+	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
+	{
+		CVSCPTable *pTable = *iter;
+		pTable->init();
+	}
+
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
     if (NULL == pClientItem) {
@@ -674,13 +683,22 @@ bool CControlObject::run(void)
 
 bool CControlObject::cleanup(void)
 {
-	// Kill w�b server
+	// Kill web server
 	mg_destroy_server( &m_pwebserver );
 
     stopDeviceWorkerThreads();
     stopTcpWorkerThread();
     stopClientWorkerThread();
     stopDaemonWorkerThread();
+
+	// kill table files
+	listVSCPTables::iterator iter;
+	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
+	{
+		CVSCPTable *pTable = *iter;
+		delete pTable;
+	}
+	
 
     wxLogDebug(_("ControlObject: Cleanup done"));
     return true;
@@ -2000,7 +2018,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                wxString tbl_name;
+                /*wxString tbl_name;
                 wxString tbl_description;
                 wxString tbl_xaxis;
 				wxString tbl_yaxis;
@@ -2009,32 +2027,27 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 				long tbl_size;
 				uint16_t tbl_vscpclass;
 				uint16_t tbl_vscptype;
-				int tbl_unit;
+				int tbl_unit;*/
 
                 bool bTable = false;
 
                 if (subchild->GetName() == wxT("table")) {
 
-					tbl_name = subchild->GetAttribute(wxT("name"), wxT(""));
-					tbl_description = subchild->GetAttribute(wxT("description"), wxT(""));
-					tbl_xaxis = subchild->GetAttribute(wxT("xaxis"), wxT(""));
-					tbl_yaxis = subchild->GetAttribute(wxT("yaxis"), wxT(""));
-					tbl_path = subchild->GetAttribute(wxT("path"), wxT(""));
-					tbl_type = vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0")/*VSCP_TABLE_NORMAL*/ ) );
-					tbl_size = vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) );
-					tbl_vscpclass = vscp_readStringValue( subchild->GetAttribute( wxT("class"), wxT("10") ) );
-					tbl_vscptype = vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) );
-					tbl_unit = vscp_readStringValue( subchild->GetAttribute( wxT("unit"), wxT("0") ) );
-					bTable = true;
-                }
-
-                // Add table
-                if (bTable) {
-					CVSCPTable *pTable = new CVSCPTable( tbl_path.mbc_str(), tbl_type, tbl_size);
+					CVSCPTable *pTable = new CVSCPTable();
 					if ( NULL != pTable ) {
+						memset( pTable, 0, sizeof(CVSCPTable) );
+						pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
+													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
+													subchild->GetAttribute( wxT("name"), wxT("") ).mbc_str(), 
+													subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
+													subchild->GetAttribute( wxT("xaxis"), wxT("") ).mbc_str(), 
+													subchild->GetAttribute( wxT("yaxis"), wxT("") ).mbc_str(),
+													vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) ),
+													vscp_readStringValue( subchild->GetAttribute( wxT("class"), wxT("10") ) ), 
+													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
+													vscp_readStringValue( subchild->GetAttribute( wxT("unit"), wxT("0") ) ) );
 						m_listTables.Append( pTable ) ;
 					}
-                    bTable = false;
                 }
 
                 subchild = subchild->GetNext();

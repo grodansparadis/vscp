@@ -550,6 +550,7 @@
     <ClInclude Include="..\..\..\common\net_skeleton.h" />
     <ClInclude Include="..\..\..\common\slre.h" />
     <ClInclude Include="..\..\..\common\strtokenizer.h" />
+    <ClInclude Include="..\..\common\actioncodes.h" />
     <ClInclude Include="..\..\common\canal.h" />
     <ClInclude Include="..\..\common\canal_macro.h" />
     <ClInclude Include="..\..\common\canal_win32_ipc.h" />

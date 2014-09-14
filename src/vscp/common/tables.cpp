@@ -63,9 +63,9 @@ WX_DEFINE_LIST( listVSCPTables );
 //
 
 // Constructor for nmormal table
-CVSCPTable::CVSCPTable( const char *fileMain, int type, uint32_t size )
+CVSCPTable::CVSCPTable( const char *path, int type, uint32_t size )
 {
-	m_pathMain = wxString::FromAscii( fileMain );
+	if ( NULL != path ) m_path = wxString::FromAscii( path );
     
 	m_number_of_records = 0;
 	m_timestamp_first = 0;
@@ -109,13 +109,13 @@ int CVSCPTable::init()
 	struct _vscpFileRecord record;
 
 	// Open/create main file
-	if ( fileExists( m_pathMain.mbc_str() ) ) {
-		m_ft = fopen( m_pathMain.mbc_str(), "r+b") ;	// binary Read Write
+	if ( fileExists( m_path.mbc_str() ) ) {
+		m_ft = fopen( m_path.mbc_str(), "r+b") ;	// binary Read Write
 		if ( NULL == m_ft ) return errno;				// Failed to open file
 	}
 	else {
 		// Create file
-		m_ft = fopen( m_pathMain.mbc_str(), "w+b") ;	// binary Read Write		
+		m_ft = fopen( m_path.mbc_str(), "w+b") ;	// binary Read Write		
 		if ( NULL == m_ft ) return errno;				// Failed to create file
 		
 		if ( VSCP_TABLE_NORMAL == m_vscpFileHead.type ) {
@@ -141,7 +141,7 @@ int CVSCPTable::init()
 
 	rv = readMainHeader();
 
-	m_number_of_records = ( fdGetFileSize( m_pathMain.mbc_str() ) - sizeof( m_vscpFileHead ))/sizeof(_vscpFileRecord);
+	m_number_of_records = ( fdGetFileSize( m_path.mbc_str() ) - sizeof( m_vscpFileHead ))/sizeof(_vscpFileRecord);
 	if ( m_number_of_records ) {
 
 		// Go to last pos
@@ -149,7 +149,7 @@ int CVSCPTable::init()
 		fread( &record, 1, sizeof(record), m_ft );
 		m_timestamp_last = record.timestamp;
 
-		// Go to firts pos
+		// Go to first pos
 		fseek( m_ft, sizeof( m_vscpFileHead ), SEEK_SET );							
 		fread( &record, 1, sizeof(record), m_ft );
 		m_timestamp_first = record.timestamp;
@@ -162,20 +162,26 @@ int CVSCPTable::init()
 // setTableInfo
 //
 
-int CVSCPTable::setTableInfo( const char *tableName, 
+int CVSCPTable::setTableInfo( const char *path,
+									uint8_t type,
+									const char *tableName, 
 									const char *tableDescription,
 									const char *xAxisLabel, 
 									const char *yAxisLabel,
+									uint32_t size,
 									uint16_t vscp_class, 
 									uint16_t vscp_type,
 									uint8_t vscp_unit )
 {
 	int rv;
 
+	m_path = wxString::FromAscii( path );
+	m_vscpFileHead.type = type;
 	strncpy( m_vscpFileHead.nameTable, tableName, sizeof( m_vscpFileHead.nameTable ) );
 	strncpy( m_vscpFileHead.descriptionTable, tableDescription, sizeof( m_vscpFileHead.descriptionTable ) );
 	strncpy( m_vscpFileHead.nameXLabel, xAxisLabel, sizeof( m_vscpFileHead.nameXLabel ) );
 	strncpy( m_vscpFileHead.nameYLabel, yAxisLabel, sizeof( m_vscpFileHead.nameYLabel) );
+	m_vscpFileHead.staticSize = size;
 	m_vscpFileHead.vscp_class = vscp_class;
 	m_vscpFileHead.vscp_type = vscp_type;
 	m_vscpFileHead.vscp_unit = vscp_unit;

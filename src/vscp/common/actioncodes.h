@@ -44,6 +44,7 @@
 // %isodate - Current date in ISO format 1999:12:31
 // %isotime - Current time in ISO format 23:59:59
 // %mstime - current time in milliseconds
+// %unixtime - Time since epoch as a 32-bit unsigned long
 //
 // For current list see VSCP specification.
 
@@ -179,6 +180,11 @@
 // Format: url
 // 
 #define VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL			0x00000075  // Get/Post URL
+
+// Write to table
+// Format: tablename,date,float
+// Example: temperature_furnice,%unixtime,%measurement.float 
+#define VSCP_DAEMON_ACTION_CODE_WRITE_TABLE					0x00000080  // Write Table
 
 
 #endif

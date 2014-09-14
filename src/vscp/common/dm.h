@@ -607,6 +607,14 @@ public:
   bool doActionGetURL( vscpEvent *pDMEvent );
 
 
+  /*!
+	Write a record to a table
+	@param pDMEvent Event that triggered the action
+	@returns true if all went well.
+  */
+  bool doActionWriteTable( vscpEvent *pDMEvent );
+
+
   /// DM row filter
   vscpEventFilter m_vscpfilter;
 

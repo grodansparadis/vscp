@@ -1332,6 +1332,11 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
             else if ( str.StartsWith( wxT("%mstime"), &str ) ) {
                 strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetTicks() );
             }
+			// Check for unixtime escape
+            else if ( str.StartsWith( wxT("%unixtime"), &str ) ) {
+				time_t now = time(NULL);	// Get current time
+                strResult += wxString::Format( wxT("%d"), now );
+            }
             // Check for hour escape
             else if ( str.StartsWith( wxT("%hour"), &str ) ) {
                 strResult += wxString::Format( wxT("%d"), wxDateTime::Now().GetHour() );
@@ -1585,6 +1590,10 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
     case VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL:
         doActionGetURL( pEvent );
+        break;
+
+	case VSCP_DAEMON_ACTION_CODE_WRITE_TABLE:
+        doActionWriteTable( pEvent );
         break;
 
     }
@@ -2492,6 +2501,21 @@ bool dmElement::doActionResumeTimer( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
+	wxStringTokenizer tkz( wxstr, wxT(";") );
+    if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter	
+        wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
+        wxstrErr += wxstr;
+        wxstrErr += _("\n");
+        m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+        return false;  
+    }
+
+    // Get timer id
+    uint32_t id = vscp_readStringValue( tkz.GetNextToken() );
+
+    m_pDM->startTimer( id );
+
     return true;
 }
 
@@ -2505,10 +2529,36 @@ bool dmElement::doActionStopTimer( vscpEvent *pDMEvent )
     wxString wxstr = m_actionparam;
     handleEscapes( pDMEvent, wxstr );
 
+	wxStringTokenizer tkz( wxstr, wxT(";") );
+    if ( !tkz.HasMoreTokens() ) {
+        // Strange action parameter	
+        wxString wxstrErr = wxT("[Action] Stop timer: Wrong action parameter ");
+        wxstrErr += wxstr;
+        wxstrErr += _("\n");
+        m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+        return false;  
+    }
+
+    // Get timer id
+    uint32_t id = vscp_readStringValue( tkz.GetNextToken() );
+
+    m_pDM->stopTimer( id );
+
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// doActionWriteTable
+//
 
+bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
+{
+	// Write in possible escapes
+    wxString wxstr = m_actionparam;
+    handleEscapes( pDMEvent, wxstr );
+
+	return true;
+}
 
 
 

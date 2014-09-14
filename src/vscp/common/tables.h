@@ -95,7 +95,7 @@ class CVSCPTable {
 public:
 
 	/// Constructor dtable
-	CVSCPTable( const char *file, int type = VSCP_TABLE_NORMAL, uint32_t size = 0 );
+	CVSCPTable( const char *file = NULL, int type = VSCP_TABLE_NORMAL, uint32_t size = 0 );
 
 	// Destructor
 	virtual ~CVSCPTable(void);
@@ -113,10 +113,13 @@ public:
 		@param yAxisLabel Name of Y axis
 		@return zero on succss
 	*/
-	int setTableInfo( const char * tableName, 
-						const char * tableDescription,
-						const char *  xAxisLabel, 
-						const char * yAxisLabel,
+	int setTableInfo( const char *path,
+						uint8_t type,
+						const char *tableName, 
+						const char *tableDescription,
+						const char *xAxisLabel, 
+						const char *yAxisLabel,
+						uint32_t size,
 						uint16_t vscp_class, 
 						uint16_t vscp_type,
 						uint8_t vscp_unit );
@@ -193,22 +196,18 @@ public:
 	*/
 	double calculatMean( time_t from, time_t to );
 
+public:
+	/// Main file head structure
+	struct _vscpFileHead m_vscpFileHead;
+
+
 private:
 	
 	/// File handel for mainfile
 	FILE * m_ft;
 
-	/// Table type
-	//int m_type;
-
-	/// Size for round robin table
-	//uint32_t m_sizeStaticTable;
-
 	/// Path to main file
-	wxString m_pathMain;
-
-	/// Main file head structure
-	struct _vscpFileHead m_vscpFileHead;
+	wxString m_path;	
 
 	/// Timestamp for first record
 	time_t m_timestamp_first;
