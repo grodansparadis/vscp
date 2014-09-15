@@ -35,6 +35,7 @@
 #include "wx/wx.h"
 #include <wx/thread.h>
 
+#include "../../common/net_skeleton.h"
 #include "../../common/mongoose.h"
 
 #include "devicelist.h"
@@ -52,6 +53,7 @@
 
 // Forward declarations
 class VSCPWebServerThread;
+class VSCPClientThread;
 
 #define DAEMON_LOGMSG_NONE                      0
 #define DAEMON_LOGMSG_INFO                      1		
@@ -367,6 +369,9 @@ public:
         Enable control (TCP/IP) interface
      */
     bool m_bTCPInterface;
+
+	/// net_skeleton structure
+	struct ns_mgr m_mgrTcpIpServer;
 
     /*!
         Interface used for TCP/IP connection

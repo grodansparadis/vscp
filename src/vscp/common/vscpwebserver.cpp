@@ -176,8 +176,7 @@ VSCPWebServerThread::~VSCPWebServerThread()
 void *VSCPWebServerThread::Entry()
 {
 	clock_t ticks,oldus;
-
-    		
+		
 	// Create the server
 	m_pCtrlObject->m_pwebserver = mg_create_server( m_pCtrlObject, VSCPWebServerThread::websrv_event_handler );
 		
@@ -2025,6 +2024,11 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			return MG_TRUE;
 
 		case MG_REQUEST:
+
+			{
+				wxString strlog = wxString::Format(_("Webserver: Page reques [%s].\n"), wxString::FromAscii( conn->uri ) );
+				pObject->logMsg( strlog, DAEMON_LOGMSG_INFO);
+			}
 
 			if (conn->is_websocket) {
 				return pObject->getWebServer()->websrv_websocket_message( conn );

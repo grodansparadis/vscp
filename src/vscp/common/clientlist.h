@@ -41,6 +41,7 @@
 
 #include "../../vscp/common/vscp.h"
 #include "guid.h"
+#include "userlist.h"
 #include "devicelist.h"
 
 
@@ -173,7 +174,7 @@ public:
     wxSemaphore m_hEventSend;
 
     /*!
-        Interface type: canal, TCP/IP
+        Interface type: CANAL, TCP/IP
     */
     uint8_t m_type;
 
@@ -184,6 +185,21 @@ public:
     */
     bool m_bUDPReceiveChannel;
 
+	///////////////////////////////////////////////////////////////////////////
+	//                       Used by TCP/IP client thread
+	//////////////////////////////////////////////////////////////////////////
+	
+	/// Username given by user
+	wxString m_UserName;
+
+	/// Password given by ysed
+	wxString m_Password;
+
+	/// True if the credentials has been checked.
+	bool m_bAuthorized;
+
+	/// pointer ti the user
+	CUserItem *m_pUserItem;
 };
 
 // List with clientitems

@@ -534,6 +534,7 @@ bool CControlObject::run(void)
         // tcp/ip clients uses joinable treads and therefor does not
         // delete themseves.  This is a garbage collect for unterminated 
         // tcp/ip connection threads.
+		/*
         TCPCLIENTS::iterator iter;
         for (iter = m_pVSCPClientThread->m_tcpclients.begin();
                 iter != m_pVSCPClientThread->m_tcpclients.end(); ++iter) {
@@ -548,6 +549,7 @@ bool CControlObject::run(void)
                 }
             }
         }
+		*/
 
         /*
          * This broadcasts to all dumb-increment-protocol connections
@@ -692,7 +694,7 @@ void CControlObject::logMsg(const wxString& wxstr, unsigned char level)
             NULL);
 #else
     //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
-    if (m_logLevel >= level) {
+    if ( m_logLevel >= level ) {
         wxPrintf(wxdebugmsg);
     }
 #endif
@@ -794,7 +796,7 @@ bool CControlObject::stopClientWorkerThread(void)
 bool CControlObject::startTcpWorkerThread(void)
 {
     /////////////////////////////////////////////////////////////////////////////
-    // Run the TCP server thread   --   TODO - multiport
+    // Run the TCP server thread 
     /////////////////////////////////////////////////////////////////////////////
     if (m_bTCPInterface) {
         
@@ -808,10 +810,12 @@ bool CControlObject::startTcpWorkerThread(void)
                 if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientThread->Run())) {
                     logMsg(_("Unable to run TCP thread."), DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+			else {
                 logMsg(_("Unable to create TCP thread."), DAEMON_LOGMSG_CRITICAL);
             }
-        } else {
+        } 
+		else {
             logMsg(_("Unable to allocate memory for TCP thread."), DAEMON_LOGMSG_CRITICAL);
         }
     }
@@ -826,13 +830,14 @@ bool CControlObject::startTcpWorkerThread(void)
 
 bool CControlObject::stopTcpWorkerThread(void)
 {
-    if (NULL != m_pVSCPClientThread) {
+    if ( NULL != m_pVSCPClientThread ) {
         m_mutexTcpClientListenThread.Lock();
         m_pVSCPClientThread->m_bQuit = true;
         m_pVSCPClientThread->Wait();
         delete m_pVSCPClientThread;
         m_mutexTcpClientListenThread.Unlock();
     }
+
     return true;
 }
 
@@ -859,10 +864,12 @@ bool CControlObject::startWebServerThread(void)
                 if (wxTHREAD_NO_ERROR != (err = m_pwebServerThread->Run())) {
                     logMsg(_("Unable to run WeServer thread."), DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+			else {
                 logMsg(_("Unable to create WebServer thread."), DAEMON_LOGMSG_CRITICAL);
             }
-        } else {
+        } 
+		else {
             logMsg(_("Unable to allocate memory for WebServer thread."), DAEMON_LOGMSG_CRITICAL);
         }
     }
@@ -909,10 +916,12 @@ bool CControlObject::startDaemonWorkerThread(void)
                 if (wxTHREAD_NO_ERROR != (err = m_pdaemonVSCPThread->Run())) {
                     logMsg(_("Unable to start TCP VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
                 }
-            } else {
+            } 
+			else {
                 logMsg(_("Unable to create TCP VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
             }
-        } else {
+        } 
+		else {
             logMsg(_("Unable to start VSCP daemon thread."), DAEMON_LOGMSG_CRITICAL);
         }
 
@@ -971,11 +980,13 @@ bool CControlObject::startDeviceWorkerThreads(void)
                     if (wxTHREAD_NO_ERROR != (err = pDeviceItem->m_pdeviceThread->Run())) {
                         logMsg(_("Unable to create DeviceThread."), DAEMON_LOGMSG_CRITICAL);
                     }
-                } else {
+                } 
+				else {
                     logMsg(_("Unable to run DeviceThread."), DAEMON_LOGMSG_CRITICAL);
                 }
 
-            } else {
+            } 
+			else {
                 logMsg(_("Unable to allocate memory for DeviceThread."), DAEMON_LOGMSG_CRITICAL);
             }
 

@@ -30,16 +30,19 @@
 #include "wx/socket.h"
 
 #include "userlist.h"
+#include "controlobject.h"
 
 #define VSCP_TCP_MAX_CLIENTS                1024
 #define MSG_COPYRIGHT                       "+OK Copyright (c) 2000-2014, Grodans Paradis AB, http://www.grodansparadis.com\r\n"
 #define MSG_WELCOME                         "+OK Welcome to the VSCP daemon.\r\n"
 #define MSG_OK                              "+OK - Success.\r\n"
 #define MSG_GOODBY                          "+OK - Connection closed by client.\r\n"
+#define MSG_GOODBY2                         "+OK - Connection closed.\r\n"
 #define MSG_USENAME_OK                      "+OK - User name accepted, password please\r\n"
 #define MSG_PASSWORD_OK                     "+OK - Ready to work.\r\n"
 #define MSG_QUEUE_CLEARED                   "+OK - All events cleared.\r\n"
-#define MSG_RECEIVE_LOOP                    "+OK - Receive loop enetered. Close session to terminate.\r\n"
+#define MSG_RECEIVE_LOOP                    "+OK - Receive loop entered. QUITLOOP to terminate.\r\n"
+#define MSG_QUIT_LOOP						"+OK - Quit receive loop.\r\n"
 #define MSG_CAN_MODE                        "+OK - CAN mode set.\r\n"
 
 #define MSG_ERROR                           "-OK - Error\r\n"
@@ -63,8 +66,10 @@
 
 #define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
 
-class CControlObject;
-class CClientItem;
+
+
+//class CControlObject;
+//class CClientItem;
 
 typedef const char * ( * COMMAND_METHOD) (  void );
 
@@ -121,272 +126,272 @@ public:
 		Check if a user has been verified
 		@return true if verified, else false.
 	*/
-	bool isVerified( void );
+	bool isVerified( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Check if a user has enough privilege
 		@return true if yes, else false.
 	*/
-	bool checkPrivilege( unsigned char reqiredPrivilege );
+	bool checkPrivilege( struct ns_connection *conn, CControlObject *pCtrlObject, unsigned char reqiredPrivilege );
 
 
 	/*!
 		Client send event
 	*/	
-	void handleClientSend( void );
+	void handleClientSend( struct ns_connection *conn,  CControlObject *pCtrlObject  );
 
 	/*!
 		Client receive
 	*/	
-	void handleClientReceive( void  );
+	void handleClientReceive( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		sendOneEventFromQueue
 		@param 	bStatusMsg True if response messages (+OK/-OK) should be sent. Default.
 		@return True on success/false on failue.
 	*/
-	bool sendOneEventFromQueue( bool bStatusMsg = true );
+	bool sendOneEventFromQueue( struct ns_connection *conn, CControlObject *pCtrlObject, bool bStatusMsg = true );
 
 	/*!
 		Client DataAvailable
 	*/	
-	void handleClientDataAvailable ( void );
+	void handleClientDataAvailable ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client Clear Input queue
 	*/
-	void handleClientClearInputQueue();
+	void handleClientClearInputQueue( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client Get statistics
 	*/
-	void handleClientGetStatistics( void );
+	void handleClientGetStatistics( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client get status
 	*/
-	void handleClientGetStatus ( void );
+	void handleClientGetStatus ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client get channel GUID
 	*/
-	void handleClientGetChannelGUID ( void );
+	void handleClientGetChannelGUID ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client set channel ID
 	*/
-	void handleClientSetChannelGUID ( void );
+	void handleClientSetChannelGUID ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client get version
 	*/
-	void handleClientGetVersion( void );
+	void handleClientGetVersion( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client set filter
 	*/
-	void handleClientSetFilter( void );
+	void handleClientSetFilter( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client set mask
 	*/
-	void handleClientSetMask( void );
+	void handleClientSetMask( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client issue user
 	*/
-	void handleClientUser( void );
+	void handleClientUser( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 	Client issue password
 	*/
-	bool handleClientPassword ( void );
+	bool handleClientPassword ( struct ns_connection *conn, CControlObject *pCtrlObject  );
 
 	/*!
 		Client Get channel ID
 	*/
-	void handleClientGetChannelID ( void );
+	void handleClientGetChannelID ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Handle RcvLoop
 	*/
-	void handleClientRcvLoop( void );
+	void handleClientRcvLoop( struct ns_connection *conn, CControlObject *pCtrlObject );
 
   /*!
 		Client Help
 	*/
-	void handleClientHelp ( void );
+	void handleClientHelp ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
   /*!
 		Client Test
 	*/
-	void handleClientTest ( void );
+	void handleClientTest ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
   /*!
 		Client Restart
 	*/
-	void handleClientRestart ( void );
+	void handleClientRestart ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
   /*!
 		Client Shutdown
 	*/
-	void handleClientShutdown ( void );
+	void handleClientShutdown ( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client REMOTE command
 	*/
-	void handleClientRemote( void );
+	void handleClientRemote( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client CLIENT/INTERFACE command
 	*/
-	void handleClientInterface( void );
+	void handleClientInterface( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client INTERFACE LIST command
 	*/
-	void handleClientInterface_List( void );
+	void handleClientInterface_List( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client INTERFACE UNIQUE command
 	*/
-	void handleClientInterface_Unique( void );
+	void handleClientInterface_Unique( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client INTERFACE NORMAL command
 	*/
-	void handleClientInterface_Normal( void );
+	void handleClientInterface_Normal( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client INTERFACE CLOSE command
 	*/
-	void handleClientInterface_Close( void );
+	void handleClientInterface_Close( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client UDP command
 	*/
-	void handleClientUdp( void );
+	void handleClientUdp( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client FILE command
 	*/
-	void handleClientFile( void );
+	void handleClientFile( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client VARIABLE command
 	*/
-	void handleClientVariable( void );
+	void handleClientVariable( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Variable List
 	*/
-	void handleVariable_List();
+	void handleVariable_List( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Variable Write
 	*/
-	void handleVariable_Write();
+	void handleVariable_Write( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Variable Read
         @param bOKResponse OK response will be given if true (default).
 	*/
-	void handleVariable_Read( bool bOKResponse = true );
+	void handleVariable_Read( struct ns_connection *conn, CControlObject *pCtrlObject, bool bOKResponse = true );
 
 	/*!
 		Variable ReadReset
 	*/
-	void handleVariable_ReadReset();
+	void handleVariable_ReadReset( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Variable Write
 	*/
-	void handleVariable_Reset();
+	void handleVariable_Reset( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Variable Remove
 	*/
-	void handleVariable_Remove();
+	void handleVariable_Remove( struct ns_connection *conn, CControlObject *pCtrlObject );
 
     /*!
         Variable Read/remove
     */
-    void handleVariable_ReadRemove();
+    void handleVariable_ReadRemove( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Variable Length
 	*/
-	void handleVariable_Length();
+	void handleVariable_Length( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Variable Load
 	*/
-	void handleVariable_Load();
+	void handleVariable_Load( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Variable Save
 	*/
-	void handleVariable_Save();
+	void handleVariable_Save( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client DM command
 	*/
-	void handleClientDm( void );
+	void handleClientDm( struct ns_connection *conn, CControlObject *pCtrlObject  );
 
 	/*!
 		Enable DM row
 	*/
-	void handleDM_Enable( void );
+	void handleDM_Enable( struct ns_connection *conn, CControlObject *pCtrlObject  );
 
 	/*!
 		Disable DM row
 	*/
-	void handleDM_Disable( void );
+	void handleDM_Disable( struct ns_connection *conn, CControlObject *pCtrlObject  );
 
 	/*!
 		List DM 
 	*/
-	void handleDM_List( void );
+	void handleDM_List( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Add DM row
 	*/
-	void handleDM_Add( void );
+	void handleDM_Add( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Delete DM row
 	*/
-	void handleDM_Delete( void );
+	void handleDM_Delete( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Do action for row
 	*/
-	void handleDM_Trigger();
+	void handleDM_Trigger( struct ns_connection *conn, CControlObject *pCtrlObject );
 	
 	/*!
 		Delete DM row trigger counter
 	*/
-	void handleDM_ClearTriggerCount();
+	void handleDM_ClearTriggerCount( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Delete DM row error counter
 	*/
-	void handleDM_ClearErrorCount();
+	void handleDM_ClearErrorCount( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Reset DM
 	*/
-	void handleDM_Reset( void );
+	void handleDM_Reset( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client LIST command
 	*/
-	void handleClientList( void );
+	void handleClientList( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 	/*!
 		Client DRIVER command
 	*/
-	void handleClientDriver( void );
+	void handleClientDriver( struct ns_connection *conn, CControlObject *pCtrlObject );
 
 // --- Member variables ---
 
@@ -395,14 +400,20 @@ public:
 	*/
 	bool m_bQuit;
 
-	wxString m_lastCommand;
-	wxString m_currentCommand;
-	wxString m_currentCommandUC;
-
 	/*!
 		Pointer to ower owner
 	*/
 	CControlObject *m_pCtrlObject;
+
+	/// Last connand executed
+	wxString m_lastCommand;
+
+	// Current command
+	wxString m_currentCommand;
+
+	/// Current command i all upper case
+	wxString m_currentCommandUC;
+
 
 	/*!
 		Number of clients currently connected
@@ -754,11 +765,6 @@ public:
 		True as long as we should run
 	*/
 	bool m_bRun;					
-
-	/*!
-		Binary node is not active initially
-	*/
-	bool m_bBinaryMode;	
 
 	/*!
 		Command
