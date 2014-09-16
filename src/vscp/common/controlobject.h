@@ -361,37 +361,30 @@ public:
 
 
     /*!
-        TCP Port for TCP Interface
-     */
-    unsigned short m_TCPPort;
-
-    /*!
-        UDP Port 
-     */
-    unsigned short m_UDPPort;
-
-
-    /*!
         Log Level
      */
     uint8_t m_logLevel;
+
+	/////////////////////////////////////////////////////////
+	//              Enable/disable switches
+	/////////////////////////////////////////////////////////
 
     /*!
         Enable control (TCP/IP) interface
      */
     bool m_bTCPInterface;
 
-	/// net_skeleton structure
-	struct ns_mgr m_mgrTcpIpServer;
+	/*!
+		Enable UDP interface
+	*/
+	bool m_bUDPInterface;
 
-    /*!
-        Interface used for TCP/IP connection
-        Default: empty
+	/*!
+        Enable DM functionality
      */
-    wxString m_strTcpInterfaceAddress;
+    bool m_bDM;
 
-
-    /*!
+	/*!
         Enable CANAL Driver functionality
      */
     bool m_bCanalDrivers;
@@ -405,6 +398,25 @@ public:
         Enable variable usage
      */
     bool m_bVariables;
+
+
+	/////////////////////////////////////////////////////////
+	//                  Communication
+	/////////////////////////////////////////////////////////
+
+	/// net_skeleton structure
+	struct ns_mgr m_mgrTcpIpServer;
+
+    /// Interface(s) used for TCP/IP connection
+    wxString m_strTcpInterfaceAddress;
+
+	/// INterface(s) to use for UDP
+	wxString m_strUDPInterfaceAddress;
+
+
+	/////////////////////////////////////////////////////////
+	//                     VARIABLES
+	/////////////////////////////////////////////////////////
 
     /*!
         Hash table for variables
@@ -439,19 +451,12 @@ public:
 
     // *************************************************************************
 
-    /*!
-        Enable DM functionality
-     */
-    bool m_bDM;
+  
 
     // Daemon Decision Matrix
     CDM m_dm;
 
-    /*!
-        TCP Port/ip connection info for
-		tcp/io interface
-     */
-    wxString m_tcpport;
+   
 
     /*!
         Username for level II divers

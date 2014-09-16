@@ -153,12 +153,30 @@ void *VSCPClientThread::Entry()
 	// Check pointers
 	if ( NULL == m_pCtrlObject ) return NULL;
 
-	const char *port1 = "9598", *port2 = "127.0.0.1:17000";
+	//const char *port1 = "9598", *port2 = "127.0.0.1:17000";
 
 	ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, m_pCtrlObject, VSCPClientThread::ev_handler );
+
+	m_pCtrlObject->m_strTcpInterfaceAddress.Trim();
+	m_pCtrlObject->m_strTcpInterfaceAddress.Trim( false );
+	wxStringTokenizer tkz( m_pCtrlObject->m_strTcpInterfaceAddress, _(" ") );
+	while ( tkz.HasMoreTokens() ) {
+		
+		wxString str = tkz.GetNextToken();
+		str.Trim();
+		str.Trim( false );
+		if ( 0 == str.Length() ) continue;
+
+		//if ( wxNOT_FOUND  != str.Find(_("tcp://") ) ) {
+		//	str = _("tcp://") + str;
+		//}
+
+		// Bind to this interface
+		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, str.mbc_str(), NULL ); //
+	}
 	
-	ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, port1, NULL ); //
-	ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, port2, NULL );
+	//ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, port1, NULL ); //
+	//ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, port2, NULL );
 
 	m_pCtrlObject->logMsg(_T("TCP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
 

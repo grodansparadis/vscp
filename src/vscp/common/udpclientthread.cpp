@@ -109,11 +109,26 @@ void *VSCPUDPClientThread::Entry()
 	// Clear the filter (Allow everything )
 	vscp_clearVSCPFilter( &m_pClientItem->m_filterVSCP );
 
-	const char *port1 = "udp:\\:9598";
-
 	ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, this, VSCPClientThread::ev_handler );
-	
-	ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, port1, NULL ); //
+
+	//const char *port1 = "udp://:9598";
+	m_pCtrlObject->m_strUDPInterfaceAddress.Trim();
+	m_pCtrlObject->m_strUDPInterfaceAddress.Trim( false );
+	wxStringTokenizer tkz( m_pCtrlObject->m_strUDPInterfaceAddress, _(" ") );
+	while ( tkz.HasMoreTokens() ) {
+		
+		wxString str = tkz.GetNextToken();
+		str.Trim();
+		str.Trim( false );
+		if ( 0 == str.Length() ) continue;
+
+		if ( wxNOT_FOUND  != str.Find(_("udp://") ) ) {
+			str = _("udp://") + str;
+		}
+
+		// Bind to this interface
+		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, str.mbc_str(), NULL ); //
+	}
 
 	m_pCtrlObject->logMsg(_T("UDP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
 

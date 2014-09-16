@@ -198,13 +198,6 @@ CControlObject::CControlObject()
         m_clientMap[ i ] = 0;
     }
 
-
-    // Set default TCP Port
-    m_tcpport = VSCP_TCPIPIF_DEFAULT_PORT;
-
-    // Set default UDP port
-    m_UDPPort = VSCP_LEVEL2_UDP_PORT;
-
 	// Loal doamin
 	m_authDomain = _("mydomain.com");
 
@@ -214,8 +207,14 @@ CControlObject::CControlObject()
     // Control TCP/IP Interface
     m_bTCPInterface = true;
 
+	// Control UDP INterface
+	m_bUDPInterface = false;
+
     // Default TCP/IP interface
-    m_strTcpInterfaceAddress = _("");
+    m_strTcpInterfaceAddress = _("9598");
+
+	// Default UDP interface
+    m_strUDPInterfaceAddress = _("udp://:9598");
 
     // Canaldriver
     m_bCanalDrivers = true;
@@ -233,11 +232,8 @@ CControlObject::CControlObject()
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
 	m_pwebServerThread = NULL;
-    //m_pudpSendThread = NULL;
-    //m_pudpReceiveThread = NULL;
     
     // Websocket interface
-    //m_portWebsockets = 7681;	// Deprecated
     m_bWebSockets = true;		// websocket interface ia active
 	m_bAuthWebsockets = true;	// Authentication is needed
     m_pathCert.Empty();
@@ -1475,22 +1471,14 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
-
-                // Deprecated <==============
-                if (subchild->GetName() == wxT("tcpport")) {
-                    wxString str = subchild->GetNodeContent();
-                    m_TCPPort = vscp_readStringValue(str);
-                }// Deprecated <==============
-                else if (subchild->GetName() == wxT("udpport")) {
-                    wxString str = subchild->GetNodeContent();
-                    m_UDPPort = vscp_readStringValue(str);
-                } else if (subchild->GetName() == wxT("loglevel")) {
-                    wxString str = subchild->GetNodeContent();
-                    str.Trim();
-                    str.Trim(false);
-                    if ( str.IsSameAs(_("NONE"), false)) {
-                        m_logLevel = DAEMON_LOGMSG_NONE;
-                    }
+					
+				if (subchild->GetName() == wxT("loglevel")) {
+					wxString str = subchild->GetNodeContent();
+					str.Trim();
+					str.Trim(false);
+					if ( str.IsSameAs(_("NONE"), false)) {
+						m_logLevel = DAEMON_LOGMSG_NONE;
+					}
                     else if ( str.IsSameAs(_("INFO"), false)) {
                         m_logLevel = DAEMON_LOGMSG_INFO;
                     }
@@ -1518,37 +1506,34 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     else {
                         m_logLevel = vscp_readStringValue(str);
                     }
-                } else if (subchild->GetName() == wxT("tcpif")) {
-#if wxMAJOR_VERSION > 3                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
+                } 
+				else if (subchild->GetName() == wxT("tcpif")) {
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));                  
                     if (property.IsSameAs(_("false"), false)) {
                         m_bTCPInterface = false;
                     }
+					else {
+						m_bTCPInterface = true;
+					}
+                    m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("interface"), wxT(""));
 
-#if wxMAJOR_VERSION > 3
-                    property = subchild->GetAttribute(wxT("port"), wxT("9598"));
-#else
-                    property = subchild->GetPropVal(wxT("port"), wxT("9598"));
-#endif                    
-                    if (property.IsNumber()) {
-                        m_TCPPort = vscp_readStringValue(property);
+				} 
+				else if (subchild->GetName() == wxT("udp")) {
+                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));                  
+                    if (property.IsSameAs(_("false"), false)) {
+                        m_bUDPInterface = false;
                     }
+					else {
+						m_bUDPInterface = true;
+					}
 
-#if wxMAJOR_VERSION > 3                    
-                    m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("ifaddress"), wxT(""));
-#else
-                    m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("ifaddress"), wxT(""));
-#endif                    
+                    m_strUDPInterfaceAddress = subchild->GetPropVal(wxT("interface"), wxT(""));
 
-                } else if (subchild->GetName() == wxT("canaldriver")) {
-#if wxMAJOR_VERSION > 3                    
+                } 
+				else if (subchild->GetName() == wxT("canaldriver")) {
+                  
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
+                
                     if (property.IsSameAs(_("false"), false)) {
                         m_bCanalDrivers = false;
                     } else {
@@ -1557,51 +1542,41 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 } 
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
-#if wxMAJOR_VERSION > 3                    
+                  
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
+                  
                     if (property.IsSameAs(_("false"), false)) {
                         m_bDM = false;
                     }
 
                     // Get the path to the DM file
-#if wxMAJOR_VERSION > 3                    
+                   
                     m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
-#else 
-                    m_dm.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
-#endif                    
+                   
                     m_dm.m_configPath.Trim();
                     m_dm.m_configPath.Trim(false);
                     
                 }                 
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
-#if wxMAJOR_VERSION > 3                    
+                
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
+                  
                     if (property.IsSameAs(_("false"), false)) {
                         m_bVariables = false;
                     }
 
                     // Get the path to the DM file
-#if wxMAJOR_VERSION > 3                    
+                 
                     m_VSCP_Variables.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
-#else 
-                    m_VSCP_Variables.m_configPath = subchild->GetPropVal(wxT("path"), wxT(""));
-#endif                    
+                  
                     m_VSCP_Variables.m_configPath.Trim();
                     m_VSCP_Variables.m_configPath.Trim(false);
 
                 } else if (subchild->GetName() == wxT("vscp")) {
-#if wxMAJOR_VERSION > 3                    
+                   
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
+                  
                     if (property.IsSameAs(_("false"), false)) {
                         m_bVSCPDaemon = false;
                     }
@@ -1636,49 +1611,36 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_pathKey.Trim(false);
                 } 
 				else if (subchild->GetName() == wxT("websockets")) {
-#if wxMAJOR_VERSION > 3                    
+                   
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
+                   
                     if (property.IsSameAs(_("false"), false)) {
                         m_bWebSockets = false;
                     }
-
-#if wxMAJOR_VERSION > 3                    
+               
                     property = subchild->GetAttribute(wxT("port"), wxT("7681"));
-#else 
-                    property = subchild->GetPropVal(wxT("port"), wxT("7681"));
-#endif                    
+                   
                     if (property.IsNumber()) {
                         //m_portWebsockets = vscp_readStringValue(property);
                     }
-
-#if wxMAJOR_VERSION > 3                    
+                  
                     property = subchild->GetAttribute(wxT("auth"), wxT("true"));
-#else 
-                    property = subchild->GetPropVal(wxT("auth"), wxT("true"));
-#endif                    
+                    
                     if (property.IsSameAs(_("false"), false)) {
                         m_bAuthWebsockets = false;
                     }
 
                 } 
 				else if (subchild->GetName() == wxT("webserver")) {
-#if wxMAJOR_VERSION > 3                    
+                   
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
+                   
                     if (property.IsSameAs(_("false"), false)) {
                         m_bWebServer = false;
                     }
-
-#if wxMAJOR_VERSION > 3                    
+                  
                     property = subchild->GetAttribute(wxT("port"), wxT("8080"));
-#else 
-                    property = subchild->GetPropVal(wxT("port"), wxT("8080"));
-#endif                    
+                  
                     if (property.IsNumber()) {
                         m_portWebServer = vscp_readStringValue(property);
                     }
@@ -1725,68 +1687,50 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                             privilege = subsubchild->GetNodeContent();
                         } else if (subsubchild->GetName() == wxT("filter")) {
                             bFilterPresent = true;
-#if wxMAJOR_VERSION > 3                            
+                          
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
-#else 
-                            wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
-#endif                            
+                        
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.filter_priority = val;
-#if wxMAJOR_VERSION > 3                            
+                            
                             wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
-#else 
-                            wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
-#endif                            
+                          
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.filter_class = val;
-#if wxMAJOR_VERSION > 3                            
+                          
                             wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
-#else 
-                            wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
-#endif                            
+                           
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.filter_type = val;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
-#else 
-                            wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
-#endif                                    
-                                    wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
+                          
+                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),                                 
+														wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.filter_GUID, str_vscp_guid);
                         } else if (subsubchild->GetName() == wxT("mask")) {
                             bMaskPresent = true;
-#if wxMAJOR_VERSION > 3                            
+                           
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
-#else 
-                            wxString str_vscp_priority = subchild->GetPropVal(wxT("priority"), wxT("0"));
-#endif                            
+                           
                             val = 0;
                             str_vscp_priority.ToULong(&val);
                             VSCPFilter.mask_priority = val;
-#if wxMAJOR_VERSION > 3                            
+                           
                             wxString str_vscp_class = subchild->GetAttribute(wxT("class"), wxT("0"));
-#else 
-                            wxString str_vscp_class = subchild->GetPropVal(wxT("class"), wxT("0"));
-#endif                            
+                        
                             val = 0;
                             str_vscp_class.ToULong(&val);
                             VSCPFilter.mask_class = val;
-#if wxMAJOR_VERSION > 3                            
+                           
                             wxString str_vscp_type = subchild->GetAttribute(wxT("type"), wxT("0"));
-#else 
-                            wxString str_vscp_type = subchild->GetPropVal(wxT("type"), wxT("0"));
-#endif                            
+                           
                             val = 0;
                             str_vscp_type.ToULong(&val);
                             VSCPFilter.mask_type = val;
-#if wxMAJOR_VERSION > 3                            
-                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),
-#else 
-                            wxString str_vscp_guid = subchild->GetPropVal(wxT("guid"),
-#endif                                    
+                           
+                            wxString str_vscp_guid = subchild->GetAttribute(wxT("guid"),                                   
                                     wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"));
                             vscp_getGuidFromStringToArray(VSCPFilter.mask_GUID, str_vscp_guid);
                         } 
@@ -1883,12 +1827,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 if (subchild->GetName() == wxT("driver")) {
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
-                    
-#if wxMAJOR_VERSION > 3                    
+                                       
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif                    
+                 
                     if (property.IsSameAs(_("false"), false)) {
                         bEnabled = false;
                     }
@@ -1991,12 +1932,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 if (subchild->GetName() == wxT("driver")) {
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
-                    
-#if wxMAJOR_VERSION > 3                    
+                                       
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-#else 
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));
-#endif
+
                     if (property.IsSameAs(_("false"), false)) {
                         bEnabled = false;
                     }
@@ -2149,21 +2087,11 @@ bool CControlObject::readMimeTypes(wxString& path)
     while (child) {  
         
         if (child->GetName() == wxT("mimetype")) {
-#if wxMAJOR_VERSION > 3             
-            wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));
-#else 
-            wxString strEnable = child->GetPropVal(wxT("enable"), wxT("false"));
-#endif 
-#if wxMAJOR_VERSION > 3             
-            wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));
-#else 
-            wxString strExt = child->GetPropVal(wxT("extension"), wxT(""));            
-#endif
-#if wxMAJOR_VERSION > 3             
+           
+            wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));         
+            wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));         
             wxString strType = child->GetAttribute(wxT("mime"), wxT(""));
-#else 
-            wxString strType = child->GetPropVal(wxT("mime"), wxT(""));            
-#endif            
+         
             if ( strEnable.IsSameAs(_("true"),false )) {
                 m_hashMimeTypes[strExt] = strType;
             }

@@ -1,9 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 0.4.0	   2013-09-18 		                                        -->
+<!-- Version 0.4.29	   2014-09-116 		                                        -->
 <!-- Linux example configuration file 		                                    -->
-<!-- Ake Hedman, akhe@grodansparadis.com http://www.grodansparadis.com	        -->
-<!-- Documentation for this configuraton file is available in the specification -->
+<!-- Ake Hedman, akhe@paradiseofthefrog.com http://www.paradiseofthefrog.com    -->
+<!-- Documentation for this configuration file is available in the specification -->
 <!-- section 14.4 and it  can be found here http://vscp.org/docs.php            -->
 
 <vscpconfig>
@@ -15,17 +15,32 @@
 
         <loglevel>debug</loglevel>
 
-        <!-- It is possibel to enable/disable the TCP/IP interface      -->
-        <!-- Set port for the tcp/ip interface (default 9598)           -->
-        <!--   Set binddaadress to listen for connections on a specific -->
-        <!--   interface (usually not needed).                          -->
-        <!-- Documented in specification 14.4.1                         -->
+        <!-- It is possible to enable/disable the TCP/IP interface        -->
+        <!-- You can open TCP/IP interfaces on several ports or on        -->
+        <!-- on a specific port or on every interface of the computer     -->
+        <!-- Default 9598 will listen on all interfaces while             -->
+		<!-- "127.0.0.1:9598" only will listen on the specified interface.-->
+		<!-- To specify several interfaces just enter them with a space   -->
+        <!-- between them.                                                -->
+        <!-- Documented in specification 14.4.1                           -->
 
-        <tcpif enable="true" port="9598" bindaddress=""/>
+        <tcpif enable="true" interface="9598"/>
+		
+		<!-- It is possible to enable/disable the UDP interface           -->
+        <!-- You can open UDP interfaces on several ports or on           -->
+        <!-- on a specific port or on every interface of the computer     -->
+        <!-- Default "UDP://:9598" will listen on all interfaces while    -->
+		<!-- "UDP://127.0.0.1:9598" only will listen on the specified     -->
+		<!-- interface. To specify several interfaces just enter them     -->
+        <!-- with a space between them. If interface is not preceded with -->
+		<!-- "UDP://" it will be added.                                   -->
+		<!-- Documented in specification 14.4.1                           -->
+		
+		<udpif enable="true" interface="udp://9598"/>
 
-        <!-- Set to true to enable CANAL driver interface. -->
-        <!-- Set to false to diable.                       -->
-        <!-- Documented in specification 14.4.1            -->
+        <!-- Set to true to enable CANAL driver interface.     -->
+        <!-- Set to false to disable.                          -->
+        <!-- Documented in specification 14.4.1                -->
 
         <canaldriver enable="true"/>
 
@@ -34,17 +49,17 @@
 
         <vscp enable="true"/>
 
-        <!-- Set to true to enable decision matrix         -->
-        <!-- Set to false to diable.                       -->
-        <!-- Set path to the decision matrix file location -->
-        <!-- Documented in specification 14.4.1            -->
+        <!-- Set to true to enable decision matrix             -->
+        <!-- Set to false to disable.                          -->
+        <!-- Set path to the decision matrix file location     -->
+        <!-- Documented in specification 14.4.1                -->
 
         <dm enable="true" path="/etc/vscp/dm.xml"/>
 
-        <!-- Set to true to enable daemon variables        -->
-        <!-- Set to false to diable.                       -->
-        <!-- Path to variables storage.                    -->
-        <!-- Documented in specification 14.4.1            -->
+        <!-- Set to true to enable daemon variables            -->
+        <!-- Set to false to disable.                          -->
+        <!-- Path to variables storage.                        -->
+        <!-- Documented in specification 14.4.1                -->
 
         <variables enable="true" path="/etc/vscp/variables.xml"/>
 
@@ -64,7 +79,7 @@
 
         <!-- Path to server web root file system              -->
         <!-- Server should have read access to this location  -->
-        <!-- and it is used both fopr websockets and for      -->
+        <!-- and it is used both for websockets and for       -->
         <!-- traditional web-pages.                           -->
         <!-- Documented in specification 14.4.1               -->
 
@@ -82,7 +97,7 @@
 
         <!-- Enable disable the websocket interface.          -->
         <!-- Set if authentication should be used for the     -->
-		<!-- websockets interface. Default is true == yes     -->
+		<!-- websocket  interface. Default is true == yes     -->
         <!-- Documented in specification 14.4.1               -->
         
         <websockets enable="true" auth="true" />
@@ -146,7 +161,7 @@
     </automation>
 	
     <!-- Holds information about interfaces on the                  -->
-    <!-- machine the daemon is run on. Set ip-address, mac-address  -->
+    <!-- machine the daemon is run on. Set IP-address, mac-address  -->
     <!-- and GUID for your interface here.                          -->
     <!-- !!!! Normally no need to enter this information.           -->
     <!-- Documented in specification 14.4.6                         -->
@@ -200,7 +215,7 @@
         <!-- Level II Logger - driver is documented in 30.1 -->
         <driver enable="true" >
             <name>VSCPLoggerDriver1</name>	
-            <path>/ust/local/lib/vscpl2_loggerdrv.so</path>
+            <path>/usr/local/lib/vscpl2_loggerdrv.so</path>
              <config>/tmp/vscp_level2.log</config> 		
              <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
