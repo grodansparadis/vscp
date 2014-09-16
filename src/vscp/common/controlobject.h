@@ -46,8 +46,9 @@
 #include "../../vscp/common/vscp.h"
 #include "vscpvariable.h"
 #include "tcpipclientthread.h"
-#include "daemonvscp.h"
+#include "udpclientthread.h"
 #include "udpthread.h"
+#include "daemonvscp.h"
 #include "dm.h"
 #include "vscp.h"
 
@@ -191,6 +192,16 @@ public:
         @return true on success
      */
     bool stopTcpWorkerThread(void);
+
+	/*!
+		Start the UDP worker thread
+	*/
+	bool startUDPWorkerThread(void);
+
+	/*!
+		Stop the UDP Workerthread
+	*/
+	bool stopUDPWorkerThread(void);
 
 	/*!
         Starting WebServer worker thread
@@ -442,7 +453,6 @@ public:
      */
     wxString m_tcpport;
 
-
     /*!
         Username for level II divers
      */
@@ -578,6 +588,12 @@ private:
     wxMutex m_mutexdaemonVSCPThread;
 
 	/*!
+        The server thread for the VSCP daemon
+     */
+	VSCPUDPClientThread *m_pVSCPClientUDPThread;
+	wxMutex m_mutexVSCPClientnUDPThread;
+
+	/*!
 		Webserver
 	*/
 	VSCPWebServerThread *m_pwebServerThread;
@@ -586,11 +602,11 @@ private:
     /*!
         UDP Worker threads
      */
-    UDPSendThread *m_pudpSendThread;
-    UDPReceiveThread *m_pudpReceiveThread;
+    //UDPSendThread *m_pudpSendThread;
+    //UDPReceiveThread *m_pudpReceiveThread;
 
-    wxMutex m_mutexudpSendThread;
-    wxMutex m_mutexudpReceiveThread;
+    //wxMutex m_mutexudpSendThread;
+    //wxMutex m_mutexudpReceiveThread;
 };
 
 

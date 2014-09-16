@@ -20,9 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// http://tangentsoft.net/wskfaq/examples/ipaddr.html
-// http://code.activestate.com/recipes/439094/
-// http://mail.nl.linux.org/kernelnewbies/2003-05/msg00090.html
 //
 
 #define _POSIX

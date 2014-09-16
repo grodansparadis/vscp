@@ -14,7 +14,7 @@
 // Alternatively, you can license this software under a commercial
 // license, as set out in <http://cesanta.com/>.
 //
-// $Date: 2014-09-03 16:09:20 UTC $
+// $Date: 2014-09-15 21:54:33 UTC $
 
 #ifndef NS_SKELETON_HEADER_INCLUDED
 #define NS_SKELETON_HEADER_INCLUDED
@@ -140,6 +140,12 @@ union socket_address {
 #endif
 };
 
+// Describes chunk of memory
+struct ns_vec {
+  const char *p;
+  size_t len;
+};
+
 // IO buffers interface
 struct iobuf {
   char *buf;
@@ -188,6 +194,7 @@ struct ns_connection {
   SSL_CTX *ssl_ctx;
   void *connection_data;
   time_t last_io_time;
+  ns_callback_t callback;
 
   unsigned int flags;
 #define NSF_FINISHED_SENDING_DATA   (1 << 0)

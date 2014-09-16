@@ -227,7 +227,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				// We need to create a clientobject and add this object to the list
 				CClientItem *pClientItem = new CClientItem;
 				if ( NULL == pClientItem ) {
-					pCtrlObject->logMsg ( _T ( "[TCP/IP Clinet] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
+					pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
 					conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
 					return;
 				}
@@ -1508,17 +1508,223 @@ void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControl
 void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
 	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	
+	wxString strcmd = m_currentCommandUC.Right( m_currentCommandUC.Length()-4 );
+	strcmd.Trim();
+	strcmd.Trim(false);
 
-	wxString str = _("Help for the VSCP tcp/ip interface\r\n");
-			str += _("====================================================================\r\n");
-			str += _("To get more information about a specific command issue 'HELP comman'\r\n");
-			str += _("+    - Repeat last command.\r\n);
-			str += _("NOOP - No operation. Does nothing.\r\n);
-			str += _("QUIT - Close the connection.\r\n);
-			str += _("USER 'username' - Username for login. \r\n);
-			str += _("PASS 'password' - Password for login.  \r\n);
-			str += _("SEND 'event'    - Send an event.   \r\n);
-			str += _("RCVLOOP         - Will retrieve events in an endless loop until the connection is closed by the client or QUITLOOP is sent.\r\n);
+	if ( _("") == strcmd ) {
+
+		wxString str = _("Help for the VSCP tcp/ip interface\r\n");
+				str += _("====================================================================\r\n");
+				str += _("To get more information about a specific command issue 'HELP comman'\r\n");
+				str += _("+    - Repeat last command.\r\n");
+				str += _("NOOP - No operation. Does nothing.\r\n");
+				str += _("QUIT - Close the connection.\r\n");
+				str += _("USER 'username' - Username for login. \r\n");
+				str += _("PASS 'password' - Password for login.  \r\n");
+				str += _("SEND 'event'    - Send an event.   \r\n");
+				str += _("RCVLOOP         - Will retrieve events in an endless loop until the connection is closed by the client or QUITLOOP is sent.\r\n");
+				str += _("QUITLOOP        - Terminate RCVLOOP.\r\n");
+				str += _("CDTA/CHKDATA    - Check if there is data in the input queue.\r\n");
+				str += _("CLRA/CLRALL     - Clear input queue.\r\n");
+				str += _("STAT            - Get statistical information.\r\n");
+				str += _("INFO            - Get status info.\r\n");
+				str += _("CHID            - Get channel id.\r\n");
+				str += _("SGID/SETGUID    - Set GUID for channel.\r\n");
+				str += _("GGID/GETGUID    - Get GUID for channel.\r\n");
+				str += _("VERS/VERSION    - Get VSCP daemon version.\r\n");
+				str += _("SFLT/SETFILTER  - Set incoming event filter.\r\n");
+				str += _("SMSK/SETMASK    - Set incoming event mask.\r\n");
+				str += _("HELP [command]  - This command.\r\n");
+				str += _("TEST            - Do test sequence. Only used for debugging.\r\n");
+				str += _("SHUTDOWN        - Shutdown the daemon.\r\n");
+				str += _("RESTART         - Restart the daemon.\r\n");
+				str += _("DRIVER          - Driver manipulation.\r\n");
+				str += _("FILE            - File handling.\r\n");
+				str += _("UDP             - UDP.\r\n");
+				str += _("REMOTE          - User manipulation.\r\n");
+				str += _("INTERFACE       - Interface manipulation. \r\n");
+				str += _("DM              - Decision Matrix manipulation.\r\n");
+				str += _("VARIABLE        - Variable handling. \r\n");
+				ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("+") == strcmd ) {
+		wxString str = _("'+' repeats the last given command.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("NOOP") == strcmd ) {
+		wxString str = _("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("QUIT") == strcmd ) {
+		wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("USER") == strcmd ) {
+		wxString str = _("'USER' Used to login to the system together with PASS. Connection will be closed if bad credentials are given.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("PASS") == strcmd ) {
+		wxString str = _("'PASS' Used to login to the system together with USER. Connection will be closed if bad credentials are given.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("QUIT") == strcmd ) {
+		wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("SEND") == strcmd ) {
+		wxString str = _("'SEND event' Send event. The event is given as 'head,class,type,obid,time-stamp,GUID,data1,data2,data3....' ");
+		str += _("Set head and obid to zero. If timestamp is set to zero it will be set by the server. If GUID is given as '-' ");
+		str += _("the GUID of the interface will be used. The GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2……. \r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("RETR") == strcmd ) {
+		wxString str = _("'RETR count' - Retrieve one or 'count' event(s). ");
+		str += _("Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("RCVLOOP") == strcmd ) {
+		wxString str = _("'RCVLOOP' - Enter the receive loop and receive events continously or until ");
+		str += _("terminated with 'QUITLOOP'. Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("QUITLOOP") == strcmd ) {
+		wxString str = _("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( ( _("CDTA") == strcmd ) || ( ( _("CHKDATA") == strcmd ) ) ) {
+		wxString str = _("'CDTA' or 'CHKDATA' - Check if there is events in the input queue.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( ( _("CLRA") == strcmd ) || ( ( _("CLRALL") == strcmd ) ) ) {
+		wxString str = _("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("STAT") == strcmd ) {
+		wxString str = _("'STAT' - Get statistical information.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("INFO") == strcmd ) {
+		wxString str = _("'INFO' - Get status information.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( ( _("CHID") == strcmd ) || ( ( _("GETCHID") == strcmd ) ) ) {
+		wxString str = _("'CHID' or 'GETCHID' - Get channel id.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( ( _("SGID") == strcmd ) || ( ( _("SETGUID") == strcmd ) ) ) {
+		wxString str = _("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( ( _("GGID") == strcmd ) || ( ( _("GETGUID") == strcmd ) ) ) {
+		wxString str = _("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( ( _("VERS") == strcmd ) || ( ( _("VERSION") == strcmd ) ) ) {
+		wxString str = _("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( ( _("SFLT") == strcmd ) || ( ( _("SETFILTER") == strcmd ) ) ) {
+		wxString str = _("'SFLT' or 'SETFILTER' - Set filter for channel. ");
+		str += _("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
+		str += _("Example:  SETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( ( _("SMSK") == strcmd ) || ( ( _("SETMASK") == strcmd ) ) ) {
+		wxString str = _("'SFLT' or 'SETFILTER' - Set mask for channel. ");
+		str += _("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
+		str += _("Example:  SETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("HELP") == strcmd ) {
+		wxString str = _("'HELP [command]' This command. Gives help about available commands and the usage.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("TEST") == strcmd ) {
+		wxString str = _("'HELP [sequency]' Test command for debugging.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("SHUTDOWN") == strcmd ) {
+		wxString str = _("'SHUTDOWN' Shutdown the daemon.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("RESTART") == strcmd ) {
+		wxString str = _("'RESTART' Restart the daemon.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("DRIVER") == strcmd ) {
+		wxString str = _("'DRIVER' Handle (load/unload/update/start/stop) Level I/Level II drivers.\r\n");
+		str += _("'DRIVER install package' .\r\n");
+		str += _("'DRIVER uninstall package' .\r\n");
+		str += _("'DRIVER upgrade package' .\r\n");
+		str += _("'DRIVER start package' .\r\n");
+		str += _("'DRIVER stop package' .\r\n");
+		str += _("'DRIVER reload package' .\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("FILE") == strcmd ) {
+		wxString str = _("'FILE' Handle daemon files.\r\n");
+		str += _("'FILE dir'.\r\n");
+		str += _("'FILE copy'.\r\n");
+		str += _("'FILE move'.\r\n");
+		str += _("'FILE delete'.\r\n");
+		str += _("'FILE list'.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("UDP") == strcmd ) {
+		wxString str = _("'UDP' Handle UDP interface.\r\n");
+		str += _("'UDP enable'.\r\n");
+		str += _("'UDP disable' .\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("REMOTE") == strcmd ) {
+		wxString str = _("'REMOTE' User management.\r\n");
+		str += _("'REMOTE list'.\r\n");
+		str += _("'REMOTE add 'username','MD5 password','from-host(s)','access-right-list','event-list','filter','mask''. Add a user.\r\n");
+		str += _("'REMOTE remove username'.\r\n");
+		str += _("'REMOTE privilege 'username','access-right-list''.\r\n");
+		str += _("'REMOTE password 'username','MD5 for password' '.\r\n");
+		str += _("'REMOTE host-list 'username','host-list''.\r\n");
+		str += _("'REMOTE event-list 'username','event-list''.\r\n");
+		str += _("'REMOTE filter 'username','filter''.\r\n");
+		str += _("'REMOTE mask 'username','mask''.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("INTERFACE") == strcmd ) {
+		wxString str = _("'INTERFACE' Handle interfaces on the daemon.\r\n");
+		str += _("'INTERFACE list'.\r\n");
+		str += _("'INTERFACE close'.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("DM") == strcmd ) {
+		wxString str = _("'DM' Handle decision matrix on the daemon.\r\n");
+		str += _("'DM enable'.\r\n");
+		str += _("'DM disable'.\r\n");
+		str += _("'DM list'.\r\n");
+		str += _("'DM add'.\r\n");
+		str += _("'DM delete'.\r\n");
+		str += _("'DM reset'.\r\n");
+		str += _("'DM clrtrig'.\r\n");
+		str += _("'DM clrerr'.\r\n");
+		str += _("'DM load'.\r\n");
+		str += _("'DM save'.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+	else if ( _("VARIABLE") == strcmd ) {
+		wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
+		str += _("'VARIABLE list'.\r\n");
+		str += _("'VARIABLE write'.\r\n");
+		str += _("'VARIABLE read'.\r\n");
+		str += _("'VARIABLE reset'.\r\n");
+		str += _("'VARIABLE readreset'.\r\n");
+		str += _("'VARIABLE remove'.\r\n");
+		str += _("'VARIABLE readremove'.\r\n");
+		str += _("'VARIABLE length'.\r\n");
+		str += _("'VARIABLE save'.\r\n");
+		ns_send( conn, str.mbc_str(), str.Length() );
+	}
+
 	ns_send( conn, MSG_OK, strlen(MSG_OK) );
 	return;
 }

@@ -233,8 +233,8 @@ CControlObject::CControlObject()
     m_pVSCPClientThread = NULL;
     m_pdaemonVSCPThread = NULL;
 	m_pwebServerThread = NULL;
-    m_pudpSendThread = NULL;
-    m_pudpReceiveThread = NULL;
+    //m_pudpSendThread = NULL;
+    //m_pudpReceiveThread = NULL;
     
     // Websocket interface
     //m_portWebsockets = 7681;	// Deprecated
@@ -841,6 +841,59 @@ bool CControlObject::stopTcpWorkerThread(void)
     return true;
 }
 
+
+
+/////////////////////////////////////////////////////////////////////////////
+// startUDPWorkerThread
+//
+
+bool CControlObject::startUDPWorkerThread(void)
+{
+    /////////////////////////////////////////////////////////////////////////////
+    // Run the TCP server thread 
+    /////////////////////////////////////////////////////////////////////////////
+    if ( m_bUDPInterface ) {
+        
+        m_pVSCPClientUDPThread = new VSCPUDPClientThread;
+
+        if (NULL != m_pVSCPClientUDPThread) {
+            m_pVSCPClientUDPThread->m_pCtrlObject = this;
+            wxThreadError err;
+            if (wxTHREAD_NO_ERROR == (err = m_pVSCPClientUDPThread->Create())) {
+                //m_ptcpListenThread->SetPriority( WXTHREAD_DEFAULT_PRIORITY );
+                if (wxTHREAD_NO_ERROR != (err = m_pVSCPClientUDPThread->Run())) {
+                    logMsg(_("Unable to run TCP thread."), DAEMON_LOGMSG_CRITICAL);
+                }
+            } 
+			else {
+                logMsg(_("Unable to create TCP thread."), DAEMON_LOGMSG_CRITICAL);
+            }
+        } 
+		else {
+            logMsg(_("Unable to allocate memory for TCP thread."), DAEMON_LOGMSG_CRITICAL);
+        }
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// stopUDPWorkerThread
+//
+
+bool CControlObject::stopUDPWorkerThread(void)
+{
+    if ( NULL != m_pVSCPClientUDPThread ) {
+        m_mutexVSCPClientnUDPThread.Lock();
+        m_pVSCPClientUDPThread->m_bQuit = true;
+        m_pVSCPClientUDPThread->Wait();
+        delete m_pVSCPClientThread;
+        m_mutexVSCPClientnUDPThread.Unlock();
+    }
+
+    return true;
+}
 
 
 /////////////////////////////////////////////////////////////////////////////

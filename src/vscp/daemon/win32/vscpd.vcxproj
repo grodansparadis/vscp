@@ -566,6 +566,7 @@
     <ClInclude Include="..\..\common\interfacelist.h" />
     <ClInclude Include="..\..\..\common\md5.h" />
     <ClInclude Include="..\..\common\tables.h" />
+    <ClInclude Include="..\..\common\udpclientthread.h" />
     <ClInclude Include="..\..\common\vscpeventhelper.h" />
     <ClInclude Include="..\..\common\vscphelper.h" />
     <ClInclude Include="..\..\common\vscpremotetcpif.h" />
@@ -573,7 +574,6 @@
     <ClInclude Include="..\..\common\webserver.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\common\tcpipclientthread.h" />
-    <ClInclude Include="..\..\common\udpthread.h" />
     <ClInclude Include="..\..\common\userlist.h" />
     <ClInclude Include="..\..\common\version.h" />
     <ClInclude Include="..\..\common\vscp.h" />
@@ -598,6 +598,7 @@
     <ClCompile Include="..\..\..\common\md5.cpp" />
     <ClCompile Include="..\..\common\tables.cpp" />
     <ClCompile Include="..\..\common\tcpipclientthread.cpp" />
+    <ClCompile Include="..\..\common\udpclientthread.cpp" />
     <ClCompile Include="..\..\common\userlist.cpp" />
     <ClCompile Include="..\..\common\vscpeventhelper.cpp" />
     <ClCompile Include="..\..\common\vscpremotetcpif.cpp" />
