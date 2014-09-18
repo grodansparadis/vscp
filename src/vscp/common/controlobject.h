@@ -70,7 +70,7 @@ class VSCPClientThread;
 #define MAX_ITEMS_RECEIVE_QUEUE                 1021
 #define MAX_ITEMS_SEND_QUEUE                    1021
 #define MAX_ITEMS_CLIENT_RECEIVE_QUEUE          8191
-#define VSCP_TCPIPIF_DEFAULT_PORT				_("9598")
+#define VSCP_TCPIPIF_DEFAULT_PORT				9598
 
 
 WX_DECLARE_LIST(canalMsg, CanalMsgList);

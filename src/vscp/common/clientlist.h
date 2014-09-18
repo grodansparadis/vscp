@@ -201,6 +201,9 @@ public:
 
 	/// pointer ti the user
 	CUserItem *m_pUserItem;
+
+	/// Read buffer
+	wxString m_readBuffer;
 };
 
 // List with clientitems

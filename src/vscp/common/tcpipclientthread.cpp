@@ -153,8 +153,6 @@ void *VSCPClientThread::Entry()
 	// Check pointers
 	if ( NULL == m_pCtrlObject ) return NULL;
 
-	//const char *port1 = "9598", *port2 = "127.0.0.1:17000";
-
 	ns_mgr_init( &m_pCtrlObject->m_mgrTcpIpServer, m_pCtrlObject, VSCPClientThread::ev_handler );
 
 	m_pCtrlObject->m_strTcpInterfaceAddress.Trim();
@@ -166,10 +164,6 @@ void *VSCPClientThread::Entry()
 		str.Trim();
 		str.Trim( false );
 		if ( 0 == str.Length() ) continue;
-
-		//if ( wxNOT_FOUND  != str.Find(_("tcp://") ) ) {
-		//	str = _("tcp://") + str;
-		//}
 
 		// Bind to this interface
 		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, str.mbc_str(), NULL ); //
@@ -229,9 +223,12 @@ void VSCPClientThread::OnExit()
 void 
 VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
 {
-	char *p;
+	char rbuf[ 2048 ];
+    int pos4lf; 
+
 	struct iobuf *io = &conn->recv_iobuf;
 	CControlObject *pCtrlObject = (CControlObject *)conn->mgr->user_data;
+	CClientItem *pClientItem = ( CClientItem *)conn->connection_data;
 
 	switch (ev) {
 	
@@ -243,7 +240,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				pCtrlObject->logMsg(_T("TCP Client: Accept.\n"), DAEMON_LOGMSG_INFO);
 
 				// We need to create a clientobject and add this object to the list
-				CClientItem *pClientItem = new CClientItem;
+				pClientItem = new CClientItem;
 				if ( NULL == pClientItem ) {
 					pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Unable to allocate memory for client.\n" ), DAEMON_LOGMSG_ERROR );
 					conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
@@ -256,7 +253,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				// This is now an active Client
 				pClientItem->m_bOpen = true; 
 				pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP;
-				pClientItem->m_strDeviceName = _("Remote TCP/IP Client connected at ");
+				pClientItem->m_strDeviceName = _("Remote TCP/IP Client. Started at ");
 				wxDateTime now = wxDateTime::Now(); 
 				pClientItem->m_strDeviceName += now.FormatISODate();
 				pClientItem->m_strDeviceName += _(" ");
@@ -280,6 +277,9 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				str += _("\r\n");
 				str += _(MSG_OK);
 				ns_send( conn, str.mbc_str(), str.Length() );
+
+				 
+
 			}
 			break;
 
@@ -288,15 +288,42 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 			break;
 
 		case NS_RECV:
-			ns_send(conn, io->buf, io->len);  // Echo message back
-			iobuf_remove(io, io->len);        // Discard message from recv buffer
-			return;
+			/*{
+				char input_buffer[512];
 
-			p = strstr( io->buf, "\r\n" );
-			if ( NULL != p ) {
-				*p = 0;
-				pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, p );
-				iobuf_remove( io, strlen(p) + 2);
+				memset( input_buffer,  0, sizeof( input_buffer ) );
+				memcpy( input_buffer, io->buf, io->len );
+				iobuf_remove(io, io->len);
+				wxString strBuf = wxString::FromAscii( input_buffer );
+				
+				int pos;
+				if ( wxNOT_FOUND != (  pos = strBuf.Find( _("\r\n") ) ) ) {
+					pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, strBuf );
+				}
+
+				//ns_send(conn, io->buf, io->len);  // Echo message back
+				//iobuf_remove(io, io->len);        // Discard message from recv buffer
+				//return;
+
+				p = strstr( io->buf, "\r\n" );
+				if ( NULL != p ) {
+					*p = 0;
+					pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, strBuf );
+					iobuf_remove( io, strlen(p) + 2);
+				}
+				
+			}*/
+
+			// Read new data
+			memset( rbuf, 0, sizeof( rbuf ) );
+			memcpy( rbuf, io->buf, io->len );
+			iobuf_remove(io, io->len); 
+            pClientItem->m_readBuffer += wxString::FromAscii( rbuf );
+
+			// Check if command already in buffer
+			if ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
+				pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, pClientItem->m_readBuffer.Mid( 0, pos4lf ) );
+				pClientItem->m_readBuffer = pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
 			}
 			break;
 
@@ -320,7 +347,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 //
 
 void 
-VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, const char *pCommand )
+VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, wxString& strCommand )
 {
 	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
 	
@@ -335,7 +362,8 @@ VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pC
 	}
 
 	//m_bOK = true;
-	m_currentCommand.FromAscii( pCommand );
+	//m_currentCommand.FromAscii( pCommand );
+	m_currentCommand = strCommand;
 	m_currentCommandUC = m_currentCommand.Upper();
     m_currentCommand.Trim();
     m_currentCommand.Trim( false );
@@ -1441,20 +1469,31 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     if ( NULL == md5.getDigest() ) return false; 
     wxString md5Password = wxString( md5.getDigest(), wxConvUTF8 );
     m_pCtrlObject->m_mutexUserList.Lock();
-    //::wxLogDebug( _("Username: ") + m_wxUserName );
-    //::wxLogDebug( _("Password: ") + strPassword );
-    //::wxLogDebug( _("MD5 of Password: ") + md5Password );
+#if  0 
+    ::wxLogDebug( _("Username: ") + m_UserName );
+    ::wxLogDebug( _("Password: ") + strPassword );
+    ::wxLogDebug( _("MD5 of Password: ") + md5Password );
+#endif
     pClientItem->m_pUserItem = m_pCtrlObject->m_userList.checkUser( pClientItem->m_UserName, md5Password );
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( NULL == pClientItem->m_pUserItem ) {
-        //::wxLogDebug ( _("Password/Username failure.") );
-        ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
+        ::wxLogDebug ( _("Password/Username failure.") );
+        wxString strErr = 
+			wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 
+			pClientItem->m_UserName, strPassword );
+		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING );
+		ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
         return false;
     }
 
 	// Get remte address
-	wxString remoteaddr = wxString::FromAscii( inet_ntoa( conn->sa.sin.sin_addr )  );
+	struct sockaddr_in cli_addr;
+	int clilen = 0;    
+    clilen = sizeof (cli_addr);
+	int ret = getpeername( conn->sock, (struct sockaddr *)&cli_addr, &clilen);
+    struct sockaddr_in *s = (struct sockaddr_in *)&cli_addr;
+    wxString remoteaddr = wxString::FromAscii( inet_ntoa( cli_addr.sin_addr ) );
 
     // Check if this user is allowed to connect from this location
     m_pCtrlObject->m_mutexUserList.Lock();
@@ -1464,7 +1503,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     if ( !bValidHost ) {
 		wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), remoteaddr );
-		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO );
+		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING );
         ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
         return false;
     }

@@ -4316,7 +4316,7 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *conn )
 
         // Interface name
         buildPage += _("<td>");
-        buildPage += pItem->m_strDeviceName.Left(pItem->m_strDeviceName.Length() - 30);
+        buildPage += pItem->m_strDeviceName.Left(pItem->m_strDeviceName.Length()-30);
         buildPage += _("</td>");
 
         // Start date
@@ -4335,13 +4335,14 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *conn )
     buildPage += _("<br>All interfaces to the daemon is listed here. This is drivers as well as clients on one of the daemons interfaces. It is possible to see events coming in on a on a specific interface and send events on just one of the interfaces. This is mostly used on the driver interfaces but is possible on all interfacs<br>");
     
     buildPage += _("<br><b>Interface Types</b><br>");
-    buildPage += _("0 - Unknown (you should not see this).<br>");
-    buildPage += _("1 - Internal daemon client.<br>");
-    buildPage += _("2 - Level I (CANAL) Driver.<br>");
-    buildPage += _("3 - Level II Driver.<br>");
-    buildPage += _("4 - TCP/IP Client.<br>");
-	buildPage += _("5 - Web Server Client.<br>");
-	buildPage += _("6 - WebSocket Client.<br>");
+    buildPage += wxString::Format( _("%d - Unknown (you should not see this).<br>"), CLIENT_ITEM_INTERFACE_TYPE_NONE );
+    buildPage += wxString::Format( _("%d - Internal daemon client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL );
+    buildPage += wxString::Format( _("%d - Level I (CANAL) Driver.<br>"), CLIENT_ITEM_INTERFACE_TYPE_DRIVER_CANAL );
+    buildPage += wxString::Format( _("%d - Level II Driver.<br>"), CLIENT_ITEM_INTERFACE_TYPE_DRIVER_VSCP );
+    buildPage += wxString::Format( _("%d - TCP/IP Client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP );
+	buildPage += wxString::Format( _("%d - UDP Client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP );
+	buildPage += wxString::Format( _("%d - Web Server Client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB );
+	buildPage += wxString::Format( _("%d - WebSocket Client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEBSOCKET );
 
     buildPage += _(WEB_COMMON_END);     // Common end code
     

@@ -65,7 +65,7 @@
 #include "dlgvscpinterfacesettings.h"
 #include "dlgselectdaemoninterface.h"
 #include "dlgvscpfilter.h"
-#include "../common/vscptcpif.h"
+#include "../common/vscpremotetcpif.h"
 
 ////@begin XPM images
 ////@end XPM images
@@ -450,8 +450,6 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 {
 	VscpTcpIf tcpif;
 	wxString wxstr;
-
-
 
 	m_btnTestConnection->Enable( false );
 

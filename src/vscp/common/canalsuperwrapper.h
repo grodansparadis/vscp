@@ -35,7 +35,7 @@ events.
 #include <string.h>
 #include "devitem.h"
 #include "dllwrapper.h"
-#include "vscptcpif.h"
+#include "vscpremotetcpif.h"
 #include "guid.h"
 #include "mdf.h"
 #include "../../common/dllist.h"

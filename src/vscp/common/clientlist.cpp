@@ -93,10 +93,15 @@ CClientItem::CClientItem()
 	m_status.lasterrorsubcode = 0;
 	memset( m_status.lasterrorstr, 0, sizeof( m_status.lasterrorstr ) );
 
-	// Working variable storage 
+	///////////////////////////////////////////////////////////////////////////
+	//                 Working variable storage for clients
+	//////////////////////////////////////////////////////////////////////////
 
 	m_bAuthorized = false;
 	m_pUserItem = NULL;
+
+	/// Buffer for read data
+	wxString m_readBuffer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

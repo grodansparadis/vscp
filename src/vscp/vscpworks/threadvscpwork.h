@@ -18,7 +18,7 @@
 #include "wx/thread.h"
 #include "wx/socket.h"
 
-#include "../common/vscptcpif.h"
+#include "../common/vscpremotetcpif.h"
 #include "frmvscpsession.h"
 
 /*!

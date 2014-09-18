@@ -113,7 +113,7 @@ public:
 	/*!
 		When a comman is received on the TCP/IP interface the command handelr is called.
 	*/
-	void CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, const char *pCommand );
+	void CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, wxString& strCommand );
 
 	/*! 
 		called when the thread exits - whether it terminates normally or is

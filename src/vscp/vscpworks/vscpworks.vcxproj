@@ -71,8 +71,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)VCProjectRelease\</OutDir>
-    <IntDir>$(SolutionDir)VCProjectRelease\</IntDir>
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -81,8 +81,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)VCProjectDebug\</OutDir>
-    <IntDir>$(SolutionDir)VCProjectDebug\</IntDir>
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -100,6 +100,10 @@
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\wxWidgets-3.0.1/lib/vc_lib/mswu;C:\wxWidgets-3.0.1/include;C:\wxWidgets-3.0.1/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
+      <ObjectFileName>.\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <XMLDocumentationFileName>.\Release\</XMLDocumentationFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -109,6 +113,7 @@
       <AdditionalLibraryDirectories>C:\wxWidgets-3.0.1/lib/vc_lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>;wxmsw30u_xrc.lib;wxmsw30u_richtext.lib;wxmsw30u_aui.lib;wxmsw30u_html.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_ribbon.lib;wxmsw30u_core.lib;wxbase30u.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxmsw30u_adv.lib;wxmsw30u_html.lib;wxmsw30u_xrc.lib;wxbase30u_net.lib;wxbase30u_xml.lib;wxexpat.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TargetMachine>MachineX86</TargetMachine>
+      <OutputFile>.\Release\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>C:\wxWidgets-3.0.1/lib/vc_lib/mswu;C:\wxWidgets-3.0.1/include;C:\wxWidgets-3.0.1/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
@@ -149,6 +154,10 @@
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\wxWidgets-3.0.1/lib/vc_lib/mswud;C:\wxWidgets-3.0.1/include;C:\wxWidgets-3.0.1/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <ObjectFileName>.\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <XMLDocumentationFileName>.\Debug\</XMLDocumentationFileName>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,6 +165,10 @@
       <AdditionalLibraryDirectories>C:\wxWidgets-3.0.1/lib/vc_lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>;wxmsw30ud_xrc.lib;wxmsw30ud_richtext.lib;wxmsw30ud_aui.lib;wxmsw30ud_html.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_ribbon.lib;wxmsw30ud_core.lib;wxbase30ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxmsw30ud_adv.lib;wxmsw30ud_html.lib;wxmsw30ud_xrc.lib;wxbase30ud_net.lib;wxbase30ud_xml.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TargetMachine>MachineX86</TargetMachine>
+      <OutputFile>.\Debug\$(TargetName)$(TargetExt)</OutputFile>
+      <ManifestFile>.\Debug\$(TargetName)$(TargetExt).intermediate.manifest</ManifestFile>
+      <ProgramDatabaseFile>.\Debug\$(TargetName).pdb</ProgramDatabaseFile>
+      <ProfileGuidedDatabase>.\Debug\$(TargetName).pgd</ProfileGuidedDatabase>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>C:\wxWidgets-3.0.1/lib/vc_lib/mswud;C:\wxWidgets-3.0.1/include;C:\wxWidgets-3.0.1/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
@@ -196,10 +209,10 @@
     <ClInclude Include="..\common\register.h" />
     <ClInclude Include="..\common\version.h" />
     <ClInclude Include="..\common\vscp.h" />
+    <ClInclude Include="..\common\vscpremotetcpif.h" />
     <ClInclude Include="..\common\vscp_class.h" />
     <ClInclude Include="..\common\vscp_type.h" />
     <ClInclude Include="..\common\vscphelper.h" />
-    <ClInclude Include="..\common\vscptcpif.h" />
     <ClInclude Include="bootdevice.h" />
     <ClInclude Include="bootdevice_pic1.h" />
     <ClInclude Include="bootdevice_vscp.h" />
@@ -245,7 +258,7 @@
     <ClCompile Include="..\common\register.cpp" />
     <ClCompile Include="..\common\vscpeventhelper.cpp" />
     <ClCompile Include="..\common\vscphelper.cpp" />
-    <ClCompile Include="..\common\vscptcpif.cpp" />
+    <ClCompile Include="..\common\vscpremotetcpif.cpp" />
     <ClCompile Include="bootdevice.cpp" />
     <ClCompile Include="bootdevice_pic1.cpp" />
     <ClCompile Include="bootdevice_vscp.cpp" />

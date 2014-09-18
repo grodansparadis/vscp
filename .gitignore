@@ -139,3 +139,5 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/daemon/win32/ReleaseDll/vscpd.exe.embed.manifest.res
 /src/vscp/daemon/win32/ReleaseDll/vscpd.ilk
 /src/vscp/daemon/win32/ReleaseDll/vscpd_manifest.rc
+/src/vscp/vscpworks/vscpworks-autosave.pjd
+/src/vscp/vscpworks/vscpworks.vcxproj.filters

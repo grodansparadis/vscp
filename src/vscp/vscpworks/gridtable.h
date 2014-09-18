@@ -45,7 +45,7 @@
 #include <wx/grid.h>
 #include <wx/ffile.h>
 #include "../common/vscp.h"
-#include "../common/vscptcpif.h"
+#include "../common/vscpremotetcpif.h"
 #include "../common/vscphelper.h"
 
 
