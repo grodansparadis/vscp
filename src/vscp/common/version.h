@@ -24,12 +24,12 @@
 #ifndef _____VSCP_VERSION_h_____
 #define _____VSCP_VERSION_h_____
 
-#define VSCPD_MAJOR_VERSION 	0
-#define VSCPD_MINOR_VERSION 	4
+#define VSCPD_MAJOR_VERSION 	1
+#define VSCPD_MINOR_VERSION 	0
 #define VSCPD_SUB_VERSION   	0
-#define VSCPD_SUB_SUB_VERSION   29
+#define VSCPD_SUB_SUB_VERSION   0
 
-#define VSCPD_DISPLAY_VERSION "0.4.0.29 Fluorine"
+#define VSCPD_DISPLAY_VERSION "1.0.0.0 Neon"
 
 #define VSCPD_COPYRIGHT "Copyright (C) 2000-2014, Ake Hedman, Paradise of the Frog AB, http://www.paradiseofthefrog.com"
 #define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2014, <a href=\"mailto:akhe@paradiseofthefrog.com\">Ake Hedman</a>, Paradise of the Frog, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"

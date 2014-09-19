@@ -231,7 +231,7 @@ void *VSCPWebServerThread::Entry()
 
 void VSCPWebServerThread::OnExit()
 {
-	;
+	time_t tttt = time(NULL);;
 }
 
 
@@ -259,22 +259,11 @@ bool VSCPWebServerThread::readMimeTypes(wxString& path)
     wxXmlNode *child = doc.GetRoot()->GetChildren();
     while (child) {  
         
-        if (child->GetName() == wxT("mimetype")) {
-#if wxMAJOR_VERSION > 3             
-            wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));
-#else 
-            wxString strEnable = child->GetPropVal(wxT("enable"), wxT("false"));
-#endif 
-#if wxMAJOR_VERSION > 3             
-            wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));
-#else 
-            wxString strExt = child->GetPropVal(wxT("extension"), wxT(""));            
-#endif
-#if wxMAJOR_VERSION > 3             
+        if (child->GetName() == wxT("mimetype")) {           
+            wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));         
+            wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));            
             wxString strType = child->GetAttribute(wxT("mime"), wxT(""));
-#else 
-            wxString strType = child->GetPropVal(wxT("mime"), wxT(""));            
-#endif            
+            
             if ( strEnable.IsSameAs(_("true"),false )) {
                 m_hashMimeTypes[strExt] = strType;
             }
@@ -921,17 +910,6 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;OPEN" );
     } 
 	else if (0 == strTok.Find(_("CLOSE"))) {
-
-		// Must be authorized to do this
-		if ( !pSession->bAuthenticated ) {
-			mg_websocket_printf( conn, 
-									WEBSOCKET_OPCODE_TEXT, 
-									"-;%d;%s",
-									WEBSOCK_ERROR_NOT_AUTHORIZED,
-									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
-			return MG_TRUE;	// We still leave channel open
-		}
-
         pSession->m_pClientItem->m_bOpen = false;
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;CLOSE" );
 		rv = MG_FALSE;
@@ -1959,7 +1937,6 @@ VSCPWebServerThread::websrv_check_password( const char *method,
 int 
 VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_event ev )
 {
-	//char buf[2048];
 	static time_t cleanupTime = time(NULL);
 	const char *hdr;
 	struct websock_session *pWebSockSession;
@@ -1982,7 +1959,6 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			if (conn->is_websocket) {	
 				return MG_TRUE;	// Always accept websocket connections
 			}
-
 			
 			// Validate REST interface user.
 			if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
@@ -1990,7 +1966,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			}
 
 			if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
-					( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
+								( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
 				return MG_FALSE;
 			}
 			if (!mg_parse_header(hdr, "username", user, sizeof(user))) return MG_FALSE;
@@ -2025,15 +2001,12 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 
 		case MG_REQUEST:
 
-			{
-				wxString strlog = wxString::Format(_("Webserver: Page reques [%s].\n"), wxString::FromAscii( conn->uri ) );
-				pObject->logMsg( strlog, DAEMON_LOGMSG_INFO);
-			}
-
 			if (conn->is_websocket) {
 				return pObject->getWebServer()->websrv_websocket_message( conn );
-			} 
+			}
 			else {
+				wxString strlog = wxString::Format(_("Webserver: Page request [%s].\n"), wxString::FromAscii( conn->uri ) );
+				pObject->logMsg( strlog, DAEMON_LOGMSG_INFO );
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
@@ -2226,7 +2199,6 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 											"+;AUTH1" );
 				}
 			}
-
 			return MG_TRUE;  // keep socket open
 
 		case MG_REPLY:
@@ -2242,6 +2214,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			return MG_FALSE;
 
 		case MG_HTTP_ERROR:
+			pObject->logMsg( _("E "), DAEMON_LOGMSG_INFO );
 			return MG_FALSE;
 
 		case MG_CLOSE:
@@ -2250,7 +2223,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 				conn->connection_param = NULL;
 				pWebSockSession = websock_get_session( conn );
 				if ( NULL != pWebSockSession ) {
-					pWebSockSession->lastActiveTime  = 0; // time(NULL) + 60 * 60 + 777;  // Mark as staled
+					pWebSockSession->lastActiveTime  = 0;	// Mark as staled
 					pObject->getWebServer()->websock_expire_sessions( conn );
 				}
 			}

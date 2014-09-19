@@ -115,6 +115,7 @@
 #include <wx/xml/xml.h>
 #include <wx/mimetype.h>
 #include <wx/filename.h>
+#include <wx/stdpaths.h>
 
 #include "web_css.h"
 #include "web_js.h"
@@ -184,8 +185,9 @@ WSADATA wsaData;							// WSA functions
 CControlObject::CControlObject()
 {
     int i;
-    m_bQuit = false;	// true if we should quit
-    gpctrlObj = this;	// needed by websocket static callbacks
+    m_bQuit = false;	        // true if we should quit
+    gpctrlObj = this;	        // needed by websocket static callbacks
+    //wxStandardPaths stdPath;
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
@@ -204,6 +206,24 @@ CControlObject::CControlObject()
     // Set Default Log Level
     m_logLevel = 0;
 
+    // General logfile is enabled by default
+    m_bLogGeneralEnable = true;
+
+#ifdef WIN32
+    m_logGeneralFile.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/logs/vscp_log_general.txt") );
+#else
+    m_logGeneralFile.SetName( _("/opt/vscp/logs/vscp_log_general") );
+#endif
+
+    // Security logfile is enabled by default
+    m_bLogSecurityEnable = true;
+
+#ifdef WIN32
+    m_logSecurityFile.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_security.txt") );
+#else
+    m_logSecurityFile.SetName( _("/opt/vscp/logs/vscp_log_security") );
+#endif
+
     // Control TCP/IP Interface
     m_bTCPInterface = true;
 
@@ -216,8 +236,11 @@ CControlObject::CControlObject()
 	// Default UDP interface
     m_strUDPInterfaceAddress = _("udp://:9598");
 
-    // Canaldriver
-    m_bCanalDrivers = true;
+    // Level I (Canal) drivers
+    m_bEnableLevel1Drivers = true;
+
+    // Level II Drivers
+    m_bEnableLevel2Drivers = true;
 
     // Control VSCP
     m_bVSCPDaemon = true;
@@ -407,7 +430,7 @@ bool CControlObject::init(wxString& strcfgfile)
 
     startClientWorkerThread();
 
-    if (m_bCanalDrivers) {
+    if (m_bEnableLevel1Drivers) {
         logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
         startDeviceWorkerThreads();
     }
@@ -1476,6 +1499,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 					wxString str = subchild->GetNodeContent();
 					str.Trim();
 					str.Trim(false);
+                    str.MakeUpper();
 					if ( str.IsSameAs(_("NONE"), false)) {
 						m_logLevel = DAEMON_LOGMSG_NONE;
 					}
@@ -1507,20 +1531,23 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_logLevel = vscp_readStringValue(str);
                     }
                 } 
-				else if (subchild->GetName() == wxT("tcpif")) {
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));                  
-                    if (property.IsSameAs(_("false"), false)) {
+				else if (subchild->GetName() == wxT("tcpip")) {
+                    wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
                         m_bTCPInterface = false;
                     }
 					else {
 						m_bTCPInterface = true;
 					}
+
                     m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("interface"), wxT(""));
 
 				} 
 				else if (subchild->GetName() == wxT("udp")) {
-                    wxString property = subchild->GetPropVal(wxT("enable"), wxT("true"));                  
-                    if (property.IsSameAs(_("false"), false)) {
+                    wxString attribut = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    attribut.MakeLower();
+                    if (attribut.IsSameAs(_("false"), false)) {
                         m_bUDPInterface = false;
                     }
 					else {
@@ -1530,31 +1557,59 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_strUDPInterfaceAddress = subchild->GetPropVal(wxT("interface"), wxT(""));
 
                 } 
-				else if (subchild->GetName() == wxT("canaldriver")) {
-                  
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bCanalDrivers = false;
-                    } else {
-                        m_bCanalDrivers = true;
-                    }
-                } 
                 else if (subchild->GetName() == wxT("dm")) {
                     // Should the internal DM be disabled
                   
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                  
-                    if (property.IsSameAs(_("false"), false)) {
+                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    attribut.MakeLower();
+                    if (attribut.IsSameAs(_("false"), false)) {
                         m_bDM = false;
                     }
 
                     // Get the path to the DM file
-                   
-                    m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
-                   
+                    m_dm.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));  
                     m_dm.m_configPath.Trim();
                     m_dm.m_configPath.Trim(false);
+
+
+                    // logging enable
+                    m_dm.m_bLogEnable = true;
+                    attribut = subchild->GetAttribute(wxT("enablelogging"), wxT("true"));
+                    attribut.MakeLower();
+                    if (attribut.IsSameAs(_("false"), false)) {
+                        m_dm.m_bLogEnable = false;
+                    }     
+
+                    // Get the Logpath
+                    m_dm.m_logFile = subchild->GetAttribute(wxT("logpath"), wxT(""));
+
+                    if ( m_dm.m_logFile.IsOk() ) {
+#ifdef WIN32
+                        m_dm.m_logFile.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_security.txt") );
+#else
+                        m_dm.m_logFile.SetName( _("/opt/vscp/logs/vscp_log_security") );
+#endif                        
+                    }
+
+                    // Get the loglevel
+                    wxString str = subchild->GetAttribute(wxT("loglevel"), wxT("NORMAL"));
+					str.Trim();
+					str.Trim(false);
+                    str.MakeUpper();
+                    if ( str.IsSameAs(_("MINOR"), false)) {
+						m_dm.m_logLevel = LOG_DM_MINOR;
+					}
+					else if ( str.IsSameAs(_("NORMAL"), false)) {
+						m_dm.m_logLevel = LOG_DM_NORMAL;
+					}
+                    else if ( str.IsSameAs(_("EXTRA"), false)) {
+						m_dm.m_logLevel = LOG_DM_EXTRA;
+					}
+                    else if ( str.IsSameAs(_("DEBUG"), false)) {
+						m_dm.m_logLevel = LOG_DM_DEBUG;
+					}
+
+
                     
                 }                 
                 else if (subchild->GetName() == wxT("variables")) {
@@ -1589,48 +1644,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 				else if (subchild->GetName() == wxT("clientbuffersize")) {
                     wxString str = subchild->GetNodeContent();
                     m_maxItemsInClientReceiveQueue = vscp_readStringValue(str);
-                } 
-				else if (subchild->GetName() == wxT("webrootpath")) {
-                    CControlObject::m_pathRoot = subchild->GetNodeContent();
-                    CControlObject::m_pathRoot.Trim();
-                    CControlObject::m_pathRoot.Trim(false); 
-				} 
-				else if (subchild->GetName() == wxT("authdoamin")) {
-                    CControlObject::m_authDomain = subchild->GetNodeContent();
-                    CControlObject::m_authDomain.Trim();
-                    CControlObject::m_authDomain.Trim(false);
-                } 
-				else if (subchild->GetName() == wxT("pathcert")) {
-                    m_pathCert = subchild->GetNodeContent();
-                    m_pathCert.Trim();
-                    m_pathCert.Trim(false);
-                } 
-				else if (subchild->GetName() == wxT("pathkey")) {
-                    m_pathKey = subchild->GetNodeContent();
-                    m_pathKey.Trim();
-                    m_pathKey.Trim(false);
-                } 
-				else if (subchild->GetName() == wxT("websockets")) {
-                   
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
-                   
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bWebSockets = false;
-                    }
-               
-                    property = subchild->GetAttribute(wxT("port"), wxT("7681"));
-                   
-                    if (property.IsNumber()) {
-                        //m_portWebsockets = vscp_readStringValue(property);
-                    }
-                  
-                    property = subchild->GetAttribute(wxT("auth"), wxT("true"));
-                    
-                    if (property.IsSameAs(_("false"), false)) {
-                        m_bAuthWebsockets = false;
-                    }
-
-                } 
+                }  
 				else if (subchild->GetName() == wxT("webserver")) {
                    
                     wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
@@ -1644,12 +1658,72 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     if (property.IsNumber()) {
                         m_portWebServer = vscp_readStringValue(property);
                     }
+
+                    // Get webserver sub components
+                    wxXmlNode *subsubchild = subchild->GetChildren();
+                    while (subsubchild) {
+                    
+                        if (subsubchild->GetName() == wxT("webrootpath")) {
+                            CControlObject::m_pathRoot = subsubchild->GetNodeContent();
+                            CControlObject::m_pathRoot.Trim();
+                            CControlObject::m_pathRoot.Trim(false); 
+				        }
+                        else if (subsubchild->GetName() == wxT("authdoamin")) {
+                            CControlObject::m_authDomain = subsubchild->GetNodeContent();
+                            CControlObject::m_authDomain.Trim();
+                            CControlObject::m_authDomain.Trim(false);
+                        } 
+				        else if (subsubchild->GetName() == wxT("pathcert")) {
+                            m_pathCert = subsubchild->GetNodeContent();
+                            m_pathCert.Trim();
+                            m_pathCert.Trim(false);
+                        } 
+				        else if (subsubchild->GetName() == wxT("pathkey")) {
+                            m_pathKey = subsubchild->GetNodeContent();
+                            m_pathKey.Trim();
+                            m_pathKey.Trim(false);
+                        }
+                        else if (subsubchild->GetName() == wxT("websockets")) {
+                   
+                            wxString property = subsubchild->GetAttribute(wxT("enable"), wxT("true"));
+                   
+                            if (property.IsSameAs(_("false"), false)) {
+                                m_bWebSockets = false;
+                            }
+                              
+                            property = subsubchild->GetAttribute(wxT("auth"), wxT("true"));
+                    
+                                if (property.IsSameAs(_("false"), false)) {
+                                 m_bAuthWebsockets = false;
+                            }
+
+                        } 
+                        else if (subsubchild->GetName() == wxT("pathtomimetypes")) {
+                            m_pathToMimeTypeFile = subsubchild->GetNodeContent();
+                            m_pathToMimeTypeFile.Trim();
+                            m_pathToMimeTypeFile.Trim(false);
+                        }
+                        else if (subsubchild->GetName() == wxT("authdoamin")) {
+                            CControlObject::m_authDomain = subsubchild->GetNodeContent();
+                            CControlObject::m_authDomain.Trim();
+                            CControlObject::m_authDomain.Trim(false);
+                        } 
+				        else if (subsubchild->GetName() == wxT("pathcert")) {
+                            m_pathCert = subsubchild->GetNodeContent();
+                            m_pathCert.Trim();
+                            m_pathCert.Trim(false);
+                        } 
+				        else if (subsubchild->GetName() == wxT("pathkey")) {
+                            m_pathKey = subsubchild->GetNodeContent();
+                            m_pathKey.Trim();
+                            m_pathKey.Trim(false);
+                        } 
+
+                        subsubchild = subsubchild->GetNext();
+                    }
+
                 }
-                else if (subchild->GetName() == wxT("pathtomimetypes")) {
-                    m_pathToMimeTypeFile = subchild->GetNodeContent();
-                    m_pathToMimeTypeFile.Trim();
-                    m_pathToMimeTypeFile.Trim(false);
-                } 
+                
 
                 subchild = subchild->GetNext();
             }
@@ -1661,6 +1735,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
+
                 vscpEventFilter VSCPFilter;
                 bool bFilterPresent = false;
                 bool bMaskPresent = false;
@@ -1678,6 +1753,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     wxXmlNode *subsubchild = subchild->GetChildren();
 
                     while (subsubchild) {
+
                         if (subsubchild->GetName() == wxT("name")) {
                             name = subsubchild->GetNodeContent();
                             bUser = true;
@@ -1811,8 +1887,17 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             }
 
         }
-            // Level I driver
-        else if (child->GetName() == wxT("canaldriver")) {
+
+        // Level I driver
+        else if ( ( child->GetName() == wxT("canaldriver") ) || ( child->GetName() == wxT("level1driver") ) ) {
+
+            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribut.MakeLower();
+            if (attribut.IsSameAs(_("false"), false)) {
+                m_bEnableLevel1Drivers = false;
+            } else {
+                m_bEnableLevel1Drivers = true;
+            }
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
@@ -1917,6 +2002,14 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
         }
             // Level II driver
         else if (child->GetName() == wxT("vscpdriver")) {
+
+            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribut.MakeLower();
+            if (attribut.IsSameAs(_("false"), false)) {
+                m_bEnableLevel2Drivers = false;
+            } else {
+                m_bEnableLevel2Drivers = true;
+            }
 
             wxXmlNode *subchild = child->GetChildren();
             

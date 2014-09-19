@@ -34,6 +34,7 @@
 
 #include "wx/wx.h"
 #include <wx/thread.h>
+#include <wx/filename.h>
 
 #include "../../common/net_skeleton.h"
 #include "../../common/mongoose.h"
@@ -359,11 +360,50 @@ public:
      */
     uint32_t m_clientMap[ VSCP_MAX_CLIENTS ];
 
+    /////////////////////////////////////////////////////////
+	//                      Logging
+	/////////////////////////////////////////////////////////
 
     /*!
         Log Level
      */
     uint8_t m_logLevel;
+
+    /*!
+        Enable general logfile
+    */
+    bool m_bLogGeneralEnable;
+
+    /*!
+        Parh to general log file
+    */
+    wxFileName m_logGeneralFile;
+
+    /*!
+        Enable security logfile
+    */
+    bool m_bLogSecurityEnable;
+
+    /*!
+        Parh to security log file
+    */
+    wxFileName m_logSecurityFile;
+
+    /*!
+        Log level for Descion Matrix logging
+    */
+    int m_logLevelDM;
+
+    /*!
+        Enable decision matrix logfile
+    */
+    bool m_bLogDMEnable;
+
+    /*!
+        Parh to decision matrix log file
+    */
+    wxFileName m_logDMFile;
+
 
 	/////////////////////////////////////////////////////////
 	//              Enable/disable switches
@@ -387,7 +427,12 @@ public:
 	/*!
         Enable CANAL Driver functionality
      */
-    bool m_bCanalDrivers;
+    bool m_bEnableLevel1Drivers;
+
+    /*!
+        Enable Level2 Driver functionality
+    */
+    bool m_bEnableLevel2Drivers;
 
     /*!
         Enable VSCP Daemon functionality

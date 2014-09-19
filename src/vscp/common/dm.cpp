@@ -2634,7 +2634,6 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 CDM::CDM( CControlObject *ctrlObj )
 {
 #ifndef BUILD_VSCPD_SERVICE
-    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
 #ifdef WIN32	
@@ -2643,6 +2642,17 @@ CDM::CDM( CControlObject *ctrlObj )
 #else
 	m_configPath = _("/srv/vscp/dm.xml");
 #endif	
+#endif
+
+    // Security logfile is enabled by default
+    m_bLogEnable = true;
+
+    m_logLevel = LOG_DM_NORMAL;
+
+#ifdef WIN32
+    m_logFile.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
+#else
+    m_logFile.SetName( _("/opt/vscp/logs/vscp_log_dm") );
 #endif
 
     m_pCtrlObject = ctrlObj;

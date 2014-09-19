@@ -187,10 +187,10 @@
     <ClCompile Include="..\..\common\vscpremotetcpif.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\common\net_skeleton.c">
+    <ClCompile Include="..\..\common\udpclientthread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\common\udpclientthread.cpp">
+    <ClCompile Include="..\..\..\common\net_skeleton.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

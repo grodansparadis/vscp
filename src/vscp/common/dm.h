@@ -51,10 +51,16 @@ WX_DECLARE_LIST( int, ACTIONTIME );
 #define DM_CONTROL_CHECK_ZONE			0x00000010 
 #define DM_CONTROL_CHECK_SUBZONE		0x00000008  
 
+
+enum {
+    LOG_DM_MINOR = 0,
+    LOG_DM_NORMAL,
+    LOG_DM_EXTRA,
+    LOG_DM_DEBUG
+};
+
 // Forward declaration
 class CDM;
-
-
 
 class actionThreadURL : public wxThread
 {
@@ -826,58 +832,77 @@ public:
 
   //------------------------------------
 
-  /// Random minute
-  uint8_t m_rndMinute;
+    /// Random minute
+    uint8_t m_rndMinute;
 
-  /// Random hour
-  uint8_t m_rndHour;
+    /// Random hour
+    uint8_t m_rndHour;
 
-  /// Random day
-  uint8_t m_rndDay;
+    /// Random day
+    uint8_t m_rndDay;
 
-  /// Random week
-  uint8_t m_rndWeek;
+    /// Random week
+    uint8_t m_rndWeek;
 
-  /// Random month
-  uint8_t m_rndMonth;
+    /// Random month
+    uint8_t m_rndMonth;
 
-  /// Random year
-  uint8_t m_rndYear;
+    /// Random year
+    uint8_t m_rndYear;
 
-  /// last update
-  wxDateTime m_lastTime;
+    /// last update
+    wxDateTime m_lastTime;
 
-  /// Path to DM file
-  wxString m_configPath;
+    /// Path to DM file
+    wxString m_configPath;
 
-  /// DM table filter - Filter for all rows of the table
-  vscpEventFilter m_DM_Table_filter;
+    /// DM table filter - Filter for all rows of the table
+    vscpEventFilter m_DM_Table_filter;
 
-  /*!
-  Control object pointer
-  */
-  CControlObject *m_pCtrlObject;
+    /*!
+        Control object pointer
+    */
+    CControlObject *m_pCtrlObject;
 
-  /*!
-  Client item pointer
-  */
-  CClientItem *m_pClientItem;
+    /*!
+        Client item pointer
+    */
+    CClientItem *m_pClientItem;
 
-  /*!
-  Mutex that control DM list access
-  */
-  wxMutex m_mutexDM;
+    /*!
+        Mutex that control DM list access
+    */
+     wxMutex m_mutexDM;
 
-  /*!
-    List with timer objects
-  */
-  DMTIMERS m_timerHash;
+    /*!
+        List with timer objects
+    */
+    DMTIMERS m_timerHash;
 
 
-  /*!
-  List with Decision Matrix elements
-  */
-  DMLIST m_DMList;
+    // ----------------------------------------
+    // Logging
+    // ----------------------------------------
+
+    /*!
+        Log level for Descion Matrix logging
+    */
+    int m_logLevel;
+
+    /*!
+        Enable decision matrix logfile
+    */
+    bool m_bLogEnable;
+
+    /*!
+        Parh to decision matrix log file
+    */
+    wxFileName m_logFile;
+
+    /*!
+        List with Decision Matrix elements
+    */
+    DMLIST m_DMList;
 
 };
 

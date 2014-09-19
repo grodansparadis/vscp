@@ -228,7 +228,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 
 	struct iobuf *io = &conn->recv_iobuf;
 	CControlObject *pCtrlObject = (CControlObject *)conn->mgr->user_data;
-	CClientItem *pClientItem = ( CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = ( CClientItem *)conn->user_data;
 
 	switch (ev) {
 	
@@ -248,7 +248,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				}
 
 				// save the client item
-				conn->connection_data = pClientItem;
+				conn->user_data = pClientItem;
 
 				// This is now an active Client
 				pClientItem->m_bOpen = true; 
@@ -276,43 +276,25 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				str += _(VSCPD_COPYRIGHT);
 				str += _("\r\n");
 				str += _(MSG_OK);
-				ns_send( conn, str.mbc_str(), str.Length() );
-
-				 
+				ns_send( conn, str.mbc_str(), str.Length() );	 
 
 			}
 			break;
 
 		case NS_CLOSE:
+
+			// Close client
+			pClientItem->m_bOpen = false;
+
 			ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
+
+			// Add the client to the Client List
+			pCtrlObject->m_wxClientMutex.Lock();
+			pCtrlObject->removeClient( pClientItem );
+			pCtrlObject->m_wxClientMutex.Unlock();
 			break;
 
 		case NS_RECV:
-			/*{
-				char input_buffer[512];
-
-				memset( input_buffer,  0, sizeof( input_buffer ) );
-				memcpy( input_buffer, io->buf, io->len );
-				iobuf_remove(io, io->len);
-				wxString strBuf = wxString::FromAscii( input_buffer );
-				
-				int pos;
-				if ( wxNOT_FOUND != (  pos = strBuf.Find( _("\r\n") ) ) ) {
-					pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, strBuf );
-				}
-
-				//ns_send(conn, io->buf, io->len);  // Echo message back
-				//iobuf_remove(io, io->len);        // Discard message from recv buffer
-				//return;
-
-				p = strstr( io->buf, "\r\n" );
-				if ( NULL != p ) {
-					*p = 0;
-					pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, strBuf );
-					iobuf_remove( io, strlen(p) + 2);
-				}
-				
-			}*/
 
 			// Read new data
 			memset( rbuf, 0, sizeof( rbuf ) );
@@ -322,6 +304,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 
 			// Check if command already in buffer
 			if ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
+
 				pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, pClientItem->m_readBuffer.Mid( 0, pos4lf ) );
 				pClientItem->m_readBuffer = pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
 			}
@@ -349,7 +332,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 void 
 VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, wxString& strCommand )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 	
 	if ( NULL == pClientItem ) {
 		pCtrlObject->logMsg ( _T ( "[TCP/IP Clinet] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
@@ -361,13 +344,15 @@ VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pC
 		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
 	}
 
-	//m_bOK = true;
-	//m_currentCommand.FromAscii( pCommand );
 	m_currentCommand = strCommand;
 	m_currentCommandUC = m_currentCommand.Upper();
     m_currentCommand.Trim();
     m_currentCommand.Trim( false );
-    m_currentCommandUC.Trim();
+
+	// If nothing to handle just return
+	if ( 0 == m_currentCommand.Length() ) return;
+    
+	m_currentCommandUC.Trim();
     m_currentCommandUC.Trim( false );
 	//wxLogDebug( _("Argument = ") + m_currentCommandUC );
 
@@ -621,7 +606,7 @@ REPEAT_COMMAND:
 
 bool VSCPClientThread::isVerified( struct ns_connection *conn, CControlObject *pCtrlObject )
 { 
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -638,7 +623,7 @@ bool VSCPClientThread::isVerified( struct ns_connection *conn, CControlObject *p
 
 bool VSCPClientThread::checkPrivilege( struct ns_connection *conn, CControlObject *pCtrlObject, unsigned char reqiredPrivilege )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be loged on
     if ( !pClientItem->m_bAuthorized ) {
@@ -669,7 +654,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
     bool bSent = false;
     vscpEvent event;
 
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -947,7 +932,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     unsigned short cnt=1;	// # of messages to read
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -988,7 +973,7 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
 bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CControlObject *pCtrlObject, bool bStatusMsg )
 {
     wxString strOut;
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
     vscpEvent *pEvent = new vscpEvent;
@@ -1070,7 +1055,7 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
 void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1094,7 +1079,7 @@ void VSCPClientThread::handleClientDataAvailable ( struct ns_connection *conn, C
 
 void VSCPClientThread::handleClientClearInputQueue ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1118,7 +1103,7 @@ void VSCPClientThread::handleClientClearInputQueue ( struct ns_connection *conn,
 void VSCPClientThread::handleClientGetStatistics ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1148,7 +1133,7 @@ void VSCPClientThread::handleClientGetStatistics ( struct ns_connection *conn, C
 void VSCPClientThread::handleClientGetStatus ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1175,7 +1160,7 @@ void VSCPClientThread::handleClientGetStatus ( struct ns_connection *conn, CCont
 void VSCPClientThread::handleClientGetChannelID ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     char outbuf[ 1024 ];
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1197,7 +1182,7 @@ void VSCPClientThread::handleClientGetChannelID ( struct ns_connection *conn, CC
 
 void VSCPClientThread::handleClientSetChannelGUID ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1221,7 +1206,7 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct ns_connection *conn, 
     //char outbuf[ 1024 ];
     //char wrkbuf[ 20 ];
     //int i;
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1260,7 +1245,7 @@ void VSCPClientThread::handleClientGetVersion ( struct ns_connection *conn, CCon
 {
     char outbuf[ 1024 ];
 
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1286,7 +1271,7 @@ void VSCPClientThread::handleClientGetVersion ( struct ns_connection *conn, CCon
 
 void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1348,7 +1333,7 @@ void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CCont
 
 void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
@@ -1410,7 +1395,7 @@ void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CContro
 
 void VSCPClientThread::handleClientUser ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( pClientItem->m_bAuthorized ) {
         ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
@@ -1435,7 +1420,7 @@ void VSCPClientThread::handleClientUser ( struct ns_connection *conn, CControlOb
 
 bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( pClientItem->m_bAuthorized ) {
         ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
@@ -1533,7 +1518,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
 void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControlObject *pCtrlObject  )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     ns_send( conn,  MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
 	conn->flags |= NSF_USER_1;	// Mark socket as being in receive loop
@@ -1564,7 +1549,7 @@ void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControl
 
 void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 	
 	wxString strcmd = m_currentCommandUC.Right( m_currentCommandUC.Length()-4 );
 	strcmd.Trim();
@@ -1793,7 +1778,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 
 void VSCPClientThread::handleClientTest ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
 	ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
 	return;
@@ -1806,7 +1791,7 @@ void VSCPClientThread::handleClientTest ( struct ns_connection *conn, CControlOb
 
 void VSCPClientThread::handleClientRestart ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
 	ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
 	return;
@@ -1819,7 +1804,7 @@ void VSCPClientThread::handleClientRestart ( struct ns_connection *conn, CContro
 
 void VSCPClientThread::handleClientShutdown ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     if ( !pClientItem->m_bAuthorized ) {
         ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
@@ -1838,7 +1823,7 @@ void VSCPClientThread::handleClientShutdown ( struct ns_connection *conn, CContr
 
 void VSCPClientThread::handleClientRemote( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->connection_data;
+	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
 	return;
 }
