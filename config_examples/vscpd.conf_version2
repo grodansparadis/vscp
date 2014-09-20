@@ -1,10 +1,12 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 0.5.0	   2014-09-19 		                                         -->
-<!-- Linux example configuration file 		                                     -->
-<!-- Ake Hedman, akhe@grodansparadis.com http://www.grodansparadis.com	         -->
-<!-- Documentation for this configuration file is available in the specification -->
-<!-- section 14.4 and it  can be found here http://vscp.org/docs.php             -->
+<!-- Version 0.5.0	   2014-09-19 		                      -->
+<!-- Example configuration file 		                      -->
+<!-- Ake Hedman, akhe@grodansparadis.com                      -->
+<!-- http://www.grodansparadis.com	                          -->
+<!-- Documentation for this configuration file is available   -->
+<!-- in the specification section 14.4 which can be found     -->
+<!-- here http://vscp.org/docs.php                            -->
 
 <vscpconfig>
 
@@ -26,6 +28,12 @@
         <!-- get security logging saved into a file.                      -->
         
         <securitylogfile enable="true">c:/tmp/vscp_log_security.txt</securitylogfile>
+        
+        <!-- Access logging will be done to this path must be set to        -->
+        <!-- get access logging for tcp/ip udp webserver websocket and rest -->
+        <!-- saved into a file.                                             -->
+        
+        <accesslogfile enable="true">c:/tmp/vscp_log_access.txt</accesslogfile>
 
         <!-- It is possible to enable/disable the TCP/IP interface        -->
         <!-- You can open TCP/IP interfaces on several ports or on        -->
@@ -68,9 +76,9 @@
                 path="/etc/vscp/dm.xml" 
                 enablelogging="true" 
                 loglevel="debug" 
-                logpath="c:/tmp/vscp_log_security.txt</dmlogfile" />      
+                logpath="c:/tmp/vscp_log_security.txt" />      
 
-        <!-- Set to true to enable daemon variables        -->
+        <!-- Set to true to enable daemon variables         -->
         <!-- Set to false to disable.                       -->
         <!-- Path to variables storage.                    -->
         <!-- Documented in specification 14.4.1            -->
@@ -103,7 +111,7 @@
             <!-- and it is used both fopr websockets and for      -->
             <!-- traditional web-pages.                           -->
             <!-- Documented in specification 14.4.1               -->
-            <webrootpath>C:/Users/grodansparadis/development/vscp_html5<webrootpath>
+            <webrootpath>C:/Users/grodansparadis/development/vscp_html5</webrootpath>
             
             <!-- authDomain is the domain name that will be used  -->
             <!-- when the internal server talks to clients doing  -->
@@ -113,7 +121,7 @@
             <!-- Path to ssl certificate                          -->
             <!-- Only valid for the SSL version                   -->
             <!-- Documented in specification 14.4.1               -->
-            <pathcert>"C:/ProgramData/vscp/certs/ssl_cert.pem"</pathcert>
+            <pathcert>C:/ProgramData/vscp/certs/ssl_cert.pem</pathcert>
 
             <!-- Path to ssl key                                  -->
             <!-- Only valid for the SSL version                   -->
@@ -215,7 +223,7 @@
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-    </canaldriver>
+    </leve1driver>
 
 	<!-- List level II VSCP drivers here                            -->
     <!-- Documented in specification 14.4.5                         -->

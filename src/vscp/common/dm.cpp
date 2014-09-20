@@ -1518,6 +1518,8 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 
 bool dmElement::doAction( vscpEvent *pEvent )
 {
+    wxString logStr;
+
     // For test of escapes
     //handleEscapes( pEvent, wxString( wxT("This is a test %class %type [%sizedata] %data  %data[0] %data[90]") ) );
 
@@ -1530,69 +1532,186 @@ bool dmElement::doAction( vscpEvent *pEvent )
 
     case VSCP_DAEMON_ACTION_CODE_NOOP:
         // We do nothing
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_NOOP.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
         break;
 
     case  VSCP_DAEMON_ACTION_CODE_EXECUTE:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_EXECUTE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionExecute( pEvent );
         break;
 
     case  VSCP_DAEMON_ACTION_CODE_SEND_EVENT:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionSendEvent( pEvent );
         break;
 
     case VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionSendEventConditional( pEvent );
         break;
 
     case VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionSendEventsFromFile( pEvent );
         break;		
 
     case  VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionStoreVariable( pEvent );
         break;
 
     case  VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionAddVariable( pEvent );
         break;
 
     case  VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionSubtractVariable( pEvent );
         break;
 
     case  VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionMultiplyVariable( pEvent );
         break;
 
     case  VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE:	
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionDivideVariable( pEvent );
         break;
 
     case VSCP_DAEMON_ACTION_CODE_START_TIMER:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_START_TIMER.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionStartTimer( pEvent );
         break;
 
     case VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionPauseTimer( pEvent );
         break;
 
     case VSCP_DAEMON_ACTION_CODE_STOP_TIMER:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOP_TIMER.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionStopTimer( pEvent );
         break;
 
     case VSCP_DAEMON_ACTION_CODE_RESUME_TIMER:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RESUME_TIMER.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionResumeTimer( pEvent );
         break;
 
     case VSCP_DAEMON_ACTION_CODE_WRITE_FILE:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_FILE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionWriteFile( pEvent );
         break;
 
     case VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionGetURL( pEvent );
         break;
 
 	case VSCP_DAEMON_ACTION_CODE_WRITE_TABLE:
+        
+        logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_TABLE.") ); // Log
+        m_pDM->logmsg( logStr, LOG_DM_NORMAL );
+        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        vscp_writeVscpEventToString( pEvent, logStr );
+        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+
         doActionWriteTable( pEvent );
         break;
 
@@ -2650,9 +2769,9 @@ CDM::CDM( CControlObject *ctrlObj )
     m_logLevel = LOG_DM_NORMAL;
 
 #ifdef WIN32
-    m_logFile.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
+    m_logFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
 #else
-    m_logFile.SetName( _("/opt/vscp/logs/vscp_log_dm") );
+    m_logFileName.SetName( _("/opt/vscp/logs/vscp_log_dm") );
 #endif
 
     m_pCtrlObject = ctrlObj;
@@ -2695,6 +2814,23 @@ CDM::~CDM()
     // Remove all elements
     m_timerHash.clear();
 
+    // Close the logfile
+    if ( m_bLogEnable ) {
+        m_fileLog.Close(); 
+    }
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// init
+//
+
+void CDM::init( void )
+{
+    // Open up the General logging file.
+    if ( m_bLogEnable ) {
+        m_fileLog.Open( m_logFileName.GetFullPath(), wxFile::write_append ); 
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2705,6 +2841,28 @@ void CDM::setControlObject( CControlObject *ctrlObj )
 {
     m_pCtrlObject = ctrlObj;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// logmsg
+//
+
+void CDM::logmsg( const wxString& msg, const uint8_t level )
+{
+    wxString logmsg;
+    wxDateTime datetime( wxDateTime::GetTimeNow() );
+    wxString wxdebugmsg;
+
+    wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + msg;
+
+    // logging.
+    if ( m_logLevel >= level ) {
+        if ( m_bLogEnable ) {
+            m_fileLog.Write( wxdebugmsg );
+        }
+    }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // addElement
@@ -3596,12 +3754,20 @@ int CDM::addTimer( uint16_t id,
     CVSCPVariable *pVariable;
     dmTimer *pTimer;
 
+    // Log
+    wxString logStr = wxString::Format(_("Add Timer %s."), nameVar );
+    logmsg( logStr, LOG_DM_EXTRA );
+
     // Check if the timer already exist - set new values
     if ( NULL != ( pTimer = m_timerHash[ id ] ) ) {
         pTimer->setVariableName( nameVar );
         pTimer->setSetValue( setValue );
         pTimer->setDelay( delay );
         pTimer->setActive( bStart );
+        
+        // Log
+        wxString logStr = wxString::Format(_("Timer %d already exist."), id );
+        logmsg( logStr, LOG_DM_DEBUG );
         return id;
     }
 
@@ -3610,6 +3776,10 @@ int CDM::addTimer( uint16_t id,
 
     // Check if variable is defined
     if ( NULL != ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( nameVar ) ) ) {
+
+        // Log
+        wxString logStr = wxString::Format(_("Variable is defined."), nameVar );
+        logmsg( logStr, LOG_DM_DEBUG );
 
         // Create a new timer
         dmTimer *pTimer = new dmTimer( nameVar, 
@@ -3628,6 +3798,10 @@ int CDM::addTimer( uint16_t id,
     } 
     // variable is not defined - we do that
     else {
+
+        // Log
+        wxString logStr = wxString::Format(_("Variable already defined %d."), nameVar );
+        logmsg( logStr, LOG_DM_DEBUG );
 
         if ( m_pCtrlObject->m_VSCP_Variables.add( nameVar, wxT("false"), VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
 
@@ -3663,6 +3837,10 @@ bool CDM::startTimer( int idTimer )
 
     pTimer->startTimer();
 
+    // Log
+    wxString logStr = wxString::Format(_("Timer %d started."), idTimer );
+    logmsg( logStr, LOG_DM_EXTRA );
+
     return true;
 }
 
@@ -3677,14 +3855,21 @@ int CDM::startTimer( uint16_t idTimer, wxString& nameVariable, uint32_t delay, b
     dmTimer *pTimer = m_timerHash[ idTimer ];
     if ( NULL == pTimer ) {
 
+        // Log
+        wxString logStr = wxString::Format(_("Timer %d created."), idTimer );
+        logmsg( logStr, LOG_DM_EXTRA );
+
         // Nonexistent timer - create it
         addTimer( idTimer, 
-            nameVariable, 
-            delay, 
-            true, 
-            bSetValue );
-
+                nameVariable, 
+                delay, 
+                true, 
+                bSetValue );
     }
+
+    // Log
+    wxString logStr = wxString::Format(_("Timer %d started."), idTimer );
+    logmsg( logStr, LOG_DM_EXTRA );
 
     return rv;
 }
@@ -3697,6 +3882,10 @@ bool CDM::stopTimer( int idTimer )
 {
     dmTimer *pTimer = m_timerHash[ idTimer ];
     if ( NULL == pTimer ) return false;
+
+    // Log
+    wxString logStr = wxString::Format(_("Timer %d stopped."), idTimer );
+    logmsg( logStr, LOG_DM_EXTRA );
 
     pTimer->stopTimer();
 

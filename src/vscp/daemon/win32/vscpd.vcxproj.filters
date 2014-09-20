@@ -111,7 +111,7 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\common\udpclientthread.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

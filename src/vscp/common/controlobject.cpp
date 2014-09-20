@@ -210,7 +210,7 @@ CControlObject::CControlObject()
     m_bLogGeneralEnable = true;
 
 #ifdef WIN32
-    m_logGeneralFile.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/logs/vscp_log_general.txt") );
+    m_logGeneralFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/logs/vscp_log_general.txt") );
 #else
     m_logGeneralFile.SetName( _("/opt/vscp/logs/vscp_log_general") );
 #endif
@@ -219,7 +219,7 @@ CControlObject::CControlObject()
     m_bLogSecurityEnable = true;
 
 #ifdef WIN32
-    m_logSecurityFile.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_security.txt") );
+    m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_security.txt") );
 #else
     m_logSecurityFile.SetName( _("/opt/vscp/logs/vscp_log_security") );
 #endif
@@ -366,7 +366,21 @@ bool CControlObject::init(wxString& strcfgfile)
     }
 
     //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
+
+    // Open up the General logging file.
+    if ( m_bLogGeneralEnable ) {
+        m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ); 
+    }
+
+    // Open up the Security logging file
+    if ( m_bLogSecurityEnable ) {
+        m_fileLogSecurity.Open( m_logSecurityFileName.GetFullPath(), wxFile::write_append );
+    }
     
+    // Open up the Access logging file
+    if ( m_bLogAccessEnable ) {
+        m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append );
+    }
     // Generate username and password for drivers
     char buf[ 64 ];
     randPassword pw(3);
@@ -397,9 +411,9 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("Path = .") + m_pathToMimeTypeFile + _("\n"), DAEMON_LOGMSG_CRITICAL);
     }
     
-    str.Printf(_("Log Level = %d\n"), m_logLevel );
+    str.Printf(_("Log Level=%d\n"), m_logLevel, DAEMON_LOGMSG_EMERGENCY );       
     logMsg(str);
-    //printf("Loglevel=%n\n",m_logLevel);
+   
 
     // Get GUID
     if ( m_guid.isNULL() ) {
@@ -414,6 +428,7 @@ bool CControlObject::init(wxString& strcfgfile)
     if (m_bDM) {
         logMsg(_("DM enabled.\n"), DAEMON_LOGMSG_INFO);
         m_dm.load();
+        m_dm.init();
     }
     else {
         logMsg(_("DM disabled.\n"), DAEMON_LOGMSG_INFO);
@@ -450,7 +465,7 @@ bool CControlObject::init(wxString& strcfgfile)
 
 
 	if (m_bWebSockets) {
-        logMsg(_("WebSerber interface active.\n"), DAEMON_LOGMSG_INFO);
+        logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
         startWebServerThread();
     }
     else {
@@ -673,6 +688,20 @@ bool CControlObject::cleanup(void)
 		delete pTable;
 	}
 	
+    // Close logfile
+    if ( m_bLogGeneralEnable ) {
+        m_fileLogGeneral.Close();
+    }
+
+    // Close security file
+    if ( m_bLogSecurityEnable ) {
+        m_fileLogSecurity.Close();
+    }
+
+    // Close access file
+    if ( m_bLogAccessEnable ) {
+        m_fileLogAccess.Close();
+    }
 
     wxLogDebug(_("ControlObject: Cleanup done"));
     return true;
@@ -682,10 +711,12 @@ bool CControlObject::cleanup(void)
 // logMsg
 //
 
-void CControlObject::logMsg(const wxString& wxstr, unsigned char level)
+void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const uint8_t nType )
 {
+    wxDateTime datetime( wxDateTime::GetTimeNow() );
+    wxString wxdebugmsg;
 
-    wxString wxdebugmsg = wxstr;
+    wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + wxstr;
 
 #ifdef WIN32
 #ifdef BUILD_VSCPD_SERVICE
@@ -712,10 +743,38 @@ void CControlObject::logMsg(const wxString& wxstr, unsigned char level)
             ps,
             NULL);
 #else
+
+    
+
     //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
     if ( m_logLevel >= level ) {
-        wxPrintf(wxdebugmsg);
+
+        // Send out to possible window
+        wxPrintf( wxdebugmsg );
+
+        if ( DAEMON_LOGTYPE_GENERAL == nType ) {
+            // Write to generalt log file
+            if ( m_fileLogGeneral.IsOpened() ) {
+                m_fileLogGeneral.Write( wxdebugmsg );
+            }
+        }
     }
+
+    if ( DAEMON_LOGTYPE_SECURITY == nType ) {
+        // Write to Security log file
+        if ( m_fileLogSecurity.IsOpened() ) {
+            m_fileLogSecurity.Write( wxdebugmsg );
+        }
+    }
+        
+    if ( DAEMON_LOGTYPE_SECURITY == nType ) {
+        // Write to Access log file
+        if ( m_fileLogAccess.IsOpened() ) {
+            m_fileLogAccess.Write( wxdebugmsg );
+        }      
+     }
+
+
 #endif
 #else
 
@@ -1581,11 +1640,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }     
 
                     // Get the Logpath
-                    m_dm.m_logFile = subchild->GetAttribute(wxT("logpath"), wxT(""));
+                    m_dm.m_logFileName = subchild->GetAttribute(wxT("logpath"), wxT(""));
 
-                    if ( m_dm.m_logFile.IsOk() ) {
+                    if ( m_dm.m_logFileName.IsOk() ) {
 #ifdef WIN32
-                        m_dm.m_logFile.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_security.txt") );
+                        m_dm.m_logFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_security.txt") );
 #else
                         m_dm.m_logFile.SetName( _("/opt/vscp/logs/vscp_log_security") );
 #endif                        
@@ -1596,18 +1655,31 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 					str.Trim();
 					str.Trim(false);
                     str.MakeUpper();
-                    if ( str.IsSameAs(_("MINOR"), false)) {
-						m_dm.m_logLevel = LOG_DM_MINOR;
+                    if ( str.IsSameAs(_("NONE"), false)) {
+						m_dm.m_logLevel = LOG_DM_NONE;
+					}
+                    if ( str.IsSameAs(_("0"), false)) {
+						m_dm.m_logLevel = LOG_DM_NONE;
+					}
+                    else if ( str.IsSameAs(_("DEBUG"), false)) {
+						m_dm.m_logLevel = LOG_DM_DEBUG;
+					}
+                    else if ( str.IsSameAs(_("1"), false)) {
+						m_dm.m_logLevel = LOG_DM_DEBUG;
 					}
 					else if ( str.IsSameAs(_("NORMAL"), false)) {
+						m_dm.m_logLevel = LOG_DM_NORMAL;
+					}
+                    else if ( str.IsSameAs(_("2"), false)) {
 						m_dm.m_logLevel = LOG_DM_NORMAL;
 					}
                     else if ( str.IsSameAs(_("EXTRA"), false)) {
 						m_dm.m_logLevel = LOG_DM_EXTRA;
 					}
-                    else if ( str.IsSameAs(_("DEBUG"), false)) {
-						m_dm.m_logLevel = LOG_DM_DEBUG;
+                    else if ( str.IsSameAs(_("3"), false)) {
+						m_dm.m_logLevel = LOG_DM_EXTRA;
 					}
+                    
 
 
                     

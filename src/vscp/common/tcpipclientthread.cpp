@@ -1467,7 +1467,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
         wxString strErr = 
 			wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 
 			pClientItem->m_UserName, strPassword );
-		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING );
+		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 		ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
         return false;
     }
@@ -1488,7 +1488,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     if ( !bValidHost ) {
 		wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), remoteaddr );
-		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING );
+		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
         return false;
     }
@@ -1498,6 +1498,11 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 				&pClientItem->m_pUserItem->m_filterVSCP, 
 				sizeof( vscpEventFilter ) );
 
+    wxString strErr = 
+        wxString::Format( _("[TCP/IP Client] Host [%s] User [%s] allowed to connect.\n"), 
+                            remoteaddr, 
+                            pClientItem->m_UserName );
+	pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 
     pClientItem->m_bAuthorized = true;
     ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );

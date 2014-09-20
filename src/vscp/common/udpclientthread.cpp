@@ -230,6 +230,10 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
 
 				if ( NULL == pUDPClientThread->m_pClientItem->m_pUserItem ) {
+                    wxString strErr = 
+                        wxString::Format( _("[UDP Client] User [%s] allowed to connect.\n"), 
+                                                pUDPClientThread->m_pClientItem->m_UserName );
+	                    pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 					::wxLogDebug ( _("Password/Username failure.") );
 					ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
 					return;
@@ -245,7 +249,7 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
 
 				if ( !bValidHost ) {
-					wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), remoteaddr );
+					wxString strErr = wxString::Format(_("[UDP Client] Host [%s] not allowed to connect.\n"), remoteaddr );
 					pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO );
 					ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
 					return;
@@ -255,6 +259,12 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 				memcpy( &pUDPClientThread->m_pClientItem->m_filterVSCP, 
 							&pUDPClientThread->m_pClientItem->m_pUserItem->m_filterVSCP, 
 							sizeof( vscpEventFilter ) );
+
+                wxString strErr = 
+                            wxString::Format( _("[UDP Client] Host [%s] User [%s] allowed to connect.\n"), 
+                                                remoteaddr, 
+                                                pUDPClientThread->m_pClientItem->m_UserName );
+	            pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 			}
 			break;
 

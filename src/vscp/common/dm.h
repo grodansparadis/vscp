@@ -53,10 +53,10 @@ WX_DECLARE_LIST( int, ACTIONTIME );
 
 
 enum {
-    LOG_DM_MINOR = 0,
+    LOG_DM_NONE = 0,
+    LOG_DM_DEBUG,
     LOG_DM_NORMAL,
-    LOG_DM_EXTRA,
-    LOG_DM_DEBUG
+    LOG_DM_EXTRA
 };
 
 // Forward declaration
@@ -722,9 +722,19 @@ public:
   ~CDM();
 
   /*!
+    Initt open logfile etc
+  */
+  void init( void );
+
+  /*!
   Set control object for DM
   */
   void setControlObject( CControlObject *ctrlObj );
+
+  /*!
+    log message
+  */
+  void logmsg( const wxString& msg, const uint8_t level = LOG_DM_NORMAL );
 
   /*!
   Add Element to matrix
@@ -885,19 +895,12 @@ public:
     // ----------------------------------------
 
     /*!
-        Log level for Descion Matrix logging
+        Path to decision matrix log file
     */
     int m_logLevel;
-
-    /*!
-        Enable decision matrix logfile
-    */
-    bool m_bLogEnable;
-
-    /*!
-        Parh to decision matrix log file
-    */
-    wxFileName m_logFile;
+    bool m_bLogEnable;      // Enable decision matrix logfile
+    wxFileName m_logFileName;
+    wxFile m_fileLog;
 
     /*!
         List with Decision Matrix elements

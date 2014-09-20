@@ -132,8 +132,6 @@
 //		          WEBSERVER
 ///////////////////////////////////////////////////
 
-
-
 // Linked list of all active sessions. (webserv.h)
 static struct websrv_Session *websrv_sessions;
 
@@ -187,7 +185,7 @@ void *VSCPWebServerThread::Entry()
 	wxString str = wxString::Format(  _("%i"), m_pCtrlObject->m_portWebServer );
 	mg_set_option( m_pCtrlObject->m_pwebserver, 
 						"listening_port", 
-						"8080" /*str.mb_str( wxConvUTF8 )*/ );					// Open web server port
+						"8080" );					                            // Open web server port
 	mg_set_option( m_pCtrlObject->m_pwebserver, 
 						"auth_domain", 
 						m_pCtrlObject->m_authDomain.mb_str( wxConvUTF8 ) );
@@ -199,8 +197,7 @@ void *VSCPWebServerThread::Entry()
 	while ( !TestDestroy() && !m_bQuit ) {
 	
 #ifdef WIN32
-		// CLOCKS_PER_SEC 
-		
+		// CLOCKS_PER_SEC 	
 		oldus = ticks = clock();
 #else
         struct timeval tv;
@@ -210,7 +207,7 @@ void *VSCPWebServerThread::Entry()
 		mg_poll_server( m_pCtrlObject->m_pwebserver, 50 );
 		websock_post_incomingEvents();
 
-		#ifdef WIN32
+#ifdef WIN32
 			oldus = clock();
 #else
             oldus = tv.tv_usec;
@@ -1462,7 +1459,14 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
 		bValidHost = pObject->m_userList.checkRemote( pUser, 
 														wxString::FromAscii( conn->remote_ip ) );
 		pObject->m_mutexUserList.Unlock();
-		if (!bValidHost) return MG_FALSE;
+		if (!bValidHost) {
+            // Log valid login
+            wxString strErr = 
+            wxString::Format( _("[Websocket Client] Host [%s] NOT allowed to connect.\n"), 
+                                             wxString::FromAscii( conn->remote_ip ) );
+	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            return MG_FALSE;
+        }
 
 		strncpy( response, strKey.mb_str(), min( sizeof(response), strKey.Length() ) );
 
@@ -1473,6 +1477,21 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
 
 		rv = ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
 
+        if (  MG_TRUE == rv ) {
+            // Log valid login
+            wxString strErr = 
+                        wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
+                                                 wxString::FromAscii( conn->remote_ip ), 
+                                                 strUser.mb_str() );
+	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
+        }
+        else {
+            // Log valid login
+            wxString strErr = 
+            wxString::Format( _("[Websocket Client] user [%s] NOT allowed to connect.\n"), 
+                                             strUser.mb_str() );
+	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+        }
 	}
 
 	return rv;
@@ -1939,6 +1958,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 {
 	static time_t cleanupTime = time(NULL);
 	const char *hdr;
+    wxString strErr;
 	struct websock_session *pWebSockSession;
 	struct websrv_Session * pWebSrvSession;
 	char user[256], nonce[256],
@@ -1961,8 +1981,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			}
 			
 			// Validate REST interface user.
-			if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
-				return MG_TRUE;	// Always accept websocket connections
+			if ( 0 == strncmp(conn->uri, "/vscp/rest",10 ) ) {
+				return MG_TRUE;	 // Always accept websocket connections
 			}
 
 			if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
@@ -1987,19 +2007,49 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			        pObject->m_userList.checkRemote( pUser, 
 														wxString::FromAscii( conn->remote_ip ) );
 			pObject->m_mutexUserList.Unlock();
-			if (!bValidHost) return MG_FALSE;
+			if (!bValidHost) {
+                // Host wrong
+                strErr = 
+                        wxString::Format( _("[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
+                                                 wxString::FromAscii( conn->remote_ip ), 
+                                                 pUser->m_user );
+                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+                return MG_FALSE;
+            }
 
 			if ( MG_TRUE != 
 				pObject->getWebServer()->websrv_check_password( conn->request_method, 
 																	(const char *)pUser->m_md5Password.mb_str(), 
-																	uri, nonce, nc, cnonce, qop, resp ) ) 
-				return MG_FALSE;
+																	uri, nonce, nc, cnonce, qop, resp ) ) {
+                    // Username/password wrong
+                    strErr = 
+                        wxString::Format( _("[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n"), 
+                                                 wxString::FromAscii( conn->remote_ip ), 
+                                                 pUser->m_user );
+	                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );                                                                        
+				    return MG_FALSE;
+            }
 
 			pObject->getWebServer()->websrv_add_session_cookie( conn, user );
 
+
+            // Valid credentials
+            strErr = 
+                    wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
+                                        wxString::FromAscii( conn->remote_ip ), 
+                                        pUser->m_user );
+	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY ); 
+            
 			return MG_TRUE;
 
 		case MG_REQUEST:
+
+            // Log access
+            strErr = 
+            wxString::Format( _("Host [%s] - req=%s query=%s method=%s \n"), 
+                                wxString::FromAscii( conn->remote_ip ),
+                                conn->uri, conn->query_string, conn->request_method );
+	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 			if (conn->is_websocket) {
 				return pObject->getWebServer()->websrv_websocket_message( conn );
@@ -2235,6 +2285,15 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 }
 
 
+
+//-----------------------------------------------------------------------------
+//                                   REST
+//-----------------------------------------------------------------------------
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // websrv_get_rest_session
 //
@@ -2464,11 +2523,31 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	bValidHost = pObject->m_userList.checkRemote( pUser, 
 													wxString::FromAscii( conn->remote_ip ) );
 	pObject->m_mutexUserList.Unlock();
-	if (!bValidHost) return MG_FALSE;
+	if (!bValidHost) {
+        wxString strErr = 
+        wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
+                            wxString::FromAscii( conn->remote_ip ), 
+                            keypairs[_("USER")] );
+	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+        return MG_FALSE;
+    }
 
 	// Is this an authorized user?
 	wxString str3 = keypairs[_("PASSWORD")];
-	if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) return MG_FALSE;
+	if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) {
+        wxString strErr = 
+        wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
+                            keypairs[_("USER")] , 
+                            wxString::FromAscii( conn->remote_ip ) );
+	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+        return MG_FALSE;
+    }
+
+    wxString strErr = 
+        wxString::Format( _("[REST Client] User [%s] Host [%s] allowed to connect. \n"), 
+                            keypairs[_("USER")] , 
+                            wxString::FromAscii( conn->remote_ip ) );
+	    pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
 	// Get format
 	if ( _("PLAIN") == keypairs[_("FORMAT")].Upper() ) {

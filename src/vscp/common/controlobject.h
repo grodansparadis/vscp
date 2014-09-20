@@ -57,16 +57,23 @@
 class VSCPWebServerThread;
 class VSCPClientThread;
 
-#define DAEMON_LOGMSG_NONE                      0
-#define DAEMON_LOGMSG_INFO                      1		
-#define DAEMON_LOGMSG_NOTICE                    2
-#define DAEMON_LOGMSG_WARNING                   3
-#define DAEMON_LOGMSG_ERROR                     4
-#define DAEMON_LOGMSG_CRITICAL                  5
-#define DAEMON_LOGMSG_ALERT                     6
-#define DAEMON_LOGMSG_EMERGENCY                 7
-#define DAEMON_LOGMSG_DEBUG                     8
+enum {
+    DAEMON_LOGMSG_NONE = 0,
+    DAEMON_LOGMSG_DEBUG,
+    DAEMON_LOGMSG_INFO,
+    DAEMON_LOGMSG_NOTICE,
+    DAEMON_LOGMSG_WARNING,
+    DAEMON_LOGMSG_ERROR,
+    DAEMON_LOGMSG_CRITICAL,
+    DAEMON_LOGMSG_ALERT,
+    DAEMON_LOGMSG_EMERGENCY,    
+};
 
+enum {
+    DAEMON_LOGTYPE_GENERAL = 0,
+    DAEMON_LOGTYPE_SECURITY,
+    DAEMON_LOGTYPE_ACCESS
+};
 
 #define MAX_ITEMS_RECEIVE_QUEUE                 1021
 #define MAX_ITEMS_SEND_QUEUE                    1021
@@ -137,10 +144,9 @@ public:
     virtual ~CControlObject(void);
 
     /*!
-      logMsg
-      write log message
+      Write log message
     */ 
-    void logMsg(const wxString& wxstr, unsigned char level = DAEMON_LOGMSG_INFO);
+    void logMsg(const wxString& wxstr, const uint8_t level = DAEMON_LOGMSG_INFO, const uint8_t nType = DAEMON_LOGTYPE_GENERAL );
 
     /*!
         General initialization
@@ -370,40 +376,25 @@ public:
     uint8_t m_logLevel;
 
     /*!
-        Enable general logfile
+        Path to general log file
     */
-    bool m_bLogGeneralEnable;
+    bool m_bLogGeneralEnable;   // Enable general logfile
+    wxFileName m_logGeneralFileName;
+    wxFile m_fileLogGeneral;
 
     /*!
-        Parh to general log file
+        Path to security log file
     */
-    wxFileName m_logGeneralFile;
+    bool m_bLogSecurityEnable; // Enable security logfile
+    wxFileName m_logSecurityFileName;
+    wxFile m_fileLogSecurity;
 
     /*!
-        Enable security logfile
+        Path to access log file
     */
-    bool m_bLogSecurityEnable;
-
-    /*!
-        Parh to security log file
-    */
-    wxFileName m_logSecurityFile;
-
-    /*!
-        Log level for Descion Matrix logging
-    */
-    int m_logLevelDM;
-
-    /*!
-        Enable decision matrix logfile
-    */
-    bool m_bLogDMEnable;
-
-    /*!
-        Parh to decision matrix log file
-    */
-    wxFileName m_logDMFile;
-
+    bool m_bLogAccessEnable; // Enable security logfile
+    wxFileName m_logAccessFileName;
+    wxFile m_fileLogAccess;
 
 	/////////////////////////////////////////////////////////
 	//              Enable/disable switches
