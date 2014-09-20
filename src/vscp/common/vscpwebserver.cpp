@@ -45,6 +45,7 @@
 #include "wx/defs.h"
 #include "wx/app.h"
 #include <wx/xml/xml.h>
+#include <wx/txtstrm.h>
 
 #ifdef WIN32
 
@@ -2046,9 +2047,11 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 
             // Log access
             strErr = 
-            wxString::Format( _("Host [%s] - req=%s query=%s method=%s \n"), 
+            wxString::Format( _("Host [%s] - req [%s] query [%s] method [%s] \n"), 
                                 wxString::FromAscii( conn->remote_ip ),
-                                conn->uri, conn->query_string, conn->request_method );
+                                wxString::FromAscii(conn->uri), 
+                                wxString::FromAscii(conn->query_string), 
+                                wxString::FromAscii(conn->request_method) );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 			if (conn->is_websocket) {
@@ -2170,6 +2173,182 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_bootload( conn );
+				}
+                else if ( 0 == strncmp(conn->uri, "/vscp/log/general",17) ) {
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
+
+                    wxString buildPage;
+                    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Log File 'General'"));
+                    buildPage += _(WEB_STYLE_START);
+                    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+                    buildPage += _(WEB_STYLE_END);
+                    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+                    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+                    // Navigation menu 
+                    buildPage += _(WEB_COMMON_MENU);
+                    
+                    buildPage += _("<b>Log File 'General'</b><br><br>");
+                    buildPage += _("<b>Path</b>=<i>");
+                    buildPage += pObject->m_logGeneralFileName.GetFullPath();
+                    buildPage += _("</i><br>");
+                    buildPage += _("-----------------------------------------------------------------------------------------<br>");
+
+                    wxFile file;
+
+                    if ( file.Open( pObject->m_logGeneralFileName.GetFullPath() ) ) {
+
+                        wxFileInputStream input( file);
+                        wxTextInputStream text( input );
+
+                        while ( !file.Eof() ) {
+                            buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>");
+                        }
+                        
+                        file.Close();
+                    }
+                    else {
+                        buildPage += _("Error: Unable to open file<br><br>");
+                    }
+
+                    // Serve data
+	                mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );                    
+                    return MG_TRUE;
+				}
+                else if ( 0 == strncmp(conn->uri, "/vscp/log/security",18) ) {
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
+
+                    wxString buildPage;
+                    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Log File 'Security'"));
+                    buildPage += _(WEB_STYLE_START);
+                    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+                    buildPage += _(WEB_STYLE_END);
+                    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+                    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+                    // Navigation menu 
+                    buildPage += _(WEB_COMMON_MENU);
+                    
+                    buildPage += _("<b>Log File 'Security'</b><br><br>");
+                    buildPage += _("<b>Path</b>=<i>");
+                    buildPage += pObject->m_logSecurityFileName.GetFullPath();
+                    buildPage += _("</i><br>");
+                    buildPage += _("-----------------------------------------------------------------------------------------<br>");
+
+                    wxFile file;
+
+                    if ( file.Open( pObject->m_logSecurityFileName.GetFullPath() ) ) {
+
+                        wxFileInputStream input( file);
+                        wxTextInputStream text( input );
+
+                        while ( !file.Eof() ) {
+                            buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>");
+                        }
+                        
+                        file.Close();
+                    }
+                    else {
+                        buildPage += _("Error: Unable to open file<br><br>");
+                    }
+
+                    // Serve data
+	                mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );                    
+                    return MG_TRUE;
+				}
+                else if ( 0 == strncmp(conn->uri, "/vscp/log/access",16) ) {
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
+
+                    wxString buildPage;
+                    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Log File 'Access'"));
+                    buildPage += _(WEB_STYLE_START);
+                    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+                    buildPage += _(WEB_STYLE_END);
+                    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+                    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+                    // Navigation menu 
+                    buildPage += _(WEB_COMMON_MENU);
+                    
+                    buildPage += _("<b>Log File 'Access'</b><br><br>");
+                    buildPage += _("<b>Path</b>=<i>");
+                    buildPage += pObject->m_logAccessFileName.GetFullPath();
+                    buildPage += _("</i><br>");
+                    buildPage += _("-----------------------------------------------------------------------------------------<br>");
+
+                    wxFile file;
+
+                    if ( file.Open( pObject->m_logAccessFileName.GetFullPath() ) ) {
+
+                        wxFileInputStream input( file);
+                        wxTextInputStream text( input );
+
+                        while ( !file.Eof() ) {
+                            buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>");
+                        }
+                        
+                        file.Close();
+                    }
+                    else {
+                        buildPage += _("Error: Unable to open file<br><br>");
+                    }
+
+                    // Serve data
+	                mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );                    
+                    return MG_TRUE;
+				}
+                else if ( 0 == strncmp(conn->uri, "/vscp/log/dm",12) ) {
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					mg_send_header(conn, "Content-Type", "text/html");
+					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+											"pre-check=0, no-store, no-cache, must-revalidate");
+
+                    wxString buildPage;
+                    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Log File 'Decision Matrix"));
+                    buildPage += _(WEB_STYLE_START);
+                    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+                    buildPage += _(WEB_STYLE_END);
+                    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+                    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+    
+                    // Navigation menu 
+                    buildPage += _(WEB_COMMON_MENU);
+                    
+                    buildPage += _("<b>Log File 'Decision Matrix'</b><br><br>");
+                    buildPage += _("<b>Path</b>=<i>");
+                    buildPage += pObject->m_dm.m_logFileName.GetFullPath();
+                    buildPage += _("</i><br>");
+                    buildPage += _("-----------------------------------------------------------------------------------------<br>");
+
+                    wxFile file;
+
+                    if ( file.Open( pObject->m_dm.m_logFileName.GetFullPath() ) ) {
+
+                        wxFileInputStream input( file);
+                        wxTextInputStream text( input );
+
+                        while ( !file.Eof() ) {
+                            buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>");
+                        }
+                        
+                        file.Close();
+                    }
+                    else {
+                        buildPage += _("Error: Unable to open file<br><br>");
+                    }
+
+                    // Serve data
+	                mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );                    
+                    return MG_TRUE;
 				}
 				else if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
 					return pObject->getWebServer()->websrv_restapi( conn );

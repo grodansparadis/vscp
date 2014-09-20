@@ -25,12 +25,9 @@
 #define WEBTEMPLATE__INCLUDED_
 
 
-// * * * M e n u * * *
+// * * *    M e n u    * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\"><li><a href=\"#\">Configuration</a><ul><li><a href=\"/vscp/configure\">Configuration File</a></li><li><a href=\"/vscp/variables\">Variable - List</a></li><li><a href=\"/vscp/varnew\">Variable - New</a></li><li><a href=\"/vscp/dm\">DM - list</a></li><li><a href=\"/vscp/dmedit?new=true\">DM - new element</a></li></ul></li><li><a href=\"#\">Tools</a><ul><li><a href=\"/vscp/session\">VSCP Client</a></li></ul></li><li><a href=\"#\">Devices</a><ul><li><a href=\"/vscp/discovery\">Discovery</a></li><li><a href=\"/vscp/interfaces\">Interfaces</a></li><li><a href=\"/vscp/configure\">Configure</a></li><li><a href=\"/vscp/bootload\">Update firmware</a></li></ul><li><a href=\"#\">Help</a><ul><li><a href=\"http://www.vscp.org/wiki/doku.php\" target=\"moon\">VSCP wiki</a></li><li><a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a></li></ul></li></ul>"
-
-
-// * * * C o m m o n * * *
+#define WEB_COMMON_MENU "<ul id=\"nav\">      <li><a href=\"#\">Configuration</a><ul><li><a href=\"/vscp/configure\">Configuration File</a></li><li><a href=\"/vscp/variables\">Variable - List</a></li><li><a href=\"/vscp/varnew\">Variable - New</a></li><li><a href=\"/vscp/dm\">DM - list</a></li><li><a href=\"/vscp/dmedit?new=true\">DM - new element</a></li></ul>         </li><li><a href=\"#\">Tools</a><ul><li><a href=\"/vscp/session\">VSCP Client</a></li></ul>        </li><li><a href=\"#\">Devices</a><ul><li><a href=\"/vscp/discovery\">Discovery</a></li><li><a href=\"/vscp/interfaces\">Interfaces</a></li><li><a href=\"/vscp/configure\">Configure</a></li><li><a href=\"/vscp/bootload\">Update firmware</a></li></ul>       <li><a href=\"#\">Logs</a><ul><li><a href=\"/vscp/log/general\">General Log</a></li><li><a href=\"/vscp/log/access\">Access Log</a></li><li><a href=\"/vscp/log/security\">Security Log</a></li><li><a href=\"/vscp/log/dm\">Decision Matrix Log</a></li></ul></li>   <li><a href=\"#\">Help</a><ul><li><a href=\"http://www.vscp.org/wiki/doku.php\" target=\"moon\">VSCP wiki</a></li><li><a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a></li></ul></li></ul>"
 
 // Common head up to <body>
 // Contains three string insert points for printf

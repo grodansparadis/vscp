@@ -151,9 +151,8 @@
 #endif
 
 
-// List for websocket triggers
-WX_DEFINE_LIST(TRIGGERLIST);
-
+// Lists
+WX_DEFINE_LIST(TRIGGERLIST) // websocket triggers
 WX_DEFINE_LIST(CanalMsgList);
 WX_DEFINE_LIST(VSCPEventList);
 
@@ -219,9 +218,18 @@ CControlObject::CControlObject()
     m_bLogSecurityEnable = true;
 
 #ifdef WIN32
-    m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_security.txt") );
+    m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscp_log_security.txt") );
 #else
     m_logSecurityFile.SetName( _("/opt/vscp/logs/vscp_log_security") );
+#endif
+
+        // Access logfile is enabled by default
+    m_bLogAccessEnable = true;
+
+#ifdef WIN32
+    m_logAccessFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscp_log_access.txt") );
+#else
+    m_logAccessFileName.SetName( _("/opt/vscp/logs/vscp_log_security") );
 #endif
 
     // Control TCP/IP Interface
@@ -335,6 +343,120 @@ CControlObject::~CControlObject()
 }
 
 
+/////////////////////////////////////////////////////////////////////////////
+// logMsg
+//
+
+void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const uint8_t nType )
+{
+    wxDateTime datetime( wxDateTime::GetTimeNow() );
+    wxString wxdebugmsg;
+
+    wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + wxstr;
+
+#ifdef WIN32
+#ifdef BUILD_VSCPD_SERVICE
+
+    const char* ps[3];
+    ps[ 0 ] = wxstr;
+    ps[ 1 ] = NULL;
+    ps[ 2 ] = NULL;
+
+    int iStr = 0;
+    for (int i = 0; i < 3; i++) {
+        if (ps[i] != NULL) {
+            iStr++;
+        }
+    }
+
+    ::ReportEvent(m_hEventSource,
+            EVENTLOG_INFORMATION_TYPE,
+            0,
+            (1L << 30),
+            NULL, // sid
+            iStr,
+            0,
+            ps,
+            NULL);
+#else
+
+    
+
+    //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
+    if ( level >= m_logLevel ) {
+
+        // Send out to possible window
+        wxPrintf( wxdebugmsg );
+
+        if ( DAEMON_LOGTYPE_GENERAL == nType ) {
+            // Write to generalt log file
+            if ( m_fileLogGeneral.IsOpened() ) {
+                m_fileLogGeneral.Write( wxdebugmsg );
+            }
+        }
+    }
+
+    if ( DAEMON_LOGTYPE_SECURITY == nType ) {
+        // Write to Security log file
+        if ( m_fileLogSecurity.IsOpened() ) {
+            m_fileLogSecurity.Write( wxdebugmsg );
+        }
+    }
+        
+    if ( DAEMON_LOGTYPE_ACCESS == nType ) {
+        // Write to Access log file
+        if ( m_fileLogAccess.IsOpened() ) {
+            m_fileLogAccess.Write( wxdebugmsg );
+        }      
+    } 
+
+
+#endif
+#else
+
+    //::wxLogDebug(wxdebugmsg);
+
+    if (m_logLevel >= level) {
+        wxPrintf(wxdebugmsg);
+    }
+
+    switch (level) {
+    case DAEMON_LOGMSG_DEBUG:
+        syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+
+    case DAEMON_LOGMSG_INFO:
+        syslog(LOG_INFO, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+
+    case DAEMON_LOGMSG_NOTICE:
+        syslog(LOG_NOTICE, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+
+    case DAEMON_LOGMSG_WARNING:
+        syslog(LOG_WARNING, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+
+    case DAEMON_LOGMSG_ERROR:
+        syslog(LOG_ERR, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+
+    case DAEMON_LOGMSG_CRITICAL:
+        syslog(LOG_CRIT, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+
+    case DAEMON_LOGMSG_ALERT:
+        syslog(LOG_ALERT, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+
+    case DAEMON_LOGMSG_EMERGENCY:
+        syslog(LOG_EMERG, "%s", (const char *) wxdebugmsg.ToAscii());
+        break;
+
+    };
+#endif
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // init
@@ -367,20 +489,6 @@ bool CControlObject::init(wxString& strcfgfile)
 
     //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
 
-    // Open up the General logging file.
-    if ( m_bLogGeneralEnable ) {
-        m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ); 
-    }
-
-    // Open up the Security logging file
-    if ( m_bLogSecurityEnable ) {
-        m_fileLogSecurity.Open( m_logSecurityFileName.GetFullPath(), wxFile::write_append );
-    }
-    
-    // Open up the Access logging file
-    if ( m_bLogAccessEnable ) {
-        m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append );
-    }
     // Generate username and password for drivers
     char buf[ 64 ];
     randPassword pw(3);
@@ -413,6 +521,21 @@ bool CControlObject::init(wxString& strcfgfile)
     
     str.Printf(_("Log Level=%d\n"), m_logLevel, DAEMON_LOGMSG_EMERGENCY );       
     logMsg(str);
+
+    // Open up the General logging file.
+    if ( m_bLogGeneralEnable ) {
+        m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ); 
+    }
+
+    // Open up the Security logging file
+    if ( m_bLogSecurityEnable ) {
+        m_fileLogSecurity.Open( m_logSecurityFileName.GetFullPath(), wxFile::write_append );
+    }
+    
+    // Open up the Access logging file
+    if ( m_bLogAccessEnable ) {
+        m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append );
+    }
    
 
     // Get GUID
@@ -707,119 +830,7 @@ bool CControlObject::cleanup(void)
     return true;
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// logMsg
-//
 
-void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const uint8_t nType )
-{
-    wxDateTime datetime( wxDateTime::GetTimeNow() );
-    wxString wxdebugmsg;
-
-    wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + wxstr;
-
-#ifdef WIN32
-#ifdef BUILD_VSCPD_SERVICE
-
-    const char* ps[3];
-    ps[ 0 ] = wxstr;
-    ps[ 1 ] = NULL;
-    ps[ 2 ] = NULL;
-
-    int iStr = 0;
-    for (int i = 0; i < 3; i++) {
-        if (ps[i] != NULL) {
-            iStr++;
-        }
-    }
-
-    ::ReportEvent(m_hEventSource,
-            EVENTLOG_INFORMATION_TYPE,
-            0,
-            (1L << 30),
-            NULL, // sid
-            iStr,
-            0,
-            ps,
-            NULL);
-#else
-
-    
-
-    //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
-    if ( m_logLevel >= level ) {
-
-        // Send out to possible window
-        wxPrintf( wxdebugmsg );
-
-        if ( DAEMON_LOGTYPE_GENERAL == nType ) {
-            // Write to generalt log file
-            if ( m_fileLogGeneral.IsOpened() ) {
-                m_fileLogGeneral.Write( wxdebugmsg );
-            }
-        }
-    }
-
-    if ( DAEMON_LOGTYPE_SECURITY == nType ) {
-        // Write to Security log file
-        if ( m_fileLogSecurity.IsOpened() ) {
-            m_fileLogSecurity.Write( wxdebugmsg );
-        }
-    }
-        
-    if ( DAEMON_LOGTYPE_SECURITY == nType ) {
-        // Write to Access log file
-        if ( m_fileLogAccess.IsOpened() ) {
-            m_fileLogAccess.Write( wxdebugmsg );
-        }      
-     }
-
-
-#endif
-#else
-
-    //::wxLogDebug(wxdebugmsg);
-
-    if (m_logLevel >= level) {
-        wxPrintf(wxdebugmsg);
-    }
-
-    switch (level) {
-    case DAEMON_LOGMSG_DEBUG:
-        syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_INFO:
-        syslog(LOG_INFO, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_NOTICE:
-        syslog(LOG_NOTICE, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_WARNING:
-        syslog(LOG_WARNING, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_ERROR:
-        syslog(LOG_ERR, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_CRITICAL:
-        syslog(LOG_CRIT, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_ALERT:
-        syslog(LOG_ALERT, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    case DAEMON_LOGMSG_EMERGENCY:
-        syslog(LOG_EMERG, "%s", (const char *) wxdebugmsg.ToAscii());
-        break;
-
-    };
-#endif
-}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1590,6 +1601,57 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_logLevel = vscp_readStringValue(str);
                     }
                 } 
+                else if (subchild->GetName() == wxT("generallogfile")) {
+                    
+                    wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_bLogGeneralEnable = false;
+                    }
+					else {
+						m_bLogGeneralEnable = true;
+					}
+
+                    wxFileName fileName;
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_logGeneralFileName = fileName;
+                    }
+                }
+                else if (subchild->GetName() == wxT("securitylogfile")) {
+                    
+                    wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_bLogSecurityEnable = false;
+                    }
+					else {
+						m_bLogSecurityEnable = true;
+					}
+
+                    wxFileName fileName;
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_logSecurityFileName = fileName;
+                    }
+                }
+                else if (subchild->GetName() == wxT("accesslogfile")) {
+                    
+                    wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    attribute.MakeLower();
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_bLogAccessEnable = false;
+                    }
+					else {
+						m_bLogAccessEnable = true;
+					}
+
+                    wxFileName fileName;
+                    fileName.SetName( subchild->GetNodeContent() );
+                    if ( fileName.IsOk() ) {
+                        m_logAccessFileName = fileName;
+                    }
+                }
 				else if (subchild->GetName() == wxT("tcpip")) {
                     wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
                     attribute.MakeLower();
@@ -1639,15 +1701,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_dm.m_bLogEnable = false;
                     }     
 
-                    // Get the Logpath
-                    m_dm.m_logFileName = subchild->GetAttribute(wxT("logpath"), wxT(""));
-
-                    if ( m_dm.m_logFileName.IsOk() ) {
-#ifdef WIN32
-                        m_dm.m_logFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_security.txt") );
-#else
-                        m_dm.m_logFile.SetName( _("/opt/vscp/logs/vscp_log_security") );
-#endif                        
+                    // Get the DM Logpath
+                    wxFileName fileName;
+                    fileName.SetName( subchild->GetAttribute( wxT("logpath"), wxT("") ) );
+                    if ( fileName.IsOk() ) {
+                        m_dm.m_logFileName = fileName;
                     }
 
                     // Get the loglevel
@@ -1679,9 +1737,6 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     else if ( str.IsSameAs(_("3"), false)) {
 						m_dm.m_logLevel = LOG_DM_EXTRA;
 					}
-                    
-
-
                     
                 }                 
                 else if (subchild->GetName() == wxT("variables")) {

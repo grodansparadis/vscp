@@ -1,7 +1,9 @@
 
-release notes for release 0.5.0 Fluorine
+release notes for release 0.1.0 Neon
 ========================================
 
+2014-09-20 - AKHE Logfiles for general, access, security and dm actions
+                    Logfiles can be viewed in the web interface
 2014-08-29 - AKHE All VSCP helper lib calls now have "vscp_" ion front of them.
 
 release notes for release 0.4.0 Fluorine
