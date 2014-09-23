@@ -141,3 +141,5 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/daemon/win32/ReleaseDll/vscpd_manifest.rc
 /src/vscp/vscpworks/vscpworks-autosave.pjd
 /src/vscp/vscpworks/vscpworks.vcxproj.filters
+/src/common/_mongoose.c
+/src/common/_mongoose.h

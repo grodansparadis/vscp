@@ -304,7 +304,6 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 
 			// Check if command already in buffer
 			if ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
-
 				pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, pClientItem->m_readBuffer.Mid( 0, pos4lf ) );
 				pClientItem->m_readBuffer = pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
 			}

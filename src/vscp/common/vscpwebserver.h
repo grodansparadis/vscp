@@ -431,6 +431,15 @@ public:
 	//							 ADMIN INTERFACE                                //
 	//////////////////////////////////////////////////////////////////////////////
 
+    /*!
+        List text file content. Built to display logfiles
+        @param conn Webserver connection handle.
+        @param file File to display
+        @param textHeader Headtext to display
+	    @return MG_TRUE ocn sucess or MG_FALSE on failure.
+    */
+    int websrv_listFile( struct mg_connection *conn, wxFileName& logfile, wxString& textHeader );
+
 
 	/*!
 		websrv_mainpage - Web server main page renderer.

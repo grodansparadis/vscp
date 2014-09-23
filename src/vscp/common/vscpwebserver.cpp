@@ -146,6 +146,47 @@ struct websrv_rest_session *websrv_rest_sessions;
 // Linked list of websocket sessions
 static struct websock_session *websock_sessions;
 
+
+///////////////////////////////////////////////////
+//					HELPERS
+///////////////////////////////////////////////////
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// make_chunk
+//
+
+static void webserv_util_make_chunk( char *obuf, const char *buf, int len) {
+  char chunk_size[512];
+#ifdef WIN32
+  int n = _snprintf( chunk_size, sizeof(chunk_size), "%X\r\n", len);
+#else
+  int n = snprintf( chunk_size, sizeof(chunk_size), "%X\r\n", len);
+#endif
+  strncat( obuf, chunk_size, n);
+  strncat( obuf, buf, len);
+  strncat( obuf, "\r\n", 2);
+}
+
+
+static void webserv_util_sendheader( struct mg_connection *conn, const int returncode, const char *content )
+{
+	char date[64];
+	time_t curtime = time(NULL);
+	vscp_getTimeString( date, sizeof(date), &curtime );
+
+	mg_send_status( conn, returncode );
+	mg_send_header( conn, "Content-Type", content );
+	mg_send_header( conn, "Date", date );
+	mg_send_header( conn, "Connection", "keep-alive" );
+	mg_send_header( conn, "Transfer-Encoding", "chunked" );
+	mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+												"pre-check=0, no-store, no-cache, must-revalidate");
+}
+
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // TcpClientListenThread
 //
@@ -1483,14 +1524,14 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             wxString strErr = 
                         wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
                                                  wxString::FromAscii( conn->remote_ip ), 
-                                                 strUser.mb_str() );
+                                                 strUser );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         }
         else {
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] user [%s] NOT allowed to connect.\n"), 
-                                             strUser.mb_str() );
+                                             strUser );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         }
 	}
@@ -1986,6 +2027,9 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 				return MG_TRUE;	 // Always accept websocket connections
 			}
 
+            // Check if a session is available. If so everything is OK.
+            if ( NULL != ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_TRUE;
+
 			if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
 								( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
 				return MG_FALSE;
@@ -2176,186 +2220,38 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/general",17) ) {
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
-					mg_send_header(conn, "Content-Type", "text/html");
-					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
-											"pre-check=0, no-store, no-cache, must-revalidate");
-
-                    wxString buildPage;
-                    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Log File 'General'"));
-                    buildPage += _(WEB_STYLE_START);
-                    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
-                    buildPage += _(WEB_STYLE_END);
-                    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
-                    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
-    
-                    // Navigation menu 
-                    buildPage += _(WEB_COMMON_MENU);
-                    
-                    buildPage += _("<b>Log File 'General'</b><br><br>");
-                    buildPage += _("<b>Path</b>=<i>");
-                    buildPage += pObject->m_logGeneralFileName.GetFullPath();
-                    buildPage += _("</i><br>");
-                    buildPage += _("-----------------------------------------------------------------------------------------<br>");
-
-                    wxFile file;
-
-                    if ( file.Open( pObject->m_logGeneralFileName.GetFullPath() ) ) {
-
-                        wxFileInputStream input( file);
-                        wxTextInputStream text( input );
-
-                        while ( !file.Eof() ) {
-                            buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>");
-                        }
-                        
-                        file.Close();
-                    }
-                    else {
-                        buildPage += _("Error: Unable to open file<br><br>");
-                    }
-
-                    // Serve data
-	                mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );                    
-                    return MG_TRUE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					return pObject->getWebServer()->websrv_listFile( conn, 
+                                                            pObject->m_logGeneralFileName, 
+                                                            wxString(_("Log File 'General'")) );
 				}
-                else if ( 0 == strncmp(conn->uri, "/vscp/log/security",18) ) {
+                else if ( 0 == strncmp(conn->uri, "/vscp/log/security",18) ) {   
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
-					mg_send_header(conn, "Content-Type", "text/html");
-					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
-											"pre-check=0, no-store, no-cache, must-revalidate");
-
-                    wxString buildPage;
-                    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Log File 'Security'"));
-                    buildPage += _(WEB_STYLE_START);
-                    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
-                    buildPage += _(WEB_STYLE_END);
-                    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
-                    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
-    
-                    // Navigation menu 
-                    buildPage += _(WEB_COMMON_MENU);
-                    
-                    buildPage += _("<b>Log File 'Security'</b><br><br>");
-                    buildPage += _("<b>Path</b>=<i>");
-                    buildPage += pObject->m_logSecurityFileName.GetFullPath();
-                    buildPage += _("</i><br>");
-                    buildPage += _("-----------------------------------------------------------------------------------------<br>");
-
-                    wxFile file;
-
-                    if ( file.Open( pObject->m_logSecurityFileName.GetFullPath() ) ) {
-
-                        wxFileInputStream input( file);
-                        wxTextInputStream text( input );
-
-                        while ( !file.Eof() ) {
-                            buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>");
-                        }
-                        
-                        file.Close();
-                    }
-                    else {
-                        buildPage += _("Error: Unable to open file<br><br>");
-                    }
-
-                    // Serve data
-	                mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );                    
-                    return MG_TRUE;
+					return pObject->getWebServer()->websrv_listFile( conn, 
+                                                            pObject->m_logSecurityFileName, 
+                                                            wxString(_("Log File 'Security'")) );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/access",16) ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
-					mg_send_header(conn, "Content-Type", "text/html");
-					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
-											"pre-check=0, no-store, no-cache, must-revalidate");
-
-                    wxString buildPage;
-                    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Log File 'Access'"));
-                    buildPage += _(WEB_STYLE_START);
-                    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
-                    buildPage += _(WEB_STYLE_END);
-                    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
-                    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
-    
-                    // Navigation menu 
-                    buildPage += _(WEB_COMMON_MENU);
-                    
-                    buildPage += _("<b>Log File 'Access'</b><br><br>");
-                    buildPage += _("<b>Path</b>=<i>");
-                    buildPage += pObject->m_logAccessFileName.GetFullPath();
-                    buildPage += _("</i><br>");
-                    buildPage += _("-----------------------------------------------------------------------------------------<br>");
-
-                    wxFile file;
-
-                    if ( file.Open( pObject->m_logAccessFileName.GetFullPath() ) ) {
-
-                        wxFileInputStream input( file);
-                        wxTextInputStream text( input );
-
-                        while ( !file.Eof() ) {
-                            buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>");
-                        }
-                        
-                        file.Close();
-                    }
-                    else {
-                        buildPage += _("Error: Unable to open file<br><br>");
-                    }
-
-                    // Serve data
-	                mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );                    
-                    return MG_TRUE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					return pObject->getWebServer()->websrv_listFile( conn, 
+                                                            pObject->m_logAccessFileName, 
+                                                            wxString(_("Log File 'Security'")) );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/dm",12) ) {
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
-					mg_send_header(conn, "Content-Type", "text/html");
-					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
-											"pre-check=0, no-store, no-cache, must-revalidate");
-
-                    wxString buildPage;
-                    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Log File 'Decision Matrix"));
-                    buildPage += _(WEB_STYLE_START);
-                    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
-                    buildPage += _(WEB_STYLE_END);
-                    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
-                    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
-    
-                    // Navigation menu 
-                    buildPage += _(WEB_COMMON_MENU);
-                    
-                    buildPage += _("<b>Log File 'Decision Matrix'</b><br><br>");
-                    buildPage += _("<b>Path</b>=<i>");
-                    buildPage += pObject->m_dm.m_logFileName.GetFullPath();
-                    buildPage += _("</i><br>");
-                    buildPage += _("-----------------------------------------------------------------------------------------<br>");
-
-                    wxFile file;
-
-                    if ( file.Open( pObject->m_dm.m_logFileName.GetFullPath() ) ) {
-
-                        wxFileInputStream input( file);
-                        wxTextInputStream text( input );
-
-                        while ( !file.Eof() ) {
-                            buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>");
-                        }
-                        
-                        file.Close();
-                    }
-                    else {
-                        buildPage += _("Error: Unable to open file<br><br>");
-                    }
-
-                    // Serve data
-	                mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );                    
-                    return MG_TRUE;
+					return pObject->getWebServer()->websrv_listFile( conn, 
+                                                            pObject->m_dm.m_logFileName, 
+                                                            wxString(_("Log File 'Decision Matrix'")) );
 				}
 				else if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
 					return pObject->getWebServer()->websrv_restapi( conn );
 				}
+                /*
 				else {
-					return MG_FALSE;
-				}
+                    wxString path = pObject->m_pathRoot + wxString::FromAscii( conn->uri );
+                    mg_send_file( conn, "index.html" );
+					return MG_TRUE;
+				}*/
 			}
 			return MG_FALSE;
 
@@ -2443,7 +2339,11 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			return MG_FALSE;
 
 		case MG_HTTP_ERROR:
-			pObject->logMsg( _("E "), DAEMON_LOGMSG_INFO );
+            {
+			    pObject->logMsg( _("WEBServer: Error "), DAEMON_LOGMSG_DEBUG );
+                //mg_send_status( conn, 304);
+                //mg_send_header(conn, "Content-Type", "text/html");
+            }
 			return MG_FALSE;
 
 		case MG_CLOSE:
@@ -2454,13 +2354,92 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 				if ( NULL != pWebSockSession ) {
 					pWebSockSession->lastActiveTime  = 0;	// Mark as staled
 					pObject->getWebServer()->websock_expire_sessions( conn );
+                    return MG_TRUE;
 				}
 			}
-			return MG_TRUE;
+			return MG_FALSE;
 
 		default: 
 			return MG_FALSE;
 	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_listFile
+//
+
+int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName& logfile, wxString& textHeader )
+{
+    mg_send_header(conn, "Content-Type", "text/html");
+    mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
+        "pre-check=0, no-store, no-cache, must-revalidate");
+
+    bool bFirstRow = false;
+    wxString buildPage;
+    wxString strHeader = wxString::Format(_("VSCP - %s"), textHeader );
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), strHeader );
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+
+    // Navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+
+    buildPage += wxString::Format( _("<b>%s</b><br><br>"), textHeader );
+    buildPage += _("<b>Path</b>=<i>");
+    buildPage += logfile.GetFullPath();
+    buildPage += _("</i><br>");
+    buildPage += _("-----------------------------------------------------------------------------------------<br>");
+
+    uint32_t nLines = 0, startLine = 0, n2Lines = 0;
+    wxULongLong fileLength = logfile.GetSize();
+    double pos;
+    if ( fileLength.ToDouble() > 100000 ) {
+        pos = fileLength.ToDouble() - 100000;
+        buildPage += wxString::Format(_("<br><span style=\"color: red;\">File has been truncated due to size. Filesize is %dMB last %dKB shown.</span><br><br>"), 
+            (int)fileLength.ToDouble()/(1024*1024), 10 );
+        bFirstRow = true;
+    }
+
+    if ( 0 == fileLength.ToDouble() ) {
+        buildPage += _("<span style=\"color: red;\">File is empty.</span><br><br>"); 
+    }
+
+    wxFile file;
+    if ( file.Open( logfile.GetFullPath() ) ) {
+
+        wxFileInputStream input( file);
+        wxTextInputStream text( input );
+
+        // Got to beginning of file
+        file.Seek( pos );
+
+        while ( !file.Eof() ) {
+            if ( !bFirstRow ) {
+                buildPage += _("&nbsp;&nbsp;&nbsp;") + text.ReadLine()  + _("<br>"); 
+            }
+            else {
+                bFirstRow = false;
+                text.ReadLine();    // First row looks ugly due to positioning
+            }
+        }
+
+        file.Close();
+
+    }
+    else {
+        buildPage += _("Error: Unable to open file<br><br>");
+    }
+
+    // Serve data
+    buildPage += _("&nbsp;&nbsp;&nbsp;<strong>The End</strong>");
+    buildPage += _(WEB_COMMON_END);
+    mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+    return MG_TRUE;
 }
 
 
@@ -2622,37 +2601,7 @@ VSCPWebServerThread::websrv_expire_rest_sessions( struct mg_connection *conn )
 WX_DECLARE_STRING_HASH_MAP( wxString, hashArgs );
 
 
-///////////////////////////////////////////////////////////////////////////////
-// make_chunk
-//
 
-static void webserv_util_make_chunk( char *obuf, const char *buf, int len) {
-  char chunk_size[512];
-#ifdef WIN32
-  int n = _snprintf( chunk_size, sizeof(chunk_size), "%X\r\n", len);
-#else
-  int n = snprintf( chunk_size, sizeof(chunk_size), "%X\r\n", len);
-#endif
-  strncat( obuf, chunk_size, n);
-  strncat( obuf, buf, len);
-  strncat( obuf, "\r\n", 2);
-}
-
-
-static void webserv_util_sendheader( struct mg_connection *conn, const int returncode, const char *content )
-{
-	char date[64];
-	time_t curtime = time(NULL);
-	vscp_getTimeString( date, sizeof(date), &curtime );
-
-	mg_send_status( conn, returncode );
-	mg_send_header( conn, "Content-Type", content );
-	mg_send_header( conn, "Date", date );
-	mg_send_header( conn, "Connection", "keep-alive" );
-	mg_send_header( conn, "Transfer-Encoding", "chunked" );
-	mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
-												"pre-check=0, no-store, no-cache, must-revalidate");
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
