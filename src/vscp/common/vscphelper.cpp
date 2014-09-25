@@ -1935,7 +1935,6 @@ bool vscp_getVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 	// Check pointers
 	if (NULL == pEvent) return false;
 
-	//wxStringTokenizer tkz( str, _(", \r\n\t") );
 	wxStringTokenizer tkz(str, _(","));
 
 	uint8_t data[ VSCP_MAX_DATA ];

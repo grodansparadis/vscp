@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="90">
+<configurationDescriptor version="94">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="common"
                    displayName="common"
@@ -137,12 +137,8 @@
         </ccTool>
       </item>
       <item path="../../../common/crc.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-        </cTool>
       </item>
       <item path="../../../common/dllist.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-        </cTool>
       </item>
       <item path="../../../common/frozen.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -407,8 +403,6 @@
         </ccTool>
       </folder>
       <item path="vscpd.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
     </conf>
   </confs>
