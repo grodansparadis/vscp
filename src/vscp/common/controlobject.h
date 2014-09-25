@@ -77,11 +77,11 @@ enum {
 
 // Needed on Linux
 #ifndef VSCPMIN
-#define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
+#define VSCPMIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #endif
 
 #ifndef VSCPMAX
- #define max(a,b) \
+ #define VSCPMAX(a,b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
      _a > _b ? _a : _b; })

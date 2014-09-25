@@ -211,7 +211,7 @@ CControlObject::CControlObject()
 #ifdef WIN32
     m_logGeneralFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/logs/vscp_log_general.txt") );
 #else
-    m_logGeneralFileName.SetName( _("/opt/vscp/logs/vscp_log_general") );
+    m_logGeneralFileName.SetName( _("/srv/vscp/logs/vscp_log_general") );
 #endif
 
     // Security logfile is enabled by default
@@ -220,7 +220,7 @@ CControlObject::CControlObject()
 #ifdef WIN32
     m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscp_log_security.txt") );
 #else
-    m_logSecurityFileName.SetName( _("/opt/vscp/logs/vscp_log_security") );
+    m_logSecurityFileName.SetName( _("/srv/vscp/logs/vscp_log_security") );
 #endif
 
         // Access logfile is enabled by default
@@ -229,7 +229,7 @@ CControlObject::CControlObject()
 #ifdef WIN32
     m_logAccessFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscp_log_access.txt") );
 #else
-    m_logAccessFileName.SetName( _("/opt/vscp/logs/vscp_log_security") );
+    m_logAccessFileName.SetName( _("/srv/vscp/logs/vscp_log_security") );
 #endif
 
     // Control TCP/IP Interface
@@ -305,7 +305,7 @@ CControlObject::CControlObject()
     crcInit();
 
 	CVSCPTable testtable( "c:/tmp/test.tbl" );
-/*
+
 	testtable.logData( 1, 100 );
 	testtable.logData( 8, 800 );
 	testtable.logData( 12, 1200 );
@@ -314,7 +314,7 @@ CControlObject::CControlObject()
 	testtable.logData( 21, 2100 );
 	testtable.logData( 30, 3000 );
 	testtable.logData( 48, 4800 );
-*/
+
 	long size = testtable.GetRangeOfData( 22, 48, NULL, 0 );
 	size = testtable.GetRangeOfData( 1, 8, NULL, 0 );
 	size = testtable.GetRangeOfData( 20, 48, NULL, 0 );

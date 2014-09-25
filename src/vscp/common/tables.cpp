@@ -99,7 +99,7 @@ CVSCPTable::CVSCPTable( const char *path, int type, uint32_t size )
 
 CVSCPTable::~CVSCPTable( void )
 {
-	fclose( m_ft );
+	if ( NULL != m_ft )  fclose( m_ft );
 }
 
 
@@ -226,6 +226,9 @@ long CVSCPTable::fdGetFileSize( const char *path )
 int CVSCPTable::readMainHeader( void )
 {
 	int rv;
+	
+	// File must be open
+	if ( NULL == m_ft ) return -1;
 
 	rv = fseek( m_ft, 0, SEEK_SET );									// Go to beginning of file
 	if ( rv ) return errno;
@@ -242,6 +245,9 @@ int CVSCPTable::readMainHeader( void )
 int CVSCPTable::writeMainHeader( void )
 {
 	int rv;
+	
+	// File must be open
+	if ( NULL == m_ft ) return -1;
 
 	rv = fseek( m_ft, 0, SEEK_SET );									// Go to beginning of file
 	if ( rv ) return errno;
@@ -260,6 +266,9 @@ int CVSCPTable::logData( time_t timestamp, double measurement )
 	int rv;
 	struct _vscpFileRecord record;
 
+	// File must be open
+	if ( NULL == m_ft ) return -1;
+	
 	record.timestamp = timestamp;
 	record.measurement = measurement;
 
@@ -309,6 +318,9 @@ long CVSCPTable::GetRangeOfData( time_t from, time_t to, void *buf, uint16_t siz
 	long midRecord;
 	struct _vscpFileRecord *p = (struct _vscpFileRecord *)buf;
 
+	// File must be open
+	if ( NULL == m_ft ) return -1;
+	
 	// Just work for normal files
 	if ( VSCP_TABLE_NORMAL != m_vscpFileHead.type ) return 0;
 
@@ -396,6 +408,9 @@ long CVSCPTable::GetRangeOfData( time_t from, time_t to, void *buf, uint16_t siz
 
 long CVSCPTable::GetStaticData( void *buf, uint16_t size )
 {
+	// File must be open
+	if ( NULL == m_ft ) return -1;
+	
 	// Just work for static files
 	if ( VSCP_TABLE_STATIC != m_vscpFileHead.type ) return 0;
 
