@@ -75,16 +75,18 @@ enum {
     DAEMON_LOGTYPE_ACCESS
 };
 
-#ifndef MIN
+// Needed on Linux
+#ifndef VSCPMIN
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #endif
 
-#ifndef MAX
+#ifndef VSCPMAX
  #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \
      _a > _b ? _a : _b; })
 #endif	
+
 
 #define MAX_ITEMS_RECEIVE_QUEUE                 1021
 #define MAX_ITEMS_SEND_QUEUE                    1021
