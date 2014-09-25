@@ -522,7 +522,7 @@ bool CControlObject::init(wxString& strcfgfile)
     str.Printf(_("Log Level=%d\n"), m_logLevel, DAEMON_LOGMSG_EMERGENCY );       
     logMsg(str);
 
-    // Open up the General logging file.
+    // Open up the General logging file. -
     if ( m_bLogGeneralEnable ) {
         m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ); 
     }
