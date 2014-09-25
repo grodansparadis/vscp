@@ -211,7 +211,7 @@ CControlObject::CControlObject()
 #ifdef WIN32
     m_logGeneralFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/logs/vscp_log_general.txt") );
 #else
-    m_logGeneralFile.SetName( _("/opt/vscp/logs/vscp_log_general") );
+    m_logGeneralFileName.SetName( _("/opt/vscp/logs/vscp_log_general") );
 #endif
 
     // Security logfile is enabled by default
@@ -220,7 +220,7 @@ CControlObject::CControlObject()
 #ifdef WIN32
     m_logSecurityFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscp_log_security.txt") );
 #else
-    m_logSecurityFile.SetName( _("/opt/vscp/logs/vscp_log_security") );
+    m_logSecurityFileName.SetName( _("/opt/vscp/logs/vscp_log_security") );
 #endif
 
         // Access logfile is enabled by default
@@ -522,7 +522,7 @@ bool CControlObject::init(wxString& strcfgfile)
     str.Printf(_("Log Level=%d\n"), m_logLevel, DAEMON_LOGMSG_EMERGENCY );       
     logMsg(str);
 
-    // Open up the General logging file. -
+    // Open up the General logging file.
     if ( m_bLogGeneralEnable ) {
         m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ); 
     }
