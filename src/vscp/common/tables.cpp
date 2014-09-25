@@ -48,6 +48,10 @@
 
 #include <wx/listimpl.cpp>
 
+#ifndef WIN32
+#include <errno.h>
+#endif
+
 #include "vscp.h"
 #include "vscphelper.h"
 #include "variablecodes.h"
@@ -111,12 +115,12 @@ int CVSCPTable::init()
 	// Open/create main file
 	if ( fileExists( m_path.mbc_str() ) ) {
 		m_ft = fopen( m_path.mbc_str(), "r+b") ;	// binary Read Write
-		if ( NULL == m_ft ) return errno;				// Failed to open file
+		if ( NULL == m_ft ) return errno;			// Failed to open file
 	}
 	else {
 		// Create file
 		m_ft = fopen( m_path.mbc_str(), "w+b") ;	// binary Read Write		
-		if ( NULL == m_ft ) return errno;				// Failed to create file
+		if ( NULL == m_ft ) return errno;			// Failed to create file
 		
 		if ( VSCP_TABLE_NORMAL == m_vscpFileHead.type ) {
 			m_vscpFileHead.id[0] = 0x55;
@@ -144,14 +148,16 @@ int CVSCPTable::init()
 	m_number_of_records = ( fdGetFileSize( m_path.mbc_str() ) - sizeof( m_vscpFileHead ))/sizeof(_vscpFileRecord);
 	if ( m_number_of_records ) {
 
+		size_t rpos;
+		
 		// Go to last pos
 		fseek( m_ft, sizeof( m_vscpFileHead ) + (m_number_of_records-1) * sizeof(_vscpFileRecord) , SEEK_SET );							
-		fread( &record, 1, sizeof(record), m_ft );
+		rpos = fread( &record, 1, sizeof(record), m_ft );
 		m_timestamp_last = record.timestamp;
 
 		// Go to first pos
 		fseek( m_ft, sizeof( m_vscpFileHead ), SEEK_SET );							
-		fread( &record, 1, sizeof(record), m_ft );
+		rpos = fread( &record, 1, sizeof(record), m_ft );
 		m_timestamp_first = record.timestamp;
 	}
 

@@ -39,14 +39,19 @@
       <itemPath>../../common/mdf.h</itemPath>
       <itemPath>../../../common/mongoose.c</itemPath>
       <itemPath>../../../common/mongoose.h</itemPath>
+      <itemPath>../../../common/net_skeleton.h</itemPath>
       <itemPath>../../../common/randPassword.cpp</itemPath>
       <itemPath>../../../common/randPassword.h</itemPath>
       <itemPath>../../../common/randpassword.cpp</itemPath>
       <itemPath>../../../common/randpassword.h</itemPath>
       <itemPath>../../../common/slre.c</itemPath>
       <itemPath>../../../common/slre.h</itemPath>
+      <itemPath>../../common/tables.cpp</itemPath>
+      <itemPath>../../common/tables.h</itemPath>
       <itemPath>../../common/tcpipclientthread.cpp</itemPath>
       <itemPath>../../common/tcpipclientthread.h</itemPath>
+      <itemPath>../../common/udpclientthread.cpp</itemPath>
+      <itemPath>../../common/udpclientthread.h</itemPath>
       <itemPath>../../common/udpthread.cpp</itemPath>
       <itemPath>../../common/udpthread.h</itemPath>
       <itemPath>../../common/userlist.cpp</itemPath>
@@ -63,10 +68,14 @@
       <itemPath>../../common/vscpeventhelper.h</itemPath>
       <itemPath>../../common/vscphelper.cpp</itemPath>
       <itemPath>../../common/vscphelper.h</itemPath>
+      <itemPath>../../common/vscpremotetcpif.cpp</itemPath>
+      <itemPath>../../common/vscpremotetcpif.h</itemPath>
       <itemPath>../../common/vscptcpif.cpp</itemPath>
       <itemPath>../../common/vscptcpif.h</itemPath>
       <itemPath>../../common/vscpvariable.cpp</itemPath>
       <itemPath>../../common/vscpvariable.h</itemPath>
+      <itemPath>../../common/vscpwebserver.cpp</itemPath>
+      <itemPath>../../common/vscpwebserver.h</itemPath>
       <itemPath>../../common/web_css.h</itemPath>
       <itemPath>../../common/web_js.h</itemPath>
       <itemPath>../../common/web_template.h</itemPath>
@@ -94,6 +103,9 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -124,7 +136,7 @@
         </makeTool>
       </makefileType>
       <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
@@ -140,12 +152,10 @@
       </item>
       <item path="../../../common/dllist.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="../../../common/frozen.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../../common/frozen.h" ex="false" tool="3" flavor2="0">
+      <item path="../../../common/frozen.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../../common/md5.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
@@ -157,9 +167,7 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../../common/mongoose.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../../common/mongoose.h" ex="false" tool="3" flavor2="0">
+      <item path="../../../common/mongoose.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../../common/randPassword.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -173,8 +181,8 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool>
+      <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
@@ -186,13 +194,9 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../../common/slre.c" ex="false" tool="0" flavor2="0">
+      <item path="../../../common/slre.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="../../../common/slre.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../../common/v7.c" ex="false" tool="0" flavor2="0">
-      </item>
-      <item path="../../../common/v7.h" ex="false" tool="3" flavor2="0">
+      <item path="../../../common/v7.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -273,7 +277,7 @@
         </ccTool>
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
@@ -298,8 +302,34 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="../../common/tables.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
       <item path="../../common/tcpipclientthread.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../common/udpclientthread.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
@@ -364,6 +394,19 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
       <item path="../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
@@ -379,6 +422,19 @@
       </item>
       <item path="../../common/vscpvariable.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../common/vscpwebserver.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>

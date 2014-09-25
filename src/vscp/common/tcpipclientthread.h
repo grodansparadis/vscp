@@ -111,9 +111,11 @@ public:
 	static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
 
 	/*!
-		When a comman is received on the TCP/IP interface the command handelr is called.
+		When a command is received on the TCP/IP interface the command handler is called.
 	*/
-	void CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, wxString& strCommand );
+	void CommandHandler( struct ns_connection *conn, 
+							CControlObject *pCtrlObject, 
+							wxString& strCommand );
 
 	/*! 
 		called when the thread exits - whether it terminates normally or is

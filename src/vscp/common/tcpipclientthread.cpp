@@ -304,7 +304,10 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 
 			// Check if command already in buffer
 			if ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
-				pCtrlObject->getTCPIPServer()->CommandHandler( conn, pCtrlObject, pClientItem->m_readBuffer.Mid( 0, pos4lf ) );
+				wxString strCmdGo = pClientItem->m_readBuffer.Mid( 0, pos4lf );
+				pCtrlObject->getTCPIPServer()->CommandHandler( conn, 
+										pCtrlObject, 
+										strCmdGo );
 				pClientItem->m_readBuffer = pClientItem->m_readBuffer.Right( pClientItem->m_readBuffer.Length()-pos4lf-1 );
 			}
 			break;
@@ -1465,7 +1468,11 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
         ::wxLogDebug ( _("Password/Username failure.") );
         wxString strErr = 
 			wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 
+#ifdef WIN32
 			pClientItem->m_UserName, strPassword );
+#else	
+			(const char *)pClientItem->m_UserName.mb_str(), (const char *)strPassword.mb_str() );
+#endif
 		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 		ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
         return false;
@@ -1473,7 +1480,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
 	// Get remte address
 	struct sockaddr_in cli_addr;
-	int clilen = 0;    
+	socklen_t clilen = 0;    
     clilen = sizeof (cli_addr);
 	int ret = getpeername( conn->sock, (struct sockaddr *)&cli_addr, &clilen);
     struct sockaddr_in *s = (struct sockaddr_in *)&cli_addr;
@@ -1486,7 +1493,12 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( !bValidHost ) {
-		wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), remoteaddr );
+		wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), 
+#ifdef WIN32
+			remoteaddr );
+#else
+			(const char *)remoteaddr.mbc_str() );
+#endif		
 		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
         return false;
@@ -1499,8 +1511,13 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     wxString strErr = 
         wxString::Format( _("[TCP/IP Client] Host [%s] User [%s] allowed to connect.\n"), 
+#ifdef WIN32		
                             remoteaddr, 
                             pClientItem->m_UserName );
+#else 	
+							(const char *)remoteaddr.mbc_str(), 
+                            (const char *)pClientItem->m_UserName.mbc_str() );
+#endif	
 	pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 
     pClientItem->m_bAuthorized = true;
@@ -1622,7 +1639,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 	else if ( _("SEND") == strcmd ) {
 		wxString str = _("'SEND event' Send event. The event is given as 'head,class,type,obid,time-stamp,GUID,data1,data2,data3....' ");
 		str += _("Set head and obid to zero. If timestamp is set to zero it will be set by the server. If GUID is given as '-' ");
-		str += _("the GUID of the interface will be used. The GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2……. \r\n");
+		str += _("the GUID of the interface will be used. The GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2ï¿½ï¿½. \r\n");
 		ns_send( conn, str.mbc_str(), str.Length() );
 	}
 	else if ( _("RETR") == strcmd ) {

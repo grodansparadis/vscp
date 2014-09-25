@@ -670,6 +670,9 @@ bool CControlObject::run(void)
     
     // DM Loop
     while (!m_bQuit) {
+		
+		clock_t ticks,oldus;
+		oldus = ticks = clock();
 
 #ifdef WIN32
 		// CLOCKS_PER_SEC 

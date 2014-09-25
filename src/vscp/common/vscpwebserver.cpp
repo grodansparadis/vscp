@@ -1384,7 +1384,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
 
 	// Check pointer
     if (NULL == conn) return MG_FALSE;
-	if ( conn->content_len ) memcpy( buf, conn->content, min(conn->content_len, sizeof( buf ) ) );
+	if ( conn->content_len ) memcpy( buf, conn->content, MIN(conn->content_len, sizeof( buf ) ) );
 
 	pSession = websock_get_session( conn );
 	if (NULL == pSession) return MG_FALSE;
@@ -1403,7 +1403,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
 	if (NULL == pObject) return MG_FALSE;
 
     memset(buf, 0, sizeof( buf));
-	memcpy(buf, (char *)conn->content, min( conn->content_len, sizeof(buf) ) );
+	memcpy(buf, (char *)conn->content, MIN( conn->content_len, sizeof(buf) ) );
 
     switch (*p) {
 
@@ -1504,18 +1504,23 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
 		if (!bValidHost) {
             // Log valid login
             wxString strErr = 
-            wxString::Format( _("[Websocket Client] Host [%s] NOT allowed to connect.\n"), 
-                                             wxString::FromAscii( conn->remote_ip ) );
+            wxString::Format( _("[Websocket Client] Host [%s] NOT allowed to connect.\n"),
+#ifdef WIN32 				
+                                            wxString::FromAscii( conn->remote_ip ) );
+#else 
+											(const char *)wxString::FromAscii( conn->remote_ip ).mbc_str() );
+#endif		
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
 
-		strncpy( response, strKey.mb_str(), min( sizeof(response), strKey.Length() ) );
+		strncpy( response, strKey.mb_str(), MIN( sizeof(response), strKey.Length() ) );
 
 		mg_md5( expected_response,
-					strUser.mb_str(), ":",
-					pUser->m_md5Password.mb_str(), ":",
-					pSession->m_sid, NULL );
+					(const char *)strUser.mb_str(), ":",
+					(const char *)pUser->m_md5Password.mb_str(), ":",
+					pSession->m_sid,
+					NULL );
 
 		rv = ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
 
@@ -1523,15 +1528,24 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
                         wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
+#ifdef WIN32
                                                  wxString::FromAscii( conn->remote_ip ), 
                                                  strUser );
+#else 
+                                                 (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
+                                                 (const char *)strUser.mbc_str() );			
+#endif			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         }
         else {
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] user [%s] NOT allowed to connect.\n"), 
+#ifdef WIN32				
                                              strUser );
+#else 
+                                             (const char *)strUser.mbc_str() );			
+#endif			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         }
 	}
@@ -2056,8 +2070,13 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Host wrong
                 strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
+#ifdef WIN32
                                                  wxString::FromAscii( conn->remote_ip ), 
                                                  pUser->m_user );
+#else 
+                                                 (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
+                                                 (const char *)pUser->m_user.mbc_str() );				
+#endif 				
                 pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
                 return MG_FALSE;
             }
@@ -2069,8 +2088,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                     // Username/password wrong
                     strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n"), 
-                                                 wxString::FromAscii( conn->remote_ip ), 
-                                                 pUser->m_user );
+                                                 (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
+                                                 (const char *)pUser->m_user.mbc_str() );
 	                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );                                                                        
 				    return MG_FALSE;
             }
@@ -2081,8 +2100,13 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
             // Valid credentials
             strErr = 
                     wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
+#ifdef WIN32				
                                         wxString::FromAscii( conn->remote_ip ), 
                                         pUser->m_user );
+#else 
+                                        (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
+                                        (const char *)pUser->m_user.mbc_str() );			
+#endif 			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY ); 
             
 			return MG_TRUE;
@@ -2092,17 +2116,26 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
             // Log access
             strErr = 
             wxString::Format( _("Host [%s] - req [%s] query [%s] method [%s] \n"), 
+#ifdef WIN32				
                                 wxString::FromAscii( conn->remote_ip ),
                                 wxString::FromAscii(conn->uri), 
                                 wxString::FromAscii(conn->query_string), 
                                 wxString::FromAscii(conn->request_method) );
+#else 
+                                (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(),
+                                (const char *)wxString::FromAscii(conn->uri).mbc_str(), 
+                                (const char *)wxString::FromAscii(conn->query_string).mbc_str(), 
+                                (const char *)wxString::FromAscii(conn->request_method).mbc_str() );			
+#endif			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 			if (conn->is_websocket) {
 				return pObject->getWebServer()->websrv_websocket_message( conn );
 			}
 			else {
-				wxString strlog = wxString::Format(_("Webserver: Page request [%s].\n"), wxString::FromAscii( conn->uri ) );
+				wxString strlog = 
+					wxString::Format(_("Webserver: Page request [%s].\n"), 
+					(const char *)wxString::FromAscii( conn->uri ).mbc_str() );
 				pObject->logMsg( strlog, DAEMON_LOGMSG_INFO );
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
@@ -2221,27 +2254,31 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/general",17) ) {
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
                     if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					wxString header = _("Log File 'General'");
 					return pObject->getWebServer()->websrv_listFile( conn, 
                                                             pObject->m_logGeneralFileName, 
-                                                            wxString(_("Log File 'General'")) );
+                                                            header );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/security",18) ) {   
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					wxString header = _("Log File 'Security'");
 					return pObject->getWebServer()->websrv_listFile( conn, 
                                                             pObject->m_logSecurityFileName, 
-                                                            wxString(_("Log File 'Security'")) );
+                                                            header );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/access",16) ) {
                     if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					wxString header = _("Log File 'Security'");
 					return pObject->getWebServer()->websrv_listFile( conn, 
                                                             pObject->m_logAccessFileName, 
-                                                            wxString(_("Log File 'Security'")) );
+                                                            header );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/dm",12) ) {
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					wxString header = _("Log File 'Decision Matrix'");
 					return pObject->getWebServer()->websrv_listFile( conn, 
                                                             pObject->m_dm.m_logFileName, 
-                                                            wxString(_("Log File 'Decision Matrix'")) );
+                                                            header );
 				}
 				else if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
 					return pObject->getWebServer()->websrv_restapi( conn );
@@ -2377,8 +2414,8 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
 
     bool bFirstRow = false;
     wxString buildPage;
-    wxString strHeader = wxString::Format(_("VSCP - %s"), textHeader );
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), strHeader );
+    wxString strHeader = wxString::Format(_("VSCP - %s"), (const char *)textHeader.mbc_str() );
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), (const char *)strHeader.mbc_str() );
     buildPage += _(WEB_STYLE_START);
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
@@ -2388,7 +2425,7 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
     // Navigation menu 
     buildPage += _(WEB_COMMON_MENU);
 
-    buildPage += wxString::Format( _("<b>%s</b><br><br>"), textHeader );
+    buildPage += wxString::Format( _("<b>%s</b><br><br>"), (const char *)textHeader.mbc_str() );
     buildPage += _("<b>Path</b>=<i>");
     buildPage += logfile.GetFullPath();
     buildPage += _("</i><br>");
@@ -2654,8 +2691,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	if (!bValidHost) {
         wxString strErr = 
         wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                            wxString::FromAscii( conn->remote_ip ), 
-                            keypairs[_("USER")] );
+                            (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
+                            (const char *)keypairs[_("USER")].mbc_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         return MG_FALSE;
     }
@@ -2665,16 +2702,16 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) {
         wxString strErr = 
         wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
-                            keypairs[_("USER")] , 
-                            wxString::FromAscii( conn->remote_ip ) );
+                            (const char *)keypairs[_("USER")].mbc_str(), 
+                            (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         return MG_FALSE;
     }
 
     wxString strErr = 
         wxString::Format( _("[REST Client] User [%s] Host [%s] allowed to connect. \n"), 
-                            keypairs[_("USER")] , 
-                            wxString::FromAscii( conn->remote_ip ) );
+                            (const char *)keypairs[_("USER")].mbc_str() , 
+                            (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
 	// Get format
@@ -2834,7 +2871,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   *******************************************
 	//   * * * * * * * * Table read  * * * * * * * *
 	//   *******************************************
-	else if ( ( '10' == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")] ) ) {
+	else if ( ( _("10") == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")] ) ) {
 		if ( _("") != keypairs[_("NAME")] ) {
 			
 			rv = webserv_rest_doGetTableData( conn, pSession, format, 
@@ -3116,14 +3153,14 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"%d events requested of %d available (unfiltered) %d will be retrived\r\n", 
+								"%lu events requested of %lu available (unfiltered) %lu will be retrived\r\n", 
 								count, 
 								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
-								min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+								MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
 
-					for ( unsigned int i=0; i<min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
 
 						CLIENTEVENTLIST::compatibility_iterator nodeClient;
 						vscpEvent *pEvent;
@@ -3199,14 +3236,14 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"1,2,Info,%d events requested of %d available (unfiltered) %d will be retrived,NULL\r\n", 
+								"1,2,Info,%lu events requested of %lu available (unfiltered) %lu will be retrived,NULL\r\n", 
 								count, 
 								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
-								min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+								MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
 
-					for ( unsigned int i=0; i<min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
 
 						CLIENTEVENTLIST::compatibility_iterator nodeClient;
 						vscpEvent *pEvent;
@@ -3286,14 +3323,14 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"<info>%d events requested of %d available (unfiltered) %d will be retrived</info>", 
+								"<info>%lu events requested of %lu available (unfiltered) %lu will be retrived</info>", 
 								count, 
 								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
-								min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+								MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
 
-					for ( unsigned int i=0; i<min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
 
 						CLIENTEVENTLIST::compatibility_iterator nodeClient;
 						vscpEvent *pEvent;
@@ -3423,10 +3460,10 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "info" );
 					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
 					sprintf( wrkbuf, 
-								"%d events requested of %d available (unfiltered) %d will be retrived", 
+								"%lu events requested of %lu available (unfiltered) %lu will be retrived", 
 								count, 
 								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
-								min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+								MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
 					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wrkbuf );
 					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
 					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "event");
@@ -3437,7 +3474,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					memset( buf, 0, sizeof( buf ) );
 					p = buf;
 
-					for ( unsigned int i=0; i<min((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
 
 						CLIENTEVENTLIST::compatibility_iterator nodeClient;
 						vscpEvent *pEvent;
@@ -3691,11 +3728,16 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 				memset( buf, 0, sizeof( buf ));
 				sprintf( wrkbuf, 
 								"variable=%s type=%d persistent=%s value=%s note=%s\r\n", 
-								pvar->getName().mb_str(), 
+								(const char *)pvar->getName().mb_str(), 
 								pvar->getType(),
 								pvar->isPersistent() ? "true" : "false", 
+#ifdef WIN32					
 								strVariableValue,
 								pvar->getNote() );
+#else 
+								(const char *)strVariableValue.mbc_str(),
+								(const char *)pvar->getNote().mbc_str() );				
+#endif				
 				webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 				mg_write( conn, buf, strlen( buf ) );
 
@@ -3709,12 +3751,12 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 			memset( buf, 0, sizeof( buf ));
 			sprintf( wrkbuf, 
-				"success-code,error-code,message,description,Variable,Type, Value,Persistent,Note\r\n1,1,Success,Success.,%s,%d\r\n",
-				strVariableName, 
+				"success-code,error-code,message,description,Variable,Type, Value,Persistent,Note\r\n1,1,Success,Success.,%s,%d,%s,%s,%s\r\n",
+				(const char *)strVariableName.mbc_str(), 
 				pvar->getType(),
-				strVariableValue,
+				(const char *)strVariableValue.mbc_str(),
 				pvar->isPersistent() ? "true" : "false", 
-				pvar->getNote() );
+				(const char *)pvar->getNote().mbc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -3745,9 +3787,9 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			memset( buf, 0, sizeof( buf ) );
 			sprintf((char *) wrkbuf, 
 							"<name>%s</name><value>%s</value><note>%s</note>",
-							pvar->getName(),
-							strVariableValue,
-							pvar->getNote() );
+							(const char *)pvar->getName().mbc_str(),
+							(const char *)strVariableValue.mbc_str(),
+							(const char *)pvar->getNote().mbc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -3975,7 +4017,11 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #else
-			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+			int n = snprintf( wrkbuf, 
+								sizeof(wrkbuf), 
+								"1 1 Success Session-id=%s nEvents=%lu", 
+								pSession->m_sid, 
+								pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
 			mg_write( conn, buf, strlen( buf ) );
@@ -3997,7 +4043,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%d", 
+					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%lu", 
 					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4020,7 +4066,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%d</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%lu</nEvents></vscp-rest>", 
 					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4043,7 +4089,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d}", 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%lu}", 
 					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4066,7 +4112,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d});", 
+					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%lu});", 
 					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4128,7 +4174,7 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #ifdef WIN32
 			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #else
-			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%lu", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
 			mg_write( conn, buf, strlen( buf ) );
@@ -4150,7 +4196,7 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%d", 
+					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%lu", 
 					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4173,7 +4219,7 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%d</nEvents></vscp-rest>", 
+					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%lu</nEvents></vscp-rest>", 
 					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4196,7 +4242,7 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d}", 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%lu}", 
 					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
@@ -4219,7 +4265,7 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
-					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d});", 
+					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%lu});", 
 					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );

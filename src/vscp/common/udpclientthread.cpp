@@ -232,7 +232,11 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 				if ( NULL == pUDPClientThread->m_pClientItem->m_pUserItem ) {
                     wxString strErr = 
                         wxString::Format( _("[UDP Client] User [%s] allowed to connect.\n"), 
+#ifdef WIN32						
                                                 pUDPClientThread->m_pClientItem->m_UserName );
+#else 
+												(const char *)pUDPClientThread->m_pClientItem->m_UserName.mbc_str() );
+#endif					
 	                    pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 					::wxLogDebug ( _("Password/Username failure.") );
 					ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
@@ -249,7 +253,12 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
 
 				if ( !bValidHost ) {
-					wxString strErr = wxString::Format(_("[UDP Client] Host [%s] not allowed to connect.\n"), remoteaddr );
+					wxString strErr = wxString::Format(_("[UDP Client] Host [%s] not allowed to connect.\n"), 
+#ifdef WIN32
+						                                     remoteaddr );
+#else 
+						                                     (const char *)remoteaddr.mbc_str() );					
+#endif					
 					pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO );
 					ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
 					return;
@@ -262,8 +271,13 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 
                 wxString strErr = 
                             wxString::Format( _("[UDP Client] Host [%s] User [%s] allowed to connect.\n"), 
+#ifdef WIN32
                                                 remoteaddr, 
                                                 pUDPClientThread->m_pClientItem->m_UserName );
+#else 
+												(const char *)remoteaddr.mbc_str(), 
+                                                (const char *)pUDPClientThread->m_pClientItem->m_UserName.mbc_str() );
+#endif				
 	            pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 			}
 			break;

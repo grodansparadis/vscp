@@ -2724,8 +2724,13 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 
 	if ( !bFound ) {
 		wxString wxstrErr = 
-			wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "), 
+			wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "),
+#ifdef WIN32			
 			tblName, wxstr );
+#else 
+			(const char *)tblName.mbc_str(), 
+			(const char *)wxstr.mbc_str() );
+#endif		
 		wxstrErr += wxstr;
 		wxstrErr += _("\n");
 		m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
@@ -3755,7 +3760,12 @@ int CDM::addTimer( uint16_t id,
     dmTimer *pTimer;
 
     // Log
-    wxString logStr = wxString::Format(_("Add Timer %s."), nameVar );
+    wxString logStr = wxString::Format(_("Add Timer %s."), 
+#ifdef WIN32		
+		nameVar );
+#else
+		(const char *)nameVar.mbc_str() );
+#endif	
     logmsg( logStr, LOG_DM_EXTRA );
 
     // Check if the timer already exist - set new values
@@ -3778,7 +3788,12 @@ int CDM::addTimer( uint16_t id,
     if ( NULL != ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( nameVar ) ) ) {
 
         // Log
-        wxString logStr = wxString::Format(_("Variable is defined."), nameVar );
+        wxString logStr = wxString::Format(_("Variable is defined."), 
+#ifdef WIN32			
+			nameVar );
+#else 
+			(const char *)nameVar.mbc_str() );
+#endif		
         logmsg( logStr, LOG_DM_DEBUG );
 
         // Create a new timer
@@ -3800,7 +3815,12 @@ int CDM::addTimer( uint16_t id,
     else {
 
         // Log
-        wxString logStr = wxString::Format(_("Variable already defined %d."), nameVar );
+        wxString logStr = wxString::Format(_("Variable already defined %d."), 
+#ifdef WIN32			
+			nameVar );
+#else 
+			(const char *)nameVar.mbc_str() );
+#endif
         logmsg( logStr, LOG_DM_DEBUG );
 
         if ( m_pCtrlObject->m_VSCP_Variables.add( nameVar, wxT("false"), VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {
