@@ -181,9 +181,6 @@
     <ClCompile Include="..\..\..\common\slre.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\common\tables.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\common\vscpwebserver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -191,6 +188,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\common\udpclientthread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

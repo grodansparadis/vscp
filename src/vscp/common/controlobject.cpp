@@ -671,14 +671,11 @@ bool CControlObject::run(void)
     // DM Loop
     while (!m_bQuit) {
 		
+        // CLOCKS_PER_SEC 
 		clock_t ticks,oldus;
 		oldus = ticks = clock();
 
-#ifdef WIN32
-		// CLOCKS_PER_SEC 
-		clock_t ticks,oldus;
-		oldus = ticks = clock();
-#else
+#ifndef WIN32
         struct timeval tv;
         gettimeofday(&tv, NULL);
 #endif
