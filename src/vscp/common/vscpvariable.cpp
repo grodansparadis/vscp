@@ -731,8 +731,8 @@ bool CVariableStorage::add( const wxString& varName, const wxString& value, uint
     // Name should not contain spaces so if it does
     // we replace them with 'underscore'
     size_t pos;
-    while ( wxNOT_FOUND != ( pos = strName.Find( 0x20 ) ) ) {
-        strName[pos] = '_';
+    while ( wxNOT_FOUND != ( pos = name.Find( 0x20 ) ) ) {
+        name[pos] = '_';
     }
 
     CVSCPVariable *pVar = new CVSCPVariable;
