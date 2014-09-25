@@ -567,6 +567,7 @@
     <ClInclude Include="..\..\..\common\md5.h" />
     <ClInclude Include="..\..\common\tables.h" />
     <ClInclude Include="..\..\common\udpclientthread.h" />
+    <ClInclude Include="..\..\common\vscpdlldef.h" />
     <ClInclude Include="..\..\common\vscpeventhelper.h" />
     <ClInclude Include="..\..\common\vscphelper.h" />
     <ClInclude Include="..\..\common\vscpremotetcpif.h" />
