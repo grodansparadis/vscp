@@ -2122,10 +2122,10 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                                 wxString::FromAscii(conn->query_string), 
                                 wxString::FromAscii(conn->request_method) );
 #else 
-                                (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(),
-                                (const char *)wxString::FromAscii(conn->uri).mbc_str(), 
-                                (const char *)wxString::FromAscii(conn->query_string).mbc_str(), 
-                                (const char *)wxString::FromAscii(conn->request_method).mbc_str() );			
+                                wxString::FromAscii( conn->remote_ip ).wc_str(),
+                                wxString::FromAscii(conn->uri).wc_str(), 
+                                wxString::FromAscii(conn->query_string).wc_str(), 
+                                wxString::FromAscii(conn->request_method).wc_str() );			
 #endif			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
@@ -2135,7 +2135,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			else {
 				wxString strlog = 
 					wxString::Format(_("Webserver: Page request [%s].\n"), 
-					(const char *)wxString::FromAscii( conn->uri ).mbc_str() );
+					wxString::FromAscii( conn->uri ).wc_str() );
 				pObject->logMsg( strlog, DAEMON_LOGMSG_INFO );
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
