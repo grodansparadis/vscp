@@ -42,6 +42,7 @@
       <itemPath>../../common/mdf.h</itemPath>
       <itemPath>../../../common/mongoose.c</itemPath>
       <itemPath>../../../common/mongoose.h</itemPath>
+      <itemPath>../../../common/net_skeleton.c</itemPath>
       <itemPath>../../../common/net_skeleton.h</itemPath>
       <itemPath>../../../common/randPassword.cpp</itemPath>
       <itemPath>../../../common/randPassword.h</itemPath>
@@ -121,6 +122,7 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>NOEMBED_NET_SKELETON</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
               <Elem>__WXDEBUG__</Elem>
@@ -171,6 +173,8 @@
       </item>
       <item path="../../../common/mongoose.c" ex="false" tool="0" flavor2="2">
       </item>
+      <item path="../../../common/net_skeleton.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="../../../common/randPassword.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
@@ -200,8 +204,6 @@
       <item path="../../../common/slre.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../../common/v7.c" ex="false" tool="0" flavor2="2">
-      </item>
-      <item path="../../common/canalsuperwrapper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -272,10 +274,6 @@
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
-      </item>
-      <item path="../../common/devitem.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="../../common/dllwrapper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
