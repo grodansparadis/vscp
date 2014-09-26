@@ -401,6 +401,7 @@ public:
 		Termination control
 	*/
 	bool m_bQuit;
+	
 
 	/*!
 		Pointer to ower owner

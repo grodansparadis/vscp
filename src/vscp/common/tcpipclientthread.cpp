@@ -32,6 +32,7 @@
 #include <wx/listimpl.cpp>
 #include <wx/tokenzr.h>
 #include <wx/stdpaths.h>
+#include <time.h> 
 
 #ifndef DWORD
 #define DWORD unsigned long
@@ -316,7 +317,15 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 
 		case NS_POLL:
 			if ( conn->flags & NSF_USER_1) {
+				
 				pCtrlObject->getTCPIPServer()->sendOneEventFromQueue( conn, pCtrlObject, false );
+				
+				// Send '+OK<CR><LF>' every two seconds to indicate that the
+				// link is open		
+				if ( ( wxGetUTCTime()-pClientItem->m_timeRcvLoop ) > 2 ) {
+					pClientItem->m_timeRcvLoop = wxGetUTCTime();
+					ns_send( conn, "+OK\r\n", 5 );
+				}
 			}
 			break;
 
@@ -364,7 +373,8 @@ REPEAT_COMMAND:
     // *********************************************************************
     if ( 0 == m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
         long test = NSF_CLOSE_IMMEDIATELY;
-		pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Command: Close.\n" ), DAEMON_LOGMSG_INFO );
+		pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ), 
+								DAEMON_LOGMSG_INFO );
 		conn->flags = NSF_CLOSE_IMMEDIATELY;	// Close connection
 		ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
         return;
@@ -381,28 +391,36 @@ REPEAT_COMMAND:
     //                             Send event
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "SEND " ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) handleClientSend( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
+			handleClientSend( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
     //                            Read event
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "RETR" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 2 ) ) handleClientReceive( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 2 ) ) {
+			handleClientReceive( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
     //                            Data Available
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "CDTA" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) handleClientDataAvailable( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
+			handleClientDataAvailable( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
     //                          Clear input queue
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "CLRA" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) handleClientClearInputQueue( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
+			handleClientClearInputQueue( conn, pCtrlObject );
+		}
     }
 
 
@@ -410,35 +428,45 @@ REPEAT_COMMAND:
     //                           Get Statistics
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "STAT" ) ) ) {
-         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) handleClientGetStatistics( conn, pCtrlObject );
+         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
+			 handleClientGetStatistics( conn, pCtrlObject );
+		 }
     }
 
     //*********************************************************************
     //                            Get Status
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "INFO" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) handleClientGetStatus( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
+			handleClientGetStatus( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
     //                           Get Channel ID
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "CHID" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) handleClientGetChannelID( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
+			handleClientGetChannelID( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
     //                          Set Channel GUID
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "SGID" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 6 ) ) handleClientSetChannelGUID( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
+			handleClientSetChannelGUID( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
     //                          Get Channel GUID
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "GGID" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) handleClientGetChannelGUID( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
+			handleClientGetChannelGUID( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
@@ -452,14 +480,18 @@ REPEAT_COMMAND:
     //                             Set Filter
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "SFLT" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) handleClientSetFilter( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
+			handleClientSetFilter( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
     //                             Set Mask
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "SMSK" ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) handleClientSetMask( conn, pCtrlObject );
+        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
+			handleClientSetMask( conn, pCtrlObject );
+		}
     }
 
     //*********************************************************************
@@ -474,7 +506,7 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "PASS " ) ) ) {
         if ( !handleClientPassword( conn, pCtrlObject ) ) {
-            pCtrlObject->logMsg ( _T ( "[TCP/IP Clinet] Command: Password. Not authorized.\n" ), DAEMON_LOGMSG_INFO );
+            pCtrlObject->logMsg ( _( "[TCP/IP Clinet] Command: Password. Not authorized.\n" ), DAEMON_LOGMSG_INFO );
 			conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
 			return;
         }
@@ -494,15 +526,18 @@ REPEAT_COMMAND:
 	//                               Rcvloop
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "RCVLOOP" ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 2 ) ) handleClientRcvLoop( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 2 ) ) {
+			pClientItem->m_timeRcvLoop = wxGetUTCTime();
+			handleClientRcvLoop( conn, pCtrlObject );
+		}
 	}
 
 	//*********************************************************************
-	//                               Rcvloop
+	//                               Quitloop
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
 		// Turn of receive loop
-		conn->flags &= ~(unsigned int)NSF_USER_1;
+		//conn->flags &= ~(unsigned int)NSF_USER_1;
 		ns_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
 	}
 
@@ -1682,13 +1717,13 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 	else if ( ( _("SFLT") == strcmd ) || ( ( _("SETFILTER") == strcmd ) ) ) {
 		wxString str = _("'SFLT' or 'SETFILTER' - Set filter for channel. ");
 		str += _("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
-		str += _("Example:  SETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
+		str += _("Example:  \r\nSETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
 		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
 	}
 	else if ( ( _("SMSK") == strcmd ) || ( ( _("SETMASK") == strcmd ) ) ) {
-		wxString str = _("'SFLT' or 'SETFILTER' - Set mask for channel. ");
+		wxString str = _("'SMSK' or 'SETMASK' - Set mask for channel. ");
 		str += _("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
-		str += _("Example:  SETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
+		str += _("Example:  \r\nSETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
 		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
 	}
 	else if ( _("HELP") == strcmd ) {
@@ -1696,7 +1731,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
 	}
 	else if ( _("TEST") == strcmd ) {
-		wxString str = _("'HELP [sequency]' Test command for debugging.\r\n");
+		wxString str = _("'TEST [sequency]' Test command for debugging.\r\n");
 		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
 	}
 	else if ( _("SHUTDOWN") == strcmd ) {

@@ -238,10 +238,10 @@ void *VSCPWebServerThread::Entry()
 
 	while ( !TestDestroy() && !m_bQuit ) {
 	
-#ifdef WIN32
 		// CLOCKS_PER_SEC 	
 		oldus = ticks = clock();
-#else
+		
+#ifndef WIN32
         struct timeval tv;
         gettimeofday(&tv, NULL);
 #endif

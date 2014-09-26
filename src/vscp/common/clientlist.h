@@ -191,6 +191,11 @@ public:
 	//                       Used by TCP/IP client thread
 	//////////////////////////////////////////////////////////////////////////
 	
+	/*!
+		RCVLOOP clock
+	 */
+	wxLongLong 	 m_timeRcvLoop;
+	
 	/// Username given by user
 	wxString m_UserName;
 

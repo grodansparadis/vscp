@@ -92,6 +92,7 @@ CClientItem::CClientItem()
 	m_status.lasterrorcode = 0;
 	m_status.lasterrorsubcode = 0;
 	memset( m_status.lasterrorstr, 0, sizeof( m_status.lasterrorstr ) );
+	
 
 	///////////////////////////////////////////////////////////////////////////
 	//                 Working variable storage for clients
