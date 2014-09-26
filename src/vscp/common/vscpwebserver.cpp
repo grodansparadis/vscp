@@ -1201,7 +1201,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         resultstr += wxString::Format(_("%d"), type);
         resultstr += _(";");
         resultstr += strvalue;
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, resultstr.mbc_str() );
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, resultstr.wc_str() );
 
     } 
 	else if (0 == strTok.Find(_("SAVEVAR"))) {
@@ -1508,7 +1508,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
 #ifdef WIN32 				
                                             wxString::FromAscii( conn->remote_ip ) );
 #else 
-											(const char *)wxString::FromAscii( conn->remote_ip ).mbc_str() );
+											(const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
 #endif		
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
@@ -1532,8 +1532,8 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
                                                  wxString::FromAscii( conn->remote_ip ), 
                                                  strUser );
 #else 
-                                                 (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
-                                                 (const char *)strUser.mbc_str() );			
+                                                 (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
+                                                 (const char *)strUser.mbc_wc_strstr() );			
 #endif			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         }
@@ -1544,7 +1544,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
 #ifdef WIN32				
                                              strUser );
 #else 
-                                             (const char *)strUser.mbc_str() );			
+                                             (const char *)strUser.wc_str() );			
 #endif			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         }
@@ -2074,8 +2074,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                                                  wxString::FromAscii( conn->remote_ip ), 
                                                  pUser->m_user );
 #else 
-                                                 (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
-                                                 (const char *)pUser->m_user.mbc_str() );				
+                                                 (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
+                                                 (const char *)pUser->m_user.wc_str() );				
 #endif 				
                 pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
                 return MG_FALSE;
@@ -2088,8 +2088,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                     // Username/password wrong
                     strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n"), 
-                                                 (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
-                                                 (const char *)pUser->m_user.mbc_str() );
+                                                 wxString::FromAscii( conn->remote_ip ).wc_str(), 
+                                                 pUser->m_user.wc_str() );
 	                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );                                                                        
 				    return MG_FALSE;
             }
@@ -2104,8 +2104,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                                         wxString::FromAscii( conn->remote_ip ), 
                                         pUser->m_user );
 #else 
-                                        (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
-                                        (const char *)pUser->m_user.mbc_str() );			
+                                        (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
+                                        (const char *)pUser->m_user.wc_str() );			
 #endif 			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY ); 
             
@@ -2414,8 +2414,8 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
 
     bool bFirstRow = false;
     wxString buildPage;
-    wxString strHeader = wxString::Format(_("VSCP - %s"), (const char *)textHeader.mbc_str() );
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), (const char *)strHeader.mbc_str() );
+    wxString strHeader = wxString::Format(_("VSCP - %s"), (const char *)textHeader.wc_str() );
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), (const char *)strHeader.mbcwc_str_str() );
     buildPage += _(WEB_STYLE_START);
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
@@ -2425,7 +2425,7 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
     // Navigation menu 
     buildPage += _(WEB_COMMON_MENU);
 
-    buildPage += wxString::Format( _("<b>%s</b><br><br>"), (const char *)textHeader.mbc_str() );
+    buildPage += wxString::Format( _("<b>%s</b><br><br>"), (const char *)textHeader.wc_str() );
     buildPage += _("<b>Path</b>=<i>");
     buildPage += logfile.GetFullPath();
     buildPage += _("</i><br>");
@@ -2691,8 +2691,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	if (!bValidHost) {
         wxString strErr = 
         wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                            (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str(), 
-                            (const char *)keypairs[_("USER")].mbc_str() );
+                            (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
+                            (const char *)keypairs[_("USER")].mbcwc_str_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         return MG_FALSE;
     }
@@ -2702,16 +2702,16 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) {
         wxString strErr = 
         wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
-                            (const char *)keypairs[_("USER")].mbc_str(), 
-                            (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str() );
+                            (const char *)keypairs[_("USER")].wc_str(), 
+                            (const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         return MG_FALSE;
     }
 
     wxString strErr = 
         wxString::Format( _("[REST Client] User [%s] Host [%s] allowed to connect. \n"), 
-                            (const char *)keypairs[_("USER")].mbc_str() , 
-                            (const char *)wxString::FromAscii( conn->remote_ip ).mbc_str() );
+                            (const char *)keypairs[_("USER")].wc_str() , 
+                            (const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
 	// Get format
@@ -3373,7 +3373,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 								strcpy((char *) wrkbuf, (const char*) "<guid>");
 								vscp_writeGuidToString( pEvent, str);
-								strcpy((char *) wrkbuf, str.mbc_str() );
+								strcpy((char *) wrkbuf, str.wc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</guid>");
 
 								strcpy((char *) wrkbuf, (const char*) "<sizedata>");
@@ -3382,7 +3382,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 								strcpy((char *) wrkbuf, (const char*) "<data>");
 								vscp_writeVscpDataToString( pEvent, str);
-								strcpy((char *) wrkbuf, str.mbc_str() );
+								strcpy((char *) wrkbuf, str.wc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</data>");
 
 								strcat((char *) wrkbuf, "</event>" );
@@ -3735,8 +3735,8 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 								strVariableValue,
 								pvar->getNote() );
 #else 
-								(const char *)strVariableValue.mbc_str(),
-								(const char *)pvar->getNote().mbc_str() );				
+								(const char *)strVariableValue.wc_str(),
+								(const char *)pvar->getNote().wc_str() );				
 #endif				
 				webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 				mg_write( conn, buf, strlen( buf ) );
@@ -3752,11 +3752,11 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			memset( buf, 0, sizeof( buf ));
 			sprintf( wrkbuf, 
 				"success-code,error-code,message,description,Variable,Type, Value,Persistent,Note\r\n1,1,Success,Success.,%s,%d,%s,%s,%s\r\n",
-				(const char *)strVariableName.mbc_str(), 
+				(const char *)strVariableName.wc_str(), 
 				pvar->getType(),
-				(const char *)strVariableValue.mbc_str(),
+				(const char *)strVariableValue.wc_str(),
 				pvar->isPersistent() ? "true" : "false", 
-				(const char *)pvar->getNote().mbc_str() );
+				(const char *)pvar->getNote().wc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -3787,9 +3787,9 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			memset( buf, 0, sizeof( buf ) );
 			sprintf((char *) wrkbuf, 
 							"<name>%s</name><value>%s</value><note>%s</note>",
-							(const char *)pvar->getName().mbc_str(),
-							(const char *)strVariableValue.mbc_str(),
-							(const char *)pvar->getNote().mbc_str() );
+							pvar->getName().wc_str(),
+							strVariableValue.wc_str(),
+							pvar->getNote().wc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -3972,7 +3972,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 		listVSCPTables::iterator iter;
 		for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
 			CVSCPTable *pTable = *iter;
-			if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, strName.mbc_str() ) ) {
+			if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, strName.wc_str() ) ) {
 			//	pTable->logData( timestamp, value );
 				break;
 			}
