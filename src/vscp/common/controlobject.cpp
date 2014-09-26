@@ -498,13 +498,23 @@ bool CControlObject::init(wxString& strcfgfile)
     //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
 
     // Generate username and password for drivers
-    char buf[ 64 ];
+    char buf[ 512 ];
     randPassword pw(3);
 
+	// Level II Driver Username	
     pw.generatePassword(32, buf);
     m_driverUsername = wxString::FromAscii(buf);
+	
+	// Level II Driver Password
     pw.generatePassword(32, buf);
-    Cmd5 md5((unsigned char *) buf);
+	
+	wxString driverhash = m_driverUsername + _(":") +
+							m_authDomain + _(":") +
+							wxString::FromAscii( buf );
+	
+	memset( buf, 0, sizeof( buf ) );
+	strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
+    Cmd5 md5( (unsigned char *)buf );
     m_driverPassword = wxString::FromAscii(buf);
 
     m_userList.addUser(m_driverUsername,

@@ -420,6 +420,8 @@ int CCAN232Obj::close(void)
     }
 
     // Give the worker thread some time to terminate
+	Sleep( 1 );
+	
     int *trv;
     pthread_join(m_threadId, (void **) &trv);
     pthread_mutex_destroy(&m_can232ObjMutex);
