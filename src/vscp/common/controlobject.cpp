@@ -414,7 +414,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
     } 
 
 
-
+#ifndef WIN32
 
     //::wxLogDebug(wxdebugmsg);
 
@@ -422,7 +422,10 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
         wxPrintf(wxdebugmsg);
     }
 
+
+
     switch (level) {
+
     case DAEMON_LOGMSG_DEBUG:
         syslog(LOG_DEBUG, "%s", (const char *) wxdebugmsg.ToAscii());
         break;
@@ -456,6 +459,9 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
         break;
 
     };
+
+#endif
+
 
 }
 

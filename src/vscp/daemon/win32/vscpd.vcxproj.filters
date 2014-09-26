@@ -193,6 +193,9 @@
     <ClCompile Include="..\..\common\tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\common\net_skeleton.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="wx\msw\blank.cur">

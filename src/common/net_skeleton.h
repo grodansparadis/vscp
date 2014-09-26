@@ -14,12 +14,12 @@
 // Alternatively, you can license this software under a commercial
 // license, as set out in <http://cesanta.com/>.
 //
-// $Date: 2014-09-17 08:49:54 UTC $
+// $Date: 2014-09-23 15:38:42 UTC $
 
 #ifndef NS_SKELETON_HEADER_INCLUDED
 #define NS_SKELETON_HEADER_INCLUDED
 
-#define NS_SKELETON_VERSION "2.0.0"
+#define NS_SKELETON_VERSION "2.1.0"
 
 #undef UNICODE                  // Use ANSI WinAPI functions
 #undef _UNICODE                 // Use multibyte encoding on Windows
@@ -27,9 +27,7 @@
 #define _INTEGRAL_MAX_BITS 64   // Enable _stati64() on Windows
 #define _CRT_SECURE_NO_WARNINGS // Disable deprecation warning in VS2005+
 #undef WIN32_LEAN_AND_MEAN      // Let windows.h always include winsock2.h
-#ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 600       // For flockfile() on Linux
-#endif
 #define __STDC_FORMAT_MACROS    // <inttypes.h> wants this for C++
 #define __STDC_LIMIT_MACROS     // C++ wants that for INT64_MAX
 #ifndef _LARGEFILE_SOURCE
@@ -159,6 +157,7 @@ void iobuf_init(struct iobuf *, size_t initial_size);
 void iobuf_free(struct iobuf *);
 size_t iobuf_append(struct iobuf *, const void *data, size_t data_size);
 void iobuf_remove(struct iobuf *, size_t data_size);
+void iobuf_resize(struct iobuf *, size_t new_size);
 
 // Net skeleton interface
 // Events. Meaning of event parameter (evp) is given in the comment.
@@ -200,6 +199,7 @@ struct ns_connection {
   ns_callback_t callback;
 
   unsigned int flags;
+
 #define NSF_FINISHED_SENDING_DATA   (1 << 0)
 #define NSF_BUFFER_BUT_DONT_SEND    (1 << 1)
 #define NSF_SSL_HANDSHAKE_DONE      (1 << 2)
