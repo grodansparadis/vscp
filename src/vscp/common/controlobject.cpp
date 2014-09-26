@@ -229,7 +229,7 @@ CControlObject::CControlObject()
 #ifdef WIN32
     m_logAccessFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscp_log_access.txt") );
 #else
-    m_logAccessFileName.SetName( _("/srv/vscp/logs/vscp_log_security") );
+    m_logAccessFileName.SetName( _("/srv/vscp/logs/vscp_log_access") );
 #endif
 
     // Control TCP/IP Interface
@@ -354,7 +354,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 
     wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + wxstr;
 
-#ifdef WIN32
+#ifdef WIN32 
 #ifdef BUILD_VSCPD_SERVICE
 
     const char* ps[3];
@@ -378,18 +378,21 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
             0,
             ps,
             NULL);
-#else
+#endif
+#endif
 
     
 
     //printf( wxdebugmsg.mb_str( wxConvUTF8 ) );
     if ( level >= m_logLevel ) {
 
+#ifdef WIN32		
         // Send out to possible window
         wxPrintf( wxdebugmsg );
+#endif		
 
         if ( DAEMON_LOGTYPE_GENERAL == nType ) {
-            // Write to generalt log file
+            // Write to general log file
             if ( m_fileLogGeneral.IsOpened() ) {
                 m_fileLogGeneral.Write( wxdebugmsg );
             }
@@ -411,8 +414,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
     } 
 
 
-#endif
-#else
+
 
     //::wxLogDebug(wxdebugmsg);
 
@@ -454,7 +456,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
         break;
 
     };
-#endif
+
 }
 
 

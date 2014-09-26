@@ -2776,7 +2776,7 @@ CDM::CDM( CControlObject *ctrlObj )
 #ifdef WIN32
     m_logFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
 #else
-    m_logFileName.SetName( _("/opt/vscp/logs/vscp_log_dm") );
+    m_logFileName.SetName( _("/srv/vscp/logs/vscp_log_dm") );
 #endif
 
     m_pCtrlObject = ctrlObj;

@@ -63,6 +63,8 @@
       <itemPath>../../common/vscp.h</itemPath>
       <itemPath>../../common/vscp_class.h</itemPath>
       <itemPath>../../common/vscp_type.h</itemPath>
+      <itemPath>../../common/vscpclientthreads.cpp</itemPath>
+      <itemPath>../../common/vscpclientthreads.h</itemPath>
       <itemPath>../../common/vscpdlldef.h</itemPath>
       <itemPath>../../common/vscpeventhelper.cpp</itemPath>
       <itemPath>../../common/vscpeventhelper.h</itemPath>
@@ -70,8 +72,6 @@
       <itemPath>../../common/vscphelper.h</itemPath>
       <itemPath>../../common/vscpremotetcpif.cpp</itemPath>
       <itemPath>../../common/vscpremotetcpif.h</itemPath>
-      <itemPath>../../common/vscptcpif.cpp</itemPath>
-      <itemPath>../../common/vscptcpif.h</itemPath>
       <itemPath>../../common/vscpvariable.cpp</itemPath>
       <itemPath>../../common/vscpvariable.h</itemPath>
       <itemPath>../../common/vscpwebserver.cpp</itemPath>
@@ -368,6 +368,10 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="../../common/vscpclientthreads.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="../../common/vscpclientthreads.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
@@ -396,19 +400,6 @@
       </item>
       <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
