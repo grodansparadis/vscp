@@ -166,7 +166,7 @@ void *VSCPClientThread::Entry()
 		if ( 0 == str.Length() ) continue;
 
 		// Bind to this interface
-		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, str.mbc_str(), NULL ); //
+		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, (const char *)str.wc_str(), NULL ); //
 	}
 	
 	//ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, port1, NULL ); //
@@ -276,7 +276,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				str += _(VSCPD_COPYRIGHT);
 				str += _("\r\n");
 				str += _(MSG_OK);
-				ns_send( conn, str.mbc_str(), str.Length() );	 
+				ns_send( conn, (const char*)str.wc_str(), str.Length() );	 
 
 			}
 			break;
@@ -1446,9 +1446,9 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     // Calculate MD5 for username:autdomain:password
     char buf[2148];
-	strncpy( buf, pClientItem->m_UserName.mbc_str(), sizeof( buf ) );
+	strncpy( buf, (const char *)pClientItem->m_UserName.wc_str(), sizeof( buf ) );
 	strncat( buf, ":", sizeof( buf ) );
-	strncat( buf, pCtrlObject->m_authDomain.mbc_str(), sizeof( buf ) );
+	strncat( buf, (const char *)pCtrlObject->m_authDomain.wc_str(), sizeof( buf ) );
 	strncat( buf, ":", sizeof( buf ) );
     strncat( (char *)buf, strPassword.mb_str(), sizeof( buf ) );
 	
@@ -1467,12 +1467,9 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     if ( NULL == pClientItem->m_pUserItem ) {
         ::wxLogDebug ( _("Password/Username failure.") );
         wxString strErr = 
-			wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 
-#ifdef WIN32
-			pClientItem->m_UserName, strPassword );
-#else	
+			wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 	
 			(const char *)pClientItem->m_UserName.mb_str(), (const char *)strPassword.mb_str() );
-#endif
+
 		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 		ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
         return false;
@@ -1494,11 +1491,8 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     if ( !bValidHost ) {
 		wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), 
-#ifdef WIN32
-			remoteaddr );
-#else
-			(const char *)remoteaddr.mbc_str() );
-#endif		
+			(const char *)remoteaddr.wc_str() );
+		
 		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
         return false;
@@ -1511,13 +1505,9 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     wxString strErr = 
         wxString::Format( _("[TCP/IP Client] Host [%s] User [%s] allowed to connect.\n"), 
-#ifdef WIN32		
-                            remoteaddr, 
-                            pClientItem->m_UserName );
-#else 	
-							(const char *)remoteaddr.mbc_str(), 
-                            (const char *)pClientItem->m_UserName.mbc_str() );
-#endif	
+							(const char *)remoteaddr.wc_str(), 
+                            (const char *)pClientItem->m_UserName.wc_str() );
+
 	pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 
     pClientItem->m_bAuthorized = true;
@@ -1610,111 +1600,111 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 				str += _("INTERFACE       - Interface manipulation. \r\n");
 				str += _("DM              - Decision Matrix manipulation.\r\n");
 				str += _("VARIABLE        - Variable handling. \r\n");
-				ns_send( conn, str.mbc_str(), str.Length() );
+				ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("+") == strcmd ) {
 		wxString str = _("'+' repeats the last given command.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("NOOP") == strcmd ) {
 		wxString str = _("'NOOP' Does absolutly nothing but giving a success in return.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("QUIT") == strcmd ) {
 		wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("USER") == strcmd ) {
 		wxString str = _("'USER' Used to login to the system together with PASS. Connection will be closed if bad credentials are given.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("PASS") == strcmd ) {
 		wxString str = _("'PASS' Used to login to the system together with USER. Connection will be closed if bad credentials are given.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("QUIT") == strcmd ) {
 		wxString str = _("'QUIT' Quit a session with the VSCP daemon and closes the connection.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("SEND") == strcmd ) {
 		wxString str = _("'SEND event' Send event. The event is given as 'head,class,type,obid,time-stamp,GUID,data1,data2,data3....' ");
 		str += _("Set head and obid to zero. If timestamp is set to zero it will be set by the server. If GUID is given as '-' ");
 		str += _("the GUID of the interface will be used. The GUID should be given on the form MSB-byte:MSB-byte-1:MSB-byte-2��. \r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("RETR") == strcmd ) {
 		wxString str = _("'RETR count' - Retrieve one or 'count' event(s). ");
 		str += _("Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("RCVLOOP") == strcmd ) {
 		wxString str = _("'RCVLOOP' - Enter the receive loop and receive events continously or until ");
 		str += _("terminated with 'QUITLOOP'. Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("QUITLOOP") == strcmd ) {
 		wxString str = _("'QUITLOOP' - End 'RCVLOOP' event receives.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( ( _("CDTA") == strcmd ) || ( ( _("CHKDATA") == strcmd ) ) ) {
 		wxString str = _("'CDTA' or 'CHKDATA' - Check if there is events in the input queue.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( ( _("CLRA") == strcmd ) || ( ( _("CLRALL") == strcmd ) ) ) {
 		wxString str = _("'CLRA' or 'CLRALL' - Clear input queue.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("STAT") == strcmd ) {
 		wxString str = _("'STAT' - Get statistical information.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("INFO") == strcmd ) {
 		wxString str = _("'INFO' - Get status information.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( ( _("CHID") == strcmd ) || ( ( _("GETCHID") == strcmd ) ) ) {
 		wxString str = _("'CHID' or 'GETCHID' - Get channel id.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( ( _("SGID") == strcmd ) || ( ( _("SETGUID") == strcmd ) ) ) {
 		wxString str = _("'SGID' or 'SETGUID' - Set GUID for channel.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( ( _("GGID") == strcmd ) || ( ( _("GETGUID") == strcmd ) ) ) {
 		wxString str = _("'GGID' or 'GETGUID' - Get GUID for channel.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( ( _("VERS") == strcmd ) || ( ( _("VERSION") == strcmd ) ) ) {
 		wxString str = _("'VERS' or 'VERSION' - Get version of VSCP daemon.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( ( _("SFLT") == strcmd ) || ( ( _("SETFILTER") == strcmd ) ) ) {
 		wxString str = _("'SFLT' or 'SETFILTER' - Set filter for channel. ");
 		str += _("The format is 'filter-priority, filter-class, filter-type, filter-GUID' \r\n");
 		str += _("Example:  SETFILTER 1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( ( _("SMSK") == strcmd ) || ( ( _("SETMASK") == strcmd ) ) ) {
 		wxString str = _("'SFLT' or 'SETFILTER' - Set mask for channel. ");
 		str += _("The format is 'mask-priority, mask-class, mask-type, mask-GUID' \r\n");
 		str += _("Example:  SETMASK 0x0f,0xffff,0x00ff,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00 \r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("HELP") == strcmd ) {
 		wxString str = _("'HELP [command]' This command. Gives help about available commands and the usage.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("TEST") == strcmd ) {
 		wxString str = _("'HELP [sequency]' Test command for debugging.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("SHUTDOWN") == strcmd ) {
 		wxString str = _("'SHUTDOWN' Shutdown the daemon.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("RESTART") == strcmd ) {
 		wxString str = _("'RESTART' Restart the daemon.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("DRIVER") == strcmd ) {
 		wxString str = _("'DRIVER' Handle (load/unload/update/start/stop) Level I/Level II drivers.\r\n");
@@ -1724,7 +1714,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 		str += _("'DRIVER start package' .\r\n");
 		str += _("'DRIVER stop package' .\r\n");
 		str += _("'DRIVER reload package' .\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("FILE") == strcmd ) {
 		wxString str = _("'FILE' Handle daemon files.\r\n");
@@ -1733,13 +1723,13 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 		str += _("'FILE move'.\r\n");
 		str += _("'FILE delete'.\r\n");
 		str += _("'FILE list'.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("UDP") == strcmd ) {
 		wxString str = _("'UDP' Handle UDP interface.\r\n");
 		str += _("'UDP enable'.\r\n");
 		str += _("'UDP disable' .\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("REMOTE") == strcmd ) {
 		wxString str = _("'REMOTE' User management.\r\n");
@@ -1752,13 +1742,13 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 		str += _("'REMOTE event-list 'username','event-list''.\r\n");
 		str += _("'REMOTE filter 'username','filter''.\r\n");
 		str += _("'REMOTE mask 'username','mask''.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("INTERFACE") == strcmd ) {
 		wxString str = _("'INTERFACE' Handle interfaces on the daemon.\r\n");
 		str += _("'INTERFACE list'.\r\n");
 		str += _("'INTERFACE close'.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("DM") == strcmd ) {
 		wxString str = _("'DM' Handle decision matrix on the daemon.\r\n");
@@ -1772,7 +1762,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 		str += _("'DM clrerr'.\r\n");
 		str += _("'DM load'.\r\n");
 		str += _("'DM save'.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 	else if ( _("VARIABLE") == strcmd ) {
 		wxString str = _("'VARIABLE' Handle variables on the daemon.\r\n");
@@ -1785,7 +1775,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 		str += _("'VARIABLE readremove'.\r\n");
 		str += _("'VARIABLE length'.\r\n");
 		str += _("'VARIABLE save'.\r\n");
-		ns_send( conn, str.mbc_str(), str.Length() );
+		ns_send( conn, (const char *)str.wc_str(), str.Length() );
 	}
 
 	ns_send( conn, MSG_OK, strlen(MSG_OK) );

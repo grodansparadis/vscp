@@ -1505,11 +1505,8 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] Host [%s] NOT allowed to connect.\n"),
-#ifdef WIN32 				
-                                            wxString::FromAscii( conn->remote_ip ) );
-#else 
 											(const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
-#endif		
+
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -1528,24 +1525,17 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
                         wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
-#ifdef WIN32
-                                                 wxString::FromAscii( conn->remote_ip ), 
-                                                 strUser );
-#else 
                                                  (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
                                                  (const char *)strUser.wc_str() );			
-#endif			
+		
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         }
         else {
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] user [%s] NOT allowed to connect.\n"), 
-#ifdef WIN32				
-                                             strUser );
-#else 
                                              (const char *)strUser.wc_str() );			
-#endif			
+			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         }
 	}
@@ -2070,13 +2060,9 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Host wrong
                 strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-#ifdef WIN32
-                                                 wxString::FromAscii( conn->remote_ip ), 
-                                                 pUser->m_user );
-#else 
                                                  (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
                                                  (const char *)pUser->m_user.wc_str() );				
-#endif 				
+			
                 pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
                 return MG_FALSE;
             }
@@ -2100,13 +2086,9 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
             // Valid credentials
             strErr = 
                     wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
-#ifdef WIN32				
-                                        wxString::FromAscii( conn->remote_ip ), 
-                                        pUser->m_user );
-#else 
                                         (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
                                         (const char *)pUser->m_user.wc_str() );			
-#endif 			
+			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY ); 
             
 			return MG_TRUE;
@@ -2116,17 +2098,11 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
             // Log access
             strErr = 
             wxString::Format( _("Host [%s] - req [%s] query [%s] method [%s] \n"), 
-#ifdef WIN32				
-                                wxString::FromAscii( conn->remote_ip ),
-                                wxString::FromAscii(conn->uri), 
-                                wxString::FromAscii(conn->query_string), 
-                                wxString::FromAscii(conn->request_method) );
-#else 
                                 wxString::FromAscii( conn->remote_ip ).wc_str(),
                                 wxString::FromAscii(conn->uri).wc_str(), 
                                 wxString::FromAscii(conn->query_string).wc_str(), 
                                 wxString::FromAscii(conn->request_method).wc_str() );			
-#endif			
+			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 			if (conn->is_websocket) {
@@ -3731,13 +3707,9 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 								(const char *)pvar->getName().mb_str(), 
 								pvar->getType(),
 								pvar->isPersistent() ? "true" : "false", 
-#ifdef WIN32					
-								strVariableValue,
-								pvar->getNote() );
-#else 
 								(const char *)strVariableValue.wc_str(),
 								(const char *)pvar->getNote().wc_str() );				
-#endif				
+			
 				webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 				mg_write( conn, buf, strlen( buf ) );
 
