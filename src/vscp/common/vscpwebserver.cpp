@@ -1201,7 +1201,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         resultstr += wxString::Format(_("%d"), type);
         resultstr += _(";");
         resultstr += strvalue;
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, resultstr.wc_str() );
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.wc_str() );
 
     } 
 	else if (0 == strTok.Find(_("SAVEVAR"))) {
@@ -1533,7 +1533,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
                                                  strUser );
 #else 
                                                  (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                                                 (const char *)strUser.mbc_wc_strstr() );			
+                                                 (const char *)strUser.wc_str() );			
 #endif			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         }
@@ -2415,7 +2415,7 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
     bool bFirstRow = false;
     wxString buildPage;
     wxString strHeader = wxString::Format(_("VSCP - %s"), (const char *)textHeader.wc_str() );
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), (const char *)strHeader.mbcwc_str_str() );
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), (const char *)strHeader.wc_str() );
     buildPage += _(WEB_STYLE_START);
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
@@ -2692,7 +2692,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
         wxString strErr = 
         wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
                             (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                            (const char *)keypairs[_("USER")].mbcwc_str_str() );
+                            (const char *)keypairs[_("USER")].wc_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         return MG_FALSE;
     }
@@ -3373,7 +3373,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 								strcpy((char *) wrkbuf, (const char*) "<guid>");
 								vscp_writeGuidToString( pEvent, str);
-								strcpy((char *) wrkbuf, str.wc_str() );
+								strcpy((char *) wrkbuf, (const char *)str.wc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</guid>");
 
 								strcpy((char *) wrkbuf, (const char*) "<sizedata>");
@@ -3382,7 +3382,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 								strcpy((char *) wrkbuf, (const char*) "<data>");
 								vscp_writeVscpDataToString( pEvent, str);
-								strcpy((char *) wrkbuf, str.wc_str() );
+								strcpy((char *) wrkbuf, (const char *)str.wc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</data>");
 
 								strcat((char *) wrkbuf, "</event>" );
@@ -3787,9 +3787,9 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			memset( buf, 0, sizeof( buf ) );
 			sprintf((char *) wrkbuf, 
 							"<name>%s</name><value>%s</value><note>%s</note>",
-							pvar->getName().wc_str(),
-							strVariableValue.wc_str(),
-							pvar->getNote().wc_str() );
+							(const char *)pvar->getName().wc_str(),
+							(const char *)strVariableValue.wc_str(),
+							(const char *)pvar->getNote().wc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -3972,7 +3972,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 		listVSCPTables::iterator iter;
 		for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
 			CVSCPTable *pTable = *iter;
-			if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, strName.wc_str() ) ) {
+			if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, (const char *)strName.wc_str() ) ) {
 			//	pTable->logData( timestamp, value );
 				break;
 			}
