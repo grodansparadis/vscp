@@ -285,9 +285,8 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 
 			// Close client
 			pClientItem->m_bOpen = false;
-
-			ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
-
+			conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+			
 			// Add the client to the Client List
 			pCtrlObject->m_wxClientMutex.Lock();
 			pCtrlObject->removeClient( pClientItem );

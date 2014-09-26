@@ -10,6 +10,7 @@
       <itemPath>../../common/canal_macro.h</itemPath>
       <itemPath>../../common/canal_win32_ipc.h</itemPath>
       <itemPath>../../common/canaldlldef.h</itemPath>
+      <itemPath>../../common/canalsuperwrapper.h</itemPath>
       <itemPath>../../common/clientlist.cpp</itemPath>
       <itemPath>../../common/clientlist.h</itemPath>
       <itemPath>../../../common/configfile.cpp</itemPath>
@@ -24,8 +25,10 @@
       <itemPath>../../common/devicelist.h</itemPath>
       <itemPath>../../common/devicethread.cpp</itemPath>
       <itemPath>../../common/devicethread.h</itemPath>
+      <itemPath>../../common/devitem.h</itemPath>
       <itemPath>../../../common/dllist.c</itemPath>
       <itemPath>../../../common/dllist.h</itemPath>
+      <itemPath>../../common/dllwrapper.h</itemPath>
       <itemPath>../../common/dm.cpp</itemPath>
       <itemPath>../../common/dm.h</itemPath>
       <itemPath>../../../common/frozen.c</itemPath>
@@ -103,9 +106,6 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
-      <flagsDictionary>
-        <element flagsID="0" commonFlags="-O2"/>
-      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -136,13 +136,14 @@
         </makeTool>
       </makefileType>
       <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -155,13 +156,14 @@
       <item path="../../../common/frozen.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../../common/md5.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -182,13 +184,14 @@
         </ccTool>
       </item>
       <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -198,6 +201,8 @@
       </item>
       <item path="../../../common/v7.c" ex="false" tool="0" flavor2="2">
       </item>
+      <item path="../../common/canalsuperwrapper.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
@@ -206,6 +211,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -219,6 +225,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -232,6 +239,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -245,6 +253,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -258,10 +267,15 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
+      </item>
+      <item path="../../common/devitem.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="../../common/dllwrapper.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -271,19 +285,21 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -297,19 +313,21 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/tables.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -323,19 +341,21 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/udpclientthread.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -363,14 +383,13 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../common/vscpclientthreads.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../common/vscpclientthreads.h" ex="false" tool="3" flavor2="0">
+      <item path="../../common/vscpclientthreads.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -380,6 +399,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -393,19 +413,21 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -419,19 +441,21 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpwebserver.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <ccTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -444,6 +468,7 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
