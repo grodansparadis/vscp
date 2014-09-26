@@ -438,7 +438,7 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
     int		 typeVariable;			  // Type of variable;
     bool	 bPersistent = false;	  // Persistence of variable		
 
-    wxStringTokenizer tkz( strVariable, _(",") );
+    wxStringTokenizer tkz( strVariable, _(";") );
 
     // Get name of variable
     if ( tkz.HasMoreTokens() ) {

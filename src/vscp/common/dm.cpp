@@ -1282,7 +1282,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     if ( wxNOT_FOUND != ( pos = str.Find( wxT("]") ) ) ) {
                         str = str.Right( str.Length() - pos - 1 );		
                     }
-                    strResult +=  wxT("empty");		// No data	
+                    strResult +=  wxT("");		// No data	
                 }
             }
             // Check for sizedata escape
@@ -2171,6 +2171,7 @@ bool dmElement::doActionStoreVariable( vscpEvent *pDMEvent )
         wxstrErr += wxstr;
         wxstrErr += _("\n");
         m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
+		delete pVar;
         return false;
     }
 
