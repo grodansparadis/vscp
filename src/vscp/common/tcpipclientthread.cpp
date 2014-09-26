@@ -363,8 +363,9 @@ REPEAT_COMMAND:
     //                                 QUIT
     // *********************************************************************
     if ( 0 == m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
+        long test = NSF_CLOSE_IMMEDIATELY;
 		pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Command: Close.\n" ), DAEMON_LOGMSG_INFO );
-		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+		conn->flags = NSF_CLOSE_IMMEDIATELY;	// Close connection
 		ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
         return;
     }
