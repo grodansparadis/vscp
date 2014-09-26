@@ -2,6 +2,9 @@
 release notes for release 0.1.0 Neon
 ========================================
 
+2014-09-26 - AKHE Merged in new code to main. Code compiles and runs on both platforms.
+                  Varaibles in action parameters has been documented as being comma separated
+                  but should be semicolon separated. This infected the code but fixed now.
 2014-09-25 - AKHE Variables with space in there names will have the space replaced with underscore.
 2014-09-20 - AKHE Logfiles for general, access, security and dm actions
                     Logfiles can be viewed in the web interface
