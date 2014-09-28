@@ -36,7 +36,7 @@ WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 MQTT_OBJECTS = mqtt.o ../../../../../common/crc.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
-PROJOBJS =  mqtt.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+PROJOBJS =  mqtt.o ../../../../../common/crc.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 
 

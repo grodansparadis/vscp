@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL1_OBJECTS =  vscpl1.o ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
-PROJOBJS        =  ../common/vscptcpif.o ../common/vscp.o ../../common/crc.o
+VSCPL1_OBJECTS =  vscpl1.o ../common/vscpremotetcpif.o ../common/vscp.o ../../common/crc.o
+PROJOBJS        =  ../common/vscpremotetcpif.o ../common/vscp.o ../../common/crc.o
 
 
 
