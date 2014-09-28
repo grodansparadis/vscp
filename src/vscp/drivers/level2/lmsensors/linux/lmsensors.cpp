@@ -54,7 +54,7 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 #include "../../../../common/vscphelper.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
 #include "lmsensors.h"
@@ -68,7 +68,7 @@ Clmsensors::Clmsensors()
 {
 	m_bQuit = false;
 	m_pthreadWork = NULL;
-    clearVSCPFilter(&m_vscpfilter); // Accept all events
+    vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
 
@@ -115,7 +115,7 @@ Clmsensors::open(const char *pUsername,
 	// Check for # of sensors in configuration string
 	if (tkz.HasMoreTokens()) {
 		// Path
-		m_nSensors = readStringValue(tkz.GetNextToken());
+		m_nSensors = vscp_readStringValue(tkz.GetNextToken());
 	}
 
 	// First log on to the host and get configuration 
@@ -545,7 +545,7 @@ CWrkTread::Entry()
                     {
                         uint8_t buf[8];
                         uint16_t size;
-                        if ( convertFloatToNormalizedEventData(val,
+                        if ( vscp_convertFloatToNormalizedEventData(val,
                                 buf,
                                 &size,
                                 ((m_datacoding >> 3 & 3)),
@@ -626,7 +626,7 @@ CWrkTread::Entry()
                     // We pretend we are a standard measurement
                     uint8_t buf[8];
                     uint16_t size;
-                    convertFloatToNormalizedEventData(val,
+                    vscp_convertFloatToNormalizedEventData(val,
                             buf,
                             &size,
                             ((m_datacoding >> 3 & 3)),
@@ -680,14 +680,14 @@ CWrkTread::Entry()
                 
                 
 
-                if (doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
+                if (vscp_doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
                     m_pObj->m_mutexReceiveQueue.Lock();
                     m_pObj->m_receiveList.push_back(pEvent);
                     m_pObj->m_semReceiveQueue.Post();
                     m_pObj->m_mutexReceiveQueue.Unlock();
                 }
                 else {
-                    deleteVSCPevent(pEvent);
+                    vscp_deleteVSCPevent(pEvent);
                 }
             }
 

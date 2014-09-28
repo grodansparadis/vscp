@@ -35,7 +35,7 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-RAWETH_OBJECTS = rawethernet.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+RAWETH_OBJECTS = rawethernet.o ../../../../../common/crc.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 PROJOBJS =  rawethernet.o ../../../../../common/crc.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 

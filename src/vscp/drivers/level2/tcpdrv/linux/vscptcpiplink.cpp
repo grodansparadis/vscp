@@ -54,7 +54,7 @@
 #include <wx/datetime.h>
 
 #include "../../../../common/vscphelper.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
 #include "vscptcpiplink.h"
@@ -69,7 +69,7 @@ CTcpipLink::CTcpipLink()
 	m_bQuit = false;
 	m_pthreadSend = NULL;
     m_pthreadReceive = NULL;
-	clearVSCPFilter(&m_vscpfilter); // Accept all events
+	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
 
@@ -121,7 +121,7 @@ CTcpipLink::open(const char *pUsername,
 	// Check for remote port in configuration string
 	if (tkz.HasMoreTokens()) {
 		// Interface
-		m_portRemote = readStringValue(tkz.GetNextToken());
+		m_portRemote = vscp_readStringValue(tkz.GetNextToken());
 	}
 	
 	// Check for remote user in configuration string
@@ -141,7 +141,7 @@ CTcpipLink::open(const char *pUsername,
 	if (tkz.HasMoreTokens()) {
 		// Interface
 		strFilter = tkz.GetNextToken();
-		readFilterFromString(&m_vscpfilter, strFilter);
+		vscp_readFilterFromString(&m_vscpfilter, strFilter);
 	}
 	
 	// Check for mask in configuration string
@@ -149,7 +149,7 @@ CTcpipLink::open(const char *pUsername,
 	if (tkz.HasMoreTokens()) {
 		// Interface
 		strMask = tkz.GetNextToken();
-		readMaskFromString(&m_vscpfilter, strMask);
+		vscp_readMaskFromString(&m_vscpfilter, strMask);
 	}
 	
 	// First log on to the host and get configuration 
@@ -217,13 +217,13 @@ CTcpipLink::open(const char *pUsername,
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
 	if (m_srvLocal.getVariableString(strName, &str)) {
-		readFilterFromString(&m_vscpfilter, str);
+		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
 	if (m_srvLocal.getVariableString(strName, &str)) {
-		readMaskFromString(&m_vscpfilter, str);
+		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 
 	// start the workerthread
@@ -493,7 +493,7 @@ CWrkReceiveTread::Entry()
             
             if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockReceive(pEvent)) {
 
-                if ( doLevel2Filter( pEvent, 
+                if ( vscp_doLevel2Filter( pEvent, 
                                         &m_pObj->m_vscpfilter) && 
                                             ( m_pObj->txChannelID != pEvent->obid ) ) {
                     m_pObj->m_mutexReceiveQueue.Lock();
@@ -502,11 +502,11 @@ CWrkReceiveTread::Entry()
                     m_pObj->m_mutexReceiveQueue.Unlock();
                 }
                 else {
-                    deleteVSCPevent(pEvent);
+                    vscp_deleteVSCPevent(pEvent);
                 }
             }
             else {
-                deleteVSCPevent(pEvent);
+                vscp_deleteVSCPevent(pEvent);
             }
         }
 				

@@ -420,7 +420,11 @@ int CCAN232Obj::close(void)
     }
 
     // Give the worker thread some time to terminate
-	Sleep( 1 );
+#ifdef WIN32
+	Sleep( 1000 );
+#else
+	sleep( 1 );
+#endif	
 	
     int *trv;
     pthread_join(m_threadId, (void **) &trv);

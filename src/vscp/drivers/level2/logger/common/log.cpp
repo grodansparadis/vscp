@@ -48,7 +48,7 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 #include "../../../../common/vscphelper.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "log.h"
 
 // Lists
@@ -157,14 +157,14 @@ CVSCPLog::open(const char *pUsername,
 	if (tkz.HasMoreTokens()) {
 		wxString str;
 		str = tkz.GetNextToken();
-		readFilterFromString(&m_Filter,str);
+		vscp_readFilterFromString(&m_Filter,str);
 	}
 	
 	// Mask
 	if (tkz.HasMoreTokens()) {
 		wxString str;
 		str = tkz.GetNextToken();
-		readMaskFromString(&m_Filter,str);
+		vscp_readMaskFromString(&m_Filter,str);
 	}
 
 	// start the worker thread
@@ -353,7 +353,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		m_pLogStream->Write("</type>\n", strlen("</type>\n"));
 
 		m_pLogStream->Write("<guid>", strlen("<guid>"));
-		writeGuidToString(pEvent, str);
+		vscp_writeGuidToString(pEvent, str);
 		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 		m_pLogStream->Write("</guid>\n", strlen("</guid>\n"));
 
@@ -364,7 +364,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 
 		if (0 != pEvent->sizeData) {
 			m_pLogStream->Write("<data>", strlen("<data>"));
-			writeVscpDataToString(pEvent, str);
+			vscp_writeVscpDataToString(pEvent, str);
 			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 			m_pLogStream->Write("</data>\n", strlen("</data>\n"));
 		}
@@ -399,7 +399,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		str.Printf(_("GUID="), pEvent->vscp_type);
 		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
-		writeGuidToString(pEvent, str);
+		vscp_writeGuidToString(pEvent, str);
 		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
 		str.Printf(_(" datasize=%d "), pEvent->sizeData);
@@ -408,7 +408,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		if (0 != pEvent->sizeData) {
 			str.Printf(_("data="), pEvent->vscp_type);
 			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
-			writeVscpDataToString(pEvent, str);
+			vscp_writeVscpDataToString(pEvent, str);
 			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 		}
 

@@ -283,8 +283,8 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
 	pdrvObj->m_mutexReceiveQueue.Unlock();
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
     
-    copyVSCPEvent( pEvent, pLocalEvent );
-    deleteVSCPevent( pLocalEvent );
+    vscp_copyVSCPEvent( pEvent, pLocalEvent );
+    vscp_deleteVSCPevent( pLocalEvent );
 	
 	return CANAL_ERROR_SUCCESS;
 }

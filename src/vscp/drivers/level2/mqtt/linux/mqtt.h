@@ -57,7 +57,7 @@
 #include "../../../../common/vscp.h"
 #include "../../../../common/canal_macro.h"
 #include "../../../../../common/dllist.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/guid.h"
 
 #include <list>

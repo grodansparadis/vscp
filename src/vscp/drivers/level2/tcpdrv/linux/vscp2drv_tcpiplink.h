@@ -34,7 +34,7 @@
 #include <pthread.h>
 #include <syslog.h>
 #include "../../../../common/canal.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/canal_macro.h"
 
 #include "vscptcpiplink.h"

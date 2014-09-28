@@ -54,7 +54,7 @@
 #include <wx/datetime.h>
 
 #include "../../../../common/vscphelper.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
 #include "mqtt.h"
@@ -109,7 +109,7 @@ void mqtt_subscribe::on_message(const struct mosquitto_message *message)
 	if ( !strcmp( message->topic, m_pObj->m_topic.ToAscii() ) ) {
         
 		wxString str = wxString::FromAscii((const char *) message->payload);
-		if (getVscpEventExFromString(&eventEx, str)) {
+		if (vscp_getVscpEventExFromString(&eventEx, str)) {
             
             vscpEvent *pEvent = new vscpEvent;
             if (NULL != pEvent) {
@@ -117,9 +117,9 @@ void mqtt_subscribe::on_message(const struct mosquitto_message *message)
                 pEvent->sizeData = 0;
                 pEvent->pdata = NULL;
                 
-                if ( doLevel2FilterEx( &eventEx, &m_pObj->m_vscpfilter ) ) {
+                if ( vscp_doLevel2FilterEx( &eventEx, &m_pObj->m_vscpfilter ) ) {
                     
-                    if ( convertVSCPfromEx( pEvent, &eventEx ) ) {
+                    if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
                         m_pObj->m_mutexReceiveQueue.Lock();
                         m_pObj->m_receiveList.push_back(pEvent);
                         m_pObj->m_semReceiveQueue.Post();
@@ -130,7 +130,7 @@ void mqtt_subscribe::on_message(const struct mosquitto_message *message)
                     }
                 }
                 else {
-                    deleteVSCPevent(pEvent);
+                    vscp_deleteVSCPevent(pEvent);
                 }
             }
 		}
@@ -235,7 +235,7 @@ Cmqtt::Cmqtt()
     m_simple_zone = 0;
     m_simple_subzone = 0;
     
-	clearVSCPFilter(&m_vscpfilter); // Accept all events
+	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
 
@@ -303,7 +303,7 @@ Cmqtt::open(const char *pUsername,
 
 	// Get MQTT host port from configuration string
 	if (tkz.HasMoreTokens()) {
-		m_portMQTT = readStringValue(tkz.GetNextToken());
+		m_portMQTT = vscp_readStringValue(tkz.GetNextToken());
 	}
 
 	// Get MQTT user from configuration string
@@ -316,9 +316,9 @@ Cmqtt::open(const char *pUsername,
 		m_passwordMQTT = tkz.GetNextToken();
 	}
 
-	// Get MQTT keepalive from configuration string
+	// Get MQTT keep alive from configuration string
 	if (tkz.HasMoreTokens()) {
-		m_keepalive = readStringValue(tkz.GetNextToken());
+		m_keepalive = vscp_readStringValue(tkz.GetNextToken());
 	}
 
 	// First log on to the host and get configuration 
@@ -420,13 +420,13 @@ Cmqtt::open(const char *pUsername,
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
 	if (m_srv.getVariableString(strName, &str)) {
-		readFilterFromString(&m_vscpfilter, str);
+		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
 	if (m_srv.getVariableString(strName, &str)) {
-		readMaskFromString(&m_vscpfilter, str);
+		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
     
     strName = m_prefix +
@@ -441,27 +441,27 @@ Cmqtt::open(const char *pUsername,
         
         // simple class
         if (tkzSimple.HasMoreTokens()) {
-            m_simple_class = readStringValue(tkzSimple.GetNextToken());
+            m_simple_class = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
         // simple type
         if (tkzSimple.HasMoreTokens()) {
-            m_simple_type = readStringValue(tkzSimple.GetNextToken());
+            m_simple_type = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
         // simple coding
         if (tkzSimple.HasMoreTokens()) {
-            m_simple_coding = readStringValue(tkzSimple.GetNextToken());
+            m_simple_coding = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
         // simple zone
         if (tkzSimple.HasMoreTokens()) {
-            m_simple_zone = readStringValue(tkzSimple.GetNextToken());
+            m_simple_zone = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
         // simple subzone
         if (tkzSimple.HasMoreTokens()) {
-            m_simple_subzone = readStringValue(tkzSimple.GetNextToken());
+            m_simple_subzone = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
     }
@@ -599,7 +599,7 @@ CWrkThread::Entry()
                     
                 }
                 else {
-                    writeVscpEventToString( pEvent, str );
+                    vscp_writeVscpEventToString( pEvent, str );
                     pPublish->publish( NULL, 
                                         m_pObj->m_topic.ToAscii(), 
                                         strlen( str.mb_str() ), 
