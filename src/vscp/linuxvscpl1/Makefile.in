@@ -36,7 +36,7 @@ WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 VSCPL1_OBJECTS =  vscpl1.o  ../common/vscptcpif.o ../common/vscphelper.o ../common/guid.o ../../common/crc.o
-PROJOBJS        =  ../common/vscptcpif.o ../common/vscphelper.o  ../../common/crc.o ../common/guid.o
+PROJOBJS        =  ../common/vscpremotetcpif.o ../common/vscphelper.o  ../../common/crc.o ../common/guid.o
 
 
 
