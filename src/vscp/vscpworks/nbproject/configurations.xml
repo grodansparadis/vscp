@@ -32,6 +32,7 @@
       <itemPath>../common/vscphelper.cpp</itemPath>
       <itemPath>../common/vscphelper.h</itemPath>
       <itemPath>../common/vscpremotetcpif.cpp</itemPath>
+      <itemPath>../common/vscpremotetcpif.h</itemPath>
       <itemPath>../common/vscptcpif.cpp</itemPath>
       <itemPath>../common/vscptcpif.h</itemPath>
     </logicalFolder>
@@ -149,6 +150,8 @@
       <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
         </ccTool>
+      </item>
+      <item path="../common/vscpremotetcpif.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
       </item>
