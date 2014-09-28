@@ -47,6 +47,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -66,10 +67,8 @@
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
-              <Elem>__PIC__=2</Elem>
               <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
-              <Elem>__pic__=2</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
@@ -123,6 +122,8 @@
         </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="vscp2drv_raweth.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
