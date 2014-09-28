@@ -55,7 +55,7 @@
 #include <wx/datetime.h>
 
 #include "../../../../common/vscphelper.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
 #include "rawethernet.h"
@@ -99,7 +99,7 @@ CRawEthernet::CRawEthernet()
 	m_localGUIDrx.setAt(14, 0x00);
 	m_localGUIDrx.setAt(15, 0x01);
 
-	clearVSCPFilter(&m_vscpfilter); // Accept all events
+	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
 
@@ -157,7 +157,7 @@ CRawEthernet::open(const char *pUsername,
 		for (int i = 0; i < 6; i++) {
 			if (!tkzmac.HasMoreTokens()) break;
 			wxString str = _("0X") + tkzmac.GetNextToken();
-			m_localMac[ i ] = readStringValue(str);
+			m_localMac[ i ] = vscp_readStringValue(str);
 			m_localGUIDtx.setAt((9 + i), m_localMac[ i ]);
 			m_localGUIDrx.setAt((9 + i), m_localMac[ i ]);
 		}
@@ -221,7 +221,7 @@ CRawEthernet::open(const char *pUsername,
 		for (int i = 0; i < 6; i++) {
 			if (!tkzmac.HasMoreTokens()) break;
 			wxString str = _("0X") + tkzmac.GetNextToken();
-			m_localMac[ i ] = readStringValue(str);
+			m_localMac[ i ] = vscp_readStringValue(str);
 			m_localGUIDtx.setAt((9 + i), m_localMac[ i ]);
 			m_localGUIDrx.setAt((9 + i), m_localMac[ i ]);
 		}
@@ -230,13 +230,13 @@ CRawEthernet::open(const char *pUsername,
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
 	if (m_srv.getVariableString(strName, &str)) {
-		readFilterFromString(&m_vscpfilter, str);
+		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
 	if (m_srv.getVariableString(strName, &str)) {
-		readMaskFromString(&m_vscpfilter, str);
+		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 
 	// start the read workerthread
@@ -437,16 +437,16 @@ CWrkReadThread::Entry()
             vscpEvent *pEvent = new vscpEvent;
             if (NULL != pEvent) {
                 
-                convertVSCPfromEx(pEvent, &eventex);
+                vscp_convertVSCPfromEx(pEvent, &eventex);
 
-                if (doLevel2FilterEx( &eventex, &m_pObj->m_vscpfilter)) {
+                if (vscp_doLevel2FilterEx( &eventex, &m_pObj->m_vscpfilter)) {
                     m_pObj->m_mutexReceiveQueue.Lock();
                     m_pObj->m_receiveList.push_back(pEvent);
                     m_pObj->m_semReceiveQueue.Post();
                     m_pObj->m_mutexReceiveQueue.Unlock();
                 }
                 else {
-                    deleteVSCPevent(pEvent);
+                    vscp_deleteVSCPevent(pEvent);
                 }
             }
 
@@ -643,7 +643,7 @@ CWrkWriteThread::Entry()
 
             // Remove the event
             m_pObj->m_mutexSendQueue.Lock();
-            deleteVSCPevent(pEvent);
+            vscp_deleteVSCPevent(pEvent);
             m_pObj->m_mutexSendQueue.Unlock();
 
 		} // Event received

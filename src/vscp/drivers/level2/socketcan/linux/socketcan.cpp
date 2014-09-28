@@ -61,7 +61,7 @@
 #include <wx/datetime.h>
 
 #include "../../../../common/vscphelper.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
 #include "../../../../common/vscp_class.h"
 #include "socketcan.h"
@@ -79,7 +79,7 @@ Csocketcan::Csocketcan()
 	m_bQuit = false;
 	m_pthreadWorker = NULL;
 	m_interface = _("vcan0");
-	clearVSCPFilter(&m_vscpfilter); // Accept all events
+	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
 
@@ -180,13 +180,13 @@ Csocketcan::open(const char *pUsername,
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
 	if (m_srv.getVariableString(strName, &str)) {
-		readFilterFromString(&m_vscpfilter, str);
+		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
 	if (m_srv.getVariableString(strName, &str)) {
-		readMaskFromString(&m_vscpfilter, str);
+		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 
 	// start the workerthread
@@ -387,10 +387,10 @@ CSocketCanWorkerTread::Entry()
                     pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
 
                     // Set VSCP class
-                    pEvent->vscp_class = getVSCPclassFromCANid(frame.can_id);
+                    pEvent->vscp_class = vscp_getVSCPclassFromCANid(frame.can_id);
 
                     // Set VSCP type
-                    pEvent->vscp_type = getVSCPtypeFromCANid(frame.can_id);
+                    pEvent->vscp_type = vscp_getVSCPtypeFromCANid(frame.can_id);
 
                     // Copy data if any
                     pEvent->sizeData = frame.len;
@@ -398,14 +398,14 @@ CSocketCanWorkerTread::Entry()
                         memcpy(pEvent->pdata, frame.data, frame.len);
                     }
 
-                    if (doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
+                    if (vscp_doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
                         m_pObj->m_mutexReceiveQueue.Lock();
                         //m_pObj->m_receiveQueue.Append(pEvent);
                         m_pObj->m_receiveList.push_back(pEvent);
                         m_pObj->m_semReceiveQueue.Post();
                         m_pObj->m_mutexReceiveQueue.Unlock();
                     } else {
-                        deleteVSCPevent(pEvent);
+                        vscp_deleteVSCPevent(pEvent);
                     }
                 }
 
@@ -429,7 +429,7 @@ CSocketCanWorkerTread::Entry()
                     // Class must be a Level I class or a Level II
                     // mirror class
                     if (pEvent->vscp_class < 512) {
-                        frame.can_id = getCANidFromVSCPevent(pEvent);
+                        frame.can_id = vscp_getCANidFromVSCPevent(pEvent);
                         frame.can_id |= CAN_EFF_FLAG; // Always extended
                         if (0 != pEvent->sizeData) {
                             frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
@@ -437,7 +437,7 @@ CSocketCanWorkerTread::Entry()
                         }
                     } else if (pEvent->vscp_class < 1024) {
                         pEvent->vscp_class -= 512;
-                        frame.can_id = getCANidFromVSCPevent(pEvent);
+                        frame.can_id = vscp_getCANidFromVSCPevent(pEvent);
                         frame.can_id |= CAN_EFF_FLAG; // Always extended
                         if (0 != pEvent->sizeData) {
                             frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
@@ -448,7 +448,7 @@ CSocketCanWorkerTread::Entry()
                     // Remove the event
                     m_pObj->m_mutexSendQueue.Lock();
                     //m_pObj->m_sendQueue.DeleteNode(nodeClient);
-                    deleteVSCPevent(pEvent);
+                    vscp_deleteVSCPevent(pEvent);
                     m_pObj->m_mutexSendQueue.Unlock();
 
 
