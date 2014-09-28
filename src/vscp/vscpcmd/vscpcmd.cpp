@@ -90,7 +90,7 @@
 
 #include "../common/canal_macro.h"
 #include "vscpcmd.h"
-#include "../common/vscptcpif.h"
+#include "../common/vscpremotetcpif.h"
 #include "../common/vscphelper.h"
 
 // Prototypes

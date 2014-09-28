@@ -2253,17 +2253,17 @@ bool VscpworksApp::readConfiguration( void )
 #if wxCHECK_VERSION(3,0,0)                             
                             pVSCPif->m_vscpfilter.filter_priority = vscp_readStringValue( subsubchild->GetAttribute( _( "priority" ), _("0") ) );
 #else 
-                            pVSCPif->m_vscpfilter.filter_priority = readStringValue( subsubchild->GetPropVal( _( "priority" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.filter_priority = vscp_readStringValue( subsubchild->GetPropVal( _( "priority" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0)                             
                             pVSCPif->m_vscpfilter.filter_class = vscp_readStringValue( subsubchild->GetAttribute( _( "class" ), _("0") ) );
 #else 
-                            pVSCPif->m_vscpfilter.filter_class = readStringValue( subsubchild->GetPropVal( _( "class" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.filter_class = vscp_readStringValue( subsubchild->GetPropVal( _( "class" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0)                             
                             pVSCPif->m_vscpfilter.filter_type = vscp_readStringValue( subsubchild->GetAttribute( _( "type" ), _("0") ) );
 #else 
-                            pVSCPif->m_vscpfilter.filter_type = readStringValue( subsubchild->GetPropVal( _( "type" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.filter_type = vscp_readStringValue( subsubchild->GetPropVal( _( "type" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0)                                                         
                             wxString strGUID = subsubchild->GetAttribute( _( "GUID" ), 
@@ -2277,17 +2277,17 @@ bool VscpworksApp::readConfiguration( void )
 #if wxCHECK_VERSION(3,0,0)                             
                             pVSCPif->m_vscpfilter.mask_priority = vscp_readStringValue( subsubchild->GetAttribute( _( "priority" ), _("0") ) );
 #else 
-                            pVSCPif->m_vscpfilter.mask_priority = readStringValue( subsubchild->GetPropVal( _( "priority" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.mask_priority = vscp_readStringValue( subsubchild->GetPropVal( _( "priority" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0)                             
                             pVSCPif->m_vscpfilter.mask_class = vscp_readStringValue( subsubchild->GetAttribute( _( "class" ), _("0") ) );
 #else 
-                            pVSCPif->m_vscpfilter.mask_class = readStringValue( subsubchild->GetPropVal( _( "class" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.mask_class = vscp_readStringValue( subsubchild->GetPropVal( _( "class" ), _("0") ) );
 #endif                               
 #if wxCHECK_VERSION(3,0,0) 
                             pVSCPif->m_vscpfilter.mask_type = vscp_readStringValue( subsubchild->GetAttribute( _( "type" ), _("0") ) );
 #else 
-                            pVSCPif->m_vscpfilter.mask_type = readStringValue( subsubchild->GetPropVal( _( "type" ), _("0") ) );
+                            pVSCPif->m_vscpfilter.mask_type = vscp_readStringValue( subsubchild->GetPropVal( _( "type" ), _("0") ) );
 #endif   
 #if wxCHECK_VERSION(3,0,0) 
                             wxString strGUID = subsubchild->GetAttribute( _( "GUID" ), 

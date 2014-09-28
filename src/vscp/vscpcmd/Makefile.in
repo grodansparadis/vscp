@@ -34,7 +34,7 @@ WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 CANCMD_OBJECTS =  \
-	vscpcmd.o ../common/vscptcpif.o  ../common/vscphelper.o ../../common/crc.o ../common/guid.o
+	vscpcmd.o ../common/vscpremotetcpif.o  ../common/vscphelper.o ../../common/crc.o ../common/guid.o ../../../common/net_skeleton.o ../../../common/mongoose.o  ../../../common/slre.o ../../../common/frozen.o ../../../common/v7.o
 
 
 ### Targets: ###

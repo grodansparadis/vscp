@@ -31,6 +31,7 @@
       <itemPath>../common/vscpeventhelper.h</itemPath>
       <itemPath>../common/vscphelper.cpp</itemPath>
       <itemPath>../common/vscphelper.h</itemPath>
+      <itemPath>../common/vscpremotetcpif.cpp</itemPath>
       <itemPath>../common/vscptcpif.cpp</itemPath>
       <itemPath>../common/vscptcpif.h</itemPath>
     </logicalFolder>
@@ -85,6 +86,9 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -131,28 +135,50 @@
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../common/mdf.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../common/register.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
       </item>
+      <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
       <item path="../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="bootdevice.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="bootdevice_pic1.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="bootdevice_vscp.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="devicebootloaderwizard.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="dialogabstractionedit.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="dialogeditlevelidmrow.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="dialogsetfiltermask.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="dlgabout.cpp" ex="false" tool="1" flavor2="4">
       </item>
@@ -178,8 +204,12 @@
         </ccTool>
       </folder>
       <item path="frmdaemondecisionmartrixeditor.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="frmdaemonvariableeditor.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="frmdeviceconfig.cpp" ex="false" tool="1" flavor2="4">
       </item>
@@ -193,12 +223,18 @@
             ex="false"
             tool="1"
             flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="frmvscpsession.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="gridtable.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="merlin.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="readregister.cpp" ex="false" tool="1" flavor2="4">
       </item>
@@ -207,6 +243,8 @@
       <item path="vscpbootloader.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="vscptxobj.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="vscpworks.cpp" ex="false" tool="1" flavor2="4">
       </item>
