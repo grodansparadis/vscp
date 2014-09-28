@@ -54,6 +54,8 @@
 #define VSCP_CLASS1_MEASUREZONE							65
 #define VSCP_CLASS1_MEASUREMENT32						70
 #define VSCP_CLASS1_SETVALUEZONE						85
+#define VSCP_CLASS1_WEATHER						        90
+#define VSCP_CLASS1_WEATHER_FORECAST					95
 #define VSCP_CLASS1_PHONE                               100
 #define VSCP_CLASS1_LIN                                 101
 #define VSCP_CLASS1_DISPLAY                             102

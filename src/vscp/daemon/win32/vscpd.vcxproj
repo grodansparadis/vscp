@@ -572,6 +572,8 @@
     <ClInclude Include="..\..\common\vscphelper.h" />
     <ClInclude Include="..\..\common\vscpremotetcpif.h" />
     <ClInclude Include="..\..\common\vscpwebserver.h" />
+    <ClInclude Include="..\..\common\vscp_class.h" />
+    <ClInclude Include="..\..\common\vscp_type.h" />
     <ClInclude Include="..\..\common\webserver.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\common\tcpipclientthread.h" />

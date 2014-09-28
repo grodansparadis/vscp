@@ -42,7 +42,7 @@
 #ifndef VSCP_TYPE_H
 #define VSCP_TYPE_H
 
-#define VSCP_TYPE_UNDEFINED				0
+#define VSCP_TYPE_UNDEFINED                                 0
 
 // VSCP Protocol Functionality
 #define VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT                1
@@ -124,217 +124,219 @@
 #define VSCP_TYPE_SECURITY_HARMFUL_SOUND_LEVEL              19
 
 // Class 10 (0x0a) -- MEASUREMENT
-#define VSCP_TYPE_MEASUREMENT_GENERAL                     0
-#define VSCP_TYPE_MEASUREMENT_COUNT                       1
-#define VSCP_TYPE_MEASUREMENT_LENGTH                      2
-#define VSCP_TYPE_MEASUREMENT_MASS                        3
-#define VSCP_TYPE_MEASUREMENT_TIME                        4
-#define VSCP_TYPE_MEASUREMENT_ELECTRIC_CURRENT            5
-#define VSCP_TYPE_MEASUREMENT_TEMPERATURE                 6
-#define VSCP_TYPE_MEASUREMENT_AMOUNT_OF_SUBSTANCE         7
-#define VSCP_TYPE_MEASUREMENT_INTENSITY_OF_LIGHT          8
-#define VSCP_TYPE_MEASUREMENT_FREQUENCY                   9
-#define VSCP_TYPE_MEASUREMENT_RADIOACTIVITY               10	// or other random event
-#define VSCP_TYPE_MEASUREMENT_FORCE                       11
-#define VSCP_TYPE_MEASUREMENT_PRESSURE                    12
-#define VSCP_TYPE_MEASUREMENT_ENERGY                      13
-#define VSCP_TYPE_MEASUREMENT_POWER                       14
-#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_CHARGE           15
-#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_POTENTIAL        16	// Voltage
-#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_CAPACITANCE      17
-#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_RECISTANCE       18
-#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_CONDUCTANCE      19
-#define VSCP_TYPE_MEASUREMENT_MAGNETIC_FIELD_STRENGTH     20
-#define VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX               21
-#define VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX_DENSITY       22
-#define VSCP_TYPE_MEASUREMENT_INDUCTANCE                  23
-#define VSCP_TYPE_MEASUREMENT_FLUX_OF_LIGHT               24
-#define VSCP_TYPE_MEASUREMENT_ILLUMINANCE                 25
-#define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE              26
-#define VSCP_TYPE_MEASUREMENT_CATALYTIC_ACITIVITY         27
-#define VSCP_TYPE_MEASUREMENT_VOLUME                      28
-#define VSCP_TYPE_MEASUREMENT_SOUND_INTENSITY             29
-#define VSCP_TYPE_MEASUREMENT_ANGLE                       30
-#define VSCP_TYPE_MEASUREMENT_POSITION                    31
-#define VSCP_TYPE_MEASUREMENT_SPEED                       32
-#define VSCP_TYPE_MEASUREMENT_ACCELERATION                33
-#define VSCP_TYPE_MEASUREMENT_TENSION                     34
-#define VSCP_TYPE_MEASUREMENT_HUMIDITY                    35	// Damp/moist (Hygrometer reading)
-#define VSCP_TYPE_MEASUREMENT_FLOW                        36
-#define VSCP_TYPE_MEASUREMENT_THERMAL_RESISTANCE          37
-#define VSCP_TYPE_MEASUREMENT_REFRACTIVE_POWER            38
-#define VSCP_TYPE_MEASUREMENT_DYNAMIC_VISCOSITY           39
-#define VSCP_TYPE_MEASUREMENT_SOUND_IMPEDANCE             40
-#define VSCP_TYPE_MEASUREMENT_SOUND_RESISTANCE            41
-#define VSCP_TYPE_MEASUREMENT_ELECTRIC_ELASTANCE          42
-#define VSCP_TYPE_MEASUREMENT_LUMINOUS_ENERGY             43
-#define VSCP_TYPE_MEASUREMENT_LUMINANCE                   44
-#define VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION      45
-#define VSCP_TYPE_MEASUREMENT_RESERVED	                  46
-#define VSCP_TYPE_MEASUREMENT_DOSE_EQVIVALENT             47
-#define VSCP_TYPE_MEASUREMENT_DEWPOINT                    49
-#define VSCP_TYPE_MEASUREMENT_RELATIVE_LEVEL              50
-#define VSCP_TYPE_MEASUREMENT_ALTITUDE                    51
-#define VSCP_TYPE_MEASUREMENT_AREA                        52
-#define VSCP_TYPE_MEASUREMENT_RADIANT_INTENSITY           53
-#define VSCP_TYPE_MEASUREMENT_RADIANCE                    54
-#define VSCP_TYPE_MEASUREMENT_IRRADIANCE                  55
-#define VSCP_TYPE_MEASUREMENT_SPECTRAL_RADIANCE           56
-#define VSCP_TYPE_MEASUREMENT_SPECTRAL_IRRADIANCE         57
+#define VSCP_TYPE_MEASUREMENT_GENERAL                       0
+#define VSCP_TYPE_MEASUREMENT_COUNT                         1
+#define VSCP_TYPE_MEASUREMENT_LENGTH                        2
+#define VSCP_TYPE_MEASUREMENT_MASS                          3
+#define VSCP_TYPE_MEASUREMENT_TIME                          4
+#define VSCP_TYPE_MEASUREMENT_ELECTRIC_CURRENT              5
+#define VSCP_TYPE_MEASUREMENT_TEMPERATURE                   6
+#define VSCP_TYPE_MEASUREMENT_AMOUNT_OF_SUBSTANCE           7
+#define VSCP_TYPE_MEASUREMENT_INTENSITY_OF_LIGHT            8
+#define VSCP_TYPE_MEASUREMENT_FREQUENCY                     9
+#define VSCP_TYPE_MEASUREMENT_RADIOACTIVITY                 10	// or other random event
+#define VSCP_TYPE_MEASUREMENT_FORCE                         11
+#define VSCP_TYPE_MEASUREMENT_PRESSURE                      12
+#define VSCP_TYPE_MEASUREMENT_ENERGY                        13
+#define VSCP_TYPE_MEASUREMENT_POWER                         14
+#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_CHARGE             15
+#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_POTENTIAL          16	// Voltage
+#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_CAPACITANCE        17
+#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_RECISTANCE         18
+#define VSCP_TYPE_MEASUREMENT_ELECTRICAL_CONDUCTANCE        19
+#define VSCP_TYPE_MEASUREMENT_MAGNETIC_FIELD_STRENGTH       20
+#define VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX                 21
+#define VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX_DENSITY         22
+#define VSCP_TYPE_MEASUREMENT_INDUCTANCE                    23
+#define VSCP_TYPE_MEASUREMENT_FLUX_OF_LIGHT                 24
+#define VSCP_TYPE_MEASUREMENT_ILLUMINANCE                   25
+#define VSCP_TYPE_MEASUREMENT_RADIATION_DOSE                26
+#define VSCP_TYPE_MEASUREMENT_CATALYTIC_ACITIVITY           27
+#define VSCP_TYPE_MEASUREMENT_VOLUME                        28
+#define VSCP_TYPE_MEASUREMENT_SOUND_INTENSITY               29
+#define VSCP_TYPE_MEASUREMENT_ANGLE                         30
+#define VSCP_TYPE_MEASUREMENT_POSITION                      31
+#define VSCP_TYPE_MEASUREMENT_SPEED                         32
+#define VSCP_TYPE_MEASUREMENT_ACCELERATION                  33
+#define VSCP_TYPE_MEASUREMENT_TENSION                       34
+#define VSCP_TYPE_MEASUREMENT_HUMIDITY                      35	// Damp/moist (Hygrometer reading)
+#define VSCP_TYPE_MEASUREMENT_FLOW                          36
+#define VSCP_TYPE_MEASUREMENT_THERMAL_RESISTANCE            37
+#define VSCP_TYPE_MEASUREMENT_REFRACTIVE_POWER              38
+#define VSCP_TYPE_MEASUREMENT_DYNAMIC_VISCOSITY             39
+#define VSCP_TYPE_MEASUREMENT_SOUND_IMPEDANCE               40
+#define VSCP_TYPE_MEASUREMENT_SOUND_RESISTANCE              41
+#define VSCP_TYPE_MEASUREMENT_ELECTRIC_ELASTANCE            42
+#define VSCP_TYPE_MEASUREMENT_LUMINOUS_ENERGY               43
+#define VSCP_TYPE_MEASUREMENT_LUMINANCE                     44
+#define VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION        45
+#define VSCP_TYPE_MEASUREMENT_RESERVED	                    46
+#define VSCP_TYPE_MEASUREMENT_DOSE_EQVIVALENT               47
+#define VSCP_TYPE_MEASUREMENT_DEWPOINT                      49
+#define VSCP_TYPE_MEASUREMENT_RELATIVE_LEVEL                50
+#define VSCP_TYPE_MEASUREMENT_ALTITUDE                      51
+#define VSCP_TYPE_MEASUREMENT_AREA                          52
+#define VSCP_TYPE_MEASUREMENT_RADIANT_INTENSITY             53
+#define VSCP_TYPE_MEASUREMENT_RADIANCE                      54
+#define VSCP_TYPE_MEASUREMENT_IRRADIANCE                    55
+#define VSCP_TYPE_MEASUREMENT_SPECTRAL_RADIANCE             56
+#define VSCP_TYPE_MEASUREMENT_SPECTRAL_IRRADIANCE           57
 
 
 // Class 15 (0x0f) -- DATA
-#define VSCP_TYPE_DATA_GENERAL                            0
-#define VSCP_TYPE_DATA_IO                                 1
-#define VSCP_TYPE_DATA_AD                                 2
-#define VSCP_TYPE_DATA_DA                                 3
-#define VSCP_TYPE_DATA_RELATIVE_STRENGTH                  4
-#define VSCP_TYPE_DATA_SIGNAL_LEVEL                       5
-#define VSCP_TYPE_DATA_SIGNAL_QUALITY                     6
+#define VSCP_TYPE_DATA_GENERAL                              0
+#define VSCP_TYPE_DATA_IO                                   1
+#define VSCP_TYPE_DATA_AD                                   2
+#define VSCP_TYPE_DATA_DA                                   3
+#define VSCP_TYPE_DATA_RELATIVE_STRENGTH                    4
+#define VSCP_TYPE_DATA_SIGNAL_LEVEL                         5
+#define VSCP_TYPE_DATA_SIGNAL_QUALITY                       6
 
 // class 20 (0x14) -- INFORMATION
-#define VSCP_TYPE_INFORMATION_GENERAL                     0
-#define VSCP_TYPE_INFORMATION_BUTTON                      1
-#define VSCP_TYPE_INFORMATION_MOUSE                       2
-#define VSCP_TYPE_INFORMATION_ON                          3
-#define VSCP_TYPE_INFORMATION_OFF                         4
-#define VSCP_TYPE_INFORMATION_ALIVE                       5
-#define VSCP_TYPE_INFORMATION_TERMINATING                 6
-#define VSCP_TYPE_INFORMATION_OPENED                      7
-#define VSCP_TYPE_INFORMATION_CLOSED                      8
-#define VSCP_TYPE_INFORMATION_NODE_HEARTBEAT              9
-#define VSCP_TYPE_INFORMATION_BELOW_LIMIT                 10
-#define VSCP_TYPE_INFORMATION_ABOVE_LIMIT                 11
-#define VSCP_TYPE_INFORMATION_PULSE                       12
-#define VSCP_TYPE_INFORMATION_ERROR                       13
-#define VSCP_TYPE_INFORMATION_RESUMED                     14
-#define VSCP_TYPE_INFORMATION_PAUSED                      15
-#define VSCP_TYPE_INFORMATION_SLEEP                       16
-#define VSCP_TYPE_INFORMATION_GOOD_MORNING                17
-#define VSCP_TYPE_INFORMATION_GOOD_DAY                    18
-#define VSCP_TYPE_INFORMATION_GOOD_AFTERNOON              19
-#define VSCP_TYPE_INFORMATION_GOOD_EVENING                20
-#define VSCP_TYPE_INFORMATION_GOOD_NIGHT                  21
-#define VSCP_TYPE_INFORMATION_SEE_YOU_SOON                22
-#define VSCP_TYPE_INFORMATION_GOODBYE                     23
-#define VSCP_TYPE_INFORMATION_STOP                        24
-#define VSCP_TYPE_INFORMATION_START                       25
-#define VSCP_TYPE_INFORMATION_RESET_COMPLETED             26
-#define VSCP_TYPE_INFORMATION_INTERRUPTED                 27
-#define VSCP_TYPE_INFORMATION_PREPARING_TO_SLEEP          28
-#define VSCP_TYPE_INFORMATION_WOKEN_UP                    29
-#define VSCP_TYPE_INFORMATION_DUSK                        30
-#define VSCP_TYPE_INFORMATION_DAWN                        31
-#define VSCP_TYPE_INFORMATION_ACTIVE                      32
-#define VSCP_TYPE_INFORMATION_INACTIVE                    33
-#define VSCP_TYPE_INFORMATION_BUSY                        34
-#define VSCP_TYPE_INFORMATION_IDLE                        35
-#define VSCP_TYPE_INFORMATION_STREAM_DATA                 36
-#define VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY              37
-#define VSCP_TYPE_INFORMATION_STREAM_DATA_WITH_ZONE       38
-#define VSCP_TYPE_INFORMATION_CONFIRM                     39
-#define VSCP_TYPE_INFORMATION_LEVEL_CHANGED               40
-#define VSCP_TYPE_INFORMATION_WARNING                     41
-#define VSCP_TYPE_INFORMATION_STATE                       42
-#define VSCP_TYPE_INFORMATION_ACTION_TRIGGER              43
-#define VSCP_TYPE_INFORMATION_SUNRISE                     44
-#define VSCP_TYPE_INFORMATION_SUNSET                      45
-#define VSCP_TYPE_INFORMATION_START_OF_RECORD             46
-#define VSCP_TYPE_INFORMATION_END_OF_RECORD               47
-#define VSCP_TYPE_INFORMATION_PRESET_ACTIVE               48
-#define VSCP_TYPE_INFORMATION_DETECT                      49
-#define VSCP_TYPE_INFORMATION_OVERFLOW                    50
-#define VSCP_TYPE_INFORMATION_BIG_LEVEL_CHANGED           51
+#define VSCP_TYPE_INFORMATION_GENERAL                       0
+#define VSCP_TYPE_INFORMATION_BUTTON                        1
+#define VSCP_TYPE_INFORMATION_MOUSE                         2
+#define VSCP_TYPE_INFORMATION_ON                            3
+#define VSCP_TYPE_INFORMATION_OFF                           4
+#define VSCP_TYPE_INFORMATION_ALIVE                         5
+#define VSCP_TYPE_INFORMATION_TERMINATING                   6
+#define VSCP_TYPE_INFORMATION_OPENED                        7
+#define VSCP_TYPE_INFORMATION_CLOSED                        8
+#define VSCP_TYPE_INFORMATION_NODE_HEARTBEAT                9
+#define VSCP_TYPE_INFORMATION_BELOW_LIMIT                   10
+#define VSCP_TYPE_INFORMATION_ABOVE_LIMIT                   11
+#define VSCP_TYPE_INFORMATION_PULSE                         12
+#define VSCP_TYPE_INFORMATION_ERROR                         13
+#define VSCP_TYPE_INFORMATION_RESUMED                       14
+#define VSCP_TYPE_INFORMATION_PAUSED                        15
+#define VSCP_TYPE_INFORMATION_SLEEP                         16
+#define VSCP_TYPE_INFORMATION_GOOD_MORNING                  17
+#define VSCP_TYPE_INFORMATION_GOOD_DAY                      18
+#define VSCP_TYPE_INFORMATION_GOOD_AFTERNOON                19
+#define VSCP_TYPE_INFORMATION_GOOD_EVENING                  20
+#define VSCP_TYPE_INFORMATION_GOOD_NIGHT                    21
+#define VSCP_TYPE_INFORMATION_SEE_YOU_SOON                  22
+#define VSCP_TYPE_INFORMATION_GOODBYE                       23
+#define VSCP_TYPE_INFORMATION_STOP                          24
+#define VSCP_TYPE_INFORMATION_START                         25
+#define VSCP_TYPE_INFORMATION_RESET_COMPLETED               26
+#define VSCP_TYPE_INFORMATION_INTERRUPTED                   27
+#define VSCP_TYPE_INFORMATION_PREPARING_TO_SLEEP            28
+#define VSCP_TYPE_INFORMATION_WOKEN_UP                      29
+#define VSCP_TYPE_INFORMATION_DUSK                          30
+#define VSCP_TYPE_INFORMATION_DAWN                          31
+#define VSCP_TYPE_INFORMATION_ACTIVE                        32
+#define VSCP_TYPE_INFORMATION_INACTIVE                      33
+#define VSCP_TYPE_INFORMATION_BUSY                          34
+#define VSCP_TYPE_INFORMATION_IDLE                          35
+#define VSCP_TYPE_INFORMATION_STREAM_DATA                   36
+#define VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY                37
+#define VSCP_TYPE_INFORMATION_STREAM_DATA_WITH_ZONE         38
+#define VSCP_TYPE_INFORMATION_CONFIRM                       39
+#define VSCP_TYPE_INFORMATION_LEVEL_CHANGED                 40
+#define VSCP_TYPE_INFORMATION_WARNING                       41
+#define VSCP_TYPE_INFORMATION_STATE                         42
+#define VSCP_TYPE_INFORMATION_ACTION_TRIGGER                43
+#define VSCP_TYPE_INFORMATION_SUNRISE                       44
+#define VSCP_TYPE_INFORMATION_SUNSET                        45
+#define VSCP_TYPE_INFORMATION_START_OF_RECORD               46
+#define VSCP_TYPE_INFORMATION_END_OF_RECORD                 47
+#define VSCP_TYPE_INFORMATION_PRESET_ACTIVE                 48
+#define VSCP_TYPE_INFORMATION_DETECT                        49
+#define VSCP_TYPE_INFORMATION_OVERFLOW                      50
+#define VSCP_TYPE_INFORMATION_BIG_LEVEL_CHANGED             51
+#define VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START        52
+#define VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START         53
 
 // class 30 (0x1E) -- CONTROL
-#define VSCP_TYPE_CONTROL_GENERAL                         0
-#define VSCP_TYPE_CONTROL_MUTE                            1
-#define VSCP_TYPE_CONTROL_ALL_LAMPS                       2
-#define VSCP_TYPE_CONTROL_OPEN                            3
-#define VSCP_TYPE_CONTROL_CLOSE                           4
-#define VSCP_TYPE_CONTROL_TURNON                          5
-#define VSCP_TYPE_CONTROL_TURNOFF                         6
-#define VSCP_TYPE_CONTROL_START                           7
-#define VSCP_TYPE_CONTROL_STOP                            8
-#define VSCP_TYPE_CONTROL_RESET                           9
-#define VSCP_TYPE_CONTROL_INTERRUPT                       10
-#define VSCP_TYPE_CONTROL_SLEEP                           11
-#define VSCP_TYPE_CONTROL_WAKEUP                          12
-#define VSCP_TYPE_CONTROL_RESUME                          13
-#define VSCP_TYPE_CONTROL_PAUSE                           14
-#define VSCP_TYPE_CONTROL_ACTIVATE                        15
-#define VSCP_TYPE_CONTROL_DEACTIVATE                      16
-#define VSCP_TYPE_CONTROL_DIM_LAMPS                       20
-#define VSCP_TYPE_CONTROL_CHANGE_CHANNEL                  21
-#define VSCP_TYPE_CONTROL_CHANGE_LEVEL                    22
-#define VSCP_TYPE_CONTROL_RELATIVE_CHANGE_LEVEL           23
-#define VSCP_TYPE_CONTROL_MEASUREMENT_REQUEST             24
-#define VSCP_TYPE_CONTROL_STREAM_DATA                     25
-#define VSCP_TYPE_CONTROL_SYNC                            26
-#define VSCP_TYPE_CONTROL_ZONED_STREAM_DATA               27
-#define VSCP_TYPE_CONTROL_SET_PRESET                      28
-#define VSCP_TYPE_CONTROL_TOGGLE_STATE                    29
-#define VSCP_TYPE_CONTROL_TIMED_PULE_ON                   30
-#define VSCP_TYPE_CONTROL_TIMED_PULSE_OFF                 31
-#define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE	          32
-#define VSCP_TYPE_CONTROL_BIG_CHANGE_LEVEL                33
+#define VSCP_TYPE_CONTROL_GENERAL                           0
+#define VSCP_TYPE_CONTROL_MUTE                              1
+#define VSCP_TYPE_CONTROL_ALL_LAMPS                         2
+#define VSCP_TYPE_CONTROL_OPEN                              3
+#define VSCP_TYPE_CONTROL_CLOSE                             4
+#define VSCP_TYPE_CONTROL_TURNON                            5
+#define VSCP_TYPE_CONTROL_TURNOFF                           6
+#define VSCP_TYPE_CONTROL_START                             7
+#define VSCP_TYPE_CONTROL_STOP                              8
+#define VSCP_TYPE_CONTROL_RESET                             9
+#define VSCP_TYPE_CONTROL_INTERRUPT                         10
+#define VSCP_TYPE_CONTROL_SLEEP                             11
+#define VSCP_TYPE_CONTROL_WAKEUP                            12
+#define VSCP_TYPE_CONTROL_RESUME                            13
+#define VSCP_TYPE_CONTROL_PAUSE                             14
+#define VSCP_TYPE_CONTROL_ACTIVATE                          15
+#define VSCP_TYPE_CONTROL_DEACTIVATE                        16
+#define VSCP_TYPE_CONTROL_DIM_LAMPS                         20
+#define VSCP_TYPE_CONTROL_CHANGE_CHANNEL                    21
+#define VSCP_TYPE_CONTROL_CHANGE_LEVEL                      22
+#define VSCP_TYPE_CONTROL_RELATIVE_CHANGE_LEVEL             23
+#define VSCP_TYPE_CONTROL_MEASUREMENT_REQUEST               24
+#define VSCP_TYPE_CONTROL_STREAM_DATA                       25
+#define VSCP_TYPE_CONTROL_SYNC                              26
+#define VSCP_TYPE_CONTROL_ZONED_STREAM_DATA                 27
+#define VSCP_TYPE_CONTROL_SET_PRESET                        28
+#define VSCP_TYPE_CONTROL_TOGGLE_STATE                      29
+#define VSCP_TYPE_CONTROL_TIMED_PULE_ON                     30
+#define VSCP_TYPE_CONTROL_TIMED_PULSE_OFF                   31
+#define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE	            32
+#define VSCP_TYPE_CONTROL_BIG_CHANGE_LEVEL                  33
 
 // class 40 (0x28) -- MULTIMEDIA
-#define VSCP_TYPE_MULTIMEDIA_GENERAL                      0
-#define VSCP_TYPE_MULTIMEDIA_PLAYBACK                     1
-#define VSCP_TYPE_MULTIMEDIA_NAVIGATOR_KEY_ENG            2
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_CONTRAST              3
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_FOCUS                 4
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_TINT                  5
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_COLOUR_BALANCE        6
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_BRIGHTNESS            7
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_HUE                   8
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_BASS                  9
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_TREBLE                10
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_MASTER_VOLUME         11
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_FRONT_VOLUME          12
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_CENTRE_VOLUME         13
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_REAR_VOLUME           14
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SIDE_VOLUME           15
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_DISK           20
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_TRACK          21
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_ALBUM          22
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_CHANNEL        23
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_PAGE           24
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_CHAPTER        25
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_SCREEN_FORMAT  26
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_INPUT_SOURCE   27
-#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_OUTPUT         28
-#define VSCP_TYPE_MULTIMEDIA_RECORD                       29
-#define VSCP_TYPE_MULTIMEDIA_SET_RECORDING_VOLUME         30
-#define VSCP_TYPE_MULTIMEDIA_TIVO_FUNCTION                40
-#define VSCP_TYPE_MULTIMEDIA_GET_CURRENT_TITLE            50
-#define VSCP_TYPE_MULTIMEDIA_SET_POSITION                 51
-#define VSCP_TYPE_MULTIMEDIA_GET_MEDIA_INFO               52
-#define VSCP_TYPE_MULTIMEDIA_REMOVE_ITEM                  53
-#define VSCP_TYPE_MULTIMEDIA_REMOVE_ALL_ITEMS             54
-#define VSCP_TYPE_MULTIMEDIA_SAVE_ALBUM                   55
-#define VSCP_TYPE_MULTIMEDIA_CONTROL                      60
-#define VSCP_TYPE_MULTIMEDIA_CONTROL_RESPONSE             61
+#define VSCP_TYPE_MULTIMEDIA_GENERAL                        0
+#define VSCP_TYPE_MULTIMEDIA_PLAYBACK                       1
+#define VSCP_TYPE_MULTIMEDIA_NAVIGATOR_KEY_ENG              2
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_CONTRAST                3
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_FOCUS                   4
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_TINT                    5
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_COLOUR_BALANCE          6
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_BRIGHTNESS              7
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_HUE                     8
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_BASS                    9
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_TREBLE                  10
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_MASTER_VOLUME           11
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_FRONT_VOLUME            12
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_CENTRE_VOLUME           13
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_REAR_VOLUME             14
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SIDE_VOLUME             15
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_DISK             20
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_TRACK            21
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_ALBUM            22
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_CHANNEL          23
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_PAGE             24
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_CHAPTER          25
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_SCREEN_FORMAT    26
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_INPUT_SOURCE     27
+#define VSCP_TYPE_MULTIMEDIA_ADJUST_SELECT_OUTPUT           28
+#define VSCP_TYPE_MULTIMEDIA_RECORD                         29
+#define VSCP_TYPE_MULTIMEDIA_SET_RECORDING_VOLUME           30
+#define VSCP_TYPE_MULTIMEDIA_TIVO_FUNCTION                  40
+#define VSCP_TYPE_MULTIMEDIA_GET_CURRENT_TITLE              50
+#define VSCP_TYPE_MULTIMEDIA_SET_POSITION                   51
+#define VSCP_TYPE_MULTIMEDIA_GET_MEDIA_INFO                 52
+#define VSCP_TYPE_MULTIMEDIA_REMOVE_ITEM                    53
+#define VSCP_TYPE_MULTIMEDIA_REMOVE_ALL_ITEMS               54
+#define VSCP_TYPE_MULTIMEDIA_SAVE_ALBUM                     55
+#define VSCP_TYPE_MULTIMEDIA_CONTROL                        60
+#define VSCP_TYPE_MULTIMEDIA_CONTROL_RESPONSE               61
 
 // class 50 (0x32) -- AOL
-#define VSCP_TYPE_AOL_GENERAL                             0
-#define VSCP_TYPE_AOL_UNPLUGGED_POWER                     1 
-#define VSCP_TYPE_AOL_UNPLUGGED_LAN                       2
-#define VSCP_TYPE_AOL_CHASSIS_INTRUSION                   3
-#define VSCP_TYPE_AOL_PROCESSOR_REMOVAL                   4
-#define VSCP_TYPE_AOL_ENVIRONMENT_ERROR                   5
-#define VSCP_TYPE_AOL_HIGH_TEMPERATURE                    6
-#define VSCP_TYPE_AOL_FAN_SPEED                           7
-#define VSCP_TYPE_AOL_VOLTAGE_FLUCTUATIONS                8
-#define VSCP_TYPE_AOL_OS_ERROR                            9
-#define VSCP_TYPE_AOL_POWER_ON_ERROR                      10
-#define VSCP_TYPE_AOL_SYSTEM_HUNG                         11
-#define VSCP_TYPE_AOL_COMPONENT_FAILURE                   12
-#define VSCP_TYPE_AOL_REBOOT_UPON_FAILURE                 13
-#define VSCP_TYPE_AOL_REPAIR_OPERATING_SYSTEM             14
-#define VSCP_TYPE_AOL_UPDATE_BIOS_IMAGE                   15
-#define VSCP_TYPE_AOL_UPDATE_DIAGNOSTIC_PROCEDURE         16
+#define VSCP_TYPE_AOL_GENERAL                               0
+#define VSCP_TYPE_AOL_UNPLUGGED_POWER                       1 
+#define VSCP_TYPE_AOL_UNPLUGGED_LAN                         2
+#define VSCP_TYPE_AOL_CHASSIS_INTRUSION                     3
+#define VSCP_TYPE_AOL_PROCESSOR_REMOVAL                     4
+#define VSCP_TYPE_AOL_ENVIRONMENT_ERROR                     5
+#define VSCP_TYPE_AOL_HIGH_TEMPERATURE                      6
+#define VSCP_TYPE_AOL_FAN_SPEED                             7
+#define VSCP_TYPE_AOL_VOLTAGE_FLUCTUATIONS                  8
+#define VSCP_TYPE_AOL_OS_ERROR                              9
+#define VSCP_TYPE_AOL_POWER_ON_ERROR                        10
+#define VSCP_TYPE_AOL_SYSTEM_HUNG                           11
+#define VSCP_TYPE_AOL_COMPONENT_FAILURE                     12
+#define VSCP_TYPE_AOL_REBOOT_UPON_FAILURE                   13
+#define VSCP_TYPE_AOL_REPAIR_OPERATING_SYSTEM               14
+#define VSCP_TYPE_AOL_UPDATE_BIOS_IMAGE                     15
+#define VSCP_TYPE_AOL_UPDATE_DIAGNOSTIC_PROCEDURE           16
 
 // class 60 (0x3C) -- CLASS1.MEASUREMENT64
 // Types are the same as CLASS1.MEASUREMENT=10
@@ -576,125 +578,200 @@
 #define VSCP_TYPE_SETVALUEZONE_SPECTRAL_RADIANCE           	56
 #define VSCP_TYPE_SETVALUEZONE_SPECTRAL_IRRADIANCE         	57
 
+
+// class 90 (0x5A) -- WATHER
+#define VSCP_TYPE_WEATHER_GENERAL                           0
+#define VSCP_TYPE_WEATHER_SEASONS_WINTER                    1
+#define VSCP_TYPE_WEATHER_SEASONS_SPRING                    2
+#define VSCP_TYPE_WEATHER_SEASONS_SUMMER                    3
+#define VSCP_TYPE_WEATHER_SEASONS_AUTUMN                    4
+#define VSCP_TYPE_WEATHER_WIND_NONE                         5
+#define VSCP_TYPE_WEATHER_WIND_LOW                          6
+#define VSCP_TYPE_WEATHER_WIND_MEDIUM                       7
+#define VSCP_TYPE_WEATHER_WIND_HIGH                         8
+#define VSCP_TYPE_WEATHER_WIND_VERY_HIGH                    9
+#define VSCP_TYPE_WEATHER_AIR_FOGGY                         10
+#define VSCP_TYPE_WEATHER_AIR_FREEZING                      11
+#define VSCP_TYPE_WEATHER_AIR_COLD                          12
+#define VSCP_TYPE_WEATHER_AIR_VERY_COLD                     13
+#define VSCP_TYPE_WEATHER_AIR_NORMAL                        14
+#define VSCP_TYPE_WEATHER_AIR_HOT                           15
+#define VSCP_TYPE_WEATHER_AIR_VERY_HOT                      16    
+#define VSCP_TYPE_WEATHER_AIR_POLLUTION_LOW                 17
+#define VSCP_TYPE_WEATHER_AIR_POLLUTION_MEDIUM              18
+#define VSCP_TYPE_WEATHER_AIR_POLLUTION_HIGH                19
+#define VSCP_TYPE_WEATHER_AIR_HUMID                         20
+#define VSCP_TYPE_WEATHER_AIR_DRY                           21
+#define VSCP_TYPE_WEATHER_SOIL_HUMID                        22
+#define VSCP_TYPE_WEATHER_SOIL_DRY                          23
+#define VSCP_TYPE_WEATHER_RAIN_NONE                         24
+#define VSCP_TYPE_WEATHER_RAIN_LIGHT                        25
+#define VSCP_TYPE_WEATHER_RAIN_HEAVY                        26
+#define VSCP_TYPE_WEATHER_RAIN_VERY_HEAVY                   27
+#define VSCP_TYPE_WEATHER_SUN_NONE                          28
+#define VSCP_TYPE_WEATHER_SUN_LIGHT                         29
+#define VSCP_TYPE_WEATHER_SUN_HEAVY                         30
+#define VSCP_TYPE_WEATHER_SNOW_NONE                         31
+#define VSCP_TYPE_WEATHER_SNOW_LIGHT                        32
+#define VSCP_TYPE_WEATHER_SNOW_HEAVY                        33
+#define VSCP_TYPE_WEATHER_DEW_POINT                         34
+#define VSCP_TYPE_WEATHER_STORM                             35
+#define VSCP_TYPE_WEATHER_FLOOD                             36
+#define VSCP_TYPE_WEATHER_EARTHQUAKE                        37
+#define VSCP_TYPE_WEATHER_NUCLEAR_DISASTER                  38
+#define VSCP_TYPE_WEATHER_FIRE                              39
+#define VSCP_TYPE_WEATHER_LIGHTNING                         40
+#define VSCP_TYPE_WEATHER_UV_RADIATION_LOW                  41
+#define VSCP_TYPE_WEATHER_UV_RADIATION_MEDIUM               42
+#define VSCP_TYPE_WEATHER_UV_RADIATION_NORMAL               43
+#define VSCP_TYPE_WEATHER_UV_RADIATION_HIGH                 44
+#define VSCP_TYPE_WEATHER_UV_RADIATION_VERY_HIGH            45
+#define VSCP_TYPE_WEATHER_WARNING_LEVEL1                    46
+#define VSCP_TYPE_WEATHER_WARNING_LEVEL2                    47
+#define VSCP_TYPE_WEATHER_WARNING_LEVEL3                    48
+#define VSCP_TYPE_WEATHER_WARNING_LEVEL4                    49
+#define VSCP_TYPE_WEATHER_WARNING_LEVEL5                    50
+#define VSCP_TYPE_WEATHER_ARMAGEDON                         51
+    
+// class 95 (0x5F) -- WATHER FORECAST
+#define VSCP_TYPE_WEATHER_FORECAST_GENERAL                  0
+#define VSCP_TYPE_WEATHER_FORECAST_SEASONS_WINTER           1
+#define VSCP_TYPE_WEATHER_FORECAST_SEASONS_SPRING           2
+#define VSCP_TYPE_WEATHER_FORECAST_SEASONS_SUMMER           3
+#define VSCP_TYPE_WEATHER_FORECAST_SEASONS_AUTUMN           4
+#define VSCP_TYPE_WEATHER_FORECAST_WIND_NONE                5
+#define VSCP_TYPE_WEATHER_FORECAST_WIND_LOW                 6
+#define VSCP_TYPE_WEATHER_FORECAST_WIND_MEDIUM              7
+#define VSCP_TYPE_WEATHER_FORECAST_WIND_HIGH                8
+#define VSCP_TYPE_WEATHER_FORECAST_WIND_VERY_HIGH           9
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_FOGGY                10
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_FREEZING             11
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_COLD                 12
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_VERY_COLD            13
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_NORMAL               14
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_HOT                  15
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_VERY_HOT             16    
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_POLLUTION_LOW        17
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_POLLUTION_MEDIUM     18
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_POLLUTION_HIGH       19
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_HUMID                20
+#define VSCP_TYPE_WEATHER_FORECAST_AIR_DRY                  21
+#define VSCP_TYPE_WEATHER_FORECAST_SOIL_HUMID               22
+#define VSCP_TYPE_WEATHER_FORECAST_SOIL_DRY                 23
+#define VSCP_TYPE_WEATHER_FORECAST_RAIN_NONE                24
+#define VSCP_TYPE_WEATHER_FORECAST_RAIN_LIGHT               25
+#define VSCP_TYPE_WEATHER_FORECAST_RAIN_HEAVY               26
+#define VSCP_TYPE_WEATHER_FORECAST_RAIN_VERY_HEAVY          27
+#define VSCP_TYPE_WEATHER_FORECAST_SUN_NONE                 28
+#define VSCP_TYPE_WEATHER_FORECAST_SUN_LIGHT                29
+#define VSCP_TYPE_WEATHER_FORECAST_SUN_HEAVY                30
+#define VSCP_TYPE_WEATHER_FORECAST_SNOW_NONE                31
+#define VSCP_TYPE_WEATHER_FORECAST_SNOW_LIGHT               32
+#define VSCP_TYPE_WEATHER_FORECAST_SNOW_HEAVY               33
+#define VSCP_TYPE_WEATHER_FORECAST_DEW_POINT                34
+#define VSCP_TYPE_WEATHER_FORECAST_STORM                    35
+#define VSCP_TYPE_WEATHER_FORECAST_FLOOD                    36
+#define VSCP_TYPE_WEATHER_FORECAST_EARTHQUAKE               37
+#define VSCP_TYPE_WEATHER_FORECAST_NUCLEAR_DISASTER         38
+#define VSCP_TYPE_WEATHER_FORECAST_FIRE                     39
+#define VSCP_TYPE_WEATHER_FORECAST_LIGHTNING                40
+#define VSCP_TYPE_WEATHER_FORECAST_UV_RADIATION_LOW         41
+#define VSCP_TYPE_WEATHER_FORECAST_UV_RADIATION_MEDIUM      42
+#define VSCP_TYPE_WEATHER_FORECAST_UV_RADIATION_NORMAL      43
+#define VSCP_TYPE_WEATHER_FORECAST_UV_RADIATION_HIGH        44
+#define VSCP_TYPE_WEATHER_FORECAST_UV_RADIATION_VERY_HIGH   45
+#define VSCP_TYPE_WEATHER_FORECAST_WARNING_LEVEL1           46
+#define VSCP_TYPE_WEATHER_FORECAST_WARNING_LEVEL2           47
+#define VSCP_TYPE_WEATHER_FORECAST_WARNING_LEVEL3           48
+#define VSCP_TYPE_WEATHER_FORECAST_WARNING_LEVEL4           49
+#define VSCP_TYPE_WEATHER_FORECAST_WARNING_LEVEL5           50
+#define VSCP_TYPE_WEATHER_FORECAST_ARMAGEDDON               51
+
+	
+
 // class 100 (0x64) -- PHONE
-#define VSCP_TYPE_PHONE_GENERAL                           0
-#define VSCP_TYPE_PHONE_INCOMING_CALL                     1
-#define VSCP_TYPE_PHONE_OUTGOING_CALL                     2
-#define VSCP_TYPE_PHONE_RING                              3
-#define VSCP_TYPE_PHONE_ANSWERE                           4
-#define VSCP_TYPE_PHONE_HANGUP                            5
-#define VSCP_TYPE_PHONE_GIVEUP                            6
-#define VSCP_TYPE_PHONE_TRANSFER                          7
-#define VSCP_TYPE_PHONE_DATABASE_INFO                     8
+#define VSCP_TYPE_PHONE_GENERAL                             0
+#define VSCP_TYPE_PHONE_INCOMING_CALL                       1
+#define VSCP_TYPE_PHONE_OUTGOING_CALL                       2
+#define VSCP_TYPE_PHONE_RING                                3
+#define VSCP_TYPE_PHONE_ANSWERE                             4
+#define VSCP_TYPE_PHONE_HANGUP                              5
+#define VSCP_TYPE_PHONE_GIVEUP                              6
+#define VSCP_TYPE_PHONE_TRANSFER                            7
+#define VSCP_TYPE_PHONE_DATABASE_INFO                       8
 
 // class 102 (0x66) -- DISPLAY
-#define VSCP_TYPE_DISPLAY_GENERAL                         0
-#define VSCP_TYPE_DISPLAY_CLEAR_DISPLAY                   1
-#define VSCP_TYPE_DISPLAY_POSITION_CURSOR                 2
-#define VSCP_TYPE_DISPLAY_WRITE_DISPLAY                   3
-#define VSCP_TYPE_DISPLAY_WRITE_DISPLAY_BUFFER            4
-#define VSCP_TYPE_DISPLAY_SHOW_DISPLAY_BUFFER             5
-#define VSCP_TYPE_DISPLAY_SET_DISPLAY_BUFFER_PARAM        6
-#define VSCP_TYPE_DISPLAY_SHOW_TEXT                       32
-#define VSCP_TYPE_DISPLAY_SHOW_LED                        48
-#define VSCP_TYPE_DISPLAY_SHOW_LED_COLOR                  49
+#define VSCP_TYPE_DISPLAY_GENERAL                           0
+#define VSCP_TYPE_DISPLAY_CLEAR_DISPLAY                     1
+#define VSCP_TYPE_DISPLAY_POSITION_CURSOR                   2
+#define VSCP_TYPE_DISPLAY_WRITE_DISPLAY                     3
+#define VSCP_TYPE_DISPLAY_WRITE_DISPLAY_BUFFER              4
+#define VSCP_TYPE_DISPLAY_SHOW_DISPLAY_BUFFER               5
+#define VSCP_TYPE_DISPLAY_SET_DISPLAY_BUFFER_PARAM          6
+#define VSCP_TYPE_DISPLAY_SHOW_TEXT                         32
+#define VSCP_TYPE_DISPLAY_SHOW_LED                          48
+#define VSCP_TYPE_DISPLAY_SHOW_LED_COLOR                    49
 
 // class 110 (0x6E) -- REMOTE
-#define VSCP_TYPE_REMOTE_GENERAL                          0
-#define VSCP_TYPE_REMOTE_RC5                              1
-#define VSCP_TYPE_REMOTE_SONY12                           2
-#define VSCP_TYPE_REMOTE_LIRC                             32
-#define VSCP_TYPE_REMOTE_VSCP                             48
-
-// class 200 (0xC8) -- 1-WIRE
-#define VSCP_TYPE_1WIRE_GENERAL                           0
-#define VSCP_TYPE_1WIRE_NEW_ID                            1
-#define VSCP_TYPE_1WIRE_CONVERT                           2
-#define VSCP_TYPE_1WIRE_READ_ROM                          3
-#define VSCP_TYPE_1WIRE_MATCH_ROM                         4
-#define VSCP_TYPE_1WIRE_SKIP_ROM                          5
-#define VSCP_TYPE_1WIRE_SEARCH_ROM                        6
-#define VSCP_TYPE_1WIRE_CONDITIONAL_SEARCH_ROM            7
-#define VSCP_TYPE_1WIRE_PROGRAM                           8
-#define VSCP_TYPE_1WIRE_OVERDRIVE_SKIP_ROM                9
-#define VSCP_TYPE_1WIRE_OVERDRIVE_MATCH_ROM               10
-#define VSCP_TYPE_1WIRE_OVERDRIVE_READ_MEMORY             11
-#define VSCP_TYPE_1WIRE_OVERDRIVE_WRITE_MEMORY            12
-
-// class 201 (0xC9) -- X10
-#define VSCP_TYPE_X10_GENERAL                             0
-#define VSCP_TYPE_X10_STANDARD_MESSAGE_RECEIVE            1
-#define VSCP_TYPE_X10_EXTENDED_MESSAGE_RECEIVE            2
-#define VSCP_TYPE_X10_STANDARD_MESSAGE_SEND               3
-#define VSCP_TYPE_X10_EXTENDED_MESSAGE_SEND               4
-#define VSCP_TYPE_X10_SIMPLE_MESSAGE                      5
-
-
-// class 202 (0xCA) -- LON
-#define VSCP_TYPE_LON_GENERAL                             0
-
-// class 203 (0xCB) -- KNX/EIB
-#define VSCP_TYPE_EIB_GENERAL                             0
-
-// class 204 (0xCC) -- SNAP
-#define VSCP_TYPE_SNAP_GENERAL                            0
-
-// class 205 (0xCD) -- CBUS
-#define VSCP_TYPE_CBUS_GENERAL                            0
+#define VSCP_TYPE_REMOTE_GENERAL                            0
+#define VSCP_TYPE_REMOTE_RC5                                1
+#define VSCP_TYPE_REMOTE_SONY12                             2
+#define VSCP_TYPE_REMOTE_LIRC                               32
+#define VSCP_TYPE_REMOTE_VSCP                               48
 
 // class 206 (0xCE) -- GPS
-#define VSCP_TYPE_GPS_GENERAL                             0
-#define VSCP_TYPE_GPS_POSITION                            1
-#define VSCP_TYPE_GPS_SATELLITES                          2
+#define VSCP_TYPE_GPS_GENERAL                               0
+#define VSCP_TYPE_GPS_POSITION                              1
+#define VSCP_TYPE_GPS_SATELLITES                            2
 
 // class 212 (0xD4) -- WIRELESS
-#define VSCP_TYPE_WIRELESS_GENERAL                        0
-#define VSCP_TYPE_WIRELESS_GSM_CELL                       1
+#define VSCP_TYPE_WIRELESS_GENERAL                          0
+#define VSCP_TYPE_WIRELESS_GSM_CELL                         1
 
 // class 509 (0x1FD) -- LOG
-#define VSCP_TYPE_LOG_GENERAL                             0
-#define VSCP_TYPE_LOG_MESSAGE                             1
-#define VSCP_TYPE_LOG_START                               2
-#define VSCP_TYPE_LOG_STOP                                3
-#define VSCP_TYPE_LOG_LEVEL                               4
+#define VSCP_TYPE_LOG_GENERAL                               0
+#define VSCP_TYPE_LOG_MESSAGE                               1
+#define VSCP_TYPE_LOG_START                                 2
+#define VSCP_TYPE_LOG_STOP                                  3
+#define VSCP_TYPE_LOG_LEVEL                                 4
 
 // class 510 (0x1FE) -- LABORATORY
-#define VSCP_TYPE_LABORATORY_GENERAL                      0
+#define VSCP_TYPE_LABORATORY_GENERAL                        0
 
 // class 511 (0x1FF) -- LOCAL
-#define VSCP_TYPE_LOCAL_GENERAL                           0
+#define VSCP_TYPE_LOCAL_GENERAL                             0
 
 ///////////////////////////////////////////////////////////////////////////////
 //				Level II
 ///////////////////////////////////////////////////////////////////////////////
 
 // Level II Protocol functionality Class=1024 (0x400)
-#define VSCP2_TYPE_PROTOCOL_GENERAL                       0
-#define VSCP2_TYPE_PROTOCOL_READ_REGISTER                 1
-#define VSCP2_TYPE_PROTOCOL_WRITE_REGISTER                2
-#define VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE           3
+#define VSCP2_TYPE_PROTOCOL_GENERAL                         0
+#define VSCP2_TYPE_PROTOCOL_READ_REGISTER                   1
+#define VSCP2_TYPE_PROTOCOL_WRITE_REGISTER                  2
+#define VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE             3
 
 // Level II Control functionality Class=1025 (0x401)
-#define VSCP2_TYPE_CONTROL_GENERAL                        0
+#define VSCP2_TYPE_CONTROL_GENERAL                          0
 
 // Level II Information functionality Class=1026 (0x402)
-#define VSCP2_TYPE_INFORMATION_GENERAL                    0
-#define VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY             1
+#define VSCP2_TYPE_INFORMATION_GENERAL                      0
+#define VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY               1
 
 // Level II Text to speech functionality Class=1028 (0x404)
-#define VSCP2_TYPE_TEXT2SPEECH_GENERAL                    0
-#define VSCP2_TYPE_TEXT2SPEECH_TALK                       1
+#define VSCP2_TYPE_TEXT2SPEECH_GENERAL                      0
+#define VSCP2_TYPE_TEXT2SPEECH_TALK                         1
 
 // Level II Custom functionality Class=1029 (0x405)
-#define VSCP2_TYPE_CUSTOM_GENERAL                         0
+#define VSCP2_TYPE_CUSTOM_GENERAL                           0
 
 // Level II Display functionality Class=1030 (0x406)
-#define VSCP2_TYPE_DISPLAY_GENERAL                        0
+#define VSCP2_TYPE_DISPLAY_GENERAL                          0
 
 // Level II Measurement String Class=1040 (0x410)
-#define VSCP2_TYPE_MEASUREMENT_STR_GENERAL                0
-#define VSCP_TYPE_MEASUREMENT_COUNT                       1
-#define VSCP_TYPE_MEASUREMENT_COUNT_LENGTH                      2
+#define VSCP2_TYPE_MEASUREMENT_STR_GENERAL                  0
+#define VSCP_TYPE_MEASUREMENT_COUNT                         1
+#define VSCP_TYPE_MEASUREMENT_COUNT_LENGTH                  2
 #define VSCP_TYPE_MEASUREMENT_COUNT_MASS                        3
 #define VSCP_TYPE_MEASUREMENT_COUNT_TIME                        4
 #define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRIC_CURRENT            5

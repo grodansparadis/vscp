@@ -59,6 +59,8 @@ enum {
     LOG_DM_EXTRA
 };
 
+
+
 // Forward declaration
 class CDM;
 

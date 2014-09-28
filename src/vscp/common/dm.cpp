@@ -57,6 +57,132 @@ WX_DEFINE_LIST( PLUGINLIST );
 WX_DEFINE_LIST( DMLIST );
 WX_DEFINE_LIST( ACTIONTIME );
 
+//-----------------------------------------------------------------------------
+//                   Helpers for sunrise/sunset calculations
+//-----------------------------------------------------------------------------
+
+double pi = 3.14159;
+double degs;
+double rads;
+
+double L, g, daylen;
+double SunDia = 0.53; // Sunradius degrees
+
+double AirRefr = 34.0 / 60.0; // athmospheric refraction degrees //
+
+
+///////////////////////////////////////////////////////////////////////////////
+// FNday
+//
+// Get the days to J2000
+// h is UT in decimal hours
+// FNday only works between 1901 to 2099 - see Meeus chapter 7
+//
+
+static double FNday(int y, int m, int d, float h)
+{
+	long int luku = -7 * (y + (m + 9) / 12) / 4 + 275 * m / 9 + d;
+	// type casting necessary on PC DOS and TClite to avoid overflow
+	luku += (long int) y * 367;
+	return(double) luku - 730531.5 + h / 24.0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// FNrange
+//
+// the function below returns an angle in the range
+// 0 to 2*pi
+//
+
+static double FNrange(double x)
+{
+	double b = 0.5 * x / pi;
+	double a = 2.0 * pi * (b - (long) (b));
+	if (a < 0) a = 2.0 * pi + a;
+	return a;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// f0
+//
+// Calculating the hourangle
+//
+
+static double f0(double lat, double declin)
+{
+	double fo, dfo;
+	// Correction: different sign at S HS
+	dfo = rads * (0.5 * SunDia + AirRefr);
+	if (lat < 0.0) dfo = -dfo;
+	fo = tan(declin + dfo) * tan(lat * rads);
+	if (fo > 0.99999) fo = 1.0; // to avoid overflow //
+	fo = asin(fo) + pi / 2.0;
+	return fo;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// f1
+//
+// Calculating the hourangle for twilight times
+//
+
+static double f1(double lat, double declin)
+{
+	double fi, df1;
+	// Correction: different sign at S HS
+	df1 = rads * 6.0;
+	if (lat < 0.0) df1 = -df1;
+	fi = tan(declin + df1) * tan(lat * rads);
+	if (fi > 0.99999) fi = 1.0; // to avoid overflow //
+	fi = asin(fi) + pi / 2.0;
+	return fi;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// FNsun
+//
+//   Find the ecliptic longitude of the Sun
+
+static double FNsun(double d)
+{
+
+	//   mean longitude of the Sun
+
+	L = FNrange(280.461 * rads + .9856474 * rads * d);
+
+	//   mean anomaly of the Sun
+
+	g = FNrange(357.528 * rads + .9856003 * rads * d);
+
+	//   Ecliptic longitude of the Sun
+
+	return FNrange(L + 1.915 * rads * sin(g) + .02 * rads * sin(2 * g));
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// showhrmn
+//
+// Display decimal hours in hours and minutes
+
+static void showhrmn(double dhr)
+{
+	int hr, mn;
+	hr = (int) dhr;
+	mn = (dhr - (double) hr)*60;
+
+	printf("%0d:%0d", hr, mn);
+};
+
+
+
+//-----------------------------------------------------------------------------
+//                       End of sunset/sunrise functions
+//-----------------------------------------------------------------------------
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // actionThreadURL

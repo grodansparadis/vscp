@@ -81,16 +81,12 @@ VSCPInformation::VSCPInformation( void )
 	m_hashClass[ 65 ] = _("CLASS1_MEASUREZONE");
 	m_hashClass[ 65 ] = _("CLASS1_MEASUREZONE70");
 	m_hashClass[ 85 ] = _("CLASS1_SETVALUEZONE");
+    m_hashClass[ 90 ] = _("CLASS1_WEATHER");
+    m_hashClass[ 95 ] = _("CLASS1_WEATHER_FORECAST");
 	m_hashClass[ 100 ] = _("CLASS1_PHONE");
 	m_hashClass[ 101 ] = _("CLASS1_LIN");
 	m_hashClass[ 102 ] = _("CLASS1_DISPLAY");
 	m_hashClass[ 110 ] = _("CLASS1_RC5");
-	m_hashClass[ 200 ] = _("CLASS1_ONEWIRE");
-	m_hashClass[ 201 ] = _("CLASS1_X10");
-	m_hashClass[ 202 ] = _("CLASS1_LON");
-	m_hashClass[ 203 ] = _("CLASS1_EIB");
-	m_hashClass[ 204 ] = _("CLASS1_SNAP");
-	m_hashClass[ 205 ] = _("CLASS1_MUMIN");
 	m_hashClass[ 509 ] = _("CLASS1_LOG");
 	m_hashClass[ 510 ] = _("CLASS1_LAB");
 	m_hashClass[ 511 ] = _("CLASS1_LOCAL");
@@ -323,6 +319,8 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(20, 49) ] = _("DETECT");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20, 50) ] = _("OVERLOW");
 	m_hashType[ MAKE_CLASSTYPE_LONG(20, 51) ] = _("BIG_LEVEL_CHANGE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 52) ] = _("CIVIL_SUNRISE_TWILIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 53) ] = _("CIVIL_SUNSET_TWILIGHT");
 
 	// class 30 (0x1E) -- CONTROL
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 0) ] = _("CONTROL_GENERAL");
@@ -532,6 +530,63 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(65, 56) ] = _("SPECTRAL RADIANCE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(65, 57) ] = _("SPECTRAL IRRADIANCE");
 
+    // class 90 (0x5A) -- WEATHER
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 0) ] = _("WEATHER_GENERAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 1) ] = _("WEATHER_SEASONS_WINTER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 2) ] = _("WEATHER_SEASONS_SPRING");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 3) ] = _("WEATHER_SEASONS_SUMMER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 4) ] = _("WEATHER_SEASONS_AUTUMN");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 5) ] = _("WEATHER_WIND_NONE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 6) ] = _("WEATHER_WIND_LOW");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 7) ] = _("WEATHER_WIND_MEDIUM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 8) ] = _("WEATHER_WIND_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 9) ] = _("WEATHER_WIND_VERY_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 10) ] = _("WEATHER_AIR_FOGGY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 11) ] = _("WEATHER_AIR_FREEZING");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 12) ] = _("WEATHER_AIR_COLD");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 13) ] = _("WEATHER_AIR_VERY_COLD");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 14) ] = _("WEATHER_AIR_NORMAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 15) ] = _("WEATHER_AIR_HOT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 16) ] = _("WEATHER_AIR_VERY_HOT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 17) ] = _("WEATHER_AIR_POLLUTION_LOW");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 18) ] = _("WEATHER_AIR_POLLUTION_MEDIUM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 19) ] = _("WEATHER_AIR_POLLUTION_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 20) ] = _("WEATHER_AIR_HUMID");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 21) ] = _("WEATHER_AIR_DRY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 22) ] = _("WEATHER_SOIL_HUMID");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 23) ] = _("WEATHER_SOIL_DRY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 24) ] = _("WEATHER_RAIN_NONE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 25) ] = _("WEATHER_RAIN_LIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 26) ] = _("WEATHER_RAIN_HEAVY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 27) ] = _("WEATHER_RAIN_VERY_HEAVY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 28) ] = _("WEATHER_SUN_NONE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 29) ] = _("WEATHER_SUN_LIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 30) ] = _("WEATHER_SUN_HEAVY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 31) ] = _("WEATHER_SNOW_NONE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 32) ] = _("WEATHER_SNOW_LIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 33) ] = _("WEATHER_SNOW_HEAVY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 34) ] = _("WEATHER_DEW_POINT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 35) ] = _("WEATHER_STORM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 36) ] = _("WEATHER_FLOOD");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 37) ] = _("WEATHER_EARTHQUAKE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 38) ] = _("WEATHER_NUCLEAR_DISASTER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 39) ] = _("WEATHER_FIRE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 40) ] = _("WEATHER_LIGHTNING");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 41) ] = _("WEATHER_UV_RADIATION_LOW");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 42) ] = _("WEATHER_UV_RADIATION_MEDIUM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 43) ] = _("WEATHER_UV_RADIATION_NORMAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 44) ] = _("WEATHER_UV_RADIATION_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 45) ] = _("WEATHER_UV_RADIATION_VERY_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 46) ] = _("WEATHER_WARNING_LEVEL1");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 47) ] = _("WEATHER_WARNING_LEVEL2");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 48) ] = _("WEATHER_WARNING_LEVEL3");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 49) ] = _("WEATHER_WARNING_LEVEL4");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 50) ] = _("WEATHER_WARNING_LEVEL5");
+    m_hashType[ MAKE_CLASSTYPE_LONG(90, 51) ] = _("WEATHER_ARMAGEDON");
+
+
+    // class 95 (0x5F) -- WEATHER_FORECAST
+
 	// class 100 (0x64) -- PHONE
 	m_hashType[ MAKE_CLASSTYPE_LONG(100, 0) ] = _("PHONE_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(100, 1) ] = _("INCOMING_CALL");
@@ -562,40 +617,6 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(110, 32) ] = _("LIRC");
 	m_hashType[ MAKE_CLASSTYPE_LONG(110, 48) ] = _("VSCP");
 
-	// class 200 (0xC8) -- 1-WIRE
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 0) ] = _("1WIRE_GENERAL");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 1) ] = _("NEW_ID");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 2) ] = _("CONVERT");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 3) ] = _("READ_ROM");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 4) ] = _("MATCH_ROM");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 5) ] = _("SKIP_ROM");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 6) ] = _("SEARCH_ROM");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 7) ] = _("CONDITIONAL_SEARCH_ROM");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 8) ] = _("PROGRAM");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 9) ] = _("OVERDRIVE_SKIP_ROM");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 10) ] = _("OVERDRIVE_MATCH_ROM");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 11) ] = _("OVERDRIVE_READ_MEMORY");
-	m_hashType[ MAKE_CLASSTYPE_LONG(200, 12) ] = _("OVERDRIVE_WRITE_MEMORY");
-
-	// class 201 (0xC9) -- X10
-	m_hashType[ MAKE_CLASSTYPE_LONG(201, 0) ] = _("X10_GENERAL");
-	m_hashType[ MAKE_CLASSTYPE_LONG(201, 1) ] = _("STANDARD_MESSAGE_RECEIVE");
-	m_hashType[ MAKE_CLASSTYPE_LONG(201, 2) ] = _("EXTENDED_MESSAGE_RECEIVE");
-	m_hashType[ MAKE_CLASSTYPE_LONG(201, 3) ] = _("STANDARD_MESSAGE_SEND");
-	m_hashType[ MAKE_CLASSTYPE_LONG(201, 4) ] = _("EXTENDED_MESSAGE_SEND");
-	m_hashType[ MAKE_CLASSTYPE_LONG(201, 5) ] = _("SIMPLE_MESSAGE");
-
-	// class 202 (0xCA) -- LON
-	m_hashType[ MAKE_CLASSTYPE_LONG(202, 0) ] = _("LON_GENERAL");
-
-	// class 203 (0xCB) -- KNX/EIB
-	m_hashType[ MAKE_CLASSTYPE_LONG(203, 0) ] = _("KNX_GENERAL");
-
-	// class 204 (0xCC) -- SNAP
-	m_hashType[ MAKE_CLASSTYPE_LONG(204, 0) ] = _("SNAP_GENERAL");
-
-	// class 205 (0xCD) -- CBUS
-	m_hashType[ MAKE_CLASSTYPE_LONG(205, 0) ] = _("CBUS_GENERAL");
 
 	// class 206 (0xCE) -- GPS
 	m_hashType[ MAKE_CLASSTYPE_LONG(206, 0) ] = _("GPS_GENERAL");
