@@ -201,7 +201,7 @@ BOOL CVSCPLApp::InitInstance()
 extern "C" unsigned long vscphlp_getDataCodingBitArray(const unsigned char *pNorm,
         const unsigned char length)
 {
-    return getDataCodingBitArray(pNorm, length);
+    return vscp_getDataCodingBitArray(pNorm, length);
 }
 
 /*!
@@ -214,7 +214,7 @@ extern "C" unsigned long vscphlp_getDataCodingBitArray(const unsigned char *pNor
 extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char
         *pNorm, const unsigned char length)
 {
-    return getDataCodingNormalizedInteger(pNorm, length);
+    return vscp_getDataCodingNormalizedInteger(pNorm, length);
 }
 
 /*!
@@ -234,7 +234,7 @@ extern "C" void vscphlp_getDataCodingString(const unsigned char *pString,
     // Check pointer
     if (NULL == pstrCoding) return;
 
-    wxString str = getDataCodingString(pString, length);
+    wxString str = vscp_getDataCodingString(pString, length);
     strncpy(pstrCoding, str.ToAscii(), len);
 }
 
@@ -249,7 +249,7 @@ extern "C" BOOL vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
         int len)
 {
     wxString wxstr;
-    if (!getVSCPMeasurementAsString(pEvent, wxstr)) return FALSE;
+    if (!vscp_getVSCPMeasurementAsString(pEvent, wxstr)) return FALSE;
 
     strncpy(pStr, wxstr.ToAscii(), len);
 
@@ -265,7 +265,7 @@ extern "C" BOOL vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
 extern "C" float vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
         const unsigned char length)
 {
-    return getMeasurementAsFloat(pNorm, length);
+    return vscp_getMeasurementAsFloat(pNorm, length);
 }
 
 /*!
@@ -283,7 +283,7 @@ extern "C" int vscphlp_convertFloatToNormalizedEventData(double value,
         unsigned char sensoridx)
 {
     uint16_t size;
-    int rv =  convertFloatToNormalizedEventData(value,
+    int rv =  vscp_convertFloatToNormalizedEventData(value,
                                                     pdata,
                                                     &size,
                                                     unit,
@@ -304,7 +304,7 @@ extern "C" unsigned long vscphlp_readStringValue(const char * pStrValue)
     wxString strVal;
     strVal.FromAscii(pStrValue);
 
-    return readStringValue(strVal);
+    return vscp_readStringValue(strVal);
 }
 
 /*!
@@ -314,7 +314,7 @@ extern "C" unsigned long vscphlp_readStringValue(const char * pStrValue)
 
 extern "C" unsigned char vscphlp_getVscpPriority(const vscpEvent *pEvent)
 {
-    return getVscpPriority(pEvent);
+    return vscp_getVscpPriority(pEvent);
 }
 
 /*!
@@ -324,7 +324,7 @@ extern "C" unsigned char vscphlp_getVscpPriority(const vscpEvent *pEvent)
 
 extern "C" unsigned char vscphlp_getVscpPriorityEx(const vscpEventEx *pEvent)
 {
-    return getVscpPriorityEx(pEvent);
+    return vscp_getVscpPriorityEx(pEvent);
 }
 
 /*!
@@ -334,7 +334,7 @@ extern "C" unsigned char vscphlp_getVscpPriorityEx(const vscpEventEx *pEvent)
 
 extern "C" void vscphlp_setVscpPriority(vscpEvent *pEvent, unsigned char priority)
 {
-    setVscpPriority(pEvent, priority);
+    vscp_setVscpPriority(pEvent, priority);
 }
 
 /*!
@@ -344,7 +344,7 @@ extern "C" void vscphlp_setVscpPriority(vscpEvent *pEvent, unsigned char priorit
  */
 extern "C" void vscphlp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority)
 {
-    setVscpPriorityEx(pEvent, priority);
+    vscp_setVscpPriorityEx(pEvent, priority);
 }
 
 /*!
@@ -354,7 +354,7 @@ extern "C" void vscphlp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char pri
 
 extern "C" unsigned char vscphlp_getVSCPheadFromCANid(const unsigned long id)
 {
-    return getVSCPheadFromCANid(id);
+    return vscp_getVSCPheadFromCANid(id);
 }
 
 /*!
@@ -364,7 +364,7 @@ extern "C" unsigned char vscphlp_getVSCPheadFromCANid(const unsigned long id)
 
 extern "C" unsigned short vscphlp_getVSCPclassFromCANid(const unsigned long id)
 {
-    return getVSCPclassFromCANid(id);
+    return vscp_getVSCPclassFromCANid(id);
 }
 
 /*!
@@ -374,7 +374,7 @@ extern "C" unsigned short vscphlp_getVSCPclassFromCANid(const unsigned long id)
 
 extern "C" unsigned short vscphlp_getVSCPtypeFromCANid(const unsigned long id)
 {
-    return getVSCPtypeFromCANid(id);
+    return vscp_getVSCPtypeFromCANid(id);
 }
 
 /*!
@@ -384,7 +384,7 @@ extern "C" unsigned short vscphlp_getVSCPtypeFromCANid(const unsigned long id)
 
 extern "C" unsigned short vscphlp_getVSCPnicknameFromCANid(const unsigned long id)
 {
-    return getVSCPnicknameFromCANid(id);
+    return vscp_getVSCPnicknameFromCANid(id);
 }
 
 /*!
@@ -398,7 +398,7 @@ extern "C" unsigned long vscphlp_getCANidFromVSCPdata(const unsigned char priori
         const unsigned short vscphlp_class,
         const unsigned short vscp_type)
 {
-    return getCANidFromVSCPdata(priority, vscphlp_class, vscp_type);
+    return vscp_getCANidFromVSCPdata(priority, vscphlp_class, vscp_type);
 }
 
 /*!
@@ -408,7 +408,7 @@ extern "C" unsigned long vscphlp_getCANidFromVSCPdata(const unsigned char priori
 
 extern "C" unsigned long vscphlp_getCANidFromVSCPevent(const vscpEvent *pEvent)
 {
-    return getCANidFromVSCPevent(pEvent);
+    return vscp_getCANidFromVSCPevent(pEvent);
 }
 
 /*!
@@ -418,7 +418,7 @@ extern "C" unsigned long vscphlp_getCANidFromVSCPevent(const vscpEvent *pEvent)
  */
 extern "C" unsigned long vscphlp_getCANidFromVSCPeventEx(const vscpEventEx *pEvent)
 {
-    return getCANidFromVSCPeventEx(pEvent);
+    return vscp_getCANidFromVSCPeventEx(pEvent);
 }
 
 /*!
@@ -428,7 +428,7 @@ extern "C" unsigned long vscphlp_getCANidFromVSCPeventEx(const vscpEventEx *pEve
 
 extern "C" unsigned short vscphlp_calcCRC(vscpEvent *pEvent, short bSet)
 {
-    return vscp_calc_crc(pEvent, bSet);
+    return vscp_vscp_calc_crc(pEvent, bSet);
 }
 
 /*!
@@ -439,7 +439,7 @@ extern "C" unsigned short vscphlp_calcCRC(vscpEvent *pEvent, short bSet)
 extern "C" BOOL vscphlp_getGuidFromString(vscpEvent *pEvent, const char * pGUID)
 {
     wxString strGUID = wxString::FromAscii(pGUID);
-    return(getGuidFromString(pEvent, strGUID) ? TRUE : FALSE);
+    return (vscp_getGuidFromString(pEvent, strGUID) ? TRUE : FALSE);
 }
 
 /*!
@@ -450,7 +450,7 @@ extern "C" BOOL vscphlp_getGuidFromString(vscpEvent *pEvent, const char * pGUID)
 extern "C" BOOL vscphlp_getGuidFromStringEx(vscpEventEx *pEvent, const char * pGUID)
 {
     wxString strGUID = wxString::FromAscii(pGUID);
-    return(getGuidFromStringEx(pEvent, strGUID) ? TRUE : FALSE);
+    return (vscp_getGuidFromStringEx(pEvent, strGUID) ? TRUE : FALSE);
 }
 
 /*!
@@ -461,7 +461,7 @@ extern "C" BOOL vscphlp_getGuidFromStringEx(vscpEventEx *pEvent, const char * pG
 extern "C" BOOL vscphlp_getGuidFromStringToArray(uint8_t *pGUID, const char * pStr)
 {
     wxString strGUID = wxString::FromAscii(pStr);
-    return(getGuidFromStringToArray(pGUID, strGUID) ? TRUE : FALSE);
+    return (vscp_getGuidFromStringToArray(pGUID, strGUID) ? TRUE : FALSE);
 }
 
 /*!
@@ -474,7 +474,7 @@ extern "C" BOOL vscphlp_writeGuidToString(const vscpEvent *pEvent, char * pStr)
     BOOL rv;
 
     wxString strGUID;
-    rv = (writeGuidToString(pEvent, strGUID) ? TRUE : FALSE);
+    rv = (vscp_writeGuidToString(pEvent, strGUID) ? TRUE : FALSE);
     strcpy(pStr, strGUID.ToAscii());
     return rv;
 }
@@ -484,7 +484,7 @@ extern "C" BOOL vscphlp_writeGuidToStringEx(const vscpEventEx *pEvent, char * pS
     BOOL rv;
 
     wxString strGUID;
-    rv = (writeGuidToStringEx(pEvent, strGUID) ? TRUE : FALSE);
+    rv = (vscp_writeGuidToStringEx(pEvent, strGUID) ? TRUE : FALSE);
     strcpy(pStr, strGUID.ToAscii());
     return rv;
 }
@@ -499,7 +499,7 @@ extern "C" BOOL vscphlp_writeGuidToStringEx(const vscpEventEx *pEvent, char * pS
 extern "C" BOOL vscphlp_writeGuidToString4Rows(const vscpEvent *pEvent,
         wxString& strGUID)
 {
-    return(writeGuidToString4Rows(pEvent, strGUID) ? TRUE : FALSE);
+    return (vscp_writeGuidToString4Rows(pEvent, strGUID) ? TRUE : FALSE);
 }
 
 /*!
@@ -512,7 +512,7 @@ extern "C" BOOL vscphlp_writeGuidToString4Rows(const vscpEvent *pEvent,
 extern "C" BOOL vscphlp_writeGuidToString4RowsEx(const vscpEventEx *pEvent,
         wxString& strGUID)
 {
-    return(writeGuidToString4RowsEx(pEvent, strGUID) ? TRUE : FALSE);
+    return (vscp_writeGuidToString4RowsEx(pEvent, strGUID) ? TRUE : FALSE);
 }
 
 /*!
@@ -524,7 +524,7 @@ extern "C" BOOL vscphlp_writeGuidToString4RowsEx(const vscpEventEx *pEvent,
 extern "C" BOOL vscphlp_writeGuidArrayToString(const unsigned char * pGUID,
         wxString& strGUID)
 {
-    return(writeGuidArrayToString(pGUID, strGUID) ? TRUE : FALSE);
+    return (vscp_writeGuidArrayToString(pGUID, strGUID) ? TRUE : FALSE);
 }
 
 /*!
@@ -534,7 +534,7 @@ extern "C" BOOL vscphlp_writeGuidArrayToString(const unsigned char * pGUID,
 
 extern "C" BOOL vscphlp_isGUIDEmpty(unsigned char *pGUID)
 {
-    return(isGUIDEmpty(pGUID) ? TRUE : FALSE);
+    return (vscp_isGUIDEmpty(pGUID) ? TRUE : FALSE);
 }
 
 /*!
@@ -546,7 +546,7 @@ extern "C" BOOL vscphlp_isGUIDEmpty(unsigned char *pGUID)
 extern "C" BOOL vscphlp_isSameGUID(const unsigned char *pGUID1,
         const unsigned char *pGUID2)
 {
-    return(isSameGUID(pGUID1, pGUID2) ? TRUE : FALSE);
+    return (vscp_isSameGUID(pGUID1, pGUID2) ? TRUE : FALSE);
 }
 
 /*!
@@ -556,7 +556,7 @@ extern "C" BOOL vscphlp_isSameGUID(const unsigned char *pGUID1,
  */
 extern "C" BOOL vscphlp_reverseGUID(unsigned char *pGUID)
 {
-    return(reverseGUID(pGUID) ? TRUE : FALSE);
+    return (vscp_reverseGUID(pGUID) ? TRUE : FALSE);
 }
 
 /*!
@@ -568,7 +568,7 @@ extern "C" BOOL vscphlp_reverseGUID(unsigned char *pGUID)
 extern "C" BOOL vscphlp_convertVSCPtoEx(vscpEventEx *pEventEx,
         const vscpEvent *pEvent)
 {
-    return(convertVSCPtoEx(pEventEx, pEvent) ? TRUE : FALSE);
+    return (vscp_convertVSCPtoEx(pEventEx, pEvent) ? TRUE : FALSE);
 }
 
 /*!
@@ -580,7 +580,7 @@ extern "C" BOOL vscphlp_convertVSCPtoEx(vscpEventEx *pEventEx,
 extern "C" BOOL vscphlp_convertVSCPfromEx(vscpEvent *pEvent,
         const vscpEventEx *pEventEx)
 {
-    return(convertVSCPfromEx(pEvent, pEventEx) ? TRUE : FALSE);
+    return (vscp_convertVSCPfromEx(pEvent, pEventEx) ? TRUE : FALSE);
 }
 
 /*!
@@ -590,7 +590,7 @@ extern "C" BOOL vscphlp_convertVSCPfromEx(vscpEvent *pEvent,
 
 extern "C" void vscphlp_deleteVSCPevent(vscpEvent *pEvent)
 {
-    deleteVSCPevent(pEvent);
+    vscp_deleteVSCPevent(pEvent);
 }
 
 /*!
@@ -600,7 +600,7 @@ extern "C" void vscphlp_deleteVSCPevent(vscpEvent *pEvent)
 
 extern "C" void vscphlp_deleteVSCPeventEx(vscpEventEx *pEventEx)
 {
-    deleteVSCPeventEx(pEventEx);
+    vscp_deleteVSCPeventEx(pEventEx);
 }
 
 /*!
@@ -610,7 +610,7 @@ extern "C" void vscphlp_deleteVSCPeventEx(vscpEventEx *pEventEx)
 
 extern "C" void vscphlp_clearVSCPFilter(vscpEventFilter *pFilter)
 {
-    clearVSCPFilter(pFilter);
+    vscp_clearVSCPFilter(pFilter);
 }
 
 /*!
@@ -622,7 +622,7 @@ extern "C" void vscphlp_clearVSCPFilter(vscpEventFilter *pFilter)
 extern "C" BOOL vscphlp_doLevel2Filter(const vscpEvent *pEvent,
         const vscpEventFilter *pFilter)
 {
-    return(doLevel2Filter(pEvent, pFilter) ? TRUE : FALSE);
+    return (vscp_doLevel2Filter(pEvent, pFilter) ? TRUE : FALSE);
 }
 
 /*!
@@ -634,7 +634,7 @@ extern "C" BOOL vscphlp_doLevel2Filter(const vscpEvent *pEvent,
 extern "C" BOOL vscphlp_doLevel2FilterEx(const vscpEventEx *pEvent,
         const vscpEventFilter *pFilter)
 {
-    return(doLevel2FilterEx(pEvent, pFilter) ? TRUE : FALSE);
+    return (vscp_doLevel2FilterEx(pEvent, pFilter) ? TRUE : FALSE);
 }
 
 /*!
@@ -648,7 +648,7 @@ extern "C" BOOL vscphlp_doLevel2FilterEx(const vscpEventEx *pEvent,
 
 extern "C" BOOL vscphlp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
 {
-    return(readFilterFromString(pFilter, strFilter) ? TRUE : FALSE);
+    return (vscp_readFilterFromString(pFilter, strFilter) ? TRUE : FALSE);
 }
 
 /*!
@@ -662,7 +662,7 @@ extern "C" BOOL vscphlp_readFilterFromString(vscpEventFilter *pFilter, wxString&
 
 extern "C" BOOL vscphlp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
 {
-    return(readMaskFromString(pFilter, strMask) ? TRUE : FALSE);
+    return (vscp_readMaskFromString(pFilter, strMask) ? TRUE : FALSE);
 }
 
 /*!
@@ -678,7 +678,7 @@ extern "C" BOOL vscphlp_convertCanalToEvent(vscpEvent *pvscpEvent,
         unsigned char *pGUID,
         BOOL bCAN)
 {
-    return convertCanalToEvent(pvscpEvent,
+    return vscp_convertCanalToEvent(pvscpEvent,
             pcanalMsg,
             pGUID,
             (bCAN ? true : false));
@@ -697,7 +697,7 @@ extern "C" BOOL vscphlp_convertCanalToEventEx(vscpEventEx *pvscpEvent,
         unsigned char *pGUID,
         BOOL bCAN)
 {
-    return convertCanalToEventEx(pvscpEvent,
+    return vscp_convertCanalToEventEx(pvscpEvent,
             pcanalMsg,
             pGUID,
             (bCAN ? true : false));
@@ -712,7 +712,7 @@ extern "C" BOOL vscphlp_convertCanalToEventEx(vscpEventEx *pvscpEvent,
 extern "C" BOOL vscphlp_convertEventToCanal(canalMsg *pcanalMsg,
         const vscpEvent *pvscpEvent)
 {
-    return(convertEventToCanal(pcanalMsg, pvscpEvent) ? TRUE : FALSE);
+    return (vscp_convertEventToCanal(pcanalMsg, pvscpEvent) ? TRUE : FALSE);
 }
 
 /*!
@@ -724,7 +724,7 @@ extern "C" BOOL vscphlp_convertEventToCanal(canalMsg *pcanalMsg,
 extern "C" BOOL vscphlp_convertEventExToCanal(canalMsg *pcanalMsg,
         const vscpEventEx *pvscpEventEx)
 {
-    return(convertEventExToCanal(pcanalMsg, pvscpEventEx) ? TRUE : FALSE);
+    return (vscp_convertEventExToCanal(pcanalMsg, pvscpEventEx) ? TRUE : FALSE);
 }
 
 /*!
@@ -734,7 +734,7 @@ extern "C" BOOL vscphlp_convertEventExToCanal(canalMsg *pcanalMsg,
 
 extern "C" unsigned long vscphlp_getTimeStamp(void)
 {
-    return makeTimeStamp();
+    return vscp_makeTimeStamp();
 }
 
 /*!
@@ -746,7 +746,7 @@ extern "C" unsigned long vscphlp_getTimeStamp(void)
 extern "C" BOOL vscphlp_copyVSCPEvent(vscpEvent *pEventTo,
         const vscpEvent *pEventFrom)
 {
-    return(copyVSCPEvent(pEventTo, pEventFrom) ? TRUE : FALSE);
+    return (vscp_copyVSCPEvent(pEventTo, pEventFrom) ? TRUE : FALSE);
 }
 
 /*!
@@ -760,7 +760,7 @@ extern "C" BOOL vscphlp_writeVscpDataToString(const vscpEvent *pEvent,
         wxString& str,
         BOOL bUseHtmlBreak)
 {
-    return(writeVscpDataToString(pEvent,
+    return (vscp_writeVscpDataToString(pEvent,
             str,
             (bUseHtmlBreak ? true : false)) ? TRUE : FALSE);
 }
@@ -773,7 +773,7 @@ extern "C" BOOL vscphlp_writeVscpDataToString(const vscpEvent *pEvent,
 extern "C" BOOL vscphlp_getVscpDataFromString(vscpEvent *pEvent,
         const wxString& str)
 {
-    return(getVscpDataFromString(pEvent, str) ? TRUE : FALSE);
+    return (vscp_getVscpDataFromString(pEvent, str) ? TRUE : FALSE);
 }
 
 /*!
@@ -788,7 +788,7 @@ extern "C" BOOL vscphlp_writeVscpEventToString(vscpEvent *pEvent,
     BOOL rv;
 
     wxString str = wxString::FromAscii(p);
-    if ((rv = (writeVscpEventToString(pEvent, str) ? TRUE : FALSE))) {
+    if ((rv = (vscp_writeVscpEventToString(pEvent, str) ? TRUE : FALSE))) {
         strcpy(p, str.ToAscii());
     }
 
@@ -805,7 +805,7 @@ extern "C" BOOL vscphlp_getVscpEventFromString(vscpEvent *pEvent,
         const char *p)
 {
     wxString str = wxString::FromAscii(p);
-    return(getVscpEventFromString(pEvent, str) ? TRUE : FALSE);
+    return (vscp_getVscpEventFromString(pEvent, str) ? TRUE : FALSE);
 }
 
 /*!
@@ -823,7 +823,7 @@ extern "C" BOOL vscphlp_writeVscpDataWithSizeToString(const uint16_t sizeData,
         BOOL bUseHtmlBreak)
 {
     wxString wxstr = wxString::FromAscii(pstr);
-    return writeVscpDataWithSizeToString(sizeData,
+    return vscp_writeVscpDataWithSizeToString(sizeData,
             pData,
             wxstr,
             (bUseHtmlBreak ? true : false));
