@@ -46,6 +46,7 @@
 #include "tables.h"
 #include "../../vscp/common/vscp.h"
 #include "vscpvariable.h"
+#include "vscpautomation.h"
 #include "tcpipclientthread.h"
 #include "udpclientthread.h"
 #include "udpthread.h"
@@ -502,9 +503,12 @@ public:
 
   
 
-    // Daemon Decision Matrix
+    /// Daemon Decision Matrix Object
     CDM m_dm;
 
+
+    /// Automation Object
+    CVSCPAutomation m_automation;
    
 
     /*!

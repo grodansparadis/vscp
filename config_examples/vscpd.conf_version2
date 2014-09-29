@@ -65,7 +65,7 @@
         <vscp enable="true"/>
 
         <!-- Set to true to enable decision matrix                         -->
-        <!-- Set to false to disable.                                       -->
+        <!-- Set to false to disable.                                      -->
         <!-- Set path to the decision matrix file location                 -->
         <!-- Documented in specification 14.4.1                            -->
         <!-- Decision matrix logging: loglevel="minor|normal|extra|debug"  -->
@@ -76,14 +76,14 @@
                 path="/etc/vscp/dm.xml" 
                 enablelogging="true" 
                 loglevel="debug" 
-                logpath="c:/tmp/vscp_log_security.txt" />      
+                logpath="c:/tmp/vscp_log_dm.txt"  />      
 
         <!-- Set to true to enable daemon variables         -->
         <!-- Set to false to disable.                       -->
         <!-- Path to variables storage.                    -->
         <!-- Documented in specification 14.4.1            -->
 
-        <variables enable="true" path="/tmp/variables.xml"/>
+        <variables enable="true" path="/tmp/variables.xml" autosave="5" />
 
         <!-- Set GUID for daemon                               -->
         <!-- Read more about GUID's in Specification section 4 -->
@@ -168,13 +168,21 @@
     <!-- of the server.                                                -->
     <!-- Documented in specification 14.4.3                            --> 
     <automation>
+        <!-- zone/subzone server use    -->
         <zone>1</zone>
         <sub-zone>2</sub-zone>
-        <longitude>61.74418333333333</longitude>
-        <latitude>15.160416666666666</latitude>
-        <time enable="true" interval="60" />
+        <!-- sunrise/sunset events data -->
+        <longitude>61.7441833</longitude>
+        <latitude>15.1604167</latitude>
+        <timezone>2</timezone>
         <sunrise enable="true" />
+        <sunrise-twilight enable="true" />
         <sunset enable="true" />
+        <sunset-twilight enable="true" />
+        <!-- Settings for 2014 -->
+        <daylightsavingtime-start>2014-03-30 02:00:00</daylightsavingtime-start>
+        <daylightsavingtime-end>2014-10-26 02:00:00</daylightsavingtime-end>
+        <time enable="true" interval="60" />
         <heartbeat enable="true" interval="30" />
     </automation>
 	
@@ -228,7 +236,7 @@
 	<!-- List level II VSCP drivers here                            -->
     <!-- Documented in specification 14.4.5                         -->
 
-    <vscpdriver enable="true">	 	
+    <level2driver enable="true">	 	
 
         <!-- Level II Logger - driver is documented in 30.1 -->
         <driver enable="true" >
@@ -278,6 +286,6 @@
         </driver>
  
 
-    </vscpdriver>	
+    </level2driver>	
 
 </vscpconfig>

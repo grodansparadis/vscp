@@ -818,10 +818,10 @@ public:
     @return a timer if > 0 on success
     */
     int addTimer( uint16_t id,
-        wxString& nameVar, 
-        uint32_t delay = 0, 
-        bool bStart = false, 
-        bool setValue = false );
+                    wxString& nameVar, 
+                    uint32_t delay = 0, 
+                    bool bStart = false, 
+                    bool setValue = false );
 
     /*!
         Start an existing timer. Do nothing if timer does not exist.
