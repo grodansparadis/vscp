@@ -646,7 +646,6 @@ bool CControlObject::run(void)
     EventShutDown.sizeData = 0;
     EventShutDown.pdata = NULL;
 
-
 	// Init table files
 	listVSCPTables::iterator iter;
 	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
@@ -685,6 +684,11 @@ bool CControlObject::run(void)
 
     // Feed startup event
     m_dm.feed(&EventStartUp);
+
+
+    //-------------------------------------------------------------------------
+    //                                    LOOP
+    //-------------------------------------------------------------------------
     
     // DM Loop
     while (!m_bQuit) {
@@ -693,11 +697,6 @@ bool CControlObject::run(void)
 		clock_t ticks,oldus;
 		oldus = ticks = clock();
 
-#ifndef WIN32
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-#endif
-
         // Feed possible perodic event
         m_dm.feedPeriodicEvent();
 
@@ -705,6 +704,14 @@ bool CControlObject::run(void)
         // Garanties at least one lop event between every other
         // event feed to the queue
         m_dm.feed(&EventLoop);
+
+
+        // Autosave variables
+        m_variableMutex.Lock();
+        if ( m_VSCP_Variables.autoSave() ) {
+            logMsg(_("Autosaved variables.\n"), DAEMON_LOGMSG_INFO);
+        }
+        m_variableMutex.Unlock();
 
         // tcp/ip clients uses joinable treads and therefor does not
         // delete themseves.  This is a garbage collect for unterminated 
@@ -726,36 +733,7 @@ bool CControlObject::run(void)
         }
 		*/
 
-        /*
-         * This broadcasts to all dumb-increment-protocol connections
-         * at 20Hz.
-         *
-         * We're just sending a character 'x', in these examples the
-         * callbacks send their own per-connection content.
-         *
-         * You have to send something with nonzero length to get the
-         * callback actions delivered.
-         *
-         * We take care of pre-and-post padding allocation.
-         */
 
-#ifdef WIN32
-		if ( (ticks - oldus) > 50000) 	
-#else
-        if ( ( (unsigned int)tv.tv_usec - oldus) > 50000) 
-#endif
-		{     
-            if (m_bWebSockets) {
-   
-            }
-
-#ifdef WIN32
-			oldus = clock();
-#else
-            oldus = tv.tv_usec;
-#endif
-
-        }
 
 
         // Wait for event
@@ -1760,18 +1738,20 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 else if (subchild->GetName() == wxT("variables")) {
                     // Should the internal DM be disabled
                 
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attrib = subchild->GetAttribute(wxT("enable"), wxT("true"));
                   
-                    if (property.IsSameAs(_("false"), false)) {
+                    if (attrib.IsSameAs(_("false"), false)) {
                         m_bVariables = false;
                     }
 
-                    // Get the path to the DM file
-                 
+                    // Get the path to the DM file                 
                     m_VSCP_Variables.m_configPath = subchild->GetAttribute(wxT("path"), wxT(""));
-                  
                     m_VSCP_Variables.m_configPath.Trim();
                     m_VSCP_Variables.m_configPath.Trim(false);
+
+                    // Autosave interval
+                    long autosave = vscp_readStringValue( subchild->GetAttribute(wxT("autosave"), wxT("5")) );
+                    m_VSCP_Variables.setAutoSaveInterval( autosave );
 
                 } else if (subchild->GetName() == wxT("vscp")) {
                    
@@ -2286,6 +2266,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
             }
 
+        }
+        else if (child->GetName() == wxT("automation")) {
+            
         }
 
 

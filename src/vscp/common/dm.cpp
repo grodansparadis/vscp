@@ -2900,6 +2900,7 @@ CDM::CDM( CControlObject *ctrlObj )
 
     m_logLevel = LOG_DM_NORMAL;
 
+
 #ifdef WIN32
     m_logFileName.SetName( wxStandardPaths::Get().GetConfigDir() + _("vscp_log_dm.txt") );
 #else

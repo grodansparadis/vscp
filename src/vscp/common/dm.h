@@ -426,279 +426,279 @@ class dmElement
 {
 public:
 
-  /// Constructor
-  dmElement( void );
+    /// Constructor
+    dmElement( void );
 
-  /// Destructor
-  ~dmElement( void );
-
-
-  /*!
-  Get DM item as a realstring description.
-  @return A string representation for the item. This string is on the form 
-  enabled,from,to,weekday,time,mask,filter,index,zone,subzone,control-code,action-code,action-param,comment,trig-counter,error-counter
-  where mask is Priority;Class;Type;GUID an filter is Priority;Class;Type;GUID
-  See the specification for a description of the from, to and weekday fields. 
-  */
-  wxString getAsRealText( void );
+    /// Destructor
+    ~dmElement( void );
 
 
-  /*!
-  Enable item
-  */
-  void enable( void )  { m_control |= DM_CONTROL_ENABLE; };
+    /*!
+        Get DM item as a realstring description.
+        @return A string representation for the item. This string is on the form 
+        enabled,from,to,weekday,time,mask,filter,index,zone,subzone,control-code,action-code,action-param,comment,trig-counter,error-counter
+        where mask is Priority;Class;Type;GUID an filter is Priority;Class;Type;GUID
+        See the specification for a description of the from, to and weekday fields. 
+    */
+    wxString getAsRealText( void );
 
-  /*!
-  Disable item
-  */
-  void disable( void )  { m_control &= 0x7fffffff; };
 
-  /*!
-  Check if it is enabled
-  @returns true if enabled false otherwise
-  */
-  bool isEnabled( void ) { return ( ( m_control & DM_CONTROL_ENABLE ) ? true : false ); };
-  
-  /*!
-  Check if scan should continue
-  @returns true if enabled false otherwise
-  */
-  bool isScanDontContinueSet( void ) { return ( ( m_control & DM_CONTROL_DONT_CONTINUE_SCAN ) ? true : false ); };
+    /*!
+        Enable item
+    */
+    void enable( void )  { m_control |= DM_CONTROL_ENABLE; };
 
-  /*!
-  Check if index should be checked
-  @returns true if enabled false otherwise
-  */
-  bool isCheckIndexSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_INDEX ) ? true : false ); };
-    
-  /*!
-  Check if zone should be checked
-  @returns true if enabled false otherwise
-  */
-  bool isCheckZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_ZONE ) ? true : false ); };
+    /*!
+        Disable item
+    */
+    void disable( void )  { m_control &= 0x7fffffff; };
+
+    /*!
+        Check if it is enabled
+        @returns true if enabled false otherwise
+    */
+    bool isEnabled( void ) { return ( ( m_control & DM_CONTROL_ENABLE ) ? true : false ); };
   
     /*!
-  Check if zone should be checked
-  @returns true if enabled false otherwise
-  */
-  bool isCheckSubZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
+        Check if scan should continue
+        @returns true if enabled false otherwise
+    */
+    bool isScanDontContinueSet( void ) { return ( ( m_control & DM_CONTROL_DONT_CONTINUE_SCAN ) ? true : false ); };
+
+    /*!
+        Check if index should be checked
+        @returns true if enabled false otherwise
+     */
+    bool isCheckIndexSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_INDEX ) ? true : false ); };
+    
+    /*!
+        Check if zone should be checked
+        @returns true if enabled false otherwise
+    */    
+    bool isCheckZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_ZONE ) ? true : false ); };
   
-  /*!
-  Handle escape sequencies
-  @param pEvent Event feed thru matrix
-  @param str String to replace escapes in
-  @return true on success, else false.
-  */
-  bool handleEscapes( vscpEvent *pEvent, wxString& str );
-
-
-  /*!
-  Perform the selected internal action. The parameter
-  is action dependent.
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doAction( vscpEvent *pDMEvent );
-
-  /*!
-  Exceute action 
-  Just executes the external action script. The parameter
-  is action dependent.
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionExecute( vscpEvent *pDMEvent );
-
-  /*!
-  Timed exceute the external action script.
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionTimedExecute( vscpEvent *pDMEvent );
-
-  /*!
-  Send event action 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionSendEvent( vscpEvent *pDMEvent );
-
-  /*!
-  Send event conditional action 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionSendEventConditional( vscpEvent *pDMEvent );
-
-  /*!
-  Send events from file action 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionSendEventsFromFile( vscpEvent *pDMEvent );
-
-  /*!
-  Store in variable action 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionStoreVariable( vscpEvent *pDMEvent );
-
-  /*!
-  Add to variable action 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionAddVariable( vscpEvent *pDMEvent );
-
-  /*!
-  Subtract from variable action 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionSubtractVariable( vscpEvent *pDMEvent );
-
-  /*!
-  Multiply variable action 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionMultiplyVariable( vscpEvent *pDMEvent );
-
-  /*!
-  Divide variable action 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionDivideVariable( vscpEvent *pDMEvent );
-
-  /*!
-  Start a timer 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionStartTimer( vscpEvent *pDMEvent );
-
-  /*!
-  Pause a timer 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionPauseTimer( vscpEvent *pDMEvent );
-
-  /*!
-  Resume a timer 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionResumeTimer( vscpEvent *pDMEvent );
-
-  /*!
-  Stop a timer 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionStopTimer( vscpEvent *pDMEvent );
-
-  /*!
-  Write to file 
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionWriteFile( vscpEvent *pDMEvent );
-
-  /*!
-  Get URL
-  @param pDMEvent Event that triggered the action
-  @returns true if all went well.
-  */
-  bool doActionGetURL( vscpEvent *pDMEvent );
-
-
-  /*!
-	Write a record to a table
-	@param pDMEvent Event that triggered the action
-	@returns true if all went well.
-  */
-  bool doActionWriteTable( vscpEvent *pDMEvent );
-
-
-  /// DM row filter
-  vscpEventFilter m_vscpfilter;
-
-  /// Control Code
-  uint32_t m_control;
-
-  /// Action code
-  uint32_t m_action;
-
-  /// Action parameters
-  wxString m_actionparam;
-
-  /// A counter that is updated each time a DM row is matched
-  uint32_t m_triggCounter;
-
-  /// A counter that is updated each time an error occurs
-  uint32_t m_errorCounter;
+    /*!
+        Check if zone should be checked
+        @returns true if enabled false otherwise
+    */
+    bool isCheckSubZoneSet( void ) { return ( ( m_control & DM_CONTROL_CHECK_SUBZONE ) ? true : false ); };
   
-  /// If index should be checked this is the one
-  uint8_t m_index;
-  
-  /// Index should be masked so only the LSB tree bits are checked
-  bool m_bMeasurement;
-  
-  /// If zone should be checked this is the one
-  uint8_t m_zone;
-  
-  /// If subzone should be checked this is the one
-  uint8_t m_subzone;
-
-  /// Description of last error
-  wxString m_strLastError;
-
-  /// Description for entry
-  wxString m_comment;
-
-  /// Group ID
-  wxString m_strGroupID;
-
-  /// Actiontime 
-  actionTime m_timeAllow;
-
-  // Pointer to owner
-  CDM *m_pDM;
+    /*!
+        Handle escape sequencies
+        @param pEvent Event feed thru matrix
+        @param str String to replace escapes in
+         @return true on success, else false.
+    */
+    bool handleEscapes( vscpEvent *pEvent, wxString& str );
 
 
-  /////////////////////////////////////////////////////////////////////////////
-  //                    A C T I O N  -  P A R A M E T E R S
-  ////////////////////////////////////////////////////////////////////////////
+    /*!
+    Perform the selected internal action. The parameter
+    is action dependent.
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doAction( vscpEvent *pDMEvent );
+
+    /*!
+    Exceute action 
+    Just executes the external action script. The parameter
+    is action dependent.
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionExecute( vscpEvent *pDMEvent );
+
+    /*!
+    Timed exceute the external action script.
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionTimedExecute( vscpEvent *pDMEvent );
+
+    /*!
+    Send event action 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionSendEvent( vscpEvent *pDMEvent );
+
+    /*!
+    Send event conditional action 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionSendEventConditional( vscpEvent *pDMEvent );
+
+    /*!
+    Send events from file action 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionSendEventsFromFile( vscpEvent *pDMEvent );
+
+    /*!
+    Store in variable action 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionStoreVariable( vscpEvent *pDMEvent );
+
+    /*!
+    Add to variable action 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionAddVariable( vscpEvent *pDMEvent );
+
+    /*!
+    Subtract from variable action 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionSubtractVariable( vscpEvent *pDMEvent );
+
+    /*!
+    Multiply variable action 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionMultiplyVariable( vscpEvent *pDMEvent );
+
+    /*!
+    Divide variable action 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionDivideVariable( vscpEvent *pDMEvent );
+
+    /*!
+    Start a timer 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionStartTimer( vscpEvent *pDMEvent );
+
+    /*!
+    Pause a timer 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionPauseTimer( vscpEvent *pDMEvent );
+
+    /*!
+    Resume a timer 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionResumeTimer( vscpEvent *pDMEvent );
+
+    /*!
+    Stop a timer 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionStopTimer( vscpEvent *pDMEvent );
+
+    /*!
+    Write to file 
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionWriteFile( vscpEvent *pDMEvent );
+
+    /*!
+    Get URL
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionGetURL( vscpEvent *pDMEvent );
+
+
+    /*!
+    Write a record to a table
+    @param pDMEvent Event that triggered the action
+    @returns true if all went well.
+    */
+    bool doActionWriteTable( vscpEvent *pDMEvent );
+
+
+    /// DM row filter
+    vscpEventFilter m_vscpfilter;
+
+    /// Control Code
+    uint32_t m_control;
+
+    /// Action code
+    uint32_t m_action;
+
+    /// Action parameters
+    wxString m_actionparam;
+
+    /// A counter that is updated each time a DM row is matched
+    uint32_t m_triggCounter;
+
+    /// A counter that is updated each time an error occurs
+    uint32_t m_errorCounter;
+
+    /// If index should be checked this is the one
+    uint8_t m_index;
+
+    /// Index should be masked so only the LSB tree bits are checked
+    bool m_bMeasurement;
+
+    /// If zone should be checked this is the one
+    uint8_t m_zone;
+
+    /// If subzone should be checked this is the one
+    uint8_t m_subzone;
+
+    /// Description of last error
+    wxString m_strLastError;
+
+    /// Description for entry
+    wxString m_comment;
+
+    /// Group ID
+    wxString m_strGroupID;
+
+    /// Actiontime 
+    actionTime m_timeAllow;
+
+    // Pointer to owner
+    CDM *m_pDM;
+
+
+    /////////////////////////////////////////////////////////////////////////////
+    //                    A C T I O N  -  P A R A M E T E R S
+    ////////////////////////////////////////////////////////////////////////////
 
 private:
 
-  // When a dm row is added the action code and the action parameter
-  // is parsed. Values here are used for storage of parsed data
+    // When a dm row is added the action code and the action parameter
+    // is parsed. Values here are used for storage of parsed data
 
-  /// For action execute dll
-  wxDynamicLibrary m_dll;     // dynamic lib holder
-  void *m_dllMethod;          // Pointer to dll/dl method
+    /// For action execute dll
+    wxDynamicLibrary m_dll;     // dynamic lib holder
+    void *m_dllMethod;          // Pointer to dll/dl method
 
-  /// Variable +-*/
-  uint8_t m_operation;
-  CVSCPVariable m_variable;
+    /// Variable +-*/
+    uint8_t m_operation;
+    CVSCPVariable m_variable;
 
-  // Event(s)
-  // Offset 0 is for single event send and true conditional.
-  // Offset 1 is for false conditional event.
-  vscpEventEx m_event[2];
+    // Event(s)
+    // Offset 0 is for single event send and true conditional.
+    // Offset 1 is for false conditional event.
+    vscpEventEx m_event[2];
 
-  // For file writes
-  wxFile m_file;
+    // For file writes
+    wxFile m_file;
 
 
 
-  /////////////////////////////////////////////////////////////////////////////
-  //                     A C T I O N  -  H E L P E R S
-  ////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////
+    //                     A C T I O N  -  H E L P E R S
+    ////////////////////////////////////////////////////////////////////////////
 
 
 
@@ -717,96 +717,96 @@ class CDM
 
 public:
 
-  // Constructor
-  CDM( CControlObject *ctrlObj = NULL );
+    // Constructor
+    CDM( CControlObject *ctrlObj = NULL );
 
-  // Destructor
-  ~CDM();
+    // Destructor
+    ~CDM();
 
-  /*!
+    /*!
     Initt open logfile etc
-  */
-  void init( void );
+    */
+    void init( void );
 
-  /*!
-  Set control object for DM
-  */
-  void setControlObject( CControlObject *ctrlObj );
+    /*!
+    Set control object for DM
+    */
+    void setControlObject( CControlObject *ctrlObj );
 
-  /*!
+    /*!
     log message
-  */
-  void logmsg( const wxString& msg, const uint8_t level = LOG_DM_NORMAL );
+    */
+    void logmsg( const wxString& msg, const uint8_t level = LOG_DM_NORMAL );
 
-  /*!
-  Add Element to matrix
-  */
-  bool addElement( dmElement *pItem );
+    /*!
+    Add Element to matrix
+    */
+    bool addElement( dmElement *pItem );
 
-  /*!
-  Remove Element from matrix
-  */
-  bool removeRow( unsigned short pos );
+    /*!
+    Remove Element from matrix
+    */
+    bool removeRow( unsigned short pos );
 
-  /*!
-  Get number of rows in matrix
-  */
-  unsigned short getRowCount( void ) { return m_DMList.GetCount(); };
+    /*!
+    Get number of rows in matrix
+    */
+    unsigned short getRowCount( void ) { return m_DMList.GetCount(); };
 
-  /*!
-  Get a row from the matrix
-  */
-  dmElement *getRow( short row );
+    /*!
+    Get a row from the matrix
+    */
+    dmElement *getRow( short row );
 
-  /*!
-  Load DM from external storage.
-  */
-  bool load( void );
+    /*!
+    Load DM from external storage.
+    */
+    bool load( void );
 
-  /*!
-  Save DM to external storage.
-  */
-  bool save( void );
+    /*!
+    Save DM to external storage.
+    */
+    bool save( void );
 
-  /*!
-  Run an event through the matrix
-  */
-  bool feed( vscpEvent *pEvent );
+    /*!
+    Run an event through the matrix
+    */
+    bool feed( vscpEvent *pEvent );
 
-  /*!
-  Feed periodic events throu the matrix
-  SECONDS
-  MINUTE
-  HOUR
-  NOON
-  MIDNIGHT
-  WEEK
-  MONTH
-  QUARTER
-  YEAR
-  RANDOM-MINUTE
-  RANDOM-HOUR
-  RANDOM-DAY
-  RANDOM-WEEK
-  RANDOM-MONTH
-  RANDOM-YEAR
-  DUSK
-  DAWN
-  */
-  bool feedPeriodicEvent( void );
+    /*!
+    Feed periodic events throu the matrix
+    SECONDS
+    MINUTE
+    HOUR
+    NOON
+    MIDNIGHT
+    WEEK
+    MONTH
+    QUARTER
+    YEAR
+    RANDOM-MINUTE
+    RANDOM-HOUR
+    RANDOM-DAY
+    RANDOM-WEEK
+    RANDOM-MONTH
+    RANDOM-YEAR
+    DUSK
+    DAWN
+    */
+    bool feedPeriodicEvent( void );
 
 
-  //------------------------------------
-  //              Timers
-  //------------------------------------
+    //------------------------------------
+    //              Timers
+    //------------------------------------
 
-  /*!
+    /*!
     serviceTimers
     This method service all timers and handle there decrement
-  */
-  void serviceTimers( void );
+    */
+    void serviceTimers( void );
 
-  /*!
+    /*!
     Add a new timer
     A new timer is created if it is not yet existing. To test this the
     variablename is searched before a new timer is created. If already 
@@ -816,31 +816,31 @@ public:
     @param bStart Run flag for timer
     @param setValue Value to set variable to when timer elapse
     @return a timer if > 0 on success
-  */
-  int addTimer( uint16_t id,
-                  wxString& nameVar, 
-                  uint32_t delay = 0, 
-                  bool bStart = false, 
-                  bool setValue = false );
+    */
+    int addTimer( uint16_t id,
+        wxString& nameVar, 
+        uint32_t delay = 0, 
+        bool bStart = false, 
+        bool setValue = false );
 
-  /*!
-    Start an existing timer. Do nothing if timer does not exist.
-    @return true on success
-  */
-  bool startTimer( int idTimer );
+    /*!
+        Start an existing timer. Do nothing if timer does not exist.
+        @return true on success
+    */
+     bool startTimer( int idTimer );
 
-  /*!
-    Start a timer and set 'setvalues' If the timer does not
-    exist create it.
-    @return timer id or zero on failure
-  */
-  int startTimer( uint16_t id, wxString& nameVariable, uint32_t delay, bool bSetValue = false );
+    /*!
+        Start a timer and set 'setvalues' If the timer does not
+        exist create it.
+        @return timer id or zero on failure
+    */
+    int startTimer( uint16_t id, wxString& nameVariable, uint32_t delay, bool bSetValue = false );
 
-  /*!
-    Stop an existing timer
-    @return true on success
-  */
-  bool stopTimer( int idTimer );
+     /*!
+        Stop an existing timer
+        @return true on success
+    */
+     bool stopTimer( int idTimer );
 
   //------------------------------------
 

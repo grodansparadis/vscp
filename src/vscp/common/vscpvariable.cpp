@@ -668,6 +668,16 @@ CVariableStorage::CVariableStorage()
     m_configPath = _("/srv/vscp/variables.xml");
 #endif	
 #endif    
+
+    // Autosave variables every five minutes.
+    m_autosaveInterval = 5;
+
+    // We just read varaibles  
+    m_lastSaveTime.SetToCurrent();
+
+    // No changes
+    bChanged = false;
+
 }
 
 
@@ -688,6 +698,25 @@ CVariableStorage::~CVariableStorage()
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// autoSave
+//
+
+bool CVariableStorage::autoSave()
+{
+    // Must be enabled
+    if ( !m_autosaveInterval ) return false;
+
+    wxTimeSpan diffTime = wxDateTime::Now() - m_lastSaveTime;
+    if ( diffTime.GetMinutes() > m_autosaveInterval ) {
+        if ( bChanged ) save();
+        return true;
+    }
+
+    return false;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // find
@@ -697,8 +726,8 @@ CVSCPVariable * CVariableStorage::find( const wxString& name )
 {
     wxString strName = name.Upper();
     strName.Trim( true );
-  strName.Trim( false );
-  CVariableStorage *pVariable = NULL;
+    strName.Trim( false );
+    CVariableStorage *pVariable = NULL;
 
     // Check if it is a persistent variable
     if ( strName[ 0 ] == VSCP_DAEMON_VARIABLE_PREFIX_PERSISTENT ) {
@@ -711,6 +740,8 @@ CVSCPVariable * CVariableStorage::find( const wxString& name )
     }
 
     if ( m_hashVariable.end() != m_hashVariable.find( strName ) ) {
+        // We don't know if it will be changed bit just in case...
+        bChanged = true;
         return m_hashVariable[ strName ];
     }
 
@@ -727,6 +758,8 @@ bool CVariableStorage::add( const wxString& varName, const wxString& value, uint
     wxString name = varName.Upper();
 	name.Trim( true );
 	name.Trim( false );
+
+    bChanged = true;
 
     // Name should not contain spaces so if it does
     // we replace them with 'underscore'
@@ -785,6 +818,8 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
     // Check that the pointer is valid
     if ( NULL == pVar ) return false;
 
+    bChanged = true;
+
     if ( NULL != find( pVar->getName() ) ) {
         
 		// The variable is there already - remove so we could add the new
@@ -812,6 +847,8 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
 
 bool CVariableStorage::remove( wxString& name ) 
 {
+    bChanged = true;
+
     m_listVariable.DeleteObject( m_hashVariable[ name ] );
     return m_hashVariable.erase( name ) ? true : false;
 }
@@ -1323,6 +1360,12 @@ bool CVariableStorage::save( wxString& path )
 
     // Close the file
     pFileStream->Close();
+
+    // Variable saved
+    m_lastSaveTime.SetToCurrent();
+
+    // No changes
+    bChanged = true;
 
     return true;
 }

@@ -8362,6 +8362,11 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
     //wxStandardPaths stdpaths;
     wxXmlDocument doc;
 
+    wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
+    wxFont fontBold = defaultFont;
+    fontBold.SetStyle(wxFONTSTYLE_NORMAL);
+    fontBold.SetWeight(wxFONTWEIGHT_BOLD);
+
     // First find a path to save register set data to
     wxFileDialog dlg(this,
             _("Choose file to load register set from "),
@@ -8378,6 +8383,13 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
             return;
         }
 
+        bool bEmpty = false;
+        int nRows = m_gridRegisters->GetNumberRows();
+        if ( 0 == nRows ) {
+            bEmpty=true;
+            //fillStandardRegisters();
+        }
+
         // start processing the XML file
         if (doc.GetRoot()->GetName() != wxT("registerset")) {
             return;
@@ -8386,34 +8398,83 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
         wxXmlNode *child = doc.GetRoot()->GetChildren();
         while (child) {
 
-            long reg;
-            uint8_t value;
             if (child->GetName() == wxT("register")) {
 
-                wxString id =
-#if wxCHECK_VERSION(3,0,0)                        
-                        child->GetAttribute(wxT("id"), wxT("-1"));
-#else
-                        child->GetPropVal(wxT("id"), wxT("-1"));
-#endif                       
-                reg = vscp_readStringValue(id);
+                long reg;
+                uint8_t value;
+                wxString strid;
+                wxString strValue;
+                wxString strSaveValue;
+                wxString strDescription;
+
+                strid = child->GetAttribute(wxT("id"), wxT("-1"));
+                     
+                reg = vscp_readStringValue(strid);
                 if (-1 == reg) continue;
 
                 wxXmlNode *subchild = child->GetChildren();
                 while (subchild) {
+
                     if (subchild->GetName() == wxT("value")) {
-                        wxString strSaveValue = m_gridRegisters->GetCellValue(reg, 2);
                         wxString str = subchild->GetNodeContent();
                         value = vscp_readStringValue(str);
-                        str.Printf(_("0x%02lx"), value);
-                        if (str != strSaveValue) {
-                            m_gridRegisters->SetCellValue(reg, 2, str);
-                            m_gridRegisters->SetCellTextColour(reg, 2, *wxRED);
-                        }
+                        strValue.Printf(_("0x%02lx"), value);
                     }
+                    else if (subchild->GetName() == wxT("description")) {
+                        strDescription = subchild->GetNodeContent();
+                    }
+
                     subchild = subchild->GetNext();
                 }
 
+                
+                if ( !bEmpty ) {
+                    strSaveValue = m_gridRegisters->GetCellValue(reg, 2);
+                }
+                else {
+                    strSaveValue = _("");
+                }
+                       
+                if ( !bEmpty ) {
+                    m_gridRegisters->SetCellValue(reg, 2, strValue);
+                    if (strValue != strSaveValue) {
+                        m_gridRegisters->SetCellTextColour(reg, 2, *wxRED);
+                    }
+                }
+                else {
+                    wxString strBuf;
+
+                    m_gridRegisters->AppendRows(1);
+                                
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strValue);
+                    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
+                    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
+                    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
+
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 1, _("rw"));
+                    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 1);
+                    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 1);
+
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
+                                                                2,
+                                                                strValue);
+                    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+                    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
+
+                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, strDescription );
+                    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 3, fontBold);
+                    m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
+    
+                    // Make all parts of the row visible
+                    m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+
+                    for (int i = 0; i < 4; i++) {
+                        m_gridRegisters->SetCellBackgroundColour(m_gridRegisters->GetNumberRows() - 1, i, wxColour(0xff, 0xff, 0xd2));
+                    }
+
+                    // Yes value is changed as it is new
+                    m_gridRegisters->SetCellTextColour(reg, 2, *wxRED);
+                }
             }
 
             child = child->GetNext();
@@ -8422,6 +8483,7 @@ void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) {
 
     }
 }
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // getRegFromCell

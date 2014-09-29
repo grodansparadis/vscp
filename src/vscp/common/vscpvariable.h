@@ -349,6 +349,16 @@ public:
 	/// Destructor
 	virtual ~CVariableStorage();
 
+    /*! 
+        Set the autosave interval
+    */
+    void setAutoSaveInterval( uint16_t interval )
+                { m_autosaveInterval = interval; };
+
+    /*!
+        Save variables if it's time for it.
+    */
+    bool autoSave();
 
 	/*!
 	Find variable from its name
@@ -419,6 +429,21 @@ public:
 	  Configuration path for variable persistant storage
 	 */
 	wxString m_configPath;
+
+    /*!
+        Autosave in minutes
+        0 = disabled.
+    */
+    uint16_t m_autosaveInterval;
+
+    /*!
+        Set to true if storage has been changed
+        since last save
+    */
+    bool bChanged;
+
+    // Last variable save
+    wxDateTime m_lastSaveTime;
 };
 
 
