@@ -18,6 +18,9 @@ double SunDia = 0.53; // Sunradius degrees
 
 double AirRefr = 34.0 / 60.0; // athmospheric refraction degrees //
 
+double test_longitude = 61.7441833;
+double test_latitude = 15.1604167;
+
 //   Get the days to J2000
 //   h is UT in decimal hours
 //   FNday only works between 1901 to 2099 - see Meeus chapter 7
@@ -136,12 +139,12 @@ int main(void)
 
 	printf("year %4d month %2d\n", (int) y, (int) m);
 	printf("Input latitude, longitude and timezone\n");
-	scanf("%f", &inlat);
-	scanf("%f", &inlon);
-	scanf("%f", &intz);
-	latit = (double) inlat;
-	longit = (double) inlon;
-	tzone = (double) intz;
+	//iscanf("%f", &inlat);
+	//scanf("%f", &inlon);
+	//scanf("%f", &intz);
+	latit = test_longitude; //(double) inlat;
+	longit = test_latitude; //(double) inlon;
+	tzone = (double)2; // intz;
 
 	// testing
 	// m=6; day=10;
