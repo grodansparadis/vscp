@@ -26,20 +26,6 @@
 #if !defined(VSCPAUTOMATION__INCLUDED_)
 #define VSCPAUTOMATION__INCLUDED_
 
-// Structure holding calculated values
-// use convert2HourMinute to convert from
-// double to hour/minutes
-
-struct SunData {
-    double declination;
-    double daylength;   // hours/minutes
-    double civilTwilightSunrise;
-    double Sunrise;
-    double SunMaxAltitude;
-    double noonTime;
-    double Sunset;
-    double civilTwilightSunset;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -91,9 +77,14 @@ public:
     static void convert2HourMinute( double floatTime, int *pHours, int *pMinutes );
 
     /*!
-        
+        Calculate Sunset/Sunrice etc   
     */
-    void calcSun( struct SunData * pSunData );
+    void calcSun( void );
+
+    /*!
+        Do automation work
+    */
+    void doWork( void );
 
 public:
 
@@ -119,26 +110,36 @@ public:
         Set to true for  periodic CLASS1.PROTOCOL, Type=1 (Segment Status Heartbeat) 
         event to be sent from the daemon. The interval between events is set in seconds.
     */
-    bool m_bSegmentStatusHeartbeat;
+    bool m_bSegmentControllerHeartbeat; 
 
     /*!
         Seconds between Segment Status Heartbeat
     */
-    uint16_t m_secondsSegmentStatusHeartbeat;
+    long m_intervalSegmentControllerHeartbeat;   // long because of .toLong
+
+    /*!
+        Enable/disable heartbeat.
+    */
+    bool m_bHeartBeatEvent;
+
+    /*!
+        Interval in seconds for heartbeats
+    */
+    long m_intervalHeartBeat;                   // long because of .toLong
 
     /*!
         Start date time when daylight saving time starts. When daylight saving time is in 
         effect the zone value will be increase with one for all calculations. Date/Time should 
         be on the form YY-MM-DD HH:MM:SS
     */
-    wxDateTime m_daylightsavingtimestart;
+    wxDateTime m_daylightsavingtimeStart;
 
     /*!
         Start date time when daylight saving time starts. When daylight saving time is in 
         effect the zone value will be increase with one for all calculations. Date/Time should 
         be on the form YY-MM-DD HH:MM:SS
     */
-    wxDateTime m_daylightsavingtimestop;
+    wxDateTime m_daylightsavingtimeEnd;
 
     /*!
         Enable/disable the CLASS1.INFORMATION, Type=52 (Civil sunrise twilight time) to be sent. 
@@ -164,15 +165,43 @@ public:
     */
     bool m_bSunSetTwilightEvent;
 
-    /*!
-        Enable/disable heartbeat.
-    */
-    bool m_bHeartBeat;
+ private:
+
+     /*!
+        calculations holders.
+        ---------------------
+        Structure holding calculated values
+        use convert2HourMinute to convert from
+        double to hour/minutes
+     */
+    double m_declination;
+    double m_daylength;               // hours/minutes
+    //double m_civilTwilightSunrise;
+    //double m_Sunrise;
+    double m_SunMaxAltitude;
+    //double m_noonTime;
+    //double m_Sunset;
+    //double m_civilTwilightSunset;
 
     /*!
-        Interval in seconds for heartbeats
+        Done every hour
     */
-    uint16_t m_intervalHeartBeat;
+    wxDateTime m_lastCalculations;
+
+    wxDateTime m_civilTwilightSunriseTime;
+    wxDateTime m_civilTwilightSunriseTime_sent;
+
+    wxDateTime m_SunriseTime;
+    wxDateTime m_SunriseTime_sent;
+    
+    wxDateTime m_SunsetTime;
+    wxDateTime m_SunsetTime_sent;
+    
+    wxDateTime m_civilTwilightSunsetTime;
+    wxDateTime m_civilTwilightSunsetTime_sent;
+    
+    wxDateTime m_noonTime;
+    wxDateTime m_noonTime_sent;
 
 private:
 

@@ -485,24 +485,20 @@ public:
     HANDLE m_hEventSource;
 #endif
 
-    // *************************************************************************
 
     /*!
         Mutex for client queue
      */
     wxMutex m_wxClientMutex;
 
-    // *************************************************************************
 
     /*!
         Mutex for device queue
      */
     wxMutex m_wxDeviceMutex;
 
-    // *************************************************************************
 
   
-
     /// Daemon Decision Matrix Object
     CDM m_dm;
 

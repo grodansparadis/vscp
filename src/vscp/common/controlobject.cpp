@@ -1882,11 +1882,14 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         if (subsubchild->GetName() == wxT("name")) {
                             name = subsubchild->GetNodeContent();
                             bUser = true;
-                        } else if (subsubchild->GetName() == wxT("password")) {
+                        } 
+                        else if (subsubchild->GetName() == wxT("password")) {
                             md5 = subsubchild->GetNodeContent();
-                        } else if (subsubchild->GetName() == wxT("privilege")) {
+                        } 
+                        else if (subsubchild->GetName() == wxT("privilege")) {
                             privilege = subsubchild->GetNodeContent();
-                        } else if (subsubchild->GetName() == wxT("filter")) {
+                        } 
+                        else if (subsubchild->GetName() == wxT("filter")) {
                             bFilterPresent = true;
                           
                             wxString str_vscp_priority = subchild->GetAttribute(wxT("priority"), wxT("0"));
@@ -2038,9 +2041,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                                        
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                  
-                    if (property.IsSameAs(_("false"), false)) {
+                    if (attribute.IsSameAs(_("false"), false)) {
                         bEnabled = false;
                     }
                     
@@ -2126,7 +2129,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
         }
             // Level II driver
-        else if (child->GetName() == wxT("vscpdriver")) {
+        else if ( ( child->GetName() == wxT("vscpdriver") ) || ( child->GetName() == wxT("level2driver") ) ) {
 
             wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
             attribut.MakeLower();
@@ -2216,7 +2219,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         wxString errMsg = _("Driver not added. Path does not exist. - [ ") +
                                 strPath + _(" ]\n");
                         logMsg(errMsg, DAEMON_LOGMSG_INFO);
-                        //wxLogDebug(errMsg);
+                    
                     } 
 					else {
                         wxString errMsg = _("Level II driver added. - [ ") +
@@ -2264,13 +2267,103 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 subchild = subchild->GetNext();
 
-            }
+            } // while
 
         }
+        
         else if (child->GetName() == wxT("automation")) {
             
-        }
+            wxXmlNode *subchild = child->GetChildren();
+            while (subchild) {
+            
+                if (subchild->GetName() == wxT("zone")) {
+                    long zone;
+                    wxString strZone = subchild->GetNodeContent();
+                    strZone.ToLong( &zone );
+                    m_automation.m_zone = zone;
+                }
+                else if (subchild->GetName() == wxT("sub-zone")) {
+                    long subzone;
+                    wxString strSubZone = subchild->GetNodeContent();
+                    strSubZone.ToLong( &subzone );
+                    m_automation.m_subzone = subzone;
+                }
+                else if (subchild->GetName() == wxT("longitude")) {
+                    wxString strLongitude = subchild->GetNodeContent();
+                    strLongitude.ToDouble( &m_automation.m_longitude );
+                }
+                else if (subchild->GetName() == wxT("latitude")) {
+                    wxString strLatitude = subchild->GetNodeContent();
+                    strLatitude.ToDouble( &m_automation.m_latitude );
+                }
+                else if (subchild->GetName() == wxT("timezone")) {
+                    wxString strTimezone = subchild->GetNodeContent();
+                    strTimezone.ToDouble( &m_automation.m_timezone );
+                }
+                else if (subchild->GetName() == wxT("sunrise")) {
+                    m_automation.m_bSunRiseEvent = true;
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_automation.m_bSunRiseEvent = false;
+                    }                    
+                }
+                else if (subchild->GetName() == wxT("sunrise-twilight")) {
+                    m_automation.m_bSunRiseTwilightEvent = true;
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_automation.m_bSunRiseTwilightEvent = false;
+                    }
+                }
+                else if (subchild->GetName() == wxT("sunset")) {
+                    m_automation.m_bSunSetEvent = true;
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_automation.m_bSunSetEvent = false;
+                    }  
+                }
+                else if (subchild->GetName() == wxT("sunset-twilight")) {
+                    m_automation.m_bSunSetTwilightEvent = true;
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_automation.m_bSunSetTwilightEvent = false;
+                    }
+                }
+                else if (subchild->GetName() == wxT("daylightsavingtime-start")) {
+                    wxString daylightsave = subchild->GetNodeContent();
+                    m_automation.m_daylightsavingtimeStart.ParseDateTime( daylightsave );
+                }
+                else if (subchild->GetName() == wxT("daylightsavingtime-end")) {
+                    wxString daylightsave = subchild->GetNodeContent();
+                    m_automation.m_daylightsavingtimeEnd.ParseDateTime( daylightsave );
+                }
+                else if (subchild->GetName() == wxT("segmentcontrol-event")) {
+                    m_automation.m_bSegmentControllerHeartbeat = true;
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_automation.m_bSegmentControllerHeartbeat = false;
+                    }
 
+                    attribute = subchild->GetAttribute(wxT("interval"), wxT("60"));
+                    attribute.ToLong( &m_automation.m_intervalSegmentControllerHeartbeat );
+                }
+                else if (subchild->GetName() == wxT("heartbeat-event")) {
+                    m_automation.m_bHeartBeatEvent = true;
+                    m_automation.m_intervalHeartBeat = 30;
+
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    if (attribute.IsSameAs(_("false"), false)) {
+                        m_automation.m_bHeartBeatEvent = false;
+                    }
+
+                    attribute = subchild->GetAttribute(wxT("interval"), wxT("30"));
+                    attribute.ToLong( &m_automation.m_intervalHeartBeat );
+                }
+
+                subchild = subchild->GetNext();
+
+            } // while
+
+        }
 
         child = child->GetNext();
 

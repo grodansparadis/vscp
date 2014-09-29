@@ -83,6 +83,42 @@ static double AirRefr = 34.0 / 60.0; // athmospheric refraction degrees //
 
 CVSCPAutomation::CVSCPAutomation( void )
 {
+    m_zone = 0;
+    m_subzone = 0;
+
+    // Take me the freedom to use my own place as reference
+    m_longitude = 61.7441833;
+    m_latitude = 15.1604167;
+    m_timezone = 1;
+
+    m_bSegmentControllerHeartbeat = true;
+    m_intervalSegmentControllerHeartbeat = 60;
+
+    m_bHeartBeatEvent = true;
+    m_intervalHeartBeat = 60;
+
+    // Again Europe and Sweden as a reference
+    m_daylightsavingtimeStart.ParseDateTime(_("2014-03-30 02:00:00"));
+    m_daylightsavingtimeEnd.ParseDateTime(_("2014-10-26 02:00:00"));
+
+    m_bSunRiseEvent = true;
+    m_bSunRiseTwilightEvent = true;
+    m_bSunSetEvent = true;
+    m_bSunSetTwilightEvent = true;
+
+    // Set to some early date 
+    m_civilTwilightSunriseTime_sent.ResetTime();
+    m_civilTwilightSunriseTime_sent.SetYear( 0 );
+    m_SunriseTime_sent.ResetTime();
+    m_SunriseTime_sent.SetYear( 0 );
+    m_SunsetTime_sent.ResetTime();
+    m_SunsetTime_sent.SetYear( 0 );
+    m_civilTwilightSunsetTime_sent.ResetTime();
+    m_civilTwilightSunsetTime_sent.SetYear( 0 );
+    m_noonTime_sent.ResetTime();
+    m_noonTime_sent.SetYear( 10 );
+
+    m_lastCalculations = wxDateTime::Now();
 
 }
 
@@ -201,7 +237,7 @@ void CVSCPAutomation::convert2HourMinute( double floatTime, int *pHours, int *pM
 // calcSun
 //
 
-void CVSCPAutomation::calcSun( struct SunData *pSunData )
+void CVSCPAutomation::calcSun( void )
 {
     double year, month, day, hour; 
 	double d, lambda;
@@ -240,7 +276,6 @@ void CVSCPAutomation::calcSun( struct SunData *pSunData )
 	obliq = 23.439 * rads - .0000004 * rads * d;
 
 	//   Find the RA and DEC of the Sun
-
 	alpha = atan2(cos(obliq) * sin(lambda), cos(lambda));
 	delta = asin(sin(obliq) * sin(lambda));
 
@@ -254,7 +289,7 @@ void CVSCPAutomation::calcSun( struct SunData *pSunData )
 	hb = f1(m_latitude, delta);
 	twx = hb - ha;          // length of twilight in radians
 	twx = 12.0 * twx / pi;  // length of twilight in hours
-	printf("ha= %.2f   hb= %.2f \n", ha, hb);
+
 	// Conversion of angle to hours and minutes
 	daylen = degs * ha / 7.5;
 	if (daylen < 0.0001) {
@@ -276,43 +311,63 @@ void CVSCPAutomation::calcSun( struct SunData *pSunData )
 	if (sunriseTime > 24.0) sunriseTime -= 24.0;
 	if (sunsetTime > 24.0) sunsetTime -= 24.0;
 
-    pSunData->declination = delta * degs;
-    pSunData->daylength = daylen;
-    pSunData->SunMaxAltitude = maxAltitude;
-    pSunData->noonTime = noonTime;
-    pSunData->civilTwilightSunrise = twilightSunraise;
-    pSunData->Sunrise = sunriseTime;
-    pSunData->Sunset = sunsetTime;
-    pSunData->civilTwilightSunset = twilightSunset;
+    m_declination = delta * degs;
+    m_daylength = daylen;
+    m_SunMaxAltitude = maxAltitude;
 
-    //convert2HourMinute( daylen, &pSunData->daylength[0], &pSunData->daylength[1]  );
-    //convert2HourMinute( twam, &pSunData->civilTwilightSunrise[0], &pSunData->civilTwilightSunrise[1]  );
-    //convert2HourMinute( riset, &pSunData->Sunrise[0], &pSunData->Sunrise[1]  );
-    //convert2HourMinute( noont, &pSunData->noonTime[0], &pSunData->noonTime[1]  );
+    int intHour, intMinute;
 
-	//printf("Latitude :  %3.1f, longitude: %3.1f, timezone: %3.1f \n", (float) m_latitude, (float) m_longitude, (float) m_timezone);
-	//printf("Declination   :  %.2f \n", delta * degs);
-	//printf("Daylength     : ");
-	//showhrmn(daylen);
-	//puts(" hours \n");
-	//printf("Civil twilight: ");
-	//showhrmn(twam);
-	//puts("");
-	//printf("Sunrise       : ");
-	//showhrmn(riset);
-	//puts("");
+    // Civil Twilight Sunrise
+    convert2HourMinute( twilightSunraise, &intHour, &intMinute );
+    m_civilTwilightSunriseTime = wxDateTime::Now();
+    m_civilTwilightSunriseTime.ResetTime();     // Set to midnight
+    m_civilTwilightSunriseTime.SetHour( intHour );
+    m_civilTwilightSunriseTime.SetMinute( intMinute ); 
 
-	//printf("Sun altitude ");
-	// Amendment by D. Smith
-	//printf(" %.2f degr", altmax);
-	//printf(m_latitude >= 0.0 ? " South" : " North");
-	//printf(" at noontime ");
-	//showhrmn(noont);
-	//puts("");
-	//printf("Sunset        : ");
-	//showhrmn(settm);
-	//puts("");
-	//printf("Civil twilight: ");
-	//showhrmn(twpm);
-	//puts("\n");
+    // Sunrise
+    convert2HourMinute( sunriseTime, &intHour, &intMinute );
+    m_SunriseTime = wxDateTime::Now();
+    m_SunriseTime.ResetTime();     // Set to midnight
+    m_SunriseTime.SetHour( intHour );
+    m_SunriseTime.SetMinute( intMinute ); 
+
+    // Sunset
+    convert2HourMinute( sunsetTime, &intHour, &intMinute );
+    m_SunsetTime = wxDateTime::Now();
+    m_SunsetTime.ResetTime();     // Set to midnight
+    m_SunsetTime.SetHour( intHour );
+    m_SunsetTime.SetMinute( intMinute ); 
+
+    // Civil Twilight Sunset
+    convert2HourMinute( twilightSunset, &intHour, &intMinute );
+    m_civilTwilightSunsetTime = wxDateTime::Now();
+    m_civilTwilightSunsetTime.ResetTime();     // Set to midnight
+    m_civilTwilightSunsetTime.SetHour( intHour );
+    m_civilTwilightSunsetTime.SetMinute( intMinute );
+
+    // NoonTime
+    convert2HourMinute( noonTime, &intHour, &intMinute );
+    m_noonTime = wxDateTime::Now();
+    m_noonTime.ResetTime();     // Set to midnight
+    m_noonTime.SetHour( intHour );
+    m_noonTime.SetMinute( intMinute );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// doWork
+//
+
+void CVSCPAutomation::doWork( void )
+{
+    wxTimeSpan hourSpan( 1 );  // one hour span
+
+    // Every hour calculate Sunrise/sunset parameters
+    // Events are just sent once per 24h/period
+    if ( wxDateTime::Now() > m_lastCalculations ) {
+        m_lastCalculations.Add( hourSpan ); // nest check is one hour in the future
+        calcSun();      
+    }
+
+
 }
