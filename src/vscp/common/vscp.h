@@ -416,6 +416,18 @@ struct myNode {
 #define VSCP_STD_REGISTER_DEVICE_URL            0xE0
 
 
+// Bits for VSCP server 16-bit capability code
+// used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE
+#define VSCP_SERVER_CAPABILITY_TCPIP            (1<<15)
+#define VSCP_SERVER_CAPABILITY_UDP              (1<<14)
+#define VSCP_SERVER_CAPABILITY_WEB              (1<<13)
+#define VSCP_SERVER_CAPABILITY_WEBSOCKET        (1<<12)
+#define VSCP_SERVER_CAPABILITY_REST             (1<<11)
+#define VSCP_SERVER_CAPABILITY_IP6              (1<<6)
+#define VSCP_SERVER_CAPABILITY_IP4              (1<<5)
+#define VSCP_SERVER_CAPABILITY_SSL              (1<<4)
+#define VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS  (1<<3)
+
 #ifdef __cplusplus
 }
 #endif

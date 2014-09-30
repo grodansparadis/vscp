@@ -408,7 +408,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                            Data Available
     //*********************************************************************
-    else if ( 0 == m_currentCommandUC.Find ( _( "CDTA" ) ) ) {
+    else if ( ( 0 == m_currentCommandUC.Find ( _( "CDTA" ) ) ) || 
+               ( 0 == m_currentCommandUC.Find ( _( "CHKDATA" ) ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
 			handleClientDataAvailable( conn, pCtrlObject );
 		}
@@ -417,7 +418,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                          Clear input queue
     //*********************************************************************
-    else if ( 0 == m_currentCommandUC.Find ( _( "CLRA" ) ) ) {
+    else if ( ( 0 == m_currentCommandUC.Find ( _( "CLRA" ) ) ) ||
+                ( 0 == m_currentCommandUC.Find ( _( "CLRALL" ) ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
 			handleClientClearInputQueue( conn, pCtrlObject );
 		}
@@ -445,7 +447,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                           Get Channel ID
     //*********************************************************************
-    else if ( 0 == m_currentCommandUC.Find ( _( "CHID" ) ) ) {
+    else if ( ( 0 == m_currentCommandUC.Find ( _( "CHID" ) ) ) || 
+                ( 0 == m_currentCommandUC.Find ( _( "GETCHID" ) ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
 			handleClientGetChannelID( conn, pCtrlObject );
 		}
@@ -454,7 +457,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                          Set Channel GUID
     //*********************************************************************
-    else if ( 0 == m_currentCommandUC.Find ( _( "SGID" ) ) ) {
+    else if ( ( 0 == m_currentCommandUC.Find ( _( "SGID" ) ) ) ||
+                ( 0 == m_currentCommandUC.Find ( _( "SETGUID" ) ) )) {
         if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
 			handleClientSetChannelGUID( conn, pCtrlObject );
 		}
@@ -463,7 +467,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                          Get Channel GUID
     //*********************************************************************
-    else if ( 0 == m_currentCommandUC.Find ( _( "GGID" ) ) ) {
+    else if ( ( 0 == m_currentCommandUC.Find ( _( "GGID" ) ) ) ||
+                ( 0 == m_currentCommandUC.Find ( _( "GETGUID" ) ) )  ) {
         if ( checkPrivilege( conn, pCtrlObject, 1 ) ) {
 			handleClientGetChannelGUID( conn, pCtrlObject );
 		}
@@ -472,14 +477,16 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                             Get Version
     //*********************************************************************
-    else if ( 0 == m_currentCommandUC.Find ( _( "VERS" ) ) ) {
+    else if ( ( 0 == m_currentCommandUC.Find ( _( "VERS" ) ) ) ||
+            ( 0 == m_currentCommandUC.Find ( _( "VERSION" ) ) ) ) {
         handleClientGetVersion( conn, pCtrlObject );
     }
 
     //*********************************************************************
     //                             Set Filter
     //*********************************************************************
-    else if ( 0 == m_currentCommandUC.Find ( _( "SFLT" ) ) ) {
+    else if ( ( 0 == m_currentCommandUC.Find ( _( "SFLT" ) ) ) ||
+               ( 0 == m_currentCommandUC.Find ( _( "SETFILTER" ) ) )  ) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
 			handleClientSetFilter( conn, pCtrlObject );
 		}
@@ -488,7 +495,8 @@ REPEAT_COMMAND:
     //*********************************************************************
     //                             Set Mask
     //*********************************************************************
-    else if ( 0 == m_currentCommandUC.Find ( _( "SMSK" ) ) ) {
+    else if ( ( 0 == m_currentCommandUC.Find ( _( "SMSK" ) ) ) || 
+                ( 0 == m_currentCommandUC.Find ( _( "SETMASK" ) ) ) ) {
         if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
 			handleClientSetMask( conn, pCtrlObject );
 		}
@@ -552,42 +560,54 @@ REPEAT_COMMAND:
 	//                              Restart
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "RESTART" ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientRestart( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientRestart( conn, pCtrlObject );
+        }
 	}
 
 	//*********************************************************************
 	//                              Driver
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "DRIVER " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientDriver( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientDriver( conn, pCtrlObject );
+        }
 	}
 
 	//*********************************************************************
 	//                               DM
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "DM " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientDm( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientDm( conn, pCtrlObject );
+        }
 	}
 
 	//*********************************************************************
 	//                             Variable
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "VARIABLE " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientVariable( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientVariable( conn, pCtrlObject );
+        }
 	}
 
 	//*********************************************************************
 	//                               File
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "FILE " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientFile( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientFile( conn, pCtrlObject );
+        }
 	}
 
 	//*********************************************************************
 	//                               UDP
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "UDP " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientUdp( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientUdp( conn, pCtrlObject );
+        }
 	}
 
 	//*********************************************************************
@@ -595,11 +615,15 @@ REPEAT_COMMAND:
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "CLIENT " ) ) ) {
 		m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-7 ); // Remove "CLIENT "
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientInterface( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientInterface( conn, pCtrlObject );
+        }
 	}
 	else if ( 0 == m_currentCommandUC.Find ( _( "INTERFACE " ) ) ) {
 		m_currentCommandUC = m_currentCommandUC.Right( m_currentCommandUC.Length()-10 ); // Remove "INTERFACE "
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientInterface( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientInterface( conn, pCtrlObject );
+        }
 	}
 
 	//*********************************************************************
@@ -613,26 +637,46 @@ REPEAT_COMMAND:
 	//                               Test
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "TEST" ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientTest( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientTest( conn, pCtrlObject );
+        }
 	}
 
 
 	//*********************************************************************
-	//                               Shutdown
+	//                              Shutdown
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "SHUTDOWN" ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) handleClientShutdown( conn, pCtrlObject );
+		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+            handleClientShutdown( conn, pCtrlObject );
+        }
 	}
 
+    //*********************************************************************
+	//                             WhatCanYouDo
+	//*********************************************************************
+	else if ( 0 == m_currentCommandUC.Find ( _( "WHATCANYOUDO" ) ) ) {
+            handleClientCapabilityRquest( conn, pCtrlObject );
+	}
 
 	//*********************************************************************
-	//                               Que?
+	//                                Que?
 	//*********************************************************************
 	else {
 		ns_send( conn,  MSG_UNKNOWN_COMMAND, strlen ( MSG_UNKNOWN_COMMAND ) );
 	}
 
 	m_lastCommand = m_currentCommand;
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// handleClientCapabilityRquest
+//
+
+void VSCPClientThread::handleClientCapabilityRquest( struct ns_connection *conn, CControlObject *pCtrlObject )
+{
 
 }
 
@@ -1227,7 +1271,14 @@ void VSCPClientThread::handleClientSetChannelGUID ( struct ns_connection *conn, 
         return;
     }
 
-    wxString str = m_currentCommandUC.Right( m_currentCommandUC.Length() - 5 ); // remove: command + space
+    wxString str;
+    if ( ( 0 == m_currentCommandUC.Find ( _( "SGID" ) ) ) ) { 
+        str = m_currentCommandUC.Right( m_currentCommandUC.Length() - 5 ); // remove: command + space
+    }
+    else {
+        str = m_currentCommandUC.Right( m_currentCommandUC.Length() - 8 ); // remove: command + space
+    }
+
     pClientItem->m_guid.getFromString(str);
 
     ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
@@ -1251,21 +1302,7 @@ void VSCPClientThread::handleClientGetChannelGUID ( struct ns_connection *conn, 
         return;
     }
 
-    //*outbuf = 0;
-/*
-    for ( i=0; i<16; i++ ) {
-        sprintf ( wrkbuf, "%d", pClientItem->m_guid.getAt(i) );
-        if ( 15 != i ) {
-            strcat ( wrkbuf, ":" );
-        }
 
-        strcat ( outbuf, wrkbuf );
-    }
-    strlen( strBuf.mb_str()
-
-    strcat ( outbuf, "\r\n" );
-    strcat ( outbuf, MSG_OK );
-    */
     pClientItem->m_guid.toString( strBuf );
     strBuf += _("\r\n");
     strBuf += _(MSG_OK);
@@ -1316,7 +1353,13 @@ void VSCPClientThread::handleClientSetFilter ( struct ns_connection *conn, CCont
         return;
     }
 
-    wxString str = m_currentCommand.Right( m_currentCommand.Length() - 5 );
+    wxString str;
+    if (  0 == m_currentCommandUC.Find ( _( "SFLT" ) ) ) { 
+        str = m_currentCommand.Right( m_currentCommand.Length() - 5 );
+    }
+    else {
+        str = m_currentCommand.Right( m_currentCommand.Length() - 10 );  // SETFILTER
+    }
     wxStringTokenizer tkz( str, _(",") );
 
     // Get priority
@@ -1378,7 +1421,13 @@ void VSCPClientThread::handleClientSetMask ( struct ns_connection *conn, CContro
         return;
     }
 
-    wxString str = m_currentCommand.Right( m_currentCommand.Length() - 5 );
+    wxString str;
+    if (  0 == m_currentCommandUC.Find ( _( "SMSK" ) ) ) { 
+        str = m_currentCommand.Right( m_currentCommand.Length() - 5 );
+    }
+    else {  
+        str = m_currentCommand.Right( m_currentCommand.Length() - 8 );  // SETMASK
+    }
     wxStringTokenizer tkz( str, _(",") );
 
     // Get priority

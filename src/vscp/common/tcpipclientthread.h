@@ -395,6 +395,11 @@ public:
 	*/
 	void handleClientDriver( struct ns_connection *conn, CControlObject *pCtrlObject );
 
+    /*!
+        Client WhatCanYouDo command
+    */
+    void handleClientCapabilityRquest( struct ns_connection *conn, CControlObject *pCtrlObject );
+
 // --- Member variables ---
 
 	/*!

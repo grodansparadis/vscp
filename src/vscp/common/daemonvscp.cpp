@@ -54,6 +54,7 @@
 #include "canal_win32_ipc.h"
 #include "canal_macro.h"
 #include "vscp.h"
+#include "vscpd.h"
 #include "vscphelper.h"
 #include "../../common/dllist.h"
 #include "../../common/md5.h"
@@ -154,7 +155,8 @@ void *daemonVSCPThread::Entry()
             // received.
             //*****************************************
 
-            if ( ( 0 == pEvent->vscp_class ) && ( 27 == pEvent->vscp_type ) ) {
+            if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
+                    ( VSCP_TYPE_PROTOCOL_HIGH_END_SERVER_PROBE == pEvent->vscp_type ) ) {
 
                 for ( int i=0;i<cntAddr; i++ ) {
 
@@ -172,8 +174,8 @@ void *daemonVSCPThread::Entry()
 
                         pnewEvent->pdata = new unsigned char[ 8 ];
                         if ( NULL != pnewEvent->pdata ) {
-                            pnewEvent->pdata[ 0 ] = 0x80;
-                            pnewEvent->pdata[ 1 ] = 0x00;
+                            pnewEvent->pdata[ 0 ] = VSCP_DAEMON_SERVER_CAPABILITIES >> 8;
+                            pnewEvent->pdata[ 1 ] = VSCP_DAEMON_SERVER_CAPABILITIES & 0x0f;
                             pnewEvent->pdata[ 2 ] = ( localaddr[ i ] >> 24 );
                             pnewEvent->pdata[ 3 ] = ( localaddr[ i ] >> 16 );
                             pnewEvent->pdata[ 4 ] = ( localaddr[ i ] >> 8 );
@@ -198,7 +200,11 @@ void *daemonVSCPThread::Entry()
 
                 } // for each server address
 
-            } // High End Probe
+            } // New node on-line   - collect 
+            else if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
+                ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
+                
+            }
 
             // Remove the event
             vscp_deleteVSCPevent( pEvent );

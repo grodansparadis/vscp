@@ -1,6 +1,8 @@
 
-release notes for release 0.1.0 Neon
+release notes for release 1.0.0 Neon
 ========================================
+
+2014-09-39 - AKHE Aded new name parsing for tcp/ip interface of the daemon.
 
 2014-09-26 - AKHE Merged in new code to main. Code compiles and runs on both platforms.
                   Varaibles in action parameters has been documented as being comma separated
