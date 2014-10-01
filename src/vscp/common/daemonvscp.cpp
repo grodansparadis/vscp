@@ -150,7 +150,7 @@ void *daemonVSCPThread::Entry()
             if ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) {
                 // crc8 of VSCP daemon GUID should be indata byte 0
                 eventEx.data[ 0 ] = 
-					calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
+					vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
             }
 
             vscpEvent *pnewEvent = new vscpEvent;
