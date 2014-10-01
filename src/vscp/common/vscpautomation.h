@@ -27,7 +27,6 @@
 #define VSCPAUTOMATION__INCLUDED_
 
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // Class that holds one VSCP vautomation
 //
@@ -84,15 +83,54 @@ public:
     /*!
         Do automation work
     */
-    void doWork( void );
+    bool doWork( vscpEventEx *pEventEx  );
+
+    /// Setter for zone
+    void setZone( uint8_t zone ) { m_zone = zone; }
+
+    /// getter for zone
+    uint8_t getZone( void ) { return m_zone; }
+
+    /// Setter for subzone
+    void setSubzone( uint8_t subzone ) { subzone = subzone; };
+
+    /// getter for subzone
+    uint8_t getSubzone( void ) { return m_subzone; };
+
+    ///
+    void enableSunRiseEvent( void ) { m_bSunRiseEvent = true; };
+
+    ///
+    void disableSunRiseEvent( void ) { m_bSunRiseEvent = false; };
+
+    
+    ///
+    void enableSunSetEvent( void ) { m_bSunSetEvent = true; };
+
+    ///
+    void disableSunSetEvent( void ) { m_bSunSetEvent = false; };
+
+
+    ///
+    void enableSunRiseTwilightEvent( void ) { m_bSunRiseTwilightEvent = true; };
+
+    ///
+    void disableSunRiseTwilightEvent( void ) { m_bSunRiseTwilightEvent = false; };
+
+
+    ///
+    void enableSunSetTwilightEvent( void ) { m_bSunSetTwilightEvent = true; };
+
+    ///
+    void disableSunSetTwillightEvent( void ) { m_bSunSetTwilightEvent = false; };
+
+    ///
+    void setDaylightSavingStart( wxDateTime &dt ) { m_daylightsavingtimeStart = dt; };
+
+    ///
+    void setDaylightSavingEnd( wxDateTime &dt ) { m_daylightsavingtimeEnd = dt; };
 
 public:
-
-    /// Zone that automation server belongs to
-    uint8_t m_zone;
-
-    /// Subzone that automation server belongs to
-    uint8_t m_subzone;
 
     /// Logitude for this server
     double m_longitude;
@@ -126,6 +164,14 @@ public:
         Interval in seconds for heartbeats
     */
     long m_intervalHeartBeat;                   // long because of .toLong
+
+private:
+
+    /// Zone that automation server belongs to
+    uint8_t m_zone;
+
+    /// Subzone that automation server belongs to
+    uint8_t m_subzone;
 
     /*!
         Start date time when daylight saving time starts. When daylight saving time is in 

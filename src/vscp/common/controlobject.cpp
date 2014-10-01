@@ -495,6 +495,9 @@ bool CControlObject::init(wxString& strcfgfile)
         return FALSE;
     }
 
+    // Calulate sunset etc
+    m_automation.calcSun();
+
     //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
 
     // Generate username and password for drivers
@@ -2280,13 +2283,13 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     long zone;
                     wxString strZone = subchild->GetNodeContent();
                     strZone.ToLong( &zone );
-                    m_automation.m_zone = zone;
+                    m_automation.setZone( zone );
                 }
                 else if (subchild->GetName() == wxT("sub-zone")) {
                     long subzone;
                     wxString strSubZone = subchild->GetNodeContent();
                     strSubZone.ToLong( &subzone );
-                    m_automation.m_subzone = subzone;
+                    m_automation.setSubzone( subzone );
                 }
                 else if (subchild->GetName() == wxT("longitude")) {
                     wxString strLongitude = subchild->GetNodeContent();
@@ -2301,40 +2304,44 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     strTimezone.ToDouble( &m_automation.m_timezone );
                 }
                 else if (subchild->GetName() == wxT("sunrise")) {
-                    m_automation.m_bSunRiseEvent = true;
+                    m_automation.enableSunRiseEvent();
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
-                        m_automation.m_bSunRiseEvent = false;
+                        m_automation.disableSunRiseEvent();
                     }                    
                 }
                 else if (subchild->GetName() == wxT("sunrise-twilight")) {
-                    m_automation.m_bSunRiseTwilightEvent = true;
+                    m_automation.enableSunRiseTwilightEvent();
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
-                        m_automation.m_bSunRiseTwilightEvent = false;
+                        m_automation.disableSunRiseTwilightEvent();
                     }
                 }
                 else if (subchild->GetName() == wxT("sunset")) {
-                    m_automation.m_bSunSetEvent = true;
+                    m_automation.enableSunSetEvent();
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
-                        m_automation.m_bSunSetEvent = false;
+                        m_automation.disableSunSetEvent();
                     }  
                 }
                 else if (subchild->GetName() == wxT("sunset-twilight")) {
-                    m_automation.m_bSunSetTwilightEvent = true;
+                    m_automation.enableSunSetTwilightEvent();
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
-                        m_automation.m_bSunSetTwilightEvent = false;
+                        m_automation.disableSunSetTwillightEvent();
                     }
                 }
                 else if (subchild->GetName() == wxT("daylightsavingtime-start")) {
                     wxString daylightsave = subchild->GetNodeContent();
-                    m_automation.m_daylightsavingtimeStart.ParseDateTime( daylightsave );
+                    wxDateTime dt;
+                    dt.ParseDateTime( daylightsave );
+                    m_automation.setDaylightSavingStart( dt );
                 }
                 else if (subchild->GetName() == wxT("daylightsavingtime-end")) {
                     wxString daylightsave = subchild->GetNodeContent();
-                    m_automation.m_daylightsavingtimeEnd.ParseDateTime( daylightsave );
+                    wxDateTime dt;
+                    dt.ParseDateTime( daylightsave );
+                    m_automation.setDaylightSavingEnd( dt );
                 }
                 else if (subchild->GetName() == wxT("segmentcontrol-event")) {
                     m_automation.m_bSegmentControllerHeartbeat = true;

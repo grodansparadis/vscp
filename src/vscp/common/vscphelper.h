@@ -153,7 +153,8 @@ extern "C" {
       the first normalise byte.
       \return returns value as a double.
      */
-    double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm, const unsigned char length);
+    double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm, 
+                                                    const unsigned char length);
 
     /*!
       Get the string from coded event data
@@ -163,7 +164,8 @@ extern "C" {
       \return Returns unicode UTF-8 string of event data
      */
 	 
-    wxString& vscp_getDataCodingString(const unsigned char *pString, const unsigned char length);
+    wxString& vscp_getDataCodingString(const unsigned char *pString, 
+                                            const unsigned char length);
 
 
     /*!

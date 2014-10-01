@@ -137,10 +137,41 @@ void *daemonVSCPThread::Entry()
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
     while ( !TestDestroy() && !m_bQuit ) {
-        // Wait for event
+
+        // Check if automation event should be sent and send it if so
+        vscpEventEx eventEx;
+        if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
+            
+            // Yes should be sent
+            eventEx.obid = pClientItem->m_clientID;
+            pClientItem->m_guid.writeGUID( eventEx.GUID );
+
+            vscpEvent *pnewEvent = new vscpEvent;
+            if ( NULL != pnewEvent ) {
+
+                // Convert event to correct format
+                vscp_convertVSCPfromEx( pnewEvent, &eventEx );
+
+                // Statistics
+                pClientItem->m_statistics.cntTransmitData += eventEx.sizeData;
+                pClientItem->m_statistics.cntTransmitFrames++;
+
+                // There must be room in the send queue
+                if ( m_pCtrlObject->m_maxItemsInClientReceiveQueue >
+                            m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
+                    m_pCtrlObject->m_mutexClientOutputQueue.Lock();
+                    m_pCtrlObject->m_clientOutputQueue.Append ( pnewEvent );
+                    m_pCtrlObject->m_semClientOutputQueue.Post();
+                    m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
+                }
+            }
+        }
+
+        // Wait for incoming event
         if ( wxSEMA_TIMEOUT == pClientItem->m_semClientInputQueue.WaitTimeout( 500 ) ) continue;
 	
         if ( pClientItem->m_clientInputQueue.GetCount() ) {
+
             pClientItem->m_mutexClientInputQueue.Lock();
             nodeClient = pClientItem->m_clientInputQueue.GetFirst();
             vscpEvent *pEvent = nodeClient->GetData();

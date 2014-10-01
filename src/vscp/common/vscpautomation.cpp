@@ -24,6 +24,10 @@
     //#pragma implementation
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -47,7 +51,8 @@
 
 #include "vscp.h"
 #include "vscphelper.h"
-
+#include "vscp_class.h"
+#include "vscp_type.h"
 
 #include "vscpautomation.h"
 
@@ -225,8 +230,8 @@ double CVSCPAutomation::FNsun(double d)
 
 void CVSCPAutomation::convert2HourMinute( double floatTime, int *pHours, int *pMinutes )
 {
-	*pHours = (int) floatTime;
-	*pMinutes = (floatTime - (double) *pHours)*60;
+	*pHours = (int)floatTime;
+	*pMinutes = (floatTime - (double)*pHours)*60;
 };
 
 
@@ -355,7 +360,7 @@ void CVSCPAutomation::calcSun( void )
 // doWork
 //
 
-void CVSCPAutomation::doWork( void )
+bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 {
     wxDateTime now = wxDateTime::Now();
     wxTimeSpan span24( 24 );  // one hour span
@@ -371,10 +376,110 @@ void CVSCPAutomation::doWork( void )
     }
 
 
+    // Sunrise Time
+    if ( ( now.GetHour() == m_SunriseTime.GetHour() ) && 
+            ( now.GetHour() == m_SunriseTime.GetMinute() ) ) {
+
+        m_SunriseTime += span24;   // Add 24h's
+
+        // Send VSCP_CLASS1_INFORMATION, Type=44/VSCP_TYPE_INFORMATION_SUNRISE
+        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
+        pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNRISE;
+        pEventEx->sizeData = 3;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        pEventEx->data[ 0 ] = 0;            // index
+        pEventEx->data[ 1 ] = m_zone;       // zone
+        pEventEx->data[ 2 ] = m_subzone;    // subzone
+
+        return true;
+
+    }
+
     // Civil Twilight Sunrise Time
     if ( ( now.GetHour() == m_civilTwilightSunriseTime.GetHour() ) && 
             ( now.GetHour() == m_civilTwilightSunriseTime.GetMinute() ) ) {
+
         m_civilTwilightSunriseTime += span24;   // Add 24h's
+
+        // Send VSCP_CLASS1_INFORMATION, Type=52/VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START
+        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
+        pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START;
+        pEventEx->sizeData = 3;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        pEventEx->data[ 0 ] = 0;    // index
+        pEventEx->data[ 1 ] = 0;    // zone
+        pEventEx->data[ 2 ] = 0;    // subzone
+
+        return true;
+
     }
 
+    // Civil Twilight Sunset Time
+    if ( ( now.GetHour() == m_civilTwilightSunsetTime.GetHour() ) && 
+            ( now.GetHour() == m_civilTwilightSunsetTime.GetMinute() ) ) {
+
+        m_civilTwilightSunsetTime += span24;   // Add 24h's
+
+        // Send VSCP_CLASS1_INFORMATION, Type=53/VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START
+        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
+        pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START;
+        pEventEx->sizeData = 3;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        pEventEx->data[ 0 ] = 0;    // index
+        pEventEx->data[ 1 ] = 0;    // zone
+        pEventEx->data[ 2 ] = 0;    // subzone
+
+        return true;
+
+    }
+
+    // Sunset Time
+    if ( ( now.GetHour() == m_SunsetTime.GetHour() ) && 
+            ( now.GetHour() == m_SunsetTime.GetMinute() ) ) {
+
+        m_SunsetTime += span24;   // Add 24h's
+
+        // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
+        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
+        pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET;
+        pEventEx->sizeData = 3;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        pEventEx->data[ 0 ] = 0;    // index
+        pEventEx->data[ 1 ] = 0;    // zone
+        pEventEx->data[ 2 ] = 0;    // subzone
+
+        return true;
+
+    }
+
+    // Noon Time
+    if ( ( now.GetHour() == m_noonTime.GetHour() ) && 
+            ( now.GetHour() == m_noonTime.GetMinute() ) ) {
+
+        m_noonTime += span24;   // Add 24h's
+
+        // Send VSCP_CLASS1_INFORMATION, Type=58/VSCP_TYPE_INFORMATION_CALCULATED_NOON
+        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
+        pEventEx->vscp_type = VSCP_TYPE_INFORMATION_CALCULATED_NOON;
+        pEventEx->sizeData = 3;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        pEventEx->data[ 0 ] = 0;    // index
+        pEventEx->data[ 1 ] = 0;    // zone
+        pEventEx->data[ 2 ] = 0;    // subzone
+
+        return true;
+
+    }
+    
+    return false;
 }

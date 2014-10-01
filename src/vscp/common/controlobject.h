@@ -57,6 +57,7 @@
 // Forward declarations
 class VSCPWebServerThread;
 class VSCPClientThread;
+class CVSCPAutomation;
 
 enum {
     DAEMON_LOGMSG_NONE = 0,
