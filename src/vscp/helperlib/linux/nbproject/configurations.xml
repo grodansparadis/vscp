@@ -11,6 +11,7 @@
       <itemPath>../../common/canaldlldef.h</itemPath>
       <itemPath>../../../common/crc.c</itemPath>
       <itemPath>../../../common/crc.h</itemPath>
+      <itemPath>../../../common/crc8.c</itemPath>
       <itemPath>../../common/guid.cpp</itemPath>
       <itemPath>../../common/guid.h</itemPath>
       <itemPath>../../common/mdf.h</itemPath>
@@ -49,6 +50,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -81,6 +83,12 @@
         </makeTool>
       </makefileType>
       <item path="../../../common/crc.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
+      </item>
+      <item path="../../../common/crc8.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -100,7 +108,7 @@
           </incDir>
         </ccTool>
       </item>
-      <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
@@ -135,8 +143,12 @@
         </cTool>
       </folder>
       <item path="libvscphelper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
     </conf>
   </confs>

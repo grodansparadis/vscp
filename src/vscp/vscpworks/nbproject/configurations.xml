@@ -13,6 +13,8 @@
       <itemPath>../common/canalsuperwrapper.h</itemPath>
       <itemPath>../../common/crc.c</itemPath>
       <itemPath>../../common/crc.h</itemPath>
+      <itemPath>../../common/crc8.c</itemPath>
+      <itemPath>../../common/crc8.h</itemPath>
       <itemPath>../common/devitem.h</itemPath>
       <itemPath>../../common/dllist.h</itemPath>
       <itemPath>../common/dllwrapper.cpp</itemPath>
@@ -126,6 +128,8 @@
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
       </item>
+      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="0">
+      </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
@@ -140,9 +144,7 @@
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
       </item>
-      <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../common/vscpremotetcpif.h" ex="false" tool="3" flavor2="0">
+      <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
       </item>

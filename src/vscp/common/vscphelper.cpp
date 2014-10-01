@@ -1154,10 +1154,10 @@ unsigned short vscp_vscp_calc_crc(vscpEvent *pEvent, short bSet)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// calcCRC4GUIDArray
+// vscp_calcCRC4GUIDArray
 //
 
-uint8_t calcCRC4GUIDArray(const uint8_t *pguid)
+uint8_t vscp_calcCRC4GUIDArray(const uint8_t *pguid)
 {
     uint8_t crc=0;
 
@@ -1171,10 +1171,10 @@ uint8_t calcCRC4GUIDArray(const uint8_t *pguid)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// calcCRC4GUIDString
+// vscp_calcCRC4GUIDString
 //
 
-uint8_t calcCRC4GUIDString(const wxString &strguid)
+uint8_t vscp_calcCRC4GUIDString(const wxString &strguid)
 {
     uint8_t crc=0;
     uint8_t guid[16];

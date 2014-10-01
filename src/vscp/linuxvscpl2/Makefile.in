@@ -35,14 +35,14 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL1_OBJECTS =  vscpl1.o  ../common/vscpremotetcpif.o ../common/vscp.o ../../common/crc.o
-PROJOBJS        =  ../common/vscpremotetcpif.o ../common/vscp.o  ../../common/crc.o
+VSCPL1_OBJECTS =  vscpl2.o  ../common/vscpremotetcpif.o ../common/vscp.o ../../common/crc.o
+PROJOBJS        =  ../common/vscpremotetcpif.o ../common/vscp.o  ../../common/crc.o ../../common/crc8.o
 
 
 
 ### Targets: ###
 
-all: vscpl1.so test
+all: vscpl2.so test
 
 install: all
 	$(INSTALL_PROGRAM) vscpl1.so $(libdir)
@@ -57,7 +57,7 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
-	rm -f vscpl1.so
+	rm -f vscpl2.so
 	rm -f test
 
 distclean: clean

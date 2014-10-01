@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL2LOGGER_OBJECTS =  ../common/log.o ../../../../../common/crc.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
-PROJOBJS = ../common/log.o ../../../../../common/crc.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+VSCPL2LOGGER_OBJECTS =  ../common/log.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+PROJOBJS = ../common/log.o ../../../../../common/crc.o  ../../../../../common/crc8.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 ### Targets: ###
 

@@ -11,6 +11,7 @@
       <itemPath>../common/canaldlldef.h</itemPath>
       <itemPath>../../common/crc.c</itemPath>
       <itemPath>../../common/crc.h</itemPath>
+      <itemPath>../../common/crc8.h</itemPath>
       <itemPath>../common/guid.cpp</itemPath>
       <itemPath>../common/guid.h</itemPath>
       <itemPath>../common/mdf.h</itemPath>
@@ -47,6 +48,10 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -63,10 +68,8 @@
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
-              <Elem>__PIC__=2</Elem>
               <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
-              <Elem>__pic__=2</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
@@ -86,12 +89,16 @@
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../common/vscpremotetcpif.h" ex="false" tool="3" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -106,6 +113,10 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
         </cTool>
         <ccTool>
           <incDir>
@@ -114,8 +125,12 @@
         </ccTool>
       </folder>
       <item path="test.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="vscpl1.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>

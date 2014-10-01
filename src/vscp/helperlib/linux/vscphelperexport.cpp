@@ -560,6 +560,33 @@ extern "C" unsigned short WINAPI EXPORT vscp_calcCRC( vscpEvent *pEvent, short b
 
 
 /*!
+    \fn unsigned short vscp_getCrcOfGuidFromArray( const unsigned char * pGUID )
+    \brief Calculate 8-bit crc for GUID in array
+	\param Pointer to GUID array
+ 	\return 8-bit crc of GUID.
+*/
+
+extern "C" bool WINAPI EXPORT vscp_getCrcOfGuidFromArray( const unsigned char * pGUID )
+{
+    return calcCRC4GUIDArray( pGUID );
+}
+
+
+/*!
+    \fn bool vscp_getGuidFromString( const char * strGUID )
+    \brief Calculate 8-bit crc for GUID in array
+    \param Pointer to GUID string.
+ 	\return 8-bit crc of GUID.
+*/
+
+extern "C" bool WINAPI EXPORT vscp_getCrcOfGuidFromString( const char * strGUID )
+{
+    wxString wxGUID = wxString::FromAscii( strGUID );
+    return  calcCRC4GUIDString( wxGUID );
+}
+
+
+/*!
     \fn bool vscp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
     \brief Write GUID into VSCP event from string.
 */

@@ -15,8 +15,8 @@
     <bool name="translate_strings">1</bool>
     <bool name="make_unicode_strings">1</bool>
     <bool name="extract_strings">0</bool>
-    <string name="user_name">"Ake Hedman"</string>
-    <string name="copyright_string">"(C) 2007-2012 Ake Hedman, Grodans Paradis AB, &lt;akhe@grodansparadis.com&gt;"</string>
+    <string name="user_name">"Ake Hedman, Paradise of the Frog"</string>
+    <string name="copyright_string">"(C) 2007-2014 Ake Hedman, Grodans Paradis AB, &lt;akhe@grodansparadis.com&gt;"</string>
     <string name="resource_prefix">""</string>
     <bool name="use_two_step_construction">1</bool>
     <bool name="use_enums">1</bool>
@@ -188,7 +188,7 @@
     <string name="app_class_name">"Application"</string>
     <bool name="generate_app_class">0</bool>
     <string name="external_symbol_filenames">""</string>
-    <string name="configuration">"GCC Debug Unicode"</string>
+    <string name="configuration">"VC++ Project Release"</string>
     <string name="source_encoding">"utf-8"</string>
     <string name="xrc_encoding">"utf-8"</string>
     <string name="project_encoding">"iso-8859-1"</string>
@@ -299,7 +299,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">8470657</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
@@ -378,7 +378,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">8470657</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
@@ -457,7 +457,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">8470657</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Release"</string>
@@ -536,7 +536,7 @@
           <long name="title-mode">0</long>
           <long name="locked">0</long>
           <string name="template-name">"GCC"</string>
-          <bool name="dirty">0</bool>
+          <bool name="dirty">1</bool>
           <long name="makefile-last-written">8470657</long>
           <string name="Compiler name">"GCC"</string>
           <string name="Build mode">"Debug"</string>
@@ -784,7 +784,7 @@
           <string name="Executable name">"%EXECUTABLE%"</string>
           <string name="Program arguments">""</string>
           <string name="Working path">"%AUTO%"</string>
-          <string name="Output path">"%AUTO%"</string>
+          <string name="Output path">".\Release\"</string>
           <string name="Objects path">"%AUTO%"</string>
           <string name="Project makefile">"%AUTO%"</string>
           <string name="wxWidgets version">"%WXVERSION%"</string>
@@ -867,7 +867,7 @@
           <string name="Executable name">"%EXECUTABLE%"</string>
           <string name="Program arguments">""</string>
           <string name="Working path">"%AUTO%"</string>
-          <string name="Output path">"%AUTO%"</string>
+          <string name="Output path">"vscpworks/Debug"</string>
           <string name="Objects path">"%AUTO%"</string>
           <string name="Project makefile">"%AUTO%"</string>
           <string name="wxWidgets version">"%WXVERSION%"</string>
@@ -56866,27 +56866,27 @@ click the cancel button."</string>
           <string name="language">""</string>
         </document>
         <document>
-          <string name="title">"vscptcpif.cpp"</string>
+          <string name="title">"vscpremotetcpif.cpp"</string>
           <string name="type">"source-editor-document"</string>
-          <string name="filename">"../common/vscptcpif.cpp"</string>
+          <string name="filename">"../common/vscpremotetcpif.cpp"</string>
           <string name="icon-name">"source-editor"</string>
           <long name="is-transient">0</long>
           <long name="owns-file">0</long>
           <long name="title-mode">1</long>
           <long name="locked">0</long>
-          <string name="created">"12/11/2007"</string>
+          <string name="created">"18/9/2014"</string>
           <string name="language">""</string>
         </document>
         <document>
-          <string name="title">"vscptcpif.h"</string>
+          <string name="title">"vscpremotetcpif.h"</string>
           <string name="type">"source-editor-document"</string>
-          <string name="filename">"../common/vscptcpif.h"</string>
+          <string name="filename">"../common/vscpremotetcpif.h"</string>
           <string name="icon-name">"source-editor"</string>
           <long name="is-transient">0</long>
           <long name="owns-file">0</long>
           <long name="title-mode">1</long>
           <long name="locked">0</long>
-          <string name="created">"12/11/2007"</string>
+          <string name="created">"18/9/2014"</string>
           <string name="language">""</string>
         </document>
         <document>

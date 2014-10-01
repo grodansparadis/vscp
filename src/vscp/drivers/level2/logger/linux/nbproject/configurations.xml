@@ -12,6 +12,8 @@
         <itemPath>../../../../../common/com.h</itemPath>
         <itemPath>../../../../../common/crc.c</itemPath>
         <itemPath>../../../../../common/crc.h</itemPath>
+        <itemPath>../../../../../common/crc8.c</itemPath>
+        <itemPath>../../../../../common/crc8.h</itemPath>
         <itemPath>../../../../../common/dllist.c</itemPath>
         <itemPath>../../../../../common/dllist.h</itemPath>
       </logicalFolder>
@@ -108,6 +110,13 @@
           </preprocessorList>
         </cTool>
       </item>
+      <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
@@ -189,8 +198,12 @@
         </ccTool>
       </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="vscpl2_loggerdrv.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="vscpl2logger.cpp" ex="false" tool="1" flavor2="4">
       </item>

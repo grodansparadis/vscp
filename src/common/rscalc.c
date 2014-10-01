@@ -146,12 +146,15 @@ int main(void)
 	longit = test_latitude; //(double) inlon;
 	tzone = (double)2; // intz;
 
+	printf("Latitude %f\n", latit );
+	printf("Longitude %f\n", longit );
+	
 	// testing
 	// m=6; day=10;
 
 
 	d = FNday(y, m, day, h);
-
+	printf("d %f\n", d );
 	//   Use FNsun to find the ecliptic longitude of the
 	//   Sun
 

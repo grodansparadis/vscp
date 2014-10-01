@@ -344,7 +344,7 @@ extern "C" {
         \param Pointer to GUID array (MSB-LSB order)
         \retur crc for GUID.
     */
-    uint8_t calcCRC4GUIDArray(const uint8_t *pguid);
+    uint8_t vscp_calcCRC4GUIDArray(const uint8_t *pguid);
 
     /*!
         calcCRC4GUIDString
@@ -352,7 +352,7 @@ extern "C" {
         \param Pointer to GUID array (MSB-LSB order)
         \retur crc for GUID.
     */
-    uint8_t calcCRC4GUIDString(const uint8_t *pguid);
+    uint8_t vscp_calcCRC4GUIDString(const wxString &strguid);
 
 
     /*!
