@@ -2097,22 +2097,17 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 
             // Log access
             strErr = 
-            wxString::Format( _("Host [%s] - req [%s] query [%s] method [%s] \n"), 
+            wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
                                 wxString::FromAscii( conn->remote_ip ).wc_str(),
                                 wxString::FromAscii(conn->uri).wc_str(), 
                                 wxString::FromAscii(conn->query_string).wc_str(), 
-                                wxString::FromAscii(conn->request_method).wc_str() );			
-			
+                                wxString::FromAscii(conn->request_method).wc_str() );						
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 			if (conn->is_websocket) {
 				return pObject->getWebServer()->websrv_websocket_message( conn );
 			}
 			else {
-				wxString strlog = 
-					wxString::Format(_("Webserver: Page request [%s].\n"), 
-					wxString::FromAscii( conn->uri ).wc_str() );
-				pObject->logMsg( strlog, DAEMON_LOGMSG_INFO );
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;

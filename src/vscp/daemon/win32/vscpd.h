@@ -34,7 +34,6 @@
                                             VSCP_SERVER_CAPABILITY_WEB | \
                                             VSCP_SERVER_CAPABILITY_WEBSOCKET | \
                                             VSCP_SERVER_CAPABILITY_REST | \
-                                            /*VSCP_SERVER_CAPABILITY_IP6 |*/ \ 
                                             VSCP_SERVER_CAPABILITY_IP4 | \
                                             VSCP_SERVER_CAPABILITY_SSL | \
                                             VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS \

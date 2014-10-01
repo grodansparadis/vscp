@@ -673,10 +673,10 @@ CVariableStorage::CVariableStorage()
     m_autosaveInterval = 5;
 
     // We just read varaibles  
-    m_lastSaveTime.SetToCurrent();
+    m_lastSaveTime = wxDateTime::Now();
 
     // No changes
-    bChanged = false;
+    m_bChanged = false;
 
 }
 
@@ -708,9 +708,13 @@ bool CVariableStorage::autoSave()
     if ( !m_autosaveInterval ) return false;
 
     wxTimeSpan diffTime = wxDateTime::Now() - m_lastSaveTime;
-    if ( diffTime.GetMinutes() > m_autosaveInterval ) {
-        if ( bChanged ) save();
-        return true;
+    if ( diffTime.GetMinutes() >= m_autosaveInterval ) {
+        if ( m_bChanged ) {
+            save();
+            m_bChanged = false;
+            return true;
+        }
+        m_lastSaveTime = wxDateTime::Now();
     }
 
     return false;
@@ -741,7 +745,7 @@ CVSCPVariable * CVariableStorage::find( const wxString& name )
 
     if ( m_hashVariable.end() != m_hashVariable.find( strName ) ) {
         // We don't know if it will be changed bit just in case...
-        bChanged = true;
+        m_bChanged = true;
         return m_hashVariable[ strName ];
     }
 
@@ -759,7 +763,7 @@ bool CVariableStorage::add( const wxString& varName, const wxString& value, uint
 	name.Trim( true );
 	name.Trim( false );
 
-    bChanged = true;
+    m_bChanged = true;
 
     // Name should not contain spaces so if it does
     // we replace them with 'underscore'
@@ -818,7 +822,7 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
     // Check that the pointer is valid
     if ( NULL == pVar ) return false;
 
-    bChanged = true;
+    m_bChanged = true;
 
     if ( NULL != find( pVar->getName() ) ) {
         
@@ -847,7 +851,7 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
 
 bool CVariableStorage::remove( wxString& name ) 
 {
-    bChanged = true;
+    m_bChanged = true;
 
     m_listVariable.DeleteObject( m_hashVariable[ name ] );
     return m_hashVariable.erase( name ) ? true : false;
@@ -1362,10 +1366,10 @@ bool CVariableStorage::save( wxString& path )
     pFileStream->Close();
 
     // Variable saved
-    m_lastSaveTime.SetToCurrent();
+    m_lastSaveTime = wxDateTime::Now();
 
     // No changes
-    bChanged = true;
+    m_bChanged = true;
 
     return true;
 }

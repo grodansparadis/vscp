@@ -106,20 +106,17 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_bSunSetEvent = true;
     m_bSunSetTwilightEvent = true;
 
-    // Set to some early date 
-    m_civilTwilightSunriseTime_sent.ResetTime();
-    m_civilTwilightSunriseTime_sent.SetYear( 0 );
-    m_SunriseTime_sent.ResetTime();
-    m_SunriseTime_sent.SetYear( 0 );
-    m_SunsetTime_sent.ResetTime();
-    m_SunsetTime_sent.SetYear( 0 );
-    m_civilTwilightSunsetTime_sent.ResetTime();
-    m_civilTwilightSunsetTime_sent.SetYear( 0 );
-    m_noonTime_sent.ResetTime();
-    m_noonTime_sent.SetYear( 10 );
+    m_bCalulationHasBeenDone = false;   // No cals has been done yet
 
-    m_lastCalculations = wxDateTime::Now();
+    // Set to some early date to indicate that they have not been sent
+    wxTimeSpan in_the_past(-12);
+    m_civilTwilightSunriseTime_sent  = wxDateTime::Now() + in_the_past;
+    m_SunriseTime_sent = wxDateTime::Now() + in_the_past;
+    m_SunsetTime_sent = wxDateTime::Now() + in_the_past;
+    m_civilTwilightSunsetTime_sent  = wxDateTime::Now() + in_the_past;
+    m_noonTime_sent = wxDateTime::Now() + in_the_past;
 
+    m_lastCalculation = wxDateTime::Now();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -360,14 +357,24 @@ void CVSCPAutomation::calcSun( void )
 
 void CVSCPAutomation::doWork( void )
 {
-    wxTimeSpan hourSpan( 1 );  // one hour span
+    wxDateTime now = wxDateTime::Now();
+    wxTimeSpan span24( 24 );  // one hour span
 
-    // Every hour calculate Sunrise/sunset parameters
+    // Every 24h calculate Sunrise/sunset parameters at noon
     // Events are just sent once per 24h/period
-    if ( wxDateTime::Now() > m_lastCalculations ) {
-        m_lastCalculations.Add( hourSpan ); // nest check is one hour in the future
-        calcSun();      
+    if ( !m_bCalulationHasBeenDone && ( 12 == wxDateTime::Now().GetHour() ) ) {
+        calcSun();     
+        m_bCalulationHasBeenDone = true;
+    }
+    else {
+        m_bCalulationHasBeenDone = false;
     }
 
+
+    // Civil Twilight Sunrise Time
+    if ( ( now.GetHour() == m_civilTwilightSunriseTime.GetHour() ) && 
+            ( now.GetHour() == m_civilTwilightSunriseTime.GetMinute() ) ) {
+        m_civilTwilightSunriseTime += span24;   // Add 24h's
+    }
 
 }

@@ -176,17 +176,12 @@ public:
      */
     double m_declination;
     double m_daylength;               // hours/minutes
-    //double m_civilTwilightSunrise;
-    //double m_Sunrise;
     double m_SunMaxAltitude;
-    //double m_noonTime;
-    //double m_Sunset;
-    //double m_civilTwilightSunset;
 
     /*!
-        Done every hour
+        Done every 24 hours and at startup
     */
-    wxDateTime m_lastCalculations;
+    wxDateTime m_lastCalculation;
 
     wxDateTime m_civilTwilightSunriseTime;
     wxDateTime m_civilTwilightSunriseTime_sent;
@@ -202,6 +197,12 @@ public:
     
     wxDateTime m_noonTime;
     wxDateTime m_noonTime_sent;
+
+    /*!
+        Set tto true when calculations has been done and
+        time is 12:00
+    */
+    bool m_bCalulationHasBeenDone;
 
 private:
 

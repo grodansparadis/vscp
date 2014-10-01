@@ -440,7 +440,7 @@ public:
         Set to true if storage has been changed
         since last save
     */
-    bool bChanged;
+    bool m_bChanged;
 
     // Last variable save
     wxDateTime m_lastSaveTime;
