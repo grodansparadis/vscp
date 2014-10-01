@@ -20,10 +20,7 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: daemon_VSCP.h,v $                                       
-// $Date: 2005/09/15 16:26:43 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
+
 
 #if !defined(DAEMONVSCP_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_)
 #define DAEMONVSCP_H__7D80016B_5EFD_40D5_94E3_6FD9C324CC7B__INCLUDED_

@@ -54,12 +54,12 @@
 #include "canal_win32_ipc.h"
 #include "canal_macro.h"
 #include "vscp.h"
-#include "vscpd.h"
 #include "vscphelper.h"
 #include "../../common/dllist.h"
 #include "../../common/md5.h"
 #include "controlobject.h"
 #include "guid.h"
+#include "vscpd_caps.h"
 
 
 ///////////////////////////////////////////////////////////////////////////////
