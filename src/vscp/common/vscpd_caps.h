@@ -25,7 +25,11 @@
 // This file contains server capabilities for the VSCP server
 //
 
+#if !defined(VSCPDCAPS)
+#define VSCPDCAPS
+
 #include "vscp.h"
+
 
 // Server capabilities for HIGH END SERVER PROBE
 #define VSCP_DAEMON_SERVER_CAPABILITIES     VSCP_SERVER_CAPABILITY_TCPIP |  \
@@ -39,3 +43,4 @@
 
 
 
+#endif

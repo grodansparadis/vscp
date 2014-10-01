@@ -545,6 +545,7 @@
     <CustomBuild Include="wx\msw\watch1.cur" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\common\crc8.h" />
     <ClInclude Include="..\..\..\common\frozen.h" />
     <ClInclude Include="..\..\..\common\mongoose.h" />
     <ClInclude Include="..\..\..\common\net_skeleton.h" />
@@ -569,6 +570,7 @@
     <ClInclude Include="..\..\common\udpclientthread.h" />
     <ClInclude Include="..\..\common\vscpautomation.h" />
     <ClInclude Include="..\..\common\vscpdlldef.h" />
+    <ClInclude Include="..\..\common\vscpd_caps.h" />
     <ClInclude Include="..\..\common\vscpeventhelper.h" />
     <ClInclude Include="..\..\common\vscphelper.h" />
     <ClInclude Include="..\..\common\vscpremotetcpif.h" />
@@ -585,6 +587,7 @@
     <ClInclude Include="vscpd.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\common\frozen.c" />
     <ClCompile Include="..\..\..\common\mongoose.c" />
     <ClCompile Include="..\..\..\common\net_skeleton.c" />

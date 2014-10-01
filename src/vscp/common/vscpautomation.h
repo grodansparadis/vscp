@@ -97,46 +97,76 @@ public:
     /// getter for subzone
     uint8_t getSubzone( void ) { return m_subzone; };
 
-    ///
+    /// setter for bSunRiseEvent
     void enableSunRiseEvent( void ) { m_bSunRiseEvent = true; };
 
-    ///
+    /// setter for bSunRiseEvent
     void disableSunRiseEvent( void ) { m_bSunRiseEvent = false; };
 
     
-    ///
+    /// setter for bSunSetEvent
     void enableSunSetEvent( void ) { m_bSunSetEvent = true; };
 
-    ///
+    /// setter for bSunSetEvent
     void disableSunSetEvent( void ) { m_bSunSetEvent = false; };
 
 
-    ///
+    /// setter for bSunRiseTwilightEven
     void enableSunRiseTwilightEvent( void ) { m_bSunRiseTwilightEvent = true; };
 
-    ///
+    /// setter for bSunRiseTwilightEvent
     void disableSunRiseTwilightEvent( void ) { m_bSunRiseTwilightEvent = false; };
 
 
-    ///
+    /// setter for bSunSetTwilightEvent
     void enableSunSetTwilightEvent( void ) { m_bSunSetTwilightEvent = true; };
 
-    ///
+    /// setter for bSunSetTwilightEvent
     void disableSunSetTwillightEvent( void ) { m_bSunSetTwilightEvent = false; };
 
-    ///
+    /// setter for daylightsavingtimeStart
     void setDaylightSavingStart( wxDateTime &dt ) { m_daylightsavingtimeStart = dt; };
 
-    ///
+    /// setter for daylightsavingtimeEnd
     void setDaylightSavingEnd( wxDateTime &dt ) { m_daylightsavingtimeEnd = dt; };
 
-public:
+    /// setter for longitude
+    void setLongitude( double l ) { m_longitude = l; };
 
-    /// Logitude for this server
-    double m_longitude;
+    /// setter for latitude
+    void setLatitude( double l ) { m_latitude = l; };
 
-    /// Latitude for this server
-    double m_latitude;
+    /// setter for timezone
+    void setTimezone( double tz ) { m_timezone = tz; };
+
+
+    /// setter for m_bSegmentControllerHeartbeat
+    void enableSegmentControllerHeartbeat( void ) { m_bSegmentControllerHeartbeat = true; };
+
+    /// setter for m_bSegmentControllerHeartbeat
+    void disableSegmentControllerHeartbeat( void ) { m_bSegmentControllerHeartbeat = false; };
+
+    /// setter for m_intervalSegmentControllerHeartbeat
+    void setIntervalSegmentControllerHeartbeat( long interval ) 
+                                        { m_intervalSegmentControllerHeartbeat = interval; };
+
+    /// setter for m_bHeartBeatEvent
+    void enableHeartbeatEvent( void ) { m_bHeartBeatEvent = true; };
+
+    /// setter for m_bHeartBeatEvent
+    void disableHeartbeatEvent( void ) { m_bHeartBeatEvent = false; };
+
+    /// setter for setIntervalHeartbeatEvent
+    void setIntervalHeartbeatEvent( long interval ) 
+                                        { m_intervalHeartBeat = interval; };
+    
+private:
+
+    /// Zone that automation server belongs to
+    uint8_t m_zone;
+
+    /// Subzone that automation server belongs to
+    uint8_t m_subzone;
 
     /*!
         Timezone for this computer
@@ -155,6 +185,9 @@ public:
     */
     long m_intervalSegmentControllerHeartbeat;   // long because of .toLong
 
+    // Time when segment controller heartbeat send
+    wxDateTime m_SegmentHeartbeat_sent;
+
     /*!
         Enable/disable heartbeat.
     */
@@ -165,13 +198,8 @@ public:
     */
     long m_intervalHeartBeat;                   // long because of .toLong
 
-private:
-
-    /// Zone that automation server belongs to
-    uint8_t m_zone;
-
-    /// Subzone that automation server belongs to
-    uint8_t m_subzone;
+    // Time when heartbeat send
+    wxDateTime m_Heartbeat_sent;
 
     /*!
         Start date time when daylight saving time starts. When daylight saving time is in 
@@ -211,7 +239,6 @@ private:
     */
     bool m_bSunSetTwilightEvent;
 
- private:
 
      /*!
         calculations holders.
@@ -223,6 +250,12 @@ private:
     double m_declination;
     double m_daylength;               // hours/minutes
     double m_SunMaxAltitude;
+
+    /// Logitude for this server
+    double m_longitude;
+
+    /// Latitude for this server
+    double m_latitude;
 
     /*!
         Done every 24 hours and at startup
@@ -249,8 +282,6 @@ private:
         time is 12:00
     */
     bool m_bCalulationHasBeenDone;
-
-private:
 
 };
 

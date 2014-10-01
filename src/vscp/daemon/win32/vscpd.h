@@ -28,16 +28,6 @@
 #include "../../common/controlobject.h"
 
 
-// Server capabilities for HIGH END SERVER PROBE
-#define VSCP_DAEMON_SERVER_CAPABILITIES     VSCP_SERVER_CAPABILITY_TCPIP |  \
-                                            VSCP_SERVER_CAPABILITY_UDP  | \
-                                            VSCP_SERVER_CAPABILITY_WEB | \
-                                            VSCP_SERVER_CAPABILITY_WEBSOCKET | \
-                                            VSCP_SERVER_CAPABILITY_REST | \
-                                            VSCP_SERVER_CAPABILITY_IP4 | \
-                                            VSCP_SERVER_CAPABILITY_SSL | \
-                                            VSCP_SERVER_CAPABILITY_TWO_CONNECTIONS \
-
 
 /*
 

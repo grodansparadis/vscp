@@ -57,6 +57,7 @@
 #include "vscphelper.h"
 #include "../../common/dllist.h"
 #include "../../common/md5.h"
+#include "../../common/crc8.h"
 #include "controlobject.h"
 #include "guid.h"
 #include "vscpd_caps.h"
@@ -142,9 +143,14 @@ void *daemonVSCPThread::Entry()
         vscpEventEx eventEx;
         if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
             
-            // Yes should be sent
+            // Yes event should be sent
             eventEx.obid = pClientItem->m_clientID;
             pClientItem->m_guid.writeGUID( eventEx.GUID );
+
+            if ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) {
+                // crc8 of VSCP daemon GUID should be indata byte 0
+                eventEx.data[ 0 ] = calcCRC4GUIDArray();
+            }
 
             vscpEvent *pnewEvent = new vscpEvent;
             if ( NULL != pnewEvent ) {

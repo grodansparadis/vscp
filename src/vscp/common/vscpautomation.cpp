@@ -92,8 +92,8 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_subzone = 0;
 
     // Take me the freedom to use my own place as reference
-    m_longitude = 61.7441833;
-    m_latitude = 15.1604167;
+    m_longitude =  15.1604167;
+    m_latitude = 61.7441833;
     m_timezone = 1;
 
     m_bSegmentControllerHeartbeat = true;
@@ -122,6 +122,10 @@ CVSCPAutomation::CVSCPAutomation( void )
     m_noonTime_sent = wxDateTime::Now() + in_the_past;
 
     m_lastCalculation = wxDateTime::Now();
+
+    m_Heartbeat_sent =  wxDateTime::Now() + in_the_past;
+    m_SegmentHeartbeat_sent =  wxDateTime::Now() + in_the_past;
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -247,6 +251,13 @@ void CVSCPAutomation::calcSun( void )
 	double twilightSunraise, maxAltitude, noonTime, sunsetTime, sunriseTime, twilightSunset;
 	time_t sekunnit;
 	struct tm *p;
+    double tzone = m_timezone;
+
+    // If summertime we add an hour to the zone
+    if ( ( wxDateTime::Now() >= m_daylightsavingtimeStart ) &&
+            ( wxDateTime::Now() <= m_daylightsavingtimeEnd ) ) {
+        tzone++;
+    }
 
 	degs = 180.0 / pi;
 	rads = pi / 180.0;
@@ -275,7 +286,7 @@ void CVSCPAutomation::calcSun( void )
 	lambda = FNsun(d);
 
 	//   Obliquity of the ecliptic
-	obliq = 23.439 * rads - .0000004 * rads * d;
+	obliq = 23.439 * rads - 0.0000004 * rads * d;
 
 	//   Find the RA and DEC of the Sun
 	alpha = atan2(cos(obliq) * sin(lambda), cos(lambda));
@@ -298,17 +309,17 @@ void CVSCPAutomation::calcSun( void )
 		daylen = 0.0;
 	}
 
-	// arctic winter     //
-	sunriseTime = 12.0 - 12.0 * ha / pi + m_timezone - m_longitude / 15.0 + equation / 60.0;
-	sunsetTime = 12.0 + 12.0 * ha / pi + m_timezone - m_longitude / 15.0 + equation / 60.0;
+	// arctic winter 
+	sunriseTime = 12.0 - 12.0 * ha / pi + tzone - m_longitude / 15.0 + equation / 60.0;
+	sunsetTime = 12.0 + 12.0 * ha / pi + tzone - m_longitude / 15.0 + equation / 60.0;
 	noonTime = sunriseTime + 12.0 * ha / pi;
 	maxAltitude = 90.0 + delta * degs - m_latitude;
 	// Correction for S HS suggested by David Smith
 	// to express altitude as degrees from the N horizon
 	if (m_latitude < delta * degs) maxAltitude = 180.0 - maxAltitude;
 
-	twilightSunraise = sunriseTime - twx; // morning twilight begin
-	twilightSunset = sunsetTime + twx; // evening twilight end
+	twilightSunraise = sunriseTime - twx;   // morning twilight begin
+	twilightSunset = sunsetTime + twx;      // evening twilight end
 
 	if (sunriseTime > 24.0) sunriseTime -= 24.0;
 	if (sunsetTime > 24.0) sunsetTime -= 24.0;
@@ -383,7 +394,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_SunriseTime += span24;   // Add 24h's
 
         // Send VSCP_CLASS1_INFORMATION, Type=44/VSCP_TYPE_INFORMATION_SUNRISE
-        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNRISE;
@@ -404,7 +415,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_civilTwilightSunriseTime += span24;   // Add 24h's
 
         // Send VSCP_CLASS1_INFORMATION, Type=52/VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START
-        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START;
@@ -425,7 +436,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_civilTwilightSunsetTime += span24;   // Add 24h's
 
         // Send VSCP_CLASS1_INFORMATION, Type=53/VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START
-        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START;
@@ -446,7 +457,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_SunsetTime += span24;   // Add 24h's
 
         // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
-        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET;
@@ -467,7 +478,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         m_noonTime += span24;   // Add 24h's
 
         // Send VSCP_CLASS1_INFORMATION, Type=58/VSCP_TYPE_INFORMATION_CALCULATED_NOON
-        pEventEx->obid = 0;     // IMPORTANT Must be set vy caller before event is sent
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
         pEventEx->head = 0;
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_CALCULATED_NOON;
@@ -479,6 +490,53 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 
         return true;
 
+    }
+
+    // Heartbeat
+    if ( m_bHeartBeatEvent && ( m_Heartbeat_sent > wxDateTime::Now() ) ) {
+
+        wxTimeSpan next( 0, 0, m_intervalHeartBeat );
+        m_Heartbeat_sent += next;
+
+        // Send VSCP_CLASS1_INFORMATION, Type=9/VSCP_TYPE_INFORMATION_NODE_HEARTBEAT
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
+        pEventEx->vscp_type = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
+        pEventEx->sizeData = 3;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        pEventEx->data[ 0 ] = 0;    // index
+        pEventEx->data[ 1 ] = 0;    // zone
+        pEventEx->data[ 2 ] = 0;    // subzone
+
+        return true;
+    }
+
+    // Segment Controller Heartbeat
+    if ( m_bSegmentControllerHeartbeat && ( m_SegmentHeartbeat_sent > wxDateTime::Now() ) ) {
+
+        wxTimeSpan next( 0, 0, m_intervalSegmentControllerHeartbeat );
+        m_SegmentHeartbeat_sent += next;
+
+        // Send VSCP_CLASS1_PROTOCOL, Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS1_PROTOCOL;
+        pEventEx->vscp_type = VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT;
+        pEventEx->sizeData = 5;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        time_t tnow;
+        time( &tnow );
+        uint32_t time32 = (uint32_t)tnow;
+
+        wxUINT32_SWAP_ON_BE( time32 );
+        pEventEx->data[ 0 ] = 0;  // 8 - bit crc for VSCP daemon GUID
+        pEventEx->data[ 1 ] = (uint8_t)((time32>>24) & 0x0f);    // Time since epoch MSB
+        pEventEx->data[ 2 ] = (uint8_t)((time32>>16) & 0x0f);    
+        pEventEx->data[ 3 ] = (uint8_t)((time32>>9)  & 0x0f);
+        pEventEx->data[ 4 ] = (uint8_t)((time32) & 0x0f);       // Time since epoch LSB
+
+        return true;
     }
     
     return false;

@@ -338,6 +338,22 @@ extern "C" {
     // Helpers
 
 
+    /*!
+        calcCRC4GUIDArray
+
+        \param Pointer to GUID array (MSB-LSB order)
+        \retur crc for GUID.
+    */
+    uint8_t calcCRC4GUIDArray(const uint8_t *pguid);
+
+    /*!
+        calcCRC4GUIDString
+
+        \param Pointer to GUID array (MSB-LSB order)
+        \retur crc for GUID.
+    */
+    uint8_t calcCRC4GUIDString(const uint8_t *pguid);
+
 
     /*!
       Get GUID from string

@@ -2293,15 +2293,21 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }
                 else if (subchild->GetName() == wxT("longitude")) {
                     wxString strLongitude = subchild->GetNodeContent();
-                    strLongitude.ToDouble( &m_automation.m_longitude );
+                    double d;
+                    strLongitude.ToDouble( &d );
+                    m_automation.setLongitude( d );
                 }
                 else if (subchild->GetName() == wxT("latitude")) {
                     wxString strLatitude = subchild->GetNodeContent();
-                    strLatitude.ToDouble( &m_automation.m_latitude );
+                    double d;
+                    strLatitude.ToDouble( &d );
+                    m_automation.setLatitude( d );
                 }
                 else if (subchild->GetName() == wxT("timezone")) {
                     wxString strTimezone = subchild->GetNodeContent();
-                    strTimezone.ToDouble( &m_automation.m_timezone );
+                    double tz;
+                    strTimezone.ToDouble( &tz );
+                    m_automation.setTimezone( tz );
                 }
                 else if (subchild->GetName() == wxT("sunrise")) {
                     m_automation.enableSunRiseEvent();
@@ -2344,26 +2350,30 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     m_automation.setDaylightSavingEnd( dt );
                 }
                 else if (subchild->GetName() == wxT("segmentcontrol-event")) {
-                    m_automation.m_bSegmentControllerHeartbeat = true;
+                    m_automation.enableSegmentControllerHeartbeat();
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
-                        m_automation.m_bSegmentControllerHeartbeat = false;
+                        m_automation.disableSegmentControllerHeartbeat();
                     }
 
                     attribute = subchild->GetAttribute(wxT("interval"), wxT("60"));
-                    attribute.ToLong( &m_automation.m_intervalSegmentControllerHeartbeat );
+                    long interval;
+                    attribute.ToLong( &interval );
+                    m_automation.setIntervalSegmentControllerHeartbeat( interval ); 
                 }
                 else if (subchild->GetName() == wxT("heartbeat-event")) {
-                    m_automation.m_bHeartBeatEvent = true;
-                    m_automation.m_intervalHeartBeat = 30;
+                    m_automation.enableHeartbeatEvent();
+                    m_automation.setIntervalHeartbeatEvent( 30 );
 
                     wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                     if (attribute.IsSameAs(_("false"), false)) {
-                        m_automation.m_bHeartBeatEvent = false;
+                        m_automation.disableHeartbeatEvent();
                     }
 
                     attribute = subchild->GetAttribute(wxT("interval"), wxT("30"));
-                    attribute.ToLong( &m_automation.m_intervalHeartBeat );
+                    long interval;
+                    attribute.ToLong( &interval );
+                    m_automation.setIntervalHeartbeatEvent( interval );
                 }
 
                 subchild = subchild->GetNext();

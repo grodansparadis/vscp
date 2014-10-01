@@ -56,6 +56,7 @@
 
 #include "vscp.h"
 #include "../common/mdf.h"
+#include "../../common/crc8.h"
 #include "vscphelper.h"
 
 
@@ -1150,6 +1151,45 @@ unsigned short vscp_vscp_calc_crc(vscpEvent *pEvent, short bSet)
 
 	return crc;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// calcCRC4GUIDArray
+//
+
+uint8_t calcCRC4GUIDArray(const uint8_t *pguid)
+{
+    uint8_t crc=0;
+
+    init_crc8();
+    for ( int i=0; i<16; i++ ) {
+        crc8( &crc, pguid[i] );
+    }
+
+    return crc;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// calcCRC4GUIDString
+//
+
+uint8_t calcCRC4GUIDString(const wxString &strguid)
+{
+    uint8_t crc=0;
+    uint8_t guid[16];
+
+    memset( guid, 0, 16 );
+    vscp_getGuidFromStringToArray( guid, strguid );
+
+    init_crc8();
+    for ( int i=0; i<16; i++ ) {
+        crc8( &crc, guid[i] );
+    }
+
+    return crc;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getGuidFromString
