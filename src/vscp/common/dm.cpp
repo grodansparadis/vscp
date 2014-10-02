@@ -2909,7 +2909,7 @@ bool CDM::addElement( dmElement *pItem )
 // removeRow
 //
 
-bool CDM::removeRow( unsigned short pos )
+bool CDM::removeElement( unsigned short pos )
 {
     if (pos < 0) return false;
     if ( pos >= m_DMList.GetCount() ) return false;
@@ -2924,10 +2924,10 @@ bool CDM::removeRow( unsigned short pos )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getRow
+// getElement
 //
 
-dmElement *CDM::getRow( short row ) 
+dmElement *CDM::getElement( short row ) 
 { 
     if (row < 0) return NULL;
     if ( (unsigned short)row >= m_DMList.GetCount() ) return NULL;
@@ -3005,11 +3005,11 @@ bool CDM::load ( void )
             
             strEnabled.MakeUpper();
             if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
-                pDMitem->enable();
+                pDMitem->enableRow();
                 bEnabled = true;
             }
             else {
-                pDMitem->disable();   
+                pDMitem->disableRow();   
             }
 
             // Get group id        
@@ -3025,44 +3025,35 @@ bool CDM::load ( void )
                 if ( subchild->GetName() == wxT ( "mask" ) ) {
                     wxString str;              
                     str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
-                  
                     pDMitem->m_vscpfilter.mask_priority = vscp_readStringValue( str );                   
-                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
-                   
-                    pDMitem->m_vscpfilter.mask_class = vscp_readStringValue( str );                  
-                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
-                   
-                    pDMitem->m_vscpfilter.mask_type = vscp_readStringValue( str );                 
+
+                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );                   
+                    pDMitem->m_vscpfilter.mask_class = vscp_readStringValue( str );
+
+                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );                   
+                    pDMitem->m_vscpfilter.mask_type = vscp_readStringValue( str );
+
                     wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
-                   
-                            wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
+                                                                wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.mask_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "filter" ) ) {
                     wxString str;                   
-                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );
-                    
+                    str = subchild->GetAttribute( wxT( "priority" ), wxT("0") );                    
                     pDMitem->m_vscpfilter.filter_priority = vscp_readStringValue( str );                
-                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );
-                   
+
+                    str = subchild->GetAttribute( wxT( "class" ), wxT("0") );                   
                     pDMitem->m_vscpfilter.filter_class = vscp_readStringValue( str );                  
-                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );
-                   
+
+                    str = subchild->GetAttribute( wxT( "type" ), wxT("0") );                   
                     pDMitem->m_vscpfilter.filter_type = vscp_readStringValue( str );                  
-                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ), 
-                  
+
+                    wxString strGUID = subchild->GetAttribute( wxT( "GUID" ),                   
                             wxT("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00") );
                     vscp_getGuidFromStringToArray( pDMitem->m_vscpfilter.filter_GUID, strGUID );
                 }
                 else if ( subchild->GetName() == wxT ( "control" ) ) {
                     pDMitem->m_control = vscp_readStringValue( subchild->GetNodeContent() );
-                    // Main property overrides enable bit if set
-                    if (bEnabled ) {
-                        enableRow();
-                    }
-                    else {
-                        diableRow();
-                    }
                 }
                 else if ( subchild->GetName() == wxT ( "action" ) ) {
                     pDMitem->m_action = vscp_readStringValue( subchild->GetNodeContent() );

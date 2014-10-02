@@ -1395,7 +1395,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
 		return MG_TRUE;
 	}
 	else if ( ( conn->wsbits & 0x0f ) == WEBSOCKET_OPCODE_PONG  ) {
-		mg_websocket_write(conn, WEBSOCKET_OPCODE_PING, conn->content, conn->content_len);
+		//mg_websocket_write(conn, WEBSOCKET_OPCODE_PING, conn->content, conn->content_len);
 		return MG_TRUE;
 	}
 
@@ -2095,19 +2095,19 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 
 		case MG_REQUEST:
 
-            // Log access
-            strErr = 
-            wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
-                                wxString::FromAscii( conn->remote_ip ).wc_str(),
-                                wxString::FromAscii(conn->uri).wc_str(), 
-                                wxString::FromAscii(conn->query_string).wc_str(), 
-                                wxString::FromAscii(conn->request_method).wc_str() );						
-	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
-
 			if (conn->is_websocket) {
 				return pObject->getWebServer()->websrv_websocket_message( conn );
 			}
 			else {
+
+                // Log access
+                strErr = 
+                wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
+                                wxString::FromAscii( conn->remote_ip ).wc_str(),
+                                wxString::FromAscii(conn->uri).wc_str(), 
+                                wxString::FromAscii(conn->query_string).wc_str(), 
+                                wxString::FromAscii(conn->request_method).wc_str() );						
+	            pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
@@ -4583,7 +4583,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
 	}
   
     // Check limits
-    if (nFrom > pObject->m_dm.getRowCount()) nFrom = 0;
+    if (nFrom > pObject->m_dm.getElementCount()) nFrom = 0;
     
     // Count
     uint16_t nCount = 50;
@@ -4592,8 +4592,8 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
 	}
     
     // Check limits
-    if ((nFrom + nCount) > pObject->m_dm.getRowCount()) {
-        upperLimit = pObject->m_dm.getRowCount()-nFrom;
+    if ((nFrom + nCount) > pObject->m_dm.getElementCount()) {
+        upperLimit = pObject->m_dm.getElementCount()-nFrom;
     }
     else {
         upperLimit = nFrom+nCount;
@@ -4612,7 +4612,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
 				if ( nFrom < 0 ) {
 					nFrom = 0;
 					if ((nFrom-nCount) < 0) {
-						upperLimit = pObject->m_dm.getRowCount()- nFrom;
+						upperLimit = pObject->m_dm.getElementCount()- nFrom;
 					}
 					else {
 						upperLimit = nFrom-nCount;
@@ -4626,15 +4626,15 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
         }        
 		else if (NULL != strstr("next",buf)) {
 
-			if ( upperLimit < pObject->m_dm.getRowCount() ) {
+			if ( upperLimit < pObject->m_dm.getElementCount() ) {
 				nFrom += nCount;
-				if (nFrom >= pObject->m_dm.getRowCount()) {
-					nFrom = pObject->m_dm.getRowCount() - nCount;
+				if (nFrom >= pObject->m_dm.getElementCount()) {
+					nFrom = pObject->m_dm.getElementCount() - nCount;
 					if ( nFrom < 0 ) nFrom = 0;
 				}
         
-				if ((nFrom+nCount) > pObject->m_dm.getRowCount()) {
-					upperLimit = pObject->m_dm.getRowCount();
+				if ((nFrom+nCount) > pObject->m_dm.getElementCount()) {
+					upperLimit = pObject->m_dm.getElementCount();
 				}
 				else {
 					upperLimit = nFrom+nCount;
@@ -4644,21 +4644,21 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
 		}
 		else if (NULL != strstr("last",buf)) {
 			
-			nFrom = pObject->m_dm.getRowCount() - nCount;
+			nFrom = pObject->m_dm.getElementCount() - nCount;
 			if ( nFrom < 0 ) {
 				nFrom = 0;
-				upperLimit = pObject->m_dm.getRowCount();
+				upperLimit = pObject->m_dm.getElementCount();
 			}
 			else {
-				upperLimit = pObject->m_dm.getRowCount();
+				upperLimit = pObject->m_dm.getElementCount();
 			}
 
 		}
 		else if ( NULL != strstr("first",buf) ) {
 
 			nFrom = 0;
-			if ((nFrom+nCount) > pObject->m_dm.getRowCount()) {
-				upperLimit = pObject->m_dm.getRowCount()-nFrom;
+			if ((nFrom+nCount) > pObject->m_dm.getElementCount()) {
+				upperLimit = pObject->m_dm.getElementCount()-nFrom;
 			}
 			else {
 				upperLimit = nFrom+nCount;
@@ -4669,8 +4669,8 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
 	else {  // No vaid navigation value
 
 		//nFrom = 0;
-        if ( (nFrom+nCount) > pObject->m_dm.getRowCount() ) {
-            upperLimit = pObject->m_dm.getRowCount()-nFrom;
+        if ( (nFrom+nCount) > pObject->m_dm.getElementCount() ) {
+            upperLimit = pObject->m_dm.getElementCount()-nFrom;
         }
         else {
             upperLimit = nFrom + nCount;
@@ -4695,9 +4695,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
                 "/vscp/dm", //wxstrurl.GetData(),
                 nFrom,
-                ((nFrom + nCount) < pObject->m_dm.getRowCount()) ? 
-                    nFrom + nCount - 1 : pObject->m_dm.getRowCount() - 1,
-                pObject->m_dm.getRowCount(),
+                ((nFrom + nCount) < pObject->m_dm.getElementCount()) ? 
+                    nFrom + nCount - 1 : pObject->m_dm.getElementCount() - 1,
+                pObject->m_dm.getElementCount(),
                 nCount,
                 nFrom,
 #if wxMAJOR_VERSION > 3 
@@ -4714,7 +4714,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
 
     // Display DM List
     
-    if ( 0 == pObject->m_dm.getRowCount() ) {
+    if ( 0 == pObject->m_dm.getElementCount() ) {
         buildPage += _("<br>Decision Matrix is empty!<br>");
     }
     else {
@@ -4725,7 +4725,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
     
     for ( int i=nFrom;i<upperLimit;i++) {
         
-        dmElement *pElement = pObject->m_dm.getRow(i);
+        dmElement *pElement = pObject->m_dm.getElement(i);
         
         {
             wxString url_dmedit = 
@@ -4808,17 +4808,14 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
                 buildPage += wxString::Format(_("%d "),
                         pElement->m_vscpfilter.filter_class);
                 buildPage += _(" [");
-                buildPage += vscpinfo.getClassDescription(
-                        pElement->m_vscpfilter.filter_class);
+                buildPage += vscpinfo.getClassDescription( pElement->m_vscpfilter.filter_class );
                 buildPage += _("] ");
 
                 buildPage += _(" <b>Filter_type: </b>");
-                buildPage += wxString::Format(_("%d "),
-                        pElement->m_vscpfilter.filter_type);
+                buildPage += wxString::Format(_("%d "), pElement->m_vscpfilter.filter_type);
                 buildPage += _(" [");
-                buildPage += vscpinfo.getTypeDescription(
-                        pElement->m_vscpfilter.filter_class,
-                        pElement->m_vscpfilter.filter_type);
+                buildPage += vscpinfo.getTypeDescription (pElement->m_vscpfilter.filter_class,
+                                                            pElement->m_vscpfilter.filter_type );
                 buildPage += _("]<br>");
 
                 buildPage += _(" <b>Filter_GUID: </b>");
@@ -4914,9 +4911,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
 				"/vscp/dm", // wxstrurl,
                 nFrom,
-                ((nFrom + nCount) < pObject->m_dm.getRowCount()) ? 
-                    nFrom + nCount - 1 : pObject->m_dm.getRowCount() - 1,
-                pObject->m_dm.getRowCount(),
+                ((nFrom + nCount) < pObject->m_dm.getElementCount()) ? 
+                    nFrom + nCount - 1 : pObject->m_dm.getElementCount() - 1,
+                pObject->m_dm.getElementCount(),
                 nCount,
                 nFrom,
 #if (wxMAJOR_VERSION > 3)
@@ -4976,8 +4973,8 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
     buildPage += _(WEB_COMMON_MENU);;
     buildPage += _(WEB_DMEDIT_BODY_START);
 
-    if ( !bNew && id < pObject->m_dm.getRowCount() ) {
-        pElement = pObject->m_dm.getRow(id);
+    if ( !bNew && id < pObject->m_dm.getElementCount() ) {
+        pElement = pObject->m_dm.getElement(id);
     }
 
     if (bNew || (NULL != pElement)) {
@@ -5071,7 +5068,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             buildPage += _("");;
         }
         else {
-            buildPage += wxString::Format(_("0x%X"), pElement->m_vscpfilter.filter_class);
+            buildPage += wxString::Format(_("%d"), pElement->m_vscpfilter.filter_class);
         }
         buildPage += _("</textarea>");
         
@@ -5737,9 +5734,9 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *conn )
 
     if ( bNew || ( id >= 0 ) ) {
 
-        if ( bNew || ((0 == id) && !bNew) || ( id < pObject->m_dm.getRowCount() ) ) {
+        if ( bNew || ((0 == id) && !bNew) || ( id < pObject->m_dm.getElementCount() ) ) {
 
-            if (!bNew) pElement = pObject->m_dm.getRow(id);
+            if (!bNew) pElement = pObject->m_dm.getElement(id);
 
             if (NULL != pElement) {
 
@@ -5788,7 +5785,6 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *conn )
                 pElement->m_subzone = subzone;
 
                 pElement->m_control = 0;
-                if (bEnableRow) pElement->m_control |= DM_CONTROL_ENABLE;
                 if (bEndScan) pElement->m_control |= DM_CONTROL_DONT_CONTINUE_SCAN;
                 if (bCheckIndex) pElement->m_control |= DM_CONTROL_CHECK_INDEX;
                 if (bCheckZone) pElement->m_control |= DM_CONTROL_CHECK_ZONE;
@@ -5889,7 +5885,7 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *conn )
     
     buildPage += _(WEB_DMEDIT_BODY_START);
     
-    if ( pObject->m_dm.removeRow( id ) ) {
+    if ( pObject->m_dm.removeElement( id ) ) {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
         // Save decision matrix
         pObject->m_dm.save();

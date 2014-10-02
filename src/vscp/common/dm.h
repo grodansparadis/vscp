@@ -749,17 +749,17 @@ public:
     /*!
     Remove Element from matrix
     */
-    bool removeRow( unsigned short pos );
+    bool removeElement( unsigned short pos );
 
     /*!
     Get number of rows in matrix
     */
-    unsigned short getRowCount( void ) { return m_DMList.GetCount(); };
+    unsigned short getElementCount( void ) { return m_DMList.GetCount(); };
 
     /*!
     Get a row from the matrix
     */
-    dmElement *getRow( short row );
+    dmElement *getElement( short row );
 
     /*!
     Load DM from external storage.

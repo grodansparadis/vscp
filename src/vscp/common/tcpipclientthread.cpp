@@ -2691,7 +2691,7 @@ void VSCPClientThread::handleDM_Enable( struct ns_connection *conn, CControlObje
         for (iter = m_pCtrlObject->m_dm.m_DMList.begin(); iter != m_pCtrlObject->m_dm.m_DMList.end(); ++iter)
         {
             dmElement *pDMItem = *iter;
-            pDMItem->enable();
+            pDMItem->enableRow();
         }	
 
         m_pCtrlObject->m_dm.m_mutexDM.Unlock();
@@ -2711,7 +2711,7 @@ void VSCPClientThread::handleDM_Enable( struct ns_connection *conn, CControlObje
         }
 
         DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
-        ( node->GetData() )->enable();
+        ( node->GetData() )->enableRow();
         m_pCtrlObject->m_dm.m_mutexDM.Unlock();
 
     }
@@ -2738,7 +2738,7 @@ void VSCPClientThread::handleDM_Disable( struct ns_connection *conn, CControlObj
             ++iter )
         {
             dmElement *pDMItem = *iter;
-            pDMItem->disable();
+            pDMItem->disableRow();
         }	
         m_pCtrlObject->m_dm.m_mutexDM.Unlock();
 
@@ -2760,7 +2760,7 @@ void VSCPClientThread::handleDM_Disable( struct ns_connection *conn, CControlObj
             }
 
             DMLIST::compatibility_iterator node = m_pCtrlObject->m_dm.m_DMList.Item( pos );
-            ( node->GetData() )->disable();
+            ( node->GetData() )->disableRow();
 
             m_pCtrlObject->m_dm.m_mutexDM.Unlock();
 
