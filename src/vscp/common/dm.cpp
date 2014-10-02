@@ -58,9 +58,6 @@ WX_DEFINE_LIST( DMLIST );
 WX_DEFINE_LIST( ACTIONTIME );
 
 
-
-
-
 ///////////////////////////////////////////////////////////////////////////////
 // actionThreadURL
 //
@@ -773,6 +770,15 @@ bool actionTime::ShouldWeDoAction( void )
 
     // If we are after endtime
     if ( now.IsLaterThan( m_endTime ) ) return false;
+
+    wxDateTime::WeekDay day = now.GetWeekDay();
+    if ( ( day == wxDateTime::Mon ) && ( 0 == m_weekDay[0] ) ) return false;
+    if ( ( day == wxDateTime::Tue ) && ( 0 == m_weekDay[1] ) ) return false;
+    if ( ( day == wxDateTime::Wed ) && ( 0 == m_weekDay[2] ) ) return false;
+    if ( ( day == wxDateTime::Thu ) && ( 0 == m_weekDay[3] ) ) return false;
+    if ( ( day == wxDateTime::Fri ) && ( 0 == m_weekDay[4] ) ) return false;
+    if ( ( day == wxDateTime::Sat ) && ( 0 == m_weekDay[5] ) ) return false;
+    if ( ( day == wxDateTime::Sun ) && ( 0 == m_weekDay[6] ) ) return false;
 
     // Check Year
     if ( m_actionYear.GetCount() ) {
