@@ -1194,7 +1194,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             return MG_TRUE;
         }
 
-        pvar->writeVariableToString(strvalue);
+        pvar->writeValueToString(strvalue);
         type = pvar->getType();
 
         wxString resultstr = _("+;READVAR;");
@@ -3677,11 +3677,11 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
             return MG_TRUE;
         }
 
-        pvar->writeVariableToString( strvalue );
+        pvar->writeValueToString( strvalue );
 
 		// Get variable value
 		wxString strVariableValue;
-		pvar->writeVariableToString( strVariableValue );
+		pvar->writeValueToString( strVariableValue );
 		
 		if ( REST_FORMAT_PLAIN == format ) {
 
@@ -6161,7 +6161,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
             buildPage += _("</h4>");
             
             wxString str;
-            pVariable->writeVariableToString(str);
+            pVariable->writeValueToString(str);
             buildPage += _("<b>Value:</b> ");
             buildPage += str;
             
@@ -6408,7 +6408,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString str;
-                pVariable->writeVariableToString( str );
+                pVariable->writeValueToString( str );
                 buildPage += str;
             }
             
@@ -6571,7 +6571,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString strGUID;
-                pVariable->writeVariableToString(strGUID);
+                pVariable->writeValueToString(strGUID);
                 buildPage += strGUID;
             }
             
@@ -6601,7 +6601,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString str;
-                pVariable->writeVariableToString( str );
+                pVariable->writeValueToString( str );
                 buildPage += str;
             }
             
@@ -6616,7 +6616,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString str;
-                pVariable->writeVariableToString( str );
+                pVariable->writeValueToString( str );
                 buildPage += str;
             }
             
@@ -6631,7 +6631,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString str;
-                pVariable->writeVariableToString( str );
+                pVariable->writeValueToString( str );
                 buildPage += str;
             }
             
@@ -6646,7 +6646,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString str;
-                pVariable->writeVariableToString( str );
+                pVariable->writeValueToString( str );
                 buildPage += str;
             }
             

@@ -143,13 +143,13 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
         else if ( 0 == str.Find( _("EVENTDATA") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA;
         }
-        else if ( 0 == str.Find( _("CLASS") ) ) {
+        else if ( 0 == str.Find( _("VSCPCLASS") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
         }
 		else if ( 0 == str.Find( _("EVENTCLASS") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS;
         }
-        else if ( 0 == str.Find( _("TYPE") ) ) {
+        else if ( 0 == str.Find( _("VSCPTYPE") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE;
         }
 		else if ( 0 == str.Find( _("EVENTTYPE") ) ) {
@@ -172,7 +172,7 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// setName
+// getVariableTypeAsString
 //
 
 const char * CVSCPVariable::getVariableTypeAsString( int type )
@@ -237,6 +237,8 @@ void CVSCPVariable::setName( const wxString& strName )
     str.Trim( true );
     m_name = str= strName.Upper();
 
+    fixName();
+
     // Check if it is a persistent variable
     if ( str[ 0 ] == VSCP_DAEMON_VARIABLE_PREFIX_PERSISTENT ) {
         m_bPersistent = true;
@@ -255,71 +257,71 @@ void CVSCPVariable::setName( const wxString& strName )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// writeVariableToString
+// writeValueToString
 //
 
-bool CVSCPVariable::writeVariableToString( wxString& strVariable )
+bool CVSCPVariable::writeValueToString( wxString& strValueOut )
 {
     wxString str = wxT("");
     switch ( m_type ) { 
 
         case VSCP_DAEMON_VARIABLE_CODE_STRING:
-            strVariable = m_strValue;
+            strValueOut = m_strValue;
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_BOOLEAN:
             if ( m_boolValue ) {
-                strVariable.Printf(_("true"));
+                strValueOut.Printf(_("true"));
             }
             else {
-                strVariable.Printf(_("false"));
+                strValueOut.Printf(_("false"));
             }
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-            strVariable.Printf(_("%d"), m_longValue );
+            strValueOut.Printf(_("%d"), m_longValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
-            strVariable.Printf(_("%ld"), m_longValue );
+            strValueOut.Printf(_("%ld"), m_longValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
-            strVariable.Printf(_("%f"), m_floatValue );
+            strValueOut.Printf(_("%f"), m_floatValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
-            vscp_writeVscpDataWithSizeToString( m_normIntSize, m_normInteger, strVariable );
+            vscp_writeVscpDataWithSizeToString( m_normIntSize, m_normInteger, strValueOut );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-            vscp_writeVscpEventToString( &m_event, strVariable );
+            vscp_writeVscpEventToString( &m_event, strValueOut );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
-            vscp_writeGuidToString( &m_event, strVariable );
+            vscp_writeGuidToString( &m_event, strValueOut );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-            vscp_writeVscpDataToString( &m_event, strVariable );
+            vscp_writeVscpDataToString( &m_event, strValueOut );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:
-            strVariable.Printf(_("%d"), m_event.vscp_class );
+            strValueOut.Printf(_("%d"), m_event.vscp_class );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TYPE:
-            strVariable.Printf(_("%d"), m_event.vscp_type );
+            strValueOut.Printf(_("%d"), m_event.vscp_type );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-            strVariable.Printf(_("%d"), m_event.timestamp );
+            strValueOut.Printf(_("%d"), m_event.timestamp );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
-            strVariable = m_timestamp.FormatISODate();
-            strVariable += wxT(" ");
-            strVariable += m_timestamp.FormatISOTime();
+            strValueOut = m_timestamp.FormatISODate();
+            strValueOut += wxT(" ");
+            strValueOut += m_timestamp.FormatISOTime();
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
@@ -327,7 +329,7 @@ bool CVSCPVariable::writeVariableToString( wxString& strVariable )
             // Fall through
 
         default:
-            strVariable.Printf(_("UNKNOWN"));
+            strValueOut.Printf(_("UNKNOWN"));
             break;
     }
 
@@ -339,10 +341,22 @@ bool CVSCPVariable::writeVariableToString( wxString& strVariable )
 // setValueFromString
 //
 
+bool CVSCPVariable::setValueFromString( CVSCPVariable::vartype type, const wxString& strValue )
+{
+    return setValueFromString( (int)type, strValue );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// setValueFromString
+//
+
 bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
 {	
     // Convert to uppercase
     wxString strUpper;
+
+    // Update lastchanged
+    setLastChangedToNow();
 
     switch ( type ) { 
 
@@ -438,6 +452,9 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
     int		 typeVariable;			  // Type of variable;
     bool	 bPersistent = false;	  // Persistence of variable		
 
+    // Update lastchanged
+    setLastChangedToNow();
+
     wxStringTokenizer tkz( strVariable, _(";") );
 
     // Get name of variable
@@ -493,6 +510,9 @@ bool CVSCPVariable::getVariableFromString( const wxString& strVariable )
 
 void CVSCPVariable::Reset( void )
 {
+    // Update lastchanged
+    setLastChangedToNow();
+
     if ( m_bPersistent ) {
         setValueFromString( m_type, m_persistant );
     }
@@ -574,23 +594,23 @@ void CVSCPVariable::Reset( void )
 
 bool CVSCPVariable::isTrue( void )
 {
-  if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == getType() && m_boolValue ) {
-    return true;  
-  }
+    if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == getType() && m_boolValue ) {
+        return true;  
+    }
 
-  if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == getType() && m_longValue ) {
-    return true;  
-  }
+    if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == getType() && m_longValue ) {
+        return true;  
+    }
 
-  if ( VSCP_DAEMON_VARIABLE_CODE_LONG == getType() && m_longValue ) {
-    return true;  
-  }
+    if ( VSCP_DAEMON_VARIABLE_CODE_LONG == getType() && m_longValue ) {
+        return true;  
+    }
 
-  if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == getType() && m_floatValue ) {
-    return true;  
-  }
+    if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == getType() && m_floatValue ) {
+        return true;  
+    }
 
-  return false;
+    return false;
 
 }
 
@@ -600,21 +620,24 @@ bool CVSCPVariable::isTrue( void )
 
 void CVSCPVariable::setTrue( void )
 {
-  if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == getType() ) {
-    m_boolValue = true;   
-  }
-  else if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == getType() ) {
-    m_longValue = -1;
-  }
-  else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == getType() ) {
-    m_longValue = -1; 
-  }
-  else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == getType() ) {
-    m_floatValue = -1;
-  }
-  else if ( VSCP_DAEMON_VARIABLE_CODE_STRING == getType() ) {
-    m_strValue = wxT("true"); 
-  }
+    // Update lastchanged
+    setLastChangedToNow();
+
+    if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == getType() ) {
+        m_boolValue = true;   
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == getType() ) {
+        m_longValue = -1;
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == getType() ) {
+        m_longValue = -1; 
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == getType() ) {
+        m_floatValue = -1;
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_STRING == getType() ) {
+        m_strValue = wxT("true"); 
+    }
   
 }
 
@@ -625,21 +648,24 @@ void CVSCPVariable::setTrue( void )
 
 void CVSCPVariable::setFalse( void )
 {
-  if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == getType() ) {
-    m_boolValue = false;   
-  }
-  else if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == getType() ) {
-    m_longValue = 0;
-  }
-  else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == getType() ) {
-    m_longValue = 0; 
-  }
-  else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == getType() ) {
-    m_floatValue = 0;
-  }
-  else if ( VSCP_DAEMON_VARIABLE_CODE_STRING == getType() ) {
-    m_strValue = wxT("false"); 
-  }
+    // Update lastchanged
+    setLastChangedToNow();
+
+    if ( VSCP_DAEMON_VARIABLE_CODE_BOOLEAN == getType() ) {
+        m_boolValue = false;   
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_INTEGER == getType() ) {
+        m_longValue = 0;
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_LONG == getType() ) {
+        m_longValue = 0; 
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_DOUBLE == getType() ) {
+        m_floatValue = 0;
+    }
+    else if ( VSCP_DAEMON_VARIABLE_CODE_STRING == getType() ) {
+        m_strValue = wxT("false"); 
+    }
   
 }
 
@@ -756,7 +782,10 @@ CVSCPVariable * CVariableStorage::find( const wxString& name )
 // add
 //
 
-bool CVariableStorage::add( const wxString& varName, const wxString& value, uint8_t type, bool bPersistent )
+bool CVariableStorage::add( const wxString& varName, 
+                                    const wxString& value, 
+                                    uint8_t type, 
+                                    bool bPersistent )
 {
 	// Name is always upper case
     wxString name = varName.Upper();
@@ -774,6 +803,9 @@ bool CVariableStorage::add( const wxString& varName, const wxString& value, uint
 
     CVSCPVariable *pVar = new CVSCPVariable;
 	if ( NULL == pVar ) return false;
+
+    // Update lastchanged
+    pVar->setLastChangedToNow();
 
 	pVar->setType( type );			// Store the type
 
@@ -822,7 +854,13 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
     // Check that the pointer is valid
     if ( NULL == pVar ) return false;
 
+    // Replace spaces in name with underscore if there are any
+    pVar->fixName();
+
     m_bChanged = true;
+
+    // Update lastchanged
+    pVar->setLastChangedToNow();
 
     if ( NULL != find( pVar->getName() ) ) {
         
@@ -834,7 +872,7 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
 		// New variable
 		m_hashVariable[ pVar->getName() ] = pVar;
         m_listVariable.Append( pVar );
-
+        
     }
     else {
         // New variable
@@ -899,6 +937,9 @@ bool CVariableStorage::load( void )
             CVSCPVariable *pVar = new CVSCPVariable;
             pVar->setPersistent( true );     // Loaded variables are persistent
             bArray = false;
+
+            // Mark last changed as now
+            pVar->setLastChangedToNow();
 
             // Get variable type - String is default
 #if wxCHECK_VERSION(3,0,0)            
@@ -1017,7 +1058,7 @@ bool CVariableStorage::save( wxString& path )
                     // Write value
                     pFileStream->Write( "    <value>", strlen("    <value>") );
                     //pFileStream->Write( pVariable->m_strValue, pVariable->m_strValue.Length() );
-                    pVariable->writeVariableToString( str );
+                    pVariable->writeValueToString( str );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
@@ -1182,7 +1223,7 @@ bool CVariableStorage::save( wxString& path )
                     //                                str,
                     //                                true );
                     //pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-                    pVariable->writeVariableToString( str );
+                    pVariable->writeValueToString( str );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
@@ -1208,7 +1249,7 @@ bool CVariableStorage::save( wxString& path )
 
                     // Write value
                     pFileStream->Write( "    <value>", strlen("    <value>") );
-                    pVariable->writeVariableToString( str );
+                    pVariable->writeValueToString( str );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
@@ -1289,7 +1330,7 @@ bool CVariableStorage::save( wxString& path )
                     pFileStream->Write( "    <value>", strlen("    <value>") );
                     //str.Printf( _("%d"), pVariable->m_event.timestamp );
                     //pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
-                    pVariable->writeVariableToString( str );
+                    pVariable->writeValueToString( str );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
@@ -1315,7 +1356,7 @@ bool CVariableStorage::save( wxString& path )
 
                     // Write value
                     pFileStream->Write( "    <value>", strlen("    <value>") );
-                    pVariable->writeVariableToString( str );
+                    pVariable->writeValueToString( str );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     pFileStream->Write( "</value>\n", strlen("</value>\n") );
 
@@ -1346,7 +1387,7 @@ bool CVariableStorage::save( wxString& path )
                     //str = pVariable->m_timestamp.FormatISODate();
                     //str += _(" ");
                     //str = pVariable->m_timestamp.FormatISOTime();
-                    pVariable->writeVariableToString( str );
+                    pVariable->writeValueToString( str );
                     pFileStream->Write( str.mb_str(), strlen(str.mb_str()) );
                     pFileStream->Write( "</value>\n", strlen("</value>\n") );
 

@@ -2160,7 +2160,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                     str += _(",false,");
                 }
 				
-                pVariable->writeVariableToString( strWork );
+                pVariable->writeValueToString( strWork );
                 str += strWork;
                 str += _("\r\n");
 
@@ -2272,7 +2272,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                                     else {
                                         str += _(",false,");
                                     }
-                                    pVariable->writeVariableToString( strWork );
+                                    pVariable->writeValueToString( strWork );
                                     str += strWork;
                                     str += _("\r\n");
 
@@ -2311,7 +2311,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                             else {
                                 str += _(",false,");
                             }
-                            pVariable->writeVariableToString( strWork );
+                            pVariable->writeValueToString( strWork );
                             str += strWork;
                             str += _("\r\n");
 
@@ -2426,7 +2426,7 @@ void VSCPClientThread::handleVariable_Read( struct ns_connection *conn, CControl
         return;
     }
 
-    pVariable->writeVariableToString( str );
+    pVariable->writeValueToString( str );
     str += _("\r\n");
     ns_send( conn,  str.ToAscii(), strlen( str.ToAscii() ) );
 
@@ -2496,7 +2496,7 @@ void VSCPClientThread::handleVariable_ReadReset( struct ns_connection *conn, CCo
         }
     }
 
-    pVariable->writeVariableToString( str );
+    pVariable->writeValueToString( str );
     str += _("\r\n");
     ns_send( conn,  str.ToAscii(), str.Length() );
 
@@ -2550,7 +2550,7 @@ void VSCPClientThread::handleVariable_ReadRemove( struct ns_connection *conn, CC
         }
     }
 
-    pVariable->writeVariableToString( str );
+    pVariable->writeValueToString( str );
     str += _("\r\n");
     ns_send( conn,  str.ToAscii(), str.Length() );
 

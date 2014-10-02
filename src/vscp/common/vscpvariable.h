@@ -39,6 +39,22 @@
 class CVSCPVariable {
 public:
 
+    enum vartype {
+        STRING_T,
+        BOOL_T,
+        INT_T,
+        LONG_T,
+        FLOAT_T,
+        MEASUREMENT_T,
+        EVENT_T,
+        GUID_T,
+        DATA_T,
+        VSCPCLASS_T,
+        VSCPTYPE_T,
+        TIMESTAMP_T,
+        DATETIME_T
+    };
+
 	/// Constructor
 	CVSCPVariable(void);
 
@@ -143,11 +159,19 @@ public:
 	 */
 	bool setValueFromString(int type, const wxString& strValue);
 
+    /*!
+	Set variable value from string
+	@param vartype Type of value (enum)
+	@param strValue Value in string form
+	@return true on success.
+	 */
+    bool setValueFromString( CVSCPVariable::vartype type, const wxString& strValue );
+
 	/*!
-	Get the variable as a string value
+	Get the variable value as a string value
 	@param str String that will get string representation of variable.
 	 */
-	bool writeVariableToString(wxString& strValue);
+	bool writeValueToString(wxString& strValue);
 
 	/*!
 	Get variable information as a string value
@@ -290,6 +314,23 @@ public:
 	};
 
 
+    /*!
+        Change last change date time to now
+    */
+    void setLastChangedToNow( void ) { m_lastChanged = wxDateTime::Now(); };
+
+
+    wxDateTime& getLastChange( void ) { return m_lastChanged; };
+    /*!
+    // Name should not contain spaces so if it does
+    // we replace them with 'underscore'
+    */
+    void fixName() {
+            size_t pos;
+            while ( wxNOT_FOUND != ( pos = m_name.Find( 0x20 ) ) ) {
+                m_name[pos] = '_';
+            }; };
+
 
 private:
 
@@ -307,6 +348,11 @@ private:
 	Arrays are never persistent!
 	 */
 	bool m_bArray;
+
+    /*!
+        Time when variable was last changed.
+    */
+    wxDateTime m_lastChanged;
 
 public:
 
