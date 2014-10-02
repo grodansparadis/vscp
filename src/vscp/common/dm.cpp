@@ -1108,7 +1108,7 @@ dmElement::~dmElement()
 //
 
 
-wxString dmElement::getAsRealText( void )
+wxString dmElement::getAsRealText( bool bCRLF )
 {
     wxString strRow;
 
@@ -1180,7 +1180,9 @@ wxString dmElement::getAsRealText( void )
     strRow += m_comment;
 
     // New line
-    strRow += _("\r\n");
+    if ( bCRLF ) {
+        strRow += _("\r\n");
+    }
 
     return strRow;
 }
@@ -1543,18 +1545,18 @@ bool dmElement::doAction( vscpEvent *pEvent )
         // We do nothing
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_NOOP.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
         break;
 
     case  VSCP_DAEMON_ACTION_CODE_EXECUTE:
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_EXECUTE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionExecute( pEvent );
         break;
@@ -1563,9 +1565,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionSendEvent( pEvent );
         break;
@@ -1574,9 +1576,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENT_CONDITIONAL.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionSendEventConditional( pEvent );
         break;
@@ -1585,9 +1587,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SEND_EVENTS_FROM_FILE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionSendEventsFromFile( pEvent );
         break;		
@@ -1596,9 +1598,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STORE_VARIABLE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionStoreVariable( pEvent );
         break;
@@ -1607,9 +1609,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_ADD_VARIABLE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg( _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionAddVariable( pEvent );
         break;
@@ -1618,9 +1620,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_SUBTRACT_VARIABLE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionSubtractVariable( pEvent );
         break;
@@ -1629,9 +1631,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_MULTIPLY_VARIABLE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionMultiplyVariable( pEvent );
         break;
@@ -1640,9 +1642,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_DIVIDE_VARIABLE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionDivideVariable( pEvent );
         break;
@@ -1651,9 +1653,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_START_TIMER.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionStartTimer( pEvent );
         break;
@@ -1662,9 +1664,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_PAUSE_TIMER.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionPauseTimer( pEvent );
         break;
@@ -1673,9 +1675,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_STOP_TIMER.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionStopTimer( pEvent );
         break;
@@ -1684,9 +1686,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_RESUME_TIMER.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionResumeTimer( pEvent );
         break;
@@ -1695,9 +1697,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_FILE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionWriteFile( pEvent );
         break;
@@ -1706,9 +1708,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_GET_PUT_POST_URL.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionGetURL( pEvent );
         break;
@@ -1717,9 +1719,9 @@ bool dmElement::doAction( vscpEvent *pEvent )
         
         logStr = wxString::Format(_("VSCP_DAEMON_ACTION_CODE_WRITE_TABLE.") ); // Log
         m_pDM->logmsg( logStr, LOG_DM_NORMAL );
-        m_pDM->logmsg( getAsRealText(), LOG_DM_EXTRA );
+        m_pDM->logmsg(  _("DM = ") + getAsRealText( false ), LOG_DM_EXTRA );
         vscp_writeVscpEventToString( pEvent, logStr );
-        m_pDM->logmsg( logStr, LOG_DM_EXTRA );
+        m_pDM->logmsg( _("Event = ") + logStr, LOG_DM_EXTRA );
 
         doActionWriteTable( pEvent );
         break;
@@ -2869,10 +2871,10 @@ void CDM::logmsg( const wxString& msg, const uint8_t level )
     wxDateTime datetime( wxDateTime::GetTimeNow() );
     wxString wxdebugmsg;
 
-    wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + msg;
+    wxdebugmsg = datetime.FormatISODate() + _(" ") + datetime.FormatISOTime() + _(" - ") + msg + _("\r\n");
 
     // logging.
-    if ( m_logLevel >= level ) {
+    if ( level >= m_logLevel ) {
         if ( m_bLogEnable ) {
             m_fileLog.Write( wxdebugmsg );
         }
