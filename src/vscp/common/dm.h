@@ -45,7 +45,7 @@ WX_DECLARE_LIST ( wxDynamicLibrary, PLUGINLIST ); 	// List with DM plugins
 WX_DECLARE_LIST( int, ACTIONTIME );
 
 // Control bits
-#define DM_CONTROL_ENABLE				0x80000000
+//#define DM_CONTROL_ENABLE				0x80000000
 #define DM_CONTROL_DONT_CONTINUE_SCAN	0x40000000
 #define DM_CONTROL_CHECK_INDEX			0x00000020
 #define DM_CONTROL_CHECK_ZONE			0x00000010 
@@ -445,20 +445,20 @@ public:
 
 
     /*!
-        Enable item
+        Enable row
     */
-    void enable( void )  { m_control |= DM_CONTROL_ENABLE; };
+    void enableRow( void )  { m_bEnable = true; };
 
     /*!
-        Disable item
+        Disable row
     */
-    void disable( void )  { m_control &= 0x7fffffff; };
+    void disableRow( void )  { m_bEnable = false; };
 
     /*!
         Check if it is enabled
         @returns true if enabled false otherwise
     */
-    bool isEnabled( void ) { return ( ( m_control & DM_CONTROL_ENABLE ) ? true : false ); };
+    bool isEnabled( void ) { return m_bEnable; };
   
     /*!
         Check if scan should continue
@@ -623,6 +623,8 @@ public:
     */
     bool doActionWriteTable( vscpEvent *pDMEvent );
 
+    /// True if row is enabled
+    bool m_bEnable;
 
     /// DM row filter
     vscpEventFilter m_vscpfilter;
