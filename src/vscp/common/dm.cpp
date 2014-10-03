@@ -1275,18 +1275,20 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
 
                     wxString wxstr = str;
-
-                    if ( str.StartsWith( wxT("]"), &str ) ) {
-                        long idx; 
-                        if ( wxstr.ToLong( &idx ) ) {
-                            if ( idx < pEvent->sizeData ) {
-                                strResult +=  wxString::Format( wxT("%d"), pEvent->pdata[ idx ] );	
-                            }
-                            else {
-                                strResult +=  wxT("?");		// invalid index	
-                            }
-                        }
+                    if ( wxNOT_FOUND != ( pos = str.Find( wxT("]") ) ) ) {
+                        str = str.Right( str.Length() - pos - 1 );		
                     }
+
+                    long idx=0; 
+                    wxstr.ToLong( &idx );
+                    if ( idx < pEvent->sizeData ) {
+                        strResult +=  wxString::Format( wxT("%d"), pEvent->pdata[ idx ] );	
+                    }
+                    else {
+                        strResult +=  wxT("?");		// invalid index	
+                    }
+                    
+
                 }
                 else {
                     // Just remove ending ]
