@@ -1277,7 +1277,7 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                     wxString wxstr = str;
                     if ( wxNOT_FOUND != ( pos = str.Find( wxT("]") ) ) ) {
                         str = str.Right( str.Length() - pos - 1 );		
-                    }
+                    } 
 
                     long idx=0; 
                     wxstr.ToLong( &idx );
