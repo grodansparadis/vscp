@@ -19,6 +19,8 @@
       <itemPath>../../common/controlobject.h</itemPath>
       <itemPath>../../../common/crc.c</itemPath>
       <itemPath>../../../common/crc.h</itemPath>
+      <itemPath>../../../common/crc8.c</itemPath>
+      <itemPath>../../../common/crc8.h</itemPath>
       <itemPath>../../common/daemonvscp.cpp</itemPath>
       <itemPath>../../common/daemonvscp.h</itemPath>
       <itemPath>../../common/devicelist.cpp</itemPath>
@@ -158,6 +160,8 @@
         </ccTool>
       </item>
       <item path="../../../common/crc.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../../../common/crc8.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../../../common/dllist.c" ex="false" tool="0" flavor2="2">
       </item>
