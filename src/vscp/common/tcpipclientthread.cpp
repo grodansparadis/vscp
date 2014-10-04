@@ -360,7 +360,10 @@ VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pC
     m_currentCommand.Trim( false );
 
 	// If nothing to handle just return
-	if ( 0 == m_currentCommand.Length() ) return;
+	if ( 0 == m_currentCommand.Length() ) {
+        ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );      
+        return;
+    }
     
 	m_currentCommandUC.Trim();
     m_currentCommandUC.Trim( false );

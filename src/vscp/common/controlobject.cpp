@@ -1180,7 +1180,7 @@ void CControlObject::sendEventToClient(CClientItem *pClientItem,
     if (NULL == pClientItem) return;
     if (NULL == pEvent) return;
 
-    // Check if filtered out
+    // Check if filtered out - if so do nothing here
     if (!vscp_doLevel2Filter(pEvent, &pClientItem->m_filterVSCP)) return;
 
     // If the client queue is full for this client then the
