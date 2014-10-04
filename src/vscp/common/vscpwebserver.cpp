@@ -934,7 +934,6 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		}
     } 
 	else if (0 == strTok.Find(_("OPEN"))) {
-
 		// Must be authorized to do this
 		if ( !pSession->bAuthenticated ) {
 			mg_websocket_printf( conn, 
@@ -1004,6 +1003,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 				pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 return MG_TRUE;
             }
+            pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
         } 
 		else {
             mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
@@ -1729,7 +1729,9 @@ VSCPWebServerThread::websock_post_incomingEvents( void )
 	struct mg_connection *conn;
 
 	// Iterate over all connections, and push current time message to websocket ones.
-	for (conn = mg_next( m_pCtrlObject->m_pwebserver, NULL); conn != NULL; conn = mg_next(m_pCtrlObject->m_pwebserver, conn)) {
+	for ( conn = mg_next( m_pCtrlObject->m_pwebserver, NULL); 
+               conn != NULL; 
+               conn = mg_next(m_pCtrlObject->m_pwebserver, conn)) {
 		
 		if ( conn->is_websocket ) {
 

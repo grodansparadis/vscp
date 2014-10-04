@@ -843,11 +843,11 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
         // this client don't get the message back
         pEvent->obid = pClientItem->m_clientID;
 
-        wxString dbgStr = 
+        /*wxString dbgStr = 
             wxString::Format( _(" obid = %d clientid = %d"), 
             pEvent->obid,  
             pClientItem->m_clientID ); 
-        m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
+        m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );*/
 
         // And data...
         if ( pEvent->sizeData > 0 ) {

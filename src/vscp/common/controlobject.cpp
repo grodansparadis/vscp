@@ -473,8 +473,8 @@ bool CControlObject::init(wxString& strcfgfile)
 {
     //wxLog::AddTraceMask( "wxTRACE_doWorkLoop" );
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_receiveQueue")); // Receive queue
-    wxLog::AddTraceMask(_("wxTRACE_vscpd_Msg"));
-    wxLog::AddTraceMask(_("wxTRACE_VSCP_Msg"));
+    //wxLog::AddTraceMask(_("wxTRACE_vscpd_Msg"));
+    //wxLog::AddTraceMask(_("wxTRACE_VSCP_Msg"));
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_ReceiveMutex"));
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_sendMutexLevel1"));
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
@@ -2483,6 +2483,7 @@ void *clientMsgWorkerThread::Entry()
     if (NULL == m_pCtrlObject) return NULL;
 
     while (!TestDestroy() && !m_bQuit) {
+
         // Wait for event
         if (wxSEMA_TIMEOUT ==
                 m_pCtrlObject->m_semClientOutputQueue.WaitTimeout(500)) continue;
