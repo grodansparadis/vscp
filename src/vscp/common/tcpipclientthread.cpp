@@ -2519,7 +2519,9 @@ void VSCPClientThread::handleVariable_Remove( struct ns_connection *conn, CContr
     m_currentCommandUC.Trim( false );
     m_currentCommandUC.Trim( true );
 
+    m_pCtrlObject->m_variableMutex.Lock();
     m_pCtrlObject->m_VSCP_Variables.remove( m_currentCommandUC );
+    m_pCtrlObject->m_variableMutex.Unlock();
 
     ns_send( conn, MSG_OK, strlen( MSG_OK ) );
 }

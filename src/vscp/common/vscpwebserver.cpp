@@ -1017,7 +1017,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;SETFILTER" );
 
     }// Clear the event queue
-    else if (0 == strTok.Find(_("CLRQUE"))) {
+    else if (0 == strTok.Find(_("CLRQUEUE"))) {
 
         CLIENTEVENTLIST::iterator iterVSCP;
 
@@ -1058,6 +1058,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         // Get variablename
         if (tkz.HasMoreTokens()) {
 
+            uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING;
+            bool bPersistent = false;
+
             CVSCPVariable *pvar;
             strTok = tkz.GetNextToken();
             if (NULL == (pvar = pObject->m_VSCP_Variables.find(strTok))) {
@@ -1067,6 +1070,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
                 return MG_TRUE;
             }
+
 
             // Get variable value
             if (tkz.HasMoreTokens()) {
@@ -1094,6 +1098,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return MG_TRUE;
         }
+
+        wxString resultstr = _("+;WRITEVAR;");
+        resultstr += strTok;
 
         // Positive reply
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;WRITEVAR" );
@@ -1126,6 +1133,16 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_SYNTAX_ERROR, 
 									WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return MG_TRUE;
+        }   
+
+        // Get variable type
+        if (tkz.HasMoreTokens()) {
+            type = vscp_readStringValue(tkz.GetNextToken());
+        }
+
+        // Get variable Persistence
+        if (tkz.HasMoreTokens()) {
+            int val = vscp_readStringValue(tkz.GetNextToken());
         }
 
         // Get variable value
@@ -1140,16 +1157,6 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             return MG_TRUE;
         }
 
-        // Get variable type
-        if (tkz.HasMoreTokens()) {
-            type = vscp_readStringValue(tkz.GetNextToken());
-        }
-
-        // Get variable Persistent
-        if (tkz.HasMoreTokens()) {
-            int val = vscp_readStringValue(tkz.GetNextToken());
-        }
-
         // Add the variable
         if (!pObject->m_VSCP_Variables.add(name, value, type, bPersistent)) {
             mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
@@ -1158,15 +1165,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_SYNTAX_ERROR );
             return MG_TRUE;
         } 
-		else {
-            mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
-									"-;%d;%s", 
-									WEBSOCK_ERROR_SYNTAX_ERROR, 
-									WEBSOCK_STR_ERROR_SYNTAX_ERROR );
-            return MG_TRUE;
-        }
 
-        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;ADDVAR" );
+        wxString resultstr = _("+;ADDVAR;");
+        resultstr += name;
+
+        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, resultstr.mbc_str() );
         
     } 
 	else if (0 == strTok.Find(_("READVAR"))) {
@@ -1198,12 +1201,190 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         type = pvar->getType();
 
         wxString resultstr = _("+;READVAR;");
+        resultstr += strTok;
+        resultstr += _(";");
         resultstr += wxString::Format(_("%d"), type);
         resultstr += _(";");
         resultstr += strvalue;
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.wc_str() );
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     } 
+    else if (0 == strTok.Find(_("RESETVAR"))) {
+
+        CVSCPVariable *pvar;
+
+		// Must be authorized to do this
+		if ( !pSession->bAuthenticated ) {
+			mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_NOT_AUTHORIZED,
+									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+			return MG_TRUE;	// We still leave channel open
+		}
+
+        strTok = tkz.GetNextToken();
+        if (NULL == (pvar = pObject->m_VSCP_Variables.find(strTok))) {
+			mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s", 
+									WEBSOCK_ERROR_VARIABLE_UNKNOWN, 
+									WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
+            return MG_TRUE;
+        }
+
+        pvar->Reset();
+
+		wxString strResult = _("+;RESETVAR;");
+        strResult += strTok;
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, strResult.mbc_str() );
+
+    }
+    else if (0 == strTok.Find(_("REMOVEVAR"))) {
+
+        CVSCPVariable *pvar;
+        wxString strvalue;
+
+		// Must be authorized to do this
+		if ( !pSession->bAuthenticated ) {
+			mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_NOT_AUTHORIZED,
+									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+			return MG_TRUE;	// We still leave channel open
+		}
+
+        strTok = tkz.GetNextToken();
+        if (NULL == (pvar = pObject->m_VSCP_Variables.find(strTok))) {
+			mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s", 
+									WEBSOCK_ERROR_VARIABLE_UNKNOWN, 
+									WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
+            return MG_TRUE;
+        }
+
+        pObject->m_variableMutex.Lock();
+        pObject->m_VSCP_Variables.remove( strTok );
+        pObject->m_variableMutex.Unlock();
+
+        wxString strResult = _("+;REMOVEVAR;");
+        strResult += strTok;
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, strResult.mbc_str() );
+
+    }
+    else if (0 == strTok.Find(_("LENGTHVAR"))) {
+
+        CVSCPVariable *pvar;
+
+		// Must be authorized to do this
+		if ( !pSession->bAuthenticated ) {
+			mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_NOT_AUTHORIZED,
+									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+			return MG_TRUE;	// We still leave channel open
+		}
+
+        strTok = tkz.GetNextToken();
+        if (NULL == (pvar = pObject->m_VSCP_Variables.find(strTok))) {
+			mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s", 
+									WEBSOCK_ERROR_VARIABLE_UNKNOWN, 
+									WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
+            return MG_TRUE;
+        }
+
+        wxString resultstr = _("+;LENGTHVAR;");
+        resultstr += strTok;
+        resultstr += _(";");
+        resultstr += wxString::Format(_("%d"), pvar->m_strValue.Length() );
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
+
+    }
+    else if (0 == strTok.Find(_("LASTCHANGEVAR"))) {
+
+        CVSCPVariable *pvar;
+        uint8_t type;
+        wxString strvalue;
+
+		// Must be authorized to do this
+		if ( !pSession->bAuthenticated ) {
+			mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_NOT_AUTHORIZED,
+									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+			return MG_TRUE;	// We still leave channel open
+		}
+
+        strTok = tkz.GetNextToken();
+        if (NULL == (pvar = pObject->m_VSCP_Variables.find(strTok))) {
+			mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s", 
+									WEBSOCK_ERROR_VARIABLE_UNKNOWN, 
+									WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
+            return MG_TRUE;
+        }
+
+        pvar->writeValueToString(strvalue);
+        type = pvar->getType();
+
+        wxString resultstr = _("+;LASTCHANGEVAR;");
+        resultstr +=  pvar->getLastChange().FormatISODate() + _(" ") +  pvar->getLastChange().FormatISOTime();
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
+
+    }
+    else if (0 == strTok.Find(_("LISTVAR"))) {
+
+        CVSCPVariable *pvar;
+        wxString strvalue;
+
+		// Must be authorized to do this
+		if ( !pSession->bAuthenticated ) {
+			mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_NOT_AUTHORIZED,
+									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+			return MG_TRUE;	// We still leave channel open
+		}
+      
+        int i = 0;
+        wxString resultstr;
+        wxString strWork;
+        m_pCtrlObject->m_variableMutex.Lock();
+
+        listVscpVariable::iterator it;
+        for( it = m_pCtrlObject->m_VSCP_Variables.m_listVariable.begin(); 
+                    it != m_pCtrlObject->m_VSCP_Variables.m_listVariable.end(); 
+                    ++it ) {
+
+            if ( NULL == ( pvar = *it ) ) continue;
+
+            wxString resultstr = _("+;LISTVAR;");
+            resultstr += wxString::Format( _("%d;"), i++ );
+            resultstr += pvar->getName();
+            resultstr += _(";");
+            strWork.Printf( _("%d"), pvar->getType() ) ;
+            resultstr += strWork;
+            if ( pvar->isPersistent() ) {
+                resultstr += _(";true;");
+            }
+            else {
+                resultstr += _(";false;");
+            }
+				
+            pvar->writeValueToString( strWork );
+            resultstr += strWork;
+
+		    mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
+        }
+
+        m_pCtrlObject->m_variableMutex.Unlock();
+
+
+    }
 	else if (0 == strTok.Find(_("SAVEVAR"))) {
 
 		// Must be authorized to do this
@@ -1232,6 +1413,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_UNKNOWN_COMMAND, 
 									WEBSOCK_STR_ERROR_UNKNOWN_COMMAND );
     }
+
 
 	return rv;
 
@@ -7117,9 +7299,11 @@ VSCPWebServerThread::websrv_variables_delete( struct mg_connection *conn )
     
     buildPage += _(WEB_VAREDIT_BODY_START);
     
-    wxlistVscpVariableNode *node = 
-            pObject->m_VSCP_Variables.m_listVariable.Item( id );
-    if ( pObject->m_VSCP_Variables.m_listVariable.DeleteNode( node )  ) {
+    pVariable = pObject->m_VSCP_Variables.m_listVariable.Item(id)->GetData();
+    //wxlistVscpVariableNode *node = 
+    //        pObject->m_VSCP_Variables.m_listVariable.Item( id );
+    //if ( pObject->m_VSCP_Variables.m_listVariable.DeleteNode( node )  ) {//
+    if ( pObject->m_VSCP_Variables.remove( pVariable ) )  {
         buildPage += wxString::Format(_("<br>Deleted record id = %d"), id);
         // Save variables
         pObject->m_VSCP_Variables.save();

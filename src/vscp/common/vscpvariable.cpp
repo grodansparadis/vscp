@@ -575,7 +575,11 @@ void CVSCPVariable::Reset( void )
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-                m_timestamp= m_timestamp.Today();
+                m_event.timestamp = 0;
+                break;
+
+            case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
+                m_timestamp = wxDateTime::Now();
                 break;
 
             case VSCP_DAEMON_VARIABLE_CODE_UNASSIGNED:
@@ -770,8 +774,6 @@ CVSCPVariable * CVariableStorage::find( const wxString& name )
     }
 
     if ( m_hashVariable.end() != m_hashVariable.find( strName ) ) {
-        // We don't know if it will be changed bit just in case...
-        m_bChanged = true;
         return m_hashVariable[ strName ];
     }
 
@@ -887,10 +889,23 @@ bool CVariableStorage::add( CVSCPVariable *pVar )
 // remove
 //
 
+bool CVariableStorage::remove( CVSCPVariable *pVariable ) 
+{
+    if ( NULL == pVariable ) return false;
+
+    return remove( pVariable->getName() );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// remove
+//
+
 bool CVariableStorage::remove( wxString& name ) 
 {
     m_bChanged = true;
 
+    name.MakeUpper();
     m_listVariable.DeleteObject( m_hashVariable[ name ] );
     return m_hashVariable.erase( name ) ? true : false;
 }

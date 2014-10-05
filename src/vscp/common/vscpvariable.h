@@ -329,7 +329,7 @@ public:
             size_t pos;
             while ( wxNOT_FOUND != ( pos = m_name.Find( 0x20 ) ) ) {
                 m_name[pos] = '_';
-            }; };
+            }; m_name.MakeUpper(); };
 
 
 private:
@@ -443,6 +443,13 @@ public:
 	@return true on success, false on failure.
 	 */
 	bool remove(wxString& name);
+
+    /*!
+	    Remove variable from object
+	    @param pVariable Pointe to variable object
+	    @return true on success, false on failure.
+	 */
+    bool remove( CVSCPVariable *pVariable );
 
 	/*!
 	Read persistent variables
