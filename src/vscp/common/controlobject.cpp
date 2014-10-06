@@ -494,7 +494,7 @@ bool CControlObject::init(wxString& strcfgfile)
         return FALSE;
     }
 
-    // Calulate sunset etc
+    // Calculate sunset etc
     m_automation.calcSun();
 
     //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
