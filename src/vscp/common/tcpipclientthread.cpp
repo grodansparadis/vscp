@@ -1533,11 +1533,15 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     // Calculate MD5 for username:autdomain:password
     char buf[2148];
-	strncpy( buf, (const char *)pClientItem->m_UserName.mbc_str(), sizeof( buf ) );
+	strncpy( buf, (const char *)pClientItem->m_UserName.mbc_str(), pClientItem->m_UserName.Length() );
 	strncat( buf, ":", sizeof( buf ) );
-	strncat( buf, (const char *)pCtrlObject->m_authDomain.mbc_str(), sizeof( buf ) );
+	strncat( buf, (const char *)pCtrlObject->m_authDomain.mbc_str(), pCtrlObject->m_authDomain.Length() );
 	strncat( buf, ":", sizeof( buf ) );
-    strncat( (char *)buf, strPassword.mb_str(), sizeof( buf ) );
+    strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
+	//wxString wrk = pClientItem->m_UserName + _(":");
+	//wrk += pCtrlObject->m_authDomain + _(":");
+	//wrk += strPassword;
+	//strcpy( buf, (const char *)wrk.c_str() );
 	
     Cmd5 md5 ( (unsigned char *)buf );
     if ( NULL == md5.getDigest() ) return false; 

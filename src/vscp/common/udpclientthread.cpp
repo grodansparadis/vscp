@@ -214,7 +214,8 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 				// Calculate MD5 for username:autdomain:password
 				strncpy( buf, strUser.mbc_str(), strUser.Length() );
 				strncat( buf, ":", sizeof( buf ) );
-				strncat( buf, pUDPClientThread->m_pCtrlObject->m_authDomain.mbc_str(), sizeof( buf ) );
+				strncat( buf, pUDPClientThread->m_pCtrlObject->m_authDomain.mbc_str(),
+								pUDPClientThread->m_pCtrlObject->m_authDomain.Length() );
 				strncat( buf, ":", sizeof( buf ) );
 				strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
 	
