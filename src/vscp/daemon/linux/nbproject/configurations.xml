@@ -131,6 +131,7 @@
             </incDir>
             <preprocessorList>
               <Elem>NOEMBED_NET_SKELETON</Elem>
+              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>_LARGE_FILES</Elem>
               <Elem>__WXDEBUG__</Elem>
@@ -154,6 +155,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -161,7 +163,7 @@
       </item>
       <item path="../../../common/crc.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="../../../common/crc8.c" ex="false" tool="0" flavor2="0">
+      <item path="../../../common/crc8.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../../common/dllist.c" ex="false" tool="0" flavor2="2">
       </item>
@@ -176,6 +178,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -206,6 +209,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -224,6 +228,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -238,6 +243,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -252,6 +258,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -266,6 +273,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -280,6 +288,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -294,6 +303,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -308,6 +318,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -322,6 +333,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -336,6 +348,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -350,6 +363,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -364,6 +378,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -392,6 +407,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -406,6 +422,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -422,6 +439,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -436,6 +454,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -450,6 +469,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -464,6 +484,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -478,6 +499,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -491,6 +513,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>

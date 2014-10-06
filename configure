@@ -623,7 +623,6 @@ ac_includes_default="\
 #endif"
 
 ac_subst_vars='LTLIBOBJS
-SSLFLAGS
 WX_RESCOMP
 WX_VERSION
 WX_LIBS_STATIC
@@ -4301,6 +4300,51 @@ _ACEOF
 
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for SSL_free in -lssl" >&5
+$as_echo_n "checking for SSL_free in -lssl... " >&6; }
+if ${ac_cv_lib_ssl_SSL_free+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lssl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char SSL_free ();
+int
+main ()
+{
+return SSL_free ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ssl_SSL_free=yes
+else
+  ac_cv_lib_ssl_SSL_free=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ssl_SSL_free" >&5
+$as_echo "$ac_cv_lib_ssl_SSL_free" >&6; }
+if test "x$ac_cv_lib_ssl_SSL_free" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBSSL 1
+_ACEOF
+
+  LIBS="-lssl $LIBS"
+
+fi
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for _init in -lmosquittopp" >&5
 $as_echo_n "checking for _init in -lmosquittopp... " >&6; }
 if ${ac_cv_lib_mosquittopp__init+:} false; then :
@@ -7087,15 +7131,6 @@ if test "$wxWin" != 1; then
     " "$LINENO" 5
 fi
 
-
-if test "${vscp_ssl}" = yes ; then
-    SSLFLAGS = "-D NS_ENABLE_SSL"
-
-    echo "SSL Build"
-else
-    SSLFLAGS = "-D tttt"
-    echo "non SSL Build"
-fi
 
 CPPFLAGS="$CPPFLAGS $WX_CPPFLAGS"
 CXXFLAGS="$CXXFLAGS $WX_CXXFLAGS_ONLY"
