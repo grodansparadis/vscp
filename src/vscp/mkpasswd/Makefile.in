@@ -35,7 +35,7 @@ WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 MKPASSWD_OBJECTS =  \
-	mkpasswd.o ../../common/md5.o ../common/vscphelper.o ../../common/crc.o
+	mkpasswd.o ../../common/md5.o ../common/vscphelper.o ../../common/crc.o ../../common/crc8.o
 
 
 ### Targets: ###
