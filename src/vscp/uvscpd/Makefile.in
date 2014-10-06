@@ -37,7 +37,7 @@ UVSCPD_OBJECTS =  uvscpd.o websocket.o base64_enc.o sha1.c \
         ../common/vscphelper.o \
 	../../common/dllist.o \
 	../../common/crc.o \
-	../../common/crc8.c \
+	../../common/crc8.o \
 	../../common/md5.o \
 	../../common/configfile.o \
 	../../common/randpassword.o 

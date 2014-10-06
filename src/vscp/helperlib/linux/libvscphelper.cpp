@@ -186,678 +186,6 @@ BOOL CVSCPLApp::InitInstance()
 
 
 
-
-//-----------------------------------------------------------------------------
-//								H E L P E R S
-//-----------------------------------------------------------------------------
-
-/*!
-  Get bitarray from coded event data
-  \param pNorm Pointer to normalized integer.
-  \param length Number of bytes it consist of including
-  the first normalize byte.
-  \return Bitarray as a unsigned 64-bit integer.
- */
-extern "C" unsigned long vscphlp_getDataCodingBitArray(const unsigned char *pNorm,
-        const unsigned char length)
-{
-    return vscp_getDataCodingBitArray(pNorm, length);
-}
-
-/*!
-      Get normalized integer from coded event data
-      \param pNorm Pointer to normalized integer.
-      \param length Number of bytes it consist of including
-      the first normalize byte.
-      \return returns value as a double.
- */
-extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char
-        *pNorm, const unsigned char length)
-{
-    return vscp_getDataCodingNormalizedInteger(pNorm, length);
-}
-
-/*!
-  Get the string from coded event data
-  \param pString Pointer to normalised integer.
-  \param length Number of bytes it consist of including
-  the first normalise byte.
-  \param pstrCoding String that will hold the result.
-  \param 
-  \return Returns unicode UTF-8 string of event data
- */
-extern "C" void vscphlp_getDataCodingString(const unsigned char *pString,
-        const unsigned char length,
-        char *pstrCoding,
-        int len)
-{
-    // Check pointer
-    if (NULL == pstrCoding) return;
-
-    wxString str = vscp_getDataCodingString(pString, length);
-    strncpy(pstrCoding, str.ToAscii(), len);
-}
-
-/*!
-  Get data in the VSCP data coding format to a string
-  \param pEvent Pointer to VSCP event.
-  \param str String that holds the result
-  \return true on success, false on failure.
- */
-extern "C" BOOL vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
-        char *pStr,
-        int len)
-{
-    wxString wxstr;
-    if (!vscp_getVSCPMeasurementAsString(pEvent, wxstr)) return FALSE;
-
-    strncpy(pStr, wxstr.ToAscii(), len);
-
-    return TRUE;
-}
-
-/*!
-  Get data in the VSCP data coding format to a float
-  \param pNorm Pointer to VSCP event.
-  \param length Number of bytes it consist of including datacoding byte
-  \return value as float
- */
-extern "C" float vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
-        const unsigned char length)
-{
-    return vscp_getMeasurementAsFloat(pNorm, length);
-}
-
-/*!
-  Get data in the VSCP data coding format to a float
-  \param value Floating point value to convert.
-  \param pdata Pointer to first byte of VSCP data.
-  \param unit Code for the unit the data is represented in.
-  \param sendoridx Index for sensor-   
-  \return value as float
- */
-extern "C" int vscphlp_convertFloatToNormalizedEventData(double value,
-        unsigned char *pdata,
-        unsigned int *psize,
-        unsigned char unit,
-        unsigned char sensoridx)
-{
-    uint16_t size;
-    int rv =  vscp_convertFloatToNormalizedEventData(value,
-                                                    pdata,
-                                                    &size,
-                                                    unit,
-                                                    sensoridx);
-    
-    *psize = size;
-    return rv;
-}
-
-/*!
-    \fn long vscphlp_readStringValue( const char * pStrValue )
-    \brief Read a value (decimal or hex) from a string.
-    \return The converted number.
- */
-
-extern "C" unsigned long vscphlp_readStringValue(const char * pStrValue)
-{
-    wxString strVal;
-    strVal.FromAscii(pStrValue);
-
-    return vscp_readStringValue(strVal);
-}
-
-/*!
-    \fn unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
-    \brief Get VSCP priority.
- */
-
-extern "C" unsigned char vscphlp_getVscpPriority(const vscpEvent *pEvent)
-{
-    return vscp_getVscpPriority(pEvent);
-}
-
-/*!
-    \fn unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
-    \brief Get VSCP priority.
- */
-
-extern "C" unsigned char vscphlp_getVscpPriorityEx(const vscpEventEx *pEvent)
-{
-    return vscp_getVscpPriorityEx(pEvent);
-}
-
-/*!
-    \fn void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
-    \brief Set VSCP priority.
- */
-
-extern "C" void vscphlp_setVscpPriority(vscpEvent *pEvent, unsigned char priority)
-{
-    vscp_setVscpPriority(pEvent, priority);
-}
-
-/*!
- Set VSCP priority Ex
- \param pEvent Pointer to VSCP event to set priority for.
- \param priority Priority (0-7) to set.
- */
-extern "C" void vscphlp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority)
-{
-    vscp_setVscpPriorityEx(pEvent, priority);
-}
-
-/*!
-    \fn vscphlp_getVSCPheadFromCANid( const unsigned long id )
-    \brief Get the VSCP head from a CANAL message id (CAN id).
- */
-
-extern "C" unsigned char vscphlp_getVSCPheadFromCANid(const unsigned long id)
-{
-    return vscp_getVSCPheadFromCANid(id);
-}
-
-/*!
-    \fn vscphlp_getVSCPclassFromCANid( const unsigned long id )
-    \brief Get the VSCP class from a CANAL message id (CAN id).
- */
-
-extern "C" unsigned short vscphlp_getVSCPclassFromCANid(const unsigned long id)
-{
-    return vscp_getVSCPclassFromCANid(id);
-}
-
-/*!
-    \fn unsigned short vscphlp_getVSCPtypeFromCANid( const unsigned long id )
-    \brief Get the VSCP type from a a CANAL message id (CAN id).
- */
-
-extern "C" unsigned short vscphlp_getVSCPtypeFromCANid(const unsigned long id)
-{
-    return vscp_getVSCPtypeFromCANid(id);
-}
-
-/*!
-    \fn unsigned short vscphlp_getVSCPnicknameFromCANid( const unsigned long id )
-    \brief Get the VSCP nickname from a a CANAL message id (CAN id).
- */
-
-extern "C" unsigned short vscphlp_getVSCPnicknameFromCANid(const unsigned long id)
-{
-    return vscp_getVSCPnicknameFromCANid(id);
-}
-
-/*!
-    \fn unsigned long vscphlp_getCANidFromVSCPdata( const unsigned char priority, 
-                                                    const unsigned short vscphlp_class, 
-                                                    const unsigned short vscp_type )
-    \brief Construct a CANAL id (CAN id ) from VSCP.
- */
-
-extern "C" unsigned long vscphlp_getCANidFromVSCPdata(const unsigned char priority,
-        const unsigned short vscphlp_class,
-        const unsigned short vscp_type)
-{
-    return vscp_getCANidFromVSCPdata(priority, vscphlp_class, vscp_type);
-}
-
-/*!
-    \fn unsigned long vscphlp_getCANidFromVSCPevent( const vscpEvent *pEvent )
-    \brief Get CANAL id (CAN id) from VSCP event.
- */
-
-extern "C" unsigned long vscphlp_getCANidFromVSCPevent(const vscpEvent *pEvent)
-{
-    return vscp_getCANidFromVSCPevent(pEvent);
-}
-
-/*!
-  Get CAN id from VSCP event
-  \param pEvent Pointer to VSCP event
-  \return CAN id with nickname == 0
- */
-extern "C" unsigned long vscphlp_getCANidFromVSCPeventEx(const vscpEventEx *pEvent)
-{
-    return vscp_getCANidFromVSCPeventEx(pEvent);
-}
-
-/*!
-    \fn unsigned short vscphlp_calcCRC( vscpEvent *pEvent, short bSet )
-    \brief Calculate VSCP crc.
- */
-
-extern "C" unsigned short vscphlp_calcCRC(vscpEvent *pEvent, short bSet)
-{
-    return vscp_vscp_calc_crc(pEvent, bSet);
-}
-
-
-/*!
-    \fn unsigned short vscp_getCrcOfGuidFromArray( const unsigned char * pGUID )
-    \brief Calculate 8-bit crc for GUID in array
-	\param Pointer to GUID array
- 	\return 8-bit crc of GUID.
-*/
-
-extern "C" bool vscp_getCrcOfGuidFromArray( const unsigned char * pGUID )
-{
-    return vscp_calcCRC4GUIDArray( pGUID );
-}
-
-
-/*!
-    \fn bool vscp_getGuidFromString( const char * strGUID )
-    \brief Calculate 8-bit crc for GUID in array
-    \param Pointer to GUID string.
- 	\return 8-bit crc of GUID.
-*/
-
-extern "C" bool vscp_getCrcOfGuidFromString( const char * strGUID )
-{
-    wxString wxGUID = wxString::FromAscii( strGUID );
-    return  vscp_calcCRC4GUIDString( wxGUID );
-}
-
-
-/*!
-    \fn BOOL vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
-    \brief Write GUID into VSCP event from string.
- */
-
-extern "C" BOOL vscphlp_getGuidFromString(vscpEvent *pEvent, const char * pGUID)
-{
-    wxString strGUID = wxString::FromAscii(pGUID);
-    return (vscp_getGuidFromString(pEvent, strGUID) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
-    \brief Write GUID into VSCP event from string.
- */
-
-extern "C" BOOL vscphlp_getGuidFromStringEx(vscpEventEx *pEvent, const char * pGUID)
-{
-    wxString strGUID = wxString::FromAscii(pGUID);
-    return (vscp_getGuidFromStringEx(pEvent, strGUID) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
-    \brief Write GUID from string into array.
- */
-
-extern "C" BOOL vscphlp_getGuidFromStringToArray(uint8_t *pGUID, const char * pStr)
-{
-    wxString strGUID = wxString::FromAscii(pStr);
-    return (vscp_getGuidFromStringToArray(pGUID, strGUID) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
-    \brief Write GUID froom VSCP event to string.
- */
-
-extern "C" BOOL vscphlp_writeGuidToString(const vscpEvent *pEvent, char * pStr)
-{
-    BOOL rv;
-
-    wxString strGUID;
-    rv = (vscp_writeGuidToString(pEvent, strGUID) ? TRUE : FALSE);
-    strcpy(pStr, strGUID.ToAscii());
-    return rv;
-}
-
-extern "C" BOOL vscphlp_writeGuidToStringEx(const vscpEventEx *pEvent, char * pStr)
-{
-    BOOL rv;
-
-    wxString strGUID;
-    rv = (vscp_writeGuidToStringEx(pEvent, strGUID) ? TRUE : FALSE);
-    strcpy(pStr, strGUID.ToAscii());
-    return rv;
-}
-
-/*!
-    \fn BOOL vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                            wxString& strGUID )
-    \brief Write GUID from VSCP event to string with four bytes on each
-    row seperated by \r\n. 
- */
-
-extern "C" BOOL vscphlp_writeGuidToString4Rows(const vscpEvent *pEvent,
-        wxString& strGUID)
-{
-    return (vscp_writeGuidToString4Rows(pEvent, strGUID) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                            wxString& strGUID )
-    \brief Write GUID from VSCP event to string with four bytes on each
-    row seperated by \r\n. 
- */
-
-extern "C" BOOL vscphlp_writeGuidToString4RowsEx(const vscpEventEx *pEvent,
-        wxString& strGUID)
-{
-    return (vscp_writeGuidToString4RowsEx(pEvent, strGUID) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                            wxString& strGUID )
-    \brief Write GUID from byte array to string.
- */
-
-extern "C" BOOL vscphlp_writeGuidArrayToString(const unsigned char * pGUID,
-        wxString& strGUID)
-{
-    return (vscp_writeGuidArrayToString(pGUID, strGUID) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_isGUIDEmpty( unsigned char *pGUID )
-    \brief Check if GUID is empty (all nills).
- */
-
-extern "C" BOOL vscphlp_isGUIDEmpty(unsigned char *pGUID)
-{
-    return (vscp_isGUIDEmpty(pGUID) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_isSameGUID( const unsigned char *pGUID1, 
-                                const unsigned char *pGUID2 )
-    \brief Check if two GUID's is equal to each other.
- */
-
-extern "C" BOOL vscphlp_isSameGUID(const unsigned char *pGUID1,
-        const unsigned char *pGUID2)
-{
-    return (vscp_isSameGUID(pGUID1, pGUID2) ? TRUE : FALSE);
-}
-
-/*!
-    Recerse GUID
-    \param pGUID Pointer to GUID to reverse.
-    \return true if OK.
- */
-extern "C" BOOL vscphlp_reverseGUID(unsigned char *pGUID)
-{
-    return (vscp_reverseGUID(pGUID) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx, 
-                                    const vscpEvent *pEvent )
-    \brief Convert VSCP standard event form to ex. form.
- */
-
-extern "C" BOOL vscphlp_convertVSCPtoEx(vscpEventEx *pEventEx,
-        const vscpEvent *pEvent)
-{
-    return (vscp_convertVSCPtoEx(pEventEx, pEvent) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_convertVSCPfromEx( vscpEvent *pEvent, 
-                                        const vscpEventEx *pEventEx )
-    \brief Convert VSCP ex. event form to standard form.
- */
-
-extern "C" BOOL vscphlp_convertVSCPfromEx(vscpEvent *pEvent,
-        const vscpEventEx *pEventEx)
-{
-    return (vscp_convertVSCPfromEx(pEvent, pEventEx) ? TRUE : FALSE);
-}
-
-/*!
-    \fn void vscphlp_deleteVSCPevent( vscpEvent *pEvent )
-    \brief Delete VSCP event.
- */
-
-extern "C" void vscphlp_deleteVSCPevent(vscpEvent *pEvent)
-{
-    vscp_deleteVSCPevent(pEvent);
-}
-
-/*!
-    \fn void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )
-    \brief Delete VSCP event ex.
- */
-
-extern "C" void vscphlp_deleteVSCPeventEx(vscpEventEx *pEventEx)
-{
-    vscp_deleteVSCPeventEx(pEventEx);
-}
-
-/*!
-    \fn void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
-    \brief Clear VSCP filter.
- */
-
-extern "C" void vscphlp_clearVSCPFilter(vscpEventFilter *pFilter)
-{
-    vscp_clearVSCPFilter(pFilter);
-}
-
-/*!
-    \fn BOOL vscphlp_doLevel2Filter( const vscpEvent *pEvent,
-                                    const vscpEventFilter *pFilter )
-    \brief Check VSCP filter condition.
- */
-
-extern "C" BOOL vscphlp_doLevel2Filter(const vscpEvent *pEvent,
-        const vscpEventFilter *pFilter)
-{
-    return (vscp_doLevel2Filter(pEvent, pFilter) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_doLevel2Filter( const vscpEvent *pEvent,
-                                    const vscpEventFilter *pFilter )
-    \brief Check VSCP filter condition.
- */
-
-extern "C" BOOL vscphlp_doLevel2FilterEx(const vscpEventEx *pEvent,
-        const vscpEventFilter *pFilter)
-{
-    return (vscp_doLevel2FilterEx(pEvent, pFilter) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
-    \brief Read a filter from a string
-    \param pFilter Filter structure to write filter to.
-    \param strFilter Filter in string form 
-                filter-priority, filter-class, filter-type, filter-GUID
-    \return true on success, false on failure.
- */
-
-extern "C" BOOL vscphlp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
-{
-    return (vscp_readFilterFromString(pFilter, strFilter) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
-    \brief Read a mask from a string
-    \param pFilter Filter structure to write mask to.
-    \param strMask Mask in string form 
-                mask-priority, mask-class, mask-type, mask-GUID
-    \return true on success, fals eon failure.
- */
-
-extern "C" BOOL vscphlp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
-{
-    return (vscp_readMaskFromString(pFilter, strMask) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_convertCanalToEvent( vscpEvent *pvscpEvent,
-                                            const canalMsg *pcanalMsg,
-                                            unsigned char *pGUID,
-                                            BOOL bCAN )
-    \brief Convert CANAL message to VSCP event.
- */
-
-extern "C" BOOL vscphlp_convertCanalToEvent(vscpEvent *pvscpEvent,
-        const canalMsg *pcanalMsg,
-        unsigned char *pGUID,
-        BOOL bCAN)
-{
-    return vscp_convertCanalToEvent(pvscpEvent,
-            pcanalMsg,
-            pGUID,
-            (bCAN ? true : false));
-}
-
-/*!
-    \fn BOOL vscphlp_convertCanalToEventEx( vscpEventEx *pvscpEvent,
-                                            const canalMsg *pcanalMsg,
-                                            unsigned char *pGUID,
-                                            BOOL bCAN )
-    \brief Convert CANAL message to VSCP event.
- */
-
-extern "C" BOOL vscphlp_convertCanalToEventEx(vscpEventEx *pvscpEvent,
-        const canalMsg *pcanalMsg,
-        unsigned char *pGUID,
-        BOOL bCAN)
-{
-    return vscp_convertCanalToEventEx(pvscpEvent,
-            pcanalMsg,
-            pGUID,
-            (bCAN ? true : false));
-}
-
-/*!
-    \fn BOOL vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
-                                        const vscpEvent *pvscpEvent )
-    \brief Convert VSCP event to CANAL message.
- */
-
-extern "C" BOOL vscphlp_convertEventToCanal(canalMsg *pcanalMsg,
-        const vscpEvent *pvscpEvent)
-{
-    return (vscp_convertEventToCanal(pcanalMsg, pvscpEvent) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
-                                            const vscpEventEx *pvscpEventEx )
-    \brief Convert VSCP event ex. to CANAL message.
- */
-
-extern "C" BOOL vscphlp_convertEventExToCanal(canalMsg *pcanalMsg,
-        const vscpEventEx *pvscpEventEx)
-{
-    return (vscp_convertEventExToCanal(pcanalMsg, pvscpEventEx) ? TRUE : FALSE);
-}
-
-/*!
-    \fn unsigned long vscphlp_getTimeStamp( void )
-    \brief Get VSCP timestamp.
- */
-
-extern "C" unsigned long vscphlp_getTimeStamp(void)
-{
-    return vscp_makeTimeStamp();
-}
-
-/*!
-    \fn BOOL vscphlp_copyVSCPEvent( vscpEvent *pEventTo, 
-                                    const vscpEvent *pEventFrom )
-    \brief Copy VSCP event.
- */
-
-extern "C" BOOL vscphlp_copyVSCPEvent(vscpEvent *pEventTo,
-        const vscpEvent *pEventFrom)
-{
-    return (vscp_copyVSCPEvent(pEventTo, pEventFrom) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
-                                            wxString& str, 
-                                            BOOL bUseHtmlBreak )
-    \brief Write VSCP data in readable form to a (multiline) string.
- */
-
-extern "C" BOOL vscphlp_writeVscpDataToString(const vscpEvent *pEvent,
-        wxString& str,
-        BOOL bUseHtmlBreak)
-{
-    return (vscp_writeVscpDataToString(pEvent,
-            str,
-            (bUseHtmlBreak ? true : false)) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_getVscpDataFromString( vscpEvent *pEvent, 
-                                            const wxString& str )
-    \brief Set data in VSCP event from a string.
- */
-extern "C" BOOL vscphlp_getVscpDataFromString(vscpEvent *pEvent,
-        const wxString& str)
-{
-    return (vscp_getVscpDataFromString(pEvent, str) ? TRUE : FALSE);
-}
-
-/*!
-    \fn BOOL vscphlp_writeVscpEventToString( vscpEvent *pEvent, 
-                                            char *p )
-    \brief Write VSCP data to a string.
- */
-
-extern "C" BOOL vscphlp_writeVscpEventToString(vscpEvent *pEvent,
-        char *p)
-{
-    BOOL rv;
-
-    wxString str = wxString::FromAscii(p);
-    if ((rv = (vscp_writeVscpEventToString(pEvent, str) ? TRUE : FALSE))) {
-        strcpy(p, str.ToAscii());
-    }
-
-    return rv;
-}
-
-/*!
-    \fn BOOL vscphlp_getVscpEventFromString( vscpEvent *pEvent, 
-                                            const char *p )
-    \brief Get VSCP event from string.
- */
-
-extern "C" BOOL vscphlp_getVscpEventFromString(vscpEvent *pEvent,
-        const char *p)
-{
-    wxString str = wxString::FromAscii(p);
-    return (vscp_getVscpEventFromString(pEvent, str) ? TRUE : FALSE);
-}
-
-/*!
-  Write VSCP data to string
-  \param sizeData Number of databytes.
-  \param pData Pointer to datastructure.
-   \param str String that receive result.
-  \param bUseHtmlBreak Set to true to use <br> instead of \\n as
-  line break 
-  \return True on success false on failure.
- */
-extern "C" BOOL vscphlp_writeVscpDataWithSizeToString(const uint16_t sizeData,
-        const unsigned char *pData,
-        char *pstr,
-        BOOL bUseHtmlBreak)
-{
-    wxString wxstr = wxString::FromAscii(pstr);
-    return vscp_writeVscpDataWithSizeToString(sizeData,
-            pData,
-            wxstr,
-            (bUseHtmlBreak ? true : false));
-}
-
-
 //-----------------------------------------------------------------------------
 //						 T C P / I P  I N T E R F A C E
 //-----------------------------------------------------------------------------
@@ -1891,3 +1219,687 @@ extern "C" int vscphlp_setVariableVSCPtype(const long handle, const char *pName,
     wxString name = wxString::FromAscii(pName);
     return(pvscpif->setVariableVSCPtype(name, vscp_type) ? TRUE : FALSE);
 }
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+//								H E L P E R S
+//-----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+/*!
+  Get bitarray from coded event data
+  \param pNorm Pointer to normalized integer.
+  \param length Number of bytes it consist of including
+  the first normalize byte.
+  \return Bitarray as a unsigned 64-bit integer.
+ */
+extern "C" unsigned long vscphlp_getDataCodingBitArray(const unsigned char *pNorm,
+        const unsigned char length)
+{
+    return vscp_getDataCodingBitArray(pNorm, length);
+}
+
+/*!
+      Get normalized integer from coded event data
+      \param pNorm Pointer to normalized integer.
+      \param length Number of bytes it consist of including
+      the first normalize byte.
+      \return returns value as a double.
+ */
+extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char
+        *pNorm, const unsigned char length)
+{
+    return vscp_getDataCodingNormalizedInteger(pNorm, length);
+}
+
+/*!
+  Get the string from coded event data
+  \param pString Pointer to normalised integer.
+  \param length Number of bytes it consist of including
+  the first normalise byte.
+  \param pstrCoding String that will hold the result.
+  \param 
+  \return Returns unicode UTF-8 string of event data
+ */
+extern "C" void vscphlp_getDataCodingString(const unsigned char *pString,
+        const unsigned char length,
+        char *pstrCoding,
+        int len)
+{
+    // Check pointer
+    if (NULL == pstrCoding) return;
+
+    wxString str = vscp_getDataCodingString(pString, length);
+    strncpy(pstrCoding, str.ToAscii(), len);
+}
+
+/*!
+  Get data in the VSCP data coding format to a string
+  \param pEvent Pointer to VSCP event.
+  \param str String that holds the result
+  \return true on success, false on failure.
+ */
+extern "C" BOOL vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent,
+        char *pStr,
+        int len)
+{
+    wxString wxstr;
+    if (!vscp_getVSCPMeasurementAsString(pEvent, wxstr)) return FALSE;
+
+    strncpy(pStr, wxstr.ToAscii(), len);
+
+    return TRUE;
+}
+
+/*!
+  Get data in the VSCP data coding format to a float
+  \param pNorm Pointer to VSCP event.
+  \param length Number of bytes it consist of including datacoding byte
+  \return value as float
+ */
+extern "C" float vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
+        const unsigned char length)
+{
+    return vscp_getMeasurementAsFloat(pNorm, length);
+}
+
+/*!
+  Get data in the VSCP data coding format to a float
+  \param value Floating point value to convert.
+  \param pdata Pointer to first byte of VSCP data.
+  \param unit Code for the unit the data is represented in.
+  \param sendoridx Index for sensor-   
+  \return value as float
+ */
+extern "C" int vscphlp_convertFloatToNormalizedEventData(double value,
+        unsigned char *pdata,
+        unsigned int *psize,
+        unsigned char unit,
+        unsigned char sensoridx)
+{
+    uint16_t size;
+    int rv =  vscp_convertFloatToNormalizedEventData(value,
+                                                    pdata,
+                                                    &size,
+                                                    unit,
+                                                    sensoridx);
+    
+    *psize = size;
+    return rv;
+}
+
+/*!
+    \fn long vscphlp_readStringValue( const char * pStrValue )
+    \brief Read a value (decimal or hex) from a string.
+    \return The converted number.
+ */
+
+extern "C" unsigned long vscphlp_readStringValue(const char * pStrValue)
+{
+    wxString strVal;
+    strVal.FromAscii(pStrValue);
+
+    return vscp_readStringValue(strVal);
+}
+
+/*!
+    \fn unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
+    \brief Get VSCP priority.
+ */
+
+extern "C" unsigned char vscphlp_getVscpPriority(const vscpEvent *pEvent)
+{
+    return vscp_getVscpPriority(pEvent);
+}
+
+/*!
+    \fn unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
+    \brief Get VSCP priority.
+ */
+
+extern "C" unsigned char vscphlp_getVscpPriorityEx(const vscpEventEx *pEvent)
+{
+    return vscp_getVscpPriorityEx(pEvent);
+}
+
+/*!
+    \fn void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+    \brief Set VSCP priority.
+ */
+
+extern "C" void vscphlp_setVscpPriority(vscpEvent *pEvent, unsigned char priority)
+{
+    vscp_setVscpPriority(pEvent, priority);
+}
+
+/*!
+ Set VSCP priority Ex
+ \param pEvent Pointer to VSCP event to set priority for.
+ \param priority Priority (0-7) to set.
+ */
+extern "C" void vscphlp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority)
+{
+    vscp_setVscpPriorityEx(pEvent, priority);
+}
+
+/*!
+    \fn vscphlp_getVSCPheadFromCANid( const unsigned long id )
+    \brief Get the VSCP head from a CANAL message id (CAN id).
+ */
+
+extern "C" unsigned char vscphlp_getVSCPheadFromCANid(const unsigned long id)
+{
+    return vscp_getVSCPheadFromCANid(id);
+}
+
+/*!
+    \fn vscphlp_getVSCPclassFromCANid( const unsigned long id )
+    \brief Get the VSCP class from a CANAL message id (CAN id).
+ */
+
+extern "C" unsigned short vscphlp_getVSCPclassFromCANid(const unsigned long id)
+{
+    return vscp_getVSCPclassFromCANid(id);
+}
+
+/*!
+    \fn unsigned short vscphlp_getVSCPtypeFromCANid( const unsigned long id )
+    \brief Get the VSCP type from a a CANAL message id (CAN id).
+ */
+
+extern "C" unsigned short vscphlp_getVSCPtypeFromCANid(const unsigned long id)
+{
+    return vscp_getVSCPtypeFromCANid(id);
+}
+
+/*!
+    \fn unsigned short vscphlp_getVSCPnicknameFromCANid( const unsigned long id )
+    \brief Get the VSCP nickname from a a CANAL message id (CAN id).
+ */
+
+extern "C" unsigned short vscphlp_getVSCPnicknameFromCANid(const unsigned long id)
+{
+    return vscp_getVSCPnicknameFromCANid(id);
+}
+
+/*!
+    \fn unsigned long vscphlp_getCANidFromVSCPdata( const unsigned char priority, 
+                                                    const unsigned short vscphlp_class, 
+                                                    const unsigned short vscp_type )
+    \brief Construct a CANAL id (CAN id ) from VSCP.
+ */
+
+extern "C" unsigned long vscphlp_getCANidFromVSCPdata(const unsigned char priority,
+        const unsigned short vscphlp_class,
+        const unsigned short vscp_type)
+{
+    return vscp_getCANidFromVSCPdata(priority, vscphlp_class, vscp_type);
+}
+
+/*!
+    \fn unsigned long vscphlp_getCANidFromVSCPevent( const vscpEvent *pEvent )
+    \brief Get CANAL id (CAN id) from VSCP event.
+ */
+
+extern "C" unsigned long vscphlp_getCANidFromVSCPevent(const vscpEvent *pEvent)
+{
+    return vscp_getCANidFromVSCPevent(pEvent);
+}
+
+/*!
+  Get CAN id from VSCP event
+  \param pEvent Pointer to VSCP event
+  \return CAN id with nickname == 0
+ */
+extern "C" unsigned long vscphlp_getCANidFromVSCPeventEx(const vscpEventEx *pEvent)
+{
+    return vscp_getCANidFromVSCPeventEx(pEvent);
+}
+
+/*!
+    \fn unsigned short vscphlp_calcCRC( vscpEvent *pEvent, short bSet )
+    \brief Calculate VSCP crc.
+ */
+
+extern "C" unsigned short vscphlp_calcCRC(vscpEvent *pEvent, short bSet)
+{
+    return vscp_vscp_calc_crc(pEvent, bSet);
+}
+
+
+/*!
+    \fn unsigned short vscp_getCrcOfGuidFromArray( const unsigned char * pGUID )
+    \brief Calculate 8-bit crc for GUID in array
+	\param Pointer to GUID array
+ 	\return 8-bit crc of GUID.
+*/
+
+extern "C" bool vscp_getCrcOfGuidFromArray( const unsigned char * pGUID )
+{
+    return vscp_calcCRC4GUIDArray( pGUID );
+}
+
+
+/*!
+    \fn bool vscp_getGuidFromString( const char * strGUID )
+    \brief Calculate 8-bit crc for GUID in array
+    \param Pointer to GUID string.
+ 	\return 8-bit crc of GUID.
+*/
+
+extern "C" bool vscp_getCrcOfGuidFromString( const char * strGUID )
+{
+    wxString wxGUID = wxString::FromAscii( strGUID );
+    return  vscp_calcCRC4GUIDString( wxGUID );
+}
+
+
+/*!
+    \fn BOOL vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+    \brief Write GUID into VSCP event from string.
+ */
+
+extern "C" BOOL vscphlp_getGuidFromString(vscpEvent *pEvent, const char * pGUID)
+{
+    wxString strGUID = wxString::FromAscii(pGUID);
+    return (vscp_getGuidFromString(pEvent, strGUID) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+    \brief Write GUID into VSCP event from string.
+ */
+
+extern "C" BOOL vscphlp_getGuidFromStringEx(vscpEventEx *pEvent, const char * pGUID)
+{
+    wxString strGUID = wxString::FromAscii(pGUID);
+    return (vscp_getGuidFromStringEx(pEvent, strGUID) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+    \brief Write GUID from string into array.
+ */
+
+extern "C" BOOL vscphlp_getGuidFromStringToArray(uint8_t *pGUID, const char * pStr)
+{
+    wxString strGUID = wxString::FromAscii(pStr);
+    return (vscp_getGuidFromStringToArray(pGUID, strGUID) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
+    \brief Write GUID froom VSCP event to string.
+ */
+
+extern "C" BOOL vscphlp_writeGuidToString(const vscpEvent *pEvent, char * pStr)
+{
+    BOOL rv;
+
+    wxString strGUID;
+    rv = (vscp_writeGuidToString(pEvent, strGUID) ? TRUE : FALSE);
+    strcpy(pStr, strGUID.ToAscii());
+    return rv;
+}
+
+extern "C" BOOL vscphlp_writeGuidToStringEx(const vscpEventEx *pEvent, char * pStr)
+{
+    BOOL rv;
+
+    wxString strGUID;
+    rv = (vscp_writeGuidToStringEx(pEvent, strGUID) ? TRUE : FALSE);
+    strcpy(pStr, strGUID.ToAscii());
+    return rv;
+}
+
+/*!
+    \fn BOOL vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                            wxString& strGUID )
+    \brief Write GUID from VSCP event to string with four bytes on each
+    row seperated by \r\n. 
+ */
+
+extern "C" BOOL vscphlp_writeGuidToString4Rows(const vscpEvent *pEvent,
+        wxString& strGUID)
+{
+    return (vscp_writeGuidToString4Rows(pEvent, strGUID) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                            wxString& strGUID )
+    \brief Write GUID from VSCP event to string with four bytes on each
+    row seperated by \r\n. 
+ */
+
+extern "C" BOOL vscphlp_writeGuidToString4RowsEx(const vscpEventEx *pEvent,
+        wxString& strGUID)
+{
+    return (vscp_writeGuidToString4RowsEx(pEvent, strGUID) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
+                                            wxString& strGUID )
+    \brief Write GUID from byte array to string.
+ */
+
+extern "C" BOOL vscphlp_writeGuidArrayToString(const unsigned char * pGUID,
+        wxString& strGUID)
+{
+    return (vscp_writeGuidArrayToString(pGUID, strGUID) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_isGUIDEmpty( unsigned char *pGUID )
+    \brief Check if GUID is empty (all nills).
+ */
+
+extern "C" BOOL vscphlp_isGUIDEmpty(unsigned char *pGUID)
+{
+    return (vscp_isGUIDEmpty(pGUID) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_isSameGUID( const unsigned char *pGUID1, 
+                                const unsigned char *pGUID2 )
+    \brief Check if two GUID's is equal to each other.
+ */
+
+extern "C" BOOL vscphlp_isSameGUID(const unsigned char *pGUID1,
+        const unsigned char *pGUID2)
+{
+    return (vscp_isSameGUID(pGUID1, pGUID2) ? TRUE : FALSE);
+}
+
+/*!
+    Recerse GUID
+    \param pGUID Pointer to GUID to reverse.
+    \return true if OK.
+ */
+extern "C" BOOL vscphlp_reverseGUID(unsigned char *pGUID)
+{
+    return (vscp_reverseGUID(pGUID) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx, 
+                                    const vscpEvent *pEvent )
+    \brief Convert VSCP standard event form to ex. form.
+ */
+
+extern "C" BOOL vscphlp_convertVSCPtoEx(vscpEventEx *pEventEx,
+        const vscpEvent *pEvent)
+{
+    return (vscp_convertVSCPtoEx(pEventEx, pEvent) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_convertVSCPfromEx( vscpEvent *pEvent, 
+                                        const vscpEventEx *pEventEx )
+    \brief Convert VSCP ex. event form to standard form.
+ */
+
+extern "C" BOOL vscphlp_convertVSCPfromEx(vscpEvent *pEvent,
+        const vscpEventEx *pEventEx)
+{
+    return (vscp_convertVSCPfromEx(pEvent, pEventEx) ? TRUE : FALSE);
+}
+
+/*!
+    \fn void vscphlp_deleteVSCPevent( vscpEvent *pEvent )
+    \brief Delete VSCP event.
+ */
+
+extern "C" void vscphlp_deleteVSCPevent(vscpEvent *pEvent)
+{
+    vscp_deleteVSCPevent(pEvent);
+}
+
+/*!
+    \fn void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )
+    \brief Delete VSCP event ex.
+ */
+
+extern "C" void vscphlp_deleteVSCPeventEx(vscpEventEx *pEventEx)
+{
+    vscp_deleteVSCPeventEx(pEventEx);
+}
+
+/*!
+    \fn void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
+    \brief Clear VSCP filter.
+ */
+
+extern "C" void vscphlp_clearVSCPFilter(vscpEventFilter *pFilter)
+{
+    vscp_clearVSCPFilter(pFilter);
+}
+
+/*!
+    \fn BOOL vscphlp_doLevel2Filter( const vscpEvent *pEvent,
+                                    const vscpEventFilter *pFilter )
+    \brief Check VSCP filter condition.
+ */
+
+extern "C" BOOL vscphlp_doLevel2Filter(const vscpEvent *pEvent,
+        const vscpEventFilter *pFilter)
+{
+    return (vscp_doLevel2Filter(pEvent, pFilter) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_doLevel2Filter( const vscpEvent *pEvent,
+                                    const vscpEventFilter *pFilter )
+    \brief Check VSCP filter condition.
+ */
+
+extern "C" BOOL vscphlp_doLevel2FilterEx(const vscpEventEx *pEvent,
+        const vscpEventFilter *pFilter)
+{
+    return (vscp_doLevel2FilterEx(pEvent, pFilter) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL readFilterFromString( vscpEventFilter *pFilter, wxString& strFilter )
+    \brief Read a filter from a string
+    \param pFilter Filter structure to write filter to.
+    \param strFilter Filter in string form 
+                filter-priority, filter-class, filter-type, filter-GUID
+    \return true on success, false on failure.
+ */
+
+extern "C" BOOL vscphlp_readFilterFromString(vscpEventFilter *pFilter, wxString& strFilter)
+{
+    return (vscp_readFilterFromString(pFilter, strFilter) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL readMaskFromString( vscpEventFilter *pFilter, wxString& strMask )
+    \brief Read a mask from a string
+    \param pFilter Filter structure to write mask to.
+    \param strMask Mask in string form 
+                mask-priority, mask-class, mask-type, mask-GUID
+    \return true on success, fals eon failure.
+ */
+
+extern "C" BOOL vscphlp_readMaskFromString(vscpEventFilter *pFilter, wxString& strMask)
+{
+    return (vscp_readMaskFromString(pFilter, strMask) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_convertCanalToEvent( vscpEvent *pvscpEvent,
+                                            const canalMsg *pcanalMsg,
+                                            unsigned char *pGUID,
+                                            BOOL bCAN )
+    \brief Convert CANAL message to VSCP event.
+ */
+
+extern "C" BOOL vscphlp_convertCanalToEvent(vscpEvent *pvscpEvent,
+        const canalMsg *pcanalMsg,
+        unsigned char *pGUID,
+        BOOL bCAN)
+{
+    return vscp_convertCanalToEvent(pvscpEvent,
+            pcanalMsg,
+            pGUID,
+            (bCAN ? true : false));
+}
+
+/*!
+    \fn BOOL vscphlp_convertCanalToEventEx( vscpEventEx *pvscpEvent,
+                                            const canalMsg *pcanalMsg,
+                                            unsigned char *pGUID,
+                                            BOOL bCAN )
+    \brief Convert CANAL message to VSCP event.
+ */
+
+extern "C" BOOL vscphlp_convertCanalToEventEx(vscpEventEx *pvscpEvent,
+        const canalMsg *pcanalMsg,
+        unsigned char *pGUID,
+        BOOL bCAN)
+{
+    return vscp_convertCanalToEventEx(pvscpEvent,
+            pcanalMsg,
+            pGUID,
+            (bCAN ? true : false));
+}
+
+/*!
+    \fn BOOL vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
+                                        const vscpEvent *pvscpEvent )
+    \brief Convert VSCP event to CANAL message.
+ */
+
+extern "C" BOOL vscphlp_convertEventToCanal(canalMsg *pcanalMsg,
+        const vscpEvent *pvscpEvent)
+{
+    return (vscp_convertEventToCanal(pcanalMsg, pvscpEvent) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
+                                            const vscpEventEx *pvscpEventEx )
+    \brief Convert VSCP event ex. to CANAL message.
+ */
+
+extern "C" BOOL vscphlp_convertEventExToCanal(canalMsg *pcanalMsg,
+        const vscpEventEx *pvscpEventEx)
+{
+    return (vscp_convertEventExToCanal(pcanalMsg, pvscpEventEx) ? TRUE : FALSE);
+}
+
+/*!
+    \fn unsigned long vscphlp_getTimeStamp( void )
+    \brief Get VSCP timestamp.
+ */
+
+extern "C" unsigned long vscphlp_getTimeStamp(void)
+{
+    return vscp_makeTimeStamp();
+}
+
+/*!
+    \fn BOOL vscphlp_copyVSCPEvent( vscpEvent *pEventTo, 
+                                    const vscpEvent *pEventFrom )
+    \brief Copy VSCP event.
+ */
+
+extern "C" BOOL vscphlp_copyVSCPEvent(vscpEvent *pEventTo,
+        const vscpEvent *pEventFrom)
+{
+    return (vscp_copyVSCPEvent(pEventTo, pEventFrom) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
+                                            wxString& str, 
+                                            BOOL bUseHtmlBreak )
+    \brief Write VSCP data in readable form to a (multiline) string.
+ */
+
+extern "C" BOOL vscphlp_writeVscpDataToString(const vscpEvent *pEvent,
+        wxString& str,
+        BOOL bUseHtmlBreak)
+{
+    return (vscp_writeVscpDataToString(pEvent,
+            str,
+            (bUseHtmlBreak ? true : false)) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_getVscpDataFromString( vscpEvent *pEvent, 
+                                            const wxString& str )
+    \brief Set data in VSCP event from a string.
+ */
+extern "C" BOOL vscphlp_getVscpDataFromString(vscpEvent *pEvent,
+        const wxString& str)
+{
+    return (vscp_getVscpDataFromString(pEvent, str) ? TRUE : FALSE);
+}
+
+/*!
+    \fn BOOL vscphlp_writeVscpEventToString( vscpEvent *pEvent, 
+                                            char *p )
+    \brief Write VSCP data to a string.
+ */
+
+extern "C" BOOL vscphlp_writeVscpEventToString(vscpEvent *pEvent,
+        char *p)
+{
+    BOOL rv;
+
+    wxString str = wxString::FromAscii(p);
+    if ((rv = (vscp_writeVscpEventToString(pEvent, str) ? TRUE : FALSE))) {
+        strcpy(p, str.ToAscii());
+    }
+
+    return rv;
+}
+
+/*!
+    \fn BOOL vscphlp_getVscpEventFromString( vscpEvent *pEvent, 
+                                            const char *p )
+    \brief Get VSCP event from string.
+ */
+
+extern "C" BOOL vscphlp_getVscpEventFromString(vscpEvent *pEvent,
+        const char *p)
+{
+    wxString str = wxString::FromAscii(p);
+    return (vscp_getVscpEventFromString(pEvent, str) ? TRUE : FALSE);
+}
+
+/*!
+  Write VSCP data to string
+  \param sizeData Number of databytes.
+  \param pData Pointer to datastructure.
+   \param str String that receive result.
+  \param bUseHtmlBreak Set to true to use <br> instead of \\n as
+  line break 
+  \return True on success false on failure.
+ */
+extern "C" BOOL vscphlp_writeVscpDataWithSizeToString(const uint16_t sizeData,
+        const unsigned char *pData,
+        char *pstr,
+        BOOL bUseHtmlBreak)
+{
+    wxString wxstr = wxString::FromAscii(pstr);
+    return vscp_writeVscpDataWithSizeToString(sizeData,
+            pData,
+            wxstr,
+            (bUseHtmlBreak ? true : false));
+}
+
+
