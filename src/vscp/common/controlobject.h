@@ -293,13 +293,6 @@ public:
      */
     bool saveConfiguration(void);
 
-	
-	/*!
-		Read in mime types
-		@param path path to XML file holding mime types
-		@return Returns true on success false on failure.
-	 */
-	bool readMimeTypes(wxString& path);
 
     /*!
         send level II message to all clients
@@ -518,17 +511,54 @@ public:
      */
     wxString m_driverPassword;
 
+
     //*****************************************************
     //            websocket/webserver interface
     //*****************************************************
 
+    // Enable/disable full webserver
+    bool m_bWebServer;
+
 	struct mg_server *m_pwebserver;
 
-	/// Path to file holding mime types
-    wxString m_pathToMimeTypeFile;
+	/// Extra mime types on the form "extension1=type1,extension2=type2,..."
+    wxString m_extraMimeTypes;
 	
-    // Path to filesystem root
-    wxString m_pathRoot;
+    // Path to web root
+    wxString m_pathWebRoot;
+
+    // Domain for webserver and other net services
+	wxString m_authDomain;
+
+    // webserver port as port "8080" or address + port "127.0.0.1:8080"
+    // If only port will bind to all interfaces,
+    wxString m_portWebServer;	// defaults to "8080"
+
+    // Path to SSL certificate
+    wxString m_pathCert;
+
+    // CGI interpreter to use
+    wxString m_cgiInterpreter;
+
+    // CGI Pattern
+    wxString m_cgiPattern;
+
+    // Enable directory listing
+    bool bEnableDirectoryListing;
+
+    // Hide file pattern
+    wxString m_hideFilePatterns;
+
+    // Index files
+    wxString m_indexFiles;
+
+    // URL rewrites
+    wxString m_urlRewrites;
+
+    // Run as user
+    wxString m_runAsUser;
+
+    // * * Websockets * *
 
     // Enable disable web socket interface
     bool m_bWebSockets;
@@ -536,30 +566,6 @@ public:
 	// websocket authentivcation is needed  (if true)
 	bool m_bAuthWebsockets;
 	
-	// Domain for webserver and other net services
-	wxString m_authDomain;
-
-    // webserver port 
-    unsigned short m_portWebServer;	// defaults to 8080
-	
-	// Enable/disable full webserver
-    bool m_bWebServer;
-	
-	// Hash table with mime types, gives mime type from
-	// file extension.
-	HashString m_hashMimeTypes;
-
-
-    //*****************************************************
-    //                     Security
-    //*****************************************************
-
-    // Path to SSL certificate
-    wxString m_pathCert;
-
-    // Path to SSL key
-    wxString m_pathKey;
-
 
     //*****************************************************
     //                      Lists

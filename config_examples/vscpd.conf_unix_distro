@@ -44,7 +44,7 @@
         <!-- between them.                                                -->
         <!-- Documented in specification 14.4.1                           -->
 
-        <tcpip enable="true" interface="9598"/>
+        <tcpip enable="true" interface="9598" />
 		
 		<!-- It is possible to enable/disable the UDP interface           -->
         <!-- You can open UDP interfaces on several ports or on           -->
@@ -104,8 +104,20 @@
         <!-- Set the port to use for the webserver interface  -->
         <!-- default is 8080.                                 -->
         <!-- Documented in specification 14.4.1               -->
-        <webserver enable="true" port="8080">
-        
+        <webserver enable="true" 
+                    webrootpath="/srv/vscp/www"
+                    path_cert=""
+                    authdomain="mydomain.com"
+                    cgi_interpreter=""
+                    cgi_pattern="**.cgi$|**.pl$|**.php|**.py"
+                    enable_directory_listing="true"
+                    hilde_file_patterns="secret.txt|even_more_secret.txt"
+                    index_files="index.html,index.htm,index.cgi,index.shtml,index.php"
+                    extra_mime_types=".cpp=plain/text,.java=plain/text"
+                    url_rewrites=""
+                    run_as_user=""
+                    port="8080">
+         
             <!-- Path to server web root file system              -->
             <!-- Server should have read access to this location  -->
             <!-- and it is used both fopr websockets and for      -->
@@ -133,10 +145,6 @@
             <!-- Documented in specification 14.4.1                         -->
         
             <websockets enable="true" auth="true" />
-        
-            <!-- Path to file holding mime types                  -->
-            <!-- Documented in specification 14.4.1               -->
-            <pathtomimetypes>/etc/vscp/mimetypes.xml</pathtomimetypes>
         
         </webserver>    
         

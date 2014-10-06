@@ -200,7 +200,7 @@ extern "C" long vscphlp_gethandle(void)
             methods that talk to the VSCP daemon TCP/IP interface.
     \return The handle for the TCP/IP server object or
             zero if the initialisation failed. 
- */
+*/
 
 extern "C" void vscphlp_releasehandle(long handle)
 {

@@ -268,16 +268,15 @@ CControlObject::CControlObject()
     m_bWebSockets = true;		// websocket interface ia active
 	m_bAuthWebsockets = true;	// Authentication is needed
     m_pathCert.Empty();
-    m_pathKey.Empty();
     
     // Webserver interface
-    m_portWebServer = 8080;
+    m_portWebServer = _("8080");
     m_bWebServer = true;
 
 #ifdef WIN32
-	m_pathRoot = _("/programdata/vscp/www");
+	m_pathWebRoot = _("/programdata/vscp/www");
 #else
-	m_pathRoot = _("/srv/vscp/www");
+	m_pathWebRoot = _("/srv/vscp/www");
 #endif
 
     // Set control object
@@ -534,11 +533,6 @@ bool CControlObject::init(wxString& strcfgfile)
         return FALSE;
     }
     
-    // Read mime types
-    if (!readMimeTypes(m_pathToMimeTypeFile)) {
-        logMsg(_("Unable to open/parse mime type file.\n"), DAEMON_LOGMSG_CRITICAL);
-        logMsg(_("Path = .") + m_pathToMimeTypeFile + _("\n"), DAEMON_LOGMSG_CRITICAL);
-    }
     
     str.Printf(_("Log Level=%d\n"), m_logLevel, DAEMON_LOGMSG_EMERGENCY );       
     logMsg(str);
@@ -1758,9 +1752,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 } else if (subchild->GetName() == wxT("vscp")) {
                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                   
-                    if (property.IsSameAs(_("false"), false)) {
+                    if (attribute.IsSameAs(_("false"), false)) {
                         m_bVSCPDaemon = false;
                     }
                 } 
@@ -1775,43 +1769,87 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }  
 				else if (subchild->GetName() == wxT("webserver")) {
                    
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
                    
-                    if (property.IsSameAs(_("false"), false)) {
+                    if (attribute.IsSameAs(_("false"), false)) {
                         m_bWebServer = false;
                     }
                   
-                    property = subchild->GetAttribute(wxT("port"), wxT("8080"));
-                  
-                    if (property.IsNumber()) {
-                        m_portWebServer = vscp_readStringValue(property);
+                    attribute = subchild->GetAttribute(wxT("port"), wxT("8080"));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        m_portWebServer = attribute;
                     }
+
+                    m_extraMimeTypes = subchild->GetAttribute(wxT("extra_mime_types"), wxT(""));
+                    m_extraMimeTypes.Trim();
+                    m_extraMimeTypes.Trim(false);
+
+                    attribute = subchild->GetAttribute(wxT("webrootpath"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        m_pathWebRoot = attribute;
+                    }
+
+                    attribute = subchild->GetAttribute(wxT("authdoamin"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    if ( attribute.Length() ) {
+                        m_authDomain = attribute;
+                    }
+
+                    attribute = subchild->GetAttribute(wxT("pathcert"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    m_pathCert = attribute;
+
+                    attribute = subchild->GetAttribute(wxT("cgi_interpreter"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    m_cgiInterpreter = attribute;
+
+                    attribute = subchild->GetAttribute(wxT("cgi_pattern"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    m_cgiPattern = attribute;
+
+                    bEnableDirectoryListing = true;
+                    attribute = subchild->GetAttribute(wxT("enable_directory_listing"), wxT("true"));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    attribute.MakeUpper();
+                    if ( attribute.IsSameAs(_("FALSE"), false ) ) {
+                        bEnableDirectoryListing = false;    
+                    }
+
+                    attribute = subchild->GetAttribute(wxT("hilde_file_patterns"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    m_hideFilePatterns = attribute;
+                    
+                    attribute = subchild->GetAttribute(wxT("index_files"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    m_indexFiles = attribute;
+
+                    attribute = subchild->GetAttribute(wxT("url_rewrites"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    m_urlRewrites = attribute;
+
+                    attribute = subchild->GetAttribute(wxT("run_as_user"), wxT(""));
+                    attribute.Trim();
+                    attribute.Trim(false);
+                    m_runAsUser = attribute;
+
 
                     // Get webserver sub components
                     wxXmlNode *subsubchild = subchild->GetChildren();
                     while (subsubchild) {
                     
-                        if (subsubchild->GetName() == wxT("webrootpath")) {
-                            CControlObject::m_pathRoot = subsubchild->GetNodeContent();
-                            CControlObject::m_pathRoot.Trim();
-                            CControlObject::m_pathRoot.Trim(false); 
-				        }
-                        else if (subsubchild->GetName() == wxT("authdoamin")) {
-                            CControlObject::m_authDomain = subsubchild->GetNodeContent();
-                            CControlObject::m_authDomain.Trim();
-                            CControlObject::m_authDomain.Trim(false);
-                        } 
-				        else if (subsubchild->GetName() == wxT("pathcert")) {
-                            m_pathCert = subsubchild->GetNodeContent();
-                            m_pathCert.Trim();
-                            m_pathCert.Trim(false);
-                        } 
-				        else if (subsubchild->GetName() == wxT("pathkey")) {
-                            m_pathKey = subsubchild->GetNodeContent();
-                            m_pathKey.Trim();
-                            m_pathKey.Trim(false);
-                        }
-                        else if (subsubchild->GetName() == wxT("websockets")) {
+                        if (subsubchild->GetName() == wxT("websockets")) {
                    
                             wxString property = subsubchild->GetAttribute(wxT("enable"), wxT("true"));
                    
@@ -1825,26 +1863,6 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                                  m_bAuthWebsockets = false;
                             }
 
-                        } 
-                        else if (subsubchild->GetName() == wxT("pathtomimetypes")) {
-                            m_pathToMimeTypeFile = subsubchild->GetNodeContent();
-                            m_pathToMimeTypeFile.Trim();
-                            m_pathToMimeTypeFile.Trim(false);
-                        }
-                        else if (subsubchild->GetName() == wxT("authdoamin")) {
-                            CControlObject::m_authDomain = subsubchild->GetNodeContent();
-                            CControlObject::m_authDomain.Trim();
-                            CControlObject::m_authDomain.Trim(false);
-                        } 
-				        else if (subsubchild->GetName() == wxT("pathcert")) {
-                            m_pathCert = subsubchild->GetNodeContent();
-                            m_pathCert.Trim();
-                            m_pathCert.Trim(false);
-                        } 
-				        else if (subsubchild->GetName() == wxT("pathkey")) {
-                            m_pathKey = subsubchild->GetNodeContent();
-                            m_pathKey.Trim();
-                            m_pathKey.Trim(false);
                         } 
 
                         subsubchild = subsubchild->GetNext();
@@ -2394,46 +2412,6 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 
 
-
-///////////////////////////////////////////////////////////////////////////////
-// readMimeTypes
-//
-// Read the Mime Types XML file 
-//
-
-bool CControlObject::readMimeTypes(wxString& path)
-{
-    //unsigned long val;
-    wxXmlDocument doc;
-    if (!doc.Load(path)) {
-        return false;
-    }
-
-    // start processing the XML file
-    if (doc.GetRoot()->GetName() != wxT("mimetypes")) {
-        return false;
-    }
-
-    wxXmlNode *child = doc.GetRoot()->GetChildren();
-    while (child) {  
-        
-        if (child->GetName() == wxT("mimetype")) {
-           
-            wxString strEnable = child->GetAttribute(wxT("enable"), wxT("false"));         
-            wxString strExt = child->GetAttribute(wxT("extension"), wxT(""));         
-            wxString strType = child->GetAttribute(wxT("mime"), wxT(""));
-         
-            if ( strEnable.IsSameAs(_("true"),false )) {
-                m_hashMimeTypes[strExt] = strType;
-            }
-        }
-        
-        child = child->GetNext();
-
-    }
-    
-    return true;
-}
 
 
 

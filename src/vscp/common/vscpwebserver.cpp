@@ -221,20 +221,102 @@ void *VSCPWebServerThread::Entry()
 	m_pCtrlObject->m_pwebserver = mg_create_server( m_pCtrlObject, VSCPWebServerThread::websrv_event_handler );
 		
 	// Set options
+
+    // Serve current directory
 	mg_set_option( m_pCtrlObject->m_pwebserver, 
 						"document_root", 
-						m_pCtrlObject->m_pathRoot.mb_str( wxConvUTF8 ) );		// Serve current directory
-	wxString str = wxString::Format(  _("%i"), m_pCtrlObject->m_portWebServer );
-	mg_set_option( m_pCtrlObject->m_pwebserver, 
-						"listening_port", 
-						"8080" );					                            // Open web server port
-	mg_set_option( m_pCtrlObject->m_pwebserver, 
-						"auth_domain", 
-						m_pCtrlObject->m_authDomain.mb_str( wxConvUTF8 ) );
-	mg_set_option( m_pCtrlObject->m_pwebserver, 
-						"ssl_certificate", 
-						m_pCtrlObject->m_pathCert.mb_str( wxConvUTF8 ) );		// SSL certificat
-		
+						m_pCtrlObject->m_pathWebRoot.mb_str( wxConvUTF8 ) );		
+
+    // Web server port(s)
+    if ( m_pCtrlObject->m_authDomain.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"listening_port", 
+			    			m_pCtrlObject->m_authDomain.mb_str( wxConvUTF8 ) );			
+    }
+
+    // auth domain
+    if ( m_pCtrlObject->m_portWebServer.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+						    "auth_domain", 
+						    m_pCtrlObject->m_portWebServer.mb_str( wxConvUTF8 ) );
+    }
+
+    // SSL certificat
+    if ( m_pCtrlObject->m_pathCert.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+						    "ssl_certificate", 
+						    m_pCtrlObject->m_pathCert.mb_str( wxConvUTF8 ) );
+    }
+
+    // Extra mime types
+    if ( m_pCtrlObject->m_extraMimeTypes.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"extra_mime_types", 
+			    			m_pCtrlObject->m_extraMimeTypes.mb_str( wxConvUTF8 ) );
+    }
+
+    // Path to SSL cert
+    if ( m_pCtrlObject->m_pathCert.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"ssl_certificate", 
+			    			m_pCtrlObject->m_pathCert.mb_str( wxConvUTF8 ) );
+    }
+
+    // CGI interpreter to use
+    if ( m_pCtrlObject->m_cgiInterpreter.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"cgi_interpreter", 
+			    			m_pCtrlObject->m_cgiInterpreter.mb_str( wxConvUTF8 ) );
+    }
+
+    // Path to SSL cert
+    if ( m_pCtrlObject->m_cgiPattern.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"cgi_pattern", 
+			    			m_pCtrlObject->m_cgiPattern.mb_str( wxConvUTF8 ) );
+    }
+	
+    if ( !m_pCtrlObject->bEnableDirectoryListing ) {
+        mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"enable_directory_listing", 
+			    			"no" );
+    }
+
+    // Hide file patterns
+    if ( m_pCtrlObject->m_hideFilePatterns.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"hide_files_patterns", 
+			    			m_pCtrlObject->m_hideFilePatterns.mb_str( wxConvUTF8 ) );
+    }
+
+    // Index files
+    if ( m_pCtrlObject->m_indexFiles.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"index_files", 
+			    			m_pCtrlObject->m_indexFiles.mb_str( wxConvUTF8 ) );
+    }
+
+
+    // Index files
+    if ( m_pCtrlObject->m_indexFiles.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"index_files", 
+			    			m_pCtrlObject->m_indexFiles.mb_str( wxConvUTF8 ) );
+    }
+
+    // URL Rewrites
+    if ( m_pCtrlObject->m_urlRewrites.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"url_rewrites", 
+			    			m_pCtrlObject->m_urlRewrites.mb_str( wxConvUTF8 ) );
+    }
+
+    // Index files
+    if ( m_pCtrlObject->m_runAsUser.Length() ) {
+	    mg_set_option( m_pCtrlObject->m_pwebserver, 
+		    				"run_as_user", 
+			    			m_pCtrlObject->m_runAsUser.mb_str( wxConvUTF8 ) );
+    }
 
 	while ( !TestDestroy() && !m_bQuit ) {
 	
