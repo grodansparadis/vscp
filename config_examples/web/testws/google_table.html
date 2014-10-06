@@ -1,0 +1,88 @@
+<html>
+  <head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+    <title>VSCP Google Charts demo</title>
+    <script type="text/javascript" src="settings.js"></script>
+    <script src="../lib/md5.js"></script>
+    <script type="text/javascript" src="../lib/vscpwslib.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+        google.load("visualization", "1", {packages:["table"]});
+        google.setOnLoadCallback(drawTable);
+
+        function drawTable() {
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Date');
+            data.addColumn('number', 'Sensor idx');
+            data.addColumn('number', 'Temperature');
+
+            var table = new google.visualization.Table(document.getElementById('table_div'));
+
+            var eventReceived = function( vscphead,
+                                        vscpclass,
+                                        vscptype,
+                                        vscpobid,
+                                        vscptimestamp,
+                                        vscpguid,
+                                        vscpdata) 
+            {
+                if ((VSCP_CLASS1_MEASUREMENT == vscpclass) &&
+                    (VSCP_TYPE_MEASUREMENT_TEMPERATURE == vscptype)) {
+                
+                    var value;
+                    
+                    // This event is for us
+                    value = 
+                        vscpws_toFixed(vscpws_measurementClass10Decode(vscpdata), 1);
+            
+                    // Should be a Celsius value
+                    switch(vscpws_getDatacoding(vscpdata[0])) {
+                        case 0:   // Kelvin
+                            value = vscpws_convertKelvinToCelsius(this.value);
+                            break;
+                        case 2:   // Fahrenheit
+                            value = vscpws_convertFahrenheitToCelsius(this.value);
+                            break;
+                        default:    // Do nothing (if already Celsius)
+                            break;
+                    }
+                    
+                    var d = new Date();
+      
+                    data.addRows([
+                        [ d.toISOString(), vscpws_getSensorIndexFromDataCoding(vscpdata[0]), parseFloat(value)]
+                    ]);
+                    table.draw( data, {showRowNumber: true});
+                }       
+            
+                return;
+            }
+            
+            var vscpeventCtrl = new vscpws_Event( vscp_setting_user,
+                                            vscp_setting_passwordhash,
+                                            vscp_setting_url,
+                                            null,
+                                            eventReceived );
+                                            
+                                            
+        }
+    </script>
+  </head>
+  <body>
+    <h1>VSCP HTML5 websocket Google Charts Table demo</h1>
+    <a href="index.html">Go back to main page</a>
+    <br>
+    <p>
+    This demo uses the Table from Google charts to display dynamic temperature measurement values in degrees Celsius. It displays 
+    all CLASS1.MEASUREMENT, Type=6/Temperature values that comes from any sensor of that device. That is not just sensoridx=2 aside
+    the other demo do.
+    </p>
+    <p>
+    The <a href="event.html">event.html</a> sample can be used to set temperature values if you don't have live hardware.
+    </p>
+    <br><br>
+    <h4>Demo</h4>
+    <hr>
+    <div id="table_div" style="width: 600px; height: 420px;"></div>  <!-- dimensions is not needed -->
+  </body>
+</html>

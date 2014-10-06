@@ -1,0 +1,182 @@
+/*
+  Author = Dinesh Guleria
+  VSCP Developer
+  Date : 27-3-2014
+*/
+
+body, html {
+    width:100%;
+    height:100%;
+    margin:0;
+    padding:0;
+    position:relative;
+    background-color:#DDDFED;
+}
+.input {
+    display: inline-block;
+    padding: 0 2px;
+}
+.input input {
+    display: block;
+}
+.imgtxt {
+    margin: 0;
+    font-family:arial;
+    color:#DDDFED;
+    font-size:15px;
+}
+.imgtxt_center {
+    margin: 0;
+    font-family:arial;
+    color:#DDDFED;
+    font-size:15px;
+    padding-top : 20px;
+    padding-right : 100px;
+    float:right;
+}
+
+.imgtxt_scrollmenu {
+    margin: 0;
+    font-family:arial;
+    color:#DDDFED;
+    font-size:15px;
+    padding-top : 20px;
+    padding-right : 10px;
+    float:right;
+}
+
+.hr_scrollable {
+    border-color:#DDDFED;
+    background-color:#DDDFED;
+    align : left;
+    width : 80px;
+    size : 40px;
+    height: 2px;
+}
+
+.image_scrollable {
+    width:80px;
+    height:48px;
+}
+
+.spantxt_center {
+    color:#DDDFED;
+}
+
+.spantxt_button_center {
+    color:#DDDFED;
+    padding-left:20px;
+}
+
+input.image_menu_center_first {
+    width : 80px;
+    height : 48px;
+    hspace : 30px;
+    padding-left: 10px;
+}
+
+input.image_menu_center_first_sec {
+    width : 80px;
+    height : 48px;
+    hspace : 30px;
+    padding-left: 20px;
+}
+
+input.image_menu_center_second {
+    width : 80px;
+    height : 48px;
+    hspace : 10px;
+    vspace : 25px;
+    padding-left: 10px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+input.image_menu_center_second_sec {
+    width : 80px;
+    height : 48px;
+    hspace : 10px;
+    vspace : 25px;
+    padding-left: 20px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+
+
+#images {
+    background-color:#888686;
+    white-space:nowrap;
+}
+div.scrollable {
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    padding-left: 4px;
+    padding-top: 20px;
+    box-sizing:border-box;
+}
+
+div.scrollableMenu {
+    margin: 0;
+    padding: 0;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-left: 4px;
+    padding-top: 20px;
+    box-sizing:border-box;
+}
+
+div.scrollableCenter {
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    padding-left: 4px;
+    padding-top: 20px;
+    box-sizing:border-box;
+}
+
+
+::-webkit-scrollbar-track {
+      background-color: #DDDFED;
+      border-radius: 20px;
+
+}
+
+::-webkit-scrollbar {
+    background-color: #DDDFED;
+    width: 10px;
+    height: 10px;
+} 
+ 
+::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+      background-color: #CCC9DA;
+}
+
+
+#Menu {
+    background-color:#292B3B;
+    position:absolute;
+    top:115px;
+    bottom:20px;
+    left:0;
+    width:250px;
+}
+#center {
+    background-color:#292B3B;
+    position:absolute;
+    top:115px;
+    left:250px;
+    right:0px;
+    bottom:20px;
+}
+#fotter {
+    background-color:#CC99FF;
+    text-align:center;
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+}

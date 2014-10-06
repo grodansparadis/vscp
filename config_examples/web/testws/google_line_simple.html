@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+    <title>VSCP Google Charts demo</title>
+    <script type="text/javascript" src="settings.js"></script>
+    <script src="../lib/md5.js"></script>
+    <script type="text/javascript" src="../lib/vscpwslib.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Date', 'Temperature'],
+          ['2014-09-12', 50 ]
+        ]);
+
+        var options = {
+          title: 'Temperature Diagram'
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+        
+        var eventReceived = function( vscphead,
+                                        vscpclass,
+                                        vscptype,
+                                        vscpobid,
+                                        vscptimestamp,
+                                        vscpguid,
+                                        vscpdata) 
+            {
+                if ((VSCP_CLASS1_MEASUREMENT == vscpclass) &&
+                    (VSCP_TYPE_MEASUREMENT_TEMPERATURE == vscptype)) {
+                
+                    var value;
+                    
+                    // This event is for us
+                    value = 
+                        vscpws_toFixed(vscpws_measurementClass10Decode(vscpdata), 1);
+            
+                    // Should be a Celsius value
+                    switch(vscpws_getDatacoding(vscpdata[0])) {
+                        case 0:   // Kelvin
+                            value = vscpws_convertKelvinToCelsius(this.value);
+                            break;
+                        case 2:   // Fahrenheit
+                            value = vscpws_convertFahrenheitToCelsius(this.value);
+                            break;
+                        default:    // Do nothing (if already Celsius)
+                            break;
+                    }
+                    
+                    var d = new Date();
+      
+                    data.addRows([
+                        [ d.toISOString(), parseFloat(value) ]
+                    ]);
+                    
+                    chart.draw(data, options);
+                }       
+            
+                return;
+            }
+            
+            var vscpeventCtrl = new vscpws_Event( vscp_setting_user,
+                                            vscp_setting_passwordhash,
+                                            vscp_setting_url,
+                                            null,
+                                            eventReceived );
+        
+      }
+    </script>
+  </head>
+  <body>
+    <div id="chart_div" style="width: 900px; height: 500px;"></div>
+  </body>
+</html>

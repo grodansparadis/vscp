@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<title>VSCP vscpws_stateButton demo</title>
+<!--
+<link rel="stylesheet" type="text/css" href="../css/vscpdemo.css" />
+-->
+<script type="text/javascript" src="settings.js"></script>
+<script src="../lib/md5.js"></script>
+<script type="text/javascript" src="../lib/vscpwslib.js"></script>
+</head>
+
+<body>
+<h1>VSCP HTML5 websocket vscpws_stateButton demo</h1>
+<a href="index.html">Go back to main page</a>
+<br>
+<p>
+On this page we have a canvas background which can be any picture and on top of it we have three
+StateButton widgets. The upper button change it's state by itself when it is clicked. All of
+the buttons send <strong>CLASS1.CONTROL, Type=5/TurnOn</strong> event when they are inactive and 
+<strong>CLASS1.CONTROL, Type=6/TurnOff event</strong>. As the upper button just toggles its state 
+it will alternate between the two events without waiting for any confirmation on if the device it
+wants to control actually is turned on or off.</p>
+<p>
+The lower two buttons on the other hand expect a reply with <strong>CLASS1.INFORMATION, Type=3/On</strong>
+when they send the TurnOn event and <strong>CLASS1.INFORMATION, Type=4/Off</strong> when they send
+the TurnOff events to change there state. If the reply is not received the button will not change it's 
+state.
+</p>
+<p>
+You can use the <a href="event.html" target="new">event.html</a> demo to send the expected replies.
+</p>
+
+<div id="canvasesdiv" style="position:relative; width:800px; height:670px">
+
+<canvas id="layerBackground"
+   style="z-index: 1;
+      position:absolute;
+      left:0px;
+      top:0px;" height="300px" width="400px">
+   Your browser does not support HTML5 Canvas.
+</canvas>
+
+<canvas id="layerMiddle"
+   style="z-index: 2;
+      position:absolute;
+      left:0px;
+      top:0px;" height="300px" width="400"px>
+   Your browser does not support HTML5 Canvas.
+</canvas>
+
+<canvas id="layerTop"
+   style="z-index: 3;
+      position:absolute;
+      left:0px;
+      top:0px;
+      " height="300px" width="400px">
+   Your browser does not support HTML5 Canvas.
+</canvas>
+    
+<canvas id="buttonKitchen"
+   style="z-index: 3;
+      position:absolute;
+      left:190px;
+      top:310px; 
+      " height="30px" width="22px">
+   Your browser does not support HTML5 Canvas.
+</canvas> 
+    
+<canvas id="buttonStudy"
+   style="z-index: 3;
+      position:absolute;
+      left:190px;
+      top:480px;" height="30px" width="22px">
+   Your browser does not support HTML5 Canvas.
+</canvas>  
+    
+<canvas id="buttonLivingroom1"
+   style="z-index: 3;
+      position:absolute;
+      left:290px;
+      top:430px;" height="30px" width="22px">
+   Your browser does not support HTML5 Canvas.
+</canvas>    
+    
+</div>
+
+
+<script type="text/javascript" >
+    
+    var bkgnd = new vscpws_backgroundCanvas( "bkg", 
+                            "../images/Karnvillan_plan1_800.jpg", 
+                            0, 0, 800, 670 );
+    
+	var btn1 = new vscpws_stateButton( vscp_setting_user,           // user   from settings.js
+                                        vscp_setting_passwordhash,  // password   from settings.js
+                                        vscp_setting_url,           // url 
+                                        "buttonKitchen",            // canvas for button
+                                        true,                       // Local state change
+                                        80 );                       // Button type
+    btn1.setMonitorVariable("stateButton1", 1000);                  // Update and monitor
+                                                                    // this variable also
+    
+    var btn2 = new vscpws_stateButton( vscp_setting_user,           // user   from settings.js
+                                        vscp_setting_passwordhash,  // password   from settings.js
+                                        vscp_setting_url,           // url
+                                        "buttonStudy",              // canvas for button
+                                        false,                      // No local state change
+                                        90);                        // Button type
+                                          
+    var btn3 = new vscpws_stateButton( vscp_setting_user,           // user   from settings.js
+                                        vscp_setting_passwordhash,  // password   from settings.js
+                                        vscp_setting_url,           // url
+                                        "buttonLivingroom1" );      // canvas
+	
+</script>
+
+</body>
+</html>
