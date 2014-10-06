@@ -17,7 +17,6 @@ clean:
 install:
 	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) install); done
 	lsb_release -i
-        mkdir -p /srv/vscp/logs
 	mkdir -p /srv/vscp/actions
 	mkdir -p /srv/vscp/web
 	mkdir -p /srv/vscp/logs
