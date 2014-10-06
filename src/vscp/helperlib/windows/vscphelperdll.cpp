@@ -41,7 +41,7 @@
 #include <wx/utils.h>
 
 #include "../../common/vscphelper.h"
-#include "../../common/vscptcpif.h"
+#include "../../common/vscpremotetcpif.h"
 #include "dlldrvobj.h"
 #include "vscphelperdll.h"
 

@@ -797,7 +797,7 @@ VSCPHashType *VSCPInformation::getTypeHashPointer(void)
 // getClassDescription
 //
 
-wxString& VSCPInformation::getClassDescription(int vscp_class)
+wxString& VSCPInformation::getClassDescription( int vscp_class )
 {
 	return m_hashClass[ vscp_class ];
 }
@@ -806,7 +806,7 @@ wxString& VSCPInformation::getClassDescription(int vscp_class)
 // getClassDescription
 //
 
-wxString& VSCPInformation::getTypeDescription(int vscp_class, int vscp_type)
+wxString& VSCPInformation::getTypeDescription( int vscp_class, int vscp_type )
 {
 	// Adjust for Level II mirror class of Level I events.
 	if ((vscp_class >= 0x200) && (vscp_class < 0x400)) vscp_class -= 512;
@@ -825,7 +825,7 @@ wxString& VSCPInformation::getTypeDescription(int vscp_class, int vscp_type)
 // fillClassDescriptions
 //
 
-void VSCPInformation::fillClassDescriptions(wxArrayString& strArray, 
+void VSCPInformation::fillClassDescriptions( wxArrayString& strArray, 
 												VSCPInformationFormat format)
 {
 	wxString str;
@@ -874,7 +874,7 @@ void VSCPInformation::fillClassDescriptions(wxArrayString& strArray,
 // fillTypeDescriptions
 //
 
-void VSCPInformation::fillClassDescriptions(wxControlWithItems *pctrl, 
+void VSCPInformation::fillClassDescriptions( wxControlWithItems *pctrl, 
 												VSCPInformationFormat format)
 {
 	wxString str;
@@ -930,9 +930,9 @@ void VSCPInformation::fillClassDescriptions(wxControlWithItems *pctrl,
 // fillTypeDescriptions
 //
 
-void VSCPInformation::fillTypeDescriptions(wxArrayString& strArray,
-		unsigned int vscp_class,
-		VSCPInformationFormat format)
+void VSCPInformation::fillTypeDescriptions( wxArrayString& strArray,
+		                                        unsigned int vscp_class,
+		                                        VSCPInformationFormat format)
 {
 	wxString str;
 	int idx;
@@ -985,9 +985,9 @@ void VSCPInformation::fillTypeDescriptions(wxArrayString& strArray,
 // fillTypeDescriptions
 //
 
-void VSCPInformation::fillTypeDescriptions(wxControlWithItems *pctrl,
-		unsigned int vscp_class,
-		VSCPInformationFormat format)
+void VSCPInformation::fillTypeDescriptions( wxControlWithItems *pctrl,
+		                                        unsigned int vscp_class,
+		                                        VSCPInformationFormat format)
 {
 	wxString str;
 	int idx;
