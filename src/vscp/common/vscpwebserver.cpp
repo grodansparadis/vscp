@@ -995,11 +995,15 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_SYNTAX_ERROR );
         return MG_TRUE;
     }
-
+    // ------------------------------------------------------------------------
+    //                                NOOP
+    //-------------------------------------------------------------------------
     if (0 == strTok.Find(_("NOOP"))) {
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;NOOP" );
 	}
-
+    // ------------------------------------------------------------------------
+    //                                AUTH
+    //-------------------------------------------------------------------------
 	// AUTH;user;hash
 	else if (0 == strTok.Find(_("AUTH"))) {
 		wxString strUser = tkz.GetNextToken();
@@ -1016,7 +1020,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 			pSession->bAuthenticated = false;	// Authenticated
 		}
     } 
-
+    // ------------------------------------------------------------------------
+    //                                OPEN
+    //-------------------------------------------------------------------------
 	else if (0 == strTok.Find(_("OPEN"))) {
 		// Must be authorized to do this
 		if ( !pSession->bAuthenticated ) {
@@ -1037,7 +1043,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;CLOSE" );
 		rv = MG_FALSE;
     } 
-
+    // ------------------------------------------------------------------------
+    //                                SETFILTER
+    //-------------------------------------------------------------------------
 	else if (0 == strTok.Find(_("SETFILTER"))) {
 
         unsigned char ifGUID[ 16 ];
@@ -1122,7 +1130,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;SETFILTER" );
 
     }
-    
+    // ------------------------------------------------------------------------
+    //                                CLRQUEUE
+    //-------------------------------------------------------------------------
     // Clear the event queue
     else if (0 == strTok.Find(_("CLRQUEUE"))) {
 
@@ -1170,7 +1180,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;CLRQUE" );
     } 
-
+    // ------------------------------------------------------------------------
+    //                                  WRITEVAR
+    //-------------------------------------------------------------------------
 	else if (0 == strTok.Find(_("WRITEVAR"))) {
 
 		// Must be authorized to do this
@@ -1254,8 +1266,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;WRITEVAR" );
 
     } 
-
-	else if (0 == strTok.Find(_("ADDVAR"))) {
+    // ------------------------------------------------------------------------
+    //                               CREATEVAR
+    //-------------------------------------------------------------------------
+	else if (0 == strTok.Find(_("CREATEVAR"))) {
 
         wxString name;
         wxString value;
@@ -1335,13 +1349,15 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             return MG_TRUE;
         } 
 
-        wxString resultstr = _("+;ADDVAR;");
+        wxString resultstr = _("+;CREATEVAR;");
         resultstr += name;
 
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, resultstr.mbc_str() );
         
     } 
-
+    // ------------------------------------------------------------------------
+    //                               READVAR
+    //-------------------------------------------------------------------------
 	else if (0 == strTok.Find(_("READVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1399,7 +1415,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     } 
-
+    // ------------------------------------------------------------------------
+    //                               RESETVAR
+    //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("RESETVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1450,7 +1468,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, strResult.mbc_str() );
 
     }
-
+    // ------------------------------------------------------------------------
+    //                              REMOVEVAR
+    //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("REMOVEVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1504,7 +1524,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, strResult.mbc_str() );
 
     }
-
+    // ------------------------------------------------------------------------
+    //                             LENGTHVAR
+    //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("LENGTHVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1555,7 +1577,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     }
-
+    // ------------------------------------------------------------------------
+    //                           LASTCHANGEVAR
+    //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("LASTCHANGEVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1609,7 +1633,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     }
-
+    // ------------------------------------------------------------------------
+    //                               LISTVAR
+    //-------------------------------------------------------------------------
     else if (0 == strTok.Find(_("LISTVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1680,7 +1706,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
 
     }
-
+    // ------------------------------------------------------------------------
+    //                                SAVEVAR
+    //-------------------------------------------------------------------------
 	else if (0 == strTok.Find(_("SAVEVAR"))) {
 
 		// Must be authorized to do this
