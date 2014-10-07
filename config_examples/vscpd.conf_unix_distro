@@ -13,9 +13,11 @@
     <general>
     
         <!-- Set the detail of logging you want -->
-        <!-- Documented in specification 14.4.1 -->
 
         <loglevel>debug</loglevel>
+        
+        <!-- The user to run as on Unix         -->
+        <runasuser></runasuser>
         
         <!-- General logging will be done to syslog on Unix but on       -->
         <!-- windows this path must be set to get logging saved into a   -->
@@ -60,7 +62,6 @@
 
 
         <!-- Set to true to enable VSCP high end functionality -->
-        <!-- Documented in specification 14.4.1                -->
 
         <vscp enable="true"/>
 
@@ -80,15 +81,14 @@
 
         <!-- Set to true to enable daemon variables         -->
         <!-- Set to false to disable.                       -->
-        <!-- Path to variables storage.                    -->
-        <!-- Documented in specification 14.4.1            -->
+        <!-- Path to variables storage.                     -->
 
         <variables enable="true" path="/srv/vscp/variables.xml" autosave="5" />
 
         <!-- Set GUID for daemon                               -->
         <!-- Read more about GUID's in Specification section 4 -->
         <!-- Apply for your own GUID series at guid@vscp.org   -->
-        <!-- Documented in specification 14.4.1                -->
+
         <guid>
             FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:FF:F5:00:00:00:00
         </guid>
@@ -96,14 +96,14 @@
         <!-- This is the default buffer size (number of events) for all  -->
         <!-- clients in the system. Everything from a driver to a TCP/IP -->
         <!-- user is regarded as a client. Default is 1024.              -->
-        <!-- Documented in specification 14.4.1                          -->
+
         <clientbuffersize>1024</clientbuffersize> 
 
         
         <!-- Enable disable the webserver interface.          -->
         <!-- Set the port to use for the webserver interface  -->
         <!-- default is 8080.                                 -->
-        <!-- Documented in specification 14.4.1               -->
+
         <webserver enable="true" 
                     webrootpath="/srv/vscp/www"
                     port="8080"
@@ -120,7 +120,7 @@
             
             <!-- Enable disable the websocket interface.                    -->
             <!-- Id auth is set to false not authentication will be done    -->
-            <!-- Documented in specification 14.4.1                         -->
+
         
             <websockets enable="true" auth="true" />
         
@@ -134,7 +134,7 @@
     <!-- Privilege is admin/user                                   -->
     <!-- Same information is used for accessing the daemon         -->
     <!-- through the TCP/IP interface as through the web-interface -->
-    <!-- Documented in specification 14.4.2                        -->
+
     <remoteuser> 
         <user>
             <name>admin</name>
@@ -152,7 +152,7 @@
 
     <!-- Here are settings that affect the internal VSCP functionality -->
     <!-- of the server.                                                -->
-    <!-- Documented in specification 14.4.3                            --> 
+ 
     <automation>
         <!-- zone/subzone server use    -->
         <zone>1</zone>
@@ -173,7 +173,6 @@
     </automation>
 	
     <!-- List level I/CANAL drivers here                            -->
-    <!-- Documented in specification 14.4.4                         -->
 
     <leve1driver enable="true" > 
 
@@ -207,7 +206,6 @@
     </leve1driver>
 
 	<!-- List level II VSCP drivers here                            -->
-    <!-- Documented in specification 14.4.5                         -->
 
     <level2driver enable="true">	 	
 

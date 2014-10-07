@@ -494,6 +494,19 @@ bool CControlObject::init(wxString& strcfgfile)
         return FALSE;
     }
 
+#ifndef WIN32
+    if ( runAsUser.Length() ) { 
+        struct passwd *pw;
+        if ((pw = getpwnam(runAsUser.mbc_str())) == NULL) {
+            logMsg(_(""Unknown user".\n"), DAEMON_LOGMSG_CRITICAL);
+        } else if (setgid(pw->pw_gid) != 0) {
+            logMsg( _("setgid() failed.\n"), DAEMON_LOGMSG_CRITICAL);
+        } else if (setuid(pw->pw_uid) != 0) {
+            logMsg( _("setuid() failed.\n"), DAEMON_LOGMSG_CRITICAL);
+        }
+    }
+#endif
+
     // Calculate sunset etc
     m_automation.calcSun();
 
@@ -1594,6 +1607,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                         m_logLevel = vscp_readStringValue(str);
                     }
                 } 
+                else if (subchild->GetName() == wxT("runasuser")) { 
+                    m_runAsUser = subchild->GetNodeContent();
+                    m_runAsUser.Trim();
+                    m_runAsUser.Trim(false);
+                }
                 else if (subchild->GetName() == wxT("generallogfile")) {
                     
                     wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
@@ -1842,7 +1860,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     attribute = subchild->GetAttribute(wxT("run_as_user"), wxT(""));
                     attribute.Trim();
                     attribute.Trim(false);
-                    m_runAsUser = attribute;
+                    m_runAsUserWeb = attribute;
 
 
                     // Get webserver sub components

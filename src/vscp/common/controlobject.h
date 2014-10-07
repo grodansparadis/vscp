@@ -349,7 +349,11 @@ public:
      */
     bool m_bQuit;
 
-
+    /*!
+        User to run asa for Unix
+        if not ""
+    */
+    wxString m_runAsUser;
 
     /*!
         Maximum number of items in receivequeue for clients
@@ -556,7 +560,7 @@ public:
     wxString m_urlRewrites;
 
     // Run as user
-    wxString m_runAsUser;
+    wxString m_runAsUserWeb;
 
     // * * Websockets * *
 
