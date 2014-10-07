@@ -69,6 +69,87 @@ CUserItem::~CUserItem(void)
     m_listAllowedEvents.clear();
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// isAllowedToConnect
+//
+
+bool CUserItem::isAllowedToConnect(const wxString& remote)
+{
+    unsigned int i;
+    wxString wxstr;
+    wxIPV4address ipaddr;
+    if (!ipaddr.Hostname(remote)) return false;
+
+    // If empty all host allowed, This is "*.*.*.*"
+    if ( m_listAllowedRemotes.IsEmpty() ) return true;
+
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        wxLogDebug(m_listAllowedRemotes[ i ]);
+        if (m_listAllowedRemotes[ i ].IsSameAs(remote)) return true;
+    }
+
+    wxStringTokenizer tkz(ipaddr.IPAddress(), wxT("."));
+    wxString ip1 = tkz.GetNextToken();
+    wxString ip2 = tkz.GetNextToken();
+    wxString ip3 = tkz.GetNextToken();
+    wxString ip4 = tkz.GetNextToken();
+
+    // test wildcard a.b.c.*
+    wxstr.Printf(_("%s.%s.%s.*"), ip1.c_str(), ip2.c_str(), ip3.c_str());
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
+    }
+
+    // test wildcard a.b.*.*
+    wxstr.Printf(_("%s.%s.*.*"), ip1.c_str(), ip2.c_str());
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
+    }
+
+
+    // test wildcard a.*.*.*
+    wxstr.Printf(_("%s.*.*.*"), ip1.c_str());
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
+    }
+
+    return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// isUserAllowedToSendEvent
+//
+
+bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
+                                            const uint32_t vscp_type)
+{
+    unsigned int i;
+    wxString wxstr;
+
+    // If empty all events allowed
+    if ( m_listAllowedEvents.IsEmpty() ) return true;
+
+    // test wildcard *.*
+    wxstr.Printf(_("*:*"), vscp_class);
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
+    }
+
+    wxstr.Printf(_("%08X:%08X"), vscp_class, vscp_type);
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
+    }
+
+    // test wildcard class.*
+    wxstr.Printf(_("%08X:*"), vscp_class);
+    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+        if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
+    }
+
+    return false;
+}
+
 
 //*****************************************************************************
 //								CUserList
@@ -104,11 +185,11 @@ CUserList::~CUserList(void)
 //
 
 bool CUserList::addUser(const wxString& user,
-        const wxString& md5,
-        const wxString& userRights,
-        const vscpEventFilter *pFilter,
-        const wxString& allowedRemotes,
-        const wxString& allowedEvents)
+                            const wxString& md5,
+                            const wxString& userRights,
+                            const vscpEventFilter *pFilter,
+                            const wxString& allowedRemotes,
+                            const wxString& allowedEvents)
 {
     CUserItem *pItem = new CUserItem;
     if (NULL == pItem) return false;
@@ -130,7 +211,7 @@ bool CUserList::addUser(const wxString& user,
             } else if (str.IsSameAs(_("user"), false)) {
                 pItem->m_userRights = 0x00000006;
             } else if (str.IsSameAs(_("driver"), false)) {
-                pItem->m_userRights = 0x00000004;
+                pItem->m_userRights = 0x0000000f;
             } else {
                 // Numerical
                 str.ToULong(&pItem->m_userRights);
@@ -154,9 +235,11 @@ bool CUserList::addUser(const wxString& user,
     if (allowedEvents.Length()) {
         wxStringTokenizer tkz(allowedEvents, wxT(","));
         do {
-            wxString event = tkz.GetNextToken();
-            if (!event.IsEmpty()) {
-                pItem->m_listAllowedEvents.Add(event);
+            wxString eventpair = tkz.GetNextToken();
+            if (!eventpair.IsEmpty()) {
+                eventpair.Trim();
+                eventpair.Trim(false);
+                pItem->m_listAllowedEvents.Add(eventpair);
             }
         } while (tkz.HasMoreTokens());
     } else {
@@ -213,89 +296,6 @@ CUserItem * CUserList::checkUser(const wxString& user, const wxString& md5passwo
     return it->second;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// checkRemote
-//
-
-bool CUserList::checkRemote(const CUserItem *pItem, const wxString& remote)
-{
-    unsigned int i;
-    wxString wxstr;
-    wxIPV4address ipaddr;
-    if (!ipaddr.Hostname(remote)) return false;
-
-    // If empty all host allowed, This is "*.*.*.*"
-    if (pItem->m_listAllowedRemotes.IsEmpty()) return true;
-
-    for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
-        wxLogDebug(pItem->m_listAllowedRemotes[ i ]);
-        if (pItem->m_listAllowedRemotes[ i ].IsSameAs(remote)) return true;
-    }
-
-    wxStringTokenizer tkz(ipaddr.IPAddress(), wxT("."));
-    wxString ip1 = tkz.GetNextToken();
-    wxString ip2 = tkz.GetNextToken();
-    wxString ip3 = tkz.GetNextToken();
-    wxString ip4 = tkz.GetNextToken();
-
-    // test wildcard a.b.c.*
-    wxstr.Printf(_("%s.%s.%s.*"), ip1.c_str(), ip2.c_str(), ip3.c_str());
-    for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
-        if (pItem->m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
-    }
-
-    // test wildcard a.b.*.*
-    wxstr.Printf(_("%s.%s.*.*"), ip1.c_str(), ip2.c_str());
-    for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
-        if (pItem->m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
-    }
 
 
-    // test wildcard a.*.*.*
-    wxstr.Printf(_("%s.*.*.*"), ip1.c_str());
-    for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
-        if (pItem->m_listAllowedRemotes[ i ].IsSameAs(wxstr)) return true;
-    }
 
-    return false;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// checkEvent
-//
-
-bool CUserList::checkEvent(const CUserItem *pItem,
-        const uint32_t vscp_class,
-        const uint32_t vscp_type)
-{
-    unsigned int i;
-    wxString wxstr;
-
-    // If empty all events allowed
-    if (pItem->m_listAllowedEvents.empty()) return true;
-
-    // test wildcard *.*
-    wxstr.Printf(_("*.*"), vscp_class);
-    for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
-        if (pItem->m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
-    }
-
-    wxstr.Printf(_("%08X.%08X"), vscp_class, vscp_type);
-    for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
-        if (pItem->m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
-    }
-
-    // test wildcard class.*
-    wxstr.Printf(_("%08X.*"), vscp_class);
-    for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
-        if (pItem->m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
-    }
-
-    // test wildcard *.type
-    wxstr.Printf(_("*.%08X"), vscp_class);
-    for (i = 0; i < pItem->m_listAllowedRemotes.GetCount(); i++) {
-        if (pItem->m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
-    }
-
-    return false;
-}

@@ -1993,50 +1993,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             }
 
         } 
-        else if (child->GetName() == wxT("interfaces")) {
-
-            wxXmlNode *subchild = child->GetChildren();
-            while (subchild) {
-
-                wxString ip;
-                wxString mac;
-                wxString guid;
-                bool bInterface = false;
-
-                if (subchild->GetName() == wxT("interface")) {
-                    wxXmlNode *subsubchild = subchild->GetChildren();
-
-                    while (subsubchild) {
-
-                        if (subsubchild->GetName() == wxT("ipaddress")) {
-                            ip = subsubchild->GetNodeContent();
-                            bInterface = true;
-                        } 
-                        else if (subsubchild->GetName() == wxT("macaddress")) {
-                            mac = subsubchild->GetNodeContent();
-                        } 
-                        else if (subsubchild->GetName() == wxT("guid")) {
-                            guid = subsubchild->GetNodeContent();
-                        }
-
-                        subsubchild = subsubchild->GetNext();
-
-                    }
-
-                }
-
-                // Add interface
-                if (bInterface) {
-                    m_interfaceList.addInterface(ip, mac, guid);
-                    bInterface = false;
-                }
-
-                subchild = subchild->GetNext();
-
-            }
-
-        }
-
+        
         // Level I driver
         else if ( ( child->GetName() == wxT("canaldriver") ) || ( child->GetName() == wxT("level1driver") ) ) {
 

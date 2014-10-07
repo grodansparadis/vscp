@@ -83,74 +83,6 @@ VSCPClientThread::~VSCPClientThread()
 
 void *VSCPClientThread::Entry()
 {
-
-/*
-    //OutputDebugString( "TCP ListenThread: Start");
-    wxSocketServer *server;
-
-	// Check pointers
-	if ( NULL == m_pCtrlObject ) return NULL;
-
-    // Create the address - defaults to localhost:0 initially
-    wxIPV4address addr;
-    addr.AnyAddress();	// TODO - change to multiple channels
-    addr.Service ( m_pCtrlObject->m_tcpport );
-
-	// Normally listens on all interfaces of a multi interface machine
-	// by specifying an interface it will jnstead listen on that
-	// specific interface. Default is to listen on all.
-	if ( 0 != m_pCtrlObject->m_strTcpInterfaceAddress.Length() ) {
-		addr.Hostname( m_pCtrlObject->m_strTcpInterfaceAddress );
-	}
-
-    // Create the socket
-    server = new wxSocketServer( addr, wxSOCKET_BLOCK | wxSOCKET_REUSEADDR );
-
-    m_pCtrlObject->logMsg( _T ( "TCP ClientListenThread: Start.\n" ), DAEMON_LOGMSG_INFO );
-
-    if ( server->Ok() ) {
-
-        wxSocketBase *pserv;
-        while ( !TestDestroy() &!m_bQuit ) {
-
-            // Remove dead clients - TODO
-
-            // Wait for a connection
-            if ( NULL == ( pserv = server->Accept( false ) ) ) {
-                Sleep ( 200 );
-                continue;
-            }
-
-            TcpClientThread *pClientThread =
-                new TcpClientThread( wxTHREAD_JOINABLE );                                                                          
-
-            if ( NULL != pClientThread ) {
-				
-				// Add to tcp client queue
-                m_tcpclients.Append( pClientThread );
-
-                pClientThread->Create();
-
-                // Do we have a connection
-                pClientThread->m_pClientSocket = pserv;
-                pClientThread->m_pClientSocket->SetFlags( wxSOCKET_BLOCK | wxSOCKET_REUSEADDR  );
-
-                // Another client
-                m_numClients++;
-
-                // Start the client
-                pClientThread->m_pCtrlObject = m_pCtrlObject;
-                pClientThread->m_pmumClients = &m_numClients;
-                pClientThread->SetPriority( WXTHREAD_MAX_PRIORITY );
-                pClientThread->Run();
-
-            } // client thread
-        } // while
-    } // socket ok
-
-    delete server;
-
-*/
 	// Check pointers
 	if ( NULL == m_pCtrlObject ) return NULL;
 
@@ -169,9 +101,6 @@ void *VSCPClientThread::Entry()
 		// Bind to this interface
 		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, (const char *)str.mbc_str(), NULL ); //
 	}
-	
-	//ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, port1, NULL ); //
-	//ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, port2, NULL );
 
 	m_pCtrlObject->logMsg(_T("TCP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
 
@@ -194,27 +123,7 @@ void *VSCPClientThread::Entry()
 
 void VSCPClientThread::OnExit()
 {
-/*    TCPCLIENTS::iterator iter;
-
-    // First stage - tell clients to terminate
-    for (iter = m_tcpclients.begin(); iter != m_tcpclients.end(); ++iter) {
-        TcpClientThread *pThread = *iter;
-        if ( ( NULL != pThread )  ) {
-            pThread->m_bQuit = true;
-        }
-    }
-
-    // Second stage - Wait until they terminates
-    for (iter = m_tcpclients.begin(); iter != m_tcpclients.end(); ++iter) {
-        TcpClientThread *pThread = *iter;
-        if ( ( NULL != pThread )  ) {
-            pThread->Wait();
-            delete pThread;
-        }
-    }
-
-    m_tcpclients.Clear();
-*/
+    ;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -506,7 +415,7 @@ REPEAT_COMMAND:
     }
 
     //*********************************************************************
-    //                               Username
+    //                             Username
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "USER " ) ) ) {
         handleClientUser( conn, pCtrlObject );
@@ -590,7 +499,7 @@ REPEAT_COMMAND:
 	//                             Variable
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "VARIABLE " ) ) ) {
-		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
+		if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
             handleClientVariable( conn, pCtrlObject );
         }
 	}
@@ -825,6 +734,19 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
         str = tkz.GetNextToken();
         data[ event.sizeData ] = vscp_readStringValue( str );
         event.sizeData++;
+    }
+
+    // Check if this user is allowed to send this event
+    if ( !pClientItem->m_pUserItem->isUserAllowedToSendEvent( event.vscp_class, event.vscp_type ) ) {
+        wxString strErr = 
+                        wxString::Format( _("[tcp/ip Client] User [%s] not allowed to send event class=%d type=%d.\n"), 
+                                                (const char *)pClientItem->m_pUserItem->m_user.wc_str(), 
+                                                event.vscp_class, event.vscp_type );			
+		
+	    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
+        
+        ns_send( conn, MSG_MOT_ALLOWED_TO_SEND_EVENT, strlen ( MSG_MOT_ALLOWED_TO_SEND_EVENT ) );
+        return;
     }
 
     vscpEvent *pEvent = new vscpEvent;		// Create new VSCP Event
@@ -1577,7 +1499,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     // Check if this user is allowed to connect from this location
     m_pCtrlObject->m_mutexUserList.Lock();
     bool bValidHost = 
-            m_pCtrlObject->m_userList.checkRemote( pClientItem->m_pUserItem, remoteaddr );
+            pClientItem->m_pUserItem->isAllowedToConnect( remoteaddr );
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( !bValidHost ) {
@@ -1603,11 +1525,6 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     pClientItem->m_bAuthorized = true;
     ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
-
-    // Copy in user filter
-    memcpy( &pClientItem->m_filterVSCP, 
-				&pClientItem->m_pUserItem->m_filterVSCP, 
-				sizeof( vscpEventFilter ) );
 
     return true;
 

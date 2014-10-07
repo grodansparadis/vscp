@@ -182,13 +182,14 @@ enum {
 };
 
 enum {
-	WEBSOCK_ERROR_NO_ERROR = 0,			// Everything is OK.			
-	WEBSOCK_ERROR_SYNTAX_ERROR,			// Syntax error.
-	WEBSOCK_ERROR_UNKNOWN_COMMAND,		// Unknown command.
-	WEBSOCK_ERROR_TX_BUFFER_FULL,		// Transmit buffer full.
-	WEBSOCK_ERROR_VARIABLE_DEFINED,		// Variable is already defined.
-	WEBSOCK_ERROR_VARIABLE_UNKNOWN,		// Cant find variable
-	WEBSOCK_ERROR_NOT_AUTHORIZED,		// Not authorized
+	WEBSOCK_ERROR_NO_ERROR = 0,			    // Everything is OK.			
+	WEBSOCK_ERROR_SYNTAX_ERROR,			    // Syntax error.
+	WEBSOCK_ERROR_UNKNOWN_COMMAND,		    // Unknown command.
+	WEBSOCK_ERROR_TX_BUFFER_FULL,		    // Transmit buffer full.
+	WEBSOCK_ERROR_VARIABLE_DEFINED,		    // Variable is already defined.
+	WEBSOCK_ERROR_VARIABLE_UNKNOWN,		    // Cant find variable
+	WEBSOCK_ERROR_NOT_AUTHORIZED,		    // Not authorized
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT // Not authorized
 };
 
 #define	WEBSOCK_STR_ERROR_NO_ERROR				"Everything is OK"			
@@ -198,6 +199,7 @@ enum {
 #define WEBSOCK_STR_ERROR_VARIABLE_DEFINED		"Variable is already defined"
 #define WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN		"Unable to find variable"
 #define WEBSOCK_STR_ERROR_NOT_AUTHORIZED		"Not authorized"
+#define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_SEND_EVENT	 "Not allowed to send event"
 
 struct websock_session {
 	// We keep all sessions in a linked list.
@@ -227,9 +229,6 @@ struct websock_session {
 
 	// Client structure for websocket
     CClientItem *m_pClientItem;		
-
-	// User structure for websocket
-	CUserItem *m_pUserItem;
 
     bool bTrigger;					// True to activate trigger functionality.
     uint32_t triggerTimeout;		// Time out before trigg (or error) must occur.

@@ -999,6 +999,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
     if (0 == strTok.Find(_("NOOP"))) {
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;NOOP" );
 	}
+
 	// AUTH;user;hash
 	else if (0 == strTok.Find(_("AUTH"))) {
 		wxString strUser = tkz.GetNextToken();
@@ -1015,6 +1016,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 			pSession->bAuthenticated = false;	// Authenticated
 		}
     } 
+
 	else if (0 == strTok.Find(_("OPEN"))) {
 		// Must be authorized to do this
 		if ( !pSession->bAuthenticated ) {
@@ -1029,11 +1031,13 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         pSession->m_pClientItem->m_bOpen = true;
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;OPEN" );
     } 
+
 	else if (0 == strTok.Find(_("CLOSE"))) {
         pSession->m_pClientItem->m_bOpen = false;
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;CLOSE" );
 		rv = MG_FALSE;
     } 
+
 	else if (0 == strTok.Find(_("SETFILTER"))) {
 
         unsigned char ifGUID[ 16 ];
@@ -1098,7 +1102,9 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         // Positive response
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;SETFILTER" );
 
-    }// Clear the event queue
+    }
+    
+    // Clear the event queue
     else if (0 == strTok.Find(_("CLRQUEUE"))) {
 
         CLIENTEVENTLIST::iterator iterVSCP;
@@ -1125,6 +1131,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;CLRQUE" );
     } 
+
 	else if (0 == strTok.Find(_("WRITEVAR"))) {
 
 		// Must be authorized to do this
@@ -1188,6 +1195,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;WRITEVAR" );
 
     } 
+
 	else if (0 == strTok.Find(_("ADDVAR"))) {
 
         wxString name;
@@ -1254,6 +1262,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, resultstr.mbc_str() );
         
     } 
+
 	else if (0 == strTok.Find(_("READVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1291,6 +1300,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     } 
+
     else if (0 == strTok.Find(_("RESETVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1321,6 +1331,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, strResult.mbc_str() );
 
     }
+
     else if (0 == strTok.Find(_("REMOVEVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1354,6 +1365,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, strResult.mbc_str() );
 
     }
+
     else if (0 == strTok.Find(_("LENGTHVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1384,6 +1396,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     }
+
     else if (0 == strTok.Find(_("LASTCHANGEVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1417,6 +1430,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     }
+
     else if (0 == strTok.Find(_("LISTVAR"))) {
 
         CVSCPVariable *pvar;
@@ -1467,6 +1481,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
 
     }
+
 	else if (0 == strTok.Find(_("SAVEVAR"))) {
 
 		// Must be authorized to do this
@@ -1489,6 +1504,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;SAVEVAR" );
     } 
+
 	else {
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s", 
@@ -1563,40 +1579,36 @@ VSCPWebServerThread::websock_sendevent( struct mg_connection *conn,
 
         if (NULL != pDestClientItem) {
 
-            // Check if filtered out
-            if (vscp_doLevel2Filter(pEvent, &pDestClientItem->m_filterVSCP)) {
-
-                // If the client queue is full for this client then the
-                // client will not receive the message
-                if (pDestClientItem->m_clientInputQueue.GetCount() <=
+            // If the client queue is full for this client then the
+            // client will not receive the message
+            if (pDestClientItem->m_clientInputQueue.GetCount() <=
                         pObject->m_maxItemsInClientReceiveQueue) {
 
-                    // Create copy of event
-                    vscpEvent *pnewEvent = new vscpEvent;
-                    if (NULL != pnewEvent) {
+                // Create copy of event
+                vscpEvent *pnewEvent = new vscpEvent;
+                if (NULL != pnewEvent) {
 
-                        vscp_copyVSCPEvent(pnewEvent, pEvent);
+                    vscp_copyVSCPEvent(pnewEvent, pEvent);
 
-                        // Add the new event to the inputqueue
-                        pDestClientItem->m_mutexClientInputQueue.Lock();
-                        pDestClientItem->m_clientInputQueue.Append(pnewEvent);
-                        pDestClientItem->m_semClientInputQueue.Post();
-                        pDestClientItem->m_mutexClientInputQueue.Unlock();
+                    // Add the new event to the inputqueue
+                    pDestClientItem->m_mutexClientInputQueue.Lock();
+                    pDestClientItem->m_clientInputQueue.Append(pnewEvent);
+                    pDestClientItem->m_semClientInputQueue.Post();
+                    pDestClientItem->m_mutexClientInputQueue.Unlock();
 
-						bSent = true;
-                    }
-					else {
-						bSent = false;
-					}
-
-                } else {
-                    // Overun - No room for event
-                    //vscp_deleteVSCPevent(pEvent);
                     bSent = true;
-                    rv = false;
+                }
+                else {
+                    bSent = false;
                 }
 
-            } // filter
+            } 
+            else {
+                // Overun - No room for event
+                //vscp_deleteVSCPevent(pEvent);
+                bSent = true;
+                rv = false;
+            }
 
         } // Client found
 
@@ -1699,6 +1711,16 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
 			str = wxString::FromAscii( p );
 			if (vscp_getVscpEventFromString( &vscp_event, str ) ) {
 
+                // Check if this user is allowed to send this event
+                if ( !pSession->m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( vscp_event.vscp_class, vscp_event.vscp_type ) ) {
+                    wxString strErr = 
+                        wxString::Format( _("websocket] User [%s] not allowed to send event class=%d type=%d.\n"), 
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str(), 
+                                                vscp_event.vscp_class, vscp_event.vscp_type );			
+		
+	                pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
+                }
+
 				vscp_event.obid = pSession->m_pClientItem->m_clientID;
 				if ( pObject->getWebServer()->websock_sendevent( conn, pSession, &vscp_event ) ) {
 					mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;EVENT" );
@@ -1761,10 +1783,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
 		if ( NULL == pUser ) return MG_FALSE;
 
 		// Check if remote ip is valid
-		pObject->m_mutexUserList.Lock();
-		bValidHost = pObject->m_userList.checkRemote( pUser, 
-														wxString::FromAscii( conn->remote_ip ) );
-		pObject->m_mutexUserList.Unlock();
+		bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
 		if (!bValidHost) {
             // Log valid login
             wxString strErr = 
@@ -1786,6 +1805,17 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
 		rv = ( vscp_strcasecmp( response, expected_response ) == 0 ) ? MG_TRUE : MG_FALSE;
 
         if (  MG_TRUE == rv ) {
+
+            pSession->m_pClientItem->m_bAuthorized = true;
+
+            // Add user to client
+            pSession->m_pClientItem->m_pUserItem = pUser;
+
+            // Copy in the user filter
+            memcpy( &pSession->m_pClientItem->m_filterVSCP, 
+				        &pUser->m_filterVSCP, 
+				        sizeof( vscpEventFilter ) );
+
             // Log valid login
             wxString strErr = 
                         wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
@@ -1793,6 +1823,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
                                                  (const char *)strUser.wc_str() );			
 		
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
+
         }
         else {
             // Log valid login
@@ -1850,14 +1881,11 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *conn, const char
 
 	Cmd5 md5( (unsigned char *)buf );
 	strcpy( ret->m_sid, md5.getDigest() );
-
-
-		
+	
 	// Init
 	strcpy( ret->m_key, pKey );				// Save key
 	ret->bAuthenticated = false;			// Not authenticated in yet
 	ret->m_version = atoi( pVer );			// Store protocol version
-	ret->m_pUserItem = NULL;				// Is set when authenticated
     ret->m_pClientItem = new CClientItem();	// Create client        
     vscp_clearVSCPFilter(&ret->m_pClientItem->m_filterVSCP); // // Clear filter
 	ret->bTrigger = false;
@@ -2318,9 +2346,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 
 			// Check if remote ip is valid
 			pObject->m_mutexUserList.Lock();
-			bValidHost = 
-			        pObject->m_userList.checkRemote( pUser, 
-														wxString::FromAscii( conn->remote_ip ) );
+			bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
 			pObject->m_mutexUserList.Unlock();
 			if (!bValidHost) {
                 // Host wrong
@@ -2922,8 +2948,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	// Check if remote ip is valid
 	bool bValidHost;
 	pObject->m_mutexUserList.Lock();
-	bValidHost = pObject->m_userList.checkRemote( pUser, 
-													wxString::FromAscii( conn->remote_ip ) );
+	bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
 	pObject->m_mutexUserList.Unlock();
 	if (!bValidHost) {
         wxString strErr = 

@@ -250,7 +250,7 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 				// Check if this user is allowed to connect from this location
 				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Lock();
 				bool bValidHost = 
-						pUDPClientThread->m_pCtrlObject->m_userList.checkRemote( pUDPClientThread->m_pClientItem->m_pUserItem, remoteaddr );
+						pUDPClientThread->m_pClientItem->m_pUserItem->isAllowedToConnect( remoteaddr );
 				pUDPClientThread->m_pCtrlObject->m_mutexUserList.Unlock();
 
 				if ( !bValidHost ) {

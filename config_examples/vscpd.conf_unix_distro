@@ -106,39 +106,17 @@
         <!-- Documented in specification 14.4.1               -->
         <webserver enable="true" 
                     webrootpath="/srv/vscp/www"
+                    port="8080"
                     path_cert=""
                     authdomain="mydomain.com"
                     cgi_interpreter=""
-                    cgi_pattern="**.cgi$|**.pl$|**.php|**.py"
+                    cgi_pattern=""
                     enable_directory_listing="true"
-                    hilde_file_patterns="secret.txt|even_more_secret.txt"
+                    hilde_file_patterns=""
                     index_files="index.html,index.htm,index.cgi,index.shtml,index.php"
-                    extra_mime_types=".cpp=plain/text,.java=plain/text"
+                    extra_mime_types=""
                     url_rewrites=""
-                    run_as_user=""
-                    port="8080">
-         
-            <!-- Path to server web root file system              -->
-            <!-- Server should have read access to this location  -->
-            <!-- and it is used both fopr websockets and for      -->
-            <!-- traditional web-pages.                           -->
-            <!-- Documented in specification 14.4.1               -->
-            <webrootpath>/srv/vscp/www</webrootpath>
-            
-            <!-- authDomain is the domain name that will be used  -->
-            <!-- when the internal server talks to clients doing  -->
-            <!-- authentications and other things.                -->
-            <authdomain>mydomain.com</authdomain>
-		
-            <!-- Path to ssl certificate                          -->
-            <!-- Only valid for the SSL version                   -->
-            <!-- Documented in specification 14.4.1               -->
-            <pathcert>/etc/vscp/ssl_cert.pem</pathcert>
-
-            <!-- Path to ssl key                                  -->
-            <!-- Only valid for the SSL version                   -->
-            <!-- Documented in specification 14.4.1               -->
-            <pathkey>/etc/vscp/sslcert</pathkey>
+                    run_as_user="" >
             
             <!-- Enable disable the websocket interface.                    -->
             <!-- Id auth is set to false not authentication will be done    -->
@@ -193,19 +171,6 @@
         <segmentcontoller-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
     </automation>
-	
-    <!-- Holds information about interfaces on the                  -->
-    <!-- machine the daemon is run on. Set ip-address, mac-address  -->
-    <!-- and GUID for your interface here.                          -->
-    <!-- !!!! Normally no need to enter this information.           -->
-    <!-- Documented in specification 14.4.6                         -->
-    <interfaces>
-        <interface> 
-            <ipaddress>192.168.168.10</ipaddress>
-            <macaddress>00:16:D4:5D:68:F6</macaddress>
-            <guid>01:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </interface> 
-    </interfaces>
 	
     <!-- List level I/CANAL drivers here                            -->
     <!-- Documented in specification 14.4.4                         -->

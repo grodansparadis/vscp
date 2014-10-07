@@ -582,11 +582,6 @@ public:
     CClientList m_clientList;
     wxMutex m_mutexClientList;
 
-    /*!
-        The list of active interfaces
-     */
-    CInterfaceList m_interfaceList;
-    wxMutex m_mutexInterfaceList;
 
     /*!
         The list of users
@@ -599,6 +594,7 @@ public:
 	*/
 	listVSCPTables m_listTables;
 	wxMutex m_mutexTableList;
+
 
     // *************************************************************************
 

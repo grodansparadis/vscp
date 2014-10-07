@@ -65,6 +65,7 @@
 #define MSG_INTERFACE_NOT_FOUND             "-OK - Interface not found.\r\n"
 
 #define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
+#define MSG_MOT_ALLOWED_TO_SEND_EVENT       "-OK - Not allowed to sen this event (contact admin).\r\n"
 
 
 

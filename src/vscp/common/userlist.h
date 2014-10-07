@@ -31,11 +31,6 @@
 #include "../../common/dllist.h"
 #include "vscp.h"
 
-// hash set for allowed remotes
-//WX_DECLARE_STRING_HASH_MAP( wxString, ALLOWED_REMOTES_HASH );
-
-// hash set for allowed events
-//WX_DECLARE_STRING_HASH_MAP( wxString, ALLOWED_EVENTS_HASH );
 
 #define VSCP_USER_RIGHT_ALLOW_RESTART					0x80000000
 // Undefined
@@ -85,6 +80,29 @@ public:
 
 	/// Destructor
 	virtual ~CUserItem(void);
+
+    /*!
+	  Check if a remote client is allowed to connect.
+		 First full ip address is checked against hash set (a.b.c.d)
+		 Next LSB byte is replaced with a star and tested. (a.b.c.*)
+		 Next the lsb-1 is also replaced with a star and tested. (a.b.*.*)
+		 Last the lsb-2 is replaced with a star and tested.(a.*.*.*)
+	  @param remote ip-address for remote machine.
+	  @return true if the remote machine is allowed to connect.
+	 */
+	bool isAllowedToConnect( const wxString& remote);
+
+	/*!
+        Check if use is allowd to send event.
+			First check "*.*"
+	        Next check "class:type"
+	        Next check "class:*"
+        @param vscp_class VSCP class to test.
+	    @param vscp_type VSCP type to test.
+        @return true if the client is allowed to send event.
+	 */
+	bool isUserAllowedToSendEvent( const uint32_t vscp_class,
+		                            const uint32_t vscp_type);
 
 	/// Username
 	wxString m_user;
@@ -159,7 +177,6 @@ public:
 		Wildcards can be used and the default is all events 
 		allowed.
 	 */
-	//ALLOWED_EVENTS_HASH m_hashAllowedEvents;
 	wxArrayString m_listAllowedEvents;
 
 protected:
@@ -201,11 +218,11 @@ public:
 		@return true on success. false on failure.	
 	 */
 	bool addUser(const wxString& user,
-		const wxString& md5,
-		const wxString& userRights = _(""),
-		const vscpEventFilter *pFilter = NULL,
-		const wxString& allowedRemotes = _(""),
-		const wxString& allowedEvents = _(""));
+		                    const wxString& md5,
+		                    const wxString& userRights = _(""),
+		                    const vscpEventFilter *pFilter = NULL,
+		                    const wxString& allowedRemotes = _(""),
+		                    const wxString& allowedEvents = _(""));
 
 
 	/*!
@@ -222,30 +239,7 @@ public:
 	 */
 	CUserItem * checkUser(const wxString& user, const wxString& md5password);
 
-	/*!
-	  Check if a remote client is allowed to connect.
-		 First full ip address is checked against hash set (a.b.c.d)
-		 Next LSB byte is replaced with a star and tested. (a.b.c.*)
-		 Next the lsb-1 is also replaced with a star and tested. (a.b.*.*)
-		 Last the lsb-2 is replaced with a star and tested.(a.*.*.*)
-	  @param remote ip-address for remote machine.
-	  @return true if the remote machine is allowed to connect.
-	 */
-	bool checkRemote(const CUserItem *pItem, const wxString& remote);
-
-	/*!
-   Check if use is allowd to send event.
-			First check "*.*"
-	  Next check "class.type"
-	  Next check "class.*"
-	  Last check "*.type"
-   @param vscp_class VSCP class to test.
-	   @param vscp_type VSCP type to test.
-   @return true if the client is allowed to send event.
-	 */
-	bool checkEvent(const CUserItem *pItem,
-		const uint32_t vscp_class,
-		const uint32_t vscp_type);
+	
 
 protected:
 
