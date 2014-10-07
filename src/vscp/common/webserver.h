@@ -189,17 +189,19 @@ enum {
 	WEBSOCK_ERROR_VARIABLE_DEFINED,		    // Variable is already defined.
 	WEBSOCK_ERROR_VARIABLE_UNKNOWN,		    // Cant find variable
 	WEBSOCK_ERROR_NOT_AUTHORIZED,		    // Not authorized
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT // Not authorized
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT, // Not authorized
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT    // Not allowed to do that
 };
 
-#define	WEBSOCK_STR_ERROR_NO_ERROR				"Everything is OK"			
-#define WEBSOCK_STR_ERROR_SYNTAX_ERROR			"Syntax error"
-#define WEBSOCK_STR_ERROR_UNKNOWN_COMMAND		"Unknown command"
-#define WEBSOCK_STR_ERROR_TX_BUFFER_FULL		"Transmit buffer full"
-#define WEBSOCK_STR_ERROR_VARIABLE_DEFINED		"Variable is already defined"
-#define WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN		"Unable to find variable"
-#define WEBSOCK_STR_ERROR_NOT_AUTHORIZED		"Not authorized"
-#define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_SEND_EVENT	 "Not allowed to send event"
+#define	WEBSOCK_STR_ERROR_NO_ERROR				        "Everything is OK"			
+#define WEBSOCK_STR_ERROR_SYNTAX_ERROR			        "Syntax error"
+#define WEBSOCK_STR_ERROR_UNKNOWN_COMMAND		        "Unknown command"
+#define WEBSOCK_STR_ERROR_TX_BUFFER_FULL		        "Transmit buffer full"
+#define WEBSOCK_STR_ERROR_VARIABLE_DEFINED		        "Variable is already defined"
+#define WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN		        "Unable to find variable"
+#define WEBSOCK_STR_ERROR_NOT_AUTHORIZED		        "Not authorized"
+#define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_SEND_EVENT	    "Not allowed to send event"
+#define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT        "Not allowed to do that (check privileges)"
 
 struct websock_session {
 	// We keep all sessions in a linked list.

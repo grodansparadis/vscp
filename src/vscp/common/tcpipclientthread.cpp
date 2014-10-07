@@ -399,7 +399,7 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( ( 0 == m_currentCommandUC.Find ( _( "SFLT" ) ) ) ||
                ( 0 == m_currentCommandUC.Find ( _( "SETFILTER" ) ) )  ) {
-        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
 			handleClientSetFilter( conn, pCtrlObject );
 		}
     }
@@ -409,7 +409,7 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( ( 0 == m_currentCommandUC.Find ( _( "SMSK" ) ) ) || 
                 ( 0 == m_currentCommandUC.Find ( _( "SETMASK" ) ) ) ) {
-        if ( checkPrivilege( conn, pCtrlObject, 4 ) ) {
+        if ( checkPrivilege( conn, pCtrlObject, 6 ) ) {
 			handleClientSetMask( conn, pCtrlObject );
 		}
     }
@@ -453,7 +453,7 @@ REPEAT_COMMAND:
 	}
 
 	//*********************************************************************
-	//                               Quitloop
+	//                           Quitloop
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
 		// Turn of receive loop
@@ -462,7 +462,7 @@ REPEAT_COMMAND:
 	}
 
 	//*********************************************************************
-	//                              Help
+	//                             Help
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "HELP" ) ) ) {
 		handleClientHelp( conn, pCtrlObject );
