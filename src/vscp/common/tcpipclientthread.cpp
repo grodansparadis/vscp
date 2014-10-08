@@ -2285,7 +2285,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
         return;	
     }
 
-    // type (optional) - string default
+    // type - string default
     if ( tkz.HasMoreTokens() ) {
         wxString wxstr = tkz.GetNextToken();
         wxstr.Trim();
@@ -2299,7 +2299,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
         return;	
     }
 
-    // persistence (optional) - false default
+    // persistence - false default
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
         str = str.Upper();

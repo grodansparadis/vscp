@@ -2650,6 +2650,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	long format = REST_FORMAT_PLAIN;
 	hashArgs keypairs;
 	struct websrv_rest_session *pSession = NULL;
+    CUserItem *pUser = NULL;
 
     // Get metod
     wxString method = wxString::FromAscii( conn->request_method );
@@ -2669,72 +2670,73 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	vscp_getTimeString( date, sizeof(date), &curtime );
 
 	
+    if ( _("POST") == method ) {
 
-    if ( _("PUT") == method ) {
+        const char *p;
 
         // user
-        mg_get_var(conn, "user", buf, sizeof(buf) );
-        keypairs[_("USER")].FromAscii( buf );
+        p = mg_get_header( conn, "VSCP-User" );
+        keypairs[_("USER")] = wxString::FromAscii( p );
 
         // password
-        mg_get_var(conn, "password", buf, sizeof(buf) );
-        keypairs[_("PASSWORD")].FromAscii( buf );
+        p = mg_get_header( conn, "VSCP-Password" );
+        keypairs[_("PASSWORD")] = wxString::FromAscii( p );
 
         // session
-        mg_get_var(conn, "session", buf, sizeof(buf) );
-        keypairs[_("SESSION")].FromAscii( buf );
+        p = mg_get_header( conn, "VSCP-Session" );
+        keypairs[_("SESSION")] = wxString::FromAscii( p );
 
         // format
         mg_get_var(conn, "format", buf, sizeof(buf) );
-        keypairs[_("FORMAT")].FromAscii( buf );
+        keypairs[_("FORMAT")] = wxString::FromAscii( buf );
 
         // op
         mg_get_var(conn, "op", buf, sizeof(buf) );
-        keypairs[_("OP")].FromAscii( buf );
+        keypairs[_("OP")] = wxString::FromAscii( buf );
 
         // vscpevent
         mg_get_var(conn, "vscpevent", buf, sizeof(buf) );
-        keypairs[_("VSCPEVENT")].FromAscii( buf );
+        keypairs[_("VSCPEVENT")] = wxString::FromAscii( buf );
 
         // count
         mg_get_var(conn, "count", buf, sizeof(buf) );
-        keypairs[_("COUNT")].FromAscii( buf );
+        keypairs[_("COUNT")] = wxString::FromAscii( buf );
 
         // vscpfilter
         mg_get_var(conn, "vscpfilter", buf, sizeof(buf) );
-        keypairs[_("VSCPFILTER")].FromAscii( buf );
+        keypairs[_("VSCPFILTER")] = wxString::FromAscii( buf );
 
         // variable
         mg_get_var(conn, "variable", buf, sizeof(buf) );
-        keypairs[_("VARIABLE")].FromAscii( buf );
+        keypairs[_("VARIABLE")] = wxString::FromAscii( buf );
 
         // type
         mg_get_var(conn, "type", buf, sizeof(buf) );
-        keypairs[_("TYPE")].FromAscii( buf );
+        keypairs[_("TYPE")] = wxString::FromAscii( buf );
 
         // measurement
         mg_get_var(conn, "measurement", buf, sizeof(buf) );
-        keypairs[_("MEASUREMENT")].FromAscii( buf );
+        keypairs[_("MEASUREMENT")] = wxString::FromAscii( buf );
 
         // unit
         mg_get_var(conn, "unit", buf, sizeof(buf) );
-        keypairs[_("UNIT")].FromAscii( buf );
+        keypairs[_("UNIT")] = wxString::FromAscii( buf );
 
         // sensoridx
         mg_get_var(conn, "sensoridx", buf, sizeof(buf) );
-        keypairs[_("SENSORIDX")].FromAscii( buf );
+        keypairs[_("SENSORIDX")] = wxString::FromAscii( buf );
 
         // name
         mg_get_var(conn, "name", buf, sizeof(buf) );
-        keypairs[_("NAME")].FromAscii( buf );
+        keypairs[_("NAME")] = wxString::FromAscii( buf );
 
         // from
         mg_get_var(conn, "from", buf, sizeof(buf) );
-        keypairs[_("FROM")].FromAscii( buf );
+        keypairs[_("FROM")] = wxString::FromAscii( buf );
 
         // to
         mg_get_var(conn, "to", buf, sizeof(buf) );
-        keypairs[_("TO")].FromAscii( buf );
+        keypairs[_("TO")] = wxString::FromAscii( buf );
     }
     else {
         // get parameters for get
@@ -2751,12 +2753,13 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
     // If we have a session key we try to get the session
 	if ( _("") != keypairs[_("SESSION")] ) {
 		pSession = websrv_get_rest_session( conn, keypairs[_("SESSION")] );
+        if ( NULL != pSession )  pUser = pSession->pUserItem;
 	}
 
     if ( NULL == pSession ) {
 
         // Get user
-        CUserItem *pUser = pObject->m_userList.getUser( keypairs[_("USER")] ); 
+        pUser = pObject->m_userList.getUser( keypairs[_("USER")] ); 
 
 	    // Check if user is valid	
 	    if ( NULL == pUser ) {
@@ -2853,8 +2856,6 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 		return MG_TRUE;
 	}
 
-	
-
 	//   *************************************************************
 	//   * * * * * * * *  Status (hold session open)   * * * * * * * *
 	//   *************************************************************
@@ -2866,14 +2867,14 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//  * * * * * * * * open session * * * * * * * *
 	//  ********************************************
     else if ( ( _("1") == keypairs[_("OP")] ) || ( _("OPEN") == keypairs[_("OP")].Upper() ) ) {
-		rv = webserv_rest_doOpen( conn, pSession, pSession->pUserItem, format );		
+		rv = webserv_rest_doOpen( conn, pSession, pUser, format );		
 	}
 
 	//   **********************************************
 	//   * * * * * * * * close session  * * * * * * * *
 	//   **********************************************
 	else if ( ( _("2") == keypairs[_("OP")] ) || ( _("CLOSE") == keypairs[_("OP")].Upper() ) ) {
-		rv = webserv_rest_doOpen( conn, pSession, pSession->pUserItem, format );
+		rv = webserv_rest_doOpen( conn, pSession, pUser, format );
 	}
 
 	//  ********************************************
@@ -2882,14 +2883,12 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	else if ( ( _("3") == keypairs[_("OP")] ) || ( _("SENDEVENT") == keypairs[_("OP")].Upper() ) ) {
 		vscpEvent vscpevent;
 		if ( _("") != keypairs[_("VSCPEVENT")] ) {
-			;
 			vscp_getVscpEventFromString( &vscpevent, keypairs[_("VSCPEVENT")] ); 
 			rv = webserv_rest_doSendEvent( conn, pSession, format, &vscpevent );
 		}
 		else {
 			// Parameter missing - No Event
 			webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
-
 		}
 	}
 
@@ -2993,6 +2992,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   * * * * * * * * Table read  * * * * * * * *
 	//   *******************************************
 	else if ( ( _("11") == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")].Upper() ) ) {
+
 		if ( _("") != keypairs[_("NAME")] ) {
 			
 			rv = webserv_rest_doGetTableData( conn, pSession, format, 
@@ -3016,9 +3016,9 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
 void
 VSCPWebServerThread::webserv_rest_error( struct mg_connection *conn, 
-										struct websrv_rest_session *pSession, 
-										int format,
-										int errorcode)
+										    struct websrv_rest_session *pSession, 
+										    int format,
+										    int errorcode)
 {
 	char buf[2048];
 
@@ -3109,9 +3109,9 @@ VSCPWebServerThread::webserv_rest_error( struct mg_connection *conn,
 
 int
 VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn, 
-											struct websrv_rest_session *pSession, 
-											int format, 
-											vscpEvent *pEvent )
+											        struct websrv_rest_session *pSession, 
+											        int format, 
+											        vscpEvent *pEvent )
 {
 	bool bSent = false;
 
@@ -3240,9 +3240,9 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn,
 
 int
 VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn, 
-												struct websrv_rest_session *pSession, 
-												int format,
-												long count )
+												        struct websrv_rest_session *pSession, 
+												        int format,
+												        long count )
 {
 	// Check pointer
     if (NULL == conn) return MG_FALSE;
@@ -3739,9 +3739,9 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 int
 VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *conn, 
-											struct websrv_rest_session *pSession, 
-											int format,
-											vscpEventFilter& vscpfilter )
+											        struct websrv_rest_session *pSession, 
+											        int format,
+											        vscpEventFilter& vscpfilter )
 {
 	if ( NULL != pSession ) {
 		pSession->pClientItem->m_mutexClientInputQueue.Lock();
@@ -3763,8 +3763,8 @@ VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *conn,
 
 int
 VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *conn, 
-												struct websrv_rest_session *pSession, 
-												int format )
+												    struct websrv_rest_session *pSession, 
+												    int format )
 {
 	// Check pointer
     if (NULL == conn) return MG_FALSE;
@@ -3804,9 +3804,9 @@ VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *conn,
 
 int
 VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn, 
-												struct websrv_rest_session *pSession, 
-												int format,
-												wxString& strVariableName )
+												    struct websrv_rest_session *pSession, 
+												    int format,
+												    wxString& strVariableName )
 {
 	char buf[512];
 	char wrkbuf[512];
@@ -3843,8 +3843,6 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 				sprintf( wrkbuf, "1 1 Success \r\n");
 				webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 				mg_write( conn, buf, strlen( buf ) );
-
-				
 
 				memset( buf, 0, sizeof( buf ));
 				sprintf( wrkbuf, 
@@ -3994,9 +3992,9 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 int
 VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *conn, 
-													struct websrv_rest_session *pSession, 
-													int format,
-													wxString& strVariable )
+												        struct websrv_rest_session *pSession, 
+													    int format,
+													    wxString& strVariable )
 {
 	wxString strName;
     wxString strValue;
@@ -4012,7 +4010,7 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *conn,
             CVSCPVariable *pvar;
             strName = tkz.GetNextToken();
             if ( NULL == (pvar = pObject->m_VSCP_Variables.find( strName ) ) ) {
-				webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
+                webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_FOUND );
 				return MG_TRUE;
             }
 
@@ -4042,23 +4040,104 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *conn,
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// webserv_rest_doCreateVariable
+//
+
+int
+VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *conn, 
+												        struct websrv_rest_session *pSession, 
+													    int format,
+													    wxString& strVariable )
+{
+	wxString strName;
+    wxString strType;
+    wxString strPersistence;
+    wxString strValue;
+    int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
+    bool bPersistence = false;
+	wxStringTokenizer tkz( strVariable, _(";") );
+
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+
+	if ( ( NULL == conn ) && ( NULL == pObject )  && ( NULL != pSession )  ) {
+
+        // Get variablename
+        if ( tkz.HasMoreTokens() ) {
+            strName = tkz.GetNextToken();
+        }
+        else {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+            return MG_TRUE;
+        }
+
+        // Get type
+        if ( tkz.HasMoreTokens() ) {
+            strType = tkz.GetNextToken();
+            strType.Trim();
+            strType.Trim( false );
+            if ( strType.Length() ) {
+                type = vscp_readStringValue( strType );
+            }
+        }
+        else {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+            return MG_TRUE;
+        }
+
+        // Get persistence
+        if ( tkz.HasMoreTokens() ) {
+            strPersistence = tkz.GetNextToken();
+            strPersistence.MakeUpper();
+            if ( strPersistence.Find( _("TRUE") ) ) {
+                bPersistence = true;		
+            }
+        }
+        else {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+            return MG_TRUE;
+        }
+
+        // Get value
+        if ( tkz.HasMoreTokens() ) {
+            strValue = tkz.GetNextToken();
+        }
+        else {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_MISSING_DATA );
+            return MG_TRUE;
+        }
+
+        // Add the variable
+        if ( !pObject->m_VSCP_Variables.add( strName, strValue, type, bPersistence ) ) {
+            webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_VARIABLE_NOT_CREATED );
+            return MG_TRUE;
+        }
+
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+
+	}
+	else {
+		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );
+	}
+
+	return MG_TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // webserv_rest_doWriteMeasurement
 //
 
 int
 VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn, 
-													struct websrv_rest_session *pSession, 
-													int format,
-													wxString& strType,
-													wxString& strMeasurement,
-													wxString& strUnit,
-													wxString& strSensorIdx )
+													    struct websrv_rest_session *pSession, 
+													    int format,
+													    wxString& strType,
+													    wxString& strMeasurement,
+													    wxString& strUnit,
+													    wxString& strSensorIdx )
 {
-	if ( NULL != pSession ) {
-
-
-		
-		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
+    if ( NULL != pSession ) {		
+        webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
 	}
 	else {
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_INVALID_SESSION );

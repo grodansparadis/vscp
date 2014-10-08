@@ -278,6 +278,7 @@ enum {
 	REST_ERROR_CODE_MISSING_DATA,
 	RESR_ERROR_CODE_INPUT_QUEUE_EMPTY,
 	REST_ERROR_CODE_VARIABLE_NOT_FOUND,
+    REST_ERROR_CODE_VARIABLE_NOT_CREATED,
 	REST_ERROR_CODE_COUNT,
 };
 
@@ -312,6 +313,7 @@ enum {
 #define REST_PLAIN_ERROR_MISSING_DATA			"0 -5 Missing data/parameter \r\n\r\nA needed parameter or data is missing to be able to perform operation.\r\n"
 #define REST_PLAIN_ERROR_INPUT_QUEUE_EMPTY		"0 -6 Input queue empty \r\n\r\nThe input queue is empty.\r\n"
 #define REST_PLAIN_ERROR_VARIABLE_NOT_FOUND		"0 -7 Variable not found \r\n\r\nVariable could not be found.\r\n"
+#define REST_PLAIN_ERROR_VARIABLE_NOT_CREATED	"0 -8 Variable could not be created \r\n\r\nVariable could not be created.\r\n"
 
 #define REST_CSV_ERROR_SUCCESS					"success-code,error-code,message,description\r\n1,1,Success,Success."
 #define REST_CSV_ERROR_GENERAL_FAILURE			"success-code,error-code,message,description\r\n0,-1,Failure,General failure."
@@ -321,6 +323,7 @@ enum {
 #define REST_CSV_ERROR_MISSING_DATA				"success-code,error-code,message,description\r\n0,-5,Missing data/parameter,A needed parameter or data is missing to be able to perform operation."
 #define REST_CSV_ERROR_INPUT_QUEUE_EMPTY		"success-code,error-code,message,description\r\n0,-6,Input queue empty,The input queue is empty."
 #define REST_CSV_ERROR_VARIABLE_NOT_FOUND		"success-code,error-code,message,description\r\n0,-7,Variable not found,Variable could not be found."
+#define REST_CSV_ERROR_VARIABLE_NOT_CREATED		"success-code,error-code,message,description\r\n0,-8,Variable could not be created,Variable could not be created."
 
 #define XML_HEADER	"<?xml version = \"1.0\" encoding = \"UTF-8\" ?>"
 #define REST_XML_ERROR_SUCCESS					"<vscp-rest success = \"true\" code = \"1\" message = \"Success\" description = \"Success.\" />"
@@ -331,7 +334,7 @@ enum {
 #define REST_XML_ERROR_MISSING_DATA			    "<vscp-rest success = \"false\" code = \"-5\" message = \"Missing data/parameter\" description = \"A needed parameter or data is missing to be able to perform operation.\" />"
 #define REST_XML_ERROR_INPUT_QUEUE_EMPTY		"<vscp-rest success = \"false\" code = \"-6\" message = \"Input queue empty\" description = \"The input queue is empty.\" />"
 #define REST_XML_ERROR_VARIABLE_NOT_FOUND		"<vscp-rest success = \"false\" code = \"-7\" message = \"Variable not found\" description = \"Variable could not be found.\" />"
-
+#define REST_XML_ERROR_VARIABLE_NOT_CREATED		"<vscp-rest success = \"false\" code = \"-8\" message = \"Variable could not be created\" description = \"Variable could not be created.\" />"
 
 #define REST_JSON_ERROR_SUCCESS					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"}"
 #define REST_JSON_ERROR_GENERAL_FAILURE			"{\"success\":false,\"code\":-1,\"message\":\"Failure\",\"description\":\"General failure.\"}"
@@ -341,6 +344,7 @@ enum {
 #define REST_JSON_ERROR_MISSING_DATA			"{\"success\":false,\"code\":-5,\"message\":\"Missing data/parameter\",\"description\":\"A needed parameter or data is missing to be able to perform operation.\"}"
 #define REST_JSON_ERROR_INPUT_QUEUE_EMPTY		"{\"success\":false,\"code\":-6,\"message\":\"Input queue empty\",\"description\":\"The input queue is empty.\"}"
 #define REST_JSON_ERROR_VARIABLE_NOT_FOUND		"{\"success\":false,\"code\":-7,\"message\":\"Variable not found\",\"description\":\"Variable could not be found.\"}"
+#define REST_JSON_ERROR_VARIABLE_NOT_CREATED	"{\"success\":false,\"code\":-7,\"message\":\"Variable could not be created\",\"description\":\"Variable could not be created.\"}"
 
 #define REST_JSONP_ERROR_SUCCESS				"func("REST_JSON_ERROR_SUCCESS");"
 #define REST_JSONP_ERROR_GENERAL_FAILURE		"func("REST_JSON_ERROR_GENERAL_FAILURE");"
@@ -350,7 +354,7 @@ enum {
 #define REST_JSONP_ERROR_MISSING_DATA			"func("REST_JSON_ERROR_MISSING_DATA");"
 #define REST_JSONP_ERROR_INPUT_QUEUE_EMPTY		"func("REST_JSON_ERROR_INPUT_QUEUE_EMPTY");"
 #define REST_JSONP_ERROR_VARIABLE_NOT_FOUND		"func("REST_JSON_ERROR_VARIABLE_NOT_FOUND");"
-
+#define REST_JSONP_ERROR_VARIABLE_NOT_CREATED	"func("REST_JSON_ERROR_VARIABLE_NOT_CREATED");"
 
 const char* rest_errors[][REST_FORMAT_COUNT+1] = {
 	{REST_PLAIN_ERROR_SUCCESS, REST_CSV_ERROR_SUCCESS,REST_XML_ERROR_SUCCESS,REST_JSON_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS,REST_JSONP_ERROR_SUCCESS},

@@ -213,7 +213,7 @@ extern "C" {
      */
 	bool vscp_convertFloatToNormalizedEventData( double value, 
 												uint8_t *pdata,
-												uint16_t *psize,
+												uint8_t *psize,
 												uint8_t unit=0,
 												uint8_t sensoridx=0 );
 	

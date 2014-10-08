@@ -42,7 +42,7 @@
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
 
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits>
@@ -856,10 +856,10 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
 //
 
 bool vscp_convertFloatToNormalizedEventData( double value, 
-                                            uint8_t *pdata,
-                                            uint16_t *psize,
-                                            uint8_t unit,
-                                            uint8_t sensoridx )
+                                                uint8_t *pdata,
+                                                uint8_t *psize,
+                                                uint8_t unit,
+                                                uint8_t sensoridx )
 {
     // Check pointer
     if ( NULL == pdata ) return false;
@@ -878,7 +878,11 @@ bool vscp_convertFloatToNormalizedEventData( double value,
     int ndigits = 0;
     uint64_t val64;
     double intpart;
-       
+#ifdef WIN32       
+    _snprintf(buf, sizeof(buf), "%g", value);
+#else
+    snprintf(buf, sizeof(buf), "%g", value);
+#endif
     char *pos = strchr(buf,'.');
     if ( NULL != pos ) {
         ndigits = strlen(pos)-1;
@@ -896,25 +900,25 @@ bool vscp_convertFloatToNormalizedEventData( double value,
         *psize = 3;
         pdata[2] = val64 & 0xff;
     }
-    else if ( val64 < ((double)0x800) ) {
+    else if ( val64 < ((double)0x8000) ) {
         *psize = 4;
         pdata[2] = (val64 >> 8) & 0xff;
         pdata[3] = val64 & 0xff;
     }
-    else if ( val64 < ((double)0x800) ) {
+    else if ( val64 < ((double)0x800000) ) {
         *psize = 5;
         pdata[2] = (val64 >> 16) & 0xff;
         pdata[3] = (val64 >> 8) & 0xff;
         pdata[4] = val64 & 0xff;
     }
-    else if ( val64 < ((double)0x80000) ) {
+    else if ( val64 < ((double)0x80000000) ) {
         *psize = 6;
         pdata[2] = (val64 >> 24) & 0xff;
         pdata[3] = (val64 >> 16) & 0xff;
         pdata[4] = (val64 >> 8) & 0xff;
         pdata[5] = val64 & 0xff;
     }
-    else if ( val64 < ((double)0x80000) ) {
+    else if ( val64 < ((double)0x8000000000) ) {
         *psize = 7;
         pdata[2] = (val64 >> 32) & 0xff;
         pdata[3] = (val64 >> 24) & 0xff;
@@ -922,7 +926,7 @@ bool vscp_convertFloatToNormalizedEventData( double value,
         pdata[5] = (val64 >> 8) & 0xff;
         pdata[6] = val64 & 0xff;
     }
-    else if ( val64 < ((double)0x80000) ) {
+    else if ( val64 < ((double)0x80000000) ) {
         *psize = 8;
         pdata[2] = (val64 >> 40) & 0xff;
         pdata[3] = (val64 >> 32) & 0xff;
