@@ -2856,7 +2856,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
     //   *****************************************************
 	//   * * * * * * * *   Create variable    * * * * * * * *
 	//   *****************************************************
-	else if ( ( '9' == keypairs[_("OP")] ) || ( _("CREATVAR") == keypairs[_("OP")] ) ) {
+	else if ( ( '9' == keypairs[_("OP")] ) || ( _("CREATEVAR") == keypairs[_("OP")] ) ) {
 
 		if ( _("") != keypairs[_("VARIABLE")] ) {
 			rv = webserv_rest_doWriteVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
