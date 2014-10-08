@@ -356,7 +356,7 @@ public:
     wxString m_runAsUser;
 
     /*!
-        Maximum number of items in receivequeue for clients
+        Maximum number of items in receiveq ueue for clients
      */
     uint32_t m_maxItemsInClientReceiveQueue;
 

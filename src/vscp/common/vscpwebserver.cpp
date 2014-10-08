@@ -2758,28 +2758,28 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   *************************************************************
 	//   * * * * * * * *  Status (hold session open)   * * * * * * * *
 	//   *************************************************************
-	if ( ( '0' == keypairs[_("OP")] ) ||  ( _("STATUS") == keypairs[_("OP")] ) ) {
+	if ( ( _("0") == keypairs[_("OP")] ) ||  ( _("STATUS") == keypairs[_("OP")] ) ) {
 		rv = webserv_rest_doStatus( conn, pSession, format );
 	}
 
 	//  ********************************************
 	//  * * * * * * * * open session * * * * * * * *
 	//  ********************************************
-	else if ( ( '1' == keypairs[_("OP")] ) || ( _("OPEN") == keypairs[_("OP")] ) ) {
+	else if ( ( _("1") == keypairs[_("OP")] ) || ( _("OPEN") == keypairs[_("OP")] ) ) {
 		rv = webserv_rest_doOpen( conn, pSession, pUser, format );		
 	}
 
 	//   **********************************************
 	//   * * * * * * * * close session  * * * * * * * *
 	//   **********************************************
-	else if ( ( '2' == keypairs[_("OP")] ) || ( _("CLOSE") == keypairs[_("OP")] ) ) {
+	else if ( ( _("2") == keypairs[_("OP")] ) || ( _("CLOSE") == keypairs[_("OP")] ) ) {
 		rv = webserv_rest_doOpen( conn, pSession, pUser, format );
 	}
 
 	//  ********************************************
 	//   * * * * * * * * Send event  * * * * * * * *
 	//  ********************************************
-	else if ( ( '3' == keypairs[_("OP")] ) || ( _("SENDEVENT") == keypairs[_("OP")] ) ) {
+	else if ( ( _("3") == keypairs[_("OP")] ) || ( _("SENDEVENT") == keypairs[_("OP")] ) ) {
 		vscpEvent vscpevent;
 		if ( _("") != keypairs[_("VSCPEVENT")] ) {
 			;
@@ -2796,7 +2796,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//  ********************************************
 	//   * * * * * * * * Read event  * * * * * * * *
 	//  ********************************************
-	else if ( ( '4' == keypairs[_("OP")] ) || ( _("READEVENT") == keypairs[_("OP")] ) ) {
+	else if ( ( _("4") == keypairs[_("OP")] ) || ( _("READEVENT") == keypairs[_("OP")] ) ) {
 		long count = 1;
 		if ( _("") != keypairs[_("COUNT")].Upper() ) {
 			keypairs[_("COUNT")].ToLong( &count );
@@ -2807,7 +2807,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   **************************************************
 	//   * * * * * * * * Set (read) filter  * * * * * * * *
 	//   **************************************************
-	else if ( ( '5' == keypairs[_("OP")] ) || ( _("SETFILTER") == keypairs[_("OP")] ) ) {
+	else if ( ( _("5") == keypairs[_("OP")] ) || ( _("SETFILTER") == keypairs[_("OP")] ) ) {
 		
 		vscpEventFilter vscpfilter;
 		if ( _("") != keypairs[_("VSCPFILTER")] ) {
@@ -2823,14 +2823,14 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   ****************************************************
 	//   * * * * * * * *  clear input queue   * * * * * * * *
 	//   ****************************************************
-	else if ( ( '6' == keypairs[_("OP")] ) || ( _("CLEARQUEUE") == keypairs[_("OP")] ) ) {
+	else if ( ( _("6") == keypairs[_("OP")] ) || ( _("CLEARQUEUE") == keypairs[_("OP")] ) ) {
 		webserv_rest_doClearQueue( conn, pSession, format );
 	}
 	
 	//   ****************************************************
 	//   * * * * * * * * read variable value  * * * * * * * *
 	//   ****************************************************
-	else if ( ( '7' == keypairs[_("OP")] ) || ( _("READVAR") == keypairs[_("OP")] ) ) {
+	else if ( ( _("7") == keypairs[_("OP")] ) || ( _("READVAR") == keypairs[_("OP")] ) ) {
 		if ( _("") != keypairs[_("VARIABLE")] ) {
 			rv = webserv_rest_doReadVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
 		}
@@ -2842,7 +2842,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   *****************************************************
 	//   * * * * * * * * Write variable value  * * * * * * * *
 	//   *****************************************************
-	else if ( ( '8' == keypairs[_("OP")] ) || ( _("WRITEVAR") == keypairs[_("OP")] ) ) {
+	else if ( ( _("8") == keypairs[_("OP")] ) || ( _("WRITEVAR") == keypairs[_("OP")] ) ) {
 
 		if ( _("") != keypairs[_("VARIABLE")] ) {
 			rv = webserv_rest_doWriteVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
@@ -2856,7 +2856,9 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
     //   *****************************************************
 	//   * * * * * * * *   Create variable    * * * * * * * *
 	//   *****************************************************
-	else if ( ( '9' == keypairs[_("OP")] ) || ( _("CREATEVAR") == keypairs[_("OP")] ) ) {
+
+	else if ( ( _("9") == keypairs[_("OP")] ) || ( _("CREATEVAR") == keypairs[_("OP")] ) ) {
+
 
 		if ( _("") != keypairs[_("VARIABLE")] ) {
 			rv = webserv_rest_doWriteVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
@@ -2872,7 +2874,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   *************************************************
 	//	 value,unit=0,sensor=0
 	//
-	else if ( ( '10' == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")] ) ) {
+	else if ( ( _("10") == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")] ) ) {
 
 		if ( ( _("") != keypairs[_("MEASUREMENT")] ) && (_("") != keypairs[_("TYPE")]) ) {
 			

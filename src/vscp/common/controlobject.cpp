@@ -99,6 +99,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <pwd.h>
 
 #include "wx/wx.h"
 #include "wx/defs.h"
@@ -495,10 +496,10 @@ bool CControlObject::init(wxString& strcfgfile)
     }
 
 #ifndef WIN32
-    if ( runAsUser.Length() ) { 
+    if ( m_runAsUser.Length() ) { 
         struct passwd *pw;
-        if ((pw = getpwnam(runAsUser.mbc_str())) == NULL) {
-            logMsg(_(""Unknown user".\n"), DAEMON_LOGMSG_CRITICAL);
+        if ( NULL == ( pw = getpwnam(m_runAsUser.mbc_str() ) ) ) {
+            logMsg(_("Unknown user.\n"), DAEMON_LOGMSG_CRITICAL);
         } else if (setgid(pw->pw_gid) != 0) {
             logMsg( _("setgid() failed.\n"), DAEMON_LOGMSG_CRITICAL);
         } else if (setuid(pw->pw_uid) != 0) {
