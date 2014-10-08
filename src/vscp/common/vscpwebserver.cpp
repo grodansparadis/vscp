@@ -2526,25 +2526,25 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *conn,
 				1337 );
 
 	Cmd5 md5( (unsigned char *)buf );
-	strcpy( ret->m_sid, md5.getDigest() );
+	strcpy( ret->sid, md5.getDigest() );
 
 	// New client
-	ret->m_pClientItem = new CClientItem();	// Create client        
-    vscp_clearVSCPFilter(&ret->m_pClientItem->m_filterVSCP); // Clear filter
-    ret->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST;
-    ret->m_pClientItem->m_strDeviceName = _("REST client. Started at ");
+	ret->pClientItem = new CClientItem();	// Create client        
+    vscp_clearVSCPFilter(&ret->pClientItem->m_filterVSCP); // Clear filter
+    ret->pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_CLIENT_REST;
+    ret->pClientItem->m_strDeviceName = _("REST client. Started at ");
     wxDateTime now = wxDateTime::Now();
-    ret->m_pClientItem->m_strDeviceName += now.FormatISODate();
-    ret->m_pClientItem->m_strDeviceName += _(" ");
-    ret->m_pClientItem->m_strDeviceName += now.FormatISOTime();
-	ret->m_pClientItem->m_bOpen = true;		// Open client
+    ret->pClientItem->m_strDeviceName += now.FormatISODate();
+    ret->pClientItem->m_strDeviceName += _(" ");
+    ret->pClientItem->m_strDeviceName += now.FormatISOTime();
+	ret->pClientItem->m_bOpen = true;		// Open client
 
 	// Add the client to the Client List
     pObject->m_wxClientMutex.Lock();
-    pObject->addClient(ret->m_pClientItem);
+    pObject->addClient(ret->pClientItem);
     pObject->m_wxClientMutex.Unlock();
 
-	ret->m_pUserItem = pUser;
+	ret->pUserItem = pUser;
 	
     // Add to linked list
     ret->lastActiveTime = time(NULL);
@@ -2571,7 +2571,7 @@ VSCPWebServerThread::websrv_get_rest_session( struct mg_connection *conn,
 	// find existing session 
 	ret = websrv_rest_sessions;
     while (NULL != ret) {
-		if  (0 == strcmp( SessionId.mb_str(), ret->m_sid) )  break;
+		if  (0 == strcmp( SessionId.mb_str(), ret->sid) )  break;
         ret = ret->m_next;
 	}
         
@@ -2616,7 +2616,7 @@ VSCPWebServerThread::websrv_expire_rest_sessions( struct mg_connection *conn )
             }
             
 			pObject->m_wxClientMutex.Lock();
-			pObject->removeClient( pos->m_pClientItem );
+			pObject->removeClient( pos->pClientItem );
 			pObject->m_wxClientMutex.Unlock();
 
             free( pos );
@@ -2651,6 +2651,12 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	hashArgs keypairs;
 	struct websrv_rest_session *pSession = NULL;
 
+    // Get metod
+    wxString method = wxString::FromAscii( conn->request_method );
+    method.Trim();
+    method.Trim( false );
+    method.MakeUpper();
+
 	// Make string with GMT time
 	vscp_getTimeString( date, sizeof(date), &curtime );
 
@@ -2662,50 +2668,147 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
 	vscp_getTimeString( date, sizeof(date), &curtime );
 
-	// get parameters
-	wxStringTokenizer tkz( wxString::FromAscii( conn->query_string ), _("&") );
-	while ( tkz.HasMoreTokens() ) {
-		int pos;
-		str = tkz.GetNextToken();
-		if ( wxNOT_FOUND != ( pos = str.Find('=') ) ) {
-			keypairs[ str.Left(pos).Upper() ] = str.Right( str.Length()-pos-1 ); 
-		}
+	
+
+    if ( _("PUT") == method ) {
+
+        // user
+        mg_get_var(conn, "user", buf, sizeof(buf) );
+        keypairs[_("USER")].FromAscii( buf );
+
+        // password
+        mg_get_var(conn, "password", buf, sizeof(buf) );
+        keypairs[_("PASSWORD")].FromAscii( buf );
+
+        // session
+        mg_get_var(conn, "session", buf, sizeof(buf) );
+        keypairs[_("SESSION")].FromAscii( buf );
+
+        // format
+        mg_get_var(conn, "format", buf, sizeof(buf) );
+        keypairs[_("FORMAT")].FromAscii( buf );
+
+        // op
+        mg_get_var(conn, "op", buf, sizeof(buf) );
+        keypairs[_("OP")].FromAscii( buf );
+
+        // vscpevent
+        mg_get_var(conn, "vscpevent", buf, sizeof(buf) );
+        keypairs[_("VSCPEVENT")].FromAscii( buf );
+
+        // count
+        mg_get_var(conn, "count", buf, sizeof(buf) );
+        keypairs[_("COUNT")].FromAscii( buf );
+
+        // vscpfilter
+        mg_get_var(conn, "vscpfilter", buf, sizeof(buf) );
+        keypairs[_("VSCPFILTER")].FromAscii( buf );
+
+        // variable
+        mg_get_var(conn, "variable", buf, sizeof(buf) );
+        keypairs[_("VARIABLE")].FromAscii( buf );
+
+        // type
+        mg_get_var(conn, "type", buf, sizeof(buf) );
+        keypairs[_("TYPE")].FromAscii( buf );
+
+        // measurement
+        mg_get_var(conn, "measurement", buf, sizeof(buf) );
+        keypairs[_("MEASUREMENT")].FromAscii( buf );
+
+        // unit
+        mg_get_var(conn, "unit", buf, sizeof(buf) );
+        keypairs[_("UNIT")].FromAscii( buf );
+
+        // sensoridx
+        mg_get_var(conn, "sensoridx", buf, sizeof(buf) );
+        keypairs[_("SENSORIDX")].FromAscii( buf );
+
+        // name
+        mg_get_var(conn, "name", buf, sizeof(buf) );
+        keypairs[_("NAME")].FromAscii( buf );
+
+        // from
+        mg_get_var(conn, "from", buf, sizeof(buf) );
+        keypairs[_("FROM")].FromAscii( buf );
+
+        // to
+        mg_get_var(conn, "to", buf, sizeof(buf) );
+        keypairs[_("TO")].FromAscii( buf );
+    }
+    else {
+        // get parameters for get
+	    wxStringTokenizer tkz( wxString::FromAscii( conn->query_string ), _("&") );
+	    while ( tkz.HasMoreTokens() ) {
+		    int pos;
+		    str = tkz.GetNextToken();
+		    if ( wxNOT_FOUND != ( pos = str.Find('=') ) ) {
+			    keypairs[ str.Left(pos).Upper() ] = str.Right( str.Length()-pos-1 ); 
+		    }
+	    }
+    }
+
+    // If we have a session key we try to get the session
+	if ( _("") != keypairs[_("SESSION")] ) {
+		pSession = websrv_get_rest_session( conn, keypairs[_("SESSION")] );
 	}
 
-	// Check if user is valid			
-	CUserItem *pUser = pObject->m_userList.getUser( keypairs[_("USER")] );
-	if ( NULL == pUser ) {
-        wxString strErr = 
-        wxString::Format( _("[REST Client] Host [%s] Invalid user [%s]\n"), 
-                            (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                            (const char *)keypairs[_("USER")].wc_str() );
-	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-        return MG_FALSE;
-    }
+    if ( NULL == pSession ) {
 
-	// Check if remote ip is valid
-	bool bValidHost;
-	pObject->m_mutexUserList.Lock();
-	bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
-	pObject->m_mutexUserList.Unlock();
-	if (!bValidHost) {
-        wxString strErr = 
-        wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                            (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                            (const char *)keypairs[_("USER")].wc_str() );
-	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-        return MG_FALSE;
-    }
+        // Get user
+        CUserItem *pUser = pObject->m_userList.getUser( keypairs[_("USER")] ); 
 
-	// Is this an authorized user?
-	wxString str3 = keypairs[_("PASSWORD")];
-	if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) {
-        wxString strErr = 
-        wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
-                            (const char *)keypairs[_("USER")].wc_str(), 
-                            (const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
-	    pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-        return MG_FALSE;
+	    // Check if user is valid	
+	    if ( NULL == pUser ) {
+            wxString strErr = 
+            wxString::Format( _("[REST Client] Host [%s] Invalid user [%s]\n"), 
+                                (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
+                                (const char *)keypairs[_("USER")].wc_str() );
+	        pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            return MG_FALSE;
+        }
+
+	    // Check if remote ip is valid
+	    bool bValidHost;
+	    pObject->m_mutexUserList.Lock();
+	    bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
+	    pObject->m_mutexUserList.Unlock();
+	    if (!bValidHost) {
+            wxString strErr = 
+            wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
+                                (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
+                                (const char *)keypairs[_("USER")].wc_str() );
+	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            return MG_FALSE;
+        }
+
+	    // Is this an authorized user?
+	    wxString str3 = keypairs[_("PASSWORD")];
+	    if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) {
+            wxString strErr = 
+            wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
+                                (const char *)keypairs[_("USER")].wc_str(), 
+                                (const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
+	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            return MG_FALSE;
+        }
+
+    }
+    else {
+        // check that the origin is valid
+        // Check if remote ip is valid
+	    bool bValidHost;
+	    pObject->m_mutexUserList.Lock();
+	    bValidHost = pSession->pUserItem->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
+	    pObject->m_mutexUserList.Unlock();
+	    if (!bValidHost) {
+            wxString strErr = 
+            wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
+                                (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
+                                (const char *)keypairs[_("USER")].wc_str() );
+	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+            return MG_FALSE;
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -2750,36 +2853,33 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 		return MG_TRUE;
 	}
 
-	// If we have a session key we try to get the session
-	if ( _("") != keypairs[_("SESSION")] ) {
-		pSession = websrv_get_rest_session( conn, keypairs[_("SESSION")] );
-	}
+	
 
 	//   *************************************************************
 	//   * * * * * * * *  Status (hold session open)   * * * * * * * *
 	//   *************************************************************
-	if ( ( _("0") == keypairs[_("OP")] ) ||  ( _("STATUS") == keypairs[_("OP")] ) ) {
+	if ( ( _("0") == keypairs[_("OP")] ) ||  ( _("STATUS") == keypairs[_("OP")].Upper() ) ) {
 		rv = webserv_rest_doStatus( conn, pSession, format );
 	}
 
 	//  ********************************************
 	//  * * * * * * * * open session * * * * * * * *
 	//  ********************************************
-	else if ( ( _("1") == keypairs[_("OP")] ) || ( _("OPEN") == keypairs[_("OP")] ) ) {
-		rv = webserv_rest_doOpen( conn, pSession, pUser, format );		
+    else if ( ( _("1") == keypairs[_("OP")] ) || ( _("OPEN") == keypairs[_("OP")].Upper() ) ) {
+		rv = webserv_rest_doOpen( conn, pSession, pSession->pUserItem, format );		
 	}
 
 	//   **********************************************
 	//   * * * * * * * * close session  * * * * * * * *
 	//   **********************************************
-	else if ( ( _("2") == keypairs[_("OP")] ) || ( _("CLOSE") == keypairs[_("OP")] ) ) {
-		rv = webserv_rest_doOpen( conn, pSession, pUser, format );
+	else if ( ( _("2") == keypairs[_("OP")] ) || ( _("CLOSE") == keypairs[_("OP")].Upper() ) ) {
+		rv = webserv_rest_doOpen( conn, pSession, pSession->pUserItem, format );
 	}
 
 	//  ********************************************
 	//   * * * * * * * * Send event  * * * * * * * *
 	//  ********************************************
-	else if ( ( _("3") == keypairs[_("OP")] ) || ( _("SENDEVENT") == keypairs[_("OP")] ) ) {
+	else if ( ( _("3") == keypairs[_("OP")] ) || ( _("SENDEVENT") == keypairs[_("OP")].Upper() ) ) {
 		vscpEvent vscpevent;
 		if ( _("") != keypairs[_("VSCPEVENT")] ) {
 			;
@@ -2796,7 +2896,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//  ********************************************
 	//   * * * * * * * * Read event  * * * * * * * *
 	//  ********************************************
-	else if ( ( _("4") == keypairs[_("OP")] ) || ( _("READEVENT") == keypairs[_("OP")] ) ) {
+	else if ( ( _("4") == keypairs[_("OP")] ) || ( _("READEVENT") == keypairs[_("OP")].Upper() ) ) {
 		long count = 1;
 		if ( _("") != keypairs[_("COUNT")].Upper() ) {
 			keypairs[_("COUNT")].ToLong( &count );
@@ -2807,7 +2907,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   **************************************************
 	//   * * * * * * * * Set (read) filter  * * * * * * * *
 	//   **************************************************
-	else if ( ( _("5") == keypairs[_("OP")] ) || ( _("SETFILTER") == keypairs[_("OP")] ) ) {
+	else if ( ( _("5") == keypairs[_("OP")] ) || ( _("SETFILTER") == keypairs[_("OP")].Upper() ) ) {
 		
 		vscpEventFilter vscpfilter;
 		if ( _("") != keypairs[_("VSCPFILTER")] ) {
@@ -2823,14 +2923,14 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   ****************************************************
 	//   * * * * * * * *  clear input queue   * * * * * * * *
 	//   ****************************************************
-	else if ( ( _("6") == keypairs[_("OP")] ) || ( _("CLEARQUEUE") == keypairs[_("OP")] ) ) {
+	else if ( ( _("6") == keypairs[_("OP")] ) || ( _("CLEARQUEUE") == keypairs[_("OP")].Upper() ) ) {
 		webserv_rest_doClearQueue( conn, pSession, format );
 	}
 	
 	//   ****************************************************
 	//   * * * * * * * * read variable value  * * * * * * * *
 	//   ****************************************************
-	else if ( ( _("7") == keypairs[_("OP")] ) || ( _("READVAR") == keypairs[_("OP")] ) ) {
+	else if ( ( _("7") == keypairs[_("OP")] ) || ( _("READVAR") == keypairs[_("OP")].Upper() ) ) {
 		if ( _("") != keypairs[_("VARIABLE")] ) {
 			rv = webserv_rest_doReadVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
 		}
@@ -2842,7 +2942,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   *****************************************************
 	//   * * * * * * * * Write variable value  * * * * * * * *
 	//   *****************************************************
-	else if ( ( _("8") == keypairs[_("OP")] ) || ( _("WRITEVAR") == keypairs[_("OP")] ) ) {
+	else if ( ( _("8") == keypairs[_("OP")] ) || ( _("WRITEVAR") == keypairs[_("OP")].Upper() ) ) {
 
 		if ( _("") != keypairs[_("VARIABLE")] ) {
 			rv = webserv_rest_doWriteVariable( conn, pSession, format, keypairs[_("VARIABLE")] );
@@ -2857,7 +2957,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   * * * * * * * *   Create variable    * * * * * * * *
 	//   *****************************************************
 
-	else if ( ( _("9") == keypairs[_("OP")] ) || ( _("CREATEVAR") == keypairs[_("OP")] ) ) {
+	else if ( ( _("9") == keypairs[_("OP")] ) || ( _("CREATEVAR") == keypairs[_("OP")].Upper() ) ) {
 
 
 		if ( _("") != keypairs[_("VARIABLE")] ) {
@@ -2874,7 +2974,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   *************************************************
 	//	 value,unit=0,sensor=0
 	//
-	else if ( ( _("10") == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")] ) ) {
+	else if ( ( _("10") == keypairs[_("OP")] ) || ( _("MEASUREMENT") == keypairs[_("OP")].Upper() ) ) {
 
 		if ( ( _("") != keypairs[_("MEASUREMENT")] ) && (_("") != keypairs[_("TYPE")]) ) {
 			
@@ -2892,7 +2992,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	//   *******************************************
 	//   * * * * * * * * Table read  * * * * * * * *
 	//   *******************************************
-	else if ( ( _("11") == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")] ) ) {
+	else if ( ( _("11") == keypairs[_("op")] ) || ( _("TABLE") == keypairs[_("op")].Upper() ) ) {
 		if ( _("") != keypairs[_("NAME")] ) {
 			
 			rv = webserv_rest_doGetTableData( conn, pSession, format, 
@@ -3039,20 +3139,20 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn,
 			destguid.setAt(0,0);
 			destguid.setAt(1,0);
 
-			if (NULL != pSession->m_pClientItem ) {
+			if (NULL != pSession->pClientItem ) {
 
 				// Set client id 
-				pEvent->obid = pSession->m_pClientItem->m_clientID;
+				pEvent->obid = pSession->pClientItem->m_clientID;
 
 				// Check if filtered out
-				if (vscp_doLevel2Filter( pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+				if (vscp_doLevel2Filter( pEvent, &pSession->pClientItem->m_filterVSCP)) {
 
 					// Lock client
 					pObject->m_wxClientMutex.Lock();
 
 					// If the client queue is full for this client then the
 					// client will not receive the message
-					if (pSession->m_pClientItem->m_clientInputQueue.GetCount() <=
+					if (pSession->pClientItem->m_clientInputQueue.GetCount() <=
 							pObject->m_maxItemsInClientReceiveQueue) {
 
 						vscpEvent *pNewEvent = new( vscpEvent );
@@ -3061,9 +3161,9 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn,
 							vscp_copyVSCPEvent(pNewEvent, pEvent);
 
 							// Add the new event to the inputqueue
-							pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
-							pSession->m_pClientItem->m_clientInputQueue.Append( pNewEvent );
-							pSession->m_pClientItem->m_semClientInputQueue.Post();
+							pSession->pClientItem->m_mutexClientInputQueue.Lock();
+							pSession->pClientItem->m_clientInputQueue.Append( pNewEvent );
+							pSession->pClientItem->m_semClientInputQueue.Post();
 
 							bSent = true;
 						}
@@ -3088,10 +3188,10 @@ VSCPWebServerThread::webserv_rest_doSendEvent( struct mg_connection *conn,
 
 		if (!bSent) {
 
-			if (NULL != pSession->m_pClientItem ) {
+			if (NULL != pSession->pClientItem ) {
 
 				// Set client id 
-				pEvent->obid = pSession->m_pClientItem->m_clientID;
+				pEvent->obid = pSession->pClientItem->m_clientID;
 
 				// There must be room in the send queue
 				if (pObject->m_maxItemsInClientReceiveQueue >
@@ -3152,7 +3252,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 	if ( NULL != pSession ) {
 
-		if ( !pSession->m_pClientItem->m_clientInputQueue.empty() ) {
+		if ( !pSession->pClientItem->m_clientInputQueue.empty() ) {
 
 			char buf[32000];
 			char wrkbuf[32000];
@@ -3164,8 +3264,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 				
 				mg_write( conn, "\r\n", 2 );		// head/body Separator
 
-				if ( pSession->m_pClientItem->m_bOpen &&
-					pSession->m_pClientItem->m_clientInputQueue.GetCount()) {
+				if ( pSession->pClientItem->m_bOpen &&
+					pSession->pClientItem->m_clientInputQueue.GetCount()) {
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, "1 1 Success \r\n");
@@ -3176,25 +3276,25 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					sprintf( wrkbuf, 
 								"%lu events requested of %lu available (unfiltered) %lu will be retrived\r\n", 
 								count, 
-								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
-								MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+								pSession->pClientItem->m_clientInputQueue.GetCount(),
+								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
 
-					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()); i++ ) {
 
 						CLIENTEVENTLIST::compatibility_iterator nodeClient;
 						vscpEvent *pEvent;
 
-						pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
-						nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+						pSession->pClientItem->m_mutexClientInputQueue.Lock();
+						nodeClient = pSession->pClientItem->m_clientInputQueue.GetFirst();
 						pEvent = nodeClient->GetData();
-						pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
-						pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+						pSession->pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+						pSession->pClientItem->m_mutexClientInputQueue.Unlock();
 
 						if (NULL != pEvent) {
 
-							if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+							if (vscp_doLevel2Filter(pEvent, &pSession->pClientItem->m_filterVSCP)) {
 
 								wxString str;
 								if (vscp_writeVscpEventToString(pEvent, str)) {
@@ -3247,8 +3347,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 				
 				mg_write( conn, "\r\n", 2 );		// head/body Separator
 
-				if ( pSession->m_pClientItem->m_bOpen &&
-					pSession->m_pClientItem->m_clientInputQueue.GetCount()) {
+				if ( pSession->pClientItem->m_bOpen &&
+					pSession->pClientItem->m_clientInputQueue.GetCount()) {
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, "success-code,error-code,message,description,Event\r\n1,1,Success,Success.,NULL\r\n");
@@ -3259,25 +3359,25 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					sprintf( wrkbuf, 
 								"1,2,Info,%lu events requested of %lu available (unfiltered) %lu will be retrived,NULL\r\n", 
 								count, 
-								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
-								MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+								pSession->pClientItem->m_clientInputQueue.GetCount(),
+								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
 
-					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()); i++ ) {
 
 						CLIENTEVENTLIST::compatibility_iterator nodeClient;
 						vscpEvent *pEvent;
 
-						pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
-						nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+						pSession->pClientItem->m_mutexClientInputQueue.Lock();
+						nodeClient = pSession->pClientItem->m_clientInputQueue.GetFirst();
 						pEvent = nodeClient->GetData();
-						pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
-						pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+						pSession->pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+						pSession->pClientItem->m_mutexClientInputQueue.Unlock();
 
 						if (NULL != pEvent) {
 
-							if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+							if (vscp_doLevel2Filter(pEvent, &pSession->pClientItem->m_filterVSCP)) {
 
 								wxString str;
 								if (vscp_writeVscpEventToString(pEvent, str)) {
@@ -3334,8 +3434,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 				
 				mg_write( conn, "\r\n", 2 );		// head/body Separator
 
-				if ( pSession->m_pClientItem->m_bOpen &&
-					pSession->m_pClientItem->m_clientInputQueue.GetCount()) {
+				if ( pSession->pClientItem->m_bOpen &&
+					pSession->pClientItem->m_clientInputQueue.GetCount()) {
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, XML_HEADER"<vscp-rest success = \"true\" code = \"1\" massage = \"Success\" description = \"Success.\" >");
@@ -3346,25 +3446,25 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					sprintf( wrkbuf, 
 								"<info>%lu events requested of %lu available (unfiltered) %lu will be retrived</info>", 
 								count, 
-								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
-								MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+								pSession->pClientItem->m_clientInputQueue.GetCount(),
+								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
 					webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 					mg_write( conn, buf, strlen( buf ) );
 
-					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()); i++ ) {
 
 						CLIENTEVENTLIST::compatibility_iterator nodeClient;
 						vscpEvent *pEvent;
 
-						pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
-						nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+						pSession->pClientItem->m_mutexClientInputQueue.Lock();
+						nodeClient = pSession->pClientItem->m_clientInputQueue.GetFirst();
 						pEvent = nodeClient->GetData();
-						pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
-						pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+						pSession->pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+						pSession->pClientItem->m_mutexClientInputQueue.Unlock();
 
 						if (NULL != pEvent) {
 
-							if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+							if (vscp_doLevel2Filter(pEvent, &pSession->pClientItem->m_filterVSCP)) {
 
 								wxString str;
 
@@ -3470,8 +3570,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 				
 				mg_write( conn, "\r\n", 2 );		// head/body Separator
 
-				if ( pSession->m_pClientItem->m_bOpen &&
-						pSession->m_pClientItem->m_clientInputQueue.GetCount() ) {
+				if ( pSession->pClientItem->m_bOpen &&
+						pSession->pClientItem->m_clientInputQueue.GetCount() ) {
 
 					if ( REST_FORMAT_JSONP == format ) {
 						p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "func(" );
@@ -3483,8 +3583,8 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					sprintf( wrkbuf, 
 								"%lu events requested of %lu available (unfiltered) %lu will be retrived", 
 								count, 
-								pSession->m_pClientItem->m_clientInputQueue.GetCount(),
-								MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()) );
+								pSession->pClientItem->m_clientInputQueue.GetCount(),
+								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
 					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wrkbuf );
 					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
 					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "event");
@@ -3495,20 +3595,20 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					memset( buf, 0, sizeof( buf ) );
 					p = buf;
 
-					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->m_pClientItem->m_clientInputQueue.GetCount()); i++ ) {
+					for ( unsigned int i=0; i<MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()); i++ ) {
 
 						CLIENTEVENTLIST::compatibility_iterator nodeClient;
 						vscpEvent *pEvent;
 
-						pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
-						nodeClient = pSession->m_pClientItem->m_clientInputQueue.GetFirst();
+						pSession->pClientItem->m_mutexClientInputQueue.Lock();
+						nodeClient = pSession->pClientItem->m_clientInputQueue.GetFirst();
 						pEvent = nodeClient->GetData();
-						pSession->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
-						pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+						pSession->pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
+						pSession->pClientItem->m_mutexClientInputQueue.Unlock();
 
 						if (NULL != pEvent) {
 
-							if (vscp_doLevel2Filter(pEvent, &pSession->m_pClientItem->m_filterVSCP)) {
+							if (vscp_doLevel2Filter(pEvent, &pSession->pClientItem->m_filterVSCP)) {
 
 								wxString str;
 								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "{" );
@@ -3644,9 +3744,9 @@ VSCPWebServerThread::webserv_rest_doSetFilter( struct mg_connection *conn,
 											vscpEventFilter& vscpfilter )
 {
 	if ( NULL != pSession ) {
-		pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
-		memcpy( &pSession->m_pClientItem->m_filterVSCP, &vscpfilter, sizeof( vscpEventFilter ) );
-		pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+		pSession->pClientItem->m_mutexClientInputQueue.Lock();
+		memcpy( &pSession->pClientItem->m_filterVSCP, &vscpfilter, sizeof( vscpEventFilter ) );
+		pSession->pClientItem->m_mutexClientInputQueue.Unlock();
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
 	}
 	else {
@@ -3677,16 +3777,16 @@ VSCPWebServerThread::webserv_rest_doClearQueue( struct mg_connection *conn,
 
 		CLIENTEVENTLIST::iterator iterVSCP;
 
-		pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
+		pSession->pClientItem->m_mutexClientInputQueue.Lock();
         
-		for (iterVSCP = pSession->m_pClientItem->m_clientInputQueue.begin();
-                iterVSCP != pSession->m_pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
+		for (iterVSCP = pSession->pClientItem->m_clientInputQueue.begin();
+                iterVSCP != pSession->pClientItem->m_clientInputQueue.end(); ++iterVSCP) {
             vscpEvent *pEvent = *iterVSCP;
             vscp_deleteVSCPevent(pEvent);
         }
 
-        pSession->m_pClientItem->m_clientInputQueue.Clear();
-        pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
+        pSession->pClientItem->m_clientInputQueue.Clear();
+        pSession->pClientItem->m_mutexClientInputQueue.Unlock();
 		
 		webserv_rest_error( conn, pSession, format, REST_ERROR_CODE_SUCCESS );
 	}
@@ -3830,8 +3930,8 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 				
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
 
-			if ( pSession->m_pClientItem->m_bOpen &&
-				pSession->m_pClientItem->m_clientInputQueue.GetCount() ) {
+			if ( pSession->pClientItem->m_bOpen &&
+				pSession->pClientItem->m_clientInputQueue.GetCount() ) {
 
 				if ( REST_FORMAT_JSONP == format ) {
 					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "func(" );
@@ -4011,8 +4111,8 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 
 int
 VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn, 
-											struct websrv_rest_session *pSession, 
-											int format )
+											    struct websrv_rest_session *pSession, 
+											    int format )
 {
 	char buf[2048];
 	char wrkbuf[256];
@@ -4032,7 +4132,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 
 			memset( buf, 0, sizeof( buf ));
 #ifdef WIN32
-			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "Session-id=%s nEvents=%d", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 								sizeof(wrkbuf), 
@@ -4056,7 +4156,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Sucess,%s,%d", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
@@ -4079,7 +4179,7 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%d</nEvents></vscp-rest>", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
@@ -4102,12 +4202,12 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d}", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%lu}", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
 			mg_write( conn, buf, strlen( buf ) );
@@ -4125,12 +4225,12 @@ VSCPWebServerThread::webserv_rest_doStatus( struct mg_connection *conn,
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d});", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%lu});", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
 			mg_write( conn, buf, strlen( buf ) );
@@ -4189,9 +4289,9 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 
 			memset( buf, 0, sizeof( buf ));
 #ifdef WIN32
-			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+			int n = _snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%d", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
-			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%lu", pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+			int n = snprintf( wrkbuf, sizeof(wrkbuf), "1 1 Success Session-id=%s nEvents=%lu", pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
 			mg_write( conn, buf, strlen( buf ) );
@@ -4209,12 +4309,12 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%d", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"success-code,error-code,message,description,session-id,nEvents\r\n1,1,Success,Success. 1,1,Success,Success,%s,%lu", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
 			mg_write( conn, buf, strlen( buf ) );
@@ -4232,12 +4332,12 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%d</nEvents></vscp-rest>", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"<vscp-rest success = \"true\" code = \"1\" massage = \"Success.\" description = \"Success.\" ><session-id>%s</session-id><nEvents>%lu</nEvents></vscp-rest>", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #endif
 			webserv_util_make_chunk( buf, wrkbuf, n );
 			mg_write( conn, buf, strlen( buf ) );
@@ -4255,7 +4355,7 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d}", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
@@ -4278,7 +4378,7 @@ VSCPWebServerThread::webserv_rest_doOpen( struct mg_connection *conn,
 			int n = _snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
 					"func({\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",\"session-id\":\"%s\",\"nEvents\":%d});", 
-					pSession->m_sid, pSession->m_pClientItem->m_clientInputQueue.GetCount() );
+					pSession->sid, pSession->pClientItem->m_clientInputQueue.GetCount() );
 #else
 			int n = snprintf( wrkbuf, 
 					sizeof(wrkbuf), 
@@ -4327,10 +4427,10 @@ VSCPWebServerThread::webserv_rest_doClose( struct mg_connection *conn,
 
 		char sid[32 + 1 ];
 		memset( sid, 0, sizeof( sid ) );
-		memcpy( sid, pSession->m_sid, sizeof( sid ) );
+		memcpy( sid, pSession->sid, sizeof( sid ) );
 
 		// We should close the session
-		pSession->m_pClientItem->m_bOpen = false;
+		pSession->pClientItem->m_bOpen = false;
 		pSession->lastActiveTime = 0;
 		websrv_expire_rest_sessions( conn );
 

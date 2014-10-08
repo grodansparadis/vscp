@@ -253,16 +253,19 @@ struct websrv_rest_session
 	struct websrv_rest_session *m_next;
 
 	// Unique ID for this session. 
-	char m_sid[33];
+	char sid[33];
 
 	// Time when this session was last active.
 	time_t lastActiveTime;
 
 	// Client item for this session
-	CClientItem *m_pClientItem;
+	CClientItem *pClientItem;
 
 	// User
-	CUserItem *m_pUserItem;
+	CUserItem *pUserItem;
+
+    // Remote IP
+    char remote_ip[48];
       
 };
 
@@ -301,7 +304,7 @@ enum {
 #define REST_MIME_TYPE_JSONP		"text/javascript"
 
 // Clear text Error messages
-#define REST_PLAIN_ERROR_SUCCESS				"1 1 Success \r\n\r\nEverythig is fine.\r\n"
+#define REST_PLAIN_ERROR_SUCCESS				"1 1 Success \r\n\r\nEverything is fine.\r\n"
 #define REST_PLAIN_ERROR_GENERAL_FAILURE		"0 -1 Failure \r\n\r\nGeneral failure.\r\n"
 #define REST_PLAIN_ERROR_INVALID_SESSION		"0 -2 Invalid session \r\n\r\nThe session must be opened with 'open' before a session command can be used. It may also be possible that the session has timed out.\r\n"
 #define REST_PLAIN_ERROR_UNSUPPORTED_FORMAT		"0 -3 Unsupported format \r\n\r\nFormat can be 0/plain, 1/CSV, 2/XML, 3/JSON, 4/JSONP´.\r\n"
