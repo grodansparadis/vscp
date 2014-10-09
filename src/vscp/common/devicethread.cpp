@@ -588,7 +588,7 @@ void *deviceThread::Entry()
 			if (NULL != pVar) {
 				wxString str;
 				if (VSCP_DAEMON_VARIABLE_CODE_STRING == pVar->getType()) {
-					pVar->getValue(&str);
+					pVar->getValue( str );
 					m_pCtrlObject->m_driverUsername = str;
 				}
 			}
@@ -598,7 +598,7 @@ void *deviceThread::Entry()
 			if (NULL != pVar) {
 				wxString str;
 				if (VSCP_DAEMON_VARIABLE_CODE_STRING == pVar->getType()) {
-					pVar->getValue(&str);
+					pVar->getValue( str );
 					m_pCtrlObject->m_driverPassword = str;
 				}
 			}
@@ -608,7 +608,7 @@ void *deviceThread::Entry()
 			if (NULL != pVar) {
 				wxString str;
 				if (VSCP_DAEMON_VARIABLE_CODE_STRING == pVar->getType()) {
-					pVar->getValue(&str);
+					pVar->getValue( str );
 					strHost = str;
 				}
 			}

@@ -65,7 +65,7 @@
 #define MSG_INTERFACE_NOT_FOUND             "-OK - Interface not found.\r\n"
 
 #define MSG_VARIABLE_NOT_DEFINED            "-OK - Variable is not defined.\r\n"
-
+#define MSG_VARIABLE_MUST_BE_EVENT_TYPE     "-OK - Variable must be of event type.\r\n"
 
 
 //class CControlObject;

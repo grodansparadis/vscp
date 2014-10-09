@@ -31,7 +31,7 @@
 #include <wx/datetime.h>
 #include <wx/tokenzr.h>
 #include "variablecodes.h"
-
+#include "vscphelper.h"
 
 // Class that holds one VSCP variable
 // 		Peristant variables should have names staring with $
@@ -236,9 +236,9 @@ public:
 	  getValue
 	  @param value String that will receive value.
 	 */
-	void getValue(wxString *pValue)
+	void getValue(wxString& value)
 	{
-		*pValue = m_strValue;
+		value = m_strValue;
 	};
 
 	/*!
@@ -311,6 +311,15 @@ public:
 	void getValue(bool *pValue)
 	{
 		*pValue = m_boolValue;
+	};
+
+    /*!
+	    getValue
+	    @param value Bool that will receive the value.
+	 */
+	void getValue(vscpEvent *pEvent)
+	{
+        if ( NULL != pEvent ) vscp_copyVSCPEvent( pEvent,  &m_event );
 	};
 
 

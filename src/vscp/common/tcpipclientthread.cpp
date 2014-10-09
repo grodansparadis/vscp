@@ -646,6 +646,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 {
     bool bSent = false;
     bool bVariable = false;
+    char data[ 512 ];
     vscpEvent event;
     wxString nameVariable;
 
@@ -671,13 +672,26 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             event.head = vscp_readStringValue( str );
         }
         else {
+            CVSCPVariable *pVariable;
             bVariable = true;   // Yes this is a variable send
+            
             nameVariable = str.Right( str.Length() - 1 );
             nameVariable.MakeUpper();
-            if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
+            
+            if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( nameVariable ) ) ) {
                 ns_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
                 return;
             }
+
+            // Must be event type
+            if ( VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT != pVariable->getType() ) {
+                ns_send( conn, MSG_VARIABLE_MUST_BE_EVENT_TYPE, strlen ( MSG_VARIABLE_MUST_BE_EVENT_TYPE ) );
+                return;
+            }
+
+            // Get the event
+            pVariable->getValue( &event );
+
         }
     }
     else {
@@ -685,74 +699,98 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
         return;	
     }
 
-    // Get Class
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
-        event.vscp_class = vscp_readStringValue( str );
-    }
-    else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-        return;	
-    }
-    
-    // Get Type
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
-        event.vscp_type = vscp_readStringValue( str );
-    }
-    else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-        return;	
-    }
+    if ( !bVariable ) {
 
-    // Get OBID  -  Kept here to be compatible with receive
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
-        event.obid = vscp_readStringValue( str );
-    }
-    else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-        return;	
-    }
-
-    // Get Timestamp
-    if ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
-        event.timestamp = vscp_readStringValue( str );
-        if ( !event.timestamp ) {
-#ifdef WIN32
-            event.timestamp = GetTickCount();
-#else
-			struct timespec ts;
-			clock_gettime(CLOCK_MONOTONIC, &ts);
-			event.timestamp = (unsigned long)ts.tv_sec * 1000000 + ts.tv_nsec/1000;  
-#endif
+        // Get Class
+        if ( tkz.HasMoreTokens() ) {
+            str = tkz.GetNextToken();
+            event.vscp_class = vscp_readStringValue( str );
         }
-    }
-    else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-        return;	
-    }
+        else {
+            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;	
+        }
+    
+        // Get Type
+        if ( tkz.HasMoreTokens() ) {
+            str = tkz.GetNextToken();
+            event.vscp_type = vscp_readStringValue( str );
+        }
+        else {
+            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;	
+        }
 
-    // Get GUID
-    wxString strGUID;
-    if ( tkz.HasMoreTokens() ) {
-        strGUID = tkz.GetNextToken();
-    }
-    else {
-        ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
-        return;	
-    }
+        // Get OBID  -  Kept here to be compatible with receive
+        if ( tkz.HasMoreTokens() ) {
+            str = tkz.GetNextToken();
+            event.obid = vscp_readStringValue( str );
+        }   
+        else {
+            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;	
+        }
 
-    // Handle data
-    event.sizeData = 0;
-    char data[ 512 ];
-    while ( tkz.HasMoreTokens() ) {
-        str = tkz.GetNextToken();
-        data[ event.sizeData ] = vscp_readStringValue( str );
-        event.sizeData++;
-    }
+        // Get Timestamp
+        if ( tkz.HasMoreTokens() ) {
+            str = tkz.GetNextToken();
+            event.timestamp = vscp_readStringValue( str );
+            if ( !event.timestamp ) {
+#ifdef WIN32
+                event.timestamp = GetTickCount();
+#else
+			    struct timespec ts;
+			    clock_gettime(CLOCK_MONOTONIC, &ts);
+			    event.timestamp = (unsigned long)ts.tv_sec * 1000000 + ts.tv_nsec/1000;  
+#endif
+            }
+        }
+        else {
+            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;	
+        }
 
+        // Get GUID
+        wxString strGUID;
+        if ( tkz.HasMoreTokens() ) {
+            strGUID = tkz.GetNextToken();
+
+            // Check if i/f GUID should be used
+            if ( ( '-' == strGUID[0] ) || vscp_isGUIDEmpty( event.GUID ) ) {
+                // Copy in the i/f GUID
+                pClientItem->m_guid.writeGUID( event.GUID );
+            }
+            else {
+                vscp_getGuidFromString( &event, strGUID );
+            }
+
+        }
+        else {
+            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;	
+        }
+
+        // Handle data
+        event.sizeData = 0;
+        while ( tkz.HasMoreTokens() ) {
+            str = tkz.GetNextToken();
+            data[ event.sizeData++ ] = vscp_readStringValue( str );
+        }
+        
+        if ( event.sizeData > 0 ) {
+            // Copy in data
+            event.pdata = new uint8_t[ event.sizeData ];
+            if ( NULL != event.pdata ) {
+                memcpy ( event.pdata, data, event.sizeData );
+            }
+        }
+        else {
+            // No data
+            event.pdata = NULL;
+        }
+
+    } // not variable send
+ 
     // Check if this user is allowed to send this event
     if ( !pClientItem->m_pUserItem->isUserAllowedToSendEvent( event.vscp_class, event.vscp_type ) ) {
         wxString strErr = 
@@ -769,17 +807,12 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
     vscpEvent *pEvent = new vscpEvent;		// Create new VSCP Event
     if ( NULL != pEvent ) {
 
-        // Check if i/f GUID should be used
-        if ( ( '-' == strGUID[0] ) || vscp_isGUIDEmpty( event.GUID ) ) {
-            // Copy in the i/f GUID
-            pClientItem->m_guid.writeGUID( event.GUID );
-        }
-        else {
-            vscp_getGuidFromString( &event, strGUID );
-        }
-
         // Copy event
-        memcpy ( pEvent, &event, sizeof ( vscpEvent ) );
+        vscp_copyVSCPEvent( pEvent, &event );
+        
+        // We don't need the original event anymore
+        if (pEvent->sizeData) delete [] event.pdata;
+        event.pdata = NULL;
 
         // Save the originating clients id so
         // this client don't get the message back
@@ -790,21 +823,6 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             pEvent->obid,  
             pClientItem->m_clientID ); 
         m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );*/
-
-        // And data...
-        if ( pEvent->sizeData > 0 ) {
-
-            // Copy in data
-            pEvent->pdata = new uint8_t[ event.sizeData ];
-            if ( NULL != pEvent->pdata ) {
-                memcpy ( pEvent->pdata, data ,pEvent->sizeData );
-            }
-
-        }
-        else {
-            // No data
-            pEvent->pdata = NULL;
-        }
 
         // Level II events between 512-1023 is recognised by the daemon and 
         // sent to the correct interface as Level I events if the interface  
@@ -866,54 +884,6 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 
 				m_pCtrlObject->m_wxClientMutex.Unlock();
 
-/*
-                if ( NULL != pDestClientItem ) {
-                    
-                    // We must translate the data part of the event to standard format
-                    //pEvent->sizeData = pEvent->sizeData - 16;
-                    //memcpy( pEvent->pdata, pEvent->pdata + 16, pEvent->sizeData ); 
-					//
-                    //pEvent->vscp_class = pEvent->vscp_class - 512;
-                         
-                    // Check if filtered out
-                    if ( doLevel2Filter( pEvent, &pDestClientItem->m_filterVSCP ) ) {
-
-                        // If the client queue is full for this client then the
-                        // client will not receive the message
-                        if ( pDestClientItem->m_clientInputQueue.GetCount() <=		
-                            m_pCtrlObject->m_maxItemsInClientReceiveQueue ) {
-
-                                // RX Statistics 1 received frame,+ received data
-                                pDestClientItem->m_statistics.cntReceiveFrames++;
-                                pDestClientItem->m_statistics.cntReceiveData += pEvent->sizeData;
-
-                                // Add the new event to the inputqueue
-                                pDestClientItem->m_mutexClientInputQueue.Lock();
-                                pDestClientItem->m_clientInputQueue.Append ( pEvent );
-                                pDestClientItem->m_semClientInputQueue.Post();
-                                pDestClientItem->m_mutexClientInputQueue.Unlock();
-
-                                bSent = true;
-
-                                // TX Statistics
-                                pClientItem->m_statistics.cntTransmitData += pEvent->sizeData;
-                                pClientItem->m_statistics.cntTransmitFrames++;
-
-                        }
-                        else {
-                            // Overun - No room for event
-                            pDestClientItem->m_statistics.cntOverruns++;
-                            deleteVSCPevent( pEvent );
-                            bSent = true;
-                        }
-
-                    } // filter
-
-                } // Client found
-
-                m_pCtrlObject->m_wxClientMutex.Unlock();
-
-*/
         }
 
 
