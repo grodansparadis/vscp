@@ -874,7 +874,7 @@ bool vscp_convertFloatToNormalizedEventData( double value,
     sensoridx &= 7;   // Mask of invalid bits
     
     char buf[128];
-    //bool bNegative = (value>0) ? false : true ;
+    bool bNegative = (value>0) ? false : true ;
     int ndigits = 0;
     uint64_t val64;
     double intpart;

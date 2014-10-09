@@ -132,18 +132,18 @@ bool CUserItem::isUserAllowedToSendEvent( const uint32_t vscp_class,
 
     // test wildcard *.*
     wxstr.Printf(_("*:*"), vscp_class);
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+    for (i = 0; i < m_listAllowedEvents.GetCount(); i++) {
         if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
     }
 
     wxstr.Printf(_("%08X:%08X"), vscp_class, vscp_type);
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+    for (i = 0; i < m_listAllowedEvents.GetCount(); i++) {
         if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
     }
 
     // test wildcard class.*
     wxstr.Printf(_("%08X:*"), vscp_class);
-    for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
+    for (i = 0; i < m_listAllowedEvents.GetCount(); i++) {
         if (m_listAllowedEvents[ i ].IsSameAs(wxstr)) return true;
     }
 
@@ -244,7 +244,7 @@ bool CUserList::addUser(const wxString& user,
         } while (tkz.HasMoreTokens());
     } else {
         // Allow all
-        pItem->m_listAllowedEvents.Add(_("*.*"));
+        pItem->m_listAllowedEvents.Add(_("*:*"));
     }
 
     // Clear filter
