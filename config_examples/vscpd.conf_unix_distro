@@ -174,7 +174,7 @@
 	
     <!-- List level I/CANAL drivers here                            -->
 
-    <leve1driver enable="true" > 
+    <level1driver enable="true" >
 
         <!-- The canallog driver is documented in 27.20.14 -->
         <driver enable="false">
@@ -203,7 +203,7 @@
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-    </leve1driver>
+    </level1driver>
 
 	<!-- List level II VSCP drivers here                            -->
 
