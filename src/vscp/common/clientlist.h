@@ -194,7 +194,7 @@ public:
 	/*!
 		RCVLOOP clock
 	 */
-	wxLongLong 	 m_timeRcvLoop;
+	wxLongLong m_timeRcvLoop;
 	
 	/// Username given by user
 	wxString m_UserName;
@@ -210,6 +210,15 @@ public:
 
 	/// Read buffer
 	wxString m_readBuffer;
+
+    /// Last connand executed
+	wxString m_lastCommand;
+
+	// Current command
+	wxString m_currentCommand;
+
+	/// Current command i all upper case
+	wxString m_currentCommandUC;
 };
 
 // List with clientitems

@@ -413,16 +413,6 @@ public:
 	*/
 	CControlObject *m_pCtrlObject;
 
-	/// Last connand executed
-	wxString m_lastCommand;
-
-	// Current command
-	wxString m_currentCommand;
-
-	/// Current command i all upper case
-	wxString m_currentCommandUC;
-
-
 };
 
 
