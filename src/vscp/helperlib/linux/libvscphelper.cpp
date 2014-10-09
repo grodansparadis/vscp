@@ -1322,19 +1322,17 @@ extern "C" float vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
   \return value as float
  */
 extern "C" int vscphlp_convertFloatToNormalizedEventData(double value,
-        unsigned char *pdata,
-        unsigned int *psize,
-        unsigned char unit,
-        unsigned char sensoridx)
+															unsigned char *pdata,
+															unsigned char *psize,
+															unsigned char unit,
+															unsigned char sensoridx)
 {
-    uint16_t size;
     int rv =  vscp_convertFloatToNormalizedEventData(value,
                                                     pdata,
-                                                    &size,
+                                                    psize,
                                                     unit,
                                                     sensoridx);
     
-    *psize = size;
     return rv;
 }
 
