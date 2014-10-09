@@ -855,7 +855,7 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
 // convertFloatToNormalizedEventData
 //
 
-bool vscp_convertFloatToNormalizedEventData( double value, 
+bool vscp_convertFloatToNormalizedEventData( double value,
                                                 uint8_t *pdata,
                                                 uint8_t *psize,
                                                 uint8_t unit,
@@ -864,21 +864,21 @@ bool vscp_convertFloatToNormalizedEventData( double value,
     // Check pointer
     if ( NULL == pdata ) return false;
     if ( NULL == psize ) return false;
-    
+
     // No data assigned yet
     *psize = 0;
-    
+
     unit &= 3;      // Mask of invalid bits
     unit <<= 3;     // Shift to correct position
-    
+
     sensoridx &= 7;   // Mask of invalid bits
-    
+
     char buf[128];
     bool bNegative = (value>0) ? false : true ;
     int ndigits = 0;
     uint64_t val64;
     double intpart;
-#ifdef WIN32       
+#ifdef WIN32
     _snprintf(buf, sizeof(buf), "%g", value);
 #else
     snprintf(buf, sizeof(buf), "%g", value);
@@ -890,12 +890,12 @@ bool vscp_convertFloatToNormalizedEventData( double value,
     else {
        ndigits=0;
     }
-    
+
     modf( value, &intpart );
     val64 = (uint64_t)(value * pow(10.0,ndigits));
 
     wxUINT64_SWAP_ON_LE(val64);
-    
+
     if ( val64 < ((double)0x80) ) {
         *psize = 3;
         pdata[2] = val64 & 0xff;
@@ -937,11 +937,60 @@ bool vscp_convertFloatToNormalizedEventData( double value,
     }
     else {
         return false;
-    } 
-    
-    pdata[0] = 0x80 + unit + sensoridx;  // Normalized integer + unit + sensorindex
-    pdata[1] = 0x80 + ndigits;  // Decimal point shifted five steps to the left
-    
+    }
+
+    pdata[0] = 0x80 + unit + sensoridx;     // Normalized integer + unit + sensorindex
+    pdata[1] = 0x80 + ndigits;              // Decimal point shifted five steps to the left
+
+    return true;
+} 
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_convertFloatToFloatEventData
+//
+
+bool vscp_convertFloatToFloatEventData( float value, 
+                                                uint8_t *pdata,
+                                                uint8_t *psize,
+                                                uint8_t unit,
+                                                uint8_t sensoridx )
+{
+    // Max an min for Single-precision floating-point IEEE 754-1985
+    double float_max = 3.4e38;
+    double float_min = -3.4e38;
+
+    // Check pointer
+    if ( NULL == pdata ) return false;
+    if ( NULL == psize ) return false;
+
+    if ( value > float_max ) return false;
+    if ( value < float_min ) return false;
+
+    // We must make sure
+    if ( 4 !=  sizeof( float ) ) return false;
+
+    wxUINT32_SWAP_ON_LE( (uint32_t)value );
+    void *p = (void *)&value;
+
+    *psize = 5;
+    pdata[0] = VSCP_DATACODING_SINGLE + unit + sensoridx;  // float + unit + sensorindex
+    memcpy( pdata + 1, p, 4 );
+          
+    return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_makeFloatMeasurementEvent
+//
+
+bool vscp_makeFloatMeasurementEvent( float value, 
+                                        vscpEvent *pEvent,
+                                        uint8_t unit,
+                                        uint8_t sensoridx )
+{
+
     return true;
 }
 
@@ -1258,6 +1307,13 @@ bool vscp_getGuidFromStringEx(vscpEventEx *pEvent, const wxString& strGUID)
 bool vscp_getGuidFromStringToArray(unsigned char *pGUID, const wxString& strGUID)
 {
 	unsigned long val;
+    
+    // If GUID is empty or "-" set all to zeror
+    if ( ( 0 == strGUID.Length() ) || ( _("-") == strGUID ) ) {
+        memset( pGUID, 0, 16 );
+        return true;
+    }
+
 
 	wxStringTokenizer tkz(strGUID, wxT(":"));
 	for (int i = 0; i < 16; i++) {

@@ -4148,11 +4148,11 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
         strUnit.ToLong( &unit );
         strSensorIdx.ToLong( &sensoridx );
 
-        if ( vscp_convertFloatToNormalizedEventData( value, 
-                                                       data,
-                                                        &sizeData,
-                                                        unit,
-                                                        sensoridx ) ) {
+        if ( vscp_convertFloatToFloatEventData( value, 
+                                                    data,
+                                                    &sizeData,
+                                                    unit,
+                                                    sensoridx ) ) {
             vscpEvent *pEvent = new vscpEvent;
             webserv_rest_doSendEvent( conn, pSession, format, pEvent );    
         }
@@ -6573,7 +6573,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             }
             else {
                 wxString str;
-                pVariable->getValue( &str );
+                pVariable->getValue( str );
                 buildPage += str;
             }
             
@@ -6778,7 +6778,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             buildPage += _("<tr><td>");
             buildPage += _("Data size: ");
             buildPage += _("</td><td>");
-            buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_sizedata\">");
+            //buildPage += _("<textarea cols=\"10\" rows=\"1\" name=\"value_sizedata\">");
             if ( bNew ) {
                 buildPage += _("0");
             }
@@ -6786,7 +6786,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
                 buildPage += wxString::Format(_("%d"), pVariable->m_event.sizeData );
             }
             
-            buildPage += _("</textarea>");
+            //buildPage += _("</textarea>");
             buildPage += _("</td></tr>");
             
             buildPage += _("<tr><td>");
@@ -7064,6 +7064,10 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *conn )
     wxString strGUID;
 	if ( mg_get_var( conn, "value_guid", buf, sizeof( buf ) ) > 0 ) {
 		strGUID = wxString::FromAscii( buf );
+        strGUID.Trim();
+        if ( 0 == strGUID.Length() ) {
+            strGUID = _("-");
+        }
 	}
     
     uint32_t value_timestamp = 0;

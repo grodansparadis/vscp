@@ -189,13 +189,14 @@ CControlObject::CControlObject()
     gpctrlObj = this;	        // needed by websocket static callbacks
     //wxStandardPaths stdPath;
 
+#if ( 0 )
     double value;
     uint8_t data[8];
     uint8_t datasize;
-    //wxString strFloat = _("245.567");
-    wxString strFloat = _("0.0023");
+    wxString strFloat = _("245.567");
     strFloat.ToDouble( &value );
-    vscp_convertFloatToNormalizedEventData( value, data, &datasize, 0, 0 );
+    vscp_convertFloatToFloatEventData( value, data, &datasize, 0, 0 );
+#endif
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
