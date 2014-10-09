@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<title>VSCP HTML5 websocket vscpws_speedometerCelius</title>
+<!--
+<link rel="stylesheet" type="text/css" href="../css/vscpdemo.css" />
+-->
+
+<script type="text/javascript" src="settings.js"></script>
+<script type="text/javascript" src="../lib/vscpwslib.js"></script>
+
+</head>
+
+<body>
+
+<h1>VSCP HTML5 websocket vscpws_speedometerCelius</h1>
+
+<a href="index.html">Go back to main page</a>
+
+
+<canvas id="myspeedometer1"
+   style="z-index: 1;
+      position:absolute;
+      left:100px;
+      top:200px;" >
+   Your browser does not support HTML5 Canvas.
+</canvas>
+
+</div>
+
+
+<script type="text/javascript" >
+        
+	var temp1 = new vscpws_speedometerCelius( VSCP_WEBSOCKET_URL, 
+                                                    "myspeedometer1", 
+                                                    0,
+                                                    VSCP_CLASS1_MEASUREMENT,
+                                                    VSCP_TYPE_MEASUREMENT_TEMPERATURE, 
+                                                    2 );
+    temp1.setDecimals(0);
+                                                   	
+</script>
+
+</body>
+</html>

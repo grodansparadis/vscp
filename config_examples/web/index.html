@@ -1,55 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
-<title>VSCP & Friends</title>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<title>VSCP Websocket widgets</title>
+<script type="text/javascript" src="../lib/vscpwslib.js"></script>
 </head>
+
 <body>
-<h1>It works!</h1>
-<img src="images/logo/vscp_new.png" width="400">
-<br><br>
-<p>This is the default web page for the VSCP daemon. This is a fully working 
-web server so you can add to HTML files to the folder you have setup using
-<b>&ltwebrootpath&gt</b> in the VSCP configuration file and serve the as from
-any other webserver. <b>/vscp</b> is a reserved path and you should not us it in your
-own folder structure as it will take you to <a href="/vscp">this reserved page.</a></p>
+<img src="../images/logo/vscp_new.png" width="400">
+<h1>VSCP HTML5 websocket widget samples</h1>
 
-<p>To test the websocket interface of the VSCP daemon you first edit the <b>setup.js</b>
-file which after installation is located in the testws subfolder of the web root filesystem. </p>
-<p>The default content in this file is:</p>
-<p><b>
-var vscp_setting_user = "admin";<br>
-var vscp_setting_authdomain = "mydomain.com";<br>
-var vscp_setting_passwordhash = "d50c3180375c27927c22e42a379c3f67";<br>
-</b><br>
-which is the default admin credentials for<br>
-<br>
-<b>Username: <i>admin</i></b><br>
-<b>Password: <i>secret</i></b><br>
-<br>
-needless to say you should change this as soon as you use your system more seriously.<br><br>
-
-The other part in the <b>setup.js</b> file to change is the url for your server. When you have edited and saved this information you 
-can test the <a href="testws/testauth.html">websocket login test script</a>. If you see something like
-<br><br> 
-<span style="color: red;"><b>Authentication 1 - Logged in</b></span>
+For help on how to use the samples check the <a href="http://www.vscp.org/wiki">wiki</a> 
+and the <a href="https://sourceforge.net/projects/m2m/files/VSCP%20Specification/"> specification document</a> at section 14.9
 <br><br>
- at the end of the output from this scripts everything is OK, if not something is bad with your login information.</p>
-p> 
-The default for the websocket samples is non-ssl. If you want to use ssl (with the ssl version 
-of the VSCP daemon) you should use 
-<b>"wss:/"</b> as prefix instead of <b>"ws://</b>
-</p>
-<h3>Demos</h3>
+
+Test of the authentication sequence - <a href="testauth.html">testauth.html</a> <br/>
+Test event control <a href="event.html">event.html</a> <br/>
+Test StateButton <a href="Statebutton.html">Statebutton.html</a> <br/>
+Test SimpleText <a href="simpletext.html">simpletext.html</a><br/>
+Test ThermometerCelsius <a href="thermometercelsius.html">thermometercelsius.html</a><br/>
+Test Speedometer <a href="speedometer.html">speedometer.html</a><br/>
+Slider <a href="slider.html">slider.html</a><br/>
+Progress <a href="progress.html">progress.html</a><br/>
+Test Node Discovery <a href="node_discovery.html">node_discovery.html</a><br/>
+<br><br>
+<h2>Google Charts Demos</h2>
+Google Charts Gauge <a href="google_gauge.html">gogle_gauge.html</a><br/>
+Google Charts Table <a href="google_table.html">google_table.html</a><br/>
+Google Charts Line Simple <a href="google_line_simple.html">google_line_simple.html</a><br/>
 <p>
-When the login works you can <b>test the websocket interface</b> of the VSCP daemon by
-<a href="testws/index.html">clicking on this link</a>.
+More info about Google Charts is <a href="https://developers.google.com/chart/">here</a>.
 </p>
 <br>
-<p> Have fun and remember to <b>Be Hungry - Stay Foolish!</p>
-<p>
-Cheers<br>
-<a href="mailto:akhe@paradiseofthefrog.com">Ake Hedman</a> <br>
-<a href="http://www.paradiseofthefrog.com">Paradise of the Frog</a>
-</p>
+</div>
 
 <div>
 <br>
@@ -60,4 +43,3 @@ Copyright &copy; 2000-2014 <a href="mailto:akhe@grodansparadis.com">Ake Hedman</
 
 </body>
 </html>
-

@@ -387,7 +387,7 @@ REPEAT_COMMAND:
     }
 
     //*********************************************************************
-    //                             Get Version
+    //                           Get Version
     //*********************************************************************
     else if ( ( 0 == m_currentCommandUC.Find ( _( "VERS" ) ) ) ||
             ( 0 == m_currentCommandUC.Find ( _( "VERSION" ) ) ) ) {
@@ -395,7 +395,7 @@ REPEAT_COMMAND:
     }
 
     //*********************************************************************
-    //                             Set Filter
+    //                           Set Filter
     //*********************************************************************
     else if ( ( 0 == m_currentCommandUC.Find ( _( "SFLT" ) ) ) ||
                ( 0 == m_currentCommandUC.Find ( _( "SETFILTER" ) ) )  ) {
@@ -405,7 +405,7 @@ REPEAT_COMMAND:
     }
 
     //*********************************************************************
-    //                             Set Mask
+    //                           Set Mask
     //*********************************************************************
     else if ( ( 0 == m_currentCommandUC.Find ( _( "SMSK" ) ) ) || 
                 ( 0 == m_currentCommandUC.Find ( _( "SETMASK" ) ) ) ) {
@@ -415,14 +415,14 @@ REPEAT_COMMAND:
     }
 
     //*********************************************************************
-    //                             Username
+    //                           Username
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "USER " ) ) ) {
         handleClientUser( conn, pCtrlObject );
     }
 
     //*********************************************************************
-    //                             Password
+    //                            Password
     //*********************************************************************
     else if ( 0 == m_currentCommandUC.Find ( _( "PASS " ) ) ) {
         if ( !handleClientPassword( conn, pCtrlObject ) ) {
@@ -469,7 +469,7 @@ REPEAT_COMMAND:
 	}
 
 	//*********************************************************************
-	//                              Restart
+	//                             Restart
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "RESTART" ) ) ) {
 		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
@@ -478,7 +478,7 @@ REPEAT_COMMAND:
 	}
 
 	//*********************************************************************
-	//                              Driver
+	//                             Driver
 	//*********************************************************************
 	else if ( 0 == m_currentCommandUC.Find ( _( "DRIVER " ) ) ) {
 		if ( checkPrivilege( conn, pCtrlObject, 15 ) ) {
@@ -645,7 +645,9 @@ bool VSCPClientThread::checkPrivilege( struct ns_connection *conn, CControlObjec
 void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
     bool bSent = false;
+    bool bVariable = false;
     vscpEvent event;
+    wxString nameVariable;
 
 	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -658,10 +660,25 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
     wxString str = m_currentCommand.Right( m_currentCommand.Length() - 5 );
     wxStringTokenizer tkz( str, _(",") );
 
+    // If first character is $ user request us to send content from
+    // a variable
+
     // Get head
     if ( tkz.HasMoreTokens() ) {
         str = tkz.GetNextToken();
-        event.head = vscp_readStringValue( str );
+        str.Trim( false ); 
+        if ( wxNOT_FOUND == str.Find(_("$") ) ) {
+            event.head = vscp_readStringValue( str );
+        }
+        else {
+            bVariable = true;   // Yes this is a variable send
+            nameVariable = str.Right( str.Length() - 1 );
+            nameVariable.MakeUpper();
+            if ( NULL == ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( m_currentCommandUC ) ) ) {
+                ns_send( conn, MSG_VARIABLE_NOT_DEFINED, strlen ( MSG_VARIABLE_NOT_DEFINED ) );
+                return;
+            }
+        }
     }
     else {
         ns_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
@@ -1455,6 +1472,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     // Calculate MD5 for username:autdomain:password
     char buf[2148];
+    memset( buf, 0, sizeof( buf ) );
 	strncpy( buf, (const char *)pClientItem->m_UserName.mbc_str(), pClientItem->m_UserName.Length() );
 	strncat( buf, ":", sizeof( buf ) );
 	strncat( buf, (const char *)pCtrlObject->m_authDomain.mbc_str(), pCtrlObject->m_authDomain.Length() );

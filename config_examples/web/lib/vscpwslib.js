@@ -5309,7 +5309,7 @@ function vscpws_Variable( username,             // Username for websocket sereve
     this.passwordhash = passwordhash;
     this.monitorVariableName = variablename;
     this.interval = interval;
-    this.fnChange = (fnChange && typeof(fnChange) === "function") ? fnChange : null;
+    this.fnCallback = (fnCallback && typeof(fnCallback) === "function") ? fnCallback : null;
     this.bAll =  typeof bAll !== 'undefined' ? bAll : false;
       
     // Websocket for VSCP daemon communication
@@ -5432,70 +5432,70 @@ vscpws_Variable.prototype.onVSCPMessage = function(msg)
         else if ( "READVAR" == msgitems[1]  ){
             if ( null !== this.fnChange ) {
                 if ( this.bAll ) {
-                    this.fnChange.call( this, true, msgitems[2], msgitems );                         
+                    this.fnCallback.call( this, true, msgitems[2], msgitems );                         
                 }
                 else {
                     // Check if value has changed 
                     if ( this.value != msgitems[3] ) {
-                        this.fnChange.call( this, true, msgitems[3], msgitems );  
+                        this.fnCallback.call( this, true, msgitems[3], msgitems );  
                     }
                 }
             }
         }
         // Write a value for a variable. Create if not existing.
         else if ( "WRITEVAR" == msgitems[1]  ){
-            if ( null !== this.fnChange ) {
-                this.fnChange.call( this, true, msgitems[1], msgitems );  
+            if ( null !== this.fnCallback ) {
+                this.fnCallback.call( this, true, msgitems[1], msgitems );  
             }
         }
-        // Add/Create a variable
-        else if ( "ADDVAR" == msgitems[1]  ){
-            if ( null !== this.fnChange ) {
-                this.fnChange.call( this, true, msgitems[1], msgitems );  
+        // Create a variable
+        else if ( "CREATEVAR" == msgitems[1]  ){
+            if ( null !== this.fnCallback ) {
+                this.fnCallback.call( this, true, msgitems[1], msgitems );  
             }
         }
         // Set variable to it's default value
         else if ( "RESETVAR" == msgitems[1]  ){
-            if ( null !== this.fnChange ) {
-                this.fnChange.call( this, true, msgitems[1], msgitems );  
+            if ( null !== this.fnCallback ) {
+                this.fnCallback.call( this, true, msgitems[1], msgitems );  
             }
         }
         // Remove/delete a variable
         else if ( "REMOVEVAR" == msgitems[1]  ){
-            if ( null !== this.fnChange ) {
-                this.fnChange.call( this, true, msgitems[1], msgitems );  
+            if ( null !== this.fnCallback ) {
+                this.fnCallback.call( this, true, msgitems[1], msgitems );  
             }
         }
         // Get length of variable
         else if ( "LENGTHVAR" == msgitems[1]  ){
-            if ( null !== this.fnChange ) {
-                this.fnChange.call( this, true, msgitems[1], msgitems );  
+            if ( null !== this.fnCallback ) {
+                this.fnCallback.call( this, true, msgitems[1], msgitems );  
             }
         }
         // Get last change date+time for variable
         else if ( "LASTCHANGEVAR" == msgitems[1]  ){
-            if ( null !== this.fnChange ) {
-                this.fnChange.call( this, true, msgitems[1], msgitems );  
+            if ( null !== this.fnCallback ) {
+                this.fnCallback.call( this, true, msgitems[1], msgitems );  
             }
         }
         // List all defined variables
         else if ( "LISTVAR" == msgitems[1]  ){
-            if ( null !== this.fnChange ) {
-                this.fnChange.call( this, true, msgitems[1], msgitems );  
+            if ( null !== this.fnCallback ) {
+                this.fnCallback.call( this, true, msgitems[1], msgitems );  
             }
         }
         // Save persistent variables
         else if ( "SAVEVAR" == msgitems[1]  ){
-            if ( null !== this.fnChange ) {
-                this.fnChange.call( this, true, msgitems[1], msgitems );  
+            if ( null !== this.fnCallback ) {
+                this.fnCallback.call( this, true, msgitems[1], msgitems );  
             }
         }
         
     }
     else if ("-" == msgitems[0]){   // Check for negative reply
         if (vscpws_debug) console.log("vscpws_variable: Negative reply " + msg.data);
-        if ( null !== this.fnChange ) {
-            this.fnChange.call( this, false, msgitems[1], msgitems );  
+        if ( null !== this.fnCallback ) {
+            this.fnCallback.call( this, false, msgitems[1], msgitems );  
         }
     }
     
@@ -5570,17 +5570,17 @@ vscpws_Variable.prototype.writeVariable = function( name, value )
 
 
 //-----------------------------------------------------------------------------
-// addVariable
+// createVariable
 //-----------------------------------------------------------------------------    
-vscpws_Variable.prototype.addVariable = function( name, type, value, persistence ) 
+vscpws_Variable.prototype.createVariable = function( name, type, value, persistence ) 
 {
     var cmd;
     
     var localPersistence =  typeof persistence !== 'undefined' ? persistence : true;
-    cmd = "C;ADDVAR;" + name + ";" + type + ";" + localPersistence + ";" + value;
+    cmd = "C;CREATEVAR;" + name + ";" + type + ";" + localPersistence + ";" + value;
 	this.socket_vscp.send(cmd);
     
-    if (vscpws_debug) console.log("addVariable" + cmd);
+    if (vscpws_debug) console.log("createVariable" + cmd);
 }
 
 

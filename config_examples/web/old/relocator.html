@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html><head>
+<!--
+To change this template, choose Tools | Templates
+and open the template in the editor.
+-->
+<title>vscpws_relocator</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+</head><body>
+<a href="index.html">back</a><br>
+
+<h1>vscpws_relocator</h1>
+
+<p><i>This information is preliminary and can change at any time.</i></p>
+
+<img src="../images/floorplan_button_example.png" align="right">
+<p> 
+The <i>vscpws_relocator</i> is a way to go to a widget that when clicked takes
+the user to a new page.
+</p>
+
+<h2>Parameters</h2>
+
+<pre>        
+        vscpws_simpleText( url2goto,    // url we should go to when clicked.
+                            nType)      // visual apperance type
+</pre>
+
+<h3>url</h3>
+
+This is the url to the websocket server. This typically is on the form
+<pre>            "ws://192.168.1.20:7681"<br>        </pre>
+
+With all widgets having there own url specified for the websocket
+server it is possible to create web pages that control
+nodes/units/hardware that are located in different locations from the
+same page.
+<h3>canvasName</h3>
+
+</body>
+</html>

@@ -242,10 +242,7 @@ bool CUserList::addUser(const wxString& user,
                 pItem->m_listAllowedEvents.Add(eventpair);
             }
         } while (tkz.HasMoreTokens());
-    } else {
-        // Allow all
-        pItem->m_listAllowedEvents.Add(_("*:*"));
-    }
+    } 
 
     // Clear filter
     if (NULL != pFilter) {

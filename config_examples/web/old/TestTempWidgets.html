@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<title>Test OHAS temperature widgets</title>
+
+<script type="text/javascript" src="../lib/wz_jsgraphics.js"></script>
+
+</head>
+
+<body>
+
+<h1 style="text-align: center;">Test&nbsp;OHAS temperature widgets</h1>
+<br>
+
+<!--
+<div id="myCanvas" style="position:relative;height:250px;width:100%;background-color:#c0c0c0; layer-background-color:#c0c0c0;"></div>
+-->
+
+<table style="text-align: left; width: 100%;" border="0" cellpadding="2" cellspacing="2">
+  <tbody>
+    <tr>
+      <td style="text-align: center; width: 30%;">
+				<div id="temp1" style="position:relative;height:250px;width:54px;">
+        	<img style="width: 54px; height: 201px;" alt="" src="../images/widgets/temp1.gif">
+				</div>
+      </td>
+      <td style="text-align: center;">
+        <table style="text-align: left; width: 100px;" border="0" cellpadding="2" cellspacing="2">
+          <tbody>
+            <tr align="right">
+              <td>
+                Temperature:
+                <input id="id_temp1" name="name_temp1" value="12">
+              </td>
+            </tr>
+            <tr align="right">
+              <td>
+                <button value="Set Temperature" name="btnSetTemp1"  
+										onClick="setTemp1( window.document.getElementById('id_temp1').value )">Set Temperature</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="text-align: center; width:80px">
+				<div id="temp2" style="position:relative;height:300px;width:80px;">
+        	<img style="width: 80px; height: 270px;" alt="" src="../images/widgets/termometer_empty.gif">
+				</div>
+      </td>
+      <td>
+        <table style="text-align: left; width: 100px;" border="0" cellpadding="2" cellspacing="2">
+          <tbody>
+            <tr align="right">
+              <td>
+                Temperature:
+                <input id="id_temp2" name="name_temp2" value="0">
+              </td>
+            </tr>
+            <tr align="right">
+              <td>
+                <button value="Set Temperature" name="btnSetTemp2"
+									onClick="setTemp2( window.document.getElementById('id_temp2').value )">Set Temperature</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="text-align: center;">
+				<div id="temp3" style="position:relative;height:100%;width:249px;">
+        	<img style="width: 249px; height: 236px;" alt="" src="../images/widgets/speedometer.png">
+				</div>
+      </td>
+      <td>
+        <table style="text-align: left; width: 100px;" border="0" cellpadding="2" cellspacing="2">
+          <tbody>
+          <tr align="right">
+            <td>
+              Temperature:
+              <input id="id_temp3" name="name_temp3" value="15">
+            </td>
+          </tr>
+        	<tr align="right">
+      			<td>
+        			<button value="Set Temperature" name="btnSetTemp1"
+							 onClick="setTemp3( window.document.getElementById('id_temp3').value )">Set Temperature</button>
+      			</td>
+    			</tr>
+  			</tbody>
+			</table>
+
+		</td>
+	</tr>
+</tbody>
+</table>
+
+<script type="text/javascript">
+<!--
+
+function myDrawFunction()
+{
+	jg1.setColor("#ff0000"); 				// red
+	jg1.drawLine(10, 10, 220, 550); 		// co-ordinates related to "myCanvas"
+	jg1.setColor("#ff00ff"); 				// blue
+	jg1.fillRect(0, 0, 30, 200);
+	jg1.paint();
+
+	jg2.setColor("#ff0000"); 				// red
+	jg2.drawLine(10, 113, 220, 55); 		// co-ordinates related to "myCanvas"
+	jg2.setColor("#0000ff"); 				// blue
+	jg2.fillRect(110, 120, 30, 60);
+	jg2.paint();
+
+}
+
+function setTemp1( x )
+{
+	// Bounds check
+	if ( x > 35 ) x = 35;
+	if ( x < -25 ) x = -25; 
+
+	//var t = 179		// t=0 => +35, t=179 => -25
+	var t = -2.98*x + 104.42; 
+
+	// Erase
+	//jg1.setColor("#ffffff"); 						// white
+	//jg1.fillRect( 26, 4, 7, 186 );
+	//jg1.paint();	
+	jg1.clear();
+
+	// Draw
+	jg1.setColor("#a00000"); 						// dark red
+	jg1.fillRect( 26, 4+t, 7, 187-t );	// 26, 4, 7, 187
+	jg1.paint();	
+}
+
+
+function setTemp2( x )
+{
+	// Bounds check
+	if ( x > 40 ) x = 40;
+	if ( x < -30 ) x = -30; 
+
+	//var t = 212;
+	//var t = 179		// t=0 => +40, t=212 => -30
+	var t = -3.0286*x + 121.14; 
+
+	// Erase
+	//jg2.setColor("#ffffff"); 						// white
+	//jg2.fillRect( 36, 16, 10, 224 );
+	//jg2.paint();	
+	jg2.clear();
+
+	// Draw
+	jg2.setColor("#ff0000"); 							// red
+	jg2.fillRect( 36, 16+t, 10, 225-t );	//  36, 16+t, 10, 225-t
+	jg2.paint();	
+}
+
+function setTemp3( x )
+{
+	// Bounds check
+	if ( x > 140 ) x = 140;
+	if ( x < 0 ) x = 0; 
+
+	//var t = 212;
+	//var t = 179		// t=0 => +40, t=212 => -30
+	var t = -3.0286*x + 121.14; 
+
+	// Erase
+	//jg3.drawImage("images/Speedometer_empty.png", 0, 0, 0, 0);  
+	jg3.clear();
+
+	//x_of_point_on_circle = x_center + radius_of_circle * sine( angle1 + angle2 );
+	//y_of_point_on_circle = y_center + radius_of_circle * cosine( angle1 + angle2 );
+	xx = 122 + 98 * Math.sin( 5 - ( (x/10) * 0.265 ) );
+	yy = 115 + 98 * Math.cos( 5 - ( (x/10) * 0.265 ) );
+
+	jg3.setStroke( 2 );  
+	jg3.setColor("#0000d0"); 							// red
+	jg3.drawLine( 122, 115, xx, yy ); 		// radius = 78 
+	jg3.setFont( "arial", "20px", Font.BOLD );  
+	jg3.drawStringRect( x + ' C', 70, 150, 100, "center");
+	jg3.paint();
+}
+
+	//var cnv = document.getElementById("myCanvas");
+	//var jg1 = new jsGraphics(cnv);
+
+	var jg1 = new jsGraphics("temp1");
+	var jg2 = new jsGraphics("temp2");
+	var jg3 = new jsGraphics("temp3");
+	//var jg_doc = new jsGraphics(); 		// draw directly into document
+
+	//myDrawFunction();
+
+	//jg_doc.setColor("#0000ff"); // blue
+	//jg_doc.fillRect(300, 300, 600, 600);
+	//jg_doc.paint();
+
+	// Set default startup values
+	setTemp1( window.document.getElementById('id_temp1').value );
+	setTemp2( window.document.getElementById('id_temp2').value );
+	setTemp3( window.document.getElementById('id_temp3').value );
+
+//-->
+</script
+
+</body></html>

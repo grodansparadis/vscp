@@ -1,0 +1,2443 @@
+#LyX file created by tex2lyx 2.0.6
+\lyxformat 413
+\begin_document
+\begin_header
+\textclass article
+\begin_preamble
+% This file was converted from HTML to LaTeX with
+% gnuhtml2latex program
+% (c) Tomasz Wegrzanowski <maniek@beer.com> 1999
+% (c) Gunnar Wolf <gwolf@gwolf.org> 2005-2010
+% Version : 0.4.
+
+
+\end_preamble
+\use_default_options false
+\language english
+\language_package none
+\inputencoding auto
+\fontencoding default
+\font_roman default
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100
+\font_tt_scale 100
+\graphics default
+\default_output_format default
+\output_sync 0
+\paperfontsize default
+\spacing single
+\use_hyperref 0
+\papersize default
+\use_geometry false
+\use_amsmath 1
+\use_esint 1
+\use_mhchem 0
+\use_mathdots 0
+\cite_engine basic
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\use_refstyle 0
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\quotes_language english
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Section*
+
+vscpws_stateButton
+\end_layout
+
+\begin_layout Standard
+
+
+\shape italic
+This information is preliminary and can change at any time.
+\shape default
+
+\end_layout
+
+\begin_layout Standard
+
+The 
+\shape italic
+vscpws_stateButton
+\shape default
+ is a button that can be used as a state button or as a stateless button. It has the ability to send an event when it changes it state (one for each state) or for a stateless button one when it is pressed and one when released. Also the button can change it's state according to incoming events or a monitored VSCP Daemon variable value. The button can have one of several appearances shown below or a custom appearance defined by the user.
+\end_layout
+
+\begin_layout Standard
+
+To assign a monitored variable to the button is a good solution if a state should be monitored over time. Instead of waiting for the next event that tell the button state a variable is read from the daemon which is kept persistent and up to date to get the state. This variable is written/changed in the decision matrix or by a user or an application through the tcp/ip interface of the daemon and can thus be influenced and controlled by some simple or advanced criteria. This also can be used to monitor the state for a specific condition by monitor a variable and just show the state on the page not allowing clicking the button. Typical scenarios can be to indicate an open window, an alarm condition or things like that.
+\end_layout
+
+\begin_layout Standard
+
+The decision matrix of the VSCP daemon is also perfect to use if one wants to have a button that sends several events. This can be anything of course. Some dimmer commands combined with some on/offs and some curtain roll downs. This is then just added to the decision matrix and triggered on the event sent from the button. Typical use is to control for example any lamps from one button to set a specified scenery for a house or a stage.
+\end_layout
+
+\begin_layout Standard
+
+A 
+\series bold
+state button
+\series default
+ as default send 
+\series bold
+CLASS1.CONTROL,TurnOn
+\series default
+ 
+\shape italic
+index=0, zone=0, subzone=0
+\shape default
+ when activated and 
+\series bold
+CLASS1.CONTROL,TurnOff
+\series default
+ 
+\shape italic
+index=0, zone=0, subzone=0
+\shape default
+ when inactivated. The button will change it's state either when the monitored variable change its state or go to the active state when an 
+\series bold
+CLASS1.INFORMATION, On-event
+\series default
+ 
+\shape italic
+index=0, zone=0, subzone=0
+\shape default
+is received and go to it's inactive state when a 
+\series bold
+CLASS1.INFORMATION,off-event
+\series default
+ 
+\shape italic
+index=0, zone=0, subzone=0
+\shape default
+ is received.
+\end_layout
+
+\begin_layout Standard
+
+A 
+\series bold
+stateless button
+\series default
+ as default send 
+\series bold
+CLASS1.CONTROL,TurnOn
+\series default
+ 
+\shape italic
+index=0, zone=0, subzone=0
+\shape default
+ when pressed and 
+\series bold
+CLASS1.CONTROL,TurnOff
+\series default
+ 
+\shape italic
+index=0, zone=0, subzone=0
+\shape default
+ when released. 
+\end_layout
+
+\begin_layout Standard
+
+Creating a button is typically done with 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ var btn1 = new vscpwsstateButton( "ws://192.168.1.20:7681", "buttonKitchen"); 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ which will create a default state button of type=0 looking like this. 
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+
+\shape italic
+"buttonKitchen"
+\shape default
+ referes to a canvas explained below.
+\end_layout
+
+\begin_layout Subsection*
+
+Parameters
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ vscpwsstateButton( url, // url to VSCP websocket i/f canvasName, // Where it should be placed bLocal, // Local visual control btnType, // Button type bNoState, // True for nonstate button bDisable, // Disable user interactions customupsrc, // Custom up image customdownsrc) // Custom down image 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Subsubsection*
+
+url
+\end_layout
+
+\begin_layout Standard
+
+This is the url to the websocket server. This typically is on the form 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ "ws://192.168.1.20:7681" 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ With all widgets having there own url specified for the websocket server it is possible to create web pages that control nodes/units/hardware that are located in different locations from the same page. 
+\end_layout
+
+\begin_layout Subsubsection*
+
+canvasName
+\end_layout
+
+\begin_layout Standard
+
+This is the name of the canvas element where the button should be placed. Typically this is defined on the form 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ &LT;
+\series bold
+canvas
+\series default
+ id="buttonLivingroom1" style="z-index: 3; position:absolute; left:290px; top:430px;" height="30px" width="22px"&GT; &LT;/canvas&GT; 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ The 
+\shape italic
+id
+\shape default
+ is the parameter that goes for the 
+\shape italic
+canvasName
+\shape default
+. This name is also used to create the instance name for the button and the name set is preceded with 
+\shape italic
+&Dot;vscpctrl_&Dot;
+\shape default
+. The canvas specifies the position and the size for the button. Also z-order is possible to define so that objects can be placed behind, ort partially behind each other to get nice visual effects. 
+\end_layout
+
+\begin_layout Subsubsection*
+
+bLocal
+\end_layout
+
+\begin_layout Standard
+
+If set to true visual indication is handled locally. For a state button appearance will be changed on every click and for a stateless button appearance will be changed when the button is pressed and then again when it is released. It is better to have the visual appearance of the buttons controlled by external events as it also a confirmation that the sent event actually did what it was intended to do. In some situations however it may be good to handle this locally for some reason. Default=false 
+\end_layout
+
+\begin_layout Subsubsection*
+
+btnType
+\end_layout
+
+\begin_layout Standard
+
+This is the visual appearances of the button. Check for possible values below. 
+\series bold
+-1
+\series default
+ is reserved for a user defined button. When used one has to supply a path to an image for both the "down" and the "up" state for the button in the 
+\shape italic
+customupsrc
+\shape default
+ and 
+\shape italic
+customdownsrc
+\shape default
+ parameters. parameters. Default = 0. 
+\end_layout
+
+\begin_layout Subsubsection*
+
+bNoState
+\end_layout
+
+\begin_layout Standard
+
+Set to true to have a stateless button. This button will send one event when pressed and one when released. The default is to send 
+\series bold
+CLASS1.CONTROL,TurnOn
+\series default
+ 
+\shape italic
+index=0, zone=0, subzone=0
+\shape default
+ when pressed and 
+\series bold
+CLASS1.CONTROL,TurnOff
+\series default
+ 
+\shape italic
+index=0, zone=0, subzone=0
+\shape default
+ when released. Default = false; 
+\end_layout
+
+\begin_layout Subsubsection*
+
+bDisable
+\end_layout
+
+\begin_layout Standard
+
+Set to true to disable user interactions. Button clicks will no longer work. This is useful if one instead wants to monitor a variable. Default is false. 
+\end_layout
+
+\begin_layout Subsubsection*
+
+customupsrc
+\end_layout
+
+\begin_layout Standard
+
+This is the path to the "up" image for a custom button when type is -1. 
+\end_layout
+
+\begin_layout Subsubsection*
+
+customdownsrc
+\end_layout
+
+\begin_layout Standard
+
+This is the path to the "down" image for a custom button when type is -1.
+\end_layout
+
+\begin_layout Subsection*
+
+Methods
+\end_layout
+
+\begin_layout Subsection*
+
+setOnTransmittEvent
+\end_layout
+
+\begin_layout Standard
+
+Set the event that is sent when a state button is activated or a stateless button is pressed down. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setOnTransmittEvent(vscpclass, // VSCP class vscptype, // VSCP type data, // Array with databytes guid) // GUID to use 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+vscpclass
+\end_layout
+
+\begin_layout Standard
+
+VSCP class to use for the event. Default=30 CLASS1.CONTROL 
+\end_layout
+
+\begin_layout Paragraph*
+
+vscptype
+\end_layout
+
+\begin_layout Standard
+
+VSCP type to use for the event. Default=5 as for CLASS1.CONTROL TurnOn-Event. 
+\end_layout
+
+\begin_layout Paragraph*
+
+data
+\end_layout
+
+\begin_layout Standard
+
+Array with data bytes to use for the event. Its the responsibility of the caller to use the correct number of data bytes. Default is "0,0,0" meaning index=0, zone=0, subzone=0, 
+\end_layout
+
+\begin_layout Paragraph*
+
+guid
+\end_layout
+
+\begin_layout Standard
+
+This is the sending GUID. Normally one just use the GUID of the sending interface of the VSCP daemon. So the default is 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00 or "-" with is a short hand version for the long form. Default="-"
+\end_layout
+
+\begin_layout Standard
+
+If you don't want an event to be sent for the on-state set vscpclass=0.
+\end_layout
+
+\begin_layout Subsection*
+
+setOffTransmittEvent
+\end_layout
+
+\begin_layout Standard
+
+Set the event that is sent when a state button is activated or a stateless button is pressed down. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setOffTransmittEvent(vscpclass, // VSCP class vscptype, // VSCP type data, // Array with databytes guid) // GUID to use 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+vscpclass
+\end_layout
+
+\begin_layout Standard
+
+VSCP class to use for the event. Default=30 CLASS1.CONTROL 
+\end_layout
+
+\begin_layout Paragraph*
+
+vscptype
+\end_layout
+
+\begin_layout Standard
+
+VSCP type to use for the event. Default=6 as for CLASS1.CONTROL TurnOff. 
+\end_layout
+
+\begin_layout Paragraph*
+
+data
+\end_layout
+
+\begin_layout Standard
+
+Array with data bytes to use for the event. Its the responsibility of the caller to use the correct number of data bytes. Default is "0,0,0" meaning index=0, zone=0, subzone=0, 
+\end_layout
+
+\begin_layout Paragraph*
+
+guid
+\end_layout
+
+\begin_layout Standard
+
+This is the sending GUID. Normally one just use the GUID of the sending interface of the VSCP daemon. So the default is 00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00 or "-" with is a short hand version for the long form. Default="-"
+\end_layout
+
+\begin_layout Standard
+
+If you don't want an event to be sent for the off-state set vscpclass=0.
+\end_layout
+
+\begin_layout Subsection*
+
+setOnReceiveEvent
+\end_layout
+
+\begin_layout Standard
+
+Set the event that should be received to set the visual indication of a button to it's on state. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setOnReceiveEvent(vscpclass, // VSCP class vscptype, // VSCP type data, // Array with databytes guid) // GUID to use 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+vscpclass
+\end_layout
+
+\begin_layout Standard
+
+VSCP class that the incoming event must have. Default=20 CLASS1.INFORMATION 
+\end_layout
+
+\begin_layout Paragraph*
+
+vscptype
+\end_layout
+
+\begin_layout Standard
+
+VSCP type that the incoming event must have. Default=3 as of the CLASS1.INFORMATION On-Event. 
+\end_layout
+
+\begin_layout Paragraph*
+
+data
+\end_layout
+
+\begin_layout Standard
+
+Array with data bytes that the event should have. Set a data byte to -1 for a don't care. Default is "-1,0,0" meaning index=-1, zone=0, subzone=0, 
+\end_layout
+
+\begin_layout Paragraph*
+
+guid
+\end_layout
+
+\begin_layout Standard
+
+This is the GUID the receiving event should have. Just leave undefined if the GUID should not be checked. Default=""
+\end_layout
+
+\begin_layout Subsection*
+
+setOffReceiveEvent
+\end_layout
+
+\begin_layout Standard
+
+Set the event that should be received to set the visual indication of a button to it's on state. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setOffReceiveEvent(vscpclass, // VSCP class vscptype, // VSCP type data, // Array with databytes guid) // GUID to use 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+vscpclass
+\end_layout
+
+\begin_layout Standard
+
+VSCP class that the incoming event must have. Default=20 CLASS1.INFORMATION 
+\end_layout
+
+\begin_layout Paragraph*
+
+vscptype
+\end_layout
+
+\begin_layout Standard
+
+VSCP type that the incoming event must have. Default=3 as of the CLASS1.INFORMATION Off-Event. 
+\end_layout
+
+\begin_layout Paragraph*
+
+data
+\end_layout
+
+\begin_layout Standard
+
+Array with data bytes that the event should have. Set a data byte to -1 for a don't care. Default is "-1,0,0" meaning index=-1, zone=0, subzone=0, 
+\end_layout
+
+\begin_layout Paragraph*
+
+guid
+\end_layout
+
+\begin_layout Standard
+
+This is the GUID the receiving event should have. Just leave undefined if the GUID should not be checked. Default=""
+\end_layout
+
+\begin_layout Subsection*
+
+setOnTransmittZone
+\end_layout
+
+\begin_layout Standard
+
+As it is common to use one of the types in CLASS1.CONTROL as on-event for a button this is a convenient method to use to change the default zone/subzone for the outgoing event. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setOnTransmittZone(zone, // zone subzone, // subzone 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+zone
+\end_layout
+
+\begin_layout Standard
+
+Zone to direct event to. 255 is all. 
+\end_layout
+
+\begin_layout Paragraph*
+
+subzone
+\end_layout
+
+\begin_layout Standard
+
+Subzone to direct event to. 255 is all.
+\end_layout
+
+\begin_layout Subsection*
+
+setOffTransmittZone
+\end_layout
+
+\begin_layout Standard
+
+As it is common to use one of the types in CLASS1.CONTROL as off-event for a button this is a convenient method to use to change the default zone/subzone for the outgoing event. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setOffTransmittZone(zone, // zone subzone, // subzone 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+zone
+\end_layout
+
+\begin_layout Standard
+
+Zone to direct event to. 255 is all. 
+\end_layout
+
+\begin_layout Paragraph*
+
+subzone
+\end_layout
+
+\begin_layout Standard
+
+Subzone to direct event to. 255 is all.
+\end_layout
+
+\begin_layout Subsection*
+
+setOnReceiveZone
+\end_layout
+
+\begin_layout Standard
+
+As it is common to use one of the types in CLASS1.INFORMATION as a trigger for the on-state of a button this is a convenient method to use to change the default zone/subzone for the incoming event. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setOnReceiveZone(zone, // zone subzone, // subzone 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+zone
+\end_layout
+
+\begin_layout Standard
+
+Zone to direct event to. 255 is all. 
+\end_layout
+
+\begin_layout Paragraph*
+
+subzone
+\end_layout
+
+\begin_layout Standard
+
+Subzone to direct event to. 255 is all.
+\end_layout
+
+\begin_layout Subsection*
+
+setOffReceiveZone
+\end_layout
+
+\begin_layout Standard
+
+As it is common to use one of the types in CLASS1.INFORMATION as a trigger for the off-state of a button this is a convenient method to use to change the default zone/subzone for the incoming event. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setOffReceiveZone(zone, // zone subzone, // subzone 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+zone
+\end_layout
+
+\begin_layout Standard
+
+Zone to direct event to. 255 is all. 
+\end_layout
+
+\begin_layout Paragraph*
+
+subzone
+\end_layout
+
+\begin_layout Standard
+
+Subzone to direct event to. 255 is all.
+\end_layout
+
+\begin_layout Subsection*
+
+setMonitorVariable
+\end_layout
+
+\begin_layout Standard
+
+With this method one can set a VSCP daemon boolean variable that should be monitored with a specific interval. If the variable is true the state for the state button will be set to true and vice versa. The variable is also updated the other way around If the button is down the variable will be set to true and vice versa. If the variable does not exist it will be created. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setMonitorVariable(variablename, // variable name interval, // monitoring interval in milliseconds 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+variablename
+\end_layout
+
+\begin_layout Standard
+
+The name for the VSCP daemon boolean variable. 
+\end_layout
+
+\begin_layout Paragraph*
+
+interval
+\end_layout
+
+\begin_layout Standard
+
+The interval in milliseconds between variable reads. Set to zero to disable. Default=1000 (one second). To test try to set the variable name to "statbutton1" and issue 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ variable write statebutton1,,,true 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ and 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ variable write statebutton1,,,false 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ in the VSCP daemon TCP/IP interface to see the change the state for the state button in your browser page.
+\end_layout
+
+\begin_layout Subsection*
+
+draw
+\end_layout
+
+\begin_layout Standard
+
+Draw the widget. Normally no need to use. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ draw() // Draw the widget 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection*
+
+setValue
+\end_layout
+
+\begin_layout Standard
+
+Set the value for the widget. The state will also be 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+begin{verbatim}
+\end_layout
+
+\end_inset
+
+ setValue(value, // Boolean value for state bUpdate ) // True (default) if a draw should be done after value is set. 
+\begin_inset ERT
+status collapsed
+
+\begin_layout Standard
+
+
+\backslash
+end{verbatim}
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Paragraph*
+
+value
+\end_layout
+
+\begin_layout Standard
+
+Boolean value that set the state of the widget. 
+\end_layout
+
+\begin_layout Paragraph*
+
+bUpdate
+\end_layout
+
+\begin_layout Standard
+
+True (default) if a draw should be done after value is set.
+\end_layout
+
+\begin_layout Subsection*
+
+Appearances types
+\end_layout
+
+\begin_layout Standard
+
+The images below is shown in there default size. Most of the buttons is designed for a different size and with an appropriate background colour.
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 0 Default
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 1
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 2
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 3
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 4
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 5
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 6
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 7
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 8
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 9
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 10
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 11
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 12
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 13
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 14
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 15
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 16
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 17
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 18
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 19
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 20
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 21
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 22
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 23
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 24
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 25
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 26
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 27
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 28
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 29
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 30
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 31
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 32
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 33
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 34
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 35
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 36
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 37
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 38
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 39
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 40
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 41
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 42
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 43
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 44
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 45
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 46
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 47
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 48
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 49
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 50
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 51
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 52
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 53
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 54
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 55
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 56
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 57
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 58
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 59
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 60
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 61
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 62
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 63
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 64
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 65
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 66
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 67
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 68
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 69
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 70
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 71
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+>
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 72
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 73
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 74
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 75
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 76
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 77
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 78
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 79
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 80
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 81
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 82
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 83
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 84
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 85
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 86
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 87
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 88
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection*
+
+Type = 89
+\end_layout
+
+\begin_layout Standard
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document

@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<title>VSCP HTML5 websocket vscpws_thermometerWidgetCelsius</title>
+<!--
+<link rel="stylesheet" type="text/css" href="../css/vscpdemo.css" />
+-->
+
+<script type="text/javascript" src="settings.js"></script>
+<script type="text/javascript" src="../lib/vscpwslib.js"></script>
+
+</head>
+
+<body>
+
+<h1>VSCP HTML5 websocket vscpws_thermometerWidgetCelsius</h1>
+
+<a href="index.html">Go back to main page</a>
+
+
+<canvas id="mythermometer1"
+   style="z-index: 1;
+      position:absolute;
+      left:100px;
+      top:200px;" >
+   Your browser does not support HTML5 Canvas.
+</canvas>
+
+<canvas id="mythermometer2"
+   style="z-index: 1;
+      position:absolute;
+      left:200px;
+      top:200px;" >
+   Your browser does not support HTML5 Canvas.
+</canvas>
+
+<canvas id="mythermometer3"
+   style="z-index: 1;
+      position:absolute;
+      left:300px;
+      top:200px;" >
+   Your browser does not support HTML5 Canvas.
+</canvas>
+
+<canvas id="mythermometer4"
+   style="z-index: 1;
+      position:absolute;
+      left:400px;
+      top:200px;" >
+   Your browser does not support HTML5 Canvas.
+</canvas>
+
+</div>
+
+
+<script type="text/javascript" >
+        
+	var temp1 = new vscpws_thermometerCelsius( VSCP_WEBSOCKET_URL, 
+                                                    "mythermometer1", 
+                                                    0,
+                                                    VSCP_CLASS1_MEASUREMENT,
+                                                    VSCP_TYPE_MEASUREMENT_TEMPERATURE, 
+                                                    2 );
+                                                    
+	var temp2 = new vscpws_thermometerCelsius( VSCP_WEBSOCKET_URL, 
+                                                    "mythermometer2", 
+                                                    1,
+                                                    VSCP_CLASS1_MEASUREMENT,
+                                                    VSCP_TYPE_MEASUREMENT_TEMPERATURE, 
+                                                    2 );       
+                                                    
+	var temp3 = new vscpws_thermometerCelsius( VSCP_WEBSOCKET_URL, 
+                                                    "mythermometer3", 
+                                                    2,
+                                                    VSCP_CLASS1_MEASUREMENT,
+                                                    VSCP_TYPE_MEASUREMENT_TEMPERATURE, 
+                                                    2 );        
+                                                    
+    var temp4 = new vscpws_thermometerCelsius( VSCP_WEBSOCKET_URL, 
+                                                    "mythermometer4", 
+                                                    3,
+                                                    VSCP_CLASS1_MEASUREMENT,
+                                                    VSCP_TYPE_MEASUREMENT_TEMPERATURE, 
+                                                    2 );                                                     
+	
+</script>
+
+</body>
+</html>

@@ -1,0 +1,101 @@
+<html>
+  <head>
+    <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+    <title>VSCP Google Charts demo</title>
+    <script type="text/javascript" src="settings.js"></script>
+    <script src="../lib/md5.js"></script>
+    <script type="text/javascript" src="../lib/vscpwslib.js"></script>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+      google.load("visualization", "1", {packages:["gauge"]});
+      google.setOnLoadCallback( drawChart );
+      
+      function drawChart() {
+
+        var data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],         
+          ['Temp C', 100]
+        ]);
+        
+        var options = {
+          width: 800, height: 420,
+          redFrom: 90, redTo: 100,
+          yellowFrom:75, yellowTo: 90,
+          minorTicks: 5
+        };
+
+        var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+
+        chart.draw( data, options );
+
+        data.setValue(0, 1, 0 );
+        chart.draw(data, options);
+        
+        var eventReceived = function( vscphead,
+                                        vscpclass,
+                                        vscptype,
+                                        vscpobid,
+                                        vscptimestamp,
+                                        vscpguid,
+                                        vscpdata) 
+        {
+            if ((VSCP_CLASS1_MEASUREMENT == vscpclass) &&
+                    (VSCP_TYPE_MEASUREMENT_TEMPERATURE == vscptype)) {
+                
+                var value;
+                    
+                // We are lazy and don't check units/sensordindex
+                if ((-1 != this.sensorIndex) &&
+                        (vscpws_getSensorIndexFromDataCoding(vscpdata[0]) != 
+                        2))
+                    return;
+
+                // This event is for us
+                value = 
+                    vscpws_toFixed(vscpws_measurementClass10Decode(vscpdata), 1);
+            
+                // Should be a Celsius value
+                switch(vscpws_getDatacoding(vscpdata[0])) {
+                    case 0:   // Kelvin
+                        value = vscpws_convertKelvinToCelsius(this.value);
+                        break;
+                    case 2:   // Fahrenheit
+                        value = vscpws_convertFahrenheitToCelsius(this.value);
+                        break;
+                    default:    // Do nothing (if already Celsius)
+                        break;
+                }
+            
+                data.setValue(0, 1, value );
+                chart.draw(data, options);
+            } 
+            
+        return;
+    };
+    
+    var vscpeventCtrl = new vscpws_Event( vscp_setting_user,
+                                            vscp_setting_passwordhash,
+                                            vscp_setting_url,
+                                            null,
+                                            eventReceived );
+        
+      }
+    </script>
+  </head>
+  <body>
+    <h1>VSCP HTML5 websocket Google Charts Gauge demo</h1>
+    <a href="index.html">Go back to main page</a>
+    <br>
+    <p>
+    This demo uses the Gauge from Google charts to display temperature measurement values in degrees Celsius. It displays 
+    (as the other samples) all CLASS1.MEASUREMENT, Type=6/Temperature values that comes from sensor=2.
+    </p>
+    <p>
+    The <a href="event.html">event.html</a> sample can be used to set temperature values if you don't have live hardware.
+    </p>
+    <br><br>
+    <h4>Demo</h4>
+    <hr>
+    <div id="chart_div" style="width: 400px; height: 120px;"></div>
+  </body>
+</html>

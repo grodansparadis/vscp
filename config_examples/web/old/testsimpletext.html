@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<title>VSCP HTML5 websocket vscpws_simpletext</title>
+<!--
+<link rel="stylesheet" type="text/css" href="../css/vscpdemo.css" />
+-->
+
+<script type="text/javascript" src="settings.js"></script>
+<script type="text/javascript" src="../lib/vscpwslib.js"></script>
+
+</head>
+
+<body>
+
+<h1>VSCP HTML5 websocket vscpws_simpletext</h1>
+
+<a href="index.html">Go back to main page</a>
+<br><br>
+<div>    
+    This is just some text in a HTML element where a temperature is equal to 
+    <span id="id1"> </span> is displayed in-line in the text. 
+</div>   
+<div>
+    Temperature placed inside &lt;H1&gt; tags.
+    <h1 id="id2"></h1>
+</div>
+<div>
+    <h1>Unit discovery</h1>
+    <div id="id3"></div>
+</div>
+
+
+<script type="text/javascript" >
+	var txt1 = new vscpws_simpleTextEvent( VSCP_WEBSOCKET_URL, 
+                                            "id1", 
+                                            VSCP_CLASS1_MEASUREMENT,
+                                            VSCP_TYPE_MEASUREMENT_TEMPERATURE,
+                                            2, // Sensor index
+                                            3, // decimals
+                                            "{0} nice degrees {1}");
+                                            
+        fn = function test(value,unit,event)
+        {
+            var val = "" + vscpws_convertCelsiusToFahrenheit(value);
+            return ("" + vscpws_convertCelsiusToFahrenheit(value));
+        }
+        
+        //var func_multiply = new Function(value,unit,event, "return 1;");
+        
+	var txt2 = new vscpws_simpleTextEvent( VSCP_WEBSOCKET_URL, 
+                                            "id2", 
+                                            VSCP_CLASS1_MEASUREMENT,
+                                            VSCP_TYPE_MEASUREMENT_TEMPERATURE,
+                                            0, // Sensor index
+                                            3, // decimals
+                                            "Temperature is {0} degrees Fahrenheit",
+                                            "",
+                                            function(value,unit,event) {return ("" + 
+                                                        vscpws_toFixed(vscpws_convertCelsiusToFahrenheit(value),2));} );
+    
+    var idArray = new Array();
+    var newnode = function(value,unit,event) {
+        //alert("Heartbeat:" + event);
+        var guid = event[5];
+        var bFound = false;
+        
+        for (i=0;i<idArray.length;i++) {
+            if ( guid == idArray[i]) {
+                bFound = true;
+                break;
+            }
+        }
+        
+        if (!bFound) {
+            var strOut = new String();
+            idArray.push(guid);
+            for (i=0;i<idArray.length;i++) {
+                strOut += idArray[i] + " - ";
+            }
+            document.getElementById("id3").textContent = strOut;
+        }
+            
+        
+        return null;
+    };
+    
+    
+    new vscpws_simpleTextEvent( VSCP_WEBSOCKET_URL, 
+                                            null, 
+                                            VSCP_CLASS1_INFORMATION,
+                                            VSCP_TYPE_INFORMATION_NODE_HEARTBEAT,
+                                            -1,
+                                            -1,
+                                            "",
+                                            "",
+                                            newnode );                                        
+</script>
+
+</body>
+</html>
