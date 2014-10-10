@@ -1321,18 +1321,19 @@ extern "C" float vscphlp_getMeasurementAsFloat(const unsigned char *pNorm,
   \param sendoridx Index for sensor-   
   \return value as float
  */
-extern "C" int vscphlp_convertFloatToNormalizedEventData(double value,
-															unsigned char *pdata,
-															unsigned char *psize,
+extern "C" int vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
+															double value,
+															unsigned short *psize,
 															unsigned char unit,
 															unsigned char sensoridx)
 {
-    int rv =  vscp_convertFloatToNormalizedEventData(value,
-                                                    pdata,
-                                                    psize,
-                                                    unit,
-                                                    sensoridx);
-    
+	uint16_t size;
+    int rv =  vscp_convertFloatToNormalizedEventData( pdata,
+														&size,
+														value,
+														unit,
+														sensoridx);
+    *psize = size;
     return rv;
 }
 
