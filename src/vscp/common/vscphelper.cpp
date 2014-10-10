@@ -991,7 +991,7 @@ bool vscp_convertIntegerToNormalizedEventData( uint8_t *pdata,
                                                     uint8_t sensoridx )
 {
     uint8_t i;
-    uint8_t date[8];
+    uint8_t data[8];
 
     uint8_t *p = (uint8_t *)&val64;
 

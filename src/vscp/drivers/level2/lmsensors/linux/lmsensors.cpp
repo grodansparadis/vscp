@@ -545,9 +545,9 @@ CWrkTread::Entry()
                     {
                         uint8_t buf[8];
                         uint16_t size;
-                        if ( vscp_convertFloatToNormalizedEventData(val,
-                                buf,
+                        if ( vscp_convertFloatToNormalizedEventData( buf,
                                 &size,
+								val,
                                 ((m_datacoding >> 3 & 3)),
                                 (m_datacoding & 7)) && (0 != size ) ) {
                             
@@ -626,9 +626,9 @@ CWrkTread::Entry()
                     // We pretend we are a standard measurement
                     uint8_t buf[8];
                     uint16_t size;
-                    vscp_convertFloatToNormalizedEventData(val,
-                            buf,
+                    vscp_convertFloatToNormalizedEventData( buf,
                             &size,
+							val,
                             ((m_datacoding >> 3 & 3)),
                             (m_datacoding & 7));
 

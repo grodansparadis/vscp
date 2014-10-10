@@ -11,6 +11,7 @@
       <logicalFolder name="common" displayName="common" projectFiles="true">
         <itemPath>../../../../../common/crc.c</itemPath>
         <itemPath>../../../../../common/crc.h</itemPath>
+        <itemPath>../../../../../common/crc8.h</itemPath>
         <itemPath>../../../../../common/dllist.h</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
@@ -87,13 +88,28 @@
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../../common/vscpremotetcpif.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
+        <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -133,6 +149,7 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>__LINUX__</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
@@ -155,6 +172,7 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>__LINUX__</Elem>
             <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
