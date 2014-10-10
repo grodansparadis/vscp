@@ -211,11 +211,11 @@ extern "C" {
       \param sensoridx Sensor index 0-7. Zero is default.
       \return true on success, false on failure.
      */
-    bool vscp_convertFloatToNormalizedEventData( double value,
-                                                uint8_t *pdata,
-                                                uint8_t *psize,
-                                                uint8_t unit=0,
-                                                uint8_t sensoridx=0 ); 
+    bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
+                                                    uint16_t *psize,
+                                                    double value,                                                
+                                                    uint8_t unit,
+                                                    uint8_t sensoridx ); 
 
 	/*!
 	  Convert a floating point measurement value into VSCP data as a
@@ -228,11 +228,28 @@ extern "C" {
 	  \param sensoridx Sensor index 0-7. Zero is default.
       \return true on success, false on failure.
      */
-	bool vscp_convertFloatToFloatEventData( float value, 
-												uint8_t *pdata,
-												uint8_t *psize,
-												uint8_t unit=0,
-												uint8_t sensoridx=0 );
+	bool vscp_convertFloatToFloatEventData( uint8_t *pdata,
+                                                uint16_t *psize, 
+                                                float value,
+                                                uint8_t unit,
+                                                uint8_t sensoridx );
+
+    /*!
+      Convert an integer measurement value into VSCP data with the
+      first byte being the normalizer byte
+      CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
+      \param value Floating point value to convert.
+      \param pdata Pointer to beginning of VSCP returned event data.
+      \param psize Pointer to size for returned data.
+      \param unit Untit for the data. Zero is default.
+      \param sensoridx Sensor index 0-7. Zero is default.
+      \return true on success, false on failure.
+     */
+    bool vscp_convertIntegerToNormalizedEventData( uint8_t *pdata,
+                                                    uint16_t *psize,
+                                                    uint64_t val64,
+                                                    uint8_t unit=0,
+                                                    uint8_t sensoridx=0 ); 
 
     /*!
 	  Convert a floating point measurement value into VSCP data as a
@@ -246,10 +263,10 @@ extern "C" {
 	  \param sensoridx Sensor index 0-7. Zero is default.
       \return true on success, false on failure.
      */
-    bool vscp_makeFloatMeasurementEvent( float value, 
-                                                vscpEvent *pEvent,
-                                                uint8_t unit,
-                                                uint8_t sensoridx );
+    bool vscp_makeFloatMeasurementEvent( vscpEvent *pEvent, 
+                                            float value,
+                                            uint8_t unit,
+                                            uint8_t sensoridx );
 	
 	/*!
       Get data in the VSCP data coding format to a string. Works for

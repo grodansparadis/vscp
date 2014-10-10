@@ -4142,15 +4142,15 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
         long unit;
         long sensoridx;
         uint8_t data[8];
-        uint8_t sizeData;
+        uint16_t sizeData;
 
         strMeasurement.ToDouble( &value );
         strUnit.ToLong( &unit );
         strSensorIdx.ToLong( &sensoridx );
 
-        if ( vscp_convertFloatToFloatEventData( value, 
-                                                    data,
+        if ( vscp_convertFloatToFloatEventData( data,
                                                     &sizeData,
+                                                    value, 
                                                     unit,
                                                     sensoridx ) ) {
             vscpEvent *pEvent = new vscpEvent;

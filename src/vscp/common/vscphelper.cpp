@@ -855,9 +855,9 @@ bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& 
 // convertFloatToNormalizedEventData
 //
 
-bool vscp_convertFloatToNormalizedEventData( double value,
-                                                uint8_t *pdata,
-                                                uint8_t *psize,
+bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
+                                                uint16_t *psize,
+                                                double value,                                                
                                                 uint8_t unit,
                                                 uint8_t sensoridx )
 {
@@ -939,8 +939,8 @@ bool vscp_convertFloatToNormalizedEventData( double value,
         return false;
     }
 
-    pdata[0] = 0x80 + unit + sensoridx;     // Normalized integer + unit + sensorindex
-    pdata[1] = 0x80 + ndigits;              // Decimal point shifted five steps to the left
+    pdata[0] = VSCP_DATACODING_NORMALIZED + unit + sensoridx;     // Normalized integer + unit + sensorindex
+    pdata[1] = VSCP_DATACODING_NORMALIZED + ndigits;              // Decimal point shifted five steps to the left
 
     return true;
 } 
@@ -950,9 +950,9 @@ bool vscp_convertFloatToNormalizedEventData( double value,
 // vscp_convertFloatToFloatEventData
 //
 
-bool vscp_convertFloatToFloatEventData( float value, 
-                                                uint8_t *pdata,
-                                                uint8_t *psize,
+bool vscp_convertFloatToFloatEventData( uint8_t *pdata,
+                                                uint16_t *psize, 
+                                                float value,
                                                 uint8_t unit,
                                                 uint8_t sensoridx )
 {
@@ -980,18 +980,86 @@ bool vscp_convertFloatToFloatEventData( float value,
     return true;
 }
 
+//////////////////////////////////////////////////////////////////////////////
+// vscp_convertIntegerToNormalizedEventData
+//
+
+bool vscp_convertIntegerToNormalizedEventData( uint8_t *pdata,
+                                                    uint16_t *psize,
+                                                    uint64_t val64,
+                                                    uint8_t unit,
+                                                    uint8_t sensoridx )
+{
+    uint8_t i;
+    uint8_t date[8];
+
+    uint8_t *p = (uint8_t *)&val64;
+
+
+    // wxUINT64_SWAP_ON_LE( val64 );  does not work at least in 32-bit builds
+    if ( wxIsPlatformLittleEndian() ) {
+        for ( i=7; i>0; i--) {
+            data[ 7-i ] = *(p+i);
+        }
+    }
+    else {
+        memcpy ( data, (uint8_t *)val64, 8 );
+    }
+
+    // Count the leasing zeror
+    uint8_t nZeros = 0;
+    for ( i=0; i<8; i++ ) {
+        if ( *(p+i) ) break;
+        nZeros++;
+    }
+
+
+
+
+    *psize = 1; // Size will be at least one byte
+    int pos = 0;
+    for ( i = nZeros; i<8; i++ ) {
+        pdata[ pos + 1] =  *(p+i+nZeros);
+        *psize++;
+    }
+
+    return true;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 // vscp_makeFloatMeasurementEvent
 //
 
-bool vscp_makeFloatMeasurementEvent( float value, 
-                                        vscpEvent *pEvent,
+bool vscp_makeFloatMeasurementEvent( vscpEvent *pEvent, 
+                                        float value,
                                         uint8_t unit,
                                         uint8_t sensoridx )
 {
+    uint8_t offset = 0;
+    
+    // Allocate data if needed
+    if ( ( NULL == pEvent->pdata ) && 
+        ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ) {
+        offset = 0;
+        pEvent->pdata = new uint8_t[ 16 + 5 ];
+        if ( NULL == pEvent->pdata ) return false;
+    }
+    else if ( ( NULL == pEvent->pdata ) &&
+         ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ) {
+        offset = 16;
+        pEvent->pdata = new uint8_t[ 5 ];
+        if ( NULL == pEvent->pdata ) return false;
+    }
+    else {
+        return false;
+    }
 
-    return true;
+    return vscp_convertFloatToFloatEventData( pEvent->pdata+offset,
+                                                &pEvent->sizeData, 
+                                                value,
+                                                unit,
+                                                sensoridx );
 }
 
 //////////////////////////////////////////////////////////////////////////////
