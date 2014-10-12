@@ -21,7 +21,7 @@
         
         <!-- Set GUID for daemon                                  -->
         <!-- All nills, "-" or not set and the mac addess or the  -->
-        <!-- IP address of the computer will be used to calculate -->
+        <!-- IP address of the computer will be used to calcucate -->
         <!-- the GUID for the daemon                              -->
         <!-- Apply for your own GUID series at guid@vscp.org      -->
         <guid>

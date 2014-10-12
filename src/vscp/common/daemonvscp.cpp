@@ -139,37 +139,40 @@ void *daemonVSCPThread::Entry()
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
     while ( !TestDestroy() && !m_bQuit ) {
 
-        // Check if automation event should be sent and send it if so
-        vscpEventEx eventEx;
-        if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
+        if (  m_pCtrlObject->m_automation.isAutomationEnabled() ) {
+        
+                // Check if automation event should be sent and send it if so
+            vscpEventEx eventEx;
+            if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
             
-            // Yes event should be sent
-            eventEx.obid = pClientItem->m_clientID;
-            pClientItem->m_guid.writeGUID( eventEx.GUID );
+                // Yes event should be sent
+                eventEx.obid = pClientItem->m_clientID;
+                pClientItem->m_guid.writeGUID( eventEx.GUID );
 
-            if ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) {
-                // crc8 of VSCP daemon GUID should be indata byte 0
-                eventEx.data[ 0 ] = 
-					vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
-            }
+                if ( VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT == eventEx.vscp_type ) {
+                    // crc8 of VSCP daemon GUID should be indata byte 0
+                    eventEx.data[ 0 ] = 
+					    vscp_calcCRC4GUIDArray( m_pCtrlObject->m_guid.getGUID() );
+                }
 
-            vscpEvent *pnewEvent = new vscpEvent;
-            if ( NULL != pnewEvent ) {
+                vscpEvent *pnewEvent = new vscpEvent;
+                if ( NULL != pnewEvent ) {
 
-                // Convert event to correct format
-                vscp_convertVSCPfromEx( pnewEvent, &eventEx );
+                    // Convert event to correct format
+                    vscp_convertVSCPfromEx( pnewEvent, &eventEx );
 
-                // Statistics
-                pClientItem->m_statistics.cntTransmitData += eventEx.sizeData;
-                pClientItem->m_statistics.cntTransmitFrames++;
+                    // Statistics
+                    pClientItem->m_statistics.cntTransmitData += eventEx.sizeData;
+                    pClientItem->m_statistics.cntTransmitFrames++;
 
-                // There must be room in the send queue
-                if ( m_pCtrlObject->m_maxItemsInClientReceiveQueue >
-                            m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
-                    m_pCtrlObject->m_mutexClientOutputQueue.Lock();
-                    m_pCtrlObject->m_clientOutputQueue.Append ( pnewEvent );
-                    m_pCtrlObject->m_semClientOutputQueue.Post();
-                    m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
+                    // There must be room in the send queue
+                    if ( m_pCtrlObject->m_maxItemsInClientReceiveQueue >
+                                m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
+                        m_pCtrlObject->m_mutexClientOutputQueue.Lock();
+                        m_pCtrlObject->m_clientOutputQueue.Append ( pnewEvent );
+                        m_pCtrlObject->m_semClientOutputQueue.Post();
+                        m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
+                    }
                 }
             }
         }

@@ -88,6 +88,8 @@ static double AirRefr = 34.0 / 60.0; // athmospheric refraction degrees //
 
 CVSCPAutomation::CVSCPAutomation( void )
 {
+    m_bAutomation = true;
+
     m_zone = 0;
     m_subzone = 0;
 

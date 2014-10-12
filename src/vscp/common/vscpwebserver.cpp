@@ -4779,8 +4779,8 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *conn )
     buildPage += _("<br><b>Interface Types</b><br>");
     buildPage += wxString::Format( _("%d - Unknown (you should not see this).<br>"), CLIENT_ITEM_INTERFACE_TYPE_NONE );
     buildPage += wxString::Format( _("%d - Internal daemon client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL );
-    buildPage += wxString::Format( _("%d - Level I (CANAL) Driver.<br>"), CLIENT_ITEM_INTERFACE_TYPE_DRIVER_CANAL );
-    buildPage += wxString::Format( _("%d - Level II Driver.<br>"), CLIENT_ITEM_INTERFACE_TYPE_DRIVER_VSCP );
+    buildPage += wxString::Format( _("%d - Level I (CANAL) Driver.<br>"), CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 );
+    buildPage += wxString::Format( _("%d - Level II Driver.<br>"), CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2 );
     buildPage += wxString::Format( _("%d - TCP/IP Client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_TCPIP );
 	buildPage += wxString::Format( _("%d - UDP Client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_UDP );
 	buildPage += wxString::Format( _("%d - Web Server Client.<br>"), CLIENT_ITEM_INTERFACE_TYPE_CLIENT_WEB );
@@ -7475,7 +7475,6 @@ VSCPWebServerThread::websrv_session( struct mg_connection *conn )
 int
 VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
 {
-	//char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
     CVSCPVariable *pVariable = NULL;
@@ -7487,20 +7486,426 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
 	if (NULL == pObject) return MG_FALSE;
 
 	wxString buildPage;
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Configuration"));
     buildPage += _(WEB_STYLE_START);
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
     buildPage += _(WEB_COMMON_JS);      // Common Javascript code
-	 buildPage += _("<meta http-equiv=\"refresh\" content=\"5;url=/vscp");
-    buildPage += _("\">");
     buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
     
     // navigation menu 
     buildPage += _(WEB_COMMON_MENU);
-	buildPage += _("<b>Configuration functionality is not yet implemented!</b>");
-    
-	// Server data
+
+    buildPage += _("<br><br><br>");
+
+    buildPage += _("<div id=\"small\"><span style=\"color: blue;\"><b>VSCP Daemon version:</b></span> ");
+    buildPage += _(VSCPD_DISPLAY_VERSION);
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    buildPage += _("<div id=\"small\"><span style=\"color: blue;\"><b>Operating system:</b></span> ");
+    buildPage += wxGetOsDescription();
+    if ( wxIsPlatform64Bit() ) {
+        buildPage += _(" 64-bit ");
+    }
+    else {
+        buildPage += _(" 32-bit ");
+    }
+    if ( wxIsPlatformLittleEndian() ) {
+        buildPage += _(" Little endian ");
+    }
+    else {
+        buildPage += _(" Big endian ");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+#ifndef WIN32
+    buildPage += _("<div id=\"small\">");
+    wxLinuxDistributionInfo info = wxGetLinuxDistributionInfo();
+    buildPage += _("<span style=\"color: blue;\"><b>Linux distribution Info:</b></span><br>");
+    buildPage += _("&nbsp;&nbsp;<b>id=:</b> ");
+    buildPage += info.id;
+    buildPage += _("&nbsp;&nbsp;<span style=\"color: blue;\"><b>release=:</b></span><br>");
+    buildPage += info.Release;
+    buildPage += _("&nbsp;&nbsp;<span style=\"color: blue;\"><b>codeName=:</b></span><br>");
+    buildPage += info.Codename;
+    buildPage += _("&nbsp;&nbsp;<span style=\"color: blue;\"><b>description=:</b></span><br>");
+    buildPage += info.Description;	
+    buildPage += _("<br>");
+    buildPage += _("</dic>");
+#endif
+
+    buildPage += _("<div id=\"small\">");
+    wxMemorySize memsize;
+    if ( -1 != ( memsize = wxGetFreeMemory() ) ) {
+        buildPage += _("<b>Free memory:</b> ");
+        buildPage += memsize.ToString();
+        buildPage += _(" bytes<br>");
+    }
+    buildPage += _("</div>");
+
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Hostname:</b> ");
+    buildPage += wxGetFullHostName();	
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // Debuglevel
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Debuglevel:</b> ");
+    buildPage += wxString::Format(_("%d "), pObject->m_logLevel );
+    switch ( pObject->m_logLevel  ) {
+        case DAEMON_LOGMSG_NONE:
+            buildPage += _("(none)");
+            break;
+        case DAEMON_LOGMSG_DEBUG:
+            buildPage += _("(debug)");
+            break;
+        case DAEMON_LOGMSG_INFO:
+            buildPage += _("(info)");
+            break;
+        case DAEMON_LOGMSG_NOTICE:
+            buildPage += _("(notice)");
+            break;
+        case DAEMON_LOGMSG_WARNING:
+            buildPage += _("(warning)");
+            break;
+        case DAEMON_LOGMSG_ERROR:
+            buildPage += _("(error)");
+            break;
+        case DAEMON_LOGMSG_CRITICAL:
+            buildPage += _("(critical)");
+            break;
+        case DAEMON_LOGMSG_ALERT:
+            buildPage += _("(alert)");
+            break;
+        case DAEMON_LOGMSG_EMERGENCY:
+            buildPage += _("(emergency)");
+            break;
+        default:
+            buildPage += _("(unkown)");
+            break;
+    }
+    buildPage += _("</div>");
+
+    // Server GUID
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Server GUID:</b> ");
+    pObject->m_guid.toString( str );
+    buildPage += str;
+    buildPage += _("</div>");
+
+    // Client buffer size
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Client buffer size:</b> ");
+    buildPage += wxString::Format(_("%d"), pObject->m_maxItemsInClientReceiveQueue );
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // TCP/IP interface
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>TCP/IP interface:</b> ");
+    if ( pObject->m_bTCPInterface ) {
+        buildPage += _("enabled on <b>interface:</b> '");
+        buildPage += pObject->m_strTcpInterfaceAddress;
+        buildPage += _("'");
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // UDP interface
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>UDP interface:</b> ");
+    if ( pObject->m_bUDPInterface ) {
+        buildPage += _("enabled on <b>interface:</b> '");
+        buildPage += pObject->m_strUDPInterfaceAddress;
+        buildPage += _("'");
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // VSCP Internal intelligence
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>VSCP internal event logic:</b> ");
+    if ( pObject->m_bVSCPDaemon ) {
+        buildPage += _("enabled.");
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("<br>");
+    buildPage += _("&nbsp;&nbsp;<b>Automation:</b> ");
+    if ( pObject->m_automation.isAutomationEnabled() ) {
+        buildPage += _("enabled.");
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // Web server interface
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Web server <b>interface:</b></b> ");
+    if ( pObject->m_bWebServer ) {
+        buildPage += _("enabled on interface '");
+        buildPage += pObject->m_portWebServer;
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>Rootfolder:</b> ");
+        buildPage += pObject->m_pathWebRoot;
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>Authdomain:</b> ");
+        buildPage += pObject->m_authDomain;
+        if ( 0 == pObject->m_authDomain.Length() ) {
+            buildPage += _("Set to default.");
+        }
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
+        buildPage += pObject->m_extraMimeTypes;
+        if ( 0 == pObject->m_extraMimeTypes.Length() ) {
+            buildPage += _("Set to default.");
+        }
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
+        buildPage += pObject->m_cgiInterpreter;
+        if ( 0 == pObject->m_cgiInterpreter.Length() ) {
+            buildPage += _("Set to default.");
+        }
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>CgiPattern:</b> ");
+        buildPage += pObject->m_cgiPattern;
+        if ( 0 == pObject->m_cgiPattern.Length() ) {
+            buildPage += _("Set to default.");
+        }
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
+        buildPage += pObject->m_hideFilePatterns;
+        if ( 0 == pObject->m_hideFilePatterns.Length() ) {
+            buildPage += _("Set to default.");
+        }
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>IndeFiles:</b> ");
+        buildPage += pObject->m_indexFiles;
+        if ( 0 == pObject->m_indexFiles.Length() ) {
+            buildPage += _("Set to default.");
+        }
+        buildPage += _("<br>");
+        if ( pObject->bEnableDirectoryListing ) {
+            buildPage += _("&nbsp;&nbsp;<b>Directory listings</b> is enabled.");    
+        }
+        else {
+            buildPage += _("&nbsp;&nbsp;<b>Directory listings</b> is disabled.");
+        }
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>UrlReqrites:</b> ");
+        buildPage += pObject->m_urlRewrites;
+        if ( 0 == pObject->m_urlRewrites.Length() ) {
+            buildPage += _("Set to default.");
+        }
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // Websockets
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>VSCP websocket interface:</b> ");
+    if ( pObject->m_bWebSockets ) {
+        buildPage += _("enabled.");
+        if ( pObject->m_bAuthWebsockets ) {
+            buildPage += _("<b>Authentication</b> enabled.");
+        }
+        else {
+            buildPage += _("<b>Authentication</b> disabled.");
+        }
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // DM
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Daemon internal decision matrix functionality:</b> ");
+    if ( pObject->m_bDM ) {
+        buildPage += _("enabled.");
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>Path to DM file:</b> ");
+        buildPage += pObject->m_dm.m_configPath;
+        buildPage += _("<br>");
+        if ( pObject->m_dm.m_bLogEnable ) {
+            buildPage += _("&nbsp;&nbsp;<b>DM logging</b> is enabled.");
+            buildPage += _("<br>");
+            buildPage += _("&nbsp;&nbsp;<b>Path to log file:</b> ");
+            buildPage += pObject->m_dm.m_logFileName.GetFullPath();
+        }
+        else {
+            buildPage += _("&nbsp;&nbsp;<b>DM logging</b> is disabled.");
+        }
+    }
+    else {
+        buildPage += _("disabled");
+    }
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // Variable handling
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Variable handling :</b> ");
+    if ( pObject->m_bVariables ) {
+        buildPage += _("enabled.");
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>Path to variables:</b> ");
+        buildPage += pObject->m_VSCP_Variables.m_configPath;
+        buildPage += _("<br>");
+        buildPage += _("&nbsp;&nbsp;<b>Autosave:</b> ");
+        buildPage += wxString::Format(_("%d minutes."), pObject->m_VSCP_Variables.m_autosaveInterval );
+    }
+    else {
+        buildPage += _("enabled.");
+    }
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    // General log file
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>General log file:</b> ");
+    if ( pObject->m_bLogGeneralEnable ) {
+        buildPage += _("enabled, <b>path:</b> ");
+        buildPage += pObject->m_logGeneralFileName.GetFullPath();
+        buildPage += _("'");
+    }
+    else {
+        buildPage += _("disabled.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    // Access log file
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Access log file:</b> ");
+    if ( pObject->m_bLogAccessEnable ) {
+        buildPage += _("enabled, <b>path:</b> ");
+        buildPage += pObject->m_logAccessFileName.GetFullPath();
+        buildPage += _("'");
+    }
+    else {
+        buildPage += _("disabled.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    // Security log file
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Security log file:</b> ");
+    if ( pObject->m_bLogSecurityEnable ) {
+        buildPage += _("enabled, <b>path:</b> ");
+        buildPage += pObject->m_logSecurityFileName.GetFullPath();
+        buildPage += _("'");
+    }
+    else {
+        buildPage += _("disabled.");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Level I Drivers:</b> ");  
+    if ( pObject->m_bEnableLevel1Drivers ) {
+
+        buildPage += _("enabled<br>");
+
+        CDeviceItem *pDeviceItem;
+        VSCPDEVICELIST::iterator iter;
+        for (iter = pObject->m_deviceList.m_devItemList.begin();
+            iter != pObject->m_deviceList.m_devItemList.end();
+            ++iter) {
+
+            pDeviceItem = *iter;
+            if  ( ( NULL != pDeviceItem ) &&   
+                    ( CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2 == pDeviceItem->m_driverLevel ) &&
+                    pDeviceItem->m_bEnable ) {
+                buildPage += _("<b>Name:</b> ");
+                buildPage += pDeviceItem->m_strName;
+                buildPage += _("<br>");
+                buildPage += _("<b>Config:</b> ");
+                buildPage += pDeviceItem->m_strParameter;
+                buildPage += _("<br>");
+                buildPage += _("<b>Path:</b> ");
+                buildPage += pDeviceItem->m_strPath;
+                buildPage += _("<br>");
+            }
+        }
+    }
+    else {
+        buildPage += _("disabled<br>");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+    buildPage += _("<hr>");
+
+
+    buildPage += _("<div id=\"small\">");
+    buildPage += _("<b>Level II Drivers:</b> ");  
+    if ( pObject->m_bEnableLevel2Drivers ) {
+        
+        buildPage += _("enabled<br>");
+
+        CDeviceItem *pDeviceItem;
+        VSCPDEVICELIST::iterator iter;
+        for (iter = pObject->m_deviceList.m_devItemList.begin();
+            iter != pObject->m_deviceList.m_devItemList.end();
+            ++iter) {
+
+            pDeviceItem = *iter;
+            if  ( ( NULL != pDeviceItem ) &&   
+                    ( CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1 == pDeviceItem->m_driverLevel ) &&
+                    pDeviceItem->m_bEnable ) {
+                buildPage += _("<b>Name:</b> ");
+                buildPage += pDeviceItem->m_strName;
+                buildPage += _("<br>");
+                buildPage += _("<b>Config:</b> ");
+                buildPage += pDeviceItem->m_strParameter;
+                buildPage += _("<br>");
+                buildPage += _("<b>Path:</b> ");
+                buildPage += pDeviceItem->m_strPath;
+                buildPage += _("<br>");
+            }
+        }
+    }
+    else {
+        buildPage += _("disabled<br>");
+    }
+    buildPage += _("<br>");
+    buildPage += _("</div>");
+
+
+	// Serve data
 	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
 
 	return MG_TRUE;	

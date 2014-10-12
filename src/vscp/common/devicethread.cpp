@@ -103,10 +103,10 @@ void *deviceThread::Entry()
 	// This is now an active Client
 	m_pDeviceItem->m_pClientItem->m_bOpen = true;
     if ( VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel ) {
-        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_VSCP;
+        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL2;
     }
     else {
-        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_CANAL;
+        m_pDeviceItem->m_pClientItem->m_type = CLIENT_ITEM_INTERFACE_TYPE_DRIVER_LEVEL1;
     }
 	m_pDeviceItem->m_pClientItem->m_strDeviceName = m_pDeviceItem->m_strName;
 	m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" Started at ");

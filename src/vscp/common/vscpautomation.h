@@ -159,8 +159,15 @@ public:
     /// setter for setIntervalHeartbeatEvent
     void setIntervalHeartbeatEvent( long interval ) 
                                         { m_intervalHeartBeat = interval; };
+
+    // Setter/getter for automation enable/diable
+    void enableAutomation( void ) { m_bAutomation = true; };
+    void disableAutomation( void ) { m_bAutomation = false; };
+    bool isAutomationEnabled( void ) { return m_bAutomation; }; 
     
 private:
+
+    bool m_bAutomation;
 
     /// Zone that automation server belongs to
     uint8_t m_zone;

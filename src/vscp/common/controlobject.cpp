@@ -320,6 +320,7 @@ CControlObject::CControlObject()
     // Initialize the CRC
     crcInit();
 
+#if (0)
 	CVSCPTable testtable( "c:/tmp/test.tbl" );
 
 	testtable.logData( 1, 100 );
@@ -334,6 +335,7 @@ CControlObject::CControlObject()
 	long size = testtable.GetRangeOfData( 22, 48, NULL, 0 );
 	size = testtable.GetRangeOfData( 1, 8, NULL, 0 );
 	size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
+#endif
 
 }
 
@@ -496,13 +498,7 @@ bool CControlObject::init(wxString& strcfgfile)
     //wxLog::AddTraceMask(_("wxTRACE_vscpd_LevelII"));
     //wxLog::AddTraceMask( _( "wxTRACE_vscpd_dm" ) );
 
-    wxString str = _("VSCP Daemon started\n");
-    str += _("Version: ");
-    str += _(VSCPD_DISPLAY_VERSION);
-    str += _("\n");
-    str += _(VSCPD_COPYRIGHT);
-    str += _("\n");
-    logMsg(str);
+    
 
     // A configuration file must be available
     if (!wxFile::Exists(strcfgfile)) {
@@ -563,10 +559,6 @@ bool CControlObject::init(wxString& strcfgfile)
         return FALSE;
     }
     
-    
-    str.Printf(_("Log Level=%d\n"), m_logLevel, DAEMON_LOGMSG_EMERGENCY );       
-    logMsg(str);
-
     // Open up the General logging file.
     if ( m_bLogGeneralEnable ) {
         m_fileLogGeneral.Open( m_logGeneralFileName.GetFullPath(), wxFile::write_append ); 
@@ -581,7 +573,17 @@ bool CControlObject::init(wxString& strcfgfile)
     if ( m_bLogAccessEnable ) {
         m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append );
     }
-   
+
+    wxString str = _("VSCP Daemon started\n");
+    str += _("Version: ");
+    str += _(VSCPD_DISPLAY_VERSION);
+    str += _("\n");
+    str += _(VSCPD_COPYRIGHT);
+    str += _("\n");
+    logMsg(str );
+    
+    str.Printf(_("Log Level=%d\n"), m_logLevel, DAEMON_LOGMSG_EMERGENCY );       
+    logMsg(str);
 
     // Get GUID
     if ( m_guid.isNULL() ) {
@@ -611,8 +613,10 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("Variables disabled.\n"), DAEMON_LOGMSG_INFO);
     }
 
+    // Start daemon internal client worker thread
     startClientWorkerThread();
 
+    // Load leve 1 drivers if the are enabled
     if (m_bEnableLevel1Drivers) {
         logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
         startDeviceWorkerThreads();
@@ -621,6 +625,7 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("Level I drivers disabled.\n"), DAEMON_LOGMSG_INFO);
     }
 
+    // Start TCP/IP interface if enabled enabled
     if (m_bTCPInterface) {
         logMsg(_("TCP/IP interface enabled.\n"), DAEMON_LOGMSG_INFO);
         startTcpWorkerThread();
@@ -629,9 +634,12 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("TCP/IP interface disabled.\n"), DAEMON_LOGMSG_INFO);
     }
 	
-	startDaemonWorkerThread();
+    // Start daemon worker thread if enabled.
+    if ( m_bVSCPDaemon ) {
+	    startDaemonWorkerThread();
+    }
 
-
+    // Start web sockets if enabled
 	if (m_bWebSockets) {
         logMsg(_("WebServer interface active.\n"), DAEMON_LOGMSG_INFO);
         startWebServerThread();
@@ -2286,6 +2294,14 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
         
         else if (child->GetName() == wxT("automation")) {
             
+            wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
+            attribut.MakeLower();
+            if (attribut.IsSameAs(_("false"), false)) {
+                m_automation.disableAutomation();
+            } else {
+                m_automation.enableAutomation();
+            }
+
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
             
