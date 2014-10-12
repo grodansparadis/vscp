@@ -46,6 +46,7 @@
 #include "wx/app.h"
 #include <wx/xml/xml.h>
 #include <wx/txtstrm.h>
+#include <wx/platinfo.h>
 
 #ifdef WIN32
 
@@ -7521,6 +7522,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
     buildPage += _("</div>");
 
 #ifndef WIN32
+/*	
     buildPage += _("<div id=\"small\">");
     wxLinuxDistributionInfo info = wxGetLinuxDistributionInfo();
     buildPage += _("<span style=\"color: blue;\"><b>Linux distribution Info:</b></span><br>");
@@ -7534,6 +7536,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
     buildPage += info.Description;	
     buildPage += _("<br>");
     buildPage += _("</dic>");
+ */ 
 #endif
 
     buildPage += _("<div id=\"small\">");
