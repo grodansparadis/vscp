@@ -22,14 +22,8 @@
 #ifndef _MDF_H_
 #define _MDF_H_
 
-#ifdef VSCP_QT
-#include <QString>
-#include <QList>
-#else
-
 #include "wx/wx.h"
 
-#endif
 
 #include "vscp.h"
 #include "vscp_class.h"

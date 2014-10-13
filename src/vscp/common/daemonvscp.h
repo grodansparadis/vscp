@@ -29,8 +29,35 @@
 #include "wx/thread.h"
 #include "wx/socket.h"
 
+#include "guid.h"
 
 class CControlObject;
+class CClientItem;
+//class cguid;
+
+class nodeInformation 
+{
+
+public:
+
+    nodeInformation();
+    ~nodeInformation();
+
+private:
+
+    /*!
+        Client originating this 
+        Event
+    */
+    CClientItem *m_pClientItem;
+
+    // Full GUID for node
+    cguid m_guid;
+
+    // MDF path for node
+    wxString m_mdfPath;
+
+};
 
 
 

@@ -55,12 +55,33 @@
 #include "canal_macro.h"
 #include "vscp.h"
 #include "vscphelper.h"
+#include "clientlist.h"
 #include "../../common/dllist.h"
 #include "../../common/md5.h"
 #include "../../common/crc8.h"
 #include "controlobject.h"
 #include "guid.h"
 #include "vscpd_caps.h"
+
+
+///////////////////////////////////////////////////////////////////////////////
+// nodeInformation CTOR
+//
+
+nodeInformation::nodeInformation()
+{
+    m_pClientItem = NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// nodeInforamtion DTOR
+//
+
+nodeInformation::~nodeInformation()
+{
+    ;
+}
+
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -139,9 +160,10 @@ void *daemonVSCPThread::Entry()
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
     while ( !TestDestroy() && !m_bQuit ) {
 
+        // Automation
         if (  m_pCtrlObject->m_automation.isAutomationEnabled() ) {
         
-                // Check if automation event should be sent and send it if so
+            // Check if automation event should be sent and send it if so
             vscpEventEx eventEx;
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
             

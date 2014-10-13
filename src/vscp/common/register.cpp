@@ -38,7 +38,9 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
+#if wxUSE_GUI!=0
 #include <wx/progdlg.h>
+#endif
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>

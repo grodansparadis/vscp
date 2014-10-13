@@ -564,8 +564,11 @@
     <ClInclude Include="..\..\common\devicethread.h" />
     <ClInclude Include="..\..\..\common\dllist.h" />
     <ClInclude Include="..\..\common\dm.h" />
+    <ClInclude Include="..\..\common\guid.h" />
     <ClInclude Include="..\..\common\interfacelist.h" />
     <ClInclude Include="..\..\..\common\md5.h" />
+    <ClInclude Include="..\..\common\mdf.h" />
+    <ClInclude Include="..\..\common\register.h" />
     <ClInclude Include="..\..\common\tables.h" />
     <ClInclude Include="..\..\common\udpclientthread.h" />
     <ClInclude Include="..\..\common\vscpautomation.h" />
@@ -604,6 +607,8 @@
     <ClCompile Include="..\..\common\guid.cpp" />
     <ClCompile Include="..\..\common\interfacelist.cpp" />
     <ClCompile Include="..\..\..\common\md5.cpp" />
+    <ClCompile Include="..\..\common\mdf.cpp" />
+    <ClCompile Include="..\..\common\register.cpp" />
     <ClCompile Include="..\..\common\tables.cpp" />
     <ClCompile Include="..\..\common\tcpipclientthread.cpp" />
     <ClCompile Include="..\..\common\udpclientthread.cpp" />

@@ -38,7 +38,9 @@
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
+#if wxUSE_GUI!=0
 #include <wx/progdlg.h>
+#endif
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
@@ -752,19 +754,23 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
     }
 
     //wxMessageBox( tmpPath );
-
+#if wxUSE_GUI!=0
     ::wxBeginBusyCursor();
-
+#endif
     // Create and open http stream
     wxURL url( remoteFile );	
     if ( wxURL_NOERR != url.GetError() ) {
+#if wxUSE_GUI!=0
         ::wxEndBusyCursor();
+#endif
         return false;
     }
 
     wxInputStream *in_stream;
     if ( NULL == ( in_stream = url.GetInputStream() ) ) {
+#if wxUSE_GUI!=0
         ::wxEndBusyCursor();
+#endif
         return false;	
     }
 
@@ -787,9 +793,9 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
 
     // Close the file
     tempFile.Close();
-
+#if wxUSE_GUI!=0
     ::wxEndBusyCursor();
-
+#endif
     return true;
 }
 
@@ -812,13 +818,17 @@ bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 
 	// Get URL from user if not given
 	if ( !bSilent && !bLocalFile && !remoteFile.Length() ) {
-
+#if wxUSE_GUI!=0
 		remoteFile = ::wxGetTextFromUser( _("Please enter URI to MDF file on server ") );
+#else
+        return false;
+#endif
 
 	}
 	// Get filename from user if not given
 	else if ( !bSilent && bLocalFile && !remoteFile.Length() ) {
 
+#if wxUSE_GUI!=0
 		// Load MDF from local file
         wxFileDialog dlg( NULL,
                             _("Choose file to load MDF from "),
@@ -831,6 +841,9 @@ bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
         else {
             return false;
         }
+#else
+            return false;
+#endif
 	
 	}
 
@@ -838,10 +851,14 @@ bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 	if ( 0 == remoteFile.Length() ) {
 	
 		if ( !bSilent && bLocalFile ) {
+#if wxUSE_GUI!=0
 			::wxMessageBox( _("A filename must be entered."), _("VSCP Works"), wxICON_ERROR );
+#endif
 		}
 		else if ( !bSilent ) {
+#if wxUSE_GUI!=0
 			::wxMessageBox( _("A URI must be entered."), _("VSCP Works"), wxICON_ERROR );
+#endif
 		}
 
 		return false;
@@ -851,9 +868,11 @@ bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 	if ( !bLocalFile ) {
 		
 		if ( !downLoadMDF( remoteFile, localFile ) ) {
+#if wxUSE_GUI!=0
 			if ( !bSilent ) ::wxMessageBox( _("Unable to download MDF."), 
 												_("VSCP Works"), 
 												wxICON_ERROR );
+#endif
 			return false;
 		}
 

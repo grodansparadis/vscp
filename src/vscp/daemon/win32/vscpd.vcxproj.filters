@@ -134,6 +134,15 @@
     <ClInclude Include="..\..\..\common\crc8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\common\guid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\mdf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\common\register.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\common\clientlist.cpp">
@@ -218,6 +227,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\common\crc8.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\mdf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\common\register.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
