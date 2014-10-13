@@ -664,6 +664,7 @@ VSCPInformation::VSCPInformation( void )
 	// Level II Information functionality Class=1026 (0x402)
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026, 0) ] = _("INFORMATION_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(1026, 1) ] = _("TOKEN_ACTIVITY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(1026, 2) ] = _("HEART_BEAT");
 
 	// Level II Text to speech functionality Class=1028 (0x404)
 	m_hashType[ MAKE_CLASSTYPE_LONG(1028, 0) ] = _("SPEECH_GENERAL");

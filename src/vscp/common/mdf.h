@@ -72,9 +72,8 @@ enum vscp_abstraction_type {
     type_index8_string
 };
 
-#ifndef VSCP_QT
 WX_DEFINE_ARRAY_LONG( uint32_t, SortedArrayLong );
-#endif
+
 
 // * * * Settings * * *
 
@@ -92,25 +91,17 @@ public:
     CMDF_ValueListValue();
     ~CMDF_ValueListValue();
 
-#ifdef VSCP_QT
-    QString m_strName;
-    QString m_strDescription;
-    QString m_strHelpType;
-    QString m_strHelp;             // Item help text or url
-    QString m_strValue;            // The abstraction tells the type
-#else
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
     wxString m_strHelp;             // Item help text or url
     wxString m_strValue;            // The abstraction tells the type
-#endif
+
   
 };
 
-#ifndef VSCP_QT
 WX_DECLARE_LIST( CMDF_ValueListValue, MDF_VALUE_LIST );
-#endif
+
 
 /*!
   CMDF_Abstraction
@@ -135,22 +126,9 @@ public:
 		@param type Abstraction type
 		@return Real text description of type.
 	*/
-#ifdef VSCP_QT
-    QString getAbstractionValueType( void );
-#else
     wxString getAbstractionValueType( void );
-#endif
 
-#ifdef VSCP_QT
-    QString m_strName;
-    QString m_strDescription;
-    QString m_strHelpType;
-    QString m_strHelp;                 // Item help text or url
 
-    QString m_strID;                   // Abstract variable id (unique
-                                       // inside of MDF
-    QString m_strDefault;              // default value
-#else
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
@@ -159,7 +137,6 @@ public:
     wxString m_strID;                   // Abstract variable id (unique
                                         // inside of MDF
     wxString m_strDefault;              // default value
-#endif
   
     vscp_abstraction_type  m_nType;     // One of the predefined types
 
@@ -176,17 +153,12 @@ public:
 
 	bool m_bIndexed;					// True of indexed storage
 
-#ifdef VSCP_QT
-    QList<CMDF_ValueListValue>  m_list_value;   // list with selectable values
-#else
     MDF_VALUE_LIST  m_list_value;       // list with selectable values
-#endif
+
 
 };
 
-#ifndef VSCP_QT
 WX_DECLARE_LIST( CMDF_Abstraction, MDF_ABSTRACTION_LIST );
-#endif
 
 
 // * * * Register * * *
@@ -208,26 +180,18 @@ public:
     CMDF_Bit();
     ~CMDF_Bit();
 
-#ifdef VSCP_QT
-    QString m_strName;
-    QString m_strDescription;
-#else
     wxString m_strName;
     wxString m_strDescription;
-#endif
+
 
     /*!
         Clear storage
     */
     void clearStorage( void );
 
-#ifdef VSCP_QT
-    QString m_strHelpType;
-    QString m_strHelp;                 // Item help text or url
-#else
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
-#endif
+
 
     // The following is used if the abstraction is a bit or bitfield
     uint8_t m_nPos;                     // 'pos'		position in bit field 0-7 (from the left)
@@ -236,17 +200,13 @@ public:
 
     uint8_t m_nAccess;                  // 'access'		Access rights for the bit(-field)
 
-#ifdef VSCP_QT
-    QList<CMDF_ValueListValue> m_list_value; // List with selectable values
-#else
     MDF_VALUE_LIST  m_list_value;       // List with selectable values
-#endif
+
   
 };
 
-#ifndef VSCP_QT
 WX_DECLARE_LIST( CMDF_Bit, MDF_BIT_LIST );
-#endif
+
 
 /*!
   CMDF_Register
@@ -268,17 +228,11 @@ public:
     */
     void clearStorage( void );
 
-#ifdef VSCP_QT
-    QString m_strName;
-    QString m_strDescription;
-    QString m_strHelpType;
-    QString m_strHelp;                 // Item help text or url
-#else
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
-#endif
+
   
     uint16_t m_nPage;
     uint16_t m_nOffset;
@@ -287,21 +241,12 @@ public:
     uint32_t m_nMin;
     uint32_t m_nMax;
 
-#ifdef VSCP_QT
-    QString m_strDefault;
-#else
     wxString m_strDefault;
-#endif
 
     uint8_t m_nAccess;
 
-#ifdef VSCP_QT
-    QList<CMDF_Bit>  m_list_bit;                // dll list with bit defines
-    QList<CMDF_ValueListValue>  m_list_value;   // dll list with selectable values
-#else
     MDF_BIT_LIST  m_list_bit;			// dll list with bit defines
     MDF_VALUE_LIST  m_list_value;		// dll list with selectable values
-#endif
 
 	// For VSCP Works
 	uint8_t m_value;					// Initial value read. This is the value
@@ -309,9 +254,9 @@ public:
 
 };
 
-#ifndef VSCP_QT
+
 WX_DECLARE_LIST( CMDF_Register, MDF_REGISTER_LIST );
-#endif
+
 
 /*!
   CMDF_ActionParameter
@@ -333,34 +278,24 @@ public:
     */
     void clearStorage( void );
 
-#ifdef VSCP_QT
-    QString m_strName;
-    QString m_strDescription;
-    QString m_strHelpType;
-    QString m_strHelp;                 // Item help text or url
-#else
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
-#endif
+
 
     uint16_t m_nOffset;
     uint8_t  m_width;
 
-#ifdef VSCP_QT
-    QList<CMDF_Bit>  m_list_bit;                // dll list with bit defines
-    QList<CMDF_ValueListValue>  m_list_value;   // dll list with selectable values
-#else
     MDF_BIT_LIST  m_list_bit;        // List with bit defines
     MDF_VALUE_LIST  m_list_value;    // List with selectable values
-#endif
+
 
 };
 
-#ifndef VSCP_QT
+
 WX_DECLARE_LIST( CMDF_ActionParameter, MDF_ACTIONPARAMETER_LIST );
-#endif
+
 
 /*!
   CMDF_Action
@@ -382,31 +317,21 @@ public:
     */
     void clearStorage( void );
 
-#ifdef VSCP_QT
-    QString m_strName;
-    QString m_strDescription;
-    QString m_strHelpType;
-    QString m_strHelp;                 // Item help text or url
-#else
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
-#endif
 
     uint16_t m_nCode;
 
-#ifdef VSCP_QT
-    QList<CMDF_ActionParameter>  m_list_ActionParameter;   // List with action parameters
-#else
     MDF_ACTIONPARAMETER_LIST  m_list_ActionParameter;   // List with action parameters
-#endif
+
 
 };
 
-#ifndef VSCP_QT
+
 WX_DECLARE_LIST( CMDF_Action, MDF_ACTION_LIST );
-#endif
+
 
 /*!
   CMDF_DecisionMatrix
@@ -435,11 +360,8 @@ public:
     uint16_t m_nRowSize;
 	bool m_bIndexed;
 
-#ifdef VSCP_QT
-    QList<CMDF_Action>  m_list_action; // Action description
-#else
     MDF_ACTION_LIST  m_list_action; // Action description
-#endif
+
 
 };
 
@@ -463,33 +385,22 @@ public:
     */
     void clearStorage( void );
 
-#ifdef VSCP_QT
-    QString m_strName;
-    QString m_strDescription;
-    QString m_strHelpType;
-    QString m_strHelp;                 // Item help text or url
-#else
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
-#endif
 
     uint16_t m_nOffset;
 
-#ifdef VSCP_QT
-    QList<CMDF_Bit> m_list_bit;                 // List with bit defines
-    QList<CMDF_ValueListValue>  m_list_value;   // List with selectable values
-#else
     MDF_BIT_LIST  m_list_bit;         // List with bit defines
     MDF_VALUE_LIST  m_list_value;     // List with selectable values
-#endif
+
 
 };
 
-#ifndef VSCP_QT
+
 WX_DECLARE_LIST( CMDF_EventData, MDF_EVENTDATA_LIST );
-#endif
+
 
 /*!
   CMDF_Event

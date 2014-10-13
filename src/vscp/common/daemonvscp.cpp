@@ -29,6 +29,9 @@
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
+#include <wx/datetime.h>
+#include <wx/listimpl.cpp>
+#include <wx/hashmap.h>
 
 #ifdef WIN32
 #else
@@ -64,20 +67,23 @@
 #include "vscpd_caps.h"
 
 
+WX_DEFINE_LIST( VSCP_KNOWN_NODES_LIST );
+
+
 ///////////////////////////////////////////////////////////////////////////////
-// nodeInformation CTOR
+// cnodeInformation CTOR
 //
 
-nodeInformation::nodeInformation()
+cnodeInformation::cnodeInformation()
 {
     m_pClientItem = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// nodeInforamtion DTOR
+// cnodeInforamtion DTOR
 //
 
-nodeInformation::~nodeInformation()
+cnodeInformation::~cnodeInformation()
 {
     ;
 }
@@ -154,7 +160,6 @@ void *daemonVSCPThread::Entry()
         pAddr = lpLocalHostEntry->h_addr_list[ cntAddr ];
         if ( NULL != pAddr ) localaddr[ cntAddr ] = * ( ( unsigned long * ) pAddr );
     }
-
     while ( ( NULL != pAddr ) && ( cntAddr < 16 ) );
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
@@ -263,10 +268,41 @@ void *daemonVSCPThread::Entry()
 
                 } // for each server address
 
-            } // New node on-line   - collect 
+            } 
+            
+            // New node on-line   - collect 
             else if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE == pEvent->vscp_type ) ) {
                 
+                cguid guid;
+                guid.getFromArray( pEvent->GUID );
+                wxString str;
+                guid.toString( str );
+                if ( wxNOT_FOUND != m_knownGUIDs.Index( str, false ) ) {
+
+                    // We have not seen this node before and we will
+                    // try to collect information from it
+
+                }
+
+            }
+
+            // New node on-line   - collect 
+            else if ( ( VSCP_CLASS1_INFORMATION == pEvent->vscp_class ) && 
+                ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
+                
+                cguid guid;
+                guid.getFromArray( pEvent->GUID );
+                wxString str;
+                guid.toString( str );
+                if ( wxNOT_FOUND != m_knownGUIDs.Index( str, false ) ) {
+
+                    // We have not seen this node before and we will
+                    // try to collect information from it
+
+
+                }
+
             }
 
             // Remove the event
@@ -296,3 +332,67 @@ void daemonVSCPThread::OnExit()
 }
 
 
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// discoveryVSCPThread
+//
+
+
+discoveryVSCPThread::discoveryVSCPThread()
+		 : wxThread( wxTHREAD_JOINABLE )
+{
+    m_bQuit = false;
+    m_pCtrlObject = NULL;
+}
+
+
+discoveryVSCPThread::~discoveryVSCPThread()
+{
+    ;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry
+//
+
+void *discoveryVSCPThread::Entry()
+{
+    // Must have a valid pointer to the control object
+    if ( NULL == m_pCtrlObject ) return NULL;
+
+    // We need to create a clientobject and add this object to the list
+    CClientItem *pClientItem = new CClientItem;
+    if ( NULL == pClientItem ) return NULL;
+
+    // This is an active client
+    pClientItem->m_bOpen = true;
+    pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
+    pClientItem->m_strDeviceName = _("Internal Daemon VSCP Worker Client. Started at ");
+    wxDateTime now = wxDateTime::Now(); 
+    pClientItem->m_strDeviceName += now.FormatISODate();
+    pClientItem->m_strDeviceName += _(" ");
+    pClientItem->m_strDeviceName += now.FormatISOTime();
+
+    // Add the client to the Client List
+    m_pCtrlObject->m_wxClientMutex.Lock();
+    m_pCtrlObject->addClient ( pClientItem );
+    m_pCtrlObject->m_wxClientMutex.Unlock();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OnExit
+//
+
+void discoveryVSCPThread::OnExit()
+{
+
+}

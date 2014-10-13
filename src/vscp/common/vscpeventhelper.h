@@ -63,9 +63,6 @@ extern "C" {
 #endif
 
 
-#ifdef VSCP_QT	
-
-#else
     /// Hashtable for known event VSCP classes
     WX_DECLARE_HASH_MAP(unsigned long, wxString, wxIntegerHash, wxIntegerEqual, VSCPHashClass);
 
@@ -81,7 +78,7 @@ extern "C" {
 	WITH_DECIMAL_SUFFIX, 
 	WITH_HEX_SUFFIX
     };
-#endif	
+
 
     /*!
       @brief This class holds information about VSCP events.

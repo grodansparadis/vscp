@@ -832,6 +832,10 @@
 #define VSCP_TYPE_MEASUREMENT_COUNT_SPECTRAL_RADIANCE           56
 #define VSCP_TYPE_MEASUREMENT_COUNT_SPECTRAL_IRRADIANCE         57
 
+#define VSCP2_TYPE_INFORMATION_GENERAL                          0
+#define VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY                   1
+#define VSCP2_TYPE_INFORMATION_HEART_BEAT                       2
+
 // Level II VSCPD daemon functionality Class=65535 (0xFFFF)
 #define VSCP2_TYPE_VSCPD_GENERAL                          0
 #define VSCP2_TYPE_VSCPD_LOOP                             1

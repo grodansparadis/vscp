@@ -75,11 +75,7 @@ public:
         Get GUID from string
         @param strGUID The GUID in string form
     */
-#ifdef VSCP_QT
-    void getFromString( const QString& strGUID );
-#else
     void getFromString( const wxString& strGUID );
-#endif
 
     /*!
         Get GUID from string
@@ -98,11 +94,7 @@ public:
         GUID to string
         @param pszGUID Zero terminated ASCII string pointing at GUID
     */
-#ifdef VSCP_QT
-    void toString( QString& strGUID  );
-#else
     void toString( wxString& strGUID  );
-#endif
 
     /*!
         Return pointer to GUID

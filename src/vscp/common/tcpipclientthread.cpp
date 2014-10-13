@@ -847,11 +847,10 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
                     destguid.getAt(11),destguid.getAt(10),destguid.getAt(9),destguid.getAt(8),
                     destguid.getAt(7),destguid.getAt(6),destguid.getAt(5),destguid.getAt(4),
                     destguid.getAt(3),destguid.getAt(2),destguid.getAt(1),destguid.getAt(0) );    
-                    m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
+                    m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
                 
-                m_pCtrlObject->m_wxClientMutex.Lock();
-
                 // Find client
+                m_pCtrlObject->m_wxClientMutex.Lock();
                 CClientItem *pDestClientItem = NULL;
                 VSCPCLIENTLIST::iterator iter;
                 for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin(); 
@@ -867,7 +866,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
                             pItem->m_guid.getAt(3),pItem->m_guid.getAt(2),pItem->m_guid.getAt(1),pItem->m_guid.getAt(0) );    
                             dbgStr += _(" ");
                             dbgStr += pItem->m_strDeviceName;
-                            m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
+                            m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
                         
                         
                         if ( pItem->m_guid == destguid ) {

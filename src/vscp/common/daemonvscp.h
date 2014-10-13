@@ -28,20 +28,21 @@
 
 #include "wx/thread.h"
 #include "wx/socket.h"
+#include <wx/datetime.h>
 
 #include "guid.h"
 
 class CControlObject;
 class CClientItem;
-//class cguid;
 
-class nodeInformation 
+
+class cnodeInformation 
 {
 
 public:
 
-    nodeInformation();
-    ~nodeInformation();
+    cnodeInformation();
+    ~cnodeInformation();
 
 private:
 
@@ -57,9 +58,13 @@ private:
     // MDF path for node
     wxString m_mdfPath;
 
+    /// Last haertbeat from this node
+    wxDateTime m_lastHeartBeat;
+
 };
 
 
+WX_DECLARE_LIST( cnodeInformation, VSCP_KNOWN_NODES_LIST );
 
 /*!
     This class implement a one of thread that look
@@ -90,6 +95,22 @@ public:
     */
     virtual void OnExit();
 
+    /*!
+        Find node
+    */
+    cnodeInformation *findKnownNode( cguid& guid );
+
+    /*!
+        Save the list of known nodes
+    */
+    void saveKnownNodes( void );
+
+
+    /*!
+        Load the list of known nodes
+    */
+    void loadKnownNodes( void );
+
 
     /*!
         Termination control
@@ -98,7 +119,57 @@ public:
 
     CControlObject *m_pCtrlObject;
 
+    // This array holds guid's for nodes that
+    // we have received a heartbeat from. The GUID
+    // is not aleays the nodes actual GUID but oftebn 
+    // the interface GUID plus nickname.
+    wxArrayString m_knownGUIDs;
+
+    // This list holds information about each discovered
+    // node in the system and the content in the list
+    // is preserved in the filesystem over time
+    VSCP_KNOWN_NODES_LIST m_knownNodes;
+
 };
+
+
+// This thread is used for node discovery
+
+
+class discoveryVSCPThread : public wxThread
+{
+
+public:
+	
+    /// Constructor
+    discoveryVSCPThread();
+
+    /// Destructor
+    ~discoveryVSCPThread();
+
+    /*!
+        Thread code entry point
+	*/
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
+
+    bool readLevel1Register( uint8_t nodeid, 
+								uint8_t reg, 
+								uint8_t *pcontent );
+
+    /*!
+        Termination control
+    */
+    bool m_bQuit;
+
+    CControlObject *m_pCtrlObject;
+};
+
 
 
 #endif
