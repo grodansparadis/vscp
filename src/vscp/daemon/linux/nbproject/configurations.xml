@@ -41,6 +41,7 @@
       <itemPath>../../common/interfacelist.h</itemPath>
       <itemPath>../../../common/md5.cpp</itemPath>
       <itemPath>../../../common/md5.h</itemPath>
+      <itemPath>../../common/mdf.cpp</itemPath>
       <itemPath>../../common/mdf.h</itemPath>
       <itemPath>../../../common/mongoose.c</itemPath>
       <itemPath>../../../common/mongoose.h</itemPath>
@@ -50,6 +51,8 @@
       <itemPath>../../../common/randPassword.h</itemPath>
       <itemPath>../../../common/randpassword.cpp</itemPath>
       <itemPath>../../../common/randpassword.h</itemPath>
+      <itemPath>../../common/register.cpp</itemPath>
+      <itemPath>../../common/register.h</itemPath>
       <itemPath>../../../common/slre.c</itemPath>
       <itemPath>../../../common/slre.h</itemPath>
       <itemPath>../../common/tables.cpp</itemPath>
@@ -325,6 +328,36 @@
         </ccTool>
       </item>
       <item path="../../common/interfacelist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../common/mdf.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NOEMBED_NET_SKELETON</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../common/register.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>

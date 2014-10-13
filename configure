@@ -6116,7 +6116,7 @@ PROJ_SUBDIRS="src/vscp/drivers/level1/logger/linux src/vscp/drivers/level1/can23
 PROJ_SUBDIRS_GUI="src/vscp/vscpworks"
 
 
-vscp_ssl=no
+vscp_ssl=yes
 # Check whether --enable-ssl was given.
 if test "${enable_ssl+set}" = set; then :
   enableval=$enable_ssl; vscp_ssl=yes

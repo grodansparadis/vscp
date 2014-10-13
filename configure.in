@@ -86,7 +86,7 @@ AC_SUBST(PROJ_SUBDIRS_GUI)
 dnl
 dnl SSL mode
 dnl
-vscp_ssl=no
+vscp_ssl=yes
 AC_ARG_ENABLE(ssl,
 [  --enable-ssl            ssl build (default disabled)],
 [vscp_ssl=yes])
