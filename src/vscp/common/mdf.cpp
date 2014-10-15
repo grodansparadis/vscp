@@ -40,11 +40,11 @@
 #include <wx/tokenzr.h>
 #if wxUSE_GUI!=0
 #include <wx/progdlg.h>
+#include <wx/imaglist.h>
 #endif
 #include <wx/file.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
-#include <wx/imaglist.h>
 #include <wx/url.h>
 #include <wx/xml/xml.h>
 #include <wx/wfstream.h>
