@@ -336,7 +336,7 @@ public:
     */
     void fixName() {
             size_t pos;
-            while ( wxNOT_FOUND != ( pos = m_name.Find( 0x20 ) ) ) {
+            while ( wxNOT_FOUND != ( pos = m_name.Find( ' ' ) ) ) {
                 m_name[pos] = '_';
             }; m_name.MakeUpper(); };
 

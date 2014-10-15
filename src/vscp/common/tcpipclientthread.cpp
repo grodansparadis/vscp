@@ -1465,7 +1465,11 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     m_pCtrlObject->m_mutexUserList.Unlock();
 
     if ( NULL == pClientItem->m_pUserItem ) {
-        ::wxLogDebug ( _("Password/Username failure.") );
+#if wxMAJOR_VERSION >= 3
+		wxLogDebug( _("Password/Username failure.") );
+#else		
+        ::wxLogDebug( _("Password/Username failure.") );
+#endif		
         wxString strErr = 
 			wxString::Format(_("[TCP/IP Client] User [%s][%s] not allowed to connect.\n"), 	
 			(const char *)pClientItem->m_UserName.mb_str(), (const char *)strPassword.mb_str() );

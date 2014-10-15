@@ -582,7 +582,7 @@ bool CControlObject::init(wxString& strcfgfile)
     str += _("\n");
     logMsg(str );
     
-    str.Printf(_("Log Level=%d\n"), m_logLevel, DAEMON_LOGMSG_EMERGENCY );       
+    str.Printf(_("Log Level=%d\n"), m_logLevel, (uint8_t)DAEMON_LOGMSG_EMERGENCY );       
     logMsg(str);
 
     // Get GUID
@@ -1639,7 +1639,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }
                 else if (subchild->GetName() == wxT("generallogfile")) {
                     
-                    wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogGeneralEnable = false;
@@ -1656,7 +1656,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }
                 else if (subchild->GetName() == wxT("securitylogfile")) {
                     
-                    wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogSecurityEnable = false;
@@ -1673,7 +1673,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }
                 else if (subchild->GetName() == wxT("accesslogfile")) {
                     
-                    wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bLogAccessEnable = false;
@@ -1689,7 +1689,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     }
                 }
 				else if (subchild->GetName() == wxT("tcpip")) {
-                    wxString attribute = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribute.MakeLower();
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bTCPInterface = false;
@@ -1698,11 +1698,11 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 						m_bTCPInterface = true;
 					}
 
-                    m_strTcpInterfaceAddress = subchild->GetPropVal(wxT("interface"), wxT(""));
+                    m_strTcpInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
 				} 
 				else if (subchild->GetName() == wxT("udp")) {
-                    wxString attribut = subchild->GetPropVal(wxT("enable"), wxT("true")); 
+                    wxString attribut = subchild->GetAttribute(wxT("enable"), wxT("true")); 
                     attribut.MakeLower();
                     if (attribut.IsSameAs(_("false"), false)) {
                         m_bUDPInterface = false;
@@ -1711,7 +1711,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 						m_bUDPInterface = true;
 					}
 
-                    m_strUDPInterfaceAddress = subchild->GetPropVal(wxT("interface"), wxT(""));
+                    m_strUDPInterfaceAddress = subchild->GetAttribute(wxT("interface"), wxT(""));
 
                 } 
                 else if (subchild->GetName() == wxT("dm")) {

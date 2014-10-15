@@ -239,7 +239,11 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 												(const char *)pUDPClientThread->m_pClientItem->m_UserName.mbc_str() );
 #endif					
 	                    pUDPClientThread->m_pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-					::wxLogDebug ( _("Password/Username failure.") );
+#if wxMAJOR_VERSION >= 3
+					wxLogDebug( _("Password/Username failure.") );		
+#else						
+					::wxLogDebug( _("Password/Username failure.") );
+#endif						
 					ns_send( conn,  MSG_PASSWORD_ERROR, strlen ( MSG_PASSWORD_ERROR ) );
 					return;
 				}
