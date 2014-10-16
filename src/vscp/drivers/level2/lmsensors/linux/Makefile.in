@@ -55,8 +55,10 @@ clean:
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
 	rm -f ../common/*.o
+	rm -f ../../common/*.o
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
+	rm -f ../../../../../common/*.o
 	rm -f vscp2drv_lmsensors.so
 	rm -f test
 

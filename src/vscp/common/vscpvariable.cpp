@@ -799,7 +799,7 @@ bool CVariableStorage::add( const wxString& varName,
     // Name should not contain spaces so if it does
     // we replace them with 'underscore'
     size_t pos;
-    while ( wxNOT_FOUND != ( pos = name.Find( 0x20 ) ) ) {
+    while ( wxNOT_FOUND != ( pos = name.Find( ' ' ) ) ) {
         name[pos] = '_';
     }
 
