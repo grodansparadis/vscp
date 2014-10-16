@@ -67,7 +67,8 @@
 #include "vscpd_caps.h"
 
 
-WX_DEFINE_LIST( VSCP_KNOWN_NODES_LIST );
+WX_DEFINE_LIST(DISCOVERYLIST);
+WX_DEFINE_LIST(VSCP_KNOWN_NODES_LIST);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -287,7 +288,7 @@ void *daemonVSCPThread::Entry()
 
             }
 
-            // New node on-line   - collect 
+            // Level I node heart beat   - collect 
             else if ( ( VSCP_CLASS1_INFORMATION == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
@@ -299,9 +300,41 @@ void *daemonVSCPThread::Entry()
 
                     // We have not seen this node before and we will
                     // try to collect information from it
+                    cguid guid;
+                    guid.getFromArray( pEvent->GUID );
+                    wxString str;
+                    guid.toString( str );
+                    if ( wxNOT_FOUND != m_knownGUIDs.Index( str, false ) ) {
 
+                        // We have not seen this node before and we will
+                        // try to collect information from it
+                        struct discoveredNodeInfo *pdiscoverNode = new struct discoveredNodeInfo;
+                        if ( NULL != pdiscoverNode ) {
+                            pdiscoverNode->bStatus = 0;                 // Working
+                            pdiscoverNode->nodeid = pEvent->GUID[15];   // node id
+                            pdiscoverNode->clientId = pEvent->obid;     // clientid
+                            pdiscoverNode->guid = guid;                 // Node guid
+                            pdiscoverNode->pThread = NULL;              // No thread yet
+                            pdiscoverNode->pThread = new discoveryVSCPThread();
+                            if (NULL != pdiscoverNode->pThread) {
+                                // Append the discovery node to the list
+                                m_discoverList.Append( pdiscoverNode );
+                            }
+                            else {
+                                delete pdiscoverNode;
+                            }
+                        }
+                    }
 
                 }
+
+            }
+
+            // Level II node heart beat   - collect 
+            else if ( ( VSCP_CLASS2_INFORMATION == pEvent->vscp_class ) && 
+                ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
+                
+                
 
             }
 
@@ -370,22 +403,54 @@ void *discoveryVSCPThread::Entry()
     if ( NULL == m_pCtrlObject ) return NULL;
 
     // We need to create a clientobject and add this object to the list
-    CClientItem *pClientItem = new CClientItem;
-    if ( NULL == pClientItem ) return NULL;
+    m_pClientItem = new CClientItem;
+    if ( NULL == m_pClientItem ) return NULL;
 
     // This is an active client
-    pClientItem->m_bOpen = true;
-    pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
-    pClientItem->m_strDeviceName = _("Internal Daemon VSCP Worker Client. Started at ");
+    m_pClientItem->m_bOpen = true;
+    m_pClientItem->m_type =  CLIENT_ITEM_INTERFACE_TYPE_CLIENT_INTERNAL;
+    m_pClientItem->m_strDeviceName = _("VSCP node discovery thread. Started at ");
     wxDateTime now = wxDateTime::Now(); 
-    pClientItem->m_strDeviceName += now.FormatISODate();
-    pClientItem->m_strDeviceName += _(" ");
-    pClientItem->m_strDeviceName += now.FormatISOTime();
+    m_pClientItem->m_strDeviceName += now.FormatISODate();
+    m_pClientItem->m_strDeviceName += _(" ");
+    m_pClientItem->m_strDeviceName += now.FormatISOTime();
 
     // Add the client to the Client List
     m_pCtrlObject->m_wxClientMutex.Lock();
-    m_pCtrlObject->addClient ( pClientItem );
+    m_pCtrlObject->addClient ( m_pClientItem );
     m_pCtrlObject->m_wxClientMutex.Unlock();
+
+    // Read GUID of node
+    cguid newguid;
+    uint8_t content;
+    for ( int i=0xd0; i<0xe0; i++ ) {
+
+        int error; // Resend errors
+        for (error=0; error<3; error++ ) {
+            if ( readLevel1Register( m_nodeid, 
+								        i, 
+								        &content,
+                                        m_clientID,
+                                        1000 ) ) {
+                newguid.setAt( i, content );
+                break;
+            }
+
+            // Check if we failed
+            if ( error >= 3 ) {
+                goto error_abort;
+            }
+        }
+    }
+
+error_abort:
+
+    // Remove messages in the client queues
+    m_pCtrlObject->m_wxClientMutex.Lock();
+    m_pCtrlObject->removeClient( m_pClientItem );
+    m_pCtrlObject->m_wxClientMutex.Unlock();
+
+    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -395,4 +460,113 @@ void *discoveryVSCPThread::Entry()
 void discoveryVSCPThread::OnExit()
 {
 
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// readLevel1Register
+//
+
+bool discoveryVSCPThread::readLevel1Register( uint8_t nodeid, 
+												uint8_t reg, 
+												uint8_t *pcontent,
+                                                uint32_t clientID,
+                                                uint32_t timeout )
+{
+	bool rv = true;
+	wxString strBuf;
+    
+	// Check pointer
+	if ( NULL == pcontent ) return false;
+
+    // New event
+    vscpEvent *pEvent = new vscpEvent;
+    if ( NULL == pEvent ) return false;
+
+    pEvent->vscp_class = VSCP_CLASS1_PROTOCOL;
+    pEvent->vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+	pEvent->sizeData = 2;
+    
+    // Allocate data
+    pEvent->pdata = new uint8_t[2];
+    if ( NULL == pEvent->pdata ) return false;
+
+	pEvent->pdata[ 16 ] = nodeid;      // Node to read from
+    pEvent->pdata[ 17 ] = reg;         // Register to read
+    
+    // Send event
+    sendEvent( pEvent, clientID );
+
+	wxLongLong startTime = ::wxGetLocalTimeMillis();
+
+    CLIENTEVENTLIST::compatibility_iterator nodeClient;
+	while ( true ) {
+
+        // Check for read error timeout
+		if ( ( ::wxGetLocalTimeMillis() - startTime ) > timeout ) {
+				return false;
+		}
+
+        // Wait for incoming event
+        if ( wxSEMA_TIMEOUT == m_pClientItem->m_semClientInputQueue.WaitTimeout( 500 ) ) continue;
+	
+        if ( m_pClientItem->m_clientInputQueue.GetCount() ) {
+
+            m_pClientItem->m_mutexClientInputQueue.Lock();
+            nodeClient = m_pClientItem->m_clientInputQueue.GetFirst();
+            vscpEvent *pEvent = nodeClient->GetData();
+            m_pClientItem->m_clientInputQueue.DeleteNode( nodeClient ); // Remove the node
+            m_pClientItem->m_mutexClientInputQueue.Unlock();
+
+            // Check if this is a response to our register read
+            if ( ( VSCP_CLASS1_PROTOCOL == pEvent->vscp_class ) && 
+                    ( VSCP_TYPE_PROTOCOL_RW_RESPONSE == pEvent->vscp_type &&
+                    ( nodeid == pEvent->GUID[15] ) ) ) {
+                if ( ( 2 == pEvent->sizeData ) && ( reg == pEvent->pdata[1] ) ) {
+                    // We have a response
+                    *pcontent = pEvent->pdata[1];
+                }
+            }
+
+            vscp_deleteVSCPevent( pEvent );
+			
+		}
+
+
+	} // while
+
+	return rv;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// sendEvent
+//
+
+bool discoveryVSCPThread::sendEvent( vscpEvent *pEvent, uint32_t obid )
+{
+    bool bSent = false;
+
+    // Find client
+    m_pCtrlObject->m_wxClientMutex.Lock();
+
+    VSCPCLIENTLIST::iterator iter;
+    for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin(); 
+            iter != m_pCtrlObject->m_clientList.m_clientItemList.end(); 
+            ++iter) {
+                    
+        CClientItem *pItem = *iter;
+                                  
+        if ( pItem->m_clientID == obid ) {
+            // Found
+            bSent = true;
+            m_pCtrlObject->sendEventToClient( pItem, pEvent );
+            break;
+        }
+
+    }
+
+	m_pCtrlObject->m_wxClientMutex.Unlock();
+
+    return bSent;
 }

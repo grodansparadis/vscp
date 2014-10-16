@@ -831,17 +831,17 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             ( pEvent->vscp_class >= 512 ) && 
             ( pEvent->sizeData >= 16 )	) {
 
-                // This event should be sent to the correct interface if it is
-                // available on this machine. If not it should be sent to 
-                // the rest of the network as normal
+            // This event should be sent to the correct interface if it is
+            // available on this machine. If not it should be sent to 
+            // the rest of the network as normal
 
-                cguid destguid;
-                destguid.getFromArray( pEvent->pdata );
+            cguid destguid;
+            destguid.getFromArray( pEvent->pdata );
 
-                destguid.setAt(0,0);    // Interface GUID's have LSB bytes nilled
-                destguid.setAt(1,0);
+            destguid.setAt(0,0);    // Interface GUID's have LSB bytes nilled
+            destguid.setAt(1,0);
                 
-                wxString dbgStr = 
+            wxString dbgStr = 
                     wxString::Format( _("Level I event over Level II dest = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
                     destguid.getAt(15),destguid.getAt(14),destguid.getAt(13),destguid.getAt(12),
                     destguid.getAt(11),destguid.getAt(10),destguid.getAt(9),destguid.getAt(8),
@@ -849,35 +849,35 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
                     destguid.getAt(3),destguid.getAt(2),destguid.getAt(1),destguid.getAt(0) );    
                     m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
                 
-                // Find client
-                m_pCtrlObject->m_wxClientMutex.Lock();
-                CClientItem *pDestClientItem = NULL;
-                VSCPCLIENTLIST::iterator iter;
-                for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin(); 
+            // Find client
+            m_pCtrlObject->m_wxClientMutex.Lock();
+
+            CClientItem *pDestClientItem = NULL;
+            VSCPCLIENTLIST::iterator iter;
+            for (iter = m_pCtrlObject->m_clientList.m_clientItemList.begin(); 
                     iter != m_pCtrlObject->m_clientList.m_clientItemList.end(); 
                     ++iter) {
                     
-                        CClientItem *pItem = *iter;
-                        dbgStr = 
-                            wxString::Format( _("Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
-                            pItem->m_guid.getAt(15),pItem->m_guid.getAt(14),pItem->m_guid.getAt(13),pItem->m_guid.getAt(12),
-                            pItem->m_guid.getAt(11),pItem->m_guid.getAt(10),pItem->m_guid.getAt(9),pItem->m_guid.getAt(8),
-                            pItem->m_guid.getAt(7),pItem->m_guid.getAt(6),pItem->m_guid.getAt(5),pItem->m_guid.getAt(4),
-                            pItem->m_guid.getAt(3),pItem->m_guid.getAt(2),pItem->m_guid.getAt(1),pItem->m_guid.getAt(0) );    
-                            dbgStr += _(" ");
-                            dbgStr += pItem->m_strDeviceName;
-                            m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
-                        
-                        
-                        if ( pItem->m_guid == destguid ) {
-                            // Found
-                            pDestClientItem = pItem;
-							bSent = true;
-                            dbgStr = _("Match ");    
-                            m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_INFO );
-							m_pCtrlObject->sendEventToClient( pItem, pEvent );
-                            break;
-                        }
+                CClientItem *pItem = *iter;
+                dbgStr = 
+                    wxString::Format( _("Test if = %d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:%d:"), 
+                    pItem->m_guid.getAt(15),pItem->m_guid.getAt(14),pItem->m_guid.getAt(13),pItem->m_guid.getAt(12),
+                    pItem->m_guid.getAt(11),pItem->m_guid.getAt(10),pItem->m_guid.getAt(9),pItem->m_guid.getAt(8),
+                    pItem->m_guid.getAt(7),pItem->m_guid.getAt(6),pItem->m_guid.getAt(5),pItem->m_guid.getAt(4),
+                    pItem->m_guid.getAt(3),pItem->m_guid.getAt(2),pItem->m_guid.getAt(1),pItem->m_guid.getAt(0) );    
+                    dbgStr += _(" ");
+                    dbgStr += pItem->m_strDeviceName;
+                    m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
+                                  
+                    if ( pItem->m_guid == destguid ) {
+                        // Found
+                        pDestClientItem = pItem;
+				        bSent = true;
+                        dbgStr = _("Match ");    
+                        m_pCtrlObject->logMsg( dbgStr, DAEMON_LOGMSG_DEBUG );
+					    m_pCtrlObject->sendEventToClient( pItem, pEvent );
+                        break;
+                    }
 
                 }
 

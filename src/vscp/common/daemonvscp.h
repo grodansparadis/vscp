@@ -32,8 +32,79 @@
 
 #include "guid.h"
 
+
 class CControlObject;
 class CClientItem;
+
+
+// This thread is used for node discovery
+
+
+class discoveryVSCPThread : public wxThread
+{
+
+public:
+	
+    /// Constructor
+    discoveryVSCPThread();
+
+    /// Destructor
+    ~discoveryVSCPThread();
+
+    /*!
+        Thread code entry point
+	*/
+    virtual void *Entry();
+
+    /*! 
+        called when the thread exits - whether it terminates normally or is
+        stopped with Delete() (but not when it is Kill()ed!)
+    */
+    virtual void OnExit();
+
+    /*!
+        Send event to client with specific id
+    */
+    bool sendEvent( vscpEvent *pEvent, uint32_t obid );
+
+    /*!
+        Read a level I register
+    */
+    bool readLevel1Register( uint8_t nodeid, 
+								uint8_t reg, 
+								uint8_t *pcontent,
+                                uint32_t clientID,
+                                uint32_t timeout = 1000 );
+
+    /*!
+        Termination control
+    */
+    bool m_bQuit;
+
+    // Node id for the node to investigate
+    uint8_t m_nodeid;
+
+    // Client id for interface the node is located at
+    uint32_t m_clientID;
+
+    // Clientitem for this trhread
+    CClientItem *m_pClientItem;
+
+    // Pointer to the control object
+    CControlObject *m_pCtrlObject;
+};
+
+
+struct discoveredNodeInfo {
+    int bStatus;        // 0 = working, -1=failed, 777=succes.
+    discoveryVSCPThread *pThread;  // Discover thread
+    uint8_t nodeid;     // nodeid for the node to investigate
+    uint32_t clientId;  // Clientid for node to investigate
+    cguid guid;         // GUID for node.
+    wxString mdfPath;   // MDF path for node.
+};
+
+WX_DECLARE_LIST ( discoveredNodeInfo, DISCOVERYLIST );
 
 
 class cnodeInformation 
@@ -130,45 +201,11 @@ public:
     // is preserved in the filesystem over time
     VSCP_KNOWN_NODES_LIST m_knownNodes;
 
+    // This list contains items (nodes) that are under discovery
+    DISCOVERYLIST m_discoverList;
+
 };
 
-
-// This thread is used for node discovery
-
-
-class discoveryVSCPThread : public wxThread
-{
-
-public:
-	
-    /// Constructor
-    discoveryVSCPThread();
-
-    /// Destructor
-    ~discoveryVSCPThread();
-
-    /*!
-        Thread code entry point
-	*/
-    virtual void *Entry();
-
-    /*! 
-        called when the thread exits - whether it terminates normally or is
-        stopped with Delete() (but not when it is Kill()ed!)
-    */
-    virtual void OnExit();
-
-    bool readLevel1Register( uint8_t nodeid, 
-								uint8_t reg, 
-								uint8_t *pcontent );
-
-    /*!
-        Termination control
-    */
-    bool m_bQuit;
-
-    CControlObject *m_pCtrlObject;
-};
 
 
 
