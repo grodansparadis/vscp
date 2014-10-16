@@ -922,11 +922,11 @@ bool CVariableStorage::load( void )
     wxXmlDocument doc;
 
 #ifdef BUILD_VSCPD_SERVICE
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
 #ifdef WIN32	
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variables.xml");
 #else
 	m_configPath = _("/srv/vscp/variables.xml");
@@ -1011,10 +1011,10 @@ bool CVariableStorage::load( void )
 bool CVariableStorage::save()
 {
 #ifdef BUILD_VSCPD_SERVICE
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variable.xml");
 #endif
 	return save( m_configPath );
@@ -1026,10 +1026,10 @@ bool CVariableStorage::save( wxString& path )
     CVSCPVariable *pVariable;
     wxString str;
 #ifdef BUILD_VSCPD_SERVICE
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default variable configuration path
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variable.xml");
 #endif
 

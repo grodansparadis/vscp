@@ -34,7 +34,7 @@ class CNTService
 public:
 
     /// Constructor
-	CNTService(const char* szServiceName);
+	CNTService(LPCTSTR szServiceName);
 	
 	/// Destructor
     virtual ~CNTService();
@@ -89,9 +89,9 @@ public:
 		@param pszS3
 	*/
     void LogEvent(WORD wType, DWORD dwID,
-                  const char* pszS1 = NULL,
-                  const char* pszS2 = NULL,
-                  const char* pszS3 = NULL);
+                        LPCWSTR pszS1 = NULL,
+                        LPCWSTR pszS2 = NULL,
+                        LPCWSTR pszS3 = NULL);
 
 	/**
 		Start the service.
@@ -166,7 +166,7 @@ public:
 		Send debug message.
 
 	*/
-    void DebugMsg(const char* pszFormat, ...);
+    void DebugMsg(LPCTSTR pszFormat, ...);
 	
     
     /**@name static member functions */
@@ -182,7 +182,7 @@ public:
     // data members
 
 	/// Name of service.
-    char m_szServiceName[64];
+    WCHAR m_szServiceName[64];
 
 	/// Major version number.
     int m_iMajorVersion;

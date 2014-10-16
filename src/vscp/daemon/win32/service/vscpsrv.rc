@@ -1,0 +1,179 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (Ireland) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENI)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_EIRE
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,80,0,0
+ PRODUCTVERSION 1,80,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "180904b0"
+        BEGIN
+            VALUE "CompanyName", "PJ Naughter"
+            VALUE "FileDescription", "TestSrv - a sample NT Service implemented using CNTService"
+            VALUE "FileVersion", "1.80.0.0"
+            VALUE "InternalName", "TestSrv"
+            VALUE "LegalCopyright", "Copyright © 1998 - 2014 PJ Naughter"
+            VALUE "OriginalFilename", "TestSrv.exe"
+            VALUE "ProductName", "TestSrv NT Service"
+            VALUE "ProductVersion", "1.80.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x1809, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDS_NTSERV_INSTALL_FAIL_OPEN_SCM 
+                            "CNTService::Install, Failed call to open SCM, Error:%1"
+    IDS_NTSERV_INSTALL_FAIL_LOCK_SCM 
+                            "CNTService::Install, Failed call to lock SCM, Error:%1"
+    IDS_NTSERV_INSTALL_FAIL_CREATESERVICE 
+                            "CNTService::Install, Failed call to CreateService, Error:%1"
+    IDS_NTSERV_INSTALL_FAIL_INSTALL_AS_EVENT_LOG_SOURCE 
+                            "CNTService::Install, Failed call to install service as an event log source, Error:%1"
+    IDS_NTSERV_UNINSTALL_FAIL_OPEN_SCM 
+                            "CNTService::Uninstall, Failed call to open SCM, Error:%1"
+    IDS_NTSERV_UNINSTALL_FAIL_OPEN_SERVICE 
+                            "CNTService::Uninstall, Failed call to OpenService, Error:%1"
+    IDS_NTSERV_UNINSTALL_FAIL_WAIT_FOR_STOP 
+                            "CNTService::Uninstall, Failed call to WaitForStop, Error:%1"
+    IDS_NTSERV_UNINSTALL_FAIL_DELETE_SERVICE 
+                            "CNTService::Uninstall, Failed call to DeleteService, Error:%1"
+    IDS_NTSERV_UNINSTALL_FAIL_UNINSTALL_EVENTLOG_SOURCE 
+                            "CNTService::Uninstall, Failed call to remove service as an event log source, Error:%1"
+    IDS_NTSERV_FAIL_START_SERVICE "Failed to start the service, Error:%1"
+    IDS_NTSERV_FAIL_STOP_SERVICE "Failed to stop the service, Error:%1"
+    IDS_NTSERV_FAIL_CONTINUE_SERVICE 
+                            "Failed to continue the service, Error:%1"
+    IDS_NTSERV_FAIL_PAUSE_SERVICE "Failed to pause the service, Error:%1"
+    IDS_NTSERV_FAIL_START_SERVICE5 "Failed to start the service, Error:%1"
+    IDS_NTSERV_VERBOSE_ERROR_STRING "%1, %2"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NTSERV_UNINSTALL_FAIL_STOP 
+                            "CNTService::Uninstall, Failed to stop service, Error:%1"
+    IDS_NTSERV_SETSERVICETOSTATUS_FAIL_OPEN_SCM 
+                            "CNTService::SetServiceToStatus, Failed call to open SCM, Error:%1"
+    IDS_NTSERV_SETSERVICETOSTATUS_FAIL_OPEN_SERVICE 
+                            "CNTService::SetServiceToStatus, Failed call to OpenService, Error:%1"
+    IDS_NTSERV_SETSERVICETOSTATUS_FAIL_START 
+                            "CNTService::SetServiceToStatus, Failed to start the service, Error:%1"
+    IDS_NTSERV_SETSERVICETOSTATUS_FAIL_CONTINUE 
+                            "CNTService::SetServiceToStatus, Failed to continue the service, Error:%1"
+    IDS_NTSERV_SETSERVICETOSTATUS_FAIL_PAUSE 
+                            "CNTService::SetServiceToStatus, Failed to pause the service, Error:%1"
+    IDS_NTSERV_SETSERVICETOSTATUS_FAIL_STOP 
+                            "CNTService::SetServiceToStatus, Failed to stop the service, Error:%1"
+    IDS_NTSERV_SETSERVICETOSTATUS_FAIL_WAITFORCHANGE 
+                            "CNTService::SetServiceToStatus, Failed to wait for the service to change state, Error:%1"
+    IDS_NTSERV_SETSERVICETOSTATUS_FAIL_QUERYSTATUS 
+                            "CNTService::SetServiceToStatus, Failed to check the service status, Error:%1"
+    IDS_NTSERV_INSTALL_GET_DEPENDENCIES 
+                            "CNTService::Install, Failed to get service dependencies, Error:%1"
+    IDS_NTSERV_INSTALL_FAIL_CHANGEDESCRIPTION 
+                            "CNTService::Install, Failed to change service description, Error:%1"
+    IDS_NTSERV_INSTALL_FAIL_CHANGESIDINFO 
+                            "CNTService::Install, Failed to change service SID info, Error:%1"
+    IDS_NTSERV_INSTALL_FAIL_CHANGEDELAYAUTOSTART 
+                            "CNTService::Install, Failed to change service DelayAutoStart setting, Error:%1"
+    IDS_NTSERV_INSTALL_FAIL_CHANGEPRIVILEGES 
+                            "CNTService::Install, Failed to change service privileges, Error:%1"
+    IDS_NTSERV_INSTALL_FAIL_CHANGEPRESHUTDOWNTIMEOUT 
+                            "CNTService::Install, Failed to change service Preshutdown timeout, Error:%1"
+    IDS_NTSERV_FAIL_GET_MODULE_FILENAME 
+                            "Failed in call to GetModuleFileName, Error:%1"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_NTSERV_INSTALL_FAIL_CHANGELAUNCHPROTECTED 
+                            "CNTService::Install, Failed to change service Launch Protected setting, Error:%1"
+END
+
+#endif    // English (Ireland) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

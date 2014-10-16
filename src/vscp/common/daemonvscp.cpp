@@ -243,8 +243,8 @@ void *daemonVSCPThread::Entry()
 
                         pnewEvent->pdata = new unsigned char[ 8 ];
                         if ( NULL != pnewEvent->pdata ) {
-                            pnewEvent->pdata[ 0 ] = (uint8_t)(VSCP_DAEMON_SERVER_CAPABILITIES >> 8);
-                            pnewEvent->pdata[ 1 ] = (uint8_t)(VSCP_DAEMON_SERVER_CAPABILITIES & 0x0f);
+                            pnewEvent->pdata[ 0 ] = (uint8_t)( VSCP_DAEMON_SERVER_CAPABILITIES >> 8 );
+                            pnewEvent->pdata[ 1 ] = (uint8_t)( VSCP_DAEMON_SERVER_CAPABILITIES & 0x0f);
                             pnewEvent->pdata[ 2 ] = ( localaddr[ i ] >> 24 );
                             pnewEvent->pdata[ 3 ] = ( localaddr[ i ] >> 16 );
                             pnewEvent->pdata[ 4 ] = ( localaddr[ i ] >> 8 );

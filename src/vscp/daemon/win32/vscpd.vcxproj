@@ -186,8 +186,8 @@
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG_CONSOLE;WIN32;_WINDOWS;WINVER=0x400;_MT;wxUSE_GUI=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;C:\OpenSSL-Win32\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NS_ENABLE_SSL;NOEMBED_NET_SKELETON;NDEBUG_CONSOLE;WIN32;_WINDOWS;WINVER=0x0601;_MT;wxUSE_GUI=0;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\ReleaseDll\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\ReleaseDll\vscpd.pch</PrecompiledHeaderOutputFile>
@@ -215,8 +215,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\ReleaseDll\vscpd.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(libexpat)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(libexpat)\bin;C:\OpenSSL-Win32\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ssleay32MTd.lib; libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'">
@@ -269,7 +269,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;C:\OpenSSL-Win32\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NS_ENABLE_SSL;NOEMBED_NET_SKELETON;DEBUG;WIN32;_CONSOLE;WINVER=0x400;_WIN32_WINNT=0x0400;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NS_ENABLE_SSL;NOEMBED_NET_SKELETON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\vscpd.pch</PrecompiledHeaderOutputFile>
@@ -356,8 +356,8 @@
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0400;_WIN32_WINNT=0x0400;_MT;wxUSE_GUI=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;C:\OpenSSL-Win32\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NS_ENABLE_SSL;NOEMBED_NET_SKELETON;_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0400;_MT;wxUSE_GUI=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Release\vscpd.pch</PrecompiledHeaderOutputFile>
@@ -389,7 +389,7 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\vscpd.exe</OutputFile>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(libexpat)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>websockets.lib;ZLIB.lib;libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>ssleay32MTd.lib;ZLIB.lib;libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;msvcrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

@@ -27,6 +27,7 @@
 #include "wx/wx.h"
 #include "wx/defs.h"
 #include "wx/app.h"
+#include <wx/stdpaths.h>
 
 #include "wx/cmdline.h"
 #include "wx/tokenzr.h"
@@ -95,7 +96,6 @@ static const wxCmdLineEntryDesc cmdLineDesc[] = {
 		wxCMD_LINE_VAL_NONE, 
 		wxCMD_LINE_PARAM_OPTIONAL 
 	},
-	//{ wxCMD_LINE_SWITCH, _("w"), _("write"), _("write to config file"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
 	{ 
 		wxCMD_LINE_NONE 
 	} 
@@ -199,11 +199,11 @@ int main(int argc, char **argv)
 		bPath = true;			
 	}
 #ifdef WIN32
-	GetSystemDirectory( wxstrPath.GetWriteBuf( MAX_PATH ), MAX_PATH );
-	wxstrPath.UngetWriteBuf();
-	wxstrPath += _("\\canalworks.conf");
+	//GetSystemDirectory( wxstrPath.GetWriteBuf( MAX_PATH ), MAX_PATH );
+	//wxstrPath.UngetWriteBuf()
+	wxstrPath += _("c:\\programdata\\vscp\\canalworks.conf");
 #else
-	wxstrPath = _("/etc/canalworks.conf");
+	wxstrPath = _("/etc/vscp/vscpworks.conf");
 #endif
 
 	if ( bVerbose ) {

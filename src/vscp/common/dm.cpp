@@ -2948,10 +2948,10 @@ bool CDM::load ( void )
     wxLogDebug( _("DM: Loading decision matrix from :") );
 
 #ifdef BUILD_VSCPD_SERVICE
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
     //wxStandardPaths stdPath;
@@ -3156,10 +3156,10 @@ bool CDM::save ( void )
     wxLogDebug( _("DM: Saving decision matrix from :") );
 
 #ifdef BUILD_VSCPD_SERVICE
-    wxStandardPaths stdPath;
+    //wxStandardPaths stdPath;
 
     // Set the default dm configuration path
-    m_configPath = stdPath.GetConfigDir();
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/dm.xml");
 #else
     //wxStandardPaths stdPath;

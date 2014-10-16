@@ -1,0 +1,2798 @@
+<html>
+
+<head>
+<title>CNTService v1.06</title>
+</head>
+
+<body>
+
+<p align="left"><img src="serv.gif" width="44" height="36"><font face="Arial"><strong><big><big><big><big>CNTService
+v1.06</big></big></big></big></strong></font></p>
+
+<p><font face="Arial">Welcome to <strong>CNTService</strong>, a collection of freeware MFC
+classes which provide a class framework for developing NT services in MFC. </font></p>
+
+<p><font face="Arial">For detailed information about NT services, how to develop them and
+their relationship to other NT subsystems, I would suggest you thoroughly read the
+relevant documentation which comes with the Platform SDK.</font></p>
+
+<p>&nbsp;</p>
+
+<table width="240">
+  <tr>
+    <td width="236"><font face="Arial"><a href="#Features">Features</a></font></td>
+  </tr>
+  <tr>
+    <td width="236"><font face="Arial"><a href="#Usage">Usage</a></font></td>
+  </tr>
+  <tr>
+    <td width="236"><font face="Arial"><a href="#History">History</a></font></td>
+  </tr>
+  <tr>
+    <td width="236"><a href="#APIReference"><font face="Arial">Class Framework Reference</font></a></td>
+  </tr>
+  <tr>
+    <td width="236"><font face="Arial"><a href="#Enhancements">Planned Enhancements</a></font></td>
+  </tr>
+  <tr>
+    <td width="236"><font face="Arial"><a href="#References">References</a></font></td>
+  </tr>
+  <tr>
+    <td width="236"><a href="#Contact"><font face="Arial">Contacting the Author</font></a></td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial"><a name="Features"></a><big><strong><big>Features</big></strong></big></font>
+
+<ul>
+  <li><font color="#000000" size="3" face="Arial">Simple and clean C++ interface using virtual
+    functions.</font></li>
+  <li><font face="Arial">All the code is Unicode enabled and build configurations are
+    provided.</font></li>
+  <li><font face="Arial">All code compiles cleanly at the highest warning level of 4. This is
+    the case with all of my other code on my web site as well.</font></li>
+  <li><font color="#000000" size="3" face="Arial">Build in persistence functions which provide
+    support similar to the build in MFC registry / ini functions.</font></li>
+  <li><font color="#000000" size="3" face="Arial">A simple test service has been provided to
+    help you get started developing your own NT services.</font></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><a name="Usage"></a><font face="Arial"><big><big><strong>Usage</strong></big></big></font>
+
+<ul>
+  <li><font color="#000000" size="3" face="Arial">Bear in mind that these classes are very NT
+    specific and none of this code will work correctly on 95/98. Both of these operating
+    systems do provide some support for services but in a completely incompatible manner with
+    NT services.</font></li>
+  <li><font color="#000000" size="3" face="Arial">To use the classes in your code simple
+    include ntserv.cpp in your project and #include ntserv.h in which ever of your modules
+    needs to make calls to the class and derive your own service class from CNTService and
+    override the necessary functions.</font></li>
+  <li><font color="#000000" size="3" face="Arial">You will also need to include the compiled
+    form of ntserv_msg.mc into your service executable's resource file. For
+    further information on this check on the history details for v1.06 below.</font></li>
+  <li><font face="Arial">To see the class in action, have a look at the code in InitInstance
+    in the module &quot;app.cpp&quot;. </font></li>
+  <li><font face="Arial">Your code will need to include MFC either statically or dynamically.</font></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial"><big><a name="History"></a></big><font color="#000000" size="5"><strong>History</strong></font></font></p>
+
+<p><strong><font color="#000000" size="3" face="Arial">V1.0 (17 July</font><font
+face="Arial"><font color="#000000" size="3"> 1998)</font></strong> </font>
+
+<ul>
+  <li><font color="#000000" size="3" face="Arial">Initial public release.</font></li>
+</ul>
+
+<p><font color="#000000" size="3" face="Arial"><strong>24 August 1998</strong></font> 
+
+<ul>
+  <li><font color="#000000" size="3" face="Arial">Minor update to the demo program (app.cpp)
+    to get rid of a compiler error.</font></li>
+</ul>
+
+<p><strong><font color="#000000" size="3" face="Arial">V1.01 (17 May 1999)</font></strong>
+
+<ul>
+  <li><font face="Arial">Addition of a number of ASSERT's statements to aid in debugging.</font>
+  </li>
+  <li><font face="Arial">Fixed a bug in CNTEventLogSource::Report as reported by Marin Kunev</font></li>
+  <li><font face="Arial">Fixed a compiler warning when compiled with VC 6.</font></li>
+</ul>
+
+<p><strong><font color="#000000" size="3" face="Arial">V1.02 (5 September 1999)</font></strong>
+
+<ul>
+  <li><font face="Arial">Addition of more ASSERT's statements to aid in debugging.</font> </li>
+</ul>
+
+<p><font color="#000000" size="3" face="Arial"><strong>V1.03 (3 October 1999)</strong></font>
+
+<ul>
+  <li><font face="Arial">Addition of GetProfileStringArray, WriteProfileStringArray,
+    GetProfileBinary and WriteProfileBinary methods to the CNTService class.</font></li>
+  <li><font face="Arial">Renamed some module names.</font></li>
+</ul>
+
+<p><font color="#000000" size="3" face="Arial"><strong>V1.04 (5 October 1999)</strong></font>
+
+<ul>
+  <li><font face="Arial">Fixed a problem compiling the mc file for release and
+    Unicode build configurations.</font></li>
+  <li><font face="Arial">Fixed a level 4 warning when built using VC++ 6.</font></li>
+</ul>
+
+<p><font color="#000000" size="3" face="Arial"><strong>V1.05 (10 October 1999)</strong></font>
+
+<ul>
+  <li><font face="Arial">Added support for the description field which services can
+    have on Windows 2000.</font></li>
+  <li><font face="Arial">Added accessor functions for the service name, friendly name
+    and the description text.</font></li>
+</ul>
+
+<p><font color="#000000" size="3" face="Arial"><strong>V1.06 (24 January 2000)</strong></font>
+
+<ul>
+  <li><font face="Arial">Modified the way the mc file is included into the
+    TestSrv.exe sample service. The mc file is now compiled into an intermediate
+    &quot;ntserv_msg.rc&quot; file which is &quot;#included&quot; into the final
+    rc file &quot;testsrv.rc&quot;. This is done so that the &quot;testsrc.rc&quot;
+    file can be edited by the resource designer inside Visual C++. In previous
+    versions of CNTService, if your tried to edit the rc file (which was
+    generated by the MC command line compiler), you would end up corrupting the
+    file. If you are developing your own service using CNTService, then I would
+    suggest you take this approach. What you need to do is create a resource
+    script inside VC++, adding whatever resources you want to be in your
+    services resources (e.g. version info's, strings etc), then bring up the
+    resource includes dialog and modify the &quot;Compile-Time directives&quot;
+    to &quot;#include &quot;ntserv_msg.rc&quot; or your version of rc file which
+    was generated by MC by compiling your .mc file. You should also check out
+    the project settings in the demo service provided with CNTService to see how
+    it handles compilation of the .mc file via a batch file (right mouse click
+    on &quot;ntserv_msg.mc&quot; and select settings).&nbsp;</font></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="crt"><font face="Arial"><a name="APIReference"></a><big><big><strong>Class
+Framework Reference</strong></big></big></font></p>
+
+<p><font face="Arial">The framework consists of the following classes:</font></p>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial"><b><a href="#CNTServiceCommandLineInfo">CNTServiceCommandLineInfo</a><br>
+<a href="#sumCNTEventLogSource">CNTEventLogSource</a><br>
+<a href="#sumCNTService">CNTService</a><br>
+<a href="#sumCNTScmService">CNTScmService</a><br>
+<a href="#sumCNTServiceControlManager">CNTServiceControlManager</a><br>
+<a href="#sumCEventLogRecord">CEventLogRecord</a><br>
+<a href="#sumCNTEventLog">CNTEventLog</a></b></font></p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p class="t"><a name="CNTServiceCommandLineInfo"></a><big><strong><font face="Arial">CNTServiceCommandLineInfo</font></strong></big></p>
+
+<p class="t"><font face="Arial">The <span class="op">CNTServiceCommandLineInfo</span>
+class aids in parsing the command line at application startup. It is based almost exactly
+upon the way that the&nbsp; CCommandLineInfo class in MFC works.</font></p>
+
+<p class="t"><font face="Arial">A service application will typically create a local
+instance of this class in your main/wmain or InitInstance function. This object is then
+passed to CNTService::ParseCommandLine, which fills the <span class="op">CNTServiceCommandLineInfo</span>
+object. The <span class="op">CNTServiceCommandLineInfo</span> object is then passed to
+CNTService::ProcessShellCommand to handle the command-line arguments and flags.</font></p>
+
+<p class="t"><font face="Arial">You can use this object to encapsulate the following
+command-line options and parameters:</font></p>
+
+<table border="0" cellPadding="7" cols="2">
+<COLGROUP>
+</COLGROUP>
+<TBODY>
+  <tr>
+    <td vAlign="top"><p class="th"><font face="Arial">Command-line argument</font></td>
+    <td vAlign="top"><p class="th"><font face="Arial">Command executed</font></td>
+  </tr>
+  <tr>
+    <td colSpan="2" vAlign="top"></td>
+  </tr>
+  <tr>
+    <td vAlign="top"><p class="tt"><font face="Arial"><span class="p">app</span> <span
+    class="l">/install</span></font></td>
+    <td vAlign="top"><p class="tt"><font face="Arial">Installs the service.</font></td>
+  </tr>
+  <tr>
+    <td vAlign="top"><p class="tt"><font face="Arial"><span class="p">app</span> <span
+    class="l">/remove | /uninstall</span></font></td>
+    <td vAlign="top"><p class="tt"><font face="Arial">Uninstalls the service.</font></td>
+  </tr>
+  <tr>
+    <td vAlign="top"><p class="tt"><font face="Arial"><span class="p">app</span> <span
+    class="l">/help</span></font></td>
+    <td vAlign="top"><p class="tt"><font face="Arial">Calls the virtual CNTService::OnHelp
+    function.</font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p class="spacing">&nbsp;</p>
+
+<p class="t"><font face="Arial">Derive a new class from <span class="op">CCommandLineInfo</span>
+to handle other flags and parameter values.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="sumCNTEventLogSource"></a><font face="Arial"><big><strong>CNTEventLogSource</strong></big></font></p>
+
+<p class="t"><font face="Arial">CNTEventLogSource provides a wrapper class for writing
+events to the NT event log. You could consider this as the server side to the Event log
+APIs.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><font face="Arial"><strong>Functions this class provides include:</strong></font></p>
+
+<p class="t"><font face="Arial"><b><a href="#CNTEventLogSource">CNTEventLogSource<br>
+</a><a href="#~CNTEventLogSource">~CNTEventLogSource<br>
+</a><a href="#elsHandle">operator HANDLE<br>
+</a><a href="#elsAttach">Attach<br>
+</a><a href="#elsDetach">Detach<br>
+</a><a href="#register">Register<br>
+</a><a href="#Report">Report<br>
+</a><a href="#Deregister">Deregister<br>
+</a><a href="#elsInstall">Install<br>
+</a><a href="#elsUninstall">Uninstall</a></b></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="CNTEventLogSource"></a><big><strong><font face="Arial">CNTEventLogSource::CNTEventLogSource</font></strong></big></p>
+
+<p class="t"><strong><font face="Arial">CNTEventLogSource();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is the default constructor which just initialises all
+internal variables to a safe state.</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#~CNTEventLogSource">~CNTEventLogSource</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="~CNTEventLogSource"></a><big><strong><font face="Arial">CNTEventLogSource::~CNTEventLogSource</font></strong></big></p>
+
+<p class="t"><font face="Arial"><strong>~CNTEventLogSource();</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is the standard destructor for the class. Internally
+it will call <a href="#register">Deregister</a> to ensure that any handle that is opened
+by this instance is closed</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#CNTEventLogSource">CNTEventLogSource</a>
+<a href="#Deregister">Deregister</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elsHandle"></a><big><strong><font face="Arial">CNTEventLogSource::operator
+HANDLE</font></strong></big></p>
+
+<p class="t"><strong><font face="Arial">operator HANDLE() const;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value:</font></strong></p>
+
+<p class="t"><font face="Arial">The underlying SDK handle representing this event log
+source.</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function exposes the underlying handle which the
+CNTEventLogSource class wraps. This function is provided for integration with legacy code
+which uses the handle directly</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elsAttach"></a><font face="Arial"><big><strong>CNTEventLogSource::Attach</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Attach(HANDLE </strong><em>hEventSource</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>hEventSource</em> An SDK event log source handle
+returned from ::RegisterEventSource</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Use this member function to attach an existing SDK handle
+to a CNTEventLogSource.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#elsDetach">Detach</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elsDetach"></a><big><strong><font face="Arial">CNTEvenLogSource::Detach</font></strong></big></p>
+
+<p class="t"><strong><font face="Arial">HANDLE Detach();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">The SDK event log source handle</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this function to detach m_hEventLogSource from the
+CNTEventLogSource object and&nbsp; set m_hEventLogSource to NULL.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#elsAttach">Attach</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="register"></a><font face="Arial"><big><strong>CNTEventLogSource::Register</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Register(LPCTSTR </strong><em>lpUNCServerName</em><strong>,
+LPCTSTR </strong><em>lpSourceName</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p><font face="Arial"><i>lpUNCServerName</i> Pointer to a null-terminated string that
+specifies the Universal Naming Convention (UNC) name of the server on which this operation
+is to be performed. If this parameter is NULL, the operation is performed on the local
+computer. </font></p>
+
+<p><font face="Arial"><i>lpSourceName</i> Pointer to a null-terminated string that
+specifies the name of the source referenced by the returned handle. The source name must
+be a subkey of a logfile entry under the <b>EventLog</b> key in the registry. For example,
+WinApp is a valid source name if the registry has the following key: </font></p>
+
+<p><font face="Arial"><code>HKEY_LOCAL_MACHINE <br>
+&nbsp; System <br>
+&nbsp;&nbsp;&nbsp; CurrentControlSet <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Services <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; EventLog <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Application <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WinApp <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Security <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System <br>
+</code><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">Use this function to register a source of logging into the
+event log. Internally the CNTService class contains a member variable (m_EventLogSource)
+of type CNTEventLogSource which calls this function in its construction.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#elsDetach" name="de">Deregister</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="Report"></a><font face="Arial"><big><strong>CNTEventLogSource::Report</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Report(WORD </strong><em>wType</em><strong>,
+WORD </strong><em>wCategory</em><strong>, DWORD </strong><em>dwEventID</em><strong>, PSID </strong><em>lpUserSid</em><strong>,
+WORD </strong><em>wNumStrings</em><strong>, DWORD </strong><em>dwDataSize</em><strong>,&nbsp;LPCTSTR*
+</strong><em>lpStrings</em><strong>, LPVOID </strong><em>lpRawData</em><strong>) const;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Report(WORD </strong><em>wType</em><strong>,
+DWORD </strong><em>dwEventID</em><strong>, LPCTSTR </strong><em>lpszString</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Report(WORD </strong>wType<strong>, DWORD </strong><em>dwEventID</em><strong>,
+LPCTSTR </strong><em>lpszString1</em><strong>, LPCTSTR </strong><em>lpszString2</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Report(WORD </strong><em>wType</em><strong>,
+DWORD </strong><em>dwEventID</em><strong>, DWORD </strong><em>dwCode</em><strong>) const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><i>wType</i> Specifies the type of event being logged. This
+parameter can be one of the following values: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="243"><font face="Arial">Value</font></th>
+    <th align="left" width="222"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_ERROR_TYPE</font></td>
+    <td width="222"><font face="Arial">Error event</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_WARNING_TYPE</font></td>
+    <td width="222"><font face="Arial">Warning event</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_INFORMATION_TYPE</font></td>
+    <td width="222"><font face="Arial">Information event</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_AUDIT_SUCCESS</font></td>
+    <td width="222"><font face="Arial">Success Audit event</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_AUDIT_FAILURE</font></td>
+    <td width="222"><font face="Arial">Failure Audit event</font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p><font face="Arial"><i>wCategory</i> Specifies the event category. This is
+source-specific information; the category can have any value. </font></p>
+
+<p><font face="Arial"><i>dwEventID</i> Specifies the event. The event identifier specifies
+the message that goes with this event as an entry in the message file associated with the
+event source. </font></p>
+
+<p><font face="Arial"><i>lpUserSid</i> Pointer to the current user's security identifier.
+This parameter can be NULL if the security identifier is not required. </font></p>
+
+<p><font face="Arial"><i>wNumStrings</i> Specifies the number of strings in the array
+pointed to by the <i>lpStrings</i> parameter. A value of zero indicates that no strings
+are present. </font></p>
+
+<p><font face="Arial"><i>dwDataSize</i> Specifies the number of bytes of event-specific
+raw (binary) data to write to the log. If this parameter is zero, no event-specific data
+is present. </font></p>
+
+<p><font face="Arial"><i>lpStrings</i> Pointer to a buffer containing an array of
+null-terminated strings that are merged into the message from the message file before
+Event Viewer displays the string to the user. This parameter must be a valid pointer (or
+NULL), even if <i>wNumStrings</i> is zero.</font></p>
+
+<p><font face="Arial"><i>lpRawData</i> Pointer to the buffer containing the binary data.
+This parameter must be a valid pointer (or NULL), even if the <i>dwDataSize</i> parameter
+is zero. </font></p>
+
+<p class="t"><font face="Arial"><em>lpszString</em>, <em>lpszString1</em>, <em>lpszString2</em>
+Specifies a single string which will be merged into the message from the message file
+before Event Viewer displays the string to the user.</font></p>
+
+<p><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">These 4 versions of Report report a message to the event
+log. The 4 versions are provided to allow the programmer to use the one most suitable for
+the particular situation at hand. </font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="Deregister"></a><font face="Arial"><big><strong>CNTEventLogSource::Deregister</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL Deregister();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this function to close the handle to the event log.
+This function will be called in the destructor in case you forget to close the handle
+yourself.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#register">Register</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elsInstall"></a><font face="Arial"><big><strong>CNTEventLogSource::Install</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>static BOOL Install(LPCTSTR </strong><em>lpSourceName</em><strong>,
+LPCTSTR </strong><em>lpEventMessageFile</em><strong>, DWORD </strong><em>dwTypesSupported</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>lpSourceName</em> The name of the service which you
+want to install an event log source as. </font></p>
+
+<p class="t"><font face="Arial"><em>lpEventMessageFile</em> The location of the binary
+where the Message table resource can be located. This can be a standard exe or dll.</font></p>
+
+<p class="t"><font face="Arial"><em>dwTypesSupported</em> Specifies a bitmask of supported
+types. It can be one or more of the following values: </font></p>
+
+<p><font face="Arial">EVENTLOG_ERROR_TYPE<br>
+EVENTLOG_WARNING_TYPE<br>
+EVENTLOG_INFORMATION_TYPE<br>
+EVENTLOG_AUDIT_SUCCESS<br>
+EVENTLOG_AUDIT_FAILURE</font></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">Call this function to setup the necessary entries in the
+registry so that the Event Viewer can correctly locate the message file for messages
+displayed in the event log. This function is called as part of CNTService::Install using
+appropriate values.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#elsUninstall">Uninstall</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elsUninstall"></a><font face="Arial"><big><strong>CNTEventLogSource::Uninstall</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>static BOOL Uninstall(LPCTSTR </strong><em>lpSourceName</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this function to remove the entries from the registry
+which were setup by the method Install.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#elsInstall">Install</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="sumCNTService"></a><font face="Arial"><big><strong>CNTService</strong></big></font></p>
+
+<p class="t"><font face="Arial">CNTService is the class which provides a C++ framework
+upon which you can develop your own MFC C++ based services. The class makes heavy use of
+virtual functions which your service class should override.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><font face="Arial"><strong>Functions this class provides include:</strong></font></p>
+
+<p class="t"><font face="Arial"><b><a href="#CNTService">CNTService<br>
+</a><a href="#~CNTService">~CNTService<br>
+</a><a href="#WriteProfileString">WriteProfileString<br>
+</a><a href="#WriteProfileInt">WriteProfileInt<br>
+</a><a href="#WriteProfileBinary">WriteProfileBinary<br>
+</a><a href="#WriteProfileStringArray">WriteProfileStringArray<br>
+</a><a href="#GetProfileString">GetProfileString<br>
+</a><a href="#GetProfileInt">GetProfileInt<br>
+</a><a href="#GetProfileBinary">GetProfileBinary<br>
+</a><a href="#GetProfileStringArray">GetProfileStringArray<br>
+</a><a href="#ParseCommandLine">ParseCommandLine<br>
+</a><a href="#ProcessShellCommand">ProcessShellCommand<br>
+</a><a href="#ReportStatusToSCM">ReportStatustoSCM<br>
+</a><a href="#RegisterCtrlHandler">RegisterCtrlHandler<br>
+</a><a href="#ServiceCtrlHandler">ServiceCtrlHandler<br>
+</a><a href="#ServiceMain">ServiceMain<br>
+</a><a href="#OnStop">OnStop<br>
+</a><a href="#OnPause">OnPause<br>
+</a><a href="#OnContinue">OnContinue<br>
+</a><a href="#OnInterrogate">OnInterrogate<br>
+</a><a href="#OnShutDown">OnShutdown<br>
+</a><a href="#OnUserDefinedRequest">OnUserDefinedRequest<br>
+</a><a href="#Run">Run<br>
+</a><a href="#Install">Install<br>
+</a><a href="#Uninstall">Uninstall<br>
+</a><a href="#Debug">Debug<br>
+</a><a href="#ShowHelp">ShowHelp</a></b></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="CNTService"></a><font face="Arial"><big><strong>CNTService::CNTService</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>CNTService(LPCTSTR </strong><em>lpszServiceName</em><strong>,
+LPCTSTR </strong><em>lpszDisplayName</em><strong>, DWORD </strong><em>dwControlsAccepted,
+</em><b>LPCTSTR </b><em> lpszDescription </em><b> = NULL</b><strong>);
+</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>lpszServiceName</em> Pointer to a null-terminated
+string that is the internal name of the service. </font></p>
+
+<p class="t"><font face="Arial"><em>lpszDisplayName</em> Pointer to a null-terminated
+string that is to be used by user interface programs to identify this service.</font></p>
+
+<p class="t"><font face="Arial"><em>dwControlsAccepted</em> Specifies the control codes
+that the service will accept and process. Any or all of the following flags can be
+specified to enable the other control codes. </font></p>
+
+<p class="t"><font face="Arial">lpszDescription The textual description of the
+service. This appears in the new service's MMC snapin in Windows 2000 as the
+&quot;Description&quot; column. Using this value just means that administrators
+will see a comment associated with your service. The default value is NULL which
+will not insert a description into the registry.</font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <td width="76"><font face="Arial"><b>Value</b></font></td>
+    <th align="left" width="370"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td colSpan="2" width="446"><font face="Arial">SERVICE_ACCEPT_STOP</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="76"></td>
+    <td width="370"><font face="Arial">The service can be stopped. This enables the
+    SERVICE_CONTROL_STOP value.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td colSpan="2" width="446"><font face="Arial">SERVICE_ACCEPT_PAUSE_CONTINUE</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="76"></td>
+    <td width="370"><font face="Arial">The service can be paused and continued. This enables
+    the SERVICE_CONTROL_PAUSE and SERVICE_CONTROL_CONTINUE values.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td colSpan="2" width="446"><font face="Arial">SERVICE_ACCEPT_SHUTDOWN</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="76"></td>
+    <td width="370"><font face="Arial">The service is notified when system shutdown occurs.
+    This enables the system to send a SERVICE_CONTROL_SHUTDOWN value to the service. The <b>ControlService</b>
+    function cannot send this control code.</font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is the standard constructor which initializes
+a
+number of internal variables based on the parameters sent in.</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#~CNTService">~CNTService</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="~CNTService"></a><font face="Arial"><big><strong>CNTService::~CNTService</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">~CNTService();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Standard destructor for the class</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#CNTService">CNTService</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="WriteProfileString"></a><font face="Arial"><big><strong>CNTService::WriteProfileString</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL WriteProfileString(LPCTSTR </strong><em>lpszSection</em><strong>,
+LPCTSTR </strong><em>lpszEntry</em><strong>, LPCTSTR </strong><em>lpszValue</em><strong>);</strong></font></p>
+
+<p class="rl"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if successful; otherwise FALSE.</font></p>
+
+<p class="rl"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszSection</span></em>&nbsp;Points
+to a null-terminated string that specifies the section containing the entry. If the
+section does not exist, it is created. The name of the section is case independent; the
+string may be any combination of uppercase and lowercase letters.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszEntry</span></em>&nbsp;Points to
+a null-terminated string that contains the entry into which the value is to be written. If
+the entry does not exist in the specified section, it is created.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszValue</span></em> Points to the
+string to be written. If this parameter is <span class="op">NULL</span>, the entry
+specified by the <span class="p">lpszEntry</span> parameter is deleted. </font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this member function to write the specified string
+into the registry where Services are meant to store their configuration setting i.e.
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ServiceName\Parameters.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="WriteProfileInt"></a><font face="Arial"><big><strong>CNTService::WriteProfileInt</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL WriteProfileInt(LPCTSTR </strong><em>lpszSection</em><strong>,
+LPCTSTR </strong><em>lpszEntry</em><strong>, int </strong><em>nValue</em><strong>);</strong></font></p>
+
+<p class="rl"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if successful; otherwise FALSE.</font></p>
+
+<p class="rl"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszSection</span></em> Points to a
+null-terminated string that specifies the section containing the entry. If the section
+does not exist, it is created. The name of the section is case independent; the string may
+be any combination of uppercase and lowercase letters.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszEntry</span></em> Points to a
+null-terminated string that contains the entry into which the value is to be written. If
+the entry does not exist in the specified section, it is created.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">nValue</span></em> Contains the
+value to be written.</font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this member function to write the specified value
+into the registry where Services are meant to store their configuration setting i.e.
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ServiceName\Parameters.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="WriteProfileBinary"></a><big><font face="Arial"><strong>CNTService::WriteProfileBinary</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL WriteProfileBinary(LPCTSTR </strong><em>lpszSection</em><strong>,
+LPCTSTR </strong><em>lpszEntry</em><strong>, LPBYTE </strong><em>pData</em><strong>, UINT </strong><em>nBytes</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if successful; otherwise FALSE.</font></p>
+
+<p class="rl"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszSection</span></em>&nbsp;Points
+to a null-terminated string that specifies the section containing the entry. If the
+section does not exist, it is created. The name of the section is case independent; the
+string may be any combination of uppercase and lowercase letters.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszEntry</span></em>&nbsp;Points to
+a null-terminated string that contains the entry into which the value is to be written. If
+the entry does not exist in the specified section, it is created.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">pData</span></em> Points to the
+binary data to be written.</font></p>
+
+<p class="dt1"><font face="Arial">nBytes The size of &quot;pData&quot; in bytes.</font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this member function to write the specified binary
+data into the registry where Services are meant to store their configuration setting i.e.
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ServiceName\Parameters.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="WriteProfileStringArray"></a><font face="Arial"><big><strong>CNTService::WriteProfileStringArray</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL WriteProfileStringArray(LPCTSTR </strong><em>lpszSection</em><strong>,
+LPCTSTR </strong><em>lpszEntry</em><strong>, const CStringArray&amp; </strong><em>array</em><strong>);</strong></font></p>
+
+<p class="rl"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if successful; otherwise FALSE.</font></p>
+
+<p class="rl"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszSection</span></em>&nbsp;Points
+to a null-terminated string that specifies the section containing the entry. If the
+section does not exist, it is created. The name of the section is case independent; the
+string may be any combination of uppercase and lowercase letters.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszEntry</span></em>&nbsp;Points to
+a null-terminated string that contains the entry into which the value is to be written. If
+the entry does not exist in the specified section, it is created.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">array</span></em> The CStringArray
+to be written.</font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this member function to write the specified string
+array into the registry where Services are meant to store their configuration setting i.e.
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\ServiceName\Parameters. The value
+will be stored as a MULTI_SZ string in the registry.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="GetProfileString"></a><font face="Arial"><big><strong>CNTService::GetProfileString</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>CString GetProfileString(LPCTSTR </strong><em>lpszSection</em><strong>,
+LPCTSTR </strong><em>lpszEntry</em><strong>, LPCTSTR </strong><em>lpszDefault</em><strong>
+= NULL);</strong></font></p>
+
+<p class="rl"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">The return value is the string from the registry or <span
+class="p">lpszDefault</span> if the string cannot be found. The maximum string length
+supported by the framework is <span class="op">_MAX_PATH</span>. If <span class="p">lpszDefault</span>
+is <span class="op">NULL</span>, the return value is an empty string.</font></p>
+
+<p class="rl"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszSection</span></em> Points to a
+null-terminated string that specifies the section containing the entry.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszEntry</span></em> Points to a
+null-terminated string that contains the entry whose string is to be retrieved. This value
+must not be <span class="op">NULL</span>.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszDefault</span></em> Points to
+the default string value for the given entry if the entry cannot be found in the registry.</font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this member function to retrieve the string
+associated with an entry within the specified section in the registry.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="GetProfileInt"></a><font face="Arial"><big><strong>CNTService::GetProfileInt</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>UINT GetProfileInt(LPCTSTR </strong><em>lpszSection</em><strong>,
+LPCTSTR </strong><em>lpszEntry</em><strong>, int </strong><em>nDefault</em><strong>);</strong></font></p>
+
+<p class="rl"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">The integer value of the string that follows the specified
+entry if the function is successful. The return value is the value of the <span class="p">nDefault</span>
+parameter if the function does not find the entry. The return value is 0 if the value that
+corresponds to the specified entry is not an integer.</font></p>
+
+<p class="rl"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszSection</span></em> Points to a
+null-terminated string that specifies the section containing the entry.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszEntry</span></em>&nbsp;Points to
+a null-terminated string that contains the entry whose value is to be retrieved.</font></p>
+
+<p class="dt1"><font face="Arial"><span class="p">nDefault</span> Specifies the default
+value to return if the framework cannot find the entry. This value can be an unsigned
+value in the range 0 through 65,535 or a signed value in the range &#150;32,768 through
+32,767.</font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this member function to retrieve the value of an
+integer from an entry within a specified section in the registry. </font></p>
+
+<p class="t"><font face="Arial">This member function is not case sensitive, so the strings
+in the <span class="p">lpszSection</span> and <span class="p">lpszEntry</span> parameters
+may differ in case.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="GetProfileBinary"></a><font face="Arial"><big><strong>CNTService::GetProfileBinary</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL GetProfileBinary(LPCTSTR </strong><em>lpszSection</em><strong>,
+LPCTSTR </strong><em>lpszEntry</em><strong>, LPBYTE* </strong><em>ppData</em><strong>,
+UINT* </strong><em>pBytes</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if successful; otherwise FALSE.</font></p>
+
+<p class="rl"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszSection</span></em> Points to a
+null-terminated string that specifies the section containing the entry.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszEntry</span></em> Points to a
+null-terminated string that contains the entry whose binary data is to be retrieved. This
+value must not be <span class="op">NULL</span>.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">ppData</span></em> Upon successful
+return, this pointer will contain the binary data read from the registry.</font></p>
+
+<p class="dt1"><font face="Arial">nBytes Upon successful return, this pointer will contain
+the size of the binary data read from the registry.</font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this member function to set a binary value associated
+with an entry within the specified section in the registry. Internally the data is stored
+in the registry as a REG_BINARY value. Note that the caller of the function is responsible
+for freeing the memory associated with the data in &quot;ppData&quot;. This can be
+achieved using: &quot;delete [] *ppData&quot;.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="GetProfileStringArray"></a><font face="Arial"><big><strong>CNTService::GetProfileStringArray</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL GetProfileStringArray(LPCTSTR </strong><em>lpszSection</em><strong>,
+LPCTSTR </strong><em>lpszEntry</em><strong>, CStringArray&amp; </strong><em>array</em><strong>);</strong></font></p>
+
+<p class="rl"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if successful; otherwise FALSE.</font></p>
+
+<p class="rl"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszSection</span></em> Points to a
+null-terminated string that specifies the section containing the entry.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">lpszEntry</span></em> Points to a
+null-terminated string that contains the entry whose string array is to be retrieved. This
+value must not be <span class="op">NULL</span>.</font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">array </span></em>Upon successful
+return this will contain the CStringArray.</font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this member function to retrieve a string array
+associated with an entry within the specified section in the registry. The value is stored
+as a MULTI_SZ string in the registry.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="ParseCommandLine"></a><font face="Arial"><big><strong>CNTService::ParseCommandLine</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>void
+ParseCommandLine(CNTServiceCommandLineInfo&amp; </strong><em>rCmdInfo</em><strong>);</strong></font></p>
+
+<p class="rl"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">rCmdInfo</span></em> A reference to
+a <a class="normal" href="#CNTServiceCommandLineInfo">CNTServiceCommandLineInfo</a><span
+class="op"> </span>object.</font></p>
+
+<p class="rl"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">Call this member function to parse the command line and
+send the parameters, one at a time, to CNTServiceCommandLineInfo::ParseParam.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="ProcessShellCommand"></a><font face="Arial"><big><strong>CNTService::ProcessShellCommand</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL
+ProcessShellCommand(CNTServiceCommandLineInfo&amp; </strong><em>rCmdInfo</em><strong>);</strong></font></p>
+
+<p class="rl"><font face="Arial"><strong>Return Value</strong></font></p>
+
+<p class="t"><font face="Arial">TRUE if the shell command is processed successfully
+otherwise FALSE.</font></p>
+
+<p class="rl"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">rCmdInfo</span></em>&nbsp;A
+reference to a <a class="normal" href="#CNTServiceCommandLineInfo">CNTServiceCommandLineInfo</a>
+object.</font></p>
+
+<p class="rl"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This member function is called by your InitInstance, main
+or wmain to accept the parameters passed from the <span class="op">CNTServiceCommandLineInfo</span>
+object identified by <span class="p">rCmdInfo</span>, and perform the indicated action. </font></p>
+
+<p class="t"><font face="Arial">The data members of the <span class="op">CNTServiceCommandLineInfo</span>
+object, identified by CNTServiceCommandLineInfo::m_nShellCommand, are of the following
+enumerated type, which is defined within the <span class="op">CNTServiceCommandLineInfo</span>
+class.</font></p>
+
+<pre><font face="Arial">enum{
+   RunAsService,
+   InstallService, 
+   UninstallService,
+   DebugService, 
+   ShowServiceHelp, 
+};</font></pre>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="ReportStatusToSCM"></a><font face="Arial"><big><strong>CNTService::ReportStatustoSCM</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL ReportStatusToSCM();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>BOOL ReportStatusToSCM(DWORD </strong><em>dwCurrentState</em><strong>,
+DWORD </strong><em>dwWin32ExitCode</em><strong>, DWORD </strong><em>dwServiceSpecificExitCode</em><strong>,
+DWORD </strong><em>dwCheckPoint</em><strong>, DWORD </strong><em>dwWaitHint</em><strong>);</strong></font></p>
+
+<p class="rl"><font face="Arial"><strong>Return Value</strong></font></p>
+
+<p class="t"><font face="Arial">TRUE if the SCM was notified successfully of this services
+state otherwise FALSE. To get extended error information, call GetLastError </font></p>
+
+<p class="rl"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p class="dt1"><font face="Arial"><em>dwCurrentState</em> Indicates the current state of
+the service. One of the following values is specified: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="231"><font face="Arial">Value</font></th>
+    <th align="left" width="215"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="231"><font face="Arial">SERVICE_STOPPED</font></td>
+    <td width="215"><font face="Arial">The service is not running.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="231"><font face="Arial">SERVICE_START_PENDING</font></td>
+    <td width="215"><font face="Arial">The service is starting.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="231"><font face="Arial">SERVICE_STOP_PENDING</font></td>
+    <td width="215"><font face="Arial">The service is stopping.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="231"><font face="Arial">SERVICE_RUNNING</font></td>
+    <td width="215"><font face="Arial">The service is running.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="231"><font face="Arial">SERVICE_CONTINUE_PENDING</font></td>
+    <td width="215"><font face="Arial">The service continue is pending.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="231"><font face="Arial">SERVICE_PAUSE_PENDING</font></td>
+    <td width="215"><font face="Arial">The service pause is pending.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="231"><font face="Arial">SERVICE_PAUSED</font></td>
+    <td width="215"><font face="Arial">The service is paused.</font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p class="dt1"><font face="Arial"><em>dwWin32ExitCode</em> Specifies an Win32 error code
+that the service uses to report an error that occurs when it is starting or stopping. To
+return an error code specific to the service, the service must set this value to
+ERROR_SERVICE_SPECIFIC_ERROR to indicate that the <b>dwServiceSpecificExitCode</b> member
+contains the error code. The service should set this value to NO_ERROR when it is running
+and on normal termination. </font></p>
+
+<p class="dt1"><font face="Arial"><em>dwServiceSpecificExitCode</em> Specifies a service
+specific error code that the service returns when an error occurs while the service is
+starting or stopping. This value is ignored unless the <b>dwWin32ExitCode</b> member is
+set to ERROR_SERVICE_SPECIFIC_ERROR.</font></p>
+
+<p class="dt1"><font face="Arial"><em>dwCheckPoint</em> Specifies a value that the service
+increments periodically to report its progress during a lengthy start, stop, pause, or
+continue operation. For example, the service should increment this value as it completes
+each step of its initialisation when it is starting up. The user interface program that
+invoked the operation on the service uses this value to track the progress of the service
+during a lengthy operation. This value is not valid and should be zero when the service
+does not have a start, stop, pause, or continue operation pending. </font></p>
+
+<p class="dt1"><font face="Arial"><em>dwWaitHint</em> Specifies an estimate of the amount
+of time, in milliseconds, that the service expects a pending start, stop, pause, or
+continue operation to take before the service makes its next call to the <b>SetServiceStatus</b>
+function with either an incremented <b>dwCheckPoint</b> value or a change in <b>dwCurrentState</b>.
+If the amount of time specified by <b>dwWaitHint</b> passes, and <b>dwCheckPoint</b> has
+not been incremented, or <b>dwCurrentState</b> has not changed, the service control
+manager or service control program can assume that an error has occurred. </font></p>
+
+<p class="rl"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">These two functions report the current state of the
+service back to the service control manager. The first versions uses the parameters
+specified and as well as updated the services own internal state will report it to the
+SCM. The second version uses the existing state of the service when reporting to the SCM.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="RegisterCtrlHandler"></a><font face="Arial"><big><strong>CNTService::RegisterCtrlHandler</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL RegisterCtrlHandler();</font></strong></p>
+
+<p class="rl"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the Control handler for this service was
+successfully registered otherwise FALSE. To get extended error information, call
+GetLastErrorr</font></p>
+
+<p class="rl"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">You would call this at the beginning of your derived
+classes ServiceMain to report to the SCM which function to callback on when making
+requests to the service. Internally when a request is made it will be routed to the
+appropriate virtual function.</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#ServiceCtrlHandler">ServiceCtrlHandler</a></font></p>
+
+<p>&nbsp;</p>
+
+<p class="t"><a name="ServiceCtrlHandler"></a><font face="Arial"><big><strong>CNTService::ServiceCtrlHandler</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>virtual void WINAPI ServiceCtrlHandler(DWORD </strong><em>dwControl</em><strong>);</strong></font></p>
+
+<p class="rl"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p class="dt1"><font face="Arial"><em><span class="p">dwControl</span></em>&nbsp;Specifies
+the requested control code. This value can be one of the standard control codes in the
+following table: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="214"><font face="Arial">Value</font></th>
+    <th align="left" width="232"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td colSpan="2" width="446"></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_STOP</font></td>
+    <td width="232"><font face="Arial">Requests the service to stop. </font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_PAUSE</font></td>
+    <td width="232"><font face="Arial">Requests the service to pause. </font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_<br>
+    CONTINUE</font></td>
+    <td width="232"><font face="Arial">Requests the paused service to resume. </font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_<br>
+    INTERROGATE</font></td>
+    <td width="232"><font face="Arial">Requests the service to update immediately its current
+    status information to the service control manager. </font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_<br>
+    SHUTDOWN</font></td>
+    <td width="232"><font face="Arial">Requests the service to perform cleanup tasks, because
+    the system is shutting down.</font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial">This value can also be a user-defined control code, as described in
+the following table: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="165"><font face="Arial">Value</font></th>
+    <th align="left" width="281"><font face="Arial">Meaning </font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="165"><font face="Arial">Range 128 to 255.</font></td>
+    <td width="281"><font face="Arial">The service defines the action associated with the
+    control code. The <i>hService</i> handle must have SERVICE_USER_DEFINED_CONTROL access. </font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p class="dt1"><font face="Arial">.</font></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This function is called into by the SCM and internally it
+delegates to the appropriate virtual function. For example if a&nbsp; SERVICE_CONTROL_STOP
+request arrives then this function will call the virtual OnStop function. This function
+will not normally have to be overridden in your derived class. Please bear in mind that
+this function will be called in the context on the main thread on your service and not the
+thread in which your service does it main work (its ServiceMain handler).</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="ServiceMain"></a><font face="Arial"><big><strong>CNTService::ServiceMain</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>virtual void WINAPI ServiceMain(DWORD </strong><em>dwArgc</em><strong>,
+LPTSTR* </strong><em>lpszArgv</em><strong>);</strong></font> 
+
+<dl>
+  <p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+</dl>
+
+<p><font face="Arial"><i>dwArgc</i> Specifies the number of arguments in the <i>lpszArgv</i>
+array.</font></p>
+
+<p><font face="Arial"><i>lpszArgv</i> Pointer to an array of pointers that point to
+null-terminated argument strings. The first argument in the array is the name of the
+service, and subsequent arguments are any strings passed to the service by the process
+that called the <a href="#scmsStart">CScmService::Start</a> function to start the service.
+</font></p>
+
+<p><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p><font face="Arial">In your derived class you are responsible for writing your own <b>ServiceMain</b>
+function for your service</font></p>
+
+<p><font face="Arial">When a service control program requests that a new service run, the
+SCM starts the service and sends a start request to the control dispatcher. The control
+dispatcher creates a new thread to execute the <b>ServiceMain</b> function for the
+service.</font></p>
+
+<p><font face="Arial">The <b>ServiceMain</b> function should perform the following tasks: </font>
+
+<ol>
+  <li><font face="Arial">Call the <a href="#RegisterCtrlHandler">RegisterServiceCtrlHandler</a>
+    function immediately to register a handler function to handle control requests for the
+    service. </font></li>
+  <li><font face="Arial">Perform initialisation. If the execution time of the initialisation
+    code is expected to be very short (less than one second), initialisation can be performed
+    directly in <b>ServiceMain</b>. </font></li>
+  <li><font face="Arial">When initialisation is complete, call <b>SetServiceStatus</b>,
+    specifying the SERVICE_RUNNING state in the <b>SERVICE_STATUS</b> structure. </font></li>
+  <li><font face="Arial">Perform the service tasks, or, if there are no pending tasks, return.
+    Any change in the state of the service warrants a call to <a href="#ReportStatusToSCM">ReportStatusToSCM</a>
+    to report new status information. </font></li>
+  <li><font face="Arial">If an error occurs while the service is initializing or running, the
+    service should call , specifying the SERVICE_STOP_PENDING state, if cleanup will be
+    lengthy. Once cleanup is complete, call <a href="#ReportStatusToSCM">ReportStatusToSCM</a>
+    from the last thread to terminate, specifying SERVICE_STOPPED in the <b>SERVICE_STATUS</b>
+    structure. Be sure to set the <b>dwServiceSpecificExitCode</b> and <b>dwWin32ExitCode</b>
+    members of the <b>SERVICE_STATUS</b> structure to identify the error. </font></li>
+</ol>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="OnStop"></a><font face="Arial"><big><strong>CNTService::OnStop</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual void OnStop();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function will be called whenever a
+SERVICE_CONTROL_STOP request comes in from the SCM. Your derived class should do whatever
+is necessary to cause your service to stop.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="OnPause"></a><font face="Arial"><big><strong>CNTService::OnPause</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual void OnPause();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function will be called whenever a
+SERVICE_CONTROL_PAUSE request comes in from the SCM. Your derived class should do whatever
+is necessary to cause your service to pause.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="OnContinue"></a><font face="Arial"><big><strong>CNTService::OnContinue</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual void OnContinue();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function will be called whenever a
+SERVICE_CONTROL_CONTINUE request comes in from the SCM. Your derived class should do
+whatever is necessary to cause your service to continue.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="OnInterrogate"></a><font face="Arial"><big><strong>CNTService::OnInterrogate</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual void OnInterrogate();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function will be called whenever a
+SERVICE_CONTROL_INTERROGATE request comes in from the SCM. The default implementation just
+calls <a href="#ReportStatusToSCM">ReportStatusToSCM</a> to inform the SCM.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="OnShutDown"></a><font face="Arial"><big><strong>CNTService::OnShutdown</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual void OnShutdown();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function will be called whenever a
+SERVICE_CONTROL_SHUTDOWN comes in from the SCM.&nbsp; Your derived class should do
+whatever is necessary to cause your service to shutdown.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="OnUserDefinedRequest"></a><font face="Arial"><big><strong>CNTService::OnUserDefinedRequest</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>virtual void OnUserDefinedRequest(DWORD </strong><em>dwControl</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function will be called whenever a user defined
+request comes in from the SCM.&nbsp; Your derived class should do whatever is appropriate
+for its service. In the example service provided, it simply changes the frequency of beeps
+emitted by the service.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="Run"></a><font face="Arial"><big><strong>CNTService::Run</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual BOOL Run();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Calling this function will cause a service to start
+running. Internally it will set up an appropriate SERVICE_TABLE_ENTRY array and call
+StartServiceCtrlDispatcher to kick of the service. You would normally call this in your
+main, wmain or InitInstance. If you are using the <a href="#CNTServiceCommandLineInfo">CNTServiceCommandLineInfo</a>
+class and <a href="#ParseCommandLine">ParseCommandLine</a> and <a
+href="#ProcessShellCommand">ProcessShellCommand</a> member functions of CNTService then
+there is no need to call this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="Install"></a><font face="Arial"><big><strong>CNTService::Install</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual BOOL Install();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This will install a service. Internally it will call into
+the SCM API to set this service up as an On demand service with no dependencies. In future
+versions of CNTService, virtual functions will be provided to allow more customisation in
+this area. It will also install the service so that it can report events to the event log
+as well as letting Event Viewer filter using the friendly name of the service. This
+function will be called internally by the <a href="#CNTServiceCommandLineInfo">CNTServiceCommandLineInfo</a>
+if &quot;-install&quot; is specified on the command line.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="Uninstall"></a><font face="Arial"><big><strong>CNTService::Uninstall</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual BOOL Uninstall();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">The is the corollary function of Install and will remove
+the service from the SCM database and remove it event log registry entries. Please bear in
+mind that once this is done, event viewer will no longer be able to correctly display any
+messages the service generated while it was installed. the <a
+href="#CNTServiceCommandLineInfo">CNTServiceCommandLineInfo</a> if &quot;-uninstall&quot;
+or &quot;-remove&quot; is specified on the command line.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="Debug"></a><font face="Arial"><big><strong>CNTService::Debug</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual void Debug();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This will run a service without interacting with the SCM,
+in effect a &quot;debug&quot; mode. This helps when testing your application as it will
+stop the SCM from timing out your service as it is being debugged. Internally this
+function will just call the ServiceMain function of your class. Remember that in this case
+your service code will be running in the same thread as the main thread so it may mask
+problems which only arise when the code is executed as a real service. This function will
+be called internally by <a href="#CNTServiceCommandLineInfo">CNTServiceCommandLineInfo</a>
+if &quot;-debug&quot; is specified on the command line.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="ShowHelp"></a><font face="Arial"><big><strong>CNTService::ShowHelp</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">virtual void ShowHelp();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This function will be called internally by <a
+href="#CNTServiceCommandLineInfo">CNTServiceCommandLineInfo</a> if &quot;-help&quot; or
+&quot;-?&quot; is specified on the command line. It is up to you to either print some
+message to the console if you are developing a console mode service or display some
+helpful window if its a GUI app. The sample service simply displays a message using
+AfxMessageBox as it was developed using the GUI subsystem.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="sumCNTScmService"></a><font face="Arial"><big><strong>CNTScmService</strong></big></font></p>
+
+<p class="t"><font face="Arial">CNTScmService is a class which encapsulates a service as
+returned from the Service Control Manager, in effect a SC_HANDLE. An instance of a
+CNTScmService is usually acquired by a call to CNTServiceControlManager::Open. Once
+retrieved the class allows you to control the service, change its configuration and query
+a service's state.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><strong><font face="Arial">Functions this class provides include:</font></strong></p>
+
+<p class="t"><font face="Arial"><b><a href="#CNTScmSevice">CNTScmService<br>
+</a><a href="#~CNTScmSevice">~CNTScmService<br>
+</a><a href="#scmsClose">Close<br>
+</a><a href="#scmsHandle">operator SC_HANDLE<br>
+</a><a href="#scmsAttach">Attach<br>
+</a><a href="#scmsDetach">Detach<br>
+</a><a href="#scmsChangeConfig">ChangeConfig<br>
+</a><a href="#scmsControl">Control<br>
+</a><a href="#scmsStop">Stop<br>
+</a><a href="#scmsPause">Pause<br>
+</a><a href="#scmsContinue">Continue<br>
+</a><a href="#scmsInterrogate">Interrogate<br>
+</a><a href="#scmsStart">Start<br>
+</a><a href="#scmsStop">AcceptStop<br>
+</a><a href="#scmsAcceptPauseContinue">AcceptPauseContinue<br>
+</a><a href="#scmsAcceptShutdown">AcceptShutdown<br>
+</a><a href="#scmsQueryStatus">QueryStatus<br>
+</a><a href="#scmsQueryConfig">QueryConfig<br>
+</a><a href="#scmsCreate">Create<br>
+</a><a href="#scmsDelete">Delete<br>
+</a><a href="#scmsEnumDependents">EnumDependents<br>
+</a><a href="#scmsQueryObjectSecurity">QueryObjectSecurity<br>
+</a><a href="#scmsSetObjectSecurity">SetObjectSecurity</a></b></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="CNTScmSevice"></a><font face="Arial"><big><strong>CNTScmService::CNTScmService</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CNTScmService();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is the default constructor which just initialises all
+internal variables to a safe state.</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#~CNTScmSevice">~CNTScmService</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="~CNTScmSevice"></a><font face="Arial"><big><strong>CNTScmService::~CNTScmService</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">~CNTScmService();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is the standard destructor for the class. Internally
+it will call <a href="#scmsClose">Close</a> to ensure that any handle that is opened by
+this instance is closed</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#CNTScmSevice">CNTScmService</a> <a
+href="#scmsClose">Close</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsClose"></a><font face="Arial"><big><strong>CNTScmService::Close</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">void Close();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This frees the SC_HANDLE by internally calling
+CloseServiceHandle which this class encapsulates.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsHandle"></a><font face="Arial"><big><strong>CNTScmService::operator
+SC_HANDLE</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">operator SC_HANDLE() const;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value:</font></strong></p>
+
+<p class="t"><font face="Arial">The underlying SDK service handle representing this class.</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function exposes the underlying handle which the
+CNTScmService class wraps. This function is provided for integration with legacy code
+which uses the handle directly.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsAttach"></a><font face="Arial"><big><strong>CNTScmService::Attach</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Attach(SC_HANDLE </strong><em>hService</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>hService</em> An SDK service handle returned from SDK
+calls to the SCM </font>APIs</p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Use this member function to attach an existing SDK handle
+to a CNTScmService.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#scmsDetach">Detach</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsDetach"></a><font face="Arial"><big><strong>CNTScmService::Detach</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">SC_HANDLE Detach();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">The SDK service handle</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this function to detach m_hService from the
+CNTScmService object and&nbsp; set m_hService to NULL.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#scmsAttach">Attach</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsChangeConfig"></a><font face="Arial"><big><strong>CNTScmService::ChangeConfig</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL ChangeConfig(DWORD </strong><em>dwServiceType</em><strong>,
+DWORD </strong><em>dwStartType</em><strong>, DWORD </strong><em>dwErrorControl</em><strong>,
+LPCTSTR </strong><em>lpBinaryPathName</em><strong>, LPCTSTR </strong><em>lpLoadOrderGroup</em><strong>,
+LPDWORD </strong><em>lpdwTagId</em><strong>, LPCTSTR </strong><em>lpDependencies</em><strong>,
+LPCTSTR </strong><em>lpServiceStartName</em><strong>, LPCTSTR </strong><em>lpPassword</em><strong>,
+LPCTSTR </strong><em>lpDisplayName</em><strong>) const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+ChangeServiceConfig. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsControl"></a><big><strong><font face="Arial">CNTScmService::Control</font></strong></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Control(DWORD </strong><em>dwControl</em><strong>);</strong></font></p>
+
+<p class="rl"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p class="dt1"><font face="Arial"><em>dwControl</em> Specifies the control code to send to
+this service. This value can be one of the standard control codes in the following table: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="214"><font face="Arial">Value</font></th>
+    <th align="left" width="232"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td colSpan="2" width="446"></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_STOP</font></td>
+    <td width="232"><font face="Arial">Requests the service to stop. </font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_PAUSE</font></td>
+    <td width="232"><font face="Arial">Requests the service to pause. </font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_<br>
+    CONTINUE</font></td>
+    <td width="232"><font face="Arial">Requests the paused service to resume. </font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_<br>
+    INTERROGATE</font></td>
+    <td width="232"><font face="Arial">Requests the service to update immediately its current
+    status information to the service control manager. </font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="214"><font face="Arial">SERVICE_CONTROL_<br>
+    SHUTDOWN</font></td>
+    <td width="232"><font face="Arial">Requests the service to perform cleanup tasks, because
+    the system is shutting down.</font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial">This value can also be a user-defined control code, as described in
+the following table: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="165"><font face="Arial">Value</font></th>
+    <th align="left" width="281"><font face="Arial">Meaning </font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="165"><font face="Arial">Range 128 to 255.</font></td>
+    <td width="281"><font face="Arial">The service defines the action associated with the
+    control code. The <i>hService</i> handle must have SERVICE_USER_DEFINED_CONTROL access. </font></td>
+  </tr>
+</table>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call ControlService
+SDK Call.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsStop"></a><font face="Arial"><big><strong>CNTScmService::Stop</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL Stop() const;</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for calling <a
+href="#scmsControl">Control</a> with the parameter SERVICE_CONTROL_STOP</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsPause"></a><font face="Arial"><big><strong>CNTScmService::Pause</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL Pause() const;</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for calling <a
+href="#scmsControl">Control</a> with the parameter SERVICE_CONTROL_PAUSE</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsContinue"></a><font face="Arial"><big><strong>CNTScmService::Continue</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL Continue() const;</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for calling <a
+href="#scmsControl">Control</a> with the parameter SERVICE_CONTROL_CONTINUE</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsInterrogate"></a><font face="Arial"><big><strong>CNTScmService::Interrogate</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL Interrogate() const;</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for calling <a
+href="#scmsControl">Control</a> with the parameter SERVICE_CONTROL_INTERROGATE</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsStart"></a><font face="Arial"><big><strong>CNTScmService::Start</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Start(DWORD </strong><em>dwNumServiceArgs</em><strong>,
+LPCTSTR* </strong><em>lpServiceArgVectors</em><strong>) const;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><i>dwNumServiceArgs</i> Specifies the number of argument strings in
+the <i>lpServiceArgVectors</i> array. If <i>lpServiceArgVectors</i> is NULL, this
+parameter can be zero. </font></p>
+
+<p><font face="Arial"><i>lpServiceArgVectors</i> Pointer to an array of pointers that
+point to null-terminated argument strings passed to a service. Driver services do not
+receive these arguments. If no arguments are passed to the service being started, this
+parameter can be NULL. </font></p>
+
+<h4><font face="Arial">Return Values</font></h4>
+
+<p><font face="Arial">TRUE If the function succeeds otherwise FALSE. To get extended error
+information, call <b>GetLastError</b>. </font></p>
+
+<h4><font face="Arial">Remarks</font></h4>
+
+<p><font face="Arial">Starts this service with the specified parameters.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsAcceptStop"></a><font face="Arial"><big><strong>CNTScmService::AcceptStop</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL AcceptStop(BOOL&amp; </strong><em>bStop</em><strong>);</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><i>bStop</i> Upon a successful return from this function, bStop will
+indicate whether this service can be stopped. </font></p>
+
+<h4><font face="Arial">Return Values</font></h4>
+
+<p><font face="Arial">TRUE If the function succeeds otherwise FALSE. To get extended error
+information, call GetLastError. </font></p>
+
+<h4><font face="Arial">Remarks</font></h4>
+
+<p><font face="Arial">Queries this service to determine if this service can currently be
+stopped.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsAcceptPauseContinue"></a><font face="Arial"><big><strong>CNTScmService::AcceptPauseContinue</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL AcceptPauseContinue(BOOL&amp; </strong><em>bPauseContinue</em><strong>);</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><i>bPauseContinue</i> Upon a successful return from this function,
+bPauseContinue will indicate whether this service can be paused and continued. </font></p>
+
+<h4><font face="Arial">Return Values</font></h4>
+
+<p><font face="Arial">TRUE If the function succeeds otherwise FALSE. To get extended error
+information, call GetLastError. </font></p>
+
+<h4><font face="Arial">Remarks</font></h4>
+
+<p><font face="Arial">Queries this service to determine if this service can currently be
+paused / continued.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsAcceptShutdown"></a><font face="Arial"><big><strong>CNTScmService::AcceptShutdown</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL AcceptShutdown(BOOL&amp; </strong><em>bShutdown</em><strong>);</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><i>bShutdown</i> Upon a successful return from this function,
+bShutdown will indicate whether this service handles the shutdown request. </font></p>
+
+<h4><font face="Arial">Return Values</font></h4>
+
+<p><font face="Arial">TRUE If the function succeeds otherwise FALSE. To get extended error
+information, call GetLastError.</font></p>
+
+<h4><font face="Arial">Remarks</font></h4>
+
+<p><font face="Arial">Queries this service to determine if this service handles the
+shutdown request.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsQueryStatus"></a><font face="Arial"><big><strong>CNTScmService::QueryStatus</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL QueryStatus(LPSERVICE_STATUS </strong><em>lpServiceStatus</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><i>lpServiceStatus</i> Upon a successful return from this function,
+lpServiceStatus will contain the current status of this service. </font></p>
+
+<h4><font face="Arial">Return Values</font></h4>
+
+<p><font face="Arial">TRUE If the function succeeds otherwise FALSE. To get extended error
+information, call GetLastError. </font></p>
+
+<h4><font face="Arial">Remarks</font></h4>
+
+<p><font face="Arial">Queries this service for its current status.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsQueryConfig"></a><font face="Arial"><big><strong>CNTScmService::QueryConfig</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL QueryConfig(LPQUERY_SERVICE_CONFIG&amp; </strong><em>lpServiceConfig</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><i>lpServiceConfig</i> Upon a successful return from this function,
+lpServiceConfig will contain the current configuration of this service. </font></p>
+
+<h4><font face="Arial">Return Values</font></h4>
+
+<p><font face="Arial">TRUE If the function succeeds otherwise FALSE. To get extended error
+information, call GetLastError. </font></p>
+
+<h4><font face="Arial">Remarks</font></h4>
+
+<p><font face="Arial">Queries this service for its current configuration. Bear in mind
+that since the QUERY_SERVICE_CONFIG is a variable sized structure, internally this
+function will allocate the required memory for lpServiceConfig, It is the responsibility
+of the client to delete this structure. This can be done as follows:</font></p>
+
+<p><font face="Arial">LPQUERY_SERVICE_CONFIG lpConfig = NULL;<br>
+service.QueryConfig(lpConfig);<br>
+delete [] (BYTE*) lpConfig;</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsCreate"></a><font face="Arial"><big><strong>CNTScmService::Create</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Create(CNTServiceControlManager&amp; </strong><em>Manager</em><strong>,
+LPCTSTR </strong><em>lpServiceName</em><strong>, LPCTSTR </strong><em>lpDisplayName</em><strong>,
+DWORD </strong><em>dwDesiredAccess</em><strong>, DWORD </strong><em>dwServiceType</em><strong>,
+DWORD </strong><em>dwStartType</em><strong>, DWORD </strong><em>dwErrorControl</em><strong>,
+LPCTSTR </strong><em>lpBinaryPathName</em><strong>, LPCTSTR </strong><em>lpLoadOrderGroup</em><strong>,
+LPDWORD </strong><em>lpdwTagId</em><strong>, LPCTSTR </strong><em>lpDependencies</em><strong>,
+LPCTSTR </strong><em>lpServiceStartName</em><strong>, LPCTSTR </strong><em>lpPassword</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call CreateService.
+See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsDelete"></a><font face="Arial"><big><strong>CNTScmService::Delete</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL Delete() const;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call DeleteService.
+See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsEnumDependents"></a><font face="Arial"><big><strong>CNTScmService::EnumDependents</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL EnumDependents(DWORD </strong><em>dwServiceState</em><strong>,
+DWORD </strong><em>dwUserData</em><strong>, ENUM_SERVICES_PROC </strong><em>lpEnumServicesFunc</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><em>dwServiceState</em> Specifies the services to enumerate based on
+their running state. It must be one or both of the following values: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="155"><font face="Arial">Value</font></th>
+    <th align="left" width="292"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="155"><font face="Arial">SERVICE_ACTIVE</font></td>
+    <td width="292"><font face="Arial">Enumerates services that are in the following states:
+    SERVICE_START_PENDING, SERVICE_STOP_PENDING, SERVICE_RUNNING, SERVICE_CONTINUE_PENDING,
+    SERVICE_PAUSE_PENDING, and SERVICE_PAUSED.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="155"><font face="Arial">SERVICE_INACTIVE</font></td>
+    <td width="292"><font face="Arial">Enumerates services that are in the SERVICE_STOPPED
+    state.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="155"><font face="Arial">SERVICE_STATE_ALL</font></td>
+    <td width="292"><font face="Arial">Combines the following states: SERVICE_ACTIVE and
+    SERVICE_INACTIVE. </font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p><font face="Arial"><em>dwUserData</em> Any user defined DWORD which you want to send to
+the callback function.</font></p>
+
+<p><font face="Arial"><em>lpEnumServicesFunc</em> pointer to a callback function to use to
+enumerate the dependent services</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function allows you to enumerate the services upon
+which this service is dependent. Internally this calls EnumDependentServices and calls the
+callback function for each service. The format of the callback function is:</font></p>
+
+<p class="t"><font face="Arial">BOOL CALLBACK ENUM_SERVICES_PROC(DWORD dwData,
+ENUM_SERVICE_STATUS&amp; ServiceStatus);</font></p>
+
+<p class="t"><font face="Arial"><em>dwData</em> This is the value as send into the
+Enumeration function</font></p>
+
+<p class="t"><font face="Arial"><em>ServiceStatus</em> Contains the information related to
+the enumerated service. See the SDK documentation for further details.</font></p>
+
+<p class="t"><font face="Arial">Return TRUE from the function to continue enumeration and
+FALSE to stop enumeration</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsQueryObjectSecurity"></a><font face="Arial"><big><strong>CNTScmService::QueryObjectSecurity</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL QueryObjectSecurity(SECURITY_INFORMATION </strong><em>dwSecurityInformation</em><strong>,
+PSECURITY_DESCRIPTOR&amp; </strong><em>lpSecurityDescriptor</em><strong>) const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+QueryServiceObjectSecurity. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmsSetObjectSecurity"></a><font face="Arial"><big><strong>CNTScmService::SetObjectSecurity</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL SetObjectSecurity(SECURITY_INFORMATION </strong><em>dwSecurityInformation</em><strong>,
+PSECURITY_DESCRIPTOR&amp; </strong><em>lpSecurityDescriptor</em><strong>) const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+SetServiceObjectSecurity. See the SDK for full details on this function. Bear in mind that
+since the PSECURITY_DESCRIPTOR is a variable sized structure, internally this function
+will allocate the required memory for lpSecurityDescriptor, It is the responsibility of
+the client to delete this structure. This can be done as follows:</font></p>
+
+<p><font face="Arial">PSECURITY_DESCRIPTOR lpDescriptor = NULL;<br>
+service.QueryObjectSecurity(whatever, lpDescriptor);<br>
+delete [] (BYTE*) lpDescriptor;</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="sumCNTServiceControlManager"></a><font face="Arial"><big><strong>CNTServiceControlManager</strong></big></font></p>
+
+<p class="t"><font face="Arial">CNTServiceControlManager is a class which encapsulates a
+connection to a Service Control Manager (SCM) on some machine. Functionality provided
+includes enumeration, database locking and service access.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><strong><font face="Arial">Functions this class provides include:</font></strong></p>
+
+<p class="t"><font face="Arial"><b><a href="#CNTServiceControlManager">CNTServiceControlManager<br>
+</a><a href="#~CNTServiceControlManager">~CNTServiceControlManager<br>
+</a><a href="#scmHandle">operator HANDLE<br>
+</a><a href="#scmAttach">Attach<br>
+</a><a href="#scmDetach">Detach<br>
+</a><a href="#scmOpen">Open<br>
+</a><a href="#scmClose">Close<br>
+</a><a href="#scmQueryLockStatus">QueryLockStatus<br>
+</a><a href="#scmEnumServices">EnumServices<br>
+</a><a href="#scmOpenService">OpenService<br>
+</a><a href="#scmLock">Lock<br>
+</a><a href="#scmUnlock">Unlock</a></b></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="CNTServiceControlManager"></a><font face="Arial"><big><strong>CNTServiceControlManager::CNTServiceControlManager</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CNTServiceControlManager();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is the default constructor which just initialises all
+internal variables to a safe state.</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#~CNTServiceControlManager">~CNTServiceControlManager</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="~CNTServiceControlManager"></a><font face="Arial"><big><strong>CNTServiceControlManager::~CNTServiceControlManager</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">~CNTServiceControlManager();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is the standard destructor for the class. Internally
+it will call <a href="#scmClose">Close</a> to ensure that any handle that is opened by
+this instance is closed</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#CNTServiceControlManager">CNTServiceControlManager</a>
+<a href="#scmClose">Close</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmHandle"></a><font face="Arial"><big><strong>CNTServiceControlManager::operator
+HANDLE</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">operator SC_HANDLE() const;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value:</font></strong></p>
+
+<p class="t"><font face="Arial">The underlying SDK service handle representing this class.</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function exposes the underlying handle which the
+CNTServiceControlManager class wraps. This function is provided for integration with
+legacy code which uses the handle directly.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmAttach"></a><font face="Arial"><big><strong>CNTServiceControlManager::Attach</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Attach(SC_HANDLE </strong><em>hSCM</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>hSCM</em> An SDK service control manager handle
+returned from SDK calls to the SCM </font>APIs</p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Use this member function to attach an existing SDK handle
+to a CNTServiceControlManager.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#scmDetach">Detach</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmDetach"></a><font face="Arial"><big><strong>CNTServiceControlManager::Detach</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">SC_HANDLE Detach();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">The SDK service control manager handle</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this function to detach m_hSCM from the
+CNTServiceControlManager object and&nbsp; set m_hSCM to NULL.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#scmAttach">Attach</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmOpen"></a><font face="Arial"><big><strong>CNTServiceControlManager::Open</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Open(LPCTSTR </strong><em>pszMachineName</em><strong>,
+DWORD </strong><em>dwDesiredAccess</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call OpenSCManager.
+See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmClose"></a><font face="Arial"><big><strong>CNTServiceControlManager::Close</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">void Close();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This frees the SC_HANDLE by internally calling
+CloseServiceHandle which this class encapsulates.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmQueryLockStatus"></a><font face="Arial"><big><strong>CNTServiceControlManager::QueryLockStatus</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL
+QueryLockStatus(LPQUERY_SERVICE_LOCK_STATUS&amp; </strong><em>lpLockStatus</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+QueryServiceLockStatus. See the SDK for full details on this function. Bear in mind that
+since the LPQUERY_SERVICE_LOCK_STATUS is a variable sized structure, internally this
+function will allocate the required memory for lpLockStatus, It is the responsibility of
+the client to delete this structure. This can be done as follows:</font></p>
+
+<p><font face="Arial">LPQUERY_SERVICE_LOCK_STATUS lpLockStatus = NULL;<br>
+scm.QueryLockStatus(lpLockStatus);<br>
+delete [] (BYTE*) lpLockStatus;</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmEnumServices"></a><font face="Arial"><big><strong>CNTServiceControlManager::EnumServices</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL EnumServices(DWORD </strong><em>dwServiceType</em><strong>,
+DWORD </strong><em>dwServiceState</em><strong>, DWORD </strong><em>dwUserData</em><strong>,
+ENUM_SERVICES_PROC </strong><em>lpEnumServicesFunc</em><strong>) const;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p><font face="Arial"><i>dwServiceType</i> Specifies the type of services to enumerate. It
+must be one or both of the following values: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="154"><font face="Arial">Value</font></th>
+    <th align="left" width="292"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="154"><font face="Arial">SERVICE_WIN32</font></td>
+    <td width="292"><font face="Arial">Enumerates services of type SERVICE_WIN32_OWN_PROCESS
+    and SERVICE_WIN32_SHARE_PROCESS.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="154"><font face="Arial">SERVICE_DRIVER</font></td>
+    <td width="292"><font face="Arial">Enumerates services of type SERVICE_KERNEL_DRIVER and
+    SERVICE_FILE_SYSTEM_DRIVER.</font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p><font face="Arial"><i>dwServiceState</i> Specifies the services to enumerate based on
+their running state. It must be one or both of the following values: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="154"><font face="Arial">Value</font></th>
+    <th align="left" width="292"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="154"><font face="Arial">SERVICE_ACTIVE</font></td>
+    <td width="292"><font face="Arial">Enumerates services that are in the following states:
+    SERVICE_START_PENDING, SERVICE_STOP_PENDING, SERVICE_RUNNING, SERVICE_CONTINUE_PENDING,
+    SERVICE_PAUSE_PENDING, and SERVICE_PAUSED.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="154"><font face="Arial">SERVICE_INACTIVE</font></td>
+    <td width="292"><font face="Arial">Enumerates services that are in the SERVICE_STOPPED
+    state.</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="154"><font face="Arial">SERVICE_STATE_ALL</font></td>
+    <td width="292"><font face="Arial">Combines the following states: SERVICE_ACTIVE and
+    SERVICE_INACTIVE. </font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p><font face="Arial"><em>dwUserData</em> Any user defined DWORD which you want to send to
+the callback function.</font></p>
+
+<p><font face="Arial"><em>lpEnumServicesFunc</em> pointer to a callback function to use to
+enumerate the dependent services</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function allows you to enumerate the services which
+in the SCM. Internally this calls EnumServicesStatus and calls the callback function for
+each service. The format of the callback function is:</font></p>
+
+<p class="t"><font face="Arial">typedef BOOL CALLBACK ENUM_SERVICES_PROC(DWORD dwData,
+ENUM_SERVICE_STATUS&amp; ServiceStatus);</font></p>
+
+<p class="t"><font face="Arial"><em>dwData</em> This is the value as send into the
+Enumeration function</font></p>
+
+<p class="t"><font face="Arial"><em>ServiceStatus</em> Contains the information related to
+the enumerated service. See the SDK documentation for further details.</font></p>
+
+<p class="t"><font face="Arial">Return TRUE from the function to continue enumeration and
+FALSE to stop enumeration</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmOpenService"></a><font face="Arial"><big><strong>CNTServiceControlManager::OpenService</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL OpenService(LPCTSTR </strong><em>lpServiceName</em><strong>,
+DWORD </strong><em>dwDesiredAccess</em><strong>, CNTScmService&amp; </strong><em>service</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call of the same
+name. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmLock"></a><font face="Arial"><big><strong>CNTServiceControlManager::Lock</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL Lock();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+LockServiceDatabase. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="scmUnlock"></a><font face="Arial"><big><strong>CNTServiceControlManager::Unlock</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">BOOL Unlock();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+UnlockServiceDatabase. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="sumCEventLogRecord"></a><font face="Arial"><big><strong>CEventLogRecord</strong></big></font></p>
+
+<p class="t"><font face="Arial">CEventLogRecord is a C++ wrapper class for the
+EVENTLOGRECORD structure as provided in the SDK. For anyone who has had to use this class
+using raw SDK calls, you will appreciate the easier access which the class provides.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><strong><font face="Arial">Functions and members this class provides include:</font></strong></p>
+
+<p class="t"><font face="Arial"><b><a href="#CEventLogRecord">CEventLogRecord<br>
+</a><a href="#elr=">operator=<br>
+</a><a href="#m_dwRecordNumber">m_dwRecordNumber<br>
+</a><a href="#m_TimeGenerated">m_TimeGenerated<br>
+</a><a href="#m_TimeWritten">m_TimeWritten<br>
+</a><a href="#m_dwEventID">m_dwEventID<br>
+</a><a href="#m_wEventTypes">m_wEventTypes<br>
+</a><a href="#m_wEventCategory">m_wEventCategory<br>
+</a><a href="#m_UserSID">m_UserSID<br>
+</a><a href="#m_Strings">m_Strings<br>
+</a><a href="#m_Data">m_Data<br>
+</a><a href="#m_sSourceName">m_sSourceName<br>
+</a><a href="#m_sComputerName">m_sComputerName</a></b></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="CEventLogRecord"></a><font face="Arial"><big><strong>CEventLogRecord::CEventLogRecord</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CEventLogRecord();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>CEventLogRecord(const CEventLogRecord&amp; </strong><em>record</em><strong>);</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>CEventLogRecord(const EVENTLOGRECORD* </strong><em>pRecord</em><strong>);</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Parameters</strong></font></p>
+
+<p class="t"><font face="Arial">record An existing CEventLogRecord</font></p>
+
+<p class="t"><font face="Arial">pRecord An existing SDK EVENTLOGRECORD structure</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elr="></a><font face="Arial"><big><strong>CEventLogRecord::operator=</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>CEventLogRecord&amp; operator=(const
+CEventLogRecord&amp; </strong><em>record</em><strong>);</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">The standard copy constructor</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_dwRecordNumber"></a><font face="Arial"><big><strong>CEventLogRecord::m_dwRecordNumber</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">DWORD m_dwRecordNumber;</font></strong></p>
+
+<p><strong><font face="Arial">Remarks</font></strong></p>
+
+<p><font face="Arial">Contains the record number for this event log entry </font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_TimeGenerated"></a><font face="Arial"><big><strong>CEventLogRecord::m_TimeGenerated</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CTime m_TimeGenerated;</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">The CTime representation of when this entry was submitted.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_TimeWritten"></a><font face="Arial"><big><strong>CEventLogRecord::m_TimeWritten</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CTime m_TimeWritten;</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">The CTime representation of when this entry was written to
+the event log.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_dwEventID"></a><font face="Arial"><big><strong>CEventLogRecord::m_dwEventID</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">DWORD m_dwEventID;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Specifies the event. This is specific to the source that
+generated the event log entry, and is used, together with <b>SourceName</b>, to identify a
+message in a message file that is presented to the user while viewing the log.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_wEventTypes"></a><font face="Arial"><big><strong>CEventLogRecord::m_wEventTypes</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>WORD m_wEventType;</strong></font></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p><font face="Arial">Specifies the type of event. This member can be one of the following
+values: </font></p>
+
+<table cellSpacing="4" cols="2">
+<TBODY>
+  <tr vAlign="top">
+    <th align="left" width="243"><font face="Arial">Value</font></th>
+    <th align="left" width="222"><font face="Arial">Meaning</font></th>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_ERROR_TYPE</font></td>
+    <td width="222"><font face="Arial">Error event</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_WARNING_TYPE</font></td>
+    <td width="222"><font face="Arial">Warning event</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_INFORMATION_TYPE</font></td>
+    <td width="222"><font face="Arial">Information event</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_AUDIT_SUCCESS</font></td>
+    <td width="222"><font face="Arial">Success Audit event</font></td>
+  </tr>
+  <tr vAlign="top">
+    <td width="243"><font face="Arial">EVENTLOG_AUDIT_FAILURE</font></td>
+    <td width="222"><font face="Arial">Failure Audit event</font></td>
+  </tr>
+</TBODY>
+</table>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_wEventCategory"></a><font face="Arial"><big><strong>CEventLogRecord::m_wEventCategory</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">WORD m_wEventCategory;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Specifies a subcategory for this event. This subcategory
+is source specific. </font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_UserSID"></a><font face="Arial"><big><strong>CEventLogRecord::m_UserSID</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CByteArray m_UserSID;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p><font face="Arial">A CByteArray representation of the security identifier of the active
+user at the time this event was logged. </font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_Strings"></a><font face="Arial"><big><strong>CEventLogRecord::m_Strings</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CStringArray m_Strings;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p><font face="Arial">A CStringArray representation of the strings which are merged into
+the message before it is displayed to the user. </font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_Data"></a><font face="Arial"><big><strong>CEventLogRecord::m_Data</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CByteArray m_Data;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">A CByteArray representation of the event-specific
+information within this event record.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_sSourceName"></a><font face="Arial"><big><strong>CEventLogRecord::m_sSourceName</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CString m_sSourceName;</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">Contains the string specifying the name of the source
+(application, service, driver, subsystem) that generated the entry.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="m_sComputerName"></a><font face="Arial"><big><strong>CEventLogRecord::m_sComputerName</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CString m_sComputerName;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Contains the string specifying the name of the computer
+that generated this event.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="sumCNTEventLog"></a><font face="Arial"><big><strong>CNTEventLog</strong></big></font></p>
+
+<p class="t"><font face="Arial">CNTEventLog is a C++ wrapper class for accessing the NT
+Event Logs. You can consider this as the client side to the Event Log APIs.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><strong><font face="Arial">Functions this class provides include:</font></strong></p>
+
+<p class="t"><font face="Arial"><b><a href="#CNTEventLog">CNTEventLog<br>
+</a><a href="#~CNTEventLog">~CNTEventLog<br>
+</a><a href="#elHandle">operator HANDLE<br>
+</a><a href="#elAttach">Attach<br>
+</a><a href="#elDetach">Detach<br>
+</a><a href="#elOpen">Open<br>
+</a><a href="#elOpenBackup">OpenBackup<br>
+</a><a href="#elOpenApplication">OpenApplication<br>
+</a><a href="#elOpenSystem">OpenSystem<br>
+</a><a href="#elOpenSecurity">OpenSecurity<br>
+</a><a href="#elClose">Close<br>
+</a><a href="#elBackup">Backup<br>
+</a><a href="#elClear">Clear<br>
+</a><a href="#elGetNumberOfRecords">GetNumberOfRecords<br>
+</a><a href="#elGetOldestRecord">GetOldestRecord<br>
+</a><a href="#elNotifyChange">NotifyChange<br>
+</a><a href="#elReadNext">ReadNext<br>
+</a><a href="#elReadPrev">ReadPrev</a></b></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="CNTEventLog"></a><font face="Arial"><big><strong>CNTEventLog::CNTEventLog</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">CNTEventLog();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is the default constructor which just initialises all
+internal variables to a safe state.</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#~CNTEventLog">~CNTEventLog</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="~CNTEventLog"></a><font face="Arial"><big><strong>CNTEventLog::~CEventLog</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">~CNTEventLog();</font></strong></p>
+
+<p class="t"><font face="Arial"><strong>Remarks</strong></font></p>
+
+<p class="t"><font face="Arial">This is the standard destructor for the class. Internally
+it will call <a href="#elClose">Close</a> to ensure that any handle that is opened by this
+instance is closed</font></p>
+
+<p><font face="Arial"><strong>See Also </strong><a href="#CNTEventLog">CNTEventLog</a> <a
+href="#elClose">Close</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elHandle"></a><font face="Arial"><big><strong>CNTEventLog::operator
+HANDLE</strong></big></font></p>
+
+<p class="t"><strong><font face="Arial">operator HANDLE() const;</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value:</font></strong></p>
+
+<p class="t"><font face="Arial">The underlying SDK event log handle representing this
+class.</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This function exposes the underlying handle which
+CNTEventLog class wraps. This function is provided for integration with legacy code which
+uses the handle directly.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elAttach"></a><big><font face="Arial"><strong>CNTEventLog::Attach</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Attach(HANDLE </strong><em>hEventLog</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>hEventLog</em> An SDK event log handle returned from
+SDK calls to the Event log </font>APIs</p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Use this member function to attach an existing SDK handle
+to a CNTEventLog.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#elDetach">Detach</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elDetach"></a><big><font face="Arial"><strong>CNTEventLog::Detach</strong></font></big></p>
+
+<p class="t"><strong><font face="Arial">HANDLE Detach();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">The SDK event log handle</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Call this function to detach m_hEventLog from the
+CNTEventLog object and&nbsp; set m_hEventLog to NULL.</font></p>
+
+<p class="t"><font face="Arial"><strong>See Also</strong> <a href="#elAttach">Attach</a></font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elOpen"></a><big><font face="Arial"><strong>CNTEventLog::Open</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Open(LPCTSTR </strong><em>lpUNCServerName</em><strong>,
+LPCTSTR </strong><em>lpSourceName</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call OpenEventLog.
+See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elOpenBackup"></a><big><font face="Arial"><strong>CNTEventLog::OpenBackup</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL OpenBackup(LPCTSTR </strong><em>lpUNCServerName</em><strong>,
+LPCTSTR </strong><em>lpFileName</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+OpenBackupEventLog. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elOpenApplication"></a><font face="Arial"><big><strong>CNTEventLog::OpenApplication</strong></big></font></p>
+
+<p class="t"><font face="Arial"><strong>BOOL OpenApplication(LPCTSTR </strong><em>lpUNCServerName</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a sample wrapper for opening the
+&quot;Application&quot; event log on the specified computer, Internally it just calls <a
+href="#elOpen">Open</a> with the appropriate string &quot;Application&quot;.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elOpenSystem"></a><big><font face="Arial"><strong>CNTEventLog::OpenSystem</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL OpenSystem(LPCTSTR </strong><em>lpUNCServerName</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a sample wrapper for opening the
+&quot;system&quot; event log on the specified computer, Internally it just calls <a
+href="#elOpen">Open</a> with the appropriate string &quot;System&quot;.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elOpenSecurity"></a><big><font face="Arial"><strong>CNTEventLog::OpenSecurity</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL OpenSecurity(LPCTSTR </strong><em>lpUNCServerName</em><strong>);</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a sample wrapper for opening the
+&quot;Security&quot; event log on the specified computer, Internally it just calls <a
+href="#elOpen">Open</a> with the appropriate string &quot;Security&quot;.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elClose"></a><big><font face="Arial"><strong>CNTEventLog::Close</strong></font></big></p>
+
+<p class="t"><strong><font face="Arial">BOOL Close();</font></strong></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This frees the HANDLE by internally calling CloseEventLog
+which this class encapsulates.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elBackup"></a><big><font face="Arial"><strong>CNTEventLog::Backup</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Backup(LPCTSTR </strong><em>lpBackupFileName</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call BackupeventLog.
+See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elClear"></a><big><font face="Arial"><strong>CNTEventLog::Clear</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL Clear(LPCTSTR </strong><em>lpBackupFileName</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call ClearEventLog.
+See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elGetNumberOfRecords"></a><big><font face="Arial"><strong>CNTEventLog::GetNumberOfRecords</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL GetNumberOfRecords(DWORD&amp; </strong><em>dwNumberOfRecords</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>dwNumberOfRecords</em> Upon successful return this
+will contain the number of records in the event log.</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+GetNumberOfEventLogRecords. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elGetOldestRecord"></a><big><font face="Arial"><strong>CNTEventLog::GetOldestRecord</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL GetOldestRecord(DWORD&amp; </strong><em>dwOldestRecord</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>dwOldestRecord</em> Upon successful return this will
+contain the record number of the oldest record in the event log.</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+GetOldestEventLogRecord. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elNotifyChange"></a><big><font face="Arial"><strong>CNTEventLog::NotifyChange</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL NotifyChange(HANDLE </strong><em>hEvent</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">This is a simple wrapper for the SDK call
+NotifyChangeEventLog. See the SDK for full details on this function.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elReadNext"></a><big><font face="Arial"><strong>CNTEventLog::ReadNext</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL ReadNext(CEventLogRecord&amp; </strong><em>record</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>record</em> Upon successful return this will contain
+the next record in the event log</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Reads the next record in forward chronological order from
+the event log. When this function returns successfully, the read position is incremented
+by one ready for the next read to occur.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t"><a name="elReadPrev"></a><big><font face="Arial"><strong>CNTEventLog::ReadPrev</strong></font></big></p>
+
+<p class="t"><font face="Arial"><strong>BOOL ReadPrev(CEventLogRecord&amp; </strong><em>record</em><strong>)
+const;</strong></font></p>
+
+<p class="t"><strong><font face="Arial">Return Value</font></strong></p>
+
+<p class="t"><font face="Arial">TRUE if the function was successful, otherwise FALSE. To
+get extended error information, call GetLastError </font></p>
+
+<p class="t"><strong><font face="Arial">Parameters</font></strong></p>
+
+<p class="t"><font face="Arial"><em>record</em> Upon successful return this will contain
+the previous record in the event log</font></p>
+
+<p class="t"><strong><font face="Arial">Remarks</font></strong></p>
+
+<p class="t"><font face="Arial">Reads the next record in reverse chronological order from
+the event log. When this function returns successfully, the read position is decremented
+by one ready for the next read to occur.</font></p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p class="t">&nbsp;</p>
+
+<p><font face="Arial"><big><a name="Enhancements"></a></big><font color="#000000" size="4"><strong>PLANNED
+ENHANCEMENTS</strong></font></font> 
+
+<ul>
+  <li><font color="#000000" size="3" face="Arial">Review all classes to determine which
+    parameters each member function requires can have default values.</font></li>
+  <li><font color="#000000" size="3" face="Arial">If you have any suggested improvements,
+    please let me know so that I can incorporate them into the next release.</font></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><a name="References"></a><big><big><font face="Arial"><strong>References</strong></font></big></big>
+
+<ul>
+  <li><font face="Arial">&quot;Creating a Simple Windows NT Service in C++&quot; by Nigel
+    Thompson on the MSDN.</font></li>
+  <li><font face="Arial"><a
+    href="http://ourworld.compuserve.com/homepages/Sam_Blackburn/wfc.htm">Win32 Foundation
+    Classes </a>developed by Sam Blackburn</font></li>
+  <li><font face="Arial">There are numerous articles in the Platform SDK which anyone
+    contemplating writing a service should read. Areas covered include: Writing to the NT
+    Event Log, Reading from the Event Log, How a simple C/SDK style service is structured, the
+    Service Control Manager (SCM), reporting your status back to the SCM, using
+    the message compiler (MC) etc etc. </font></li>
+</ul>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p><font face="Arial"><a name="Contact"></a><font color="#000000" size="4"><strong>CONTACTING
+THE AUTHOR</strong></font></font></p>
+
+<p><font color="#000000" size="3" face="Arial">PJ Naughter<br>
+Email: <a href="mailto:pjn@indigo..ie">pjn@indigo.ie</a><br>
+Web: <a href="http://indigo.ie/~pjn">http://indigo.ie/~pjn</a><br>
+24 January 2000</font></p>
+</body>
+</html>

@@ -6,6 +6,10 @@
     //#pragma implementation
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 

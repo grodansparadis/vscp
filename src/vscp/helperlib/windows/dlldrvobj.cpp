@@ -33,7 +33,7 @@
 CHelpDllObj::CHelpDllObj()
 {
 	m_instanceCounter = 0;
-	m_objMutex = CreateMutex( NULL, true, "__HELPER_DLL_MUTEX__" );
+	m_objMutex = CreateMutex( NULL, true, _("__HELPER_DLL_MUTEX__") );
 
 	// Init the driver array
 	for ( int i = 0; i<VSCP_HELPER_MAX_OPEN; i++ ) {

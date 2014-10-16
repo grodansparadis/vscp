@@ -43,7 +43,7 @@ CNTService* CNTService::m_pThis = NULL;
 // CNTService
 //
 
-CNTService::CNTService( const char * szServiceName )
+CNTService::CNTService( LPCTSTR szServiceName )
 {
     // copy the address of the current object so we can access it from
     // the static member callback functions. 
@@ -51,7 +51,7 @@ CNTService::CNTService( const char * szServiceName )
     m_pThis = this;
     
     // Set the default service name and version
-    strncpy( m_szServiceName, szServiceName, sizeof( m_szServiceName ) - 1 );
+    wcscpy( m_szServiceName, szServiceName );
     m_iMajorVersion = VSCPD_MAJOR_VERSION;
     m_iMinorVersion = VSCPD_MINOR_VERSION;
 	m_iSubMinorVersion = VSCPD_SUB_VERSION;
@@ -84,7 +84,7 @@ CNTService::CNTService( const char * szServiceName )
 
 CNTService::~CNTService()
 {
-	DebugMsg("CNTService::~CNTService()");
+	DebugMsg(_("CNTService::~CNTService()"));
 	if ( m_hEventSource ) {
         ::DeregisterEventSource( m_hEventSource );
     }
@@ -142,7 +142,7 @@ BOOL CNTService::ParseStandardArgs(int argc, char* argv[])
             // Try and remove the copy that's installed
             if ( Uninstall() ) {
                 // Get the executable file path
-                char szFilePath[_MAX_PATH];
+                WCHAR szFilePath[_MAX_PATH];
                 ::GetModuleFileName( NULL, szFilePath, sizeof(szFilePath));
                 printf("%s removed. (You must delete the file (%s) yourself.)\n",
                        m_szServiceName, szFilePath);
@@ -176,8 +176,8 @@ BOOL CNTService::ParseStandardArgs(int argc, char* argv[])
 
 void CNTService::showHelp( void )
 {
-	printf("\nVSCP Service - (C) 2000-2011 Grodans Paradis AB\n");
-	printf("=============================================\n\n");
+	printf("\nVSCP Service - (C) 2000-2014 Grodans Paradis AB\n");
+	printf("===============================================\n\n");
 	printf("Command line switches.\n");
 	printf("----------------------\n");
 	printf("\"no switch\"\tStart the service.\n");
@@ -238,7 +238,7 @@ BOOL CNTService::Install()
 	}
 
     // Get the executable file path
-    char szFilePath[_MAX_PATH];
+    WCHAR szFilePath[_MAX_PATH];
     ::GetModuleFileName(NULL, szFilePath, sizeof(szFilePath));
 
     // Create the service
@@ -263,10 +263,10 @@ BOOL CNTService::Install()
     // make registry entries to support logging messages
     // Add the source name as a subkey under the Application
     // key in the EventLog service portion of the registry.
-    char szKey[256];
+    WCHAR szKey[256];
     HKEY hKey = NULL;
-    strcpy( szKey, "SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\" );
-    strcat( szKey, m_szServiceName );
+    wcscpy( szKey, _("SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\") );
+    wcscpy( szKey, m_szServiceName );
     if ( ::RegCreateKey(HKEY_LOCAL_MACHINE, szKey, &hKey) != ERROR_SUCCESS ) {
         ::CloseServiceHandle( hService );
         ::CloseServiceHandle( hSCM );
@@ -275,16 +275,16 @@ BOOL CNTService::Install()
 
     // Add the Event ID message-file name to the 'EventMessageFile' subkey.
     ::RegSetValueEx( hKey,
-						"EventMessageFile",
+						_("EventMessageFile"),
 						0,
 						REG_EXPAND_SZ, 
 						(CONST BYTE*)szFilePath,
-						strlen(szFilePath) + 1 );     
+						wcslen(szFilePath) + 1 );     
 
     // Set the supported types flags.
     DWORD dwData = EVENTLOG_ERROR_TYPE | EVENTLOG_WARNING_TYPE | EVENTLOG_INFORMATION_TYPE;
     ::RegSetValueEx( hKey,
-						"TypesSupported",
+						_("TypesSupported"),
 						0,
 						REG_DWORD,
 						(CONST BYTE*)&dwData,
@@ -343,11 +343,11 @@ BOOL CNTService::Uninstall()
 //
 
 void CNTService::LogEvent(WORD wType, DWORD dwID,
-                          const char* pszS1,
-                          const char* pszS2,
-                          const char* pszS3)
+                          LPCWSTR pszS1,
+                          LPCWSTR pszS2,
+                          LPCWSTR pszS3)
 {
-    const char* ps[3];
+    LPCWSTR ps[3];
     ps[0] = pszS1;
     ps[1] = pszS2;
     ps[2] = pszS3;
@@ -393,9 +393,9 @@ BOOL CNTService::StartService()
         { NULL, NULL }
     };
 
-    DebugMsg("Calling StartServiceCtrlDispatcher()");
+    DebugMsg(_("Calling StartServiceCtrlDispatcher()"));
     BOOL b = ::StartServiceCtrlDispatcher( st );
-    DebugMsg("Returned from StartServiceCtrlDispatcher()");
+    DebugMsg(_("Returned from StartServiceCtrlDispatcher()"));
     
 	return b;
 }
@@ -411,7 +411,7 @@ void CNTService::ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
     // Get a pointer to the C++ object
     CNTService* pService = m_pThis;
     
-    pService->DebugMsg("Entering CNTService::ServiceMain()");
+    pService->DebugMsg(_("Entering CNTService::ServiceMain()"));
 
     // Register the control request handler
     pService->m_Status.dwCurrentState = SERVICE_START_PENDING;
@@ -444,7 +444,7 @@ void CNTService::ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
     else if ( ( dwWaitRes == WAIT_FAILED ) || ( dwWaitRes == WAIT_ABANDONED ) ) {
 		// We failed to kill the threads we have to
 		// abort anyway but we tell the world that we do so....
-		pService->DebugMsg("Failed to terminate all threads in CNTService::ServiceMain()");
+		pService->DebugMsg(_("Failed to terminate all threads in CNTService::ServiceMain()"));
 	}    
 
 	// close the event handle and the thread handle
@@ -458,7 +458,7 @@ void CNTService::ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
     // Tell the service manager we are stopped
     pService->SetStatus( SERVICE_STOPPED );
 
-    pService->DebugMsg("Leaving CNTService::ServiceMain()");
+    pService->DebugMsg(_("Leaving CNTService::ServiceMain()"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -472,7 +472,7 @@ void CNTService::ServiceMain(DWORD dwArgc, LPTSTR* lpszArgv)
 
 void CNTService::SetStatus(DWORD dwState)
 {
-    DebugMsg("CNTService::SetStatus(%lu, %lu)", m_hServiceStatus, dwState);
+    DebugMsg(_("CNTService::SetStatus(%lu, %lu)"), m_hServiceStatus, dwState);
     m_Status.dwCurrentState = dwState;
     ::SetServiceStatus(m_hServiceStatus, &m_Status);
 }
@@ -485,7 +485,7 @@ void CNTService::SetStatus(DWORD dwState)
 
 BOOL CNTService::Initialize()
 {
-    DebugMsg("Entering CNTService::Initialize()");
+    DebugMsg(_("Entering CNTService::Initialize()"));
 
     // Start the initialization
     SetStatus(SERVICE_START_PENDING);
@@ -506,7 +506,7 @@ BOOL CNTService::Initialize()
     LogEvent(EVENTLOG_INFORMATION_TYPE, EVMSG_STARTED);
     SetStatus(SERVICE_RUNNING);
 
-    DebugMsg("Leaving CNTService::Initialize()");
+    DebugMsg(_("Leaving CNTService::Initialize()"));
     return TRUE;
 }
 
@@ -521,15 +521,15 @@ BOOL CNTService::Initialize()
 
 void CNTService::Run()
 {
-    DebugMsg("Entering CNTService::Run()");
+    DebugMsg(_("Entering CNTService::Run()"));
 
     while ( m_bIsRunning ) {
-        DebugMsg("Sleeping...");
+        DebugMsg(_("Sleeping..."));
         Sleep(5000);
     }
 
     // nothing more to do
-    DebugMsg("Leaving CNTService::Run()");
+    DebugMsg(_("Leaving CNTService::Run()"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -546,7 +546,7 @@ void CNTService::Handler( DWORD dwOpcode )
     // Get a pointer to the object
     CNTService* pService = m_pThis;
     
-    pService->DebugMsg("CNTService::Handler(%lu)", dwOpcode);
+    pService->DebugMsg(_("CNTService::Handler(%lu)"), dwOpcode);
     
 	switch ( dwOpcode ) {
     
@@ -586,7 +586,7 @@ void CNTService::Handler( DWORD dwOpcode )
     }
 
     // Report current status
-    pService->DebugMsg("Updating status (%lu, %lu)",
+    pService->DebugMsg(_("Updating status (%lu, %lu)"),
                        pService->m_hServiceStatus,
                        pService->m_Status.dwCurrentState);
     ::SetServiceStatus(pService->m_hServiceStatus, &pService->m_Status);
@@ -598,7 +598,7 @@ void CNTService::Handler( DWORD dwOpcode )
 
 BOOL CNTService::OnInit()
 {
-    DebugMsg("CNTService::OnInit()");
+    DebugMsg(_("CNTService::OnInit()"));
 	return TRUE;
 }
 
@@ -608,7 +608,7 @@ BOOL CNTService::OnInit()
 
 void CNTService::OnStop()
 {
-    DebugMsg("CNTService::OnStop()");
+    DebugMsg(_("CNTService::OnStop()"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -617,7 +617,7 @@ void CNTService::OnStop()
 
 void CNTService::OnInterrogate()
 {
-    DebugMsg("CNTService::OnInterrogate()");
+    DebugMsg(_("CNTService::OnInterrogate()"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -627,7 +627,7 @@ void CNTService::OnInterrogate()
 
 void CNTService::OnPause()
 {
-    DebugMsg("CNTService::OnPause()");
+    DebugMsg(_("CNTService::OnPause()"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -637,7 +637,7 @@ void CNTService::OnPause()
 
 void CNTService::OnContinue()
 {
-    DebugMsg("CNTService::OnContinue()");
+    DebugMsg(_("CNTService::OnContinue()"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -647,7 +647,7 @@ void CNTService::OnContinue()
 
 void CNTService::OnShutdown()
 {
-    DebugMsg("CNTService::OnShutdown()");
+    DebugMsg(_("CNTService::OnShutdown()"));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -657,7 +657,7 @@ void CNTService::OnShutdown()
 
 BOOL CNTService::OnUserControl( DWORD dwOpcode )
 {
-    DebugMsg("CNTService::OnUserControl(%8.8lXH)", dwOpcode);
+    DebugMsg(_("CNTService::OnUserControl(%8.8lXH)"), dwOpcode);
     return FALSE; // say not handled
 }
 
@@ -671,15 +671,15 @@ BOOL CNTService::OnUserControl( DWORD dwOpcode )
 //
 //
 
-void CNTService::DebugMsg(const char* pszFormat, ...)
+void CNTService::DebugMsg(LPCTSTR pszFormat, ...)
 {
-    char buf[1024];
-    sprintf( buf, "[%s](%lu): ", m_szServiceName, GetCurrentThreadId() );
+    WCHAR buf[1024];
+    swprintf( buf, _("[%s](%lu): "), m_szServiceName, GetCurrentThreadId() );
 	va_list arglist;
 	va_start( arglist, pszFormat );
-    vsprintf( &buf[strlen(buf)], pszFormat, arglist );
+    _vswprintf( &buf[wcslen(buf)], pszFormat, arglist );
 	va_end( arglist );
-    strcat( buf, "\n" );
+    wcscat( buf, _("\n") );
     OutputDebugString( buf );
 }
 

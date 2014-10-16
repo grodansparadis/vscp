@@ -8,6 +8,10 @@
     //#pragma implementation
 #endif
 
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
 
@@ -49,7 +53,7 @@ static bool gbRun = true;	// Thread are running as long as value is true...
 // CVSCPService
 //
 
-CVSCPService::CVSCPService() : CNTService("vscpservice")
+CVSCPService::CVSCPService() : CNTService(_("vscpservice"))
 {
 	m_iStartParam = 0;
 	m_iState = m_iStartParam;
@@ -67,10 +71,10 @@ BOOL CVSCPService::OnInit()
         return false;      
     }
 
-	wxStandardPaths stdPath;
+	//wxStandardPaths stdPath;
     wxString strCfgFile;
    
-    strCfgFile = stdPath.GetConfigDir();
+    strCfgFile = wxStandardPaths::Get().GetConfigDir();
     strCfgFile += _("/vscp/vscpd.conf");
 
 	rv = m_ctrlObj.init( strCfgFile );
@@ -178,21 +182,21 @@ void CVSCPService::OnShutdown( void )
 
 void CVSCPService::SaveStatus()
 {
-    DebugMsg("Saving current status");
+    DebugMsg(_("Saving current status"));
     // Try opening the registry key:
     // HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\<AppName>\...
     HKEY hkey = NULL;
-	char szKey[1024];
-	strcpy(szKey, "SYSTEM\\CurrentControlSet\\Services\\");
-	strcat(szKey, m_szServiceName);
-	strcat(szKey, "\\Status");
+	WCHAR szKey[1024];
+	wcscpy(szKey, _("SYSTEM\\CurrentControlSet\\Services\\"));
+	wcscat(szKey, m_szServiceName);
+	wcscat(szKey, _("\\Status"));
     DWORD dwDisp;
 	DWORD dwErr;
-    DebugMsg("Creating key: %s", szKey);
+    DebugMsg(_("Creating key: %s"), szKey);
     dwErr = RegCreateKeyEx(	HKEY_LOCAL_MACHINE,
                            	szKey,
                    			0,
-                   			"",
+                   			NULL,
                    			REG_OPTION_NON_VOLATILE,
                    			KEY_WRITE,
                    			NULL,
@@ -201,14 +205,14 @@ void CVSCPService::SaveStatus()
 	
 	if (dwErr != ERROR_SUCCESS) 
 	{
-		DebugMsg("Failed to create Status key (%lu)", dwErr);
+		DebugMsg(_("Failed to create Status key (%lu)"), dwErr);
 		return;
 	}	
 
     // Set the registry values
-	DebugMsg("Saving 'Current' as %ld", m_iState); 
+	DebugMsg(_("Saving 'Current' as %ld"), m_iState); 
     RegSetValueEx(hkey,
-                  "Current",
+                  _("Current"),
                   0,
                   REG_DWORD,
                   (BYTE*)&m_iState,

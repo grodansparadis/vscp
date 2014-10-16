@@ -45,6 +45,10 @@
 #include "dlldrvobj.h"
 #include "vscphelperdll.h"
 
+#ifdef _MSC_VER
+   #include <wx/msw/msvcrt.h>
+#endif
+
 static HANDLE hThisInstDll = NULL;
 static CHelpDllObj *theApp = NULL;
 

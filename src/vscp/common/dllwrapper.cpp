@@ -24,6 +24,10 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #if WIN32
+#include <windows.h>
+#include <stdio.h>
+#include <errno.h>
+#include <limits.h>
 #else
 #define _POSIX
 #include <stdio.h>
@@ -71,7 +75,7 @@ int CDllWrapper::initialize( wxString& strPath )
 
 	// Load dynamic library
 	if ( ! m_wxdll.Load( strPath, wxDL_LAZY ) ) {
-		wxLogStatus( _("Unable to load dynamic library."));
+		wxLogDebug( _("Unable to load dynamic library."));
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -82,7 +86,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALOPEN ) m_wxdll.GetSymbol ( _T ( "CanalOpen" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalOpen." ) );
+		wxLogDebug(  _( "Unable to get dl entry for CanalOpen." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -91,7 +95,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALCLOSE ) m_wxdll.GetSymbol ( _T ( "CanalClose" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalClose." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalClose." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -100,7 +104,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALGETLEVEL ) m_wxdll.GetSymbol ( _T ( "CanalGetLevel" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalGetLevel." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalGetLevel." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -109,7 +113,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALSEND ) m_wxdll.GetSymbol ( _T ( "CanalSend" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalSend." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalSend." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -118,7 +122,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALDATAAVAILABLE ) m_wxdll.GetSymbol ( _T ( "CanalDataAvailable" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalDataAvailable." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalDataAvailable." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -128,7 +132,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALRECEIVE ) m_wxdll.GetSymbol ( _T ( "CanalReceive" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalReceive." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalReceive." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -137,7 +141,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALGETSTATUS ) m_wxdll.GetSymbol ( _T ( "CanalGetStatus" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalGetStatus." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalGetStatus." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -146,7 +150,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALGETSTATISTICS ) m_wxdll.GetSymbol ( _T ( "CanalGetStatistics" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalGetStatistics." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalGetStatistics." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -155,7 +159,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALSETFILTER ) m_wxdll.GetSymbol ( _T ( "CanalSetFilter" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalSetFilter." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalSetFilter." ) );
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -164,7 +168,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALSETMASK ) m_wxdll.GetSymbol ( _T ( "CanalSetMask" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalSetMask." ));
+		wxLogDebug( _( "Unable to get dl entry for CanalSetMask." ));
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -173,7 +177,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALGETVERSION ) m_wxdll.GetSymbol ( _T ( "CanalGetVersion" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalGetVersion." ));
+		wxLogDebug( _( "Unable to get dl entry for CanalGetVersion." ));
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -182,7 +186,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALGETDLLVERSION ) m_wxdll.GetSymbol ( _T ( "CanalGetDllVersion" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalGetDllVersion." ));
+		wxLogDebug( _( "Unable to get dl entry for CanalGetDllVersion." ));
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -191,7 +195,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	                   ( LPFNDLL_CANALGETVENDORSTRING ) m_wxdll.GetSymbol ( _T ( "CanalGetVendorString" ) ) ) )
 	{
 		// Free the library
-		wxLogStatus( _T ( "Unable to get dl entry for CanalGetVendorString." ));
+		wxLogDebug( _( "Unable to get dl entry for CanalGetVendorString." ));
 		return CANAL_ERROR_PARAMETER;
 	}
 
@@ -208,7 +212,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	if ( NULL == ( m_proc_CanalBlockingSend =
 	                   ( LPFNDLL_CANALBLOCKINGSEND ) m_wxdll.GetSymbol ( _T ( "CanalBlockingSend" ) ) ) )
 	{
-		wxLogStatus( _T ( "Unable to get dl entry for CanalBlockingSend. Probably Generation 1 driver." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalBlockingSend. Probably Generation 1 driver." ) );
     m_proc_CanalBlockingSend = NULL;
 	}
 
@@ -216,7 +220,7 @@ int CDllWrapper::initialize( wxString& strPath )
 	if ( NULL == ( m_proc_CanalBlockingReceive =
 	                   ( LPFNDLL_CANALBLOCKINGRECEIVE ) m_wxdll.GetSymbol ( _T ( "CanalBlockingReceive" ) ) ) )
 	{
-		wxLogStatus( _T ( "Unable to get dl entry for CanalBlockingReceive. Probably Generation 1 driver." ) );
+		wxLogDebug( _( "Unable to get dl entry for CanalBlockingReceive. Probably Generation 1 driver." ) );
     m_proc_CanalBlockingReceive = NULL;
 	}
 
@@ -224,8 +228,8 @@ int CDllWrapper::initialize( wxString& strPath )
 	if ( NULL == ( m_proc_CanalGetdriverInfo =
 	                   ( LPFNDLL_CANALGETDRIVERINFO ) m_wxdll.GetSymbol ( _T ( "CanalGetDriverInfo" ) ) ) )
 	{
-		wxLogStatus( _T ( "Unable to get dl entry for CanalGetDriverInfo. Probably Generation 1 driver." ) );
-    m_proc_CanalGetdriverInfo = NULL;
+		wxLogDebug( _( "Unable to get dl entry for CanalGetDriverInfo. Probably Generation 1 driver." ) );
+        m_proc_CanalGetdriverInfo = NULL;
 	}
 
   

@@ -41,7 +41,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>Dynamic</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -98,6 +98,7 @@
     <OutDir>.\release\</OutDir>
     <IntDir>.\release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>.\release\</OutDir>
@@ -114,8 +115,8 @@
       <WarningLevel>Level3</WarningLevel>
       <MinimalRebuild>true</MinimalRebuild>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_WIN32;_WIN32_WINNT=0x0500;WIN32;_DEBUG;VSCP;WINDOWS;BUILD_VSCPD_SERVICE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;C:\OpenSSL-Win32\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NS_ENABLE_SSL;NOEMBED_NET_SKELETON;_WIN32;_WIN32_WINNT=0x0601;WIN32;_DEBUG;VSCP;WINDOWS;BUILD_VSCPD_SERVICE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\debug\vscpservice.pch</PrecompiledHeaderOutputFile>
@@ -140,7 +141,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\debug\vscpservice.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(libexpat)\bin;C:\OpenSSL-Win32\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -192,8 +193,8 @@
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_WIN32;_WIN32_WINNT=0x0500;WIN32;BUILD_VSCPD_SERVICE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\;C:\OpenSSL-Win32\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NS_ENABLE_SSL;NOEMBED_NET_SKELETON;NDEBUG;_CONSOLE;_WIN32;_WIN32_WINNT=0x0601;WIN32;BUILD_VSCPD_SERVICE;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;__WXMSW__;_WINDOWS;wxUSE_GUI=0;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\release\vscpservice.pch</PrecompiledHeaderOutputFile>
@@ -220,8 +221,8 @@ copy release\*.exe $(WINDIR)\system32</Command>
       <SubSystem>Console</SubSystem>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <OutputFile>.\release\vscpservice.exe</OutputFile>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(libexpat)\bin;C:\OpenSSL-Win32\lib\VC;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ssleay32MTd.lib; libexpat.lib;netapi32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -266,35 +267,41 @@ copy release\*.exe $(WINDIR)\system32</Command>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\common\crc.c" />
+    <ClCompile Include="..\..\common\crc8.c" />
+    <ClCompile Include="..\..\common\dllist.c" />
     <ClCompile Include="..\..\common\frozen.c" />
+    <ClCompile Include="..\..\common\md5.cpp" />
     <ClCompile Include="..\..\common\mongoose.c" />
+    <ClCompile Include="..\..\common\net_skeleton.c" />
+    <ClCompile Include="..\..\common\NTService.cpp" />
     <ClCompile Include="..\..\common\randpassword.cpp" />
     <ClCompile Include="..\..\common\slre.c" />
-    <ClCompile Include="..\..\common\strtokenizer.cpp" />
     <ClCompile Include="..\common\clientlist.cpp" />
     <ClCompile Include="..\common\controlobject.cpp" />
-    <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\common\daemonvscp.cpp" />
     <ClCompile Include="..\common\devicelist.cpp" />
     <ClCompile Include="..\common\devicethread.cpp" />
-    <ClCompile Include="..\..\common\dllist.c" />
     <ClCompile Include="..\common\dm.cpp" />
     <ClCompile Include="..\common\guid.cpp" />
     <ClCompile Include="..\common\interfacelist.cpp" />
-    <ClCompile Include="..\..\common\md5.cpp" />
-    <ClCompile Include="..\..\common\NTService.cpp" />
+    <ClCompile Include="..\common\tables.cpp" />
     <ClCompile Include="..\common\tcpipclientthread.cpp" />
+    <ClCompile Include="..\common\udpclientthread.cpp" />
     <ClCompile Include="..\common\userlist.cpp" />
+    <ClCompile Include="..\common\vscpautomation.cpp" />
     <ClCompile Include="..\common\vscpeventhelper.cpp" />
     <ClCompile Include="..\common\vscphelper.cpp" />
-    <ClCompile Include="..\common\vscptcpif.cpp" />
+    <ClCompile Include="..\common\vscpremotetcpif.cpp" />
+    <ClCompile Include="..\common\vscpvariable.cpp" />
+    <ClCompile Include="..\common\vscpwebserver.cpp" />
+    <ClCompile Include="..\daemon\win32\service\StdAfx.cpp" />
     <ClCompile Include="VSCPServApp.cpp" />
     <ClCompile Include="vscpservice.cpp" />
-    <ClCompile Include="..\common\vscpvariable.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\md5.h" />
-    <ClInclude Include="..\common\vscphelper.h" />
+    <ClInclude Include="..\..\common\net_skeleton.h" />
     <ClInclude Include="..\common\canal.h" />
     <ClInclude Include="..\common\canal_macro.h" />
     <ClInclude Include="..\common\canal_win32_ipc.h" />
@@ -308,6 +315,7 @@ copy release\*.exe $(WINDIR)\system32</Command>
     <ClInclude Include="..\..\common\ntservmsg.h" />
     <ClInclude Include="..\common\options.h" />
     <ClInclude Include="..\common\pipecmd.h" />
+    <ClInclude Include="..\common\vscphelper.h" />
     <ClInclude Include="..\VSCPDiagnostic\Resource.h" />
     <ClInclude Include="..\common\vscp.h" />
     <ClInclude Include="..\common\vscp_classes.h" />
@@ -322,6 +330,7 @@ copy release\*.exe $(WINDIR)\system32</Command>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">\Users\akhe\development\vscp_software\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">\Users\akhe\development\vscp_software\src\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <ResourceCompile Include="..\daemon\win32\service\vscpsrv.rc" />
     <ResourceCompile Include="VSCPServApp.rc">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

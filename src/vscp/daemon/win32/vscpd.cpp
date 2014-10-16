@@ -42,24 +42,24 @@
 static const wxCmdLineEntryDesc cmdLineDesc[] = { 
   { 
     wxCMD_LINE_OPTION, 
-    _T("c"), 
-    _T("configpath"), 
-    _T("Path to configuration file"), 
+    _("c"), 
+    _("configpath"), 
+    _("Path to configuration file"), 
     wxCMD_LINE_VAL_STRING, 
     wxCMD_LINE_PARAM_OPTIONAL 
   },
  { 
     wxCMD_LINE_OPTION, 
-    _T("d"), 
-    _T("debuglevel"), 
-    _T("Debug Level."), 
+    _("d"), 
+    _("debuglevel"), 
+    _("Debug Level."), 
     wxCMD_LINE_VAL_NUMBER, 
     wxCMD_LINE_PARAM_OPTIONAL 
   },
-  { wxCMD_LINE_SWITCH, _T("h"), _T("help"), _T("Shows this message"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_OPTION_HELP  },
-  { wxCMD_LINE_SWITCH, _T("v"), _T("verbose"), _T("Vebose mode"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
-  { wxCMD_LINE_SWITCH, _T("w"), _T("hide"), _T("Hide debug window"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
-  { wxCMD_LINE_SWITCH, _T("g"), _T("gnu"), _T("Copyleft"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
+  { wxCMD_LINE_SWITCH, _("h"), _("help"), _("Shows this message"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL | wxCMD_LINE_OPTION_HELP  },
+  { wxCMD_LINE_SWITCH, _("v"), _("verbose"), _("Vebose mode"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
+  { wxCMD_LINE_SWITCH, _("w"), _("hide"), _("Hide debug window"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
+  { wxCMD_LINE_SWITCH, _("g"), _("gnu"), _("Copyleft"), wxCMD_LINE_VAL_NONE, wxCMD_LINE_PARAM_OPTIONAL },
   { wxCMD_LINE_NONE } 
 };
 
@@ -103,12 +103,11 @@ int main(int argc, char **argv)
     bool bVerbose = false;
     bool bCopyLeft = false;
     bool bHideWindow = false;
-    wxStandardPaths stdPath;
     wxString strCfgFile;
     CControlObject ctrlobj;
 
    
-    strCfgFile = stdPath.GetConfigDir();
+    strCfgFile = wxStandardPaths::Get().GetConfigDir();
     strCfgFile += _("/vscp/vscpd.conf");
 
     wxCmdLineParser *pparser = new wxCmdLineParser( cmdLineDesc, argc, argv );
@@ -116,7 +115,6 @@ int main(int argc, char **argv)
     if ( NULL != pparser ) {
 		
 		wxString wxstr;
-	
 		if ( pparser->Parse(false) > 0 ) {
 			printf("\n\nUsage for vscpd.exe\n");
 			printf("-------------------------\n");
