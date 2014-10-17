@@ -209,7 +209,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 			memset( rbuf, 0, sizeof( rbuf ) );
 			memcpy( rbuf, io->buf, io->len );
 			iobuf_remove(io, io->len); 
-            pClientItem->m_readBuffer += wxString::FromAscii( rbuf );
+            pClientItem->m_readBuffer += wxString::FromUTF8( rbuf );
 
 			// Check if command already in buffer
 			if ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
