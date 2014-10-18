@@ -1,9 +1,11 @@
 // Example
 // =======
-// Connect to a remote VSCP daemon and send a temperature event that defaults to
-// 25 degrees Celsius but can be set between -128 and 127.
-// 
-// You can read about all the commands in the VCSP TCP/IP interface here
+// Connect to a remote VSCP daemon and start to receive events from the
+// server. We use the "rcvloop" command here to just sit and wait for
+// event when they come in. And alternative is of course to use the 
+// event polling command "retr" to read an event in the input queue and
+// the "chkdata" to check if there are events waiting to be read. You can
+// read about the commands in the VCSP TCP/IP interface here
 // http://www.vscp.org/docs/vscpd/doku.php?id=vscp_daemon_tcp_ip_protocol_description
 //
 // Arguments is 'host' 'port' 'user' 'password' 'temperature'
@@ -96,8 +98,8 @@ client.on('data', function(data) {
             clearTimeout( global.timeoutConnection );
 
             // Send temperature event 
-            if ( bDebug ) console.log('Sending temperature event to VSCP daemon.');
-            client.write('send 0,10,6,0,0,-,138,0,' + TEMPERATURE + '\r\n');
+            if ( bDebug ) console.log('Starting receive loop.');
+            client.write('rcvloop'  + '\r\n');
         }
         else {
             nState = STATE_NOT_CONNECTED;
@@ -105,12 +107,39 @@ client.on('data', function(data) {
     }
     else if ( STATE_CONNECTED == nState ) {
         if ( ( -1 != strReceiveData.search('\\+OK') ) ) {
-            console.log('Command OK');
-            client.destroy();
+            if ( bDebug ) console.log('Command OK');;
         }
         else {
-            console.log('Command Error');
-            client.destroy();
+            // This is a received event
+            var offset;
+            var vscpitems = strReceiveData.split(",");
+            var vscphead = parseInt(vscpitems[0]);
+            var vscpclass = parseInt(vscpitems[1]);
+            var vscptype = parseInt(vscpitems[2]);
+            var vscpobid = parseInt(vscpitems[3]);
+            var vscptimestamp = parseInt(vscpitems[4]);
+            var vscpguid = vscpitems[5];
+            
+            // Check if we have Level I events over Level II
+            if ( vscpclass >= 512 && vscpclass < 1024 ) {
+                offset = 16;    // Offset into data
+                vscpclass -= 512;
+            }
+        
+            // Get the data
+            var vscpdata = new Array();
+            for (i=0;i<vscpitems.length-6-offset;i++){
+                vscpdata[i] = parseInt(vscpitems[offset+6+i]);
+            }
+            
+            if ( bDebug ) {
+                console.log("VSCP event received");
+                console.log("===================");
+                console.log("VSCP Class =" + vscpclass );
+                console.log("VSCP Type =" + vscptype );
+                console.log("VSCP GUID =" + vscpguid );
+                console.log("VSCP Data =" + vscpdata );
+            }
         }
     }
 });
