@@ -1570,9 +1570,9 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 		wxString str = _("Help for the VSCP tcp/ip interface\r\n");
 				str += _("====================================================================\r\n");
 				str += _("To get more information about a specific command issue 'HELP comman'\r\n");
-				str += _("+    - Repeat last command.\r\n");
-				str += _("NOOP - No operation. Does nothing.\r\n");
-				str += _("QUIT - Close the connection.\r\n");
+				str += _("+               - Repeat last command.\r\n");
+				str += _("NOOP            - No operation. Does nothing.\r\n");
+				str += _("QUIT            - Close the connection.\r\n");
 				str += _("USER 'username' - Username for login. \r\n");
 				str += _("PASS 'password' - Password for login.  \r\n");
 				str += _("SEND 'event'    - Send an event.   \r\n");
