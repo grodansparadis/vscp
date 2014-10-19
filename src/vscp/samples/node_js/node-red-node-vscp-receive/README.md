@@ -1,0 +1,1 @@
+This is a node-red node that connects to the VSCP daemon and receives events.

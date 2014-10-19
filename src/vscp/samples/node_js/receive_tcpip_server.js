@@ -60,7 +60,6 @@ client.on('connect', function() {
 
 client.on('data', function(data) {
     var strReceiveData = data.toString();
-    var reg1 = "\+OK Welcome to the VSCP daemon";
     
     if ( bDebug ) console.log('DATA: ' + data); // Log received data
     
@@ -78,7 +77,9 @@ client.on('data', function(data) {
     }
     else if ( STATE_USERNAME == nState ) {
         if ( ( -1 != strReceiveData.search('\\+OK') ) ) {
+        
             if ( bDebug ) console.log('Username accepted.');
+        
             nState = STATE_PASSWORD;
             client.write('pass ' + PASSWORD + "\r\n" );
         }

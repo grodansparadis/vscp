@@ -1,0 +1,27 @@
+{
+    "name"          : "node-red-node-vscp-receive",
+    "version"       : "1.0.0",
+    "description"   : "A Node-RED node that received VSCP events form a VSCP Daemon.",
+    "dependencies"  : {
+    },
+    "repository" : {
+        "type":"git",
+        "url":"https://github.com/grodansparadis/vscp_software/tree/master/src/vscp/samples/node_js"
+    },
+    "license": "Apache",
+    "keywords": [ "node-red", "vscp", "event" ],
+    "node-red"      : {
+        "nodes"     : {
+            "vscp-receive": "vscp-receive.js"
+        }
+    },
+    "author": {
+        "name": "Ake Hedman, Grodans Paradis AB",
+        "email": "akhe@paradiseofthefrog.com",
+        "url": "http://www.vscp.org"
+    },
+    credentials: {
+        username: {type:"text"},
+        password: {type:"password"}
+    }
+}

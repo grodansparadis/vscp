@@ -1576,6 +1576,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 				str += _("USER 'username' - Username for login. \r\n");
 				str += _("PASS 'password' - Password for login.  \r\n");
 				str += _("SEND 'event'    - Send an event.   \r\n");
+                str += _("RETR 'count'    - Rtrive n events from input queue.   \r\n");
 				str += _("RCVLOOP         - Will retrieve events in an endless loop until the connection is closed by the client or QUITLOOP is sent.\r\n");
 				str += _("QUITLOOP        - Terminate RCVLOOP.\r\n");
 				str += _("CDTA/CHKDATA    - Check if there is data in the input queue.\r\n");
@@ -1633,7 +1634,7 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
 	}
 	else if ( _("RETR") == strcmd ) {
-		wxString str = _("'RETR count' - Retrieve one or 'count' event(s). ");
+		wxString str = _("'RETR count' - Retrieve one (if no argument) or 'count' event(s). ");
 		str += _("Events are retrived on the form head,class,type,obid,time-stamp,GUID,data0,data1,data2,...........\r\n");
 		ns_send( conn, (const char *)str.mbc_str(), str.Length() );
 	}
