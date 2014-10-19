@@ -55,6 +55,7 @@
 #include "canal.h"
 #include "vscp.h"
 #include "../../common/dllist.h"
+#include "controlobject.h"
 #include "clientlist.h"
 #include "guid.h"
 #include "devicelist.h"
@@ -81,7 +82,7 @@ CDeviceItem::CDeviceItem()
     m_DeviceFlags = 0;      // Default: No flags.
     m_driverLevel = 0;      // Standard Canal messages is the default
 
-    m_pdeviceThread = NULL;
+    m_pdeviceThread = NULL; // No device thread started for this device
 
     // No proc. addresses assigned yet
     m_proc_CanalOpen = NULL;
@@ -123,6 +124,66 @@ CDeviceItem::CDeviceItem()
 CDeviceItem::~CDeviceItem(void)
 {
     ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// startDriver
+//
+bool CDeviceItem::startDriver( CControlObject *pCtrlObject )
+{
+    // Must stop before we can start.
+    if (NULL != m_pdeviceThread) {
+        return false;
+    }
+
+    // Just start if enabled
+    if ( !m_bEnable ) return false;
+                
+    // *****************************************
+    //  Create the worker thread for the device
+    // *****************************************
+
+    m_pdeviceThread = new deviceThread();
+    if (NULL != m_pdeviceThread) {
+
+        m_pdeviceThread->m_pCtrlObject = pCtrlObject;
+        m_pdeviceThread->m_pDeviceItem = this;
+
+        wxThreadError err;
+        if (wxTHREAD_NO_ERROR == (err = m_pdeviceThread->Create())) {
+            if (wxTHREAD_NO_ERROR != (err = m_pdeviceThread->Run())) {
+                pCtrlObject->logMsg(_("Unable to create DeviceThread."), DAEMON_LOGMSG_ERROR);
+            }
+        } 
+        else {
+            pCtrlObject->logMsg(_("Unable to run DeviceThread."), DAEMON_LOGMSG_ERROR);
+        }
+
+    } 
+    else {
+        pCtrlObject->logMsg(_("Unable to allocate memory for DeviceThread."), DAEMON_LOGMSG_ERROR);
+    }
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// stopDriver
+//
+
+bool CDeviceItem::stopDriver()
+{
+    if (NULL != m_pdeviceThread) {
+        m_mutexdeviceThread.Lock();
+        m_bQuit = true;
+        m_pdeviceThread->Wait();
+        m_mutexdeviceThread.Unlock();
+        delete m_pdeviceThread;
+        m_pdeviceThread = NULL;
+        return true;
+    }
+
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////

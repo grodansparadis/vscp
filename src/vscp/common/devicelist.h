@@ -49,7 +49,7 @@
 
 #include "../common/canaldlldef.h"
 
-
+//#include "controlobject.h"
 #include "vscpdlldef.h"
 #include "../../common/dllist.h"
 #include "clientlist.h"
@@ -78,20 +78,27 @@ public:
 	/// Destructor
 	virtual ~CDeviceItem();
 
+
+    bool startDriver( CControlObject *pCtrlObject );
+
+
+    bool stopDriver( void );
+
+
 	/*!
 		Name of device
 	*/
-  wxString m_strName;
+    wxString m_strName;
 
 	/*!
 		Device configuration string
 	*/
-  wxString m_strParameter;
+    wxString m_strParameter;
 
 	/*!
 		CANAL DLL/DL path
 	*/
-  wxString m_strPath;
+    wxString m_strPath;
 
 	/*!
 		Canal Driver Level
@@ -137,7 +144,7 @@ public:
 	// Handle for dll/dl driver interface
 	long m_openHandle;
 
-	// CANAL driver methods
+	// Level I (CANAL) driver methods
 	LPFNDLL_CANALOPEN			        m_proc_CanalOpen;
 	LPFNDLL_CANALCLOSE				    m_proc_CanalClose;
 	LPFNDLL_CANALGETLEVEL			    m_proc_CanalGetLevel;
@@ -157,7 +164,7 @@ public:
 	LPFNDLL_CANALBLOCKINGRECEIVE	    m_proc_CanalBlockingReceive;
 	LPFNDLL_CANALGETDRIVERINFO		    m_proc_CanalGetdriverInfo;
 
-    // VSCP driver methods
+    // Level II driver methods
     LPFNDLL_VSCPOPEN			        m_proc_VSCPOpen;
 	LPFNDLL_VSCPCLOSE				    m_proc_VSCPClose;
 	LPFNDLL_VSCPBLOCKINGSEND			m_proc_VSCPBlockingSend;

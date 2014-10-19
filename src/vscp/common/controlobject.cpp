@@ -1138,30 +1138,7 @@ bool CControlObject::startDeviceWorkerThreads(void)
             // Just start if enabled
             if ( !pDeviceItem->m_bEnable ) continue;
                 
-            // *****************************************
-            //  Create the worker thread for the device
-            // *****************************************
-
-            pDeviceItem->m_pdeviceThread = new deviceThread();
-            if (NULL != pDeviceItem->m_pdeviceThread) {
-
-                pDeviceItem->m_pdeviceThread->m_pCtrlObject = this;
-                pDeviceItem->m_pdeviceThread->m_pDeviceItem = pDeviceItem;
-
-                wxThreadError err;
-                if (wxTHREAD_NO_ERROR == (err = pDeviceItem->m_pdeviceThread->Create())) {
-                    if (wxTHREAD_NO_ERROR != (err = pDeviceItem->m_pdeviceThread->Run())) {
-                        logMsg(_("Unable to create DeviceThread."), DAEMON_LOGMSG_CRITICAL);
-                    }
-                } 
-				else {
-                    logMsg(_("Unable to run DeviceThread."), DAEMON_LOGMSG_CRITICAL);
-                }
-
-            } 
-			else {
-                logMsg(_("Unable to allocate memory for DeviceThread."), DAEMON_LOGMSG_CRITICAL);
-            }
+            pDeviceItem->startDriver( this );
 
         } // Valid device item
     }
@@ -1184,15 +1161,7 @@ bool CControlObject::stopDeviceWorkerThreads(void)
 
         pDeviceItem = *iter;
         if (NULL != pDeviceItem) {
-
-            if (NULL != pDeviceItem->m_pdeviceThread) {
-                pDeviceItem->m_mutexdeviceThread.Lock();
-                pDeviceItem->m_bQuit = true;
-                pDeviceItem->m_pdeviceThread->Wait();
-                pDeviceItem->m_mutexdeviceThread.Unlock();
-                delete pDeviceItem->m_pdeviceThread;
-            }
-
+            pDeviceItem->stopDriver();
         }
 
     }

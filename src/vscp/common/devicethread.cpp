@@ -76,6 +76,10 @@ deviceThread::deviceThread()
 	m_pwriteThread = NULL;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// stopDriver
+//
+
 deviceThread::~deviceThread()
 {
 	;
