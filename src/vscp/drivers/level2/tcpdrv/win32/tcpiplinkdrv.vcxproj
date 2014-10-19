@@ -18,7 +18,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -61,10 +61,10 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>wxUSE_GUI=0;_WINDLL;WIN32;NDEBUG;_WINDOWS;_USRDLL;tcpdrv_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>wxUSE_GUI=0;_WINDLL;WIN32;NDEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\Release\tcpdrv.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\Release\tcpiplinkdrv.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <ObjectFileName>.\Release\</ObjectFileName>
@@ -77,7 +77,7 @@
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <TypeLibraryName>.\Release\tcpdrv.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Release\tcpiplinkdrv.tlb</TypeLibraryName>
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <TargetEnvironment>Win32</TargetEnvironment>
     </Midl>
@@ -87,17 +87,17 @@
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Release\tcpdrv.bsc</OutputFile>
+      <OutputFile>.\Release\tcpiplinkdrv.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\tcpdrv.dll</OutputFile>
-      <ImportLibrary>.\Release\tcpdrv.lib</ImportLibrary>
+      <OutputFile>.\Release\tcpiplinkdrv.dll</OutputFile>
+      <ImportLibrary>.\Release\tcpiplinkdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>.\tcpdrv.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>.\tcpiplinkdrv.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>echo on
@@ -118,10 +118,10 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
       <MinimalRebuild>true</MinimalRebuild>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>wxUSE_GUI=0;WIN32;_DEBUG;_WINDOWS;_USRDLL;tcpdrv_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>wxUSE_GUI=0;WIN32;_DEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
-      <PrecompiledHeaderOutputFile>.\Debug\tcpdrv.pch</PrecompiledHeaderOutputFile>
+      <PrecompiledHeaderOutputFile>.\Debug\tcpiplinkdrv.pch</PrecompiledHeaderOutputFile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <ObjectFileName>.\Debug\</ObjectFileName>
@@ -131,7 +131,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <TypeLibraryName>.\Debug\tcpdrv.tlb</TypeLibraryName>
+      <TypeLibraryName>.\Debug\tcpiplinkdrv.tlb</TypeLibraryName>
       <MkTypLibCompatible>true</MkTypLibCompatible>
       <TargetEnvironment>Win32</TargetEnvironment>
     </Midl>
@@ -141,18 +141,18 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
     </ResourceCompile>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <OutputFile>.\Debug\tcpdrv.bsc</OutputFile>
+      <OutputFile>.\Debug\tcpiplinkdrv.bsc</OutputFile>
     </Bscmake>
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\tcpdrv.dll</OutputFile>
-      <ImportLibrary>.\Debug\tcpdrv.lib</ImportLibrary>
+      <OutputFile>.\Debug\tcpiplinkdrv.dll</OutputFile>
+      <ImportLibrary>.\Debug\tcpiplinkdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>wpcap.lib;wsock32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <ModuleDefinitionFile>.\tcpdrv.def</ModuleDefinitionFile>
+      <AdditionalDependencies>wsock32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>.\tcpiplinkdrv.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
       <Command>echo on
@@ -164,27 +164,29 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPat
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\common\crc.c" />
+    <ClCompile Include="..\..\..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\..\common\guid.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
-    <ClCompile Include="..\..\..\..\common\vscptcpif.cpp" />
-    <ClCompile Include="tcpdrv.cpp" />
-    <ClCompile Include="..\common\dlldrvobj.cpp" />
+    <ClCompile Include="..\..\..\..\common\vscpremotetcpif.cpp" />
+    <ClCompile Include="..\common\vscptcpiplink.cpp" />
+    <ClCompile Include="tcpiplinkdrv.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="tcpdrv.def" />
+    <CustomBuild Include="tcpiplinkdrv.def" />
     <CustomBuild Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
+    <ClInclude Include="..\..\..\..\..\common\crc8.h" />
     <ClInclude Include="..\..\..\..\common\guid.h" />
     <ClInclude Include="..\..\..\..\common\vscp.h" />
     <ClInclude Include="..\..\..\..\common\vscphelper.h" />
     <ClInclude Include="..\..\..\..\common\vscptcpif.h" />
+    <ClInclude Include="..\common\vscptcpiplink.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="..\..\..\common\canal.h" />
     <ClInclude Include="..\..\..\common\canal_macro.h" />
-    <ClInclude Include="..\common\dlldrvobj.h" />
-    <ClInclude Include="tcpdrv.h" />
+    <ClInclude Include="tcpiplinkdrv.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

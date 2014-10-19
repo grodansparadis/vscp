@@ -29,6 +29,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpservice", "vscpservice\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpsrv", "daemon\win32\service\vscpsrv.vcxproj", "{8E990011-435F-BAEA-0990-EAA79FFD50BB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcpiplinkdrv", "drivers\level2\tcpdrv\win32\tcpiplinkdrv.vcxproj", "{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
@@ -391,6 +393,27 @@ Global
 		{8E990011-435F-BAEA-0990-EAA79FFD50BB}.Unicode Release|Win32.ActiveCfg = Unicode Release|Win32
 		{8E990011-435F-BAEA-0990-EAA79FFD50BB}.Unicode Release|Win32.Build.0 = Unicode Release|Win32
 		{8E990011-435F-BAEA-0990-EAA79FFD50BB}.Unicode Release|x64.ActiveCfg = Unicode Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Debug Unicode|x64.ActiveCfg = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Debug|Win32.Build.0 = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Debug|x64.ActiveCfg = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Release Unicode|Win32.Build.0 = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Release Unicode|x64.ActiveCfg = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Release|Win32.ActiveCfg = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Release|Win32.Build.0 = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Release|x64.ActiveCfg = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Template|Win32.ActiveCfg = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Template|Win32.Build.0 = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Template|x64.ActiveCfg = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Unicode Debug|Win32.ActiveCfg = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Unicode Debug|Win32.Build.0 = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Unicode Debug|x64.ActiveCfg = Debug|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Unicode Release|Win32.ActiveCfg = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Unicode Release|Win32.Build.0 = Release|Win32
+		{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}.Unicode Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

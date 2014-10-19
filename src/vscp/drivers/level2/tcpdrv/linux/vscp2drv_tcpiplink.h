@@ -70,7 +70,6 @@ typedef int BOOL;
 
 /////////////////////////////////////////////////////////////////////////////
 // CVSCPDrvApp
-// See vscpl1.cpp for the implementation of this class
 //
 
 class CVSCPDrvApp

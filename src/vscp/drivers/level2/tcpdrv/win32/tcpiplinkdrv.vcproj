@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="tcpdrv"
+	Name="tcpiplinkdrv"
 	ProjectGUID="{A80883CE-CE9F-4F69-9F2F-D8EA3441A952}"
 	TargetFrameworkVersion="131072"
 	>
@@ -42,7 +42,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/tcpdrv.tlb"
+				TypeLibraryName=".\Release/tcpiplinkdrv.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -50,11 +50,11 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="$(wxwin)\include\msvc,$(WXWIN)\include\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;tcpdrv_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;tcpiplinkdrv_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/tcpdrv.pch"
+				PrecompiledHeaderFile=".\Release/tcpiplinkdrv.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -76,15 +76,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Release/tcpdrv.dll"
+				OutputFile=".\Release/tcpiplinkdrv.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(wxwin)\lib\vc_lib"
-				ModuleDefinitionFile=".\tcpdrv.def"
-				ProgramDatabaseFile=".\Release/tcpdrv.pdb"
+				ModuleDefinitionFile=".\tcpiplinkdrv.def"
+				ProgramDatabaseFile=".\Release/tcpiplinkdrv.pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/tcpdrv.lib"
+				ImportLibrary=".\Release/tcpiplinkdrv.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -138,17 +138,17 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Debug/tcpdrv.tlb"
+				TypeLibraryName=".\Debug/tcpiplinkdrv.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="$(wxwin)\include\msvc,$(WXWIN)\include\"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;tcpdrv_EXPORTS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
-				PrecompiledHeaderFile=".\Debug/tcpdrv.pch"
+				PrecompiledHeaderFile=".\Debug/tcpiplinkdrv.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
@@ -171,16 +171,16 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Debug/tcpdrv.dll"
+				OutputFile=".\Debug/tcpiplinkdrv.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(wxwin)\lib\vc_lib"
-				ModuleDefinitionFile=".\tcpdrv.def"
+				ModuleDefinitionFile=".\tcpiplinkdrv.def"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/tcpdrv.pdb"
+				ProgramDatabaseFile=".\Debug/tcpiplinkdrv.pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Debug/tcpdrv.lib"
+				ImportLibrary=".\Debug/tcpiplinkdrv.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -233,7 +233,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\Release/tcpdrv.tlb"
+				TypeLibraryName=".\Release/tcpiplinkdrv.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -241,11 +241,11 @@
 				Optimization="2"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="$(wxwin)\include\msvc,$(WXWIN)\include\"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;tcpdrv_EXPORTS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/tcpdrv.pch"
+				PrecompiledHeaderFile=".\Release/tcpiplinkdrv.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -267,15 +267,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Release/tcpdrv.dll"
+				OutputFile=".\Release/tcpiplinkdrv.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="$(wxwin)\lib\vc_lib"
-				ModuleDefinitionFile=".\tcpdrv.def"
-				ProgramDatabaseFile=".\Release/tcpdrv.pdb"
+				ModuleDefinitionFile=".\tcpiplinkdrv.def"
+				ProgramDatabaseFile=".\Release/tcpiplinkdrv.pdb"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
-				ImportLibrary=".\Release/tcpdrv.lib"
+				ImportLibrary=".\Release/tcpiplinkdrv.lib"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -310,7 +310,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="tcpdrv.cpp"
+				RelativePath="tcpiplinkdrv.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -319,7 +319,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -330,7 +330,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -342,13 +342,13 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINK_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="tcpdrv.def"
+				RelativePath="tcpiplinkdrv.def"
 				>
 			</File>
 			<File
@@ -361,7 +361,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINK_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -372,7 +372,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINK_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -384,7 +384,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -399,7 +399,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -410,7 +410,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -422,7 +422,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -437,7 +437,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
@@ -448,7 +448,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="0"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BasicRuntimeChecks="3"
 						BrowseInformation="1"
 					/>
@@ -460,7 +460,7 @@
 						Name="VCCLCompilerTool"
 						Optimization="2"
 						AdditionalIncludeDirectories=""
-						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;tcpdrv_EXPORTS;$(NoInherit)"
+						PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TCPIPLINKDRV_EXPORTS;$(NoInherit)"
 						BrowseInformation="1"
 					/>
 				</FileConfiguration>
