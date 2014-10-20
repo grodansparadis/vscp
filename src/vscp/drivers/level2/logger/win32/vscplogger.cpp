@@ -22,11 +22,9 @@
 // Boston, MA 02111-1307, USA.
 // 
 
-//#define WIN32_LEAN_AND_MEAN
 #include "wx/wxprec.h"
 #include "wx/wx.h"
-//#include <windows.h>
-//#include <stdlib.h>
+#include "wx/defs.h"
 
 #include "../common/dlldrvobj.h"
 #include "../common/log.h"
@@ -101,7 +99,7 @@ extern "C" long VSCPOpen( const char *pUsername,
 	CVSCPLog *pdrvObj = new CVSCPLog();
 	if ( NULL != pdrvObj ) {
 
-		if ( pdrvObj->open( pUsername, pPassword, pHost, port, pPrefix, pParameter, flags ) ){
+		if ( pdrvObj->open( pUsername, pPassword, pHost, port, pPrefix, pParameter ) ){
 
 			if ( !( h = theApp->addDriverObject( pdrvObj ) ) ) {
 				delete pdrvObj;

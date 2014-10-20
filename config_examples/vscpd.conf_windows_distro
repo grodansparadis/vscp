@@ -224,14 +224,6 @@
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-        <!-- Level II socketcan - driver is documented in 30.4 -->
-	    <driver enable="false" >
-            <name>VSCPSocketCANDriver 1</name>
-            <path>/usr/local/lib/linux/vscp2drv_socketcan.so</path>
-            <config>can0</config>
-            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
-        </driver>
-
         <!-- Level II mqtt - driver is documented in 30.6 -->
         <driver enable="false" >
             <name>VSCPMQTTDriver1</name>
@@ -255,7 +247,37 @@
             <path>/usr/local/lib/vscp2drv_raweth.so</path>
         </driver>
  
-
     </level2driver>	
 
+    <!-- Collect data in tables -->
+    <!--
+    <tables>
+    
+        <table path="c:/tmp/temperature_outside.table" 
+                  type="0"
+                  name="officetemp"
+                  description="The temperature in the office"
+                  labelx="Time"
+                  labely="Temperature"
+                  size=""
+                  vscpclass="10"    
+                  vscptype="6"
+                  vscpunit="1"
+        />
+        
+        <table path="c:/tmp/temperature_inside.table" 
+                  type="0"
+                  name="outsidetemp"
+                  description="The temperature in the greens"
+                  labelx="Time"
+                  labely="Temperature"
+                  size=""
+                  vscpclass="10"    
+                  vscptype="6"
+                  vscpunit="1"
+        />
+    
+    </tables>
+    -->
+    
 </vscpconfig>

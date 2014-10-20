@@ -59,7 +59,7 @@ CDllDrvObj::CDllDrvObj()
 {
 	m_instanceCounter = 0;
 #ifdef WIN32
-	m_objMutex = CreateMutex( NULL, true, "__VSCP_VSCPLOGGER_MUTEX__" );
+	m_objMutex = CreateMutex( NULL, true, _("__VSCP_VSCPLOGGER_MUTEX__") );
 #else
 	pthread_mutex_init( &m_objMutex, NULL );
 #endif

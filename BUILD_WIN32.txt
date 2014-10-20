@@ -109,9 +109,9 @@ This is the "original" project and includes all sub-projects.
     http://www.vector.com/downloads/drivers/canlib43.zip
 
 12.) To build the rawethernet driver the wpcap library and include files need to be installed on the system. A
-	environment variable named "pcap" should point to folder of the project (where the inlude and lib folders are).
-	install the latest wpdpack from http://www.winpcap.org/archive/ and point the environment variable to it.
-	wincap itself needs to be installed as well (http://www.winpcap.org).	
+	environment variable named "pcap" should point to folder of the project (where the include and lib folders are).
+	install the latest wpdpak from http://www.winpcap.org/archive/ and point the environment variable to it.
+	wincap (the driver) itself needs to be installed as well (http://www.winpcap.org.	
 
 
 VSCP Minimal Project

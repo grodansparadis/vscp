@@ -2245,12 +2245,12 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
 													subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(), 
 													subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
-													subchild->GetAttribute( wxT("xaxis"), wxT("") ).mbc_str(), 
-													subchild->GetAttribute( wxT("yaxis"), wxT("") ).mbc_str(),
+													subchild->GetAttribute( wxT("labelx"), wxT("") ).mbc_str(), 
+													subchild->GetAttribute( wxT("labely"), wxT("") ).mbc_str(),
 													vscp_readStringValue( subchild->GetAttribute( wxT("size"), wxT("0") ) ),
-													vscp_readStringValue( subchild->GetAttribute( wxT("class"), wxT("10") ) ), 
-													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
-													vscp_readStringValue( subchild->GetAttribute( wxT("unit"), wxT("0") ) ) );
+													vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("10") ) ), 
+													vscp_readStringValue( subchild->GetAttribute( wxT("vscptype"), wxT("6") ) ),
+													vscp_readStringValue( subchild->GetAttribute( wxT("vscpunit"), wxT("0") ) ) );
 						m_listTables.Append( pTable ) ;
 					}
                 }

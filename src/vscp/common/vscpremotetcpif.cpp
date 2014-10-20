@@ -92,13 +92,11 @@ bool VscpTcpIf::checkReturnValue( void )
     wxDateTime start,now;
     
     start.SetToCurrent(); 
-
     m_strReply.Empty();
     
     do {
 
         wxTimeSpan tt = wxDateTime::Now() - start;
-
         memset( buf, 0, sizeof( buf ) - 1 );
 
         m_psock->Read( buf, sizeof( buf ) - 1 );

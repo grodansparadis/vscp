@@ -31,7 +31,7 @@
 //#include <windows.h>
 //#include <stdlib.h>
 
-#include "../common/dlldrvobj.h"
+
 
 
 #ifdef WIN32

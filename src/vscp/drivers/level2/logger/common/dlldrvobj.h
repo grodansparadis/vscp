@@ -25,7 +25,14 @@
 #if !defined(AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
 #define AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
 
+#ifdef WIN32
+#include <windows.h>
+#endif
+
+
 #include "log.h"
+
+
 
 // This is the version info for this DLL - Change to your own value
 #define DLL_VERSION		                0x000001

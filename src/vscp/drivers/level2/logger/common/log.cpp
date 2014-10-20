@@ -51,6 +51,10 @@
 #include "../../../../common/vscpremotetcpif.h"
 #include "log.h"
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 // Lists
 WX_DEFINE_LIST(VSCPEVENTLIST);
 
@@ -522,7 +526,7 @@ CVSCPLogWrkTread::Entry()
     // Close server connection
     m_srv.doCmdClose();
 
-	int rv;
+	//int rv;
 	//vscpEvent event;
 	while (!TestDestroy() && !m_pLog->m_bQuit) {
 

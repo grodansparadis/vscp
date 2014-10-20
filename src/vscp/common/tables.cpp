@@ -182,7 +182,12 @@ int CVSCPTable::setTableInfo( const char *path,
 	int rv;
 
 	m_path = wxString::FromAscii( path );
-	m_vscpFileHead.type = type;
+	if ( type < 2 ) {
+        m_vscpFileHead.type = type;
+    }
+    else {
+        m_vscpFileHead.type = 0;
+    }
 	strncpy( m_vscpFileHead.nameTable, tableName, sizeof( m_vscpFileHead.nameTable ) );
 	strncpy( m_vscpFileHead.descriptionTable, tableDescription, sizeof( m_vscpFileHead.descriptionTable ) );
 	strncpy( m_vscpFileHead.nameXLabel, xAxisLabel, sizeof( m_vscpFileHead.nameXLabel ) );

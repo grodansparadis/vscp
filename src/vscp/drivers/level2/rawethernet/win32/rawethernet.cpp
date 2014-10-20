@@ -55,7 +55,7 @@
 
 
 #include "../../../../common/vscphelper.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 #include "rawethernet.h"
 
 static HANDLE hThisInstDll = NULL;
@@ -342,7 +342,7 @@ bool CRawEthernet::open(const char *pUsername,
 		for (int i = 0; i < 6; i++) {
 			if (!tkzmac.HasMoreTokens()) break;
 			wxString str = _("0X") + tkzmac.GetNextToken();
-			m_localMac[ i ] = readStringValue(str);
+			m_localMac[ i ] = vscp_readStringValue(str);
 			m_localGUIDtx.setAt((9 + i), m_localMac[ i ]);
 			m_localGUIDrx.setAt((9 + i), m_localMac[ i ]);
 		}
@@ -454,7 +454,7 @@ void *CRawEthernetTxTread::Entry()
 		for (int i = 0; i < 6; i++) {
 			if (tkz.HasMoreTokens()) break;
 			wxString str = _("0X") + tkz.GetNextToken();
-			m_pobj->m_localMac[ i ] = readStringValue(str);
+			m_pobj->m_localMac[ i ] = vscp_readStringValue(str);
 			m_pobj->m_localGUIDtx.setAt((9 + i), m_pobj->m_localMac[ i ]);
 			m_pobj->m_localGUIDrx.setAt((9 + i), m_pobj->m_localMac[ i ]);
 		}
@@ -463,7 +463,7 @@ void *CRawEthernetTxTread::Entry()
 	// We want to use our own Ethernet based GUID for this interface
 	wxString strGUID;
 	m_pobj->m_localGUIDtx.toString(strGUID);
-	m_srv.doCmdSetGUID((char *) strGUID.ToAscii());
+    m_srv.doCmdSetGUID( strGUID.mbc_str() );
 
 	// Open the adapter 
 	if ((fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
@@ -610,7 +610,7 @@ void *CRawEthernetRxTread::Entry()
 	// We want to use our own Ethernet based  GUID for this interface
 	wxString strGUID;
 	m_pobj->m_localGUIDrx.toString(strGUID);
-	m_srv.doCmdSetGUID((char *) strGUID.ToAscii());
+	m_srv.doCmdSetGUID( strGUID.mbc_str() );
 
 	// Open the adapter 
 	if ((fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
