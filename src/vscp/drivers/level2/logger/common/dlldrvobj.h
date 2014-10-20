@@ -29,10 +29,7 @@
 #include <windows.h>
 #endif
 
-
 #include "log.h"
-
-
 
 // This is the version info for this DLL - Change to your own value
 #define DLL_VERSION		                0x000001
