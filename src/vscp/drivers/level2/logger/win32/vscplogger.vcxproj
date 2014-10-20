@@ -12,17 +12,18 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A80883CE-CE9F-4F69-9F2F-D8EA3441A952}</ProjectGuid>
+    <ProjectName>vscpl2_loggerdrv</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -77,7 +78,7 @@
       <Culture>0x041d</Culture>
     </ResourceCompile>
     <Link>
-      <OutputFile>.\Release/vscplogger.dll</OutputFile>
+      <OutputFile>.\Release\vscpl2_loggerdrv.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\vscplogger.def</ModuleDefinitionFile>
@@ -117,7 +118,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>wxUSE_GUI=0;WIN32;__WXMSW__;_DEBUG;_WINDOWS;_USRDLL;vscplogger_EXPORTS;wxUSE_GUI=0;_AFXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>wxUSE_GUI=0;WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;VSCPLOGGER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\Debug/vscplogger.pch</PrecompiledHeaderOutputFile>
@@ -129,13 +130,14 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
+      <MinimalRebuild>true</MinimalRebuild>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x041d</Culture>
     </ResourceCompile>
     <Link>
-      <OutputFile>.\Debug/vscplogger.dll</OutputFile>
+      <OutputFile>.\Debug\vscpl2_loggerdrv.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\vscplogger.def</ModuleDefinitionFile>
@@ -149,69 +151,39 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <AdditionalDependencies>wsock32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <CustomBuildStep>
-      <Command>echo on
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$(TargetName).lib"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\common\crc.c" />
+    <ClCompile Include="..\..\..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\..\..\common\dllist.c" />
     <ClCompile Include="..\..\..\..\common\guid.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
-    <ClCompile Include="..\..\..\..\common\vscptcpif.cpp" />
-    <ClCompile Include="vscplogger.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;vscplogger_EXPORTS</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;vscplogger_EXPORTS</PreprocessorDefinitions>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
-    </ClCompile>
-    <ClCompile Include="..\common\dlldrvobj.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;vscplogger_EXPORTS</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;vscplogger_EXPORTS</PreprocessorDefinitions>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
-    </ClCompile>
-    <ClCompile Include="..\common\log.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;vscplogger_EXPORTS</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;vscplogger_EXPORTS</PreprocessorDefinitions>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</BrowseInformation>
-    </ClCompile>
+    <ClCompile Include="..\..\..\..\common\vscpremotetcpif.cpp" />
+    <ClCompile Include="..\common\dlldrvobj.cpp" />
+    <ClCompile Include="..\common\log.cpp" />
+    <ClCompile Include="vscplogger.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="vscplogger.def" />
     <None Include="ReadMe.txt" />
+    <None Include="vscplogger.def" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
+    <ClInclude Include="..\..\..\..\..\common\crc8.h" />
     <ClInclude Include="..\..\..\..\..\common\dllist.h" />
     <ClInclude Include="..\..\..\..\common\guid.h" />
     <ClInclude Include="..\..\..\..\common\vscphelper.h" />
-    <ClInclude Include="..\..\..\..\common\vscptcpif.h" />
+    <ClInclude Include="..\..\..\..\common\vscpremotetcpif.h" />
+    <ClInclude Include="..\common\dlldrvobj.h" />
+    <ClInclude Include="..\common\log.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="..\..\..\common\canal.h" />
     <ClInclude Include="..\..\..\common\canal_macro.h" />
-    <ClInclude Include="..\common\dlldrvobj.h" />
-    <ClInclude Include="..\common\log.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

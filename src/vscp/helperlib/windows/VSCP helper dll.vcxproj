@@ -86,14 +86,10 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
-      <Command>echo on
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-echo "$(TargetPath)" 
-echo "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$(TargetName).lib"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -102,7 +98,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>.\;C:\OpenSSL-Win32\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;WIN32;__WXMSW__;_DEBUG;_WINDOWS;__WXDEBUG__;wxUSE_GUI=0;_AFXDLL%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;__WXMSW__;_DEBUG;_WINDOWS;__WXDEBUG__;wxUSE_GUI=0;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -171,13 +167,10 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <CustomBuildStep>
-      <Command>echo on 
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$(TargetName).lib"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -266,6 +259,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\common\crc8.c" />
+    <ClCompile Include="..\..\..\common\net_skeleton.c" />
     <ClCompile Include="..\..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\..\..\common\crc.c" />
     <ClCompile Include="..\..\common\dllwrapper.cpp" />
@@ -282,9 +276,10 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\common\net_skeleton.h" />
     <ClInclude Include="..\..\common\canalsuperwrapper.h" />
     <ClInclude Include="..\..\common\dllwrapper.h" />
-    <ClInclude Include="..\..\common\vscptcpif.h" />
+    <ClInclude Include="..\..\common\vscpremotetcpif.h" />
     <ClInclude Include="dlldrvobj.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />

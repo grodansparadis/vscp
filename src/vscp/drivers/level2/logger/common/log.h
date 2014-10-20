@@ -25,8 +25,9 @@
 #if !defined(AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
 #define AFX_VSCPLOG_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
 
+
 #ifdef WIN32
-#include <windows.h>
+//#include <windows.h>
 #endif
 
 #include <stdio.h>
@@ -48,6 +49,7 @@
 
 #endif
 
+#include "wx/wx.h"
 #include <wx/file.h>
 #include <wx/wfstream.h>
 
@@ -247,7 +249,7 @@ public:
     virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Log object
     CVSCPLog *m_pLog;

@@ -193,7 +193,6 @@ VSCPOpen(const char *pUsername,
             const char *pParameter,
             unsigned long flags)
 {
-
 	long h = 0;
 
 	CVSCPLog *pdrvObj = new CVSCPLog();

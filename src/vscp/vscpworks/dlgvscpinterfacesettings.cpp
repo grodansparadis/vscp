@@ -448,7 +448,7 @@ void dlgVscpInterfaceSettings::OnButtonVscpSetConfigurationClick( wxCommandEvent
 
 void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event )
 {
-	VscpTcpIf tcpif;
+	VscpRemoteTcpIf tcpif;
 	wxString wxstr;
 
 	m_btnTestConnection->Enable( false );
@@ -504,7 +504,7 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 
 void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event )
 {
-	VscpTcpIf tcpif;
+	VscpRemoteTcpIf tcpif;
 	wxString wxstr;
 
 	m_btnGetInterfaces->Enable( false );

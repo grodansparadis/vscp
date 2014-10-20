@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <SccProjectName />
     <SccLocalPath />
+    <ProjectName>vscpl1_zanthicdrv</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -124,7 +125,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\zanthicdrv.dll</OutputFile>
+      <OutputFile>.\Release\vscpl1_zanthicdrv.dll</OutputFile>
       <ImportLibrary>.\Release\zanthicdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -235,7 +236,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\zanthicdrv.dll</OutputFile>
+      <OutputFile>.\Debug\vscpl1_zanthicdrv.dll</OutputFile>
       <ImportLibrary>.\Debug\zanthicdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>

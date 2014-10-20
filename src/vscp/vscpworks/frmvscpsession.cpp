@@ -3158,7 +3158,7 @@ void *TXWorkerThread::Entry()
     wxCommandEvent eventConnected(wxVSCP_RCV_CONNECTED_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
 
     /// TCP/IP Control
-    VscpTcpIf tcpifControl;
+    VscpRemoteTcpIf tcpifControl;
 
     // Must be a valid control object pointer
     if (NULL == m_pCtrlObject) return NULL;
@@ -3254,7 +3254,7 @@ RXWorkerThread::~RXWorkerThread()
 void *RXWorkerThread::Entry()
 {
     int rv;
-    VscpTcpIf tcpifReceive;
+    VscpRemoteTcpIf tcpifReceive;
     wxCommandEvent eventReceive(wxVSCP_IN_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventConnectionLost(wxVSCP_RCV_LOST_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
 

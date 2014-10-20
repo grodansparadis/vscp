@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// vscptcpif.cpp: 
+// VscpRemoteTcpIf.cpp: 
 //
 // This file is part is part of VSCP, Very Simple Control Protocol
 // http://www.vscp.org)
@@ -66,7 +66,7 @@ WX_DEFINE_LIST( EVENT_TX_QUEUE );
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-VscpTcpIf::VscpTcpIf()
+VscpRemoteTcpIf::VscpRemoteTcpIf()
 {	
     m_psock = NULL;	
     m_bModeReceiveLoop = false;
@@ -74,7 +74,7 @@ VscpTcpIf::VscpTcpIf()
 }
 
 
-VscpTcpIf::~VscpTcpIf()
+VscpRemoteTcpIf::~VscpRemoteTcpIf()
 {	
     if ( NULL != m_psock ) delete m_psock;
 }
@@ -83,7 +83,7 @@ VscpTcpIf::~VscpTcpIf()
 // checkReturnValue
 //
 
-bool VscpTcpIf::checkReturnValue( void )
+bool VscpRemoteTcpIf::checkReturnValue( void )
 {
     bool rv = false;
     bool bDone = false;
@@ -92,13 +92,11 @@ bool VscpTcpIf::checkReturnValue( void )
     wxDateTime start,now;
     
     start.SetToCurrent(); 
-
     m_strReply.Empty();
     
     do {
 
         wxTimeSpan tt = wxDateTime::Now() - start;
-
         memset( buf, 0, sizeof( buf ) - 1 );
 
         m_psock->Read( buf, sizeof( buf ) - 1 );
@@ -145,7 +143,7 @@ bool VscpTcpIf::checkReturnValue( void )
 // doCommand
 //
 
-bool VscpTcpIf::doCommand( uint8_t cmd )
+bool VscpRemoteTcpIf::doCommand( uint8_t cmd )
 {	
     cmd = cmd;	// supress warning	
     return true;
@@ -155,7 +153,7 @@ bool VscpTcpIf::doCommand( uint8_t cmd )
 // doCmdOpen
 //
 
-long VscpTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
+long VscpRemoteTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
 {
     //int pos;
     bool bUsePassword = false;
@@ -225,7 +223,7 @@ long VscpTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
 // doCmdOpen
 //
 
-long VscpTcpIf::doCmdOpen( const wxString& strHostname, 
+long VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname, 
                             const short port, 
                             const wxString& strUsername, 
                             const wxString& strPassword )
@@ -294,7 +292,7 @@ long VscpTcpIf::doCmdOpen( const wxString& strHostname,
 // close
 //
 
-int VscpTcpIf::doCmdClose( void )
+int VscpRemoteTcpIf::doCmdClose( void )
 {	
     int rv;
 
@@ -324,7 +322,7 @@ int VscpTcpIf::doCmdClose( void )
 // doCmdNOOP
 //
 
-int VscpTcpIf::doCmdNOOP( void )
+int VscpRemoteTcpIf::doCmdNOOP( void )
 {	
     if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
     if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
@@ -347,7 +345,7 @@ int VscpTcpIf::doCmdNOOP( void )
 // doCmdClear
 //
 
-int VscpTcpIf::doCmdClear( void )
+int VscpRemoteTcpIf::doCmdClear( void )
 {	
     if ( NULL == m_psock ) return CANAL_ERROR_PARAMETER;	// Must have a valid socket
     if ( !m_psock->IsOk() ) return CANAL_ERROR_PARAMETER;	// Must be connected
@@ -372,7 +370,7 @@ int VscpTcpIf::doCmdClear( void )
 //
 
 
-int VscpTcpIf::doCmdSend( const vscpEvent *pEvent )
+int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
 {	
     uint16_t i;
     
@@ -445,7 +443,7 @@ int VscpTcpIf::doCmdSend( const vscpEvent *pEvent )
 // doCmdSendEx
 //
 
-int VscpTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
+int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
 {	
     uint16_t i;
     wxString strBuf, strWrk, strGUID;
@@ -515,7 +513,7 @@ int VscpTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
 // doCmdSendLevel1
 //
 
-int VscpTcpIf::doCmdSendLevel1( const canalMsg *pCanalMsg )
+int VscpRemoteTcpIf::doCmdSendLevel1( const canalMsg *pCanalMsg )
 {
     vscpEventEx event;
     
@@ -546,7 +544,7 @@ int VscpTcpIf::doCmdSendLevel1( const canalMsg *pCanalMsg )
 // getEventFromLine
 //
 
-bool VscpTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEvent )
+bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEvent )
 {
     wxStringTokenizer strTokens;
     wxString strWrk;
@@ -658,7 +656,7 @@ bool VscpTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEvent )
 // doCmdReceive
 //
 
-int VscpTcpIf::doCmdReceive( vscpEvent *pEvent )
+int VscpRemoteTcpIf::doCmdReceive( vscpEvent *pEvent )
 {	
     int pos;
     wxStringTokenizer strTokens;
@@ -701,7 +699,7 @@ int VscpTcpIf::doCmdReceive( vscpEvent *pEvent )
 // doCmdReceiveEx
 //
 
-int VscpTcpIf::doCmdReceiveEx( vscpEventEx *pEventEx )
+int VscpRemoteTcpIf::doCmdReceiveEx( vscpEventEx *pEventEx )
 {	
     int pos;
     wxStringTokenizer strTokens;
@@ -752,7 +750,7 @@ int VscpTcpIf::doCmdReceiveEx( vscpEventEx *pEventEx )
 // doCmdReceiveLevel1
 //
 
-int VscpTcpIf::doCmdReceiveLevel1( canalMsg *pCanalMsg )
+int VscpRemoteTcpIf::doCmdReceiveLevel1( canalMsg *pCanalMsg )
 {
     vscpEventEx event;
 
@@ -794,7 +792,7 @@ int VscpTcpIf::doCmdReceiveLevel1( canalMsg *pCanalMsg )
 // doCmdEnterReceiveLoop
 //
 
-int VscpTcpIf::doCmdEnterReceiveLoop( void )
+int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
 {
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;
@@ -813,7 +811,7 @@ int VscpTcpIf::doCmdEnterReceiveLoop( void )
 // doCmdBlockReceive
 //
 
-int VscpTcpIf::doCmdBlockReceive( vscpEvent *pEvent, uint32_t timeout )
+int VscpRemoteTcpIf::doCmdBlockReceive( vscpEvent *pEvent, uint32_t timeout )
 {
     char buf[512];
     static wxString strBuf = _("");
@@ -924,7 +922,7 @@ int VscpTcpIf::doCmdBlockReceive( vscpEvent *pEvent, uint32_t timeout )
 // doCmdDataAvailable
 //
 
-int VscpTcpIf::doCmdDataAvailable( void )
+int VscpRemoteTcpIf::doCmdDataAvailable( void )
 {
     wxString strLine;
     int pos;
@@ -961,7 +959,7 @@ int VscpTcpIf::doCmdDataAvailable( void )
 // doCmdState
 //
 
-int VscpTcpIf::doCmdStatus( canalStatus *pStatus )
+int VscpRemoteTcpIf::doCmdStatus( canalStatus *pStatus )
 {	
     int pos;
     long val;
@@ -1018,7 +1016,7 @@ int VscpTcpIf::doCmdStatus( canalStatus *pStatus )
 // doCmdStatistics
 //
 
-int VscpTcpIf::doCmdStatistics( canalStatistics *pStatistics )
+int VscpRemoteTcpIf::doCmdStatistics( canalStatistics *pStatistics )
 {	
     int pos;
     long val;
@@ -1129,7 +1127,7 @@ int VscpTcpIf::doCmdStatistics( canalStatistics *pStatistics )
 // doCmdFilter
 //
 
-int VscpTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
+int VscpRemoteTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
 {	
     wxString strCmd;
     
@@ -1197,7 +1195,7 @@ int VscpTcpIf::doCmdFilter( const vscpEventFilter *pFilter )
 // doCmdFilter
 //
 
-int VscpTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
+int VscpRemoteTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
 {	
     wxString strCmd;
 
@@ -1224,7 +1222,7 @@ int VscpTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
 // doCmdVersion
 //
 
-unsigned long VscpTcpIf::doCmdVersion( void )
+unsigned long VscpRemoteTcpIf::doCmdVersion( void )
 {
     long val;
     int pos;
@@ -1289,7 +1287,7 @@ unsigned long VscpTcpIf::doCmdVersion( void )
 // doCmdDLLVersion
 //
 
-unsigned long VscpTcpIf::doCmdDLLVersion( void  )
+unsigned long VscpRemoteTcpIf::doCmdDLLVersion( void  )
 {
     return TCPIP_DLL_VERSION;
 }
@@ -1299,7 +1297,7 @@ unsigned long VscpTcpIf::doCmdDLLVersion( void  )
 // doCmdVendorString
 //
 
-const char * VscpTcpIf::doCmdVendorString( void )
+const char * VscpRemoteTcpIf::doCmdVendorString( void )
 {
   return wxString( TCPIP_VENDOR_STRING ).mb_str();
 }
@@ -1308,7 +1306,7 @@ const char * VscpTcpIf::doCmdVendorString( void )
 // doCmdGetDriverInfo
 //
 
-const char * VscpTcpIf::doCmdGetDriverInfo( void )
+const char * VscpRemoteTcpIf::doCmdGetDriverInfo( void )
 {
     return NULL;
 }
@@ -1317,7 +1315,7 @@ const char * VscpTcpIf::doCmdGetDriverInfo( void )
 // doCmdGetGUID
 //
 
-int VscpTcpIf::doCmdGetGUID( char *pGUID )
+int VscpRemoteTcpIf::doCmdGetGUID( char *pGUID )
 {
     long val;
     int pos;
@@ -1373,7 +1371,7 @@ int VscpTcpIf::doCmdGetGUID( char *pGUID )
 // doCmdGetGUID
 //
 
-int VscpTcpIf::doCmdGetGUID( cguid& ifguid )
+int VscpRemoteTcpIf::doCmdGetGUID( cguid& ifguid )
 {
     //long val;
     int pos;
@@ -1409,7 +1407,7 @@ int VscpTcpIf::doCmdGetGUID( cguid& ifguid )
 // doCmdSetGUID
 //
 
-int VscpTcpIf::doCmdSetGUID( const char *pGUID )
+int VscpRemoteTcpIf::doCmdSetGUID( const char *pGUID )
 {
     int pos;
     wxString strLine;
@@ -1463,7 +1461,7 @@ int VscpTcpIf::doCmdSetGUID( const char *pGUID )
 //
 
 
-int VscpTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
+int VscpRemoteTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
 {
     int rv;
     wxStringTokenizer strTokens;
@@ -1505,7 +1503,7 @@ int VscpTcpIf::doCmdGetChannelInfo( VSCPChannelInfo *pChannelInfo )
 // doCmdGetChannelID
 //
 
-int VscpTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
+int VscpRemoteTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
 {
     int pos;
     wxString strLine;
@@ -1541,7 +1539,7 @@ int VscpTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
 // doCmdInterfaceList
 //
 
-int VscpTcpIf::doCmdInterfaceList( wxArrayString& array )
+int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& array )
 {
     wxString strCmd(_("INTERFACE LIST\r\n"));
     m_psock->Write( strCmd.mb_str(), strCmd.length() );
@@ -1564,7 +1562,7 @@ int VscpTcpIf::doCmdInterfaceList( wxArrayString& array )
 // doCmdShutdown
 //
 
-int VscpTcpIf::doCmdShutDown( void )
+int VscpRemoteTcpIf::doCmdShutDown( void )
 {
   wxString strCmd(_("SHUTDOWN\r\n"));
   m_psock->Write( strCmd.mb_str(), strCmd.length() );
@@ -1584,7 +1582,7 @@ int VscpTcpIf::doCmdShutDown( void )
 // getVariableString
 //
 
-bool VscpTcpIf::getVariableString( wxString& name, wxString *strValue )
+bool VscpRemoteTcpIf::getVariableString( wxString& name, wxString *strValue )
 {
     wxString strCmd;
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
@@ -1604,7 +1602,7 @@ bool VscpTcpIf::getVariableString( wxString& name, wxString *strValue )
 // setVariableString
 //
 
-bool VscpTcpIf::setVariableString( wxString& name, const wxString& strValue )
+bool VscpRemoteTcpIf::setVariableString( wxString& name, const wxString& strValue )
 {
     wxString strCmd;
     strCmd = _("VARIABLE WRITE ") + name + _(",,,") + strValue + _("\r\n");
@@ -1618,7 +1616,7 @@ bool VscpTcpIf::setVariableString( wxString& name, const wxString& strValue )
 // getVariableBool
 //
 
-bool VscpTcpIf::getVariableBool( wxString& name, bool *bValue )
+bool VscpRemoteTcpIf::getVariableBool( wxString& name, bool *bValue )
 {
     wxString strCmd;
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
@@ -1644,7 +1642,7 @@ bool VscpTcpIf::getVariableBool( wxString& name, bool *bValue )
 // setVariableBool
 //
 
-bool VscpTcpIf::setVariableBool( wxString& name, const bool bValue )
+bool VscpRemoteTcpIf::setVariableBool( wxString& name, const bool bValue )
 {
     wxString strCmd;
     wxString strValue;
@@ -1667,7 +1665,7 @@ bool VscpTcpIf::setVariableBool( wxString& name, const bool bValue )
 // getVariableInt
 //
 
-bool VscpTcpIf::getVariableInt( wxString& name, int *value )
+bool VscpRemoteTcpIf::getVariableInt( wxString& name, int *value )
 {
     wxString strCmd;
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
@@ -1691,7 +1689,7 @@ bool VscpTcpIf::getVariableInt( wxString& name, int *value )
 // setVariableInt
 //
 
-bool VscpTcpIf::setVariableInt( wxString& name, int value )
+bool VscpRemoteTcpIf::setVariableInt( wxString& name, int value )
 {
     wxString strCmd;
     wxString strValue;
@@ -1708,7 +1706,7 @@ bool VscpTcpIf::setVariableInt( wxString& name, int value )
 // getVariableLong
 //
 
-bool VscpTcpIf::getVariableLong( wxString& name, long *value )
+bool VscpRemoteTcpIf::getVariableLong( wxString& name, long *value )
 {
     wxString strCmd;
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
@@ -1731,7 +1729,7 @@ bool VscpTcpIf::getVariableLong( wxString& name, long *value )
 // setVariableLong
 //
 
-bool VscpTcpIf::setVariableLong( wxString& name, long value )
+bool VscpRemoteTcpIf::setVariableLong( wxString& name, long value )
 {
     wxString strCmd;
     wxString strValue;
@@ -1748,7 +1746,7 @@ bool VscpTcpIf::setVariableLong( wxString& name, long value )
 // getVariableDouble
 //
 
-bool VscpTcpIf::getVariableDouble( wxString& name, double *value )
+bool VscpRemoteTcpIf::getVariableDouble( wxString& name, double *value )
 {
     wxString strCmd;
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
@@ -1771,7 +1769,7 @@ bool VscpTcpIf::getVariableDouble( wxString& name, double *value )
 // setVariableDouble
 //
 
-bool VscpTcpIf::setVariableDouble( wxString& name, double value )
+bool VscpRemoteTcpIf::setVariableDouble( wxString& name, double value )
 {
     wxString strCmd;
     wxString strValue;
@@ -1788,7 +1786,7 @@ bool VscpTcpIf::setVariableDouble( wxString& name, double value )
 // getVariableMeasurement
 //
 
-bool VscpTcpIf::getVariableMeasurement( wxString& name, wxString& strValue )
+bool VscpRemoteTcpIf::getVariableMeasurement( wxString& name, wxString& strValue )
 {
     wxString strCmd;
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
@@ -1808,7 +1806,7 @@ bool VscpTcpIf::getVariableMeasurement( wxString& name, wxString& strValue )
 // setVariableMeasurement
 //
 
-bool VscpTcpIf::setVariableMeasurement( wxString& name, wxString& strValue )
+bool VscpRemoteTcpIf::setVariableMeasurement( wxString& name, wxString& strValue )
 {
     wxString strCmd;
 
@@ -1824,7 +1822,7 @@ bool VscpTcpIf::setVariableMeasurement( wxString& name, wxString& strValue )
 // getVariableEvent
 //
 
-bool VscpTcpIf::getVariableEvent( wxString& name, vscpEvent *pEvent )
+bool VscpRemoteTcpIf::getVariableEvent( wxString& name, vscpEvent *pEvent )
 {
     // Check pointer
     if ( NULL == pEvent ) return false;
@@ -1846,7 +1844,7 @@ bool VscpTcpIf::getVariableEvent( wxString& name, vscpEvent *pEvent )
 // setVariableEvent
 //
 
-bool VscpTcpIf::setVariableEvent( wxString& name, vscpEvent *pEvent )
+bool VscpRemoteTcpIf::setVariableEvent( wxString& name, vscpEvent *pEvent )
 {
     wxString strCmd;
     wxString strValue;
@@ -1863,7 +1861,7 @@ bool VscpTcpIf::setVariableEvent( wxString& name, vscpEvent *pEvent )
 // getVariableEventEx
 //
 
-bool VscpTcpIf::getVariableEventEx( wxString& name, vscpEventEx *pEvent )
+bool VscpRemoteTcpIf::getVariableEventEx( wxString& name, vscpEventEx *pEvent )
 {    
     // Check pointer
     if ( NULL == pEvent ) return false;
@@ -1885,7 +1883,7 @@ bool VscpTcpIf::getVariableEventEx( wxString& name, vscpEventEx *pEvent )
 // setVariableEventEx
 //
 
-bool VscpTcpIf::setVariableEventEx( wxString& name, vscpEventEx *pEvent )
+bool VscpRemoteTcpIf::setVariableEventEx( wxString& name, vscpEventEx *pEvent )
 {
     wxString strCmd;
     wxString strValue;
@@ -1902,7 +1900,7 @@ bool VscpTcpIf::setVariableEventEx( wxString& name, vscpEventEx *pEvent )
 // getVariableGUID
 //
 
-bool VscpTcpIf::getVariableGUID( wxString& name, cguid& guid )
+bool VscpRemoteTcpIf::getVariableGUID( wxString& name, cguid& guid )
 {    
     wxString strCmd;
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
@@ -1921,7 +1919,7 @@ bool VscpTcpIf::getVariableGUID( wxString& name, cguid& guid )
 // setVariableGUID
 //
 
-bool VscpTcpIf::setVariableGUID( wxString& name, cguid& guid )
+bool VscpRemoteTcpIf::setVariableGUID( wxString& name, cguid& guid )
 {
     wxString strCmd;
     wxString strValue;
@@ -1938,7 +1936,7 @@ bool VscpTcpIf::setVariableGUID( wxString& name, cguid& guid )
 // getVariableVSCPdata
 //
 
-bool VscpTcpIf::getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData )
+bool VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData )
 {
     // Check pointer
     if ( NULL == pData ) return false;
@@ -1960,7 +1958,7 @@ bool VscpTcpIf::getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_
 // setVariableVSCPdata
 //
 
-bool VscpTcpIf::setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData )
+bool VscpRemoteTcpIf::setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData )
 {
     wxString strCmd;
     wxString strValue;
@@ -1977,7 +1975,7 @@ bool VscpTcpIf::setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t 
 // getVariableVSCPclass
 //
 
-bool VscpTcpIf::getVariableVSCPclass( wxString& name, uint16_t *vscp_class )
+bool VscpRemoteTcpIf::getVariableVSCPclass( wxString& name, uint16_t *vscp_class )
 {
     // Check pointer
     if ( NULL == vscp_class ) return false;
@@ -2001,7 +1999,7 @@ bool VscpTcpIf::getVariableVSCPclass( wxString& name, uint16_t *vscp_class )
 // getVariableVSCPclass
 //
 
-bool VscpTcpIf::setVariableVSCPclass( wxString& name, uint16_t vscp_class )
+bool VscpRemoteTcpIf::setVariableVSCPclass( wxString& name, uint16_t vscp_class )
 {
     wxString strCmd;
     wxString strValue;
@@ -2019,7 +2017,7 @@ bool VscpTcpIf::setVariableVSCPclass( wxString& name, uint16_t vscp_class )
 // getVariableVSCPtype
 //
 
-bool VscpTcpIf::getVariableVSCPtype( wxString& name, uint8_t *vscp_type )
+bool VscpRemoteTcpIf::getVariableVSCPtype( wxString& name, uint8_t *vscp_type )
 {
     // Check pointer
     if ( NULL == vscp_type ) return false;
@@ -2044,7 +2042,7 @@ bool VscpTcpIf::getVariableVSCPtype( wxString& name, uint8_t *vscp_type )
 // getVariableVSCPtype
 //
 
-bool VscpTcpIf::setVariableVSCPtype( wxString& name, uint16_t vscp_type )
+bool VscpRemoteTcpIf::setVariableVSCPtype( wxString& name, uint16_t vscp_type )
 {
     wxString strCmd;
     wxString strValue;
@@ -2153,7 +2151,7 @@ void *VSCPTCPIP_RX_WorkerThread::Entry()
     
 
     int rv;
-    VscpTcpIf tcpifReceive; // TODO
+    VscpRemoteTcpIf tcpifReceive; // TODO
     //wxCommandEvent eventReceive( wxVSCPTCPIF_RX_EVENT, m_pCtrlObject->m_wndID );
     //wxCommandEvent eventConnectionLost( wxVSCPTCPIF_CONNECTION_LOST_EVENT, m_pCtrlObject->m_wndID );
   
@@ -2285,7 +2283,7 @@ void *VSCPTCPIP_TX_WorkerThread::Entry()
     // Must be a valid control object pointer
     if ( NULL == m_pCtrlObject ) return NULL;
     
-     VscpTcpIf tcpifTransmit;
+     VscpRemoteTcpIf tcpifTransmit;
     //wxCommandEvent eventConnectionLost( wxVSCPTCPIF_CONNECTION_LOST_EVENT, m_pCtrlObject->m_wndID );
   
     // Must be a valid control object pointer

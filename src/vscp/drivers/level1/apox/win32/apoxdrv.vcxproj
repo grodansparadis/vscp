@@ -21,6 +21,7 @@
   <PropertyGroup Label="Globals">
     <SccProjectName />
     <SccLocalPath />
+    <ProjectName>vscpl1_apoxdrv</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -132,19 +133,17 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\apoxdrv.dll</OutputFile>
+      <OutputFile>.\Release\vscpl1_apoxdrv.dll</OutputFile>
       <ImportLibrary>.\Release\apoxdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;FTD2XX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\apoxdrv.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
-      <Command>echo on
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$(TargetName).lib"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -243,19 +242,17 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\apoxdrv.dll</OutputFile>
+      <OutputFile>.\Debug\vscpl1_apoxdrv.dll</OutputFile>
       <ImportLibrary>.\Debug\apoxdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;FTD2XX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\apoxdrv.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
-      <Command>echo on
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$(TargetName).lib"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

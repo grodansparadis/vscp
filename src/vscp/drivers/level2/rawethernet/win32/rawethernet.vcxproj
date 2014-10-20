@@ -13,17 +13,18 @@
   <PropertyGroup Label="Globals">
     <SccProjectName />
     <SccLocalPath />
+    <ProjectName>vscpl2_rawethernetdrv</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -61,7 +62,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>wxUSE_GUI=0;_WINDLL;WIN32;NDEBUG;_WINDOWS;_USRDLL;rawethernet_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>wxUSE_GUI=0;_WINDLL;WIN32;NDEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Release\rawethernet.pch</PrecompiledHeaderOutputFile>
@@ -93,19 +94,17 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\rawethernet.dll</OutputFile>
+      <OutputFile>.\Release\vscpl2_rawethernetdrv.dll</OutputFile>
       <ImportLibrary>.\Release\rawethernet.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\rawethernet.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
-      <Command>echo on
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$(TargetName).lib"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -119,7 +118,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <MinimalRebuild>true</MinimalRebuild>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>wxUSE_GUI=0;WIN32;_DEBUG;_WINDOWS;_USRDLL;rawethernet_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>wxUSE_GUI=0;WIN32;_DEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\rawethernet.pch</PrecompiledHeaderOutputFile>
@@ -149,26 +148,25 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\rawethernet.dll</OutputFile>
+      <OutputFile>.\Debug\vscpl2_rawethernetdrv.dll</OutputFile>
       <ImportLibrary>.\Debug\rawethernet.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>wpcap.lib;wsock32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\rawethernet.def</ModuleDefinitionFile>
     </Link>
     <CustomBuildStep>
-      <Command>echo on
-mkdir "$(VSCP_HOME)\src\vscp\Build"
-mkdir "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(TargetPath)"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"
-if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$(TargetName).lib"  "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)"</Command>
-      <Outputs>$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)$(TargetFileName)</Outputs>
+      <Command>
+      </Command>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\common\crc.c" />
+    <ClCompile Include="..\..\..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\..\common\guid.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
-    <ClCompile Include="..\..\..\..\common\vscptcpif.cpp" />
+    <ClCompile Include="..\..\..\..\common\vscpremotetcpif.cpp" />
     <ClCompile Include="rawethernet.cpp" />
     <ClCompile Include="..\common\dlldrvobj.cpp" />
   </ItemGroup>
@@ -178,10 +176,11 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
+    <ClInclude Include="..\..\..\..\..\common\crc8.h" />
     <ClInclude Include="..\..\..\..\common\guid.h" />
     <ClInclude Include="..\..\..\..\common\vscp.h" />
     <ClInclude Include="..\..\..\..\common\vscphelper.h" />
-    <ClInclude Include="..\..\..\..\common\vscptcpif.h" />
+    <ClInclude Include="..\..\..\..\common\vscpremotetcpif.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="..\..\..\common\canal.h" />
     <ClInclude Include="..\..\..\common\canal_macro.h" />

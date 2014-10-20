@@ -51,6 +51,10 @@
 #include "../../../../common/vscpremotetcpif.h"
 #include "log.h"
 
+#ifndef _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
+#endif
+
 // Lists
 WX_DEFINE_LIST(VSCPEVENTLIST);
 
@@ -103,6 +107,7 @@ CVSCPLog::open(const char *pUsername,
                 const char *pPrefix,
                 const char *pConfig)
 {
+    ::wxInitialize();
 
 	bool rv = true;
 	wxString wxstr = wxString::FromAscii(pConfig);
@@ -451,10 +456,10 @@ CVSCPLogWrkTread::Entry()
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen(m_pLog->m_host,
-		m_pLog->m_port,
-		m_pLog->m_username,
-		m_pLog->m_password) <= 0) {
+	if (m_srv.doCmdOpen( m_pLog->m_host,
+		                    m_pLog->m_port,
+		                    m_pLog->m_username,
+		                    m_pLog->m_password) <= 0) {
 		return NULL;
 	}
 
@@ -522,7 +527,7 @@ CVSCPLogWrkTread::Entry()
     // Close server connection
     m_srv.doCmdClose();
 
-	int rv;
+	//int rv;
 	//vscpEvent event;
 	while (!TestDestroy() && !m_pLog->m_bQuit) {
 

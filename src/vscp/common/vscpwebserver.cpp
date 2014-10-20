@@ -4173,11 +4173,11 @@ VSCPWebServerThread::webserv_rest_doWriteMeasurement( struct mg_connection *conn
 
 int
 VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn, 
-												struct websrv_rest_session *pSession, 
-												int format,
-												wxString& strName,
-												wxString& strFrom,
-												wxString& strTo )
+												    struct websrv_rest_session *pSession, 
+												    int format,
+												    wxString& strName,
+												    wxString& strFrom,
+												    wxString& strTo )
 {
 	CControlObject *pObject = (CControlObject *)conn->server_param;
 

@@ -52,7 +52,7 @@
 #include "../../../../common/vscp.h"
 #include "../../../../common/canal_macro.h"
 #include "../../../../../common/dllist.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 
 
 
@@ -179,7 +179,7 @@ public:
  	virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Pointer back to owner
     CRawEthernet *m_pobj;
@@ -213,7 +213,7 @@ public:
  	virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Pointer back to owner
     CRawEthernet *m_pobj;

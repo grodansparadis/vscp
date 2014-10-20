@@ -188,7 +188,7 @@ int main(int argc, char **argv)
     wxString strHost = _("localhost"); // The local machine
 
     // VSCP tcp/ip interface
-    VscpTcpIf m_vscpif;
+    VscpRemoteTcpIf m_vscpif;
 
     // Event 
     vscpEventEx event;

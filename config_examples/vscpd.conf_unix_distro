@@ -179,7 +179,7 @@
         <driver enable="false">
             <name>logger</name>
             <config>/tmp/canallog.txt</config>
-            <path>/ust/local/lib/canallogger.so</path>
+            <path>/usr/local/lib/canallogger.so</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -211,7 +211,7 @@
         <!-- Level II Logger - driver is documented in 30.1 -->
         <driver enable="true" >
             <name>VSCPLoggerDriver1</name>	
-            <path>/ust/local/lib/vscpl2_loggerdrv.so</path>
+            <path>/usr/local/lib/vscpl2_loggerdrv.so</path>
              <config>/tmp/vscp_level2.log</config> 		
              <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -255,7 +255,37 @@
             <path>/usr/local/lib/vscp2drv_raweth.so</path>
         </driver>
  
-
     </level2driver>	
 
+    <!-- Collect data in tables -->
+    <!--
+    <tables>
+    
+        <table path="c:/tmp/temperature_outside.table" 
+                  type="0"
+                  name="officetemp"
+                  description="The temperature in the office"
+                  labelx="Time"
+                  labely="Temperature"
+                  size=""
+                  vscpclass="10"    
+                  vscptype="6"
+                  vscpunit="1"
+        />
+        
+        <table path="c:/tmp/temperature_inside.table" 
+                  type="0"
+                  name="outsidetemp"
+                  description="The temperature in the greens"
+                  labelx="Time"
+                  labely="Temperature"
+                  size=""
+                  vscpclass="10"    
+                  vscptype="6"
+                  vscpunit="1"
+        />
+    
+    </tables>
+    -->
+    
 </vscpconfig>

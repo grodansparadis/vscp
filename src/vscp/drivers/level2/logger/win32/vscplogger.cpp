@@ -22,19 +22,18 @@
 // Boston, MA 02111-1307, USA.
 // 
 
-//#define WIN32_LEAN_AND_MEAN
 #include "wx/wxprec.h"
 #include "wx/wx.h"
-//#include <windows.h>
-//#include <stdlib.h>
+#include "wx/defs.h"
 
 #include "../common/dlldrvobj.h"
 #include "../common/log.h"
 
+WORD wVersionRequested = MAKEWORD(1, 1);	// WSA functions
+WSADATA wsaData;							// WSA functions
+
 static HANDLE hThisInstDll = NULL;
 static CDllDrvObj *theApp = NULL;
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // DllMain
@@ -98,10 +97,15 @@ extern "C" long VSCPOpen( const char *pUsername,
 {
 	long h = 0;
 	
+     // Initialize winsock layer
+    //WSAStartup(wVersionRequested, &wsaData);
+
+    wxSocketBase::Initialize();
+
 	CVSCPLog *pdrvObj = new CVSCPLog();
 	if ( NULL != pdrvObj ) {
 
-		if ( pdrvObj->open( pUsername, pPassword, pHost, port, pPrefix, pParameter, flags ) ){
+		if ( pdrvObj->open( pUsername, pPassword, pHost, port, pPrefix, pParameter ) ){
 
 			if ( !( h = theApp->addDriverObject( pdrvObj ) ) ) {
 				delete pdrvObj;
@@ -138,16 +142,42 @@ extern "C" int VSCPClose( long handle )
 	return CANAL_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingSend
+// 
+
+extern "C" int
+VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+
+	CVSCPLog *pdrvObj = theApp->getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    pdrvObj->addEvent2SendQueue( pEvent );   
+	return CANAL_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingReceive
+// 
+
+extern "C" int
+VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
+{
+    wxMilliSleep( timeout );
+    
+    // Nothing to receive
+    pEvent = NULL;
+	return CANAL_ERROR_FIFO_EMPTY;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetLevel
 // 
 
-#ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT VSCPGetLevel( void )
-#else
-extern "C" unsigned long VSCPGetLevel( void )
-#endif
+extern "C" unsigned long
+VSCPGetLevel(void)
 {
 	return CANAL_LEVEL_USES_TCPIP;
 }
@@ -157,13 +187,10 @@ extern "C" unsigned long VSCPGetLevel( void )
 // VSCPGetDllVersion
 //
 
-#ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT VSCPGetDllVersion( void )
-#else
-extern "C" unsigned long VSCPGetDllVersion( void )
-#endif
+extern "C" unsigned long
+VSCPGetDllVersion(void)
 {
-	return DLL_VERSION;
+	return VSCP_DLL_VERSION;
 }
 
 
@@ -171,11 +198,8 @@ extern "C" unsigned long VSCPGetDllVersion( void )
 // VSCPGetVendorString
 //
 
-#ifdef WIN32
-extern "C" const char * WINAPI EXPORT VSCPGetVendorString( void )
-#else
-extern "C" const char * VSCPGetVendorString( void )
-#endif
+extern "C" const char *
+VSCPGetVendorString(void)
 {
 	return VSCP_DLL_VENDOR;
 }
@@ -185,13 +209,47 @@ extern "C" const char * VSCPGetVendorString( void )
 // VSCPGetDriverInfo
 //
 
-#ifdef WIN32
-extern "C" const char * WINAPI EXPORT VSCPGetDriverInfo( void )
-#else
-extern "C" const char * VSCPGetDriverInfo( void )
-#endif
+extern "C" const char *
+VSCPGetDriverInfo(void)
 {
 	return VSCP_LOGGER_DRIVERINFO;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPGetWebPageTemplate
+// 
+
+extern "C" long
+VSCPGetWebPageTemplate( long handle, const char *url, char *page )
+{
+    page = NULL;
+    
+    // Not implemented
+	return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPWebPageInfo
+// 
+
+extern "C" int
+VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
+{
+    // Not implemented
+	return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPWebPageupdate
+// 
+
+extern "C" int
+VSCPWebPageupdate( long handle, const char *url )
+{
+    // Not implemented
+	return -1;
 }
 
 
