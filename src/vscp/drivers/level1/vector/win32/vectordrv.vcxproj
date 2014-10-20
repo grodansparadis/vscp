@@ -133,7 +133,7 @@
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\vectordrv.dll</OutputFile>
+      <OutputFile>.\Debug\vscpl1_vectordrv.dll</OutputFile>
       <ImportLibrary>.\Debug\vectordrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;vcandm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -243,7 +243,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\vectordrv.dll</OutputFile>
+      <OutputFile>.\Release\vscpl1_vectordrv.dll</OutputFile>
       <ImportLibrary>.\Release\vectordrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;vcandm32.lib;%(AdditionalDependencies)</AdditionalDependencies>

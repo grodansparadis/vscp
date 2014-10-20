@@ -76,16 +76,16 @@ WX_DECLARE_LIST( vscpEvent, EVENT_TX_QUEUE );
 /*!
   @brief Class for VSCP daemon tcp/ip interface
 */
-class VscpTcpIf  
+class VscpRemoteTcpIf  
 {
 
 public:
 
     /// Constructor
-    VscpTcpIf();
+    VscpRemoteTcpIf();
 
     /// Destructor
-    virtual ~VscpTcpIf();
+    virtual ~VscpRemoteTcpIf();
 
 public:
     

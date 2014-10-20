@@ -62,7 +62,7 @@ public:
 	frmVSCPSession *m_pfrmNode;
 
 	/// Server TCP/IP interface
-	VscpTcpIf m_vscptcpif;		
+	VscpRemoteTcpIf m_vscptcpif;		
 		
 };
 

@@ -133,7 +133,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\apoxdrv.dll</OutputFile>
+      <OutputFile>.\Release\vscpl1_apoxdrv.dll</OutputFile>
       <ImportLibrary>.\Release\apoxdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;FTD2XX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
@@ -242,7 +242,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\apoxdrv.dll</OutputFile>
+      <OutputFile>.\Debug\vscpl1_apoxdrv.dll</OutputFile>
       <ImportLibrary>.\Debug\apoxdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;FTD2XX.LIB;%(AdditionalDependencies)</AdditionalDependencies>

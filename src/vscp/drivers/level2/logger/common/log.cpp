@@ -107,6 +107,7 @@ CVSCPLog::open(const char *pUsername,
                 const char *pPrefix,
                 const char *pConfig)
 {
+    ::wxInitialize();
 
 	bool rv = true;
 	wxString wxstr = wxString::FromAscii(pConfig);
@@ -455,10 +456,10 @@ CVSCPLogWrkTread::Entry()
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen(m_pLog->m_host,
-		m_pLog->m_port,
-		m_pLog->m_username,
-		m_pLog->m_password) <= 0) {
+	if (m_srv.doCmdOpen( m_pLog->m_host,
+		                    m_pLog->m_port,
+		                    m_pLog->m_username,
+		                    m_pLog->m_password) <= 0) {
 		return NULL;
 	}
 

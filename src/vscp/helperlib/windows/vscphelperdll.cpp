@@ -191,6 +191,7 @@ extern "C" long vscphlp_gethandle(void)
 {
 	if ( NULL == theApp ) return NULL;
 
+    wxSocketBase::Initialize();
     CCanalSuperWrapper *pvscpif = new CCanalSuperWrapper;
     if (NULL == pvscpif) return 0;
 
@@ -666,7 +667,7 @@ extern "C" int WINAPI EXPORT vscp_doCmdShutDown( long handle )
 		NULL if failure.
 */
 
-extern "C" VscpTcpIf * WINAPI EXPORT vscp_getTcpIpInterface( long handle )
+extern "C" VscpRemoteTcpIf * WINAPI EXPORT vscp_getTcpIpInterface( long handle )
 {
 	CCanalSuperWrapper *pvscpif = theApp->getDriverObject( handle );
 	if ( NULL == pvscpif ) NULL;

@@ -280,7 +280,7 @@ actionThreadVSCPSrv::~actionThreadVSCPSrv()
 void *actionThreadVSCPSrv::Entry()
 {
     //m_pCtrlObject->logMsg ( _T ( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
-    VscpTcpIf client;
+    VscpRemoteTcpIf client;
     long err;
 
     if ( CANAL_ERROR_SUCCESS != ( err = client.doCmdOpen( m_strHostname, 

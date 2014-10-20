@@ -329,7 +329,7 @@ public:
 	Get a pointer to the TCP/IP interface
 	@return A pointer to the TCP/IP interface
 	*/
-	VscpTcpIf *getTcpIpInterface( void ) { return &m_vscptcpif; };
+	VscpRemoteTcpIf *getTcpIpInterface( void ) { return &m_vscptcpif; };
 
 	/*!
 	Get variable value from string variable
@@ -1391,7 +1391,7 @@ protected:
 	/*!
 	CANAL TCP/IP interface
 	*/
-	VscpTcpIf m_vscptcpif;
+	VscpRemoteTcpIf m_vscptcpif;
 
 	/*!
 	GUID

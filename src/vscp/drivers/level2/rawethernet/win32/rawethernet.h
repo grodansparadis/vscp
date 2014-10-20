@@ -179,7 +179,7 @@ public:
  	virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Pointer back to owner
     CRawEthernet *m_pobj;
@@ -213,7 +213,7 @@ public:
  	virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Pointer back to owner
     CRawEthernet *m_pobj;

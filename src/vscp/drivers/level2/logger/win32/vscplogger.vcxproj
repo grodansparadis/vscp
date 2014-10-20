@@ -78,7 +78,7 @@
       <Culture>0x041d</Culture>
     </ResourceCompile>
     <Link>
-      <OutputFile>.\Release/vscplogger.dll</OutputFile>
+      <OutputFile>.\Release\vscpl2_loggerdrv.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\vscplogger.def</ModuleDefinitionFile>
@@ -137,7 +137,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <Culture>0x041d</Culture>
     </ResourceCompile>
     <Link>
-      <OutputFile>.\Debug/vscplogger.dll</OutputFile>
+      <OutputFile>.\Debug\vscpl2_loggerdrv.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\vscplogger.def</ModuleDefinitionFile>
@@ -170,6 +170,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemGroup>
   <ItemGroup>
     <None Include="ReadMe.txt" />
+    <None Include="vscplogger.def" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
