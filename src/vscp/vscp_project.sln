@@ -7,19 +7,19 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpcmd", "vscpcmd\vscpcmd.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpworks", "vscpworks\vscpworks.vcxproj", "{FAE29035-75E4-4F76-BF2D-B3537B0BF9CC}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "apoxdrv", "drivers\level1\apox\win32\apoxdrv.vcxproj", "{C9264913-4420-3077-142B-F12E92E73D43}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_apoxdrv", "drivers\level1\apox\win32\apoxdrv.vcxproj", "{C9264913-4420-3077-142B-F12E92E73D43}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "can232drv", "drivers\level1\can232\win32\can232drv\can232drv.vcxproj", "{AEEDC800-0A74-F6DE-A7EF-95CD54ABCCD1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_can232drv", "drivers\level1\can232\win32\can232drv\can232drv.vcxproj", "{AEEDC800-0A74-F6DE-A7EF-95CD54ABCCD1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ixxatvcidrv", "drivers\level1\ixxat_vc2\win32\ixxatvcidrv.vcxproj", "{E8818AF3-9FBD-1A22-FA2C-5A09A743CA7B}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_ixxatvcidrv", "drivers\level1\ixxat_vc2\win32\ixxatvcidrv.vcxproj", "{E8818AF3-9FBD-1A22-FA2C-5A09A743CA7B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "canallogger", "drivers\level1\logger\win32\canallogger.vcxproj", "{EF71D1DB-76BC-0526-69AE-B8F87A449FC1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_loggerdrv", "drivers\level1\logger\win32\canallogger.vcxproj", "{EF71D1DB-76BC-0526-69AE-B8F87A449FC1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "peakdrv", "drivers\level1\peak\win32\peakdrv.vcxproj", "{AEE2FCBA-AB80-4D8C-B0AC-9C354A58532D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_peakdrv", "drivers\level1\peak\win32\peakdrv.vcxproj", "{AEE2FCBA-AB80-4D8C-B0AC-9C354A58532D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vectordrv", "drivers\level1\vector\win32\vectordrv.vcxproj", "{66C720D0-F634-AA33-CC30-CC3A1B3A2099}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_vectordrv", "drivers\level1\vector\win32\vectordrv.vcxproj", "{66C720D0-F634-AA33-CC30-CC3A1B3A2099}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zanthicdrv", "drivers\level1\zanthic\win32\zanthicdrv.vcxproj", "{89311601-FD30-7D30-3D30-16F14E74E001}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_zanthicdrv", "drivers\level1\zanthic\win32\zanthicdrv.vcxproj", "{89311601-FD30-7D30-3D30-16F14E74E001}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscphelper", "helperlib\windows\VSCP helper dll.vcxproj", "{5B1BB19C-F27B-481E-8A70-EE83B1F6F896}"
 EndProject
@@ -29,11 +29,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpservice", "vscpservice\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpsrv", "daemon\win32\service\vscpsrv.vcxproj", "{8E990011-435F-BAEA-0990-EAA79FFD50BB}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tcpiplinkdrv", "drivers\level2\tcpdrv\win32\tcpiplinkdrv.vcxproj", "{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl2_tcpiplinkdrv", "drivers\level2\tcpdrv\win32\tcpiplinkdrv.vcxproj", "{0178C7D7-82EB-E103-34C4-C73CB82DEDD5}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "rawethernet", "drivers\level2\rawethernet\win32\rawethernet.vcxproj", "{9BC2870E-F792-68D9-9A23-536A7329577C}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl2_rawethernetdrv", "drivers\level2\rawethernet\win32\rawethernet.vcxproj", "{9BC2870E-F792-68D9-9A23-536A7329577C}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscplogger", "drivers\level2\logger\win32\vscplogger.vcxproj", "{A80883CE-CE9F-4F69-9F2F-D8EA3441A952}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl2_loggerdrv", "drivers\level2\logger\win32\vscplogger.vcxproj", "{A80883CE-CE9F-4F69-9F2F-D8EA3441A952}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscphelpertest", "helperlib\windows\test\test.vcxproj", "{B3D80145-C3E7-4A87-9CA2-B308F4437716}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -460,6 +462,27 @@ Global
 		{A80883CE-CE9F-4F69-9F2F-D8EA3441A952}.Unicode Release|Win32.ActiveCfg = Release|Win32
 		{A80883CE-CE9F-4F69-9F2F-D8EA3441A952}.Unicode Release|Win32.Build.0 = Release|Win32
 		{A80883CE-CE9F-4F69-9F2F-D8EA3441A952}.Unicode Release|x64.ActiveCfg = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Debug Unicode|x64.ActiveCfg = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Debug|Win32.ActiveCfg = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Debug|Win32.Build.0 = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Debug|x64.ActiveCfg = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Release Unicode|Win32.Build.0 = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Release Unicode|x64.ActiveCfg = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Release|Win32.ActiveCfg = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Release|Win32.Build.0 = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Release|x64.ActiveCfg = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Template|Win32.ActiveCfg = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Template|Win32.Build.0 = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Template|x64.ActiveCfg = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Unicode Debug|Win32.ActiveCfg = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Unicode Debug|Win32.Build.0 = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Unicode Debug|x64.ActiveCfg = Debug|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Unicode Release|Win32.ActiveCfg = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Unicode Release|Win32.Build.0 = Release|Win32
+		{B3D80145-C3E7-4A87-9CA2-B308F4437716}.Unicode Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

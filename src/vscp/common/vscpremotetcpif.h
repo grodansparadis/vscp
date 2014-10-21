@@ -42,7 +42,7 @@
 #include "guid.h"
 #include "vscphelper.h"
 
-#include "wx/socket.h"
+#include "../../common/net_skeleton.h"
 #include "wx/datetime.h"
 
 //---------------------------------------------------------------------------
@@ -72,6 +72,51 @@ WX_DECLARE_LIST( vscpEvent, EVENT_RX_QUEUE );
 /// Transmit queue
 WX_DECLARE_LIST( vscpEvent, EVENT_TX_QUEUE );
 
+// Forward declarations
+class VscpRemoteTcpIf;
+
+
+class clientTcpIpWorkerThread : public wxThread
+{
+
+public:
+	
+	/// Constructor
+	clientTcpIpWorkerThread();
+
+	/// Destructor
+	~clientTcpIpWorkerThread();
+
+    /*!
+		Thread code entry point
+	*/
+	virtual void *Entry();
+
+	/*!
+		TCP/IP handler
+	*/
+	static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
+
+    /*! 
+		called when the thread exits - whether it terminates normally or is
+		stopped with Delete() (but not when it is Kill()ed!)
+	*/
+	virtual void OnExit();
+
+    /// Run as long as true
+    bool m_bRun;
+
+    /// Hostname to conect to
+    wxString m_hostname;
+
+    /// net_skeleton structure
+	struct ns_mgr m_mgrTcpIpConnection;
+
+    /// Pointer to the TCP/IP interface that owns the thread
+    VscpRemoteTcpIf *m_pvscpRemoteTcpIpIf;
+
+};
+
 
 /*!
   @brief Class for VSCP daemon tcp/ip interface
@@ -92,14 +137,18 @@ public:
     /*!
      Returns TRUE if we are connected false otherwise.
      */
-    bool isConnected( void ) { return ( m_psock->IsOk() && 
-			(m_psock->LastError() != wxSOCKET_INVSOCK )); };
+    bool isConnected( void ) { return m_bConnected; };
 
     /*!
         checkReturnValue
         \return Return false for "-OK" and true for "+OK"
     */
     bool checkReturnValue( void );
+
+    /*!
+        Clear the input queue
+    */
+    void doClrInputQueue(  void  );
 
     /*!
         \brief Do command allows to send any command to the server.
@@ -129,7 +178,6 @@ public:
             or the channel is already opened or other error occur.
     */
     long doCmdOpen( const wxString& strHostname, 
-	    				const short port, 
 		    			const wxString& strUsername, 
 			    		const wxString& strPassword );
 
@@ -598,14 +646,41 @@ public:
 
 // ------------------------------------------------------------------------
 
+public:
+
+
+    /*!
+        Flag for connection - This flag is true when we are 
+        connected.
+    */
+    bool m_bConnected;
+
+    /*! 
+        Array that gets filled with input lines as
+        they are receied 
+    */
+    wxArrayString m_inputStrArray;
+
+    /// Mutex to protect string array
+    wxMutex m_mutexArray;
+
+    /*!
+        Buffer for incoming data on socket. Data sits here
+        until a crlf pair is found when it is transfered to
+        the strArray
+    */
+    wxString m_readBuffer;
+
 
 protected:
 
+    clientTcpIpWorkerThread *m_pClientTcpIpWorkerThread;
+
     /// Socket
-    wxSocketClient* m_psock;
+    //wxSocketClient* m_psock;
 
     /// Server address
-    wxIPV4address m_addr;
+    //wxIPV4address m_addr;
 
     /// Response string
     wxString m_strReply;

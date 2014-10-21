@@ -27,7 +27,7 @@
 
 
 #include "wx/thread.h"
-#include "wx/socket.h"
+//#include "wx/socket.h"
 
 #include "userlist.h"
 #include "controlobject.h"

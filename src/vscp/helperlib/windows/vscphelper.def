@@ -4,9 +4,12 @@ LIBRARY      "vscphelper"
 
 EXPORTS
     ; Explicit exports can go here
-
-
-
+    vscphlp_newSession @1
+    vscphlp_closeSession @2
+    vscphlp_OpenInterface @3
+    vscphlp_Open @4
+    vscphlp_Close @5
+    vscphlp_Noop @6
 
 
 	

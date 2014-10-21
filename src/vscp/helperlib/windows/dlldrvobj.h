@@ -59,7 +59,7 @@ public:
 		@parm plog Object to add
 		@return handle or 0 for error
 	*/
-	long addDriverObject( CCanalSuperWrapper *pObj );
+	long addDriverObject( VscpRemoteTcpIf *pObj );
 
 	/*!
 		Get a driver object from its handle
@@ -68,7 +68,7 @@ public:
 		@return pointer to object or NULL if invalid
 				handle.
 	*/
-	CCanalSuperWrapper *getDriverObject( long h );
+	VscpRemoteTcpIf *getDriverObject( long h );
 
 	/*!
 		Remove a driver object
@@ -81,10 +81,10 @@ public:
 		The log file object
 		This is the array with driver objects (max 256 objects
 	*/
-	CCanalSuperWrapper *m_drvObjArray[ VSCP_HELPER_MAX_OPEN ];
+	VscpRemoteTcpIf *m_drvObjArray[ VSCP_HELPER_MAX_OPEN ];
 
 	/// Mutex for open/close	
-	HANDLE m_objMutex;
+    wxMutex m_mutex;
 
 	/// Counter for users of the interface
 	unsigned long m_instanceCounter;
