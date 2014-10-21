@@ -284,11 +284,11 @@ REPEAT_COMMAND:
     //                                 QUIT
     // *********************************************************************
     if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
-        long test = NSF_CLOSE_IMMEDIATELY;
+        //long test = NSF_CLOSE_IMMEDIATELY;
 		pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ), 
 								DAEMON_LOGMSG_INFO );
-		conn->flags = NSF_CLOSE_IMMEDIATELY;	// Close connection
 		ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
+		conn->flags = NSF_FINISHED_SENDING_DATA;	// Close connection
         return;
     }
 
