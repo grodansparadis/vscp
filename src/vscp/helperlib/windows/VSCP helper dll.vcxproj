@@ -264,6 +264,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <ClCompile Include="..\..\common\guid.cpp" />
     <ClCompile Include="..\..\common\vscphelper.cpp" />
     <ClCompile Include="..\..\common\vscpremotetcpif.cpp" />
+    <ClCompile Include="..\vscphelperlib.cpp" />
     <ClCompile Include="dlldrvobj.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="vscphelperdll.cpp" />
@@ -275,11 +276,12 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\common\net_skeleton.h" />
+    <ClInclude Include="..\..\common\vscp.h" />
     <ClInclude Include="..\..\common\vscpremotetcpif.h" />
+    <ClInclude Include="..\vscphelperlib.h" />
     <ClInclude Include="dlldrvobj.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="..\..\common\vscphelper.h" />
     <ClInclude Include="vscphelperdll.h" />
   </ItemGroup>

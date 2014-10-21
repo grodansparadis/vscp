@@ -60,7 +60,7 @@
 	\def TCPIP_DLL_VERSION
 	Pseudo version string
 */
-#define TCPIP_DLL_VERSION				0x00000001
+#define TCPIP_DLL_VERSION				0x00000003
 /*! 
 	\def TCPIP_VENDOR_STRING
 	Pseudo vendor string
@@ -204,7 +204,7 @@ public:
         Get the Canal protocol level
         \return VSCP Level
     */
-    unsigned long doCmdGetLevel( void ) { return CANAL_LEVEL_STANDARD; }
+    unsigned long doCmdGetLevel( void ) { return VSCP_LEVEL2; }
 
 
     /*!

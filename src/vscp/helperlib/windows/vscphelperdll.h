@@ -44,29 +44,3 @@
 #include "resource.h"		// main symbols
 #include "../../common/canalsuperwrapper.h"
 
-/*!
-	\class CVSCPhelperdllApp
-	\brief Implements helper functionality from the VSCP helper
-	class.
-	See VSCP helper dll.cpp for the implementation of this class.
-*/
-
-/*
-class CVSCPhelperdllApp : public CWinApp
-{
-public:
-	CVSCPhelperdllApp();
-
-// Overrides
-public:
-	/// Init this instance of the dll
-	virtual BOOL InitInstance();
-
-	DECLARE_MESSAGE_MAP()
-
-public:
-
-    // VSCP Interface
-    CCanalSuperWrapper m_vscpif;
-};
-*/

@@ -6,10 +6,49 @@ EXPORTS
     ; Explicit exports can go here
     vscphlp_newSession @1
     vscphlp_closeSession @2
-    vscphlp_OpenInterface @3
-    vscphlp_Open @4
-    vscphlp_Close @5
-    vscphlp_Noop @6
-
-
-	
+    vscphlp_setResponseTimeout @3
+    vscphlp_isConnected @4
+    vscphlp_openInterface @5
+    vscphlp_open @6
+    vscphlp_close @7
+    vscphlp_noop @8
+    vscphlp_getLevel @9
+    vscphlp_clearInQueue @10
+    vscphlp_sendEvent @11
+    vscphlp_sendEventEx @12
+    vscphlp_receiveEvent @13
+    vscphlp_receiveEventEx @14
+	vscphlp_isDataAvailable @15
+    vscphlp_getStatus @16
+    vscphlp_getStatistics @17
+    vscphlp_setFilter @18
+    vscphlp_getVersion @19
+    vscphlp_getDLLVersion @20
+    vscphlp_getVendorString @21
+    vscphlp_getDriverInfo @22
+    vscphlp_shutDownServer @23
+    vscphlp_getVariableString @24
+    vscphlp_setVariableString @25
+    vscphlp_getVariableBool @26
+    vscphlp_setVariableBool @27
+    vscphlp_getVariableInt @28
+    vscphlp_setVariableInt @29
+    vscphlp_getVariableLong @30
+    vscphlp_setVariableLong @31
+    vscphlp_getVariableDouble @32
+    vscphlp_setVariableDouble @33
+    vscphlp_getVariableMeasurement @34
+    vscphlp_setVariableMeasurement @35
+    vscphlp_getVariableEvent @36
+    vscphlp_setVariableEvent @37
+    vscphlp_getVariableEventEx @38
+    vscphlp_setVariableEventEx @39
+    vscphlp_getVariableGUID @40
+    vscphlp_setVariableGUID @41
+    vscphlp_getVariableVSCPdata @42
+    vscphlp_setVariableVSCPdata @43
+    vscphlp_getVariableVSCPclass @44
+    vscphlp_setVariableVSCPclass @45
+    vscphlp_getVariableVSCPtype @46
+    vscphlp_setVariableVSCPtype @47
+    vscphlp_enterReceiveLoop @48

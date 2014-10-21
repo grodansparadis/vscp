@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "../vscphelperlib.h"
+#include "../../vscphelperlib.h"
 
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -14,6 +14,7 @@ int _tmain(int argc, _TCHAR* argv[])
                  "192.168.1.9:9598",
                  "admin",
                  "secret" ); 
+
     vscphlp_Noop( handle );
 
     vscphlp_Close( handle );

@@ -168,6 +168,8 @@ typedef unsigned short                      uint64_t;
 
 #define VSCP_MAX_DATA                       (512-25)
 
+#define VSCP_LEVEL1                         1
+#define VSCP_LEVEL2                         2
 
 #ifdef __cplusplus
 extern "C" {
