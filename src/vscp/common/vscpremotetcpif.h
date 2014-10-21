@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// vscptcpif.h:
+// vscpremotetcpif.h:
 //
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)

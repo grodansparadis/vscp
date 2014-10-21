@@ -80,7 +80,7 @@ public:
 		@parm plog Object to add
 		@return handle or 0 for error
 	*/	
-	long addDriverObject( VscpTcpIf  *pvscpif );
+	long addDriverObject( VscpRemoteTcpIf  *pvscpif );
 
 	/*!
 		Get a driver object from its handle
@@ -89,7 +89,7 @@ public:
 		@return pointer to object or NULL if invalid
 				handle.
 	*/
-	VscpTcpIf *getDriverObject( long handle );
+	VscpRemoteTcpIf *getDriverObject( long handle );
 
 	/*!
 		Remove a driver object
@@ -102,7 +102,7 @@ public:
 		The log file object
 		This is the array with driver objects (max 256 objects
 	*/
-	VscpTcpIf *m_pvscpifArray[ VSCP_INTERFACE_MAX_OPEN ];
+	VscpRemoteTcpIf *m_pvscpifArray[ VSCP_INTERFACE_MAX_OPEN ];
 	
 	
 	/// Mutex for open/close

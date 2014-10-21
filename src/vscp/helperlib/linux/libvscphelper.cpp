@@ -86,7 +86,7 @@ CVSCPLApp::~CVSCPLApp()
 
         if (NULL == m_pvscpifArray[ i ]) {
 
-            VscpTcpIf *pvscpif = getDriverObject(i);
+            VscpRemoteTcpIf *pvscpif = getDriverObject(i);
             if (NULL != pvscpif) {
                 pvscpif->doCmdClose();
                 delete m_pvscpifArray[ i ];
@@ -115,7 +115,7 @@ CVSCPLApp theApp;
 // addDriverObject
 //
 
-long CVSCPLApp::addDriverObject(VscpTcpIf *pvscpif)
+long CVSCPLApp::addDriverObject(VscpRemoteTcpIf *pvscpif)
 {
     long h = 0;
 
@@ -142,7 +142,7 @@ long CVSCPLApp::addDriverObject(VscpTcpIf *pvscpif)
 // getDriverObject
 //
 
-VscpTcpIf *CVSCPLApp::getDriverObject(long h)
+VscpRemoteTcpIf *CVSCPLApp::getDriverObject(long h)
 {
     long idx = h - 1681;
 
@@ -202,7 +202,7 @@ BOOL CVSCPLApp::InitInstance()
 //-------------------------------------------------------------------------
 
 /*!
-    \fn long vscphlp_gethandle(void)
+    \fn long vscphlp_newSession(void)
     \brief Initialise the library. This is only needed
             if you use methods which has a handle in them that is
             methods that talk to the VSCP daemon TCP/IP interface.
@@ -210,16 +210,16 @@ BOOL CVSCPLApp::InitInstance()
             zero if the initialisation failed. 
  */
 
-extern "C" long vscphlp_gethandle(void)
+extern "C" long vscphlp_newSession(void)
 {
-    VscpTcpIf *pvscpif = new VscpTcpIf;
+    VscpRemoteTcpIf *pvscpif = new VscpRemoteTcpIf;
     if (NULL == pvscpif) return 0;
 
     return theApp.addDriverObject(pvscpif);
 }
 
 /*!
-    \fn void vscphlp_releasehandle(long handle)
+    \fn void vscphlp_closeSession(long handle)
     \brief Clean up the library. This is only needed
             if you use methods which has a handle in them that is
             methods that talk to the VSCP daemon TCP/IP interface.
@@ -227,10 +227,10 @@ extern "C" long vscphlp_gethandle(void)
             zero if the initialisation failed. 
  */
 
-extern "C" void vscphlp_releasehandle(long handle)
+extern "C" void vscphlp_closeSession(long handle)
 {
 
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL != pvscpif) pvscpif->doCmdClose();
 
     theApp.removeDriverObject(handle);
@@ -246,7 +246,7 @@ extern "C" void vscphlp_releasehandle(long handle)
  */
 extern "C" void vscphlp_setResponseTimeout(long handle, unsigned char to)
 {
-    VscpTcpIf *pvscpif = new VscpTcpIf;
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return;
 
     pvscpif->setResponseTimeout((uint8_t) to);
@@ -261,7 +261,7 @@ extern "C" void vscphlp_setResponseTimeout(long handle, unsigned char to)
 extern "C" int vscphlp_isConnected(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     return(pvscpif->isConnected() ? TRUE : FALSE);
@@ -276,7 +276,7 @@ extern "C" int vscphlp_isConnected(const long handle)
 BOOL vscphlp_checkReturnValue(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     return(pvscpif->checkReturnValue() ? TRUE : FALSE);
@@ -292,12 +292,12 @@ BOOL vscphlp_checkReturnValue(const long handle)
     \return CANAL_ERROR_SUCCESS if channel is open or CANAL error code  if error 
     or the channel is already opened or other error occur.
  */
-extern "C" long vscphlp_doCmdOpenParam(const long handle,
-        const char *pInterface,
-        unsigned long flags)
+extern "C" long vscphlp_OpenInterface(const long handle,
+										const char *pInterface,
+										unsigned long flags)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
 
     wxString strInterface = wxString::FromAscii(pInterface);
@@ -314,23 +314,21 @@ extern "C" long vscphlp_doCmdOpenParam(const long handle,
     \return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 
         or the channel is already opened or other error occur.
  */
-extern "C" long vscphlp_doCmdOpen(const long handle,
-        const char *pHostname,
-        const short port,
-        const char *pUsername,
-        const char *pPassword)
+extern "C" long vscphlp_Open(const long handle,
+								const char *pHostname,
+								const char *pUsername,
+								const char *pPassword)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
 
     wxString strHostname = wxString::FromAscii(pHostname);
     wxString strUsername = wxString::FromAscii(pUsername);
     wxString strPassword = wxString::FromAscii(pPassword);
     return pvscpif->doCmdOpen(strHostname,
-            port,
-            strUsername,
-            strPassword);
+								strUsername,
+								strPassword);
 }
 
 /*!
@@ -338,10 +336,10 @@ extern "C" long vscphlp_doCmdOpen(const long handle,
     \param handle to server object
     \return CANAL_ERROR_SUCCESS on success and error code if failure.
  */
-extern "C" int vscphlp_doCmdClose(const long handle)
+extern "C" int vscphlp_Close(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdClose();
 }
@@ -351,10 +349,10 @@ extern "C" int vscphlp_doCmdClose(const long handle)
     \param handle to server object 
     \return CANAL_ERROR_SUCCESS on success and error code if failure.
  */
-extern "C" int vscphlp_doCmdNOOP(const long handle)
+extern "C" int vscphlp_NOOP(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdNOOP();
 }
@@ -367,7 +365,7 @@ extern "C" int vscphlp_doCmdNOOP(const long handle)
 extern "C" int vscphlp_doCmdClear(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdClear();
 }
@@ -380,7 +378,7 @@ extern "C" int vscphlp_doCmdClear(const long handle)
 extern "C" unsigned long vscphlp_doCmdGetLevel(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdGetLevel();
 }
@@ -397,7 +395,7 @@ extern "C" int vscphlp_doCmdSend(const long handle,
         const vscpEvent *pEvent)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdSend(pEvent);
 }
@@ -412,7 +410,7 @@ extern "C" int vscphlp_doCmdSendEx(const long handle,
         const vscpEventEx *pEvent)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdSendEx(pEvent);
 }
@@ -427,7 +425,7 @@ extern "C" int vscphlp_doCmdSendLevel1(const long handle,
         const canalMsg *pMsg)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdSendLevel1(pMsg);
 }
@@ -440,7 +438,7 @@ extern "C" int vscphlp_doCmdSendLevel1(const long handle,
 extern "C" int vscphlp_doCmdReceive(const long handle, vscpEvent *pEvent)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdReceive(pEvent);
 }
@@ -453,7 +451,7 @@ extern "C" int vscphlp_doCmdReceive(const long handle, vscpEvent *pEvent)
 extern "C" int vscphlp_doCmdReceiveEx(const long handle, vscpEventEx *pEvent)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdReceiveEx(pEvent);
 }
@@ -471,7 +469,7 @@ extern "C" int vscphlp_doCmdReceiveEx(const long handle, vscpEventEx *pEvent)
 extern "C" int vscphlp_doCmdReceiveLevel1(const long handle, canalMsg *pCanalMsg)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdReceiveLevel1(pCanalMsg);
 }
@@ -489,7 +487,7 @@ extern "C" int vscphlp_doCmdReceiveLevel1(const long handle, canalMsg *pCanalMsg
 extern "C" int vscphlp_doCmdEnterReceiveLoop(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdEnterReceiveLoop();
 }
@@ -510,7 +508,7 @@ extern "C" int vscphlp_doCmdBlockReceive(const long handle,
         unsigned long timeout)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdBlockReceive(pEvent, timeout);
 }
@@ -524,7 +522,7 @@ extern "C" int vscphlp_doCmdBlockReceive(const long handle,
 extern "C" int vscphlp_doCmdDataAvailable(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdDataAvailable();
 }
@@ -537,7 +535,7 @@ extern "C" int vscphlp_doCmdDataAvailable(const long handle)
 extern "C" int vscphlp_doCmdStatus(const long handle, canalStatus *pStatus)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdStatus(pStatus);
 }
@@ -551,7 +549,7 @@ extern "C" int vscphlp_doCmdStatistics(const long handle,
         canalStatistics *pStatistics)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdStatistics(pStatistics);
 }
@@ -564,7 +562,7 @@ extern "C" int vscphlp_doCmdStatistics(const long handle,
 extern "C" int vscphlp_doCmdFilter(const long handle, const vscpEventFilter *pFilter)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdFilter(pFilter);
 }
@@ -584,7 +582,7 @@ extern "C" int vscphlp_doCmdFilterString(const long handle,
     wxString mask = wxString::FromAscii(pmask);
 
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdFilter(filter, mask);
 }
@@ -597,7 +595,7 @@ extern "C" int vscphlp_doCmdFilterString(const long handle,
 extern "C" unsigned long vscphlp_doCmdVersion(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdVersion();
 }
@@ -609,7 +607,7 @@ extern "C" unsigned long vscphlp_doCmdVersion(const long handle)
 extern "C" unsigned long vscphlp_doCmdDLLVersion(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdDLLVersion();
 }
@@ -621,7 +619,7 @@ extern "C" unsigned long vscphlp_doCmdDLLVersion(const long handle)
 extern "C" const char *vscphlp_doCmdVendorString(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return NULL;
     return pvscpif->doCmdVendorString();
 }
@@ -633,7 +631,7 @@ extern "C" const char *vscphlp_doCmdVendorString(const long handle)
 extern "C" const char *vscphlp_doCmdGetDriverInfo(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return NULL;
     return pvscpif->doCmdGetDriverInfo();
 }
@@ -646,7 +644,7 @@ extern "C" const char *vscphlp_doCmdGetDriverInfo(const long handle)
 extern "C" int vscphlp_doCmdGetGUID(const long handle, char *pGUID)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdGetGUID(pGUID);
 }
@@ -660,7 +658,7 @@ extern "C" int vscphlp_doCmdGetGUID(const long handle, char *pGUID)
 extern "C" int vscphlp_doCmdSetGUID(const long handle, const char *pGUID)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdSetGUID(pGUID);
 }
@@ -675,7 +673,7 @@ extern "C" int vscphlp_doCmdGetChannelInfo(const long handle,
         VSCPChannelInfo *pChannelInfo)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdGetChannelInfo(pChannelInfo);
 }
@@ -690,7 +688,7 @@ extern "C" int vscphlp_doCmdGetChannelID(const long handle,
         uint32_t *pChannelID)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdGetChannelID(pChannelID);
 }
@@ -714,7 +712,7 @@ extern "C" int vscphlp_doCmdInterfaceList(const long handle, char **parray)
     parray = NULL;
 
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     if (!pvscpif->doCmdInterfaceList(array)) return CANAL_ERROR_INIT_FAIL;
 
@@ -743,7 +741,7 @@ extern "C" int vscphlp_doCmdInterfaceList(const long handle, char **parray)
 extern "C" int vscphlp_doCmdShutDown(const long handle)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return CANAL_ERROR_INIT_FAIL;
     return pvscpif->doCmdShutDown();
 }
@@ -768,7 +766,7 @@ extern "C" int vscphlp_getVariableString(const long handle,
     wxString strValue;
 
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     if (!pvscpif->getVariableString(name, &strValue)) {
@@ -795,7 +793,7 @@ extern "C" int vscphlp_setVariableString(const long handle, const char *pName, c
     if (NULL == pValue) return FALSE;
 
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -816,7 +814,7 @@ extern "C" int vscphlp_setVariableString(const long handle, const char *pName, c
 extern "C" int vscphlp_getVariableBool(const long handle, const char *pName, bool *bValue)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -834,7 +832,7 @@ extern "C" int vscphlp_getVariableBool(const long handle, const char *pName, boo
 extern "C" int vscphlp_setVariableBool(const long handle, const char *pName, bool bValue)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -852,7 +850,7 @@ extern "C" int vscphlp_setVariableBool(const long handle, const char *pName, boo
 extern "C" int vscphlp_getVariableInt(const long handle, const char *pName, int *value)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return false;
 
     wxString name = wxString::FromAscii(pName);
@@ -870,7 +868,7 @@ extern "C" int vscphlp_getVariableInt(const long handle, const char *pName, int 
 extern "C" int vscphlp_setVariableInt(const long handle, const char *pName, int value)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -888,7 +886,7 @@ extern "C" int vscphlp_setVariableInt(const long handle, const char *pName, int 
 extern "C" int vscphlp_getVariableLong(const long handle, const char *pName, long *value)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -906,7 +904,7 @@ extern "C" int vscphlp_getVariableLong(const long handle, const char *pName, lon
 extern "C" int vscphlp_setVariableLong(const long handle, const char *pName, long value)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -924,7 +922,7 @@ extern "C" int vscphlp_setVariableLong(const long handle, const char *pName, lon
 extern "C" int vscphlp_getVariableDouble(const long handle, const char *pName, double *value)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -942,7 +940,7 @@ extern "C" int vscphlp_getVariableDouble(const long handle, const char *pName, d
 extern "C" int vscphlp_setVariableDouble(const long handle, const char *pName, double value)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -961,7 +959,7 @@ extern "C" int vscphlp_setVariableDouble(const long handle, const char *pName, d
 extern "C" int vscphlp_getVariableMeasurement(const long handle, const char *pName, char *pValue)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -987,7 +985,7 @@ extern "C" int vscphlp_getVariableMeasurement(const long handle, const char *pNa
 extern "C" int vscphlp_setVariableMeasurement(const long handle, const char *pName, char *pValue)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1006,7 +1004,7 @@ extern "C" int vscphlp_setVariableMeasurement(const long handle, const char *pNa
 extern "C" int vscphlp_getVariableEvent(const long handle, const char *pName, vscpEvent *pEvent)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1024,7 +1022,7 @@ extern "C" int vscphlp_getVariableEvent(const long handle, const char *pName, vs
 extern "C" int vscphlp_setVariableEvent(const long handle, const char *pName, vscpEvent *pEvent)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1042,7 +1040,7 @@ extern "C" int vscphlp_setVariableEvent(const long handle, const char *pName, vs
 extern "C" int vscphlp_getVariableEventEx(const long handle, const char *pName, vscpEventEx *pEvent)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1060,7 +1058,7 @@ extern "C" int vscphlp_getVariableEventEx(const long handle, const char *pName, 
 extern "C" int vscphlp_setVariableEventEx(const long handle, const char *pName, vscpEventEx *pEvent)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1078,7 +1076,7 @@ extern "C" int vscphlp_setVariableEventEx(const long handle, const char *pName, 
 extern "C" int vscphlp_getVariableGUID(const long handle, const char *pName, cguid& GUID)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1096,7 +1094,7 @@ extern "C" int vscphlp_getVariableGUID(const long handle, const char *pName, cgu
 extern "C" int vscphlp_setVariableGUID(const long handle, const char *pName, cguid& GUID)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1116,7 +1114,7 @@ extern "C" int vscphlp_setVariableGUID(const long handle, const char *pName, cgu
 extern "C" int vscphlp_getVariableVSCPdata(const long handle, const char *pName, uint16_t *psizeData, uint8_t *pData)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1139,7 +1137,7 @@ extern "C" int vscphlp_setVariableVSCPdata(const long handle,
         uint8_t *pData)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1159,7 +1157,7 @@ extern "C" int vscp_getVariableVSCPclass(const long handle,
         uint16_t *vscp_class)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1177,7 +1175,7 @@ extern "C" int vscp_getVariableVSCPclass(const long handle,
 extern "C" int vscphlp_setVariableVSCPclass(const long handle, const char *pName, uint16_t vscp_class)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1195,7 +1193,7 @@ extern "C" int vscphlp_setVariableVSCPclass(const long handle, const char *pName
 extern "C" int vscphlp_getVariableVSCPtype(const long handle, const char *pName, uint8_t *vscp_type)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
@@ -1213,7 +1211,7 @@ extern "C" int vscphlp_getVariableVSCPtype(const long handle, const char *pName,
 extern "C" int vscphlp_setVariableVSCPtype(const long handle, const char *pName, uint8_t vscp_type)
 {
     // Get VSCP TCP/IP object
-    VscpTcpIf *pvscpif = theApp.getDriverObject(handle);
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
     if (NULL == pvscpif) return FALSE;
 
     wxString name = wxString::FromAscii(pName);
