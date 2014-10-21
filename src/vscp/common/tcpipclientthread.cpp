@@ -99,7 +99,7 @@ void *VSCPClientThread::Entry()
 		if ( 0 == str.Length() ) continue;
 
 		// Bind to this interface
-		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, (const char *)str.mbc_str(), NULL ); //
+		ns_bind( &m_pCtrlObject->m_mgrTcpIpServer, (const char *)str.mbc_str(), NULL ); 
 	}
 
 	m_pCtrlObject->logMsg(_T("TCP Client: Thread started.\n"), DAEMON_LOGMSG_INFO);
@@ -197,7 +197,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 			pClientItem->m_bOpen = false;
 			conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
 			
-			// Add the client to the Client List
+			// Remove the client from the Client List
 			pCtrlObject->m_wxClientMutex.Lock();
 			pCtrlObject->removeClient( pClientItem );
 			pCtrlObject->m_wxClientMutex.Unlock();
@@ -212,7 +212,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
             pClientItem->m_readBuffer += wxString::FromUTF8( rbuf );
 
 			// Check if command already in buffer
-			if ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
+			while ( wxNOT_FOUND != ( pos4lf = pClientItem->m_readBuffer.Find ( (const char)0x0a ) ) ) {
 				wxString strCmdGo = pClientItem->m_readBuffer.Mid( 0, pos4lf );
 				pCtrlObject->getTCPIPServer()->CommandHandler( conn, 
 										pCtrlObject, 

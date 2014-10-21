@@ -143,3 +143,6 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/vscpworks/vscpworks.vcxproj.filters
 /src/common/_mongoose.c
 /src/common/_mongoose.h
+/src/vscp/drivers/level2/logger/win32/Output-Build.txt
+/src/vscp/helperlib/windows/test/test.vcxproj
+/src/vscp/helperlib/windows/test/test.vcxproj.filters

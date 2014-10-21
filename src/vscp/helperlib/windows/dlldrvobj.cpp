@@ -33,26 +33,23 @@
 CHelpDllObj::CHelpDllObj()
 {
 	m_instanceCounter = 0;
-	m_objMutex = CreateMutex( NULL, true, _("__HELPER_DLL_MUTEX__") );
 
 	// Init the driver array
 	for ( int i = 0; i<VSCP_HELPER_MAX_OPEN; i++ ) {
 		m_drvObjArray[ i ] = NULL;
 	}
-
-	UNLOCK_MUTEX( m_objMutex );
 }
 
 
 CHelpDllObj::~CHelpDllObj()
 {
-	LOCK_MUTEX( m_objMutex );
+    m_mutex.Lock();
 	
 	for ( int i = 0; i<VSCP_HELPER_MAX_OPEN; i++ ) {
 		
-		if ( NULL == m_drvObjArray[ i ] ) {
+		if ( NULL != m_drvObjArray[ i ] ) {
 			
-			CCanalSuperWrapper *pdrvObj =  getDriverObject( i );
+			VscpRemoteTcpIf *pdrvObj =  getDriverObject( i );
 			if ( NULL != pdrvObj ) { 
 				pdrvObj->doCmdClose();	
 				delete m_drvObjArray[ i ];
@@ -61,15 +58,9 @@ CHelpDllObj::~CHelpDllObj()
 		}
 	}
 
-	UNLOCK_MUTEX( m_objMutex );
+    m_mutex.Unlock();
 
-	CloseHandle( m_objMutex );
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// The one and only CDllDrvObjgerdllApp object
-
-CHelpDllObj theApp;
 
 
 
@@ -77,11 +68,11 @@ CHelpDllObj theApp;
 // addDriverObject
 //
 
-long CHelpDllObj::addDriverObject( CCanalSuperWrapper *pdrvObj )
+long CHelpDllObj::addDriverObject( VscpRemoteTcpIf *pdrvObj )
 {
 	long h = 0;
 
-	LOCK_MUTEX( m_objMutex );
+    m_mutex.Lock();
 	for ( int i=0; i<VSCP_HELPER_MAX_OPEN; i++ ) {
 	
 		if ( NULL == m_drvObjArray[ i ] ) {
@@ -94,7 +85,7 @@ long CHelpDllObj::addDriverObject( CCanalSuperWrapper *pdrvObj )
 
 	}
 
-	UNLOCK_MUTEX( m_objMutex );
+    m_mutex.Unlock();
 
 	return h;
 }
@@ -104,7 +95,7 @@ long CHelpDllObj::addDriverObject( CCanalSuperWrapper *pdrvObj )
 // getDriverObject
 //
 
-CCanalSuperWrapper * CHelpDllObj::getDriverObject( long h )
+VscpRemoteTcpIf * CHelpDllObj::getDriverObject( long h )
 {
 	long idx = h - 1681;
 
@@ -127,10 +118,15 @@ void CHelpDllObj::removeDriverObject( long h )
 	if ( idx < 0 ) return;
 	if ( idx >= VSCP_HELPER_MAX_OPEN ) return;
 
-	LOCK_MUTEX( m_objMutex );
-	if ( NULL != m_drvObjArray[ idx ] ) delete m_drvObjArray[ idx ];
+	//LOCK_MUTEX( m_objMutex );
+    m_mutex.Lock();
+	if ( NULL != m_drvObjArray[ idx ] ) 
+    {
+        delete m_drvObjArray[ idx ];
+    }
 	m_drvObjArray[ idx ] = NULL;
-	UNLOCK_MUTEX( m_objMutex );
+	//UNLOCK_MUTEX( m_objMutex );
+    m_mutex.Unlock();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -138,6 +134,9 @@ void CHelpDllObj::removeDriverObject( long h )
 
 BOOL CHelpDllObj::InitInstance() 
 {
+    // http://osdir.com/ml/lib.wxwindows.general/2004-01/msg00759.html
+    // http://sudarsun.in/blog/2009/02/error-can-not-start-thread-error-writing-tls-error-87-the-parameter-is-incorrect/
+    //wxInitialize();
 	m_instanceCounter++;
 	return TRUE;
 }
