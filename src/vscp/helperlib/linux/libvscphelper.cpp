@@ -52,12 +52,14 @@ void _fini() __attribute__((destructor));
 
 void _init()
 {
-    printf("initializing\n");
+    wxLogDebug(_("initializing"));
+	wxApp::SetInstance(new wxApp());
+	new wxInitializer();
 }
 
 void _fini()
 {
-    printf("finishing\n");
+    wxLogDebug("finishing");
 }
 
 
@@ -67,6 +69,8 @@ void _fini()
 
 CVSCPLApp::CVSCPLApp()
 {
+	wxLogDebug("application constructor");
+	
     m_instanceCounter = 0;
     pthread_mutex_init(&m_objMutex, NULL);
 
@@ -76,6 +80,7 @@ CVSCPLApp::CVSCPLApp()
     }
 
     UNLOCK_MUTEX(m_objMutex);
+	wxLogDebug("constructed");
 }
 
 CVSCPLApp::~CVSCPLApp()
@@ -176,7 +181,10 @@ void CVSCPLApp::removeDriverObject(long h)
 
 BOOL CVSCPLApp::InitInstance()
 {
+	printf("InitInstance");
     m_instanceCounter++;
+	wxInitialize();
+	printf("InitInstance done");
     return TRUE;
 }
 

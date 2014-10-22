@@ -77,9 +77,11 @@ extern CVSCPLApp theApp;
 //
 
 #ifdef WIN32
-extern "C" long WINAPI EXPORT vscphlp_newSession( void )
+extern "C" 
+long WINAPI EXPORT vscphlp_newSession( void )
 #else
-extern "C" long vscphlp_newSession( void )
+extern "C" long 
+EXPORT vscphlp_newSession( void ) 
 #endif
 {
 	//if ( NULL == theApp ) return NULL;
@@ -115,8 +117,8 @@ extern "C" long WINAPI EXPORT vscphlp_openInterface( long handle,
                                                             unsigned long flags )
 #else
 extern "C" long vscphlp_openInterface( long handle,
-												            const char *pInterface,
-                                                            unsigned long flags )
+										const char *pInterface,
+                                        unsigned long flags )
 #endif
 {	
 	wxString strInterface;
@@ -137,9 +139,9 @@ extern "C" long WINAPI EXPORT vscphlp_open( const long handle,
                                                     const char *pPassword )
 #else
 extern "C" long vscphlp_open( const long handle,
-												    const char *pHostname, 
-                                                    const char *pUsername, 
-                                                    const char *pPassword )
+									const char *pHostname, 
+                                    const char *pUsername, 
+                                    const char *pPassword )
 #endif
 {	
 	wxString strHostname;

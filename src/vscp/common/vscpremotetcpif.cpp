@@ -390,7 +390,8 @@ long VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     }
     wxLogDebug( _("Username OK") );
     doClrInputQueue();
-
+	wxLogDebug( _("X1") );
+	
     // Password
     wxstr = strPassword;
     wxstr.Trim(false);

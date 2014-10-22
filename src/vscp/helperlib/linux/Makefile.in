@@ -67,7 +67,7 @@ distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
 lib:   libvscphelper.so
-        ar rcs libvscphelper.a libvscphelper.o
+	ar rcs libvscphelper.a libvscphelper.o
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
