@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dlldrvobj.cpp,v $                                       
-// $Date: 2005/08/10 21:09:09 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 //
 // Linux
 // =====
@@ -60,7 +56,7 @@ CDllDrvObj::CDllDrvObj()
 {
 	m_instanceCounter = 0;
 #ifdef WIN32
-	m_objMutex = CreateMutex( NULL, true, "__CANAL_XAPDRV_MUTEX__" );
+	m_objMutex = CreateMutex( NULL, true, TEXT("__CANAL_XAPDRV_MUTEX__") );
 #else
 	pthread_mutex_init( &m_objMutex, NULL );
 #endif

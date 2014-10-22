@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: xapobj.h,v $                                       
-// $Date: 2005/10/03 16:30:12 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.6 $ 
 
 #if !defined(XAPOBJ__INCLUDED_)
 #define XAPOBJ__INCLUDED_
@@ -35,6 +31,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "stdio.h"
 #include <time.h>
 #include <winsock.h>
 
@@ -69,10 +66,10 @@
 #include "../../../../../common/dllist.h"
 
 
-#define CANAL_DLL_XAPDRV_OBJ_MUTEX	"___CANAL__DLL_XAPDRV_OBJ_MUTEX____"
-#define CANAL_DLL_XAPDRV_PORT_MUTEX	"___CANAL__DLL_XAPDRV_PORT_MUTEX____"
-#define CANAL_DLL_XAPDRV_RECEIVE_MUTEX	"___CANAL__DLL_XAPDRV_RECEIVE_MUTEX____"
-#define CANAL_DLL_XAPDRV_TRANSMIT_MUTEX "___CANAL__DLL_XAPDRV_TRANSMIT_MUTEX____"
+#define CANAL_DLL_XAPDRV_OBJ_MUTEX	TEXT("___CANAL__DLL_XAPDRV_OBJ_MUTEX____")
+#define CANAL_DLL_XAPDRV_PORT_MUTEX	TEXT("___CANAL__DLL_XAPDRV_PORT_MUTEX____")
+#define CANAL_DLL_XAPDRV_RECEIVE_MUTEX	TEXT("___CANAL__DLL_XAPDRV_RECEIVE_MUTEX____")
+#define CANAL_DLL_XAPDRV_TRANSMIT_MUTEX TEXT("___CANAL__DLL_XAPDRV_TRANSMIT_MUTEX____")
 
 // Max messages in input queue
 #define XAP_MAX_RCVMSG		512

@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: xapobj.cpp,v $                                       
-// $Date: 2005/10/04 20:15:08 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.7 $ 
 
 #include "stdlib.h"
 #include "stdio.h"
