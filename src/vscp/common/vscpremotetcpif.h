@@ -141,9 +141,10 @@ public:
 
     /*!
         checkReturnValue
+        \param bClear Clear the input bugger before starting to wait for received data.
         \return Return false for "-OK" and true for "+OK"
     */
-    bool checkReturnValue( void );
+    bool checkReturnValue( bool bClear=false );
 
     /*!
         Clear the input queue

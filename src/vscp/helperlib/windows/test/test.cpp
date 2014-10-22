@@ -10,14 +10,14 @@ int _tmain(int argc, _TCHAR* argv[])
     long handle;
     handle = vscphlp_newSession();
 
-    vscphlp_Open( handle, 
+    vscphlp_open( handle, 
                  "192.168.1.9:9598",
                  "admin",
-                 "secret" ); 
+                 "secret2" ); 
 
-    vscphlp_Noop( handle );
+    vscphlp_noop( handle );
 
-    vscphlp_Close( handle );
+    vscphlp_close( handle );
     vscphlp_closeSession( handle );
    
 	return 0;
