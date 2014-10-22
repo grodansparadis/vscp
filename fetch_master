@@ -1,0 +1,8 @@
+#!/bin/sh
+sudo rm -rf vscp_software-master
+sudo wget https://github.com/grodansparadis/vscp_software/archive/master.zip
+sudo unzip master.zip
+sudo rm -rf master.zip
+cd vscp_software-master
+sudo ./configure
+sudo make
