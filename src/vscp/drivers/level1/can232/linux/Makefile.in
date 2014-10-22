@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALLOGGER_OBJECTS =  can232drv.o can232obj.o ../../../../common/guid.o ../../../../../common/dllist.o ../../../../common/devicelist.o ../../../../../common/com.o
-PROJOBJS = ../../../../common/guid.o ../../../../../common/dllist.o ../../../../common/devicelist.o
+CANALLOGGER_OBJECTS =  can232drv.o can232obj.o ../../../../common/guid.o ../../../../../common/dllist.o  ../../../../../common/com.o
+PROJOBJS = ../../../../common/guid.o ../../../../../common/dllist.o 
 
 
 ### Targets: ###

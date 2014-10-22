@@ -171,7 +171,6 @@ public:
     /*!
         Open communication interface.
         \param strHostname Host to connect to.
-        \param port TCP/IP port to use.
         \param strUsername Username.
         \param strPassword Username.
         \return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 

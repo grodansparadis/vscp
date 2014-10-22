@@ -457,7 +457,6 @@ CVSCPLogWrkTread::Entry()
 	// variables
 
 	if (m_srv.doCmdOpen( m_pLog->m_host,
-		                    m_pLog->m_port,
 		                    m_pLog->m_username,
 		                    m_pLog->m_password) <= 0) {
 		return NULL;

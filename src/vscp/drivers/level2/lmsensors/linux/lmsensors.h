@@ -72,7 +72,7 @@ using namespace std;
 
 // Forward declarations
 class ClmsensorsWrkTread;
-class VscpTcpIf;
+class VscpRemoteTcpIf;
 class wxFile;
 
 
@@ -136,7 +136,7 @@ public:
     ClmsensorsWrkTread *m_pthreadWork;
     
      /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 	
 	// Queue
 	std::list<vscpEvent *> m_sendList;
@@ -180,7 +180,7 @@ public:
     virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Sensor object
     Clmsensors *m_pObj;

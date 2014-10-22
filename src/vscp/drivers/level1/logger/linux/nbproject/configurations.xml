@@ -10,6 +10,8 @@
         <itemPath>../../../../../common/crc.h</itemPath>
         <itemPath>../../../../../common/dllist.c</itemPath>
         <itemPath>../../../../../common/dllist.h</itemPath>
+        <itemPath>../../../../../common/mongoose.h</itemPath>
+        <itemPath>../../../../../common/net_skeleton.h</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -17,16 +19,28 @@
           <itemPath>../../../../common/canal_macro.h</itemPath>
           <itemPath>../../../../common/canaldlldef.h</itemPath>
           <itemPath>../../../../common/clientlist.h</itemPath>
+          <itemPath>../../../../common/controlobject.h</itemPath>
+          <itemPath>../../../../common/daemonvscp.h</itemPath>
           <itemPath>../../../../common/devicelist.cpp</itemPath>
           <itemPath>../../../../common/devicelist.h</itemPath>
           <itemPath>../../../../common/devicethread.h</itemPath>
+          <itemPath>../../../../common/dm.h</itemPath>
           <itemPath>../../../../common/guid.cpp</itemPath>
           <itemPath>../../../../common/guid.h</itemPath>
+          <itemPath>../../../../common/interfacelist.h</itemPath>
+          <itemPath>../../../../common/tables.h</itemPath>
+          <itemPath>../../../../common/tcpipclientthread.h</itemPath>
+          <itemPath>../../../../common/udpclientthread.h</itemPath>
+          <itemPath>../../../../common/udpthread.h</itemPath>
           <itemPath>../../../../common/userlist.h</itemPath>
+          <itemPath>../../../../common/variablecodes.h</itemPath>
           <itemPath>../../../../common/vscp.h</itemPath>
           <itemPath>../../../../common/vscp_class.h</itemPath>
           <itemPath>../../../../common/vscp_type.h</itemPath>
+          <itemPath>../../../../common/vscpautomation.h</itemPath>
           <itemPath>../../../../common/vscpdlldef.h</itemPath>
+          <itemPath>../../../../common/vscphelper.h</itemPath>
+          <itemPath>../../../../common/vscpvariable.h</itemPath>
         </logicalFolder>
         <logicalFolder name="drivers" displayName="drivers" projectFiles="true">
           <logicalFolder name="level1" displayName="level1" projectFiles="true">
@@ -59,6 +73,10 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2 -fPIC"/>
+        <element flagsID="1" commonFlags="-g -O2 -fPIC"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -69,43 +87,51 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>NS_ENABLE_SSL</Elem>
+              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
             </incDir>
             <preprocessorList>
+              <Elem>NS_ENABLE_SSL</Elem>
+              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
         </makeTool>
       </makefileType>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="../../../../common/userlist.h" ex="false" tool="3" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../common/log.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="canallogger.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <folder path="src">
         <ccTool>
@@ -115,6 +141,8 @@
         </ccTool>
       </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>

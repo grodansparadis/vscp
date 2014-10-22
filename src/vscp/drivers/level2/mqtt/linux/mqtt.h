@@ -72,8 +72,7 @@ using namespace std;
 
 // Forward declarations
 class CWrkThread;
-class VscpTcpIf;
-//class wxFile;
+class VscpRemoteTcpIf;
 class Cmqtt;
 
 // Subscribe base class
@@ -228,7 +227,7 @@ public:
     CWrkThread *m_pthreadWork;
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 	
 	// Queue
 	std::list<vscpEvent *> m_sendList;
@@ -271,7 +270,7 @@ public:
     virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Sensor object
     Cmqtt *m_pObj;

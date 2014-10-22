@@ -73,7 +73,7 @@ using namespace std;
 
 // Forward declarations
 class CSocketCanWorkerTread;
-class VscpTcpIf;
+class VscpRemoteTcpIf;
 class wxFile;
 
 
@@ -140,7 +140,7 @@ public:
     CSocketCanWorkerTread *m_pthreadWorker;
     
      /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 	
 	// Queue
 	//VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
@@ -187,7 +187,7 @@ public:
     virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Sensor object
     Csocketcan *m_pObj;

@@ -80,7 +80,38 @@ void *workThread( void *id )
 	void* handle = 0;
 	//parent *(*open)(void) = 0
 	//const char* error = 0;
-	CDeviceItem m_item;
+	LPFNDLL_CANALOPEN			        m_proc_CanalOpen;
+	LPFNDLL_CANALCLOSE				    m_proc_CanalClose;
+	LPFNDLL_CANALGETLEVEL			    m_proc_CanalGetLevel;
+	LPFNDLL_CANALSEND				    m_proc_CanalSend;
+	LPFNDLL_CANALRECEIVE			    m_proc_CanalReceive;
+	LPFNDLL_CANALDATAAVAILABLE		    m_proc_CanalDataAvailable;
+	LPFNDLL_CANALGETSTATUS			    m_proc_CanalGetStatus;
+	LPFNDLL_CANALGETSTATISTICS		    m_proc_CanalGetStatistics;
+	LPFNDLL_CANALSETFILTER			    m_proc_CanalSetFilter;
+	LPFNDLL_CANALSETMASK			    m_proc_CanalSetMask;
+	LPFNDLL_CANALSETBAUDRATE		    m_proc_CanalSetBaudrate;
+	LPFNDLL_CANALGETVERSION			    m_proc_CanalGetVersion;
+	LPFNDLL_CANALGETDLLVERSION		    m_proc_CanalGetDllVersion;
+	LPFNDLL_CANALGETVENDORSTRING	    m_proc_CanalGetVendorString;
+	// Generation 2
+	LPFNDLL_CANALBLOCKINGSEND		    m_proc_CanalBlockingSend;
+	LPFNDLL_CANALBLOCKINGRECEIVE	    m_proc_CanalBlockingReceive;
+	LPFNDLL_CANALGETDRIVERINFO		    m_proc_CanalGetdriverInfo;
+
+    // Level II driver methods
+    LPFNDLL_VSCPOPEN			        m_proc_VSCPOpen;
+	LPFNDLL_VSCPCLOSE				    m_proc_VSCPClose;
+	LPFNDLL_VSCPBLOCKINGSEND			m_proc_VSCPBlockingSend;
+	LPFNDLL_VSCPBLOCKINGRECEIVE			m_proc_VSCPBlockingReceive;
+    LPFNDLL_VSCPGETLEVEL				m_proc_VSCPGetLevel;
+    LPFNDLL_VSCPGETVERSION			    m_proc_VSCPGetVersion;
+	LPFNDLL_VSCPGETDLLVERSION		    m_proc_VSCPGetDllVersion;
+	LPFNDLL_VSCPGETVENDORSTRING	        m_proc_VSCPGetVendorString;
+    LPFNDLL_VSCPGETDRIVERINFO		    m_proc_VSCPGetdriverInfo;
+	LPFNDLL_VSCPGETWEBPAGETEMPLATE		m_proc_VSCPGetWebPageTemplate;
+	LPFNDLL_VSCPGETWEBPAGEINFO			m_proc_VSCPGetWebPageInfo;
+	LPFNDLL_VSCPWEBPAGEUPDATE			m_proc_VSCPWebPageupdate;
 
 	handle = dlopen("./canallogger.so", RTLD_LAZY);
 	
@@ -90,7 +121,7 @@ void *workThread( void *id )
 	}
 
 	// * * * * CANAL OPEN * * * * 
-	if ( 0 == ( m_item.m_proc_CanalOpen = (LPFNDLL_CANALOPEN)dlsym( handle, "CanalOpen" ) ) )  {
+	if ( 0 == ( m_proc_CanalOpen = (LPFNDLL_CANALOPEN)dlsym( handle, "CanalOpen" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -100,7 +131,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL CLOSE * * * * 
-	if ( 0 == ( m_item.m_proc_CanalClose = (LPFNDLL_CANALCLOSE)dlsym( handle, "CanalClose" ) ) )  {
+	if ( 0 == ( m_proc_CanalClose = (LPFNDLL_CANALCLOSE)dlsym( handle, "CanalClose" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -110,7 +141,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL GETLEVEL * * * * 
-	if ( 0 == ( m_item.m_proc_CanalGetLevel = (LPFNDLL_CANALGETLEVEL)dlsym( handle, "CanalGetLevel" ) ) )  {
+	if ( 0 == ( m_proc_CanalGetLevel = (LPFNDLL_CANALGETLEVEL)dlsym( handle, "CanalGetLevel" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -120,7 +151,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL SEND * * * * 
-	if ( 0 == ( m_item.m_proc_CanalSend = (LPFNDLL_CANALSEND)dlsym( handle, "CanalSend" ) ) )  {
+	if ( 0 == ( m_proc_CanalSend = (LPFNDLL_CANALSEND)dlsym( handle, "CanalSend" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -131,7 +162,7 @@ void *workThread( void *id )
 	
 	
 	// * * * * CANAL DATA AVAILABLE * * * * 
-	if ( 0 == ( m_item.m_proc_CanalDataAvailable = (LPFNDLL_CANALDATAAVAILABLE)dlsym( handle, "CanalDataAvailable" ) ) )  {
+	if ( 0 == ( m_proc_CanalDataAvailable = (LPFNDLL_CANALDATAAVAILABLE)dlsym( handle, "CanalDataAvailable" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -141,7 +172,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL DATA AVAILABLE * * * * 
-	if ( 0 == ( m_item.m_proc_CanalDataAvailable = (LPFNDLL_CANALDATAAVAILABLE)dlsym( handle, "CanalDataAvailable" ) ) )  {
+	if ( 0 == ( m_proc_CanalDataAvailable = (LPFNDLL_CANALDATAAVAILABLE)dlsym( handle, "CanalDataAvailable" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -151,7 +182,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL RECEIVE * * * * 
-	if ( 0 == ( m_item.m_proc_CanalReceive = (LPFNDLL_CANALRECEIVE)dlsym( handle, "CanalReceive" ) ) )  {
+	if ( 0 == ( m_proc_CanalReceive = (LPFNDLL_CANALRECEIVE)dlsym( handle, "CanalReceive" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -161,7 +192,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL GET STATUS * * * * 
-	if ( 0 == ( m_item.m_proc_CanalGetStatus = (LPFNDLL_CANALGETSTATUS)dlsym( handle, "CanalGetStatus" ) ) )  {
+	if ( 0 == ( m_proc_CanalGetStatus = (LPFNDLL_CANALGETSTATUS)dlsym( handle, "CanalGetStatus" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -171,7 +202,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL GET STATISTICS * * * * 
-	if ( 0 == ( m_item.m_proc_CanalGetStatistics = (LPFNDLL_CANALGETSTATISTICS)dlsym( handle, "CanalGetStatistics" ) ) )  {
+	if ( 0 == ( m_proc_CanalGetStatistics = (LPFNDLL_CANALGETSTATISTICS)dlsym( handle, "CanalGetStatistics" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -181,7 +212,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL SET FILTER * * * * 
-	if ( 0 == ( m_item.m_proc_CanalSetFilter = (LPFNDLL_CANALSETFILTER)dlsym( handle, "CanalSetFilter" ) ) )  {
+	if ( 0 == ( m_proc_CanalSetFilter = (LPFNDLL_CANALSETFILTER)dlsym( handle, "CanalSetFilter" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -191,7 +222,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL SET MASK * * * * 
-	if ( 0 == ( m_item.m_proc_CanalSetMask = (LPFNDLL_CANALSETMASK)dlsym( handle, "CanalSetMask" ) ) )  {
+	if ( 0 == ( m_proc_CanalSetMask = (LPFNDLL_CANALSETMASK)dlsym( handle, "CanalSetMask" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -201,7 +232,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL GET VERSION * * * * 
-	if ( 0 == ( m_item.m_proc_CanalGetVersion = (LPFNDLL_CANALGETVERSION)dlsym( handle, "CanalGetVersion" ) ) )  {
+	if ( 0 == ( m_proc_CanalGetVersion = (LPFNDLL_CANALGETVERSION)dlsym( handle, "CanalGetVersion" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -211,7 +242,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL GET DLL VERSION * * * *
-	if ( 0 == ( m_item.m_proc_CanalGetDllVersion = (LPFNDLL_CANALGETDLLVERSION)dlsym( handle, "CanalGetDllVersion" ) ) )  {
+	if ( 0 == ( m_proc_CanalGetDllVersion = (LPFNDLL_CANALGETDLLVERSION)dlsym( handle, "CanalGetDllVersion" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -221,7 +252,7 @@ void *workThread( void *id )
 	}
 	
 	// * * * * CANAL GET VENDOR STRING * * * * 
-	if ( 0 == ( m_item.m_proc_CanalGetVendorString = (LPFNDLL_CANALGETVENDORSTRING)dlsym( handle, "CanalGetVendorString" ) ) )  {
+	if ( 0 == ( m_proc_CanalGetVendorString = (LPFNDLL_CANALGETVENDORSTRING)dlsym( handle, "CanalGetVendorString" ) ) )  {
 	
 		// Free the library	
 		dlclose( handle );
@@ -238,7 +269,7 @@ void *workThread( void *id )
 	char szfilename[ 32 ];
 	long dh;
 	sprintf( szfilename, "LOGFILE%d", *((int *)id) );
-	dh = (*m_item.m_proc_CanalOpen)( szfilename, 1 );
+	dh = (*m_proc_CanalOpen)( szfilename, 1 );
 
 	printf("Sending data.\n");
 	
@@ -259,7 +290,7 @@ void *workThread( void *id )
 		msg.data[6] = 0x77;
 		msg.data[7] = 0x88;
 		msg.timestamp = 3210;
-		(*m_item.m_proc_CanalSend)( dh, &msg );
+		(*m_proc_CanalSend)( dh, &msg );
 		printf(".");
 	
 		msg.obid = 2001;
@@ -275,7 +306,7 @@ void *workThread( void *id )
 		msg.data[6] = 0x07;
 		msg.data[7] = 0x18;
 		msg.timestamp = 0xcc55;
-		(*m_item.m_proc_CanalSend)( dh, &msg );
+		(*m_proc_CanalSend)( dh, &msg );
 		printf(".");
 	}
 	
@@ -285,10 +316,10 @@ void *workThread( void *id )
 	printf("=                       Data for DLL\n");
 	printf("===========================================================\n");
 	
-	printf( "Canal Level = %lu\n", (*m_item.m_proc_CanalGetLevel)( dh ) );
-	printf( "Canal Version = %lu\n", (*m_item.m_proc_CanalGetVersion)() );
-	printf( "DLL Version = %lu\n", (*m_item.m_proc_CanalGetDllVersion)() );				
-	printf( "Vendor String = %s\n", (*m_item.m_proc_CanalGetVendorString)() ); 
+	printf( "Canal Level = %lu\n", (*m_proc_CanalGetLevel)( dh ) );
+	printf( "Canal Version = %lu\n", (*m_proc_CanalGetVersion)() );
+	printf( "DLL Version = %lu\n", (*m_proc_CanalGetDllVersion)() );				
+	printf( "Vendor String = %s\n", (*m_proc_CanalGetVendorString)() ); 
 
 	printf("===========================================================\n");
 	
@@ -299,7 +330,7 @@ void *workThread( void *id )
 	sleep( 1 );
 	
 	// Close
-	(*m_item.m_proc_CanalClose)( dh );
+	(*m_proc_CanalClose)( dh );
 	
 	printf("Closing DLL\n");
 

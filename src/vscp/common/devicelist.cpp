@@ -26,7 +26,6 @@
 #include <winsock2.h>
 #endif
 
-//#include <wx/wxprec.h>
 #include <wx/wx.h>
 #include <wx/defs.h>
 #include <wx/app.h>
@@ -58,6 +57,7 @@
 #include "controlobject.h"
 #include "clientlist.h"
 #include "guid.h"
+#include "devicethread.h"
 #include "devicelist.h"
 
 WX_DEFINE_LIST(CanalMsgOutList);

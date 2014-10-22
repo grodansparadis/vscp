@@ -88,7 +88,7 @@ CVSCPL1App::~CVSCPL1App()
 		
 		if ( NULL == m_pvscpifArray[ i ] ) {
 			
-			VscpTcpIf *pvscpif =  getDriverObject( i );
+			VscpRemoteTcpIf *pvscpif =  getDriverObject( i );
 			if ( NULL != pvscpif ) { 
 				pvscpif->doCmdClose();	
 				delete m_pvscpifArray[ i ];
@@ -117,7 +117,7 @@ CVSCPL1App theApp;
 // addDriverObject
 //
 
-long CVSCPL1App::addDriverObject( VscpTcpIf *pvscpif )
+long CVSCPL1App::addDriverObject( VscpRemoteTcpIf *pvscpif )
 {
 	long h = 0;
 
@@ -144,7 +144,7 @@ long CVSCPL1App::addDriverObject( VscpTcpIf *pvscpif )
 // getDriverObject
 //
 
-VscpTcpIf *CVSCPL1App::getDriverObject( long h )
+VscpRemoteTcpIf *CVSCPL1App::getDriverObject( long h )
 {
 	long idx = h - 1681;
 
@@ -215,7 +215,7 @@ extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
 	}
 	
 	
-	VscpTcpIf *pvscpif = new VscpTcpIf();
+	VscpRemoteTcpIf *pvscpif = new VscpRemoteTcpIf();
 	if ( NULL != pvscpif ) {
 
 		if ( pvscpif->doCmdOpen( strDevice, flags ) ){
@@ -252,7 +252,7 @@ extern "C" int CanalClose( long handle )
 {
 	int rv = 0;
 
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 	pvscpif->doCmdClose();
 	theApp.removeDriverObject( handle );
@@ -269,7 +269,7 @@ extern "C" unsigned long CanalGetLevel( long handle )
 {
 	unsigned long level;
 
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 
 	level = pvscpif->doCmdGetLevel();
@@ -283,7 +283,7 @@ extern "C" unsigned long CanalGetLevel( long handle )
 
 extern "C" int CanalSend( long handle, PCANALMSG pCanalMsg  )
 {
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 
 	return ( pvscpif->doCmdSendLevel1( pCanalMsg )? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
@@ -297,7 +297,7 @@ extern "C" int CanalReceive( long handle, PCANALMSG pCanalMsg  )
 {
 	int rv = 0;
 
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
         if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 	
 	return ( pvscpif->doCmdReceiveLevel1( pCanalMsg ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
@@ -312,7 +312,7 @@ extern "C" int CanalDataAvailable( long handle  )
 {
 	int rv = 0;
 
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
         if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 
 	return ( pvscpif->doCmdDataAvailable() ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
@@ -326,7 +326,7 @@ extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
 {
 	int rv = 0;
 
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
         if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 
 	return ( pvscpif->doCmdStatus( pCanalStatus) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
@@ -338,7 +338,7 @@ extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
 
 extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistics  )
 {
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
         if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 
 	return ( pvscpif->doCmdStatistics( pCanalStatistics ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
@@ -350,7 +350,7 @@ extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistic
 
 extern "C" int CanalSetFilter( long handle, unsigned long filter )
 {
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 	return ( pvscpif->doCmdFilter( filter ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
 }
@@ -361,7 +361,7 @@ extern "C" int CanalSetFilter( long handle, unsigned long filter )
 
 extern "C" int CanalSetMask( long handle, unsigned long mask )
 {
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 	return ( pvscpif->doCmdMask( mask ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );
 }
@@ -372,7 +372,7 @@ extern "C" int CanalSetMask( long handle, unsigned long mask )
 
 extern "C" int CanalSetBaudrate( long handle, unsigned long baudrate )
 {
-	VscpTcpIf *pvscpif =  theApp.getDriverObject( handle );
+	VscpRemoteTcpIf *pvscpif =  theApp.getDriverObject( handle );
         if ( NULL == pvscpif ) return CANAL_ERROR_MEMORY;
 
 	return ( pvscpif->doCmdSetBaudrate( baudrate ) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_SUB_DRIVER );

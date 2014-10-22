@@ -71,7 +71,7 @@ using namespace std;
 // Forward declarations
 class CWrkReadThread;
 class CWrkWriteThread;
-class VscpTcpIf;
+class VscpRemoteTcpIf;
 class wxFile;
 
 
@@ -147,7 +147,7 @@ public:
     CWrkWriteThread *m_pwriteWorkThread;
     
      /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 		
 	// Queue
 	std::list<vscpEvent *> m_sendList;
@@ -191,7 +191,7 @@ public:
     virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Sensor object
     CRawEthernet *m_pObj;
@@ -220,7 +220,7 @@ public:
     virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Sensor object
     CRawEthernet *m_pObj;

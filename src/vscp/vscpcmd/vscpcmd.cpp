@@ -391,7 +391,7 @@ int main(int argc, char **argv)
         }
 
         // Open the interface
-        if (m_vscpif.doCmdOpen(strHost, VSCP_LEVEL2_TCP_PORT, strUsername, strPassword)) {
+        if (m_vscpif.doCmdOpen(strHost, strUsername, strPassword)) {
 
             if (bVerbose) {
                 wxString wxstr =

@@ -16,6 +16,9 @@
         <itemPath>../../../../../common/crc8.h</itemPath>
         <itemPath>../../../../../common/dllist.c</itemPath>
         <itemPath>../../../../../common/dllist.h</itemPath>
+        <itemPath>../../../../../common/mongoose.h</itemPath>
+        <itemPath>../../../../../common/net_skeleton.c</itemPath>
+        <itemPath>../../../../../common/net_skeleton.h</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
         <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -24,16 +27,26 @@
           <itemPath>../../../../common/canal_win32_ipc.h</itemPath>
           <itemPath>../../../../common/canaldlldef.h</itemPath>
           <itemPath>../../../../common/clientlist.h</itemPath>
+          <itemPath>../../../../common/controlobject.h</itemPath>
+          <itemPath>../../../../common/daemonvscp.h</itemPath>
           <itemPath>../../../../common/devicelist.cpp</itemPath>
           <itemPath>../../../../common/devicelist.h</itemPath>
           <itemPath>../../../../common/devicethread.h</itemPath>
+          <itemPath>../../../../common/dm.h</itemPath>
           <itemPath>../../../../common/guid.cpp</itemPath>
           <itemPath>../../../../common/guid.h</itemPath>
+          <itemPath>../../../../common/interfacelist.h</itemPath>
           <itemPath>../../../../common/mdf.h</itemPath>
+          <itemPath>../../../../common/tables.h</itemPath>
+          <itemPath>../../../../common/tcpipclientthread.h</itemPath>
+          <itemPath>../../../../common/udpclientthread.h</itemPath>
+          <itemPath>../../../../common/udpthread.h</itemPath>
           <itemPath>../../../../common/userlist.h</itemPath>
+          <itemPath>../../../../common/variablecodes.h</itemPath>
           <itemPath>../../../../common/vscp.h</itemPath>
           <itemPath>../../../../common/vscp_class.h</itemPath>
           <itemPath>../../../../common/vscp_type.h</itemPath>
+          <itemPath>../../../../common/vscpautomation.h</itemPath>
           <itemPath>../../../../common/vscpdlldef.h</itemPath>
           <itemPath>../../../../common/vscphelper.cpp</itemPath>
           <itemPath>../../../../common/vscphelper.h</itemPath>
@@ -41,6 +54,7 @@
           <itemPath>../../../../common/vscpremotetcpif.h</itemPath>
           <itemPath>../../../../common/vscptcpif.cpp</itemPath>
           <itemPath>../../../../common/vscptcpif.h</itemPath>
+          <itemPath>../../../../common/vscpvariable.h</itemPath>
         </logicalFolder>
       </logicalFolder>
     </logicalFolder>
@@ -78,15 +92,8 @@
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>../../../../daemon/linux/vscpd</executablePath>
           <cTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-              <pElem>/usr/local/include/wx-2.8</pElem>
-              <pElem>.</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
-              <Elem>_LARGE_FILES</Elem>
-              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
@@ -103,41 +110,34 @@
       </item>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">
-      </item>
-      <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
-      </item>
-      <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
-      </item>
-      <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
-      </item>
-      <item path="../../../../common/vscpremotetcpif.cpp"
-            ex="false"
-            tool="1"
-            flavor2="4">
-      </item>
-      <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-          <preprocessorList>
-            <Elem>__PIC__=2</Elem>
-            <Elem>__pic__=2</Elem>
-          </preprocessorList>
-        </ccTool>
-      </item>
-      <item path="../common/log.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
+        <cTool>
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
@@ -146,6 +146,106 @@
           <preprocessorList>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../../../../../common/net_skeleton.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="1">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+            <Elem>__LINUX__</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../../../common/vscpremotetcpif.cpp"
+            ex="false"
+            tool="1"
+            flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>.</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__PIC__=2</Elem>
+            <Elem>__WXDEBUG__</Elem>
+            <Elem>__pic__=2</Elem>
+          </preprocessorList>
+        </ccTool>
+      </item>
+      <item path="../common/log.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -156,6 +256,10 @@
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
+        </ccTool>
+      </folder>
+      <folder path="src/common">
+        <ccTool>
           <preprocessorList>
             <Elem>_LARGE_FILES</Elem>
             <Elem>__WXDEBUG__</Elem>
@@ -165,12 +269,12 @@
       <item path="test.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>

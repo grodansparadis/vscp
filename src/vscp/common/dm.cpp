@@ -283,8 +283,7 @@ void *actionThreadVSCPSrv::Entry()
     VscpRemoteTcpIf client;
     long err;
 
-    if ( CANAL_ERROR_SUCCESS != ( err = client.doCmdOpen( m_strHostname, 
-        m_port, 
+    if ( CANAL_ERROR_SUCCESS != ( err = client.doCmdOpen( m_strHostname,  
         m_strUsername, 
         m_strPassword ) ) ) {
             // Failed to connect

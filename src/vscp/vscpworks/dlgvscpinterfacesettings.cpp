@@ -533,7 +533,6 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 	unsigned long val;
 	m_RemoteServerPort->GetValue().ToULong( &val );
 	long rv = tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
-		val,
 		m_RemoteServerUsername->GetValue(),
 		wxstr );
 

@@ -122,7 +122,6 @@ Clmsensors::open(const char *pUsername,
 	// variables
 
 	if (m_srv.doCmdOpen( m_host,
-                            m_port,
                             m_username,
                             m_password) <= 0) {
 		syslog(LOG_ERR,

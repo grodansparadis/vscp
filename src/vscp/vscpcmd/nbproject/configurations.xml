@@ -10,6 +10,7 @@
       <itemPath>../common/canal_win32_ipc.h</itemPath>
       <itemPath>../../common/crc.c</itemPath>
       <itemPath>../../common/crc.h</itemPath>
+      <itemPath>../../common/crc8.c</itemPath>
       <itemPath>../../common/crc8.h</itemPath>
       <itemPath>../../common/frozen.c</itemPath>
       <itemPath>../../common/frozen.h</itemPath>
@@ -66,7 +67,14 @@
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath></executablePath>
           <cTool>
+            <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/include/wx-3.0</pElem>
+              <pElem>.</pElem>
+            </incDir>
             <preprocessorList>
+              <Elem>NS_ENABLE_SSL</Elem>
+              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
@@ -80,69 +88,16 @@
         </makeTool>
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
+      </item>
+      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../../common/frozen.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../common/slre.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../common/v7.c" ex="false" tool="0" flavor2="0">
-        <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -209,6 +164,8 @@
         </ccTool>
       </folder>
       <item path="vscpcmd.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>

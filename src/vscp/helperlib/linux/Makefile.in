@@ -10,9 +10,9 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@ -fPIC
+CXXFLAGS = @CXXFLAGS@ -fPIC -D__LINUX__ 
 CPPFLAGS = @CPPFLAGS@ -fPIC
-CFLAGS = -fPIC
+CFLAGS = -fPIC -D__LINUX__ 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 DLFLAGS = -g -shared -fPIC
@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPHELPER_OBJECTS =  libvscphelper.o ../../common/vscpremotetcpif.o ../../common/vscphelper.o ../../common/guid.o ../../../common/crc.o ../../../common/crc8.o ../../../common/net_skeleton.o 
-PROJOBJS        =  ../../common/vscpremotetcpif.o ../../common/vscphelper.o  ../../../common/crc.o ../../common/guid.o ../../../common/crc8.o ../../../common/net_skeleton.o
+VSCPHELPER_OBJECTS =  libvscphelper.o ../vscphelperlib.o ../../common/vscpremotetcpif.o ../../common/vscphelper.o ../../common/guid.o ../../../common/crc.o ../../../common/crc8.o ../../../common/net_skeleton.o 
+PROJOBJS        =  ../vscphelperlib.h ../../common/vscpremotetcpif.o ../../common/vscphelper.o  ../../../common/crc.o ../../common/guid.o ../../../common/crc8.o ../../../common/net_skeleton.o
 
 
 

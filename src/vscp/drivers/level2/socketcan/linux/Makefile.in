@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-SOCKETCAN_OBJECTS = socketcan.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
-PROJOBJS =  socketcan.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+SOCKETCAN_OBJECTS = socketcan.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+PROJOBJS =  socketcan.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
 
 
 
