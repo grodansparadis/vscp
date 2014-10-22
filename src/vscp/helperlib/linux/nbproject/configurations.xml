@@ -78,6 +78,7 @@
               <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>__LINUX__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>

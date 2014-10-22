@@ -42,10 +42,11 @@ PROJOBJS        =  ../vscphelperlib.h ../../common/vscpremotetcpif.o ../../commo
 
 ### Targets: ###
 
-all: libvscphelper.so test
+all: libvscphelper.so test lib
 
 install: all
 	$(INSTALL_PROGRAM) libvscphelper.so $(libdir)
+	ar rcs libvscphelper.a libvscphelper.o
 
 uninstall: 
 
@@ -54,6 +55,7 @@ install-strip: install
 clean: 
 	rm -rf ./.deps ./.pch
 	rm -f ./*.o
+	rm -f ./*.a
 	rm -f ../common/*.o
 	rm -f ../../common/*.o
 	rm -f ../../../common/*.o
@@ -64,6 +66,8 @@ clean:
 distclean: clean
 	rm -f config.cache config.log config.status bk-deps bk-make-pch shared-ld-sh Makefile
 
+lib:   libvscphelper.so
+        ar rcs libvscphelper.a libvscphelper.o
 
 test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
