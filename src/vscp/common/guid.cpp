@@ -27,9 +27,7 @@
 // $Revision: 1.4 $ 
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifdef VSCP_QT
 
-#else
 
 #ifdef __GNUG__
     //#pragma implementation
@@ -52,7 +50,7 @@
 
 #include <wx/tokenzr.h>
 
-#endif
+
 
 #include "guid.h"
 
@@ -111,16 +109,7 @@ bool cguid::operator!=(const cguid &guid)
 // getFromString
 //
  
-#ifdef VSCP_QT
-void cguid::getFromString( const QString& strGUID )
-{
-    QStringList guidlist = strGUID.split(":");
 
-    for ( int i=0; i<std::min(16,guidlist.size()); i++ ) {
-        m_id[ i ] = (uint8_t)guidlist.at(i).toUShort();
-    }
-}
-#else
 void cguid::getFromString( const wxString& strGUID )
 {
     unsigned long val;
@@ -133,27 +122,20 @@ void cguid::getFromString( const wxString& strGUID )
         if ( !tkz.HasMoreTokens() ) break;
     }
 }
-#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getFromString
 //
 
-#ifdef VSCP_QT
-void cguid::getFromString( char *pszGUID )
-{
-  //QString str = pszGUID;
-  //getFromString( str );
-  getFromString( QString( pszGUID ) );
-}
-#else
- void cguid::getFromString( char *pszGUID )
+
+ void cguid::getFromString( const char *pszGUID )
  {
     wxString str;
     str.FromAscii( pszGUID );
     getFromString( str );
  }
-#endif
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // getFromArray

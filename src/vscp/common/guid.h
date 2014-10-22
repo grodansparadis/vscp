@@ -81,7 +81,7 @@ public:
         Get GUID from string
         @param pszGUID Zero terminated ASCII string pointing at GUID
     */
-    void getFromString( char *pszGUID );
+    void getFromString( const char *pszGUID );
 
 	/*!
 		Set GUID from array
