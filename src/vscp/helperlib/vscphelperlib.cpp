@@ -435,7 +435,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableString( long handle, const char 
         strcpy( pValue, strValue.ToAscii() );
     }
 
-    return rv ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -460,7 +460,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableString( long handle, const char 
     wxString strValue = wxString::FromAscii( pValue );
     return pvscpif->setVariableString( name, strValue );
 
-    return rv ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -476,7 +476,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *p
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableBool( name, bValue ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableBool( name, bValue ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 };
 
 
@@ -493,7 +493,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *p
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableBool( name, bValue ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR; 
+    return pvscpif->setVariableBool( name, bValue ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 };
 
 
@@ -510,7 +510,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableInt( long handle, const char *pN
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableInt( name, value ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableInt( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 };
 
 
@@ -527,7 +527,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableInt( long handle, const char *pN
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableInt( name, value ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR; 
+    return pvscpif->setVariableInt( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 };
 
 /*!
@@ -543,7 +543,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableLong( long handle, const char *p
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableLong( name, value ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->getVariableLong( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 };
 
 /*!
@@ -559,7 +559,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *p
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableLong( name, value ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->setVariableLong( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 };
 
 /*!
@@ -575,7 +575,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char 
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableDouble( name, value ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->getVariableDouble( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 };
 
 /*!
@@ -591,7 +591,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char 
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableDouble( name, value ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->setVariableDouble( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 };
 
 /*!
@@ -615,7 +615,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const 
         strcpy( pValue, strValue.ToAscii() );
     }
 
-    return rv ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 };
 
 /*!
@@ -637,7 +637,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const 
     wxString strValue;
     return pvscpif->setVariableMeasurement( name, strValue );
 
-    return rv ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 };
 
 /*!
@@ -653,7 +653,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableEvent( long handle, const char *
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableEvent( name, pEvent ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->getVariableEvent( name, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -669,7 +669,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableEvent( long handle, const char *
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableEvent( name, pEvent ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->setVariableEvent( name, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -685,7 +685,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableEventEx( long handle, const char
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableEventEx( name, pEvent ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableEventEx( name, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 }
 
 /*!
@@ -701,7 +701,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableEventEx( long handle, const char
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableEventEx( name, pEvent ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->setVariableEventEx( name, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -722,7 +722,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableGUID( long handle, const char *p
     bool rv =  pvscpif->getVariableGUID( name, GUID ); 
     GUID.toString( strGuid );
     strcpy( pGUID, strGuid.mbc_str() );
-    return rv ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -740,7 +740,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableGUID( long handle, const char *p
     cguid guid;
     guid.getFromString( pGUID );
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableGUID( name, guid ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->setVariableGUID( name, guid ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -758,7 +758,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPdata( long handle, const cha
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPdata( name, psizeData, pData ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableVSCPdata( name, psizeData, pData ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 }
 
 /*!
@@ -776,7 +776,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPdata( long handle, const cha
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPdata( name, sizeData, pData ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR; 
+    return pvscpif->setVariableVSCPdata( name, sizeData, pData ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 }
 
 /*!
@@ -792,7 +792,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPclass( long handle, const ch
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPclass( name, vscp_class ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableVSCPclass( name, vscp_class ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 }
 
 /*!
@@ -808,7 +808,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPclass( long handle, const ch
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPclass( name, vscp_class ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->setVariableVSCPclass( name, vscp_class ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -824,7 +824,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPtype( long handle, const cha
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPtype( name, vscp_type ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->getVariableVSCPtype( name, vscp_type ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -840,7 +840,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPtype( long handle, const cha
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPtype( name, vscp_type ) ? VSCP_ERROR_SUCCESS | VSCP_ERROR_ERROR;
+    return pvscpif->setVariableVSCPtype( name, vscp_type ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 
