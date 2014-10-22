@@ -13,7 +13,7 @@ int _tmain(int argc, _TCHAR* argv[])
     vscphlp_open( handle, 
                  "192.168.1.9:9598",
                  "admin",
-                 "secret2" ); 
+                 "secret" ); 
 
     vscphlp_noop( handle );
 

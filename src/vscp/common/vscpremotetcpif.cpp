@@ -148,9 +148,6 @@ void *clientTcpIpWorkerThread::Entry()
     // Event loop
     while ( !TestDestroy() && m_bRun ) {
         ns_mgr_poll( &m_mgrTcpIpConnection, 50 );
-        //if ( m_mgrTcpIpConnection.active_connections->flags & NSF_USER_1 ) {
-        //    m_bRun = false;
-        //}
     }
 
     // Free resources
@@ -421,27 +418,29 @@ long VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 int VscpRemoteTcpIf::doCmdClose( void )
 {	
     int rv = VSCP_ERROR_SUCCESS;
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
-    
-    // Try to behave
-    doClrInputQueue();
-    wxString strCmd(_("QUIT\r\n"));
-    ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
-                strCmd.mbc_str(),
-                strCmd.Length() );
 
-    if ( checkReturnValue(true) ) {
-        wxLogDebug( _("Successful QUIT command.") );
-        rv = VSCP_ERROR_SUCCESS;
-    }
-    else {
-        rv = VSCP_ERROR_SUCCESS;
+    if ( m_bConnected ) {    
+        // Try to behave
+        wxString strCmd(_("QUIT\r\n"));
+        ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+                    strCmd.mbc_str(),
+                    strCmd.Length() );
+
+        if ( checkReturnValue(true) ) {
+            wxLogDebug( _("Successful QUIT command.") );
+            rv = VSCP_ERROR_SUCCESS;
+        }   
+        else {
+            rv = VSCP_ERROR_SUCCESS;
+        }
     }
 
-    m_pClientTcpIpWorkerThread->m_bRun = false;
-    m_pClientTcpIpWorkerThread->Wait();
-    delete m_pClientTcpIpWorkerThread;
-    m_pClientTcpIpWorkerThread = NULL;
+    if ( NULL != m_pClientTcpIpWorkerThread ) {
+        m_pClientTcpIpWorkerThread->m_bRun = false;
+        m_pClientTcpIpWorkerThread->Wait();
+        delete m_pClientTcpIpWorkerThread;
+        m_pClientTcpIpWorkerThread = NULL;
+    }
 
     return rv;  
 }
