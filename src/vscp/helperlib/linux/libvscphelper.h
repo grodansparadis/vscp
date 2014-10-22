@@ -63,7 +63,7 @@ typedef int BOOL;
 // See vscpl1.cpp for the implementation of this class
 //
 
-class CVSCPLApp
+class CVSCPLApp /*: public wxApp*/
 {
 
 public:

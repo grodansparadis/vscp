@@ -77,9 +77,11 @@ extern CVSCPLApp theApp;
 //
 
 #ifdef WIN32
-extern "C" long WINAPI EXPORT vscphlp_newSession( void )
+extern "C" 
+long WINAPI EXPORT vscphlp_newSession( void )
 #else
-extern "C" long vscphlp_newSession( void )
+extern "C" long 
+EXPORT vscphlp_newSession( void ) 
 #endif
 {
 	//if ( NULL == theApp ) return NULL;
@@ -115,8 +117,8 @@ extern "C" long WINAPI EXPORT vscphlp_openInterface( long handle,
                                                             unsigned long flags )
 #else
 extern "C" long vscphlp_openInterface( long handle,
-												            const char *pInterface,
-                                                            unsigned long flags )
+										const char *pInterface,
+                                        unsigned long flags )
 #endif
 {	
 	wxString strInterface;
@@ -137,9 +139,9 @@ extern "C" long WINAPI EXPORT vscphlp_open( const long handle,
                                                     const char *pPassword )
 #else
 extern "C" long vscphlp_open( const long handle,
-												    const char *pHostname, 
-                                                    const char *pUsername, 
-                                                    const char *pPassword )
+									const char *pHostname, 
+                                    const char *pUsername, 
+                                    const char *pPassword )
 #endif
 {	
 	wxString strHostname;
@@ -578,16 +580,24 @@ extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, bool *bValue )
+extern "C" int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, int *bValue )
 #else
-extern "C" int vscphlp_getVariableBool( long handle, const char *pName, bool *bValue )
+extern "C" int vscphlp_getVariableBool( long handle, const char *pName, int *bValue )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableBool( name, bValue ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+	bool bBoolValue;
+    int rv =  pvscpif->getVariableBool( name, &bBoolValue ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+	if ( bBoolValue ) {
+		*bValue = 1;
+	}
+	else {
+		*bValue = 0;
+	}
+	return rv;
 };
 
 
@@ -599,16 +609,16 @@ extern "C" int vscphlp_getVariableBool( long handle, const char *pName, bool *bV
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, bool bValue )
+extern "C" int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, int bValue )
 #else
-extern "C" int vscphlp_setVariableBool( long handle, const char *pName, bool bValue )
+extern "C" int vscphlp_setVariableBool( long handle, const char *pName, int bValue )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return VSCP_ERROR_INIT_MISSING;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableBool( name, bValue ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return pvscpif->setVariableBool( name, ( bValue ? true : false ) ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
 };
 
 

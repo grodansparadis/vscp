@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2007 Johan Hedlund,  <kungjohan@gmail.com>
+// Copyright (C) 2014 Ake Hedman,  <akhe@grodandparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -78,7 +78,7 @@ void displayErrorAndExit(char* funcName)
 
 void initLib(void)
 {
-    handle = dlopen("./vscpl1.so", RTLD_LAZY);
+    handle = dlopen("./libvscphelper.so", RTLD_LAZY);
 
     if ( 0 == handle )
     {

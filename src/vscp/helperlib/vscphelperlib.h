@@ -31,172 +31,177 @@
 
 #include "../common/vscp.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif	
 
 #ifdef WIN32
 
 // * * * * *  W I N D O W S  * * * * *
-extern "C" long WINAPI vscphlp_newSession(void);
-extern "C" void WINAPI vscphlp_closeSession(long handle);
-extern "C" void WINAPI vscphlp_setResponseTimeout(long handle, 
+long WINAPI vscphlp_newSession(void);
+void WINAPI vscphlp_closeSession(long handle);
+void WINAPI vscphlp_setResponseTimeout(long handle, 
                                                     unsigned char timeout );
-extern "C" int WINAPI vscphlp_isConnected(const long handle);
-extern "C" long WINAPI vscphlp_openInterface( long handle,
+int WINAPI vscphlp_isConnected(const long handle);
+long WINAPI vscphlp_openInterface( long handle,
 						                        const char *pInterface,
                                                 unsigned long flags );
-extern "C" long WINAPI vscphlp_open( long handle,
+long WINAPI vscphlp_open( long handle,
                                         const char *pHostname, 
                                         const char *pUsername, 
                                         const char *pPassword );
-extern "C" int WINAPI vscphlp_close( long handle );
-extern "C" int WINAPI vscphlp_noop( long handle );
-extern "C" unsigned long WINAPI EXPORT vscphlp_getLevel( long handle );
-extern "C" int WINAPI EXPORT vscphlp_clearInQueue( long handle );
-extern "C" int WINAPI EXPORT vscphlp_sendEvent( long handle,
+int WINAPI vscphlp_close( long handle );
+int WINAPI vscphlp_noop( long handle );
+unsigned long WINAPI EXPORT vscphlp_getLevel( long handle );
+int WINAPI EXPORT vscphlp_clearInQueue( long handle );
+int WINAPI EXPORT vscphlp_sendEvent( long handle,
 													    const vscpEvent *pEvent );
-extern "C" int WINAPI EXPORT vscphlp_sendEventEx( long handle,
+int WINAPI EXPORT vscphlp_sendEventEx( long handle,
 														const vscpEventEx *pEvent );
-extern "C" int WINAPI EXPORT vscphlp_receiveEvent( long handle,
+int WINAPI EXPORT vscphlp_receiveEvent( long handle,
 														vscpEvent *pEvent );
-extern "C" int WINAPI EXPORT vscphlp_receiveEventEx( long handle,
+int WINAPI EXPORT vscphlp_receiveEventEx( long handle,
 														vscpEventEx *pEvent );
-extern "C" int WINAPI EXPORT vscphlp_isDataAvailable( long handle );
-extern "C" int WINAPI EXPORT vscphlp_getStatus( long handle,
+int WINAPI EXPORT vscphlp_isDataAvailable( long handle );
+int WINAPI EXPORT vscphlp_getStatus( long handle,
 													canalStatus *pStatus );
-extern "C" int WINAPI EXPORT vscphlp_getStatistics( long handle,
+int WINAPI EXPORT vscphlp_getStatistics( long handle,
 														canalStatistics *pStatistics );
-extern "C" int WINAPI EXPORT vscphlp_setFilter( long handle,
+int WINAPI EXPORT vscphlp_setFilter( long handle,
 														const vscpEventFilter *pFilter );
-extern "C" unsigned long WINAPI EXPORT vscphlp_getVersion( long handle );
-extern "C" unsigned long WINAPI EXPORT vscphlp_getDLLVersion( long handle );
-extern "C"  const char * WINAPI EXPORT vscphlp_getVendorString( long handle );
-extern "C"  const char * WINAPI EXPORT vscphlp_getDriverInfo( long handle );
-extern "C" int WINAPI EXPORT vscphlp_shutDownServer( long handle );
-extern "C" int WINAPI EXPORT vscphlp_enterReceiveLoop(const long handle);
+unsigned long WINAPI EXPORT vscphlp_getVersion( long handle );
+unsigned long WINAPI EXPORT vscphlp_getDLLVersion( long handle );
+const char * WINAPI EXPORT vscphlp_getVendorString( long handle );
+const char * WINAPI EXPORT vscphlp_getDriverInfo( long handle );
+int WINAPI EXPORT vscphlp_shutDownServer( long handle );
+int WINAPI EXPORT vscphlp_enterReceiveLoop(const long handle);
 
 //-------------------------------------------------------------------------
 //                                Variables 
 //-------------------------------------------------------------------------
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue );
-extern "C" int WINAPI EXPORT vscphlp_setVariableString( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_setVariableString( long handle, const char *pName, char *pValue );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, bool *bValue );
-extern "C" int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, bool *bValue );
+int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, int *bValue );
+int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, int *bValue );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableInt( long handle, const char *pName, int *value );
-extern "C" int WINAPI EXPORT vscphlp_setVariableInt( long handle, const char *pName, int *value );
+int WINAPI EXPORT vscphlp_getVariableInt( long handle, const char *pName, int *value );
+int WINAPI EXPORT vscphlp_setVariableInt( long handle, const char *pName, int *value );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableLong( long handle, const char *pName, long *value );
-extern "C" int WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *pName, long *value );
+int WINAPI EXPORT vscphlp_getVariableLong( long handle, const char *pName, long *value );
+int WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *pName, long *value );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char *pName, double *value );
-extern "C" int WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char *pName, double *value );
+int WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char *pName, double *value );
+int WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char *pName, double *value );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue );
-extern "C" int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
-extern "C" int WINAPI EXPORT vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
+int WINAPI EXPORT vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
+int WINAPI EXPORT vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
-extern "C" int WINAPI EXPORT vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
+int WINAPI EXPORT vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
+int WINAPI EXPORT vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableGUID( long handle, const char *pName, const char *pGUID );
-extern "C" int WINAPI EXPORT vscphlp_setVariableGUID( long handle, const char *pName, const char *pGUID );
+int WINAPI EXPORT vscphlp_getVariableGUID( long handle, const char *pName, const char *pGUID );
+int WINAPI EXPORT vscphlp_setVariableGUID( long handle, const char *pName, const char *pGUID );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPdata( long handle, const char *pName, unsigned short *psizeData, unsigned char *pData );
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPdata( long handle, const char *pName, unsigned short *psizeData, unsigned char *pData );
+int WINAPI EXPORT vscphlp_getVariableVSCPdata( long handle, const char *pName, unsigned short *psizeData, unsigned char *pData );
+int WINAPI EXPORT vscphlp_setVariableVSCPdata( long handle, const char *pName, unsigned short *psizeData, unsigned char *pData );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
+int WINAPI EXPORT vscphlp_getVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
+int WINAPI EXPORT vscphlp_setVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
 
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
+int WINAPI EXPORT vscphlp_getVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
+int WINAPI EXPORT vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
 
 #else
 
 // * * * * *  L I N U X  * * * * *
-extern "C" long vscphlp_newSession(void);
-extern "C" void vscphlp_closeSession(long handle);
-extern "C" void vscphlp_setResponseTimeout(long handle, 
+ long vscphlp_newSession(void);
+void vscphlp_closeSession(long handle);
+void vscphlp_setResponseTimeout(long handle, 
                                               unsigned char timeout );
-extern "C" int vscphlp_isConnected(const long handle);
-extern "C" long vscphlp_OpenInterface( long handle,
+int vscphlp_isConnected(const long handle);
+long vscphlp_OpenInterface( long handle,
 						                const char *pInterface,
                                         unsigned long flags );
-extern "C" long vscphlp_Open( long handle,
+long vscphlp_Open( long handle,
                                 const char *pHostname, 
                                 const char *pUsername, 
                                 const char *pPassword );
-extern "C" int vscphlp_Close( long handle );
-extern "C" int vscphlp_Noop( long handle );
-extern "C" unsigned long vscphlp_GetLevel( long handle );
-extern "C" int vscphlp_ClearInQueue( long handle );
-extern "C" int vscphlp_SendEvent( long handle,
+int vscphlp_Close( long handle );
+int vscphlp_Noop( long handle );
+unsigned long vscphlp_GetLevel( long handle );
+int vscphlp_ClearInQueue( long handle );
+int vscphlp_SendEvent( long handle,
                                       const vscpEvent *pEvent );
-extern "C" int vscphlp_SendEventEx( long handle,
+int vscphlp_SendEventEx( long handle,
                                         const vscpEventEx *pEvent );
-extern "C" int vscphlp_ReceiveEvent( long handle,
+int vscphlp_ReceiveEvent( long handle,
 										vscpEvent *pEvent );
-extern "C" int vscphlp_ReceiveEventEx( long handle,
+int vscphlp_ReceiveEventEx( long handle,
                                         vscpEventEx *pEvent );
-extern "C" int vscphlp_isDataAvailable( long handle );
-extern "C" int vscphlp_GetStatus( long handle,
+int vscphlp_isDataAvailable( long handle );
+int vscphlp_GetStatus( long handle,
                                      canalStatus *pStatus );
-extern "C" int vscphlp_getStatistics( long handle,
+int vscphlp_getStatistics( long handle,
                                      canalStatistics *pStatistics );
-extern "C" int vscphlp_SetFilter( long handle,
+int vscphlp_SetFilter( long handle,
                                      const vscpEventFilter *pFilter );
-extern "C" unsigned long vscphlp_getVersion( long handle );
-extern "C" unsigned long vscphlp_GetDLLVersion( long handle );
-extern "C"  const char * vscphlp_getVendorString( long handle );
-extern "C"  const char * vscphlp_GetDriverInfo( long handle );
-extern "C" int vscphlp_ServerShutDown( long handle );
-extern "C" int vscphlp_enterReceiveLoop(const long handle);
+unsigned long vscphlp_getVersion( long handle );
+unsigned long vscphlp_GetDLLVersion( long handle );
+const char * vscphlp_getVendorString( long handle );
+const char * vscphlp_GetDriverInfo( long handle );
+int vscphlp_ServerShutDown( long handle );
+int vscphlp_enterReceiveLoop(const long handle);
 
 //-------------------------------------------------------------------------
 //                                Variables 
 //-------------------------------------------------------------------------
 
-extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *pValue );
-extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *pValue );
+int vscphlp_getVariableString( long handle, const char *pName, char *pValue );
+int vscphlp_setVariableString( long handle, const char *pName, char *pValue );
 
-extern "C" int vscphlp_getVariableBool( long handle, const char *pName, bool *bValue );
-extern "C" int vscphlp_setVariableBool( long handle, const char *pName, bool *bValue );
+int vscphlp_getVariableBool( long handle, const char *pName, int *bValue );
+int vscphlp_setVariableBool( long handle, const char *pName, int *bValue );
 
-extern "C" int vscphlp_getVariableInt( long handle, const char *pName, int *value );
-extern "C" int vscphlp_setVariableInt( long handle, const char *pName, int *value );
+int vscphlp_getVariableInt( long handle, const char *pName, int *value );
+int vscphlp_setVariableInt( long handle, const char *pName, int *value );
 
-extern "C" int vscphlp_getVariableLong( long handle, const char *pName, long *value );
-extern "C" int vscphlp_setVariableLong( long handle, const char *pName, long *value );
+int vscphlp_getVariableLong( long handle, const char *pName, long *value );
+int vscphlp_setVariableLong( long handle, const char *pName, long *value );
 
-extern "C" int vscphlp_getVariableDouble( long handle, const char *pName, double *value );
-extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double *value );
+int vscphlp_getVariableDouble( long handle, const char *pName, double *value );
+int vscphlp_setVariableDouble( long handle, const char *pName, double *value );
 
-extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue );
-extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
+int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue );
+int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
 
-extern "C" int vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
-extern "C" int vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
+int vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
+int vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
 
-extern "C" int vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
-extern "C" int vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
+int vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
+int vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
 
-extern "C" int vscphlp_getVariableGUID( long handle, const char *pName, const char *pGUID );
-extern "C" int vscphlp_setVariableGUID( long handle, const char *pName, const char *pGUID );
+int vscphlp_getVariableGUID( long handle, const char *pName, const char *pGUID );
+int vscphlp_setVariableGUID( long handle, const char *pName, const char *pGUID );
 
-extern "C" int vscphlp_getVariableVSCPdata( long handle, const char *pName, unsigned short *psizeData, unsigned char *pData );
-extern "C" int vscphlp_setVariableVSCPdata( long handle, const char *pName, unsigned short *psizeData, unsigned char *pData );
+int vscphlp_getVariableVSCPdata( long handle, const char *pName, unsigned short *psizeData, unsigned char *pData );
+int vscphlp_setVariableVSCPdata( long handle, const char *pName, unsigned short *psizeData, unsigned char *pData );
 
-extern "C" int vscphlp_getVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
-extern "C" int vscphlp_setVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
+int vscphlp_getVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
+int vscphlp_setVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
 
-extern "C" int vscphlp_getVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
-extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
+int vscphlp_getVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
+int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
 
 #endif
 
-
+#ifdef __cplusplus
+}  // Extern "c"
+#endif
 
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +217,7 @@ extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsi
 	\return true if success false if not.
 */
 
-//extern "C" int WINAPI vscp_doCmdSendCanal( long handle,
+//int WINAPI vscp_doCmdSendCanal( long handle,
 //													canalMsg *pMsg );
 
 
@@ -223,5 +228,5 @@ extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsi
 	\return True if success false if not.
 */
 
-//extern "C" int WINAPI vscp_doCmdReceiveCanal( long handle,
+//int WINAPI vscp_doCmdReceiveCanal( long handle,
 //														canalMsg *pMsg );
