@@ -133,6 +133,12 @@ public:
     virtual ~VscpRemoteTcpIf();
 
 public:
+
+    /*!
+        Set response timeout
+        \param to Timeout value in seconds. (Default = 2 seconds.)
+    */
+    void setResponseTimeout( uint8_t to ) { if ( to ) m_responseTimeOut = to; };
     
     /*!
      Returns TRUE if we are connected false otherwise.
@@ -152,11 +158,11 @@ public:
     void doClrInputQueue(  void  );
 
     /*!
-        \brief Do command allows to send any command to the server.
-	 It's also your responsability to check any return value.
-     * \return Returns true if the command could be sent successfully.
+        \brief Send a command to the server allows to send any command to the server.
+        \return Returns VSCP_ERROR_SUCCESS if the command could be sent successfully and
+        a positive respone (+OK) is received.
     */
-    bool doCommand( uint8_t cmd );
+    int doCommand( wxString& cmd );
 
     /*!
         Open communication interface.
@@ -167,7 +173,7 @@ public:
         \return CANAL_ERROR_SUCCESS if channel is open or CANAL error code  if error 
         or the channel is already opened or other error occur.
     */
-    long doCmdOpen( const wxString& strInterface = (_("")), uint32_t flags = 0L );
+    int doCmdOpen( const wxString& strInterface = (_("")), uint32_t flags = 0L );
 
     /*!
         Open communication interface.
@@ -177,7 +183,7 @@ public:
         \return CANAL_ERROR_SUCCESS if channel is open or CANAL error code if error 
             or the channel is already opened or other error occur.
     */
-    long doCmdOpen( const wxString& strHostname, 
+    int doCmdOpen( const wxString& strHostname, 
 		    			const wxString& strUsername, 
 			    		const wxString& strPassword );
 
@@ -294,7 +300,7 @@ public:
         Receive CAN statistics through the interface. 
         \return CANAL_ERROR_SUCCESS on success and error code if failure.
     */
-    int doCmdStatistics( canalStatistics *pStatistics );
+    int doCmdStatistics( VSCPStatistics *pStatistics );
 
     /*!
         Set/Reset a filter through the interface. 
@@ -314,7 +320,9 @@ public:
         Get i/f version through the interface. 
         \return version number.
     */
-    unsigned long doCmdVersion( void );
+    unsigned int doCmdVersion( uint8_t *pMajorVer,
+                                               uint8_t *pMinorVer,
+                                               uint8_t *pSubMinorVer );
 
     /*!
         Get interface version
@@ -403,11 +411,7 @@ public:
     */
     bool getEventFromLine( const wxString& strLine, vscpEvent *pEvent );
 
-    /*!
-        Set response timeout
-        \param to Timeout value in seconds. (Default = 2 seconds.)
-    */
-    void setResponseTimeout( uint8_t to ) { if ( to ) m_responseTimeOut = to; };
+    
 
 
     
