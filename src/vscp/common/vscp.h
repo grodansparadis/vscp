@@ -197,7 +197,7 @@ typedef struct  {
                             // bit 0 = Reserved.
 	uint16_t vscp_class;    // VSCP class
 	uint16_t vscp_type;     // VSCP type
-	uint8_t  GUID[ 16 ];    // Node address MSB(0) -> LSB(15)
+	uint8_t  GUID[ 16 ];    // Node globally unique id MSB(0) -> LSB(15)
 	uint16_t sizeData;      // Number of valid data bytes		
 } vscpEvent;
 
@@ -225,7 +225,7 @@ typedef struct {
                                     // bit 0 = If bit 2 is set: Remote frame if set
 	uint16_t vscp_class;            // VSCP class
 	uint16_t vscp_type;             // VSCP type
-	uint8_t  GUID[ 16 ];            // Node address MSB(0) -> LSB(15)
+	uint8_t  GUID[ 16 ];            // Node globally unique id MSB(0) -> LSB(15)
 	uint16_t sizeData;              // Number of valid data bytes		
 
     uint8_t  data[VSCP_MAX_DATA];   // Pointer to data. Max 487 (512- 25) bytes
@@ -290,6 +290,26 @@ typedef struct  {
 
 
 typedef vscpEventFilter *PVSCPEVENTFILTER;
+
+
+/*!
+	Statistics
+
+	This is the general statistics structure
+*/
+
+typedef struct structVSCPStatistics {
+    unsigned long cntReceiveFrames;             // # of receive frames
+    unsigned long cntTransmitFrames;            // # of transmitted frames
+    unsigned long cntReceiveData;               // # of received data bytes
+    unsigned long cntTransmitData;              // # of transmitted data bytes	
+    unsigned long cntOverruns;                  // # of overruns
+    unsigned long x;                            // Currently undefined value 
+    unsigned long y;                            // Currently undefined value 
+    unsigned long z;                            // Currently undefined value 
+} VSCPStatistics;
+
+typedef  VSCPStatistics * PVSCPSTATISTICS;
 
 
 // VSCP LEVEL II UDP datagram offsets
@@ -462,6 +482,7 @@ struct myNode {
 #define VSCP_ERROR_USER                    38      // Login error username
 #define VSCP_ERROR_PASSWORD                39      // Login error password
 #define VSCP_ERROR_CONNECTION              40      // Could not connect   
+#define VSCP_ERROR_INVALID_HANDLE          41      // The handle is not valid
 
 #ifdef __cplusplus
 }

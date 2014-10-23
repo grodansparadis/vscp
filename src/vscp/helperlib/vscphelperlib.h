@@ -38,41 +38,31 @@ extern "C" {
 #ifdef WIN32
 
 // * * * * *  W I N D O W S  * * * * *
-long WINAPI vscphlp_newSession(void);
-void WINAPI vscphlp_closeSession(long handle);
-void WINAPI vscphlp_setResponseTimeout(long handle, 
-                                                    unsigned char timeout );
-int WINAPI vscphlp_isConnected(const long handle);
-long WINAPI vscphlp_openInterface( long handle,
-						                        const char *pInterface,
-                                                unsigned long flags );
-long WINAPI vscphlp_open( long handle,
-                                        const char *pHostname, 
-                                        const char *pUsername, 
-                                        const char *pPassword );
-int WINAPI vscphlp_close( long handle );
-int WINAPI vscphlp_noop( long handle );
-unsigned long WINAPI EXPORT vscphlp_getLevel( long handle );
-int WINAPI EXPORT vscphlp_clearInQueue( long handle );
-int WINAPI EXPORT vscphlp_sendEvent( long handle,
-													    const vscpEvent *pEvent );
-int WINAPI EXPORT vscphlp_sendEventEx( long handle,
-														const vscpEventEx *pEvent );
-int WINAPI EXPORT vscphlp_receiveEvent( long handle,
-														vscpEvent *pEvent );
-int WINAPI EXPORT vscphlp_receiveEventEx( long handle,
-														vscpEventEx *pEvent );
-int WINAPI EXPORT vscphlp_isDataAvailable( long handle );
-int WINAPI EXPORT vscphlp_getStatus( long handle,
-													canalStatus *pStatus );
-int WINAPI EXPORT vscphlp_getStatistics( long handle,
-														canalStatistics *pStatistics );
-int WINAPI EXPORT vscphlp_setFilter( long handle,
-														const vscpEventFilter *pFilter );
-unsigned long WINAPI EXPORT vscphlp_getVersion( long handle );
-unsigned long WINAPI EXPORT vscphlp_getDLLVersion( long handle );
-const char * WINAPI EXPORT vscphlp_getVendorString( long handle );
-const char * WINAPI EXPORT vscphlp_getDriverInfo( long handle );
+long WINAPI EXPORT vscphlp_newSession(void);
+void WINAPI EXPORT vscphlp_closeSession(long handle);
+void WINAPI EXPORT vscphlp_setResponseTimeout(long handle, unsigned char timeout );
+int WINAPI EXPORT vscphlp_isConnected(const long handle);
+int WINAPI EXPORT vscphlp_doCommand( long handle, const char * cmd );
+int WINAPI EXPORT vscphlp_checkReply( long handle, int bClear );
+int WINAPI EXPORT vscphlp_clearLocalInputQueue( long handle );
+int WINAPI EXPORT vscphlp_openInterface( long handle, const char *pInterface, unsigned long flags );
+int WINAPI EXPORT vscphlp_open( long handle, const char *pHostname,  const char *pUsername, const char *pPassword );
+int WINAPI EXPORT vscphlp_close( long handle );
+int WINAPI EXPORT vscphlp_noop( long handle );
+int WINAPI EXPORT vscphlp_clearDaemonEventQueue( long handle );
+int WINAPI EXPORT vscphlp_sendEvent( long handle, const vscpEvent *pEvent );
+int WINAPI EXPORT vscphlp_sendEventEx( long handle, const vscpEventEx *pEvent );
+int WINAPI EXPORT vscphlp_receiveEvent( long handle, vscpEvent *pEvent );
+int WINAPI EXPORT vscphlp_receiveEventEx( long handle, vscpEventEx *pEvent );
+int WINAPI EXPORT vscphlp_isDataAvailable( long handle, unsigned int *pCount );
+int WINAPI EXPORT vscphlp_getStatistics( long handle, VSCPStatistics *pStatistics );
+int WINAPI EXPORT vscphlp_setFilter( long handle, const vscpEventFilter *pFilter );
+int WINAPI EXPORT vscphlp_getVersion( long handle, unsigned char *pMajorVer,
+                                                    unsigned char *pMinorVer,
+                                                    unsigned char *pSubMinorVer );
+int WINAPI EXPORT vscphlp_getDLLVersion( long handle, unsigned long *pVersion );
+int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, int size  );
+int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pVendorStr, int size  );
 int WINAPI EXPORT vscphlp_shutDownServer( long handle );
 int WINAPI EXPORT vscphlp_enterReceiveLoop(const long handle);
 
@@ -116,44 +106,41 @@ int WINAPI EXPORT vscphlp_setVariableVSCPclass( long handle, const char *pName, 
 int WINAPI EXPORT vscphlp_getVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
 int WINAPI EXPORT vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
 
+//-------------------------------------------------------------------------
+//                                Helpers 
+//-------------------------------------------------------------------------
+
+void WINAPI EXPORT vscphlp_deleteVSCPevent( vscpEvent *pEvent );
+void WINAPI EXPORT vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx );
+
 #else
 
 // * * * * *  L I N U X  * * * * *
- long vscphlp_newSession(void);
+long vscphlp_newSession(void);
 void vscphlp_closeSession(long handle);
-void vscphlp_setResponseTimeout(long handle, 
-                                              unsigned char timeout );
+void vscphlp_setResponseTimeout(long handle, unsigned char timeout );
 int vscphlp_isConnected(const long handle);
-long vscphlp_OpenInterface( long handle,
-						                const char *pInterface,
-                                        unsigned long flags );
-long vscphlp_Open( long handle,
-                                const char *pHostname, 
-                                const char *pUsername, 
-                                const char *pPassword );
+int vscphlp_doCommand( long handle, const char * cmd );
+int vscphlp_checkReply( long handle, int bClear );
+int vscphlp_clearLocalInputQueue( long handle );
+int vscphlp_OpenInterface( long handle, const char *pInterface, unsigned long flags );
+int vscphlp_Open( long handle, const char *pHostname, const char *pUsername, const char *pPassword );
 int vscphlp_Close( long handle );
 int vscphlp_Noop( long handle );
-unsigned long vscphlp_GetLevel( long handle );
-int vscphlp_ClearInQueue( long handle );
-int vscphlp_SendEvent( long handle,
-                                      const vscpEvent *pEvent );
-int vscphlp_SendEventEx( long handle,
-                                        const vscpEventEx *pEvent );
-int vscphlp_ReceiveEvent( long handle,
-										vscpEvent *pEvent );
-int vscphlp_ReceiveEventEx( long handle,
-                                        vscpEventEx *pEvent );
-int vscphlp_isDataAvailable( long handle );
-int vscphlp_GetStatus( long handle,
-                                     canalStatus *pStatus );
-int vscphlp_getStatistics( long handle,
-                                     canalStatistics *pStatistics );
-int vscphlp_SetFilter( long handle,
-                                     const vscpEventFilter *pFilter );
-unsigned long vscphlp_getVersion( long handle );
-unsigned long vscphlp_GetDLLVersion( long handle );
-const char * vscphlp_getVendorString( long handle );
-const char * vscphlp_GetDriverInfo( long handle );
+int vscphlp_ClearDaemonEventQueue( long handle );
+int vscphlp_SendEvent( long handle,  const vscpEvent *pEvent );
+int vscphlp_SendEventEx( long handle, const vscpEventEx *pEvent );
+int vscphlp_ReceiveEvent( long handle, vscpEvent *pEvent );
+int vscphlp_ReceiveEventEx( long handle, vscpEventEx *pEvent );
+int vscphlp_isDataAvailable( long handle, unsigned int *pCount );
+int vscphlp_getStatistics( long handle, VSCPStatistics *pStatistics );
+int vscphlp_SetFilter( long handle, const vscpEventFilter *pFilter );
+int vscphlp_getVersion( long handle, unsigned char *pMajorVer,
+                                                    unsigned char *pMinorVer,
+                                                    unsigned char *pSubMinorVer );
+int vscphlp_GetDLLVersion( long handle, unsigned long *pVersion );
+int vscphlp_getVendorString( long handle, char *pVendorStr, int size  );
+int vscphlp_GetDriverInfo( long handle, char *pVendorStr, int size  );
 int vscphlp_ServerShutDown( long handle );
 int vscphlp_enterReceiveLoop(const long handle);
 
@@ -196,6 +183,15 @@ int vscphlp_setVariableVSCPclass( long handle, const char *pName, unsigned short
 
 int vscphlp_getVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
 int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
+
+
+//-------------------------------------------------------------------------
+//                                Helpers 
+//-------------------------------------------------------------------------
+
+void vscphlp_deleteVSCPevent( vscpEvent *pEvent );
+void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx );
+
 
 #endif
 
