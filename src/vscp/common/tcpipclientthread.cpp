@@ -944,7 +944,7 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
 
         if ( !pClientItem->m_bOpen ) {
             ns_send( conn,  MSG_NO_MSG, strlen ( MSG_NO_MSG ) );
-            break;
+            return;
         }
         else {
             if ( false == sendOneEventFromQueue( conn, pCtrlObject ) ) {

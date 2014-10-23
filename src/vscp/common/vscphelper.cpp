@@ -1084,12 +1084,18 @@ uint32_t vscp_readStringValue(const wxString& strval)
 {
 	static unsigned long val;
 	wxString str = strval;
-
+	
+	str.Trim();
+	str.Trim(false);
 	str.MakeLower();
 	if (wxNOT_FOUND != str.Find(_("0x"))) {
-		str.ToULong(&val, 16);
+		if ( !str.ToULong(&val, 16) ) {
+			val = 0;
+		}
 	} else {
-		str.ToULong(&val);
+		if ( !str.ToULong(&val) ) {
+			val = 0;
+		}
 	}
 
 	return val;
