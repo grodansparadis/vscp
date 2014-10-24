@@ -3286,7 +3286,7 @@ void *RXWorkerThread::Entry()
     while (!TestDestroy() && !m_pCtrlObject->m_bQuit) {
 
         if (CANAL_ERROR_SUCCESS ==
-                (rv = tcpifReceive.doCmdBlockReceive(&event, 1000))) {
+                (rv = tcpifReceive.doCmdBlockingReceive(&event, 1000))) {
 
             if (NULL != m_pCtrlObject->m_pVSCPSessionWnd) {
 

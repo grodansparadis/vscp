@@ -486,7 +486,7 @@ CWrkReceiveTread::Entry()
             pEvent->sizeData = 0;
             pEvent->pdata = NULL;
             
-            if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockReceive(pEvent)) {
+            if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockingReceive(pEvent)) {
 
                 if ( vscp_doLevel2Filter( pEvent, 
                                         &m_pObj->m_vscpfilter) && 

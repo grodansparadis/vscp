@@ -14,6 +14,7 @@
         <itemPath>../../../../../common/crc8.c</itemPath>
         <itemPath>../../../../../common/crc8.h</itemPath>
         <itemPath>../../../../../common/dllist.h</itemPath>
+        <itemPath>../../../../../common/net_skeleton.c</itemPath>
         <itemPath>../../../../../common/net_skeleton.h</itemPath>
       </logicalFolder>
       <logicalFolder name="vscp" displayName="vscp" projectFiles="true">
@@ -89,14 +90,19 @@
         <cTool flags="1">
         </cTool>
       </item>
+      <item path="../../../../../common/net_skeleton.c"
+            ex="false"
+            tool="0"
+            flavor2="0">
+        <cTool flags="1">
+        </cTool>
+      </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
@@ -107,11 +113,9 @@
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
