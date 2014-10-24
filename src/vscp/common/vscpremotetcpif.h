@@ -297,10 +297,16 @@ public:
     int doCmdStatus( canalStatus *pStatus );
 
     /*!
-        Receive CAN statistics through the interface. 
+        Receive VSCP statistics through the interface. 
         \return CANAL_ERROR_SUCCESS on success and error code if failure.
     */
     int doCmdStatistics( VSCPStatistics *pStatistics );
+	
+	/*!
+        Receive CAN statistics through the interface. 
+        \return CANAL_ERROR_SUCCESS on success and error code if failure.
+    */
+    int doCmdStatistics( canalStatistics *pStatistics );
 
     /*!
         Set/Reset a filter through the interface. 

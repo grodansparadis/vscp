@@ -1141,7 +1141,7 @@ int VscpRemoteTcpIf::doCmdStatistics( VSCPStatistics *pStatistics )
 
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;
 
-   
+  
     strLine = m_inputStrArray[ m_inputStrArray.Count()-2 ];
     
     strTokens.SetString( strLine, _(",\r\n"));
@@ -1238,6 +1238,34 @@ int VscpRemoteTcpIf::doCmdStatistics( VSCPStatistics *pStatistics )
     
     return VSCP_ERROR_SUCCESS;
 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// doCmdStatistics
+//
+
+int VscpRemoteTcpIf::doCmdStatistics( canalStatistics *pStatistics )
+{
+	int rv;
+	VSCPStatistics vscpstat;
+	
+	if ( NULL == pStatistics ) return VSCP_ERROR_PARAMETER;
+	
+	if ( VSCP_ERROR_SUCCESS != ( rv = doCmdStatistics( &vscpstat ) ) ) {
+		return rv;
+	}
+	
+	// It may be tempting to just do a copy here but don't they 
+	// will be different in the future for sure.
+	pStatistics->cntBusOff = 0;
+	pStatistics->cntBusWarnings = 0;
+	pStatistics->cntOverruns = 0;
+	pStatistics->cntReceiveData = vscpstat.cntReceiveData;
+	pStatistics->cntReceiveFrames = vscpstat.cntReceiveFrames;
+	pStatistics->cntTransmitData = vscpstat.cntTransmitData;
+	pStatistics->cntTransmitFrames = vscpstat.cntTransmitFrames;	 
+	
+	return VSCP_ERROR_SUCCESS;
 }
 
 

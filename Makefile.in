@@ -29,7 +29,7 @@ install:
 	$(INSTALL_PROGRAM) -b -m755 vscpd.startup_script_debian /etc/init.d/vscpd
 	update-rc.d vscpd defaults
 	$(INSTALL_PROGRAM) -b -m744 config_examples/web/index.html /srv/vscp/web/
-	$(INSTALL_PROGRAM) -b -m744 config_examples/web/* /srv/vscp/web/
+	$(INSTALL_PROGRAM) -b -m744 -t config_examples/web/* /srv/vscp/web/
 	$(INSTALL_PROGRAM) -b -m744 config_examples/mimetypes.xml_distro /etc/vscp/mimetypes.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro /srv/vscp/variables.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro /srv/vscp/dm.xml

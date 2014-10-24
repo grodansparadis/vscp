@@ -560,7 +560,9 @@ unsigned long CCanalSuperWrapper::doCmdVersion( void )
 		return m_canalDll.doCmdVersion();
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
-		return m_vscptcpif.doCmdVersion();
+		uint8_t v1,v2,v3;
+		m_vscptcpif.doCmdVersion( &v2, &v2, &v3 );
+		return v1<<16 + v2<<8 + v3;
 	}
 
 	return 0;
