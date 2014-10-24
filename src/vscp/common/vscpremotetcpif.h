@@ -65,9 +65,9 @@
 	\def TCPIP_VENDOR_STRING
 	Pseudo vendor string
 */
-#define TCPIP_VENDOR_STRING	  			(_("Grodans Paradis AB, Sweden"))
+#define TCPIP_VENDOR_STRING	  			"Grodans Paradis AB, Sweden"
 
-#define DRIVER_INFO_STRING	  			(_(""))
+#define DRIVER_INFO_STRING	  			""
 
 /// Receive queue
 WX_DECLARE_LIST( vscpEvent, EVENT_RX_QUEUE );
