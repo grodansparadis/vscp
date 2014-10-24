@@ -511,7 +511,7 @@ extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    wxString str =  pvscpif->doCmdVendorString();
+    wxString str =  wxString::FromAscii( pvscpif->doCmdVendorString() );
     strncpy( pVendorStr, str.mbc_str(), size );
     
     return VSCP_ERROR_SUCCESS;
@@ -534,7 +534,7 @@ extern "C" int vscphlp_getDriverInfo( long handle, char *pInfoStr, int size )
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    wxString str =  pvscpif->doCmdGetDriverInfo();
+    wxString str =  wxString::FromAscii( pvscpif->doCmdGetDriverInfo() );
     strncpy( pInfoStr, str.mbc_str(), size );
     
     return VSCP_ERROR_SUCCESS;
