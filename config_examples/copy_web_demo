@@ -1,4 +1,6 @@
 #!/bin/sh
+cp ../../vscp_html5/index.html web
+cp ../../vscp_html5/favicon.ico web
 cp ../../vscp_html5/css/example.css web/css
 cp ../../vscp_html5/css/vscpdemo.css web/css 
 cp -r ../../vscp_html5/images web
