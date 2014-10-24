@@ -54,7 +54,12 @@ int WINAPI EXPORT vscphlp_sendEvent( long handle, const vscpEvent *pEvent );
 int WINAPI EXPORT vscphlp_sendEventEx( long handle, const vscpEventEx *pEvent );
 int WINAPI EXPORT vscphlp_receiveEvent( long handle, vscpEvent *pEvent );
 int WINAPI EXPORT vscphlp_receiveEventEx( long handle, vscpEventEx *pEvent );
+int WINAPI EXPORT vscphlp_blockingReceiveEvent( long handle, vscpEvent *pEvent );
+int WINAPI EXPORT vscphlp_blockingReceiveEventEx( long handle, vscpEventEx *pEvent );
+int WINAPI EXPORT vscphlp_enterReceiveLoop(const long handle);
+int WINAPI EXPORT vscphlp_quitReceiveLoop(const long handle);
 int WINAPI EXPORT vscphlp_isDataAvailable( long handle, unsigned int *pCount );
+int WINAPI EXPORT vscphlp_getStatus( long handle, VSCPStatus *pStatus );
 int WINAPI EXPORT vscphlp_getStatistics( long handle, VSCPStatistics *pStatistics );
 int WINAPI EXPORT vscphlp_setFilter( long handle, const vscpEventFilter *pFilter );
 int WINAPI EXPORT vscphlp_getVersion( long handle, unsigned char *pMajorVer,
@@ -64,7 +69,6 @@ int WINAPI EXPORT vscphlp_getDLLVersion( long handle, unsigned long *pVersion );
 int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, int size  );
 int WINAPI EXPORT vscphlp_getDriverInfo( long handle, char *pVendorStr, int size  );
 int WINAPI EXPORT vscphlp_shutDownServer( long handle );
-int WINAPI EXPORT vscphlp_enterReceiveLoop(const long handle);
 
 //-------------------------------------------------------------------------
 //                                Variables 
@@ -130,9 +134,14 @@ int vscphlp_Noop( long handle );
 int vscphlp_ClearDaemonEventQueue( long handle );
 int vscphlp_SendEvent( long handle,  const vscpEvent *pEvent );
 int vscphlp_SendEventEx( long handle, const vscpEventEx *pEvent );
-int vscphlp_ReceiveEvent( long handle, vscpEvent *pEvent );
-int vscphlp_ReceiveEventEx( long handle, vscpEventEx *pEvent );
+int vscphlp_receiveEvent( long handle, vscpEvent *pEvent );
+int vscphlp_receiveEventEx( long handle, vscpEventEx *pEvent );
+int vscphlp_blockingReceiveEvent( long handle, vscpEvent *pEvent );
+int vscphlp_blockingReceiveEventEx( long handle, vscpEventEx *pEvent );
+int vscphlp_enterReceiveLoop(const long handle);
+int vscphlp_quitReceiveLoop(const long handle);
 int vscphlp_isDataAvailable( long handle, unsigned int *pCount );
+int vscphlp_getStatus( long handle, VSCPStatus *pStatus );
 int vscphlp_getStatistics( long handle, VSCPStatistics *pStatistics );
 int vscphlp_SetFilter( long handle, const vscpEventFilter *pFilter );
 int vscphlp_getVersion( long handle, unsigned char *pMajorVer,
@@ -142,7 +151,6 @@ int vscphlp_GetDLLVersion( long handle, unsigned long *pVersion );
 int vscphlp_getVendorString( long handle, char *pVendorStr, int size  );
 int vscphlp_GetDriverInfo( long handle, char *pVendorStr, int size  );
 int vscphlp_ServerShutDown( long handle );
-int vscphlp_enterReceiveLoop(const long handle);
 
 //-------------------------------------------------------------------------
 //                                Variables 

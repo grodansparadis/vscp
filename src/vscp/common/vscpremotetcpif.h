@@ -274,6 +274,11 @@ public:
     int doCmdEnterReceiveLoop( void );
 
     /*!
+        Quit the receive loop
+    */
+    int doCmdQuitReceiveLoop( void );
+
+    /*!
         Receive an event 
         The receiveloop command must have been issued for this method to work as 
         it sets up the ringbuffer used for the blocking receive.
@@ -283,7 +288,9 @@ public:
         returned if no event was available. CANAL_ERROR_TIMEOUT on timeout.CANAL_ERROR_COMMUNICATION
         is returned if a socket error is detected.
     */
-    int doCmdBlockReceive( vscpEvent *pEvent, uint32_t timeout = 500 );
+    int doCmdBlockingReceive( vscpEvent *pEvent, uint32_t timeout = 500 );
+
+    int doCmdBlockingReceive( vscpEventEx *pEventEx, uint32_t timeout = 500 );
 
     /*!
         Get the number of events in the input queue of this interface
@@ -297,6 +304,12 @@ public:
         \return CANAL_ERROR_SUCCESS on success and error code if failure.
     */
     int doCmdStatus( canalStatus *pStatus );
+
+
+    /*!
+        A VSCP variant of the above
+    */
+    int doCmdStatus( VSCPStatus *pStatus );
 
     /*!
         Receive VSCP statistics through the interface. 
@@ -673,6 +686,11 @@ public:
     */
     wxArrayString m_inputStrArray;
 
+    /*!
+        Semaphore for input string array
+    */
+    wxSemaphore *m_psemInputArray;
+
     /// Mutex to protect string array
     wxMutex m_mutexArray;
 
@@ -683,16 +701,12 @@ public:
     */
     wxString m_readBuffer;
 
+    /// Flag for active receive loop
+    bool m_bModeReceiveLoop;
 
 protected:
 
     clientTcpIpWorkerThread *m_pClientTcpIpWorkerThread;
-
-    /// Socket
-    //wxSocketClient* m_psock;
-
-    /// Server address
-    //wxIPV4address m_addr;
 
     /// Response string
     wxString m_strReply;
@@ -702,9 +716,6 @@ protected:
 
     /// Last binary error
     uint8_t m_lastBinaryError;
-
-    /// Flag for active receive loop
-    bool m_bModeReceiveLoop;
 
     /// Server response timeout
     uint8_t m_responseTimeOut;

@@ -312,6 +312,25 @@ typedef struct structVSCPStatistics {
 typedef  VSCPStatistics * PVSCPSTATISTICS;
 
 
+/*!
+	VSCPStatus
+
+	This is the general channel state structure
+*/
+
+#define VSCP_STATUS_ERROR_STRING_SIZE   80
+
+typedef struct structVSCPStatus {
+    unsigned long channel_status;           // Current state for channel
+    unsigned long lasterrorcode;            // Last error code
+    unsigned long lasterrorsubcode;         // Last error subcode
+    char lasterrorstr[VSCP_STATUS_ERROR_STRING_SIZE]; // Last error string
+} VSCPStatus;
+
+
+typedef  VSCPStatus * PVSCPSTATUS;
+ 
+
 // VSCP LEVEL II UDP datagram offsets
 #define VSCP_UDP_POS_HEAD             0
 #define VSCP_UDP_POS_CLASS            1

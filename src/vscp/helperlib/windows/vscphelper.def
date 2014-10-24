@@ -20,7 +20,12 @@ EXPORTS
     vscphlp_sendEventEx
     vscphlp_receiveEvent
     vscphlp_receiveEventEx
+    vscphlp_enterReceiveLoop
+    vscphlp_quitReceiveLoop
+    vscphlp_blockingReceiveEvent
+    vscphlp_blockingReceiveEventEx
 	vscphlp_isDataAvailable
+    vscphlp_getStatus
     vscphlp_getStatistics 
     vscphlp_setFilter
     vscphlp_getVersion

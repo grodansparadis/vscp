@@ -386,6 +386,47 @@ extern "C" int vscphlp_receiveEventEx( long handle,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// vscphlp_blockingReceiveEvent
+//
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_blockingReceiveEvent( long handle,
+														vscpEvent *pEvent )
+#else
+extern "C" int vscphlp_blockingReceiveEvent( long handle,
+                                                vscpEvent *pEvent )
+#endif
+{
+	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+
+    // Check that we are connected
+    if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
+
+    return pvscpif->doCmdBlockingReceive( pEvent );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_blockingReceiveEventEx
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_blockingReceiveEventEx( long handle,
+														vscpEventEx *pEvent )
+#else
+extern "C" int vscphlp_blockingReceiveEventEx( long handle,
+											vscpEventEx *pEvent )
+#endif
+{
+	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+
+    // Check that we are connected
+    if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
+
+    return pvscpif->doCmdBlockingReceive( pEvent );
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // vscphlp_isDataAvailable
 //
 #ifdef WIN32
@@ -403,6 +444,28 @@ extern "C" int vscphlp_isDataAvailable( long handle, unsigned int *pCount )
     *pCount = pvscpif->doCmdDataAvailable();
 
     return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscphlp_getStatus
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getStatus( long handle,
+														VSCPStatus *pStatus )
+#else
+extern "C" int vscphlp_getStatus( long handle,
+										VSCPStatus *pStatus )
+#endif
+{
+	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
+
+    // Check that we are connected
+    if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
+
+    return pvscpif->doCmdStatus( pStatus );
 }
 
 
@@ -566,7 +629,7 @@ extern "C" int vscphlp_shutDownServer( long handle )
     checking that it went there.
 
     Note! The only way to terminate this receive loop is to close the session with 
-    close .
+    'CLOSE' or sending 'QUITLOOP' .
     \param handle to server object
     \return CANAL_ERROR_SUCCESS if success CANAL_ERROR_GENERIC if not.
  */
@@ -584,6 +647,25 @@ extern "C" int vscphlp_enterReceiveLoop(const long handle)
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     return pvscpif->doCmdEnterReceiveLoop();
+}
+
+/*!
+    Quit the receiveloop
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_quitReceiveLoop(const long handle)
+#else
+extern "C" int vscphlp_quitReceiveLoop(const long handle)
+#endif
+{
+    // Get VSCP TCP/IP object
+    VscpRemoteTcpIf *pvscpif = theApp.getDriverObject(handle);
+    if (NULL == pvscpif) return VSCP_ERROR_INVALID_HANDLE;
+
+    // Check that we are connected
+    if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
+
+    return pvscpif->doCmdQuitReceiveLoop();
 }
 
 
