@@ -1,0 +1,73 @@
+<form action="">
+	<fieldset>
+		<br /><input type="radio" name="endian" value="0" checked="checked" />Big Endian
+		<input type="radio" name="endian" value="1" />Little Endian
+		<br /><br />
+	<fieldset>
+		<legend>Número > Hexadecimal</legend>
+		Converter número <input type="text" name="fromNumber" value="123" /> para
+		<select name="toHex">
+			<option value="Small">Small</option>
+			<option value="Byte">Byte</option>
+			<option value="Short">Short</option>
+			<option value="Word">Word</option>
+			<option value="Int">Int</option>
+			<option value="DWord">DWord</option>
+			<option value="Float">Float</option>
+			<option value="Double">Double</option>
+		</select>
+		<br /><input type="button" name="n2h" value="Converter" />
+	</fieldset>
+	<br />
+	<fieldset>
+		<legend>Hexadecimal > Número</legend>
+		Converter hexadecimal <input type="text" name="fromHex" value="7b" /> para número
+		<select name="toNumber">
+			<option value="Small">Small</option>
+			<option value="Byte">Byte</option>
+			<option value="Short">Short</option>
+			<option value="Word">Word</option>
+			<option value="Int">Int</option>
+			<option value="DWord">DWord</option>
+			<option value="Float">Float</option>
+			<option value="Double">Double</option>
+		</select>
+		<br /><input type="button" name="h2n" value="Converter" />
+	</fieldset>
+	</fieldset>
+</form>
+
+<script type="text/javascript">
+//<![CDATA[
+
+f = document.forms[0];
+//http://www.jsfromhell.com/geral/event-listener
+addEvent(f.n2h, "click", function(e){
+	function char2hex(s){
+		for(var k, i = s.length, r = ""; i; r = ((k = s.charCodeAt(--i).toString(16 )).length - 1 ? k : "0" + k) + r);
+		return r;
+	}
+	try{
+		alert(char2hex((new BinaryParser(f.endian[0].checked, true))["from" + f.toHex.value](f.fromNumber.value - 0)));
+	}
+	catch(e){
+		alert('Erro\n'+e.message);
+	}
+});
+
+//http://www.jsfromhell.com/geral/event-listener
+addEvent(f.h2n, "click", function(e){
+	function hex2bin(s){
+		for(var i = 0, l = s.length, r = ""; i < l; r += String.fromCharCode(parseInt(s.substr(i, 2), 16)), i += 2);
+		return r;
+	}
+	try{
+		alert((new BinaryParser(f.endian[0].checked, true))["to" + f.toNumber.value](hex2bin(f.fromHex.value)));
+	}
+	catch(e){
+		alert('Erro\n'+e.message);
+	}
+} );
+
+//]]>
+</script>

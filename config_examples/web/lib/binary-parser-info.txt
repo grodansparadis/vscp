@@ -1,0 +1,16 @@
+JSFromHell.com @ http://jsfromhell.com
+--------------------------------------
+
+Name: Binary Parser
+URL: http://jsfromhell.com/classes/binary-parser
+Author: Jonas Raoni Soares Silva
+Created: 2005.08.08
+Modified: 2005.08.08
+Description:
+Serializes and unserializes binary data.
+
+To keep yourself updated, sign up the ATOM feed at: http://jsfromhell.com/en/feed/atom.xml
+
+We authorize the copy and modification of all the codes on the site, since the original author credits are kept
+In the case you have a code that you consider indispensable, job offers, feature requests, suggestions or if you've found problems on the site, contact us.
+We don't assume any responsibility for any kind of damage, direct or indirect, that can be raised upon the utilization of our codes/site or any site that's available through hiperlinks in our site.
