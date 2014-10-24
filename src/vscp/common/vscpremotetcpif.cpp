@@ -1446,7 +1446,7 @@ unsigned long VscpRemoteTcpIf::doCmdDLLVersion( void  )
 
 const char * VscpRemoteTcpIf::doCmdVendorString( void )
 {
-  return wxString( TCPIP_VENDOR_STRING ).mb_str();
+  return TCPIP_VENDOR_STRING;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1455,7 +1455,7 @@ const char * VscpRemoteTcpIf::doCmdVendorString( void )
 
 const char * VscpRemoteTcpIf::doCmdGetDriverInfo( void )
 {
-    return NULL;
+    return DRIVER_INFO_STRING;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -67,6 +67,8 @@
 */
 #define TCPIP_VENDOR_STRING	  			(_("Grodans Paradis AB, Sweden"))
 
+#define DRIVER_INFO_STRING	  			(_(""))
+
 /// Receive queue
 WX_DECLARE_LIST( vscpEvent, EVENT_RX_QUEUE );
 /// Transmit queue
