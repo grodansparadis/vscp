@@ -1046,8 +1046,8 @@ int VscpRemoteTcpIf::doCmdDataAvailable( void )
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.mb_str(), 
                 strCmd.length() );
-    if ( !checkReturnValue(true) ) return VSCP_ERROR_GENERIC;
-    
+
+    if ( !checkReturnValue(true) ) return VSCP_ERROR_GENERIC;  
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;
     strLine = m_inputStrArray[ m_inputStrArray.Count()-2 ];
     strLine.Trim();
@@ -1085,10 +1085,9 @@ int VscpRemoteTcpIf::doCmdStatus( canalStatus *pStatus )
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.mb_str(), 
                 strCmd.length() );
+
     if ( !checkReturnValue(true) ) return VSCP_ERROR_GENERIC;
-
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;
-
     strLine = m_inputStrArray[ m_inputStrArray.Count()-2 ];
 
     // channelstatus
@@ -1137,11 +1136,9 @@ int VscpRemoteTcpIf::doCmdStatistics( VSCPStatistics *pStatistics )
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.mb_str(), 
                     strCmd.length() );
+
     if ( !checkReturnValue(true) ) return VSCP_ERROR_GENERIC;
-
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;
-
-  
     strLine = m_inputStrArray[ m_inputStrArray.Count()-2 ];
     
     strTokens.SetString( strLine, _(",\r\n"));

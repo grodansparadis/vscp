@@ -500,7 +500,7 @@ extern "C" int vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
 #ifdef WIN32
 extern "C"  int WINAPI EXPORT vscphlp_getVendorString( long handle, char *pVendorStr, int size )
 #else
-extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size )
+extern "C"  int vscphlp_getVendorString( long handle, char *pVendorStr, int size  )
 #endif
 {
     if ( NULL == pVendorStr ) return VSCP_ERROR_PARAMETER;

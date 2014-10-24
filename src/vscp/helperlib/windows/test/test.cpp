@@ -272,6 +272,15 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     
 
+    // Get statistics
+    VSCPStatistics stat;
+    if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_getStatistics( handle2, &stat ) ) ) {
+        printf( "Command success: vscphlp_getStatistics on channel 2\n" );
+    }
+    else {
+        printf("Command error: vscphlp_getStatistics on channel 2  Error code=%d\n", rv);
+    }
+
 
     // ------------------------------------------------------------------------
 
