@@ -53,13 +53,16 @@ void _fini() __attribute__((destructor));
 void _init()
 {
     wxLogDebug(_("initializing"));
-	wxApp::SetInstance(new wxApp());
-	new wxInitializer();
+	// The following works on 3.0 but not on 2.8
+	//wxApp::SetInstance(new wxApp());
+	//new wxInitializer();
+	wxInitialize();
 }
 
 void _fini()
 {
-    wxLogDebug("finishing");
+    wxLogDebug("finishing");	
+	wxUninitialize();
 }
 
 
