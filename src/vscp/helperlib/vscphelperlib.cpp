@@ -391,7 +391,7 @@ extern "C" int vscphlp_receiveEventEx( long handle,
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_isDataAvailable( long handle, unsigned int *pCount )
 #else
-extern "C" int vscphlp_isDataAvailable( long handle )
+extern "C" int vscphlp_isDataAvailable( long handle, unsigned int *pCount )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -457,7 +457,10 @@ extern "C" int WINAPI EXPORT vscphlp_getVersion( long handle,
                                                     unsigned char *pMinorVer,
                                                     unsigned char *pSubMinorVer )
 #else
-extern "C" int vscphlp_getVersion( long handle )
+extern "C" int vscphlp_getVersion( long handle, 
+                                      unsigned char *pMajorVer,
+                                      unsigned char *pMinorVer,
+                                      unsigned char *pSubMinorVer )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -477,7 +480,7 @@ extern "C" int vscphlp_getVersion( long handle )
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
 #else
-extern "C" int vscphlp_getDLLVersion( long handle )
+extern "C" int vscphlp_getDLLVersion( long handle, unsigned long *pVersion )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
