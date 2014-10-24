@@ -10,6 +10,12 @@
 	var user = "admin";
 	var authdomain = "mydomain.com";
 	var passwordhash = "d50c3180375c27927c22e42a379c3f67";
+    
+    
+    var test = 0.0;
+    var ttt = 0xffff;
+    test = ttt;
+    alert(ttt);
 
 	var vscp_make_websocket_auth_hash = function( user, password, sid ){
 		return hex_md5( user + ":" + password + ":" + sid ); 

@@ -716,42 +716,6 @@ var VSCP_TYPE_REMOTE_SONY12 = 2;
 var VSCP_TYPE_REMOTE_LIRC = 32;
 var VSCP_TYPE_REMOTE_VSCP = 48;
 
-// class 200 (0xC8) -- 1-WIRE
-var VSCP_TYPE_1WIRE_GENERAL = 0;
-var VSCP_TYPE_1WIRE_NEW_ID = 1;
-var VSCP_TYPE_1WIRE_CONVERT = 2;
-var VSCP_TYPE_1WIRE_READ_ROM = 3;
-var VSCP_TYPE_1WIRE_MATCH_ROM = 4;
-var VSCP_TYPE_1WIRE_SKIP_ROM = 5;
-var VSCP_TYPE_1WIRE_SEARCH_ROM = 6;
-var VSCP_TYPE_1WIRE_CONDITIONAL_SEARCH_ROM = 7;
-var VSCP_TYPE_1WIRE_PROGRAM = 8;
-var VSCP_TYPE_1WIRE_OVERDRIVE_SKIP_ROM = 9;
-var VSCP_TYPE_1WIRE_OVERDRIVE_MATCH_ROM = 10;
-var VSCP_TYPE_1WIRE_OVERDRIVE_READ_MEMORY = 11;
-var VSCP_TYPE_1WIRE_OVERDRIVE_WRITE_MEMORY = 12;
-
-// class 201 (0xC9) -- X10
-var VSCP_TYPE_X10_GENERAL = 0;
-var VSCP_TYPE_X10_STANDARD_MESSAGE_RECEIVE = 1;
-var VSCP_TYPE_X10_EXTENDED_MESSAGE_RECEIVE = 2;
-var VSCP_TYPE_X10_STANDARD_MESSAGE_SEND = 3;
-var VSCP_TYPE_X10_EXTENDED_MESSAGE_SEND = 4;
-var VSCP_TYPE_X10_SIMPLE_MESSAGE = 5;
-
-
-// class 202 (0xCA) -- LON
-var VSCP_TYPE_LON_GENERAL = 0;
-
-// class 203 (0xCB) -- KNX/EIB
-var VSCP_TYPE_EIB_GENERAL = 0;
-
-// class 204 (0xCC) -- SNAP
-var VSCP_TYPE_SNAP_GENERAL = 0;
-
-// class 205 (0xCD) -- CBUS
-var VSCP_TYPE_CBUS_GENERAL = 0;
-
 // class 206 (0xCE) -- GPS
 var VSCP_TYPE_GPS_GENERAL = 0;
 var VSCP_TYPE_GPS_POSITION = 1;
@@ -790,6 +754,7 @@ var VSCP2_TYPE_CONTROL_GENERAL = 0;
 // Level II Information functionality Class=1026 (0x402)
 var VSCP2_TYPE_INFORMATION_GENERAL = 0;
 var VSCP2_TYPE_INFORMATION_TOKEN_ACTIVITY  = 1;
+var VSCP2_TYPE_INFORMATION_HEART_BEAT  = 2;
 
 // Level II Text to speech functionality Class=1028 (0x404)
 var VSCP2_TYPE_TEXT2SPEECH_GENERAL = 0;
@@ -940,6 +905,52 @@ function vscpws_encodeFloat(number) {
         mantissa = (mantissa << 1) + bin[i];
     }
     return ((signal ? 0x80000000 : 0) + (exponent << 23) + mantissa) | 0;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscpws_littleEndian
+//
+// Return true for little endian/false for big endian
+//
+
+var vscpws_littleEndian = (function() {
+    var buffer = new ArrayBuffer(2);
+    new DataView(buffer).setInt16(0, 256, true);
+    return new Int16Array(buffer)[0] === 256;
+})();
+
+///////////////////////////////////////////////////////////////////////////////
+// vscpws_checkEndian
+//
+// Byte swap word and dword
+//
+
+function vscpws_swapBytes(buf, size)
+{
+
+    var bytes = Uint8Array(buf);
+    var len = bytes.length;
+ 
+    if (size == 'WORD'){
+        var holder;
+        for(var i =0; i<len; i+=2){
+            holder = bytes[i];
+            bytes[i] = bytes[i+1];
+            bytes[i+1] = holder;
+        }
+    } 
+    else if(size == 'DWORD'){
+        var holder;
+        for(var i =0; i<len; i+=4){
+            holder = bytes[i];
+            bytes[i] = bytes[i+3];
+            bytes[i+3] = holder;
+            holder = bytes[i+1];
+            bytes[i+1] = bytes[i+2];
+            bytes[i+2] = holder;
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1140,6 +1151,34 @@ function vscp_make_websocket_auth_hash( user, password, sid ){
 	return hex_md5( user + ":" + password + ":" + sid ); 
 };
 
+
+function vscpws_varInteger2Float( data ) {    
+    var rval = 0.0;
+
+    var bNegative = false;
+    
+    if ( data[0] & 0x80 ) {    
+        bNegative = true;
+    
+        for ( i=0; i<data.length; i++ ) {
+            data[i] = ~data[i] & 0xff; 
+        }
+    }
+        
+    for (i=0;i<data.length;i++) {
+        rval = rval << 8;
+        rval += data[i];
+    }
+            
+    if ( bNegative ) {
+        rval = -1.0 * (rval + 1);
+    }
+
+    //console.log( data.length );
+    //console.log( rval );
+    return rval;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // vscpws_getDatacoding
 //
@@ -1178,12 +1217,14 @@ function vscpws_measurementClass10Decode(data){
     switch ( vscpws_getDatacoding(data[0]) ){
         case 0: // Bits
         case 1: // Bytes
-        case 3: // Integer    
+        case 3: // Integer   
             {
+                var newdata = new Array(data.length-1);
+                
                 for (i=1;i<data.length;i++) {
-                    rval = rval << 8;
-                    rval += data[i];
+                    newdata[i-1] = data[i];
                 }
+                rval = vscpws_varInteger2Float( newdata );
             }
             break;
 
@@ -1199,41 +1240,14 @@ function vscpws_measurementClass10Decode(data){
         case 4: // Normalized integer
             {
                 var exp = data[1];
-                var bNegative = (data[2] & 0x80) ? true : false ;
-                //if (bNegative) data[2] = (data[2] & 0x7f);
+                var newdata = new Array(data.length-2);
                 
                 for (i=2;i<data.length;i++) {
-                    rval = (rval << 8);
-                    mask = (mask << 8);
-                    rval += data[i];
-                    mask += 0xff;
-                }
-     
-                if (bNegative) {
-                
-                    switch ( data.length ) {
-                        case 3:
-                            rval = 0xffffffffff00 + rval;
-                            break;
-                        case 4:
-                            rval = 0xffffffff0000 + rval;
-                            break;
-                        case 5:
-                            rval = 0xffffff000000 + rval;
-                            break;
-                        case 6:
-                            rval = 0xffff00000000 + rval;
-                            break;
-                        case 7:
-                            rval = 0xff0000000000 + rval;
-                            break;      
-                    }
-                    
-                    console.log("Negative value " + rval );
-                    rval = ~~rval; // Fix two's complement value
-                    console.log( 'negiated = ' + rval );
+                    newdata[i-2] = data[i];
                 }
                 
+                rval = vscpws_varInteger2Float( newdata );
+              
                 // Handle mantissa
                 if ( exp & 0x80 ) {
                     exp &= 0x7f;
@@ -3257,19 +3271,19 @@ vscpws_stateButton.prototype.onVSCPMessage = function(msg)
             this.bConnected = false;
         }
         else if ("READVAR" == msgitems[1] && (2 == msgitems[2])){
-            if ( ("true" == msgitems[3].toLowerCase()) && 
+            if ( ("true" == msgitems[4].toLowerCase()) && 
                     (false == this.bState )) {
                 // We have a match for ON
                 this.bState = true;
                 this.draw();
             }
-            else if ( ("false" == msgitems[3].toLowerCase()) && 
+            else if ( ("false" == msgitems[4].toLowerCase()) && 
                     (true == this.bState )) {
                 // We have a match for ON
                 this.bState = false;
                 this.draw();
             }
-            if ( this.bOnce && ( typeof interval !== 'undefined' ) ) {
+            if ( this.bOnce && ( typeof  this.monitorVariableName !== 'undefined' ) ) {
                 clearInterval( this.variableTimer );
                 this.bOnce = false;
             }
@@ -3322,10 +3336,10 @@ vscpws_stateButton.prototype.onVSCPMessage = function(msg)
                            (vscpdata[i] != this.receive_data_on[i]) ) return;
                 }
             }
-
+       
             // Check GUID
             if ( ("" != this.receive_guid_on) && 
-                    this.receive_guid_on.toLowerCase() != guid.toLowerCase()) return;
+                    this.receive_guid_on.toLowerCase() != vscpguid.toLowerCase()) return;
             
             // We have a match for ON
             this.bState = true;
@@ -3350,7 +3364,7 @@ vscpws_stateButton.prototype.onVSCPMessage = function(msg)
                  
             // Check GUID
             if (("" != this.receive_guid_off) && 
-                    this.receive_guid_off.toLowerCase() != guid.toLowerCase()) return;
+                    this.receive_guid_off.toLowerCase() != vscpguid.toLowerCase()) return;
                       
             // We have a match for OFF
             this.bState = false;
@@ -3657,6 +3671,10 @@ vscpws_simpleTextEvent.prototype.onVSCPMessage = function(msg)
         if ((vscpclass == undefined) || (vscptype == undefined) ) return;
         if (( -1 != this.vscpclass) && (vscpclass != this.vscpclass)) return;
         if (( -1 != this.vscptype) && (vscptype != this.vscptype)) return;       
+        
+         // Check GUID
+        if ( ("" != this.guid) &&
+                this.guid.toLowerCase() != vscpguid.toLowerCase()) return;
         
         // Classes with data coding byte
         if ((VSCP_CLASS1_MEASUREMENT == this.vscpclass) || 

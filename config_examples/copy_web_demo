@@ -1,6 +1,8 @@
 #!/bin/sh
 cp ../../vscp_html5/css/example.css web/css
 cp ../../vscp_html5/css/vscpdemo.css web/css 
-cp -r ../../vscp_html5/images web/images
-cp -r ../../vscp_html5/lib web/lib
-cp -r ../../vscp_html5/testws web/testws
+cp -r ../../vscp_html5/images web
+cp -r ../../vscp_html5/lib web
+cp -r ../../vscp_html5/testws web
+
+

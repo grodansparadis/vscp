@@ -1,0 +1,6 @@
+http://www.adp-gmbh.ch/cpp/gcc/create_lib.html
+http://tldp.org/HOWTO/Program-Library-HOWTO/shared-libraries.html
+nm -Ca ../libvscphelper.so  - list method sin lib
+
+
+cc example1.c -o example1 -L.. -lvscphelper
