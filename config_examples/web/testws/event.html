@@ -23,6 +23,7 @@
         else {
             txt = "Negative reply ";
         }
+        StripRows("myReponseTable", 5);
   
         cell1.innerHTML = "Reply: </strong>=" + txt + " - " + msgitems;
               
@@ -43,10 +44,26 @@
             " <strong>Type</strong>=" + vscptype + 
             " <strong>Data</strong>=" + vscpdata +
             " <strong>GUID</strong>=" + vscpguid;
-              
+        StripRows("myEventTable", 20);
         return;
     };
-    
+
+    // Delete <num> rows in table by tableID
+    function StripRows(tableID, num) {
+    try {
+        var table = document.getElementById(tableID);
+        var rowCount = table.rows.length;
+
+        if(rowCount>num) {
+            for(var i=0; i<rowCount-num; i++) {
+                table.deleteRow(i);
+            }
+        }
+    } catch(e) {
+	    alert(e);
+        }
+    }
+
     var vscpeventCtrl = new vscpws_Event( vscp_setting_user,
                                             vscp_setting_passwordhash,
                                             vscp_setting_url,
