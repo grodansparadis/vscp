@@ -9,8 +9,10 @@
 
 // If TEST_RECEIVE_LOOP is uncommented the rcvloop commands
 // will be tested. Must send five events externally to test
-#define TEST_RECEIVE_LOOP 
+//#define TEST_RECEIVE_LOOP 
 
+// Uncomment to test variable handling
+#define TEST_VARIABLE_HANDLING 
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -36,7 +38,7 @@ int _tmain(int argc, _TCHAR* argv[])
         printf("\aError: Failed to get handle for channel 2\n");
     }
 
-    // OPen Channel 1
+    // Open Channel 1
     rv=vscphlp_open( handle1, 
                         "192.168.1.9:9598",
                          "admin",
@@ -86,8 +88,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
 
-    // Send event on handle 1
-
+    // Send event on channel 1
     vscpEvent e;
     e.vscp_class = 10;  // CLASS1.MEASUREMENT
     e.vscp_type = 6;    // Temperature
@@ -212,7 +213,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Read event1
     vscpEvent *pEvent = new vscpEvent;
-    pEvent->pdata = NULL;   // A must for a successfull delete
+    pEvent->pdata = NULL;   // A must for a successful delete
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_receiveEvent( handle2, pEvent ) ) ) {
         printf( "Command success: vscphlp_receiveEvent on handle2\n" );
         printf( "VSCP class=%d VSCP type=%d sizeData=%d\n", 
@@ -238,7 +239,7 @@ int _tmain(int argc, _TCHAR* argv[])
     
     // Read event2
     pEvent = new vscpEvent;
-    pEvent->pdata = NULL;   // A must for a successfull delete
+    pEvent->pdata = NULL;   // A must for a successful delete
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_receiveEvent( handle2, pEvent ) ) ) {
         printf( "Command success: vscphlp_receiveEvent on handle2\n" );
         printf( "VSCP class=%d VSCP type=%d sizeData=%d\n", 
@@ -278,7 +279,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     
 
-    // Get statistics
+    // Get status
     VSCPStatus status;
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_getStatus( handle2, &status ) ) ) {
         printf( "Command success: vscphlp_getStatus on channel 2\n" );
@@ -299,7 +300,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Set VSCP filter
     vscpEventFilter filter;
-    filter.filter_class = 22;   // We are intrested in events with VSCP class=22 only
+    filter.filter_class = 22;   // We are interested  in events with VSCP class=22 only
     filter.mask_class = 0xffff;
     filter.mask_type = 0;               // Any type
     filter.mask_priority = 0;           // Any priority
@@ -393,7 +394,7 @@ int _tmain(int argc, _TCHAR* argv[])
         printf("\aCommand error: vscphlp_getVendorString on channel 2  Error code=%d\n", rv);
     }
 
-    // Get vendorstring
+    // Get driver info
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_getDriverInfo( handle2, buf, sizeof(buf) ) ) ) {
         printf( "Command success: vscphlp_getDriverInfo on channel 2\n" );
         printf( "Driver info = \"%s\"\n", buf );
@@ -404,6 +405,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
     
 #ifdef TEST_RECEIVE_LOOP
+
+    printf("\n* * * * * Receive loop  * * * * *\n");
 
     // Enter receiveloop
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_enterReceiveLoop( handle2 ) ) ) {
@@ -427,8 +430,8 @@ int _tmain(int argc, _TCHAR* argv[])
                         pEvent->sizeData );
             if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
                 printf("Data = ");
-                for ( int i=0; i<ex2.sizeData; i++ ) {
-                    printf("%d ", ex2.data[i] );
+                for ( int i=0; i<pEvent->sizeData; i++ ) {
+                    printf("%d ", pEvent->pdata[i] );
                 }
                 printf("\n");
             }
@@ -443,22 +446,83 @@ int _tmain(int argc, _TCHAR* argv[])
         printf( "Command success: vscphlp_quitReceiveLoop on channel 2\n" );
     }
     else {
-        printf("Command error: vscphlp_quitReceiveLoop on channel 2  Error code=%d\n", rv);
+        printf("\aCommand error: vscphlp_quitReceiveLoop on channel 2  Error code=%d\n", rv);
     }
 
 
 #endif
 
 
+
+#ifdef TEST_VARIABLE_HANDLING
+
+    printf("\n* * * * * Variables  * * * * *\n");
+
+    // Write a value to a string variable
+    if ( VSCP_ERROR_SUCCESS == 
+        (rv = vscphlp_setVariableString( handle1, "test_string_variable", "this is the value of the string variable!" )  ) ) {
+        printf( "Command success: vscphlp_setVariableString on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableString on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Read a value from a string variable
+    char strBuf[32];
+    if ( VSCP_ERROR_SUCCESS == 
+        (rv = vscphlp_getVariableString( handle1, "test_string_variable", strBuf, sizeof( strBuf ) ) ) ) {
+        printf( "Command success: vscphlp_getVariableString on channel 1\n" );
+        printf(" Value = %d\n");
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableString on channel 1  Error code=%d\n", rv);
+    }
+
+
+
+    // Write a value to a string variable
+    if ( VSCP_ERROR_SUCCESS == 
+        (rv = vscphlp_setVariableBool( handle1, "test_bool_variable", -1 )  ) ) {
+        printf( "Command success: vscphlp_setVariableBool on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableBool on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Read a value from a boolean variable
+    int valBool;
+    if ( VSCP_ERROR_SUCCESS == 
+        (rv = vscphlp_getVariableBool( handle1, "test_boolean_variable", &valBool ) ) ) {
+        printf( "Command success: vscphlp_getVariableBool on channel 1\n" );
+        printf(" Value = %s\n", valBool ? "true" : "false" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableBool on channel 1  Error code=%d\n", rv);
+    }
+
+
+#endif
+
+
+
     // ------------------------------------------------------------------------
+
+    printf("\n\n\n");
 
 
     // free data
     delete e.pdata;
 
 
-    rv=vscphlp_close( handle1 );
-    rv=vscphlp_close( handle2 );
+    if ( VSCP_ERROR_SUCCESS == vscphlp_close( handle1 ) ) {
+        printf( "Command success: vscphlp_close on channel 1\n" );
+    }
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_close( handle2 ) ) {
+        printf( "Command success: vscphlp_close on channel 2\n" );
+    }
 
     vscphlp_closeSession( handle1 );
     vscphlp_closeSession( handle2 );

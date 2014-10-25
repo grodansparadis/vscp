@@ -435,9 +435,15 @@ public:
 	  @return true on success, false on failure.
 	 */
 	bool add(const wxString& varName,
-		const wxString& value,
-		uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
-		bool bPersistent = false);
+		            const wxString& value,
+		            uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING,
+		            bool bPersistent = false);
+
+    // Variant of the above with string as type
+    bool addWithStringType(const wxString& varName,
+		                    const wxString& value,
+		                    const wxString& strType,
+		                    bool bPersistent = false);
 
 	/*!
 	  Add a variable.

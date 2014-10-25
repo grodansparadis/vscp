@@ -164,7 +164,9 @@ uint8_t CVSCPVariable::getVariableTypeFromString( const wxString& strVariableTyp
         else if ( 0 == str.Find( _("DATETIME") ) ) {
             type = VSCP_DAEMON_VARIABLE_CODE_DATETIME;
         }
-
+        else {
+            type = vscp_readStringValue( str );
+        }
     }
 
     return type;
@@ -846,6 +848,22 @@ bool CVariableStorage::add( const wxString& varName,
     return true;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// addWithStringType
+//
+
+bool CVariableStorage::addWithStringType(const wxString& varName,
+		                const wxString& value,
+		                const wxString& strType,
+		                bool bPersistent ) 
+{
+    uint8_t type = CVSCPVariable::getVariableTypeFromString( strType );
+    return add(varName,
+		        value,
+		        type,
+		        bPersistent ); 
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // add
@@ -956,12 +974,8 @@ bool CVariableStorage::load( void )
             // Mark last changed as now
             pVar->setLastChangedToNow();
 
-            // Get variable type - String is default
-#if wxCHECK_VERSION(3,0,0)            
-            pVar->setType( pVar->getVariableTypeFromString( child->GetAttribute( wxT("type"), wxT("string") ) ) );  
-#else
-            pVar->setType( pVar->getVariableTypeFromString( child->GetPropVal( wxT("type"), wxT("string") ) ) );
-#endif             
+            // Get variable type - String is default           
+            pVar->setType( pVar->getVariableTypeFromString( child->GetAttribute( wxT("type"), wxT("string") ) ) );            
 
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {

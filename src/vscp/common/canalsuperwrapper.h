@@ -337,7 +337,7 @@ public:
 	\param strValue pointer to string that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableString( wxString& name, wxString *strValue )
+	int getVariableString( wxString& name, wxString *strValue )
 	{ return m_vscptcpif.getVariableString( name, strValue ); };
 
 	/*!
@@ -346,7 +346,7 @@ public:
 	\param strValue to string that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableString( wxString& name, wxString& strValue )
+	int setVariableString( wxString& name, wxString& strValue )
 	{ return m_vscptcpif.setVariableString( name, strValue ); };
 
 	/*!
@@ -355,7 +355,7 @@ public:
 	\param bValue pointer to boolean variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableBool( wxString& name, bool *bValue )
+	int getVariableBool( wxString& name, bool *bValue )
 	{ return m_vscptcpif.getVariableBool( name, bValue ); };
 
 	/*!
@@ -364,7 +364,7 @@ public:
 	\param bValue boolean variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableBool( wxString& name, bool bValue )
+	int setVariableBool( wxString& name, bool bValue )
 	{ return m_vscptcpif.setVariableBool( name, bValue ); };
 
 	/*!
@@ -373,7 +373,7 @@ public:
 	\param value pointer to integer variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableInt( wxString& name, int *value )
+	int getVariableInt( wxString& name, int *value )
 	{ return m_vscptcpif.getVariableInt( name, value ); };
 
 	/*!
@@ -382,7 +382,7 @@ public:
 	\param value integer variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableInt( wxString& name, int value )
+	int setVariableInt( wxString& name, int value )
 	{ return m_vscptcpif.setVariableInt( name, value ); };
 
 	/*!
@@ -391,7 +391,7 @@ public:
 	\param value pointer to long variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableLong( wxString& name, long *value )
+	int getVariableLong( wxString& name, long *value )
 	{ return m_vscptcpif.getVariableLong( name, value );  };
 
 	/*!
@@ -400,7 +400,7 @@ public:
 	\param value long variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableLong( wxString& name, long value )
+	int setVariableLong( wxString& name, long value )
 	{ return m_vscptcpif.setVariableLong( name, value );  };
 
 	/*!
@@ -409,7 +409,7 @@ public:
 	\param value pointer to double variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableDouble( wxString& name, double *value )
+	int getVariableDouble( wxString& name, double *value )
 	{ return m_vscptcpif.getVariableDouble( name, value ); };
 
 	/*!
@@ -418,7 +418,7 @@ public:
 	\param value pointer to double variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableDouble( wxString& name, double value )
+	int setVariableDouble( wxString& name, double value )
 	{ return m_vscptcpif.setVariableDouble( name, value ); };
 
 	/*!
@@ -428,7 +428,7 @@ public:
 	value of the measurement.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableMeasurement( wxString& name, wxString& strValue )
+	int getVariableMeasurement( wxString& name, wxString& strValue )
 	{ return m_vscptcpif.getVariableMeasurement( name, strValue ); };
 
 	/*!
@@ -438,7 +438,7 @@ public:
 	value of the measurement.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableMeasurement( wxString& name, wxString& strValue )
+	int setVariableMeasurement( wxString& name, wxString& strValue )
 	{ return m_vscptcpif.setVariableMeasurement( name, strValue ); };
 
 	/*!
@@ -447,7 +447,7 @@ public:
 	\param pEvent pointer to event variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableEvent( wxString& name, vscpEvent *pEvent )
+	int getVariableEvent( wxString& name, vscpEvent *pEvent )
 	{ return m_vscptcpif.getVariableEvent( name, pEvent ); };
 
 	/*!
@@ -456,7 +456,7 @@ public:
 	\param pEvent pointer to event variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableEvent( wxString& name, vscpEvent *pEvent )
+	int setVariableEvent( wxString& name, vscpEvent *pEvent )
 	{ return m_vscptcpif.setVariableEvent( name, pEvent ); };
 
 	/*!
@@ -465,7 +465,7 @@ public:
 	\param pEvent pointer to event variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableEventEx( wxString& name, vscpEventEx *pEvent )
+	int getVariableEventEx( wxString& name, vscpEventEx *pEvent )
 	{ return m_vscptcpif.getVariableEventEx( name, pEvent ); };
 
 	/*!
@@ -474,7 +474,7 @@ public:
 	\param pEvent pointer to event variable that get the value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableEventEx( wxString& name, vscpEventEx *pEvent )
+	int setVariableEventEx( wxString& name, vscpEventEx *pEvent )
 	{ return m_vscptcpif.setVariableEventEx( name, pEvent ); };
 
 	/*!
@@ -483,7 +483,7 @@ public:
 	\param GUID variable that get the value of the GUID variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableGUID( wxString& name, cguid& GUID )
+	int getVariableGUID( wxString& name, cguid& GUID )
 	{ return m_vscptcpif.getVariableGUID( name, GUID ); };
 
 	/*!
@@ -492,7 +492,7 @@ public:
 	\param GUID variable that get the value of the GUID variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableGUID( wxString& name, cguid& GUID )
+	int setVariableGUID( wxString& name, cguid& GUID )
 	{ return m_vscptcpif.setVariableGUID( name, GUID ); };
 
 	/*!
@@ -503,7 +503,7 @@ public:
 	value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData )
+	int getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData )
 	{ return m_vscptcpif.getVariableVSCPdata( name, psizeData, pData ); };
 
 	/*!
@@ -514,7 +514,7 @@ public:
 	value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData )
+	int setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData )
 	{ return m_vscptcpif.setVariableVSCPdata( name, sizeData, pData ); };
 
 	/*!
@@ -523,7 +523,7 @@ public:
 	\param vscp_class pointer to int that get the value of the class variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableVSCPclass( wxString& name, uint16_t *vscp_class )
+	int getVariableVSCPclass( wxString& name, uint16_t *vscp_class )
 	{ return m_vscptcpif.getVariableVSCPclass( name, vscp_class ); };
 
 	/*!
@@ -532,7 +532,7 @@ public:
 	\param vscp_class int that get the value of the class variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableVSCPclass( wxString& name, uint16_t vscp_class )
+	int setVariableVSCPclass( wxString& name, uint16_t vscp_class )
 	{ return m_vscptcpif.setVariableVSCPclass( name, vscp_class ); };
 
 	/*!
@@ -541,7 +541,7 @@ public:
 	\param vscp_type pointer to int that get the value of the type variable.
 	\return true if the variable is of type string.
 	*/
-	bool getVariableVSCPtype( wxString& name, uint8_t *vscp_type )
+	int getVariableVSCPtype( wxString& name, uint8_t *vscp_type )
 	{ return m_vscptcpif.getVariableVSCPtype( name, vscp_type ); };
 
 
@@ -551,7 +551,7 @@ public:
 	\param vscp_type to int that get the value of the type variable.
 	\return true if the variable is of type string.
 	*/
-	bool setVariableVSCPtype( wxString& name, uint8_t vscp_type )
+	int setVariableVSCPtype( wxString& name, uint8_t vscp_type )
 	{ return m_vscptcpif.setVariableVSCPtype( name, vscp_type ); };
 
 	/*!

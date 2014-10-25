@@ -450,7 +450,7 @@ public:
         \return true if the variable is of type string and the operation
         was successful.
     */
-    bool getVariableString( wxString& name, wxString *strValue );
+    int getVariableString( wxString& name, wxString *strValue  );
 
     /*!
         Set variable value from string variable
@@ -459,7 +459,7 @@ public:
         \return true if the variable is of type string and the operation
         was successful.
     */
-    bool setVariableString( wxString& name, const wxString& strValue );
+    int setVariableString( wxString& name, const wxString& strValue );
 
 
     /*!
@@ -469,7 +469,7 @@ public:
         \return true if the variable is of type bool and the operation
         was successful.
     */
-    bool getVariableBool( wxString& name, bool *bValue );
+    int getVariableBool( wxString& name, bool *bValue );
 
     /*!
         Set variable value from boolean variable
@@ -478,7 +478,7 @@ public:
         \return true if the variable is of type bool and the operation
         was successful.
     */
-    bool setVariableBool( wxString& name, const bool bValue );
+    int setVariableBool( wxString& name, const bool bValue );
 
     /*!
         Get variable value from integer variable
@@ -487,7 +487,7 @@ public:
         \return true if the variable is of type integer and the operation
         was successful.
     */
-    bool getVariableInt( wxString& name, int *value );
+    int getVariableInt( wxString& name, int *value );
 
     /*!
         Set variable value from integer variable
@@ -496,7 +496,7 @@ public:
         \return true if the variable is of type integer and the operation
         was successful.
     */
-    bool setVariableInt( wxString& name, int value );
+    int setVariableInt( wxString& name, int value );
 
     /*!
         Get variable value from long variable
@@ -505,7 +505,7 @@ public:
         \return true if the variable is of type long and the operation
         was successful.
     */
-    bool getVariableLong( wxString& name, long *value );
+    int getVariableLong( wxString& name, long *value );
 
     /*!
         Set variable value from long variable
@@ -514,7 +514,7 @@ public:
         \return true if the variable is of type long and the operation
         was successful.
     */
-    bool setVariableLong( wxString& name, long value );
+    int setVariableLong( wxString& name, long value );
 
     /*!
         Get variable value from double variable
@@ -523,7 +523,7 @@ public:
         \return true if the variable is of type double and the operation
         was successful.
     */
-    bool getVariableDouble( wxString& name, double *value );
+    int getVariableDouble( wxString& name, double *value );
 
     /*!
         Set variable value from double variable
@@ -532,7 +532,7 @@ public:
         \return true if the variable is of type double and the operation
         was successful.
     */
-    bool setVariableDouble( wxString& name, double value );
+    int setVariableDouble( wxString& name, double value );
 
     /*!
         Get variable value from measurement variable
@@ -542,7 +542,7 @@ public:
         \return true if the variable is of type measurement and the operation
         was successful.
     */
-    bool getVariableMeasurement( wxString& name, wxString& strValue );
+    int getVariableMeasurement( wxString& name, wxString& strValue );
 
     /*!
         set variable value from double variable
@@ -551,7 +551,7 @@ public:
         \return true if the variable is of type double and the operation
         was successful.
     */
-    bool setVariableMeasurement( wxString& name, wxString& strValue );
+    int setVariableMeasurement( wxString& name, wxString& strValue );
 
     /*!
         Get variable value from event variable
@@ -560,7 +560,7 @@ public:
         \return true if the variable is of type VSCP event and the operation
         was successful.
     */
-    bool getVariableEvent( wxString& name, vscpEvent *pEvent );
+    int getVariableEvent( wxString& name, vscpEvent *pEvent );
 
     /*!
         set variable value from VSCP event
@@ -568,7 +568,7 @@ public:
         \param pEvent pointer to event that is used to set the variable.
         \return true if the operation was successful.
     */
-    bool setVariableEvent( wxString& name, vscpEvent *pEvent );
+    int setVariableEvent( wxString& name, vscpEvent *pEvent );
 
     /*!
         Get variable value from event variable
@@ -577,7 +577,7 @@ public:
         \return true if the variable is of type VSCP event and the operation
         was successful.
     */
-    bool getVariableEventEx( wxString& name, vscpEventEx *pEvent );
+    int getVariableEventEx( wxString& name, vscpEventEx *pEvent );
 
     /*!
         set variable value from VSCP event
@@ -585,7 +585,7 @@ public:
         \param pEvent pointer to event that is used to set the variable.
         \return true if the operation was successful.
     */
-    bool setVariableEventEx( wxString& name, vscpEventEx *pEvent );
+    int setVariableEventEx( wxString& name, vscpEventEx *pEvent );
 
     /*!
         Get variable value from GUID variable
@@ -594,7 +594,7 @@ public:
         \return true if the variable is of type VSCP GUID and the operation
         was successful.
     */
-    bool getVariableGUID( wxString& name, cguid& pGUID );
+    int getVariableGUID( wxString& name, cguid& pGUID );
 
     /*!
         set variable value from GUID
@@ -602,7 +602,7 @@ public:
         \param pGUID pointer to GUID that is used to set the variable.
         \return true if the operation was successful.
     */
-    bool setVariableGUID( wxString& name, cguid& pGUID );
+    int setVariableGUID( wxString& name, cguid& pGUID );
 
     /*!
         Get variable value from VSCP data variable
@@ -613,7 +613,7 @@ public:
         \return true if the variable is of type VSCP data and the operation
         was successful.
     */
-    bool getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData );
+    int getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData );
 
     /*!
         set variable value from VSCP data
@@ -622,7 +622,7 @@ public:
         \param pData Pointer to data array to set data from.
         \return true if the operation was successful.
     */
-    bool setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData );
+    int setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData );
 
     /*!
         Get variable value from class variable
@@ -631,7 +631,7 @@ public:
         \return true if the variable is of type VSCP class and the operation
         was successful.
     */
-    bool getVariableVSCPclass( wxString& name, uint16_t *vscp_class );
+    int getVariableVSCPclass( wxString& name, uint16_t *vscp_class );
 
     /*!
         set variable value from vscp_class.
@@ -639,7 +639,7 @@ public:
         \param vscp_class to write to variable.
         \return true if the operation was successful.
     */
-    bool setVariableVSCPclass( wxString& name, uint16_t vscp_class );
+    int setVariableVSCPclass( wxString& name, uint16_t vscp_class );
 
     /*!
         Get variable value from type variable
@@ -648,7 +648,7 @@ public:
         \return true if the variable is of type VSCP type and the operation
         was successful.
     */
-    bool getVariableVSCPtype( wxString& name, uint8_t *vscp_type );
+    int getVariableVSCPtype( wxString& name, uint8_t *vscp_type );
 
 
     /*!
@@ -657,7 +657,7 @@ public:
         \param vscp_type to write to variable.
         \return true if the operation was successful.
     */
-    bool setVariableVSCPtype( wxString& name, uint16_t vscp_type );
+    int setVariableVSCPtype( wxString& name, uint16_t vscp_type );
 
     
 
@@ -709,13 +709,13 @@ protected:
     clientTcpIpWorkerThread *m_pClientTcpIpWorkerThread;
 
     /// Response string
-    wxString m_strReply;
+    //wxString m_strReply;
 
     /// Error storage
     uint32_t m_err;
 
     /// Last binary error
-    uint8_t m_lastBinaryError;
+    //uint8_t m_lastBinaryError;
 
     /// Server response timeout
     uint8_t m_responseTimeOut;

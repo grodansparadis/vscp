@@ -2263,7 +2263,8 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
 {
     wxString strName;
     wxString strValue;
-    int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
+    //int type = VSCP_DAEMON_VARIABLE_CODE_STRING;
+    wxString strType = _("STRING");   
     bool bPersistence = false;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
@@ -2285,14 +2286,11 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
         return;	
     }
 
-    // type - string default
+    // type - string default. can be numerical r string
     if ( tkz.HasMoreTokens() ) {
-        wxString wxstr = tkz.GetNextToken();
-        wxstr.Trim();
-        wxstr.Trim( false );
-        if ( wxstr.Length() ) {
-            type = vscp_readStringValue( wxstr );
-        }
+        strType = tkz.GetNextToken();
+        strType.Trim();
+        strType.Trim( false );
     }
     else {
         ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -2323,7 +2321,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
 
     // If the variable exist change value
     // if not add it. This is handled in add.
-    m_pCtrlObject->m_VSCP_Variables.add( strName, strValue, type, bPersistence );
+    m_pCtrlObject->m_VSCP_Variables.addWithStringType( strName, strValue, strType, bPersistence );
 	
 	// Save decision matrix
     m_pCtrlObject->m_dm.save();

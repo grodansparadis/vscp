@@ -74,22 +74,22 @@ int WINAPI EXPORT vscphlp_shutDownServer( long handle );
 //                                Variables 
 //-------------------------------------------------------------------------
 
-int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size );
 int WINAPI EXPORT vscphlp_setVariableString( long handle, const char *pName, char *pValue );
 
-int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, int *bValue );
-int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, int *bValue );
+int WINAPI EXPORT vscphlp_getVariableBool( long handle, const char *pName, int *pvalue );
+int WINAPI EXPORT vscphlp_setVariableBool( long handle, const char *pName, int value );
 
-int WINAPI EXPORT vscphlp_getVariableInt( long handle, const char *pName, int *value );
-int WINAPI EXPORT vscphlp_setVariableInt( long handle, const char *pName, int *value );
+int WINAPI EXPORT vscphlp_getVariableInt( long handle, const char *pName, int *pvalue );
+int WINAPI EXPORT vscphlp_setVariableInt( long handle, const char *pName, int value );
 
-int WINAPI EXPORT vscphlp_getVariableLong( long handle, const char *pName, long *value );
-int WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *pName, long *value );
+int WINAPI EXPORT vscphlp_getVariableLong( long handle, const char *pName, long *pvalue );
+int WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *pName, long value );
 
-int WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char *pName, double *value );
-int WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char *pName, double *value );
+int WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char *pName, double *pvalue );
+int WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char *pName, double value );
 
-int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue );
+int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pvalue );
 int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
 
 int WINAPI EXPORT vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
@@ -156,22 +156,22 @@ int vscphlp_ServerShutDown( long handle );
 //                                Variables 
 //-------------------------------------------------------------------------
 
-int vscphlp_getVariableString( long handle, const char *pName, char *pValue );
-int vscphlp_setVariableString( long handle, const char *pName, char *pValue );
+int vscphlp_getVariableString( long handle, const char *pName, char *pvalue );
+int vscphlp_setVariableString( long handle, const char *pName, char Value );
 
 int vscphlp_getVariableBool( long handle, const char *pName, int *bValue );
-int vscphlp_setVariableBool( long handle, const char *pName, int *bValue );
+int vscphlp_setVariableBool( long handle, const char *pName, int value );
 
 int vscphlp_getVariableInt( long handle, const char *pName, int *value );
-int vscphlp_setVariableInt( long handle, const char *pName, int *value );
+int vscphlp_setVariableInt( long handle, const char *pName, int value );
 
 int vscphlp_getVariableLong( long handle, const char *pName, long *value );
-int vscphlp_setVariableLong( long handle, const char *pName, long *value );
+int vscphlp_setVariableLong( long handle, const char *pName, long value );
 
 int vscphlp_getVariableDouble( long handle, const char *pName, double *value );
-int vscphlp_setVariableDouble( long handle, const char *pName, double *value );
+int vscphlp_setVariableDouble( long handle, const char *pName, double value );
 
-int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue );
+int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pvalue );
 int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
 
 int vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );

@@ -681,15 +681,16 @@ extern "C" int vscphlp_quitReceiveLoop(const long handle)
     \brief Get variable value from string variable
     \param name of variable
     \param pointer to string that get the value of the string variable.
+    \param size fo buffer
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue ) 
+extern "C" int WINAPI EXPORT vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size ) 
 #else
-extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *pValue ) 
+extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *pValue, int size ) 
 #endif
 { 
-    bool rv;
+    int rv;
 
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
@@ -699,11 +700,11 @@ extern "C" int vscphlp_getVariableString( long handle, const char *pName, char *
 
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
-    if ( ( rv = pvscpif->getVariableString( name, &strValue ) ) ) {
-        strcpy( pValue, strValue.ToAscii() );
+    if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getVariableString( name, &strValue ) ) ) {
+        strncpy( pValue, strValue.ToAscii(), size );
     }
 
-    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return rv;
 }
 
 /*!
@@ -719,8 +720,6 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableString( long handle, const char 
 extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *pValue ) 
 #endif
 { 
-    bool rv;
-
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
@@ -733,9 +732,8 @@ extern "C" int vscphlp_setVariableString( long handle, const char *pName, char *
 
     wxString name = wxString::FromAscii( pName );
     wxString strValue = wxString::FromAscii( pValue );
-    return pvscpif->setVariableString( name, strValue );
 
-    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->setVariableString( name, strValue );
 }
 
 /*!
@@ -759,7 +757,7 @@ extern "C" int vscphlp_getVariableBool( long handle, const char *pName, int *bVa
 
     wxString name = wxString::FromAscii( pName );
 	bool bBoolValue;
-    int rv =  pvscpif->getVariableBool( name, &bBoolValue ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    int rv =  pvscpif->getVariableBool( name, &bBoolValue ); 
 	if ( bBoolValue ) {
 		*bValue = 1;
 	}
@@ -790,7 +788,7 @@ extern "C" int vscphlp_setVariableBool( long handle, const char *pName, int bVal
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableBool( name, ( bValue ? true : false ) ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return pvscpif->setVariableBool( name, ( bValue ? true : false ) ); 
 };
 
 
@@ -814,7 +812,7 @@ extern "C" int vscphlp_getVariableInt( long handle, const char *pName, int *valu
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableInt( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableInt( name, value ); 
 };
 
 
@@ -838,7 +836,7 @@ extern "C" int vscphlp_setVariableInt( long handle, const char *pName, int value
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableInt( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return pvscpif->setVariableInt( name, value ); 
 };
 
 /*!
@@ -861,7 +859,7 @@ extern "C" int vscphlp_getVariableLong( long handle, const char *pName, long *va
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableLong( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->getVariableLong( name, value );
 };
 
 /*!
@@ -884,7 +882,7 @@ extern "C" int vscphlp_setVariableLong( long handle, const char *pName, long val
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableLong( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->setVariableLong( name, value );
 };
 
 /*!
@@ -907,7 +905,7 @@ extern "C" int vscphlp_getVariableDouble( long handle, const char *pName, double
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableDouble( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->getVariableDouble( name, value );
 };
 
 /*!
@@ -930,7 +928,7 @@ extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableDouble( name, value ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->setVariableDouble( name, value );
 };
 
 /*!
@@ -947,7 +945,7 @@ extern "C" int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const 
 extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue )
 #endif
 { 
-    bool rv;
+    int rv;
 
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
 	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
@@ -957,11 +955,11 @@ extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, c
 
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
-    if ( rv = pvscpif->getVariableMeasurement( name, strValue ) ) {
+    if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getVariableMeasurement( name, strValue ) ) ) {
         strcpy( pValue, strValue.ToAscii() );
     }
 
-    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return rv;
 };
 
 /*!
@@ -990,7 +988,7 @@ extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, c
     wxString strValue;
     return pvscpif->setVariableMeasurement( name, strValue );
 
-    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return rv;
 };
 
 /*!
@@ -1013,7 +1011,7 @@ extern "C" int vscphlp_getVariableEvent( long handle, const char *pName, vscpEve
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableEvent( name, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->getVariableEvent( name, pEvent );
 }
 
 /*!
@@ -1036,7 +1034,7 @@ extern "C" int vscphlp_setVariableEvent( long handle, const char *pName, vscpEve
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableEvent( name, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->setVariableEvent( name, pEvent );
 }
 
 /*!
@@ -1059,7 +1057,7 @@ extern "C" int vscphlp_getVariableEventEx( long handle, const char *pName, vscpE
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableEventEx( name, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableEventEx( name, pEvent ); 
 }
 
 /*!
@@ -1082,7 +1080,7 @@ extern "C" int vscphlp_setVariableEventEx( long handle, const char *pName, vscpE
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableEventEx( name, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->setVariableEventEx( name, pEvent );
 }
 
 /*!
@@ -1107,10 +1105,10 @@ extern "C" int vscphlp_getVariableGUID( long handle, const char *pName, char *pG
     cguid GUID;
     wxString strGuid;
     wxString name = wxString::FromAscii( pName );
-    bool rv =  pvscpif->getVariableGUID( name, GUID ); 
+    int rv =  pvscpif->getVariableGUID( name, GUID ); 
     GUID.toString( strGuid );
     strcpy( pGUID, strGuid.mbc_str() );
-    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return rv;
 }
 
 /*!
@@ -1135,7 +1133,7 @@ extern "C" int vscphlp_setVariableGUID( long handle, const char *pName, const ch
     cguid guid;
     guid.getFromString( pGUID );
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableGUID( name, guid ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->setVariableGUID( name, guid );
 }
 
 /*!
@@ -1160,7 +1158,7 @@ extern "C" int vscphlp_getVariableVSCPdata( long handle, const char *pName, uint
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPdata( name, psizeData, pData ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableVSCPdata( name, psizeData, pData ); 
 }
 
 /*!
@@ -1185,7 +1183,7 @@ extern "C" int vscphlp_setVariableVSCPdata( long handle, const char *pName, uint
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPdata( name, sizeData, pData ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return pvscpif->setVariableVSCPdata( name, sizeData, pData ); 
 }
 
 /*!
@@ -1208,7 +1206,7 @@ extern "C" int vscphlp_getVariableVSCPclass( long handle, const char *pName, uin
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPclass( name, vscp_class ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR; 
+    return pvscpif->getVariableVSCPclass( name, vscp_class ); 
 }
 
 /*!
@@ -1231,7 +1229,7 @@ extern "C" int vscphlp_setVariableVSCPclass( long handle, const char *pName, uin
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPclass( name, vscp_class ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->setVariableVSCPclass( name, vscp_class );
 }
 
 /*!
@@ -1254,7 +1252,7 @@ extern "C" int vscphlp_getVariableVSCPtype( long handle, const char *pName, uint
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->getVariableVSCPtype( name, vscp_type ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->getVariableVSCPtype( name, vscp_type );
 }
 
 /*!
@@ -1277,7 +1275,7 @@ extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, uint
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPtype( name, vscp_type ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+    return pvscpif->setVariableVSCPtype( name, vscp_type );
 }
 
 
