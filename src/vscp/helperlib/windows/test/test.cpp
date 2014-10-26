@@ -40,7 +40,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Open Channel 1
     rv=vscphlp_open( handle1, 
-                        "192.168.1.9:9598",
+                         "192.168.1.9:9598",
                          "admin",
                         "secret" ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {

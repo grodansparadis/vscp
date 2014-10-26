@@ -2291,6 +2291,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
         strType = tkz.GetNextToken();
         strType.Trim();
         strType.Trim( false );
+        strType.MakeUpper();
     }
     else {
         ns_send( conn, MSG_PARAMETER_ERROR, strlen( MSG_PARAMETER_ERROR ) );
@@ -2301,7 +2302,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
     if ( tkz.HasMoreTokens() ) {
         wxString str = tkz.GetNextToken();
         str = str.Upper();
-        if ( str.Find( _("TRUE") ) ) {
+        if ( wxNOT_FOUND != str.Find( _("TRUE") ) ) {
             bPersistence = true;		
         }
     }
