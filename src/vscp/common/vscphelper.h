@@ -660,7 +660,8 @@ extern "C" {
     bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
 										const unsigned char *pData,
 										wxString& str,
-										bool bUseHtmlBreak = false);
+										bool bUseHtmlBreak = false,
+                                        bool bBreak = true );
 									
 
     /*!

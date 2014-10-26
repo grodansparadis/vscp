@@ -101,17 +101,17 @@ int WINAPI EXPORT vscphlp_setVariableEventEx( long handle, const char *pName, vs
 int WINAPI EXPORT vscphlp_getVariableGUIDString( long handle, const char *pName, const char *pGUID, int size );
 int WINAPI EXPORT vscphlp_setVariableGUIDString( long handle, const char *pName, const char *pGUID );
 
-int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, const char *pGUID, int size );
-int WINAPI EXPORT vscphlp_setVariableGUIDArray( long handle, const char *pName, const char *pGUID );
+int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID );
+int WINAPI EXPORT vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID );
 
-int WINAPI EXPORT vscphlp_getVariableVSCPdata( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
-int WINAPI EXPORT vscphlp_setVariableVSCPdata( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
+int WINAPI EXPORT vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
+int WINAPI EXPORT vscphlp_setVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short size );
 
-int WINAPI EXPORT vscphlp_getVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
-int WINAPI EXPORT vscphlp_setVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
+int WINAPI EXPORT vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
+int WINAPI EXPORT vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class );
 
-int WINAPI EXPORT vscphlp_getVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
-int WINAPI EXPORT vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
+int WINAPI EXPORT vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
+int WINAPI EXPORT vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
 
 //-------------------------------------------------------------------------
 //                                Helpers 
@@ -186,17 +186,17 @@ int vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEv
 int WINAPI EXPORT vscphlp_getVariableGUIDString( long handle, const char *pName, const char *pGUID, int size );
 int WINAPI EXPORT vscphlp_setVariableGUIDString( long handle, const char *pName, const char *pGUID );
 
-int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, const char *pGUID );
-int WINAPI EXPORT vscphlp_setVariableGUIDArray( long handle, const char *pName, const char *pGUID );
+int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID );
+int WINAPI EXPORT vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID );
 
-int vscphlp_getVariableVSCPdata( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
-int vscphlp_setVariableVSCPdata( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
+int vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
+int vscphlp_setVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short size );
 
-int vscphlp_getVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
-int vscphlp_setVariableVSCPclass( long handle, const char *pName, unsigned short *vscp_class );
+int vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
+int vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
 
-int vscphlp_getVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
-int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned char *vscp_type );
+int vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
+int vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
 
 
 //-------------------------------------------------------------------------

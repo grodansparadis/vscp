@@ -648,7 +648,7 @@ public:
         \return true if the variable is of type VSCP type and the operation
         was successful.
     */
-    int getVariableVSCPtype( wxString& name, uint8_t *vscp_type );
+    int getVariableVSCPtype( wxString& name, uint16_t *vscp_type );
 
 
     /*!

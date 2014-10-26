@@ -705,12 +705,12 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
 
-    // Write a value to an GUID variable
-    char strGUID[32];
+    // Write a value to an GUID variable - string type
+    char strGUID[64];
     strcpy( strGUID, "FF:FF:FF:FF:FF:FF:FF:00:00:00:00:7F:00:01:01:FD" );
 
     if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_setVariableGUIDString( handle1, "test_guid_variable", strGUID ) ) ) {
+            (rv = vscphlp_setVariableGUIDString( handle1, "test_guidstr_variable", strGUID ) ) ) {
         printf( "Command success: vscphlp_setVariableGUIDString on channel 1\n" );
     }
     else {
@@ -718,10 +718,10 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     memset( strGUID, 0, sizeof(strGUID) );
-
-    // Read a value from a GUID variable 
+   
+    // Read a value from a GUID variable - string type
     if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_getVariableGUIDString( handle1, "test_guid_variable", strGUID, sizeof(strGUID)-1 )  ) )  {
+            (rv = vscphlp_getVariableGUIDString( handle1, "test_guidstr_variable", strGUID, sizeof(strGUID)-1 )  ) )  {
         printf( "Command success: vscphlp_getVariableGUIDString on channel 1\n" );
         printf(" Value = %s\n", strGUID );
     }
@@ -730,6 +730,151 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
 
+
+    // Write a value to an GUID variable - string type
+    unsigned char GUID[16];
+    memset( GUID, 0, 16 );
+    for ( int i=0;i<16; i++ ) {
+        GUID[i] = i;
+    }
+
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableGUIDArray( handle1, "test_guidarray_variable", GUID ) ) ) {
+        printf( "Command success: vscphlp_setVariableGUIDArray on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableGUIDArray on channel 1  Error code=%d\n", rv);
+    }
+
+    memset( GUID, 0, 16 );
+   
+    // Read a value from a GUID variable - string type
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableGUIDArray( handle1, "test_guidarray_variable", GUID  ) ) )  {
+        printf( "Command success: vscphlp_getVariableGUIDArray on channel 1\n" );
+        printf(" Value = " );
+        for ( int i=0; i<16; i++ ) {
+            printf("%d ", GUID[i] );    
+        }
+        printf("\n");
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableGUIDArray on channel 1  Error code=%d\n", rv);
+    }
+
+
+
+    unsigned char dataArray[10];
+    memset( dataArray, 0, sizeof(dataArray) );
+    for ( int i=0; i<sizeof(dataArray); i++ ) {
+        dataArray[ i ] = i;    
+    }
+
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableVSCPData( handle1, "test_dataarray_variable", dataArray, sizeof( dataArray ) ) ) ) {
+        printf( "Command success: vscphlp_setVariableVSCPData on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableVSCPData on channel 1  Error code=%d\n", rv);
+    }
+
+    unsigned short size;
+    memset( dataArray, 0, sizeof( dataArray ) );
+   
+    // Read a value from a GUID variable - string type
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableVSCPData( handle1, "test_dataarray_variable", dataArray, &size  ) ) )  {
+        printf( "Command success: vscphlp_getVariableVSCPData on channel 1\n" );
+        printf(" Value = " );
+        for ( int i=0; i<size; i++ ) {
+            printf("%d ", dataArray[i] );    
+        }
+        printf("\n");
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableVSCPData on channel 1  Error code=%d\n", rv);
+    }
+
+
+
+    // Write a value to an GUID variable - string type
+    //unsigned char GUID[16];
+    memset( GUID, 0, 16 );
+    for ( int i=0;i<16; i++ ) {
+        GUID[i] = i;
+    }
+
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableGUIDArray( handle1, "test_guidarray_variable", GUID ) ) ) {
+        printf( "Command success: vscphlp_setVariableGUIDArray on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableGUIDArray on channel 1  Error code=%d\n", rv);
+    }
+
+    memset( GUID, 0, 16 );
+   
+    // Read a value from a GUID variable - string type
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableGUIDArray( handle1, "test_guidarray_variable", GUID  ) ) )  {
+        printf( "Command success: vscphlp_getVariableGUIDArray on channel 1\n" );
+        printf(" Value = " );
+        for ( int i=0; i<16; i++ ) {
+            printf("%d ", GUID[i] );    
+        }
+        printf("\n");
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableGUIDArray on channel 1  Error code=%d\n", rv);
+    }
+
+
+
+    // Write a value for VSCP class type
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableVSCPClass( handle1, "test_vscp_class_variable", 10 ) ) ) {
+        printf( "Command success: vscphlp_setVariableVSCPClass on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableVSCPClass on channel 1  Error code=%d\n", rv);
+    }
+   
+    unsigned short vscpclass;
+
+    // Read a value from aVSCP class type
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableVSCPClass( handle1, "test_vscp_class_variable", &vscpclass ) ) )  {
+        printf( "Command success: vscphlp_getVariableVSCPClass on channel 1\n" );
+        printf(" Value = %d", vscpclass );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableVSCPClass on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Write a value for VSCP type type
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableVSCPType( handle1, "test_vscp_class_variable", 22 ) ) ) {
+        printf( "Command success: vscphlp_setVariableVSCPType on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableVSCPType on channel 1  Error code=%d\n", rv);
+    }
+   
+    unsigned short vscptype;
+
+    // Read a value from aVSCP type type
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableVSCPType( handle1, "test_vscp_class_variable", &vscptype ) ) )  {
+        printf( "Command success: vscphlp_getVariableVSCPType on channel 1\n" );
+        printf(" Value = %d", vscptype );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableVSCPType on channel 1  Error code=%d\n", rv);
+    }
+
+
+    
 #endif
 
 

@@ -53,11 +53,11 @@ EXPORTS
     vscphlp_setVariableGUIDString
     vscphlp_getVariableGUIDArray
     vscphlp_setVariableGUIDArray
-    vscphlp_getVariableVSCPdata
-    vscphlp_setVariableVSCPdata
-    vscphlp_getVariableVSCPclass
-    vscphlp_setVariableVSCPclass
-    vscphlp_getVariableVSCPtype
-    vscphlp_setVariableVSCPtype
+    vscphlp_getVariableVSCPData
+    vscphlp_setVariableVSCPData
+    vscphlp_getVariableVSCPClass
+    vscphlp_setVariableVSCPClass
+    vscphlp_getVariableVSCPType
+    vscphlp_setVariableVSCPType
     vscphlp_deleteVSCPevent
     vscphlp_deleteVSCPeventEx

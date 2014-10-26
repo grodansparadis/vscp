@@ -1144,9 +1144,9 @@ extern "C" int vscphlp_setVariableGUIDString( long handle, const char *pName, co
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, char *pGUID )
+extern "C" int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
 #else
-extern "C" int vscphlp_getVariableGUIDArray( long handle, const char *pName, conat char *pGUID )
+extern "C" int vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1172,7 +1172,7 @@ extern "C" int vscphlp_getVariableGUIDArray( long handle, const char *pName, con
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
 #else
-extern "C" int vscphlp_setVariableGUIDArray( long handle, const char *pName, const char *pGUID )
+extern "C" int vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1197,9 +1197,9 @@ extern "C" int vscphlp_setVariableGUIDArray( long handle, const char *pName, con
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPdata( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
+extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
 #else
-extern "C" int vscphlp_getVariableVSCPdata( long handle, const char *pName, unsigned char *pData, int *psize )
+extern "C" int vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize )
 #endif
 { 
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1222,9 +1222,9 @@ extern "C" int vscphlp_getVariableVSCPdata( long handle, const char *pName, unsi
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPdata( long handle, const char *pName, uint16_t sizeData, uint8_t *pData )
+extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPData( long handle, const char *pName,  uint8_t *pData, unsigned short size )
 #else
-extern "C" int vscphlp_setVariableVSCPdata( long handle, const char *pName, uint16_t sizeData, uint8_t *pData )
+extern "C" int vscphlp_setVariableVSCPData( long handle, const char *pName, uint8_t *pData, unsigned short *psize )
 #endif
 { 
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1234,7 +1234,7 @@ extern "C" int vscphlp_setVariableVSCPdata( long handle, const char *pName, uint
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    return pvscpif->setVariableVSCPdata( name, pData, sizeData ); 
+    return pvscpif->setVariableVSCPdata( name, pData, size ); 
 }
 
 /*!
@@ -1245,9 +1245,9 @@ extern "C" int vscphlp_setVariableVSCPdata( long handle, const char *pName, uint
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPclass( long handle, const char *pName, uint16_t *vscp_class )
+extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
 #else
-extern "C" int vscphlp_getVariableVSCPclass( long handle, const char *pName, uint16_t *vscp_class )
+extern "C" int vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1268,9 +1268,9 @@ extern "C" int vscphlp_getVariableVSCPclass( long handle, const char *pName, uin
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPclass( long handle, const char *pName, uint16_t vscp_class )
+extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
 #else
-extern "C" int vscphlp_setVariableVSCPclass( long handle, const char *pName, uint16_t vscp_class )
+extern "C" int vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1291,9 +1291,9 @@ extern "C" int vscphlp_setVariableVSCPclass( long handle, const char *pName, uin
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPtype( long handle, const char *pName, uint8_t *vscp_type )
+extern "C" int WINAPI EXPORT vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
 #else
-extern "C" int vscphlp_getVariableVSCPtype( long handle, const char *pName, uint8_t *vscp_type )
+extern "C" int vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1314,9 +1314,9 @@ extern "C" int vscphlp_getVariableVSCPtype( long handle, const char *pName, uint
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPtype( long handle, const char *pName, uint8_t vscp_type )
+extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
 #else
-extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, uint8_t vscp_type )
+extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned short vscp_type )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );

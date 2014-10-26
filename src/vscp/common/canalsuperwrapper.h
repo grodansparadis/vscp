@@ -585,7 +585,7 @@ public:
 	\param vscp_type pointer to int that get the value of the type variable.
 	\return true if the variable is of type string.
 	*/
-	int getVariableVSCPtype( wxString& name, uint8_t *vscp_type )
+	int getVariableVSCPtype( wxString& name, uint16_t *vscp_type )
 	{ 
         return m_vscptcpif.getVariableVSCPtype( name, vscp_type ); 
     };
@@ -597,7 +597,7 @@ public:
 	\param vscp_type to int that get the value of the type variable.
 	\return true if the variable is of type string.
 	*/
-	int setVariableVSCPtype( wxString& name, uint8_t vscp_type )
+	int setVariableVSCPtype( wxString& name, uint16_t vscp_type )
 	{ 
         return m_vscptcpif.setVariableVSCPtype( name, vscp_type ); 
     };

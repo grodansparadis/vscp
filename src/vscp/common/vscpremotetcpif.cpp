@@ -2284,13 +2284,14 @@ int VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint8_t *pData, uint16
 
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;   
     m_mutexArray.Lock();
-    strLine = m_inputStrArray[ m_inputStrArray.Count()-2 ];
+    for ( int i=0; i< m_inputStrArray.Count()-1; i++ ) {
+        strLine += m_inputStrArray[ i ];
+        strLine.Trim();
+        strLine.Trim(false);
+    }
     m_mutexArray.Unlock();
 
-    wxStringTokenizer tkz( strLine, _("\r\n") );
-    if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_ERROR;
-
-    vscp_getVscpDataArrayFromString( pData, psize, tkz.GetNextToken() );
+    vscp_getVscpDataArrayFromString( pData, psize, strLine );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2306,7 +2307,7 @@ int VscpRemoteTcpIf::setVariableVSCPdata( wxString& name, uint8_t *pData, uint16
 
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
     
-    vscp_writeVscpDataWithSizeToString( size, pData, strValue );
+    vscp_writeVscpDataWithSizeToString( size, pData, strValue, false, false );
     strCmd = _("VARIABLE WRITE ") + name + _(";EVENTDATA;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.ToAscii(), 
@@ -2377,7 +2378,7 @@ int VscpRemoteTcpIf::setVariableVSCPclass( wxString& name, uint16_t vscp_class )
 // getVariableVSCPtype
 //
 
-int VscpRemoteTcpIf::getVariableVSCPtype( wxString& name, uint8_t *vscp_type )
+int VscpRemoteTcpIf::getVariableVSCPtype( wxString& name, uint16_t *vscp_type )
 {
     wxString strLine;
     wxString strCmd;

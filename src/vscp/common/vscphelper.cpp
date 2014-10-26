@@ -2066,9 +2066,10 @@ bool vscp_writeVscpDataToString(const vscpEvent *pEvent, wxString& str, bool bUs
 //
 
 bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
-                                    const unsigned char *pData,
-                                    wxString& str,
-                                    bool bUseHtmlBreak)
+                                            const unsigned char *pData,
+                                            wxString& str,
+                                            bool bUseHtmlBreak,
+                                            bool bBreak )
 {
 	wxString wrk, strBreak;
 
@@ -2091,7 +2092,9 @@ bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
 			wrk += _(",");
 		}
 
-		if (!((i + 1) % 8)) wrk += strBreak;
+        if ( bBreak ) {
+		    if (!((i + 1) % 8)) wrk += strBreak;
+        }
 		str += wrk;
 	}
 
