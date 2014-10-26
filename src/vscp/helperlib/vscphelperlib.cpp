@@ -936,11 +936,11 @@ extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double
     \brief Get variable value from measurement variable
     \param name of variable
     \param String that get that get the 
-    value of the measurement.
+        value of the measurement.
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue )
+extern "C" int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue, int size )
 #else
 extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue )
 #endif
@@ -956,7 +956,7 @@ extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, c
     wxString name = wxString::FromAscii( pName );
     wxString strValue;
     if ( VSCP_ERROR_SUCCESS == ( rv = pvscpif->getVariableMeasurement( name, strValue ) ) ) {
-        strcpy( pValue, strValue.ToAscii() );
+        strncpy( pValue, strValue.ToAscii(), size );
     }
 
     return rv;
@@ -971,7 +971,7 @@ extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, c
     \return true if the variable is of type string.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue )
+extern "C" int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, const char *pValue )
 #else
 extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue )
 #endif
@@ -985,7 +985,7 @@ extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, c
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
     wxString name = wxString::FromAscii( pName );
-    wxString strValue;
+    wxString strValue = wxString::FromAscii( pValue );
     return pvscpif->setVariableMeasurement( name, strValue );
 
     return rv;

@@ -40,9 +40,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Open Channel 1
     rv=vscphlp_open( handle1, 
-                         "192.168.1.9:9598",
+                         "192.168.1.6:9598",
                          "admin",
-                        "secret" ); 
+                         "secret" ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
         printf("Command success: vscphlp_open on channel 1\n");
     }
@@ -51,7 +51,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     // OPEN channel 2
-    rv=vscphlp_openInterface( handle2, "192.168.1.9:9598;admin;secret", 0 ); 
+    rv=vscphlp_openInterface( handle2, "192.168.1.6:9598;admin;secret", 0 ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
         printf("Command success: vscphlp_openInterface on channel 2\n");
     }
@@ -470,10 +470,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Read a value from a string variable
     char strBuf[32];
+
     if ( VSCP_ERROR_SUCCESS == 
-        (rv = vscphlp_getVariableString( handle1, "test_string_variable", strBuf, sizeof( strBuf ) ) ) ) {
+        (rv = vscphlp_getVariableString( handle1, "test_string_variable", strBuf, sizeof( strBuf )-1 ) ) ) {
         printf( "Command success: vscphlp_getVariableString on channel 1\n" );
-        printf(" Value = %d\n");
+        printf(" Value = %s\n", strBuf );
     }
     else {
         printf("\aCommand error: vscphlp_getVariableString on channel 1  Error code=%d\n", rv);
@@ -481,9 +482,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
-    // Write a value to a string variable
+    // Write a value (false) to a boolean variable
     if ( VSCP_ERROR_SUCCESS == 
-        (rv = vscphlp_setVariableBool( handle1, "test_bool_variable", -1 )  ) ) {
+            (rv = vscphlp_setVariableBool( handle1, "test_bool_variable", 0 )  ) ) {
         printf( "Command success: vscphlp_setVariableBool on channel 1\n" );
     }
     else {
@@ -494,7 +495,7 @@ int _tmain(int argc, _TCHAR* argv[])
     // Read a value from a boolean variable
     int valBool;
     if ( VSCP_ERROR_SUCCESS == 
-        (rv = vscphlp_getVariableBool( handle1, "test_boolean_variable", &valBool ) ) ) {
+            (rv = vscphlp_getVariableBool( handle1, "test_bool_variable", &valBool ) ) ) {
         printf( "Command success: vscphlp_getVariableBool on channel 1\n" );
         printf(" Value = %s\n", valBool ? "true" : "false" );
     }
@@ -503,18 +504,122 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
 
+
+
+    // Write a value to an int variable
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableInt( handle1, "test_integer_variable", 777666 )  ) ) {
+        printf( "Command success: vscphlp_setVariableInt on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableInt on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Read a value from a int variable
+    int intValue;
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableInt( handle1, "test_integer_variable", &intValue ) ) ) {
+        printf( "Command success: vscphlp_getVariableInt on channel 1\n" );
+        printf(" Value = %d\n", intValue );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableInt on channel 1  Error code=%d\n", rv);
+    }
+
+
+
+
+
+
+    // Write a value to an long variable
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableLong( handle1, "test_long_variable", 123456780 )  ) ) {
+        printf( "Command success: vscphlp_setVariableLong on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableLong on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Read a value from a long variable
+    long longValue;
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableLong( handle1, "test_long_variable", &longValue ) ) ) {
+        printf( "Command success: vscphlp_getVariableLong on channel 1\n" );
+        printf(" Value = %lu\n", longValue );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableLong on channel 1  Error code=%d\n", rv);
+    }
+
+
+
+
+
+
+    // Write a value to an float variable
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableDouble( handle1, "test_float_variable", 1.2345001 )  ) ) {
+        printf( "Command success: vscphlp_setVariableDouble on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableDouble on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Read a value from a float variable
+    double floatValue;
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableDouble( handle1, "test_float_variable", &floatValue ) ) ) {
+        printf( "Command success: vscphlp_getVariableDouble on channel 1\n" );
+        printf(" Value = %f\n", floatValue );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableDouble on channel 1  Error code=%d\n", rv);
+    }
+
+
+
+
+
+
+
+    // Write a value to an measurement variable
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableMeasurement( handle1, "test_measurement_variable", "138,0,23" )  ) ) {
+        printf( "Command success: vscphlp_setVariableMeasurement on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableMeasurement on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Read a value from a measurement variable 
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableMeasurement( handle1, "test_measurement_variable", strBuf, sizeof(strBuf)-1  ) ) ) {
+        printf( "Command success: vscphlp_getVariableMeasurement on channel 1\n" );
+        printf(" Value = %s\n", strBuf );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableMeasurement on channel 1  Error code=%d\n", rv);
+    }
+
+
+
 #endif
 
 
 
     // ------------------------------------------------------------------------
 
+
+
     printf("\n\n\n");
 
 
     // free data
     delete e.pdata;
-
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_close( handle1 ) ) {
         printf( "Command success: vscphlp_close on channel 1\n" );

@@ -1813,7 +1813,7 @@ int VscpRemoteTcpIf::setVariableString( wxString& name, const wxString& strValue
     
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
     
-    strCmd = _("VARIABLE WRITE ") + name + _(",STRING,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";STRING;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.ToAscii(), 
                     strlen( strCmd.ToAscii() ) );
@@ -1876,7 +1876,7 @@ int VscpRemoteTcpIf::setVariableBool( wxString& name, const bool bValue )
     else {
         strValue = _("FALSE");
     }
-    strCmd = _("VARIABLE WRITE ") + name + _(",BOOL,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";BOOL;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.ToAscii(), 
                     strlen( strCmd.ToAscii() ) );
@@ -1933,7 +1933,7 @@ int VscpRemoteTcpIf::setVariableInt( wxString& name, int value )
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
     
     strValue.Printf(  _("%d"), value );
-    strCmd = _("VARIABLE WRITE ") + name + _(",INT,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";INT;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.ToAscii(), 
                 strlen( strCmd.ToAscii() ) );
@@ -1988,7 +1988,7 @@ int VscpRemoteTcpIf::setVariableLong( wxString& name, long value )
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
 
     strValue.Printf( _("%d"), value );
-    strCmd = _("VARIABLE WRITE ") + name + _(",LONG,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";LONG;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.ToAscii(), 
                 strlen( strCmd.ToAscii() ) );
@@ -2043,7 +2043,7 @@ int VscpRemoteTcpIf::setVariableDouble( wxString& name, double value )
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
 
     strValue.Printf( _("%f"), value );
-    strCmd = _("VARIABLE WRITE ") + name + _(",DOUBLE,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";DOUBLE;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.ToAscii(), 
                     strlen( strCmd.ToAscii() ) );
@@ -2093,7 +2093,7 @@ int VscpRemoteTcpIf::setVariableMeasurement( wxString& name, wxString& strValue 
 
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
 
-    strCmd = _("VARIABLE WRITE ") + name + _(",MEASUREMENT,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";MEASUREMENT;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.ToAscii(), 
                     strlen( strCmd.ToAscii() ) );
@@ -2148,7 +2148,7 @@ int VscpRemoteTcpIf::setVariableEvent( wxString& name, vscpEvent *pEvent )
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
     
     vscp_writeVscpEventToString( pEvent, strValue );
-    strCmd = _("VARIABLE WRITE ") + name + _(",EVENT,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";EVENT;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.ToAscii(), 
                     strlen( strCmd.ToAscii() ) );
@@ -2202,7 +2202,7 @@ int VscpRemoteTcpIf::setVariableEventEx( wxString& name, vscpEventEx *pEvent )
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
 
     vscp_writeVscpEventExToString( pEvent, strValue );
-    strCmd = _("VARIABLE WRITE ") + name + _(",EVENT,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";EVENT;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.ToAscii(), 
                 strlen( strCmd.ToAscii() ) );
@@ -2253,7 +2253,7 @@ int VscpRemoteTcpIf::setVariableGUID( wxString& name, cguid& guid )
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
 
     guid.toString( strValue );
-    strCmd = _("VARIABLE WRITE ") + name + _(",EVENTGUID,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";EVENTGUID;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.ToAscii(), 
                 strlen( strCmd.ToAscii() ) );
@@ -2307,7 +2307,7 @@ int VscpRemoteTcpIf::setVariableVSCPdata( wxString& name, uint16_t sizeData, uin
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
     
     vscp_writeVscpDataWithSizeToString( sizeData, pData, strValue );
-    strCmd = _("VARIABLE WRITE ") + name + _(",EVENTDATA,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";EVENTDATA;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.ToAscii(), 
                     strlen( strCmd.ToAscii() ) );
@@ -2363,7 +2363,7 @@ int VscpRemoteTcpIf::setVariableVSCPclass( wxString& name, uint16_t vscp_class )
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
 
     strValue.Printf( _("%d"), vscp_class );
-    strCmd = _("VARIABLE WRITE ") + name + _(",EVENTCLASS,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";EVENTCLASS;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.ToAscii(), 
                 strlen( strCmd.ToAscii() ) );
@@ -2421,7 +2421,7 @@ int VscpRemoteTcpIf::setVariableVSCPtype( wxString& name, uint16_t vscp_type )
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
 
     strValue.Printf( _("%d"), vscp_type );
-    strCmd = _("VARIABLE WRITE ") + name + _(",EVENTTYPE,,") + strValue + _("\r\n");
+    strCmd = _("VARIABLE WRITE ") + name + _(";EVENTTYPE;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.ToAscii(), 
                 strlen( strCmd.ToAscii() ) );

@@ -89,7 +89,7 @@ int WINAPI EXPORT vscphlp_setVariableLong( long handle, const char *pName, long 
 int WINAPI EXPORT vscphlp_getVariableDouble( long handle, const char *pName, double *pvalue );
 int WINAPI EXPORT vscphlp_setVariableDouble( long handle, const char *pName, double value );
 
-int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pvalue );
+int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pvalue, int size );
 int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
 
 int WINAPI EXPORT vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );
@@ -171,7 +171,7 @@ int vscphlp_setVariableLong( long handle, const char *pName, long value );
 int vscphlp_getVariableDouble( long handle, const char *pName, double *value );
 int vscphlp_setVariableDouble( long handle, const char *pName, double value );
 
-int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pvalue );
+int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pvalue, int size );
 int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue );
 
 int vscphlp_getVariableEvent( long handle, const char *pName, vscpEvent *pEvent );

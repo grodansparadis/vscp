@@ -492,7 +492,7 @@ struct myNode {
 #define VSCP_ERROR_PROCADDRESS             29      // Unable get library proc address
 #define VSCP_ERROR_ONLY_ONE_INSTANCE       30      // Only one instance allowed
 #define VSCP_ERROR_SUB_DRIVER              31      // Problem with sub driver call
-#define VSCP_ERROR_TIMEOUT                 32      // Blocking call timeout
+#define VSCP_ERROR_TIMEOUT                 32      // Timeout
 #define VSCP_ERROR_NOT_OPEN                33      // The device is not open.
 #define VSCP_ERROR_PARAMETER               34      // A parameter is invalid.
 #define VSCP_ERROR_MEMORY                  35      // Memory exhausted.

@@ -2073,14 +2073,14 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                 if ( NULL == ( pVariable = *it ) ) continue;
 
                 str = pVariable->getName();
-                str += _(",");
+                str += _(";");
                 strWork.Printf( _("%d"), pVariable->getType() ) ;
                 str += strWork;
                 if ( pVariable->isPersistent() ) {
-                    str += _(",true,");
+                    str += _(";true;");
                 }
                 else {
-                    str += _(",false,");
+                    str += _(";false;");
                 }
 				
                 pVariable->writeValueToString( strWork );
@@ -2186,14 +2186,14 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                                 ( bfromLeft && ( ( str.Length() - token.Length() ) == posFound ) ) ) {
 
                                     str = pVariable->getName();
-                                    str += _(",");
+                                    str += _(";");
                                     strWork.Printf( _("%d"), pVariable->getType() ) ;
                                     str += strWork;
                                     if ( pVariable->isPersistent() ) {
-                                        str += _(",true,");
+                                        str += _(";true;");
                                     }
                                     else {
-                                        str += _(",false,");
+                                        str += _(";false;");
                                     }
                                     pVariable->writeValueToString( strWork );
                                     str += strWork;
@@ -2225,14 +2225,14 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                         if ( pVariable->getName() == token ) {
 
                             str = pVariable->getName();
-                            str += _(",");
+                            str += _(";");
                             strWork.Printf( _("%d"), pVariable->getType() ) ;
                             str += strWork;
                             if ( pVariable->isPersistent() ) {
-                                str += _(",true,");
+                                str += _(";true;");
                             }
                             else {
-                                str += _(",false,");
+                                str += _(";false;");
                             }
                             pVariable->writeValueToString( strWork );
                             str += strWork;
@@ -2274,7 +2274,7 @@ void VSCPClientThread::handleVariable_Write( struct ns_connection *conn, CContro
     pClientItem->m_currentCommand.Trim( false );
     pClientItem->m_currentCommand.Trim( true );
 
-    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(",") );
+    wxStringTokenizer tkz( pClientItem->m_currentCommand, _(";") );
 
     // Get name of variable
     if ( tkz.HasMoreTokens() ) {
