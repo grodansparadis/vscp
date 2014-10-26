@@ -116,7 +116,7 @@ void cguid::getFromString( const wxString& strGUID )
 
     wxStringTokenizer tkz( strGUID, wxT ( ":" ) );
     for ( int i=0; i<16; i++ ) {
-        tkz.GetNextToken().ToULong ( &val, 16 );
+        tkz.GetNextToken().ToULong( &val, 16 );
         m_id[ i ] = ( uint8_t ) val;
         // If no tokens left no use to continue
         if ( !tkz.HasMoreTokens() ) break;
@@ -132,7 +132,7 @@ void cguid::getFromString( const wxString& strGUID )
  void cguid::getFromString( const char *pszGUID )
  {
     wxString str;
-    str.FromAscii( pszGUID );
+    str = wxString::FromUTF8( pszGUID );
     getFromString( str );
  }
 
@@ -141,7 +141,7 @@ void cguid::getFromString( const wxString& strGUID )
 // getFromArray
 //
 
-void cguid::getFromArray( uint8_t *pguid )
+void cguid::getFromArray( const uint8_t *pguid )
 {
   memcpy(m_id, pguid, 16 );
 }

@@ -2266,7 +2266,7 @@ int VscpRemoteTcpIf::setVariableGUID( wxString& name, cguid& guid )
 // getVariableVSCPdata
 //
 
-int VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData )
+int VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint8_t *pData, uint16_t *psize )
 {
     wxString strLine;
     wxString strCmd;
@@ -2290,7 +2290,7 @@ int VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint16_t *psizeData, u
     wxStringTokenizer tkz( strLine, _("\r\n") );
     if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_ERROR;
 
-    vscp_getVscpDataArrayFromString( pData, psizeData, tkz.GetNextToken() );
+    vscp_getVscpDataArrayFromString( pData, psize, tkz.GetNextToken() );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2299,14 +2299,14 @@ int VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint16_t *psizeData, u
 // setVariableVSCPdata
 //
 
-int VscpRemoteTcpIf::setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData )
+int VscpRemoteTcpIf::setVariableVSCPdata( wxString& name, uint8_t *pData, uint16_t size )
 {
     wxString strCmd;
     wxString strValue;
 
     if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
     
-    vscp_writeVscpDataWithSizeToString( sizeData, pData, strValue );
+    vscp_writeVscpDataWithSizeToString( size, pData, strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(";EVENTDATA;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.ToAscii(), 

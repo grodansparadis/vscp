@@ -88,7 +88,7 @@ public:
 		@param pguid Pointer to array that holds 16 GUID bytes on
 						MSB->LSB form.
 	*/
-	void getFromArray( uint8_t *pguid );
+	void getFromArray( const uint8_t *pguid );
 
     /*!
         GUID to string

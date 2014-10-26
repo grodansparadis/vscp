@@ -276,6 +276,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\common\net_skeleton.h" />
+    <ClInclude Include="..\..\common\guid.h" />
     <ClInclude Include="..\..\common\vscp.h" />
     <ClInclude Include="..\..\common\vscpremotetcpif.h" />
     <ClInclude Include="..\vscphelperlib.h" />

@@ -607,6 +607,129 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
+
+
+    
+    // Write a value to an event variable
+    
+    pEvent = new vscpEvent;
+    pEvent->head = 0;
+    pEvent->vscp_class = 10;
+    pEvent->vscp_type = 6;
+    pEvent->obid = 0;
+    pEvent->timestamp = 0;
+    memset( pEvent->GUID, 0, 16 );
+    pEvent->sizeData = 4;
+    pEvent->pdata = new unsigned char[4];
+    pEvent->pdata[ 0 ] = 10;
+    pEvent->pdata[ 1 ] = 20;
+    pEvent->pdata[ 2 ] = 30;
+    pEvent->pdata[ 3 ] = 40;
+    
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableEvent( handle1, "test_event_variable", pEvent )  ) ) {
+        printf( "Command success: vscphlp_setVariableEvent on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableEvent on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Read a value from a event variable 
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableEvent( handle1, "test_event_variable", pEvent  ) ) ) {
+        printf( "Command success: vscphlp_getVariableEvent on channel 1\n" );
+        printf(" Event: class=%d Type=%d sizeData=%d\n", 
+                        pEvent->vscp_class,
+                        pEvent->vscp_type,
+                        pEvent->sizeData );
+        if ( pEvent->sizeData && ( NULL != pEvent->pdata ) ) {
+            printf("Data = ");
+            for ( int i=0; i<pEvent->sizeData; i++ ) {
+                printf("%d ", pEvent->pdata[i] );
+            }
+            printf("\n");
+        }
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableEvent on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Free the event
+    vscphlp_deleteVSCPevent( pEvent );
+
+
+
+    // Write a value to an event variable
+    vscpEventEx ex1;
+    ex1.head = 0;
+    ex1.vscp_class = 50;
+    ex1.vscp_type = 22;
+    ex1.obid = 0;
+    ex1.timestamp = 0;
+    memset( ex1.GUID, 0, 16 );
+    ex1.sizeData = 4;
+    ex1.data[ 0 ] = 40;
+    ex1.data[ 1 ] = 30;
+    ex1.data[ 2 ] = 20;
+    ex1.data[ 3 ] = 10;
+    
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableEventEx( handle1, "test_eventex_variable", &ex1 )  ) ) {
+        printf( "Command success: vscphlp_setVariableEventEx on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableEventEx on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Read a value from a event variable 
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableEventEx( handle1, "test_eventex_variable", &ex1  ) ) ) {
+        printf( "Command success: vscphlp_getVariableEventEx on channel 1\n" );
+        printf(" Event: class=%d Type=%d sizeData=%d\n", 
+                        ex1.vscp_class,
+                        ex1.vscp_type,
+                        ex1.sizeData );
+        if ( ex1.sizeData ) {
+            printf("Data = ");
+            for ( int i=0; i<ex1.sizeData; i++ ) {
+                printf("%d ", ex1.data[i] );
+            }
+            printf("\n");
+        }
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableEvent on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Write a value to an GUID variable
+    char strGUID[32];
+    strcpy( strGUID, "FF:FF:FF:FF:FF:FF:FF:00:00:00:00:7F:00:01:01:FD" );
+
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_setVariableGUIDString( handle1, "test_guid_variable", strGUID ) ) ) {
+        printf( "Command success: vscphlp_setVariableGUIDString on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_setVariableGUIDString on channel 1  Error code=%d\n", rv);
+    }
+
+    memset( strGUID, 0, sizeof(strGUID) );
+
+    // Read a value from a GUID variable 
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_getVariableGUIDString( handle1, "test_guid_variable", strGUID, sizeof(strGUID)-1 )  ) )  {
+        printf( "Command success: vscphlp_getVariableGUIDString on channel 1\n" );
+        printf(" Value = %s\n", strGUID );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableGUIDString on channel 1  Error code=%d\n", rv);
+    }
+
+
 #endif
 
 

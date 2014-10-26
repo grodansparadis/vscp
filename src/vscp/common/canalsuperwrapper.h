@@ -338,7 +338,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableString( wxString& name, wxString *strValue )
-	{ return m_vscptcpif.getVariableString( name, strValue ); };
+	{ 
+        return m_vscptcpif.getVariableString( name, strValue ); 
+    };
 
 	/*!
 	Set variable value from string variable
@@ -347,7 +349,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableString( wxString& name, wxString& strValue )
-	{ return m_vscptcpif.setVariableString( name, strValue ); };
+	{ 
+        return m_vscptcpif.setVariableString( name, strValue ); 
+    };
 
 	/*!
 	Get variable value from boolean variable
@@ -356,7 +360,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableBool( wxString& name, bool *bValue )
-	{ return m_vscptcpif.getVariableBool( name, bValue ); };
+	{ 
+        return m_vscptcpif.getVariableBool( name, bValue ); 
+    };
 
 	/*!
 	Set variable value from boolean variable
@@ -365,7 +371,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableBool( wxString& name, bool bValue )
-	{ return m_vscptcpif.setVariableBool( name, bValue ); };
+	{ 
+        return m_vscptcpif.setVariableBool( name, bValue ); 
+    };
 
 	/*!
 	Get variable value from integer variable
@@ -374,7 +382,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableInt( wxString& name, int *value )
-	{ return m_vscptcpif.getVariableInt( name, value ); };
+	{ 
+        return m_vscptcpif.getVariableInt( name, value ); 
+    };
 
 	/*!
 	set variable value from integer variable
@@ -383,7 +393,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableInt( wxString& name, int value )
-	{ return m_vscptcpif.setVariableInt( name, value ); };
+	{ 
+        return m_vscptcpif.setVariableInt( name, value ); 
+    };
 
 	/*!
 	Get variable value from long variable
@@ -392,7 +404,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableLong( wxString& name, long *value )
-	{ return m_vscptcpif.getVariableLong( name, value );  };
+	{ 
+        return m_vscptcpif.getVariableLong( name, value );  
+    };
 
 	/*!
 	Set variable value from long variable
@@ -401,7 +415,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableLong( wxString& name, long value )
-	{ return m_vscptcpif.setVariableLong( name, value );  };
+	{ 
+        return m_vscptcpif.setVariableLong( name, value );  
+    };
 
 	/*!
 	Get variable value from double variable
@@ -410,7 +426,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableDouble( wxString& name, double *value )
-	{ return m_vscptcpif.getVariableDouble( name, value ); };
+	{ 
+        return m_vscptcpif.getVariableDouble( name, value ); 
+    };
 
 	/*!
 	Set variable value from double variable
@@ -419,7 +437,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableDouble( wxString& name, double value )
-	{ return m_vscptcpif.setVariableDouble( name, value ); };
+	{ 
+        return m_vscptcpif.setVariableDouble( name, value ); 
+    };
 
 	/*!
 	Get variable value from measurement variable
@@ -429,7 +449,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableMeasurement( wxString& name, wxString& strValue )
-	{ return m_vscptcpif.getVariableMeasurement( name, strValue ); };
+	{ 
+        return m_vscptcpif.getVariableMeasurement( name, strValue ); 
+    };
 
 	/*!
 	Set variable value from measurement variable
@@ -439,7 +461,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableMeasurement( wxString& name, wxString& strValue )
-	{ return m_vscptcpif.setVariableMeasurement( name, strValue ); };
+	{ 
+        return m_vscptcpif.setVariableMeasurement( name, strValue ); 
+    };
 
 	/*!
 	Get variable value from event variable
@@ -448,7 +472,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableEvent( wxString& name, vscpEvent *pEvent )
-	{ return m_vscptcpif.getVariableEvent( name, pEvent ); };
+	{ 
+        return m_vscptcpif.getVariableEvent( name, pEvent ); 
+    };
 
 	/*!
 	Set variable value from event variable
@@ -457,7 +483,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableEvent( wxString& name, vscpEvent *pEvent )
-	{ return m_vscptcpif.setVariableEvent( name, pEvent ); };
+	{ 
+        return m_vscptcpif.setVariableEvent( name, pEvent ); 
+    };
 
 	/*!
 	Get variable value from event variable
@@ -466,7 +494,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableEventEx( wxString& name, vscpEventEx *pEvent )
-	{ return m_vscptcpif.getVariableEventEx( name, pEvent ); };
+	{ 
+        return m_vscptcpif.getVariableEventEx( name, pEvent ); 
+    };
 
 	/*!
 	Set variable value from event variable
@@ -475,7 +505,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableEventEx( wxString& name, vscpEventEx *pEvent )
-	{ return m_vscptcpif.setVariableEventEx( name, pEvent ); };
+	{ 
+        return m_vscptcpif.setVariableEventEx( name, pEvent ); 
+    };
 
 	/*!
 	Get variable value from GUID variable
@@ -484,7 +516,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableGUID( wxString& name, cguid& GUID )
-	{ return m_vscptcpif.getVariableGUID( name, GUID ); };
+	{ 
+        return m_vscptcpif.getVariableGUID( name, GUID ); 
+    };
 
 	/*!
 	Set variable value from GUID variable
@@ -493,7 +527,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableGUID( wxString& name, cguid& GUID )
-	{ return m_vscptcpif.setVariableGUID( name, GUID ); };
+	{ 
+        return m_vscptcpif.setVariableGUID( name, GUID ); 
+    };
 
 	/*!
 	Get variable value from VSCP data variable
@@ -503,8 +539,10 @@ public:
 	value of the string variable.
 	\return true if the variable is of type string.
 	*/
-	int getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData )
-	{ return m_vscptcpif.getVariableVSCPdata( name, psizeData, pData ); };
+	int getVariableVSCPdata( wxString& name, uint8_t *pData, uint16_t *psizeData )
+	{ 
+        return m_vscptcpif.getVariableVSCPdata( name, pData, psizeData ); 
+    };
 
 	/*!
 	Set variable value from VSCP data variable
@@ -515,7 +553,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData )
-	{ return m_vscptcpif.setVariableVSCPdata( name, sizeData, pData ); };
+	{ 
+        return m_vscptcpif.setVariableVSCPdata( name, pData, sizeData ); 
+    };
 
 	/*!
 	Get variable value from class variable
@@ -524,7 +564,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableVSCPclass( wxString& name, uint16_t *vscp_class )
-	{ return m_vscptcpif.getVariableVSCPclass( name, vscp_class ); };
+	{ 
+        return m_vscptcpif.getVariableVSCPclass( name, vscp_class ); 
+    };
 
 	/*!
 	Set variable value from class variable
@@ -533,7 +575,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableVSCPclass( wxString& name, uint16_t vscp_class )
-	{ return m_vscptcpif.setVariableVSCPclass( name, vscp_class ); };
+	{ 
+        return m_vscptcpif.setVariableVSCPclass( name, vscp_class ); 
+    };
 
 	/*!
 	Get variable value from type variable
@@ -542,7 +586,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int getVariableVSCPtype( wxString& name, uint8_t *vscp_type )
-	{ return m_vscptcpif.getVariableVSCPtype( name, vscp_type ); };
+	{ 
+        return m_vscptcpif.getVariableVSCPtype( name, vscp_type ); 
+    };
 
 
 	/*!
@@ -552,7 +598,9 @@ public:
 	\return true if the variable is of type string.
 	*/
 	int setVariableVSCPtype( wxString& name, uint8_t vscp_type )
-	{ return m_vscptcpif.setVariableVSCPtype( name, vscp_type ); };
+	{ 
+        return m_vscptcpif.setVariableVSCPtype( name, vscp_type ); 
+    };
 
 	/*!
 	Set read timeout

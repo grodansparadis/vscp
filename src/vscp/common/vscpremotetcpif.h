@@ -613,7 +613,7 @@ public:
         \return true if the variable is of type VSCP data and the operation
         was successful.
     */
-    int getVariableVSCPdata( wxString& name, uint16_t *psizeData, uint8_t *pData );
+    int getVariableVSCPdata( wxString& name, uint8_t *psizeData, uint16_t *pData );
 
     /*!
         set variable value from VSCP data
@@ -622,7 +622,7 @@ public:
         \param pData Pointer to data array to set data from.
         \return true if the operation was successful.
     */
-    int setVariableVSCPdata( wxString& name, uint16_t sizeData, uint8_t *pData );
+    int setVariableVSCPdata( wxString& name, uint8_t *pData, uint16_t size );
 
     /*!
         Get variable value from class variable

@@ -1331,7 +1331,8 @@ bool vscp_getGuidFromString(vscpEvent *pEvent, const wxString& strGUID)
 
 	if (0 == strGUID.Find(_("-"))) {
 		memset(pEvent->GUID, 0, 16);
-	} else {
+	} 
+    else {
 		wxStringTokenizer tkz(strGUID, wxT(":"));
 		for (int i = 0; i < 16; i++) {
 			tkz.GetNextToken().ToULong(&val, 16);
@@ -2214,6 +2215,7 @@ bool vscp_writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 bool vscp_writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
 {
 	vscpEvent Event;
+    Event.pdata = NULL;
 
 	// Check pointer
 	if (NULL == pEventEx) return false;
@@ -2221,7 +2223,7 @@ bool vscp_writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
 	Event.pdata = NULL;
 	vscp_convertVSCPfromEx(&Event, pEventEx);
 	vscp_writeVscpEventToString(&Event, str);
-	vscp_deleteVSCPevent(&Event);
+	if ( NULL != Event.pdata ) delete Event.pdata;
 
 	return true;
 }
