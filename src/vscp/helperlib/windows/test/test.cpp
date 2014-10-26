@@ -40,7 +40,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Open Channel 1
     rv=vscphlp_open( handle1, 
-                         "192.168.1.6:9598",
+                         "192.168.1.9:9598",
                          "admin",
                          "secret" ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
@@ -51,7 +51,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     // OPEN channel 2
-    rv=vscphlp_openInterface( handle2, "192.168.1.6:9598;admin;secret", 0 ); 
+    rv=vscphlp_openInterface( handle2, "192.168.1.9:9598;admin;secret", 0 ); 
     if ( VSCP_ERROR_SUCCESS == rv ) {
         printf("Command success: vscphlp_openInterface on channel 2\n");
     }
