@@ -73,7 +73,6 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC"/>
-        <element flagsID="1" commonFlags="-g -O2"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -106,8 +105,6 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="0">
-        <cTool flags="1">
-        </cTool>
       </item>
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -138,8 +135,6 @@
         </ccTool>
       </item>
       <item path="../common/xapobj.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool flags="0">
-        </ccTool>
       </item>
       <folder path="0">
         <ccTool>
@@ -174,12 +169,8 @@
         </ccTool>
       </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="0">
-        <ccTool flags="0">
-        </ccTool>
       </item>
       <item path="xapdrv.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
-        </ccTool>
       </item>
     </conf>
   </confs>

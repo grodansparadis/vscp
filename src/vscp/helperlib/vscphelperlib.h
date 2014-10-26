@@ -183,11 +183,11 @@ int vscphlp_setVariableEvent( long handle, const char *pName, vscpEvent *pEvent 
 int vscphlp_getVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
 int vscphlp_setVariableEventEx( long handle, const char *pName, vscpEventEx *pEvent );
 
-int WINAPI EXPORT vscphlp_getVariableGUIDString( long handle, const char *pName, const char *pGUID, int size );
-int WINAPI EXPORT vscphlp_setVariableGUIDString( long handle, const char *pName, const char *pGUID );
+int vscphlp_getVariableGUIDString( long handle, const char *pName, const char *pGUID, int size );
+int vscphlp_setVariableGUIDString( long handle, const char *pName, const char *pGUID );
 
-int WINAPI EXPORT vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID );
-int WINAPI EXPORT vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID );
+int vscphlp_getVariableGUIDArray( long handle, const char *pName, unsigned char *pGUID );
+int vscphlp_setVariableGUIDArray( long handle, const char *pName, const unsigned char *pGUID );
 
 int vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short *psize );
 int vscphlp_setVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short size );

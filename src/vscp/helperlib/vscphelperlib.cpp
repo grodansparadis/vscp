@@ -1093,7 +1093,7 @@ extern "C" int vscphlp_setVariableEventEx( long handle, const char *pName, vscpE
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_getVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
 #else
-extern "C" int vscphlp_getVariableGUIDString( long handle, const char *pName, char *pGUID )
+extern "C" int vscphlp_getVariableGUIDString( long handle, const char *pName, char *pGUID, int size )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1224,7 +1224,7 @@ extern "C" int vscphlp_getVariableVSCPData( long handle, const char *pName, unsi
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPData( long handle, const char *pName,  uint8_t *pData, unsigned short size )
 #else
-extern "C" int vscphlp_setVariableVSCPData( long handle, const char *pName, uint8_t *pData, unsigned short *psize )
+extern "C" int vscphlp_setVariableVSCPData( long handle, const char *pName, uint8_t *pData, unsigned short size )
 #endif
 { 
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
