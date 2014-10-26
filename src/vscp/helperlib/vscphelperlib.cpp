@@ -942,7 +942,7 @@ extern "C" int vscphlp_setVariableDouble( long handle, const char *pName, double
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue, int size )
 #else
-extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue )
+extern "C" int vscphlp_getVariableMeasurement( long handle, const char *pName, char *pValue, int size )
 #endif
 { 
     int rv;
