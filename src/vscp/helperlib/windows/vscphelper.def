@@ -33,6 +33,9 @@ EXPORTS
     vscphlp_getVendorString
     vscphlp_getDriverInfo
     vscphlp_shutDownServer
+    vscphlp_deleteVariable
+    vscphlp_createVariable
+    vscphlp_saveVariablesToDisk
     vscphlp_getVariableString 
     vscphlp_setVariableString
     vscphlp_getVariableBool
@@ -59,5 +62,36 @@ EXPORTS
     vscphlp_setVariableVSCPClass
     vscphlp_getVariableVSCPType
     vscphlp_setVariableVSCPType
+    vscphlp_readStringValue
+    vscphlp_getVscpPriority
+    vscphlp_setVscpPriority
+    vscphlp_getVSCPheadFromCANid
+    vscphlp_getVSCPclassFromCANid
+    vscphlp_getVSCPtypeFromCANid
+    vscphlp_getCANidFromVSCPdata
+    vscphlp_getCANidFromVSCPevent
+    vscphlp_calcCRC
+    vscphlp_getGuidFromString
+    vscphlp_getGuidFromStringToArray
+    vscphlp_writeGuidToString
+    vscphlp_writeGuidToString4Rows
+    vscphlp_writeGuidArrayToString
+    vscphlp_isGUIDEmpty
+    vscphlp_isSameGUID
+    vscphlp_convertVSCPtoEx
+    vscphlp_convertVSCPfromEx
     vscphlp_deleteVSCPevent
     vscphlp_deleteVSCPeventEx
+    vscphlp_clearVSCPFilter
+    vscphlp_readFilterFromString
+    vscphlp_readMaskFromString
+    vscphlp_doLevel2Filter
+    vscphlp_convertCanalToEvent
+    vscphlp_convertEventToCanal
+    vscphlp_convertEventExToCanal
+    vscphlp_getTimeStamp
+    vscphlp_copyVSCPEvent
+    vscphlp_writeVscpDataToString
+    vscphlp_getVscpDataFromString
+    vscphlp_writeVscpEventToString
+    vscphlp_getVscpEventFromString

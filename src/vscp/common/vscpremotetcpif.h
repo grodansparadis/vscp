@@ -442,6 +442,27 @@ public:
     // ------------------------------------------------------------------------
 
 
+    /*!
+        Delete a named variable
+        \param name Name of variable to delete.
+    */
+    int deleteVariable( wxString& name );
+
+
+    /*!
+        Save all variables to disk
+    */
+    int saveVariablesToDisk( void );
+
+    /*!
+        Create a variable
+        \param name Name of variable to create.
+        \param type of variabel either in string or mnenomic form
+        \param value Initial value for the variable
+        \param bPersistet True if the variable should be persistent (default=false)
+    */
+    int createVariable( wxString& name, wxString& type, wxString& strValue, bool bPersistent=false  );
+
 
     /*!
         Get variable value from string variable

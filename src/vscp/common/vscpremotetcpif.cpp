@@ -1773,6 +1773,67 @@ int VscpRemoteTcpIf::doCmdShutDown( void )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// deleteVariable
+//
+
+int VscpRemoteTcpIf::deleteVariable( wxString& name )
+{
+    wxString strCmd;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    
+    strCmd = _("VARIABLE REMOVE ") + name + _("\r\n");
+    ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+                    strCmd.ToAscii(), 
+                    strlen( strCmd.ToAscii() ) );
+    if ( !checkReturnValue(true) ) return VSCP_ERROR_ERROR;
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// saveVariablesToDisk
+//
+
+int VscpRemoteTcpIf::createVariable( wxString& name, wxString& type, wxString& strValue, bool bPersistent )
+{
+    wxString strCmd;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+
+    wxString strPersistent = ( bPersistent ) ? _("TRUE") : _("FALSE");
+    strCmd = _("VARIABLE WRITE ") + name + _(";") + type + _(";") + strPersistent + _(";") + strValue + _("\r\n");
+    ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+                    strCmd.ToAscii(), 
+                    strlen( strCmd.ToAscii() ) );
+    if ( !checkReturnValue(true) ) return VSCP_ERROR_ERROR;
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// saveVariablesToDisk
+//
+
+int VscpRemoteTcpIf::saveVariablesToDisk( void )
+{
+    wxString strCmd;
+    
+    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    
+    strCmd = _("VARIABLE SAVE\r\n");
+    ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+                    strCmd.ToAscii(), 
+                    strlen( strCmd.ToAscii() ) );
+    if ( !checkReturnValue(true) ) return VSCP_ERROR_ERROR;
+
+    return VSCP_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // getVariableString
 //
 
@@ -2284,7 +2345,7 @@ int VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint8_t *pData, uint16
 
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;   
     m_mutexArray.Lock();
-    for ( int i=0; i< m_inputStrArray.Count()-1; i++ ) {
+    for ( uint16_t i=0; i< m_inputStrArray.Count()-1; i++ ) {
         strLine += m_inputStrArray[ i ];
         strLine.Trim();
         strLine.Trim(false);

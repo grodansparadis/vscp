@@ -731,7 +731,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
-    // Write a value to an GUID variable - string type
+    // Write a value to an GUID variable - array type
     unsigned char GUID[16];
     memset( GUID, 0, 16 );
     for ( int i=0;i<16; i++ ) {
@@ -748,7 +748,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     memset( GUID, 0, 16 );
    
-    // Read a value from a GUID variable - string type
+    // Read a value from a GUID variable - array type
     if ( VSCP_ERROR_SUCCESS == 
             (rv = vscphlp_getVariableGUIDArray( handle1, "test_guidarray_variable", GUID  ) ) )  {
         printf( "Command success: vscphlp_getVariableGUIDArray on channel 1\n" );
@@ -781,7 +781,7 @@ int _tmain(int argc, _TCHAR* argv[])
     unsigned short size;
     memset( dataArray, 0, sizeof( dataArray ) );
    
-    // Read a value from a GUID variable - string type
+    // Read a value from a data variable 
     if ( VSCP_ERROR_SUCCESS == 
             (rv = vscphlp_getVariableVSCPData( handle1, "test_dataarray_variable", dataArray, &size  ) ) )  {
         printf( "Command success: vscphlp_getVariableVSCPData on channel 1\n" );
@@ -797,7 +797,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
-    // Write a value to an GUID variable - string type
+    // Write a value to an GUID variable 
     //unsigned char GUID[16];
     memset( GUID, 0, 16 );
     for ( int i=0;i<16; i++ ) {
@@ -845,7 +845,7 @@ int _tmain(int argc, _TCHAR* argv[])
     if ( VSCP_ERROR_SUCCESS == 
             (rv = vscphlp_getVariableVSCPClass( handle1, "test_vscp_class_variable", &vscpclass ) ) )  {
         printf( "Command success: vscphlp_getVariableVSCPClass on channel 1\n" );
-        printf(" Value = %d", vscpclass );
+        printf(" Value = %d\n", vscpclass );
     }
     else {
         printf("\aCommand error: vscphlp_getVariableVSCPClass on channel 1  Error code=%d\n", rv);
@@ -854,7 +854,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Write a value for VSCP type type
     if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_setVariableVSCPType( handle1, "test_vscp_class_variable", 22 ) ) ) {
+            (rv = vscphlp_setVariableVSCPType( handle1, "test_vscp_type_variable", 22 ) ) ) {
         printf( "Command success: vscphlp_setVariableVSCPType on channel 1\n" );
     }
     else {
@@ -865,15 +865,57 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Read a value from aVSCP type type
     if ( VSCP_ERROR_SUCCESS == 
-            (rv = vscphlp_getVariableVSCPType( handle1, "test_vscp_class_variable", &vscptype ) ) )  {
+            (rv = vscphlp_getVariableVSCPType( handle1, "test_vscp_type_variable", &vscptype ) ) )  {
         printf( "Command success: vscphlp_getVariableVSCPType on channel 1\n" );
-        printf(" Value = %d", vscptype );
+        printf(" Value = %d\n", vscptype );
     }
     else {
         printf("\aCommand error: vscphlp_getVariableVSCPType on channel 1  Error code=%d\n", rv);
     }
 
 
+    // Create a varaible
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_createVariable( handle1, 
+                                             "test_of_create_variable",
+                                             "string",
+                                             "Carpe Diem",
+                                             1 ) ) )  {
+        printf( "Command success: vscphlp_createVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_createVariable on channel 1  Error code=%d\n", rv);
+    }
+
+    if ( VSCP_ERROR_SUCCESS == 
+        (rv = vscphlp_getVariableString( handle1, "test_of_create_variable", strBuf, sizeof( strBuf )-1 ) ) ) {
+        printf( "Command success: vscphlp_getVariableString on channel 1\n" );
+        printf(" Value = %s\n", strBuf );
+    }
+    else {
+        printf("\aCommand error: vscphlp_getVariableString on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Delete a variable
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_deleteVariable( handle1, 
+                                             "test_of_create_variable" ) ) )  {
+        printf( "Command success: vscphlp_deleteVariable on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_deleteVariable on channel 1  Error code=%d\n", rv);
+    }
+
+
+    // Save variables marked as persistent
+    if ( VSCP_ERROR_SUCCESS == 
+            (rv = vscphlp_saveVariablesToDisk( handle1 ) ) )  {
+        printf( "Command success: vscphlp_saveVariablesToDisk on channel 1\n" );
+    }
+    else {
+        printf("\aCommand error: vscphlp_saveVariablesToDisk on channel 1  Error code=%d\n", rv);
+    }
     
 #endif
 
