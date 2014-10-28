@@ -157,7 +157,7 @@ typedef unsigned short                      uint64_t;
 #define VSCPD_UDP_OBJ_MUTEX                 _("____VSCPD_UDP_OBJ_MUTEX____")
 #define VSCPD_SEND_OBJ_MUTEX                _("____VSCPD_SEND_OBJ_MUTEX____")
 #define VSCPD_RECEIVE_OBJ_MUTEX             _("____VSCPD_RECEIVE_OBJ_MUTEX____")
-#define VSCPD_CLIENT_MUTEX                  _("__VSCPD_CLIENT_MUTEX__")
+#define VSCPD_CLIENT_MUTEX                  _("____VSCPD_CLIENT_MUTEX____")
 
 
 #define	VSCP_LEVEL2_UDP_PORT                9598
@@ -186,8 +186,7 @@ typedef struct  {
     // Following two are for daemon internal use
 	uint32_t obid;          // Used by driver for channel info etc.
 	uint32_t timestamp;     // Relative time stamp for package in microseconds
-    // CRC should be calculated from
-    // here to end + datablock
+    // ----- CRC should be calculated from here to end + datablock ----
 	uint16_t head;          // Bit 16   GUID is IP v.6 address.
 							// bit 765  priority, Priority 0-7 where 0 is highest.
                             // bit 4 = hard coded, true for a hard coded device.
@@ -235,6 +234,8 @@ typedef struct {
 
 typedef vscpEventEx *PVSCPEVENTEX;
 
+// Priorities in the header byte as or'in values
+// Priorities goes from 0-7 where 0 is highest 
 #define VSCP_PRIORITY_0             0x00
 #define VSCP_PRIORITY_1             0x20
 #define VSCP_PRIORITY_2             0x40
@@ -246,6 +247,7 @@ typedef vscpEventEx *PVSCPEVENTEX;
 
 #define VSCP_PRIORITY_HIGH          0x00
 #define VSCP_PRIORITY_LOW           0xE0
+#define VSCP_PRIORITY_MEDIUM        0xC0
 #define VSCP_PRIORITY_NORMAL        0x60
 
 #define VSCP_HEADER_PRIORITY_MASK   0xE0

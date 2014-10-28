@@ -164,8 +164,9 @@ extern "C" {
       \return Returns unicode UTF-8 string of event data
      */
 	 
-    wxString& vscp_getDataCodingString(const unsigned char *pString, 
-                                            const unsigned char length);
+    bool vscp_getDataCodingString(const unsigned char *pData, 
+                                            unsigned char dataSize,
+                                            wxString& strResult );
 
 
     /*!
@@ -328,64 +329,68 @@ extern "C" {
     void vscp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority);
 
     /*!
-      Get VSCP head from CAN id
+      Get VSCP head from CANAL id
       \param id CAN id
       \return VSCP head
      */
-    unsigned char vscp_getVSCPheadFromCANid(const uint32_t id);
+    unsigned char vscp_getVSCPheadFromCANALid(uint32_t id);
 
     /*!
-     Get VSCP class from CAN id
+     Get VSCP class from CANAL id
       \param id CAN id
       \return VSCP class
      */
-    uint16_t vscp_getVSCPclassFromCANid(const uint32_t id);
+    uint16_t vscp_getVSCPclassFromCANALid(uint32_t id);
 
     /*!
-      Get VSCP type from CAN id
+      Get VSCP type from CANAL id
       \param id CAN id
      \return VSCP type
      */
-    uint16_t vscp_getVSCPtypeFromCANid(const uint32_t id);
+    uint16_t vscp_getVSCPtypeFromCANALid(uint32_t id);
 
     /*!
-     Get VSCP nide nickname from CAN id
+     Get VSCP nide nickname from CANAL id
       \param id CAN id
       \return VSCP node nickname
      */
-    uint16_t vscp_getVSCPnicknameFromCANid(const uint32_t id);
+    uint8_t vscp_getVSCPnicknameFromCANALid(uint32_t id);
 
     /*!
-      Get CAN id from VSCP info
+      Get CANAL id from VSCP info
       \param priority VSCP priority
       \param vscp_class VSCP class
       \param vscp_type VSCP type
       \return CAN id with nickname == 0
      */
-    uint32_t vscp_getCANidFromVSCPdata(const unsigned char priority,
+    uint32_t vscp_getCANALidFromVSCPdata(unsigned char priority,
             const uint16_t vscp_class,
             const uint16_t vscp_type);
 
     /*!
-      Get CAN id from VSCP event
+      Get CANAL id from VSCP event
       \param pEvent Pointer to VSCP event
       \return CAN id with nickname == 0
      */
-    uint32_t vscp_getCANidFromVSCPevent(const vscpEvent *pEvent);
+    uint32_t vscp_getCANALidFromVSCPevent(const vscpEvent *pEvent);
 
     /*!
       Get CAN id from VSCP event
       \param pEvent Pointer to VSCP event
       \return CAN id with nickname == 0
      */
-    uint32_t vscp_getCANidFromVSCPeventEx(const vscpEventEx *pEvent);
+    uint32_t vscp_getCANALidFromVSCPeventEx(const vscpEventEx *pEvent);
 
     /*!
       Calculate CRC for VSCP event
      */
-    unsigned short vscp_vscp_calc_crc(vscpEvent *pEvent, short bSet);
+    unsigned short vscp_calc_crc_Event(vscpEvent *pEvent, short bSet);
 
 
+    /*!
+      Calculate CRC for VSCP event
+     */
+    unsigned short vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet);
 
     // Helpers
 
@@ -685,8 +690,8 @@ extern "C" {
      */
  
     bool vscp_getVscpDataArrayFromString( uint8_t *pData, 
-										uint16_t *psizeData, 
-										const wxString& str);
+										    uint16_t *psizeData, 
+										    const wxString& str );
 									
 
     /*!

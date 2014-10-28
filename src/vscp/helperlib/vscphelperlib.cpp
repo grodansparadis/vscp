@@ -1501,27 +1501,6 @@ extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsi
 
 
 
-
-// * * * * *    D A T A C O D I N G   * * * * *
-
-#ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
-#else
-extern "C" unsigned char vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
-#endif
-{
-    return vscp_getMeasurementDataCoding( pEvent );
-}
-
-#ifdef WIN32
-extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pNorm, unsigned char length )
-#else
-extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pNorm, const unsigned char length )
-#endif
-{
-    return vscp_getDataCodingBitArray(pNorm, length);
-}
-
 // * * * * *    G E N E R A L   * * * * *
 
 
@@ -1537,254 +1516,29 @@ extern "C" unsigned long vscphlp_readStringValue( const char * pStrValue )
 #endif
 {
     wxString strVal;
-    strVal.FromAscii( pStrValue );
+    strVal = wxString::FromAscii( pStrValue );
 
     return vscp_readStringValue( strVal );
 }
 
 
-
-/*!
-    \fn unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
-    \brief Get VSCP priority.
-*/
 #ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent )
+extern "C" int WINAPI EXPORT vscphlp_replaceBackslash( char *pStr )
 #else
-extern "C" unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
+extern "C" int vscphlp_replaceBackslash( const char *pStr )
 #endif
 {
-    return vscp_getVscpPriority( pEvent );
-}
+    if ( NULL == pStr ) return VSCP_ERROR_ERROR;
 
-/*!
-    \fn void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
-    \brief Set VSCP priority.
-*/
-#ifdef WIN32
-extern "C" void WINAPI EXPORT vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
-#else
-extern "C" void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
-#endif
-{
-    vscp_setVscpPriority( pEvent, priority );
+    wxString wxstr = wxString::FromAscii( pStr );
+    wxstr = vscp_replaceBackslash( wxstr );
+    strcpy(pStr, wxstr.mbc_str() );
+    return VSCP_ERROR_SUCCESS;
 }
 
 
-/*!
-    \fn vscphlp_getVSCPheadFromCANid( const unsigned long id )
-    \brief Get the VSCP head from a CANAL message id (CAN id).
-*/
-#ifdef WIN32
-extern "C" unsigned char WINAPI EXPORT vscphlp_getVSCPheadFromCANid( const unsigned long id )
-#else
-extern "C" unsigned char vscphlp_getVSCPheadFromCANid( const unsigned long id )
-#endif
-{
-    return  vscp_getVSCPheadFromCANid( id );
-}
+// * * * * *  E V E N T - H E L P E R S * * * * *
 
-/*!
-    \fn vscphlp_getVSCPclassFromCANid( const unsigned long id )
-    \brief Get the VSCP class from a CANAL message id (CAN id).
-*/
-#ifdef WIN32
-extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPclassFromCANid( const unsigned long id )
-#else
-extern "C" unsigned short vscphlp_getVSCPclassFromCANid( const unsigned long id )
-#endif
-{
-    return vscp_getVSCPclassFromCANid( id );
-}
-
-
-/*!
-    \fn unsigned short vscphlp_getVSCPtypeFromCANid( const unsigned long id )
-    \brief Get the VSCP type from a a CANAL message id (CAN id).
-*/
-#ifdef WIN32
-extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPtypeFromCANid( const unsigned long id )
-#else
-extern "C" unsigned short vscphlp_getVSCPtypeFromCANid( const unsigned long id )
-#endif
-{
-    return vscp_getVSCPtypeFromCANid( id );
-}
-
-/*!
-    \fn unsigned short vscphlp_getVSCPnicknameFromCANid( const unsigned long id )
-    \brief Get the VSCP nickname from a a CANAL message id (CAN id).
-*/
-#ifdef WIN32
-extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPnicknameFromCANid( const unsigned long id )
-#else
-extern "C" unsigned short vscphlp_getVSCPnicknameFromCANid( const unsigned long id )
-#endif
-{
-    return vscp_getVSCPnicknameFromCANid( id );
-}
-
-/*!
-    \fn unsigned long vscphlp_getCANidFromVSCPdata( const unsigned char priority, 
-                                                    const unsigned short vscp_class, 
-                                                    const unsigned short vscp_type )
-    \brief Construct a CANAL id (CAN id ) from VSCP.
-*/
-#ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_getCANidFromVSCPdata( const unsigned char priority, 
-                                                                    const unsigned short vscp_class, 
-                                                                   const unsigned short vscp_type )
-#else
-extern "C" unsigned long vscphlp_getCANidFromVSCPdata( const unsigned char priority, 
-                                                                    const unsigned short vscp_class, 
-                                                                   const unsigned short vscp_type )
-#endif
-{
-    return  vscp_getCANidFromVSCPdata( priority, vscp_class, vscp_type );
-}
-
-/*!
-    \fn unsigned long vscphlp_getCANidFromVSCPevent( const vscpEvent *pEvent )
-    \brief Get CANAL id (CAN id) from VSCP event.
-*/
-#ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_getCANidFromVSCPevent( const vscpEvent *pEvent )
-#else
-extern "C" unsigned long vscphlp_getCANidFromVSCPevent( const vscpEvent *pEvent )
-#endif
-{
-    return vscp_getCANidFromVSCPevent( pEvent );
-}
-
-/*!
-    \fn unsigned short vscphlp_calcCRC( vscpEvent *pEvent, short bSet )
-    \brief Calculate VSCP crc.
-*/
-#ifdef WIN32
-extern "C" unsigned short WINAPI EXPORT vscphlp_calcCRC( vscpEvent *pEvent, short bSet )
-#else
-extern "C" unsigned short vscphlp_calcCRC( vscpEvent *pEvent, short bSet )
-#endif
-{
-    return vscp_vscp_calc_crc( pEvent, bSet );
-}
-
-
-/*!
-    \fn bool vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
-    \brief Write GUID into VSCP event from string.
-*/
-#ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
-#else
-extern "C" int vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
-#endif
-{
-    wxString strGUID = wxString::FromAscii( pGUID );
-    return  vscp_getGuidFromString( pEvent, strGUID );
-}
-
-/*!
-    \fn bool vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
-    \brief Write GUID from string into array.
-*/
-#ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
-#else
-extern "C" int vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
-#endif
-{
-    wxString strGUID = wxString::FromAscii( pStr );
-    return vscp_getGuidFromStringToArray( pGUID, strGUID );
-}
-
-/*!
-    \fn bool vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
-    \brief Write GUID froom VSCP event to string.
-*/
-#ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
-#else
-extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr )
-#endif
-{
-    bool rv;
-
-    wxString strGUID;
-    rv = vscp_writeGuidToString( pEvent, strGUID );
-    strcpy( pStr, strGUID.ToAscii() );
-    return rv;
-}
-
-
-/*!
-    \fn bool vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                            wxString& strGUID )
-    \brief Write GUID from VSCP event to string with four bytes on each
-    row seperated by \r\n. 
-*/
-#ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                                                char *strGUID )
-#else
-extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                                                char *strGUID )
-#endif
-{
-    wxString str = wxString::FromAscii( strGUID );
-    return vscp_writeGuidToString4Rows( pEvent, str );
-}
-
-/*!
-    \fn bool vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                            wxString& strGUID )
-    \brief Write GUID from byte array to string.
-*/
-#ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                                                char *strGUID, 
-                                                                int size )
-#else
-extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                                                char *strGUID, 
-                                                                int size )
-#endif
-{
-    wxString str;
-    bool rv = vscp_writeGuidArrayToString( pGUID, str );
-    strncpy( strGUID, str.mbc_str(), size );
-    
-    return rv;
-}
-
-/*!
-    \fn bool vscphlp_isGUIDEmpty( unsigned char *pGUID )
-    \brief Check if GUID is empty (all nills).
-*/
-#ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_isGUIDEmpty( unsigned char *pGUID )
-#else
-extern "C" int vscphlp_isGUIDEmpty( unsigned char *pGUID )
-#endif
-{
-    return vscp_isGUIDEmpty( pGUID );
-}
-
-/*!
-    \fn bool vscphlp_isSameGUID( const unsigned char *pGUID1, 
-                                const unsigned char *pGUID2 )
-    \brief Check if two GUID's is equal to each other.
-*/
-#ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_isSameGUID( const unsigned char *pGUID1, 
-                                                const unsigned char *pGUID2 )
-#else
-extern "C" int vscphlp_isSameGUID( const unsigned char *pGUID1, 
-                                                const unsigned char *pGUID2 )
-#endif
-{
-    return vscp_isSameGUID( pGUID1, pGUID2 );
-}
 
 /*!
     \fn bool vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx, 
@@ -1799,7 +1553,7 @@ extern "C" int vscphlp_convertVSCPtoEx( vscpEventEx *pEventEx,
                                                         const vscpEvent *pEvent )
 #endif
 {
-    return vscp_convertVSCPtoEx( pEventEx, pEvent );
+    return vscp_convertVSCPtoEx( pEventEx, pEvent ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -1815,7 +1569,7 @@ extern "C" int vscphlp_convertVSCPfromEx( vscpEvent *pEvent,
                                                         const vscpEventEx *pEventEx )
 #endif
 {
-    return vscp_convertVSCPfromEx( pEvent, pEventEx );
+    return vscp_convertVSCPfromEx( pEvent, pEventEx ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 
@@ -1845,6 +1599,415 @@ extern "C" void vscphlp_deleteVSCPeventEx( vscpEventEx *pEventEx )
     return vscp_deleteVSCPeventEx( pEventEx );
 }
 
+
+/*!
+    \fn unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
+    \brief Get VSCP priority.
+*/
+#ifdef WIN32
+extern "C" unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent )
+#else
+extern "C" unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent )
+#endif
+{
+    return vscp_getVscpPriority( pEvent );
+}
+
+#ifdef WIN32
+extern "C" unsigned char WINAPI EXPORT vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent )
+#else
+extern "C" unsigned char vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent )
+#endif
+{
+    return vscp_getVscpPriorityEx( pEvent );
+}
+
+
+/*!
+    \fn void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+    \brief Set VSCP priority.
+*/
+#ifdef WIN32
+extern "C" void WINAPI EXPORT vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+#else
+extern "C" void vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority )
+#endif
+{
+    vscp_setVscpPriority( pEvent, priority );
+}
+
+#ifdef WIN32
+extern "C" void WINAPI EXPORT vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority )
+#else
+extern "C" void vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority )
+#endif
+{
+    vscp_setVscpPriorityEx( pEvent, priority );
+}
+
+
+
+
+/*!
+    \fn vscphlp_getVSCPheadFromCANALid( const unsigned long id )
+    \brief Get the VSCP head from a CANAL message id (CANAL id).
+*/
+#ifdef WIN32
+extern "C" unsigned char WINAPI EXPORT vscphlp_getVSCPheadFromCANALid( const unsigned long id )
+#else
+extern "C" unsigned char vscphlp_getVSCPheadFromCANALid( const unsigned long id )
+#endif
+{
+    return  vscp_getVSCPheadFromCANALid( id );
+}
+
+/*!
+    \fn vscphlp_getVSCPclassFromCANALid( const unsigned long id )
+    \brief Get the VSCP class from a CANAL message id (CANAL id).
+*/
+#ifdef WIN32
+extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPclassFromCANALid( const unsigned long id )
+#else
+extern "C" unsigned short vscphlp_getVSCPclassFromCANALid( const unsigned long id )
+#endif
+{
+    return vscp_getVSCPclassFromCANALid( id );
+}
+
+
+/*!
+    \fn unsigned short vscphlp_getVSCPtypeFromCANALid( const unsigned long id )
+    \brief Get the VSCP type from a a CANAL message id (CANAL id).
+*/
+#ifdef WIN32
+extern "C" unsigned short WINAPI EXPORT vscphlp_getVSCPtypeFromCANALid( const unsigned long id )
+#else
+extern "C" unsigned short vscphlp_getVSCPtypeFromCANALid( const unsigned long id )
+#endif
+{
+    return vscp_getVSCPtypeFromCANALid( id );
+}
+
+/*!
+    \fn unsigned short vscphlp_getVSCPnicknameFromCANALid( const unsigned long id )
+    \brief Get the VSCP nickname from a a CANAL message id (CANAL id).
+*/
+#ifdef WIN32
+extern "C" unsigned char WINAPI EXPORT vscphlp_getVSCPnicknameFromCANALid( const unsigned long id )
+#else
+extern "C" unsigned char vscphlp_getVSCPnicknameFromCANALid( const unsigned long id )
+#endif
+{
+    return vscp_getVSCPnicknameFromCANALid( id );
+}
+
+/*!
+    \fn unsigned long vscphlp_getCANALidFromVSCPdata( const unsigned char priority, 
+                                                    const unsigned short vscp_class, 
+                                                    const unsigned short vscp_type )
+    \brief Construct a CANAL id (CANAL id ) from VSCP.
+*/
+#ifdef WIN32
+extern "C" unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPdata( const unsigned char priority, 
+                                                                        const unsigned short vscp_class, 
+                                                                        const unsigned short vscp_type )
+#else
+extern "C" unsigned long vscphlp_getCANALidFromVSCPdata( const unsigned char priority, 
+                                                                    const unsigned short vscp_class, 
+                                                                    const unsigned short vscp_type )
+#endif
+{
+    return  vscp_getCANALidFromVSCPdata( priority, vscp_class, vscp_type );
+}
+
+/*!
+    \fn unsigned long vscphlp_getCANALidFromVSCPevent( const vscpEvent *pEvent )
+    \brief Get CANAL id (CAN id) from VSCP event.
+*/
+#ifdef WIN32
+extern "C" unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPevent( const vscpEvent *pEvent )
+#else
+extern "C" unsigned long vscphlp_getCANALidFromVSCPevent( const vscpEvent *pEvent )
+#endif
+{
+    return vscp_getCANALidFromVSCPevent( pEvent );
+}
+
+
+/*!
+    \fn unsigned long vscphlp_getCANALidFromVSCPevent( const vscpEvent *pEvent )
+    \brief Get CANAL id (CAN id) from VSCP event.
+*/
+#ifdef WIN32
+extern "C" unsigned long WINAPI EXPORT vscphlp_getCANALidFromVSCPeventEx( const vscpEventEx *pEvent )
+#else
+extern "C" unsigned long vscphlp_getCANALidFromVSCPeventEx( const vscpEventEx *pEvent )
+#endif
+{
+    return vscp_getCANALidFromVSCPeventEx( pEvent );
+}
+
+/*!
+    \fn unsigned short vscphlp_calc_crc_Event( vscpEvent *pEvent, short bSet )
+    \brief Calculate VSCP crc.
+*/
+#ifdef WIN32
+extern "C" unsigned short WINAPI EXPORT vscphlp_calc_crc_Event( vscpEvent *pEvent, short bSet )
+#else
+extern "C" unsigned short vscphlp_calc_crc_Event( vscpEvent *pEvent, short bSet )
+#endif
+{
+    return vscp_calc_crc_Event( pEvent, bSet );
+}
+
+
+/*!
+    \fn unsigned short vscphlp_calc_crc_EventEx( vscpEvent *pEvent, short bSet )
+    \brief Calculate VSCP crc.
+*/
+#ifdef WIN32
+extern "C" unsigned short WINAPI EXPORT vscphlp_calc_crc_EventEx( vscpEventEx *pEvent, short bSet )
+#else
+extern "C" unsigned short vscphlp_calc_crc_EventEx( vscpEventEx *pEvent, short bSet )
+#endif
+{
+    return vscp_calc_crc_EventEx( pEvent, bSet );
+}
+
+
+
+// * * * * *   G U I D  H E L P E R S    * * * * *
+
+
+
+/*!
+        calcCRC4GUIDArray
+
+        \param Pointer to GUID array (MSB-LSB order)
+        \return crc for GUID.
+    */
+#ifdef WIN32
+extern "C" unsigned char WINAPI EXPORT vscphlp_calcCRC4GUIDArray( unsigned char *pguid )
+#else
+extern "C" unsigned char vscphlp_calcCRC4GUIDArray( unsigned char *pguid)
+#endif
+{
+    return vscp_calcCRC4GUIDArray( pguid );
+}
+
+
+/*!
+  calcCRC4GUIDString
+
+  \param Pointer to GUID array (MSB-LSB order)
+  \return crc for GUID.
+*/
+#ifdef WIN32
+extern "C" unsigned char WINAPI EXPORT vscphlp_calcCRC4GUIDString(const char *strguid)
+#else
+extern "C" unsigned char vscphlp_calcCRC4GUIDString(const char *strguid)
+#endif
+{
+    wxString wxstr = wxString::FromAscii(strguid);
+    return vscp_calcCRC4GUIDString(strguid);
+}
+
+
+/*!
+    \fn bool vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+    \brief Write GUID into VSCP event from string.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+#else
+extern "C" int vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID )
+#endif
+{
+    wxString strGUID = wxString::FromAscii( pGUID );
+    return  vscp_getGuidFromString( pEvent, strGUID ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+/*!
+    \fn bool vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pGUID )
+    \brief Write GUID into VSCP event from string.
+*/
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pGUID )
+#else
+extern "C" int vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pGUID )
+#endif
+{
+    wxString strGUID = wxString::FromAscii( pGUID );
+    return  vscp_getGuidFromStringEx( pEvent, strGUID ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+/*!
+    \fn bool vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+    \brief Write GUID from string into array.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+#else
+extern "C" int vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr )
+#endif
+{
+    wxString strGUID = wxString::FromAscii( pStr );
+    return vscp_getGuidFromStringToArray( pGUID, strGUID ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+/*!
+    \fn bool vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, int size )
+    \brief Write GUID froom VSCP event to string.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr, int size )
+#else
+extern "C" int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, int size )
+#endif
+{
+    bool rv;
+
+    wxString strGUID;
+    rv = vscp_writeGuidToString( pEvent, strGUID );
+    strncpy( pStr, strGUID.mbc_str(), size );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+/*!
+    \fn bool vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pStr )
+    \brief Write GUID froom VSCP event to string.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char *pStr, int size )
+#else
+extern "C" int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pStr, int size )
+#endif
+{
+    bool rv;
+
+    wxString strGUID;
+    rv = vscp_writeGuidToStringEx( pEvent, strGUID );
+    strncpy( pStr, strGUID.mbc_str(), size );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+/*!
+    \fn bool vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                            wxString& strGUID )
+    \brief Write GUID from VSCP event to string with four bytes on each
+    row seperated by \r\n. 
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                                                char *strGUID, 
+                                                                int size )
+#else
+extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
+                                                                char *strGUID
+                                                                int size )
+#endif
+{
+    wxString str = wxString::FromAscii( strGUID );
+    return vscp_writeGuidToString4Rows( pEvent, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+/*!
+    \fn bool vscphlp_writeGuidToString4RowsEx( const vscpEvent *pEvent, 
+                                            wxString& strGUID )
+    \brief Write GUID from VSCP event to string with four bytes on each
+    row seperated by \r\n. 
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent, 
+                                                                char *strGUID,
+                                                                int size )
+#else
+extern "C" int vscphlp_writeGuidToString4RowsEx( const vscpEventEx *pEvent, 
+                                                                char *strGUID,
+                                                                int size )
+#endif
+{
+    wxString str = wxString::FromAscii( strGUID );
+    return vscp_writeGuidToString4RowsEx( pEvent, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+/*!
+    \fn bool vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
+                                            wxString& strGUID,
+                                            int size )
+    \brief Write GUID from byte array to string.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char *pGUID, 
+                                                                char *strGUID, 
+                                                                int size )
+#else
+extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
+                                                                char *strGUID, 
+                                                                int size )
+#endif
+{
+    wxString str;
+    bool rv = vscp_writeGuidArrayToString( pGUID, str );
+    strncpy( strGUID, str.mbc_str(), size );
+    
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+
+/*!
+    \fn bool vscphlp_isGUIDEmpty( unsigned char *pGUID )
+    \brief Check if GUID is empty (all nills).
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_isGUIDEmpty( unsigned char *pGUID )
+#else
+extern "C" int vscphlp_isGUIDEmpty( unsigned char *pGUID )
+#endif
+{
+    return vscp_isGUIDEmpty( pGUID ) ? 1 : 0;
+}
+
+/*!
+    \fn bool vscphlp_isSameGUID( const unsigned char *pGUID1, 
+                                const unsigned char *pGUID2 )
+    \brief Check if two GUID's is equal to each other.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_isSameGUID( const unsigned char *pGUID1, 
+                                                const unsigned char *pGUID2 )
+#else
+extern "C" int vscphlp_isSameGUID( const unsigned char *pGUID1, 
+                                                const unsigned char *pGUID2 )
+#endif
+{
+    return vscp_isSameGUID( pGUID1, pGUID2 ) ? 1 : 0;
+}
+
+
+/*!
+    \fn bool vscphlp_reverseGUID(unsigned char *pGUID)
+    \brief Reverse a GUID
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_reverseGUID(unsigned char *pGUID)
+#else
+extern "C" int vscphlp_reverseGUID(unsigned char *pGUID)
+#endif
+{
+    return vscp_reverseGUID(pGUID) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+
+
+// * * * * *   F I L T E R  * * * * *
+
+
 /*!
     \fn void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
     \brief Clear VSCP filter.
@@ -1867,13 +2030,13 @@ extern "C" void vscphlp_clearVSCPFilter( vscpEventFilter *pFilter )
 	\return true on success, fals eon failure.
 */
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char * strFilter )
+extern "C" int WINAPI EXPORT vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char *strFilter )
 #else
 extern "C" int vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char * strFilter )
 #endif
 {
     wxString str = wxString::FromAscii( strFilter );
-	return vscp_readFilterFromString( pFilter, str );
+	return vscp_readFilterFromString( pFilter, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -1891,7 +2054,7 @@ extern "C" int vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char 
 #endif
 {
     wxString str = wxString::FromAscii( strMask );
-	return vscp_readMaskFromString( pFilter, str );
+	return vscp_readMaskFromString( pFilter, str ) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
 
 /*!
@@ -1955,6 +2118,23 @@ extern "C" int vscphlp_convertEventToCanal( canalMsg *pcanalMsg,
 
 
 /*!
+    \fn bool vscphlp_convertEventToCanalEx( canalMsg *pcanalMsg,
+                                        const vscpEventEx *pvscpEvent )
+    \brief Convert VSCP event to CANAL message.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertEventToCanalEx( canalMsg *pcanalMsg,
+                                                            const vscpEventEx *pvscpEvent )
+#else
+extern "C" int vscphlp_convertEventToCanalEx( canalMsg *pcanalMsg,
+                                                            const vscpEventEx *pvscpEvent )
+#endif
+{
+    return  vscp_convertEventExToCanal( pcanalMsg, pvscpEvent );
+}
+
+
+/*!
     \fn bool vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
                                             const vscpEventEx *pvscpEventEx )
     \brief Convert VSCP event ex. to CANAL message.
@@ -1970,14 +2150,15 @@ extern "C" int vscphlp_convertEventExToCanal( canalMsg *pcanalMsg,
     return  vscp_convertEventExToCanal( pcanalMsg, pvscpEventEx );
 }
 
+
 /*!
-    \fn unsigned long vscphlp_getTimeStamp( void )
+    \fn unsigned long vscphlp_makeTimeStamp( void )
     \brief Get VSCP timestamp.
 */
 #ifdef WIN32
-extern "C" unsigned long WINAPI EXPORT vscphlp_getTimeStamp( void )
+extern "C" unsigned long WINAPI EXPORT vscphlp_makeTimeStamp( void )
 #else
-extern "C" unsigned long vscphlp_getTimeStamp( void )
+extern "C" unsigned long vscphlp_makeTimeStamp( void )
 #endif
 {
     return vscp_makeTimeStamp();
@@ -2023,6 +2204,41 @@ extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
 
 
 /*!
+    \fn bool vscphlp_writeVscpDataWithSizeToString(const unsigned short sizeData,
+										                            const unsigned char *pData,
+										                            char *pStr,
+										                            int bUseHtmlBreak,
+                                                                    int bBreak )
+    \brief Write VSCP data in readable form to a (multiline) string.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeVscpDataWithSizeToString(const unsigned short sizeData,
+										                            const unsigned char *pData,
+										                            char *pStr,
+                                                                    int size,
+										                            int bUseHtmlBreak,
+                                                                    int bBreak )
+#else
+extern "C" int vscphlp_writeVscpDataToString( const unsigned short sizeData,
+										                            const unsigned char *pData,
+										                            char *pStr,
+                                                                    int size,
+										                            int bUseHtmlBreak,
+                                                                    int bBreak )
+#endif
+{
+    wxString wxstr;
+    bool rv = vscp_writeVscpDataWithSizeToString( sizeData,
+										            pData,
+										            wxstr,
+										            bUseHtmlBreak ? true : false,
+                                                    bBreak ? true : false );
+    strncpy( pStr, wxstr.mbc_str(), size );
+    return rv;
+}
+
+
+/*!
     \fn bool vscphlp_getVscpDataFromString( vscpEvent *pEvent, 
                                             const wxString& str )
     \brief Set data in VSCP event from a string.
@@ -2038,6 +2254,28 @@ extern "C" int vscphlp_getVscpDataFromString( vscpEvent *pEvent,
     wxString wxstr = wxString::FromAscii( pstr );
     return vscp_getVscpDataFromString( pEvent, wxstr );
 }
+
+
+/*!
+    \fn bool vscphlp_getVscpDataAttayFromString( vscpEvent *pEvent,
+                                                     unsigned short *psizeData,
+                                                     const char *pstr )
+    \brief Set data in VSCP event from a string.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getVscpDataArrayFromString( unsigned char *pData,
+                                                                    unsigned short *psizeData,
+                                                                    const char *pstr )
+#else
+extern "C" int vscphlp_getVscpDataArrayFromString( vscpEvent *pEvent,
+                                                      unsigned short *psizeData,
+                                                      const char *pstr )
+#endif
+{
+    wxString wxstr = wxString::FromAscii( pstr );
+    return vscp_getVscpDataArrayFromString( pData, psizeData, wxstr );
+}
+
 
 /*!
     \fn bool vscphlp_writeVscpEventToString( vscpEvent *pEvent, 
@@ -2061,6 +2299,30 @@ extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent,
     return rv;
 }
 
+
+/*!
+    \fn bool vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, 
+                                                char *p )
+    \brief Write VSCP data to a string.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, 
+                                                                 char *p )
+#else
+extern "C" int vscphlp_writeVscpEventExToString( vscpEvent *pEvent, 
+                                                  char *p )
+#endif
+{
+    bool rv;
+
+    wxString str = wxString::FromAscii( p );
+    if ( ( rv =  vscp_writeVscpEventExToString( pEvent, str ) ) ) {
+        strcpy( p, str.ToAscii() );
+    }
+    return rv;
+}
+
+
 /*!
     \fn bool vscphlp_getVscpEventFromString( vscpEvent *pEvent, 
                                             const char *p )
@@ -2076,6 +2338,334 @@ extern "C" int vscphlp_getVscpEventFromString( vscpEvent *pEvent,
 {
     wxString str = wxString::FromAscii( p );
     return vscp_getVscpEventFromString( pEvent, str ); 
+}
+
+
+/*!
+    \fn bool vscphlp_getVscpEventExFromString( vscpEventEx *pEvent, 
+                                            const char *p )
+    \brief Get VSCP event from string.
+*/
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getVscpEventExFromString( vscpEventEx *pEvent, 
+                                                                  const char *p )
+#else
+extern "C" int vscphlp_getVscpEventExFromString( vscpEventEx *pEvent, 
+                                                                const char *p )
+#endif
+{
+    wxString str = wxString::FromAscii( p );
+    return vscp_getVscpEventExFromString( pEvent, str ); 
+}
+
+
+// * * * * *    D A T A C O D I N G   * * * * *
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" unsigned char WINAPI EXPORT vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
+#else
+extern "C" unsigned char vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
+#endif
+{
+    return vscp_getMeasurementDataCoding( pEvent );
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pNorm, unsigned char length )
+#else
+extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pNorm, const unsigned char length )
+#endif
+{
+    return vscp_getDataCodingBitArray(pNorm, length);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pNorm, 
+                                                                                     unsigned char length )
+#else
+extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pNorm, 
+                                                                       unsigned char length )
+#endif
+{
+    return vscp_getDataCodingNormalizedInteger(pNorm,length );
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getDataCodingString(const unsigned char *pData,
+                                                              unsigned char dataLength, 
+                                                              char *strResult,
+                                                              int size )
+#else
+extern "C" int vscphlp_getDataCodingString(const unsigned char *pData,
+                                                              unsigned char dataLength, 
+                                                              char *strResult,
+                                                              int size )
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pData ) return VSCP_ERROR_ERROR;
+    if ( NULL == strResult ) return VSCP_ERROR_ERROR;
+
+    bool rv =  vscp_getDataCodingString(pData,
+                                        dataLength, 
+                                        wxstr );
+    strncpy( strResult, wxstr.mbc_str(), size );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementAsString( const vscpEvent *pEvent, 
+                                                                    char *pResult, 
+                                                                    int size )
+#else
+extern "C" int vscphlp_getVSCPMeasurementAsString(const vscpEvent *pEvent, 
+                                                                    char *pResult, 
+                                                                    int size)
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
+
+    bool rv =  vscp_getVSCPMeasurementAsString( pEvent, wxstr );
+    strncpy( pResult, wxstr.mbc_str(), size );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
+#else
+extern "C" int vscphlp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
+
+    return  vscp_getVSCPMeasurementAsDouble(pEvent, pvalue) ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, 
+                                                                            char *pStrResult, 
+                                                                            int size )
+#else
+extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, 
+                                                                            char *pStrResult, 
+                                                                            int size )
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
+
+    bool rv = vscp_getVSCPMeasurementFloat64AsString( pEvent, wxstr);
+    strncpy( pStrResult, wxstr.mbc_str(), size );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
+                                                                            unsigned short *psize,
+                                                                            double value,                                                
+                                                                            unsigned char unit,
+                                                                            unsigned char sensoridx )
+#else
+extern "C" int vscphlp_convertFloatToNormalizedEventData( unsigned char *pdata,
+                                                              unsigned short *psize,
+                                                              double value,                                                
+                                                              unsigned char unit,
+                                                              unsigned char sensoridx )
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pdata ) return VSCP_ERROR_ERROR;
+
+    bool rv = vscp_convertFloatToNormalizedEventData( pdata,
+                                                        psize,
+                                                        value,                                                
+                                                        unit,
+                                                        sensoridx );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
+                                                                        unsigned short *psize, 
+                                                                        float value,
+                                                                        unsigned char unit,
+                                                                        unsigned char sensoridx )
+#else
+extern "C" int vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
+                                                                        unsigned short *psize, 
+                                                                        float value,
+                                                                        unsigned char unit,
+                                                                        unsigned char sensoridx )
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pdata ) return VSCP_ERROR_ERROR;
+
+    bool rv = vscp_convertFloatToFloatEventData( pdata,
+                                                    psize, 
+                                                    value,
+                                                    unit,
+                                                    sensoridx );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_convertIntegerToNormalizedEventData( unsigned char *pdata,
+                                                                            unsigned short *psize,
+                                                                            unsigned long long val64,
+                                                                            unsigned char unit,
+                                                                            unsigned char sensoridx )
+#else
+extern "C" int vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
+                                                         unsigned short *psize,
+                                                         unsigned long long val64,
+                                                         unsigned char unit,
+                                                         unsigned char sensoridx )
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pdata ) return VSCP_ERROR_ERROR;
+    if ( NULL == psize ) return VSCP_ERROR_ERROR;
+
+    bool rv = vscp_convertIntegerToNormalizedEventData( pdata,
+                                                            psize,
+                                                            val64,
+                                                            unit,
+                                                            sensoridx );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent, 
+                                                                    float value,
+                                                                    unsigned char unit,
+                                                                    unsigned char sensoridx )
+#else
+extern "C" int vscphlp_makeFloatMeasurementEvent( vscpEvent *pEvent, 
+                                                      float value,
+                                                      unsigned char unit,
+                                                      unsigned char sensoridx )
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
+
+    bool rv = vscp_makeFloatMeasurementEvent( pEvent, 
+                                                 value,
+                                                 unit,
+                                                 sensoridx );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, char *pStr, int size )
+#else
+extern "C" int vscphlp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, char *pStr, int size)
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
+    int rv = vscp_getVSCPMeasurementZoneAsString(pEvent, wxstr) ;
+    strncpy( pStr, wxstr.mbc_str(), size );
+    return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT vscphlp_getMeasurementAsFloat(const unsigned char *pNorm, 
+                                                                unsigned char length,
+                                                                float *pResult )
+#else
+extern "C" int vscphlp_getMeasurementAsFloat(const unsigned char *pNorm, 
+                                                                unsigned char length,
+                                                                float *pResult )
+#endif
+{
+    wxString wxstr;
+
+    if ( NULL == pNorm ) return VSCP_ERROR_ERROR;
+    if ( NULL == pResult ) return VSCP_ERROR_ERROR;
+
+    *pResult = vscp_getMeasurementAsFloat(pNorm, length );
+    return VSCP_ERROR_SUCCESS;
 }
 
 

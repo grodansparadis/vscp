@@ -317,26 +317,23 @@ wxString& getDataCodingString(const unsigned char *pString,
 //
 
 
-wxString& vscp_getDataCodingString(const unsigned char *pString,
-                                        unsigned char length)							
-{
-	static wxString str;
-	
+bool vscp_getDataCodingString(const unsigned char *pData,
+                                        unsigned char dataSize, 
+                                        wxString& strResult )							
+{	
 	char buf[ 8 ];
 
+    if ( NULL != pData ) return false;
 
-	str.Empty();
-
-
-	if (NULL != pString) {
+	strResult.Empty();
+	if (NULL != pData) {
 		memset(buf, 0, sizeof( buf));
-		memcpy(buf, pString, length - 1);
+		memcpy(buf, pData, dataSize - 1);
 	
-		str = wxString::FromUTF8(buf);
-		
+		strResult = wxString::FromUTF8(buf);	
 	}
 
-	return str;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1061,6 +1058,16 @@ bool vscp_makeFloatMeasurementEvent( vscpEvent *pEvent,
 }
 
 //////////////////////////////////////////////////////////////////////////////
+// vscp_getVSCPMeasurementZoneAsString
+//
+
+bool vscp_getVSCPMeasurementZoneAsString(const vscpEvent *pEvent, wxString& str)
+{
+    return false;   // TODO
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
 // replaceBackslash
 //
 
@@ -1108,7 +1115,7 @@ unsigned char vscp_getVscpPriority(const vscpEvent *pEvent)
 	// Must be a valid message pointer
 	if (NULL == pEvent) return 0;
 
-	return( (unsigned char) (pEvent->head >> 5));
+	return (( pEvent->head >> 5 ) & 0x07);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1119,7 +1126,7 @@ unsigned char vscp_getVscpPriorityEx(const vscpEventEx *pEvent)
 	// Must be a valid message pointer
 	if (NULL == pEvent) return 0;
 
-	return( (unsigned char) (pEvent->head >> 5));
+	return (( pEvent->head >> 5 ) & 0x07);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1130,9 +1137,8 @@ void vscp_setVscpPriority(vscpEvent *pEvent, unsigned char priority)
 	// Must be a valid message pointer
 	if (NULL == pEvent) return;
 
-	if (priority > 7) return;
-
-	pEvent->head = ((unsigned char) (priority << 5));
+    pEvent->head &= ~VSCP_HEADER_PRIORITY_MASK;
+	pEvent->head |= ( priority<<5);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1143,54 +1149,56 @@ void vscp_setVscpPriorityEx(vscpEventEx *pEvent, unsigned char priority)
 	// Must be a valid message pointer
 	if (NULL == pEvent) return;
 
-	if (priority > 7) return;
-
-	pEvent->head = ((unsigned char) (priority << 5));
+	pEvent->head &= ~VSCP_HEADER_PRIORITY_MASK;
+	pEvent->head |= (priority<<5);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPheadFromCANid
+// getVSCPheadFromCANALid
 //
 
-unsigned char vscp_getVSCPheadFromCANid(const uint32_t id)
+unsigned char vscp_getVSCPheadFromCANALid(uint32_t id)
 {
-	return(unsigned char) (0xf0 & (id >> 21)); // Shift 26-5  1110 0000
+    uint8_t hardcoded = 0;
+    uint8_t priority = (0x07 & (id >> 26));
+    if ( id & (1<<25) ) hardcoded = VSCP_HEADER_HARD_CODED;
+	return ( (priority<<5) | hardcoded );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPclassFromCANid
+// getVSCPclassFromCANALid
 //
 
-uint16_t vscp_getVSCPclassFromCANid(const uint32_t id)
+uint16_t vscp_getVSCPclassFromCANALid(uint32_t id)
 {
 	return(uint16_t) (0x1ff & (id >> 16));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPtypeFromCANid
+// getVSCPtypeFromCANALid
 //
 
-uint16_t vscp_getVSCPtypeFromCANid(const uint32_t id)
+uint16_t vscp_getVSCPtypeFromCANALid(uint32_t id)
 {
 	return(uint16_t) (0xff & (id >> 8));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getVSCPnicknameFromCANid
+// getVSCPnicknameFromCANALid
 //
 
-uint16_t vscp_getVSCPnicknameFromCANid(const uint32_t id)
+uint8_t vscp_getVSCPnicknameFromCANALid(uint32_t id)
 {
 	return( id & 0xff);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getCANidFromVSCPdata
+// getCANALidFromVSCPdata
 //
 
-uint32_t vscp_getCANidFromVSCPdata(const unsigned char priority, 
-		const uint16_t vscp_class, 
-		const uint16_t vscp_type)
+uint32_t vscp_getCANALidFromVSCPdata(unsigned char priority, 
+		                            const uint16_t vscp_class, 
+		                            const uint16_t vscp_type)
 {
 	//unsigned long t1 = (unsigned long)priority << 20;
 	//unsigned long t2 = (unsigned long)pvscpMsg->vscp_class << 16;
@@ -1202,10 +1210,10 @@ uint32_t vscp_getCANidFromVSCPdata(const unsigned char priority,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getCANidFromVSCPevent
+// getCANCANALidFromVSCPevent
 //
 
-uint32_t vscp_getCANidFromVSCPevent(const vscpEvent *pEvent)
+uint32_t vscp_getCANALidFromVSCPevent(const vscpEvent *pEvent)
 {
 	return( ((unsigned long) vscp_getVscpPriority(pEvent) << 26) |
 			((unsigned long) pEvent->vscp_class << 16) |
@@ -1214,10 +1222,10 @@ uint32_t vscp_getCANidFromVSCPevent(const vscpEvent *pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// getCANidFromVSCPeventEx
+// getCANCANALidFromVSCPeventEx
 //
 
-uint32_t vscp_getCANidFromVSCPeventEx(const vscpEventEx *pEvent)
+uint32_t vscp_getCANALidFromVSCPeventEx(const vscpEventEx *pEvent)
 {
 	return( ((unsigned long) vscp_getVscpPriorityEx(pEvent) << 26) |
 			((unsigned long) pEvent->vscp_class << 16) |
@@ -1226,13 +1234,13 @@ uint32_t vscp_getCANidFromVSCPeventEx(const vscpEventEx *pEvent)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// vscp_calc_crc
+// vscp_calc_crc_Event
 //
 // Calculate CRC for Level 2 package. If bSet is true also write the
 // crc into the packet.
 //
 
-unsigned short vscp_vscp_calc_crc(vscpEvent *pEvent, short bSet)
+unsigned short vscp_calc_crc_Event(vscpEvent *pEvent, short bSet)
 {
 	unsigned short crc = 0;
 	unsigned char *p;
@@ -1262,6 +1270,59 @@ unsigned short vscp_vscp_calc_crc(vscpEvent *pEvent, short bSet)
 		p += 16;
 
 		memcpy(p, pEvent->pdata, pEvent->sizeData);
+		p += pEvent->sizeData;
+
+		memcpy(p, (unsigned char *) &pEvent->sizeData, 2);
+		p += 2;
+
+		crc = crcFast(pbuf, sizeof( pbuf));
+
+		if (bSet) pEvent->crc = crc;
+
+		free(pbuf);
+	}
+
+	return crc;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscp_calc_crc_EventEx
+//
+// Calculate CRC for Level 2 package. If bSet is true also write the
+// crc into the packet.
+//
+
+unsigned short vscp_calc_crc_EventEx(vscpEventEx *pEvent, short bSet)
+{
+	unsigned short crc = 0;
+	unsigned char *p;
+	unsigned char *pbuf;
+
+	// Must be a valid message pointer
+	if (NULL == pEvent) return 0;
+
+	crcInit();
+
+	pbuf = (unsigned char *) malloc(23 + pEvent->sizeData);
+
+	if (NULL != pbuf) {
+
+		p = pbuf;
+
+		memcpy(p, (unsigned char *) &pEvent->head, 1);
+		p++;
+
+		memcpy(p, (unsigned char *) &pEvent->vscp_class, 2);
+		p += 2;
+
+		memcpy(p, (unsigned char *) &pEvent->vscp_type, 2);
+		p += 2;
+
+		memcpy(p, (unsigned char *) &pEvent->GUID, 16);
+		p += 16;
+
+		memcpy(p, pEvent->data, pEvent->sizeData);
 		p += pEvent->sizeData;
 
 		memcpy(p, (unsigned char *) &pEvent->sizeData, 2);
@@ -1900,10 +1961,10 @@ bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
 	}
 
 	// Build ID
-	pvscpEvent->head = vscp_getVSCPheadFromCANid(pcanalMsg->id);
+	pvscpEvent->head = vscp_getVSCPheadFromCANALid(pcanalMsg->id);
 	if (pcanalMsg->id & 0x02000000) pvscpEvent->head |= VSCP_HEADER_HARD_CODED;
-	pvscpEvent->vscp_class = vscp_getVSCPclassFromCANid(pcanalMsg->id);
-	pvscpEvent->vscp_type = vscp_getVSCPtypeFromCANid(pcanalMsg->id);
+	pvscpEvent->vscp_class = vscp_getVSCPclassFromCANALid(pcanalMsg->id);
+	pvscpEvent->vscp_type = vscp_getVSCPtypeFromCANALid(pcanalMsg->id);
 
 	// Timestamp
 	pvscpEvent->timestamp = pcanalMsg->timestamp;
@@ -2926,8 +2987,11 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		case 0x40: // string format
 		{
 			str += _("[string] = ");
-			str += vscp_getDataCodingString(pEvent->pdata+offset, 
-										pEvent->sizeData-offset);
+            wxString wxstr;
+			vscp_getDataCodingString(pEvent->pdata+offset, 
+										pEvent->sizeData-offset,
+                                        wxstr );
+            str += wxstr;
 		}
 			break;
 		case 0x60: // int format

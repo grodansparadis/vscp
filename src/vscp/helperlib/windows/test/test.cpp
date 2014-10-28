@@ -12,7 +12,10 @@
 //#define TEST_RECEIVE_LOOP 
 
 // Uncomment to test variable handling
-#define TEST_VARIABLE_HANDLING 
+//#define TEST_VARIABLE_HANDLING 
+
+// Uncomment to test helpers
+#define TEST_HELPERS
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -923,6 +926,311 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // ------------------------------------------------------------------------
 
+
+
+#ifdef TEST_HELPERS
+
+    printf("\n\n");
+    printf("\n\nTesting helpers\n");
+    printf("===============\n");
+
+
+    pEvent = new vscpEvent;
+    pEvent->head = 0;
+    pEvent->vscp_class = 10;
+    pEvent->vscp_type = 6;
+    pEvent->obid = 0;
+    pEvent->timestamp = 0;
+    memset( pEvent->GUID, 0, 16 );
+    pEvent->sizeData = 3;
+    pEvent->pdata = new unsigned char[3];
+    pEvent->pdata[ 0 ] = 138;
+    pEvent->pdata[ 1 ] = 0;
+    pEvent->pdata[ 2 ] = 30;
+
+    vscpEventEx ex3;
+    ex3.head = 0;
+    ex3.vscp_class = 10;
+    ex3.vscp_type = 6;
+    ex3.obid = 0;
+    ex3.timestamp = 0;
+    memset( ex3.GUID, 0, 16 );
+    ex3.sizeData = 3;
+    ex3.data[ 0 ] = 138;
+    ex3.data[ 1 ] = 0;
+    ex3.data[ 2 ] = 30;
+ 
+    long readValue = vscphlp_readStringValue("0x22");
+    if ( 0x22 == readValue ) {
+        printf("readStringValue correct = %d\n", readValue );
+    }
+    else {
+        printf("\aError:  readStringValue = %d\n", readValue );
+    }
+
+
+    readValue = vscphlp_readStringValue("-00000000099");
+    if ( -99 == readValue ) {
+        printf("readStringValue correct = %d\n", readValue );
+    }
+    else {
+        printf("\aError:  readStringValue = %d\n", readValue );
+    }
+    
+    
+    
+    unsigned char dataCoding = vscphlp_getMeasurementDataCoding( pEvent );
+    if ( 138 == dataCoding  ) {
+        printf("Data Coding = %d\n", dataCoding );
+    }
+    else {
+        printf("\aError: Data Coding = %d\n", dataCoding );
+    }
+
+
+    unsigned char eventPriority;
+    if ( 0 == ( eventPriority = vscphlp_getVscpPriority( pEvent ) ) ) {
+        printf("Event priority = %d\n", eventPriority );
+    }
+    else {
+        printf("\aError: Event priority = %d\n", eventPriority );
+    }
+
+
+    if ( 0 == ( eventPriority = vscphlp_getVscpPriorityEx( &ex3 ) ) ) {
+        printf("EventEx priority = %d\n", eventPriority );
+    }
+    else {
+        printf("\aError: Get EventEx priority = %d\n", eventPriority );
+    }
+
+
+    vscphlp_setVscpPriority( pEvent, 3 );
+    if ( 3 == ( eventPriority = vscphlp_getVscpPriority( pEvent ) ) ) {
+        printf("Event priority = %d\n", eventPriority );
+    }
+    else {
+        printf("\aError: vscphlp_setVscpPriority = %d\n", eventPriority );
+    }
+
+
+    vscphlp_setVscpPriorityEx( &ex3, 7 );
+    if ( 7 == ( eventPriority = vscphlp_getVscpPriorityEx( &ex3 ) ) ) {
+        printf("Event priority = %d\n", eventPriority );
+    }
+    else {
+        printf("\aError: vscphlp_setVscpPriorityEx = %d\n", eventPriority );
+    }
+
+    unsigned char vscphead;
+    unsigned long canalid = 0x0c0a0601;
+    vscphead = vscphlp_getVSCPheadFromCANALid( canalid );
+    if ( 96 == vscphead ) {
+        printf("VSCP head = %d\n", vscphead );
+    }
+    else {
+        printf("\aError: vscphlp_getVSCPheadFromCANALid = %d\n", vscphead );
+    }
+
+
+    unsigned short canal_vscpclass = vscphlp_getVSCPclassFromCANALid( canalid );
+    if ( 10 == canal_vscpclass ) {
+        printf("VSCP Class = %d\n", canal_vscpclass );
+    }
+    else {
+        printf("\aError: vscphlp_getVSCPclassFromCANALid = %d\n", canal_vscpclass );
+    }
+
+
+    unsigned short canal_vscptype = vscphlp_getVSCPtypeFromCANALid( canalid );
+    if ( 6 == canal_vscptype ) {
+        printf("VSCP Type = %d\n", canal_vscptype );
+    }
+    else {
+        printf("\aError: vscphlp_getVSCPtypeFromCANALid = %d\n", canal_vscptype );
+    }
+
+    unsigned char canal_nickname = vscphlp_getVSCPnicknameFromCANALid( canalid );
+    if ( 1 == canal_nickname ) {
+        printf("Nickname = %d\n", canal_nickname );
+    }
+    else {
+        printf("\aError: vscphlp_getVSCPnicknameFromCANALid = %d\n", canal_nickname );
+    }
+
+    unsigned long constr_canal_id2 = vscphlp_getCANALidFromVSCPdata( 3, 10, 6 ); 
+    if ( 0x0c0a0600 == constr_canal_id2 ) {
+        printf("Nickname = %08X\n", constr_canal_id2 );
+    }
+    else {
+        printf("\aError: vscphlp_getVSCPnicknameFromCANALid = %08X\n", constr_canal_id2 );
+    }
+
+    constr_canal_id2 = vscphlp_getCANALidFromVSCPevent( pEvent ); 
+    if ( 0x0c0a0600 == constr_canal_id2 ) {
+        printf("Nickname = %08X\n", constr_canal_id2 );
+    }
+    else {
+        printf("\aError: vscphlp_getCANALidFromVSCPevent = %08X\n", constr_canal_id2 );
+    }  
+
+    constr_canal_id2 = vscphlp_getCANALidFromVSCPeventEx( &ex3 ); 
+    if ( 0x1c0a0600 == constr_canal_id2 ) {
+        printf("Nickname = %08X\n", constr_canal_id2 );
+    }
+    else {
+        printf("\aError: vscphlp_getCANALidFromVSCPeventEx = %08X\n", constr_canal_id2 );
+    } 
+
+
+    // Calculate CRC for event
+    unsigned short crc = vscphlp_calc_crc_Event( pEvent, false );
+    printf("CRC = %04X\n", crc );
+
+    // Calculate CRC for event
+    crc = vscphlp_calc_crc_EventEx( pEvent, false );
+    printf("CRC = %04X\n", crc );
+
+    // Calculate CRC for GID array
+    unsigned char GUID2[16];
+    memset( GUID2, 0, 16 );
+    for ( int i=0;i<16; i++ ) {
+        GUID2[i] = i;
+    }
+    unsigned char crc8 = vscphlp_calcCRC4GUIDArray( GUID2 );
+    printf("CRC = %02X\n", crc8 );
+
+    // Calculate GUID for GUID string
+    char strguid[64], strguid2[64];
+    strcpy( strguid, "FF:FF:FF:FF:FF:FF:FF:00:00:00:00:7F:00:01:01:FD" );
+    crc8 = vscphlp_calcCRC4GUIDString( strguid);
+    printf("CRC = %02X\n", crc8 );
+
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getGuidFromString( pEvent, strguid ) ) {
+        vscphlp_writeGuidToString( pEvent, strguid2, sizeof( strguid2 )-1 );
+        printf( "GUID=%s\n", strguid2 );
+    }
+    else {
+        printf( "\aError: vscphlp_writeGuidArrayToString\n");
+    }
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getGuidFromStringEx( &ex3, strguid ) ) {
+        vscphlp_writeGuidToStringEx( &ex3, strguid2, sizeof( strguid2 )-1 );
+        printf( "GUID=%s\n", strguid2 );
+    }
+    else {
+        printf( "\aError: vscphlp_writeGuidArrayToString\n");
+    }
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_writeGuidToString4Rows( pEvent, strguid2, sizeof( strguid2 )-1 ) ) {
+        printf( "GUID\n%s\n", strguid2 );
+    }
+    else {
+        printf( "\aError: vscphlp_writeGuidArrayToString\n");
+    }
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_writeGuidToString4RowsEx( &ex3, strguid2, sizeof( strguid2 )-1 ) ) {
+        printf( "GUID\n%s\n", strguid2 );
+    }
+    else {
+        printf( "\aError: vscphlp_writeGuidArrayToString\n");
+    }
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_writeGuidArrayToString( GUID2, strguid2, sizeof( strguid2 )-1 ) ) {
+        printf( "GUID=%s\n", strguid2 );
+    }
+    else {
+        printf( "\aError: vscphlp_writeGuidArrayToString\n");
+    }
+
+    unsigned char emptyGUID[16];
+    memset( emptyGUID,0, 16 );
+    if ( vscphlp_isGUIDEmpty( emptyGUID ) ) {
+        printf( "vscphlp_isGUIDEmpty  - GUID is detected as empty as it should be\n" );    
+    }
+    else {
+        printf( "\aError: vscphlp_isGUIDEmpty\n");
+    }
+
+    if ( vscphlp_isGUIDEmpty( GUID2 ) ) {
+        printf( "\aError: vscphlp_isGUIDEmpty\n");    
+    }
+    else {
+        printf( "vscphlp_isGUIDEmpty  - GUID is detected as NOT empty as it should be\n" );
+        
+    }
+
+    if ( vscphlp_isSameGUID( emptyGUID, GUID2) ) {
+        printf( "\aError: vscphlp_isSameGUID\n");
+    }
+    else {
+        printf( "vscphlp_isSameGUID  - Correct, GUIDs are not the same.\n" );
+    }
+
+    vscphlp_writeGuidArrayToString( GUID2, strguid2, sizeof( strguid2 )-1 );
+    printf( "GUID before reverse = %s\n", strguid2 );
+    if ( VSCP_ERROR_SUCCESS == vscphlp_reverseGUID( GUID2 ) ) {
+        vscphlp_writeGuidArrayToString( GUID2, strguid2, sizeof( strguid2 )-1 );
+        printf( "GUID  after reverse = %s\n", strguid2 );
+    }
+    else {
+        printf( "\aError: vscphlp_reverseGUID\n");
+    }
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getGuidFromStringToArray( GUID2, strguid ) ) {
+        vscphlp_writeGuidArrayToString( GUID2, strguid2, sizeof( strguid2 )-1 );
+        printf( "GUID  after reverse = %s\n", strguid2 );
+    }
+    else {
+        printf( "\aError: vscphlp_getGuidFromStringToArray\n");
+    }
+
+    vscpEventEx ex4;
+    if ( VSCP_ERROR_SUCCESS != vscphlp_convertVSCPtoEx( &ex4, pEvent ) ) {
+        printf( "\aError: vscphlp_getGuidFromStringToArray\n");
+    }
+
+
+    if ( VSCP_ERROR_SUCCESS != vscphlp_convertVSCPfromEx( pEvent, &ex4 ) ) {
+        printf( "\aError: vscphlp_convertVSCPfromEx\n");
+    }
+
+    //vscpEventFilter filter;
+    vscphlp_clearVSCPFilter( &filter );
+
+    if ( VSCP_ERROR_SUCCESS != vscphlp_readFilterFromString( &filter, 
+                "1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00" ) ) {
+        printf( "\aError: vscphlp_readFilterFromString\n");   
+    }
+    else {
+        printf( "OK: vscphlp_readFilterFromString\n");    
+    }
+
+    if ( VSCP_ERROR_SUCCESS != vscphlp_readMaskFromString( &filter, 
+                "1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00" ) ) {
+        printf( "\aError: vscphlp_readMaskFromString\n");   
+    }
+    else {
+        printf( "OK: vscphlp_readMaskFromString\n");    
+    }
+
+
+    if ( vscphlp_doLevel2Filter( pEvent, &filter ) ) {
+        printf( "Event pass:  vscphlp_doLevel2Filter\n");
+    }
+    else {
+        printf( "Event does NOT pass:  vscphlp_doLevel2Filter\n");
+    }
+
+    // Free the event
+    vscphlp_deleteVSCPevent( pEvent );
+    
+
+#endif
+
+
+    // -------------------------------------------------------------------------------------------------
 
 
     printf("\n\n\n");

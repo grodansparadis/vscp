@@ -1975,7 +1975,7 @@ void VSCPClientThread::handleClientVariable( struct ns_connection *conn, CContro
 {
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
-    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC, DAEMON_LOGMSG_INFO );
+    m_pCtrlObject->logMsg ( pClientItem->m_currentCommandUC + "\r\b", DAEMON_LOGMSG_INFO );
 
     pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-9 );    // remove "VARIABLE "
     pClientItem->m_currentCommand = pClientItem->m_currentCommand.Right( pClientItem->m_currentCommand.Length()-9 );          // remove "VARIABLE "
