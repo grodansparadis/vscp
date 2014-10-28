@@ -229,7 +229,7 @@ int vscphlp_createVariable( long handle,
                                 const char* pValue,
                                 int bPersistent );
 
-int vscphlp_saveVariablesToDisk( long handle ):
+int vscphlp_saveVariablesToDisk( long handle );
 
 int vscphlp_getVariableString( long handle, const char *pName, char *pvalue );
 int vscphlp_setVariableString( long handle, const char *pName, char Value );
