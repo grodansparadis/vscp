@@ -162,10 +162,8 @@ uint8_t vscp_getMeasurementDataCoding(const vscpEvent *pEvent)
 // getDataCodingBitArray
 //
 
-// TODO should be uint64_t
-
-uint32_t vscp_getDataCodingBitArray(const unsigned char *pNorm,
-                                const unsigned char length)
+uint64_t vscp_getDataCodingBitArray(const uint8_t *pNorm,
+                                        const uint8_t length)
 {
 	uint32_t bitArray = 0;
 
@@ -187,8 +185,8 @@ uint32_t vscp_getDataCodingBitArray(const unsigned char *pNorm,
 // getDataCodingNormalizedInteger
 //
 
-double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm,
-		const unsigned char length)
+double vscp_getDataCodingNormalizedInteger(const uint8_t *pNorm,
+		                                    uint8_t length)
 {
 	uint8_t valarray[ 8 ];
     uint8_t normbyte;
@@ -296,7 +294,7 @@ double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm,
 
 
 wxString& getDataCodingString(const unsigned char *pString,
-                                const unsigned char length)							
+                                unsigned char length)							
 {
 
 	static wxString str;
@@ -320,7 +318,7 @@ wxString& getDataCodingString(const unsigned char *pString,
 
 
 wxString& vscp_getDataCodingString(const unsigned char *pString,
-                                const unsigned char length)							
+                                        unsigned char length)							
 {
 	static wxString str;
 	
@@ -346,7 +344,7 @@ wxString& vscp_getDataCodingString(const unsigned char *pString,
 //
 
 float vscp_getMeasurementAsFloat(const unsigned char *pNorm, 
-                                    const unsigned char length)								
+                                    unsigned char length)								
 {
     float *pfloat = NULL;
     

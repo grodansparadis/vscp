@@ -95,3 +95,4 @@ EXPORTS
     vscphlp_getVscpDataFromString
     vscphlp_writeVscpEventToString
     vscphlp_getVscpEventFromString
+    vscphlp_getMeasurementDataCoding

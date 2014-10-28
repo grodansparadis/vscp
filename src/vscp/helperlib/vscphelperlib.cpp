@@ -1502,6 +1502,28 @@ extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsi
 
 
 
+// * * * * *    D A T A C O D I N G   * * * * *
+
+#ifdef WIN32
+extern "C" unsigned char WINAPI EXPORT vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
+#else
+extern "C" unsigned char vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent )
+#endif
+{
+    return vscp_getMeasurementDataCoding( pEvent );
+}
+
+#ifdef WIN32
+extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pNorm, unsigned char length )
+#else
+extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pNorm, const unsigned char length )
+#endif
+{
+    return vscp_getDataCodingBitArray(pNorm, length);
+}
+
+// * * * * *    G E N E R A L   * * * * *
+
 
 /*!
     \fn long vscphlp_readStringValue( const char * pStrValue )
@@ -1709,7 +1731,8 @@ extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
                                                                 char *strGUID )
 #endif
 {
-    return vscp_writeGuidToString4Rows( pEvent, strGUID );
+    wxString str = wxString::FromAscii( strGUID );
+    return vscp_writeGuidToString4Rows( pEvent, str );
 }
 
 /*!
@@ -1719,13 +1742,19 @@ extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent,
 */
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                                                char *strGUID )
+                                                                char *strGUID, 
+                                                                int size )
 #else
 extern "C" int vscphlp_writeGuidArrayToString( const unsigned char * pGUID, 
-                                                                char *strGUID )
+                                                                char *strGUID, 
+                                                                int size )
 #endif
 {
-    return vscp_writeGuidArrayToString( pGUID, strGUID );
+    wxString str;
+    bool rv = vscp_writeGuidArrayToString( pGUID, str );
+    strncpy( strGUID, str.mbc_str(), size );
+    
+    return rv;
 }
 
 /*!
@@ -1843,7 +1872,8 @@ extern "C" int WINAPI EXPORT vscphlp_readFilterFromString( vscpEventFilter *pFil
 extern "C" int vscphlp_readFilterFromString( vscpEventFilter *pFilter, const char * strFilter )
 #endif
 {
-	return vscp_readFilterFromString( pFilter, strFilter );
+    wxString str = wxString::FromAscii( strFilter );
+	return vscp_readFilterFromString( pFilter, str );
 }
 
 /*!
@@ -1860,7 +1890,8 @@ extern "C" int WINAPI EXPORT vscphlp_readMaskFromString( vscpEventFilter *pFilte
 extern "C" int vscphlp_readMaskFromString( vscpEventFilter *pFilter, const char *strMask )
 #endif
 {
-	return vscp_readMaskFromString( pFilter, strMask );
+    wxString str = wxString::FromAscii( strMask );
+	return vscp_readMaskFromString( pFilter, str );
 }
 
 /*!
@@ -1984,9 +2015,10 @@ extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent,
                                                             bool bUseHtmlBreak )
 #endif
 {
+    wxString wxstr = wxString::FromAscii( pstr );
     return vscp_writeVscpDataToString( pEvent, 
-                                    str, 
-                                    bUseHtmlBreak );
+                                         wxstr, 
+                                         bUseHtmlBreak );
 }
 
 
@@ -2003,7 +2035,8 @@ extern "C" int vscphlp_getVscpDataFromString( vscpEvent *pEvent,
                                                    const char *pstr )
 #endif
 {
-    return vscp_getVscpDataFromString( pEvent, str );
+    wxString wxstr = wxString::FromAscii( pstr );
+    return vscp_getVscpDataFromString( pEvent, wxstr );
 }
 
 /*!

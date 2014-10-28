@@ -144,7 +144,7 @@ extern "C" {
       the first normalize byte.
       \return Bitarray as a unsigned 64-bit integer.
      */
-    uint32_t vscp_getDataCodingBitArray(const unsigned char *pNorm, const unsigned char length);
+    uint64_t vscp_getDataCodingBitArray(const uint8_t *pNorm, uint8_t length);
 
     /*!
       Get normalised integer from coded event data
@@ -154,7 +154,7 @@ extern "C" {
       \return returns value as a double.
      */
     double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm, 
-                                                    const unsigned char length);
+                                                    unsigned char length);
 
     /*!
       Get the string from coded event data
