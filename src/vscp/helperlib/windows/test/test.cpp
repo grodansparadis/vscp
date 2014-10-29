@@ -1191,10 +1191,12 @@ int _tmain(int argc, _TCHAR* argv[])
         printf( "\aError: vscphlp_getGuidFromStringToArray\n");
     }
 
-
-    if ( VSCP_ERROR_SUCCESS != vscphlp_convertVSCPfromEx( pEvent, &ex4 ) ) {
+    vscpEvent *pEvent2 = new vscpEvent;
+    pEvent2->pdata = NULL;
+    if ( VSCP_ERROR_SUCCESS != vscphlp_convertVSCPfromEx( pEvent2, &ex4 ) ) {
         printf( "\aError: vscphlp_convertVSCPfromEx\n");
     }
+    vscphlp_deleteVSCPevent( pEvent2 );
 
     //vscpEventFilter filter;
     vscphlp_clearVSCPFilter( &filter );
@@ -1206,7 +1208,7 @@ int _tmain(int argc, _TCHAR* argv[])
     else {
         printf( "OK: vscphlp_readFilterFromString\n");    
     }
-
+    
     if ( VSCP_ERROR_SUCCESS != vscphlp_readMaskFromString( &filter, 
                 "1,0x0000,0x0006,ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00" ) ) {
         printf( "\aError: vscphlp_readMaskFromString\n");   
@@ -1215,13 +1217,164 @@ int _tmain(int argc, _TCHAR* argv[])
         printf( "OK: vscphlp_readMaskFromString\n");    
     }
 
-
+    
     if ( vscphlp_doLevel2Filter( pEvent, &filter ) ) {
         printf( "Event pass:  vscphlp_doLevel2Filter\n");
     }
     else {
         printf( "Event does NOT pass:  vscphlp_doLevel2Filter\n");
     }
+
+    vscpEvent *pEvent3 = new vscpEvent;
+    pEvent3->pdata = NULL;
+    canalMsg canalMsg;
+    canalMsg.id = 0x0c0a0601;
+    canalMsg.sizeData = 3;
+    canalMsg.data[0] = 138;
+    canalMsg.data[1] = 0;
+    canalMsg.data[2] = 30;
+    if ( VSCP_ERROR_SUCCESS == vscphlp_convertCanalToEvent( pEvent3,
+                                                               &canalMsg,
+                                                               GUID2 ) ) {
+        printf( "OK vscphlp_convertCanalToEvent VSCP class=%d Type=%d\n", pEvent3->vscp_class, pEvent3->vscp_type );
+    }
+    else {
+        printf( "\aError: vscphlp_convertCanalToEvent\n");
+    }
+
+    // Free the event
+    vscphlp_deleteVSCPevent( pEvent3 );
+
+    vscpEventEx ex5;
+    if ( VSCP_ERROR_SUCCESS == vscphlp_convertCanalToEventEx( &ex5,
+                                                                &canalMsg,
+                                                                GUID2 ) ) {
+        printf( "OK vscphlp_convertCanalToEventEx VSCP class=%d Type=%d\n", ex5.vscp_class, ex5.vscp_type );
+    }
+    else {
+        printf( "\aError: vscphlp_convertCanalToEvent\n");
+    }
+
+    
+    if ( VSCP_ERROR_SUCCESS == vscphlp_convertEventToCanal( &canalMsg, pEvent ) ) {
+        printf( "OK vscphlp_convertEventToCanal id=%08X\n", canalMsg.id );
+    }
+    else {
+        printf( "\aError: vscphlp_convertEventToCanal\n");
+    }
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_convertEventExToCanal( &canalMsg, &ex5 ) ) {
+        printf( "OK vscphlp_convertEventExToCanal id=%08X\n", canalMsg.id );
+    }
+    else {
+        printf( "\aError: vscphlp_convertEventExToCanal\n");
+    }
+
+
+    printf( "vscphlp_makeTimeStamp  %04X\n", vscphlp_makeTimeStamp() );
+
+    
+    vscpEvent *pEventFrom = new vscpEvent;
+    vscpEvent *pEventTo = new vscpEvent;
+    pEventFrom->head = 0;
+    pEventFrom->vscp_class = 10;
+    pEventFrom->vscp_type = 6;
+    pEventFrom->obid = 0;
+    pEventFrom->timestamp = 0;
+    memset( pEventFrom->GUID, 0, 16 );
+    pEventFrom->sizeData = 2;
+    pEventFrom->pdata = new unsigned char[2];
+    pEventFrom->pdata[ 0 ] = 0xAA;
+    pEventFrom->pdata[ 1 ] = 0x55;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_copyVSCPEvent( pEventTo, pEventFrom ) ) {
+        printf( "OK vscphlp_copyVSCPEvent %02X %02X \n", pEventTo->pdata[0], pEventTo->pdata[1] );
+    }
+    else {
+        printf( "\aError: vscphlp_copyVSCPEvent\n");
+    }
+
+
+
+    // Free the events
+    vscphlp_deleteVSCPevent( pEventFrom );
+    vscphlp_deleteVSCPevent( pEventTo );
+
+    char dataBuf[80];
+    if ( VSCP_ERROR_SUCCESS == vscphlp_writeVscpDataToString( pEvent, 
+                                                                dataBuf, 
+                                                                sizeof( dataBuf )-1,
+                                                                0 ) ) {
+       printf( "OK vscphlp_writeVscpDataToString \n%s \n", dataBuf );
+    }
+    else {
+        printf( "\aError: vscphlp_writeVscpDataToString\n");
+    }
+
+
+
+    unsigned char dataArray[32];
+    unsigned short sizeData;
+    if ( VSCP_ERROR_SUCCESS == 
+             vscphlp_setVscpDataArrayFromString( dataArray, 
+                                       &sizeData,
+                                       "1,2,3,4,5,6,0x07,0x55,3,4,0xaa,0xff,0xff" ) ) {
+        printf( "OK vscphlp_setVscpDataArrayFromString size=%d Data = \n", sizeData );
+        for ( int i=0; i<sizeData; i++ ) {
+            printf("%d ", dataArray[i] );
+        }
+        printf("\n");
+    }
+    else {
+        printf( "\aError: vscphlp_setVscpDataArrayFromString\n");
+    }
+
+
+    char eventBuf[128];
+    if ( VSCP_ERROR_SUCCESS == vscphlp_writeVscpEventToString( pEvent, eventBuf, sizeof( eventBuf )-1 ) ) {
+        printf( "OK vscphlp_writeVscpEventToString Event = %s\n", eventBuf );    
+    }
+    else {
+        printf( "\aError: vscphlp_writeVscpEventToString\n");
+    }
+
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_writeVscpEventExToString( &ex3, eventBuf, sizeof( eventBuf )-1 ) ) {
+        printf( "OK vscphlp_writeVscpEventToString Event = %s\n", eventBuf );    
+    }
+    else {
+        printf( "\aError: vscphlp_writeVscpEventToString\n");
+    }
+
+
+    vscpEvent *pEventString1 = new vscpEvent;
+    pEventString1->pdata = NULL;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_setVscpEventFromString( pEventString1, 
+                             "0,10,6,0,0,FF:FF:FF:FF:FF:FF:FF:00:00:00:00:7F:00:01:01:FD,0x8A,0x00,0x1E" ) ) {
+        printf( "OK vscphlp_setVscpEventFromString class=%d Type=%d\n", 
+                   pEventString1->vscp_class, pEventString1->vscp_type );
+    }
+    else {
+        printf( "\aError: vscphlp_setVscpEventFromString\n");
+    }
+
+    // Free the events
+    vscphlp_deleteVSCPevent( pEventString1 );
+
+
+
+    vscpEventEx ex6;
+    if ( VSCP_ERROR_SUCCESS == vscphlp_setVscpEventExFromString( &ex6, 
+                             "0,10,6,0,0,FF:FF:FF:FF:FF:FF:FF:00:00:00:00:7F:00:01:01:FD,0x8A,0x00,0x1E" ) ) {
+        printf( "OK vscphlp_setVscpEventExFromString class=%d Type=%d\n", 
+                   ex6.vscp_class, ex6.vscp_type );
+    }
+    else {
+        printf( "\aError: vscphlp_setVscpEventExFromString\n");
+    }
+
+
 
     // Free the event
     vscphlp_deleteVSCPevent( pEvent );

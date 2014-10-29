@@ -596,29 +596,27 @@ extern "C" {
       Convert an Event from a CANAL message
      */
     bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
-            const canalMsg *pcanalMsg,
-            unsigned char *pGUID,
-            bool bCAN = false);
+                                     const canalMsg *pcanalMsg,
+                                     unsigned char *pGUID );
     
     /*!
       Convert an Event from a CANAL message
      */
     bool vscp_convertCanalToEventEx(vscpEventEx *pvscpEvent,
-            const canalMsg *pcanalMsg,
-            unsigned char *pGUID,
-            bool bCAN = false);
+                                       const canalMsg *pcanalMsg,
+                                       unsigned char *pGUID );
 
     /*!
       Covert VSCP event to CANAL message
      */
     bool vscp_convertEventToCanal(canalMsg *pcanalMsg,
-            const vscpEvent *pvscpEvent);
+                                     const vscpEvent *pvscpEvent);
     
     /*!
       Covert VSCP event to CANAL message
     */
     bool vscp_convertEventExToCanal(canalMsg *pcanalMsg,
-            const vscpEventEx *pvscpEvent);
+                                       const vscpEventEx *pvscpEvent);
 
 
     /*!
@@ -648,8 +646,8 @@ extern "C" {
      */
 	 
     bool vscp_writeVscpDataToString(const vscpEvent *pEvent, 
-								wxString& str, 
-								bool bUseHtmlBreak = false);
+								              wxString& str, 
+								              bool bUseHtmlBreak = false);
 								
 
     /*!
@@ -663,25 +661,25 @@ extern "C" {
      */
 	 
     bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
-										const unsigned char *pData,
-										wxString& str,
-										bool bUseHtmlBreak = false,
-                                        bool bBreak = true );
+										       const unsigned char *pData,
+										       wxString& str,
+										       bool bUseHtmlBreak = false,
+                                               bool bBreak = true );
 									
 
     /*!
-      Get VSCP data from a string
+      Set VSCP data from a string
       \param pEvent Ponter to a VSCP event to write parsed data to.
       \param str A string with comma or whitespace separated data in decimal
       or hexadecimal form. Data can span multiple lines.
       \return true on success, false on failure.
      */
  
-    bool vscp_getVscpDataFromString(vscpEvent *pEvent, const wxString& str);
+    bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str);
 
 
     /*!
-      Get VSCP data from a string
+      Set VSCP data from a string
       \param pData Pointer to a unsigned byte array to write parsed data to.
       \param psizeData Number of data bytes. 
       \param str A string with comma or whitespace separated data in decimal
@@ -689,7 +687,7 @@ extern "C" {
       \return true on success, false on failure.
      */
  
-    bool vscp_getVscpDataArrayFromString( uint8_t *pData, 
+    bool vscp_setVscpDataArrayFromString( uint8_t *pData, 
 										    uint16_t *psizeData, 
 										    const wxString& str );
 									
@@ -702,7 +700,7 @@ extern "C" {
       \return true on success, false on failure.
      */
  
-    bool vscp_writeVscpEventToString(vscpEvent *pEvent, wxString& str);
+    bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str);
 
 
     /*!
@@ -713,7 +711,7 @@ extern "C" {
       \return true on success, false on failure.
      */
 	 
-    bool vscp_writeVscpEventExToString(vscpEventEx *pEvent, wxString& str);
+    bool vscp_writeVscpEventExToString( const vscpEventEx *pEvent, wxString& str);
 	
 
 
@@ -725,7 +723,7 @@ extern "C" {
       \return true on success, false on failure.
      */
 	 
-    bool vscp_getVscpEventFromString(vscpEvent *pEvent, const wxString& str);
+    bool vscp_setVscpEventFromString( vscpEvent *pEvent, const wxString& str);
 	
 
     /*!
@@ -736,7 +734,7 @@ extern "C" {
       \return true on success, false on failure.
      */
  
-    bool vscp_getVscpEventExFromString(vscpEventEx *pEventEx, const wxString& str);
+    bool vscp_setVscpEventExFromString( vscpEventEx *pEventEx, const wxString& str);
 
 
     /*!

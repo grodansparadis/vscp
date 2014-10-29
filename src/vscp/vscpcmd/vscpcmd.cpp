@@ -320,7 +320,7 @@ int main(int argc, char **argv)
             // Flag event parameter
             bEventParam = true;
 
-            vscp_getVscpEventExFromString(&event, wxstr);
+            vscp_setVscpEventExFromString(&event, wxstr);
         }
 
         // * * * Value * * *

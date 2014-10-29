@@ -394,7 +394,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
             {
                 uint8_t data[ VSCP_MAX_DATA ];
                 uint16_t sizeData = 0;
-                vscp_getVscpDataArrayFromString( data, &sizeData, strValue );
+                vscp_setVscpDataArrayFromString( data, &sizeData, strValue );
                 if ( sizeData > 8 ) sizeData = 8;
                 if (sizeData) memcpy( m_normInteger, data, sizeData );
                 m_normIntSize = sizeData;
@@ -402,7 +402,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT:
-            vscp_getVscpEventFromString( &m_event, strValue );
+            vscp_setVscpEventFromString( &m_event, strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_GUID:
@@ -410,7 +410,7 @@ bool CVSCPVariable::setValueFromString( int type, const wxString& strValue )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-            vscp_getVscpDataFromString( &m_event, strValue );
+            vscp_setVscpDataFromString( &m_event, strValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_CLASS:

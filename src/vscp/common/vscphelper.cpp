@@ -1928,9 +1928,8 @@ bool vscp_readMaskFromString(vscpEventFilter *pFilter, wxString& strFilter)
 //
 
 bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
-		const canalMsg *pcanalMsg,
-		unsigned char *pGUID,
-		bool bCAN)
+		                         const canalMsg *pcanalMsg,
+		                         unsigned char *pGUID )
 {
 	// Must be valid pointers
 	if (NULL == pGUID) return false;
@@ -1942,9 +1941,14 @@ bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
 
 	pvscpEvent->head = 0;
 
+    if ( pcanalMsg->sizeData > 8 ) {
+        pcanalMsg->sizeData;
+    }
+
 	if (pcanalMsg->sizeData > 0) {
+
 		// Allocate storage for data
-		pvscpEvent->pdata = new uint8_t[ pvscpEvent->sizeData ];
+		pvscpEvent->pdata = new uint8_t[ pcanalMsg->sizeData ];
 
 		if (NULL != pvscpEvent->pdata) {
 			// Assign size (max 8 bytes it's CAN... )
@@ -1981,14 +1985,12 @@ bool vscp_convertCanalToEvent(vscpEvent *pvscpEvent,
 
 bool vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx,
 		const canalMsg *pcanalMsg,
-		unsigned char *pGUID,
-		bool bCAN)
+		unsigned char *pGUID )
 {
 	vscpEvent *pEvent = new vscpEvent;
 	bool rv = vscp_convertCanalToEvent(pEvent,
-                                    pcanalMsg,
-                                    pGUID,
-                                    bCAN);
+                                         pcanalMsg,
+                                         pGUID );
 	
 	if ( rv ) {	
 		vscp_convertVSCPtoEx(pvscpEventEx, pEvent );
@@ -2164,10 +2166,10 @@ bool vscp_writeVscpDataWithSizeToString(const uint16_t sizeData,
 
 
 //////////////////////////////////////////////////////////////////////////////
-// getVscpDataFromString
+// setVscpDataFromString
 //
 
-bool vscp_getVscpDataFromString(vscpEvent *pEvent, const wxString& str)
+bool vscp_setVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 {
 	// Check pointers
 	if (NULL == pEvent) return false;
@@ -2197,12 +2199,12 @@ bool vscp_getVscpDataFromString(vscpEvent *pEvent, const wxString& str)
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// getVscpDataArrayFromString
+// setVscpDataArrayFromString
 //
 
-bool vscp_getVscpDataArrayFromString(uint8_t *pData, 
-                                    uint16_t *psizeData, 
-                                    const wxString& str)
+bool vscp_setVscpDataArrayFromString(uint8_t *pData, 
+                                        uint16_t *psizeData, 
+                                        const wxString& str)
 {
 	// Check pointers
 	if (NULL == pData) return false;
@@ -2242,7 +2244,7 @@ unsigned long vscp_makeTimeStamp(void)
 // head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool vscp_writeVscpEventToString(vscpEvent *pEvent, wxString& str)
+bool vscp_writeVscpEventToString( const vscpEvent *pEvent, wxString& str)
 {
 	// Check pointer
 	if (NULL == pEvent) return false;
@@ -2274,7 +2276,7 @@ bool vscp_writeVscpEventToString(vscpEvent *pEvent, wxString& str)
 // head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool vscp_writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
+bool vscp_writeVscpEventExToString( const vscpEventEx *pEventEx, wxString& str)
 {
 	vscpEvent Event;
     Event.pdata = NULL;
@@ -2291,13 +2293,13 @@ bool vscp_writeVscpEventExToString(vscpEventEx *pEventEx, wxString& str)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// getVscpEventFromString
+// setVscpEventFromString
 //
 // Format: 
 //		head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool vscp_getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
+bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 {
 	// Check pointer
 	if (NULL == pEvent) {
@@ -2389,20 +2391,19 @@ bool vscp_getVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
-// getVscpEventExFromString
+// setVscpEventExFromString
 //
 // Format: 
 //		head,class,type,obid,timestamp,GUID,data1,data2,data3....
 //
 
-bool vscp_getVscpEventExFromString(vscpEventEx *pEventEx, const wxString& strEvent)
+bool vscp_setVscpEventExFromString(vscpEventEx *pEventEx, const wxString& strEvent)
 {
 	bool rv;
 	vscpEvent event;
 
 	// Parse the string data
-	rv = vscp_getVscpEventFromString(&event, strEvent);
-
+	rv = vscp_setVscpEventFromString(&event, strEvent);
 	vscp_convertVSCPtoEx(pEventEx, &event);
 
 	// Remove possible data

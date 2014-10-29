@@ -1419,7 +1419,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
 			p++; // Point beyond initial info "E;"
 			vscpEvent vscp_event;
 			str = wxString::FromAscii( p );
-			if (vscp_getVscpEventFromString( &vscp_event, str ) ) {
+			if (vscp_setVscpEventFromString( &vscp_event, str ) ) {
 
                 // Check if this user is allowed to send this event
                 if ( !pSession->m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( vscp_event.vscp_class, vscp_event.vscp_type ) ) {
@@ -2884,7 +2884,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	else if ( ( _("3") == keypairs[_("OP")] ) || ( _("SENDEVENT") == keypairs[_("OP")].Upper() ) ) {
 		vscpEvent vscpevent;
 		if ( _("") != keypairs[_("VSCPEVENT")] ) {
-			vscp_getVscpEventFromString( &vscpevent, keypairs[_("VSCPEVENT")] ); 
+			vscp_setVscpEventFromString( &vscpevent, keypairs[_("VSCPEVENT")] ); 
 			rv = webserv_rest_doSendEvent( conn, pSession, format, &vscpevent );
 		}
 		else {
@@ -7170,7 +7170,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *conn )
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_MEASUREMENT:
                     uint16_t size;
-                    vscp_getVscpDataArrayFromString( pVariable->m_normInteger, 
+                    vscp_setVscpDataArrayFromString( pVariable->m_normInteger, 
                                                     &size,
                                                     strMeasurement );
                     pVariable->m_normIntSize = size;
@@ -7180,7 +7180,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *conn )
                     pVariable->m_event.vscp_class = value_class;
                     pVariable->m_event.vscp_type = value_type;
                     vscp_getGuidFromStringToArray( pVariable->m_event.GUID, strGUID );
-                    vscp_getVscpDataFromString( &pVariable->m_event,
+                    vscp_setVscpDataFromString( &pVariable->m_event,
                                             strData );
                     pVariable->m_event.crc = value_crc;
                     pVariable->m_event.head = value_head;
@@ -7193,7 +7193,7 @@ VSCPWebServerThread::websrv_variables_post( struct mg_connection *conn )
                     break;
 
                 case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_DATA:
-                    vscp_getVscpDataFromString( &pVariable->m_event,
+                    vscp_setVscpDataFromString( &pVariable->m_event,
                                             strData );
                     break;
 

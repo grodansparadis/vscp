@@ -424,7 +424,6 @@ void *CRawEthernetTxTread::Entry()
 	// variables
 
 	if (m_srv.doCmdOpen(m_pobj->m_host,
-			m_pobj->m_port,
 			m_pobj->m_username,
 			m_pobj->m_password) <= 0) {
 		return NULL;
@@ -597,7 +596,6 @@ void *CRawEthernetRxTread::Entry()
 	// variables
 
 	if (m_srv.doCmdOpen(m_pobj->m_host,
-			m_pobj->m_port,
 			m_pobj->m_username,
 			m_pobj->m_password) <= 0) {
 		return NULL;

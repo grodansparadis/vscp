@@ -2192,7 +2192,7 @@ int VscpRemoteTcpIf::getVariableEvent( wxString& name, vscpEvent *pEvent )
     wxStringTokenizer tkz( strLine, _("\r\n") );
     if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_ERROR;
 
-    vscp_getVscpEventFromString( pEvent, tkz.GetNextToken() );
+    vscp_setVscpEventFromString( pEvent, tkz.GetNextToken() );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2246,7 +2246,7 @@ int VscpRemoteTcpIf::getVariableEventEx( wxString& name, vscpEventEx *pEvent )
     wxStringTokenizer tkz( strLine, _("\r\n") );
     if ( !tkz.HasMoreTokens() ) return VSCP_ERROR_ERROR;
 
-    vscp_getVscpEventExFromString( pEvent, tkz.GetNextToken() );
+    vscp_setVscpEventExFromString( pEvent, tkz.GetNextToken() );
 
     return VSCP_ERROR_SUCCESS;
 }
@@ -2352,7 +2352,7 @@ int VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint8_t *pData, uint16
     }
     m_mutexArray.Unlock();
 
-    vscp_getVscpDataArrayFromString( pData, psize, strLine );
+    vscp_setVscpDataArrayFromString( pData, psize, strLine );
 
     return VSCP_ERROR_SUCCESS;
 }

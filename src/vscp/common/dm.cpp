@@ -263,7 +263,7 @@ actionThreadVSCPSrv::actionThreadVSCPSrv( CControlObject *pCtrlObject,
     m_port = port;
     m_strUsername = strUsername;
     m_strPassword = strPassword;
-    vscp_getVscpEventExFromString( &m_eventThe, strEvent );
+    vscp_setVscpEventExFromString( &m_eventThe, strEvent );
 }
 
 actionThreadVSCPSrv::~actionThreadVSCPSrv()
@@ -1807,7 +1807,7 @@ bool dmElement::doActionSendEvent( vscpEvent *pDMEvent )
             vscpEvent *pEvent = new vscpEvent;
             if ( NULL != pEvent ) {
 
-                vscp_getVscpEventFromString( pEvent, m_actionparam );
+                vscp_setVscpEventFromString( pEvent, m_actionparam );
 
                 m_pDM->m_pCtrlObject->m_mutexClientOutputQueue.Lock();
                 m_pDM->m_pCtrlObject->m_clientOutputQueue.Append ( pEvent );
@@ -1893,7 +1893,7 @@ bool dmElement::doActionSendEventConditional( vscpEvent *pDMEvent )
 
         wxString strEvent = tkz.GetNextToken();
 
-        if ( !vscp_getVscpEventFromString( pEvent, strEvent ) ) {
+        if ( !vscp_setVscpEventFromString( pEvent, strEvent ) ) {
             // Could not parse evenet data
             wxString wxstrErr = wxT("[Action] Conditional event: Unable to parse event ");
             wxstrErr += wxstr;
@@ -2004,7 +2004,7 @@ bool dmElement::doActionSendEventsFromFile( vscpEvent *pDMEvent )
                         vscp_getGuidFromString( pEvent, subchild->GetNodeContent() );
                     }
                     if ( subchild->GetName() == wxT ( "data" ) ) {
-                        vscp_getVscpDataFromString( pEvent, subchild->GetNodeContent() );
+                        vscp_setVscpDataFromString( pEvent, subchild->GetNodeContent() );
                     }
 
                 }

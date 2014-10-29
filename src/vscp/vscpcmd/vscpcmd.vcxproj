@@ -914,6 +914,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
+    <ClCompile Include="..\..\common\net_skeleton.c" />
     <ClCompile Include="..\common\guid.cpp" />
     <ClCompile Include="..\common\vscpremotetcpif.cpp" />
     <ClCompile Include="vscpcmd.cpp" />

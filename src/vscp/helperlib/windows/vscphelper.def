@@ -99,19 +99,18 @@ EXPORTS
     vscphlp_readMaskFromString
     vscphlp_doLevel2Filter
     vscphlp_convertCanalToEvent
-    vscphlp_convertEventToCanalEx
+    vscphlp_convertCanalToEventEx
     vscphlp_convertEventToCanal
     vscphlp_convertEventExToCanal
     vscphlp_makeTimeStamp
     vscphlp_copyVSCPEvent
     vscphlp_writeVscpDataToString
-    vscphlp_writeVscpDataWithSizeToString
-    vscphlp_getVscpDataFromString
-    vscphlp_getVscpDataArrayFromString
+    vscphlp_setVscpDataFromString
+    vscphlp_setVscpDataArrayFromString
     vscphlp_writeVscpEventToString
     vscphlp_writeVscpEventExToString
-    vscphlp_getVscpEventFromString
-    vscphlp_getVscpEventExFromString
+    vscphlp_setVscpEventFromString
+    vscphlp_setVscpEventExFromString
     vscphlp_getMeasurementDataCoding
     vscphlp_getDataCodingBitArray
     vscphlp_getDataCodingNormalizedInteger
