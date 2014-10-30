@@ -1423,7 +1423,7 @@ bool dlgVSCPTrmitElement::getEventData( VscpTXObj *pObj )
     // Data is allowed to scan multiple lines and to be in hex
     // or decimal form
     str = m_wxStrData->GetValue();
-    vscp_getVscpDataFromString( &pObj->m_Event, str );
+    vscp_setVscpDataFromString( &pObj->m_Event, str );
   
     return true;
 }

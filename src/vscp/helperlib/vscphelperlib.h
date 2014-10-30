@@ -352,7 +352,7 @@ int vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID );
 int vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pGUID );
 int vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr );
 int vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr );
-int WINAPI EXPORT vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pStr );
+int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pStr );
 int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
                                        char *strGUID,
                                        int size );

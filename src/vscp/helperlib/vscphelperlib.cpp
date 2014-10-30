@@ -1525,7 +1525,7 @@ extern "C" unsigned long vscphlp_readStringValue( const char * pStrValue )
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_replaceBackslash( char *pStr )
 #else
-extern "C" int vscphlp_replaceBackslash( const char *pStr )
+extern "C" int vscphlp_replaceBackslash( char *pStr )
 #endif
 {
     if ( NULL == pStr ) return VSCP_ERROR_ERROR;
@@ -1905,7 +1905,7 @@ extern "C" int WINAPI EXPORT vscphlp_writeGuidToString4Rows( const vscpEvent *pE
                                                                 int size )
 #else
 extern "C" int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
-                                                                char *strGUID
+                                                                char *strGUID,
                                                                 int size )
 #endif
 {
@@ -2219,7 +2219,7 @@ extern "C" int WINAPI EXPORT vscphlp_writeVscpDataToString( const vscpEvent *pEv
 #else
 extern "C" int vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
                                                                   char *pstr, 
-                                                                  int size
+                                                                  int size,
                                                                   int bUseHtmlBreak )
 #endif
 {
@@ -2268,7 +2268,7 @@ extern "C" int WINAPI EXPORT vscphlp_setVscpDataArrayFromString( unsigned char *
                                                                     unsigned short *psizeData,
                                                                     const char *pstr )
 #else
-extern "C" int vscphlp_setVscpDataArrayFromString( vscpEvent *pEvent,
+extern "C" int vscphlp_setVscpDataArrayFromString( unsigned char *pData,
                                                       unsigned short *psizeData,
                                                       const char *pstr )
 #endif
@@ -2307,7 +2307,7 @@ extern "C" int vscphlp_writeVscpEventToString( vscpEvent *pEvent, char *p, int s
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, char *p, int size )
 #else
-extern "C" int vscphlp_writeVscpEventExToString( vscpEvent *pEvent, 
+extern "C" int vscphlp_writeVscpEventExToString( vscpEventEx *pEvent, 
                                                   char *p, int size )
 #endif
 {
@@ -2572,11 +2572,11 @@ extern "C" int WINAPI EXPORT vscphlp_convertIntegerToNormalizedEventData( unsign
                                                                             unsigned char unit,
                                                                             unsigned char sensoridx )
 #else
-extern "C" int vscphlp_convertFloatToFloatEventData( unsigned char *pdata,
-                                                         unsigned short *psize,
-                                                         unsigned long long val64,
-                                                         unsigned char unit,
-                                                         unsigned char sensoridx )
+extern "C" int vscphlp_convertIntegerToNormalizedEventData( unsigned char *pdata,
+                                                              unsigned short *psize,
+                                                              unsigned long long val64,
+                                                              unsigned char unit,
+                                                              unsigned char sensoridx )
 #endif
 {
     wxString wxstr;
