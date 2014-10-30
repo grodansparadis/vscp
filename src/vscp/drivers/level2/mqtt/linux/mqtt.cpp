@@ -109,7 +109,7 @@ void mqtt_subscribe::on_message(const struct mosquitto_message *message)
 	if ( !strcmp( message->topic, m_pObj->m_topic.ToAscii() ) ) {
         
 		wxString str = wxString::FromAscii((const char *) message->payload);
-		if (vscp_getVscpEventExFromString(&eventEx, str)) {
+		if (vscp_setVscpEventExFromString(&eventEx, str)) {
             
             vscpEvent *pEvent = new vscpEvent;
             if (NULL != pEvent) {

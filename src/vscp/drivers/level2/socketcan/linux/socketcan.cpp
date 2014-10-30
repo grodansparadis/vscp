@@ -386,10 +386,10 @@ CSocketCanWorkerTread::Entry()
                     pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
 
                     // Set VSCP class
-                    pEvent->vscp_class = vscp_getVSCPclassFromCANid(frame.can_id);
+                    pEvent->vscp_class = vscp_getVSCPclassFromCANALid(frame.can_id);
 
                     // Set VSCP type
-                    pEvent->vscp_type = vscp_getVSCPtypeFromCANid(frame.can_id);
+                    pEvent->vscp_type = vscp_getVSCPtypeFromCANALid(frame.can_id);
 
                     // Copy data if any
                     pEvent->sizeData = frame.len;
@@ -428,7 +428,7 @@ CSocketCanWorkerTread::Entry()
                     // Class must be a Level I class or a Level II
                     // mirror class
                     if (pEvent->vscp_class < 512) {
-                        frame.can_id = vscp_getCANidFromVSCPevent(pEvent);
+                        frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
                         frame.can_id |= CAN_EFF_FLAG; // Always extended
                         if (0 != pEvent->sizeData) {
                             frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
@@ -436,7 +436,7 @@ CSocketCanWorkerTread::Entry()
                         }
                     } else if (pEvent->vscp_class < 1024) {
                         pEvent->vscp_class -= 512;
-                        frame.can_id = vscp_getCANidFromVSCPevent(pEvent);
+                        frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
                         frame.can_id |= CAN_EFF_FLAG; // Always extended
                         if (0 != pEvent->sizeData) {
                             frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
