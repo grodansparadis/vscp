@@ -139,21 +139,32 @@ extern "C" {
 
     /*!
       Get bitarray from coded event data
-      \param pNorm Pointer to normalized integer.
+      \param pCode Pointer to data coding byte.
       \param length Number of bytes it consist of including
       the first normalize byte.
       \return Bitarray as a unsigned 64-bit integer.
      */
-    uint64_t vscp_getDataCodingBitArray(const uint8_t *pNorm, uint8_t length);
+    uint64_t vscp_getDataCodingBitArray(const uint8_t *pCode, uint8_t length);
+
+
+    /*!
+      Get integer from coded event data
+      \param pCode Pointer to normalised integer.
+      \param length Number of bytes it consist of including
+      the first normalise byte.
+      \return returns value as a 64-bit integer.
+     */
+    int64_t vscp_getDataCodingInteger(const uint8_t *pCode,
+		                                  uint8_t length );
 
     /*!
       Get normalised integer from coded event data
-      \param pNorm Pointer to normalised integer.
+      \param pCode Pointer to normalised integer.
       \param length Number of bytes it consist of including
       the first normalise byte.
       \return returns value as a double.
      */
-    double vscp_getDataCodingNormalizedInteger(const unsigned char *pNorm, 
+    double vscp_getDataCodingNormalizedInteger(const unsigned char *pCode, 
                                                     unsigned char length);
 
     /*!
@@ -164,7 +175,7 @@ extern "C" {
       \return Returns unicode UTF-8 string of event data
      */
 	 
-    bool vscp_getDataCodingString(const unsigned char *pData, 
+    bool vscp_getDataCodingString(const unsigned char *pCode, 
                                             unsigned char dataSize,
                                             wxString& strResult );
 

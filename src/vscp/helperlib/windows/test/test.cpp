@@ -17,6 +17,9 @@
 // Uncomment to test helpers
 #define TEST_HELPERS
 
+// Uncomment to test measurement functionality
+#define TEST_MEASUREMENT
+
 int _tmain(int argc, _TCHAR* argv[])
 {
     int rv;
@@ -51,6 +54,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_open on channel 1  Error code=%d\n", rv);
+        return -1;
     }
 
     // OPEN channel 2
@@ -60,6 +64,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     else {
         printf("\aCommand error: vscphlp_openInterface on channel 2  Error code=%d\n", rv);
+        return -1;
     }
 
     // NOOP on handle1
@@ -978,14 +983,6 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     
     
-    
-    unsigned char dataCoding = vscphlp_getMeasurementDataCoding( pEvent );
-    if ( 138 == dataCoding  ) {
-        printf("Data Coding = %d\n", dataCoding );
-    }
-    else {
-        printf("\aError: Data Coding = %d\n", dataCoding );
-    }
 
 
     unsigned char eventPriority;
@@ -1375,15 +1372,258 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
 
+#endif
+
+
+
+#ifdef TEST_MEASUREMENT
+
+
+    printf("\n\n");
+    printf("\n\nMeasurement helpers\n");
+    printf("===================\n");
+
+    unsigned char dataCoding = vscphlp_getMeasurementDataCoding( pEvent );
+    if ( 138 == dataCoding  ) {
+        printf("Data Coding = %d\n", dataCoding );
+    }
+    else {
+        printf("\aError: Data Coding = %d\n", dataCoding );
+    }
+
+
+    unsigned char bitarry[3];
+    bitarry[0] = VSCP_DATACODING_BIT; // Data cding byte. Default unit, sensoridx=0
+    bitarry[1] = 0x55;
+    bitarry[2] = 0xAA;
+    unsigned long long bitarray64 = vscphlp_getDataCodingBitArray( bitarry, sizeof( bitarry ) );
+    if ( bitarray64 ==  0x55AA ) {
+        printf("OK - vscphlp_getDataCodingBitArray \n");
+    }
+    else {
+        printf("\aError: vscphlp_getDataCodingBitArray\n", dataCoding );
+    }
+
+    unsigned char normarry[4];
+    normarry[0] = 0x89; // Data coding byte: Normalized integer, unit=1, sensoridx=1
+    normarry[1] = 0x02;
+    normarry[2] = 0x01;
+    normarry[3] = 0x36;
+    double value =  vscphlp_getDataCodingNormalizedInteger( normarry, sizeof( normarry ) );
+    if ( 3.1 == value ) {
+        printf("OK - vscphlp_getDataCodingNormalizedInteger value = %f \n", value );
+    }
+    else {
+        printf("Error - vscphlp_getDataCodingNormalizedInteger value = %f \n", value );
+    }
+
+    normarry[0] = 0x60; // Data coding byte: Integer, unit=0, sensoridx=0
+    normarry[1] = 0xFF;
+    normarry[2] = 0xFF;
+    normarry[3] = 0xFF;
+    unsigned long long val64 = vscphlp_getDataCodingInteger( normarry, sizeof( normarry ) );
+    printf("OK - vscphlp_getDataCodingInteger value = %ld \n", val64 );
+
+    unsigned char stringarry[6];
+    stringarry[0] = VSCP_DATACODING_STRING; // Data cding byte. Default unit, sensoridx=0
+    stringarry[1] = 0x32;
+    stringarry[2] = 0x33;
+    stringarry[3] = 0x34;
+    stringarry[4] = 0x2E;
+    stringarry[5] = 0x35;
+    char stringbuf[2048];
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getDataCodingString( stringarry,
+                                                              sizeof( stringarry ), 
+                                                              stringbuf,
+                                                              sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getDataCodingString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getDataCodingString value = %s \n", stringbuf );
+    }
+
+
+
+    vscpEvent *pEventMeasurement = new vscpEvent;
+    pEventMeasurement->head = 0;
+    pEventMeasurement->vscp_class = 10;
+    pEventMeasurement->vscp_type = 6;
+    pEventMeasurement->obid = 0;
+    pEventMeasurement->timestamp = 0;
+    memset( pEventMeasurement->GUID, 0, 16 );
+    pEventMeasurement->sizeData = 4;
+    pEventMeasurement->pdata = new unsigned char[ pEventMeasurement->sizeData ];
+    pEventMeasurement->pdata[0] = 0x89;
+    pEventMeasurement->pdata[1] = 0x02;
+    pEventMeasurement->pdata[2] = 0x00;
+    pEventMeasurement->pdata[3] = 0xF1;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementAsString( pEventMeasurement, 
+                                                                    stringbuf, 
+                                                                    sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+
+
+
+
+    pEventMeasurement->pdata[0] = 0x89;
+    pEventMeasurement->pdata[1] = 0x02;
+    pEventMeasurement->pdata[2] = 0xFF;
+    pEventMeasurement->pdata[3] = 0xF1;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementAsString( pEventMeasurement, 
+                                                                    stringbuf, 
+                                                                    sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+
+
+
+
+    pEventMeasurement->pdata[0] = VSCP_DATACODING_BIT;
+    pEventMeasurement->pdata[1] = 0x55;
+    pEventMeasurement->pdata[2] = 0xAA;
+    pEventMeasurement->pdata[3] = 0x55;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementAsString( pEventMeasurement, 
+                                                                    stringbuf, 
+                                                                    sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+
+
+
+    pEventMeasurement->pdata[0] = VSCP_DATACODING_BYTE;
+    pEventMeasurement->pdata[1] = 0x55;
+    pEventMeasurement->pdata[2] = 0xAA;
+    pEventMeasurement->pdata[3] = 0x55;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementAsString( pEventMeasurement, 
+                                                                    stringbuf, 
+                                                                    sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+
+
+    pEventMeasurement->pdata[0] = VSCP_DATACODING_STRING;
+    pEventMeasurement->pdata[1] = 0x33;
+    pEventMeasurement->pdata[2] = 0x31;
+    pEventMeasurement->pdata[3] = 0x34;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementAsString( pEventMeasurement, 
+                                                                    stringbuf, 
+                                                                    sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+
+
+    pEventMeasurement->pdata[0] = VSCP_DATACODING_INTEGER;
+    pEventMeasurement->pdata[1] = 0x00;
+    pEventMeasurement->pdata[2] = 0xFF;
+    pEventMeasurement->pdata[3] = 0xFF;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementAsString( pEventMeasurement, 
+                                                                    stringbuf, 
+                                                                    sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+
+
+
+    pEventMeasurement->pdata[0] = VSCP_DATACODING_INTEGER;
+    pEventMeasurement->pdata[1] = 0xFF;
+    pEventMeasurement->pdata[2] = 0xFF;
+    pEventMeasurement->pdata[3] = 0xFF;
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementAsString( pEventMeasurement, 
+                                                                    stringbuf, 
+                                                                    sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementAsString value = %s \n", stringbuf );
+    }
+
+
+
+    pEventMeasurement->pdata[0] = VSCP_DATACODING_INTEGER;
+    pEventMeasurement->pdata[1] = 0xFF;
+    pEventMeasurement->pdata[2] = 0xFF;
+    pEventMeasurement->pdata[3] = 0xFF;
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementAsDouble( pEventMeasurement, &value ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementAsDouble value = %lf\n", value );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementAsDouble value = %slf \n", value );
+    }
+
+    double vvv = 3.14159265359;
+    unsigned char *p = (unsigned char *)&vvv;
+    vscpEvent *pEventfloat = new vscpEvent;
+    pEventfloat->head = 0;
+    pEventfloat->vscp_class = 10;
+    pEventfloat->vscp_type = 6;
+    pEventfloat->obid = 0;
+    pEventfloat->timestamp = 0;
+    memset( pEventfloat->GUID, 0, 16 );
+    pEventfloat->sizeData = 8;
+    pEventfloat->pdata = new unsigned char[ pEventfloat->sizeData ];
+    pEventfloat->pdata[0] = 234; //*p;
+    pEventfloat->pdata[1] = 46;  // *(p+1);
+    pEventfloat->pdata[2] = 68; // *(p+2);
+    pEventfloat->pdata[3] = 84; //*(p+3);
+    pEventfloat->pdata[4] = 251; //*(p+4);
+    pEventfloat->pdata[5] = 33; //*(p+5);
+    pEventfloat->pdata[6] = 9; // *(p+6);
+    pEventfloat->pdata[7] = 64; // *(p+7);
+
+    for ( int i=0; i<8; i++ ) {
+        printf( "%d ", pEventfloat->pdata[i] );
+    }
+
+    if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementFloat64AsString( pEventfloat, 
+                                                                            stringbuf, 
+                                                                            sizeof( stringbuf ) ) ) {
+        printf("OK - vscphlp_getVSCPMeasurementFloat64AsString value = %s \n", stringbuf );
+    }
+    else {
+        printf("Error - vscphlp_getVSCPMeasurementFloat64AsString value = %s \n", stringbuf );
+    }
 
     // Free the event
-    vscphlp_deleteVSCPevent( pEvent );
-    
+    vscphlp_deleteVSCPevent( pEventfloat );
+
+
+    // Free the event
+    vscphlp_deleteVSCPevent( pEventMeasurement );
+
 
 #endif
 
 
     // -------------------------------------------------------------------------------------------------
+
+    // Free the event
+    vscphlp_deleteVSCPevent( pEvent );
 
 
     printf("\n\n\n");

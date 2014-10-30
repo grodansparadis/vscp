@@ -2378,12 +2378,12 @@ extern "C" unsigned char vscphlp_getMeasurementDataCoding( const vscpEvent *pEve
 //
 
 #ifdef WIN32
-extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pNorm, int size )
+extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pCode, int size )
 #else
-extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pNorm, int size )
+extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pCode, int size )
 #endif
 {
-    return vscp_getDataCodingBitArray(pNorm, size );
+    return vscp_getDataCodingBitArray(pCode, size );
 }
 
 
@@ -2392,14 +2392,29 @@ extern "C" unsigned long long vscphlp_getDataCodingBitArray(const unsigned char 
 //
 
 #ifdef WIN32
-extern "C" double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pNorm, 
+extern "C" unsigned long long WINAPI EXPORT vscphlp_getDataCodingInteger(const unsigned char *pCode, 
+                                                                            int size )
+#else
+extern "C" unsigned long long vscphlp_getDataCodingInteger(const unsigned char *pCode, 
+                                                              int size )
+#endif
+{
+    return vscp_getDataCodingInteger(pCode, size );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+//
+
+#ifdef WIN32
+extern "C" double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode, 
                                                                                      int size )
 #else
-extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pNorm, 
+extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode, 
                                                                        int size )
 #endif
 {
-    return vscp_getDataCodingNormalizedInteger(pNorm, size );
+    return vscp_getDataCodingNormalizedInteger(pCode, size );
 }
 
 
@@ -2409,12 +2424,12 @@ extern "C" double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pN
 //
 
 #ifdef WIN32
-extern "C" int WINAPI EXPORT vscphlp_getDataCodingString(const unsigned char *pData,
+extern "C" int WINAPI EXPORT vscphlp_getDataCodingString(const unsigned char *pCode,
                                                               unsigned char dataLength, 
                                                               char *strResult,
                                                               int size )
 #else
-extern "C" int vscphlp_getDataCodingString(const unsigned char *pData,
+extern "C" int vscphlp_getDataCodingString(const unsigned char *pCode,
                                                               unsigned char dataLength, 
                                                               char *strResult,
                                                               int size )
@@ -2422,12 +2437,12 @@ extern "C" int vscphlp_getDataCodingString(const unsigned char *pData,
 {
     wxString wxstr;
 
-    if ( NULL == pData ) return VSCP_ERROR_ERROR;
+    if ( NULL == pCode ) return VSCP_ERROR_ERROR;
     if ( NULL == strResult ) return VSCP_ERROR_ERROR;
 
-    bool rv =  vscp_getDataCodingString(pData,
-                                        dataLength, 
-                                        wxstr );
+    bool rv =  vscp_getDataCodingString( pCode,
+                                           dataLength, 
+                                           wxstr );
     strncpy( strResult, wxstr.mbc_str(), size );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -2493,7 +2508,7 @@ extern "C" int vscphlp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent
 
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
 
-    bool rv = vscp_getVSCPMeasurementFloat64AsString( pEvent, wxstr);
+    bool rv = vscp_getVSCPMeasurementFloat64AsString( pEvent, wxstr );
     strncpy( pStrResult, wxstr.mbc_str(), size );
     return rv ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }

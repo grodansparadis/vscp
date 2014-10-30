@@ -113,6 +113,7 @@ EXPORTS
     vscphlp_setVscpEventExFromString
     vscphlp_getMeasurementDataCoding
     vscphlp_getDataCodingBitArray
+    vscphlp_getDataCodingInteger
     vscphlp_getDataCodingNormalizedInteger
     vscphlp_getDataCodingString
     vscphlp_getVSCPMeasurementAsString

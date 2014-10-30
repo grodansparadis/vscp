@@ -146,3 +146,8 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/drivers/level2/logger/win32/Output-Build.txt
 /src/vscp/helperlib/windows/test/test.vcxproj
 /src/vscp/helperlib/windows/test/test.vcxproj.filters
+/src/vscp/UpgradeLog.XML
+/src/vscp/_UpgradeReport_Files/UpgradeReport.css
+/src/vscp/_UpgradeReport_Files/UpgradeReport.xslt
+/src/vscp/_UpgradeReport_Files/UpgradeReport_Minus.gif
+/src/vscp/_UpgradeReport_Files/UpgradeReport_Plus.gif

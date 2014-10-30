@@ -60,6 +60,13 @@
 #include "vscphelper.h"
 
 
+#define Swap8Bytes(val) \
+	 ( (((val) >> 56) & 0x00000000000000FF) | (((val) >> 40) & 0x000000000000FF00) | \
+	   (((val) >> 24) & 0x0000000000FF0000) | (((val) >>  8) & 0x00000000FF000000) | \
+	   (((val) <<  8) & 0x000000FF00000000) | (((val) << 24) & 0x0000FF0000000000) | \
+	   (((val) << 40) & 0x00FF000000000000) | (((val) << 56) & 0xFF00000000000000) )
+
+
 // ***************************************************************************
 //                                General Helpers
 // ***************************************************************************
@@ -162,31 +169,57 @@ uint8_t vscp_getMeasurementDataCoding(const vscpEvent *pEvent)
 // getDataCodingBitArray
 //
 
-uint64_t vscp_getDataCodingBitArray(const uint8_t *pNorm,
+uint64_t vscp_getDataCodingBitArray(const uint8_t *pCode,
                                         const uint8_t length)
 {
-	uint32_t bitArray = 0;
+	uint64_t bitArray = 0;
 
-	memcpy((unsigned char *) &bitArray + (8 - length - 1), pNorm + 1, length - 1);
+    if ( NULL == pCode ) return 0;
+    if ( ( length > 7 ) || ( length <= 1 ) ) return 0;
+
+    for ( int i=0; i<length-1; i++ ) {
+        bitArray = bitArray << 8;
+        bitArray |= *(pCode + 1 + i);
+    }
 
 	return bitArray;
 }
 
 
-#define Swap8Bytes(val) \
-	 ( (((val) >> 56) & 0x00000000000000FF) | (((val) >> 40) & 0x000000000000FF00) | \
-	   (((val) >> 24) & 0x0000000000FF0000) | (((val) >>  8) & 0x00000000FF000000) | \
-	   (((val) <<  8) & 0x000000FF00000000) | (((val) << 24) & 0x0000FF0000000000) | \
-	   (((val) << 40) & 0x00FF000000000000) | (((val) << 56) & 0xFF00000000000000) )
+//////////////////////////////////////////////////////////////////////////////
+// vscp_getDataCodingInteger
+//
 
+int64_t vscp_getDataCodingInteger(const uint8_t *pCode, uint8_t length )
+{
+    int64_t value64 = 0;
+    uint8_t byteArray[8];
+
+    if ( NULL == pCode ) return 0;
+    if ( length < 2 ) return 0;
+
+    // Check if this is a negative number
+	if ( (*(pCode + 1)) & 0x80) {
+	    memset( (uint8_t *)&value64, 0xff, 8 );
+	}
+    else {
+        memset( (uint8_t *)&value64, 0, 8 );
+    }
+
+    for ( int i=1; i<length; i++ ) {
+        value64 = ( value64 << 8 ) + pCode[i];
+    }
+
+    return value64;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////
 // getDataCodingNormalizedInteger
 //
 
-double vscp_getDataCodingNormalizedInteger(const uint8_t *pNorm,
-		                                    uint8_t length)
+double vscp_getDataCodingNormalizedInteger(const uint8_t *pCode,
+		                                      uint8_t length )
 {
 	uint8_t valarray[ 8 ];
     uint8_t normbyte;
@@ -196,46 +229,45 @@ double vscp_getDataCodingNormalizedInteger(const uint8_t *pNorm,
 	bool bNegative = false; // set for negative number
 
 	// Check pointer
-	if (NULL == pNorm) return 0;
+	if (NULL == pCode) return 0;
 
 	// Check character count
 	if ((length > 8) || (length < 2)) return 0;
 
 	memset(valarray, 0, sizeof( valarray));
-	normbyte = *pNorm;
-	decibyte = *(pNorm + 1);
+	normbyte = *pCode;
+	decibyte = *(pCode + 1);
 
 	// Check if this is a negative number
-	uint8_t ttt = (*(pNorm + 2));
-	if ( (*(pNorm + 2)) & 0x80) {
+	if ( (*(pCode + 2)) & 0x80) {
 		bNegative = true;
 	}
 
 	switch (length - 2) {
 
 	case 1: // 8-bit
-		memcpy((char *) &valarray, (pNorm + 2), (length - 2));
+		memcpy((char *) &valarray, (pCode + 2), (length - 2));
 		value = *((int8_t *) valarray);
 		break;
 
 	case 2: // 16-bit
-		memcpy((char *) &valarray, (pNorm + 2), (length - 2));	
+		memcpy((char *) &valarray, (pCode + 2), (length - 2));	
 		value = wxINT16_SWAP_ON_LE(* ((int16_t *) valarray));	
 		break;
 
 	case 3: // 24-bit
-		memcpy(((char *) &valarray + 1), (pNorm + 2), (length - 2));
+		memcpy(((char *) &valarray + 1), (pCode + 2), (length - 2));
 		if ( bNegative ) *valarray = 0xff; // First byte must be 0xff			
 		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));	
 		break;
 
 	case 4: // 32-bit
-		memcpy((char *) &valarray, (pNorm + 2), (length - 2));	
+		memcpy((char *) &valarray, (pCode + 2), (length - 2));	
 		value = wxINT32_SWAP_ON_LE(* ((int32_t *) valarray));
 		break;
 
 	case 5: // 40-bit
-		memcpy(((char *) &valarray + 3), (pNorm + 2), (length - 2));
+		memcpy(((char *) &valarray + 3), (pCode + 2), (length - 2));
 		if ( bNegative ) {			
 			*valarray = 0xff; // First byte must be 0xff
 			*(valarray+1) = 0xff;
@@ -251,7 +283,7 @@ double vscp_getDataCodingNormalizedInteger(const uint8_t *pNorm,
 		break;
 
 	case 6: // 48-bit
-		memcpy(((char *) &valarray + 2), (pNorm + 2), (length - 2));
+		memcpy(((char *) &valarray + 2), (pCode + 2), (length - 2));
 		if ( bNegative ) {			
 			*valarray = 0xff; // First byte must be 0xff
 			*(valarray+1) = 0xff;
@@ -288,23 +320,26 @@ double vscp_getDataCodingNormalizedInteger(const uint8_t *pNorm,
 
 }
 
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 // getDataCodingString
 //
 
 
-wxString& getDataCodingString(const unsigned char *pString,
-                                unsigned char length)							
+wxString& vscp_getDataCodingString(const unsigned char *pCode,
+                                      unsigned char length)							
 {
 
 	static wxString str;
-	char buf[ 8 ];
+	char buf[ 20 ];
 
 	str.Empty();
 
-	if (NULL != pString) {
+	if (NULL != pCode) {
 		memset(buf, 0, sizeof( buf));
-		memcpy(buf, pString, length - 1);
+		memcpy(buf, pCode+1, length-1 );
 		str = wxString::FromUTF8(buf);
 	}
 
@@ -317,20 +352,20 @@ wxString& getDataCodingString(const unsigned char *pString,
 //
 
 
-bool vscp_getDataCodingString(const unsigned char *pData,
+bool vscp_getDataCodingString(const unsigned char *pCode,
                                         unsigned char dataSize, 
                                         wxString& strResult )							
 {	
-	char buf[ 8 ];
+	char buf[ 20 ];
 
-    if ( NULL != pData ) return false;
+    if ( NULL == pCode ) return false;
 
 	strResult.Empty();
-	if (NULL != pData) {
+	if (NULL != pCode) {
 		memset(buf, 0, sizeof( buf));
-		memcpy(buf, pData, dataSize - 1);
+		memcpy( buf, pCode+1, dataSize-1 );
 	
-		strResult = wxString::FromUTF8(buf);	
+		strResult = wxString::FromUTF8(buf);
 	}
 
     return true;
@@ -340,18 +375,18 @@ bool vscp_getDataCodingString(const unsigned char *pData,
 // getMeasurementAsFloat
 //
 
-float vscp_getMeasurementAsFloat(const unsigned char *pNorm, 
+float vscp_getMeasurementAsFloat(const unsigned char *pCode, 
                                     unsigned char length)								
 {
     float *pfloat = NULL;
     
     // Check pointers
-    if ( NULL == pNorm ) return false;
+    if ( NULL == pCode ) return false;
     
 	//float value;
 	//value = std::numeric_limits<float>::infinity();
 	if (length >= 5) {
-		pfloat = (float*)(pNorm + 1);
+		pfloat = (float*)(pCode + 1);
 		//value = pfloat[0];
 		// please insert test for (!NaN || !INF)
 	}
@@ -382,7 +417,7 @@ bool vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue
 	if (NULL == pEvent) return false;
 	if (NULL == pEvent->pdata) return false;
 
-	// If class >= 512 and class <1024 we
+	// If class >= 512 and class < 1024 we
 	// have GUID in front of data. 
 	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && 
 			(pEvent->vscp_class < VSCP_CLASS2_PROTOCOL) ) {
@@ -398,24 +433,19 @@ bool vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue
 	case 0: // series of bits
 		for (i = 1; i < (pEvent->sizeData-offset); i++) {
 
-			for (j = 7; j > 0; j--) {
+			for ( j=7; j>=0; j--) {
 
-				if (pEvent->pdata[ i+offset ] & (2 ^ j)) {
-			
-					strValue += wxT("true");
-				
+				if (pEvent->pdata[ i+offset ] & (1<<j)) {		
+					strValue += wxT("1");				
 				} else {
-		
-					strValue += wxT("false");
-				
+					strValue += wxT("0");
 				}
 
-				if ((i != (pEvent->sizeData - 1 - offset)) && (j != 0)) {
-
-					strValue += wxT(",");
-
-				}
+				//if ((i != (pEvent->sizeData - 1 - offset)) && (j != 0)) {
+					//strValue += wxT(",");
+				//}
 			}
+            strValue += wxT(" ");
 		}
 		break;
 
@@ -447,249 +477,15 @@ bool vscp_getVSCPMeasurementAsString(const vscpEvent *pEvent, wxString& strValue
 
 	case 3: // integer
 	{
-		wxUint32 hi = 0, lo = 0;	
-		unsigned char construct[ 4 ];
-
-		switch ( pEvent->sizeData-offset ) {
-
-		case 0:
-		case 1:
-			// This is illegal. No data but integer
-			// Zero is a good value in this case
-			break;
-
-		case 2:
-		{
-			// 8-bit integer or 1 byte
-			memset(construct, 0, sizeof( construct));
-			construct[ 3 ] = pEvent->pdata[ 1+offset ];
-			lo = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-			
-		}
-			break;
-
-		case 3:
-		{
-			// 16-bit integer or 2 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 2 ] = pEvent->pdata[ 1+offset ];
-			construct[ 3 ] = pEvent->pdata[ 2+offset ];
-			lo = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 4:
-		{
-			// 24-bit integer or 3 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 1 ] = pEvent->pdata[ 1+offset ];
-			construct[ 2 ] = pEvent->pdata[ 2+offset ];
-			construct[ 3 ] = pEvent->pdata[ 3+offset ];
-			lo = *((long *) construct);			
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 5:
-		{
-			// 32-bit integer or 4 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 0 ] = pEvent->pdata[ 1+offset ];
-			construct[ 1 ] = pEvent->pdata[ 2+offset ];
-			construct[ 2 ] = pEvent->pdata[ 3+offset ];
-			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 6:
-		{
-			// 40-bit integer or 5 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 0 ] = pEvent->pdata[ 1+offset ];
-			construct[ 1 ] = pEvent->pdata[ 2+offset ];
-			construct[ 2 ] = pEvent->pdata[ 3+offset ];
-			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-			memset(construct, 0, sizeof( construct));
-			construct[ 3 ] = pEvent->pdata[ 1+offset ];
-			hi = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 7:
-		{
-			// 48-bit integer or 6 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 0 ] = pEvent->pdata[ 1+offset ];
-			construct[ 1 ] = pEvent->pdata[ 2+offset ];
-			construct[ 2 ] = pEvent->pdata[ 3+offset ];
-			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-			memset(construct, 0, sizeof( construct));
-			construct[ 2 ] = pEvent->pdata[ 1+offset ];
-			construct[ 3 ] = pEvent->pdata[ 2+offset ];
-			hi = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 8:
-		{
-			// 56-bit integer or 7 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 0 ] = pEvent->pdata[ 1+offset ];
-			construct[ 1 ] = pEvent->pdata[ 2+offset ];
-			construct[ 2 ] = pEvent->pdata[ 3+offset ];
-			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);			
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-			memset(construct, 0, sizeof( construct));
-			construct[ 1 ] = pEvent->pdata[ 1+offset ];
-			construct[ 2 ] = pEvent->pdata[ 2+offset ];
-			construct[ 3 ] = pEvent->pdata[ 3+offset ];
-			hi = *((long *) construct);			
-			lo = wxUINT32_SWAP_ON_LE(lo);
-		}
-			break;
-
-		}
-		
-		wxLongLong longVal(hi, lo);
-		strValue = longVal.ToString();
-		
-
+        double value = (double)vscp_getDataCodingInteger( pEvent->pdata+offset, pEvent->sizeData-offset );
+        strValue.Printf(_("%.0lf"), value );
 	}
 		break;
 
 	case 4: // normalized integer
 	{
-	
-		wxUint32 hi = 0, lo = 0;		
-		unsigned char construct[ 4 ];
-
-		switch ( pEvent->sizeData-offset ) {
-
-		case 0:
-		case 1:
-		case 2:
-			// This is illegal. No data but integer
-			// Zero is a good value in this case
-			break;
-
-		case 3:
-		{
-			// 8-bit integer or 1 byte
-			memset(construct, 0, sizeof( construct));
-			construct[ 3 ] = pEvent->pdata[ 1+offset ];
-			lo = *((long *) construct);			
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 4:
-		{
-			// 16-bit integer or 2 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 2 ] = pEvent->pdata[ 1+offset ];
-			construct[ 3 ] = pEvent->pdata[ 2+offset ];
-			lo = *((long *) construct);			
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 5:
-		{
-			// 24-bit integer or 3 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 1 ] = pEvent->pdata[ 1+offset ];
-			construct[ 2 ] = pEvent->pdata[ 2+offset ];
-			construct[ 3 ] = pEvent->pdata[ 3+offset ];
-			lo = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 6:
-		{
-			// 32-bit integer or 4 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 0 ] = pEvent->pdata[ 1+offset ];
-			construct[ 1 ] = pEvent->pdata[ 2+offset ];
-			construct[ 2 ] = pEvent->pdata[ 3+offset ];
-			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 7:
-		{
-			// 40-bit integer or 5 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 0 ] = pEvent->pdata[ 1+offset ];
-			construct[ 1 ] = pEvent->pdata[ 2+offset ];
-			construct[ 2 ] = pEvent->pdata[ 3+offset ];
-			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);			
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-			memset(construct, 0, sizeof( construct));
-			construct[ 3 ] = pEvent->pdata[ 1+offset ];
-			hi = *((long *) construct);			
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		case 8:
-		{
-			// 48-bit integer or 6 bytes
-			memset(construct, 0, sizeof( construct));
-			construct[ 0 ] = pEvent->pdata[ 1+offset ];
-			construct[ 1 ] = pEvent->pdata[ 2+offset ];
-			construct[ 2 ] = pEvent->pdata[ 3+offset ];
-			construct[ 3 ] = pEvent->pdata[ 4+offset ];
-			lo = *((long *) construct);			
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-			memset(construct, 0, sizeof( construct));
-			construct[ 2 ] = pEvent->pdata[ 1+offset ];
-			construct[ 3 ] = pEvent->pdata[ 2+offset ];
-			hi = *((long *) construct);		
-			lo = wxUINT32_SWAP_ON_LE(lo);
-
-		}
-			break;
-
-		}
-
-		wxLongLong longVal(hi, lo);
-		wxDouble dValue = longVal.ToDouble();
-		char exponent = pEvent->pdata[ 1+offset ];
-
-		dValue = dValue * pow(10.0, exponent);
-        strValue.Printf(_("%f"), dValue);
-
-
+	    double value = vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, pEvent->sizeData-offset);
+        strValue.Printf(_("%lf"), value );
 	}
 		break;
 
@@ -796,7 +592,6 @@ bool vscp_getVSCPMeasurementAsDouble(const vscpEvent *pEvent, double *pvalue)
 
 bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& strValue)
 {
-    //float value;
     int offset = 0;
     
     // If class >= 512 and class <1024 we
@@ -806,11 +601,10 @@ bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& s
 		offset = 16;
 	}
     
-    if (pEvent->sizeData-offset < 6) return false;
+    if (pEvent->sizeData-offset != 8) return false;
     
-	//value = std::numeric_limits<float>::infinity();
-	float *pfloat = (float*)(pEvent->pdata+offset);
-    strValue.Format( _("%f"), *pfloat );
+	double *pfloat = (double*)(pEvent->pdata+offset);
+    strValue.Printf( _("%lf"), *pfloat );
 
     return true;
 }

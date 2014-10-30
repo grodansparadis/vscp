@@ -199,8 +199,13 @@ int WINAPI EXPORT vscphlp_setVscpEventFromString( vscpEvent *pEvent, const char 
 int WINAPI EXPORT vscphlp_setVscpEventExFromString( vscpEventEx *pEvent, const char *p );
 
 unsigned char WINAPI EXPORT vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent );
-unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pNorm, int size );
-double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pNorm, int size );
+unsigned long long WINAPI EXPORT vscphlp_getDataCodingBitArray(const unsigned char *pCode, int size );
+unsigned long long WINAPI EXPORT vscphlp_getDataCodingInteger(const unsigned char *pCode, int size );
+double WINAPI EXPORT vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode, int size );
+int WINAPI EXPORT vscphlp_getDataCodingString(const unsigned char *pData,
+                                                    unsigned char dataLength, 
+                                                    char *strResult,
+                                                    int size );
 int WINAPI EXPORT vscphlp_getVscpDataFromString( vscpEvent *pEvent, 
                                                     const char *pstr );
 int WINAPI EXPORT vscphlp_getVSCPMeasurementAsString( const vscpEvent *pEvent, 
@@ -411,8 +416,9 @@ int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent, const char *p );
 
 
 unsigned char vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent );
-unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pNorm, int size );
-double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pNorm, int size );
+unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pCode, int size );
+unsigned long long vscphlp_getDataCodingInteger(const unsigned char *pCode, int size );
+double vscphlp_getDataCodingNormalizedInteger(const unsigned char *pCode, int size );
 int vscphlp_getDataCodingString(const unsigned char *pData,
                                        unsigned char dataLength, 
                                        char *strResult,
