@@ -216,7 +216,7 @@ CControlObject::CControlObject()
         m_clientMap[ i ] = 0;
     }
 
-	// Loal doamin
+	// Local domain
 	m_authDomain = _("mydomain.com");
 
     // Set Default Log Level

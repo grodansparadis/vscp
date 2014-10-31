@@ -139,6 +139,7 @@ void *deviceThread::Entry()
 			wxString str;
 			str = _("Loading level I driver: ");
 			str += m_pDeviceItem->m_strName;
+			str += _("\n");
 			m_pCtrlObject->logMsg(str, DAEMON_LOGMSG_INFO);
 			wxLogDebug(str);
 		}
@@ -481,6 +482,7 @@ void *deviceThread::Entry()
 			str = _("Loading level II driver: <");
 			str += m_pDeviceItem->m_strName;
             str += _(">");
+			str += _("\n");
 			m_pCtrlObject->logMsg(str, DAEMON_LOGMSG_INFO);
 		}
 
@@ -576,7 +578,7 @@ void *deviceThread::Entry()
         
 		// Username, password, host and port can be set in configuration file. Read in them here
 		// if they are.
-		wxString strHost(_("localhost"));
+		wxString strHost(_("localhost:8080"));
 		short port = 9598;
 
 		wxStringTokenizer tkz(m_pDeviceItem->m_strParameter, _(";"));
