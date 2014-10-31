@@ -1160,7 +1160,7 @@ uint8_t vscp_calcCRC4GUIDString(const wxString &strguid)
     uint8_t guid[16];
 
     memset( guid, 0, 16 );
-    vscp_getGuidFromStringToArray( guid, strguid.mbc_str() );
+    vscp_getGuidFromStringToArray( guid, strguid );
 
     init_crc8();
     for ( int i=0; i<16; i++ ) {

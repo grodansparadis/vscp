@@ -1809,7 +1809,7 @@ extern "C" unsigned char vscphlp_calcCRC4GUIDString(const char *strguid)
 #endif
 {
     wxString wxstr = wxString::FromAscii(strguid);
-    return vscp_calcCRC4GUIDString(strguid);
+    return vscp_calcCRC4GUIDString(wxstr);
 }
 
 
