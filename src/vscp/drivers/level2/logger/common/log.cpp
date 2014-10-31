@@ -375,7 +375,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		}
 
 		m_pLogStream->Write("<timestamp>", strlen("<timestamp>"));
-		str.Printf(_("%lu"), pEvent->timestamp);
+		str.Printf(_("%X"), pEvent->timestamp);
 		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 		m_pLogStream->Write("</timestamp>\n", strlen("</timestamp>\n"));
 
@@ -417,7 +417,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 		}
 
-		str.Printf(_(" Timestamp=%lu\r\n"), pEvent->timestamp);
+		str.Printf(_(" Timestamp=%X\r\n"), pEvent->timestamp );
 		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
 
 	}
@@ -549,6 +549,10 @@ CVSCPLogWrkTread::Entry()
                 delete [] pEvent->pdata;
                 pEvent->pdata = NULL;
             }
+			
+			// And delete the event
+			delete pEvent;
+			pEvent = NULL;
 
 		} // Event received
 	} // Receive loop
