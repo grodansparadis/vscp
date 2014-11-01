@@ -104,7 +104,7 @@
         <!-- default is 8080.                                 -->
 
         <webserver enable="true" 
-                    webrootpath="/srv/vscp/www"
+                    webrootpath="/srv/vscp/web"
                     port="8080"
                     path_cert=""
                     authdomain="mydomain.com"
