@@ -968,43 +968,43 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
 	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
-    vscpEvent *pEvent = new vscpEvent;
+    //vscpEvent *pEvent = new vscpEvent;
 
-    if ( ( NULL != pEvent ) && pClientItem->m_clientInputQueue.GetCount() ) {
-
+    if ( /*( NULL != pEvent ) &&*/ pClientItem->m_clientInputQueue.GetCount() ) {
+		
+		vscpEvent *pqueueEvent;
         pClientItem->m_mutexClientInputQueue.Lock();
         {
             nodeClient = pClientItem->m_clientInputQueue.GetFirst();
-            vscpEvent *pqueueEvent = nodeClient->GetData();
+            pqueueEvent = nodeClient->GetData();
 
             // Copy message
-            memcpy ( pEvent, pqueueEvent, sizeof ( vscpEvent ) );
+            //memcpy ( pEvent, pqueueEvent, sizeof ( vscpEvent ) );
 
             // Remove the node
             pClientItem->m_clientInputQueue.DeleteNode ( nodeClient );
         }
-
         pClientItem->m_mutexClientInputQueue.Unlock();
 
         strOut.Printf( _("%u,%u,%u,%lu,%lu,"),
-                            pEvent->head,
-                            pEvent->vscp_class,
-                            pEvent->vscp_type,
-                            pEvent->obid,
-                            pEvent->timestamp );
+                            pqueueEvent->head,
+                            pqueueEvent->vscp_class,
+                            pqueueEvent->vscp_type,
+                            pqueueEvent->obid,
+                            pqueueEvent->timestamp );
 
         wxString strGUID;
-        vscp_writeGuidToString( pEvent, strGUID );
+        vscp_writeGuidToString( pqueueEvent, strGUID );
         strOut += strGUID;
 
         // Handle data
-        if ( NULL != pEvent->pdata ) {
+        if ( NULL != pqueueEvent->pdata ) {
 
             strOut += _(",");
-            for ( int i=0; i<pEvent->sizeData; i++ ) {
+            for ( int i=0; i<pqueueEvent->sizeData; i++ ) {
                 wxString wrk;
-                wrk.Printf(_("%d"), pEvent->pdata[ i ] );
-                if ( ( pEvent->sizeData - 1 ) != i ) {
+                wrk.Printf(_("%d"), pqueueEvent->pdata[ i ] );
+                if ( ( pqueueEvent->sizeData - 1 ) != i ) {
                     wrk += _(",");
                 }
 
@@ -1018,11 +1018,11 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
         ns_send( conn,  strOut.mb_str(), strlen ( strOut.mb_str() ) );
 
         // Remove the old data
-        if ( NULL != pEvent->pdata ) delete pEvent->pdata;
-        pEvent->pdata = NULL;	 // Data stored in message
+        //if ( NULL != pqueueEvent->pdata ) delete pqueueEvent->pdata;
+        //pqueueEvent->pdata = NULL;	 // Data stored in message
 
-        delete pEvent;
-
+        //delete pqueueEvent;
+		vscp_deleteVSCPevent( pqueueEvent );
 
     }
     else {

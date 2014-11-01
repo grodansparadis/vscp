@@ -339,44 +339,44 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 
 		m_pLogStream->Write("<time>", strlen("<time>"));
 		str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime();
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</time>\n", strlen("</time>\n"));
 
 		m_pLogStream->Write("<head>", strlen("<head>"));
 		str.Printf(_("%d"), pEvent->head);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</head>\n", strlen("</head>\n"));
 
 		m_pLogStream->Write("<class>", strlen("<class>"));
 		str.Printf(_("%d"), pEvent->vscp_class);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</class>\n", strlen("</class>\n"));
 
 		m_pLogStream->Write("<type>", strlen("<type>"));
 		str.Printf(_("%d"), pEvent->vscp_type);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</type>\n", strlen("</type>\n"));
 
 		m_pLogStream->Write("<guid>", strlen("<guid>"));
 		vscp_writeGuidToString(pEvent, str);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</guid>\n", strlen("</guid>\n"));
 
 		m_pLogStream->Write("<sizedata>", strlen("<sizedata>")); // Not used by read routine	
 		str.Printf(_("%d"), pEvent->sizeData);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</sizedata>\n", strlen("</sizedata>\n"));
 
 		if (0 != pEvent->sizeData) {
 			m_pLogStream->Write("<data>", strlen("<data>"));
 			vscp_writeVscpDataToString(pEvent, str);
-			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+			m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 			m_pLogStream->Write("</data>\n", strlen("</data>\n"));
 		}
 
 		m_pLogStream->Write("<timestamp>", strlen("<timestamp>"));
 		str.Printf(_("%X"), pEvent->timestamp);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</timestamp>\n", strlen("</timestamp>\n"));
 
 		m_pLogStream->Write("<note>", strlen("<note>"));
@@ -390,35 +390,35 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		wxString str;
 
 		str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime() + _(": ");
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
 		str.Printf(_("head=%d "), pEvent->head);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
 		str.Printf(_("class=%d "), pEvent->vscp_class);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
 		str.Printf(_("type=%d "), pEvent->vscp_type);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
 		str.Printf(_("GUID="), pEvent->vscp_type);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
 		vscp_writeGuidToString(pEvent, str);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
 		str.Printf(_(" datasize=%d "), pEvent->sizeData);
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
 		if (0 != pEvent->sizeData) {
 			str.Printf(_("data="), pEvent->vscp_type);
-			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+			m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 			vscp_writeVscpDataToString(pEvent, str);
-			m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+			m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		}
 
 		str.Printf(_(" Timestamp=%X\r\n"), pEvent->timestamp );
-		m_pLogStream->Write(str.mb_str(), strlen(str.mb_str()));
+		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
 	}
 
