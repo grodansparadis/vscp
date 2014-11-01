@@ -1576,8 +1576,6 @@ int _tmain(int argc, _TCHAR* argv[])
         printf("Error - vscphlp_getVSCPMeasurementAsDouble value = %slf \n", value );
     }
 
-    double vvv = 3.14159265359;
-    unsigned char *p = (unsigned char *)&vvv;
     vscpEvent *pEventfloat = new vscpEvent;
     pEventfloat->head = 0;
     pEventfloat->vscp_class = 10;
@@ -1587,18 +1585,14 @@ int _tmain(int argc, _TCHAR* argv[])
     memset( pEventfloat->GUID, 0, 16 );
     pEventfloat->sizeData = 8;
     pEventfloat->pdata = new unsigned char[ pEventfloat->sizeData ];
-    pEventfloat->pdata[0] = 234; //*p;
-    pEventfloat->pdata[1] = 46;  // *(p+1);
-    pEventfloat->pdata[2] = 68; // *(p+2);
-    pEventfloat->pdata[3] = 84; //*(p+3);
-    pEventfloat->pdata[4] = 251; //*(p+4);
-    pEventfloat->pdata[5] = 33; //*(p+5);
-    pEventfloat->pdata[6] = 9; // *(p+6);
-    pEventfloat->pdata[7] = 64; // *(p+7);
-
-    for ( int i=0; i<8; i++ ) {
-        printf( "%d ", pEventfloat->pdata[i] );
-    }
+    pEventfloat->pdata[0] = 234;
+    pEventfloat->pdata[1] = 46;
+    pEventfloat->pdata[2] = 68;
+    pEventfloat->pdata[3] = 84;
+    pEventfloat->pdata[4] = 251;
+    pEventfloat->pdata[5] = 33;
+    pEventfloat->pdata[6] = 9;
+    pEventfloat->pdata[7] = 64;
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_getVSCPMeasurementFloat64AsString( pEventfloat, 
                                                                             stringbuf, 

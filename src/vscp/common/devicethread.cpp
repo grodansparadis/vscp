@@ -718,6 +718,7 @@ void *deviceThread::Entry()
 
 
 
+
 	//
 	// =====================================================================================
 	//
@@ -1013,22 +1014,8 @@ void *deviceLevel2ReceiveThread::Entry()
             pEvent->GUID[15] = nickname_lsb;
         
         }
-        
-        /*
-        // If this is a Level I event over Level II we need to fill in the
-        // interface GUID
-        if ( (pEvent->vscp_class < 1024) && (pEvent->vscp_class >= 512) ) {
-            uint8_t l1 = pEvent->GUID[0];
-            uint8_t l2 = pEvent->GUID[1];
-            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.setGUID( pEvent->GUID );
-            pEvent->GUID[ 0 ] = l1;
-            pEvent->GUID[ 1 ] = l2;
-            m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_guid.setAt(1,l2);
-        }
-        */
-        
-            
-        // There must be room in the receive queue
+                    
+        // There must be room in the receive queue (even if rom (or whisky) has been better)
 		if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
 				m_pMainThreadObj->m_pCtrlObject->m_clientOutputQueue.GetCount()) {
 
@@ -1103,14 +1090,17 @@ void *deviceLevel2WriteThread::Entry()
 			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Lock();
 			nodeClient = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.GetFirst();
 			vscpEvent *pqueueEvent = nodeClient->GetData();
-            //m_pObj->m_sendQueue.DeleteNode(nodeClient);
+            
 			m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Unlock();
 
 			if (CANAL_ERROR_SUCCESS ==
-				m_pMainThreadObj->m_pDeviceItem->m_proc_VSCPBlockingSend(m_pMainThreadObj->m_pDeviceItem->m_openHandle, pqueueEvent, 300)) {
-				// Remove the node
-				m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.DeleteNode(nodeClient);
-                //deleteVSCPevent(pqueueEvent);
+				
+                m_pMainThreadObj->m_pDeviceItem->m_proc_VSCPBlockingSend(m_pMainThreadObj->m_pDeviceItem->m_openHandle, pqueueEvent, 300)) {
+				
+                // Remove the node
+                m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Lock();
+				m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientInputQueue.DeleteNode( nodeClient );
+                m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_mutexClientInputQueue.Unlock();
 			} 
             else {
 				// Give it another try

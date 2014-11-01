@@ -193,7 +193,7 @@ uint64_t vscp_getDataCodingBitArray(const uint8_t *pCode,
 int64_t vscp_getDataCodingInteger(const uint8_t *pCode, uint8_t length )
 {
     int64_t value64 = 0;
-    uint8_t byteArray[8];
+    //uint8_t byteArray[8];
 
     if ( NULL == pCode ) return 0;
     if ( length < 2 ) return 0;

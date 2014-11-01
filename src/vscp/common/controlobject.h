@@ -121,7 +121,6 @@ public:
      */
     virtual void *Entry();
 
-
     /*! 
         called when the thread exits - whether it terminates normally or is
         stopped with Delete() (but not when it is Kill()ed!)
@@ -159,9 +158,11 @@ public:
     virtual ~CControlObject(void);
 
     /*!
-      Write log message
+      Write log message - 
     */ 
-    void logMsg(const wxString& wxstr, const uint8_t level = DAEMON_LOGMSG_INFO, const uint8_t nType = DAEMON_LOGTYPE_GENERAL );
+    void logMsg(const wxString& wxstr, 
+                    const uint8_t level = DAEMON_LOGMSG_INFO, 
+                    const uint8_t nType = DAEMON_LOGTYPE_GENERAL );
 
     /*!
         General initialization
@@ -382,6 +383,8 @@ public:
 	//                      Logging
 	/////////////////////////////////////////////////////////
 
+    wxMutex m_mutexLogWrite;
+
     /*!
         Log Level
      */
@@ -407,6 +410,7 @@ public:
     bool m_bLogAccessEnable; // Enable security logfile
     wxFileName m_logAccessFileName;
     wxFile m_fileLogAccess;
+
 
 	/////////////////////////////////////////////////////////
 	//              Enable/disable switches

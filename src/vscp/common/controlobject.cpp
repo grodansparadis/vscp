@@ -367,6 +367,8 @@ CControlObject::~CControlObject()
 
 void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const uint8_t nType )
 {
+    m_mutexLogWrite.Lock();
+
     wxDateTime datetime( wxDateTime::GetTimeNow() );
     wxString wxdebugmsg;
 
@@ -410,11 +412,15 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 #endif		
 
         if ( DAEMON_LOGTYPE_GENERAL == nType ) {
+
             // Write to general log file
             if ( m_fileLogGeneral.IsOpened() ) {
                 m_fileLogGeneral.Write( wxdebugmsg );
             }
+
         }
+
+
     }
 
     if ( DAEMON_LOGTYPE_SECURITY == nType ) {
@@ -434,13 +440,9 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 
 #ifndef WIN32
 
-    //::wxLogDebug(wxdebugmsg);
-
     if (m_logLevel >= level) {
         wxPrintf(wxdebugmsg);
     }
-
-
 
     switch (level) {
 
@@ -480,6 +482,7 @@ void CControlObject::logMsg(const wxString& wxstr, const uint8_t level, const ui
 
 #endif
 
+     m_mutexLogWrite.Unlock();
 
 }
 
