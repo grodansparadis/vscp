@@ -968,9 +968,8 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
 	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     CLIENTEVENTLIST::compatibility_iterator nodeClient;
-    //vscpEvent *pEvent = new vscpEvent;
 
-    if ( /*( NULL != pEvent ) &&*/ pClientItem->m_clientInputQueue.GetCount() ) {
+    if ( pClientItem->m_clientInputQueue.GetCount() ) {
 		
 		vscpEvent *pqueueEvent;
         pClientItem->m_mutexClientInputQueue.Lock();
@@ -978,21 +977,18 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
             nodeClient = pClientItem->m_clientInputQueue.GetFirst();
             pqueueEvent = nodeClient->GetData();
 
-            // Copy message
-            //memcpy ( pEvent, pqueueEvent, sizeof ( vscpEvent ) );
-
             // Remove the node
             pClientItem->m_clientInputQueue.DeleteNode ( nodeClient );
         }
         pClientItem->m_mutexClientInputQueue.Unlock();
 
-        strOut.Printf( _("%u,%u,%u,%lu,%lu,"),
+        strOut.Printf( _("%d,%d,%d,%d,%d,"),
                             pqueueEvent->head,
                             pqueueEvent->vscp_class,
                             pqueueEvent->vscp_type,
                             pqueueEvent->obid,
                             pqueueEvent->timestamp );
-
+		 
         wxString strGUID;
         vscp_writeGuidToString( pqueueEvent, strGUID );
         strOut += strGUID;
@@ -1017,13 +1013,11 @@ bool VSCPClientThread::sendOneEventFromQueue( struct ns_connection *conn, CContr
         strOut += _("\r\n");
         ns_send( conn,  strOut.mb_str(), strlen ( strOut.mb_str() ) );
 
-        // Remove the old data
-        //if ( NULL != pqueueEvent->pdata ) delete pqueueEvent->pdata;
-        //pqueueEvent->pdata = NULL;	 // Data stored in message
-
         //delete pqueueEvent;
 		vscp_deleteVSCPevent( pqueueEvent );
 
+		// Let the system work a little
+		//ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 1 );
     }
     else {
         if ( bStatusMsg ) {

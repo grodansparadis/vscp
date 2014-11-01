@@ -375,7 +375,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 		}
 
 		m_pLogStream->Write("<timestamp>", strlen("<timestamp>"));
-		str.Printf(_("%X"), pEvent->timestamp);
+		str.Printf(_("%d"), pEvent->timestamp);
 		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		m_pLogStream->Write("</timestamp>\n", strlen("</timestamp>\n"));
 
@@ -388,7 +388,7 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
     else {
 		// Standard log format
 		wxString str;
-
+		
 		str = wxDateTime::Now().FormatISODate() + _(" ") + wxDateTime::Now().FormatISOTime() + _(": ");
 		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 
@@ -417,9 +417,9 @@ CVSCPLog::writeEvent(vscpEvent *pEvent)
 			m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
 		}
 
-		str.Printf(_(" Timestamp=%X\r\n"), pEvent->timestamp );
+		str.Printf(_(" Timestamp=%d\r\n"), pEvent->timestamp );
 		m_pLogStream->Write(str.mbc_str(), strlen(str.mbc_str()));
-
+		
 	}
 
 	return true;
@@ -526,12 +526,10 @@ CVSCPLogWrkTread::Entry()
     // Close server connection
     m_srv.doCmdClose();
 
-	//int rv;
-	//vscpEvent event;
 	while (!TestDestroy() && !m_pLog->m_bQuit) {
 
+		// Wait for events
         if ( wxSEMA_TIMEOUT == m_pLog->m_semSendQueue.WaitTimeout(500)) continue;
-        
 
         if (m_pLog->m_sendList.size()) {
 
@@ -544,21 +542,12 @@ CVSCPLogWrkTread::Entry()
 
             m_pLog->writeEvent(pEvent);
 
-            // We are done with the event - remove data if any
-            if (NULL != pEvent->pdata) {
-                delete [] pEvent->pdata;
-                pEvent->pdata = NULL;
-            }
-			
-			// And delete the event
-			delete pEvent;
+			vscp_deleteVSCPevent( pEvent );
 			pEvent = NULL;
 
 		} // Event received
+		
 	} // Receive loop
-
-
-
 
 	// Close the channel
 	m_srv.doCmdClose();

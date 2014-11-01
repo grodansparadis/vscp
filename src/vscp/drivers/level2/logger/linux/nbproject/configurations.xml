@@ -152,7 +152,7 @@
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
             tool="0"
-            flavor2="0">
+            flavor2="2">
         <cTool flags="1">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>

@@ -1509,6 +1509,8 @@ void vscp_deleteVSCPevent(vscpEvent *pEvent)
 {
 	if (pEvent->sizeData) delete [] pEvent->pdata;
 	delete pEvent;
+	pEvent = NULL;
+	
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

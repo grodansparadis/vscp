@@ -619,16 +619,7 @@ bool CControlObject::init(wxString& strcfgfile)
     // Start daemon internal client worker thread
     startClientWorkerThread();
 
-    // Load leve 1 drivers if the are enabled
-    if (m_bEnableLevel1Drivers) {
-        logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
-        startDeviceWorkerThreads();
-    }
-    else {
-        logMsg(_("Level I drivers disabled.\n"), DAEMON_LOGMSG_INFO);
-    }
-
-    // Start TCP/IP interface if enabled enabled
+    // Start TCP/IP interface if enabled
     if (m_bTCPInterface) {
         logMsg(_("TCP/IP interface enabled.\n"), DAEMON_LOGMSG_INFO);
         startTcpWorkerThread();
@@ -649,6 +640,15 @@ bool CControlObject::init(wxString& strcfgfile)
     }
     else {
         logMsg(_("WebServer interface disabled.\n"), DAEMON_LOGMSG_INFO);
+    }
+	
+	// Load level 1 drivers if the are enabled
+    if (m_bEnableLevel1Drivers) {
+        logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
+        startDeviceWorkerThreads();
+    }
+    else {
+        logMsg(_("Level I drivers disabled.\n"), DAEMON_LOGMSG_INFO);
     }
 
     return true;
