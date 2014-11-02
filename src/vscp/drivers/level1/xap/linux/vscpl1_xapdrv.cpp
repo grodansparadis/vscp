@@ -32,7 +32,7 @@
 // =====
 // device1 = logger,c:\canal_log,txt,d:\winnr\system32\canallogger.dll,64,64,1
 
-#include "xapdrv.h"
+#include "vscpl1_xapdrv.h"
 #include "stdio.h"
 #include "stdlib.h"
 

@@ -35,16 +35,16 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-XAPDRV_OBJECTS =  xapdrv.o ../common/xapobj.o 
+XAPDRV_OBJECTS =  vscpl1_xapdrv.o ../common/xapobj.o 
 PROJOBJS        =     ../../../../common/guid.o  ../../../../../common/dllist.o 
 
 
 ### Targets: ###
 
-all: xapdrv.so test
+all: vscpl1_xapdrv.so test
 
 install: all
-	$(INSTALL_PROGRAM) xapdrv.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl1_xapdrv.so $(libdir)
 
 uninstall: 
 
@@ -56,7 +56,7 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f xapdrv.so
+	rm -f vscpl1_xapdrv.so
 	rm -f test
 
 distclean: clean
