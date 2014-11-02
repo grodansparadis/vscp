@@ -23,7 +23,7 @@
 //
 
 
-#include "socketcandrv.h"
+#include "vscpl1_socketcandrv.h"
 #include "stdio.h"
 #include "stdlib.h"
 

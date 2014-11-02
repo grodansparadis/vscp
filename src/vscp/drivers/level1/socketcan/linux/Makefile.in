@@ -35,13 +35,13 @@ DLLPREFIX = lib
 WX_RELEASE = 2.6
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALSOCKETCAN_OBJECTS =  socketcandrv.o socketcanobj.o ../../../../common/guid.o ../../../../../common/dllist.o 
+CANALSOCKETCAN_OBJECTS =  vscpl1_socketcandrv.o socketcanobj.o ../../../../common/guid.o ../../../../../common/dllist.o 
 PROJOBJS = ../../../../common/guid.o ../../../../../common/dllist.o
 
 
 ### Targets: ###
 
-all: socketcandrv.so test
+all: vscpl1_socketcandrv.so test
 
 install: all
 	$(INSTALL_PROGRAM) socketcandrv.so $(libdir)
@@ -56,7 +56,7 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f socketcandrv.so
+	rm -f vscpl1_socketcandrv.so
 	rm -f test
 	rm -rf ../common/*~
 	rm -rf *~
