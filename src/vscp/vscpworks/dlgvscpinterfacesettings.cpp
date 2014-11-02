@@ -453,14 +453,6 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 
 	m_btnTestConnection->Enable( false );
 
-	wxProgressDialog *pProgressDlg = 
-		new wxProgressDialog( _("TCP/IP session"),
-		_("Connecting to server..."),
-		100, 
-		this,
-		wxPD_AUTO_HIDE | wxPD_APP_MODAL );
-	pProgressDlg->Update(80 );
-
 	// If server username is given and no password is entered we ask for it.
 	if ( m_RemoteServerPassword->GetValue().IsEmpty() && !m_RemoteServerUsername->GetValue().IsEmpty() ) {
 		wxstr = ::wxGetTextFromUser( _("Please enter password"), 
@@ -478,7 +470,7 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 		tcpif.doCmdOpen( m_RemoteServerURL->GetValue(),
 			m_RemoteServerUsername->GetValue(),
 			wxstr );
-	if ( rv ) {
+	if ( VSCP_ERROR_SUCCESS == rv ) {
 		rv = tcpif.doCmdNOOP();
 		tcpif.doCmdClose();
 		if ( CANAL_ERROR_SUCCESS == rv ) {
@@ -493,7 +485,6 @@ void dlgVscpInterfaceSettings::OnButtonTestInterfaceClick( wxCommandEvent& event
 	}
 
 	m_btnTestConnection->Enable( true );
-	pProgressDlg->Update( 100 );
 
 	event.Skip();
 }
@@ -520,14 +511,6 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 		wxstr = m_RemoteServerPassword->GetValue();
 	}
 
-	wxProgressDialog *pProgressDlg = 
-		new wxProgressDialog( _("TCP/IP session"),
-		_("Connecting to server..."),
-		100, 
-		this,
-		wxPD_AUTO_HIDE | wxPD_APP_MODAL );
-	pProgressDlg->Update( 80 );
-
 	wxBusyCursor busy;
 
 	unsigned long val;
@@ -536,9 +519,7 @@ void dlgVscpInterfaceSettings::OnButtonGetInterfacesClick( wxCommandEvent& event
 		m_RemoteServerUsername->GetValue(),
 		wxstr );
 
-	pProgressDlg->Update( 100 );
-
-	if ( rv ) {
+	if ( VSCP_ERROR_SUCCESS == rv ) {
 
 		// Get the interface list
 		wxArrayString array;

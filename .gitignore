@@ -151,3 +151,4 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/_UpgradeReport_Files/UpgradeReport.xslt
 /src/vscp/_UpgradeReport_Files/UpgradeReport_Minus.gif
 /src/vscp/_UpgradeReport_Files/UpgradeReport_Plus.gif
+/config_examples/web/old

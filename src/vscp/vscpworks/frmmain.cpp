@@ -4878,7 +4878,6 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 									sizeof( vscpEventFilter ) );
 
                         subframe->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
-                                                        pBoth->m_pvscpif->m_port,
                                                         pBoth->m_pvscpif->m_strUser,
                                                         pBoth->m_pvscpif->m_strPassword );
 
@@ -5024,7 +5023,6 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 
                         //subframe->m_csw = m_interfaceType;
                         subframe->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
-														pBoth->m_pvscpif->m_port,
 														pBoth->m_pvscpif->m_strUser,
 														pBoth->m_pvscpif->m_strPassword );
 

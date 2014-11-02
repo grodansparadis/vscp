@@ -5411,7 +5411,6 @@ void WizardPage1::OnButtonSelectInterfaceClick( wxCommandEvent& event )
 
                             // Set the selected interface
                             ((DeviceBootloaderwizard *)GetParent())->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
-                                pBoth->m_pvscpif->m_port,
                                 pBoth->m_pvscpif->m_strUser,
                                 pBoth->m_pvscpif->m_strPassword );
 

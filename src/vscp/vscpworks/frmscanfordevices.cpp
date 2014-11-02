@@ -1253,7 +1253,8 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
 			// Mark as loaded
 			if ( bregs ) pElement->m_bLoaded = true;
 
-		} else if (INTERFACE_VSCP == m_interfaceType) {
+		} 
+        else if (INTERFACE_VSCP == m_interfaceType) {
         
 			cguid destguid;
 			destguid.setLSB( pElement->m_nodeid );
@@ -1266,6 +1267,8 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
 								                        &destguid,
 									                    &progressDlg,
 										                false );
+            // If read fails abort
+            if (!bregs) return;
 
 	        uint8_t preg_url[33];
 		    memset( preg_url, 0, sizeof(preg_url));
@@ -1369,13 +1372,12 @@ void frmScanforDevices::openConfiguration(wxCommandEvent& event)
         if (m_vscpif.m_strPassword.IsEmpty() &&
                 !m_vscpif.m_strUser.IsEmpty()) {
             m_vscpif.m_strPassword =
-                    ::wxGetTextFromUser(_("Please enter passeword"),
+                    ::wxGetTextFromUser(_("Please enter password"),
                     _("Connection Test"));
         }
 
         //subframe->m_csw = m_interfaceType;
         subframe->m_csw.setInterface(m_vscpif.m_strHost,
-                m_vscpif.m_port,
                 m_vscpif.m_strUser,
                 m_vscpif.m_strPassword);
 

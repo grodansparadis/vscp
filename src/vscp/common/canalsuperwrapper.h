@@ -113,14 +113,12 @@ public:
 	Set Interface TCP/IP
 	Use this method if the default constructor is used to construct the object
 	@param host to connect to (defaults to localhost if not given).
-	@param port on host to connect to. Default to 9598 if not given.
 	@param username Username to login to service.
 	@param password to login to service.
 	*/
 	void setInterface( const wxString& host, 
-		const short port,
-		const wxString& username,
-		const wxString& password );
+		                    const wxString& username,
+		                    const wxString& password );
 
 	/*!
 	Set Interface CANAL
@@ -133,11 +131,11 @@ public:
 	@param mask Mask to set.
 	*/
 	void setInterface( const wxString& name,
-		const wxString& path,
-		const wxString& parameters,
-		const unsigned long flags,
-		const unsigned long filter,
-		const unsigned long mask );
+		                    const wxString& path,
+		                    const wxString& parameters,
+		                    const unsigned long flags,
+		                    const unsigned long filter,
+		                    const unsigned long mask );
 
 	/*!
 	Open communication channel.

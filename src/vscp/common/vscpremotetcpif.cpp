@@ -107,30 +107,34 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
         case NS_RECV:
 			// Read new data
 			memset( rbuf, 0, sizeof( rbuf ) );
-			memcpy( rbuf, io->buf, io->len );
-			iobuf_remove(io, io->len); 
-            pTcpIfSession->m_readBuffer += wxString::FromUTF8( rbuf );
+            if ( io->len ) {
+			    memcpy( rbuf, io->buf, io->len );
+			    iobuf_remove(io, io->len); 
+                pTcpIfSession->m_readBuffer += wxString::FromUTF8( rbuf );
 
-			// Check if command already is in buffer
-			while ( wxNOT_FOUND != ( pos4lf = pTcpIfSession->m_readBuffer.Find( (const char)0x0a ) ) ) {
-				wxString strCmdGo = pTcpIfSession->m_readBuffer.Mid( 0, pos4lf );
-                // If in ReceiveLoop we dont store the "+OK"s
-                if ( pTcpIfSession->m_bModeReceiveLoop ) {
-                    strCmdGo.Trim();
-                    strCmdGo.Trim(false);
-                    if ( _("+OK") == strCmdGo ) {
-                        pTcpIfSession->m_readBuffer = pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
-                        continue;
-                    }
+			    // Check if command already is in buffer
+			    while ( wxNOT_FOUND != ( pos4lf = pTcpIfSession->m_readBuffer.Find( (const char)0x0a ) ) ) {
+				    wxString strCmdGo = pTcpIfSession->m_readBuffer.Mid( 0, pos4lf );
+                    // If in ReceiveLoop we dont store the "+OK"s
+                    if ( pTcpIfSession->m_bModeReceiveLoop ) {
+                        strCmdGo.Trim();
+                        strCmdGo.Trim(false);
+                        if ( _("+OK") == strCmdGo ) {
+                            pTcpIfSession->m_readBuffer = 
+                                pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
+                            continue;
+                        }
                     
-                }
-                // Add to array 
-                pTcpIfSession->m_mutexArray.Lock();
-				pTcpIfSession->m_inputStrArray.Add( strCmdGo );
-                pTcpIfSession->m_mutexArray.Unlock();
-                if ( pTcpIfSession->m_bModeReceiveLoop ) pTcpIfSession->m_psemInputArray->Post(); // Flag that event is available
-				pTcpIfSession->m_readBuffer = pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
-			}
+                    }
+                    // Add to array 
+                    pTcpIfSession->m_mutexArray.Lock();
+				    pTcpIfSession->m_inputStrArray.Add( strCmdGo );
+                    pTcpIfSession->m_mutexArray.Unlock();
+                    if ( pTcpIfSession->m_bModeReceiveLoop ) pTcpIfSession->m_psemInputArray->Post(); // Flag that event is available
+				    pTcpIfSession->m_readBuffer = 
+                        pTcpIfSession->m_readBuffer.Right( pTcpIfSession->m_readBuffer.Length()-pos4lf-1 );
+			    }
+            }
 			break;
 
     };
@@ -227,7 +231,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 
         }
 
-        wxMilliSleep( 50 );
+        wxMilliSleep( 1 );
 
     }
 
@@ -1712,10 +1716,8 @@ int VscpRemoteTcpIf::doCmdGetChannelID( uint32_t *pChannelID )
 // doCmdInterfaceList
 //
 
-int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& array )
+int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& wxarray )
 {
-    wxString strLine;
-
     if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
 
     wxString strCmd(_("INTERFACE LIST\r\n"));
@@ -1725,17 +1727,14 @@ int VscpRemoteTcpIf::doCmdInterfaceList( wxArrayString& array )
     if ( !checkReturnValue(true) ) return VSCP_ERROR_GENERIC;
 
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;   
-    m_mutexArray.Lock();
-    strLine = m_inputStrArray[ m_inputStrArray.Count()-2 ];
-    m_mutexArray.Unlock();
     
     // Handle the data (if any)
-    wxStringTokenizer tkz( strLine, _("\r\n") );
-    while ( tkz.HasMoreTokens() ) {
-        wxString str = tkz.GetNextToken();
-        if ( wxNOT_FOUND == str.Find( _("+OK") ) ) {
-            array.Add( str );
+    for (unsigned int i=0; i<m_inputStrArray.Count(); i++ ) {
+        m_mutexArray.Lock();
+        if ( wxNOT_FOUND == m_inputStrArray[ i ].Find( _("+OK") ) ) {            
+            wxarray.Add( m_inputStrArray[ i ] );            
         }
+        m_mutexArray.Unlock();
     }
   
     return VSCP_ERROR_SUCCESS;

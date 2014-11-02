@@ -133,10 +133,9 @@ void CCanalSuperWrapper::init( void )
 // setInterface
 //  TCP/IP version
 
-void CCanalSuperWrapper::setInterface( const wxString& host, 
-	const short port,
-	const wxString& username,
-	const wxString& password )
+void CCanalSuperWrapper::setInterface( const wxString& host,
+	                                        const wxString& username,
+	                                        const wxString& password )
 {
 	// TCP/IP interface
 	m_itemDevice.id = USE_TCPIP_INTERFACE;
@@ -148,13 +147,12 @@ void CCanalSuperWrapper::setInterface( const wxString& host,
 	m_itemDevice.strPath.Empty();
 
 	// Build TCP/IP configuration string
-	m_itemDevice.strParameters = username;
+    m_itemDevice.strParameters = host;
+    m_itemDevice.strParameters += _(";");
+	m_itemDevice.strParameters += username;
 	m_itemDevice.strParameters += _(";"); 
 	m_itemDevice.strParameters += password;
 	m_itemDevice.strParameters += _(";");
-	m_itemDevice.strParameters += host;
-	m_itemDevice.strParameters += _(";");
-	m_itemDevice.strParameters += wxString::Format( _("%d"), port );
 
 	m_itemDevice.flags = 0;
 	m_itemDevice.filter = 0;
@@ -212,7 +210,10 @@ long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface, unsigned long 
 		// *** Open remote TCP/IP interface *** 
 
 		if ( strInterface.Length() ) {
-			rv = m_vscptcpif.doCmdOpen( strInterface, flags );
+			if ( VSCP_ERROR_SUCCESS ==  m_vscptcpif.doCmdOpen( strInterface, flags ) )
+            {
+                rv = 1661; // Pretend to be driver 
+            }
 		}
 		else {
 			rv = m_vscptcpif.doCmdOpen( m_itemDevice.strParameters, m_itemDevice.flags );
@@ -221,6 +222,8 @@ long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface, unsigned long 
 				// fail to get it we use the GUID assigned
 				// in the constructor
 				m_vscptcpif.doCmdGetGUID( (char *)m_GUID.m_id );
+
+                rv = 1661; // pretend to be driver
 			}
 
 		}
@@ -560,9 +563,9 @@ unsigned long CCanalSuperWrapper::doCmdVersion( void )
 		return m_canalDll.doCmdVersion();
 	}
 	else if ( USE_TCPIP_INTERFACE == m_itemDevice.id) {
-		uint8_t v1,v2,v3;
+		uint8_t v1=0,v2=0,v3=0;
 		m_vscptcpif.doCmdVersion( &v2, &v2, &v3 );
-		return v1<<16 + v2<<8 + v3;
+		return ((v1<<16) + (v2<<8) + v3);
 	}
 
 	return 0;

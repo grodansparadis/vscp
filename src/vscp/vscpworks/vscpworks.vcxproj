@@ -100,6 +100,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\crc.h" />
+    <ClInclude Include="..\..\common\net_skeleton.h" />
     <ClInclude Include="..\common\canal.h" />
     <ClInclude Include="..\common\canaldlldef.h" />
     <ClInclude Include="..\common\canalsuperwrapper.h" />
@@ -154,6 +155,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
+    <ClCompile Include="..\..\common\net_skeleton.c" />
     <ClCompile Include="..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\common\dllwrapper.cpp" />
     <ClCompile Include="..\common\guid.cpp" />
