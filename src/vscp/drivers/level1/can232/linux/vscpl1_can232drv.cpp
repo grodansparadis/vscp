@@ -29,7 +29,7 @@
 // =====
 // device1 = comport;baudrate;mask;filter;bus-speed;btr0;btr1
 
-#include "can232drv.h"
+#include "vscpl1_can232drv.h"
 #include "stdio.h"
 #include "stdlib.h"
 

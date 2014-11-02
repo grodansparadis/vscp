@@ -14,11 +14,12 @@
         <in>csv2txt.c</in>
       </df>
       <in>can232drv.cpp</in>
-      <in>can232drv.h</in>
       <in>can232obj.cpp</in>
       <in>can232obj.h</in>
       <in>config.h</in>
       <in>test.cpp</in>
+      <in>vscpl2_can232drv.cpp</in>
+      <in>vscpl2_can232drv.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>
