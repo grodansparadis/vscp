@@ -1403,22 +1403,22 @@ bool CControlObject::getMacAddress(cguid& guid)
         uRetCode = Netbios(&Ncb);
 
         if (uRetCode == 0) {
-            guid.setAt( 15, 0xff );
-            guid.setAt( 14, 0xff );
-            guid.setAt( 13, 0xff );
-            guid.setAt( 12, 0xff );
-            guid.setAt( 11, 0xff );
-            guid.setAt( 10, 0xff );
-            guid.setAt( 9, 0xff );
-            guid.setAt( 8, 0xfe );
-            guid.setAt( 7, Adapter.adapt.adapter_address[ 0 ] );
-            guid.setAt( 6, Adapter.adapt.adapter_address[ 1 ] );
-            guid.setAt( 5, Adapter.adapt.adapter_address[ 2 ] );
-            guid.setAt( 4, Adapter.adapt.adapter_address[ 3 ] );
-            guid.setAt( 3, Adapter.adapt.adapter_address[ 4 ] );
-            guid.setAt( 2, Adapter.adapt.adapter_address[ 5 ] );
-            guid.setAt( 1, 0 );
-            guid.setAt( 0, 0 );
+            guid.setAt( 0, 0xff );
+            guid.setAt( 1, 0xff );
+            guid.setAt( 2, 0xff );
+            guid.setAt( 3, 0xff );
+            guid.setAt( 4, 0xff );
+            guid.setAt( 5, 0xff );
+            guid.setAt( 6, 0xff );
+            guid.setAt( 7, 0xfe );
+            guid.setAt( 8, Adapter.adapt.adapter_address[ 0 ] );
+            guid.setAt( 9, Adapter.adapt.adapter_address[ 1 ] );
+            guid.setAt( 10, Adapter.adapt.adapter_address[ 2 ] );
+            guid.setAt( 11, Adapter.adapt.adapter_address[ 3 ] );
+            guid.setAt( 12, Adapter.adapt.adapter_address[ 4 ] );
+            guid.setAt( 13, Adapter.adapt.adapter_address[ 5 ] );
+            guid.setAt( 14, 0 );
+            guid.setAt( 15, 0 );
 #ifdef __WXDEBUG__
             char buf[256];
             sprintf(buf, "The Ethernet MAC Address: %02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -1461,22 +1461,22 @@ bool CControlObject::getMacAddress(cguid& guid)
                 *(ptr + 3),
                 *(ptr + 4),
                 *(ptr + 5)), DAEMON_LOGMSG_INFO);
-        guid.setAt( 15, 0xff );
-        guid.setAt( 14, 0xff );
-        guid.setAt( 13, 0xff );
-        guid.setAt( 12, 0xff );
-        guid.setAt( 11, 0xff );
-        guid.setAt( 10, 0xff );
-        guid.setAt( 9, 0xff );
-        guid.setAt( 8, 0xfe );
-        guid.setAt( 7, *ptr );
-        guid.setAt( 6, *(ptr + 1) );
-        guid.setAt( 5, *(ptr + 2) );
-        guid.setAt( 4, *(ptr + 3) );
-        guid.setAt( 3, *(ptr + 4));
-        guid.setAt( 2, *(ptr + 5) );
-        guid.setAt( 1, 0 );
-        guid.setAt( 0, 0 );
+        guid.setAt( 0, 0xff );
+        guid.setAt( 1, 0xff );
+        guid.setAt( 2, 0xff );
+        guid.setAt( 3, 0xff );
+        guid.setAt( 4, 0xff );
+        guid.setAt( 5, 0xff );
+        guid.setAt( 6, 0xff );
+        guid.setAt( 7, 0xfe );
+        guid.setAt( 8, *ptr );
+        guid.setAt( 9, *(ptr + 1) );
+        guid.setAt( 10, *(ptr + 2) );
+        guid.setAt( 11, *(ptr + 3) );
+        guid.setAt( 12, *(ptr + 4));
+        guid.setAt( 13, *(ptr + 5) );
+        guid.setAt( 14, 0 );
+        guid.setAt( 15, 0 );
     } else {
         logMsg(_("Failed to get hardware address (must be root?).\n"), DAEMON_LOGMSG_WARNING);
         rv = false;
@@ -1500,14 +1500,14 @@ bool CControlObject::getIPAddress(cguid& guid)
     // Clear the GUID
     guid.clear();
 
-    guid.setAt( 15, 0xff );
-    guid.setAt( 14, 0xff );
-    guid.setAt( 13, 0xff );
-    guid.setAt( 12, 0xff );
-    guid.setAt( 11, 0xff );
-    guid.setAt( 10, 0xff );
-    guid.setAt( 9, 0xff );
-    guid.setAt( 8, 0xfd );
+    guid.setAt( 0, 0xff );
+    guid.setAt( 1, 0xff );
+    guid.setAt( 2, 0xff );
+    guid.setAt( 3, 0xff );
+    guid.setAt( 4, 0xff );
+    guid.setAt( 5, 0xff );
+    guid.setAt( 6, 0xff );
+    guid.setAt( 7, 0xfd );
 
     char szName[ 128 ];
     gethostname(szName, sizeof( szName));
@@ -1532,10 +1532,15 @@ bool CControlObject::getIPAddress(cguid& guid)
         if (NULL != pAddr) localaddr[ idx ] = *((unsigned long *) pAddr);
     } while ((NULL != pAddr) && (idx < 16));
 
-    guid.setAt( 7, (localaddr[ 0 ] >> 24) & 0xff );
-    guid.setAt( 6, (localaddr[ 0 ] >> 16) & 0xff );
-    guid.setAt( 5, (localaddr[ 0 ] >> 8) & 0xff );
-    guid.setAt( 4, localaddr[ 0 ] & 0xff );
+    guid.setAt( 8, (localaddr[ 0 ] >> 24) & 0xff );
+    guid.setAt( 9, (localaddr[ 0 ] >> 16) & 0xff );
+    guid.setAt( 10, (localaddr[ 0 ] >> 8) & 0xff );
+    guid.setAt( 11, localaddr[ 0 ] & 0xff );
+
+    guid.setAt( 12, 0 );
+    guid.setAt( 13, 0 );
+    guid.setAt( 14, 0 );
+    guid.setAt( 15, 0 );
     
     return true;
 }

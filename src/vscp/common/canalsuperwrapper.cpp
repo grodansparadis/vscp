@@ -885,31 +885,31 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 	uint32_t errors = 0;
 	bool bResend;
 	wxString strBuf;
-	vscpEventEx event;
+	vscpEventEx e;
 
 	// Check pointers
 	if ( NULL == pcontent ) return false; 
     if (NULL == pdestGUID ) return false;
     
-    event.head = VSCP_PRIORITY_NORMAL;
-    event.timestamp = 0;
-    event.obid = 0;
+    e.head = VSCP_PRIORITY_NORMAL;
+    e.timestamp = 0;
+    e.obid = 0;
 
 	// Check if a specific interface is used
 	if ( !ifGUID.isNULL() ) {
 
 		// Event should be sent to a specific interface
 
-		event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
-		event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+		e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+		e.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
 
-		memset( event.GUID, 0, 16 );	// We use GUID for interface 
-		event.sizeData = 16 + 2;		// Interface GUID + nodeid + register to read
+		memset( e.GUID, 0, 16 );	// We use GUID for interface 
+		e.sizeData = 16 + 2;		// Interface GUID + nodeid + register to read
 
-		ifGUID.writeGUID( event.data );
+		ifGUID.writeGUID( e.data );
 
-		event.data[ 16 ] = pdestGUID->getLSB();	// nodeid
-		event.data[ 17 ] = reg;                 // Register to read
+		e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
+		e.data[ 17 ] = reg;                 // Register to read
 
 	}
 	else {
@@ -920,37 +920,37 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 
 			// True real Level II event
 
-			event.head = VSCP_PRIORITY_NORMAL;
-			event.vscp_class = VSCP_CLASS2_PROTOCOL;
-			event.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
+			e.head = VSCP_PRIORITY_NORMAL;
+			e.vscp_class = VSCP_CLASS2_PROTOCOL;
+			e.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
 
-			memset( event.GUID, 0, 16 );		// We use GUID for interface 
+			memset( e.GUID, 0, 16 );		// We use GUID for interface 
 
-			event.sizeData = 22;				// nodeid + register to read
+			e.sizeData = 22;				// nodeid + register to read
 
-			pdestGUID->writeGUID( event.data );	// Destination GUID
-			event.data[ 16 ] = ( reg >> 24 ) & 0xff;	// Register to read
-			event.data[ 17 ] = ( reg >> 16 ) & 0xff;
-			event.data[ 18 ] = ( reg >> 8 ) & 0xff;
-			event.data[ 19 ] = reg & 0xff;
-			event.data[ 20 ] = 0x00;			// Read one register
-			event.data[ 21 ] = 0x01;
+			pdestGUID->writeGUID( e.data );	// Destination GUID
+			e.data[ 16 ] = ( reg >> 24 ) & 0xff;	// Register to read
+			e.data[ 17 ] = ( reg >> 16 ) & 0xff;
+			e.data[ 18 ] = ( reg >> 8 ) & 0xff;
+			e.data[ 19 ] = reg & 0xff;
+			e.data[ 20 ] = 0x00;			// Read one register
+			e.data[ 21 ] = 0x01;
 
 		}
 		else {
 
 			// Level I over CLASS2 to all interfaces 
 
-			event.head = VSCP_PRIORITY_NORMAL;
-			event.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
-			event.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
+			e.head = VSCP_PRIORITY_NORMAL;
+			e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+			e.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
 
-			memset( event.GUID, 0, 16 );		// We use GUID for interface 
-			event.sizeData = 16 + 2;			// nodeid + register to read
-			pdestGUID->writeGUID( event.data );   // Destination GUID
+			memset( e.GUID, 0, 16 );		// We use GUID for interface 
+			e.sizeData = 16 + 2;			// nodeid + register to read
+			pdestGUID->writeGUID( e.data );   // Destination GUID
 
-			event.data[16] = pdestGUID->getLSB(); // nodeid
-			event.data[17] = reg;                 // Register to read
+			e.data[16] = pdestGUID->getLSB(); // nodeid
+			e.data[17] = reg;                 // Register to read
 
 		}
 	}
@@ -959,8 +959,8 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 
 	// Send the event
 	doCmdClear();
-	event.timestamp = 0;
-	doCmdSend( &event );
+	e.timestamp = 0;
+	doCmdSend( &e );
 
 	wxLongLong resendTime = ::wxGetLocalTimeMillis();
 
@@ -970,25 +970,25 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 
 		if ( doCmdDataAvailable() ) {	// Message available
 
-			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {	// Valid event
+			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &e ) ) {	// Valid event
 
 				// Check for correct reply event
                 {
                     wxString str;
                     str = wxString::Format(_("Received Event: class=%d type=%d size=%d data=%d %d"), 
-                            event.vscp_class, event.vscp_type, event.sizeData, event.data[16], event.data[17] );
+                            e.vscp_class, e.vscp_type, e.sizeData, e.data[16], e.data[17] );
                     wxLogDebug(str);
                 }
 
 				// Level I Read reply?
-				if ( /*ifGUID.isNULL() &&*/ ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
-					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) {   
+				if ( /*ifGUID.isNULL() &&*/ ( VSCP_CLASS1_PROTOCOL == e.vscp_class ) && 
+					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == e.vscp_type ) ) {   
                     
-                    if ( event.data[ 0 ] == reg ) {	// Requested register?
+                    if ( e.data[ 0 ] == reg ) {	// Requested register?
 						
-                        if ( pdestGUID->isSameGUID( event.GUID ) ) { // From correct node?
+                        if ( pdestGUID->isSameGUID( e.GUID ) ) { // From correct node?
 							if ( NULL != pcontent ) {
-								*pcontent = event.data[ 1 ];
+								*pcontent = e.data[ 1 ];
 							}
 							break;
 						}
@@ -997,16 +997,16 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 				}
 				// Level II 512 Read reply?
 				else if ( !ifGUID.isNULL() && !bLevel2 && 
-					( VSCP_CLASS2_LEVEL1_PROTOCOL == event.vscp_class ) && 
-					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == event.vscp_type ) ) { 
+					( VSCP_CLASS2_LEVEL1_PROTOCOL == e.vscp_class ) && 
+					( VSCP_TYPE_PROTOCOL_RW_RESPONSE == e.vscp_type ) ) { 
 
-                    if ( pdestGUID->isSameGUID( event.GUID ) ) {
+                    if ( pdestGUID->isSameGUID( e.GUID ) ) {
                         
 						// Is this the register we requested?
-						if ( event.data[ 16 ] == reg ) {
+						if ( e.data[ 16 ] == reg ) {
 							// OK get the data
 							if ( NULL != pcontent ) {
-								*pcontent = event.data[ 17 ];
+								*pcontent = e.data[ 17 ];
 								break;
 							}
 						}
@@ -1015,23 +1015,23 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 				}
 				// Level II Read reply?
 				else if ( ifGUID.isNULL() && bLevel2 && 
-					( VSCP_CLASS2_PROTOCOL == event.vscp_class ) && 
-					( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == event.vscp_type ) ) { 
+					( VSCP_CLASS2_PROTOCOL == e.vscp_class ) && 
+					( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == e.vscp_type ) ) { 
 
 					// from us
-					if ( pdestGUID->isSameGUID( event.GUID ) ) {	
+					if ( pdestGUID->isSameGUID( e.GUID ) ) {	
 
-						uint32_t retreg = ( event.data[ 0 ]  << 24 ) +
-								(	event.data[ 1 ]  << 16 ) +
-								(	event.data[ 2 ]  << 8 ) +
-								event.data[ 3 ];
+						uint32_t retreg = ( e.data[ 0 ]  << 24 ) +
+								(	e.data[ 1 ]  << 16 ) +
+								(	e.data[ 2 ]  << 8 ) +
+								e.data[ 3 ];
 
 						// Reg we requested?
 						if ( retreg == reg ) {
 								
 							// OK get the data
 							if ( NULL != pcontent ) {
-								*pcontent = event.data[ 4 ];
+								*pcontent = e.data[ 4 ];
 								break;
 							}
 						}
@@ -1049,9 +1049,9 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 				errors++;
 
 				// Send again
-				event.timestamp = 0;
+				e.timestamp = 0;
 				wxLongLong resendTime = ::wxGetLocalTimeMillis();
-				doCmdSend( &event );
+				doCmdSend( &e );
 
 		}   
 
