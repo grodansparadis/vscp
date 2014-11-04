@@ -1231,7 +1231,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -1246,7 +1246,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1324,7 +1324,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_NOT_FOUND,
 									WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
 			wxString strErr = 
-                wxString::Format( _("[Websocket] Table not found. [name=%s]\n"), tblName.wc_str() );					
+                wxString::Format( _("[Websocket] Table not found. [name=%s]\n"), (const char *)tblName.mbc_str() );					
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
             return MG_TRUE;
         }
@@ -1367,7 +1367,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_ERROR_READING,
 									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
 			        wxString strErr = 
-                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wc_str() );					
+                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), (const char *)tblName.mbc_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1382,7 +1382,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_MEMORY_ALLOCATION,
 									WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
 			            wxString strErr = 
-                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wc_str() );					
+                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), (const char *)tblName.mbc_str() );					
 	                    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                         return MG_TRUE;
                     }
@@ -1421,7 +1421,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_NO_DATA,
 									WEBSOCK_STR_ERROR_TABLE_NO_DATA );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.wc_str() );					
+                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), (const char *)tblName.mbc_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1432,7 +1432,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_ERROR_READING,
 									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wc_str() );					
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), (const char *)tblName.mbc_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1460,7 +1460,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_ERROR_READING,
 									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wc_str() );					
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), (const char *)tblName.mbc_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1475,7 +1475,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_MEMORY_ALLOCATION,
 									WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
 			            wxString strErr = 
-                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wc_str() );					
+                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), (const char *)tblName.mbc_str() );					
 	                    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                         return MG_TRUE;
                     }
@@ -1514,7 +1514,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_NO_DATA,
 									WEBSOCK_STR_ERROR_TABLE_NO_DATA );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.wc_str() );					
+                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), (const char *)tblName.mbc_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
