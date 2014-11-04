@@ -1347,7 +1347,8 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
 			// Check for unixtime escape
             else if ( str.StartsWith( wxT("%unixtime"), &str ) ) {
 				time_t now = time(NULL);	// Get current time
-                strResult += wxString::Format( wxT("%d"), now );
+                uint64_t tnow = now;
+                strResult += wxString::Format( wxT("%llu"), tnow );
             }
             // Check for hour escape
             else if ( str.StartsWith( wxT("%hour"), &str ) ) {
@@ -2728,7 +2729,9 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 	{
 		CVSCPTable *pTable = *iter;
 		if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, tblName.mbc_str() ) ) {
+            pTable->m_mutexThisTable.Lock();
 			pTable->logData( timestamp, value );
+            pTable->m_mutexThisTable.Unlock();
 			bFound = true;
 			break;
 		}
@@ -2752,6 +2755,7 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 
 	return true;
 }
+
 
 
 

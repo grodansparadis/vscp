@@ -899,12 +899,11 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 	if ( !ifGUID.isNULL() ) {
 
 		// Event should be sent to a specific interface
-
 		e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
 		e.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;
 
-		memset( e.GUID, 0, 16 );	// We use GUID for interface 
-		e.sizeData = 16 + 2;		// Interface GUID + nodeid + register to read
+		memset( e.GUID, 0, 16 );	        // We use GUID for interface 
+		e.sizeData = 16 + 2;		        // Interface GUID + nodeid + register to read
 
 		ifGUID.writeGUID( e.data );
 
@@ -928,19 +927,18 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 
 			e.sizeData = 22;				// nodeid + register to read
 
-			pdestGUID->writeGUID( e.data );	// Destination GUID
+			pdestGUID->writeGUID( e.data );	        // Destination GUID
 			e.data[ 16 ] = ( reg >> 24 ) & 0xff;	// Register to read
 			e.data[ 17 ] = ( reg >> 16 ) & 0xff;
 			e.data[ 18 ] = ( reg >> 8 ) & 0xff;
 			e.data[ 19 ] = reg & 0xff;
-			e.data[ 20 ] = 0x00;			// Read one register
+			e.data[ 20 ] = 0x00;			        // Read one register
 			e.data[ 21 ] = 0x01;
 
 		}
 		else {
 
 			// Level I over CLASS2 to all interfaces 
-
 			e.head = VSCP_PRIORITY_NORMAL;
 			e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
 			e.vscp_type = VSCP_TYPE_PROTOCOL_READ_REGISTER;

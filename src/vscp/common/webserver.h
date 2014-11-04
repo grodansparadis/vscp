@@ -186,22 +186,34 @@ enum {
 	WEBSOCK_ERROR_SYNTAX_ERROR,			    // Syntax error.
 	WEBSOCK_ERROR_UNKNOWN_COMMAND,		    // Unknown command.
 	WEBSOCK_ERROR_TX_BUFFER_FULL,		    // Transmit buffer full.
+    WEBSOCK_ERROR_MEMORY_ALLOCATION,		// Problem allocating memory.
 	WEBSOCK_ERROR_VARIABLE_DEFINED,		    // Variable is already defined.
 	WEBSOCK_ERROR_VARIABLE_UNKNOWN,		    // Cant find variable
 	WEBSOCK_ERROR_NOT_AUTHORIZED,		    // Not authorized
     WEBSOCK_ERROR_NOT_ALLOWED_TO_SEND_EVENT, // Not authorized
-    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT    // Not allowed to do that
+    WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,   // Not allowed to do that
+    WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,     // Must have a table name
+    WEBSOCK_ERROR_END_DATE_IS_WRONG,        // End date must be later than start date
+    WEBSOCK_ERROR_TABLE_NOT_FOUND,          // Table not found
+    WEBSOCK_ERROR_TABLE_NO_DATA,            // No data in table
+    WEBSOCK_ERROR_TABLE_ERROR_READING       // Error reading table
 };
 
 #define	WEBSOCK_STR_ERROR_NO_ERROR				        "Everything is OK"			
 #define WEBSOCK_STR_ERROR_SYNTAX_ERROR			        "Syntax error"
 #define WEBSOCK_STR_ERROR_UNKNOWN_COMMAND		        "Unknown command"
 #define WEBSOCK_STR_ERROR_TX_BUFFER_FULL		        "Transmit buffer full"
+#define WEBSOCK_STR_ERROR_MEMORY_ALLOCATION		        "Having problems to allocate memory"
 #define WEBSOCK_STR_ERROR_VARIABLE_DEFINED		        "Variable is already defined"
 #define WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN		        "Unable to find variable"
 #define WEBSOCK_STR_ERROR_NOT_AUTHORIZED		        "Not authorized"
 #define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_SEND_EVENT	    "Not allowed to send event"
 #define WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT        "Not allowed to do that (check privileges)"
+#define WEBSOCK_STR_ERROR_MUST_HAVE_TABLE_NAME	        "A table name must be given as parameter"
+#define WEBSOCK_STR_ERROR_END_DATE_IS_WRONG	            "End date must be later than the start date"
+#define WEBSOCK_STR_ERROR_TABLE_NOT_FOUND	            "Table not found"
+#define WEBSOCK_STR_ERROR_TABLE_NO_DATA	                "No data in table"
+#define WEBSOCK_STR_ERROR_TABLE_ERROR_READING	        "Error reading table"
 
 struct websock_session {
 	// We keep all sessions in a linked list.

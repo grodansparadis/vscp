@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "testpcan.h"
 #include "testpcanDlg.h"
-#include "../../../../common/canal.h"
+#include "../../../../../common/canal.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -123,7 +123,7 @@ BOOL CTestpcanDlg::OnInitDialog()
 	
 	m_Status = "Set device parameters\r\nPress test."; 
 	m_flags = 1;
-	m_DeviceString = "CANUSB;500";
+	m_DeviceString = "CANUSB;125";
 	UpdateData( false );
 	
 	return TRUE;  // return TRUE  unless you set the focus to a control

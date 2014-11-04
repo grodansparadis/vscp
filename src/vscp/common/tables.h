@@ -138,13 +138,13 @@ public:
 
 	/*!
 		Read file header
-		@return 0 on success.
+		@return VSCP_ERROR_ERROR on success.
 	*/
 	int readMainHeader( void );
 
 	/*!
 		Write file header
-		@return 0 on success.
+		@return VSCP_ERROR_ERROR on success.
 	*/
 	int writeMainHeader( void );
 
@@ -153,7 +153,7 @@ public:
 		Log data
 		@param time Log time (since epoch)
 		@param measurement Measurement data
-		@return zero on success
+		@return VSCP_ERROR_ERROR on success
 	*/
 	int logData( time_t timestamp, double measurement );
 
@@ -165,7 +165,7 @@ public:
 				no data will be filled only the number of records will be
 				returned.
 		@param size Size of bugger in bytes
-		@return Number of records read.
+		@return Number of records read or to read or -1 if error.
 	*/
 	long GetRangeOfData( time_t from, time_t to, void *buf = NULL, uint16_t size = 0 );
 
@@ -180,7 +180,7 @@ public:
 	/*!
 		Get required buffer size for static file
 		@return Returns the number of bytes needed to hold the
-				static file.
+				static file, -1 on error.
 	*/
 	long GetStaticRequiredBuffSize( void );
 
@@ -194,7 +194,17 @@ public:
 	*/
 	double calculatMean( time_t from, time_t to );
 
+    // Get time for firts logged entry
+    time_t getTimeStampStart( void ) { return m_timestamp_first; };
+
+    // Get time for last logged entry
+    time_t getTimeStampEnd( void ) { return m_timestamp_last; };
+
 public:
+    
+    // Protector for this table
+    wxMutex m_mutexThisTable;
+
 	/// Main file head structure
 	struct _vscpFileHead m_vscpFileHead;
 

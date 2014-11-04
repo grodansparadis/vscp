@@ -45,7 +45,7 @@
 	
 	
 	
-	<canaldriver>  <!-- Information about CANAL drivers --> 
+	<level1driver>  <!-- Information about CANAL drivers --> 
 
 		<driver>
 		   <name>logger</name>
@@ -75,7 +75,7 @@
 			<flags>1</flags>
 		</driver>		
 		 
-	</canaldriver>
+	</level1driver>
 	
 	<vscpdriver>	<!-- Information about Level II VSCP drivers --> 
 		

@@ -689,7 +689,9 @@ bool CControlObject::run(void)
 	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
 	{
 		CVSCPTable *pTable = *iter;
+        pTable->m_mutexThisTable.Lock();
 		pTable->init();
+        pTable->m_mutexThisTable.Unlock();
 	}
 
     // We need to create a clientItem and add this object to the list
@@ -1557,11 +1559,13 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
     unsigned long val;
     wxXmlDocument doc;
     if (!doc.Load(strcfgfile)) {
+        logMsg(_("Can't load logfile. Is path correct?"), DAEMON_LOGMSG_CRITICAL );
         return false;
     }
 
     // start processing the XML file
     if (doc.GetRoot()->GetName() != wxT("vscpconfig")) {
+        logMsg(_("Can't read logfile. Maybe it is invalid!"), DAEMON_LOGMSG_CRITICAL );
         return false;
     }
 
@@ -2021,7 +2025,8 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             attribut.MakeLower();
             if (attribut.IsSameAs(_("false"), false)) {
                 m_bEnableLevel1Drivers = false;
-            } else {
+            } 
+            else {
                 m_bEnableLevel1Drivers = true;
             }
 
@@ -2096,7 +2101,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }
 
                 // Add the device
-                if (bCanalDriver) {
+                if (bCanalDriver && bEnabled ) {
 
                     if (!m_deviceList.addItem( strName,
                                                 strConfig,
@@ -2152,9 +2157,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     
                     wxXmlNode *subsubchild = subchild->GetChildren();
                                        
-                    wxString property = subchild->GetAttribute(wxT("enable"), wxT("true"));
+                    wxString attribute = subchild->GetAttribute(wxT("enable"), wxT("true"));
 
-                    if (property.IsSameAs(_("false"), false)) {
+                    if (attribute.IsSameAs(_("false"), false)) {
                         bEnabled = false;
                     }
                     
@@ -2205,7 +2210,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                 }
 
                 // Add the device
-                if (bLevel2Driver) {
+                if (bLevel2Driver && bEnabled) {
 
                     if (!m_deviceList.addItem(strName,
                                                 strConfig,
@@ -2248,7 +2253,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
 					CVSCPTable *pTable = new CVSCPTable();
 					if ( NULL != pTable ) {
-						memset( pTable, 0, sizeof(CVSCPTable) );
+                        memset( &pTable->m_vscpFileHead, 0, sizeof(_vscptableInfo) );
 						pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
 													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
 													subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(), 

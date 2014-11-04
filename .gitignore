@@ -152,3 +152,4 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/_UpgradeReport_Files/UpgradeReport_Minus.gif
 /src/vscp/_UpgradeReport_Files/UpgradeReport_Plus.gif
 /config_examples/web/old
+/src/vscp/drivers/level1/peak/win32/testpcan/testpcan.aps

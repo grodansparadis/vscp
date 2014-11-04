@@ -69,7 +69,7 @@ WX_DEFINE_LIST( listVSCPTables );
 // Constructor for nmormal table
 CVSCPTable::CVSCPTable( const char *path, int type, uint32_t size )
 {
-	if ( NULL != path ) m_path = wxString::FromAscii( path );
+    if ( NULL != path ) m_path = wxString::FromAscii( path );
     
 	m_number_of_records = 0;
 	m_timestamp_first = 0;
@@ -109,18 +109,18 @@ CVSCPTable::~CVSCPTable( void )
 
 int CVSCPTable::init() 
 {
-	int rv;
+    int rv = VSCP_ERROR_SUCCESS;
 	struct _vscpFileRecord record;
 
 	// Open/create main file
 	if ( fileExists( m_path.mbc_str() ) ) {
-		m_ft = fopen( m_path.mbc_str(), "r+b") ;	// binary Read Write
-		if ( NULL == m_ft ) return errno;			// Failed to open file
+		m_ft = fopen( m_path.mbc_str(), "r+b") ;	  // binary Read Write
+		if ( NULL == m_ft ) return VSCP_ERROR_ERROR;  // Failed to open file
 	}
 	else {
 		// Create file
-		m_ft = fopen( m_path.mbc_str(), "w+b") ;	// binary Read Write		
-		if ( NULL == m_ft ) return errno;			// Failed to create file
+		m_ft = fopen( m_path.mbc_str(), "w+b") ;	  // binary Read Write		
+		if ( NULL == m_ft ) return VSCP_ERROR_ERROR;  // Failed to create file
 		
 		if ( VSCP_TABLE_NORMAL == m_vscpFileHead.type ) {
 			m_vscpFileHead.id[0] = 0x55;
@@ -133,7 +133,7 @@ int CVSCPTable::init()
 		
 		// Write header
 		if ( sizeof( m_vscpFileHead ) != 
-			fwrite( &m_vscpFileHead , 1, sizeof(m_vscpFileHead), m_ft ) ) return errno;
+			fwrite( &m_vscpFileHead , 1, sizeof(m_vscpFileHead), m_ft ) ) return VSCP_ERROR_ERROR;
 
 		// If we have a static table we initiate it
 		if ( VSCP_TABLE_STATIC == m_vscpFileHead.type ) {
@@ -179,7 +179,7 @@ int CVSCPTable::setTableInfo( const char *path,
 									uint16_t vscp_type,
 									uint8_t vscp_unit )
 {
-	int rv;
+	int rv = VSCP_ERROR_SUCCESS;
 
 	m_path = wxString::FromAscii( path );
 	if ( type < 2 ) {
@@ -233,14 +233,14 @@ int CVSCPTable::readMainHeader( void )
 	int rv;
 	
 	// File must be open
-	if ( NULL == m_ft ) return -1;
+	if ( NULL == m_ft ) return VSCP_ERROR_ERROR;
 
 	rv = fseek( m_ft, 0, SEEK_SET );									// Go to beginning of file
 	if ( rv ) return errno;
 	rv = fread( &m_vscpFileHead, 1, sizeof(m_vscpFileHead), m_ft );		// Read structure
-	if ( rv ) return errno;
+	if ( rv ) return VSCP_ERROR_ERROR;
 
-	return rv;
+	return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -249,17 +249,17 @@ int CVSCPTable::readMainHeader( void )
 
 int CVSCPTable::writeMainHeader( void )
 {
-	int rv;
-	
+    int rv;
+
 	// File must be open
-	if ( NULL == m_ft ) return -1;
+	if ( NULL == m_ft ) return VSCP_ERROR_ERROR;
 
 	rv = fseek( m_ft, 0, SEEK_SET );									// Go to beginning of file
 	if ( rv ) return errno;
 	rv = fwrite( &m_vscpFileHead, 1, sizeof(m_vscpFileHead), m_ft );	// Read structure
-	if ( rv ) return errno;
+	if ( rv ) return VSCP_ERROR_ERROR;
 
-	return rv;
+	return VSCP_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -268,11 +268,11 @@ int CVSCPTable::writeMainHeader( void )
 
 int CVSCPTable::logData( time_t timestamp, double measurement )
 {
-	int rv;
+	int rv = VSCP_ERROR_SUCCESS;
 	struct _vscpFileRecord record;
 
 	// File must be open
-	if ( NULL == m_ft ) return -1;
+	if ( NULL == m_ft ) return VSCP_ERROR_ERROR;
 	
 	record.timestamp = timestamp;
 	record.measurement = measurement;
@@ -287,7 +287,7 @@ int CVSCPTable::logData( time_t timestamp, double measurement )
 
 		// Write record
 		if ( sizeof( record ) != 
-			fwrite( &record , 1, sizeof(record), m_ft ) ) return errno;
+			fwrite( &record , 1, sizeof(record), m_ft ) ) return VSCP_ERROR_ERROR;
 
 		m_number_of_records++;	// Another record
 		if ( 0 == m_timestamp_first ) m_timestamp_first = timestamp; // If first 
@@ -386,7 +386,7 @@ long CVSCPTable::GetRangeOfData( time_t from, time_t to, void *buf, uint16_t siz
 		
 		// read record
 		if ( sizeof(_vscpFileRecord) != fread( &record, 1, sizeof(_vscpFileRecord), m_ft ) ) {
-				break;
+	        break;
 		}
 
 		// Break if we are ready

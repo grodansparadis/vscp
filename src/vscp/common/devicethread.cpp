@@ -119,6 +119,8 @@ void *deviceThread::Entry()
 	m_pDeviceItem->m_pClientItem->m_strDeviceName += _(" ");
 	m_pDeviceItem->m_pClientItem->m_strDeviceName += now.FormatISOTime();
 
+    m_pCtrlObject->logMsg(m_pDeviceItem->m_pClientItem->m_strDeviceName + _("\n"), DAEMON_LOGMSG_DEBUG);
+
 	// Add the client to the Client List
 	m_pCtrlObject->m_wxClientMutex.Lock();
 	m_pCtrlObject->addClient(m_pDeviceItem->m_pClientItem);
@@ -306,6 +308,10 @@ void *deviceThread::Entry()
 			m_pCtrlObject->logMsg(errMsg, DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
+        else {
+            wxString wxstr = wxString::Format(_("Driver %s opended."), m_pDeviceItem->m_strName.mbc_str() );
+            m_pCtrlObject->logMsg( wxstr, DAEMON_LOGMSG_INFO);
+        }
 
 		// Get Driver Level
 		m_pDeviceItem->m_driverLevel = m_pDeviceItem->m_proc_CanalGetLevel(m_pDeviceItem->m_openHandle);

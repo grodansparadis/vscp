@@ -1214,7 +1214,326 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;SAVEVAR" );
     } 
+    // ------------------------------------------------------------------------
+    //                                GETTABLE
+    //-------------------------------------------------------------------------
+	else if (0 == strTok.Find(_("GETTABLE"))) {
 
+        // Format is:
+        //      tablename;from;to
+
+        // Must be authorized to do this
+		if ( !pSession->bAuthenticated ) {
+			mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_NOT_AUTHORIZED,
+									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
+             wxString strErr = 
+                        wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+		
+	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
+			return MG_TRUE;	// We still leave channel open
+		}
+
+        // Check privilege
+        if ( (pSession->m_pClientItem->m_pUserItem->m_userRights & 0xf) < 4 ) {
+            mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_NOT_ALLOWED_TO_DO_THAT,
+									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
+			wxString strErr = 
+                        wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+		
+	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
+            return MG_TRUE;	// We still leave channel open	
+        }
+
+        wxString tblName;
+        wxDateTime timeFrom = wxDateTime::Now();
+        wxDateTime timeTo = wxDateTime::Now();
+        int nRange = 0;
+
+        // Get name of table
+        if ( tkz.HasMoreTokens() ) {
+            tblName = tkz.GetNextToken();
+            tblName.Trim();
+            tblName.Trim(false);
+        }
+        else {
+            // Must have a table name
+            mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,
+									WEBSOCK_STR_ERROR_MUST_HAVE_TABLE_NAME );
+			wxString strErr = 
+                      wxString::Format( _("[Websocket] Must have a tablename to read a table.\n") );					
+	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
+            return MG_TRUE;
+        }
+
+        // Get from-date for range
+        if ( tkz.HasMoreTokens() ) {
+            timeFrom.ParseDateTime( tkz.GetNextToken() );
+            nRange++; // Start date entered
+        }
+
+        // Get to-date for range
+        if ( tkz.HasMoreTokens() ) {
+            timeTo.ParseDateTime( tkz.GetNextToken() );
+            nRange++; // End date entered
+        }
+
+        if ( (nRange > 1) && timeTo.IsEarlierThan( timeFrom ) ) {
+
+            // To date must be later then from date
+            mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,
+									WEBSOCK_STR_ERROR_MUST_HAVE_TABLE_NAME );
+			wxString strErr = 
+                      wxString::Format( _("[Websocket] The end date must be later than the star date.\n") );					
+	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
+            return MG_TRUE;
+
+        }
+
+        CVSCPTable *ptblItem = NULL;
+        pCtrlObject->m_mutexTableList.Lock();
+        listVSCPTables::iterator iter;
+        for (iter = pCtrlObject->m_listTables.begin(); iter != pCtrlObject->m_listTables.end(); ++iter) {
+            ptblItem = *iter;
+            if ( tblName== wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ) {
+                break;
+            }
+            ptblItem = NULL;
+        }
+        pCtrlObject->m_mutexTableList.Unlock();
+
+        // Did we find it?
+        if ( NULL == ptblItem ) {
+            // nope
+            mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_TABLE_NOT_FOUND,
+									WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
+			wxString strErr = 
+                      wxString::Format( _("[Websocket] Table not found. [name=%s]\n"), tblName.mbc_str() );					
+	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
+            return MG_TRUE;
+        }
+
+        if ( VSCP_TABLE_NORMAL == ptblItem->m_vscpFileHead.type ) {
+
+            time_t start,end;
+            if ( 0 == nRange ) {
+                // Neither 'from' or 'to' given 
+                // Use value from header
+                start = ptblItem->getTimeStampStart();
+                end = ptblItem->getTimeStampStart();
+            }
+            else if ( 1 == nRange ) { 
+                // From given but no end
+                start = timeFrom.GetTicks();
+                end = ptblItem->getTimeStampStart();
+            }
+            else {
+                // range given
+                start = timeFrom.GetTicks();
+                end = timeTo.GetTicks();
+            }
+
+            // Fetch number of records in set 
+            ptblItem->m_mutexThisTable.Lock();
+            long nRecords = ptblItem->GetRangeOfData(start, end );
+            ptblItem->m_mutexThisTable.Unlock();
+
+            if ( nRecords > 0 ) {
+                
+                ptblItem->m_mutexThisTable.Lock();
+                long nfetchedRecords = ptblItem->GetRangeOfData(start, end );
+                ptblItem->m_mutexThisTable.Unlock();
+
+                if ( 0 == nfetchedRecords ) {
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_TABLE_ERROR_READING,
+									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
+			        wxString strErr = 
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.mbc_str() );					
+	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
+                    return MG_TRUE;
+                }
+                else {
+
+                    struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nfetchedRecords];
+
+                    if ( NULL == pRecords ) {
+                        mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_MEMORY_ALLOCATION,
+									WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
+			            wxString strErr = 
+                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.mbc_str() );					
+	                    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
+                        return MG_TRUE;
+                    }
+
+                    // First send start post with number if records
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"+;GETTABLE;START;%d",
+                                    nfetchedRecords );
+
+                    // Then send measurement records
+                    for ( long i=0; i<nfetchedRecords; i++ ) {
+                        mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"+;T;%d;%d;%f",
+                                    i, pRecords[i].timestamp, pRecords[i].measurement );
+                    }
+
+                    // Last send end post with number if records
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"+;GETTABLE;END;%d",
+                                    nfetchedRecords );
+
+                    // Deallocate storage
+                    delete pRecords;
+
+                }
+
+            }
+            else {
+                if ( 0 == nRecords ) {
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_TABLE_NO_DATA,
+									WEBSOCK_STR_ERROR_TABLE_NO_DATA );
+			        wxString strErr = 
+                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.mbc_str() );					
+	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
+                    return MG_TRUE;
+                }
+                else {
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_TABLE_ERROR_READING,
+									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
+			        wxString strErr = 
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.mbc_str() );					
+	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
+                    return MG_TRUE;
+                }
+            }
+
+        }
+        // OK STATIC table
+        else {
+
+            // Fetch number of records in set 
+            ptblItem->m_mutexThisTable.Lock();
+            long nRecords = ptblItem->GetStaticRequiredBuffSize();
+            ptblItem->m_mutexThisTable.Unlock();
+            
+            if ( nRecords > 0 ) {
+            
+                ptblItem->m_mutexThisTable.Lock();
+                long nfetchedRecords = ptblItem->GetStaticRequiredBuffSize();
+                ptblItem->m_mutexThisTable.Unlock();
+
+                if ( 0 == nfetchedRecords ) {
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_TABLE_ERROR_READING,
+									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
+			        wxString strErr = 
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.mbc_str() );					
+	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
+                    return MG_TRUE;
+                }
+                else {
+
+                    struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nfetchedRecords];
+
+                    if ( NULL == pRecords ) {
+                        mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_MEMORY_ALLOCATION,
+									WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
+			            wxString strErr = 
+                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.mbc_str() );					
+	                    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
+                        return MG_TRUE;
+                    }
+
+                    // First send start post with number if records
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"+;GETTABLE;START;%d",
+                                    nfetchedRecords );
+
+                    // Then send measurement records
+                    for ( long i=0; i<nfetchedRecords; i++ ) {
+                        mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"+;T;%d;%d;%f",
+                                    i, pRecords[i].timestamp, pRecords[i].measurement );
+                    }
+
+                    // Last send end post with number if records
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"+;GETTABLE;END;%d",
+                                    nfetchedRecords );
+
+                    // Deallocate storage
+                    delete pRecords;
+
+                }
+
+            }
+            else {
+                if ( 0 == nRecords ) {
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_TABLE_NO_DATA,
+									WEBSOCK_STR_ERROR_TABLE_NO_DATA );
+			        wxString strErr = 
+                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.mbc_str() );					
+	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
+                    return MG_TRUE;
+                }
+                else {
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_TABLE_ERROR_READING,
+									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
+			        wxString strErr = 
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.mbc_str() );					
+	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
+                    return MG_TRUE;
+                }
+            }
+
+        }
+
+    }
 	else {
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s", 
@@ -5098,6 +5417,10 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
                 buildPage += _("<b>Subzone: </b>");
                 buildPage += wxString::Format(_("%d "), pElement->m_subzone);
 
+                if ( pElement->m_bMeasurement ) {
+                    buildPage += _("&nbsp;&nbsp;&nbsp;(Sensor index is used for index compare)");
+                }
+
                 buildPage += _("<br>");
 
                 buildPage += _("<b>Allowed from:</b> ");
@@ -5385,7 +5708,20 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
         else {
             buildPage += wxString::Format(_("%d"), pElement->m_index );
         }
-        buildPage += _("</textarea></td></tr>");
+        buildPage += _("</textarea>");
+
+        // Use measurement index
+        buildPage += _("&nbsp;&nbsp;<input name=\"check_measurementindex\" value=\"true\" ");
+        if ( bNew ) {
+            buildPage += _("");
+        }
+        else {
+            buildPage += wxString::Format(_("%s"), 
+                pElement->m_bMeasurement ? _("checked") : _("") );
+        }
+        buildPage += _(" type=\"checkbox\">");            
+        buildPage += _("<span id=\"optiontext\">Use measurement index (only for measurement events)</span>");
+        buildPage += _("</td></tr>");
 
         // Zone
         buildPage += _("<tr class=\"invisable\"><td class=\"invisable\">Zone:</td><td class=\"invisable\"><textarea cols=\"10\" rows=\"1\" name=\"vscpzone\">");
@@ -5431,7 +5767,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             buildPage += _("");
         }
         else {
-            buildPage += wxString::Format(_("%d"), 
+            buildPage += wxString::Format(_("%s"), 
                                             pElement->isScanDontContinueSet() ? _("checked") : _("") );
         }
         buildPage += _(" type=\"checkbox\">");           
@@ -5445,7 +5781,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             buildPage += _("");
         }
         else {
-            buildPage += wxString::Format(_("%d"), 
+            buildPage += wxString::Format(_("%s"), 
                                             pElement->isCheckIndexSet() ? _("checked") : _("") );
         }
         buildPage += _(" type=\"checkbox\">"); 
@@ -5457,7 +5793,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             buildPage += _("");
         }
         else {
-            buildPage += wxString::Format(_("%d"), 
+            buildPage += wxString::Format(_("%s"), 
                                             pElement->isCheckZoneSet() ? _("checked") : _("") );
         }
         buildPage += _(" type=\"checkbox\">"); 
@@ -5469,7 +5805,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             buildPage += _("");
         }
         else {
-            buildPage += wxString::Format(_("%d"), 
+            buildPage += wxString::Format(_("%s"), 
                                             pElement->isCheckSubZoneSet() ? _("checked") : _("") );
         }
         buildPage += _(" type=\"checkbox\">"); 
@@ -5729,12 +6065,24 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
         buildPage += wxString::Format(_("<option value=\"0x75\" %s>Get/Put/Post URL</option>"),
                 str.GetData());
 
+        if ( bNew ) {
+            str = _("");
+        }
+        else { 
+            str = (0x75 == pElement->m_action) ? _("selected") : _(" ");
+        }
+        buildPage += wxString::Format(_("<option value=\"0x80\" %s>Write to table</option>"),
+                str.GetData());
+
         buildPage += _("</select>");
+
+        buildPage += _(" <a href=\"http://www.vscp.org/docs/vscpd/doku.php?id=vscp_daemon_decision_matrix#level_ii\" target=\"new\">Help for actions and parameters</a><br>");
              
         buildPage += _("<h4>Action parameter:</h4>");
         buildPage += _("<textarea cols=\"80\" rows=\"1\" name=\"actionparameter\">");
         if ( !bNew ) buildPage += pElement->m_actionparam;
         buildPage += _("</textarea>");
+
 
         buildPage += _("<h4>Comment:</h4>");
         buildPage += _("<textarea cols=\"80\" rows=\"5\" name=\"comment\">");
@@ -5839,6 +6187,11 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *conn )
     uint8_t index = 0;
 	if ( mg_get_var( conn, "vscpindex", buf, sizeof( buf ) ) > 0 ) {
 		index = vscp_readStringValue( wxString::FromAscii( buf ) );
+	}
+
+    bool bUseMeasurementIndex = false;
+	if ( mg_get_var( conn, "check_measurementindex", buf, sizeof( buf ) ) > 0 ) {
+		if ( NULL != strstr( "true", buf ) ) bUseMeasurementIndex = true;
 	}
     
     uint8_t zone = 0;
@@ -6032,6 +6385,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *conn )
 
                 pElement->m_index = index;
                 pElement->m_zone = zone;
+                pElement->m_bMeasurement = bUseMeasurementIndex;
                 pElement->m_subzone = subzone;
 
                 pElement->m_control = 0;
