@@ -41,6 +41,13 @@ public:
 	// Destructor
 	virtual ~CVSCPAutomation(void);
 
+    /*!
+        
+        \return Greater than zero if Daylight Saving Time is in effect, 
+        zero if Daylight Saving Time is not in effect, and less than 
+        zero if the information is not available.
+    */
+    int isDaylightSavingTime();
 
     /*!
 

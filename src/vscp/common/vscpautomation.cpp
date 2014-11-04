@@ -141,6 +141,21 @@ CVSCPAutomation::~CVSCPAutomation( void )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// isDaylightSavingTime
+//
+
+int CVSCPAutomation::isDaylightSavingTime() 
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+    return timeinfo->tm_isdst;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // FNday
 //
 // Get the days to J2000

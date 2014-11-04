@@ -337,6 +337,19 @@ CControlObject::CControlObject()
 	size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
 #endif
 
+    time_t rawtime;
+    struct tm *timeinfo;
+
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+    timeinfo->tm_hour = 18;
+    timeinfo->tm_min = 0;
+    timeinfo->tm_sec = 0;
+    timeinfo->tm_mday = 3;
+    timeinfo->tm_mon = 10;
+    timeinfo->tm_year = 2014;
+    time_t ttt = mktime ( timeinfo );
+    ttt = ttt + 1;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

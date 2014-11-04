@@ -155,7 +155,7 @@ public:
 		@param measurement Measurement data
 		@return VSCP_ERROR_ERROR on success
 	*/
-	int logData( time_t timestamp, double measurement );
+	int logData( uint64_t timestamp, double measurement );
 
 	/*!
 		Get a data range
@@ -167,7 +167,7 @@ public:
 		@param size Size of bugger in bytes
 		@return Number of records read or to read or -1 if error.
 	*/
-	long GetRangeOfData( time_t from, time_t to, void *buf = NULL, uint16_t size = 0 );
+	long GetRangeOfData( uint64_t from, uint64_t to, void *buf = NULL, uint16_t size = 0 );
 
 	/*!
 		Get static dataset
@@ -187,12 +187,12 @@ public:
 	/*!
 		Get statistics for a range for a range
 	*/
-	int getInfo( struct _vscptableInfo *pInfo, time_t from = 0, time_t to = 0 );
+	int getInfo( struct _vscptableInfo *pInfo, uint64_t from = 0, uint64_t to = 0 );
 
 	/*!
 		Calculate mean over a range
 	*/
-	double calculatMean( time_t from, time_t to );
+	double calculatMean( uint64_t from, uint64_t to );
 
     // Get time for firts logged entry
     time_t getTimeStampStart( void ) { return m_timestamp_first; };

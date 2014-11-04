@@ -266,7 +266,7 @@ int CVSCPTable::writeMainHeader( void )
 // logData
 //
 
-int CVSCPTable::logData( time_t timestamp, double measurement )
+int CVSCPTable::logData( uint64_t timestamp, double measurement )
 {
 	int rv = VSCP_ERROR_SUCCESS;
 	struct _vscpFileRecord record;
@@ -312,7 +312,7 @@ int CVSCPTable::logData( time_t timestamp, double measurement )
 // GetRangeOfData
 //
 
-long CVSCPTable::GetRangeOfData( time_t from, time_t to, void *buf, uint16_t size )
+long CVSCPTable::GetRangeOfData( uint64_t from, uint64_t to, void *buf, uint16_t size )
 {
 	long  returnCount = 0;
 	bool bFound = false;
@@ -322,6 +322,7 @@ long CVSCPTable::GetRangeOfData( time_t from, time_t to, void *buf, uint16_t siz
 	long endRecord = m_number_of_records-1;
 	long midRecord;
 	struct _vscpFileRecord *p = (struct _vscpFileRecord *)buf;
+    
 
 	// File must be open
 	if ( NULL == m_ft ) return -1;
@@ -444,7 +445,7 @@ long CVSCPTable::GetStaticRequiredBuffSize( void )
 // getInfo
 //
 
-int CVSCPTable::getInfo( struct _vscptableInfo *pInfo, time_t from, time_t to )
+int CVSCPTable::getInfo( struct _vscptableInfo *pInfo, uint64_t from, uint64_t to )
 {
 	bool bFirst =true;
 	_vscpFileRecord record;
