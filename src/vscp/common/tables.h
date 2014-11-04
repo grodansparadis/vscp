@@ -73,7 +73,7 @@ struct _vscpFileHead {
 
 // All data is written with this record type
 struct _vscpFileRecord {
-	time_t timestamp;
+	uint64_t timestamp;
 	double measurement;
 };
 

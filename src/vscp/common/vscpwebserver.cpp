@@ -6069,7 +6069,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = _("");
         }
         else { 
-            str = (0x75 == pElement->m_action) ? _("selected") : _(" ");
+            str = (0x80 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x80\" %s>Write to table</option>"),
                 str.GetData());
