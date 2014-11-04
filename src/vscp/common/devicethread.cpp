@@ -309,7 +309,7 @@ void *deviceThread::Entry()
 			return NULL;
 		}
         else {
-            wxString wxstr = wxString::Format(_("Driver %s opended."), m_pDeviceItem->m_strName.mbc_str() );
+            wxString wxstr = wxString::Format(_("Driver %s opended."), (const char *)m_pDeviceItem->m_strName.mbc_str() );
             m_pCtrlObject->logMsg( wxstr, DAEMON_LOGMSG_INFO);
         }
 
