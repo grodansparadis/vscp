@@ -2412,8 +2412,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                     // Username/password wrong
                     strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n"), 
-                                                 wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(), 
-                                                 pUser->m_user.mbc_str() );
+                                                 (const char *)wxString::FromAscii((const char *)conn->remote_ip ).mbc_str(), 
+                                                 (const char *)pUser->m_user.mbc_str() );
 	                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );                                                                        
 				    return MG_FALSE;
             }
@@ -2441,10 +2441,10 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Log access
                 strErr = 
                 wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
-                                wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(),
-                                wxString::FromAscii((const char *)conn->uri).mbc_str(), 
-                                wxString::FromAscii((const char *)conn->query_string).mbc_str(), 
-                                wxString::FromAscii((const char *)conn->request_method).mbc_str() );						
+                                (const char *)wxString::FromAscii((const char *)conn->remote_ip ).mbc_str(),
+                                (const char *)wxString::FromAscii((const char *)conn->uri).mbc_str(), 
+                                (const char *)wxString::FromAscii((const char *)conn->query_string).mbc_str(), 
+                                (const char *)wxString::FromAscii((const char *)conn->request_method).mbc_str() );						
 	            pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
