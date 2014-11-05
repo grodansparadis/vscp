@@ -325,8 +325,8 @@ Cmqtt::open(const char *pUsername,
 	// variables
 
 	if (m_srv.doCmdOpen(m_host,
-			m_username,
-			m_password) <= 0) {
+                           m_username,
+                           m_password) <= 0) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
@@ -479,7 +479,8 @@ Cmqtt::open(const char *pUsername,
 		m_pthreadWork->m_pObj = this;
 		m_pthreadWork->Create();
 		m_pthreadWork->Run();
-	} else {
+	} 
+	else {
 		rv = false;
 	}
 
@@ -498,8 +499,7 @@ Cmqtt::close(void)
 	if (m_bQuit) return;
 
 	m_bQuit = true; // terminate the thread
-	wxSleep(1); // Give the thread some time to terminate
-
+	wxSleep(1);		// Give the thread some time to terminate
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -510,7 +510,6 @@ bool
 Cmqtt::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
-	//m_sendQueue.Append((vscpEvent *)pEvent);
     m_sendList.push_back((vscpEvent *)pEvent);
 	m_semSendQueue.Post();
 	m_mutexSendQueue.Unlock();
@@ -545,15 +544,15 @@ CWrkThread::Entry()
 
     mosqpp::lib_init();
 
-    if (m_pObj->m_bSubscribe) {
+	if (m_pObj->m_bSubscribe) {
 
-        // S u b s c r i b e
-        mqtt_subscribe *pSubscribe = 
-                new mqtt_subscribe( "vscpdriver",
-                                        m_pObj->m_topic.ToAscii(),
-                                        m_pObj->m_hostMQTT.ToAscii(),
-                                        m_pObj->m_portMQTT,
-                                        m_pObj->m_keepalive);
+		// S u b s c r i b e
+		mqtt_subscribe *pSubscribe =
+			new mqtt_subscribe("vscpdriver",
+								m_pObj->m_topic.ToAscii(),
+								m_pObj->m_hostMQTT.ToAscii(),
+								m_pObj->m_portMQTT,
+								m_pObj->m_keepalive);
         
         // Save the object class
         pSubscribe->m_pObj = m_pObj;
@@ -575,10 +574,10 @@ CWrkThread::Entry()
         // P u b l i s h
         mqtt_publish *pPublish = 
                 new mqtt_publish( "vscpdriver",
-                                        m_pObj->m_topic.ToAscii(),
-                                        m_pObj->m_hostMQTT.ToAscii(),
-                                        m_pObj->m_portMQTT,
-                                        m_pObj->m_keepalive);
+                                    m_pObj->m_topic.ToAscii(),
+                                    m_pObj->m_hostMQTT.ToAscii(),
+                                    m_pObj->m_portMQTT,
+                                    m_pObj->m_keepalive);
 
         // Save the object class
         pPublish->m_pObj = m_pObj;

@@ -8,8 +8,9 @@
       </df>
       <in>config.h</in>
       <in>test.cpp</in>
+      <in>vscpl1_xapdrv.cpp</in>
+      <in>vscpl1_xapdrv.h</in>
       <in>xapdrv.cpp</in>
-      <in>xapdrv.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

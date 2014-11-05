@@ -31,10 +31,11 @@
       </df>
       <in>config.h</in>
       <in>socketcandrv.cpp</in>
-      <in>socketcandrv.h</in>
       <in>socketcanobj.cpp</in>
       <in>socketcanobj.h</in>
       <in>test.cpp</in>
+      <in>vscpl1_socketcandrv.cpp</in>
+      <in>vscpl1_socketcandrv.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

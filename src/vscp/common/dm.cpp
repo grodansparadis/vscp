@@ -123,7 +123,7 @@ void *actionThreadURL::Entry()
             wxstr += wxT("\n");
             wxstr += wxT("User-Agent: VSCPD/1.0\n\n");
         }
-        // OK the accessmethod is PUT
+        // OK the access method is PUT
         else {
             wxstr = wxT("POST ");
             wxstr += m_url.GetPath();
@@ -2812,6 +2812,24 @@ CDM::CDM( CControlObject *ctrlObj )
 
     m_lastTime = wxDateTime::Now();
 
+#ifdef WIN32	
+#ifdef BUILD_VSCPD_SERVICE
+    //wxStandardPaths stdPath;
+
+    // Set the default dm configuration path
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
+    m_configPath += _("/vscp/dm.xml");
+#else
+    //wxStandardPaths stdPath;
+
+    // Set the default dm configuration path
+    m_configPath = wxStandardPaths::Get().GetConfigDir();
+    m_configPath += _("/vscp/dm.xml");
+#endif
+#else
+	m_configPath = _("/srv/vscp/dm.xml");
+#endif	
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2854,6 +2872,11 @@ void CDM::init( void )
     if ( m_bLogEnable ) {
         m_fileLog.Open( m_logFileName.GetFullPath(), wxFile::write_append ); 
     }
+	
+	wxString wxlogmsg = 
+		wxString::Format("DM engine started. DM from [%s]\n",
+							(const char *)m_configPath.mbc_str() );
+	logmsg( wxlogmsg );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2870,7 +2893,7 @@ void CDM::setControlObject( CControlObject *ctrlObj )
 // logmsg
 //
 
-void CDM::logmsg( const wxString& msg, const uint8_t level )
+void CDM::logmsg( const wxString& msg, uint8_t level )
 {
     wxString logmsg;
     wxDateTime datetime( wxDateTime::GetTimeNow() );
@@ -2948,28 +2971,14 @@ dmElement *CDM::getElement( short row )
 
 bool CDM::load ( void )
 {
-    wxLogDebug( _("DM: Loading decision matrix from :") );
-
-#ifdef BUILD_VSCPD_SERVICE
-    //wxStandardPaths stdPath;
-
-    // Set the default dm configuration path
-    m_configPath = wxStandardPaths::Get().GetConfigDir();
-    m_configPath += _("/vscp/dm.xml");
-#else
-    //wxStandardPaths stdPath;
-
-    // Set the default dm configuration path
-    m_configPath = wxStandardPaths::Get().GetConfigDir();
-    m_configPath += _("/vscp/dm.xml");
-#endif
+    logmsg( _("DM: Loading decision matrix from :\n") );
 
     // debug print configuration path
-    wxLogDebug( m_configPath );
+    logmsg( m_configPath + _("\n") );
 
     // File must exist
     if ( !wxFile::Exists( m_configPath ) ) { 
-        wxLogDebug( _("DM: file does not exist.") );	
+        logmsg( _("DM: file does not exist.\n") );	
         return false;
     }
 
@@ -3141,7 +3150,7 @@ bool CDM::load ( void )
 
     }
 
-    wxLogDebug( _("DM: Success.") );
+    logmsg( _("DM: Read success.\n"), LOG_DM_NORMAL );
 
     return true;
 }
@@ -3156,21 +3165,7 @@ bool CDM::load ( void )
 bool CDM::save ( void )
 {
     wxString buf;
-    wxLogDebug( _("DM: Saving decision matrix from :") );
-
-#ifdef BUILD_VSCPD_SERVICE
-    //wxStandardPaths stdPath;
-
-    // Set the default dm configuration path
-    m_configPath = wxStandardPaths::Get().GetConfigDir();
-    m_configPath += _("/vscp/dm.xml");
-#else
-    //wxStandardPaths stdPath;
-
-    // Set the default dm configuration path
-    m_configPath = wxStandardPaths::Get().GetConfigDir();
-    m_configPath += _("/vscp/dm.xml");
-#endif
+    logmsg( _("DM: Saving decision matrix to :\n") );
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
     if ( NULL == pFileStream ) return false;
