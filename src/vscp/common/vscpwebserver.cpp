@@ -523,7 +523,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
             wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -538,7 +538,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -610,7 +610,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -625,7 +625,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -657,7 +657,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -672,7 +672,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -748,7 +748,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -763,7 +763,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -836,7 +836,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -851,7 +851,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -904,7 +904,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -918,7 +918,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_VARIABLE_UNKNOWN );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;
@@ -948,7 +948,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -963,7 +963,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1003,7 +1003,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -1018,7 +1018,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1058,7 +1058,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -1073,7 +1073,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1113,7 +1113,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -1128,7 +1128,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1183,7 +1183,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
              wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not authorized to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			return MG_TRUE;	// We still leave channel open
@@ -1198,7 +1198,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str() );			
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1744,7 +1744,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
                 if ( !pSession->m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( vscp_event.vscp_class, vscp_event.vscp_type ) ) {
                     wxString strErr = 
                         wxString::Format( _("websocket] User [%s] not allowed to send event class=%d type=%d.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.wc_str(), 
+                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.mbc_str(), 
                                                 vscp_event.vscp_class, vscp_event.vscp_type );			
 		
 	                pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
@@ -1817,7 +1817,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] Host [%s] NOT allowed to connect.\n"),
-											(const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
+											(const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str() );
 
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
@@ -1848,8 +1848,8 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
                         wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
-                                                 (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                                                 (const char *)strUser.wc_str() );			
+                                                 (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(), 
+                                                 (const char *)strUser.mbc_str() );			
 		
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
@@ -1858,7 +1858,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] user [%s] NOT allowed to connect.\n"), 
-                                             (const char *)strUser.wc_str() );			
+                                             (const char *)strUser.mbc_str() );			
 			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         }
@@ -2398,8 +2398,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Host wrong
                 strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                                 (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                                                 (const char *)pUser->m_user.wc_str() );				
+                                                 (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(), 
+                                                 (const char *)pUser->m_user.mbc_str() );				
 			
                 pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
                 return MG_FALSE;
@@ -2412,8 +2412,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                     // Username/password wrong
                     strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n"), 
-                                                 wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                                                 pUser->m_user.wc_str() );
+                                                 wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(), 
+                                                 pUser->m_user.mbc_str() );
 	                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );                                                                        
 				    return MG_FALSE;
             }
@@ -2424,8 +2424,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
             // Valid credentials
             strErr = 
                     wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
-                                        (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                                        (const char *)pUser->m_user.wc_str() );			
+                                        (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(), 
+                                        (const char *)pUser->m_user.mbc_str() );			
 			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY ); 
             
@@ -2441,10 +2441,10 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Log access
                 strErr = 
                 wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
-                                wxString::FromAscii( conn->remote_ip ).wc_str(),
-                                wxString::FromAscii(conn->uri).wc_str(), 
-                                wxString::FromAscii(conn->query_string).wc_str(), 
-                                wxString::FromAscii(conn->request_method).wc_str() );						
+                                wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(),
+                                wxString::FromAscii((const char *)conn->uri).mbc_str(), 
+                                wxString::FromAscii((const char *)conn->query_string).mbc_str(), 
+                                wxString::FromAscii((const char *)conn->request_method).mbc_str() );						
 	            pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
@@ -2723,8 +2723,8 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
 
     bool bFirstRow = false;
     wxString buildPage;
-    wxString strHeader = wxString::Format(_("VSCP - %s"), (const char *)textHeader.wc_str() );
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), (const char *)strHeader.wc_str() );
+    wxString strHeader = wxString::Format(_("VSCP - %s"), (const char *)textHeader.mbc_str() );
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), (const char *)strHeader.mbc_str() );
     buildPage += _(WEB_STYLE_START);
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
@@ -2734,7 +2734,7 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
     // Navigation menu 
     buildPage += _(WEB_COMMON_MENU);
 
-    buildPage += wxString::Format( _("<b>%s</b><br><br>"), (const char *)textHeader.wc_str() );
+    buildPage += wxString::Format( _("<b>%s</b><br><br>"), (const char *)textHeader.mbc_str() );
     buildPage += _("<b>Path</b>=<i>");
     buildPage += logfile.GetFullPath();
     buildPage += _("</i><br>");
@@ -3085,8 +3085,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	    if ( NULL == pUser ) {
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] Invalid user [%s]\n"), 
-                                (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                                (const char *)keypairs[_("USER")].wc_str() );
+                                (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(), 
+                                (const char *)keypairs[_("USER")].mbc_str() );
 	        pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3099,8 +3099,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	    if (!bValidHost) {
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                                (const char *)keypairs[_("USER")].wc_str() );
+                                (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(), 
+                                (const char *)keypairs[_("USER")].mbc_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3110,8 +3110,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	    if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) {
             wxString strErr = 
             wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
-                                (const char *)keypairs[_("USER")].wc_str(), 
-                                (const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
+                                (const char *)keypairs[_("USER")].mbc_str(), 
+                                (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3127,8 +3127,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	    if (!bValidHost) {
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                (const char *)wxString::FromAscii( conn->remote_ip ).wc_str(), 
-                                (const char *)keypairs[_("USER")].wc_str() );
+                                (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str(), 
+                                (const char *)keypairs[_("USER")].mbc_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3140,8 +3140,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
     wxString strErr = 
         wxString::Format( _("[REST Client] User [%s] Host [%s] allowed to connect. \n"), 
-                            (const char *)keypairs[_("USER")].wc_str() , 
-                            (const char *)wxString::FromAscii( conn->remote_ip ).wc_str() );
+                            (const char *)keypairs[_("USER")].mbc_str() , 
+                            (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).mbc_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
 	// Get format
@@ -3814,7 +3814,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 								strcpy((char *) wrkbuf, (const char*) "<guid>");
 								vscp_writeGuidToString( pEvent, str);
-								strcpy((char *) wrkbuf, (const char *)str.wc_str() );
+								strcpy((char *) wrkbuf, (const char *)str.mbc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</guid>");
 
 								strcpy((char *) wrkbuf, (const char*) "<sizedata>");
@@ -3823,7 +3823,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 								strcpy((char *) wrkbuf, (const char*) "<data>");
 								vscp_writeVscpDataToString( pEvent, str);
-								strcpy((char *) wrkbuf, (const char *)str.wc_str() );
+								strcpy((char *) wrkbuf, (const char *)str.mbc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</data>");
 
 								strcat((char *) wrkbuf, "</event>" );
@@ -4170,8 +4170,8 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 								(const char *)pvar->getName().mb_str(), 
 								pvar->getType(),
 								pvar->isPersistent() ? "true" : "false", 
-								(const char *)strVariableValue.wc_str(),
-								(const char *)pvar->getNote().wc_str() );				
+								(const char *)strVariableValue.mbc_str(),
+								(const char *)pvar->getNote().mbc_str() );				
 			
 				webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 				mg_write( conn, buf, strlen( buf ) );
@@ -4187,11 +4187,11 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			memset( buf, 0, sizeof( buf ));
 			sprintf( wrkbuf, 
 				"success-code,error-code,message,description,Variable,Type, Value,Persistent,Note\r\n1,1,Success,Success.,%s,%d,%s,%s,%s\r\n",
-				(const char *)strVariableName.wc_str(), 
+				(const char *)strVariableName.mbc_str(), 
 				pvar->getType(),
-				(const char *)strVariableValue.wc_str(),
+				(const char *)strVariableValue.mbc_str(),
 				pvar->isPersistent() ? "true" : "false", 
-				(const char *)pvar->getNote().wc_str() );
+				(const char *)pvar->getNote().mbc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -4222,9 +4222,9 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			memset( buf, 0, sizeof( buf ) );
 			sprintf((char *) wrkbuf, 
 							"<name>%s</name><value>%s</value><note>%s</note>",
-							(const char *)pvar->getName().wc_str(),
-							(const char *)strVariableValue.wc_str(),
-							(const char *)pvar->getNote().wc_str() );
+							(const char *)pvar->getName().mbc_str(),
+							(const char *)strVariableValue.mbc_str(),
+							(const char *)pvar->getNote().mbc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -4508,7 +4508,7 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 		listVSCPTables::iterator iter;
 		for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
 			CVSCPTable *pTable = *iter;
-			if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, (const char *)strName.wc_str() ) ) {
+			if ( 0 == strcmp( pTable->m_vscpFileHead.nameTable, (const char *)strName.mbc_str() ) ) {
 			//	pTable->logData( timestamp, value );
 				break;
 			}

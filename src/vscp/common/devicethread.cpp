@@ -129,7 +129,7 @@ void *deviceThread::Entry()
 
 	// Load dynamic library
 	if (!m_wxdll.Load(m_pDeviceItem->m_strPath, wxDL_LAZY)) {
-		m_pCtrlObject->logMsg(_T("Unable to load dynamic library."), DAEMON_LOGMSG_CRITICAL);
+		m_pCtrlObject->logMsg(_T("Unable to load dynamic library.\n"), DAEMON_LOGMSG_CRITICAL);
 		return NULL;
 	}
     
@@ -150,7 +150,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalOpen =
 			(LPFNDLL_CANALOPEN) m_wxdll.GetSymbol(_T("CanalOpen")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalOpen."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalOpen.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -158,7 +158,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalClose =
 			(LPFNDLL_CANALCLOSE) m_wxdll.GetSymbol(_T("CanalClose")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalClose."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalClose.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -166,7 +166,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalGetLevel =
 			(LPFNDLL_CANALGETLEVEL) m_wxdll.GetSymbol(_T("CanalGetLevel")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetLevel."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetLevel.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -174,7 +174,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalSend =
 			(LPFNDLL_CANALSEND) m_wxdll.GetSymbol(_T("CanalSend")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalSend."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalSend.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -182,7 +182,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalDataAvailable =
 			(LPFNDLL_CANALDATAAVAILABLE) m_wxdll.GetSymbol(_T("CanalDataAvailable")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalDataAvailable."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalDataAvailable.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -191,7 +191,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalReceive =
 			(LPFNDLL_CANALRECEIVE) m_wxdll.GetSymbol(_T("CanalReceive")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalReceive."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalReceive.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -199,7 +199,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalGetStatus =
 			(LPFNDLL_CANALGETSTATUS) m_wxdll.GetSymbol(_T("CanalGetStatus")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetStatus."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetStatus.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -207,7 +207,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalGetStatistics =
 			(LPFNDLL_CANALGETSTATISTICS) m_wxdll.GetSymbol(_T("CanalGetStatistics")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetStatistics."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetStatistics.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -215,7 +215,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalSetFilter =
 			(LPFNDLL_CANALSETFILTER) m_wxdll.GetSymbol(_T("CanalSetFilter")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalSetFilter."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalSetFilter.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -223,7 +223,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalSetMask =
 			(LPFNDLL_CANALSETMASK) m_wxdll.GetSymbol(_T("CanalSetMask")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalSetMask."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalSetMask.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -231,7 +231,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalGetVersion =
 			(LPFNDLL_CANALGETVERSION) m_wxdll.GetSymbol(_T("CanalGetVersion")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetVersion."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetVersion.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -239,7 +239,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalGetDllVersion =
 			(LPFNDLL_CANALGETDLLVERSION) m_wxdll.GetSymbol(_T("CanalGetDllVersion")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetDllVersion."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetDllVersion.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -247,7 +247,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalGetVendorString =
 			(LPFNDLL_CANALGETVENDORSTRING) m_wxdll.GetSymbol(_T("CanalGetVendorString")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetVendorString."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetVendorString.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -262,7 +262,7 @@ void *deviceThread::Entry()
 		if (m_wxdll.HasSymbol(_T("CanalBlockingSend"))) {
 			if (NULL == (m_pDeviceItem->m_proc_CanalBlockingSend =
 				(LPFNDLL_CANALBLOCKINGSEND) m_wxdll.GetSymbol(_T("CanalBlockingSend")))) {
-				m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalBlockingSend. Probably Generation 1 driver."),
+				m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalBlockingSend. Probably Generation 1 driver.\n"),
 					DAEMON_LOGMSG_CRITICAL);
 				m_pDeviceItem->m_proc_CanalBlockingSend = NULL;
 			}
@@ -276,7 +276,7 @@ void *deviceThread::Entry()
 		if (m_wxdll.HasSymbol(_T("CanalBlockingReceive"))) {
 			if (NULL == (m_pDeviceItem->m_proc_CanalBlockingReceive =
 				(LPFNDLL_CANALBLOCKINGRECEIVE) m_wxdll.GetSymbol(_T("CanalBlockingReceive")))) {
-				m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalBlockingReceive. Probably Generation 1 driver."),
+				m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalBlockingReceive. Probably Generation 1 driver.\n"),
 					DAEMON_LOGMSG_CRITICAL);
 				m_pDeviceItem->m_proc_CanalBlockingReceive = NULL;
 			}
@@ -290,7 +290,7 @@ void *deviceThread::Entry()
 		if (m_wxdll.HasSymbol(_T("CanalGetDriverInfo"))) {
 			if (NULL == (m_pDeviceItem->m_proc_CanalGetdriverInfo =
 				(LPFNDLL_CANALGETDRIVERINFO) m_wxdll.GetSymbol(_T("CanalGetDriverInfo")))) {
-				m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetDriverInfo. Probably Generation 1 driver."),
+				m_pCtrlObject->logMsg(_T("Unable to get dl entry for CanalGetDriverInfo. Probably Generation 1 driver.\n"),
 					DAEMON_LOGMSG_CRITICAL);
 				m_pDeviceItem->m_proc_CanalGetdriverInfo = NULL;
 			}
@@ -309,7 +309,7 @@ void *deviceThread::Entry()
 			return NULL;
 		}
         else {
-            wxString wxstr = wxString::Format(_("Driver %s opended."), (const char *)m_pDeviceItem->m_strName.mbc_str() );
+            wxString wxstr = wxString::Format(_("Driver %s opended.\n"), (const char *)m_pDeviceItem->m_strName.mbc_str() );
             m_pCtrlObject->logMsg( wxstr, DAEMON_LOGMSG_INFO);
         }
 
@@ -335,13 +335,13 @@ void *deviceThread::Entry()
 				if (wxTHREAD_NO_ERROR == (err = m_pwriteThread->Create())) {
 					m_pwriteThread->SetPriority(WXTHREAD_MAX_PRIORITY);
 					if (wxTHREAD_NO_ERROR != (err = m_pwriteThread->Run())) {
-						m_pCtrlObject->logMsg(_("Unable to run device write worker thread."), DAEMON_LOGMSG_CRITICAL);
+						m_pCtrlObject->logMsg(_("Unable to run device write worker thread.\n"), DAEMON_LOGMSG_CRITICAL);
 					}
 				} else {
-					m_pCtrlObject->logMsg(_("Unable to create device write worker thread."), DAEMON_LOGMSG_CRITICAL);
+					m_pCtrlObject->logMsg(_("Unable to create device write worker thread.\n"), DAEMON_LOGMSG_CRITICAL);
 				}
 			} else {
-				m_pCtrlObject->logMsg(_("Unable to allocate memory for device write worker thread."), DAEMON_LOGMSG_CRITICAL);
+				m_pCtrlObject->logMsg(_("Unable to allocate memory for device write worker thread.\n"), DAEMON_LOGMSG_CRITICAL);
 			}
 
 			/////////////////////////////////////////////////////////////////////////////
@@ -355,13 +355,13 @@ void *deviceThread::Entry()
 				if (wxTHREAD_NO_ERROR == (err = m_preceiveThread->Create())) {
 					m_preceiveThread->SetPriority(WXTHREAD_MAX_PRIORITY);
 					if (wxTHREAD_NO_ERROR != (err = m_preceiveThread->Run())) {
-						m_pCtrlObject->logMsg(_("Unable to run device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
+						m_pCtrlObject->logMsg(_("Unable to run device receive worker thread.\n"), DAEMON_LOGMSG_CRITICAL);
 					}
 				} else {
-					m_pCtrlObject->logMsg(_("Unable to create device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
+					m_pCtrlObject->logMsg(_("Unable to create device receive worker thread.\n"), DAEMON_LOGMSG_CRITICAL);
 				}
 			} else {
-				m_pCtrlObject->logMsg(_("Unable to allocate memory for device receive worker thread."), DAEMON_LOGMSG_CRITICAL);
+				m_pCtrlObject->logMsg(_("Unable to allocate memory for device receive worker thread.\n"), DAEMON_LOGMSG_CRITICAL);
 			}
 
 			// Just sit and wait until the end of the world as we know it...
@@ -496,7 +496,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPOpen =
 			(LPFNDLL_VSCPOPEN) m_wxdll.GetSymbol(_T("VSCPOpen")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPOpen."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPOpen.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -504,7 +504,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPClose =
 			(LPFNDLL_VSCPCLOSE) m_wxdll.GetSymbol(_T("VSCPClose")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPClose."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPClose.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
         
@@ -512,7 +512,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPBlockingSend =
 			(LPFNDLL_VSCPBLOCKINGSEND) m_wxdll.GetSymbol(_T("VSCPBlockingSend")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPBlockingSend."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPBlockingSend.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
         
@@ -520,7 +520,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPBlockingReceive =
 			(LPFNDLL_VSCPBLOCKINGRECEIVE) m_wxdll.GetSymbol(_T("VSCPBlockingReceive")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPBlockingReceive."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPBlockingReceive.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -528,7 +528,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPGetLevel =
 			(LPFNDLL_VSCPGETLEVEL) m_wxdll.GetSymbol(_T("VSCPGetLevel")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetLevel."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetLevel.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -536,7 +536,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPGetDllVersion =
 			(LPFNDLL_VSCPGETDLLVERSION) m_wxdll.GetSymbol(_T("VSCPGetDllVersion")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetDllVersion."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetDllVersion.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -544,7 +544,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPGetVendorString =
 			(LPFNDLL_VSCPGETVENDORSTRING) m_wxdll.GetSymbol(_T("VSCPGetVendorString")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetVendorString."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetVendorString.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
@@ -552,7 +552,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_CanalGetdriverInfo =
 			(LPFNDLL_VSCPGETVENDORSTRING) m_wxdll.GetSymbol(_T("VSCPGetDriverInfo")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetDriverInfo."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetDriverInfo.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
         
@@ -560,7 +560,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPGetWebPageTemplate =
 			(LPFNDLL_VSCPGETWEBPAGETEMPLATE) m_wxdll.GetSymbol(_T("VSCPGetWebPageTemplate")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetWebPageTemplate."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetWebPageTemplate.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
         
@@ -568,7 +568,7 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPGetWebPageInfo =
 			(LPFNDLL_VSCPGETWEBPAGEINFO) m_wxdll.GetSymbol(_T("VSCPGetWebPageInfo")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetWebPageInfo."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPGetWebPageInfo.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
         
@@ -576,11 +576,11 @@ void *deviceThread::Entry()
 		if (NULL == (m_pDeviceItem->m_proc_VSCPWebPageupdate =
 			(LPFNDLL_VSCPWEBPAGEUPDATE) m_wxdll.GetSymbol(_T("VSCPWebPageupdate")))) {
 			// Free the library
-			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPWebPageupdate."), DAEMON_LOGMSG_CRITICAL);
+			m_pCtrlObject->logMsg(_T("Unable to get dl entry for VSCPWebPageupdate.\n"), DAEMON_LOGMSG_CRITICAL);
 			return NULL;
 		}
 
-        m_pCtrlObject->logMsg(_("Discovered all methods"), DAEMON_LOGMSG_INFO);
+        m_pCtrlObject->logMsg(_("Discovered all methods\n"), DAEMON_LOGMSG_INFO);
         
 		// Username, password, host and port can be set in configuration file. Read in them here
 		// if they are.

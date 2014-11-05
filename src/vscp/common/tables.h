@@ -80,8 +80,8 @@ struct _vscpFileRecord {
 struct _vscptableInfo {
 	double minValue;
 	double maxValue;
-	time_t minTime;
-	time_t maxTime;
+	uint64_t minTime;
+	uint64_t maxTime;
 	double meanValue;
 	uint32_t nRecords;
 };
@@ -167,7 +167,21 @@ public:
 		@param size Size of bugger in bytes
 		@return Number of records read or to read or -1 if error.
 	*/
-	long GetRangeOfData( uint64_t from, uint64_t to, void *buf = NULL, uint16_t size = 0 );
+	long GetRangeOfData( uint64_t start, uint64_t end, void *buf = NULL, uint16_t size = 0 );
+
+
+    /*!
+		Get a data range
+		@param from date/time from which data should be fetched
+		@param to date/time to which data should be fetched
+		@param buf Buffer where result will be placed. If buffer is NULL
+				no data will be filled only the number of records will be
+				returned.
+		@param size Size of bugger in bytes
+		@return Number of records read or to read or -1 if error.
+	*/
+    long GetRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf = NULL, uint16_t size = 0 );
+
 
 	/*!
 		Get static dataset
@@ -218,10 +232,10 @@ private:
 	wxString m_path;	
 
 	/// Timestamp for first record
-	time_t m_timestamp_first;
+	uint64_t m_timestamp_first;
 
 	/// Timestamp for last record
-	time_t m_timestamp_last;
+	uint64_t m_timestamp_last;
 
 	/// Current number of records in database
 	long m_number_of_records;

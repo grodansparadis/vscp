@@ -50,6 +50,11 @@ public:
     int isDaylightSavingTime();
 
     /*!
+        Get the hours our locale differs from GMT
+    */
+    int getTimeZoneDiffHours();
+
+    /*!
 
     */
     static double FNday(int y, int m, int d, float h);

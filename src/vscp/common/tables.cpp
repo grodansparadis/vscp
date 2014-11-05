@@ -312,7 +312,7 @@ int CVSCPTable::logData( uint64_t timestamp, double measurement )
 // GetRangeOfData
 //
 
-long CVSCPTable::GetRangeOfData( uint64_t from, uint64_t to, void *buf, uint16_t size )
+long CVSCPTable::GetRangeOfData( uint64_t start, uint64_t end, void *buf, uint16_t size )
 {
 	long  returnCount = 0;
 	bool bFound = false;
@@ -334,9 +334,9 @@ long CVSCPTable::GetRangeOfData( uint64_t from, uint64_t to, void *buf, uint16_t
 	if ( 0 == buf ) size = m_number_of_records * sizeof( struct _vscpFileRecord ) + sizeof(_vscpFileHead);
 
 	// If there is nothing to do - do nothing
-	if ( to < from ) return 0;
+	if ( start < end ) return 0;
 
-	if ( m_timestamp_first >= from ) {
+	if ( m_timestamp_first >= end ) {
 		// Set initial searchpos to start.
 		startSearchPos = sizeof(_vscpFileHead);
 	}
@@ -356,12 +356,12 @@ long CVSCPTable::GetRangeOfData( uint64_t from, uint64_t to, void *buf, uint16_t
 				break;
 			}
 
-			if ( record.timestamp == from ) {
+			if ( record.timestamp == end ) {
 				bFound = true;
 				break;
 			}
 			// determine which subarray to search
-			else if (record.timestamp < from ) {
+			else if (record.timestamp < end ) {
 				// change min index to search upper subarray
 				startRecord = midRecord + 1;
 			}
@@ -391,9 +391,9 @@ long CVSCPTable::GetRangeOfData( uint64_t from, uint64_t to, void *buf, uint16_t
 		}
 
 		// Break if we are ready
-		if ( record.timestamp > to ) break;
+		if ( record.timestamp > start ) break;
 
-		if ( record.timestamp >= from ) {
+		if ( record.timestamp >= end ) {
 			if ( NULL != buf ) {
 				memcpy( p++, &record, sizeof(_vscpFileRecord) );
 				size -= sizeof(_vscpFileRecord);
@@ -405,6 +405,39 @@ long CVSCPTable::GetRangeOfData( uint64_t from, uint64_t to, void *buf, uint16_t
 	}
 
 	return returnCount;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// GetRangeOfData
+//
+
+long CVSCPTable::GetRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf, uint16_t size )
+{
+    uint64_t from, to;
+    time_t rawtime;
+    struct tm *timeStart;
+    struct tm *timeEnd;
+    time ( &rawtime );
+
+    timeStart = localtime( &rawtime );
+    timeStart->tm_hour = wxStart.GetHour();
+    timeStart->tm_min = wxStart.GetMinute();
+    timeStart->tm_sec = wxStart.GetSecond();
+    timeStart->tm_mday = wxStart.GetDay();
+    timeStart->tm_mon = wxStart.GetDay();
+    timeStart->tm_year = wxStart.GetYear();
+    from = mktime ( timeStart );
+
+    timeEnd = localtime( &rawtime );
+    timeEnd->tm_hour = wxEnd.GetHour();
+    timeEnd->tm_min = wxEnd.GetMinute();
+    timeEnd->tm_sec = wxEnd.GetSecond();
+    timeEnd->tm_mday = wxEnd.GetDay();
+    timeEnd->tm_mon = wxEnd.GetDay();
+    timeEnd->tm_year = wxEnd.GetYear();
+    to = mktime ( timeEnd );
+
+    return GetRangeOfData( from, to, buf, size );
 }
 
 

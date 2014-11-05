@@ -337,11 +337,12 @@ CControlObject::CControlObject()
 	size = testtable.GetRangeOfData( 20, 48, NULL, 0 );
 #endif
 
+if ( 0 ) {
     time_t rawtime;
     struct tm *timeinfo;
 
     time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+    timeinfo = localtime( &rawtime );
     timeinfo->tm_hour = 18;
     timeinfo->tm_min = 0;
     timeinfo->tm_sec = 0;
@@ -350,6 +351,7 @@ CControlObject::CControlObject()
     timeinfo->tm_year = 2014;
     time_t ttt = mktime ( timeinfo );
     ttt = ttt + 1;
+}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

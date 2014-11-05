@@ -144,7 +144,7 @@ CVSCPAutomation::~CVSCPAutomation( void )
 // isDaylightSavingTime
 //
 
-int CVSCPAutomation::isDaylightSavingTime() 
+int CVSCPAutomation::isDaylightSavingTime( void ) 
 {
     time_t rawtime;
     struct tm *timeinfo;
@@ -154,6 +154,22 @@ int CVSCPAutomation::isDaylightSavingTime()
     return timeinfo->tm_isdst;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getTimeZoneDiffHours
+//
+
+int CVSCPAutomation::getTimeZoneDiffHours( void )
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+    struct tm *timeinfo_gmt;
+
+    time ( &rawtime );
+    timeinfo = localtime( &rawtime );
+    timeinfo_gmt = gmtime( &rawtime );
+
+    return ( timeinfo->tm_hour - timeinfo_gmt->tm_hour );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // FNday
@@ -270,10 +286,20 @@ void CVSCPAutomation::calcSun( void )
 	struct tm *p;
     double tzone = m_timezone;
 
-    // If summertime we add an hour to the zone
-    if ( ( wxDateTime::Now() >= m_daylightsavingtimeStart ) &&
-            ( wxDateTime::Now() <= m_daylightsavingtimeEnd ) ) {
-        tzone++;
+    if ( isDaylightSavingTime() < 0 ) {
+        // No support from system for Daylight saving time on this system
+
+        // If summertime we add an hour to the zone
+        if ( ( wxDateTime::Now() >= m_daylightsavingtimeStart ) &&
+                ( wxDateTime::Now() <= m_daylightsavingtimeEnd ) ) {
+            tzone++;
+        }
+    }
+    else {
+        // We have support for Daylight saving time
+        if ( isDaylightSavingTime() ) {
+            tzone = getTimeZoneDiffHours();
+        }
     }
 
 	degs = 180.0 / pi;
