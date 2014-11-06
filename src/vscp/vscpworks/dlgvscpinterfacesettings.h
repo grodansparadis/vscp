@@ -145,7 +145,6 @@ public:
   wxPanel* m_panelServer;
   wxTextCtrl* m_RemoteServerDescription;
   wxTextCtrl* m_RemoteServerURL;
-  wxTextCtrl* m_RemoteServerPort;
   wxTextCtrl* m_RemoteServerUsername;
   wxTextCtrl* m_RemoteServerPassword;
   wxCheckBox* m_fullLevel2;
@@ -165,7 +164,6 @@ public:
     ID_PANEL_INTERFACE_REMOTE = 16024,
     ID_TEXTCTRL = 16025,
     ID_RemoteServerURL = 16026,
-    ID_RemoteServerPort = 16027,
     ID_RemoteServerUsername = 16028,
     ID_RemoteServerPassword = 16029,
     ID_CHECKBOX2 = 16009,

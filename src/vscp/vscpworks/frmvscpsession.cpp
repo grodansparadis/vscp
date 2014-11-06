@@ -3153,6 +3153,7 @@ void *TXWorkerThread::Entry()
 {
     eventOutQueue::compatibility_iterator node;
     vscpEvent *pEvent;
+
     wxCommandEvent eventConnectionLost(wxVSCP_CTRL_LOST_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventPrepConnection(wxVSCP_RCV_PREP_CONNECT_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventConnected(wxVSCP_RCV_CONNECTED_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
@@ -3172,6 +3173,7 @@ void *TXWorkerThread::Entry()
         ::wxGetApp().logMsg(_("VSCP TX thread - Unable to connect to server."), DAEMON_LOGMSG_CRITICAL);
         m_pCtrlObject->m_errorControl = VSCP_SESSION_ERROR_UNABLE_TO_CONNECT;
         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+		//wxQueueEvent( m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost );
         return NULL;
     }
 

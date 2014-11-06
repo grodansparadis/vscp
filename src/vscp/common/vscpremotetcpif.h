@@ -699,7 +699,10 @@ public:
         Flag for connection - This flag is true when we are 
         connected.
     */
-    bool m_bConnected;
+    volatile bool m_bConnected;
+	
+	// Semaphore that is signaled when connected
+	wxSemaphore m_semConnected;
 
     /*! 
         Array that gets filled with input lines as

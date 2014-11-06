@@ -280,22 +280,12 @@ VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pC
 
 REPEAT_COMMAND:
 
-    // *********************************************************************
-    //                                 QUIT
-    // *********************************************************************
-    if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
-        //long test = NSF_CLOSE_IMMEDIATELY;
-		pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ), 
-								DAEMON_LOGMSG_INFO );
-		ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
-		conn->flags = NSF_FINISHED_SENDING_DATA;	// Close connection
-        return;
-    }
+    
 
     //*********************************************************************
     //                            No Operation
     //*********************************************************************
-    else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "NOOP" ) ) ) {
+    if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "NOOP" ) ) ) {
 	    ns_send( conn,  MSG_OK, strlen ( MSG_OK ) );
     }
 
@@ -457,9 +447,21 @@ REPEAT_COMMAND:
 	//*********************************************************************
 	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUITLOOP" ) ) ) {
 		// Turn of receive loop
-		//conn->flags &= ~(unsigned int)NSF_USER_1;
+		conn->flags &= ~(unsigned int)NSF_USER_1;
 		ns_send( conn, MSG_QUIT_LOOP, strlen ( MSG_QUIT_LOOP ) );
 	}
+
+	// *********************************************************************
+    //                                 QUIT
+    // *********************************************************************
+	else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "QUIT" ) ) ) {
+        //long test = NSF_CLOSE_IMMEDIATELY;
+		pCtrlObject->logMsg( _( "[TCP/IP Client] Command: Close.\n" ), 
+								DAEMON_LOGMSG_INFO );
+		ns_send( conn, MSG_GOODBY, strlen ( MSG_GOODBY ) );
+		conn->flags = NSF_FINISHED_SENDING_DATA;	// Close connection
+        return;
+    }
 
 	//*********************************************************************
 	//                             Help
@@ -736,13 +738,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             str = tkz.GetNextToken();
             event.timestamp = vscp_readStringValue( str );
             if ( !event.timestamp ) {
-#ifdef WIN32
-                event.timestamp = GetTickCount();
-#else
-			    struct timespec ts;
-			    clock_gettime(CLOCK_MONOTONIC, &ts);
-			    event.timestamp = (unsigned long)ts.tv_sec * 1000000 + ts.tv_nsec/1000;  
-#endif
+                event.timestamp = vscp_makeTimeStamp();
             }
         }
         else {

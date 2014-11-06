@@ -2737,10 +2737,10 @@ bool VscpworksApp::writeConfiguration( void )
             pFileStream->Write("</host>\n",strlen("</host>\n"));
 
             // port
-            pFileStream->Write("<port>",strlen("<port>"));
-            buf.Printf(_("%d"), pIf->m_port );
-            pFileStream->Write( buf.mb_str(),strlen(buf.mb_str()) );
-            pFileStream->Write("</port>\n",strlen("</port>\n"));
+            //pFileStream->Write("<port>",strlen("<port>"));
+            //buf.Printf(_("%d"), pIf->m_port );
+            //pFileStream->Write( buf.mb_str(),strlen(buf.mb_str()) );
+            //pFileStream->Write("</port>\n",strlen("</port>\n"));
 
             // username
             pFileStream->Write("<username>",strlen("<username>"));

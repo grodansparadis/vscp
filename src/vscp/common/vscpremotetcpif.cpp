@@ -96,26 +96,33 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
     switch (ev) {
 	
 		case NS_CONNECT: // connect() succeeded or failed. int *success_status
+			wxLogDebug( _("TCP/IP connect.") );
+			pTcpIfSession->m_semConnected.Post();
             pTcpIfSession->m_bConnected = true;
             conn->flags |= NSF_USER_1;  // We should terminate 
 			break;
 
         case NS_CLOSE:
+			wxLogDebug( _("TCP/IP close.") );
             pTcpIfSession->m_bConnected = false;
             break;
 
         case NS_RECV:
+			wxLogDebug( _("TCP/IP receive.") );
 			// Read new data
 			memset( rbuf, 0, sizeof( rbuf ) );
             if ( io->len ) {
 			    memcpy( rbuf, io->buf, io->len );
 			    iobuf_remove(io, io->len); 
                 pTcpIfSession->m_readBuffer += wxString::FromUTF8( rbuf );
-
+				wxLogDebug( wxString::FromUTF8( rbuf ) );
+				
 			    // Check if command already is in buffer
 			    while ( wxNOT_FOUND != ( pos4lf = pTcpIfSession->m_readBuffer.Find( (const char)0x0a ) ) ) {
-				    wxString strCmdGo = pTcpIfSession->m_readBuffer.Mid( 0, pos4lf );
-                    // If in ReceiveLoop we dont store the "+OK"s
+				    
+					wxString strCmdGo = pTcpIfSession->m_readBuffer.Mid( 0, pos4lf );
+                    
+					// If in ReceiveLoop we don't store the "+OK"s
                     if ( pTcpIfSession->m_bModeReceiveLoop ) {
                         strCmdGo.Trim();
                         strCmdGo.Trim(false);
@@ -127,6 +134,9 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
                     
                     }
                     // Add to array 
+					wxString wxlog = wxString::Format(_("TCP/IP line: %s"), 
+										(const char *)strCmdGo.mbc_str() );
+					wxLogDebug( wxlog );
                     pTcpIfSession->m_mutexArray.Lock();
 				    pTcpIfSession->m_inputStrArray.Add( strCmdGo );
                     pTcpIfSession->m_mutexArray.Unlock();
@@ -146,7 +156,7 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
 
 void *clientTcpIpWorkerThread::Entry()
 {
-    // Set up the net_skeleton communication enginee
+    // Set up the net_skeleton communication engine
     ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf, clientTcpIpWorkerThread::ev_handler );
     
     if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
@@ -231,7 +241,8 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 
         }
 
-        wxMilliSleep( 1 );
+        //wxMilliSleep( 50 );
+		ns_mgr_poll( &m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection, 5 );
 
     }
 
@@ -349,20 +360,35 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 
     wxLogDebug( _("Connect in progress with server ") + strHostname );
     
+	int rv;
+	if ( wxSEMA_NO_ERROR != ( rv = m_semConnected.WaitTimeout(3000 * (m_responseTimeOut + 1 ) ) ) ) {
+		m_pClientTcpIpWorkerThread->m_bRun = false;
+		wxString wxlog = wxString::Format(_("Connection failed: Code=%d - "), rv);
+        wxLogDebug( wxlog+ strHostname );
+		m_pClientTcpIpWorkerThread->m_bRun = false;
+		return VSCP_ERROR_TIMEOUT;
+	}
+	
     // Wait for connection
-    long start = wxGetUTCTime();
+    /*long start = wxGetUTCTime();
     while ( !m_bConnected ) {
-        if ( checkReturnValue() ) break;
+        //if ( checkReturnValue() ) break;
         if ( ( wxGetUTCTime() - start ) > (3 * m_responseTimeOut) ) {
             m_pClientTcpIpWorkerThread->m_bRun = false;
-            wxLogDebug( _("No response from ") + strHostname );
+            wxLogDebug( _("Timout: No response from ") + strHostname );
+			wxString strLog = wxString::Format(_("diff = %ld"), ( wxGetUTCTime() - start ) );
+			wxLogDebug( strLog );
             m_pClientTcpIpWorkerThread->m_bRun = false;
             return VSCP_ERROR_TIMEOUT;
         }
+		
         wxMilliSleep( 50 );
-    }
+
+    }*/
     
-    wxLogDebug( _("Checking server respons") );
+    wxLogDebug( _("Checking server response") );
+	
+	checkReturnValue();
 
     // The server should reply "+OK - Success"
     bool bFound = false;
@@ -379,7 +405,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 
     if ( !bFound ) {
         m_pClientTcpIpWorkerThread->m_bRun = false;
-        wxLogDebug( _("No response from ") + strHostname );
+        wxLogDebug( _("No +OK found ") + strHostname );
         return VSCP_ERROR_CONNECTION;
     }
 

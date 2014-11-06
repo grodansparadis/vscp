@@ -988,6 +988,11 @@ void *deviceLevel2ReceiveThread::Entry()
         // Identify ourselves 
         pEvent->obid = m_pMainThreadObj->m_pDeviceItem->m_pClientItem->m_clientID;
         
+		// If timestamp is zero we set it here
+		if ( 0 == pEvent->timestamp ) {
+			pEvent->timestamp = vscp_makeTimeStamp();
+		}
+		
         // If no GUID is set,
         //      - Set driver GUID if define
         //      - Set interface GUID if no driver GUID defined.
