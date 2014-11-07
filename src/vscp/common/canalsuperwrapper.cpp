@@ -217,7 +217,7 @@ long CCanalSuperWrapper::doCmdOpen( const wxString& strInterface, unsigned long 
 		}
 		else {
 			rv = m_vscptcpif.doCmdOpen( m_itemDevice.strParameters, m_itemDevice.flags );
-			if ( CANAL_ERROR_SUCCESS == rv ) {
+			if ( VSCP_ERROR_SUCCESS == rv ) {
 				// We try to get the interface GUID. If we
 				// fail to get it we use the GUID assigned
 				// in the constructor

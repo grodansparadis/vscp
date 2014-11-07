@@ -739,7 +739,7 @@ public:
     /*!
     log message
     */
-    void logmsg( const wxString& msg, uint8_t level = LOG_DM_NORMAL );
+    void logMsg( const wxString& msg, uint8_t level = LOG_DM_NORMAL );
 
     /*!
     Add Element to matrix

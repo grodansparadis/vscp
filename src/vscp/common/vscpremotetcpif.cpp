@@ -241,8 +241,10 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 
         }
 
-        //wxMilliSleep( 50 );
-		ns_mgr_poll( &m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection, 5 );
+        //wxMilliSleep( 5 );
+        if ( m_bConnected && ( NULL != m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections ) ) {
+		    ns_mgr_poll( &m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection, 5 );
+        }
 
     }
 
@@ -453,9 +455,7 @@ int VscpRemoteTcpIf::doCmdClose( void )
                     strCmd.mbc_str(),
                     strCmd.Length() );
 
-        if ( checkReturnValue(true) ) {
-            wxLogDebug( _("Successful QUIT command.") );
-        }   
+        // We skip the check here as the interfaces closes  
 
     }
 

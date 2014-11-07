@@ -189,21 +189,6 @@ CControlObject::CControlObject()
     gpctrlObj = this;	        // needed by websocket static callbacks
     //wxStandardPaths stdPath;
 
-    
-#if ( 1 )
-    double value;
-    uint8_t data[8];
-    uint16_t datasize;
-    wxString strFloat = _("245.567");
-    strFloat.ToDouble( &value );
-    vscp_convertFloatToFloatEventData( data, &datasize, value, 0, 0 );
-
-    uint64_t val64 = 314;
-    vscp_convertIntegerToNormalizedEventData( data,
-                                                    &datasize,
-                                                    val64 );
-
-#endif
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
@@ -615,8 +600,8 @@ bool CControlObject::init(wxString& strcfgfile)
     // Load decision matrix if mechanism is enabled
     if (m_bDM) {
         logMsg(_("DM enabled.\n"), DAEMON_LOGMSG_INFO);
-        m_dm.load();
         m_dm.init();
+        m_dm.load();
     }
     else {
         logMsg(_("DM disabled.\n"), DAEMON_LOGMSG_INFO);
@@ -1573,6 +1558,10 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 {
     unsigned long val;
     wxXmlDocument doc;
+
+    wxString wxlogmsg = wxString::Format(_("Reading configuration from [%s]\n"), (const char *)strcfgfile.mbc_str() );
+    logMsg( wxlogmsg, DAEMON_LOGMSG_INFO );
+
     if (!doc.Load(strcfgfile)) {
         logMsg(_("Can't load logfile. Is path correct?"), DAEMON_LOGMSG_CRITICAL );
         return false;
