@@ -19,6 +19,7 @@ install:
 	lsb_release -i
 	mkdir -p /srv/vscp/actions
 	mkdir -p /srv/vscp/web
+	mkdir -p /srv/vscp/certs
 	mkdir -p /srv/vscp/web/css
 	mkdir -p /srv/vscp/web/images
 	mkdir -p /srv/vscp/web/lib
