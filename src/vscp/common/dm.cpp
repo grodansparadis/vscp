@@ -2878,7 +2878,7 @@ void CDM::init( void )
     }
 	
 	wxString wxlogmsg = 
-		wxString::Format("DM engine started (init). DM from [%s]\n",
+		wxString::Format(_("DM engine started. DM from [%s]\n"),
 							(const char *)m_configPath.mbc_str() );
 	logMsg( wxlogmsg );
 }
