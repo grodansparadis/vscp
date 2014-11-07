@@ -679,18 +679,18 @@ bool frmScanforDevices::enableInterface(void)
 
             // Get the interface list
             wxString wxstr;
-            wxArrayString array;
+            wxArrayString strarray;
 
             // Get VSCP interface list
             progressDlg.Pulse(_("TCP/IP Interface Open"));
 
-            m_csw.getTcpIpInterface()->doCmdInterfaceList(array);
+            m_csw.getTcpIpInterface()->doCmdInterfaceList(strarray);
 
-            if (array.Count()) {
+            if (strarray.Count()) {
 
                 //m_comboNodeID->Clear();
-                for (unsigned int i = 0; i < array.Count(); i++) {
-                    wxStringTokenizer tkz(array[i], _(","));
+                for (unsigned int i = 0; i < strarray.Count(); i++) {
+                    wxStringTokenizer tkz(strarray[i], _(","));
                     wxString strOrdinal = tkz.GetNextToken();
                     wxString strType = tkz.GetNextToken();
                     wxString strGUID = tkz.GetNextToken();
@@ -889,7 +889,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             if (!progressDlg.Update(i, wxString::Format(_("Checking for device %d"), i))) {
                 if (m_DeviceTree->GetCount()) {
                     wxTreeItemIdValue cookie;
-                    m_DeviceTree->SelectItem(m_DeviceTree->GetFirstChild(m_DeviceTree->GetRootItem(), cookie));
+                    wxTreeItemId item = m_DeviceTree->GetFirstChild(m_DeviceTree->GetRootItem(), cookie);
+                    if ( NULL != item.GetID() ) m_DeviceTree->SelectItem( item );
                 }
                 ::wxEndBusyCursor();
                 break;
