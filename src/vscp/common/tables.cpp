@@ -314,7 +314,7 @@ int CVSCPTable::logData( uint64_t timestamp, double measurement )
 
 long CVSCPTable::GetRangeOfData( uint64_t start, uint64_t end, void *buf, uint16_t size )
 {
-	long  returnCount = 0;
+	long returnCount = 0;
 	bool bFound = false;
 	struct _vscpFileRecord record;
 	long startSearchPos;
@@ -323,6 +323,19 @@ long CVSCPTable::GetRangeOfData( uint64_t start, uint64_t end, void *buf, uint16
 	long midRecord;
 	struct _vscpFileRecord *p = (struct _vscpFileRecord *)buf;
     
+    wxDateTime dtStart, dtEnd, dtsearchStart, dtSearchEnd;
+    dtStart.Set( (time_t)m_timestamp_first );
+    dtEnd.Set( (time_t)m_timestamp_last );
+    dtsearchStart.Set( (time_t)start );
+    dtSearchEnd.Set( (time_t)end );
+    wxString str1 =  _("Start=") + dtStart.FormatISODate() + _(" ") + dtStart.FormatISOTime();
+    wxLogDebug( str1 );
+    wxString str2 =  _("End=") + dtEnd.FormatISODate() + _(" ") + dtEnd.FormatISOTime();
+    wxLogDebug( str2 );
+    wxString str3 =  _("Search Start=") + dtsearchStart.FormatISODate() + _(" ") + dtsearchStart.FormatISOTime();
+    wxLogDebug( str3 );
+    wxString str4 =  _("Search End=") + dtSearchEnd.FormatISODate() + _(" ") + dtSearchEnd.FormatISOTime();
+    wxLogDebug( str4 );
 
 	// File must be open
 	if ( NULL == m_ft ) return -1;
@@ -334,73 +347,83 @@ long CVSCPTable::GetRangeOfData( uint64_t start, uint64_t end, void *buf, uint16
 	if ( 0 == buf ) size = m_number_of_records * sizeof( struct _vscpFileRecord ) + sizeof(_vscpFileHead);
 
 	// If there is nothing to do - do nothing
-	if ( start < end ) return 0;
+	if ( start > end ) return 0;
 
-	if ( m_timestamp_first >= end ) {
-		// Set initial searchpos to start.
-		startSearchPos = sizeof(_vscpFileHead);
+    // IN range?
+	if ( m_timestamp_first > end ) {
+        return 0;
+	}
+
+    // Check high
+	if ( end > m_timestamp_last ) {
+        end = m_timestamp_last;
+	}
+
+    // Check low
+	if ( start < m_timestamp_first ) {
+        start = m_timestamp_first;
+	}
+
+
+	while ( endRecord >= startRecord ) {
+
+		midRecord = startRecord + (endRecord - startRecord) / 2;
+
+		// Seek the pos
+		startSearchPos = sizeof(_vscpFileHead) + midRecord*sizeof(_vscpFileRecord);
+		fseek( m_ft, startSearchPos, SEEK_SET );
+
+		// read record
+		if ( sizeof(_vscpFileRecord) != fread( &record, 1, sizeof(_vscpFileRecord), m_ft ) ) {
+		    // Set initial searchpos to start.
+			startSearchPos = sizeof(_vscpFileHead);
+			break;
+		}
+
+		if ( /*record.timestamp == end*/ (endRecord - startRecord) <= 8 ) {
+			bFound = true;
+			break;
+		}
+		// determine which subarray to search
+		else if (record.timestamp < end ) {
+			// change min index to search upper subarray
+			startRecord = midRecord + 1;
+		}
+		else {        
+			// change max index to search lower subarray
+			endRecord = midRecord - 1;
+		}
+	} // while
+
+    if ( bFound ) {
+		startSearchPos = sizeof(_vscpFileHead) + midRecord*sizeof(_vscpFileRecord);
 	}
 	else {
-		while ( endRecord >= startRecord ) {
-
-			midRecord = startRecord + (endRecord - startRecord) / 2;
-
-			// Seek the pos
-			startSearchPos = sizeof(_vscpFileHead) + midRecord*sizeof(_vscpFileRecord);
-			fseek( m_ft, startSearchPos, SEEK_SET );
-
-			// read record
-			if ( sizeof(_vscpFileRecord) != fread( &record, 1, sizeof(_vscpFileRecord), m_ft ) ) {
-				// Set initial searchpos to start.
-				startSearchPos = sizeof(_vscpFileHead);
-				break;
-			}
-
-			if ( record.timestamp == end ) {
-				bFound = true;
-				break;
-			}
-			// determine which subarray to search
-			else if (record.timestamp < end ) {
-				// change min index to search upper subarray
-				startRecord = midRecord + 1;
-			}
-			else {        
-				// change max index to search lower subarray
-				endRecord = midRecord - 1;
-			}
-		} // while
-
-		if ( bFound ) {
-			startSearchPos = sizeof(_vscpFileHead) + midRecord*sizeof(_vscpFileRecord);
-		}
-		else {
-			if ( midRecord ) midRecord--;	// Start search befor current mid
-			startSearchPos = sizeof(_vscpFileHead) + midRecord*sizeof(_vscpFileRecord);
-		}
-	}
+        return 0;
+    }
 
 	// Position at search pos
 	fseek( m_ft, startSearchPos, SEEK_SET );
 
-	while ( size > sizeof(_vscpFileRecord) && !feof(m_ft) ) {
+	while ( size  && !feof(m_ft) ) {
 		
 		// read record
 		if ( sizeof(_vscpFileRecord) != fread( &record, 1, sizeof(_vscpFileRecord), m_ft ) ) {
 	        break;
 		}
 
-		// Break if we are ready
-		if ( record.timestamp > start ) break;
+		if ( (record.timestamp >= start) && (record.timestamp <= end) ) {
 
-		if ( record.timestamp >= end ) {
 			if ( NULL != buf ) {
 				memcpy( p++, &record, sizeof(_vscpFileRecord) );
-				size -= sizeof(_vscpFileRecord);
+				size--;
 			}
 		
 			returnCount++;
 		}
+
+        // Break if we are ready
+		if ( record.timestamp > end ) break;
 
 	}
 

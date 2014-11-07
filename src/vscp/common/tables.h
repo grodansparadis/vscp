@@ -209,10 +209,13 @@ public:
 	double calculatMean( uint64_t from, uint64_t to );
 
     // Get time for firts logged entry
-    time_t getTimeStampStart( void ) { return m_timestamp_first; };
+    uint64_t getTimeStampStart( void ) { return m_timestamp_first; };
 
     // Get time for last logged entry
-    time_t getTimeStampEnd( void ) { return m_timestamp_last; };
+    uint64_t getTimeStampEnd( void ) { return m_timestamp_last; };
+
+    // Get number of records in database
+    long getNumberOfRecords( void ) { return m_number_of_records; };
 
 public:
     

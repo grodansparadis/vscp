@@ -487,6 +487,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
     //                                OPEN
     //-------------------------------------------------------------------------
 	else if (0 == strTok.Find(_("OPEN"))) {
+
 		// Must be authorized to do this
 		if ( !pSession->bAuthenticated ) {
 			mg_websocket_printf( conn, 
@@ -496,6 +497,8 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_AUTHORIZED );
 			return MG_TRUE;	// We still leave channel open
 		}
+
+
 
         pSession->m_pClientItem->m_bOpen = true;
         mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;OPEN" );
@@ -1217,7 +1220,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
     // ------------------------------------------------------------------------
     //                                GETTABLE
     //-------------------------------------------------------------------------
-	else if (0 == strTok.Find(_("GETTABLE"))) {
+	else if (0 == strTok.Find(_("GT"))) {
 
         // Format is:
         //      tablename;from;to
@@ -1262,6 +1265,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             tblName = tkz.GetNextToken();
             tblName.Trim();
             tblName.Trim(false);
+            tblName.MakeUpper();
         }
         else {
             // Must have a table name
@@ -1278,13 +1282,17 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         // Get from-date for range
         if ( tkz.HasMoreTokens() ) {
-            timeFrom.ParseDateTime( tkz.GetNextToken() );
+            wxString wxstr = tkz.GetNextToken();
+            timeFrom.ParseDateTime( wxstr );
+            wxstr = timeFrom.FormatISODate() + _(" ") + timeFrom.FormatISOTime();
             nRange++; // Start date entered
         }
 
         // Get to-date for range
         if ( tkz.HasMoreTokens() ) {
-            timeTo.ParseDateTime( tkz.GetNextToken() );
+            wxString wxstr = tkz.GetNextToken();
+            timeTo.ParseDateTime( wxstr);
+            wxstr = timeTo.FormatISODate() + _(" ") + timeTo.FormatISOTime();
             nRange++; // End date entered
         }
 
@@ -1331,7 +1339,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         if ( VSCP_TABLE_NORMAL == ptblItem->m_vscpFileHead.type ) {
 
-            time_t start,end;
+            uint64_t start,end;
             if ( 0 == nRange ) {
                 // Neither 'from' or 'to' given 
                 // Use value from header
@@ -1355,9 +1363,23 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             ptblItem->m_mutexThisTable.Unlock();
 
             if ( nRecords > 0 ) {
+
+                struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nRecords];
+
+                if ( NULL == pRecords ) {
+                    mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"-;%d;%s",
+									WEBSOCK_ERROR_MEMORY_ALLOCATION,
+									WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
+			        wxString strErr = 
+                            wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), (const char *)tblName.mbc_str() );					
+	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
+                    return MG_TRUE;
+                }
                 
                 ptblItem->m_mutexThisTable.Lock();
-                long nfetchedRecords = ptblItem->GetRangeOfData(start, end );
+                long nfetchedRecords = ptblItem->GetRangeOfData(start, end, (void *)pRecords, sizeof(pRecords)  );
                 ptblItem->m_mutexThisTable.Unlock();
 
                 if ( 0 == nfetchedRecords ) {
@@ -1373,44 +1395,47 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                 }
                 else {
 
-                    struct _vscpFileRecord *pRecords = new struct _vscpFileRecord[nfetchedRecords];
+                    wxDateTime dtStart;
+                    dtStart.Set( (time_t)ptblItem->getTimeStampStart() );
+                    wxString strDateTimeStart = dtStart.FormatISOCombined();
 
-                    if ( NULL == pRecords ) {
-                        mg_websocket_printf( conn, 
-									WEBSOCKET_OPCODE_TEXT, 
-									"-;%d;%s",
-									WEBSOCK_ERROR_MEMORY_ALLOCATION,
-									WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
-			            wxString strErr = 
-                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), (const char *)tblName.mbc_str() );					
-	                    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
-                        return MG_TRUE;
-                    }
+                    wxDateTime dtEnd;
+                    dtEnd.Set( (time_t)ptblItem->getTimeStampEnd() );
+                    wxString strDateTimeEnd = dtEnd.FormatISOCombined();
 
                     // First send start post with number if records
+                    wxString wxstr = wxString::Format(_("+;GT;START;%d;%d;%s;%s"),
+                                                nfetchedRecords,
+                                                ptblItem->getNumberOfRecords(),
+                                                (const char *)strDateTimeStart.mbc_str(),
+                                                (const char *)strDateTimeEnd.mbc_str() );
                     mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									"+;GETTABLE;START;%d",
-                                    nfetchedRecords );
+									wxstr );
 
                     // Then send measurement records
                     for ( long i=0; i<nfetchedRecords; i++ ) {
+                        wxDateTime dt;
+                        dt.Set( (time_t)pRecords[i].timestamp );
+                        wxString strDateTime = dt.FormatISOCombined();
+                        wxString wxstr = wxString::Format(_("+;GT;%d;%s;%f"),
+                                                i, 
+                                                (const char *)strDateTime.mbc_str(), 
+                                                pRecords[i].measurement );
                         mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									"+;T;%d;%d;%f",
-                                    i, pRecords[i].timestamp, pRecords[i].measurement );
+									(const char *)wxstr.mbc_str() );
                     }
 
                     // Last send end post with number if records
                     mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									"+;GETTABLE;END;%d",
+									"+;GT;END;%d",
                                     nfetchedRecords );
-
-                    // Deallocate storage
-                    delete pRecords;
-
                 }
+
+                // Deallocate storage
+                delete pRecords;
 
             }
             else {
@@ -1483,21 +1508,21 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                     // First send start post with number if records
                     mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									"+;GETTABLE;START;%d",
+									"+;GT;START;%d",
                                     nfetchedRecords );
 
                     // Then send measurement records
                     for ( long i=0; i<nfetchedRecords; i++ ) {
                         mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									"+;T;%d;%d;%f",
+									"+;GT;%d;%d;%f",
                                     i, pRecords[i].timestamp, pRecords[i].measurement );
                     }
 
                     // Last send end post with number if records
                     mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									"+;GETTABLE;END;%d",
+									"+;GT;END;%d",
                                     nfetchedRecords );
 
                     // Deallocate storage

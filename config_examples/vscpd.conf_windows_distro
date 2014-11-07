@@ -1,12 +1,11 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 0.5.0	   2014-09-19 		                      -->
-<!-- Example configuration file 		                      -->
-<!-- Ake Hedman, akhe@grodansparadis.com                      -->
-<!-- http://www.grodansparadis.com	                          -->
-<!-- Documentation for this configuration file is available   -->
-<!-- in the specification section 14.4 which can be found     -->
-<!-- here http://vscp.org/docs.php                            -->
+<!-- Version 1.0.0	   2014-11-07 		                                     -->
+<!-- Example configuration file 		                                     -->
+<!-- Ake Hedman, akhe@grodansparadis.com                                     -->
+<!-- http://www.grodansparadis.com	                                         -->
+<!-- Documentation for this configuration file is available                  -->
+<!-- http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon  -->
 
 <vscpconfig>
 
@@ -19,42 +18,23 @@
         <!-- The user to run as on Unix         -->
         <runasuser></runasuser>
         
-        <!-- Set GUID for daemon                                  -->
-        <!-- All nills, "-" or not set and the mac addess or the  -->
-        <!-- IP address of the computer will be used to calcucate -->
-        <!-- the GUID for the daemon                              -->
-        <!-- Apply for your own GUID series at guid@vscp.org      -->
-        <guid>
-            00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
-        </guid>
+        <!-- General logging will be done to syslog on Unix but on          -->
+        <!-- windows this path must be set to get logging saved into a      -->
+        <!-- file. The debug level will determine how much information      -->
+        <!-- you will get into this file.                                   -->
         
-        <!-- Set to true to enable VSCP high end functionality           -->
-        <!-- If disabled also automation will be disabled                -->
-        <vscp enable="true"/>
-
-        <!-- This is the default buffer size (number of events) for all  -->
-        <!-- clients in the system. Everything from a driver to a TCP/IP -->
-        <!-- user is regarded as a client. Default is 1024.              -->
-
-        <clientbuffersize>1024</clientbuffersize>
+        <generallogfile enable="true">c:/programdata/vscp/logs/vscp_log_general.txt</generallogfile>
         
-        <!-- General logging will be done to syslog on Unix but on       -->
-        <!-- windows this path must be set to get logging saved into a   -->
-        <!-- file. The debug level will determine how much information   -->
-        <!-- you will get into this file.                                -->
+        <!-- Security logging will be done to this path must be set to      -->
+        <!-- get security logging saved into a file.                        -->
         
-        <generallogfile enable="true">/srv/vscp/logs/vscp_log_general.txt</generallogfile>
-        
-        <!-- Security logging will be done to this path must be set to    -->
-        <!-- get security logging saved into a file.                      -->
-        
-        <securitylogfile enable="true">/srv/vscp/logs/vscp_log_security.txt</securitylogfile>
+        <securitylogfile enable="true">c:/programdata/vscp/logs/vscp_log_security.txt</securitylogfile>
         
         <!-- Access logging will be done to this path must be set to        -->
         <!-- get access logging for tcp/ip udp webserver websocket and rest -->
         <!-- saved into a file.                                             -->
         
-        <accesslogfile enable="true">/srv/vscp/logs/vscp_log_access.txt</accesslogfile>
+        <accesslogfile enable="true">c:/programdata/vscp/logs/vscp_log_access.txt</accesslogfile>
 
         <!-- It is possible to enable/disable the TCP/IP interface        -->
         <!-- You can open TCP/IP interfaces on several ports or on        -->
@@ -63,9 +43,8 @@
 		<!-- "127.0.0.1:9598" only will listen on the specified interface.-->
 		<!-- To specify several interfaces just enter them with a space   -->
         <!-- between them.                                                -->
-        <!-- Documented in specification 14.4.1                           -->
 
-        <tcpip enable="true" interface="9598" />
+        <tcpip enable="true" interface="9598"/>
 		
 		<!-- It is possible to enable/disable the UDP interface           -->
         <!-- You can open UDP interfaces on several ports or on           -->
@@ -75,36 +54,55 @@
 		<!-- interface. To specify several interfaces just enter them     -->
         <!-- with a space between them. If interface is not preceded with -->
 		<!-- "UDP://" it will be added.                                   -->
-		<!-- Documented in specification 14.4.1                           -->
 		
 		<udp enable="true" interface="udp://9598"/>
+
+
+        <!-- Set to true to enable VSCP high end functionality -->
+
+        <vscp enable="true"/>
 
         <!-- Set to true to enable decision matrix                         -->
         <!-- Set to false to disable.                                      -->
         <!-- Set path to the decision matrix file location                 -->
-        <!-- Documented in specification 14.4.1                            -->
         <!-- Decision matrix logging: loglevel="minor|normal|extra|debug"  -->
         <!-- enableogging="true:false" to enable/disable dm logging        -->
-        <!-- logpath is the path to the logfile.                                   -->
+        <!-- logpath is ptah to logfile.                                   -->
         
         <dm enable="true" 
-                path="/srv/vscp/dm.xml" 
+                path="c:/programdata/vscp/dm.xml" 
                 enablelogging="true" 
                 loglevel="debug" 
-                logpath="/srv/vscp/logs/vscp_log_dm.txt"  />      
+                logpath="c:/programdata/vscp/logs/vscp_log_dm.txt"  />      
 
         <!-- Set to true to enable daemon variables         -->
         <!-- Set to false to disable.                       -->
         <!-- Path to variables storage.                     -->
 
-        <variables enable="true" path="/srv/vscp/variables.xml" autosave="5" />
 
+        <variables enable="true" path="c:/tmp/variables.xml" autosave="5" />
+
+        <!-- Set GUID for daemon                               -->
+        <!-- Read more about GUID's in Specification section 4 -->
+        <!-- Apply for your own GUID series at guid@vscp.org   -->
+  
+        <guid>
+            00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00
+        </guid>
+
+        <!-- This is the default buffer size (number of events) for all  -->
+        <!-- clients in the system. Everything from a driver to a TCP/IP -->
+        <!-- user is regarded as a client. Default is 1024.              -->
+ 
+        <clientbuffersize>1024</clientbuffersize> 
+
+        
         <!-- Enable disable the webserver interface.          -->
         <!-- Set the port to use for the webserver interface  -->
         <!-- default is 8080.                                 -->
 
         <webserver enable="true" 
-                    webrootpath="/srv/vscp/www"
+                    webrootpath="C:\programdata\vscp\web"
                     port="8080"
                     path_cert=""
                     authdomain="mydomain.com"
@@ -112,14 +110,10 @@
                     cgi_pattern=""
                     enable_directory_listing="true"
                     hilde_file_patterns=""
-                    index_files="index.html,index.htm,index.cgi,index.shtml,index.php"
+                    index_files=""
                     extra_mime_types=""
                     url_rewrites=""
                     run_as_user="" >
-            
-            <!-- Enable disable the websocket interface.                    -->
-            <!-- Id auth is set to false not authentication will be done    -->
-
         
             <websockets enable="true" auth="true" />
         
@@ -151,8 +145,7 @@
 
     <!-- Here are settings that affect the internal VSCP functionality -->
     <!-- of the server.                                                -->
- 
-    <automation enable="true">
+    <automation enabled="true">
         <!-- zone/subzone server use    -->
         <zone>1</zone>
         <sub-zone>2</sub-zone>
@@ -164,27 +157,29 @@
         <sunrise-twilight enable="true" />
         <sunset enable="true" />
         <sunset-twilight enable="true" />
-        <!-- Settings for 2014 -->
+        <!-- Settings for 2014 (Sweden)                              -->
+        <!-- Not needed on systems that is dayligt saving time aware -->
         <daylightsavingtime-start>2014-03-30 02:00:00</daylightsavingtime-start>
         <daylightsavingtime-end>2014-10-26 02:00:00</daylightsavingtime-end>
         <segmentcontoller-event enable="true" interval="60" />
         <heartbeat-event enable="true" interval="60" />
     </automation>
 	
+	
     <!-- List level I/CANAL drivers here                            -->
 
-    <level1driver enable="true" >
+    <level1driver enable="true" > 
 
-        <!-- The canallog driver is documented in 27.20.14 -->
+        <!-- The canallog driver  -->
         <driver enable="false">
             <name>logger</name>
             <config>/tmp/canallog.txt</config>
-            <path>/ust/local/lib/canallogger.so</path>
+            <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level1\logger\win32\Release/canallogger.dll</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-        <!-- The can232 driver is documented in 27.20.3 -->
+        <!-- The can232 driver  -->
         <driver enable="false" >
             <name>can232</name>
             <config>/dev/ttyS0;19200;0;0;125</config>
@@ -193,12 +188,21 @@
             <flags>0</flags>
         </driver>
 
-        <!-- The xap driver is documented in 27.20.17 -->
+        <!-- The xap driver  -->
         <driver enable="false" >
             <name>xap</name>
             <config>9598;3639</config>
             <path>/usr/local/lib/xapdrv.so</path>
             <flags>0</flags>
+            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+        </driver>
+        
+        <!-- PEAK driver -->
+        <driver enable="true" >
+            <name>peak</name>
+            <config>CANUSB;125</config>
+            <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level1\peak\win32\Debug\vscpl1_peakdrv.dll</path>
+            <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
@@ -208,15 +212,15 @@
 
     <level2driver enable="true">	 	
 
-        <!-- Level II Logger - driver is documented in 30.1 -->
+        <!-- Level II Logger  -->
         <driver enable="true" >
             <name>VSCPLoggerDriver1</name>	
-            <path>/ust/local/lib/vscpl2_loggerdrv.so</path>
-             <config>/tmp/vscp_level2.log</config> 		
-             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+            <path>C:\vscpl2_loggerdrv.dll</path>
+            <config>C:\tmp/vscp_level2.log</config> 		
+            <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
  	
-        <!-- Level II lmsensors - driver is documented in 30.3 -->
+        <!-- Level II lmsensors  -->
         <driver enable="false" >
             <name>lmsensors</name>
             <path>/usr/local/lib/vscp2drv_lmsensors.so</path>
@@ -224,7 +228,7 @@
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-        <!-- Level II mqtt - driver is documented in 30.6 -->
+        <!-- Level II mqtt -->
         <driver enable="false" >
             <name>VSCPMQTTDriver1</name>
             <path>/usr/local/lib/vscp2drv_mqtt.so</path>
@@ -232,7 +236,7 @@
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>	
 
-        <!-- Level II tcp/ip link - driver is documented in 30.5 -->
+        <!-- Level II tcp/ip link -->
         <driver enable="false" >                 
             <name>tcpiplink1</name>
             <path>/usr/local/lib/vscp2drv_tcpiplink.so</path>
@@ -240,44 +244,43 @@
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-        <!-- Level II raw ethernet - driver is documented in 30.2 -->
+        <!-- Level II raw ethernet  -->
         <driver enable="false"> 		   	 			
             <name>rawethernet1</name> 		   	 		
             <config>eth0</config>
             <path>/usr/local/lib/vscp2drv_raweth.so</path>
         </driver>
  
-    </level2driver>	
 
+    </level2driver>	
+    
     <!-- Collect data in tables -->
-    <!--
     <tables>
     
-        <table path="c:/tmp/temperature_outside.table" 
-                  type="0"
-                  name="officetemp"
-                  description="The temperature in the office"
-                  labelx="Time"
-                  labely="Temperature"
-                  size=""
-                  vscpclass="10"    
-                  vscptype="6"
-                  vscpunit="1"
-        />
-        
-        <table path="c:/tmp/temperature_inside.table" 
+        <table path="c:/programdata/vscp/tables/temperature_outside.table" 
                   type="0"
                   name="outsidetemp"
                   description="The temperature in the greens"
                   labelx="Time"
-                  labely="Temperature"
+                  labely="Temperature outside"
                   size=""
-                  vscpclass="10"    
+                  vscpclass="10"  
                   vscptype="6"
                   vscpunit="1"
         />
+        
+        <table path="c:/programdata/vscp/tables/temperature_office.table" 
+                  type="0"
+                  name="officetemp"
+                  description="The temperature in the office"
+                  labelx="Time"
+                  labely="Temperature office"
+                  size=""
+                  vscpclass="10"    
+                  vscptype="6"
+                  vscpunit="3"
+        />
     
     </tables>
-    -->
-    
+
 </vscpconfig>
