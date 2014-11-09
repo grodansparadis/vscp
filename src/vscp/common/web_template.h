@@ -27,7 +27,93 @@
 
 // * * *    M e n u    * * *
 
-#define WEB_COMMON_MENU "<ul id=\"nav\">      <li><a href=\"#\">Configuration</a><ul><li><a href=\"/vscp/configure\">Configuration File</a></li><li><a href=\"/vscp/variables\">Variable - List</a></li><li><a href=\"/vscp/varnew\">Variable - New</a></li><li><a href=\"/vscp/dm\">DM - list</a></li><li><a href=\"/vscp/dmedit?new=true\">DM - new element</a></li></ul>         </li><li><a href=\"#\">Tools</a><ul><li><a href=\"/vscp/session\">VSCP Client</a></li></ul>        </li><li><a href=\"#\">Devices</a><ul><li><a href=\"/vscp/discovery\">Discovery</a></li><li><a href=\"/vscp/interfaces\">Interfaces</a></li><li><a href=\"/vscp/configure\">Configure</a></li><li><a href=\"/vscp/bootload\">Update firmware</a></li></ul>       <li><a href=\"#\">Logs</a><ul><li><a href=\"/vscp/log/general\">General Log</a></li><li><a href=\"/vscp/log/access\">Access Log</a></li><li><a href=\"/vscp/log/security\">Security Log</a></li><li><a href=\"/vscp/log/dm\">Decision Matrix Log</a></li></ul></li>   <li><a href=\"#\">Help</a><ul><li><a href=\"http://www.vscp.org/wiki/doku.php\" target=\"moon\">VSCP wiki</a></li><li><a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a></li></ul></li></ul>"
+#define WEB_COMMON_MENU "<ul id=\"nav\">      "\
+                           " <li>"\
+                           "    <a href=\"#\">Configuration</a>"\
+                           "    <ul>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/configure\">Configuration File</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/variables\">Variable - List</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/varnew\">Variable - New</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/dm\">DM - list</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/dmedit?new=true\">DM - new element</a>"\
+                           "        </li>"\
+                           "    </ul>"\
+                           " </li>"\
+                           " <li>"\
+                           "    <a href=\"#\">Tools</a>"\
+                           "    <ul>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/session\">VSCP Client</a>"\
+                           "        </li>"\
+                           "    </ul>"\
+                           " </li>"\
+                           " <li>"\
+                           "    <a href=\"#\">Devices</a>"\
+                           "    <ul>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/discovery\">Discovery</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/interfaces\">Interfaces</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/configure\">Configure</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/bootload\">Update firmware</a>"\
+                           "        </li>"\
+                           "    </ul>"\
+                           " </li>"\
+                           " <li>"\
+                           "    <a href=\"#\">Logs</a>"\
+                           "    <ul>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/log/general\">General Log</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/log/access\">Access Log</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/log/security\">Security Log</a>"\
+                           "        </li>"\
+                           "        <li>"\
+                           "            <a href=\"/vscp/log/dm\">Decision Matrix Log</a>"\
+                           "        </li>"\
+                           "    </ul>"\
+                           " </li>"\
+                           " <li>"\
+                           "     <a href=\"#\">Help</a>"\
+                           "     <ul>"\
+                           "         <li>"\
+                           "             <a href=\"http://www.vscp.org/docs/vscpd/doku.php\" target=\"moon\">VSCP Daemon</a>"\
+                           "         </li>"\
+                           "         <li>"\
+                           "             <a href=\"http://www.vscp.org/docs/vscpworks/doku.php\" target=\"moon\">VSCP Works</a>"\
+                           "         </li>"\
+                           "         <li>"\
+                           "             <a href=\"http://www.vscp.org/docs/vscphelper/doku.php\" target=\"moon\">VSCP Helper lib</a>"\
+                           "         </li>"\
+                           "         <li>"\
+                           "             <a href=\"http://www.vscp.org/wiki/doku.php\" target=\"moon\">VSCP wiki</a>"\
+                           "         </li>"\
+                           "         <li>"\
+                           "             <a href=\"http://www.vscp.org\" target=\"moon\">VSCP Site</a>"\
+                           "         </li>"\
+                           "         <li>"\
+                           "             <a href=\"https://www.youtube.com/watch?v=7CeNIDWtlo0\" target=\"moon\">Stay foolish...</a>"\
+                           "         </li>"\
+                           "     </ul>"\
+                           " </li>"\
+                           "</ul>"
 
 // Common head up to <body>
 // Contains three string insert points for printf
@@ -45,7 +131,7 @@
 // Last shown record	- integer
 // total records		- integer
 // count to show		- integer
-#define WEB_COMMON_LIST_NAVIGATION "<br><div style=\"text-align:center\"><form method=\"get\" action=\"%s\" name=\"PageSelect\"><button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button><button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button><button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button><button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button><span style=\"font-weight:bold\">%d - %d</span> of <span style=\"font-weight:bold\">%d</span> Show: <input name=\"count\" value=\"%d\" size=\"3\"><input name=\"from\" value=\"%d\" type=\"hidden\"><input name=\"light\" value=\"%s\" type=\"hidden\"><br></form></div>"
+#define WEB_COMMON_LIST_NAVIGATION "<br><div style=\"text-align:center\"><form method=\"get\" action=\"%s\" name=\"PageSelect\"><button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button><button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button><button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button><button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button><span style=\"font-weight:bold\">%d - %d</span> of <span style=\"font-weight:bold\">%d</span> Show: <input name=\"count\" value=\"%d\" size=\"3\"><input name=\"from\" value=\"%d\" type=\"hidden\"><input name=\"light\" value=\"%s\" type=\"hidden\"><br></form></div> "
 
 // Clickable/navigational table rows
 // Fill in Navigation url

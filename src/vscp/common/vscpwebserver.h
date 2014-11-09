@@ -590,6 +590,15 @@ public:
 	int 
 	websrv_bootload( struct mg_connection *conn );
 
+    /**
+	 * websrv_tableview - Device bootload
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+    int
+    websrv_tableview( struct mg_connection *conn );
+
 
 // --- Member variables ---
 

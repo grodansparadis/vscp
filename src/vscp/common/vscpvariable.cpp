@@ -1031,6 +1031,10 @@ bool CVariableStorage::save()
     m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variable.xml");
 #endif
+
+    // Make a copy before we save
+    wxCopyFile( m_configPath, m_configPath + _("~") );
+
 	return save( m_configPath );
 }
 

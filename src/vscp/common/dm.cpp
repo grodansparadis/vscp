@@ -1509,13 +1509,6 @@ bool dmElement::handleEscapes( vscpEvent *pEvent, wxString& str )
                 strResult += vscp_getRealTextData( pEvent );
             }
 
-            // Remove the escape.
-            if ( wxNOT_FOUND != ( pos = str.Find( wxT(" ") ) ) ) {
-                str = str.Right( str.Length() - pos + 1 );		
-            }
-            else {
-                //str.Empty();	
-            }
         }
     }
 
@@ -1757,9 +1750,9 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
         bOK = false;
     }
 
-    wxString cdir = wxGetCwd();
-    bool rv = wxSetWorkingDirectory(_("c:\\programdata\\vscp\\actions"));
-    if ( /*bOK &&*/ ( -1 !=::wxExecute(wxstr, wxEXEC_ASYNC /*| wxEXEC_HIDE_CONSOLE*/ ) ) ) {
+    //wxString cdir = wxGetCwd();
+    //bool rv = wxSetWorkingDirectory(_("c:\\programdata\\vscp\\actions"));
+    if ( bOK && ( ::wxExecute(wxstr, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE ) ) ) {
         wxString wxstr = wxT("[Action] Executed: ");
         wxstr += m_actionparam;
         wxstr += _("\n");
@@ -3173,6 +3166,9 @@ bool CDM::save ( void )
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
     if ( NULL == pFileStream ) return false;
+
+    // Make a copy before we save
+    wxCopyFile( m_configPath, m_configPath + _("~") );
 
     pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
         strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) );

@@ -2614,6 +2614,11 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                                                             pObject->m_dm.m_logFileName, 
                                                             header );
 				}
+                else if ( 0 == strncmp(conn->uri, "/vscp/table",12) ) {
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					return pObject->getWebServer()->websrv_tableview( conn );
+				}
+                
 				else if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
 					return pObject->getWebServer()->websrv_restapi( conn );
 				}
@@ -5649,7 +5654,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
 
         buildPage += _("</select>");
         // Priority mask
-        buildPage += _("</td><td><textarea cols=\"5\" rows=\"1\" name=\"mask_priority\">");
+        buildPage += _("</td><td><textarea style=\"background-color: #72A4D2;\" cols=\"5\" rows=\"1\" name=\"mask_priority\">");
         if ( bNew ) {
             buildPage += _("0x00");
         }
@@ -5670,7 +5675,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
         }
         buildPage += _("</textarea>");
         
-        buildPage += _("</td><td> <textarea cols=\"10\" rows=\"1\" name=\"mask_vscpclass\">");
+        buildPage += _("</td><td> <textarea style=\"background-color: #72A4D2;\" cols=\"10\" rows=\"1\" name=\"mask_vscpclass\">");
         if ( bNew ) {
             buildPage += _("0xFFFF");
         }
@@ -5691,7 +5696,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
         }
         buildPage += _("</textarea>");
         
-        buildPage += _("</td><td> <textarea cols=\"10\" rows=\"1\" name=\"mask_vscptype\">");
+        buildPage += _("</td><td> <textarea style=\"background-color: #72A4D2;\" cols=\"10\" rows=\"1\" name=\"mask_vscptype\">");
         if ( bNew ) {
             buildPage += _("0xFFFF");;
         }
@@ -5714,7 +5719,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
         buildPage += _("</textarea></td>");
         
         if ( !bNew ) vscp_writeGuidArrayToString( pElement->m_vscpfilter.mask_GUID, str );
-        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\"> </td><td class=\"invisable\"><textarea cols=\"50\" rows=\"1\" name=\"mask_vscpguid\">");
+        buildPage += _("<tr class=\"invisable\"><td class=\"invisable\"> </td><td class=\"invisable\"><textarea style=\"background-color: #72A4D2;\" cols=\"50\" rows=\"1\" name=\"mask_vscpguid\">");
         if ( bNew ) {
             buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         }
@@ -6104,7 +6109,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
         buildPage += _(" <a href=\"http://www.vscp.org/docs/vscpd/doku.php?id=vscp_daemon_decision_matrix#level_ii\" target=\"new\">Help for actions and parameters</a><br>");
              
         buildPage += _("<h4>Action parameter:</h4>");
-        buildPage += _("<textarea cols=\"80\" rows=\"1\" name=\"actionparameter\">");
+        buildPage += _("<textarea cols=\"80\" rows=\"5\" name=\"actionparameter\">");
         if ( !bNew ) buildPage += pElement->m_actionparam;
         buildPage += _("</textarea>");
 
@@ -6136,7 +6141,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
 int 
 VSCPWebServerThread::websrv_dmpost( struct mg_connection *conn )
 {
-	char buf[80];
+	char buf[32000];
     wxString str;
     VSCPInformation vscpinfo;
     dmElement *pElement = NULL;
@@ -6367,6 +6372,13 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *conn )
             if (!bNew) pElement = pObject->m_dm.getElement(id);
 
             if (NULL != pElement) {
+
+                if ( bEnableRow ) {
+                    pElement->enableRow();
+                }
+                else {
+                    pElement->disableRow();
+                }
 
                 if (-1 == filter_priority) {
                     pElement->m_vscpfilter.mask_priority = 0;
@@ -6947,7 +6959,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
         
         if ( nType  == VSCP_DAEMON_VARIABLE_CODE_STRING ) {
             
-            buildPage += _("<textarea cols=\"50\" rows=\"1\" name=\"value_string\">");
+            buildPage += _("<textarea cols=\"50\" rows=\"5\" name=\"value_string\">");
             if ( bNew ) {
                 buildPage += _("");
             }
@@ -7355,7 +7367,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
 int
 VSCPWebServerThread::websrv_variables_post( struct mg_connection *conn )
 {
-	char buf[80];
+	char buf[32000];
     wxString str;
     VSCPInformation vscpinfo;
     CVSCPVariable *pVariable = NULL;
@@ -8334,3 +8346,49 @@ VSCPWebServerThread::websrv_bootload( struct mg_connection *conn )
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// websrv_tableview
+//
+
+int
+VSCPWebServerThread::websrv_tableview( struct mg_connection *conn )
+{
+	//char buf[80];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CVSCPVariable *pVariable = NULL;
+
+	// Check pointer
+	if (NULL == conn) return MG_FALSE;
+
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return MG_FALSE;
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Table view"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+
+    wxString tblName;
+    CVSCPTable *ptblItem = NULL;
+    pObject->m_mutexTableList.Lock();
+    listVSCPTables::iterator iter;
+    for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
+        ptblItem = *iter;
+        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) + _("<br>");
+        ptblItem = NULL;
+    }
+    pObject->m_mutexTableList.Unlock();
+    
+    
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
