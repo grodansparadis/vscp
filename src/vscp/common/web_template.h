@@ -69,6 +69,9 @@
                            "            <a href=\"/vscp/configure\">Configure</a>"\
                            "        </li>"\
                            "        <li>"\
+                           "            <a href=\"/vscp/table\">Tables</a>"\
+                           "        </li>"\
+                           "        <li>"\
                            "            <a href=\"/vscp/bootload\">Update firmware</a>"\
                            "        </li>"\
                            "    </ul>"\
@@ -131,7 +134,7 @@
 // Last shown record	- integer
 // total records		- integer
 // count to show		- integer
-#define WEB_COMMON_LIST_NAVIGATION "<br><div style=\"text-align:center\"><form method=\"get\" action=\"%s\" name=\"PageSelect\"><button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button><button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button><button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button><button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button><span style=\"font-weight:bold\">%d - %d</span> of <span style=\"font-weight:bold\">%d</span> Show: <input name=\"count\" value=\"%d\" size=\"3\"><input name=\"from\" value=\"%d\" type=\"hidden\"><input name=\"light\" value=\"%s\" type=\"hidden\"><br></form></div> "
+#define WEB_COMMON_LIST_NAVIGATION "<br><div style=\"text-align:center\"><form method=\"get\" action=\"%s\" name=\"PageSelect\"><button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button><button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button><button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button><button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button><span style=\"font-weight:bold\"> %d - %d</span> of <span style=\"font-weight:bold\">%d</span> Show: <input name=\"count\" value=\"%d\" size=\"3\"><input name=\"from\" value=\"%d\" type=\"hidden\"><input name=\"light\" value=\"%s\" type=\"hidden\"><br></form></div> "
 
 // Clickable/navigational table rows
 // Fill in Navigation url
@@ -198,6 +201,8 @@
 // Table head
 #define WEB_VARLIST_TR_HEAD "<tr><th>Pos</th><th>Type</th><th>Variable</th></tr>"
 
+
+
 // * * * Variables Edit * * *
 
 // Place after menus
@@ -215,6 +220,52 @@
 
 //  Variable-New step1 submit 
 #define WEB_VARNEW_SUBMIT "<br><div style=\"text-align:center\"><button type=\"submit\" value=\"btnnext\" name=\"btnnext\">next</button><br></div>"
+
+
+
+
+// * * * Table List * * *
+
+// Place after menus
+#define WEB_TABLELIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">VSCP - Tables</h1></div><table><tbody>"
+
+// Place before common end
+#define WEB_TABLELIST_TABLE_END "</tbody></table>"
+
+// Rows
+#define WEB_TABLELIST_TR_HEAD "<tr><th>Name</th><th>Type</th></tr>"
+
+#define WEB_TABLELIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.vscp.org/')\" >"
+
+#define WEB_TABLELIST_TD_CENTERED "<td id=\"tdcenter\">"
+
+
+
+
+// * * * Table value List * * *
+
+// Place after menus
+#define WEB_TABLEVALUELIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">List of values - %s</h1></div><table><tbody>"
+
+// Place before common end
+#define WEB_TABLEVALUELIST_TABLE_END "</tbody></table>"
+
+// Rows
+#define WEB_TABLEVALUELIST_TR_HEAD "<tr><th>Record</th><th>Date</th><th>Value</th></tr>"
+
+#define WEB_TABLEVALUELIST_TR "<tr onmouseover=\"ChangeColor(this, true);\" onmouseout=\"ChangeColor(this, false);\" onclick=\"DoNav('http://www.vscp.org/')\" >"
+
+#define WEB_TABLEVALUELIST_TD_CENTERED "<td id=\"tdcenter\">"
+
+#define WEB_TABLEVALUELIST_TD_GUID "<td id=\"tdguid\">"
+
+// Tablevalue navigation - 
+// Action url			- string
+// First shown record	- integer
+// Last shown record	- integer
+// total records		- integer
+// count to show		- integer
+#define WEB_TABLEVALUE_LIST_NAVIGATION "<br><div style=\"text-align:center\"><form method=\"get\" action=\"%s\" name=\"PageSelect\"><button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button><button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button><button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button><button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button><span style=\"font-weight:bold\"> %d - %d</span> of <span style=\"font-weight:bold\">%d</span> Show: <input name=\"count\" value=\"%d\" size=\"3\"><input name=\"from\" value=\"%d\" type=\"hidden\"><input name=\"tblname\" value=\"%s\" type=\"hidden\"><br></form></div> "
 
 
 #endif

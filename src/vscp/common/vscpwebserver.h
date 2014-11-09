@@ -591,13 +591,23 @@ public:
 	websrv_bootload( struct mg_connection *conn );
 
     /**
-	 * websrv_tableview - Device bootload
+	 * websrv_table - View infor about defined tables
 	 *
 	 * @param conn Webserver connection handle.
 	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
 	 */
     int
-    websrv_tableview( struct mg_connection *conn );
+    websrv_table( struct mg_connection *conn );
+
+
+    /**
+	 * websrv_tablelist - List table
+	 *
+	 * @param conn Webserver connection handle.
+	 * @return MG_TRUE ocn sucess or MG_FALSE on failure.
+	 */
+    int
+    websrv_tablelist( struct mg_connection *conn );
 
 
 // --- Member variables ---

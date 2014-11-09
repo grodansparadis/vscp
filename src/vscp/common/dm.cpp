@@ -2720,7 +2720,7 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
     }
 	value = atof( tkz.GetNextToken().mbc_str() );
 
-	m_pDM->m_pCtrlObject->m_mutexTableList.Lock();
+	//m_pDM->m_pCtrlObject->m_mutexTableList.Lock();  
 	listVSCPTables::iterator iter;
 	for (iter = m_pDM->m_pCtrlObject->m_listTables.begin(); iter != m_pDM->m_pCtrlObject->m_listTables.end(); ++iter)
 	{
@@ -2733,7 +2733,7 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 			break;
 		}
 	}
-	m_pDM->m_pCtrlObject->m_mutexTableList.Unlock();
+	//m_pDM->m_pCtrlObject->m_mutexTableList.Unlock();
 
 	if ( !bFound ) {
 		wxString wxstrErr = 

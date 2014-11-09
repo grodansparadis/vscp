@@ -1337,7 +1337,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             return MG_TRUE;
         }
 
-        if ( VSCP_TABLE_NORMAL == ptblItem->m_vscpFileHead.type ) {
+        if ( VSCP_TABLE_DYNAMIC == ptblItem->m_vscpFileHead.type ) {
 
             uint64_t start,end;
             if ( 0 == nRange ) {
@@ -1359,7 +1359,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
             // Fetch number of records in set 
             ptblItem->m_mutexThisTable.Lock();
-            long nRecords = ptblItem->GetRangeOfData(start, end );
+            long nRecords = ptblItem->getRangeOfData(start, end );
             ptblItem->m_mutexThisTable.Unlock();
 
             if ( nRecords > 0 ) {
@@ -1379,7 +1379,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                 }
                 
                 ptblItem->m_mutexThisTable.Lock();
-                long nfetchedRecords = ptblItem->GetRangeOfData(start, end, (void *)pRecords, sizeof(pRecords)  );
+                long nfetchedRecords = ptblItem->getRangeOfData(start, end, (void *)pRecords, sizeof(pRecords)  );
                 ptblItem->m_mutexThisTable.Unlock();
 
                 if ( 0 == nfetchedRecords ) {
@@ -1469,13 +1469,13 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
             // Fetch number of records in set 
             ptblItem->m_mutexThisTable.Lock();
-            long nRecords = ptblItem->GetStaticRequiredBuffSize();
+            long nRecords = ptblItem->getStaticRequiredBuffSize();
             ptblItem->m_mutexThisTable.Unlock();
             
             if ( nRecords > 0 ) {
             
                 ptblItem->m_mutexThisTable.Lock();
-                long nfetchedRecords = ptblItem->GetStaticRequiredBuffSize();
+                long nfetchedRecords = ptblItem->getStaticRequiredBuffSize();
                 ptblItem->m_mutexThisTable.Unlock();
 
                 if ( 0 == nfetchedRecords ) {
@@ -2616,7 +2616,13 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/table",12) ) {
 					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
-					return pObject->getWebServer()->websrv_tableview( conn );
+					return pObject->getWebServer()->websrv_table( conn );
+				}
+
+
+                else if ( 0 == strncmp(conn->uri, "/vscp/tablelist",12) ) {
+					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+					return pObject->getWebServer()->websrv_tablelist( conn );
 				}
                 
 				else if ( 0 == strncmp(conn->uri, "/vscp/rest",10) ) {
@@ -5299,12 +5305,8 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
                 pObject->m_dm.getElementCount(),
                 nCount,
                 nFrom,
-#if wxMAJOR_VERSION > 3 
-                wxstrlight );
-#else           
-				wxstrlight.c_str() );
-                //wxstrlight.GetWriteBuf( wxstrlight.Length() ) );
-#endif        
+				(const char *)wxstrlight.mbc_str() );
+               
         buildPage += _("<br>");
     } 
 
@@ -6667,8 +6669,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
     buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
     
     // Navigation menu 
-    buildPage += _(WEB_COMMON_MENU);
-    
+    buildPage += _(WEB_COMMON_MENU);   
     buildPage += _(WEB_VARLIST_BODY_START);
     
     {
@@ -7840,7 +7841,7 @@ VSCPWebServerThread::websrv_session( struct mg_connection *conn )
 	if (NULL == pObject) return MG_FALSE;
 
 	wxString buildPage;
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Device discovery"));
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Session"));
     buildPage += _(WEB_STYLE_START);
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
@@ -8347,11 +8348,11 @@ VSCPWebServerThread::websrv_bootload( struct mg_connection *conn )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// websrv_tableview
+// websrv_table
 //
 
 int
-VSCPWebServerThread::websrv_tableview( struct mg_connection *conn )
+VSCPWebServerThread::websrv_table( struct mg_connection *conn )
 {
 	//char buf[80];
     wxString str;
@@ -8375,18 +8376,245 @@ VSCPWebServerThread::websrv_tableview( struct mg_connection *conn )
     // navigation menu 
     buildPage += _(WEB_COMMON_MENU);
 
+    buildPage += _(WEB_TABLELIST_BODY_START);
+    buildPage += _(WEB_TABLELIST_TR_HEAD);
+
     wxString tblName;
     CVSCPTable *ptblItem = NULL;
     pObject->m_mutexTableList.Lock();
     listVSCPTables::iterator iter;
     for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
-        ptblItem = *iter;
-        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) + _("<br>");
+        ptblItem = *iter; 
+
+        buildPage += wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
+                                                _("/vscp/tablelist?tblname=") + wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) );
+        buildPage += _("<td><b>");
+        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable );
+        buildPage += _("</b><br>");
+        buildPage += _("<div id=\"small\">");
+        buildPage += _("<b>Filename:</b> ");
+        buildPage += ptblItem->getFileName();
+        buildPage += _(" <b>Filesize:</b> ");
+        wxFileName ff( ptblItem->getFileName() );
+        buildPage += ff.GetHumanReadableSize();
+        buildPage += _("<br><b>First date:</b> ");
+        wxDateTime dtStart = wxDateTime( (time_t)ptblItem->getTimeStampStart() );
+        buildPage += dtStart.FormatISOCombined(' ');
+        buildPage += _(" <b>Last date:</b> ");
+        wxDateTime dtEnd = wxDateTime( (time_t)ptblItem->getTimeStampEnd() );
+        buildPage += dtEnd.FormatISOCombined(' ');
+        buildPage += _(" <b>Number of records: </b> ");
+        buildPage += wxString::Format(_("%d"), ptblItem->getNumberOfRecords() );
+        buildPage += _("<br><b>X-label:</b> ");
+        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameXLabel );
+        buildPage += _(" <b>Y-label :</b> ");
+        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameYLabel );
+        buildPage += _(" <b>VSCP Class:</b> ");
+        buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.vscp_class );
+        buildPage += _(" <b>VSCP Type:</b> ");
+        buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.vscp_type );
+        buildPage += _(" <b>Unit :</b> ");
+        buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.vscp_unit );
+        struct _vscptableInfo info;
+        ptblItem->getInfo( &info );
+        buildPage += _("<br><b>Min-value:</b> ");
+        buildPage += wxString::Format(_("%g"), info.minValue );
+        buildPage += _(" <b>Max-value:</b> ");
+        buildPage += wxString::Format(_("%g"), info.maxValue );
+        buildPage += _(" <b>Mean-value:</b> ");
+        buildPage += wxString::Format(_("%g"), info.meanValue );
+        buildPage += _("<br><b>Description:</b> ");
+        buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.descriptionTable );
+        buildPage += _("</div>");
+        buildPage += _("</td>");
+
+        // Type
+        buildPage += _("<td>");
+        buildPage += _("<div id=\"small\">");
+        if ( VSCP_TABLE_DYNAMIC == ptblItem->m_vscpFileHead.type ) {
+            buildPage += _("<b>Dynamic</b>");
+        }
+        else {
+            buildPage += _("<b>Static</b>");
+            buildPage += _("<br><b>Static size:</b> ");
+            buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.staticSize );
+        }
+        buildPage += _("</div>");
+        buildPage += _("</td>");
+
+        buildPage += _("</tr>");
         ptblItem = NULL;
     }
     pObject->m_mutexTableList.Unlock();
     
     
+    buildPage += _(WEB_TABLELIST_TABLE_END);
+
+
+	// Server data
+	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+
+	return MG_TRUE;	
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// websrv_tablelist
+//
+
+int
+VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
+{
+	char buf[512];
+    wxString str;
+    VSCPInformation vscpinfo;
+    CVSCPVariable *pVariable = NULL;
+
+	// Check pointer
+	if (NULL == conn) return MG_FALSE;
+
+	CControlObject *pObject = (CControlObject *)conn->server_param;
+	if (NULL == pObject) return MG_FALSE;
+
+    // From
+    long nFrom = 0;
+	if ( mg_get_var( conn, "from", buf, sizeof( buf ) ) > 0 ) { 
+		nFrom = atoi( buf );
+	}
+      
+    // Count
+    uint16_t nCount = 50;
+	if ( mg_get_var( conn, "count", buf, sizeof( buf ) ) > 0 ) { 
+		nCount = atoi( buf );
+	}
+
+
+    wxString tblName;
+    if ( mg_get_var( conn, "tblname", buf, sizeof( buf ) ) > 0 ) { 
+        tblName = wxString::FromUTF8( buf );
+	}
+
+    bool bFound = false;
+    CVSCPTable *ptblItem = NULL;
+    pObject->m_mutexTableList.Lock();
+    listVSCPTables::iterator iter;
+    for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
+        ptblItem = *iter; 
+        if ( 0 == strcmp( ptblItem->m_vscpFileHead.nameTable, (const char *)tblName.mbc_str() ) ) {
+            bFound = true;
+		    break;
+		}
+    }
+
+ 
+    // Navigation button
+	if ( mg_get_var( conn, "navbtn", buf, sizeof( buf ) ) > 0 ) { 
+	
+		if (NULL != strstr("previous", buf) ) {    
+		    nFrom -= nCount;
+			if ( nFrom < 0 )  nFrom = 0;
+        }        
+		else if (NULL != strstr("next",buf)) {
+            nFrom += nCount;
+            if ( nFrom > ptblItem->getNumberOfRecords()-1 ) {
+                if ( ptblItem->getNumberOfRecords() % nCount ) {
+                    nFrom = ptblItem->getNumberOfRecords()/nCount;
+                }
+                else {
+                    nFrom = (ptblItem->getNumberOfRecords()/nCount) - 1;
+                }
+            }
+		}
+		else if (NULL != strstr("last",buf)) {
+            if ( ptblItem->getNumberOfRecords() % nCount ) {
+                nFrom = (ptblItem->getNumberOfRecords()/nCount)*nCount;
+            }
+            else {
+                nFrom = ((ptblItem->getNumberOfRecords()/nCount) - 1)*nCount;
+            }
+		}
+		else if ( NULL != strstr("first",buf) ) {
+			nFrom = 0;
+        }
+	}
+	else {  // No vaid navigation value
+        nFrom = 0;
+    }   
+
+	wxString buildPage;
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), _("VSCP - Table List"));
+    buildPage += _(WEB_STYLE_START);
+    buildPage += _(WEB_COMMON_CSS);     // CSS style Code
+    buildPage += _(WEB_STYLE_END);
+    buildPage += _(WEB_COMMON_JS);      // Common Javascript code
+    buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
+
+    // navigation menu 
+    buildPage += _(WEB_COMMON_MENU);
+
+    buildPage += wxString::Format( WEB_TABLEVALUELIST_BODY_START, tblName );
+
+    {
+        buildPage += wxString::Format( _(WEB_TABLEVALUE_LIST_NAVIGATION),
+                _("/vscp/tablelist"),
+                nFrom,
+                ((nFrom + nCount) < ptblItem->getNumberOfRecords() ) ? 
+                      nFrom + nCount - 1 : ptblItem->getNumberOfRecords() - 1,
+                ptblItem->getNumberOfRecords(),
+                nCount,
+                nFrom,
+				tblName );
+               
+        buildPage += _("<br>");
+    }
+
+    if ( bFound ) {
+
+        struct _vscpFileRecord *ptableInfo = new struct _vscpFileRecord[ nCount ];
+        if ( NULL != ptableInfo ) {
+            
+            nCount = ptblItem->getRangeOfData( nFrom, nCount, ptableInfo  );
+
+            buildPage += _(WEB_TABLEVALUELIST_TR_HEAD);
+    
+            for ( uint16_t i=0; i<nCount; i++ ) {
+
+                buildPage += _("<tr>");
+
+                // record
+                buildPage += _("<td>");
+                buildPage += wxString::Format(_("%u"), nFrom + i );
+                buildPage += _("</td>");
+                
+                // Date
+                buildPage += _("<td>");
+                wxDateTime dt( (time_t)ptableInfo[i].timestamp );
+                buildPage += dt.FormatISOCombined(' ');
+                buildPage += _("</td>");
+
+                // value
+                buildPage += _("<td>");
+                buildPage += wxString::Format(_("%g"), ptableInfo[i].measurement );
+                buildPage += _("</td>");
+
+                buildPage += _("</tr>");
+
+            }
+
+            buildPage += _(WEB_TABLEVALUELIST_TABLE_END);
+
+            delete ptableInfo;
+        }
+        else {
+            buildPage += _("Failed to allocate memory for table.");
+        }
+    }
+    else {
+        buildPage += _("Table not found!");
+    }
+
+
 	// Server data
 	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
 

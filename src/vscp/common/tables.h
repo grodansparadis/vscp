@@ -49,7 +49,7 @@ ab+		binary Write Create
 
 // Table types
 enum  {
-	VSCP_TABLE_NORMAL = 0,
+	VSCP_TABLE_DYNAMIC = 0,
 	VSCP_TABLE_STATIC
 };
 
@@ -93,7 +93,7 @@ class CVSCPTable {
 public:
 
 	/// Constructor dtable
-	CVSCPTable( const char *file = NULL, int type = VSCP_TABLE_NORMAL, uint32_t size = 0 );
+	CVSCPTable( const char *file = NULL, int type = VSCP_TABLE_DYNAMIC, uint32_t size = 0 );
 
 	// Destructor
 	virtual ~CVSCPTable(void);
@@ -120,7 +120,7 @@ public:
 						uint32_t size,
 						uint16_t vscp_class, 
 						uint16_t vscp_type,
-						uint8_t vscp_unit );
+						uint8_t vscp_unit );         
 
 	/*!
 		Check if a file exists and returns true if it does
@@ -167,7 +167,7 @@ public:
 		@param size Size of bugger in bytes
 		@return Number of records read or to read or -1 if error.
 	*/
-	long GetRangeOfData( uint64_t start, uint64_t end, void *buf = NULL, uint16_t size = 0 );
+	long getRangeOfData( uint64_t start, uint64_t end, void *buf = NULL, uint16_t size = 0 );
 
 
     /*!
@@ -180,7 +180,16 @@ public:
 		@param size Size of bugger in bytes
 		@return Number of records read or to read or -1 if error.
 	*/
-    long GetRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf = NULL, uint16_t size = 0 );
+    long getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *buf = NULL, uint16_t size = 0 );
+
+
+    /*! 
+        Get range of data
+        @param starpos Record number to start to fecth data at
+        @param count nu,ber of records to fetch
+        @param buf, Buffer that will be filled with read data
+    */
+    long getRangeOfData( uint32_t startpos, uint16_t count, struct _vscpFileRecord *buf );
 
 
 	/*!
@@ -189,14 +198,14 @@ public:
 		@param size of buffer
 		@return Number of records in buffer or zero on error
 	*/
-	long GetStaticData( void *buf, uint16_t size );
+	long getStaticData( void *buf, uint16_t size );
 
 	/*!
 		Get required buffer size for static file
 		@return Returns the number of bytes needed to hold the
 				static file, -1 on error.
 	*/
-	long GetStaticRequiredBuffSize( void );
+	long getStaticRequiredBuffSize( void );
 
 	/*!
 		Get statistics for a range for a range
@@ -216,6 +225,9 @@ public:
 
     // Get number of records in database
     long getNumberOfRecords( void ) { return m_number_of_records; };
+
+    // Get file
+    wxString& getFileName( void ) { return m_path; };
 
 public:
     
