@@ -1397,11 +1397,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
                     wxDateTime dtStart;
                     dtStart.Set( (time_t)ptblItem->getTimeStampStart() );
-                    wxString strDateTimeStart = dtStart.FormatISOCombined();
+                    wxString strDateTimeStart = dtStart.FormatISODate() + _("T") + dtStart.FormatISOTime();
 
                     wxDateTime dtEnd;
                     dtEnd.Set( (time_t)ptblItem->getTimeStampEnd() );
-                    wxString strDateTimeEnd = dtEnd.FormatISOCombined();
+                    wxString strDateTimeEnd = dtEnd.FormatISODate() + _("T") + dtEnd.FormatISOTime();
 
                     // First send start post with number if records
                     wxString wxstr = wxString::Format(_("+;GT;START;%d;%d;%s;%s"),
@@ -1411,13 +1411,13 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                                                 (const char *)strDateTimeEnd.mbc_str() );
                     mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									wxstr );
+									(const char *)wxstr.mbc_str() );
 
                     // Then send measurement records
                     for ( long i=0; i<nfetchedRecords; i++ ) {
                         wxDateTime dt;
                         dt.Set( (time_t)pRecords[i].timestamp );
-                        wxString strDateTime = dt.FormatISOCombined();
+                        wxString strDateTime = dt.FormatISODate() + _(" ") + dt.FormatISOTime();
                         wxString wxstr = wxString::Format(_("+;GT;%d;%s;%f"),
                                                 i, 
                                                 (const char *)strDateTime.mbc_str(), 
@@ -8403,7 +8403,7 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
         ptblItem = *iter; 
 
         buildPage += wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                                _("/vscp/tablelist?tblname=") + wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) );
+                                                (const char *)wxString( _("/vscp/tablelist?tblname=") + wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ).mbc_str() );
         buildPage += _("<td><b>");
         buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable );
         buildPage += _("</b><br>");
@@ -8415,10 +8415,10 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
         buildPage += ff.GetHumanReadableSize();
         buildPage += _("<br><b>First date:</b> ");
         wxDateTime dtStart = wxDateTime( (time_t)ptblItem->getTimeStampStart() );
-        buildPage += dtStart.FormatISOCombined(' ');
+        buildPage += dtStart.FormatISODate() + _(" ") + dtStart.FormatISOTime();
         buildPage += _(" <b>Last date:</b> ");
         wxDateTime dtEnd = wxDateTime( (time_t)ptblItem->getTimeStampEnd() );
-        buildPage += dtEnd.FormatISOCombined(' ');
+        buildPage += dtEnd.FormatISODate() + _(" ") + dtEnd.FormatISOTime();
         buildPage += _(" <b>Number of records: </b> ");
         buildPage += wxString::Format(_("%d"), ptblItem->getNumberOfRecords() );
         buildPage += _("<br><b>X-label:</b> ");
@@ -8569,7 +8569,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
     // navigation menu 
     buildPage += _(WEB_COMMON_MENU);
 
-    buildPage += wxString::Format( WEB_TABLEVALUELIST_BODY_START, tblName );
+    buildPage += wxString::Format( WEB_TABLEVALUELIST_BODY_START, (const char *)tblName.mbc_str() );
 
     {
         buildPage += wxString::Format( _(WEB_TABLEVALUE_LIST_NAVIGATION),
@@ -8580,7 +8580,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
                 ptblItem->getNumberOfRecords(),
                 nCount,
                 nFrom,
-				tblName );
+		(const char *)tblName.mbc_str() );
                
         buildPage += _("<br>");
     }
@@ -8606,7 +8606,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
                 // Date
                 buildPage += _("<td>");
                 wxDateTime dt( (time_t)ptableInfo[i].timestamp );
-                buildPage += dt.FormatISOCombined(' ');
+                buildPage += dt.FormatISODate() + _(" ") + dt.FormatISOTime();
                 buildPage += _("</td>");
 
                 // value
