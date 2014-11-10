@@ -65,10 +65,10 @@ struct _vscpFileHead {
 	uint16_t vscp_type;		    // Measurement type: temp, current etc
 	uint8_t vscp_unit;		    // Measurement unit: e.g. Celsius(1)/Fahrenheit(2)/Kelvin(0) for temperature class=10/Type=6
 
-	long unsigned int posStaticRead;	// Next read position for static file
+	long unsigned int dummy;	        // Next read position for static file   !!! NOT USED !!!
 	long unsigned int posStaticWrite;	// Next write position for static file
 
-	long staticSize;		// Number of records in static file
+	unsigned long staticSize;		    // Number of records in static file
 };
 
 // All data is written with this record type

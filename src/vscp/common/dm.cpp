@@ -2981,11 +2981,13 @@ bool CDM::load ( void )
 
     wxXmlDocument doc;
     if ( !doc.Load ( m_configPath ) ) {
+        logMsg( _("Faild to load DM. Check format!\n") );
         return false;
     }
 
     // start processing the XML file
     if ( doc.GetRoot()->GetName() != wxT ( "dm" ) ) {
+        logMsg( _("Faild to load DM. <dm> tahs not found, format is wrong!\n") );
         return false;
     }
 

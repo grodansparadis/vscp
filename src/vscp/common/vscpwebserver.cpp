@@ -5586,7 +5586,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
         buildPage += _("</textarea><br>");
         
         
-        buildPage += _("<h4>Event:</h4> <span id=\"optiontext\">(leave items blank for don't care)</span><br>");
+        buildPage += _("<h4>Event:</h4> <span id=\"optiontext\">(blueish are masks)</span><br>");
 
         buildPage += _("<table class=\"invisable\"><tbody><tr class=\"invisable\">");
 

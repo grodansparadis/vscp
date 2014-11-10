@@ -2135,7 +2135,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             }
 
         }
-            // Level II driver
+        // Level II driver
         else if ( ( child->GetName() == wxT("vscpdriver") ) || ( child->GetName() == wxT("level2driver") ) ) {
 
             wxString attribut = child->GetAttribute(wxT("enable"), wxT("true"));
@@ -2255,11 +2255,24 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 
                 if (subchild->GetName() == wxT("table")) {
 
+                    int nType = VSCP_TABLE_DYNAMIC;
+                    wxString attribute =  subchild->GetAttribute( wxT("type"), wxT("0") );
+                    attribute.MakeUpper();
+                    if ( wxNOT_FOUND  != attribute.Find(_("DYNAMIC")) ) {
+                        nType = VSCP_TABLE_DYNAMIC;
+                    }
+                    else if ( wxNOT_FOUND  != attribute.Find(_("STATIC")) ) {
+                        nType = VSCP_TABLE_STATIC;
+                    }
+                    else {
+                        nType = vscp_readStringValue( attribute );
+                    }
+
 					CVSCPTable *pTable = new CVSCPTable();
 					if ( NULL != pTable ) {
                         memset( &pTable->m_vscpFileHead, 0, sizeof(_vscptableInfo) );
 						pTable->setTableInfo( subchild->GetAttribute( wxT("path"), wxT("") ).mbc_str(),
-													vscp_readStringValue( subchild->GetAttribute( wxT("type"), wxT("0") ) ),
+													nType,
 													subchild->GetAttribute( wxT("name"), wxT("") ).Upper().mbc_str(), 
 													subchild->GetAttribute( wxT("description"), wxT("") ).mbc_str(),
 													subchild->GetAttribute( wxT("labelx"), wxT("") ).mbc_str(), 

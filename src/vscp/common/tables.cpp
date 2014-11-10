@@ -83,13 +83,10 @@ CVSCPTable::CVSCPTable( const char *path, int type, uint32_t size )
 	strcpy( m_vscpFileHead.nameYLabel, "Y Label" );
 
 	// Next pos to write at for a new static file
-	m_vscpFileHead.posStaticRead = sizeof( m_vscpFileHead );
-	m_vscpFileHead.posStaticWrite = sizeof( m_vscpFileHead );
+	m_vscpFileHead.posStaticWrite = 0;
 	m_vscpFileHead.staticSize = size;
 
 	m_ft = NULL;
-
-	init();
 }
 
 
@@ -132,34 +129,49 @@ int CVSCPTable::init()
 		}
 		
 		// Write header
-		if ( sizeof( m_vscpFileHead ) != 
-			fwrite( &m_vscpFileHead , 1, sizeof(m_vscpFileHead), m_ft ) ) return VSCP_ERROR_ERROR;
+		if ( sizeof( m_vscpFileHead ) != fwrite( &m_vscpFileHead, 1, sizeof(m_vscpFileHead), m_ft ) ) {
+            return VSCP_ERROR_ERROR;
+        }
 
 		// If we have a static table we initiate it
 		if ( VSCP_TABLE_STATIC == m_vscpFileHead.type ) {
 			_vscpFileRecord rec;
 			memset( &rec, 0, sizeof(_vscpFileRecord) ); 
-			fwrite( &rec, m_vscpFileHead.staticSize, sizeof(_vscpFileRecord), m_ft );
+            for ( int i=0; i<m_vscpFileHead.staticSize; i++ ) {
+			    if ( sizeof(_vscpFileRecord) != fwrite( &rec, 1, sizeof(_vscpFileRecord), m_ft ) ) {
+                    return VSCP_ERROR_ERROR;
+                }
+            }
 		}
 	}
 
+    //Read header information
 	rv = readMainHeader();
 
-	m_number_of_records = ( fdGetFileSize( m_path.mbc_str() ) - sizeof( m_vscpFileHead ))/sizeof(_vscpFileRecord);
-	if ( m_number_of_records ) {
+    if ( VSCP_TABLE_DYNAMIC == m_vscpFileHead.type ) {
 
-		size_t rpos;
+        // Calculate number of records in file
+	    m_number_of_records = ( fdGetFileSize( m_path.mbc_str() ) - sizeof( m_vscpFileHead ))/sizeof(_vscpFileRecord);
+	    if ( m_number_of_records ) {
+
+		    size_t rpos;
 		
-		// Go to last pos
-		fseek( m_ft, sizeof( m_vscpFileHead ) + (m_number_of_records-1) * sizeof(_vscpFileRecord) , SEEK_SET );							
-		rpos = fread( &record, 1, sizeof(record), m_ft );
-		m_timestamp_last = record.timestamp;
+		    // Go to last pos - Read last timestamp
+		    fseek( m_ft, sizeof( m_vscpFileHead ) + (m_number_of_records-1) * sizeof(_vscpFileRecord) , SEEK_SET );							
+		    rpos = fread( &record, 1, sizeof(record), m_ft );
+		    m_timestamp_last = record.timestamp;
 
-		// Go to first pos
-		fseek( m_ft, sizeof( m_vscpFileHead ), SEEK_SET );							
-		rpos = fread( &record, 1, sizeof(record), m_ft );
-		m_timestamp_first = record.timestamp;
-	}
+		    // Go to first pos - read first timestamp
+		    fseek( m_ft, sizeof( m_vscpFileHead ), SEEK_SET );							
+		    rpos = fread( &record, 1, sizeof(record), m_ft );
+		    m_timestamp_first = record.timestamp;
+
+	    }
+
+    }
+    else {  // STATIC TABLE
+        m_number_of_records = m_vscpFileHead.staticSize;
+    }
 
 	return rv; 
 }
@@ -238,10 +250,10 @@ int CVSCPTable::readMainHeader( void )
 	// File must be open
 	if ( NULL == m_ft ) return VSCP_ERROR_ERROR;
 
-	rv = fseek( m_ft, 0, SEEK_SET );									// Go to beginning of file
+	rv = fseek( m_ft, 0, SEEK_SET );                                    // Go to beginning of file
 	if ( rv ) return errno;
-	rv = fread( &m_vscpFileHead, 1, sizeof(m_vscpFileHead), m_ft );		// Read structure
-	if ( rv ) return VSCP_ERROR_ERROR;
+	rv = fread( &m_vscpFileHead, 1, sizeof(m_vscpFileHead), m_ft );     // Read structure
+	if ( rv != sizeof(m_vscpFileHead) ) return VSCP_ERROR_ERROR;
 
 	return VSCP_ERROR_SUCCESS;
 }
@@ -305,12 +317,22 @@ int CVSCPTable::logData( uint64_t timestamp, double measurement )
 	}
 	else if ( VSCP_TABLE_STATIC == m_vscpFileHead.type ) {
 		
-		fseek( m_ft, m_vscpFileHead.posStaticWrite, SEEK_SET );
-		fwrite( &record, 1, sizeof(record), m_ft );
-		// Check if we have gone past the end
-		if ( ftell( m_ft ) > (long)( m_vscpFileHead.staticSize * sizeof( _vscpFileRecord ) + sizeof( _vscpFileHead ) ) ) {
-			m_vscpFileHead.posStaticWrite = sizeof( _vscpFileHead );
-		}
+		fseek( m_ft, sizeof( _vscpFileHead ) + m_vscpFileHead.posStaticWrite*sizeof( _vscpFileRecord ), SEEK_SET );
+		if ( sizeof(record) == fwrite( &record, 1, sizeof(record), m_ft ) ) {
+
+            m_vscpFileHead.posStaticWrite++;
+            if ( m_vscpFileHead.posStaticWrite >= m_vscpFileHead.staticSize ) {
+                m_vscpFileHead.posStaticWrite = 0;
+            }
+
+		    // Check if we have gone past the end
+		    //if ( ftell( m_ft ) > (long)( m_vscpFileHead.staticSize * sizeof( _vscpFileRecord ) + sizeof( _vscpFileHead ) ) ) {
+			//    m_vscpFileHead.posStaticWrite = sizeof( _vscpFileHead );
+		    //}
+        }
+        else {
+            rv = VSCP_ERROR_ERROR;
+        }
 
 	}
 
@@ -478,6 +500,9 @@ long CVSCPTable::getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *b
     return getRangeOfData( from, to, buf, size );
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// getRangeOfData
+//
 
 long CVSCPTable::getRangeOfData( uint32_t startpos, uint16_t count, struct _vscpFileRecord *buf )
 {
@@ -486,16 +511,44 @@ long CVSCPTable::getRangeOfData( uint32_t startpos, uint16_t count, struct _vscp
     // Protect
     wxMutexLocker lock( m_mutexThisTable );
 
-    // Seek the start pos
-	if ( fseek( m_ft, sizeof(_vscpFileHead) + startpos*sizeof(_vscpFileRecord), SEEK_SET ) ) {
-        return 0;   // No records read
-    }
+    if ( VSCP_TABLE_DYNAMIC == m_vscpFileHead.type ) {
+        // Seek the start pos
+	    if ( fseek( m_ft, sizeof(_vscpFileHead) + startpos*sizeof(_vscpFileRecord), SEEK_SET ) ) {
+            return 0;   // No records read
+        }
 
-	// read records
-    for ( i=0; i<count; i++ ) {
-	    if ( sizeof(_vscpFileRecord) != fread( (void *)(buf + i), 1, sizeof(_vscpFileRecord), m_ft ) ) {
-		    break;
-	    }
+	    // read records
+        for ( i=0; i<count; i++ ) {
+	        if ( sizeof(_vscpFileRecord) != fread( (void *)(buf + i), 1, sizeof(_vscpFileRecord), m_ft ) ) {
+		        break;
+	        }
+        }
+    }
+    else {
+        
+        // Seek the start pos
+        long unsigned int  pos = ( m_vscpFileHead.posStaticWrite + startpos ) % m_vscpFileHead.staticSize;
+
+	    if ( fseek( m_ft, sizeof( _vscpFileHead ) + pos*sizeof( _vscpFileRecord ), SEEK_SET ) ) {
+            return 0;   // No records read
+        }
+
+        // read records
+        for ( i=0; i<count; i++ ) {
+	        if ( sizeof(_vscpFileRecord) != fread( (void *)(buf + i), 1, sizeof(_vscpFileRecord), m_ft ) ) {
+		        break;
+	        }
+
+            // Check if we have gone past the end
+		    if ( ftell( m_ft ) >= (long)( m_vscpFileHead.staticSize * sizeof( _vscpFileRecord ) + sizeof( _vscpFileHead ) ) ) {
+			    if ( fseek( m_ft, sizeof( _vscpFileHead ), SEEK_SET ) ) {
+                    return 0;   // No records read
+                }
+		    }
+
+            //if ( ( pos + i) >= m_vscpFileHead.posStaticWrite ) break; 
+        }
+
     }
 
     return i;
@@ -529,7 +582,7 @@ long CVSCPTable::getStaticData( void *buf, uint16_t size )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// getStaticData
+// getStaticRequiredBuffSize
 //
 
 long CVSCPTable::getStaticRequiredBuffSize( void )
