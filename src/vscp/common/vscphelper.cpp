@@ -1805,12 +1805,15 @@ bool vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx,
 bool vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
 {
 	unsigned char nodeid = 0;
-	short sizeData = pvscpEvent->sizeData;
-	uint16_t vscp_class = pvscpEvent->vscp_class;
+	short sizeData = 0;
+	uint16_t vscp_class = 0;
 
 	if (NULL == pcanalMsg) return false;
 	if (NULL == pvscpEvent) return false;
 
+    sizeData = pvscpEvent->sizeData;
+    vscp_class = pvscpEvent->vscp_class;
+    
 	pcanalMsg->obid = pvscpEvent->obid;
 	pcanalMsg->flags = 0;
 
