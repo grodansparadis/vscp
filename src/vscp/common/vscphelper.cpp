@@ -379,6 +379,7 @@ float vscp_getMeasurementAsFloat(const unsigned char *pCode,
                                     unsigned char length)								
 {
     float *pfloat = NULL;
+    float value = 0.0f;
     
     // Check pointers
     if ( NULL == pCode ) return false;
@@ -387,11 +388,12 @@ float vscp_getMeasurementAsFloat(const unsigned char *pCode,
 	//value = std::numeric_limits<float>::infinity();
 	if (length >= 5) {
 		pfloat = (float*)(pCode + 1);
+		value = *pfloat;
 		//value = pfloat[0];
 		// please insert test for (!NaN || !INF)
 	}
     
-	return *pfloat;
+	return value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -617,7 +619,7 @@ bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& s
 
 bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strValue)
 {
-    int offset;
+    int offset = 0;
     
     // If class >= 512 and class <1024 we
 	// have GUID in front of data. 
@@ -809,7 +811,7 @@ bool vscp_convertIntegerToNormalizedEventData( uint8_t *pdata,
     int pos = 0;
     for ( i = nZeros; i<8; i++ ) {
         pdata[ pos + 1] =  *(p+i+nZeros);
-        *psize++;
+        (*psize)++;
     }
 
     return true;
@@ -1803,12 +1805,15 @@ bool vscp_convertCanalToEventEx(vscpEventEx *pvscpEventEx,
 bool vscp_convertEventToCanal(canalMsg *pcanalMsg, const vscpEvent *pvscpEvent)
 {
 	unsigned char nodeid = 0;
-	short sizeData = pvscpEvent->sizeData;
-	uint16_t vscp_class = pvscpEvent->vscp_class;
+	short sizeData = 0;
+	uint16_t vscp_class = 0;
 
 	if (NULL == pcanalMsg) return false;
 	if (NULL == pvscpEvent) return false;
 
+    sizeData = pvscpEvent->sizeData;
+    vscp_class = pvscpEvent->vscp_class;
+    
 	pcanalMsg->obid = pvscpEvent->obid;
 	pcanalMsg->flags = 0;
 
