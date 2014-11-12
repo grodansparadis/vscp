@@ -1435,7 +1435,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                 }
 
                 // Deallocate storage
-                delete pRecords;
+                delete[] pRecords;
 
             }
             else {
@@ -7714,14 +7714,10 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *conn )
     
     buildPage += _(WEB_COMMON_END); // Common end code
     
-    char *ppage = new char[ buildPage.Length() + 1 ];
-    memset(ppage, 0, buildPage.Length() + 1 );
-    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
-
-	// Server data
-	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
-     
-	return MG_TRUE;	
+    // Server data
+    mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
+    
+    return MG_TRUE;	
 }
 
 
@@ -8620,7 +8616,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
 
             buildPage += _(WEB_TABLEVALUELIST_TABLE_END);
 
-            delete ptableInfo;
+            delete[] ptableInfo;
         }
         else {
             buildPage += _("Failed to allocate memory for table.");
