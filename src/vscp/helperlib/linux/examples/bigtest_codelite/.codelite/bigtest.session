@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Session Name="/home/akhe/vscp_software/src/vscp/helperlib/linux/examples/bigtest/bigtest.workspace">
+  <int Value="2" Name="m_selectedTab"/>
+  <wxString Value="/home/akhe/vscp_software/src/vscp/helperlib/linux/examples/bigtest/bigtest.workspace" Name="m_workspaceName"/>
+  <TabInfoArray Name="TabInfoArray">
+    <TabInfo>
+      <wxString Value="/home/akhe/vscp_software/src/vscp/helperlib/linux/examples/bigtest.c" Name="FileName"/>
+      <int Value="1300" Name="FirstVisibleLine"/>
+      <int Value="1300" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/vscp_software/src/vscp/helperlib/linux/examples/Makefile" Name="FileName"/>
+      <int Value="0" Name="FirstVisibleLine"/>
+      <int Value="8" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+    <TabInfo>
+      <wxString Value="/home/akhe/vscp_software/src/vscp/helperlib/vscphelperlib.h" Name="FileName"/>
+      <int Value="381" Name="FirstVisibleLine"/>
+      <int Value="400" Name="CurrentLine"/>
+      <wxArrayString Name="Bookmarks"/>
+      <IntVector Name="CollapsedFolds"/>
+    </TabInfo>
+  </TabInfoArray>
+  <SerializedObject Name="m_breakpoints">
+    <long Value="0" Name="Count"/>
+  </SerializedObject>
+</Session>

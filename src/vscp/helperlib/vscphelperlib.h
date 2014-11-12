@@ -27,6 +27,9 @@
 
 #ifndef WIN32
 #define __LINUX__
+#define VSCP_HELPER_PRE	
+#else
+#define VSCP_HELPER_PRE	WINAPI EXPORT
 #endif
 
 #include "../common/vscp.h"
@@ -36,7 +39,7 @@ extern "C" {
 #endif	
 
 #ifdef WIN32
-
+/*
 // * * * * *  W I N D O W S  * * * * *
 long WINAPI EXPORT vscphlp_newSession(void);
 void WINAPI EXPORT vscphlp_closeSession(long handle);
@@ -243,7 +246,10 @@ unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent );
 unsigned char WINAPI EXPORT vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent );
 void WINAPI EXPORT vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority );
 void WINAPI EXPORT vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority );
+*/
+
 #else
+
 
 // * * * * *  U N I X  /  L I N U X  * * * * *
 
@@ -293,8 +299,8 @@ int vscphlp_createVariable( long handle,
 
 int vscphlp_saveVariablesToDisk( long handle );
 
-int vscphlp_getVariableString( long handle, const char *pName, char *pvalue );
-int vscphlp_setVariableString( long handle, const char *pName, char Value );
+int vscphlp_getVariableString( long handle, const char *pName, char *pvalue, int size );
+int vscphlp_setVariableString( long handle, const char *pName, char *pValue );
 
 int vscphlp_getVariableBool( long handle, const char *pName, int *bValue );
 int vscphlp_setVariableBool( long handle, const char *pName, int value );
@@ -327,15 +333,16 @@ int vscphlp_getVariableVSCPData( long handle, const char *pName, unsigned char *
 int vscphlp_setVariableVSCPData( long handle, const char *pName, unsigned char *pData, unsigned short size );
 
 int vscphlp_getVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
-int vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short *vscp_class );
+int vscphlp_setVariableVSCPClass( long handle, const char *pName, unsigned short vscp_class );
 
 int vscphlp_getVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
-int vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short *vscp_type );
+int vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type );
 
 
 //-------------------------------------------------------------------------
 //                                Helpers 
 //-------------------------------------------------------------------------
+
 
 unsigned long vscphlp_readStringValue( const char * pStrValue );
 unsigned char vscphlp_getVscpPriority( const vscpEvent *pEvent );
@@ -356,8 +363,8 @@ unsigned char vscphlp_calcCRC4GUIDString(const char *strguid);
 int vscphlp_getGuidFromString( vscpEvent *pEvent, const char * pGUID );
 int vscphlp_getGuidFromStringEx( vscpEventEx *pEvent, const char * pGUID );
 int vscphlp_getGuidFromStringToArray( uint8_t *pGUID, const char * pStr );
-int vscphlp_writeGuidToString( const vscpEvent *pEvent, char * pStr );
-int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char * pStr );
+int vscphlp_writeGuidToString( const vscpEvent *pEvent, char *pStr, int size );
+int vscphlp_writeGuidToStringEx( const vscpEventEx *pEvent, char *pStr, int size );
 int vscphlp_writeGuidToString4Rows( const vscpEvent *pEvent, 
                                        char *strGUID,
                                        int size );
@@ -396,13 +403,14 @@ unsigned long vscphlp_makeTimeStamp( void );
 int vscphlp_copyVSCPEvent( vscpEvent *pEventTo, 
                               const vscpEvent *pEventFrom );
 int vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
-                                       const char *pstr, 
-                                       int bUseHtmlBreak );
+											char *pstr,
+											int size,  
+											int bUseHtmlBreak );
 int vscphlp_writeVscpDataWithSizeToString(const unsigned short sizeData,
-										      const unsigned char *pData,
-										      char *pStr,
+													const unsigned char *pData,
+													char *pStr,
                                               int size,
-										      int bUseHtmlBreak,
+													int bUseHtmlBreak,
                                               int bBreak );
 int vscphlp_getVscpDataFromString( vscpEvent *pEvent, 
                                       const char *pstr );

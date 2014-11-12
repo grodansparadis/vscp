@@ -8,6 +8,7 @@
           <in>calc_mean.h</in>
           <in>main.c</in>
         </df>
+        <in>bigtest.c</in>
         <in>example1.c</in>
       </df>
       <df name="old">

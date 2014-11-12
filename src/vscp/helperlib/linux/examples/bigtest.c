@@ -1,9 +1,8 @@
-// test.cpp : Defines the entry point for the console application.
+// bigtest.c 
 //
 
-#include "stdafx.h"
-#include <locale.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "../../vscphelperlib.h"
 
@@ -12,7 +11,7 @@
 //#define TEST_RECEIVE_LOOP 
 
 // Uncomment to test variable handling
-//#define TEST_VARIABLE_HANDLING 
+#define TEST_VARIABLE_HANDLING 
 
 // Uncomment to test helpers
 #define TEST_HELPERS
@@ -20,17 +19,18 @@
 // Uncomment to test measurement functionality
 #define TEST_MEASUREMENT
 
-int _tmain(int argc, _TCHAR* argv[])
+
+int main(int argc, char* argv[])
 {
     int rv;
-    long handle1, handle2;
+    long handle1, handle2; 
 
     printf("VSCP helperlib test program\n");
     printf("===========================\n");
 
     handle1 = vscphlp_newSession();
     if (0 != handle1 ) {
-        printf( "Handle one OK %l\n", handle1 );
+        printf( "Handle one OK %ld\n", handle1 );
     }
     else {
         printf("\aError: Failed to get handle for channel 1\n");
@@ -38,7 +38,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     handle2 = vscphlp_newSession();
     if (0 != handle2 ) {
-        printf( "Handle two OK %l\n", handle2 );
+        printf( "Handle two OK %ld\n", handle2 );
     }
     else {
         printf("\aError: Failed to get handle for channel 2\n");
@@ -102,7 +102,7 @@ int _tmain(int argc, _TCHAR* argv[])
     e.vscp_type = 6;    // Temperature
     e.head = 0;
     e.sizeData = 3;
-    e.pdata = new unsigned char[3];
+    e.pdata = malloc( sizeof( unsigned char[3] ) );
     e.pdata[0] = 138;  // Six degrees Celsius from sensor 2
     e.pdata[1] = 0;
     e.pdata[2] = 6;
@@ -220,7 +220,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
     // Read event1
-    vscpEvent *pEvent = new vscpEvent;
+    vscpEvent *pEvent = malloc( sizeof( vscpEvent ) );
     pEvent->pdata = NULL;   // A must for a successful delete
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_receiveEvent( handle2, pEvent ) ) ) {
         printf( "Command success: vscphlp_receiveEvent on handle2\n" );
@@ -246,7 +246,7 @@ int _tmain(int argc, _TCHAR* argv[])
     
     
     // Read event2
-    pEvent = new vscpEvent;
+    pEvent = malloc( sizeof( vscpEvent ) );
     pEvent->pdata = NULL;   // A must for a successful delete
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_receiveEvent( handle2, pEvent ) ) ) {
         printf( "Command success: vscphlp_receiveEvent on handle2\n" );
@@ -428,7 +428,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     int cntEvents = 0;
     while ( cntEvents < 5 ) {
-        pEvent = new vscpEvent;
+        pEvent = malloc( sizeof( vscpEvent ) );
         pEvent->pdata = NULL;   // A must for a successfull delete
         if ( VSCP_ERROR_SUCCESS == vscphlp_blockingReceiveEvent( handle2, pEvent ) ) {
             printf( "Command success: vscphlp_blockingReceiveEvent on channel 2\n" );
@@ -620,7 +620,7 @@ int _tmain(int argc, _TCHAR* argv[])
     
     // Write a value to an event variable
     
-    pEvent = new vscpEvent;
+    pEvent = malloc( sizeof( vscpEvent ) );
     pEvent->head = 0;
     pEvent->vscp_class = 10;
     pEvent->vscp_type = 6;
@@ -628,7 +628,7 @@ int _tmain(int argc, _TCHAR* argv[])
     pEvent->timestamp = 0;
     memset( pEvent->GUID, 0, 16 );
     pEvent->sizeData = 4;
-    pEvent->pdata = new unsigned char[4];
+    pEvent->pdata = malloc( sizeof( unsigned char[4] ) );
     pEvent->pdata[ 0 ] = 10;
     pEvent->pdata[ 1 ] = 20;
     pEvent->pdata[ 2 ] = 30;
@@ -940,7 +940,7 @@ int _tmain(int argc, _TCHAR* argv[])
     printf("===============\n");
 
 
-    pEvent = new vscpEvent;
+    pEvent = malloc( sizeof( vscpEvent ) );
     pEvent->head = 0;
     pEvent->vscp_class = 10;
     pEvent->vscp_type = 6;
@@ -948,7 +948,7 @@ int _tmain(int argc, _TCHAR* argv[])
     pEvent->timestamp = 0;
     memset( pEvent->GUID, 0, 16 );
     pEvent->sizeData = 3;
-    pEvent->pdata = new unsigned char[3];
+    pEvent->pdata = malloc( sizeof( unsigned char[3] ) );
     pEvent->pdata[ 0 ] = 138;
     pEvent->pdata[ 1 ] = 0;
     pEvent->pdata[ 2 ] = 30;
@@ -967,19 +967,19 @@ int _tmain(int argc, _TCHAR* argv[])
  
     long readValue = vscphlp_readStringValue("0x22");
     if ( 0x22 == readValue ) {
-        printf("readStringValue correct = %d\n", readValue );
+        printf("readStringValue correct = %ld\n", readValue );
     }
     else {
-        printf("\aError:  readStringValue = %d\n", readValue );
+        printf("\aError:  readStringValue = %ld\n", readValue );
     }
 
 
     readValue = vscphlp_readStringValue("-00000000099");
     if ( -99 == readValue ) {
-        printf("readStringValue correct = %d\n", readValue );
+        printf("readStringValue correct = %ld\n", readValue );
     }
     else {
-        printf("\aError:  readStringValue = %d\n", readValue );
+        printf("\aError:  readStringValue = %ld\n", readValue );
     }
     
     
@@ -1081,11 +1081,11 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
     // Calculate CRC for event
-    unsigned short crc = vscphlp_calc_crc_Event( pEvent, false );
+    unsigned short crc = vscphlp_calc_crc_Event( pEvent, 0 );
     printf("CRC = %04X\n", crc );
 
     // Calculate CRC for event
-    crc = vscphlp_calc_crc_EventEx( pEvent, false );
+    crc = vscphlp_calc_crc_EventEx( pEvent, 0 );
     printf("CRC = %04X\n", crc );
 
     // Calculate CRC for GID array
@@ -1188,7 +1188,7 @@ int _tmain(int argc, _TCHAR* argv[])
         printf( "\aError: vscphlp_getGuidFromStringToArray\n");
     }
 
-    vscpEvent *pEvent2 = new vscpEvent;
+    vscpEvent *pEvent2 = malloc( sizeof( vscpEvent ) );
     pEvent2->pdata = NULL;
     if ( VSCP_ERROR_SUCCESS != vscphlp_convertVSCPfromEx( pEvent2, &ex4 ) ) {
         printf( "\aError: vscphlp_convertVSCPfromEx\n");
@@ -1222,7 +1222,7 @@ int _tmain(int argc, _TCHAR* argv[])
         printf( "Event does NOT pass:  vscphlp_doLevel2Filter\n");
     }
 
-    vscpEvent *pEvent3 = new vscpEvent;
+    vscpEvent *pEvent3 = malloc( sizeof( vscpEvent ) );
     pEvent3->pdata = NULL;
     canalMsg canalMsg;
     canalMsg.id = 0x0c0a0601;
@@ -1271,8 +1271,8 @@ int _tmain(int argc, _TCHAR* argv[])
     printf( "vscphlp_makeTimeStamp  %04X\n", vscphlp_makeTimeStamp() );
 
     
-    vscpEvent *pEventFrom = new vscpEvent;
-    vscpEvent *pEventTo = new vscpEvent;
+    vscpEvent *pEventFrom = malloc( sizeof( vscpEvent ) );
+    vscpEvent *pEventTo = malloc( sizeof( vscpEvent ) );
     pEventFrom->head = 0;
     pEventFrom->vscp_class = 10;
     pEventFrom->vscp_type = 6;
@@ -1280,7 +1280,7 @@ int _tmain(int argc, _TCHAR* argv[])
     pEventFrom->timestamp = 0;
     memset( pEventFrom->GUID, 0, 16 );
     pEventFrom->sizeData = 2;
-    pEventFrom->pdata = new unsigned char[2];
+    pEventFrom->pdata = malloc( sizeof( unsigned char[2] ) );
     pEventFrom->pdata[ 0 ] = 0xAA;
     pEventFrom->pdata[ 1 ] = 0x55;
 
@@ -1310,15 +1310,15 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
-    unsigned char dataArray[32];
+    unsigned char dataArray2[32];
     unsigned short sizeData;
     if ( VSCP_ERROR_SUCCESS == 
-             vscphlp_setVscpDataArrayFromString( dataArray, 
+             vscphlp_setVscpDataArrayFromString( dataArray2, 
                                        &sizeData,
                                        "1,2,3,4,5,6,0x07,0x55,3,4,0xaa,0xff,0xff" ) ) {
         printf( "OK vscphlp_setVscpDataArrayFromString size=%d Data = \n", sizeData );
         for ( int i=0; i<sizeData; i++ ) {
-            printf("%d ", dataArray[i] );
+            printf("%d ", dataArray2[i] );
         }
         printf("\n");
     }
@@ -1344,7 +1344,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
 
-    vscpEvent *pEventString1 = new vscpEvent;
+    vscpEvent *pEventString1 = malloc( sizeof( vscpEvent ) );
     pEventString1->pdata = NULL;
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_setVscpEventFromString( pEventString1, 
@@ -1401,7 +1401,7 @@ int _tmain(int argc, _TCHAR* argv[])
         printf("OK - vscphlp_getDataCodingBitArray \n");
     }
     else {
-        printf("\aError: vscphlp_getDataCodingBitArray\n", dataCoding );
+        printf("\aError: vscphlp_getDataCodingBitArray [%d]\n", dataCoding );
     }
 
     unsigned char normarry[4];
@@ -1422,7 +1422,7 @@ int _tmain(int argc, _TCHAR* argv[])
     normarry[2] = 0xFF;
     normarry[3] = 0xFF;
     unsigned long long val64 = vscphlp_getDataCodingInteger( normarry, sizeof( normarry ) );
-    printf("OK - vscphlp_getDataCodingInteger value = %ld \n", val64 );
+    printf("OK - vscphlp_getDataCodingInteger value = %lld \n", val64 );
 
     unsigned char stringarry[6];
     stringarry[0] = VSCP_DATACODING_STRING; // Data cding byte. Default unit, sensoridx=0
@@ -1444,7 +1444,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
 
-    vscpEvent *pEventMeasurement = new vscpEvent;
+    vscpEvent *pEventMeasurement = malloc( sizeof( vscpEvent ) );
     pEventMeasurement->head = 0;
     pEventMeasurement->vscp_class = 10;
     pEventMeasurement->vscp_type = 6;
@@ -1452,7 +1452,7 @@ int _tmain(int argc, _TCHAR* argv[])
     pEventMeasurement->timestamp = 0;
     memset( pEventMeasurement->GUID, 0, 16 );
     pEventMeasurement->sizeData = 4;
-    pEventMeasurement->pdata = new unsigned char[ pEventMeasurement->sizeData ];
+    pEventMeasurement->pdata = malloc( sizeof( unsigned char[ pEventMeasurement->sizeData ] ) );
     pEventMeasurement->pdata[0] = 0x89;
     pEventMeasurement->pdata[1] = 0x02;
     pEventMeasurement->pdata[2] = 0x00;
@@ -1573,10 +1573,10 @@ int _tmain(int argc, _TCHAR* argv[])
         printf("OK - vscphlp_getVSCPMeasurementAsDouble value = %lf\n", value );
     }
     else {
-        printf("Error - vscphlp_getVSCPMeasurementAsDouble value = %slf \n", value );
+        printf("Error - vscphlp_getVSCPMeasurementAsDouble value = %lf \n", value );
     }
 
-    vscpEvent *pEventfloat = new vscpEvent;
+    vscpEvent *pEventfloat = malloc( sizeof( vscpEvent ) );
     pEventfloat->head = 0;
     pEventfloat->vscp_class = 10;
     pEventfloat->vscp_type = 6;
@@ -1584,7 +1584,7 @@ int _tmain(int argc, _TCHAR* argv[])
     pEventfloat->timestamp = 0;
     memset( pEventfloat->GUID, 0, 16 );
     pEventfloat->sizeData = 8;
-    pEventfloat->pdata = new unsigned char[ pEventfloat->sizeData ];
+    pEventfloat->pdata = malloc( sizeof( unsigned char[ pEventfloat->sizeData ] ) );
     pEventfloat->pdata[0] = 234;
     pEventfloat->pdata[1] = 46;
     pEventfloat->pdata[2] = 68;
@@ -1624,7 +1624,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
 
     // free data
-    delete e.pdata;
+    free( e.pdata );
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_close( handle1 ) ) {
         printf( "Command success: vscphlp_close on channel 1\n" );
@@ -1642,4 +1642,3 @@ int _tmain(int argc, _TCHAR* argv[])
    
 	return 0;
 }
-

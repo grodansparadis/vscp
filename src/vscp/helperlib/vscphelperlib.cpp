@@ -290,7 +290,7 @@ extern "C" int vscphlp_noop( long handle )
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_clearDaemonEventQueue( long handle )
 #else
-extern "C" int vscphlp_clearInQueue( long handle )
+extern "C" int vscphlp_clearDaemonEventQueue( long handle )
 #endif
 {
 	VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -1476,7 +1476,7 @@ extern "C" int vscphlp_getVariableVSCPType( long handle, const char *pName, unsi
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
 #else
-extern "C" int vscphlp_setVariableVSCPtype( long handle, const char *pName, unsigned short vscp_type )
+extern "C" int vscphlp_setVariableVSCPType( long handle, const char *pName, unsigned short vscp_type )
 #endif
 {
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;

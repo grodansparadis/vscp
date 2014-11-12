@@ -42,6 +42,7 @@
             <file>file:/home/akhe/vscp_software/src/vscp/common/vscpremotetcpif.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/vscphelper.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/tcpipclientthread.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/vscpremotetcpif.cpp</file>
         </group>
     </open-files>
 </project-private>
