@@ -379,6 +379,7 @@ float vscp_getMeasurementAsFloat(const unsigned char *pCode,
                                     unsigned char length)								
 {
     float *pfloat = NULL;
+    float value = 0.0f;
     
     // Check pointers
     if ( NULL == pCode ) return false;
@@ -387,11 +388,12 @@ float vscp_getMeasurementAsFloat(const unsigned char *pCode,
 	//value = std::numeric_limits<float>::infinity();
 	if (length >= 5) {
 		pfloat = (float*)(pCode + 1);
+		value = *pfloat;
 		//value = pfloat[0];
 		// please insert test for (!NaN || !INF)
 	}
     
-	return *pfloat;
+	return value;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
