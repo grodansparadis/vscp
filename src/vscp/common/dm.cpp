@@ -1752,7 +1752,11 @@ bool dmElement::doActionExecute(vscpEvent *pDMEvent)
 
     //wxString cdir = wxGetCwd();
     //bool rv = wxSetWorkingDirectory(_("c:\\programdata\\vscp\\actions"));
+#ifdef WIN32
     if ( bOK && ( ::wxExecute(wxstr, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE ) ) ) {
+#else
+    if ( bOK && ( ::wxExecute(wxstr, wxEXEC_ASYNC  ) ) ) {
+#endif
         wxString wxstr = wxT("[Action] Executed: ");
         wxstr += m_actionparam;
         wxstr += _("\n");

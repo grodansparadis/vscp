@@ -245,7 +245,7 @@
 // * * * Table value List * * *
 
 // Place after menus
-#define WEB_TABLEVALUELIST_BODY_START "<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">List of values - %s</h1></div><table><tbody>"
+#define WEB_TABLEVALUELIST_BODY_START _("<br><div id=\"content\"><div id=\"header\"><h1 id=\"header\">List of values - %s</h1></div><table><tbody>")
 
 // Place before common end
 #define WEB_TABLEVALUELIST_TABLE_END "</tbody></table>"
