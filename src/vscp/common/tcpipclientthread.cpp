@@ -259,11 +259,13 @@ VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pC
 	if ( NULL == pClientItem ) {
 		pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
 		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+		return;
 	}
 
 	if ( NULL == pCtrlObject ) {
 		pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ControlObject pointer is NULL in command handeler.\n" ), DAEMON_LOGMSG_ERROR );
 		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+		return;
 	}
 
 	pClientItem->m_currentCommand = strCommand;
