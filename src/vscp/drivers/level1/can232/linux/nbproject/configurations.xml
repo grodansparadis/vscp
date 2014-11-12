@@ -5,6 +5,7 @@
       <in>can232drv.cpp</in>
       <in>can232obj.cpp</in>
       <in>test.cpp</in>
+      <in>vscpl1_can232drv.cpp</in>
     </df>
     <logicalFolder name="src" displayName="src" projectFiles="true" root="../../..">
       <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -130,6 +131,8 @@
         </ccTool>
       </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="vscpl1_can232drv.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
   </confs>

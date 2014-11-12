@@ -1,6 +1,7 @@
 // example1.c 
 //
 
+#include "stdio.h"
 #include "../../vscphelperlib.h"
 
 
@@ -9,14 +10,28 @@ int main(int argc, char* argv[])
     long handle;
     handle = vscphlp_newSession();
 
-    vscphlp_open( handle, 
-                 "192.168.1.9:9598",
-                 "admin",
-                 "secret" ); 
+    if ( VSCP_ERROR_SUCCESS == vscphlp_open( handle, 
+                 				"192.168.1.9:9598",
+                 				"admin",
+    	             			"secret" ) ) {
+	printf("\avscphlp_open: Success!\n");
+	return -1;
+    } 
+    else {
+        printf("\a * * * * * *  Failed to open connection!  * * * * * * *\n");
+    }
 
-    vscphlp_noop( handle );
+    if ( VSCP_ERROR_SUCCESS == vscphlp_noop( handle ) ) {
+       printf("vscphlp_noop: Success!\n");
+    }   
+    else {
+        printf("\a * * * * * *  Failed noop! * * * * * *  v\n");
+    }
 
-    vscphlp_close( handle );
+    if ( VSCP_ERROR_SUCCESS == vscphlp_close( handle ) ) {
+		printf("vscphlp_close: Success!\n");
+	}
+	
     vscphlp_closeSession( handle );
    
 	return 0;

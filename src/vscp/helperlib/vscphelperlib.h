@@ -397,7 +397,7 @@ int vscphlp_copyVSCPEvent( vscpEvent *pEventTo,
                               const vscpEvent *pEventFrom );
 int vscphlp_writeVscpDataToString( const vscpEvent *pEvent, 
                                        const char *pstr, 
-                                       bool bUseHtmlBreak );
+                                       int bUseHtmlBreak );
 int vscphlp_writeVscpDataWithSizeToString(const unsigned short sizeData,
 										      const unsigned char *pData,
 										      char *pStr,

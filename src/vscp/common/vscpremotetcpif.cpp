@@ -76,7 +76,7 @@ clientTcpIpWorkerThread::clientTcpIpWorkerThread() : wxThread( wxTHREAD_JOINABLE
 
 clientTcpIpWorkerThread::~clientTcpIpWorkerThread()
 {
-    ;
+    m_pvscpRemoteTcpIpIf = NULL;;
 }
 
 
@@ -96,19 +96,20 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
     switch (ev) {
 	
 		case NS_CONNECT: // connect() succeeded or failed. int *success_status
-			wxLogDebug( _("TCP/IP connect.") );
+			wxLogDebug( _("ev_handler: TCP/IP connect.") );
+			ns_send( conn, "\r\n", 2 ); 
 			pTcpIfSession->m_semConnected.Post();
             pTcpIfSession->m_bConnected = true;
             conn->flags |= NSF_USER_1;  // We should terminate 
 			break;
 
         case NS_CLOSE:
-			wxLogDebug( _("TCP/IP close.") );
+			wxLogDebug( _("ev_handler: TCP/IP close.") );
             pTcpIfSession->m_bConnected = false;
             break;
 
         case NS_RECV:
-			wxLogDebug( _("TCP/IP receive.") );
+			wxLogDebug( _("ev_handler: TCP/IP receive.") );
 			// Read new data
 			memset( rbuf, 0, sizeof( rbuf ) );
             if ( io->len ) {
@@ -156,23 +157,30 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
 
 void *clientTcpIpWorkerThread::Entry()
 {
+	wxLogDebug( _("clientTcpIpWorkerThread: Starting.") );
+	
     // Set up the net_skeleton communication engine
     ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf, clientTcpIpWorkerThread::ev_handler );
     
     if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
                                 (const char *)m_hostname.mbc_str(),
                                  m_pvscpRemoteTcpIpIf ) ) {
+		wxLogDebug( _("clientTcpIpWorkerThread: Connect failed!") );
         return NULL;
     }
+	
+	wxLogDebug( _("clientTcpIpWorkerThread: Before loop.") );
 
     // Event loop
     while ( !TestDestroy() && m_bRun ) {
         ns_mgr_poll( &m_mgrTcpIpConnection, 50 );
+		Yield();
     }
 
     // Free resources
     ns_mgr_free( &m_mgrTcpIpConnection );
 
+	wxLogDebug( _("clientTcpIpWorkerThread: Terminating.") );
     return NULL;
 }
 
@@ -203,6 +211,7 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
 
 VscpRemoteTcpIf::~VscpRemoteTcpIf()
 {	
+	doCmdClose();
     delete m_psemInputArray;
 }
 
@@ -229,11 +238,11 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
             wxLogDebug(strReply);
 
             if ( wxNOT_FOUND != strReply.Find(_("+OK")) ) {
-                wxLogDebug( _("CHECKRETURNVALUE: Command success!") );
+                wxLogDebug( _("checkReturnValue: Command success!") );
                 return true;
             }
             else if ( wxNOT_FOUND != strReply.Find(_("-OK")) ) {
-                wxLogDebug( _("CHECKRETURNVALUE: Command failed!") );
+                wxLogDebug( _("checkReturnValue: Command failed!") );
                 return false;
             }
 
@@ -241,10 +250,7 @@ bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 
         }
 
-        //wxMilliSleep( 5 );
-        if ( m_bConnected && ( NULL != m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections ) ) {
-		    ns_mgr_poll( &m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection, 5 );
-        }
+        wxMilliSleep( 50 );
 
     }
 
@@ -350,32 +356,43 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     
     // Create the worker thread
     if (wxTHREAD_NO_ERROR != m_pClientTcpIpWorkerThread->Create() ) {
+		wxLogDebug( _("Open: Unable to create thread.") );
         delete m_pClientTcpIpWorkerThread;
         return VSCP_ERROR_ERROR;
     }
 
     // Start the worker thread
     if (wxTHREAD_NO_ERROR != m_pClientTcpIpWorkerThread->Run() ) {
+		wxLogDebug( _("Open: Unable to start thread.") );
         delete m_pClientTcpIpWorkerThread;
         return VSCP_ERROR_ERROR;
     }
 
+	wxLogDebug( _("============================================================") );
     wxLogDebug( _("Connect in progress with server ") + strHostname );
+	wxLogDebug( _("============================================================") );
     
+	//while ( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections &  )
+	
 	int rv;
-	if ( wxSEMA_NO_ERROR != ( rv = m_semConnected.WaitTimeout(3000 * (m_responseTimeOut + 1 ) ) ) ) {
+	if ( wxSEMA_NO_ERROR != ( rv = m_semConnected.WaitTimeout(3 * (m_responseTimeOut + 1 ) ) ) ) {
 		m_pClientTcpIpWorkerThread->m_bRun = false;
 		wxString wxlog = wxString::Format(_("Connection failed: Code=%d - "), rv);
         wxLogDebug( wxlog+ strHostname );
-		m_pClientTcpIpWorkerThread->m_bRun = false;
+		wxMilliSleep( 500 );
 		return VSCP_ERROR_TIMEOUT;
 	}
 	
+	// Wake up 
+	//ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+    //            "\r\n",
+    //            2 ); 
+	
     // Wait for connection
     /*long start = wxGetUTCTime();
-    while ( !m_bConnected ) {
+    while ( !(m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections->flags & NSF_USER_1 ) ) {
         //if ( checkReturnValue() ) break;
-        if ( ( wxGetUTCTime() - start ) > (3 * m_responseTimeOut) ) {
+        if ( ( wxGetUTCTime() - start ) > (30 * m_responseTimeOut) ) {
             m_pClientTcpIpWorkerThread->m_bRun = false;
             wxLogDebug( _("Timout: No response from ") + strHostname );
 			wxString strLog = wxString::Format(_("diff = %ld"), ( wxGetUTCTime() - start ) );
@@ -390,10 +407,21 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     
     wxLogDebug( _("Checking server response") );
 	
-	checkReturnValue();
-
+	bool bFound = false;
+	for ( int i=0; i<1; i++ ) {	
+		if ( checkReturnValue() ) {
+			wxLogDebug( _("+OK found from server.") );
+			bFound = true;
+			break;
+		}
+		//ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
+        //        "\r\n",
+        //        2 ); 
+		wxLogDebug( _("Still waiting... %d"), i );
+	}
+	
     // The server should reply "+OK - Success"
-    bool bFound = false;
+/*    bool bFound = false;
     m_mutexArray.Lock();
     for ( uint32_t i=0; i<m_inputStrArray.Count(); i++ ) {
         if ( wxNOT_FOUND != m_inputStrArray[i].Find(_("+OK - Success")) ) {
@@ -404,13 +432,13 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
     }
     m_inputStrArray.Clear();
     m_mutexArray.Unlock();
-
+*/
     if ( !bFound ) {
         m_pClientTcpIpWorkerThread->m_bRun = false;
         wxLogDebug( _("No +OK found ") + strHostname );
         return VSCP_ERROR_CONNECTION;
     }
-
+	
     // Username
     wxstr = strUsername;
     wxstr.Trim(false);
@@ -458,9 +486,10 @@ int VscpRemoteTcpIf::doCmdClose( void )
         // We skip the check here as the interfaces closes  
 
     }
-
+	
     if ( NULL != m_pClientTcpIpWorkerThread ) {
         m_pClientTcpIpWorkerThread->m_bRun = false;
+		wxMilliSleep( 500 );
         m_pClientTcpIpWorkerThread->Wait();
         delete m_pClientTcpIpWorkerThread;
         m_pClientTcpIpWorkerThread = NULL;

@@ -50,10 +50,10 @@ static void* handle = NULL;
 #define CanalBlockingSend_Name        "CanalBlockingSend"
 #define CanalBlockingReceive_Name     "CanalBlockingReceive"
 
-static  LPFNDLL_CANALOPEN               CanalOpen_P ;
-static	LPFNDLL_CANALCLOSE		CanalClose_P;
+static  LPFNDLL_CANALOPEN			CanalOpen_P ;
+static	LPFNDLL_CANALCLOSE			CanalClose_P;
 static	LPFNDLL_CANALGETLEVEL		CanalGetLevel_P;
-static	LPFNDLL_CANALSEND		CanalSend_P;
+static	LPFNDLL_CANALSEND			CanalSend_P;
 static	LPFNDLL_CANALRECEIVE		CanalReceive_P;
 static	LPFNDLL_CANALDATAAVAILABLE	CanalDataAvailable_P;
 static	LPFNDLL_CANALGETSTATUS		CanalGetStatus_P;

@@ -37,4 +37,4 @@ install:
 	$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro /srv/vscp/variables.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro /srv/vscp/dm.xml
 	$(INSTALL_PROGRAM) -b -m744 config_examples/vscpd.conf_unix_distro /etc/vscp/vscpd.conf
-
+	echo "Your VSCP & Friends system is now installed"

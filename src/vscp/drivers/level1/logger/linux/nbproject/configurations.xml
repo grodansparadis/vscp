@@ -4,6 +4,7 @@
     <df root="." name="0">
       <in>canallogger.cpp</in>
       <in>test.cpp</in>
+      <in>vscpl1_loggerdrv.cpp</in>
     </df>
     <logicalFolder name="src" displayName="src" projectFiles="true" root="../../..">
       <logicalFolder name="common" displayName="common" projectFiles="true">
@@ -127,6 +128,8 @@
         </ccTool>
       </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="vscpl1_loggerdrv.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
   </confs>

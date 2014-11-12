@@ -115,6 +115,9 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -131,6 +134,7 @@
             </incDir>
             <preprocessorList>
               <Elem>NOEMBED_NET_SKELETON</Elem>
+              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -145,7 +149,7 @@
         </makeTool>
       </makefileType>
       <item path="../../../common/configfile.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -153,46 +157,21 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../../common/crc.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSLi</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../../common/crc8.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSLi</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../../common/dllist.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSLi</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../../common/frozen.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSLi</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../../common/md5.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -200,27 +179,14 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../../common/mongoose.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSLi</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSLi</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../../common/randPassword.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -235,7 +201,7 @@
         </ccTool>
       </item>
       <item path="../../../common/randpassword.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -243,29 +209,17 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../../common/slre.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSLi</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../../common/v7.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../common/clientlist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -273,14 +227,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/controlobject.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -288,14 +241,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/daemonvscp.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -303,14 +255,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -318,14 +269,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/devicethread.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -333,14 +283,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/dm.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -348,14 +297,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/guid.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -363,14 +311,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/interfacelist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -378,14 +325,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/mdf.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -393,14 +339,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/register.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -408,14 +353,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/tables.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -423,14 +367,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/tcpipclientthread.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -438,14 +381,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/udpclientthread.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -453,9 +395,8 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -474,7 +415,7 @@
         </ccTool>
       </item>
       <item path="../../common/userlist.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -482,14 +423,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpautomation.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -497,16 +437,15 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpclientthreads.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="../../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -514,14 +453,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -529,14 +467,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -544,14 +481,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpvariable.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -559,14 +495,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpwebserver.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
@@ -574,9 +509,8 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -588,9 +522,8 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSLi</Elem>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
-            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </ccTool>
       </folder>

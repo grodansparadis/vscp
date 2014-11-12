@@ -11,6 +11,7 @@
     </logicalFolder>
     <df root="." name="0">
       <in>test.cpp</in>
+      <in>vscpl1_xapdrv.cpp</in>
       <in>xapdrv.cpp</in>
     </df>
     <logicalFolder name="src" displayName="src" projectFiles="true" root="../../..">
@@ -109,9 +110,9 @@
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
+            <pElem>.</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>_LARGE_FILES</Elem>
@@ -169,6 +170,8 @@
         </ccTool>
       </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="vscpl1_xapdrv.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="xapdrv.cpp" ex="false" tool="1" flavor2="4">
       </item>

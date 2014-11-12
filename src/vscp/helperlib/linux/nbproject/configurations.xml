@@ -67,7 +67,7 @@
           <buildCommandWorkingDir>.</buildCommandWorkingDir>
           <buildCommand>${MAKE} -f Makefile</buildCommand>
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
-          <executablePath></executablePath>
+          <executablePath>test</executablePath>
           <cTool>
             <incDir>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>

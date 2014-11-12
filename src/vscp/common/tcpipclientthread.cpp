@@ -106,6 +106,7 @@ void *VSCPClientThread::Entry()
 
 	while ( !TestDestroy() && !m_bQuit ) {
 		ns_mgr_poll( &m_pCtrlObject->m_mgrTcpIpServer, 50 );
+		Yield();
 	}
 
 	// release the server
@@ -143,11 +144,12 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 	switch (ev) {
 	
 		case NS_CONNECT: // connect() succeeded or failed. int *success_status
+			pCtrlObject->logMsg(_T("TCP Client: Connect.\n"), DAEMON_LOGMSG_INFO);
 			break;
 
 		case NS_ACCEPT:	// New connection accept()-ed. union socket_address *remote_addr
 			{
-				pCtrlObject->logMsg(_T("TCP Client: Accept.\n"), DAEMON_LOGMSG_INFO);
+				pCtrlObject->logMsg(_T("TCP Client: --Accept.\n"), DAEMON_LOGMSG_INFO);
 
 				// We need to create a clientobject and add this object to the list
 				pClientItem = new CClientItem;
@@ -168,12 +170,12 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				pClientItem->m_strDeviceName += now.FormatISODate();
 				pClientItem->m_strDeviceName += _(" ");
 				pClientItem->m_strDeviceName += now.FormatISOTime();
-
+				
 				// Add the client to the Client List
 				pCtrlObject->m_wxClientMutex.Lock();
 				pCtrlObject->addClient( pClientItem );
 				pCtrlObject->m_wxClientMutex.Unlock();
-
+				
 				// Clear the filter (Allow everything )
 				vscp_clearVSCPFilter( &pClientItem->m_filterVSCP );
 
@@ -188,6 +190,7 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 				str += _(MSG_OK);
 				ns_send( conn, (const char*)str.mbc_str(), str.Length() );	 
 
+				pCtrlObject->logMsg(_T("TCP Client: Ready to serve client.\n"), DAEMON_LOGMSG_DEBUG);
 			}
 			break;
 

@@ -146,6 +146,14 @@ VscpworksApp::VscpworksApp()
 	// http://trac.wxwidgets.org/ticket/14302
 	wxSetEnv(wxT("UBUNTU_MENUPROXY"), wxT("0"));
 	
+	// net_skeleton generates on no receiving socket at other end
+	// we can safely dismiss.
+#ifndef WIN32	
+	//int set = 1;
+	//setsockopt(sd, SOL_SOCKET, SO_NOSIGPIPE, (void *)&set, sizeof(int));
+	signal(SIGPIPE, SIG_IGN);
+#endif	
+	
     Init();
     wxSocketBase::Initialize();
 }
