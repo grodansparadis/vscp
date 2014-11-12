@@ -1526,7 +1526,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                                     nfetchedRecords );
 
                     // Deallocate storage
-                    delete pRecords;
+                    delete[] pRecords;
 
                 }
 
@@ -5144,12 +5144,6 @@ VSCPWebServerThread::websrv_interfaces( struct mg_connection *conn )
 
     buildPage += _(WEB_COMMON_END);     // Common end code
     
-    char *ppage = new char[ buildPage.Length() + 1 ];
-    memset(ppage, 0, buildPage.Length() + 1 );
-    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
-    
-	buildPage += _(WEB_COMMON_END);     // Common end code
-    
 	// Server data
 	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
 
@@ -6800,10 +6794,6 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
      
     buildPage += _(WEB_COMMON_END);     // Common end code
     
-    char *ppage = new char[ buildPage.Length() + 1 ];
-    memset(ppage, 0, buildPage.Length() + 1 );
-    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
-
 	// Server data
 	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
     
@@ -7324,10 +7314,6 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
     buildPage += _("</form>");
     buildPage += _(WEB_COMMON_END);     // Common end code
     
-    char *ppage = new char[ buildPage.Length() + 1 ];
-    memset(ppage, 0, buildPage.Length() + 1 );
-    memcpy( ppage, buildPage.ToAscii(), buildPage.Length() );        
-
 	// Server data
 	mg_send_data( conn, buildPage.ToAscii(), buildPage.Length() );
 
