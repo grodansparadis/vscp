@@ -811,7 +811,7 @@ bool vscp_convertIntegerToNormalizedEventData( uint8_t *pdata,
     int pos = 0;
     for ( i = nZeros; i<8; i++ ) {
         pdata[ pos + 1] =  *(p+i+nZeros);
-        *psize++;
+        (*psize)++;
     }
 
     return true;
