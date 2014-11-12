@@ -617,7 +617,7 @@ bool vscp_getVSCPMeasurementFloat64AsString(const vscpEvent *pEvent, wxString& s
 
 bool vscp_getVSCPMeasurementWithZoneAsString(const vscpEvent *pEvent, wxString& strValue)
 {
-    int offset;
+    int offset = 0;
     
     // If class >= 512 and class <1024 we
 	// have GUID in front of data. 
