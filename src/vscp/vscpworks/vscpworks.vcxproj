@@ -59,7 +59,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.1/lib/vc_lib/mswu;C:\wxWidgets-3.0.1/include;C:\wxWidgets-3.0.1/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.2/lib/vc_lib/mswu;C:\wxWidgets-3.0.2/include;C:\wxWidgets-3.0.2/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -67,12 +67,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\wxWidgets-3.0.1/lib/vc_lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\wxWidgets-3.0.2/lib/vc_lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>;wxmsw30u_xrc.lib;wxmsw30u_richtext.lib;wxmsw30u_aui.lib;wxmsw30u_html.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_ribbon.lib;wxmsw30u_core.lib;wxbase30u.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxmsw30u_adv.lib;wxmsw30u_html.lib;wxmsw30u_xrc.lib;wxbase30u_net.lib;wxbase30u_xml.lib;wxexpat.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.1/lib/vc_lib/mswu;C:\wxWidgets-3.0.1/include;C:\wxWidgets-3.0.1/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.2/lib/vc_lib/mswu;C:\wxWidgets-3.0.2/include;C:\wxWidgets-3.0.2/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>
@@ -83,18 +83,18 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.1/lib/vc_lib/mswud;C:\wxWidgets-3.0.1/include;C:\wxWidgets-3.0.1/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.2/lib/vc_lib/mswud;C:\wxWidgets-3.0.2/include;C:\wxWidgets-3.0.2/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\wxWidgets-3.0.1/lib/vc_lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\wxWidgets-3.0.2/lib/vc_lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>;wxmsw30ud_xrc.lib;wxmsw30ud_richtext.lib;wxmsw30ud_aui.lib;wxmsw30ud_html.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_ribbon.lib;wxmsw30ud_core.lib;wxbase30ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxmsw30ud_adv.lib;wxmsw30ud_html.lib;wxmsw30ud_xrc.lib;wxbase30ud_net.lib;wxbase30ud_xml.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <ResourceCompile>
-      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.1/lib/vc_lib/mswud;C:\wxWidgets-3.0.1/include;C:\wxWidgets-3.0.1/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.2/lib/vc_lib/mswud;C:\wxWidgets-3.0.2/include;C:\wxWidgets-3.0.2/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
   </ItemDefinitionGroup>

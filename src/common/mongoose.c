@@ -1060,7 +1060,7 @@ int ns_mgr_poll(struct ns_mgr *mgr, int milli) {
       }
     }
   }
-  
+
   for (conn = mgr->active_connections; conn != NULL; conn = tmp_conn) {
     tmp_conn = conn->next;
     num_active_connections++;

@@ -3930,21 +3930,23 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 						pSession->pClientItem->m_clientInputQueue.GetCount() ) {
 
 					if ( REST_FORMAT_JSONP == format ) {
-						p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "func(" );
+						p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "func(", 5 );
 					}
 
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," );
-					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "info" );
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, 
+						"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
+						strlen("{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",") );
+					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "info", 4 );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
 					sprintf( wrkbuf, 
 								"%lu events requested of %lu available (unfiltered) %lu will be retrived", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
-					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wrkbuf );
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
-					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "event");
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":[" );
+					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wrkbuf, strlen(wrkbuf) );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "event", 5);
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":[", 2 );
 
 					webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
 					mg_write( conn, buf, strlen( wrkbuf ) );
@@ -3967,53 +3969,53 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 							if (vscp_doLevel2Filter(pEvent, &pSession->pClientItem->m_filterVSCP)) {
 
 								wxString str;
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "{" );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "{", 1 );
 								
 								// head
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "head");
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
-								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->head );
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "head", 4 );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+								p += json_emit_long( p, &buf[sizeof(buf)] - p, pEvent->head );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 								
 								// class
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "class");
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
-								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->vscp_class );
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "class", 5 );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+								p += json_emit_long( p, &buf[sizeof(buf)] - p, pEvent->vscp_class );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 								
 								// type
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "type");
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
-								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->vscp_type );
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "type", 4);
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+								p += json_emit_long( p, &buf[sizeof(buf)] - p, pEvent->vscp_type );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 								
 								// timestamp
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "timestamp");
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
-								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->timestamp );
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "timestamp", 9 );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+								p += json_emit_long( p, &buf[sizeof(buf)] - p, pEvent->timestamp );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 								
 								// GUID
 								vscp_writeGuidToString( pEvent, str);
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "guid");
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, str.mb_str() );
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "guid", 4 );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, str.mb_str(), str.Length() );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 								
 								// SizeData
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "sizedata");
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
-								p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->sizeData );
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "sizedata", 8 );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+								p += json_emit_long( p, &buf[sizeof(buf)] - p, pEvent->sizeData );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 								
 								// Data
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "data");
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":[" );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "data", 4);
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":[", 2 );
 								for ( unsigned int j=0; j<pEvent->sizeData; j++ ) {
-									p += json_emit_int( p, &buf[sizeof(buf)] - p, pEvent->pdata[j] );
-									p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+									p += json_emit_long( p, &buf[sizeof(buf)] - p, pEvent->pdata[j] );
+									p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 								}
-								p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "]}," );
+								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "]},", 3 );
 
 								webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
 								mg_write( conn, buf, strlen( wrkbuf ) );
@@ -4039,18 +4041,18 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					} // for
 
 					// Mark end
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "]," );
-					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "filtered");
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
-					p += json_emit_int( p, &buf[sizeof(buf)] - p, filtered );
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
-					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "errors");
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );
-					p += json_emit_int( p, &buf[sizeof(buf)] - p, errors );
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "}" );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "],", 2 );
+					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "filtered", 8 );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+					p += json_emit_long( p, &buf[sizeof(buf)] - p, filtered );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
+					p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "errors", 6 );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+					p += json_emit_long( p, &buf[sizeof(buf)] - p, errors );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "}", 1 );
 
 					if ( REST_FORMAT_JSONP == format ) {
-						p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ");" );
+						p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ");", 2 );
 					}
 
 					webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );
@@ -4288,41 +4290,45 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 				pSession->pClientItem->m_clientInputQueue.GetCount() ) {
 
 				if ( REST_FORMAT_JSONP == format ) {
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "func(" );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "func(", 5 );
 				}
 
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, 
+					"{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\",",
+					strlen( "{\"success\":true,\"code\":1,\"message\":\"success\",\"description\":\"Success\"," ) );
 					
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-name" );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getName().mb_str() );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-name", 13 );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getName().mb_str(), pvar->getName().Length() );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type" );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getVariableTypeAsString( pvar->getType() ) );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type", 13 );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );			
+				wxString wxstr = wxString::FromAscii( pvar->getVariableTypeAsString( pvar->getType() ) );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type-code" );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
-				p += json_emit_int( p, &buf[sizeof(buf)] - p, pvar->getType() );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type-code", 18 );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+				p += json_emit_long( p, &buf[sizeof(buf)] - p, pvar->getType() );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-persistence" );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->isPersistent() ? "true" : "false" );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-persistence", 20 );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
+				wxstr = pvar->isPersistent() ? _("true") : _("false");
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mb_str(), wxstr.Length() );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-calue" );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ":" );					
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, strVariableValue.mb_str() );
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "," );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-value", 14 );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, strVariableValue.mb_str(), strVariableValue.Length() );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
 				// Mark end
-				p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, "}" );
+				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, "}", 1 );
 
 				if ( REST_FORMAT_JSONP == format ) {
-					p += json_emit_raw_str( p, &buf[sizeof(buf)] - p, ");" );
+					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ");", 1 );
 				}
 
 				webserv_util_make_chunk( wrkbuf, buf, strlen( buf) );

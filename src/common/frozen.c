@@ -1,25 +1,28 @@
-// Copyright (c) 2004-2013 Sergey Lyubka <valenok@gmail.com>
-// Copyright (c) 2013 Cesanta Software Limited
-// All rights reserved
-//
-// This library is dual-licensed: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License version 2 as
-// published by the Free Software Foundation. For the terms of this
-// license, see <http://www.gnu.org/licenses/>.
-//
-// You are free to use this library under the terms of the GNU General
-// Public License, but WITHOUT ANY WARRANTY; without even the implied
-// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// Alternatively, you can license this library under a commercial
-// license, as set out in <http://cesanta.com/products.html>.
+/*
+ * Copyright (c) 2004-2013 Sergey Lyubka <valenok@gmail.com>
+ * Copyright (c) 2013 Cesanta Software Limited
+ * All rights reserved
+ *
+ * This library is dual-licensed: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation. For the terms of this
+ * license, see <http: *www.gnu.org/licenses/>.
+ *
+ * You are free to use this library under the terms of the GNU General
+ * Public License, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * Alternatively, you can license this library under a commercial
+ * license, as set out in <http://cesanta.com/products.html>.
+ */
 
-#define _CRT_SECURE_NO_WARNINGS // Disable deprecation warning in VS2005+
+#define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005+ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 #include "frozen.h"
 
 #ifdef _WIN32
@@ -123,7 +126,7 @@ static int capture_len(struct frozen *f, int token_index, const char *ptr) {
   return 0;
 }
 
-// identifier = letter { letter | digit | '_' }
+/* identifier = letter { letter | digit | '_' } */
 static int parse_identifier(struct frozen *f) {
   EXPECT(is_alpha(cur(f)), JSON_STRING_INVALID);
   TRY(capture_ptr(f, f->cur, JSON_TYPE_STRING));
@@ -144,7 +147,7 @@ static int get_utf8_char_len(unsigned char ch) {
   }
 }
 
-// string = '"' { quoted_printable_chars } '"'
+/* string = '"' { quoted_printable_chars } '"' */
 static int parse_string(struct frozen *f) {
   int n, ch = 0, len = 0;
   TRY(test_and_skip(f, '"'));
@@ -152,8 +155,7 @@ static int parse_string(struct frozen *f) {
   for (; f->cur < f->end; f->cur += len) {
     ch = * (unsigned char *) f->cur;
     len = get_utf8_char_len((unsigned char) ch);
-    //printf("[%c] [%d]\n", ch, len);
-    EXPECT(ch >= 32 && len > 0, JSON_STRING_INVALID);  // No control chars
+    EXPECT(ch >= 32 && len > 0, JSON_STRING_INVALID);  /* No control chars */
     EXPECT(len < left(f), JSON_STRING_INCOMPLETE);
     if (ch == '\\') {
       EXPECT((n = get_escape_len(f->cur + 1, left(f))) > 0, n);
@@ -167,7 +169,7 @@ static int parse_string(struct frozen *f) {
   return ch == '"' ? 0 : JSON_STRING_INCOMPLETE;
 }
 
-// number = [ '-' ] digit+ [ '.' digit+ ] [ ['e'|'E'] ['+'|'-'] digit+ ]
+/* number = [ '-' ] digit+ [ '.' digit+ ] [ ['e'|'E'] ['+'|'-'] digit+ ] */
 static int parse_number(struct frozen *f) {
   int ch = cur(f);
   TRY(capture_ptr(f, f->cur, JSON_TYPE_NUMBER));
@@ -193,7 +195,7 @@ static int parse_number(struct frozen *f) {
   return 0;
 }
 
-// array = '[' [ value { ',' value } ] ']'
+/* array = '[' [ value { ',' value } ] ']' */
 static int parse_array(struct frozen *f) {
   int ind;
   TRY(test_and_skip(f, '['));
@@ -214,37 +216,43 @@ static int compare(const char *s, const char *str, int len) {
   return i == len ? 1 : 0;
 }
 
-// value = 'null' | 'true' | 'false' | number | string | array | object
-static int parse_value(struct frozen *f) {
-  int ch = cur(f);
-  if (ch == '"') {
-    TRY(parse_string(f));
-  } else if (ch == '{') {
-    TRY(parse_object(f));
-  } else if (ch == '[') {
-    TRY(parse_array(f));
-  } else if (ch == 'n' && left(f) > 4 && compare(f->cur, "null", 4)) {
-    TRY(capture_ptr(f, f->cur, JSON_TYPE_NULL));
-    f->cur += 4;
-    capture_len(f, f->num_tokens - 1, f->cur);
-  } else if (ch == 't' && left(f) > 4 && compare(f->cur, "true", 4)) {
-    TRY(capture_ptr(f, f->cur, JSON_TYPE_TRUE));
-    f->cur += 4;
-    capture_len(f, f->num_tokens - 1, f->cur);
-  } else if (ch == 'f' && left(f) > 5 && compare(f->cur, "false", 5)) {
-    TRY(capture_ptr(f, f->cur, JSON_TYPE_FALSE));
-    f->cur += 5;
-    capture_len(f, f->num_tokens - 1, f->cur);
-  } else if (is_digit(ch) ||
-             (ch == '-' && f->cur + 1 < f->end && is_digit(f->cur[1]))) {
-    TRY(parse_number(f));
-  } else {
-    return ch == END_OF_STRING ? JSON_STRING_INCOMPLETE : JSON_STRING_INVALID;
+static int expect(struct frozen *f, const char *s, int len, enum json_type t) {
+  int i, n = left(f);
+
+  TRY(capture_ptr(f, f->cur, t));
+  for (i = 0; i < len; i++) {
+    if (i >= n) return JSON_STRING_INCOMPLETE;
+    if (f->cur[i] != s[i]) return JSON_STRING_INVALID;
   }
+  f->cur += len;
+  TRY(capture_len(f, f->num_tokens - 1, f->cur));
+
   return 0;
 }
 
-// key = identifier | string
+/* value = 'null' | 'true' | 'false' | number | string | array | object */
+static int parse_value(struct frozen *f) {
+  int ch = cur(f);
+
+  switch (ch) {
+    case '"': TRY(parse_string(f)); break;
+    case '{': TRY(parse_object(f)); break;
+    case '[': TRY(parse_array(f)); break;
+    case 'n': TRY(expect(f, "null", 4, JSON_TYPE_NULL)); break;
+    case 't': TRY(expect(f, "true", 4, JSON_TYPE_TRUE)); break;
+    case 'f': TRY(expect(f, "false", 5, JSON_TYPE_FALSE)); break;
+    case '-': case '0': case '1': case '2': case '3': case '4':
+    case '5': case '6': case '7': case '8': case '9':
+      TRY(parse_number(f));
+      break;
+    default:
+      return ch == END_OF_STRING ? JSON_STRING_INCOMPLETE : JSON_STRING_INVALID;
+  }
+
+  return 0;
+}
+
+/* key = identifier | string */
 static int parse_key(struct frozen *f) {
   int ch = cur(f);
 #if 0
@@ -260,7 +268,7 @@ static int parse_key(struct frozen *f) {
   return 0;
 }
 
-// pair = key ':' value
+/* pair = key ':' value */
 static int parse_pair(struct frozen *f) {
   TRY(parse_key(f));
   TRY(test_and_skip(f, ':'));
@@ -268,7 +276,7 @@ static int parse_pair(struct frozen *f) {
   return 0;
 }
 
-// object = '{' pair { ',' pair } '}'
+/* object = '{' pair { ',' pair } '}' */
 static int parse_object(struct frozen *f) {
   int ind;
   TRY(test_and_skip(f, '{'));
@@ -292,15 +300,29 @@ static int doit(struct frozen *f) {
   return 0;
 }
 
-// json = object
+/* json = object */
 int parse_json(const char *s, int s_len, struct json_token *arr, int arr_len) {
-  struct frozen frozen = { s + s_len, s, arr, arr_len, 0, 0 };
+  struct frozen frozen;
+
+  memset(&frozen, 0, sizeof(frozen));
+  frozen.end = s + s_len;
+  frozen.cur = s;
+  frozen.tokens = arr;
+  frozen.max_tokens = arr_len;
+
   TRY(doit(&frozen));
+
   return frozen.cur - s;
 }
 
 struct json_token *parse_json2(const char *s, int s_len) {
-  struct frozen frozen = { s + s_len, s, NULL, 0, 0, 1 };
+  struct frozen frozen;
+
+  memset(&frozen, 0, sizeof(frozen));
+  frozen.end = s + s_len;
+  frozen.cur = s;
+  frozen.do_realloc = 1;
+
   if (doit(&frozen) < 0) {
     FROZEN_FREE((void *) frozen.tokens);
     frozen.tokens = NULL;
@@ -314,8 +336,7 @@ static int path_part_len(const char *p) {
   return i;
 }
 
-const struct json_token *find_json_token(const struct json_token *toks,
-                                         const char *path) {
+struct json_token *find_json_token(struct json_token *toks, const char *path) {
   while (path != 0 && path[0] != '\0') {
     int i, ind2 = 0, ind = -1, skip = 2, n = path_part_len(path);
     if (path[0] == '[') {
@@ -326,11 +347,11 @@ const struct json_token *find_json_token(const struct json_token *toks,
         ind += path[n] - '0';
       }
       if (path[n++] != ']') return 0;
-      skip = 1;  // In objects, we skip 2 elems while iterating, in arrays 1.
+      skip = 1;  /* In objects, we skip 2 elems while iterating, in arrays 1. */
     } else if (toks->type != JSON_TYPE_OBJECT) return 0;
     toks++;
     for (i = 0; i < toks[-1].num_desc; i += skip, ind2++) {
-      // ind == -1 indicated that we're iterating an array, not object
+      /* ind == -1 indicated that we're iterating an array, not object */
       if (ind == -1 && toks[i].type != JSON_TYPE_STRING) return 0;
       if (ind2 == ind ||
           (ind == -1 && toks[i].len == n && compare(path, toks[i].ptr, n))) {
@@ -351,23 +372,29 @@ const struct json_token *find_json_token(const struct json_token *toks,
   return 0;
 }
 
-int json_emit_int(char *buf, int buf_len, long int value) {
-  return buf_len <= 0 ? 0 : snprintf(buf, buf_len, "%ld", value);
+int json_emit_long(char *buf, int buf_len, long int value) {
+  char tmp[20];
+  int n = snprintf(tmp, sizeof(tmp), "%ld", value);
+  strncpy(buf, tmp, buf_len > 0 ? buf_len : 0);
+  return n;
 }
 
 int json_emit_double(char *buf, int buf_len, double value) {
-  return buf_len <= 0 ? 0 : snprintf(buf, buf_len, "%g", value);
+  char tmp[20];
+  int n = snprintf(tmp, sizeof(tmp), "%g", value);
+  strncpy(buf, tmp, buf_len > 0 ? buf_len : 0);
+  return n;
 }
 
-int json_emit_quoted_str(char *buf, int buf_len, const char *str) {
-  int i = 0, j = 0, ch;
+int json_emit_quoted_str(char *s, int s_len, const char *str, int len) {
+  const char *begin = s, *end = s + s_len, *str_end = str + len;
+  char ch;
 
-  if (buf_len <= 1) return 0;
-
-#define EMIT(x) do { if (j < buf_len) buf[j++] = x; } while (0)
+#define EMIT(x) do { if (s < end) *s = x; s++; } while (0)
 
   EMIT('"');
-  while ((ch = str[i++]) != '\0' && j < buf_len) {
+  while (str < str_end) {
+    ch = *str++;
     switch (ch) {
       case '"':  EMIT('\\'); EMIT('"'); break;
       case '\\': EMIT('\\'); EMIT('\\'); break;
@@ -380,11 +407,91 @@ int json_emit_quoted_str(char *buf, int buf_len, const char *str) {
     }
   }
   EMIT('"');
-  EMIT(0);
+  if (s < end) {
+    *s = '\0';
+  }
 
-  return j == 0 ? 0 : j - 1;
+  return s - begin;
 }
 
-int json_emit_raw_str(char *buf, int buf_len, const char *str) {
-  return buf_len <= 0 ? 0 : snprintf(buf, buf_len, "%s", str);
+int json_emit_unquoted_str(char *buf, int buf_len, const char *str, int len) {
+  if (buf_len > 0 && len > 0) {
+    int n = len < buf_len ? len : buf_len;
+    memcpy(buf, str, n);
+    if (n < buf_len) {
+      buf[n] = '\0';
+    }
+  }
+  return len;
+}
+
+int json_emit_va(char *s, int s_len, const char *fmt, va_list ap) {
+  const char *end = s + s_len, *str, *orig = s;
+  size_t len;
+
+  while (*fmt != '\0') {
+    switch (*fmt) {
+      case '[': case ']': case '{': case '}': case ',': case ':':
+      case ' ': case '\r': case '\n': case '\t':
+        if (s < end) {
+          *s = *fmt;
+        }
+        s++;
+        break;
+      case 'i':
+        s += json_emit_long(s, end - s, va_arg(ap, long));
+        break;
+      case 'f':
+        s += json_emit_double(s, end - s, va_arg(ap, double));
+        break;
+      case 'v':
+        str = va_arg(ap, char *);
+        len = va_arg(ap, size_t);
+        s += json_emit_quoted_str(s, end - s, str, len);
+        break;
+      case 'V':
+        str = va_arg(ap, char *);
+        len = va_arg(ap, size_t);
+        s += json_emit_unquoted_str(s, end - s, str, len);
+        break;
+      case 's':
+        str = va_arg(ap, char *);
+        s += json_emit_quoted_str(s, end - s, str, strlen(str));
+        break;
+      case 'S':
+        str = va_arg(ap, char *);
+        s += json_emit_unquoted_str(s, end - s, str, strlen(str));
+        break;
+      case 'T':
+        s += json_emit_unquoted_str(s, end - s, "true", 4);
+        break;
+      case 'F':
+        s += json_emit_unquoted_str(s, end - s, "false", 5);
+        break;
+      case 'N':
+        s += json_emit_unquoted_str(s, end - s, "null", 4);
+        break;
+      default:
+        return 0;
+    }
+    fmt++;
+  }
+
+  /* Best-effort to 0-terminate generated string */
+  if (s < end) {
+    *s = '\0';
+  }
+
+  return s - orig;
+}
+
+int json_emit(char *buf, int buf_len, const char *fmt, ...) {
+  int len;
+  va_list ap;
+
+  va_start(ap, fmt);
+  len = json_emit_va(buf, buf_len, fmt, ap);
+  va_end(ap);
+
+  return len;
 }

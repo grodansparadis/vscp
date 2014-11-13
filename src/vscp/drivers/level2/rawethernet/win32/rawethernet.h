@@ -54,7 +54,10 @@
 #include "../../../../../common/dllist.h"
 #include "../../../../common/vscpremotetcpif.h"
 
+#include <list>
+#include <string>
 
+using namespace std;
 
 // Forward declarations
 class CRawEthernetTxTread;
@@ -93,6 +96,11 @@ public:
 		Flush and close the log file
 	*/
 	void close( void );
+
+	/*!
+		Add event to send queue 
+	*/
+	bool addEvent2SendQueue(const vscpEvent *pEvent);
 
 public:
 
@@ -140,7 +148,21 @@ public:
 
     /// Pointer to worker threads
     CRawEthernetTxTread *m_pthreadWorkTx;
-    CRawEthernetRxTread *m_pthreadWorkRx;
+	CRawEthernetRxTread *m_pthreadWorkRx;
+
+	// Queue
+	std::list<vscpEvent *> m_sendList;
+	std::list<vscpEvent *> m_receiveList;
+	
+	/*!
+        Event object to indicate that there is an event in the output queue
+     */
+    wxSemaphore m_semSendQueue;			
+	wxSemaphore m_semReceiveQueue;		
+	
+	// Mutex to protect the output queue
+	wxMutex m_mutexSendQueue;		
+	wxMutex m_mutexReceiveQueue;
 
 };
 

@@ -160,9 +160,8 @@ CTcpipLink::open(const char *pUsername,
 	// variables
 
 	if (m_srvLocal.doCmdOpen(m_hostLocal,
-			m_portLocal,
-			m_usernameLocal,
-			m_passwordLocal) <= 0) {
+								m_usernameLocal,
+								m_passwordLocal) <= 0) {
 #ifndef WIN32
 		syslog(LOG_ERR,
 				"%s",
@@ -321,7 +320,6 @@ CWrkSendTread::Entry()
 	
 	// Open remote interface
 	if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
-                                m_pObj->m_portRemote,
                                 m_pObj->m_usernameRemote,
                                 m_pObj->m_passwordRemote) <= 0) {
 #ifndef WIN32
@@ -355,7 +353,6 @@ CWrkSendTread::Entry()
 			::wxSleep(5);
 
 			if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
-                                        m_pObj->m_portRemote,
                                         m_pObj->m_usernameRemote,
                                         m_pObj->m_passwordRemote)) {
 #ifndef WIN32
@@ -450,7 +447,6 @@ CWrkReceiveTread::Entry()
 
 	// Open remote interface
 	if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
-                                m_pObj->m_portRemote,
                                 m_pObj->m_usernameRemote,
                                 m_pObj->m_passwordRemote) <= 0) {
 #ifndef WIN32
@@ -484,7 +480,6 @@ CWrkReceiveTread::Entry()
 			::wxSleep(5);
 
 			if (m_srvRemote.doCmdOpen(m_pObj->m_hostRemote,
-                                        m_pObj->m_portRemote,
                                         m_pObj->m_usernameRemote,
                                         m_pObj->m_passwordRemote)) {
 #ifndef WIN32
@@ -509,7 +504,7 @@ CWrkReceiveTread::Entry()
             pEvent->sizeData = 0;
             pEvent->pdata = NULL;
             
-            if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockReceive(pEvent)) {
+            if (CANAL_ERROR_SUCCESS == m_srvRemote.doCmdBlockingReceive(pEvent)) {
 
                 if ( vscp_doLevel2Filter( pEvent, 
                                         &m_pObj->m_vscpfilter) && 

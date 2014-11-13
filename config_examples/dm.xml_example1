@@ -1,9 +1,9 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
 <!-- Version 0.0.1	2009-02-01 -->
-<!-- This files holds the decion matrix for the daemon -->
+<!-- This files holds the decision matrix for the daemon -->
 <!-- The matrix consist of the following items -->
-<!-- row - one for each decion matrix row -->
+<!-- row - one for each decision matrix row -->
 <!--     mask - standard VSCP level II mask -->
 <!--     filter - standard VSCP level II filter -->
 <!--     control - standard VSCP level II 32-bit control value -->
@@ -12,7 +12,7 @@
 <!--            This method parse a string on the form YYYY:MM:DD HH:MM:SS. Both parts can -->
 <!--            be replaced with a '*' to indicate that it is a no care meaning that * * is -->
 <!--            for all dates and all time while * HH:MM:SS is for all dates but a specific times. -->
-<!--            Furter all elemenst such as YYYY, MM, DD, HH, MM, SS can be replaced with a * to -->
+<!--            All elemenst such as YYYY, MM, DD, HH, MM, SS can be replaced with a * to -->
 <!--            represent a no care for each where it's present. Each can also be given as a list -->
 <!--            seperated with '/' characters to indicate several choices. So YYYY:MM:DD HH:0/5/10;SS -->
 <!--            means the action should be performed on a specific date and hour on every full hour, five -->
@@ -39,8 +39,8 @@
         <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
 		<!-- Every zero,five and ten minutes-->
 		
-		<!-- Control code - Note that the row property enabled is doubled as the highes bit here -->	
-        <control>0x80000000</control>  <!-- enable row -->
+		<!-- Control code  -->	
+        <control>0x00000000</control>  <!-- enable row -->
         
 		<!-- Action code  -->
         <action>0x00000010</action>
@@ -49,7 +49,7 @@
         <!-- <param>0,20,3,0,0,0:1:2:3:4:5:6:7:8:9:10:11:12:13:14:15,0,1,35;bSent</param> -->
 		<param>c:\windows\notepad2.exe</param>
         
-		<!-- Comment for decion matrix row -->
+		<!-- Comment for decision matrix row -->
         <comment>This is a dumb comment</comment>
     </row>
 </dm>
