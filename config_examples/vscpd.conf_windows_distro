@@ -173,8 +173,8 @@
         <!-- The canallog driver  -->
         <driver enable="false">
             <name>logger</name>
-            <config>/tmp/canallog.txt</config>
-            <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level1\logger\win32\Release/canallogger.dll</path>
+            <config>/tmp/vscpl1_canallog.txt</config>
+            <path>c:\canallogger.dll</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -183,7 +183,7 @@
         <driver enable="false" >
             <name>can232</name>
             <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>/usr/local/lib/can232drv.so</path>
+            <path>c:/vscpl1_can232drv.dll</path>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             <flags>0</flags>
         </driver>
@@ -192,7 +192,7 @@
         <driver enable="false" >
             <name>xap</name>
             <config>9598;3639</config>
-            <path>/usr/local/lib/xapdrv.so</path>
+            <path>c:/vscpl1_xapdrv.dll</path>
             <flags>0</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -213,7 +213,7 @@
     <level2driver enable="true">	 	
 
         <!-- Level II Logger  -->
-        <driver enable="true" >
+        <driver enable="false" >
             <name>VSCPLoggerDriver1</name>	
             <path>C:\vscpl2_loggerdrv.dll</path>
             <config>C:\tmp/vscp_level2.log</config> 		
@@ -223,7 +223,7 @@
         <!-- Level II lmsensors  -->
         <driver enable="false" >
             <name>lmsensors</name>
-            <path>/usr/local/lib/vscp2drv_lmsensors.so</path>
+            <path>C:\vscp2drv_lmsensors.dll</path>
             <config>2</config>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -231,7 +231,7 @@
         <!-- Level II mqtt -->
         <driver enable="false" >
             <name>VSCPMQTTDriver1</name>
-            <path>/usr/local/lib/vscp2drv_mqtt.so</path>
+            <path>C:\vscp2drv_mqtt.dll</path>
             <config>subscribe;vscp;localhost;1883;;60</config>
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>	
@@ -239,16 +239,16 @@
         <!-- Level II tcp/ip link -->
         <driver enable="false" >                 
             <name>tcpiplink1</name>
-            <path>/usr/local/lib/vscp2drv_tcpiplink.so</path>
+            <path>C:\vscp2drv_tcpiplink.dll</path>
             <config>192.168.1.2;9598;admin;secret</config>                 
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
         <!-- Level II raw ethernet  -->
         <driver enable="false"> 		   	 			
-            <name>rawethernet1</name> 		   	 		
-            <config>eth0</config>
-            <path>/usr/local/lib/vscp2drv_raweth.so</path>
+            <name>rawethernet1</name> 
+			<path>C:\vscp2drv_raweth.dll</path>
+            <config>eth0</config>            
         </driver>
  
 

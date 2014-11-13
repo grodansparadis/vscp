@@ -1,0 +1,1346 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+
+<!-- Version 0.0.1	2009-02-01 -->
+<!-- This files holds the decion matrix for the daemon -->
+<!-- The matrix consist of the following items -->
+<!-- row - one for each decion matrix row -->
+<!--     mask - standard VSCP level II mask -->
+<!--     filter - standard VSCP level II filter -->
+<!--     control - standard VSCP level II 32-bit control value -->
+<!--     action - VSCP daemon specific 32-bit action code. -->
+<!--     time - Determines the time when the action is allwed to occur -->
+<!--            This method parse a string on the form YYYY:MM:DD HH:MM:SS. -->
+<!--		Both parts can be replaced with a '*' to indicate that it is -->
+<!--            a no care meaning that * * is for all dates and all time -->
+<!--            while * HH:MM:SS is for all dates but a specific times. -->
+<!--            Furter all elemenst such as YYYY, MM, DD, HH, MM, SS can be  -->
+<!--            replaced with a * to represent a no care for each where it's  -->
+<!--            present. Each can also be given as a list seperated with '/'  -->
+<!--            characters to indicate several choices. So  -->
+<!--            YYYY:MM:DD HH:0/5/10;SS means the action should be performed -->
+<!--		on a specific date and hour on every full hour, five minutes  -->
+<!--	 	past and ten minutes past. -->
+<dm>
+    <row enable="true" groupid="test">
+        <!-- Mask to trigger row - zero for a bit is dont care -->
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+		
+        <!-- Filter to trigger row - if mask have a one in a bit it -->
+	<!-- is compared with filter -->
+        <filter priority="-1" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        
+	<!-- Date and time from which action should trigger -->
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        
+	<!-- Date and time up to which action should trigger -->
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        
+	<!-- Date and time up to which action should trigger -->
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        
+	<!-- A specific time (or pattern) when the action should trigger -->
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+	<!-- Every zero,five and ten minutes-->
+		
+	<!-- Control code - Note that the row property enabled is doubled -->
+	<!-- as the highes bit here -->	
+        <control>0x80000000</control>  <!-- enable row -->
+        
+	<!-- Action code  -->
+        <action>0x00000010</action>
+        
+	<!-- Action parameter -->
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        
+	<!-- Comment for decion matrix row -->
+        <comment>
+	This is a dumb comment and it is very very very very very very
+	very very very very very very very very very very very very
+	very very very very very very very very very very very very
+	very very very very very very very very very very very very
+        very very very very very very very very very very very very
+	very very very very very very very very very very very very
+        very very very very very very very very very very very very 
+	very very very very very very very very very very very very
+	long comment.
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x80000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 2
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 3
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 4
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 5
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 6
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 7
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 8
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 9
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 10
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 11
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 12
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 13
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 14
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 15
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 16
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 17
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 18
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 19
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 20
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 21
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 22
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 23
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 24
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 25
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 26
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 27
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 28
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 29
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 30
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 31
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 32
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 33
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 34
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 35
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 36
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 37
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 38
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 39
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 40
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 41
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 42
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 43
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 44
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 45
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 46
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 47
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 48
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 49
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 50
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 51
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 52
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 53
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 54
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 55
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 56
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 57
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 58
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 59
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 60
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 61
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 62
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 63
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 64
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 65
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 66
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 67
+	</comment>
+    </row>
+
+    <row enable="false" groupid="dummy">
+        <mask priority="0" class="0xffff" type="0xff" 		
+		guid="00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00"></mask>
+        <filter priority="7" class="0xffff" type="5" 
+		guid="FF:EE:DD:CC:BB:AA:99:88:77:66:55:44:33:22:11:00"></filter>
+        <allowed_from>1977-01-01 00:00:00</allowed_from>
+        <allowed_to>2099-12-31 23:59:59</allowed_to>
+        <allowed_weekdays>mtwtfss</allowed_weekdays>
+        <allowed_time>*-*-* *:*:0/10/20/30/40/50</allowed_time>
+        <control>0x00000000</control>
+        <action>0x00000010</action>
+        <param>
+	/srv/vscp/actions/testaction "%isodate %isotime This is a testparam"
+	</param>
+        <comment>
+	This is row 68
+	</comment>
+    </row>
+
+</dm>

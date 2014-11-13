@@ -182,6 +182,68 @@ extern "C" int VSCPClose(long handle)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingSend
+// 
+
+extern "C" int
+VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+
+	CRawEthernet *pdrvObj = theApp->getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    
+    //vscpEvent *pEventNew = new vscpEvent;
+    //if ( NULL != pEventNew ) {
+    //    copyVSCPEvent( pEventNew, pEvent );
+    pdrvObj->addEvent2SendQueue( pEvent );
+	//}
+    //else {
+    //    return CANAL_ERROR_MEMORY;
+    //}
+    
+	return CANAL_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingReceive
+// 
+
+extern "C" int
+VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+ 
+    // Check pointer
+    if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
+    
+	CRawEthernet *pdrvObj = theApp->getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    
+    if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
+        return CANAL_ERROR_TIMEOUT;
+    }
+    
+    //VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
+
+	pdrvObj->m_mutexReceiveQueue.Lock();
+	//nodeClient = pdrvObj->m_receiveQueue.GetFirst();
+	//vscpEvent *pLocalEvent = nodeClient->GetData();
+    vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
+    pdrvObj->m_receiveList.pop_front();
+	pdrvObj->m_mutexReceiveQueue.Unlock();
+    if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
+    
+    vscp_copyVSCPEvent( pEvent, pLocalEvent );
+    //pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
+    vscp_deleteVSCPevent( pLocalEvent );
+	
+	return CANAL_ERROR_SUCCESS;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetLevel
 // 
 
@@ -384,6 +446,23 @@ void CRawEthernet::close(void)
 
 	m_bQuit = true; // terminate the thread
 	wxSleep(1); // Give the thread some time to terminate
+}
+
+
+
+//////////////////////////////////////////////////////////////////////
+// addEvent2SendQueue
+//
+
+bool 
+CRawEthernet::addEvent2SendQueue(const vscpEvent *pEvent)
+{
+    m_mutexSendQueue.Lock();
+	//m_sendQueue.Append((vscpEvent *)pEvent);
+    m_sendList.push_back((vscpEvent *)pEvent);
+	m_semSendQueue.Post();
+	m_mutexSendQueue.Unlock();
+    return true;
 }
 
 
@@ -630,7 +709,7 @@ void *CRawEthernetRxTread::Entry()
 	while (!TestDestroy() && !m_pobj->m_bQuit) {
 
 		if (CANAL_ERROR_SUCCESS ==
-				(rv = m_srv.doCmdBlockReceive(&event, 10))) {
+			(rv = m_srv.doCmdBlockingReceive(&event, 10))) {
 
 			// As we are on a different VSCP interface we need to filter the events we sent out 
 			// ourselves.

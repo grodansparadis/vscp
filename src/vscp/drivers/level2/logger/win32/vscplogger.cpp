@@ -98,9 +98,9 @@ extern "C" long VSCPOpen( const char *pUsername,
 	long h = 0;
 	
      // Initialize winsock layer
-    //WSAStartup(wVersionRequested, &wsaData);
+    WSAStartup(wVersionRequested, &wsaData);
 
-    wxSocketBase::Initialize();
+    //wxSocketBase::Initialize();
 
 	CVSCPLog *pdrvObj = new CVSCPLog();
 	if ( NULL != pdrvObj ) {
