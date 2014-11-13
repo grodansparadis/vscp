@@ -4304,8 +4304,8 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type", 13 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );			
-				wxString wxstr = pvar->getVariableTypeAsString( pvar->getType() );
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr, wxstr.Length() );
+				wxString wxstr = wxString::FromAscii( pvar->getVariableTypeAsString( pvar->getType() ) );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type-code", 18 );
@@ -4315,8 +4315,8 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-persistence", 20 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-				wxstr = pvar->isPersistent() ? "true" : "false";
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr, wxstr.Length() );
+				wxstr = pvar->isPersistent() ? _("true") : _("false");
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mb_str(), wxstr.Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-value", 14 );
