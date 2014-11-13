@@ -890,7 +890,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                 if (m_DeviceTree->GetCount()) {
                     wxTreeItemIdValue cookie;
                     wxTreeItemId item = m_DeviceTree->GetFirstChild(m_DeviceTree->GetRootItem(), cookie);
-                    if ( NULL != item.GetID() ) m_DeviceTree->SelectItem( item );
+                    if ( item.IsOk() ) m_DeviceTree->SelectItem( item );
                 }
                 ::wxEndBusyCursor();
                 break;
