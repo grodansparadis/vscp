@@ -11,10 +11,10 @@ top_builddir = ../../../..
 top_wxbuilddir = @top_wxbuilddir@
 CXX = g++
 CXXFLAGS = -g -O2  -fPIC -D__LINUX__ 
-CPPFLAGS =  -I/usr/local/lib/wx/include/gtk2-unicode-3.0 -I/usr/local/include/wx-3.0 -D_FILE_OFFSET_BITS=64 -DWXUSINGDLL -D__WXGTK__ -D NS_ENABLE_SSL -fPIC
+CPPFLAGS =  -I/usr/lib/i386-linux-gnu/wx/include/base-unicode-release-2.8 -I/usr/include/wx-2.8 -D_FILE_OFFSET_BITS=64 -D_LARGE_FILES -DwxUSE_GUI=0 -D NS_ENABLE_SSL -fPIC
 CFLAGS = -fPIC -D__LINUX__ 
 LDFLAGS = 
-EXTRALIBS =  -lmosquittopp -lssl -lpcap -lz -lrt -lm -lcrypto -lpthread -ldl -lcurses  -L/usr/local/lib -pthread   -lwx_gtk2u_xrc-3.0 -lwx_gtk2u_html-3.0 -lwx_gtk2u_qa-3.0 -lwx_gtk2u_adv-3.0 -lwx_gtk2u_core-3.0 -lwx_baseu_xml-3.0 -lwx_baseu_net-3.0 -lwx_baseu-3.0 
+EXTRALIBS =  -lmosquittopp -lssl -lpcap -lz -lrt -lm -lcrypto -lpthread -ldl  -L/usr/lib/i386-linux-gnu -pthread   -lwx_baseu_xml-2.8 -lwx_baseu_net-2.8 -lwx_baseu-2.8 
 DLFLAGS = -g -shared -fPIC
 TRIP = strip
 INSTALL_PROGRAM = ${INSTALL}
