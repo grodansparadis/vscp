@@ -396,10 +396,12 @@ long CVSCPTable::getRangeOfData( uint64_t start, uint64_t end, void *buf, uint16
     // Check low
 	if ( start < m_timestamp_first ) {
         start = m_timestamp_first;
+		midRecord = 0;
+		bFound = true;
 	}
 
 
-	while ( endRecord >= startRecord ) {
+	while ( ( endRecord >= startRecord ) && !bFound ) {
 
 		midRecord = startRecord + (endRecord - startRecord) / 2;
 
@@ -419,7 +421,7 @@ long CVSCPTable::getRangeOfData( uint64_t start, uint64_t end, void *buf, uint16
 			break;
 		}
 		// determine which subarray to search
-		else if (record.timestamp < end ) {
+		else if (record.timestamp < start ) {
 			// change min index to search upper subarray
 			startRecord = midRecord + 1;
 		}

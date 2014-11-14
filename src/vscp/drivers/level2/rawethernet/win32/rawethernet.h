@@ -1,8 +1,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 // rawethernet.h:
 //
-// This file is part is part of CANAL (CAN Abstraction Layer)
-// http://can.sourceforge.net)
+// This file is part is part of VSCP & Friends
+// http://www.vscp.org)
 //
 // Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB,
 // <akhe@grodansparadis.com>

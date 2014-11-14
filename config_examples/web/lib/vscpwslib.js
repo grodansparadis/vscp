@@ -5313,7 +5313,7 @@ vscpws_Event.prototype.clrQueue = function()
 // vscpws_variable
 //
 
-function vscpws_Variable( username,             // Username for websocket serever  
+function vscpws_Variable( username,             // Username for websocket server  
                             passwordhash,       // Password hash for websocket
                             serverurl,          // url to VSCP websocket i/f
                             variablename,       // The variable to monitor (must exist)
@@ -5682,4 +5682,248 @@ vscpws_Variable.prototype.saveVariable = function(name)
     
     if (vscpws_debug) console.log("saveVariable" + cmd);
 }
+
+
+
+
+
+
+
+//*****************************************************************************
+//                             vscpws_Table
+//*****************************************************************************
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+// vscpws_Table
+//
+
+function vscpws_Table( username,                // Username for websocket server  
+                            passwordhash,       // Password hash for websocket
+                            serverurl,          // url to VSCP websocket i/f
+                            tablename,          // The table to monitor (must exist)
+                            interval,           // Interval in seconds between updates
+                            fnDataUpdate,       // function to call when update is available
+                            start,              // Start date for dynamic tabled
+                            end )               // end date for dynamic tables
+{
+    // First set default parameter
+    this.username = username;
+    this.passwordhash = passwordhash;
+    this.TableName = tablename;
+    this.interval = interval;
+    this.fnDataUpdate = (fnDataUpdate && typeof(fnDataUpdate) === "function") ? fnDataUpdate : null;
+    this.start = (start && typeof(start) === "string") ? start : "";
+    this.end = (end && typeof(end) === "string") ? end : "";
+       
+    // Websocket for VSCP daemon communication
+    this.socket_vscp = null;
+    
+    // Flag for connected or unconnected state.
+    this.bConnected = false;
+    
+    // Unassigned variable value
+    this.value = "unassigned";
+    
+    // Set the instance name for the control
+    instanceName = "vscpws_table_" + tablename;
+    
+    // move this to global scope
+    eval(instanceName + " = this;");
+        
+    // remember instance name
+    this.instanceName = instanceName;
+        
+    // Open the socket
+    this.socket_vscp = vscpws_openSocket(serverurl);
+    
+    if (null==this.socket_vscp ) {
+        alert("Could not open websocket to VSCP server!");
+    }
+       
+    // Bind events	
+    this.socket_vscp.onmessage = this.onVSCPMessage.bind(this);	
+    this.socket_vscp.onopen = this.onVSCPOpen.bind(this);
+    this.socket_vscp.onclose = this.onVSCPClose.bind(this);
+       
+    //retrieve instance name
+    this.getInstanceName = function() {
+       return this.instanceName;
+    }
+
+    //default property
+    this.toString = function() {
+       return this.getInstanceName();
+    }     
+}
+
+//-----------------------------------------------------------------------------
+// onVSCPOpen
+//-----------------------------------------------------------------------------
+
+vscpws_Table.prototype.isOpen = function() 
+{
+    return this.bConnected;
+}
+
+//-----------------------------------------------------------------------------
+// onVSCPOpen
+//-----------------------------------------------------------------------------
+
+vscpws_Table.prototype.onVSCPOpen = function() 
+{
+    if (this.elementId) document.getElementById(this.elementId).textContent = 
+            " undefined ";
+    if (vscpws_debug) console.log('Open VSCP websocket');
+    
+    // Start monitoring
+    //this.SetInterval( this.interval );
+};
+
+//-----------------------------------------------------------------------------
+// onVSCPClose
+//-----------------------------------------------------------------------------
+
+vscpws_Table.prototype.onVSCPClose = function() 
+{
+    if (this.elementId) document.getElementById(this.elementId).textContent = 
+            " websocket connection CLOSED ";
+    if (vscpws_debug) console.log('Close VSCP websocket');
+    this.bConnected = false;
+    this.SetInterval( 0 );
+};
+
+
+//-----------------------------------------------------------------------------
+// onVSCPMessage
+//-----------------------------------------------------------------------------
+// handle VSCP websocket incoming message/event.	
+vscpws_Table.prototype.onVSCPMessage = function(msg) 
+{	 
+    if (vscpws_debug) console.log('onVSCPMessage - ' + this.instanceName + 
+                                    " " + msg.data);
+	
+    msgitems = msg.data.split(';');
+				
+    if ("+" == msgitems[0]){        // check for positive reply
+        
+        if (vscpws_debug) console.log( "Positive reply " + msgitems );
+        
+        respone = msgitems[0].split(";");
+        
+        if ( "AUTH0" == msgitems[1] ) {
+            var msg = "C;AUTH;" + this.username + ";" + 
+                    vscp_make_websocket_auth_hash( this.username, 
+                                                    this.passwordhash, 
+                                                    msgitems[2] );
+			this.socket_vscp.send(msg);
+        }
+        else if ( "AUTH1" == msgitems[1] ) {
+                   
+            // We are authenticated and ready to go to work         
+            //this.socket_vscp.send("C;" + "OPEN");
+            //this.socket_vscp.send("C;" + "GT;" + this.TableName + ";2014-11-05 00:00:00;2015-11-06 23:59:59");
+            this.bConnected = true;
+        }
+        else if ( "OPEN" == msgitems[1] ) {
+            // Open confirmation => We are connected
+            this.bConnected = true;
+        }
+        else if ( "CLOSE" == msgitems[1] ) {
+            // Close confirmation => We are NOT connected
+            this.bConnected = false;
+        }
+        // Read a value for a variable
+        else if ( "GT" == msgitems[1] ){
+            if (vscpws_debug) console.log( msg.data );
+            if ( null !== this.fnDataUpdate ) {
+				this.fnDataUpdate.call( this, msgitems );                         
+            }
+        }
+        
+    }
+    else if ("-" == msgitems[0]){   // Check for negative reply
+        if (vscpws_debug) console.log("vscpws_Table: Negative reply " + msg.data);
+        if ( null !== this.fnDataUpdate ) {
+            //this.fnCallback.call( this, false, msgitems[1], msgitems );  
+        }
+    }
+    
+}
+
+//-----------------------------------------------------------------------------
+// openConnection
+//-----------------------------------------------------------------------------
+// Open/close event traffic	
+vscpws_Table.prototype.openConnection = function() 
+{
+	this.socket_vscp.send("C;" + "open");
+}
+    
+//-----------------------------------------------------------------------------
+// closeConnection
+//-----------------------------------------------------------------------------    
+vscpws_Table.prototype.closeConnection = function() 
+{
+	this.socket_vscp.send("C;" + "close");
+}
+
+//-----------------------------------------------------------------------------
+// SetInterval
+//-----------------------------------------------------------------------------
+
+vscpws_Table.prototype.SetInterval = function(interval) 
+{
+    if ( 0 == interval  ) {
+        clearInterval( this.variableTimer );
+    }
+    else {
+        // First set default parameter
+        interval = typeof interval !== 'undefined' ? interval : 1000;
+        this.monitorInterval = interval;
+    
+        var t = this;
+        this.variableTimer = 
+            setInterval(function(){
+                        t.time4TableUpdate(
+                            t.TableName,t.socket_vscp);},interval);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// time4VariableRead
+//-----------------------------------------------------------------------------    
+vscpws_Table.prototype.time4TableUpdate = function(m,s) 
+{
+    var cmd;
+    
+    cmd = "C;GT;" + this.TableName + ";" + this.start + ";" + this.end;
+	this.socket_vscp.send(cmd);
+    if (vscpws_debug) console.log("time4TableUpdate - " + cmd);
+}
+
+
+//-----------------------------------------------------------------------------
+// GetTableData
+//-----------------------------------------------------------------------------
+
+vscpws_Table.prototype.getTableData = function( start, end ) 
+{
+    var cmd;
+    
+    cmd = "C;GT;" + this.TableName + ";" + 
+			start.toLocaleDateString() + " " + start.toLocaleTimeString() + ";" + 
+			end.toLocaleDateString() + " " + end.toLocaleTimeString();
+	this.socket_vscp.send(cmd);
+    if (vscpws_debug) console.log("GetTableData - " + cmd);
+}
+
+
+
+
 

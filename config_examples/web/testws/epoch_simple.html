@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta content="text/html; charset=ISO-8859-1" http-equiv="content-type">
+<title>VSCP vscpws_table Epoch simple</title>
+
+	
+	
+    <!-- Don't cache the page -->
+    <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
+    <META HTTP-EQUIV="Expires" CONTENT="-1">
+    <!-- https://cdnjs.com/ -->
+	
+	<script src="../lib/jquery.min.js"></script>
+    <script src="../lib/d3.min.js"></script>
+    <script src="../lib/epoch.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="../css/epoch.min.css">
+	
+    <script type="text/javascript" src="settings.js"></script>
+    <script type="text/javascript" src="../lib/md5.js"></script>
+    <script type="text/javascript" src="../lib/vscpwslib.js"></script>
+	
+    <script type="text/javascript">
+	
+    var lineChartData = [
+	{
+		label: "Temperature",
+		values: [ 
+			{time: 1370044800, y: 20}, {time: 1370044801, y: 20}, {time: 1370044802, y: 19}, {time: 1370044803, y: 18},
+			{time: 1370044804, y: 17}, {time: 1370044805, y: 16}, {time: 1370044806, y: 15}, {time: 1370044807, y: 14},
+			{time: 1370044808, y: 13}, {time: 1370044809, y: 12}, {time: 1370044810, y: 11}, {time: 1370044811, y: 10},
+			{time: 1370044812, y: 9}, {time: 1370044813, y: 8}, {time: 1370044814, y: 7}, {time: 1370044815, y: 6},
+			{time: 1370044822, y: 4}, {time: 1370044844, y: 1}, {time: 1370044848, y: 0}, {time: 1370044899, y: -3},
+		]
+	},
+
+	];
+    
+	var areaChartData = [
+		{ label: 'Layer 1', values: [ {x: 0, y: 0}, {x: 1, y: 1}, {x: 2, y: 2} ] },
+		{ label: 'Layer 2', values: [ {x: 0, y: 0}, {x: 1, y: 1}, {x: 2, y: 4} ] }
+	];
+	
+	
+	var eventReceived = function( vscphead,
+                                        vscpclass,
+                                        vscptype,
+                                        vscpobid,
+                                        vscptimestamp,
+                                        vscpguid,
+                                        vscpdata) 
+            {
+                if ((VSCP_CLASS1_MEASUREMENT == vscpclass) &&
+                    (VSCP_TYPE_MEASUREMENT_TEMPERATURE == vscptype)) {
+                
+                    var value;
+                    
+					// This event is for us
+					console.log( "Codingbyte = " + vscpdata );
+                    var sensorindex =  vscpws_getSensorIndexFromDataCoding( vscpdata[0] );
+					if ( sensorindex != 2 ) return;
+					
+                    // This event is for us
+                    value = 
+                        vscpws_toFixed(vscpws_measurementClass10Decode(vscpdata), 1);
+                                
+                    // Should be a Celsius value
+                    switch(vscpws_getDatacoding(vscpdata[0])) {
+                        case 0:   // Kelvin
+                            value = vscpws_convertKelvinToCelsius(this.value);
+                            break;
+                        case 2:   // Fahrenheit
+                            value = vscpws_convertFahrenheitToCelsius(this.value);
+                            break;
+                        default:    // Do nothing (if already Celsius)
+                            break;
+                    }
+                    
+                    var d = new Date();
+					var data = [{ time: d.getTime(), y: value }];
+                    lineBarChart1.push( data );
+					lineBarChart2.push( data );
+					areaChartInstance1.push( data );
+                }       
+            
+                return;
+            }
+            
+            var vscpeventCtrl = new vscpws_Event( vscp_setting_user,
+                                            vscp_setting_passwordhash,
+                                            vscp_setting_url,
+                                            null,
+                                            eventReceived );
+	
+</script>
+</head>
+
+<body>
+
+<h1>VSCP HTML5 websocket vscpws_Event demo of Epoch charts</h1>
+
+<a href="index.html">Go back to main page</a>
+<p>
+This demo demonstrates the vscpws_Event used with <a href="http://fastly.github.io/epoch/">Epoch charts</a>. First the 
+tables is updated with some static data  
+just to have something to show even if no data stream is available. After that the first three charts are updated 
+when received CLASS1.MEASUREMENT, Type=6, Temperature events from sensor 2. You can simulated active devices by 
+opening the event page in an other window and send temperature events using demo3/4.
+</p>
+<br><br>
+
+<h2>Bar</h2>
+<div id="lineBarChart1" class="epoch category10" style="width: 800px; height: 200px"></div>
+<script>
+  var lineBarChart1 = $('#lineBarChart1').epoch({
+    type: 'time.bar',
+	tickFormats: { time: function(d) { return new Date(time*1000).toISOString() } },
+    data: lineChartData,
+	axes: ['left', 'right', 'bottom']
+  });
+</script>
+<br>
+
+<h2>Line</h2>
+<div id="lineBarChart2" class="epoch category10" style="width: 800px; height: 200px"></div>
+<script>
+  var lineBarChart2 = $('#lineBarChart2').epoch({
+    type: 'time.line',
+	tickFormats: { time: function(d) { return new Date(time*1000).toISOString() } },
+    data: lineChartData,
+	axes: ['left', 'right', 'bottom']
+  });
+</script>
+<br>
+
+<h2>Area time</h2>
+<div id="lineAreaChart1" class="epoch category10" style="width: 800px; height: 200px"></div>
+<script>
+var areaChartInstance1 = $('#lineAreaChart1').epoch({
+    type: 'time.area',
+	tickFormats: { time: function(d) { return new Date(time*1000).toISOString() } },
+    data: lineChartData,
+    axes: ['left', 'right', 'bottom']
+});
+</script>
+<br>
+
+<h2>Area x/y</h2>
+<div id="lineAreaChart2" class="epoch category10" style="width: 800px; height: 200px"></div>
+<script>
+var areaChartInstance2 = $('#lineAreaChart2').epoch({
+    type: 'area',
+    data: areaChartData,
+    axes: ['left', 'right', 'bottom']
+});
+</script>
+<br>
+
+
+</body>
+</html>

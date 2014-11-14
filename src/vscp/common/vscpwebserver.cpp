@@ -1302,10 +1302,10 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s",
-									WEBSOCK_ERROR_MUST_HAVE_TABLE_NAME,
-									WEBSOCK_STR_ERROR_MUST_HAVE_TABLE_NAME );
+									WEBSOCK_ERROR_END_DATE_IS_WRONG,
+									WEBSOCK_STR_ERROR_END_DATE_IS_WRONG );
 			wxString strErr = 
-                      wxString::Format( _("[Websocket] The end date must be later than the star date.\n") );					
+                      wxString::Format( _("[Websocket] The end date must be later than the start date.\n") );					
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
             return MG_TRUE;
 
@@ -1379,7 +1379,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                 }
                 
                 ptblItem->m_mutexThisTable.Lock();
-                long nfetchedRecords = ptblItem->getRangeOfData(start, end, (void *)pRecords, sizeof(pRecords)  );
+                long nfetchedRecords = ptblItem->getRangeOfData(start, end, (void *)pRecords, nRecords* sizeof(struct _vscpFileRecord )  );
                 ptblItem->m_mutexThisTable.Unlock();
 
                 if ( 0 == nfetchedRecords ) {
