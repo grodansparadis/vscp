@@ -135,7 +135,7 @@ extern "C" int vscphlp_isConnected(const long handle)
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) VSCP_ERROR_INVALID_HANDLE;
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     return pvscpif->isConnected() ? VSCP_ERROR_SUCCESS : VSCP_ERROR_ERROR;
 }
@@ -150,7 +150,7 @@ int vscphlp_doCommand( long handle, const char * cmd )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) VSCP_ERROR_INVALID_HANDLE;
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -169,7 +169,7 @@ int vscphlp_checkReply( long handle, int bClear )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) VSCP_ERROR_INVALID_HANDLE;
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
@@ -187,7 +187,7 @@ int vscphlp_clearInputQueue( long handle )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) VSCP_ERROR_INVALID_HANDLE;
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     pvscpif->doClrInputQueue();
     return VSCP_ERROR_SUCCESS;
@@ -208,7 +208,7 @@ extern "C" long vscphlp_openInterface( long handle,
 {	
 	wxString strInterface;
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) VSCP_ERROR_INVALID_HANDLE;
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     strInterface = wxString::FromUTF8( pInterface );
     return pvscpif->doCmdOpen( strInterface, flags );
@@ -234,7 +234,7 @@ extern "C" int vscphlp_open( const long handle,
     wxString strPassword;
 
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
-	if ( NULL == pvscpif ) VSCP_ERROR_INVALID_HANDLE;
+	if ( NULL == pvscpif ) return VSCP_ERROR_INVALID_HANDLE;
 
     strHostname = wxString::FromUTF8( pHostname );
     strUsername = wxString::FromUTF8( pUsername );
