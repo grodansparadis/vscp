@@ -18,7 +18,7 @@ You can use ./configure --help to get help about available switches. Use --enabl
 of wxWidgets and use --enable-unicode to use the unicode version (default=. The use of the unicode version is recommended.
 
 To compile the package you need the wxWidgets libraries. The toolkit can be found at 
-http://www.wxwidgets.org. Either use the graphical version GTK2 (libgtk3.0-dev/libgtk2.0-dev) 
+http://www.wxwidgets.org. Either use the graphical version GTK2 (libgtk3.0-dev) 
 of the library (if you want to build the graphical components == vscpworks) or the base version.
 
 If you want the MQTT driver to build you need to install and build the mosquitto-1.1.3.tar.gz or later 
