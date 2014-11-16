@@ -129,7 +129,7 @@ void *deviceThread::Entry()
 
 	// Load dynamic library
 	if (!m_wxdll.Load(m_pDeviceItem->m_strPath, wxDL_LAZY)) {
-		m_pCtrlObject->logMsg(_T("Unable to load dynamic library.\n"), DAEMON_LOGMSG_CRITICAL);
+		m_pCtrlObject->logMsg(_("Unable to load dynamic library.\n"), DAEMON_LOGMSG_CRITICAL);
 		return NULL;
 	}
     

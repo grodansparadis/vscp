@@ -92,15 +92,24 @@
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>../../../../daemon/linux/vscpd</executablePath>
           <cTool>
+            <incDir>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
+              <pElem>.</pElem>
+            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
               <Elem>__LINUX__</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </ccTool>
@@ -110,58 +119,29 @@
       </item>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
-          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
-          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-            <pElem>.</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </cTool>
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
             tool="0"
             flavor2="2">
         <cTool flags="1">
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
-          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
           </preprocessorList>
         </cTool>
@@ -173,35 +153,29 @@
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -211,13 +185,12 @@
             flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -229,9 +202,7 @@
             <pElem>/usr/local/include/wx-2.8</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
             <Elem>__PIC__=2</Elem>
-            <Elem>__WXDEBUG__</Elem>
             <Elem>__pic__=2</Elem>
           </preprocessorList>
         </ccTool>
@@ -239,16 +210,23 @@
       <item path="../common/log.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
+      <folder path="0">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
       <folder path="src">
         <ccTool>
           <incDir>
@@ -258,49 +236,21 @@
           </incDir>
         </ccTool>
       </folder>
-      <folder path="src/common">
-        <ccTool>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </ccTool>
-      </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="vscpl2_loggerdrv.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="vscpl2logger.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
-          </incDir>
-          <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
-          </preprocessorList>
-        </ccTool>
       </item>
     </conf>
   </confs>

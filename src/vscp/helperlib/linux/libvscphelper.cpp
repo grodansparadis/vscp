@@ -61,7 +61,7 @@ void _init()
 
 void _fini()
 {
-    wxLogDebug("finishing");	
+    wxLogDebug(_("finishing"));	
 	wxUninitialize();
 }
 
@@ -72,7 +72,7 @@ void _fini()
 
 CVSCPLApp::CVSCPLApp()
 {
-	wxLogDebug("application constructor");
+	wxLogDebug(_("application constructor"));
 	
     m_instanceCounter = 0;
     pthread_mutex_init(&m_objMutex, NULL);
@@ -83,7 +83,7 @@ CVSCPLApp::CVSCPLApp()
     }
 
     UNLOCK_MUTEX(m_objMutex);
-	wxLogDebug("constructed");
+	wxLogDebug(_("constructed"));
 }
 
 CVSCPLApp::~CVSCPLApp()
