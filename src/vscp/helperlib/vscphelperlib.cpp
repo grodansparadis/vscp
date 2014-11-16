@@ -1094,8 +1094,6 @@ extern "C" int WINAPI EXPORT vscphlp_setVariableMeasurement( long handle, const 
 extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, char *pValue )
 #endif
 { 
-    bool rv;
-
     if ( NULL == pName ) return VSCP_ERROR_PARAMETER;
     if ( NULL == pValue ) return VSCP_ERROR_PARAMETER;
 
@@ -1108,8 +1106,6 @@ extern "C" int vscphlp_setVariableMeasurement( long handle, const char *pName, c
     wxString name = wxString::FromAscii( pName );
     wxString strValue = wxString::FromAscii( pValue );
     return pvscpif->setVariableMeasurement( name, strValue );
-
-    return rv;
 };
 
 /*!
