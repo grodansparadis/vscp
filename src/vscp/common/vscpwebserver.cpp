@@ -8391,7 +8391,8 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
         ptblItem = *iter; 
 
         buildPage += wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                                (const char *)wxString( _("/vscp/tablelist?tblname=") + wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ).mbc_str() );
+                                            (const char *)wxString( _("/vscp/tablelist?tblname=") + 
+											wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ).c_str()  );
         buildPage += _("<td><b>");
         buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable );
         buildPage += _("</b><br>");
@@ -8420,7 +8421,9 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
         buildPage += _(" <b>Unit :</b> ");
         buildPage += wxString::Format(_("%d"), ptblItem->m_vscpFileHead.vscp_unit );
         struct _vscptableInfo info;
+		ptblItem->m_mutexThisTable.Lock();
         ptblItem->getInfo( &info );
+		ptblItem->m_mutexThisTable.Unlock();
         buildPage += _("<br><b>Min-value:</b> ");
         buildPage += wxString::Format(_("%g"), info.minValue );
         buildPage += _(" <b>Max-value:</b> ");
@@ -8448,7 +8451,7 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
 
         buildPage += _("</tr>");
         ptblItem = NULL;
-    }
+    } // for
     pObject->m_mutexTableList.Unlock();
     
     
@@ -8499,9 +8502,9 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
         tblName = wxString::FromUTF8( buf );
 	}
 
+	pObject->m_mutexTableList.Lock();
     bool bFound = false;
     CVSCPTable *ptblItem = NULL;
-    pObject->m_mutexTableList.Lock();
     listVSCPTables::iterator iter;
     for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
         ptblItem = *iter; 
@@ -8510,7 +8513,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
 		    break;
 		}
     }
-
+	pObject->m_mutexTableList.Unlock();
  
     // Navigation button
 	if ( mg_get_var( conn, "navbtn", buf, sizeof( buf ) ) > 0 ) { 

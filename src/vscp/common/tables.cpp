@@ -106,6 +106,7 @@ CVSCPTable::~CVSCPTable( void )
 
 int CVSCPTable::init() 
 {
+	// Protect
     int rv = VSCP_ERROR_SUCCESS;
 	struct _vscpFileRecord record;
 
@@ -129,7 +130,9 @@ int CVSCPTable::init()
 		}
 		
 		// Write header
-		if ( sizeof( m_vscpFileHead ) != fwrite( &m_vscpFileHead, 1, sizeof(m_vscpFileHead), m_ft ) ) {
+		if ( sizeof( m_vscpFileHead ) != fwrite( &m_vscpFileHead, 
+											1, 
+											sizeof(m_vscpFileHead), m_ft ) ) {
             return VSCP_ERROR_ERROR;
         }
 
@@ -138,7 +141,9 @@ int CVSCPTable::init()
 			_vscpFileRecord rec;
 			memset( &rec, 0, sizeof(_vscpFileRecord) ); 
             for ( int i=0; i<m_vscpFileHead.staticSize; i++ ) {
-			    if ( sizeof(_vscpFileRecord) != fwrite( &rec, 1, sizeof(_vscpFileRecord), m_ft ) ) {
+			    if ( sizeof(_vscpFileRecord) != fwrite( &rec, 
+													1, 
+													sizeof(_vscpFileRecord), m_ft ) ) {
                     return VSCP_ERROR_ERROR;
                 }
             }
@@ -243,9 +248,6 @@ long CVSCPTable::fdGetFileSize( const char *path )
 int CVSCPTable::readMainHeader( void )
 {
 	int rv;
-
-    // Protect
-    wxMutexLocker lock( m_mutexThisTable );
 	
 	// File must be open
 	if ( NULL == m_ft ) return VSCP_ERROR_ERROR;
@@ -266,9 +268,6 @@ int CVSCPTable::writeMainHeader( void )
 {
     int rv;
 
-    // Protect
-    wxMutexLocker lock( m_mutexThisTable );
-
 	// File must be open
 	if ( NULL == m_ft ) return VSCP_ERROR_ERROR;
 
@@ -288,9 +287,6 @@ int CVSCPTable::logData( uint64_t timestamp, double measurement )
 {
 	int rv = VSCP_ERROR_SUCCESS;
 	struct _vscpFileRecord record;
-
-    // Protect
-    wxMutexLocker lock( m_mutexThisTable );
 
 	// File must be open
 	if ( NULL == m_ft ) return VSCP_ERROR_ERROR;
@@ -353,9 +349,6 @@ long CVSCPTable::getRangeOfData( uint64_t start, uint64_t end, void *buf, uint16
 	long endRecord = m_number_of_records-1;
 	long midRecord;
 	struct _vscpFileRecord *p = (struct _vscpFileRecord *)buf;
-
-    // Protect
-    wxMutexLocker lock( m_mutexThisTable );
     
     wxDateTime dtStart, dtEnd, dtsearchStart, dtSearchEnd;
     dtStart.Set( (time_t)m_timestamp_first );
@@ -478,9 +471,6 @@ long CVSCPTable::getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *b
     struct tm *timeEnd;
     time ( &rawtime );
 
-    // Protect
-    wxMutexLocker lock( m_mutexThisTable );
-
     timeStart = localtime( &rawtime );
     timeStart->tm_hour = wxStart.GetHour();
     timeStart->tm_min = wxStart.GetMinute();
@@ -509,9 +499,6 @@ long CVSCPTable::getRangeOfData( wxDateTime& wxStart, wxDateTime& wxEnd, void *b
 long CVSCPTable::getRangeOfData( uint32_t startpos, uint16_t count, struct _vscpFileRecord *buf )
 {
     uint16_t i;
-
-    // Protect
-    wxMutexLocker lock( m_mutexThisTable );
 
     if ( VSCP_TABLE_DYNAMIC == m_vscpFileHead.type ) {
         // Seek the start pos
@@ -562,8 +549,6 @@ long CVSCPTable::getRangeOfData( uint32_t startpos, uint16_t count, struct _vscp
 
 long CVSCPTable::getStaticData( void *buf, uint16_t size )
 {
-    // Protect
-    wxMutexLocker lock( m_mutexThisTable );
 
 	// File must be open
 	if ( NULL == m_ft ) return -1;
@@ -600,9 +585,6 @@ int CVSCPTable::getInfo( struct _vscptableInfo *pInfo, uint64_t from, uint64_t t
 {
 	bool bFirst =true;
 	_vscpFileRecord record;
-
-    // Protect
-    wxMutexLocker lock( m_mutexThisTable );
 
 	if ( NULL == pInfo ) return 0;
 

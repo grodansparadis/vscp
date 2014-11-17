@@ -95,19 +95,13 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
-        <cTool flags="1">
-        </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="0">
-        <cTool flags="1">
-        </cTool>
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
             tool="0"
             flavor2="0">
-        <cTool flags="1">
-        </cTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -166,8 +160,6 @@
       <item path="readsock.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="socketcan.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
-        </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
@@ -177,8 +169,6 @@
         </cTool>
       </item>
       <item path="vscp2drv_socketcan.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
-        </ccTool>
       </item>
     </conf>
   </confs>

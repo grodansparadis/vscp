@@ -538,22 +538,23 @@ bool CControlObject::init(wxString& strcfgfile)
 	
 	// Level II Driver Password
     pw.generatePassword(32, buf);
+	m_driverPassword = wxString::FromAscii( buf );
 	
 	wxString driverhash = m_driverUsername + _(":") +
 							m_authDomain + _(":") +
-							wxString::FromAscii( buf );
+							m_driverPassword;
 	
 	memset( buf, 0, sizeof( buf ) );
 	strncpy( buf,(const char *)driverhash.mbc_str(), driverhash.Length() );
     Cmd5 md5( (unsigned char *)buf );
-    m_driverPassword = wxString::FromAscii(buf);
+    
 
-    m_userList.addUser(m_driverUsername,
-            wxString::FromAscii(md5.getDigest()),
-            _T("admin"),
-            NULL,
-            _T(""),
-            _T(""));
+    m_userList.addUser( m_driverUsername,
+							wxString::FromAscii( md5.getDigest() ),
+							_("admin"),
+							NULL,
+							_(""),
+							_("") );
 
     // Read configuration
     if (!readConfiguration(strcfgfile)) {
@@ -685,6 +686,7 @@ bool CControlObject::run(void)
     EventShutDown.pdata = NULL;
 
 	// Init table files
+	m_mutexTableList.Lock();
 	listVSCPTables::iterator iter;
 	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
 	{
@@ -693,6 +695,7 @@ bool CControlObject::run(void)
 		pTable->init();
         pTable->m_mutexThisTable.Unlock();
 	}
+	m_mutexTableList.Unlock();
 
     // We need to create a clientItem and add this object to the list
     CClientItem *pClientItem = new CClientItem;
@@ -840,12 +843,14 @@ bool CControlObject::cleanup(void)
     stopDaemonWorkerThread();
 
 	// kill table files
+	m_mutexTableList.Lock();
 	listVSCPTables::iterator iter;
 	for (iter = m_listTables.begin(); iter != m_listTables.end(); ++iter)
 	{
 		CVSCPTable *pTable = *iter;
 		delete pTable;
 	}
+	m_mutexTableList.Unlock();
 	
     // Close logfile
     if ( m_bLogGeneralEnable ) {
@@ -2281,7 +2286,9 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
 													vscp_readStringValue( subchild->GetAttribute( wxT("vscpclass"), wxT("10") ) ), 
 													vscp_readStringValue( subchild->GetAttribute( wxT("vscptype"), wxT("6") ) ),
 													vscp_readStringValue( subchild->GetAttribute( wxT("vscpunit"), wxT("0") ) ) );
+						m_mutexTableList.Lock();
 						m_listTables.Append( pTable ) ;
+						m_mutexTableList.Unlock();
 					}
                 }
 

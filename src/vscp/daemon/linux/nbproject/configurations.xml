@@ -633,8 +633,6 @@
         </ccTool>
       </folder>
       <item path="vscpd.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
-        </ccTool>
       </item>
     </conf>
   </confs>

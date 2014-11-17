@@ -60,6 +60,7 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 
+#include "../../../../common/vscp.h"
 #include "../../../../common/vscphelper.h"
 #include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/vscp_type.h"
@@ -132,9 +133,9 @@ Csocketcan::open(const char *pUsername,
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen(m_host,
-			m_username,
-			m_password) <= 0) {
+	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
+												m_username,
+												m_password) <= 0) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
@@ -187,6 +188,8 @@ Csocketcan::open(const char *pUsername,
 	if (m_srv.getVariableString(strName, &str)) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
+	
+	m_srv.doClrInputQueue();
 
 	// start the workerthread
 	m_pthreadWorker = new CSocketCanWorkerTread();
@@ -194,7 +197,8 @@ Csocketcan::open(const char *pUsername,
 		m_pthreadWorker->m_pObj = this;
 		m_pthreadWorker->Create();
 		m_pthreadWorker->Run();
-	} else {
+	} 
+	else {
 		rv = false;
 	}
 

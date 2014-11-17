@@ -584,8 +584,7 @@ void *deviceThread::Entry()
         
 		// Username, password, host and port can be set in configuration file. Read in them here
 		// if they are.
-		wxString strHost(_("localhost:8080"));
-		short port = 9598;
+		wxString strHost(_("localhost:9598"));
 
 		wxStringTokenizer tkz(m_pDeviceItem->m_strParameter, _(";"));
 		if (tkz.HasMoreTokens()) {
@@ -625,26 +624,16 @@ void *deviceThread::Entry()
 				}
 			}
 
-			// Check if port is specified in the configuration file
-			pVar = m_pCtrlObject->m_VSCP_Variables.find(m_pDeviceItem->m_strName + _("_port"));
-			if (NULL != pVar) {
-				int cfgport;
-				if (VSCP_DAEMON_VARIABLE_CODE_INTEGER == pVar->getType()) {
-					pVar->getValue((int *) &cfgport);
-					port = cfgport;
-				}
-            }
-
         }
 
         // Open up the driver
         m_pDeviceItem->m_openHandle =
-                m_pDeviceItem->m_proc_VSCPOpen( m_pCtrlObject->m_driverUsername.mb_str(wxConvUTF8),
-                m_pCtrlObject->m_driverPassword.mb_str(wxConvUTF8),
-                strHost.mb_str(wxConvUTF8),
-                port,
-                (const char *)m_pDeviceItem->m_strName.mb_str(wxConvUTF8),
-                (const char *)m_pDeviceItem->m_strParameter.mb_str(wxConvUTF8));
+                m_pDeviceItem->m_proc_VSCPOpen( m_pCtrlObject->m_driverUsername.mbc_str(),
+                (const char *)m_pCtrlObject->m_driverPassword.mbc_str(),
+                (const char *)strHost.mbc_str(),
+                0,
+                (const char *)m_pDeviceItem->m_strName.mbc_str(),
+                (const char *)m_pDeviceItem->m_strParameter.mbc_str());
 
         /////////////////////////////////////////////////////////////////////////////
         // Device write worker thread

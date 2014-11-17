@@ -135,8 +135,8 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
                     
                     }
                     // Add to array 
-					wxString wxlog = wxString::Format(_("TCP/IP line: %s"), 
-										(const char *)strCmdGo.mbc_str() );
+					wxString wxlog = wxString::Format(_("TCP/IP line: %s "), 
+										(const char *)strCmdGo.c_str() );
 					wxLogDebug( wxlog );
                     pTcpIfSession->m_mutexArray.Lock();
 				    pTcpIfSession->m_inputStrArray.Add( strCmdGo );

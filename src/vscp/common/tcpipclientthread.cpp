@@ -421,7 +421,7 @@ REPEAT_COMMAND:
     //*********************************************************************
     else if ( 0 == pClientItem->m_currentCommandUC.Find ( _( "PASS " ) ) ) {
         if ( !handleClientPassword( conn, pCtrlObject ) ) {
-            pCtrlObject->logMsg ( _( "[TCP/IP Clinet] Command: Password. Not authorized.\n" ), DAEMON_LOGMSG_INFO );
+            pCtrlObject->logMsg ( _( "[TCP/IP Clinet] Command: Password. Not authorized.\n" ), DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 			conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
 			return;
         }
@@ -796,7 +796,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
     if ( !pClientItem->m_pUserItem->isUserAllowedToSendEvent( event.vscp_class, event.vscp_type ) ) {
         wxString strErr = 
                         wxString::Format( _("[tcp/ip Client] User [%s] not allowed to send event class=%d type=%d.\n"), 
-                                                (const char *)pClientItem->m_pUserItem->m_user.wc_str(), 
+                                                (const char *)pClientItem->m_pUserItem->m_user.mbc_str(), 
                                                 event.vscp_class, event.vscp_type );			
 		
 	    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
@@ -1438,14 +1438,10 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
     char buf[2148];
     memset( buf, 0, sizeof( buf ) );
 	strncpy( buf, (const char *)pClientItem->m_UserName.mbc_str(), pClientItem->m_UserName.Length() );
-	strncat( buf, ":", sizeof( buf ) );
+	strncat( buf, ":", 1 );
 	strncat( buf, (const char *)pCtrlObject->m_authDomain.mbc_str(), pCtrlObject->m_authDomain.Length() );
-	strncat( buf, ":", sizeof( buf ) );
-    strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
-	//wxString wrk = pClientItem->m_UserName + _(":");
-	//wrk += pCtrlObject->m_authDomain + _(":");
-	//wrk += strPassword;
-	//strcpy( buf, (const char *)wrk.c_str() );
+	strncat( buf, ":", 1 );
+    strncat( (char *)buf, strPassword.mbc_str(), strPassword.Length() );
 	
     Cmd5 md5 ( (unsigned char *)buf );
     if ( NULL == md5.getDigest() ) return false; 
@@ -1474,7 +1470,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
         return false;
     }
 
-	// Get remte address
+	// Get remote address
 	struct sockaddr_in cli_addr;
 	socklen_t clilen = 0;    
     clilen = sizeof (cli_addr);
@@ -1490,7 +1486,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     if ( !bValidHost ) {
 		wxString strErr = wxString::Format(_("[TCP/IP Client] Host [%s] not allowed to connect.\n"), 
-			(const char *)remoteaddr.wc_str() );
+			(const char *)remoteaddr.mbc_str() );
 		
 		pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         ns_send( conn,  MSG_INVALID_REMOTE_ERROR, strlen ( MSG_INVALID_REMOTE_ERROR ) );
@@ -1504,8 +1500,8 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
     wxString strErr = 
         wxString::Format( _("[TCP/IP Client] Host [%s] User [%s] allowed to connect.\n"), 
-							(const char *)remoteaddr.wc_str(), 
-                            (const char *)pClientItem->m_UserName.wc_str() );
+							(const char *)remoteaddr.c_str(),
+                            (const char *)pClientItem->m_UserName.c_str() );
 
 	pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
 

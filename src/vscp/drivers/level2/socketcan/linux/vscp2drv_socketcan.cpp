@@ -206,11 +206,11 @@ VSCPOpen(const char *pUsername,
 	if (NULL != pdrvObj) {
 
 		if (pdrvObj->open(pUsername,
-				pPassword,
-				pHost,
-				port,
-				pPrefix,
-				pParameter)) {
+							pPassword,
+							pHost,
+							port,
+							pPrefix,
+							pParameter)) {
 
 			if (!(h = theApp.addDriverObject(pdrvObj))) {
 				delete pdrvObj;
