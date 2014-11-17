@@ -3708,6 +3708,7 @@ vscpws_simpleTextEvent.prototype.onVSCPMessage = function(msg)
                 vscpws_units[vscptype][vscpws_getDatacodingUnit(vscpdata[0])],
                 vscpws_getDatacodingUnit(vscpdata[0]),
                 vscpws_getSensorIndexFromDataCoding(vscpdata[0]));
+            document.getElementById(this.elementId).style.color = 'green';
             
         } 
         // Floating point
@@ -3822,16 +3823,27 @@ vscpws_simpleTextEvent.prototype.closeConnection = function()
 	this.socket_vscp.send("C;" + "close");
 }
 
+//-----------------------------------------------------------------------------
+// setTextValidityExpire
+//-----------------------------------------------------------------------------
 
+vscpws_simpleTextEvent.prototype.setTextValidityExpire = function(interval)
+{
+    var t = this;
+    // First set default parameter
+    interval = typeof interval !== 'undefined' ? interval : 90000;
+    setInterval(function(){t.time4TextValidityExpire();}, interval);
+}
 
+//-----------------------------------------------------------------------------
+// time4TextValidityExpire
+//-----------------------------------------------------------------------------
 
-
-
-
-
-
-
-
+vscpws_simpleTextEvent.prototype.time4TextValidityExpire = function()
+{
+    if (vscpws_debug) console.log("time4TextValidityExpire");
+    document.getElementById(this.elementId).style.color = 'gray';
+}
 
 // ----------------------------------------------------------------------------
 
