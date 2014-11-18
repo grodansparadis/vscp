@@ -297,7 +297,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
     wxString strPassword;
     wxString strHostname;
     
-    flags=flags;	// supress warning
+    TCPIP_UNUSED(flags);
     
     wxLogDebug( _("strInterface = ") );
     wxLogDebug( strInterface ); 
