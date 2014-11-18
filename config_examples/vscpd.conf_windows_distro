@@ -66,8 +66,8 @@
         <!-- Set to false to disable.                                      -->
         <!-- Set path to the decision matrix file location                 -->
         <!-- Decision matrix logging: loglevel="minor|normal|extra|debug"  -->
-        <!-- enableogging="true:false" to enable/disable dm logging        -->
-        <!-- logpath is ptah to logfile.                                   -->
+        <!-- enablogging="true:false" to enable/disable dm logging         -->
+        <!-- logpath is path to logfile.                                   -->
         
         <dm enable="true" 
                 path="c:/programdata/vscp/dm.xml" 
@@ -80,7 +80,7 @@
         <!-- Path to variables storage.                     -->
 
 
-        <variables enable="true" path="c:/tmp/variables.xml" autosave="5" />
+        <variables enable="true" path="c:/programdata/vscp/variables.xml" autosave="5" />
 
         <!-- Set GUID for daemon                               -->
         <!-- Read more about GUID's in Specification section 4 -->
@@ -104,7 +104,7 @@
         <webserver enable="true" 
                     webrootpath="C:\programdata\vscp\web"
                     port="8080"
-                    path_cert=""
+                    path_cert="c:\programdata\vscp\certs\ssl_cert2.pem"
                     authdomain="mydomain.com"
                     cgi_interpreter=""
                     cgi_pattern=""
@@ -173,8 +173,8 @@
         <!-- The canallog driver  -->
         <driver enable="false">
             <name>logger</name>
-            <config>/tmp/vscpl1_canallog.txt</config>
-            <path>c:\canallogger.dll</path>
+            <config>/tmp/canallog.txt</config>
+            <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level1\logger\win32\Release/canallogger.dll</path>
             <flags>1</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -183,7 +183,7 @@
         <driver enable="false" >
             <name>can232</name>
             <config>/dev/ttyS0;19200;0;0;125</config>
-            <path>c:/vscpl1_can232drv.dll</path>
+            <path>/usr/local/lib/can232drv.so</path>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
             <flags>0</flags>
         </driver>
@@ -192,7 +192,7 @@
         <driver enable="false" >
             <name>xap</name>
             <config>9598;3639</config>
-            <path>c:/vscpl1_xapdrv.dll</path>
+            <path>/usr/local/lib/xapdrv.so</path>
             <flags>0</flags>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -215,7 +215,7 @@
         <!-- Level II Logger  -->
         <driver enable="false" >
             <name>VSCPLoggerDriver1</name>	
-            <path>C:\vscpl2_loggerdrv.dll</path>
+            <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level2\logger\win32\Debug\vscpl2_loggerdrv.dll</path>
             <config>C:\tmp/vscp_level2.log</config> 		
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -223,32 +223,32 @@
         <!-- Level II lmsensors  -->
         <driver enable="false" >
             <name>lmsensors</name>
-            <path>C:\vscp2drv_lmsensors.dll</path>
+            <path>/usr/local/lib/vscp2drv_lmsensors.so</path>
             <config>2</config>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
-        <!-- Level II mqtt -->
+        <!-- Level II mqtt  -->
         <driver enable="false" >
             <name>VSCPMQTTDriver1</name>
-            <path>C:\vscp2drv_mqtt.dll</path>
+            <path>/usr/local/lib/vscp2drv_mqtt.so</path>
             <config>subscribe;vscp;localhost;1883;;60</config>
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>	
 
-        <!-- Level II tcp/ip link -->
+        <!-- Level II tcp/ip link  -->
         <driver enable="false" >                 
             <name>tcpiplink1</name>
-            <path>C:\vscp2drv_tcpiplink.dll</path>
+            <path>/usr/local/lib/vscp2drv_tcpiplink.so</path>
             <config>192.168.1.2;9598;admin;secret</config>                 
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
 
         <!-- Level II raw ethernet  -->
         <driver enable="false"> 		   	 			
-            <name>rawethernet1</name> 
-			<path>C:\vscp2drv_raweth.dll</path>
-            <config>eth0</config>            
+            <name>rawethernet1</name> 		   	 		
+            <config>eth0</config>
+            <path>/usr/local/lib/vscp2drv_raweth.so</path>
         </driver>
  
 
@@ -258,7 +258,7 @@
     <tables>
     
         <table path="c:/programdata/vscp/tables/temperature_outside.table" 
-                  type="0"
+                  type="dynamic"
                   name="outsidetemp"
                   description="The temperature in the greens"
                   labelx="Time"
@@ -270,7 +270,7 @@
         />
         
         <table path="c:/programdata/vscp/tables/temperature_office.table" 
-                  type="0"
+                  type="dynamic"
                   name="officetemp"
                   description="The temperature in the office"
                   labelx="Time"
@@ -278,7 +278,19 @@
                   size=""
                   vscpclass="10"    
                   vscptype="6"
-                  vscpunit="3"
+                  vscpunit="1"
+        />
+        
+        <table path="c:/programdata/vscp/tables/temperature_south.table" 
+                  type="static"
+                  name="southtemp"
+                  description="The temperature in the office"
+                  labelx="Time"
+                  labely="Temperature office"
+                  size="8640"
+                  vscpclass="10"    
+                  vscptype="6"
+                  vscpunit="1"
         />
     
     </tables>

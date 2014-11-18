@@ -282,11 +282,11 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-            strValueOut.Printf(_("%l"), (int)m_longValue );
+            strValueOut.Printf(_("%ld"), (int)m_longValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
-            strValueOut.Printf(_("%l"), m_longValue );
+            strValueOut.Printf(_("%ld"), m_longValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
@@ -318,7 +318,7 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-            strValueOut.Printf(_("%ul"), m_event.timestamp );
+            strValueOut.Printf(_("%lu"), m_event.timestamp );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:

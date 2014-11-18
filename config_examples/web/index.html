@@ -16,6 +16,7 @@ own folder structure as it will take you to <a href="/vscp">this reserved page.<
 file which after installation is located in the testws subfolder of the web root filesystem. </p>
 <p>The default content in this file is:</p>
 <p><b>
+var vscp_setting_url="ws://127.0.0.1:8080";<br>
 var vscp_setting_user = "admin";<br>
 var vscp_setting_authdomain = "mydomain.com";<br>
 var vscp_setting_passwordhash = "d50c3180375c27927c22e42a379c3f67";<br>
@@ -33,10 +34,10 @@ can test the <a href="testws/testauth.html">websocket login test script</a>. If 
 <span style="color: red;"><b>Authentication 1 - Logged in</b></span>
 <br><br>
  at the end of the output from this scripts everything is OK, if not something is bad with your login information.</p>
-p> 
+<p> 
 The default for the websocket samples is non-ssl. If you want to use ssl (with the ssl version 
 of the VSCP daemon) you should use 
-<b>"wss:/"</b> as prefix instead of <b>"ws://</b>
+<b>"wss://"</b> as prefix instead of <b>"ws://"</b>
 </p>
 <h3>Demos</h3>
 <p>

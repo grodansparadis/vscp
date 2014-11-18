@@ -140,7 +140,7 @@ int CVSCPTable::init()
 		if ( VSCP_TABLE_STATIC == m_vscpFileHead.type ) {
 			_vscpFileRecord rec;
 			memset( &rec, 0, sizeof(_vscpFileRecord) ); 
-            for ( int i=0; i<m_vscpFileHead.staticSize; i++ ) {
+            for ( unsigned int i=0; i<m_vscpFileHead.staticSize; i++ ) {
 			    if ( sizeof(_vscpFileRecord) != fwrite( &rec, 
 													1, 
 													sizeof(_vscpFileRecord), m_ft ) ) {
