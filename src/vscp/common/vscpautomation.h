@@ -104,7 +104,7 @@ public:
     uint8_t getZone( void ) { return m_zone; }
 
     /// Setter for subzone
-    void setSubzone( uint8_t subzone ) { subzone = subzone; };
+    void setSubzone( uint8_t subzone ) { m_subzone = subzone; };
 
     /// getter for subzone
     uint8_t getSubzone( void ) { return m_subzone; };

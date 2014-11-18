@@ -1141,10 +1141,10 @@ bool CMDF::parseMDF( wxString& path )
                                         pFax->m_strDescription = child4->GetNodeContent();
                                     }
                                 }
+                                
+                                child4 = child4->GetNext();
+                                
                             } // Child 4
-
-                            child4 = child4->GetNext();
-
                         } // fax
                         else if ( child3->GetName() == wxT("email") ) {
 
