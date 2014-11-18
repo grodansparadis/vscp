@@ -3619,7 +3619,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"%lu events requested of %lu available (unfiltered) %lu will be retrived\r\n", 
+								"%ld events requested of %lu available (unfiltered) %lu will be retrived\r\n", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
@@ -3702,7 +3702,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"1,2,Info,%lu events requested of %lu available (unfiltered) %lu will be retrived,NULL\r\n", 
+								"1,2,Info,%ld events requested of %lu available (unfiltered) %lu will be retrived,NULL\r\n", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
@@ -3789,7 +3789,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 
 					memset( buf, 0, sizeof( buf ));
 					sprintf( wrkbuf, 
-								"<info>%lu events requested of %lu available (unfiltered) %lu will be retrived</info>", 
+								"<info>%ld events requested of %lu available (unfiltered) %lu will be retrived</info>", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
@@ -3928,7 +3928,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "info", 4 );
 					p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
 					sprintf( wrkbuf, 
-								"%lu events requested of %lu available (unfiltered) %lu will be retrived", 
+								"%ld events requested of %lu available (unfiltered) %lu will be retrived", 
 								count, 
 								pSession->pClientItem->m_clientInputQueue.GetCount(),
 								MIN((unsigned long)count,pSession->pClientItem->m_clientInputQueue.GetCount()) );
