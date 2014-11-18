@@ -132,10 +132,10 @@ int main(int argc, char* argv[])
             printf( "Two events waiting to be fetched on channel 2." );
         }
         else if ( count > 2 ) {
-            printf( "%d events waiting to be fetched on channel 2.", count );
+            printf( "%u events waiting to be fetched on channel 2.", count );
         }
         else {
-            printf( "%d events waiting to be fetched on channel 2 [Other source is also sending events].", count );
+            printf( "%u events waiting to be fetched on channel 2 [Other source is also sending events].", count );
         }
     }
     else {
@@ -145,10 +145,7 @@ int main(int argc, char* argv[])
 
     // Clear the event queue on the demon
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_clearDaemonEventQueue( handle2 ) ) ) {
-        printf( "Command success: vscphlp_clearDaemonEventQueue input queue on channel 2\n", 
-                majorVer, 
-                minorVer, 
-                subminorVer );
+        printf( "Command success: vscphlp_clearDaemonEventQueue input queue on channel 2\n");
     }
     else {
         printf("\aCommand error: vscphlp_clearDaemonEventQueue on channel 2  Error code=%d\n", rv);
@@ -158,7 +155,7 @@ int main(int argc, char* argv[])
     // We should now have an empty queue on channel2
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_isDataAvailable( handle2, &count ) ) ) {
         printf( "Command success: vscphlp_isDataAvailable on handle2\n" );
-        printf( "count = %d\n", count );
+        printf( "count = %u\n", count );
         if ( !count ) printf("Which is correct.\n");
     }
     else {
@@ -211,7 +208,7 @@ int main(int argc, char* argv[])
     // We should now have three events in the queue on channel2
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_isDataAvailable( handle2, &count ) ) ) {
         printf( "Command success: vscphlp_isDataAvailable on handle2\n" );
-        printf( "count = %d\n", count );
+        printf( "count = %u\n", count );
         if ( 3 == count ) printf("Which is correct.\n");
     }
     else {
@@ -324,7 +321,7 @@ int main(int argc, char* argv[])
     // Display # events in the queue on channel2
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_isDataAvailable( handle2, &count ) ) ) {
         printf( "Command success: vscphlp_isDataAvailable on handle2\n" );
-        printf( "count before sending two events = %d\n", count );
+        printf( "count before sending two events = %u\n", count );
     }
     else {
         printf("\aCommand error: vscphlp_isDataAvailable on channel 2  Error code=%d\n", rv);
@@ -354,7 +351,7 @@ int main(int argc, char* argv[])
     // Display # events in the queue on channel2
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_isDataAvailable( handle2, &count ) ) ) {
         printf( "Command success: vscphlp_isDataAvailable on handle2\n" );
-        printf( "count after sending two events (+1) = %d\n", count );
+        printf( "count after sending two events (+1) = %u\n", count );
     }
     else {
         printf("\aCommand error: vscphlp_isDataAvailable on channel 2  Error code=%d\n", rv);
@@ -385,7 +382,7 @@ int main(int argc, char* argv[])
     unsigned long dllversion;
     if ( VSCP_ERROR_SUCCESS == (rv = vscphlp_getDLLVersion( handle2, &dllversion ) ) ) {
         printf( "Command success: vscphlp_getDLLVersion on channel 2\n" );
-        printf( "DL(L) version is %08X\n", dllversion );
+        printf( "DL(L) version is %08lX\n", dllversion );
     }
     else {
         printf("\aCommand error: vscphlp_getDLLVersion on channel 2  Error code=%d\n", rv);
@@ -424,7 +421,7 @@ int main(int argc, char* argv[])
         printf("\aCommand error: vscphlp_enterReceiveLoop on channel 2  Error code=%d\n", rv);
     }
 
-    printf("* * * * Waiting for five received events on channel 2 * * * * *\n", rv);
+    printf("* * * * Waiting for five received events on channel 2 * * * * *\n");
 
     int cntEvents = 0;
     while ( cntEvents < 5 ) {
@@ -555,7 +552,7 @@ int main(int argc, char* argv[])
     if ( VSCP_ERROR_SUCCESS == 
             (rv = vscphlp_getVariableLong( handle1, "test_long_variable", &longValue ) ) ) {
         printf( "Command success: vscphlp_getVariableLong on channel 1\n" );
-        printf(" Value = %lu\n", longValue );
+        printf(" Value = %ld\n", longValue );
     }
     else {
         printf("\aCommand error: vscphlp_getVariableLong on channel 1  Error code=%d\n", rv);
@@ -1057,26 +1054,26 @@ int main(int argc, char* argv[])
 
     unsigned long constr_canal_id2 = vscphlp_getCANALidFromVSCPdata( 3, 10, 6 ); 
     if ( 0x0c0a0600 == constr_canal_id2 ) {
-        printf("Nickname = %08X\n", constr_canal_id2 );
+        printf("Nickname = %08lX\n", constr_canal_id2 );
     }
     else {
-        printf("\aError: vscphlp_getVSCPnicknameFromCANALid = %08X\n", constr_canal_id2 );
+        printf("\aError: vscphlp_getVSCPnicknameFromCANALid = %08lX\n", constr_canal_id2 );
     }
 
     constr_canal_id2 = vscphlp_getCANALidFromVSCPevent( pEvent ); 
     if ( 0x0c0a0600 == constr_canal_id2 ) {
-        printf("Nickname = %08X\n", constr_canal_id2 );
+        printf("Nickname = %08lX\n", constr_canal_id2 );
     }
     else {
-        printf("\aError: vscphlp_getCANALidFromVSCPevent = %08X\n", constr_canal_id2 );
+        printf("\aError: vscphlp_getCANALidFromVSCPevent = %08lX\n", constr_canal_id2 );
     }  
 
     constr_canal_id2 = vscphlp_getCANALidFromVSCPeventEx( &ex3 ); 
     if ( 0x1c0a0600 == constr_canal_id2 ) {
-        printf("Nickname = %08X\n", constr_canal_id2 );
+        printf("Nickname = %08lX\n", constr_canal_id2 );
     }
     else {
-        printf("\aError: vscphlp_getCANALidFromVSCPeventEx = %08X\n", constr_canal_id2 );
+        printf("\aError: vscphlp_getCANALidFromVSCPeventEx = %08lX\n", constr_canal_id2 );
     } 
 
 
@@ -1224,7 +1221,7 @@ int main(int argc, char* argv[])
 
     vscpEvent *pEvent3 = malloc( sizeof( vscpEvent ) );
     pEvent3->pdata = NULL;
-    canalMsg canalMsg;
+    canalMsg canalMsg = { 0 };
     canalMsg.id = 0x0c0a0601;
     canalMsg.sizeData = 3;
     canalMsg.data[0] = 138;
@@ -1254,21 +1251,21 @@ int main(int argc, char* argv[])
 
     
     if ( VSCP_ERROR_SUCCESS == vscphlp_convertEventToCanal( &canalMsg, pEvent ) ) {
-        printf( "OK vscphlp_convertEventToCanal id=%08X\n", canalMsg.id );
+        printf( "OK vscphlp_convertEventToCanal id=%08lX\n", canalMsg.id );
     }
     else {
         printf( "\aError: vscphlp_convertEventToCanal\n");
     }
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_convertEventExToCanal( &canalMsg, &ex5 ) ) {
-        printf( "OK vscphlp_convertEventExToCanal id=%08X\n", canalMsg.id );
+        printf( "OK vscphlp_convertEventExToCanal id=%08lX\n", canalMsg.id );
     }
     else {
         printf( "\aError: vscphlp_convertEventExToCanal\n");
     }
 
 
-    printf( "vscphlp_makeTimeStamp  %04X\n", vscphlp_makeTimeStamp() );
+    printf( "vscphlp_makeTimeStamp  %04lX\n", vscphlp_makeTimeStamp() );
 
     
     vscpEvent *pEventFrom = malloc( sizeof( vscpEvent ) );
@@ -1422,7 +1419,7 @@ int main(int argc, char* argv[])
     normarry[2] = 0xFF;
     normarry[3] = 0xFF;
     unsigned long long val64 = vscphlp_getDataCodingInteger( normarry, sizeof( normarry ) );
-    printf("OK - vscphlp_getDataCodingInteger value = %lld \n", val64 );
+    printf("OK - vscphlp_getDataCodingInteger value = %llu \n", val64 );
 
     unsigned char stringarry[6];
     stringarry[0] = VSCP_DATACODING_STRING; // Data cding byte. Default unit, sensoridx=0
@@ -1638,7 +1635,7 @@ int main(int argc, char* argv[])
     vscphlp_closeSession( handle2 );
 
     printf("\n\nHit ENTER to terminate\n");
-    int c = getchar();
+    (void)getchar();
    
 	return 0;
 }

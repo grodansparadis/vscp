@@ -1238,19 +1238,22 @@ void CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
     CClientItem *pClientItem;
     VSCPCLIENTLIST::iterator it;
 
+    if (NULL == pEvent) return;
+
     wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
             _(" ControlObject: event %d, excludeid = %d"),
             pEvent->obid, excludeID);
-
-    if (NULL == pEvent) return;
-
+    
     m_wxClientMutex.Lock();
     for (it = m_clientList.m_clientItemList.begin(); it != m_clientList.m_clientItemList.end(); ++it) {
         pClientItem = *it;
 
-        wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
-                _(" ControlObject: clientid = %d"),
-                pClientItem->m_clientID);
+        if (NULL != pClientItem)
+        {
+            wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
+                    _(" ControlObject: clientid = %d"),
+                    pClientItem->m_clientID);
+        }
 
         if ((NULL != pClientItem) && (excludeID != pClientItem->m_clientID)) {
             sendEventToClient(pClientItem, pEvent);
