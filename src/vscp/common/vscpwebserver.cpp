@@ -2996,8 +2996,12 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	hashArgs keypairs;
 	struct websrv_rest_session *pSession = NULL;
     CUserItem *pUser = NULL;
+    wxString method;
 
-    // Get metod
+	// Check pointer
+    if (NULL == conn) return MG_FALSE;
+	
+    // Get method
     wxString method = wxString::FromAscii( conn->request_method );
     method.Trim();
     method.Trim( false );
@@ -3005,10 +3009,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
 	// Make string with GMT time
 	vscp_getTimeString( date, sizeof(date), &curtime );
-
-	// Check pointer
-    if (NULL == conn) return MG_FALSE;
-	
+    
 	CControlObject *pObject = (CControlObject *)conn->server_param;
 	if (NULL == pObject) return MG_FALSE;
 
