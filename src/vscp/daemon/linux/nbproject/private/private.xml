@@ -41,10 +41,14 @@
         <group>
             <file>file:/home/akhe/vscp_software/src/vscp/common/tables.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/vscpdlldef.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/tcpipclientthread.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/vscpwebserver.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/tables.h</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/devicelist.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/devicethread.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/dm.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.h</file>
         </group>
     </open-files>
 </project-private>

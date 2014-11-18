@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeLite_Project Name="codelite_vscpd" InternalType="">
+  <Reconciliation>
+    <Regexes/>
+    <Excludepaths/>
+    <Ignorefiles/>
+    <Extensions>
+      <![CDATA[cpp;c;h;hpp;xrc;wxcp;fbp]]>
+    </Extensions>
+    <Topleveldir>../../../../vscp</Topleveldir>
+  </Reconciliation>
+  <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00010001N0005Debug000000000000]]>
+    </Plugin>
+    <Plugin Name="CMakePlugin">
+      <![CDATA[[{
+  "name": "Debug",
+  "enabled": false,
+  "buildDirectory": "build",
+  "sourceDirectory": "$(ProjectPath)",
+  "generator": "",
+  "buildType": "",
+  "arguments": [],
+  "parentProject": ""
+ }]]]>
+    </Plugin>
+  </Plugins>
+  <Description/>
+  <Dependencies/>
+  <VirtualDirectory Name="common">
+    <File Name="../../../common/clientlist.cpp"/>
+    <File Name="../../../common/clientlist.h"/>
+    <File Name="../../../common/controlobject.cpp"/>
+    <File Name="../../../common/controlobject.h"/>
+    <File Name="../../../common/daemonvscp.cpp"/>
+    <File Name="../../../common/daemonvscp.h"/>
+    <File Name="../../../common/devicelist.cpp"/>
+    <File Name="../../../common/devicelist.h"/>
+    <File Name="../../../common/devicethread.cpp"/>
+    <File Name="../../../common/devicethread.h"/>
+    <File Name="../../../common/devitem.h"/>
+    <File Name="../../../common/dm.cpp"/>
+    <File Name="../../../common/dm.h"/>
+    <File Name="../../../common/guid.cpp"/>
+    <File Name="../../../common/guid.h"/>
+    <File Name="../../../common/tables.cpp"/>
+    <File Name="../../../common/tables.h"/>
+    <File Name="../../../common/tcpipclientthread.cpp"/>
+    <File Name="../../../common/tcpipclientthread.h"/>
+    <File Name="../../../common/udpclientthread.cpp"/>
+    <File Name="../../../common/udpclientthread.h"/>
+    <File Name="../../../common/udpthread.cpp"/>
+    <File Name="../../../common/udpthread.h"/>
+    <File Name="../../../common/userlist.cpp"/>
+    <File Name="../../../common/userlist.h"/>
+    <File Name="../../../common/variablecodes.h"/>
+    <File Name="../../../common/version.h"/>
+    <File Name="../../../common/vscp.h"/>
+    <File Name="../../../common/vscp_class.h"/>
+    <File Name="../../../common/vscp_type.h"/>
+    <File Name="../../../common/vscpautomation.cpp"/>
+    <File Name="../../../common/vscpautomation.h"/>
+    <File Name="../../../common/vscpclientthreads.cpp"/>
+    <File Name="../../../common/vscpclientthreads.h"/>
+    <File Name="../../../common/vscpd_caps.h"/>
+    <File Name="../../../common/vscpdlldef.h"/>
+    <File Name="../../../common/vscpeventhelper.cpp"/>
+    <File Name="../../../common/vscpeventhelper.h"/>
+    <File Name="../../../common/vscphelper.cpp"/>
+    <File Name="../../../common/vscpremotetcpif.cpp"/>
+    <File Name="../../../common/vscpremotetcpif.h"/>
+    <File Name="../../../common/vscpvariable.cpp"/>
+    <File Name="../../../common/vscpvariable.h"/>
+    <File Name="../../../common/vscpwebserver.cpp"/>
+    <File Name="../../../common/vscpwebserver.h"/>
+    <File Name="../../../common/web_css.h"/>
+    <File Name="../../../common/web_js.h"/>
+    <File Name="../../../common/web_template.h"/>
+    <File Name="../../../common/webserver.h"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="linux">
+    <File Name="../vscpd.cpp"/>
+    <File Name="../vscpd.h"/>
+  </VirtualDirectory>
+  <VirtualDirectory Name="build">
+    <File Name="../Makefile"/>
+    <File Name="../Makefile.carambola"/>
+    <File Name="../Makefile.in"/>
+  </VirtualDirectory>
+  <Settings Type="Executable">
+    <GlobalSettings>
+      <Compiler Options="" C_Options="" Assembler="">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="">
+        <LibraryPath Value="."/>
+      </Linker>
+      <ResourceCompiler Options=""/>
+    </GlobalSettings>
+    <Configuration Name="Debug" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Executable" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="-g" C_Options="-g" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="" Required="yes"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="" IntermediateDirectory="/home/akhe/vscp_software/src/vscp/daemon/linux" Command="/home/akhe/vscp_software/src/vscp/daemon/linux/vscpd" CommandArguments="-s" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="/home/akhe/vscp_software/src/vscp/daemon/linux" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="yes">
+        <RebuildCommand/>
+        <CleanCommand>make clean</CleanCommand>
+        <BuildCommand>make</BuildCommand>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory>/home/akhe/vscp_software/src/vscp/daemon/linux</WorkingDirectory>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+    <Configuration Name="Release" CompilerType="GCC" DebuggerType="GNU gdb debugger" Type="Dynamic Library" BuildCmpWithGlobalSettings="append" BuildLnkWithGlobalSettings="append" BuildResWithGlobalSettings="append">
+      <Compiler Options="" C_Options="" Assembler="" Required="yes" PreCompiledHeader="" PCHInCommandLine="no" PCHFlags="" PCHFlagsPolicy="0">
+        <IncludePath Value="."/>
+      </Compiler>
+      <Linker Options="-O2" Required="yes"/>
+      <ResourceCompiler Options="" Required="no"/>
+      <General OutputFile="" IntermediateDirectory="./Release" Command="" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="$(IntermediateDirectory)" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
+      <Environment EnvVarSetName="&lt;Use Defaults&gt;" DbgSetName="&lt;Use Defaults&gt;">
+        <![CDATA[]]>
+      </Environment>
+      <Debugger IsRemote="no" RemoteHostName="" RemoteHostPort="" DebuggerPath="" IsExtended="no">
+        <DebuggerSearchPaths/>
+        <PostConnectCommands/>
+        <StartupCommands/>
+      </Debugger>
+      <PreBuild/>
+      <PostBuild/>
+      <CustomBuild Enabled="yes">
+        <RebuildCommand/>
+        <CleanCommand>make clean</CleanCommand>
+        <BuildCommand>make</BuildCommand>
+        <PreprocessFileCommand/>
+        <SingleFileCommand/>
+        <MakefileGenerationCommand/>
+        <ThirdPartyToolName>None</ThirdPartyToolName>
+        <WorkingDirectory>$(WorkspacePath)</WorkingDirectory>
+      </CustomBuild>
+      <AdditionalRules>
+        <CustomPostBuild/>
+        <CustomPreBuild/>
+      </AdditionalRules>
+      <Completion EnableCpp11="no">
+        <ClangCmpFlagsC/>
+        <ClangCmpFlags/>
+        <ClangPP/>
+        <SearchPaths/>
+      </Completion>
+    </Configuration>
+  </Settings>
+</CodeLite_Project>

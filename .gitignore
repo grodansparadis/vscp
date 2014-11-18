@@ -154,3 +154,5 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /config_examples/web/old
 /src/vscp/drivers/level1/peak/win32/testpcan/testpcan.aps
 /src/vscp/drivers/delivery
+src/vscp/drivers/level2/lmsensors/linux/-D__LINUX__
+src/vscp/helperlib/linux/examples/bigtest

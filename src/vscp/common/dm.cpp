@@ -2742,12 +2742,8 @@ bool dmElement::doActionWriteTable( vscpEvent *pDMEvent )
 	if ( !bFound ) {
 		wxString wxstrErr = 
 			wxString::Format( _("[Action] Write Table: Table [%s] not found. Parameter='%s' "),
-#ifdef WIN32			
-			tblName, wxstr );
-#else 
-			(const char *)tblName.mbc_str(), 
-			(const char *)wxstr.mbc_str() );
-#endif		
+			(const char *)tblName.c_str(), 
+			(const char *)wxstr.c_str() );
 		wxstrErr += wxstr;
 		wxstrErr += _("\n");
 		m_pDM->m_pCtrlObject->logMsg( wxstrErr, DAEMON_LOGMSG_ERROR );
@@ -2876,7 +2872,7 @@ void CDM::init( void )
 	
 	wxString wxlogmsg = 
 		wxString::Format(_("DM engine started. DM from [%s]\n"),
-							(const char *)m_configPath.mbc_str() );
+							(const char *)m_configPath.c_str() );
 	logMsg( wxlogmsg );
 }
 
@@ -3167,17 +3163,30 @@ bool CDM::load ( void )
 
 bool CDM::save ( void )
 {
+	wxString strLog;
     wxString buf;
-    logMsg( _("DM: Saving decision matrix to :\n") );
+	
+	strLog = _("DM: Saving decision matrix to: ") + m_configPath + _("\n");
+	logMsg( strLog );
+	
+	if ( !wxFileName::IsFileWritable( m_configPath ) ) {
+		strLog = _("DM: File is not writable.\n");
+		logMsg( strLog );
+		return false;
+	}
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream ( m_configPath );
-    if ( NULL == pFileStream ) return false;
-
+    if ( NULL == pFileStream ) {
+		strLog = _("DM: Failed to save: ") + m_configPath + _(" (memory allocation)\n");
+		logMsg( strLog );
+		return false;
+	 }
+		
     // Make a copy before we save
     wxCopyFile( m_configPath, m_configPath + _("~") );
 
     pFileStream->Write ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
-        strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) );
+			strlen ( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) ); 
 
     m_mutexDM.Lock();
 
@@ -3322,7 +3331,7 @@ bool CDM::save ( void )
 
     // Close the file
     pFileStream->Close();
-
+	
     return true;
 }
 
@@ -3739,11 +3748,7 @@ int CDM::addTimer( uint16_t id,
 
     // Log
     wxString logStr = wxString::Format(_("Add Timer %s."), 
-#ifdef WIN32		
-		nameVar );
-#else
-		(const char *)nameVar.mbc_str() );
-#endif	
+										(const char *)nameVar.c_str() );
     logMsg( logStr, LOG_DM_EXTRA );
 
     // Check if the timer already exist - set new values
@@ -3767,7 +3772,7 @@ int CDM::addTimer( uint16_t id,
 
         // Log
         wxString logStr = wxString::Format(_("Variable is not defined %s"),  
-			(const char *)nameVar.mbc_str() );
+											(const char *)nameVar.c_str() );
         logMsg( logStr, LOG_DM_DEBUG );
 
         // Create a new timer
@@ -3790,7 +3795,7 @@ int CDM::addTimer( uint16_t id,
 
         // Log
         wxString logStr = wxString::Format(_("Variable already defined %s."), 
-			(const char *)nameVar.mbc_str() );
+											(const char *)nameVar.c_str() );
         logMsg( logStr, LOG_DM_DEBUG );
 
         if ( m_pCtrlObject->m_VSCP_Variables.add( nameVar, wxT("false"), VSCP_DAEMON_VARIABLE_CODE_BOOLEAN ) ) {

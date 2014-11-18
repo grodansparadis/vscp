@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Session Name="/home/akhe/vscp_software/src/vscp/daemon/linux/test.workspace">
+  <int Value="0" Name="m_selectedTab"/>
+  <wxString Value="/home/akhe/vscp_software/src/vscp/daemon/linux/test.workspace" Name="m_workspaceName"/>
+  <TabInfoArray Name="TabInfoArray"/>
+  <SerializedObject Name="m_breakpoints">
+    <long Value="0" Name="Count"/>
+  </SerializedObject>
+</Session>

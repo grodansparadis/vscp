@@ -94,6 +94,8 @@
         <in>vscpvariable.cpp</in>
         <in>vscpvariable.h</in>
       </df>
+      <df name="codelite_vscpd">
+      </df>
       <df name="html">
       </df>
       <df name="latex">
@@ -133,8 +135,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
             <option name="debug_command" value="vscpd -s"/>

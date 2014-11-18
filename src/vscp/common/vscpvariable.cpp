@@ -41,6 +41,7 @@
 #include "wx/defs.h"
 #include "wx/app.h"
 #include <wx/datetime.h>
+#include <wx/filename.h>
 #include <wx/wfstream.h>
 #include <wx/xml/xml.h>
 #include <wx/stdpaths.h>
@@ -281,11 +282,11 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_INTEGER:
-            strValueOut.Printf(_("%d"), m_longValue );
+            strValueOut.Printf(_("%l"), (int)m_longValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_LONG:
-            strValueOut.Printf(_("%ld"), m_longValue );
+            strValueOut.Printf(_("%l"), m_longValue );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DOUBLE:
@@ -317,7 +318,7 @@ bool CVSCPVariable::writeValueToString( wxString& strValueOut )
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_VSCP_EVENT_TIMESTAMP:
-            strValueOut.Printf(_("%d"), m_event.timestamp );
+            strValueOut.Printf(_("%ul"), m_event.timestamp );
             break;
 
         case VSCP_DAEMON_VARIABLE_CODE_DATETIME:
@@ -1050,6 +1051,12 @@ bool CVariableStorage::save( wxString& path )
     m_configPath = wxStandardPaths::Get().GetConfigDir();
     m_configPath += _("/vscp/variable.xml");
 #endif
+
+	if ( !wxFileName::IsFileWritable( path ) ) {
+		//wxString strLog = _("Variable save: File is not writable.\n");
+		//logMsg( strLog );
+		return false;
+	}
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream( path );
     if ( NULL == pFileStream ) return false;

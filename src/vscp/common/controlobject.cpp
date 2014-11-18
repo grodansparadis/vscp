@@ -1564,7 +1564,7 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
     unsigned long val;
     wxXmlDocument doc;
 
-    wxString wxlogmsg = wxString::Format(_("Reading configuration from [%s]\n"), (const char *)strcfgfile.mbc_str() );
+    wxString wxlogmsg = wxString::Format(_("Reading configuration from [%s]\n"), (const char *)strcfgfile.c_str() );
     logMsg( wxlogmsg, DAEMON_LOGMSG_INFO );
 
     if (!doc.Load(strcfgfile)) {

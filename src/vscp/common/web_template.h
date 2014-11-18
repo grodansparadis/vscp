@@ -134,7 +134,17 @@
 // Last shown record	- integer
 // total records		- integer
 // count to show		- integer
-#define WEB_COMMON_LIST_NAVIGATION "<br><div style=\"text-align:center\"><form method=\"get\" action=\"%s\" name=\"PageSelect\"><button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button><button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button><button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button><button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button><span style=\"font-weight:bold\"> %d - %d</span> of <span style=\"font-weight:bold\">%d</span> Show: <input name=\"count\" value=\"%d\" size=\"3\"><input name=\"from\" value=\"%d\" type=\"hidden\"><input name=\"light\" value=\"%s\" type=\"hidden\"><br></form></div> "
+#define WEB_COMMON_LIST_NAVIGATION "<br><div style=\"text-align:center\">\
+						<form method=\"get\" action=\"%s\" name=\"PageSelect\">\
+						<button type=\"submit\" value=\"first\" name=\"navbtn\">&lt;&lt;</button>\
+						<button type=\"submit\" value=\"previous\" name=\"navbtn\">&lt;</button>\
+						<button type=\"submit\" value=\"next\" name=\"navbtn\">&gt;</button>\
+						<button type=\"submit\" value=\"last\" name=\"navbtn\">&gt;&gt;</button>\
+						<span style=\"font-weight:bold\"> %lu - %lu</span> of \
+						<span style=\"font-weight:bold\">%lu</span> Show: \
+						<input name=\"count\" value=\"%lu\" size=\"3\">\
+						<input name=\"from\" value=\"%lu\" type=\"hidden\">\
+						<input name=\"light\" value=\"%s\" type=\"hidden\"></form><br></div> "
 
 // Clickable/navigational table rows
 // Fill in Navigation url
