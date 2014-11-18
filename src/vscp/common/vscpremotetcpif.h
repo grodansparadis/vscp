@@ -69,6 +69,11 @@
 
 #define DRIVER_INFO_STRING	  			""
 
+/*!
+    Use this macro for unused function parameters.
+*/
+#define TCPIP_UNUSED(__par)             (void)(__par)
+
 /// Receive queue
 WX_DECLARE_LIST( vscpEvent, EVENT_RX_QUEUE );
 /// Transmit queue
@@ -405,19 +410,19 @@ public:
         Dummy for Baudrate setting
     */
     int doCmdSetBaudrate(  uint32_t baudrate ) 
-                { baudrate = baudrate; return CANAL_ERROR_SUCCESS; };
+                { TCPIP_UNUSED(baudrate); return CANAL_ERROR_SUCCESS; };
 
     /*!
         Dummy for filter setting
     */
     int doCmdFilter( uint32_t filter )
-                { filter= filter; return CANAL_ERROR_SUCCESS; };
+                { TCPIP_UNUSED(filter); return CANAL_ERROR_SUCCESS; };
 
     /*!
         Dummy for mask setting
     */
     int doCmdMask( uint32_t mask )
-                        { mask = mask; return CANAL_ERROR_SUCCESS; };
+                        { TCPIP_UNUSED(mask); return CANAL_ERROR_SUCCESS; };
 
 	/*!
         Shutdown the VSCP daemon  
