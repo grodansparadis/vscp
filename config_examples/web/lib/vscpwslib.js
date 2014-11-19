@@ -3270,7 +3270,7 @@ vscpws_stateButton.prototype.onVSCPMessage = function(msg)
             // Close confirmation => We are NOT connected
             this.bConnected = false;
         }
-        else if ("READVAR" == msgitems[1] && (2 == msgitems[2])){
+        else if ("READVAR" == msgitems[1] && (2 == msgitems[3])){
             if ( ("true" == msgitems[4].toLowerCase()) && 
                     (false == this.bState )) {
                 // We have a match for ON
