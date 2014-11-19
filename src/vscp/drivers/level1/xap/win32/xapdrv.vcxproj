@@ -89,8 +89,8 @@
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\xapdrv.dll</OutputFile>
-      <ImportLibrary>.\Debug\xapdrv.lib</ImportLibrary>
+      <OutputFile>.\Debug\vscpl1_xapdrv.dll</OutputFile>
+      <ImportLibrary>.\Debug\vscpl1_xapdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\xapdrv.def</ModuleDefinitionFile>
@@ -143,8 +143,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\xapdrv.dll</OutputFile>
-      <ImportLibrary>.\Release\xapdrv.lib</ImportLibrary>
+      <OutputFile>.\Release\vscpl1_xapdrv.dll</OutputFile>
+      <ImportLibrary>.\Release\vscpl1_xapdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\xapdrv.def</ModuleDefinitionFile>

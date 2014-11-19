@@ -3002,7 +3002,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
     if (NULL == conn) return MG_FALSE;
 	
     // Get method
-    wxString method = wxString::FromAscii( conn->request_method );
+    method = wxString::FromAscii( conn->request_method );
     method.Trim();
     method.Trim( false );
     method.MakeUpper();

@@ -323,7 +323,7 @@ bool CTellstickObj::open( const char *szDeviceString, unsigned long flags )
 	}
 
 	FT_STATUS ftStatus;
-	ftStatus = FT_OpenEx( (PVOID) m_SerialNumber.c_str(), 
+	ftStatus = FT_OpenEx( (PVOID) (const char *)m_SerialNumber.c_str(), 
 							FT_OPEN_BY_SERIAL_NUMBER, 
 							&m_ftHandle );
 	if ( !FT_SUCCESS( ftStatus ) ) return false;
@@ -593,7 +593,7 @@ bool CTellstickObj::parseConfiguration( wxString& path )
 			CEventTranslation *pEvent = new CEventTranslation;
 			wxASSERT( NULL != pEvent );
 
-			wxString strType = child->GetPropVal ( wxT ( "type" ), wxT ( "off" ) );
+			wxString strType = child->GetAttribute( wxT ( "type" ), wxT ( "off" ) );
 			
 			strType = strType.MakeUpper();
 			if ( wxNOT_FOUND != strType.find( _("ON") ) ) {
@@ -613,8 +613,8 @@ bool CTellstickObj::parseConfiguration( wxString& path )
 				pEvent->m_vscp_type = VSCP_TYPE_CONTROL_TURNOFF;
 			}
 
-			pEvent->m_zone = readStringValue( child->GetPropVal ( wxT ( "zone" ), wxT ( "0" ) ) );
-			pEvent->m_subzone = readStringValue( child->GetPropVal ( wxT ( "subzone" ), wxT ( "0" ) ) );
+			pEvent->m_zone = vscp_readStringValue( child->GetAttribute ( wxT ( "zone" ), wxT ( "0" ) ) );
+			pEvent->m_subzone = vscp_readStringValue( child->GetAttribute ( wxT ( "subzone" ), wxT ( "0" ) ) );
 
 			// Add the event
 			m_eventList.Append( pEvent );
@@ -627,39 +627,39 @@ bool CTellstickObj::parseConfiguration( wxString& path )
 					CTellStickDevice *pDevice = new CTellStickDevice;
 					wxASSERT( NULL != pDevice );
 
-					pDevice->m_nodeid = readStringValue( subchild->GetPropVal( wxT( "usenodeid" ), wxT( "1" ) ) );
+					pDevice->m_nodeid = vscp_readStringValue( subchild->GetAttribute( wxT( "usenodeid" ), wxT( "1" ) ) );
 					
-					wxString strProtocol = subchild->GetPropVal ( wxT( "protocol" ), wxT( "NEXA" ) );
+					wxString strProtocol = subchild->GetAttribute ( wxT( "protocol" ), wxT( "NEXA" ) );
 					strProtocol = strProtocol.MakeUpper();
 					if ( wxNOT_FOUND != strProtocol.find( _("WAVEMAN") ) ) {
 						pDevice->m_protocol = TELLSTICK_PROTOCOL_WAVEMAN;
-						pDevice->m_houseCode = subchild->GetPropVal ( wxT( "housecode" ), wxT( "A" ) );
-						pDevice->m_channelCode  = readStringValue( subchild->GetPropVal ( wxT( "channelcode" ), wxT( "1" ) ) );
-						pDevice->m_dimlevel = readStringValue( subchild->GetPropVal ( wxT( "dimlevel" ), wxT( "0" ) ) );
+						pDevice->m_houseCode = subchild->GetAttribute ( wxT( "housecode" ), wxT( "A" ) );
+						pDevice->m_channelCode  = vscp_readStringValue( subchild->GetAttribute ( wxT( "channelcode" ), wxT( "1" ) ) );
+						pDevice->m_dimlevel = vscp_readStringValue( subchild->GetAttribute ( wxT( "dimlevel" ), wxT( "0" ) ) );
 						pDevice->m_bTurnOn = 
-							readStringValue( subchild->GetPropVal( wxT( "state" ), wxT( "0" ) ) ) ? true : false;
+							vscp_readStringValue( subchild->GetAttribute( wxT( "state" ), wxT( "0" ) ) ) ? true : false;
 					}	
 					else if ( wxNOT_FOUND != strProtocol.find( _("SARTANO") ) ) {
 						pDevice->m_protocol = TELLSTICK_PROTOCOL_SARTANO;
-						pDevice->m_strChannel = subchild->GetPropVal ( wxT( "channelcode" ), wxT( "0" ) );
+						pDevice->m_strChannel = subchild->GetAttribute ( wxT( "channelcode" ), wxT( "0" ) );
 						pDevice->m_bTurnOn = 
-							readStringValue( subchild->GetPropVal( wxT( "state" ), wxT( "0" ) ) ) ? true : false;
+							vscp_readStringValue( subchild->GetAttribute( wxT( "state" ), wxT( "0" ) ) ) ? true : false;
 					}
 					else if ( wxNOT_FOUND != strProtocol.find( _("IKEA") ) ) {
 						pDevice->m_protocol = TELLSTICK_PROTOCOL_IKEA;
-						pDevice->m_ikea_systemcode = readStringValue( subchild->GetPropVal( wxT( "systemcode" ), wxT( "0" ) ) );
-						pDevice->m_ikea_devicecode = readStringValue( subchild->GetPropVal( wxT( "devicecode" ), wxT(  "0" ) ) );
-						pDevice->m_dimlevel = readStringValue( subchild->GetPropVal ( wxT( "dimlevel" ), wxT( "0" ) ) );
+						pDevice->m_ikea_systemcode = vscp_readStringValue( subchild->GetAttribute( wxT( "systemcode" ), wxT( "0" ) ) );
+						pDevice->m_ikea_devicecode = vscp_readStringValue( subchild->GetAttribute( wxT( "devicecode" ), wxT(  "0" ) ) );
+						pDevice->m_dimlevel = vscp_readStringValue( subchild->GetAttribute ( wxT( "dimlevel" ), wxT( "0" ) ) );
 						pDevice->m_bNiceDim = 
-							( readStringValue( subchild->GetPropVal ( wxT( "dimstyle" ), wxT( "0" ) ) ) ? true : false );
+							( vscp_readStringValue( subchild->GetAttribute ( wxT( "dimstyle" ), wxT( "0" ) ) ) ? true : false );
 					}
 					else { // NEXA is default
 						pDevice->m_protocol = TELLSTICK_PROTOCOL_NEXA;
-						pDevice->m_houseCode = subchild->GetPropVal ( wxT( "housecode" ), wxT ( "A" ) );
-						pDevice->m_channelCode  = readStringValue( subchild->GetPropVal ( wxT( "channelcode" ), wxT ( "1" ) ) );
-						pDevice->m_dimlevel = readStringValue( subchild->GetPropVal ( wxT( "dimlevel" ), wxT ( "0" ) ) );
+						pDevice->m_houseCode = subchild->GetAttribute ( wxT( "housecode" ), wxT ( "A" ) );
+						pDevice->m_channelCode  = vscp_readStringValue( subchild->GetAttribute ( wxT( "channelcode" ), wxT ( "1" ) ) );
+						pDevice->m_dimlevel = vscp_readStringValue( subchild->GetAttribute ( wxT( "dimlevel" ), wxT ( "0" ) ) );
 						pDevice->m_bTurnOn = 
-							readStringValue( subchild->GetPropVal ( wxT( "state" ), wxT( "0" ) ) ) ? true : false;
+							vscp_readStringValue( subchild->GetAttribute ( wxT( "state" ), wxT( "0" ) ) ) ? true : false;
 					}
 
 					// Add the device
@@ -672,7 +672,7 @@ bool CTellstickObj::parseConfiguration( wxString& path )
 			}
 		}
 		else if ( child->GetName() == wxT( "replymsg" ) ) {
-			wxString strReplyMsg = child->GetPropVal ( wxT( "send" ), wxT( "true" ) );
+			wxString strReplyMsg = child->GetAttribute ( wxT( "send" ), wxT( "true" ) );
 			strReplyMsg = strReplyMsg.MakeUpper();
 			if ( wxNOT_FOUND != strReplyMsg.find( _("FALSE") ) ) {
 				m_bSendReplyEvents = false;
@@ -728,15 +728,15 @@ void *CTellstickWrkTread::Entry()
 	// If no data nothing to do
 	if ( NULL == pMsg ) return NULL;
 
-	if ( VSCP_CLASS1_CONTROL == getVSCPclassFromCANid( pMsg->id  ) ) {
+	if ( VSCP_CLASS1_CONTROL == vscp_getVSCPclassFromCANALid( pMsg->id  ) ) {
 	
-		if ( VSCP_TYPE_CONTROL_TURNON == getVSCPtypeFromCANid( pMsg->id ) ) {
+		if ( VSCP_TYPE_CONTROL_TURNON == vscp_getVSCPtypeFromCANALid( pMsg->id ) ) {
 			sendDeviceCommands( pMsg, VSCP_TYPE_INFORMATION_ON );
 		}
-		else if ( VSCP_TYPE_CONTROL_TURNOFF == getVSCPtypeFromCANid( pMsg->id ) ) {
+		else if ( VSCP_TYPE_CONTROL_TURNOFF == vscp_getVSCPtypeFromCANALid( pMsg->id ) ) {
 			sendDeviceCommands( pMsg, VSCP_TYPE_INFORMATION_OFF );
 		}
-		else if ( VSCP_TYPE_CONTROL_ALL_LAMPS == getVSCPtypeFromCANid( pMsg->id ) ) {
+		else if ( VSCP_TYPE_CONTROL_ALL_LAMPS == vscp_getVSCPtypeFromCANALid( pMsg->id ) ) {
 			if ( pMsg->data[ 0 ] ) {
 				sendDeviceCommands( pMsg, VSCP_TYPE_INFORMATION_ON );
 			}
@@ -744,7 +744,7 @@ void *CTellstickWrkTread::Entry()
 				sendDeviceCommands( pMsg, VSCP_TYPE_INFORMATION_OFF );
 			}
 		}
-		else if ( VSCP_TYPE_CONTROL_DIM_LAMPS == getVSCPtypeFromCANid( pMsg->id ) ) {
+		else if ( VSCP_TYPE_CONTROL_DIM_LAMPS == vscp_getVSCPtypeFromCANALid( pMsg->id ) ) {
 			
 		}
 	}
@@ -919,9 +919,9 @@ int CTellstickWrkTread::createIkeaString( int systemCode,
 {
 	*pStrReturn = '\0';						// Make sure tx string is empty 
 
-	const char STARTCODE[] = "STTTTTT\AA";
+	const char STARTCODE[] = "STTTTTT\\AA";
 	const char TT[]  = "TT";
-	const char A[]   = "\AA";
+	const char A[]   = "\\AA";
 	systemCode--;							// System 1..16
 	int DimStyle = bNiceDim ? 1 : 0;
 	int intCode      = 0;
@@ -1098,8 +1098,8 @@ void CTellstickWrkTread::sendDeviceCommands( canalMsg *pMsg,
 			continue;
 		}
 
-		if ( getVSCPclassFromCANid( pMsg->id  ) == pEvent->m_vscp_class &&
-				getVSCPtypeFromCANid( pMsg->id ) == pEvent->m_vscp_type &&
+		if ( vscp_getVSCPclassFromCANALid( pMsg->id  ) == pEvent->m_vscp_class &&
+				vscp_getVSCPtypeFromCANALid( pMsg->id ) == pEvent->m_vscp_type &&
 				( ( pMsg->data[1] == pEvent->m_zone ) || ( 255 == pEvent->m_zone ) ) &&
 				( ( pMsg->data[1] == pEvent->m_subzone ) || ( 255 == pEvent->m_subzone ) ) ) {
 					
@@ -1301,7 +1301,7 @@ void CTellstickWrkTread::replyEvent( CEventTranslation *pEvent,
 
 	canalMsg *pcanalMsg = new canalMsg;
 	wxASSERT( NULL != pcanalMsg );
-	convertEventExToCanal( pcanalMsg, &eventEx );
+	vscp_convertEventExToCanal( pcanalMsg, &eventEx );
 
 	// Add the event to the out queue
 	dllnode *pNode = new dllnode;
@@ -1338,7 +1338,7 @@ void CTellstickWrkTread::replyError( CEventTranslation *pTellstickEvent,
 	canalMsg *pcanalMsg = new canalMsg;
 	wxASSERT( NULL != pcanalMsg );
 
-	convertEventExToCanal( pcanalMsg, &eventEx );
+	vscp_convertEventExToCanal( pcanalMsg, &eventEx );
 
 	// Add the event to the out queue
 	dllnode *pNode = new dllnode;

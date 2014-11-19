@@ -134,7 +134,7 @@
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\vscpl1_apoxdrv.dll</OutputFile>
-      <ImportLibrary>.\Release\apoxdrv.lib</ImportLibrary>
+      <ImportLibrary>.\Release\vscpl1_apoxdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;FTD2XX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\apoxdrv.def</ModuleDefinitionFile>

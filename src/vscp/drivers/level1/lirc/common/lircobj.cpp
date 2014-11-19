@@ -51,7 +51,7 @@ static unsigned long getDataValue( const char *szData );
 CLircObj::CLircObj()
 {
 	// Set default LIRC host
-	strcpy( m_lircHost, "localhost" );
+	wcscpy( m_lircHost, _("localhost") ); 
 
 	// Set default LIRC port
 	m_lircPort = LIRC_PORT;
@@ -88,8 +88,6 @@ CLircObj::~CLircObj()
 //
 void CLircObj::readConfigData()
 {
-
-
 	if ( !wxFileName::FileExists( m_pathToConfigFile ) ) return;
 	
 	// Init XML parser
@@ -519,7 +517,7 @@ void CLircObj::parseLircLine( wxString &wxstr )
 //
 
 static void XMLCALL
-startElement( void *userData, const TCHAR *name, const char **atts )
+startElement( void *userData, const WCHAR *name, const char **atts )
 {
 	CLircObj *pworkObj = (CLircObj *)userData;
 	if ( NULL == pworkObj ) return;
@@ -527,16 +525,16 @@ startElement( void *userData, const TCHAR *name, const char **atts )
 	pworkObj->m_depth += 1;
 
 	// canallirc
-	if ( 0 == strcmp( name, wxT("lirc") ) ) {
+	if ( 0 == strcmp( name, _("lirc") ) ) {
 		pworkObj->m_bCanalLirc = true;
 		// We set a tagname as dummy incase there is some problem or a
 		// missing "codetag". This way elements with no code tag are
 		// added to this list
-		strcpy( pworkObj->m_keytag, "dummy" );  
+		strcpy( pworkObj->m_keytag, _("dummy") );  
 	}
 
 	// object
-	if ( 0 == strcmp( name, wxT("object") ) ) {
+	if ( 0 == strcmp( name, _("object") ) ) {
 		pworkObj->m_bObject = true; 
 	}
 	
@@ -689,20 +687,20 @@ endElement( void *userData, const char *name )
 			}
 			
 			// id
-			if ( 0 == strcmp( pworkObj->m_curtagname, wxT("id") ) ) { 
+			if ( 0 == strcmp( pworkObj->m_curtagname, _("id") ) ) { 
 				pworkObj->m_workMsg.id = getDataValue( pworkObj->m_xmlbuf );
 			}
 			
 			// sizeData
-			else if ( 0 == strcmp( pworkObj->m_curtagname, wxT("sizedata") ) ) { 
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("sizedata") ) ) { 
 				pworkObj->m_workMsg.sizeData = getDataValue( pworkObj->m_xmlbuf );
 			}
 
 			// Data  "val1,val2,val3,val4...."
-			else if ( 0 == strcmp( pworkObj->m_curtagname, wxT("data") ) ) { 
+			else if ( 0 == strcmp( pworkObj->m_curtagname, _("data") ) ) { 
 				int idx = 0;
 				wxStringTokenizer tok;
-				tok.SetString( pworkObj->m_xmlbuf, wxT(",\r\n") );
+				tok.SetString( pworkObj->m_xmlbuf, _(",\r\n") );
 			
 				while( ( idx < 8 ) && tok.HasMoreTokens() ) {
 

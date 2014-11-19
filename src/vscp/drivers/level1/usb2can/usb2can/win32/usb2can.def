@@ -1,0 +1,24 @@
+; usb2can.def : Declares the module parameters for the DLL.
+
+LIBRARY      "usb2can"
+DESCRIPTION  'usb2can Windows Dynamic Link Library'
+
+EXPORTS
+    ; Explicit exports can go here
+	CanalOpen @1
+	CanalClose @2
+	CanalGetLevel @3
+	CanalSend @4
+	CanalBlockingSend @5
+	CanalReceive @6
+	CanalBlockingReceive @7
+	CanalDataAvailable @8
+	CanalGetStatus @9
+	CanalGetStatistics @10
+	CanalSetFilter @11
+	CanalSetMask @12
+	CanalSetBaudrate @13
+	CanalGetVersion @14
+	CanalGetDllVersion @15
+	CanalGetVendorString @16
+	CanalGetReceiveHandle @17

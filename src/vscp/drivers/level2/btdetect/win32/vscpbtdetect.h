@@ -55,7 +55,7 @@
 #include "../../../../common/vscp.h"
 #include "../../../../common/canal_macro.h"
 #include "../../../../../common/dllist.h"
-#include "../../../../common/vscptcpif.h"
+#include "../../../../common/vscpremotetcpif.h"
 
 // Forward declarations
 class CVSCPBTDetectWrkTread;
@@ -177,7 +177,7 @@ public:
  	virtual void OnExit();
 
     /// VSCP server interface
-    VscpTcpIf m_srv;
+    VscpRemoteTcpIf m_srv;
 
     /// Mama pointer
     CVSCPBTDetect *m_pobj;

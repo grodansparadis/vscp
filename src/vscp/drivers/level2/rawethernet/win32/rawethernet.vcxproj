@@ -95,7 +95,7 @@
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\vscpl2_rawethernetdrv.dll</OutputFile>
-      <ImportLibrary>.\Release\rawethernet.lib</ImportLibrary>
+      <ImportLibrary>.\Release\vscpl2_rawethernetdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>wsock32.lib;wpcap.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\rawethernet.def</ModuleDefinitionFile>
@@ -149,7 +149,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Debug\vscpl2_rawethernetdrv.dll</OutputFile>
-      <ImportLibrary>.\Debug\rawethernet.lib</ImportLibrary>
+      <ImportLibrary>.\Debug\vscpl2_rawethernetdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>wpcap.lib;wsock32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\rawethernet.def</ModuleDefinitionFile>

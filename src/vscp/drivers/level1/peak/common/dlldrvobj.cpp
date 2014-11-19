@@ -60,7 +60,7 @@ CDllDrvObj::CDllDrvObj()
 {
 	m_instanceCounter = 0;
 #ifdef WIN32
-	m_objMutex = CreateMutex( NULL, true, "__CANAL_PEAK_MUTEX__" );
+	m_objMutex = CreateMutex( NULL, true, TEXT("__CANAL_PEAK_MUTEX__") );
 #else
 	pthread_mutex_init( &m_objMutex, NULL );
 #endif

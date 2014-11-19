@@ -13,17 +13,18 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D02F6A75-021F-46A1-9200-1C6EA80375E1}</ProjectGuid>
     <RootNamespace>tellstickdrv</RootNamespace>
+    <ProjectName>vscpl1_tellstickdrv</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -89,16 +90,16 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <Culture>0x041d</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>FTD2XX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Release/tellstickdrv.dll</OutputFile>
+      <AdditionalDependencies>FTD2XX.LIB;libexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Release/vscpl1_tellstickdrv.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(EXPAT)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\tellstickdrv.def</ModuleDefinitionFile>
       <ProgramDatabaseFile>.\Release/tellstickdrv.pdb</ProgramDatabaseFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>.\Release/tellstickdrv.lib</ImportLibrary>
+      <ImportLibrary>.\Release/vscpl1_tellstickdrv.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
@@ -145,71 +146,46 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <Culture>0x041d</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>FTD2XX.LIB;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\Debug/tellstickdrv.dll</OutputFile>
+      <AdditionalDependencies>FTD2XX.LIB;libexpat.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\Debug/vscpl1_tellstickdrv.dll</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(EXPAT)\bin;;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\tellstickdrv.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\Debug/tellstickdrv.pdb</ProgramDatabaseFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
-      <ImportLibrary>.\Debug/tellstickdrv.lib</ImportLibrary>
+      <ImportLibrary>.\Debug/vscpl1_tellstickdrv.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\common\com_win32.cpp" />
     <ClCompile Include="..\..\..\..\..\common\crc.c" />
-    <ClCompile Include="..\common\dlldrvobj.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;TELLSTICKDRV_EXPORTS</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TELLSTICKDRV_EXPORTS</PreprocessorDefinitions>
-    </ClCompile>
+    <ClCompile Include="..\..\..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\..\..\common\dllist.c" />
-    <ClCompile Include="tellstickdrv.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;TELLSTICKDRV_EXPORTS</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TELLSTICKDRV_EXPORTS</PreprocessorDefinitions>
-    </ClCompile>
-    <ClCompile Include="..\common\tellstickobj.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;_WINDOWS;_MBCS;_USRDLL;TELLSTICKDRV_EXPORTS</PreprocessorDefinitions>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <BrowseInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</BrowseInformation>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;_WINDOWS;_MBCS;_USRDLL;TELLSTICKDRV_EXPORTS</PreprocessorDefinitions>
-    </ClCompile>
+    <ClCompile Include="..\common\dlldrvobj.cpp" />
+    <ClCompile Include="..\common\tellstickobj.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
+    <ClCompile Include="tellstickdrv.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="tellstickdrv.def" />
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\..\common\crc8.h" />
     <ClInclude Include="..\common\callback.h" />
     <ClInclude Include="..\..\..\..\common\canal.h" />
     <ClInclude Include="..\..\..\..\common\canal_macro.h" />
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
-    <ClInclude Include="..\common\dlldrvobj.h" />
     <ClInclude Include="..\..\..\..\..\common\dllist.h" />
-    <ClInclude Include="..\common\tellstickobj.h" />
+    <ClInclude Include="..\common\dlldrvobj.h" />
     <ClInclude Include="..\..\..\..\common\vscp_class.h" />
     <ClInclude Include="..\..\..\..\common\vscp_type.h" />
     <ClInclude Include="..\..\..\..\common\vscphelper.h" />
+    <ClInclude Include="..\common\tellstickobj.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: tellstickobj.h,v $                                       
-// $Date: 2005/05/29 19:20:08 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.5 $ 
 
 #if !defined(AFX_IXXATVCI_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_)
 #define AFX_IXXATVCI_H__6F5CD90E_ACF7_459A_9ACB_849A57595639__INCLUDED_
@@ -64,10 +60,10 @@
 #include "FTD2XX.h"		// from ftdi-site http://www.ftdichip.com/
 #endif 
 
-#define CANAL_DLL_TELLSTICKOBJ_OBJ_MUTEX		"___CANAL__DLL_TELLSTICKOBJ_OBJ_MUTEX____"
-#define CANAL_DLL_TELLSTICKOBJ_RECEIVE_MUTEX	"___CANAL__DLL_TELLSTICKOBJ_RECEIVE_MUTEX____"
-#define CANAL_DLL_TELLSTICKOBJ_TRANSMIT_MUTEX	"___CANAL__DLL_TELLSTICKOBJ_TRANSMIT_MUTEX____"
-#define CANAL_DLL_TELLSTICKOBJ_RESPONSE_MUTEX	"___CANAL__DLL_TELLSTICKOBJ_RESPONSE_MUTEX____"
+#define CANAL_DLL_TELLSTICKOBJ_OBJ_MUTEX		TEXT("___CANAL__DLL_TELLSTICKOBJ_OBJ_MUTEX____")
+#define CANAL_DLL_TELLSTICKOBJ_RECEIVE_MUTEX	TEXT("___CANAL__DLL_TELLSTICKOBJ_RECEIVE_MUTEX____")
+#define CANAL_DLL_TELLSTICKOBJ_TRANSMIT_MUTEX	TEXT("___CANAL__DLL_TELLSTICKOBJ_TRANSMIT_MUTEX____")
+#define CANAL_DLL_TELLSTICKOBJ_RESPONSE_MUTEX	TEXT("___CANAL__DLL_TELLSTICKOBJ_RESPONSE_MUTEX____")
 
 
 // Max messages in output queue

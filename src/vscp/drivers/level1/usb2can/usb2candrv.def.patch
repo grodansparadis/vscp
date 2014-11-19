@@ -1,0 +1,12 @@
+Index: usb2can.def
+===================================================================
+--- usb2can.def	(revision 3328)
++++ usb2can.def	(revision 3329)
+@@ -21,4 +21,4 @@
+ 	CanalGetVersion @14
+ 	CanalGetDllVersion @15
+ 	CanalGetVendorString @16
+-	
+\ No newline at end of file
++	CanalGetReceiveHandle @17
+\ No newline at end of file

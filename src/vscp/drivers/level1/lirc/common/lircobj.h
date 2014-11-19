@@ -275,12 +275,12 @@ public:
 	/*!
 		Path to configuration file
 	*/
-	TCHAR m_pathToConfigFile[ 512 ];
+	WCHAR m_pathToConfigFile[ 512 ];
 
 	/*!
 		Lirc Host name
 	*/
-	TCHAR m_lircHost[ 512 ];
+	WCHAR m_lircHost[ 512 ];
 
 	/*!
 		Lirc daemon port

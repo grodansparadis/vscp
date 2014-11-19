@@ -1,0 +1,921 @@
+Index: stdafx.h
+===================================================================
+--- stdafx.h	(revision 0)
++++ stdafx.h	(revision 3344)
+@@ -0,0 +1,16 @@
++// stdafx.h : include file for standard system include files,
++// or project specific include files that are used frequently, but
++// are changed infrequently
++//
++
++#pragma once
++
++#include "targetver.h"
++
++#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
++// Windows Header Files:
++#include <windows.h>
++
++
++
++// TODO: reference additional headers your program requires here
+Index: usb2can.vcproj
+===================================================================
+--- usb2can.vcproj	(revision 0)
++++ usb2can.vcproj	(revision 3344)
+@@ -0,0 +1,282 @@
++<?xml version="1.0" encoding="Windows-1252"?>
++<VisualStudioProject
++	ProjectType="Visual C++"
++	Version="9.00"
++	Name="usb2can"
++	ProjectGUID="{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}"
++	RootNamespace="usb2can"
++	Keyword="Win32Proj"
++	TargetFrameworkVersion="196613"
++	>
++	<Platforms>
++		<Platform
++			Name="Win32"
++		/>
++	</Platforms>
++	<ToolFiles>
++	</ToolFiles>
++	<Configurations>
++		<Configuration
++			Name="Debug|Win32"
++			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
++			IntermediateDirectory="$(ConfigurationName)"
++			ConfigurationType="2"
++			CharacterSet="0"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="0"
++				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_WINDOWS;_USRDLL;USB2CAN_EXPORTS"
++				MinimalRebuild="true"
++				BasicRuntimeChecks="3"
++				RuntimeLibrary="3"
++				UsePrecompiledHeader="0"
++				WarningLevel="3"
++				DebugInformationFormat="4"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLinkerTool"
++				AdditionalDependencies="Setupapi.lib"
++				LinkIncremental="2"
++				AdditionalLibraryDirectories="C:\Program Files\Microsoft SDKs\Windows\v6.0A\Lib"
++				ModuleDefinitionFile="win32\usb2can.def"
++				GenerateDebugInformation="true"
++				SubSystem="2"
++				TargetMachine="1"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCManifestTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCAppVerifierTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++				CommandLine=""
++			/>
++		</Configuration>
++		<Configuration
++			Name="Release|Win32"
++			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
++			IntermediateDirectory="$(ConfigurationName)"
++			ConfigurationType="2"
++			CharacterSet="0"
++			WholeProgramOptimization="1"
++			>
++			<Tool
++				Name="VCPreBuildEventTool"
++			/>
++			<Tool
++				Name="VCCustomBuildTool"
++			/>
++			<Tool
++				Name="VCXMLDataGeneratorTool"
++			/>
++			<Tool
++				Name="VCWebServiceProxyGeneratorTool"
++			/>
++			<Tool
++				Name="VCMIDLTool"
++			/>
++			<Tool
++				Name="VCCLCompilerTool"
++				Optimization="2"
++				EnableIntrinsicFunctions="true"
++				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_WINDOWS;_USRDLL;USB2CAN_EXPORTS"
++				RuntimeLibrary="2"
++				EnableFunctionLevelLinking="true"
++				UsePrecompiledHeader="0"
++				WarningLevel="3"
++				DebugInformationFormat="3"
++			/>
++			<Tool
++				Name="VCManagedResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCResourceCompilerTool"
++			/>
++			<Tool
++				Name="VCPreLinkEventTool"
++			/>
++			<Tool
++				Name="VCLinkerTool"
++				AdditionalDependencies="Setupapi.lib"
++				LinkIncremental="1"
++				AdditionalLibraryDirectories="C:\Program Files\Microsoft SDKs\Windows\v6.0A\Lib"
++				ModuleDefinitionFile="win32\usb2can.def"
++				GenerateDebugInformation="true"
++				SubSystem="2"
++				OptimizeReferences="2"
++				EnableCOMDATFolding="2"
++				TargetMachine="1"
++			/>
++			<Tool
++				Name="VCALinkTool"
++			/>
++			<Tool
++				Name="VCManifestTool"
++			/>
++			<Tool
++				Name="VCXDCMakeTool"
++			/>
++			<Tool
++				Name="VCBscMakeTool"
++			/>
++			<Tool
++				Name="VCFxCopTool"
++			/>
++			<Tool
++				Name="VCAppVerifierTool"
++			/>
++			<Tool
++				Name="VCPostBuildEventTool"
++				Description="lib /def:win32\usb2can.def /OUT:$(TargetDir)$(TargetName).lib"
++				CommandLine=""
++			/>
++		</Configuration>
++	</Configurations>
++	<References>
++	</References>
++	<Files>
++		<Filter
++			Name="Source Files"
++			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
++			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
++			>
++			<File
++				RelativePath=".\common\dlldrvobj.cpp"
++				>
++			</File>
++			<File
++				RelativePath=".\vscp_common\dllist.c"
++				>
++			</File>
++			<File
++				RelativePath=".\common\enum.cpp"
++				>
++			</File>
++			<File
++				RelativePath=".\stdafx.cpp"
++				>
++				<FileConfiguration
++					Name="Debug|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						UsePrecompiledHeader="1"
++					/>
++				</FileConfiguration>
++				<FileConfiguration
++					Name="Release|Win32"
++					>
++					<Tool
++						Name="VCCLCompilerTool"
++						UsePrecompiledHeader="1"
++					/>
++				</FileConfiguration>
++			</File>
++			<File
++				RelativePath=".\win32\usb2can.def"
++				>
++			</File>
++			<File
++				RelativePath=".\win32\usb2candrv.cpp"
++				>
++			</File>
++			<File
++				RelativePath=".\common\usb2canobj.cpp"
++				>
++			</File>
++		</Filter>
++		<Filter
++			Name="Header Files"
++			Filter="h;hpp;hxx;hm;inl;inc;xsd"
++			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
++			>
++			<File
++				RelativePath=".\common\callback.h"
++				>
++			</File>
++			<File
++				RelativePath=".\vscp_common\canal.h"
++				>
++			</File>
++			<File
++				RelativePath=".\vscp_common\canal_macro.h"
++				>
++			</File>
++			<File
++				RelativePath=".\common\dlldrvobj.h"
++				>
++			</File>
++			<File
++				RelativePath=".\vscp_common\dllist.h"
++				>
++			</File>
++			<File
++				RelativePath=".\common\enum.h"
++				>
++			</File>
++			<File
++				RelativePath=".\stdafx.h"
++				>
++			</File>
++			<File
++				RelativePath=".\targetver.h"
++				>
++			</File>
++			<File
++				RelativePath=".\common\usb2canobj.h"
++				>
++			</File>
++		</Filter>
++		<Filter
++			Name="Resource Files"
++			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
++			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
++			>
++		</Filter>
++		<File
++			RelativePath=".\ReadMe.txt"
++			>
++		</File>
++	</Files>
++	<Globals>
++	</Globals>
++</VisualStudioProject>
+Index: win32/usb2can.def
+===================================================================
+--- win32/usb2can.def	(revision 3328)
++++ win32/usb2can.def	(revision 3344)
+@@ -21,4 +21,4 @@
+ 	CanalGetVersion @14
+ 	CanalGetDllVersion @15
+ 	CanalGetVendorString @16
+-	
+\ No newline at end of file
++	CanalGetReceiveHandle @17
+\ No newline at end of file
+Index: win32/usb2candrv.cpp
+===================================================================
+--- win32/usb2candrv.cpp	(revision 3328)
++++ win32/usb2candrv.cpp	(revision 3344)
+@@ -47,9 +47,15 @@
+ 	switch( ul_reason_for_call ) {
+ 
+ 		case DLL_PROCESS_ATTACH:
+-			hThisInstDll = hInstDll;
+-			theApp = new CDllDrvObj();
+-			theApp->InitInstance();
++			try{
++				hThisInstDll = hInstDll;
++				theApp = new CDllDrvObj();
++				theApp->InitInstance();
++			}
++			catch(...)
++			{
++				return FALSE;//memory exception creating handles
++			}
+ 			break;
+ 
+ 		case DLL_THREAD_ATTACH:
+@@ -90,18 +96,18 @@
+ 	{
+ 
+ 			if ( ( h = theApp->addDriverObject(pdrvObj)) <= 0 )
+-				{
++			{
+ 				 h = 0;
+                  delete  pdrvObj; 
+-				}
++			}
+ 			else
++			{
++				if ( pdrvObj->open( pDevice, flags ) == FALSE )
+ 				{
+-                  if ( pdrvObj->open( pDevice, flags ) == FALSE )
+-					  {
+-					   theApp->removeDriverObject( h );
+-					   h = 0;
+-					  }
+-				}		
++				   theApp->removeDriverObject( h );
++				   h = 0;
++				}
++			}		
+ 	}
+ 
+ 	return h;
+@@ -371,16 +377,31 @@
+ //#define CANAL_MINOR_VERSION					0
+ //#define CANAL_SUB_VERSION	
+ 
+-	strcpy( r_str, pdrvObj->getVendorString());
+-    strcat( r_str, ";");
++	strcpy_s( r_str, 256, pdrvObj->getVendorString());
++    strcat_s( r_str, 256, ";");
+     sprintf_s(tmp_str,sizeof(tmp_str),"%d.%d.%d",CANAL_MAIN_VERSION,CANAL_MINOR_VERSION,CANAL_SUB_VERSION);
+-	strcat( r_str,tmp_str );
+-	strcat( r_str, ";");
++	strcat_s( r_str, 256, tmp_str );
++	strcat_s( r_str, 256, ";");
+     sprintf_s(tmp_str,sizeof(tmp_str),"%d.%d.%d",DLL_MAIN_VERSION,DLL_MINOR_VERSION,DLL_SUB_VERSION);
+-	strcat( r_str,tmp_str );
+-	strcat( r_str, ";");
+-	strcat( r_str, "8devices.com\0");
++	strcat_s( r_str, 256, tmp_str );
++	strcat_s( r_str, 256, ";");
++	strcat_s( r_str, 256, "8devices.com\0");
+ 
+     return (r_str);
+ }
+ 
++
++///////////////////////////////////////////////////////////////////////////////
++// CanalGetReceiveHandle
++//
++
++#ifdef WIN32
++extern "C" HANDLE WINAPI EXPORT CanalGetReceiveHandle( long handle )
++#else
++extern "C" HANDLE CanalGetReceiveHandle( long handle )
++#endif
++{
++	CUsb2canObj *pdrvObj =  theApp->getDriverObject( handle );
++	if ( NULL == pdrvObj ) return 0;
++	return pdrvObj->getReceiveHandle();
++}
+Index: vscp_common/canal.h
+===================================================================
+--- vscp_common/canal.h	(revision 3328)
++++ vscp_common/canal.h	(revision 3344)
+@@ -235,6 +235,20 @@
+ int CanalBlockingSend( long handle, PCANALMSG pCanalMsg, unsigned long timeout );
+ #endif
+ 
++
++/*! 
++	Receive event handle for CANAL chanel.
++
++	@param handle - Handle to open physical CANAL channel.
++	@return zero on failure or handle for receiving event.
++*/
++#ifdef WIN32
++HANDLE WINAPI EXPORT CanalGetReceiveHandle( long handle );
++#else
++HANDLE CanalGetReceiveHandle( long handle );
++#endif
++
++
+ /*!
+ 	Receieve a message on a CANAL channel.
+ 
+@@ -560,6 +574,7 @@
+ // History
+ // =======
+ //
++// 2014-08-27 DL   - Exposed received message event and allowing only one instance port
+ // 2007-10-31 AKHE - Blocking and driver properties added
+ // 2006-05-16 AKHE - Added fastmode defines.
+ // 2005-08-09 AKHE - Added error info to canalStatus structure.
+Index: usb2can.vcproj.KELVATEK.d.luca.user
+===================================================================
+--- usb2can.vcproj.KELVATEK.d.luca.user	(revision 0)
++++ usb2can.vcproj.KELVATEK.d.luca.user	(revision 3344)
+@@ -0,0 +1,65 @@
++<?xml version="1.0" encoding="Windows-1252"?>
++<VisualStudioUserFile
++	ProjectType="Visual C++"
++	Version="9.00"
++	ShowAllFiles="false"
++	>
++	<Configurations>
++		<Configuration
++			Name="Debug|Win32"
++			>
++			<DebugSettings
++				Command="C:\KELVATEK\Projects\TOTUS\Common\Canoodle\Debug\CanoodleServer.exe"
++				WorkingDirectory="C:\KELVATEK\Projects\TOTUS\Common\Canoodle\Debug\"
++				CommandArguments="CANAL_ED000215 1000000 51791"
++				Attach="false"
++				DebuggerType="3"
++				Remote="1"
++				RemoteMachine="LENOVO-E520E"
++				RemoteCommand=""
++				HttpUrl=""
++				PDBPath=""
++				SQLDebugging=""
++				Environment=""
++				EnvironmentMerge="true"
++				DebuggerFlavor="0"
++				MPIRunCommand=""
++				MPIRunArguments=""
++				MPIRunWorkingDirectory=""
++				ApplicationCommand=""
++				ApplicationArguments=""
++				ShimCommand=""
++				MPIAcceptMode=""
++				MPIAcceptFilter=""
++			/>
++		</Configuration>
++		<Configuration
++			Name="Release|Win32"
++			>
++			<DebugSettings
++				Command="C:\KELVATEK\Projects\TOTUS\Common\Canoodle\Release\CanoodleServer.exe"
++				WorkingDirectory="C:\KELVATEK\Projects\TOTUS\Common\Canoodle\Release"
++				CommandArguments="CANAL_ED000215 1000000 51791"
++				Attach="false"
++				DebuggerType="3"
++				Remote="1"
++				RemoteMachine="LENOVO-E520E"
++				RemoteCommand=""
++				HttpUrl=""
++				PDBPath=""
++				SQLDebugging=""
++				Environment=""
++				EnvironmentMerge="true"
++				DebuggerFlavor="0"
++				MPIRunCommand=""
++				MPIRunArguments=""
++				MPIRunWorkingDirectory=""
++				ApplicationCommand=""
++				ApplicationArguments=""
++				ShimCommand=""
++				MPIAcceptMode=""
++				MPIAcceptFilter=""
++			/>
++		</Configuration>
++	</Configurations>
++</VisualStudioUserFile>
+Index: common/dlldrvobj.cpp
+===================================================================
+--- common/dlldrvobj.cpp	(revision 3328)
++++ common/dlldrvobj.cpp	(revision 3344)
+@@ -55,21 +55,75 @@
+ 
+ ////////////////////////////////////////////////////////////////////////////
+ // CDllDrvObj construction
++static long arrayObj[CANAL_USB2CAN_DRIVER_MAX_OPEN];
+ 
+-CDllDrvObj::CDllDrvObj()
++
++CDllDrvObj::CDllDrvObj() : lpvMem(arrayObj), hMapObject(NULL)
+ {
+ 	m_instanceCounter = 0;
+ #ifdef WIN32
+-	m_objMutex = CreateMutex( NULL, true, "__CANAL_IXXATVCI_MUTEX__" );
++	m_objMutex = CreateMutex( NULL, false, "__CANAL_IXXATVCI_MUTEX__" );
++	DWORD dwResult = LOCK_MUTEX(m_objMutex);
++	if(dwResult == WAIT_ABANDONED)
++	{
++		UNLOCK_MUTEX(m_objMutex);
++		CloseHandle(m_objMutex);		
++		throw "error mutex abandoned";
++	}
++
++            // Create a named file mapping object
++ 
++            hMapObject = CreateFileMapping( 
++                INVALID_HANDLE_VALUE,   // use paging file
++                NULL,                   // default security attributes
++                PAGE_READWRITE,         // read/write access
++                0,                      // size: high 32-bits
++                sizeof(long) * CANAL_USB2CAN_DRIVER_MAX_OPEN,  // size: low 32-bits
++                TEXT("dllusb2canfilemap")); // name of map object
++            if (hMapObject == NULL) 
++			{
++				UNLOCK_MUTEX(m_objMutex);
++				CloseHandle(m_objMutex);
++                throw "error createfilemapping"; 
++			}
++ 
++            // The first process to attach initializes memory
++ 
++            bool fInit = (GetLastError() != ERROR_ALREADY_EXISTS); 
++ 
++            // Get a pointer to the file-mapped shared memory
++ 
++            lpvMem = static_cast<long*>(MapViewOfFile( 
++                hMapObject,     // object to map view of
++                FILE_MAP_WRITE, // read/write access
++                0,              // high offset:  map from
++                0,              // low offset:   beginning
++                0));             // default: map entire file
++            if (lpvMem == NULL) 
++			{
++				UNLOCK_MUTEX(m_objMutex);
++				CloseHandle(m_objMutex);
++                throw "error createfilemapping"; 
++			}
++ 
++            // Initialize memory if this is the first process
++ 
++            if (fInit) 
++			{
++				memset(lpvMem, 0, sizeof(long)*CANAL_USB2CAN_DRIVER_MAX_OPEN);
++			}
++
+ #else
+ 	pthread_mutex_init( &m_objMutex, NULL );
++	//DL: I'm afraid I don't know how to open a memory mapped file under Linux so for lpvMem by default uses a static array address
+ #endif
+ 
+ 	// Init the driver array
+ 	for ( int i = 0; i<CANAL_USB2CAN_DRIVER_MAX_OPEN; i++ ) {
+-		m_drvObjArray[ i ] = NULL;
++		m_drvObjArray[i] = NULL;
+ 	}
+ 
++
+ 	UNLOCK_MUTEX( m_objMutex );
+ }
+ 
+@@ -80,24 +134,23 @@
+ 	
+ 	for ( int i = 0; i<CANAL_USB2CAN_DRIVER_MAX_OPEN; i++ )
+ 	{
+-		
+-		if ( NULL == m_drvObjArray[ i ] )
+-		{
+-			
+-			CUsb2canObj *pdrvObj =  getDriverObject( i );
+-
+-			if ( NULL != pdrvObj )
+-			{ 
+-				pdrvObj->close();	
+-				delete m_drvObjArray[ i ];
+-				m_drvObjArray[ i ] = NULL; 
+-			}
+-		}
++		if ( NULL != m_drvObjArray[i] )
++		{ 
++			m_drvObjArray[ i ]->close();	
++			delete m_drvObjArray[ i ];
++			m_drvObjArray[ i ] = NULL; 
++			lpvMem[i] = 0;//inform global space that this driver closed
++		}		
+ 	}
++#ifdef WIN32
++	UnmapViewOfFile(lpvMem); 
++ 
++    // Close the process's handle to the file-mapping object
++    CloseHandle(hMapObject);
+ 
+ 	UNLOCK_MUTEX( m_objMutex );
+ 
+-#ifdef WIN32
++
+ 	CloseHandle( m_objMutex );
+ #else	
+ 	pthread_mutex_destroy( &m_objMutex );
+@@ -123,10 +176,11 @@
+ 
+ 	 for ( int i=0; i<CANAL_USB2CAN_DRIVER_MAX_OPEN; i++ )
+ 	 {	
+-		if ( NULL == m_drvObjArray[ i ] )
++		if ( NULL == m_drvObjArray[ i ] && lpvMem[i] == 0)
+ 		{		
+ 			m_drvObjArray[ i ] = pdrvObj;	
+ 			h = i + 1681; 
++			lpvMem[i] = h;//inform global space that this driver opened on position i
+ 			break;
+ 	    }
+ 	}
+@@ -146,8 +200,7 @@
+ 	long idx = h - 1681;
+ 
+ 	// Check if valid handle
+-	if ( idx < 0 ) return NULL;
+-	if ( idx >= CANAL_USB2CAN_DRIVER_MAX_OPEN ) return NULL;
++	if ( idx < 0 || idx >= CANAL_USB2CAN_DRIVER_MAX_OPEN) return NULL;
+ 	return m_drvObjArray[ idx ];
+ }
+ 
+@@ -161,15 +214,17 @@
+ 	long idx = h - 1681;
+ 
+ 	// Check if valid handle
+-	if ( idx < 0 ) return;
+-	if ( idx >= CANAL_USB2CAN_DRIVER_MAX_OPEN ) return;
++	if ( idx < 0 || idx >= CANAL_USB2CAN_DRIVER_MAX_OPEN) return;
+ 
+ 	LOCK_MUTEX( m_objMutex );
+ 
+ 	if ( NULL != m_drvObjArray[ idx ] )
++	{
+ 	  delete m_drvObjArray[ idx ];
++	}
+ 
+ 	m_drvObjArray[ idx ] = NULL;
++	lpvMem[idx] = 0;//inform global space driver on position idx closed
+ 
+ 	UNLOCK_MUTEX( m_objMutex );
+ }
+@@ -189,27 +244,17 @@
+ 
+ BOOL CDllDrvObj::removeAllObjects()
+ {
+-	long h = 0;
+-
+-
+ 	LOCK_MUTEX( m_objMutex );
+ 
+ 	for ( int i=0; i<CANAL_USB2CAN_DRIVER_MAX_OPEN; i++ )
+ 	{
+-	
+-		if ( NULL == m_drvObjArray[ i ] )
+-		{
+-			
+-			CUsb2canObj *pdrvObj =  getDriverObject( i );
+-
+-			if ( NULL != pdrvObj )
+-			{ 
+-				pdrvObj->close();	
+-				delete m_drvObjArray[ i ];
+-				m_drvObjArray[ i ] = NULL; 
+-			}
++		if ( NULL != m_drvObjArray[ i ] )
++		{ 
++			m_drvObjArray[ i ]->close();	
++			delete m_drvObjArray[ i ];
++			m_drvObjArray[ i ] = NULL; 
++			lpvMem[i] = 0;//inform global space driver on position i closed
+ 		}
+-
+ 	}
+ 
+ 	UNLOCK_MUTEX( m_objMutex );
+Index: common/dlldrvobj.h
+===================================================================
+--- common/dlldrvobj.h	(revision 3328)
++++ common/dlldrvobj.h	(revision 3344)
+@@ -31,7 +31,7 @@
+ 
+ #define DLL_MAIN_VERSION					1
+ #define DLL_MINOR_VERSION					0
+-#define DLL_SUB_VERSION				        6	
++#define DLL_SUB_VERSION				        7	
+ 
+ // This is the vendor string - Change to your own value
+ #define CANAL_DLL_VENDOR "edevices, Lithuania, http://www.8devices.com"
+@@ -40,6 +40,7 @@
+ // Max number of open connections
+ //#define CANAL_USB2CAN_DRIVER_MAX_OPEN	256
+ #define CANAL_USB2CAN_DRIVER_MAX_OPEN	1
++//WARNING! CANAL_USB2CAN_DRIVER_MAX_OPEN will be a problem with using old version with smaller size and a new version with bigger size on the same pc at the same time
+ 
+ /////////////////////////////////////////////////////////////////////////////
+ // CDllDrvObj
+@@ -92,7 +93,10 @@
+ 		This is the array with driver objects (max 256 objects
+ 	*/
+ 	CUsb2canObj *m_drvObjArray[ CANAL_USB2CAN_DRIVER_MAX_OPEN ];
++	long * lpvMem;      // pointer to shared memory
++	HANDLE hMapObject;  // handle to file mapping
+ 
++
+ 	/// Mutex for open/close
+ #ifdef WIN32	
+ 	HANDLE m_objMutex;
+Index: common/usb2canobj.cpp
+===================================================================
+--- common/usb2canobj.cpp	(revision 3328)
++++ common/usb2canobj.cpp	(revision 3344)
+@@ -219,7 +219,7 @@
+ 			  m_serial[y] = 0;
+ 		  }
+ 
+-		  strupr(m_serial);
++		  _strupr(m_serial);
+ 
+ 		  if( strlen (m_serial) != 8 )
+             return false;
+@@ -475,7 +475,10 @@
+ 
+ 	// set USB2CAN baudrate
+     if( USB2CAN_open( nSpeed,m_tseg1,m_tseg2,m_sjw,m_brp,m_initFlag ) == FALSE )
+-	  close();
++	{
++		close();
++		return false;
++	}
+ 
+     m_bOpen = true;
+ 
+@@ -976,9 +979,13 @@
+ 	   LOCK_MUTEX( m_receiveMutex );
+ 
+ 	   dll_removeNode( &m_receiveList, m_receiveList.pHead );
++	   if(m_receiveList.nCount == 0)
++	   {
++		   ResetEvent( m_receiveDataEvent);		
++	   }
+        UNLOCK_MUTEX( m_receiveMutex );
+ 
+-	   ResetEvent( m_receiveDataEvent);		
++	   
+ 
+        rv = CANAL_ERROR_SUCCESS;	
+ 
+@@ -1018,7 +1025,10 @@
+        LOCK_MUTEX( m_receiveMutex );
+        memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );	   
+ 	   dll_removeNode( &m_receiveList, m_receiveList.pHead );
+-	   ResetEvent( m_receiveDataEvent);
++	   if(m_receiveList.nCount == 0)
++	   {
++			ResetEvent( m_receiveDataEvent);
++	   }
+        UNLOCK_MUTEX( m_receiveMutex );	   	
+ 	  }
+ 	  else
+@@ -1453,18 +1463,16 @@
+ 				   {
+ 					 LOCK_MUTEX( pobj->m_receiveMutex );
+ 					 dll_addNode( &pobj->m_receiveList, pNode );
++					 SetEvent( pobj->m_receiveDataEvent ); // Signal frame in queue
+ 					 UNLOCK_MUTEX( pobj->m_receiveMutex );
+ 
+-					 SetEvent( pobj->m_receiveDataEvent ); // Signal frame in queue
+-
+ 				   }
+ 				   else if( (pobj->m_initFlag & 8) && (pobj->m_receiveList.nCount < USB2CAN_MAX_FIFO) )
+ 				   {
+ 					  LOCK_MUTEX( pobj->m_receiveMutex );
+ 					  dll_addNode( &pobj->m_receiveList, pNode );
++					  SetEvent( pobj->m_receiveDataEvent ); // Signal frame in queue
+ 					  UNLOCK_MUTEX( pobj->m_receiveMutex );
+-
+-					  SetEvent( pobj->m_receiveDataEvent ); // Signal frame in queue
+ 				   }
+ 				   else 
+ 				   {
+Index: common/usb2canobj.h
+===================================================================
+--- common/usb2canobj.h	(revision 3328)
++++ common/usb2canobj.h	(revision 3344)
+@@ -379,6 +379,13 @@
+ 	int dataAvailable( void );
+ 
+ 	/*!
++		Handle for receive event to know when to call readMsg
++		@return Handle
++	*/
++	HANDLE getReceiveHandle( void ) { return m_receiveDataEvent; }
++
++
++	/*!
+ 		Get device status
+ 		@param pCanalStatus Pointer to CANAL status structure
+ 		@return True on success.
+Index: targetver.h
+===================================================================
+--- targetver.h	(revision 0)
++++ targetver.h	(revision 3344)
+@@ -0,0 +1,24 @@
++#pragma once
++
++// The following macros define the minimum required platform.  The minimum required platform
++// is the earliest version of Windows, Internet Explorer etc. that has the necessary features to run 
++// your application.  The macros work by enabling all features available on platform versions up to and 
++// including the version specified.
++
++// Modify the following defines if you have to target a platform prior to the ones specified below.
++// Refer to MSDN for the latest info on corresponding values for different platforms.
++#ifndef WINVER                          // Specifies that the minimum required platform is Windows Vista.
++#define WINVER 0x0600           // Change this to the appropriate value to target other versions of Windows.
++#endif
++
++#ifndef _WIN32_WINNT            // Specifies that the minimum required platform is Windows Vista.
++#define _WIN32_WINNT 0x0600     // Change this to the appropriate value to target other versions of Windows.
++#endif
++
++#ifndef _WIN32_WINDOWS          // Specifies that the minimum required platform is Windows 98.
++#define _WIN32_WINDOWS 0x0410 // Change this to the appropriate value to target Windows Me or later.
++#endif
++
++#ifndef _WIN32_IE                       // Specifies that the minimum required platform is Internet Explorer 7.0.
++#define _WIN32_IE 0x0700        // Change this to the appropriate value to target other versions of IE.
++#endif
+Index: stdafx.cpp
+===================================================================
+--- stdafx.cpp	(revision 0)
++++ stdafx.cpp	(revision 3344)
+@@ -0,0 +1,8 @@
++// stdafx.cpp : source file that includes just the standard includes
++// usb2can.pch will be the pre-compiled header
++// stdafx.obj will contain the pre-compiled type information
++
++#include "stdafx.h"
++
++// TODO: reference any additional headers you need in STDAFX.H
++// and not in this file
+Index: ReadMe.txt
+===================================================================
+--- ReadMe.txt	(revision 0)
++++ ReadMe.txt	(revision 3344)
+@@ -0,0 +1,41 @@
++========================================================================
++    DYNAMIC LINK LIBRARY : usb2can Project Overview
++========================================================================
++
++AppWizard has created this usb2can DLL for you.
++
++This file contains a summary of what you will find in each of the files that
++make up your usb2can application.
++
++
++usb2can.vcproj
++    This is the main project file for VC++ projects generated using an Application Wizard.
++    It contains information about the version of Visual C++ that generated the file, and
++    information about the platforms, configurations, and project features selected with the
++    Application Wizard.
++
++usb2can.cpp
++    This is the main DLL source file.
++
++	When created, this DLL does not export any symbols. As a result, it
++	will not produce a .lib file when it is built. If you wish this project
++	to be a project dependency of some other project, you will either need to
++	add code to export some symbols from the DLL so that an export library
++	will be produced, or you can set the Ignore Input Library property to Yes
++	on the General propert page of the Linker folder in the project's Property
++	Pages dialog box.
++
++/////////////////////////////////////////////////////////////////////////////
++Other standard files:
++
++StdAfx.h, StdAfx.cpp
++    These files are used to build a precompiled header (PCH) file
++    named usb2can.pch and a precompiled types file named StdAfx.obj.
++
++/////////////////////////////////////////////////////////////////////////////
++Other notes:
++
++AppWizard uses "TODO:" comments to indicate parts of the source code you
++should add to or customize.
++
++/////////////////////////////////////////////////////////////////////////////

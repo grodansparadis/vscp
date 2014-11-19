@@ -52,13 +52,13 @@ bool CComm::init( unsigned char nComPort,
 						unsigned char nStopbits,
 						unsigned char nHandshake )
 {
-	char szComPort[10];
+	WCHAR szComPort[10];
 	COMMTIMEOUTS ct;
 	DCB dcbCommPort;	// ONESTOPBIT
 
 	// Check com-port data
-	if ( nComPort!= 0 ) {
-		sprintf( szComPort, "\\\\.\\COM%d", nComPort );
+	if ( nComPort!= 0 ) { 
+		swprintf( szComPort, sizeof(szComPort), TEXT("\\\\.\\COM%d"), nComPort );
 	}
 	else {
 		return false;	

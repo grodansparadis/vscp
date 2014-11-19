@@ -234,7 +234,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\vscpl1_can232drv.dll</OutputFile>
-      <ImportLibrary>.\Release\can232drv.lib</ImportLibrary>
+      <ImportLibrary>.\Release\vscpl1_can232drv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\can232drv.def</ModuleDefinitionFile>

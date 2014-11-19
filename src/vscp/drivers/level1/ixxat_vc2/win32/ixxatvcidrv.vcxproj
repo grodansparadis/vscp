@@ -134,7 +134,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Debug\vscpl1_ixxatvcidrv.dll</OutputFile>
-      <ImportLibrary>.\Debug\ixxatvcidrv.lib</ImportLibrary>
+      <ImportLibrary>.\Debug\vscpl1_ixxatvcidrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(IXXAT2)\lib;$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;Xat11Reg.lib;vci11un6.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\ixxatvcidrv.def</ModuleDefinitionFile>
@@ -242,7 +242,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\vscpl1_ixxatvcidrv.dll</OutputFile>
-      <ImportLibrary>.\Release\ixxatvcidrv.lib</ImportLibrary>
+      <ImportLibrary>.\Release\vscpl1_ixxatvcidrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(IXXAT2)\lib;$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>comctl32.lib;wsock32.lib;netapi32.lib;Xat11Reg.lib;vci11un6.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\ixxatvcidrv.def</ModuleDefinitionFile>

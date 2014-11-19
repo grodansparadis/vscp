@@ -127,7 +127,7 @@
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Release\vscpl1_loggerdrv.dll</OutputFile>
-      <ImportLibrary>.\Release\canallogger.lib</ImportLibrary>
+      <ImportLibrary>.\Release\vscpl1_loggerdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\canallogger.def</ModuleDefinitionFile>
@@ -237,7 +237,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <OutputFile>.\Debug\vscpl1_loggerdrv.dll</OutputFile>
-      <ImportLibrary>.\Debug\canallogger.lib</ImportLibrary>
+      <ImportLibrary>.\Debug\vscpl1_loggerdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\canallogger.def</ModuleDefinitionFile>
