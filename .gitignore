@@ -156,3 +156,11 @@ src/vscp/uvscpd/nbproject/private/launcher.properties
 /src/vscp/drivers/delivery
 src/vscp/drivers/level2/lmsensors/linux/-D__LINUX__
 src/vscp/helperlib/linux/examples/bigtest
+/src/vscp/drivers/level1/usb2can/usb2can/UpgradeLog.XML
+/src/vscp/drivers/level1/usb2can/usb2can/_UpgradeReport_Files/UpgradeReport.css
+/src/vscp/drivers/level1/usb2can/usb2can/_UpgradeReport_Files/UpgradeReport.xslt
+/src/vscp/drivers/level1/usb2can/usb2can/_UpgradeReport_Files/UpgradeReport_Minus.gif
+/src/vscp/drivers/level1/usb2can/usb2can/_UpgradeReport_Files/UpgradeReport_Plus.gif
+/src/vscp/drivers/level1/usb2can/usb2can/usb2can.sdf
+/src/vscp/drivers/level1/usb2can/usb2can/usb2can.suo
+/src/vscp/drivers/level1/usb2can/usb2can/usb2can.vcxproj.filters
