@@ -229,6 +229,9 @@ public:
     // Get file
     wxString& getFileName( void ) { return m_path; };
 
+	// isOPen()
+	bool isOpen( void ) { return m_ft ? true : false; };
+
 public:
     
     // Protector for this table
@@ -241,7 +244,7 @@ public:
 private:
 	
 	/// File handel for mainfile
-	FILE * m_ft;
+	FILE *m_ft;
 
 	/// Path to main file
 	wxString m_path;	

@@ -8379,7 +8379,10 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
     pObject->m_mutexTableList.Lock();
     listVSCPTables::iterator iter;
     for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
+
         ptblItem = *iter; 
+
+		if ( ( NULL == ptblItem ) || !ptblItem->isOpen() ) continue;
 
         buildPage += wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
                                             ( wxString( _("/vscp/tablelist?tblname=") + 
@@ -8499,8 +8502,9 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
     listVSCPTables::iterator iter;
     for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
         ptblItem = *iter; 
-        if ( 0 == strcmp( ptblItem->m_vscpFileHead.nameTable, (const char *)tblName.mbc_str() ) ) {
-            bFound = true;
+        if ( ( NULL != ptblItem ) && 
+				( 0 == strcmp( ptblItem->m_vscpFileHead.nameTable, (const char *)tblName.mbc_str() ) ) ) {
+            if ( ptblItem->isOpen() ) bFound = true;
 		    break;
 		}
     }

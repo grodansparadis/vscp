@@ -500,6 +500,8 @@ long CVSCPTable::getRangeOfData( uint32_t startpos, uint16_t count, struct _vscp
 {
     uint16_t i;
 
+	if ( NULL == m_ft ) return -1;
+
     if ( VSCP_TABLE_DYNAMIC == m_vscpFileHead.type ) {
         // Seek the start pos
 	    if ( fseek( m_ft, sizeof(_vscpFileHead) + startpos*sizeof(_vscpFileRecord), SEEK_SET ) ) {
@@ -587,6 +589,7 @@ int CVSCPTable::getInfo( struct _vscptableInfo *pInfo, uint64_t from, uint64_t t
 	_vscpFileRecord record;
 
 	if ( NULL == pInfo ) return 0;
+	if ( NULL == m_ft ) return 0;
 
 	memset( pInfo, 0, sizeof( struct _vscptableInfo ) ); 
 

@@ -53,6 +53,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_lircdrv", "drivers\l
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_syslogdrv", "drivers\level1\syslogdrv\windows\syslogdrv.vcxproj", "{20ADB0B9-B8C6-5FCA-8D92-D934D44C298E}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl1_usb2can", "drivers\level1\usb2can\usb2can\usb2can.vcxproj", "{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Unicode|Win32 = Debug Unicode|Win32
@@ -650,6 +652,27 @@ Global
 		{20ADB0B9-B8C6-5FCA-8D92-D934D44C298E}.Unicode Release|Win32.ActiveCfg = Release|Win32
 		{20ADB0B9-B8C6-5FCA-8D92-D934D44C298E}.Unicode Release|Win32.Build.0 = Release|Win32
 		{20ADB0B9-B8C6-5FCA-8D92-D934D44C298E}.Unicode Release|x64.ActiveCfg = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Debug Unicode|Win32.ActiveCfg = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Debug Unicode|Win32.Build.0 = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Debug Unicode|x64.ActiveCfg = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Debug|Win32.Build.0 = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Debug|x64.ActiveCfg = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Release Unicode|Win32.ActiveCfg = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Release Unicode|Win32.Build.0 = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Release Unicode|x64.ActiveCfg = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Release|Win32.ActiveCfg = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Release|Win32.Build.0 = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Release|x64.ActiveCfg = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Template|Win32.ActiveCfg = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Template|Win32.Build.0 = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Template|x64.ActiveCfg = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Unicode Debug|Win32.ActiveCfg = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Unicode Debug|Win32.Build.0 = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Unicode Debug|x64.ActiveCfg = Debug|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Unicode Release|Win32.ActiveCfg = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Unicode Release|Win32.Build.0 = Release|Win32
+		{0B81E79F-41D9-4E90-8823-76F9F94FAE4F}.Unicode Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
