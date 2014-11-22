@@ -259,13 +259,13 @@ int vscphlp_isConnected(const long handle);
 int vscphlp_doCommand( long handle, const char * cmd );
 int vscphlp_checkReply( long handle, int bClear );
 int vscphlp_clearLocalInputQueue( long handle );
-int vscphlp_OpenInterface( long handle, const char *pInterface, unsigned long flags );
-int vscphlp_Open( long handle, const char *pHostname, const char *pUsername, const char *pPassword );
-int vscphlp_Close( long handle );
-int vscphlp_Noop( long handle );
-int vscphlp_ClearDaemonEventQueue( long handle );
-int vscphlp_SendEvent( long handle,  const vscpEvent *pEvent );
-int vscphlp_SendEventEx( long handle, const vscpEventEx *pEvent );
+int vscphlp_openInterface( long handle, const char *pInterface, unsigned long flags );
+int vscphlp_open( long handle, const char *pHostname, const char *pUsername, const char *pPassword );
+int vscphlp_close( long handle );
+int vscphlp_noop( long handle );
+int vscphlp_clearDaemonEventQueue( long handle );
+int vscphlp_sendEvent( long handle,  const vscpEvent *pEvent );
+int vscphlp_sendEventEx( long handle, const vscpEventEx *pEvent );
 int vscphlp_receiveEvent( long handle, vscpEvent *pEvent );
 int vscphlp_receiveEventEx( long handle, vscpEventEx *pEvent );
 int vscphlp_blockingReceiveEvent( long handle, vscpEvent *pEvent );
@@ -275,14 +275,14 @@ int vscphlp_quitReceiveLoop(const long handle);
 int vscphlp_isDataAvailable( long handle, unsigned int *pCount );
 int vscphlp_getStatus( long handle, VSCPStatus *pStatus );
 int vscphlp_getStatistics( long handle, VSCPStatistics *pStatistics );
-int vscphlp_SetFilter( long handle, const vscpEventFilter *pFilter );
+int vscphlp_setFilter( long handle, const vscpEventFilter *pFilter );
 int vscphlp_getVersion( long handle, unsigned char *pMajorVer,
                                                     unsigned char *pMinorVer,
                                                     unsigned char *pSubMinorVer );
-int vscphlp_GetDLLVersion( long handle, unsigned long *pVersion );
+int vscphlp_getDLLVersion( long handle, unsigned long *pVersion );
 int vscphlp_getVendorString( long handle, char *pVendorStr, int size  );
-int vscphlp_GetDriverInfo( long handle, char *pVendorStr, int size  );
-int vscphlp_ServerShutDown( long handle );
+int vscphlp_getDriverInfo( long handle, char *pVendorStr, int size  );
+int vscphlp_serverShutDown( long handle );
 
 //-------------------------------------------------------------------------
 //                                Variables 
