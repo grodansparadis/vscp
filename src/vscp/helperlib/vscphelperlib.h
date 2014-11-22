@@ -39,8 +39,9 @@ extern "C" {
 #endif	
 
 #ifdef WIN32
-/*
+
 // * * * * *  W I N D O W S  * * * * *
+
 long WINAPI EXPORT vscphlp_newSession(void);
 void WINAPI EXPORT vscphlp_closeSession(long handle);
 void WINAPI EXPORT vscphlp_setResponseTimeout(long handle, unsigned char timeout );
@@ -246,10 +247,8 @@ unsigned char WINAPI EXPORT vscphlp_getVscpPriority( const vscpEvent *pEvent );
 unsigned char WINAPI EXPORT vscphlp_getVscpPriorityEx( const vscpEventEx *pEvent );
 void WINAPI EXPORT vscphlp_setVscpPriority( vscpEvent *pEvent, unsigned char priority );
 void WINAPI EXPORT vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char priority );
-*/
 
 #else
-
 
 // * * * * *  U N I X  /  L I N U X  * * * * *
 
