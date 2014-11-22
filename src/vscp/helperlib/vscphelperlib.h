@@ -44,7 +44,7 @@ extern "C" {
 
 long WINAPI EXPORT vscphlp_newSession(void);
 void WINAPI EXPORT vscphlp_closeSession(long handle);
-void WINAPI EXPORT vscphlp_setResponseTimeout(long handle, unsigned char timeout );
+int WINAPI EXPORT vscphlp_setResponseTimeout(long handle, unsigned char timeout );
 int WINAPI EXPORT vscphlp_isConnected(const long handle);
 int WINAPI EXPORT vscphlp_doCommand( long handle, const char * cmd );
 int WINAPI EXPORT vscphlp_checkReply( long handle, int bClear );
