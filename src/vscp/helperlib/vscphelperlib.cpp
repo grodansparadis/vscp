@@ -197,11 +197,11 @@ int vscphlp_clearInputQueue( long handle )
 // vscphlp_OpenInterface
 //
 #ifdef WIN32
-extern "C" long WINAPI EXPORT vscphlp_openInterface( long handle,
+extern "C" int WINAPI EXPORT vscphlp_openInterface( long handle,
 												            const char *pInterface,
                                                             unsigned long flags )
 #else
-extern "C" long vscphlp_openInterface( long handle,
+extern "C" int vscphlp_openInterface( long handle,
 										const char *pInterface,
                                         unsigned long flags )
 #endif
