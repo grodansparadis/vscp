@@ -254,7 +254,7 @@ void WINAPI EXPORT vscphlp_setVscpPriorityEx( vscpEventEx *pEvent, unsigned char
 
 long vscphlp_newSession(void);
 void vscphlp_closeSession(long handle);
-void vscphlp_setResponseTimeout(long handle, unsigned char timeout );
+int vscphlp_setResponseTimeout(long handle, unsigned char timeout );
 int vscphlp_isConnected(const long handle);
 int vscphlp_doCommand( long handle, const char * cmd );
 int vscphlp_checkReply( long handle, int bClear );
