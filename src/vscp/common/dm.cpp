@@ -2936,7 +2936,6 @@ bool CDM::addElement( dmElement *pItem )
 
 bool CDM::removeElement( unsigned short pos )
 {
-    if (pos < 0) return false;
     if ( pos >= m_DMList.GetCount() ) return false;
     
     wxDMLISTNode *node = m_DMList.Item( pos );
