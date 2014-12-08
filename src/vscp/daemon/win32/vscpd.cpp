@@ -95,6 +95,18 @@ int main(int argc, char **argv)
 
     if ( !::wxInitialize() ) {
         fprintf(stderr, "Failed to initialize the wxWindows library, aborting.");
+        
+#if wxUSE_UNICODE
+        /* Clean up */
+        {
+            for ( int n = 0; n < argc; n++ ) {
+                free(wxArgv[n]);
+            }
+
+            delete [] wxArgv;
+        }
+#endif // wxUSE_UNICODE
+        
         return -1;      
     }
 
@@ -190,6 +202,18 @@ int main(int argc, char **argv)
     if ( !ctrlobj.init( strCfgFile ) ) {
 		ctrlobj.logMsg( _("Unable to initialize the vscpd application."), 
                           DAEMON_LOGMSG_CRITICAL );
+                          
+#if wxUSE_UNICODE
+        /* Clean up */
+        {
+            for ( int n = 0; n < argc; n++ ) {
+                free(wxArgv[n]);
+            }
+
+            delete [] wxArgv;
+        }
+#endif // wxUSE_UNICODE
+
 		::wxUninitialize();
 		return FALSE;
 	}
