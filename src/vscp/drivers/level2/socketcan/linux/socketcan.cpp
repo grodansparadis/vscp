@@ -146,7 +146,7 @@ Csocketcan::open(const char *pUsername,
 	uint32_t ChannelID;
 	m_srv.doCmdGetChannelID(&ChannelID);
     
-	//m_srv.doCmdGetGUID(m_ifguid);
+	//m_srv.doCmdGetGUID( m_ifguid );
 
 	// The server should hold configuration data for each sensor
 	// we want to monitor.
@@ -338,7 +338,7 @@ CSocketCanWorkerTread::Entry()
             tv.tv_usec = 5000; // 5ms timeout 
 
             int ret;
-            if ((ret = select(sock + 1, &rdfs, NULL, NULL, &tv)) < 0) {
+            if ( ( ret = select(sock + 1, &rdfs, NULL, NULL, &tv ) ) <  0) {
                 // Error
                 if (ENETDOWN == errno) {
                     // We try to get contact with the net
@@ -351,7 +351,7 @@ CSocketCanWorkerTread::Entry()
                 continue;
             }
 
-            if (ret) {
+            if ( ret ) {
 
                 // There is data to read
 
