@@ -96,7 +96,7 @@ long CCAN232Obj::open( const char *pDevice, unsigned long flags )
 	p = strtok( NULL, ";" );
 	if ( NULL != p ) {		
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
-			sscanf( p + 2, "%x", &nMask );
+			sscanf( p + 2, "%lx", &nMask );
 		}
 		else {
 			nMask = atol( p );
@@ -107,7 +107,7 @@ long CCAN232Obj::open( const char *pDevice, unsigned long flags )
 	p = strtok( NULL, ";" );
 	if ( NULL != p ) {		
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
-			sscanf( p + 2, "%x", &nFilter );
+			sscanf( p + 2, "%lx", &nFilter );
 		}
 		else {
 			nFilter = atol( p );
