@@ -3002,7 +3002,7 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
     if (NULL == conn) return MG_FALSE;
 	
     // Get method
-    wxString method = wxString::FromAscii( conn->request_method );
+    method = wxString::FromAscii( conn->request_method );
     method.Trim();
     method.Trim( false );
     method.MakeUpper();
@@ -5228,10 +5228,9 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
     buildPage += _(WEB_DMLIST_BODY_START);
     
     {
-		//wxString wxstrurl = wxString::Format( _("%s/vscp/dm"), conn->local_ip );
         wxString wxstrlight = ((bLight) ? _("true") : _("false"));
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
-                _("/vscp/dm"), //wxstrurl.GetData(),
+                _("/vscp/dm"),
                 (unsigned long)nFrom+1,
                 ( (unsigned long)(nFrom + nCount) < pObject->m_dm.getElementCount()) ? 
                     nFrom + nCount : pObject->m_dm.getElementCount(),
@@ -5266,8 +5265,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
         
         {
             wxString url_dmedit = 
-                    wxString::Format(_("/vscp/dmedit?id=%l&from=%l&count=%l"),
-										//conn->local_ip,
+                    wxString::Format(_("/vscp/dmedit?id=%ld&from=%ld&count=%ld"),
                                         (long)(nFrom+i), (long)nFrom, (long)nCount );
             wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
                                                 (const char *)url_dmedit.c_str() );
@@ -5276,7 +5274,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
 
         // Client id    
         buildPage += _(WEB_IFLIST_TD_CENTERED);
-        buildPage += wxString::Format(_("<form name=\"input\" action=\"/vscp/dmdelete?id=%l\" method=\"get\"> %l <input type=\"submit\" value=\"x\"><input type=\"hidden\" name=\"id\"value=\"%l\"></form>"), 
+        buildPage += wxString::Format(_("<form name=\"input\" action=\"/vscp/dmdelete?id=%ld\" method=\"get\"> %ld <input type=\"submit\" value=\"x\"><input type=\"hidden\" name=\"id\"value=\"%ld\"></form>"), 
 										(long)nFrom+i, (long)nFrom+i+1, (long)nFrom+i );
         buildPage += _("</td>");
 
@@ -5447,17 +5445,16 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
     buildPage += _(WEB_DMLIST_TABLE_END);
     
     {
-        //wxString wxstrurl = _("/vscp/dm");
         wxString wxstrlight = ((bLight) ? _("true") : _("false"));
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
-				_("/vscp/dm"), // wxstrurl,
-                (unsigned long)nFrom,
-                ((unsigned long)(nFrom + nCount) < pObject->m_dm.getElementCount()) ? 
-                    nFrom + nCount - 1 : pObject->m_dm.getElementCount() - 1,
+                _("/vscp/dm"),
+                (unsigned long)nFrom+1,
+                ( (unsigned long)(nFrom + nCount) < pObject->m_dm.getElementCount()) ? 
+                    nFrom + nCount : pObject->m_dm.getElementCount(),
                 (unsigned long)pObject->m_dm.getElementCount(),
                 (unsigned long)nCount,
-                (unsigned long)nFrom,          
-				  (const char *)wxstrlight.c_str() );      
+                (unsigned long)nFrom,
+				(const char *)wxstrlight.c_str() );      
     }
      
     buildPage += _(WEB_COMMON_END);     // Common end code
@@ -5531,14 +5528,14 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             buildPage += _("<span id=\"optiontext\">New record.</span><br>");
         }
         else {
-            buildPage += wxString::Format(_("<span id=\"optiontext\">Record = %l.</span><br>"), id);
+            buildPage += wxString::Format(_("<span id=\"optiontext\">Record = %ld.</span><br>"), id);
         }
         
         buildPage += _("<br><form method=\"get\" action=\"");
         buildPage += _("/vscp/dmpost");
         buildPage += _("\" name=\"dmedit\">");
         
-        buildPage += wxString::Format(_("<input name=\"id\" value=\"%l\" type=\"hidden\"></input>"), id );
+        buildPage += wxString::Format(_("<input name=\"id\" value=\"%ld\" type=\"hidden\"></input>"), id );
        
 
         if (bNew) {
@@ -5553,15 +5550,15 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
                 nFrom = ((pObject->m_dm.getElementCount()/nCount) - 1)*nCount;
             }
     
-            buildPage += wxString::Format( _("<input name=\"from\" value=\"%l\" type=\"hidden\">"), (long)nFrom );
-            buildPage += wxString::Format( _("<input name=\"count\" value=\"%l\" type=\"hidden\">"), (long)nCount );
+            buildPage += wxString::Format( _("<input name=\"from\" value=\"%ld\" type=\"hidden\">"), (long)nFrom );
+            buildPage += wxString::Format( _("<input name=\"count\" value=\"%ld\" type=\"hidden\">"), (long)nCount );
 
         }
         else {
             // Hidden from
-            buildPage += wxString::Format(_("<input name=\"from\" value=\"%l\" type=\"hidden\">"), (long)nFrom );
+            buildPage += wxString::Format(_("<input name=\"from\" value=\"%ld\" type=\"hidden\">"), (long)nFrom );
             // Hidden count
-            buildPage += wxString::Format(_("<input name=\"count\" value=\"%l\" type=\"hidden\">"), (long)nCount );
+            buildPage += wxString::Format(_("<input name=\"count\" value=\"%ld\" type=\"hidden\">"), (long)nCount );
             buildPage += _("<input name=\"new\" value=\"false\" type=\"hidden\"></input>");
         }
         
@@ -6321,7 +6318,7 @@ VSCPWebServerThread::websrv_dmpost( struct mg_connection *conn )
     buildPage += _(WEB_STYLE_END);
     buildPage += _(WEB_COMMON_JS);      // Common Javascript code
     buildPage += _("<meta http-equiv=\"refresh\" content=\"2;url=/vscp/dm");
-    buildPage += wxString::Format(_("?from=%l&count=%l"), (long)nCount );
+    buildPage += wxString::Format(_("?from=%ld&count=%ld"), (long)nFrom, (long)nCount );
     buildPage += _("\">");
     buildPage += _(WEB_COMMON_HEAD_END_BODY_START);
     
@@ -6645,7 +6642,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
                 pObject->m_VSCP_Variables.m_listVariable.Item( i )->GetData();
         {
             wxString url_dmedit = 
-                    wxString::Format(_("/vscp/varedit?id=%l&from=%l&count=%l"),
+                    wxString::Format(_("/vscp/varedit?id=%ld&from=%ld&count=%ld"),
                                         (long)(nFrom+i), (long)nFrom, (long)nCount );
             wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
                                                 (const char *)url_dmedit.c_str() );
@@ -6654,7 +6651,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
 
         // Client id    
         buildPage += _(WEB_IFLIST_TD_CENTERED);
-        buildPage += wxString::Format(_("<form name=\"input\" action=\"/vscp/vardelete?id=%l\" method=\"get\"> %l <input type=\"submit\" value=\"x\"><input type=\"hidden\" name=\"id\"value=\"%l\"></form>"), 
+        buildPage += wxString::Format(_("<form name=\"input\" action=\"/vscp/vardelete?id=%ld\" method=\"get\"> %ld <input type=\"submit\" value=\"x\"><input type=\"hidden\" name=\"id\"value=\"%ld\"></form>"), 
                         (long)(nFrom+i), (long)(nFrom+i+1), (long)(nFrom+i) );
         buildPage += _("</td>");
         
@@ -6773,13 +6770,13 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
         wxString wxstrurl = _("/vscp/variables");
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
                 (const char *)wxstrurl.c_str(),
-                (unsigned long)nFrom,
+                (unsigned long)(nFrom+1),
                 ( (unsigned long)(nFrom + nCount) < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ? 
-                    nFrom + nCount - 1 : pObject->m_VSCP_Variables.m_listVariable.GetCount() - 1,
+                    nFrom + nCount : pObject->m_VSCP_Variables.m_listVariable.GetCount(),
                 (unsigned long)pObject->m_VSCP_Variables.m_listVariable.GetCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
-                _("false") );
+                _("false" ) );
     }
      
     buildPage += _(WEB_COMMON_END);     // Common end code
@@ -8382,7 +8379,10 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
     pObject->m_mutexTableList.Lock();
     listVSCPTables::iterator iter;
     for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
+
         ptblItem = *iter; 
+
+		if ( ( NULL == ptblItem ) || !ptblItem->isOpen() ) continue;
 
         buildPage += wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
                                             ( wxString( _("/vscp/tablelist?tblname=") + 
@@ -8502,8 +8502,9 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
     listVSCPTables::iterator iter;
     for (iter = pObject->m_listTables.begin(); iter != pObject->m_listTables.end(); ++iter) {
         ptblItem = *iter; 
-        if ( 0 == strcmp( ptblItem->m_vscpFileHead.nameTable, (const char *)tblName.mbc_str() ) ) {
-            bFound = true;
+        if ( ( NULL != ptblItem ) && 
+				( 0 == strcmp( ptblItem->m_vscpFileHead.nameTable, (const char *)tblName.mbc_str() ) ) ) {
+            if ( ptblItem->isOpen() ) bFound = true;
 		    break;
 		}
     }
