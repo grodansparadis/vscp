@@ -682,7 +682,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
        ndigits=0;
     }
 
-    modf( value, &intpart );
+    (void)modf( value, &intpart );
     val64 = (uint64_t)(value * pow(10.0,ndigits));
 
     wxUINT64_SWAP_ON_LE(val64);
