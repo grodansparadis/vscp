@@ -110,10 +110,6 @@ int main(int argc, char **argv)
         return -1;      
     }
 
-    int arg = 0;
-    unsigned char nDebugLevel = 0;
-    bool bVerbose = false;
-    bool bCopyLeft = false;
     bool bHideWindow = false;
     wxString strCfgFile;
     CControlObject ctrlobj;
@@ -143,11 +139,8 @@ int main(int argc, char **argv)
 
         // * * * Verbose * * *
         if ( pparser->Found( wxT("verbose") ) ) {
-            bVerbose = true;
-            {
-	            wxString wxstr;
-	            wxstr.Printf(wxT("Verbose mode set\n"));
-            }
+            wxString wxstr;
+            wxstr.Printf(wxT("Verbose mode set\n"));
         }
 
         // * * * Hide debug window * * *
@@ -161,11 +154,8 @@ int main(int argc, char **argv)
 
         // * * * Copyleft * * *
         if ( pparser->Found( wxT("gnu") ) ) {
-            bCopyLeft = true;
-            {
-                wxString wxstr;
-                wxstr.Printf(wxT("Verbose mode set\n"));
-            }
+            wxString wxstr;
+            wxstr.Printf(wxT("Verbose mode set\n"));
         }
 
         // * * * Path to configuration file * * *
