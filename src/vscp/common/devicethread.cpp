@@ -769,12 +769,11 @@ void *deviceCanalReceiveThread::Entry()
 	// Blocking receive method must have been found
 	if (NULL == m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingReceive) return NULL;
 
-	int rv;
     while (!TestDestroy() && !m_bQuit) {
 
         if (CANAL_ERROR_SUCCESS ==
-                (rv = m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingReceive(
-                m_pMainThreadObj->m_pDeviceItem->m_openHandle, &msg, 500))) {
+                m_pMainThreadObj->m_pDeviceItem->m_proc_CanalBlockingReceive(
+                m_pMainThreadObj->m_pDeviceItem->m_openHandle, &msg, 500)) {
 
             // There must be room in the receive queue
             if (m_pMainThreadObj->m_pCtrlObject->m_maxItemsInClientReceiveQueue >
