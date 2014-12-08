@@ -717,7 +717,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
         pdata[5] = (val64 >> 8) & 0xff;
         pdata[6] = val64 & 0xff;
     }
-    else if ( val64 < ((double)0x80000000) ) {
+    else if ( val64 < ((double)0x800000000000) ) {
         *psize = 8;
         pdata[2] = (val64 >> 40) & 0xff;
         pdata[3] = (val64 >> 32) & 0xff;
