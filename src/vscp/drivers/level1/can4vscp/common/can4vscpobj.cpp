@@ -272,7 +272,10 @@ bool CCan4VSCPObj::open( const char *szFileName, unsigned long flags )
 							
 		syslog( LOG_CRIT, "can4vscp: Unable to create can4vscpdrv write thread.");
 		rv = false;
-		fclose( m_flog );
+        if (NULL != m_flog) {
+            fclose( m_flog );
+            m_flog = NULL;
+        }
 	}
 
 
@@ -284,7 +287,10 @@ bool CCan4VSCPObj::open( const char *szFileName, unsigned long flags )
 							
 		syslog( LOG_CRIT, "can4vscp: Unable to create can4vscpdrv receive thread.");
 		rv = false;
-		fclose( m_flog );
+        if (NULL != m_flog) {
+            fclose( m_flog );
+            m_flog = NULL;
+        }
 	}
 		
     // We are open
