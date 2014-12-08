@@ -333,7 +333,7 @@ int CSocketcanObj::dataAvailable(void)
 //	getStatistics
 //------------------------------------------------------------------------------
 
-bool CSocketcanObj::getStatistics(PCANALSTATISTICS pCanalStatistics)
+bool CSocketcanObj::getStatistics(PCANALSTATISTICS& pCanalStatistics)
 {
 	pCanalStatistics = &m_socketcanobj.m_stat;
 	return true;
