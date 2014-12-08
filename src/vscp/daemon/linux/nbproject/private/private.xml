@@ -43,7 +43,6 @@
             <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/tcpipclientthread.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/vscpwebserver.cpp</file>
-            <file>file:/home/akhe/vscp_software/src/vscp/common/devicethread.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/dm.cpp</file>
         </group>
     </open-files>
