@@ -2760,7 +2760,6 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
     buildPage += _("</i><br>");
     buildPage += _("-----------------------------------------------------------------------------------------<br>");
 
-    uint32_t nLines = 0, startLine = 0, n2Lines = 0;
     wxULongLong fileLength = logfile.GetSize();
     double pos;
     if ( fileLength.ToDouble() > 100000 ) {
@@ -4220,9 +4219,6 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 
 		}
 		else if ( REST_FORMAT_XML == format ) {
-
-			int filtered = 0;
-			int errors = 0;
 
 			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_XML );
 				
@@ -6489,7 +6485,6 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *conn )
 	char buf[80];
 	wxString str;
     VSCPInformation vscpinfo;
-    dmElement *pElement = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;
