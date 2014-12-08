@@ -4352,10 +4352,18 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *conn,
     wxString strValue;
 	wxStringTokenizer tkz( strVariable, _(";") );
 
-	CControlObject *pObject = (CControlObject *)conn->server_param;
+    // Check pointer
+    if (NULL == conn) {
+        return MG_FALSE;
+    }
 
-	if ( ( NULL == conn ) && ( NULL == pObject )  && ( NULL != pSession )  ) {
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    
+    if (NULL == pObject) {
+        return MG_FALSE;
+    }
 
+    if ( NULL != pSession ) {
         // Get variablename
         if ( tkz.HasMoreTokens() ) {
 
@@ -4409,9 +4417,18 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *conn,
     bool bPersistence = false;
 	wxStringTokenizer tkz( strVariable, _(";") );
 
-	CControlObject *pObject = (CControlObject *)conn->server_param;
+    // Check pointer
+    if (NULL == conn) {
+        return MG_FALSE;
+    }
 
-	if ( ( NULL == conn ) && ( NULL == pObject )  && ( NULL != pSession )  ) {
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    
+    if (NULL == pObject) {
+        return MG_FALSE;
+    }
+
+    if ( NULL != pSession ) {
 
         // Get variablename
         if ( tkz.HasMoreTokens() ) {
@@ -4530,9 +4547,18 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 												    wxString& strFrom,
 												    wxString& strTo )
 {
-	CControlObject *pObject = (CControlObject *)conn->server_param;
+    // Check pointer
+    if (NULL == conn) {
+        return MG_FALSE;
+    }
 
-	if ( ( NULL == conn ) && ( NULL == pObject )  && ( NULL != pSession )  ) {
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    
+    if (NULL == pObject) {
+        return MG_FALSE;
+    }
+
+    if ( NULL != pSession ) {
 
 		// We need 'tablename' and optinally 'from' and 'to'
 
