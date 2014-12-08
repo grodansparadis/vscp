@@ -169,7 +169,7 @@ public:
 	/*!
 		Get statistics
 	*/
-	bool getStatistics( PCANALSTATISTICS pCanalStatistics );
+	bool getStatistics( PCANALSTATISTICS& pCanalStatistics );
 
 
 	/*
