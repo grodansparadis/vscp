@@ -2438,7 +2438,7 @@ uint32_t CMDF::getNumberOfRegisters( uint32_t page )
 
 uint32_t CMDF::getPages( SortedArrayLong& arraylong ) 
 { 
-	uint32_t npages = 0;
+	//uint32_t npages = 0;
 	bool bFound;
 
 	MDF_REGISTER_LIST::iterator iterValue;
