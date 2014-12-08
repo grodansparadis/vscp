@@ -762,7 +762,7 @@ bool can323ToCanal( char * p, PCANALMSG pMsg )
 {
 	bool rv = false;
 	int val;
-	short data_offset;	// Offset to dlc byte
+	short data_offset = 0;	// Offset to dlc byte
 	char save;
 
 	if ( 't' == *p ) {
