@@ -224,7 +224,9 @@ double vscp_getDataCodingNormalizedInteger(const uint8_t *pCode,
 	uint8_t valarray[ 8 ];
     uint8_t normbyte;
 	uint8_t decibyte;
+#ifndef  WORDS_BIGENDIAN	
 	int64_t value64;
+#endif
 	double value = 0;
 	bool bNegative = false; // set for negative number
 
