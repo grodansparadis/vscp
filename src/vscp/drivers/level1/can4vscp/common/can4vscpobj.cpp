@@ -854,10 +854,10 @@ bool CCan4VSCPObj::readSerialData( void )
 				if (  m_receiveList.nCount < CAN4VSCP_MAX_RCVMSG ) {					
 					
 					PCANALMSG pMsg	= new canalMsg;
-					pMsg->flags = 0;
 
 					if ( NULL != pMsg ) {
-					
+                    
+                        pMsg->flags = 0;
 						dllnode *pNode = new dllnode; 
 						if ( NULL != pNode ) {
 							
