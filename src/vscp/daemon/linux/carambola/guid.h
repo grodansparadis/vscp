@@ -83,7 +83,7 @@ public:
     /*!
         Set a byte at a specific GUID position
     */
-    void setAt( const unsigned char n, const unsigned char value ) { int pos; pos &= ( n & 0x0f ); m_id[ pos ] = value; };
+    void setAt( const unsigned char n, const unsigned char value ) { int pos = 0; pos &= ( n & 0x0f ); m_id[ pos ] = value; };
 
     /*!
         Check if same as supplied GUID
