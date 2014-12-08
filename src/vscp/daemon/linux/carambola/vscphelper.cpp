@@ -1075,7 +1075,7 @@ wxString& getDataCodingString( const uint8_t *pString, const uint8_t length )
 //
 float getDataCodingFloat ( const uint8_t *pNorm, const uint8_t length )
 {
-  float value;
+  float value = 0.0f;
   //value = std::numeric_limits<float>::infinity();
   if (length >= 5) {
     float *pfloat=(float*)(pNorm+1);
