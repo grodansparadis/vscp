@@ -3123,13 +3123,16 @@ void TcpClientThread::sendFastOutgoingFrame ( CClientItem *pClientItem )
         BINARY_WriteEvent ( CANAL_BINARY_FRAME_TYPE_VSCP,
             outbuf,
             pEvent->sizeData + 21 );
-
-        delete pEvent;
-
     }
 	else {
         // No event(s) to read
         SendFastErrorFrame ( CANAL_BINARY_ERROR_NO_DATA );
+    }
+    
+    if (NULL != pEvent)
+    {
+        delete pEvent;
+        pEvent = NULL;
     }
 
     pClientItem->m_mutexClientInputQueue.Unlock();
