@@ -131,7 +131,7 @@ int axtoi(const char *x)
 // decodes a url string
 void urldecode(char *str)
 {
-	char tmp[2];
+	char tmp[3];
 
 	int j = strlen(str);
 	for(int i=0; i < j; i++)
