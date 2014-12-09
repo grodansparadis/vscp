@@ -589,7 +589,7 @@ int CCAN232Obj::dataAvailable(void)
 //	getStatistics
 //------------------------------------------------------------------------------
 
-bool CCAN232Obj::getStatistics(PCANALSTATISTICS pCanalStatistics)
+bool CCAN232Obj::getStatistics(PCANALSTATISTICS& pCanalStatistics)
 {
     pCanalStatistics = &m_can232obj.m_stat;
     return true;

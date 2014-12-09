@@ -681,9 +681,6 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         // Get variablename
         if (tkz.HasMoreTokens()) {
 
-            uint8_t type = VSCP_DAEMON_VARIABLE_CODE_STRING;
-            bool bPersistent = false;
-
             CVSCPVariable *pvar;
             strTok = tkz.GetNextToken();
             if (NULL == (pvar = pCtrlObject->m_VSCP_Variables.find(strTok))) {
@@ -1042,7 +1039,6 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
     else if (0 == strTok.Find(_("LASTCHANGEVAR"))) {
 
         CVSCPVariable *pvar;
-        uint8_t type;
         wxString strvalue;
 
 		// Must be authorized to do this
@@ -1084,7 +1080,6 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         }
 
         pvar->writeValueToString(strvalue);
-        type = pvar->getType();
 
         wxString resultstr = _("+;LASTCHANGEVAR;");
         resultstr +=  pvar->getLastChange().FormatISODate() + _(" ") +  pvar->getLastChange().FormatISOTime();
@@ -2765,7 +2760,6 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
     buildPage += _("</i><br>");
     buildPage += _("-----------------------------------------------------------------------------------------<br>");
 
-    uint32_t nLines = 0, startLine = 0, n2Lines = 0;
     wxULongLong fileLength = logfile.GetSize();
     double pos;
     if ( fileLength.ToDouble() > 100000 ) {
@@ -4226,9 +4220,6 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 		}
 		else if ( REST_FORMAT_XML == format ) {
 
-			int filtered = 0;
-			int errors = 0;
-
 			webserv_util_sendheader( conn, 400, REST_MIME_TYPE_XML );
 				
 			mg_write( conn, "\r\n", 2 );		// head/body Separator
@@ -4352,10 +4343,18 @@ VSCPWebServerThread::webserv_rest_doWriteVariable( struct mg_connection *conn,
     wxString strValue;
 	wxStringTokenizer tkz( strVariable, _(";") );
 
-	CControlObject *pObject = (CControlObject *)conn->server_param;
+    // Check pointer
+    if (NULL == conn) {
+        return MG_FALSE;
+    }
 
-	if ( ( NULL == conn ) && ( NULL == pObject )  && ( NULL != pSession )  ) {
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    
+    if (NULL == pObject) {
+        return MG_FALSE;
+    }
 
+    if ( NULL != pSession ) {
         // Get variablename
         if ( tkz.HasMoreTokens() ) {
 
@@ -4409,9 +4408,18 @@ VSCPWebServerThread::webserv_rest_doCreateVariable( struct mg_connection *conn,
     bool bPersistence = false;
 	wxStringTokenizer tkz( strVariable, _(";") );
 
-	CControlObject *pObject = (CControlObject *)conn->server_param;
+    // Check pointer
+    if (NULL == conn) {
+        return MG_FALSE;
+    }
 
-	if ( ( NULL == conn ) && ( NULL == pObject )  && ( NULL != pSession )  ) {
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    
+    if (NULL == pObject) {
+        return MG_FALSE;
+    }
+
+    if ( NULL != pSession ) {
 
         // Get variablename
         if ( tkz.HasMoreTokens() ) {
@@ -4530,9 +4538,18 @@ VSCPWebServerThread::webserv_rest_doGetTableData( struct mg_connection *conn,
 												    wxString& strFrom,
 												    wxString& strTo )
 {
-	CControlObject *pObject = (CControlObject *)conn->server_param;
+    // Check pointer
+    if (NULL == conn) {
+        return MG_FALSE;
+    }
 
-	if ( ( NULL == conn ) && ( NULL == pObject )  && ( NULL != pSession )  ) {
+    CControlObject *pObject = (CControlObject *)conn->server_param;
+    
+    if (NULL == pObject) {
+        return MG_FALSE;
+    }
+
+    if ( NULL != pSession ) {
 
 		// We need 'tablename' and optinally 'from' and 'to'
 
@@ -6468,7 +6485,6 @@ VSCPWebServerThread::websrv_dmdelete( struct mg_connection *conn )
 	char buf[80];
 	wxString str;
     VSCPInformation vscpinfo;
-    dmElement *pElement = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;
@@ -7614,7 +7630,6 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *conn )
     wxString str;
     char buf[80];
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;
@@ -7778,7 +7793,6 @@ VSCPWebServerThread::websrv_discovery( struct mg_connection *conn )
 	//char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;
@@ -7817,7 +7831,6 @@ VSCPWebServerThread::websrv_session( struct mg_connection *conn )
 	//char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;
@@ -7855,7 +7868,6 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
 {
     wxString str;
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;
@@ -8314,7 +8326,6 @@ VSCPWebServerThread::websrv_bootload( struct mg_connection *conn )
 	//char buf[80];
     wxString str;
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;
@@ -8352,7 +8363,6 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
 {
     wxString str;
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;
@@ -8470,7 +8480,6 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
 	char buf[512];
     wxString str;
     VSCPInformation vscpinfo;
-    CVSCPVariable *pVariable = NULL;
 
 	// Check pointer
 	if (NULL == conn) return MG_FALSE;

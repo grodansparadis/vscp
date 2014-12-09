@@ -207,7 +207,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 			fclose(pFile);
 		}
 
-		int rv = chdir("/"); // Change working directory
+		(void)chdir("/"); // Change working directory
 		umask(0); // Clear out file mode creation mask
 
 		// Close out the standard file descriptors 

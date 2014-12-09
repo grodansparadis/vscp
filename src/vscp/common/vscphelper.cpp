@@ -224,7 +224,9 @@ double vscp_getDataCodingNormalizedInteger(const uint8_t *pCode,
 	uint8_t valarray[ 8 ];
     uint8_t normbyte;
 	uint8_t decibyte;
+#ifndef  WORDS_BIGENDIAN	
 	int64_t value64;
+#endif
 	double value = 0;
 	bool bNegative = false; // set for negative number
 
@@ -682,7 +684,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
        ndigits=0;
     }
 
-    modf( value, &intpart );
+    (void)modf( value, &intpart );
     val64 = (uint64_t)(value * pow(10.0,ndigits));
 
     wxUINT64_SWAP_ON_LE(val64);
@@ -717,7 +719,7 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
         pdata[5] = (val64 >> 8) & 0xff;
         pdata[6] = val64 & 0xff;
     }
-    else if ( val64 < ((double)0x80000000) ) {
+    else if ( val64 < ((double)0x800000000000) ) {
         *psize = 8;
         pdata[2] = (val64 >> 40) & 0xff;
         pdata[3] = (val64 >> 32) & 0xff;

@@ -380,9 +380,12 @@ void daemonVSCPThread::OnExit()
 
 
 discoveryVSCPThread::discoveryVSCPThread()
-		 : wxThread( wxTHREAD_JOINABLE )
+    : wxThread( wxTHREAD_JOINABLE )
 {
     m_bQuit = false;
+    m_nodeid = 0;
+    m_clientID = 0;
+    m_pClientItem = NULL;
     m_pCtrlObject = NULL;
 }
 
