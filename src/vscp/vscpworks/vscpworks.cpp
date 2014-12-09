@@ -387,7 +387,9 @@ int VscpworksApp::OnExit()
 
 void VscpworksApp::logMsg( const wxString& wxstr, unsigned char level )
 {
-    level = level;
+#ifndef WIN32
+    (void)level;    // Suppress warning
+#endif
 
     wxString wxdebugmsg;
     wxdebugmsg = _("vscpd :") + wxstr;
