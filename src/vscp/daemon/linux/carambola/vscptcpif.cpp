@@ -147,7 +147,7 @@ bool VscpTcpIf::checkReturnValue( void )
 
 bool VscpTcpIf::doCommand( uint8_t cmd )
 {	
-    cmd = cmd;	// supress warning	
+    TCPIP_UNUSED(cmd);	// supress warning	
     return true;
 }
 
@@ -166,7 +166,7 @@ long VscpTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
     wxString strPassword;
     wxString strHostname;
     
-    flags=flags;	// supress warning
+    TCPIP_UNUSED(flags);	// supress warning
     
     wxLogDebug( _("strInterface = ") );
     wxLogDebug( strInterface ); 
@@ -796,7 +796,7 @@ int VscpTcpIf::doCmdBlockReceive( vscpEvent *pEvent, uint32_t timeout )
     static wxString strBuf = _("");
     wxString strReply;
     
-    timeout = timeout;
+    TCPIP_UNUSED(timeout);
 
     // If not receive loop active terminate
     if ( !m_bModeReceiveLoop ) return CANAL_ERROR_PARAMETER;

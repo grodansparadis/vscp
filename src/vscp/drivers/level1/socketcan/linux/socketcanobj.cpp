@@ -439,8 +439,9 @@ void *workThread(void *pObject)
 			if (psocketcanobj->m_socketcanobj.m_rcvList.nCount < SOCKETCAN_MAX_RCVMSG) {
 				
 				PCANALMSG pMsg = new canalMsg;
-				pMsg->flags = 0;
+				
 				if (NULL != pMsg) {
+                    pMsg->flags = 0;
 					dllnode *pNode = new dllnode;
 					if (NULL != pNode) {
 							
