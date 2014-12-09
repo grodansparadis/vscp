@@ -74,6 +74,10 @@
 #include "../common/vscpeventhelper.h"
 #include "gridtable.h"   
 
+/*!
+    Use this macro for unused function parameters.
+*/
+#define GRIDTABLE_UNUSED(__par) (void)(__par)
 
 extern appConfiguration g_Config;
 
@@ -94,8 +98,8 @@ BigGridTable::BigGridTable() : wxGridTableBase()
 
 BigGridTable::BigGridTable( int numRows, int numCols ) : wxGridTableBase()
 {
-  numRows = numRows;
-  numCols = numCols;
+  GRIDTABLE_UNUSED(numRows);
+  GRIDTABLE_UNUSED(numCols);
 
   // List is default view mode
   m_mode = VSCP_GRID_VIEW_MODE_LIST;
@@ -282,7 +286,7 @@ bool BigGridTable::IsEmptyCell( int row, int col  )
 
 void BigGridTable::SetRowLabelValue( int row, const wxString &value )
 {
-  row = row;
+  GRIDTABLE_UNUSED(row);
   wxString str = value; 
 }
 
@@ -341,8 +345,6 @@ void BigGridTable::ClearGrid( void )
 
 bool BigGridTable::AppendRows( size_t numRows )
 {
-  numRows = numRows;
-
   if ( GetView() )
   {
     wxGridTableMessage msg( this,
@@ -363,8 +365,7 @@ bool BigGridTable::AppendRows( size_t numRows )
 
 bool BigGridTable::AppendCols(int numCols, bool updateLabels )
 {
-  numCols = numCols;
-  updateLabels = updateLabels;
+  GRIDTABLE_UNUSED(updateLabels);
 
   if ( GetView() )
   {
@@ -385,9 +386,6 @@ bool BigGridTable::AppendCols(int numCols, bool updateLabels )
 
 bool BigGridTable::DeleteRows( size_t pos, size_t numRows )
 {
-  numRows = numRows;
-  pos = pos;
-
   if ( GetView() )
   {
     wxGridTableMessage msg( this,
@@ -407,9 +405,7 @@ bool BigGridTable::DeleteRows( size_t pos, size_t numRows )
 
 bool BigGridTable::DeleteCols(int pos, int numCols, bool updateLabels )
 {
-  numCols = numCols;
-  pos = pos;
-  updateLabels= updateLabels;
+  GRIDTABLE_UNUSED(updateLabels);
   
   if ( GetView() )
   {
