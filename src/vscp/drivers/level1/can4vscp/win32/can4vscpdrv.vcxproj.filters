@@ -30,18 +30,15 @@
     <ClCompile Include="..\..\..\..\..\common\dllist.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\..\common\crc8.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="callback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\common\can4vscpobj.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\canal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\common\canal_macro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\common\com_win32.h">
@@ -51,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\common\dllist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\common\canal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\common\canal_macro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

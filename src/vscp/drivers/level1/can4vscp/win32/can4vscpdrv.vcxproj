@@ -303,6 +303,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\common\com_win32.cpp" />
+    <ClCompile Include="..\..\..\..\..\common\crc8.c" />
     <ClCompile Include="..\..\..\..\..\common\dllist.c" />
     <ClCompile Include="can4vscpdrv.cpp" />
     <ClCompile Include="..\common\can4vscpobj.cpp" />
@@ -313,10 +314,10 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <CustomBuild Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\..\common\canal.h" />
+    <ClInclude Include="..\..\..\..\common\canal_macro.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="..\common\can4vscpobj.h" />
-    <ClInclude Include="..\..\..\common\canal.h" />
-    <ClInclude Include="..\..\..\common\canal_macro.h" />
     <ClInclude Include="..\..\..\..\common\com_win32.h" />
     <ClInclude Include="..\common\dlldrvobj.h" />
     <ClInclude Include="..\..\..\..\common\dllist.h" />

@@ -182,11 +182,11 @@ public:
 	/*! 
 		Open/create the logfile
 
-		@param szFileName the name of the log file
+		@param pConfig	Configuration string
 		@param flags 	bit 1 = 0 Append, bit 1 = 1 Rewrite
 		@return True on success.
 	*/
-	bool open( const char * szFileName, unsigned long flags = 0 );
+	bool open( const char *pConfig, unsigned long flags = 0 );
 
 
 	/*!

@@ -21,10 +21,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: can4vscpdrv.cpp,v $                                       
-// $Date: 2005/05/23 21:32:54 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

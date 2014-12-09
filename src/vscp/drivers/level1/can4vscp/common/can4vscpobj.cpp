@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: can4vscpobj.cpp,v $                                       
-// $Date: 2005/05/29 19:20:08 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.5 $ 
 
 #include "stdio.h"
 #include "can4vscpobj.h"
@@ -131,11 +127,11 @@ CCan4VSCPObj::~CCan4VSCPObj()
 // open
 //
 //
-// filename
+// pConfig
 //-----------------------------------------------------------------------------
 // Parameters for the driver as a string on the following form
 //		
-// "comport;baudrate"
+// "comport"
 //
 //
 // comport
@@ -143,26 +139,13 @@ CCan4VSCPObj::~CCan4VSCPObj()
 //	WIN32: 1 for COM1, 2 for COM2 etc
 //	LINUX: /dev/ttyS1, /dev/ttyS2 etc
 //
-// baudrate
-// ========
-// Actual baudrate to use (now only 57600)
+// Baudrate is always 115200
 // 
-// flags (!!!! Not used at the moment, left for future expansion !!!!!
+// flags 
 //-----------------------------------------------------------------------------
 //
-// bit 0
-// =====
-//  0		11 bit identifiers are not received.
-//  1		11 bit identifiers are received.
 //
-// bit 1
-// =====
-//	0		29 bit identifiers are not received.
-//	1		29 bit identifiers are received.
-//
-// Both bits 00 is the same as 11 i.e. both standard and exteded messages are received
-//
-// bit 3/4
+// bit 1/2
 // =======
 //	00 - Normal Mode
 //	01 - Listen Mode
@@ -171,7 +154,7 @@ CCan4VSCPObj::~CCan4VSCPObj()
 //
 // 
 
-bool CCan4VSCPObj::open( const char *szFileName, unsigned long flags )
+bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 {
 	char szDrvParams[ MAX_PATH ];
 	char *p;
@@ -182,8 +165,8 @@ bool CCan4VSCPObj::open( const char *szFileName, unsigned long flags )
 	m_RxMsgState = INCOMING_STATE_NONE;
 	m_RxMsgSubState = INCOMING_SUBSTATE_NONE;
 
-	// save parameter string and convert to upper case
-	strncpy( szDrvParams, szFileName, MAX_PATH );
+	// Save configuration string and convert to upper case
+	strncpy( szDrvParams, pConfig, MAX_PATH );
 	_strupr( szDrvParams );
 
 	// Initiate statistics
@@ -212,7 +195,7 @@ bool CCan4VSCPObj::open( const char *szFileName, unsigned long flags )
 
 	// Open the com port
 	if ( !m_com.init( nComPort,
-						CBR_57600,
+						CBR_115200,
 						8,
 						NOPARITY,
 						ONESTOPBIT,
