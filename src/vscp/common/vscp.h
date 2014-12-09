@@ -175,30 +175,30 @@ typedef unsigned short                      uint64_t;
 extern "C" {
 #endif
 
-//			* * * General structure for VSCP * * *
+    //			* * * General structure for VSCP * * *
 
-// This structure is for VSCP Level II
-// 
+    // This structure is for VSCP Level II
+    //
 
-typedef struct  {	
-	uint16_t crc;           // crc checksum - currently only used for UDP and RF
-	uint8_t  *pdata;        // Pointer to data. Max 487 (512- 25) bytes
-    // Following two are for daemon internal use
-	uint32_t obid;          // Used by driver for channel info etc.
-	uint32_t timestamp;     // Relative time stamp for package in microseconds
-    // ----- CRC should be calculated from here to end + datablock ----
-	uint16_t head;          // Bit 16   GUID is IP v.6 address.
-							// bit 765  priority, Priority 0-7 where 0 is highest.
+    typedef struct {
+        uint16_t crc;       // crc checksum - currently only used for UDP and RF
+        uint8_t *pdata;     // Pointer to data. Max 487 (512- 25) bytes
+        // Following two are for daemon internal use
+        uint32_t obid;      // Used by driver for channel info etc.
+        uint32_t timestamp; // Relative time stamp for package in microseconds
+        // ----- CRC should be calculated from here to end + datablock ----
+        uint16_t head;      // Bit 16   GUID is IP v.6 address.
+                            // bit 765  priority, Priority 0-7 where 0 is highest.
                             // bit 4 = hard coded, true for a hard coded device.
                             // bit 3 = Don't calculate CRC, false for CRC usage.
                             // bit 2 = Reserved.
                             // bit 1 = Reserved.
                             // bit 0 = Reserved.
-	uint16_t vscp_class;    // VSCP class
-	uint16_t vscp_type;     // VSCP type
-	uint8_t  GUID[ 16 ];    // Node globally unique id MSB(0) -> LSB(15)
-	uint16_t sizeData;      // Number of valid data bytes		
-} vscpEvent;
+        uint16_t vscp_class;// VSCP class
+        uint16_t vscp_type; // VSCP type
+        uint8_t GUID[ 16 ]; // Node globally unique id MSB(0) -> LSB(15)
+        uint16_t sizeData;  // Number of valid data bytes
+    } vscpEvent;
 
 
 typedef vscpEvent *PVSCPEVENT;

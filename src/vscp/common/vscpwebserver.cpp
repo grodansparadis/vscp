@@ -547,10 +547,14 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         }
 
         // Get filter
-        if (tkz.HasMoreTokens()) {
-            strTok = tkz.GetNextToken();
+        if ( tkz.HasMoreTokens() ) {
+			
+			strTok = tkz.GetNextToken();
+			
 			pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
             if (!vscp_readFilterFromString( &pSession->m_pClientItem->m_filterVSCP, strTok ) ) {
+				
+				// Unlock
 				pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s", 
@@ -558,6 +562,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_SYNTAX_ERROR );
                 return MG_TRUE;
             }
+
 			pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
         } 
 		else {
@@ -570,9 +575,13 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         // Get mask
         if (tkz.HasMoreTokens()) {
+
             strTok = tkz.GetNextToken();
+			
 			pSession->m_pClientItem->m_mutexClientInputQueue.Lock();
             if (!vscp_readMaskFromString( &pSession->m_pClientItem->m_filterVSCP, strTok)) {
+
+				// Unlock
 				pSession->m_pClientItem->m_mutexClientInputQueue.Unlock();
                 mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, 
 									"-;%d;%s", 
