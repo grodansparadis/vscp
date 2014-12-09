@@ -272,7 +272,10 @@ bool CCan4VSCPObj::open( const char *szFileName, unsigned long flags )
 							
 		syslog( LOG_CRIT, "can4vscp: Unable to create can4vscpdrv write thread.");
 		rv = false;
-		fclose( m_flog );
+        if (NULL != m_flog) {
+            fclose( m_flog );
+            m_flog = NULL;
+        }
 	}
 
 
@@ -284,7 +287,10 @@ bool CCan4VSCPObj::open( const char *szFileName, unsigned long flags )
 							
 		syslog( LOG_CRIT, "can4vscp: Unable to create can4vscpdrv receive thread.");
 		rv = false;
-		fclose( m_flog );
+        if (NULL != m_flog) {
+            fclose( m_flog );
+            m_flog = NULL;
+        }
 	}
 		
     // We are open
@@ -854,10 +860,10 @@ bool CCan4VSCPObj::readSerialData( void )
 				if (  m_receiveList.nCount < CAN4VSCP_MAX_RCVMSG ) {					
 					
 					PCANALMSG pMsg	= new canalMsg;
-					pMsg->flags = 0;
 
 					if ( NULL != pMsg ) {
-					
+                    
+                        pMsg->flags = 0;
 						dllnode *pNode = new dllnode; 
 						if ( NULL != pNode ) {
 							

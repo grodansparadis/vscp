@@ -2259,8 +2259,6 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
             wxXmlNode *subchild = child->GetChildren();
             while (subchild) {
 
-                bool bTable = false;
-
                 if (subchild->GetName() == wxT("table")) {
 
                     int nType = VSCP_TABLE_DYNAMIC;

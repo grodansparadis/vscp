@@ -95,13 +95,21 @@ int main(int argc, char **argv)
 
     if ( !::wxInitialize() ) {
         fprintf(stderr, "Failed to initialize the wxWindows library, aborting.");
+        
+#if wxUSE_UNICODE
+        /* Clean up */
+        {
+            for ( int n = 0; n < argc; n++ ) {
+                free(wxArgv[n]);
+            }
+
+            delete [] wxArgv;
+        }
+#endif // wxUSE_UNICODE
+        
         return -1;      
     }
 
-    int arg = 0;
-    unsigned char nDebugLevel = 0;
-    bool bVerbose = false;
-    bool bCopyLeft = false;
     bool bHideWindow = false;
     wxString strCfgFile;
     CControlObject ctrlobj;
@@ -131,11 +139,8 @@ int main(int argc, char **argv)
 
         // * * * Verbose * * *
         if ( pparser->Found( wxT("verbose") ) ) {
-            bVerbose = true;
-            {
-	            wxString wxstr;
-	            wxstr.Printf(wxT("Verbose mode set\n"));
-            }
+            wxString wxstr;
+            wxstr.Printf(wxT("Verbose mode set\n"));
         }
 
         // * * * Hide debug window * * *
@@ -149,11 +154,8 @@ int main(int argc, char **argv)
 
         // * * * Copyleft * * *
         if ( pparser->Found( wxT("gnu") ) ) {
-            bCopyLeft = true;
-            {
-                wxString wxstr;
-                wxstr.Printf(wxT("Verbose mode set\n"));
-            }
+            wxString wxstr;
+            wxstr.Printf(wxT("Verbose mode set\n"));
         }
 
         // * * * Path to configuration file * * *
@@ -190,6 +192,18 @@ int main(int argc, char **argv)
     if ( !ctrlobj.init( strCfgFile ) ) {
 		ctrlobj.logMsg( _("Unable to initialize the vscpd application."), 
                           DAEMON_LOGMSG_CRITICAL );
+                          
+#if wxUSE_UNICODE
+        /* Clean up */
+        {
+            for ( int n = 0; n < argc; n++ ) {
+                free(wxArgv[n]);
+            }
+
+            delete [] wxArgv;
+        }
+#endif // wxUSE_UNICODE
+
 		::wxUninitialize();
 		return FALSE;
 	}

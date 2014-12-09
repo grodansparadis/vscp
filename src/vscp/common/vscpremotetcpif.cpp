@@ -221,7 +221,6 @@ VscpRemoteTcpIf::~VscpRemoteTcpIf()
 
 bool VscpRemoteTcpIf::checkReturnValue( bool bClear )
 {
-    bool rv = false;
     int last = 0;   // last read pos in array
     wxString strReply;
 
@@ -290,8 +289,6 @@ void VscpRemoteTcpIf::doClrInputQueue( void )
 
 int VscpRemoteTcpIf::doCmdOpen( const wxString& strInterface, uint32_t flags )
 {
-    short port = 9598; // VSCP_LEVEL2_TCP_PORT;
-
     wxString wxstr;
     wxString strUsername;
     wxString strPassword;

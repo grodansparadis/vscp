@@ -281,11 +281,10 @@ void *actionThreadVSCPSrv::Entry()
 {
     //m_pCtrlObject->logMsg ( _T ( "TCP actionThreadURL: Quit.\n" ), DAEMON_LOGMSG_INFO );
     VscpRemoteTcpIf client;
-    long err;
 
-    if ( CANAL_ERROR_SUCCESS != ( err = client.doCmdOpen( m_strHostname,  
+    if ( CANAL_ERROR_SUCCESS != client.doCmdOpen( m_strHostname,  
         m_strUsername, 
-        m_strPassword ) ) ) {
+        m_strPassword ) ) {
             // Failed to connect
             m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to connect to remote server : " ) +
                 m_strHostname +
@@ -294,7 +293,7 @@ void *actionThreadVSCPSrv::Entry()
     }
 
     // Connected
-    if ( CANAL_ERROR_SUCCESS != ( err = client.doCmdSendEx( &m_eventThe ) ) ) {
+    if ( CANAL_ERROR_SUCCESS != client.doCmdSendEx( &m_eventThe ) ) {
         // Failed to send event
         m_pCtrlObject->logMsg( wxT( "actionThreadVSCPSrv: Unable to send event to remote server : " ) +
             m_strHostname +
@@ -2839,7 +2838,6 @@ CDM::~CDM()
     DMTIMERS::iterator it;
     for ( it = m_timerHash.begin(); it != m_timerHash.end(); it++ ) {
 
-        int idTimer = it->first;
         dmTimer *pTimer = it->second;
 
         // Check if variable name is already there
@@ -2915,8 +2913,6 @@ void CDM::logMsg( const wxString& msg, uint8_t level )
 
 bool CDM::addElement( dmElement *pItem )
 {
-    static unsigned long id = 0; // just increments for each row added
-
     // Check pointer
     if ( NULL == pItem ) return false;
 
@@ -2936,7 +2932,6 @@ bool CDM::addElement( dmElement *pItem )
 
 bool CDM::removeElement( unsigned short pos )
 {
-    if (pos < 0) return false;
     if ( pos >= m_DMList.GetCount() ) return false;
     
     wxDMLISTNode *node = m_DMList.Item( pos );
@@ -3011,7 +3006,6 @@ bool CDM::load ( void )
             pDMitem->m_zone = 0;
             pDMitem->m_subzone = 0;
             vscp_clearVSCPFilter( &pDMitem->m_vscpfilter );
-            bool bEnabled = false;
 
             // Check if row is enabled           
             wxString strEnabled = child->GetAttribute( wxT( "enable" ), wxT("false") );
@@ -3019,7 +3013,6 @@ bool CDM::load ( void )
             strEnabled.MakeUpper();
             if ( wxNOT_FOUND != strEnabled.Find( _("TRUE") ) ) {
                 pDMitem->enableRow();
-                bEnabled = true;
             }
             else {
                 pDMitem->disableRow();   
@@ -3703,7 +3696,6 @@ void CDM::serviceTimers( void )
     DMTIMERS::iterator it;
     for ( it = m_timerHash.begin(); it != m_timerHash.end(); it++ ) {
 
-        int idTimer = it->first;
         dmTimer *pTimer = it->second;
 
         if ( pTimer->isActive() && 
@@ -3743,7 +3735,6 @@ int CDM::addTimer( uint16_t id,
 {
 
     int rv = 0; // Default return value is failure
-    CVSCPVariable *pVariable;
     dmTimer *pTimer;
 
     // Log
@@ -3768,7 +3759,7 @@ int CDM::addTimer( uint16_t id,
     nameVar.Trim( false );
 
     // Check if variable is defined
-    if ( NULL != ( pVariable = m_pCtrlObject->m_VSCP_Variables.find( nameVar ) ) ) {
+    if ( NULL != m_pCtrlObject->m_VSCP_Variables.find( nameVar ) ) {
 
         // Log
         wxString logStr = wxString::Format(_("Variable is not defined %s"),  

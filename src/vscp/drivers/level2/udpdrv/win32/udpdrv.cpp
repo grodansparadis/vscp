@@ -248,7 +248,7 @@ Cudpdrv::Cudpdrv()
     m_pthreadWorkTx = NULL;
     m_pthreadWorkRx = NULL;
     
-    memset( m_localMac, 0, 16 );
+    memset( m_localMac, 0, sizeof(m_localMac) );
 
     // Initialize tx channel GUID
     m_localGUIDtx.clear();

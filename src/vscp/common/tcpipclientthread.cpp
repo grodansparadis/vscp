@@ -1474,8 +1474,7 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 	struct sockaddr_in cli_addr;
 	socklen_t clilen = 0;    
     clilen = sizeof (cli_addr);
-	int ret = getpeername( conn->sock, (struct sockaddr *)&cli_addr, &clilen);
-    struct sockaddr_in *s = (struct sockaddr_in *)&cli_addr;
+	(void)getpeername( conn->sock, (struct sockaddr *)&cli_addr, &clilen);
     wxString remoteaddr = wxString::FromAscii( inet_ntoa( cli_addr.sin_addr ) );
 
     // Check if this user is allowed to connect from this location
@@ -1519,7 +1518,9 @@ bool VSCPClientThread::handleClientPassword ( struct ns_connection *conn, CContr
 
 void VSCPClientThread::handleClientRcvLoop( struct ns_connection *conn, CControlObject *pCtrlObject  )
 {
+/*
 	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+*/
 
     ns_send( conn,  MSG_RECEIVE_LOOP, strlen ( MSG_RECEIVE_LOOP ) );
 	conn->flags |= NSF_USER_1;	// Mark socket as being in receive loop
@@ -1591,7 +1592,6 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 				str += _("INTERFACE       - Interface manipulation. \r\n");
 				str += _("DM              - Decision Matrix manipulation.\r\n");
 				str += _("VARIABLE        - Variable handling. \r\n");
-				int ttt = str.Length();
 				ns_send( conn, (const char *)str.mbc_str(), str.Length() );
 	}
 	else if ( _("+") == strcmd ) {
@@ -1781,8 +1781,6 @@ void VSCPClientThread::handleClientHelp( struct ns_connection *conn, CControlObj
 
 void VSCPClientThread::handleClientTest ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
-
 	ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
 	return;
 }
@@ -1794,8 +1792,6 @@ void VSCPClientThread::handleClientTest ( struct ns_connection *conn, CControlOb
 
 void VSCPClientThread::handleClientRestart ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
-
 	ns_send( conn, MSG_OK, strlen ( MSG_OK ) );
 	return;
 }
@@ -1826,8 +1822,6 @@ void VSCPClientThread::handleClientShutdown ( struct ns_connection *conn, CContr
 
 void VSCPClientThread::handleClientRemote( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
-
 	return;
 }
 
@@ -2030,7 +2024,6 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
     wxString str;
     wxString strWork;
     listVscpVariable::iterator it;
-	static int l;
     CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     pClientItem->m_currentCommandUC = pClientItem->m_currentCommandUC.Right( pClientItem->m_currentCommandUC.Length()-5 );    // remove "LIST "
@@ -2078,10 +2071,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                 str += strWork;
                 str += _("\r\n");
 
-				l = str.Length();
                 ns_send( conn,  str.mb_str(), str.Length() );
-				//l = m_pClientSocket->LastCount();
-				l = 1;
         }
 
         m_pCtrlObject->m_variableMutex.Unlock();
@@ -2125,7 +2115,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                     token = token.Right( token.Length() - 1 );
 
                     // Can still be a wildcard left
-                    if ( wxNOT_FOUND != ( pos = token.Find( '*' ) ) ) {
+                    if ( wxNOT_FOUND != token.Find( '*' ) ) {
 
                         bDoubleWildcard = true;
 
@@ -2146,7 +2136,7 @@ void VSCPClientThread::handleVariable_List( struct ns_connection *conn, CControl
                     token = token.Left( token.Length() - 1 );
 
                     // Can still be a wildcard left
-                    if ( wxNOT_FOUND != ( pos = token.Find( '*' ) ) ) {
+                    if ( wxNOT_FOUND != token.Find( '*' ) ) {
 
                         bDoubleWildcard = true;
 

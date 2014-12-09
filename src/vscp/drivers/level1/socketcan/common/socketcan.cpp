@@ -96,7 +96,7 @@ long CCAN232Obj::open( const char *pDevice, unsigned long flags )
 	p = strtok( NULL, ";" );
 	if ( NULL != p ) {		
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
-			sscanf( p + 2, "%x", &nMask );
+			sscanf( p + 2, "%lx", &nMask );
 		}
 		else {
 			nMask = atol( p );
@@ -107,7 +107,7 @@ long CCAN232Obj::open( const char *pDevice, unsigned long flags )
 	p = strtok( NULL, ";" );
 	if ( NULL != p ) {		
 		if ( ( NULL != strstr( p, "0x" ) ) || ( NULL != strstr( p, "0X" ) )  ) {
-			sscanf( p + 2, "%x", &nFilter );
+			sscanf( p + 2, "%lx", &nFilter );
 		}
 		else {
 			nFilter = atol( p );
@@ -762,7 +762,7 @@ bool can323ToCanal( char * p, PCANALMSG pMsg )
 {
 	bool rv = false;
 	int val;
-	short data_offset;	// Offset to dlc byte
+	short data_offset = 0;	// Offset to dlc byte
 	char save;
 
 	if ( 't' == *p ) {
