@@ -1988,12 +1988,15 @@ bool convertCanalToEvent( vscpEvent *pvscpEvent,
 bool convertEventToCanal( canalMsg *pcanalMsg, const vscpEvent *pvscpEvent )
 {
   unsigned char nodeid = 0;
-  short sizeData = pvscpEvent->sizeData;
-  uint16_t vscp_class = pvscpEvent->vscp_class;
+  short sizeData = 0;
+  uint16_t vscp_class = 0;
 
   if ( NULL == pcanalMsg ) return false;
   if ( NULL == pvscpEvent ) return false;
 
+  sizeData = pvscpEvent->sizeData;
+  vscp_class = pvscpEvent->vscp_class;
+  
   pcanalMsg->obid = pvscpEvent->obid;
   pcanalMsg->flags = 0;
 
@@ -2197,7 +2200,7 @@ bool getVscpDataArrayFromString( uint8_t *pData, uint16_t *psizeData, const wxSt
     while ( tkz.HasMoreTokens() ) {
         wxString token = tkz.GetNextToken();
         pData[ *psizeData ] = readStringValue ( token );
-        *psizeData++;
+        (*psizeData)++;
         if ( *psizeData >= VSCP_MAX_DATA ) break;
     }
 
