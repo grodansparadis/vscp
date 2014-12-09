@@ -193,24 +193,6 @@ int main(int argc, char **argv)
     // Event 
     vscpEventEx event;
 
-#if wxUSE_UNICODE
-    wxChar **wxArgv = new wxChar *[argc + 1];
-
-    {
-        int n;
-
-        for (n = 0; n < argc; n++) {
-            wxMB2WXbuf warg = wxConvertMB2WX(argv[n]);
-            wxArgv[ n ] = wxStrdup(warg);
-        }
-
-        wxArgv[n] = NULL;
-    }
-
-#else // !wxUSE_UNICODE
-#define wxArgv argv
-#endif // wxUSE_UNICODE/!wxUSE_UNICODE
-
     wxApp::CheckBuildOptions(WX_BUILD_OPTIONS_SIGNATURE, "program");
 
     //wxInitializer initializer;

@@ -3084,16 +3084,13 @@ void frmVSCPSession::OnMenuitemSetAutoreplyClick(wxCommandEvent& event)
 
 void frmVSCPSession::OnMenuitemSaveRxCellWidth(wxCommandEvent& event)
 {
-    g_Config.m_VscpRcvFieldWidth[0] = m_ctrlGridReceive->GetColSize(0);
-    g_Config.m_VscpRcvFieldWidth[1] = m_ctrlGridReceive->GetColSize(1);
-    g_Config.m_VscpRcvFieldWidth[2] = m_ctrlGridReceive->GetColSize(2);
-    g_Config.m_VscpRcvFieldWidth[3] = m_ctrlGridReceive->GetColSize(3);
-    g_Config.m_VscpRcvFieldWidth[4] = m_ctrlGridReceive->GetColSize(4);
-    g_Config.m_VscpRcvFieldWidth[5] = m_ctrlGridReceive->GetColSize(5);
-    g_Config.m_VscpRcvFieldWidth[6] = m_ctrlGridReceive->GetColSize(6);
-    g_Config.m_VscpRcvFieldWidth[7] = m_ctrlGridReceive->GetColSize(7);
-    g_Config.m_VscpRcvFieldWidth[8] = m_ctrlGridReceive->GetColSize(8);
-    g_Config.m_VscpRcvFieldWidth[9] = m_ctrlGridReceive->GetColSize(9);
+    int index   = 0;
+    
+    for(index = 0; index < VCSP_RSCV_FIELD_COUNT; ++index)
+    {
+        g_Config.m_VscpRcvFieldWidth[index] = m_ctrlGridReceive->GetColSize(index);
+    }
+    
     wxGetApp().writeConfiguration();
     event.Skip();
 }
@@ -3104,12 +3101,13 @@ void frmVSCPSession::OnMenuitemSaveRxCellWidth(wxCommandEvent& event)
 
 void frmVSCPSession::OnMenuitemSaveTxCellWidth(wxCommandEvent& event)
 {
-    g_Config.m_VscpTrmitFieldWidth[0] = m_ctrlGridTransmission->GetColSize(0);
-    g_Config.m_VscpTrmitFieldWidth[1] = m_ctrlGridTransmission->GetColSize(1);
-    g_Config.m_VscpTrmitFieldWidth[2] = m_ctrlGridTransmission->GetColSize(2);
-    g_Config.m_VscpTrmitFieldWidth[3] = m_ctrlGridTransmission->GetColSize(3);
-    g_Config.m_VscpTrmitFieldWidth[4] = m_ctrlGridTransmission->GetColSize(4);
-    g_Config.m_VscpTrmitFieldWidth[5] = m_ctrlGridTransmission->GetColSize(5);
+    int index   = 0;
+    
+    for(index = 0; index < VCSP_TRMIT_FIELD_COUNT; ++index)
+    {
+        g_Config.m_VscpTrmitFieldWidth[index] = m_ctrlGridTransmission->GetColSize(index);
+    }
+    
     wxGetApp().writeConfiguration();
     event.Skip();
 }

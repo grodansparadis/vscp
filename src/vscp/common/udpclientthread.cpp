@@ -213,10 +213,10 @@ VSCPUDPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, vo
 				// Check if user is valid
 				// Calculate MD5 for username:autdomain:password
 				strncpy( buf, strUser.mbc_str(), strUser.Length() );
-				strncat( buf, ":", sizeof( buf ) );
+				strncat( buf, ":", sizeof( buf ) - strlen( buf ) - 1 );
 				strncat( buf, pUDPClientThread->m_pCtrlObject->m_authDomain.mbc_str(),
 								pUDPClientThread->m_pCtrlObject->m_authDomain.Length() );
-				strncat( buf, ":", sizeof( buf ) );
+				strncat( buf, ":", sizeof( buf ) - strlen( buf) - 1);
 				strncat( (char *)buf, strPassword.mb_str(), strPassword.Length() );
 	
 				Cmd5 md5 ( (unsigned char *)buf );
