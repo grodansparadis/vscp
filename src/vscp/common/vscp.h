@@ -505,6 +505,7 @@ struct myNode {
 #define VSCP_ERROR_CONNECTION              40      // Could not connect   
 #define VSCP_ERROR_INVALID_HANDLE          41      // The handle is not valid
 
+
 #ifdef __cplusplus
 }
 #endif

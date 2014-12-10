@@ -954,6 +954,15 @@ void *workThreadTransmit( void *pObject )
 
 			// Outgoing CAN message
 			// --------------------------
+			// [0] DLE
+			// [1] STX
+			// 
+			// [1] ID MSB
+			// [2] ID
+			// [3] ID
+			// [4] ID LSB
+			// [5-12] DATA
+
 			// [0] ([EXT:1][RTR:1][TYPE:2][count:4])
 			// [1] ID MSB
 			// [2] ID
