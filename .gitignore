@@ -164,3 +164,4 @@ src/vscp/helperlib/linux/examples/bigtest
 /src/vscp/drivers/level1/usb2can/usb2can/usb2can.sdf
 /src/vscp/drivers/level1/usb2can/usb2can/usb2can.suo
 /src/vscp/drivers/level1/usb2can/usb2can/usb2can.vcxproj.filters
+/src/vscp/drivers/level1/can4vscp/win32/*.filters

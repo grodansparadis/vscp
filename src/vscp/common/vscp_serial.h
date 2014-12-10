@@ -24,6 +24,57 @@
 #ifndef _VSCP_SERIAL_H_
 #define _VSCP_SERIAL_H_
 
+// Outgoing VSCP event
+// -------------------
+// [0]		DLE
+// [1]		STX
+// [2]		Frame type (1 - VSCP event to/from node.)
+// [3]		Channel (always zero)
+// [4]		Sequence number 
+// [5/6]	Size of payload 
+// [7]		VSCP head
+// [8]   	VSCP Priority
+// [9]  	MSB of VSCP class
+// [10]  	LSB of VSCP class
+// [11]  	MSB of VSCP type
+// [12]  	LSB of VSCP type
+// [13-28]	GUID MSB - LSB
+// [29-n]  	VSCP data (0-487 bytes/Max 8 byte for Level I) 
+// [len-3]	CRC
+// [len-2]	STX
+// [len-1]	ETX
+
+// CANAL message
+// -------------
+// [0]      DLE
+// [1]      STX
+// [2]      Frame type (2 - CANAL message.)
+// [3]      Channel (always zero)
+// [4]      Sequence number 
+// [5/6]    Size of payload ( 12 + sizeData )
+// [7]      CANAL flags (MSB)
+// [8]      CANAL flags
+// [9]      CANAL flags
+// [10]     CANAL flags (LSB)
+// [11]     CANAL timestamp (MSB)
+// [12]     CANAL timestamp
+// [13]     CANAL timestamp
+// [14]     CANAL timestamp (LSB)
+// [15]     CAN id (MSB)
+// [26]     CAN id
+// [27]     CAN id
+// [28]     CAN id (LSB)
+// [29-n]   CAN data (0-8 bytes) 
+// [len-3]  CRC
+// [len-2]  DLE
+// [len-1]  ETX
+
+
+// VSCP Driver special character codes
+#define DLE     0x10
+#define STX     0x02
+#define ETX     0x03
+
 // Serial protocol defines
 
 // VSCP Driver states

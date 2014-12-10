@@ -89,7 +89,6 @@
 
 // Can4VSCP Commands
 #define RESET_NOOP				0x00	// No Operation
-#define RESET_CPU				0x01	// Reset
 #define	GET_TX_ERR_CNT			0x02	// Get TX error count
 #define	GET_RX_ERR_CNT			0x03	// Get RX error count
 #define	GET_CANSTAT				0x04	// Get CAN statistics
@@ -98,15 +97,7 @@
 #define	GET_MSGFILTER2			0x07	// Get message filter 2
 #define	SET_MSGFILTER1			0x08	// Set message filter 1
 #define	SET_MSGFILTER2			0x09	// Set message filter 2
-#define SET_CONFIG_MODE			0x10	// Set config mode
-#define SET_LOOPBACK_MODE		0x11	// Set loopback mode
-#define SET_NORMAL_MODE			0x12	// Set normal mode
-#define SET_SLEEP_MODE			0x13	// Set sleep mode
-#define SET_LISTEN_MODE			0x14	// Set listen mode
-#define GET_BAUD_REGS			0x15	// Get Baudrate registers
-#define RESET_MICRO				0x16	// Reset device micro
-#define GET_HARDWARE_VERSION	0x17	// Get hardware version
-#define GET_FIRMWARE_VERSION	0x18	// Get firmware version
+
 
 
 // Emergency flags
@@ -242,7 +233,7 @@ public:
 		@param dataSize Size for datablock
 		@return True on success.
 	*/
-	bool sendCommand( uint8_t cmdcode, uint8_t *pData = NULL, uint16_t dataSize = 0 );
+	bool sendCommand( uint16_t cmdcode, uint8_t *pParam = NULL, uint8_t size = 0 );
 
 
 	/*!
@@ -264,18 +255,36 @@ public:
 		@return True on success
 
 	*/
-	bool sendCommandWait( uint8_t cmdcode, responseMsg *pMsg, uint32_t timeout );
+	bool sendCommandWait( uint16_t cmdcode, responseMsg *pMsg, uint32_t timeout );
 
 
 	/*!
 		Send command on the serial channel
 
-		@param pdata data to send
-		@param dataSize Total number of bytes to send
-		@return True on success
+		@param buffer Contains data to send
+		@param size Total number of bytes to send
+		@return true on success
 	*/
-	bool sendMsg( uint8_t *pdata, short dataSize );
+	bool sendMsg( uint8_t *buffer, short size );
 
+	/*!
+		Check CRC for frame in buffer defined by
+		content in m_bufferMsgRcv and with length
+		m_lengthMsgRcv
+	*/
+	bool checkCRC( void );
+
+	/*!
+		Send ACK
+		\param seq Sequency number
+	*/
+	void sendACK( uint8_t seq );
+
+	/*!
+		Send NACK
+		\param seq Sequency number
+	*/
+	void sendNACK( uint8_t seq );
 
 	/*!
 		Read serial data and feed to state machine
@@ -283,7 +292,9 @@ public:
 	*/
 	bool serialData2StateMachine( void );
 
-
+	/*!
+		Do reading and interpreet data
+	*/
 	bool readSerialData( void );
 
 public:
@@ -448,39 +459,7 @@ public:
 		flags 
 		-----------------------------------------------------------------------------
 
-		bit 0
-		=====
-		0		11 bit identifier mode
-		1		29 bit identifier mode
-
-		bit 2
-		=====
-		0		High speed
-		1		A low speed-busconnector is used
-				(if provided by the hardware)
-
-		bit 2
-		=====
-		0		Filter our own TX messages from our receive..
-		1		All sent CAN objects appear
-				as received CAN objects in the
-				rx queues.
-
-		bit 3
-		=====
-		0		Active Mode.
-		1		Passive mode: CAN controller works as passive 
-				CAN node (only monitoring) and
-				therefore it does not send any
-				acknowledge bit for CAN objects
-				sent by another CAN node.
-
-		bit 4
-		=====
-		0		No error report objects.
-		1		Errorframes are detected and
-				reported as CAN objects via
-				the rx queues
+		
  
 	*/
 	uint32_t m_initFlag;
@@ -508,12 +487,19 @@ public:
 	/*!
 		Message receive buffer
 	*/
-	uint8_t m_bufferMsgRcv[ 13 ];
+	uint8_t m_bufferMsgRcv[ 512 ];
 
 	/*!
 		Current length for received message
 	*/
 	uint16_t m_lengthMsgRcv;
+
+
+    /*!
+        Sequency number
+        This number is increase for every frame sent.
+    */
+    uint8_t m_sequencyno;
 
 	
 	/*!
