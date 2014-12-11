@@ -317,6 +317,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\common\crc8.h" />
+    <ClInclude Include="..\..\..\..\..\common\dllist.h" />
     <ClInclude Include="..\..\..\..\common\canal.h" />
     <ClInclude Include="..\..\..\..\common\canal_macro.h" />
     <ClInclude Include="..\..\..\..\common\vscp.h" />
@@ -326,7 +327,6 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <ClInclude Include="..\common\can4vscpobj.h" />
     <ClInclude Include="..\..\..\..\common\com_win32.h" />
     <ClInclude Include="..\common\dlldrvobj.h" />
-    <ClInclude Include="..\..\..\..\common\dllist.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

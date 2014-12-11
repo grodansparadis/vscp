@@ -30,19 +30,6 @@
 extern "C" {
 #endif
 
-	/*
-	#ifndef __int8_t_defined
-	# define __int8_t_defined
-	//typedef long long               int64_t;
-	typedef long                    int32_t;
-	typedef short                   int16_t;
-	typedef char                    int8_t;
-	//typedef unsigned long long      uint64_t;
-	typedef unsigned long           uint32_t;
-	typedef unsigned short          uint16_t;
-	typedef unsigned char           uint8_t;
-	#endif
-	 */
 
 	/*!
 	  A base class to derive from for object storage
@@ -89,12 +76,13 @@ extern "C" {
 	};
 
 	/*!
-	  Methods to handle a node for the double linked list
+	    Methods to handle a node for the double linked list
 	 */
 
 	/*!
-	  Sorttypes for the list
+	    Sorttypes for the list
 	 */
+
 	//enum _sorttype { SORT_NONE = 0, SORT_STRING, SORT_NUMERIC };
 
 #define SORT_NONE           0
