@@ -886,7 +886,6 @@ void dlgNewVSCPSession::OnListboxInterfacesSelected(wxCommandEvent& event)
     event.Skip();
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // wxEVT_COMMAND_LISTBOX_DOUBLECLICKED event handler for ID_LISTBOX_INTERFACES
 //
@@ -896,9 +895,6 @@ void dlgNewVSCPSession::OnListboxInterfacesDoubleClicked(wxCommandEvent& WXUNUSE
     EndModal(wxID_OK);
     return;
 }
-
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -513,7 +513,7 @@ void frmScanforDevices::CreateControls()
 
   m_labelInterface = new wxStaticText;
   m_labelInterface->Create( m_pPanel, wxID_STATIC, _("Searching on interface: "), wxDefaultPosition, wxDefaultSize, 0 );
-  m_labelInterface->SetName(_T("m_staticInterfaceName"));
+  m_labelInterface->SetName(wxT("m_staticInterfaceName"));
   itemBoxSizer21->Add(m_labelInterface, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
   wxBoxSizer* itemBoxSizer23 = new wxBoxSizer(wxHORIZONTAL);
@@ -571,6 +571,11 @@ void frmScanforDevices::CreateControls()
   wxButton* itemButton37 = new wxButton;
   itemButton37->Create( m_pPanel, ID_BUTTON_SCAN, _("Scan"), wxDefaultPosition, wxDefaultSize, 0 );
   itemBoxSizer30->Add(itemButton37, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+
+  wxStatusBar* itemStatusBar38 = new wxStatusBar;
+  itemStatusBar38->Create( m_pPanel, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
+  itemStatusBar38->SetFieldsCount(2);
+  itemBoxSizer20->Add(itemStatusBar38, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
   // Connect events and objects
   m_DeviceTree->Connect(ID_TREE_DEVICE, wxEVT_LEFT_DCLICK, wxMouseEventHandler(frmScanforDevices::OnLeftDClick), NULL, this);

@@ -72,10 +72,10 @@
 #include <wx/html/htmlcell.h>
 
 #include "vscpworks.h"
-#include "../common/canal.h"
-#include "../common/vscp.h"
-#include "../common/vscphelper.h"
-#include "../common/mdf.h"
+#include <canal.h>
+#include <vscp.h>
+#include <vscphelper.h>
+#include <mdf.h>
 #include "dlgabout.h"
 #include "dialogeditlevelidmrow.h"
 #include "dialogabstractionedit.h"
@@ -2812,11 +2812,11 @@ void frmDeviceConfig::CreateControls() {
   itemToolBar25->AddSeparator();
   wxStaticText* itemStaticText35 = new wxStaticText;
   itemStaticText35->Create( itemToolBar25, wxID_STATIC, _("Node id: "), wxDefaultPosition, wxDefaultSize, 0 );
-  itemStaticText35->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+  itemStaticText35->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
   itemToolBar25->AddControl(itemStaticText35);
   wxArrayString m_comboNodeIDStrings;
   m_comboNodeID = new wxComboBox;
-  m_comboNodeID->Create( itemToolBar25, ID_COMBOBOX4, wxEmptyString, wxDefaultPosition, wxSize(410, -1), m_comboNodeIDStrings, wxCB_DROPDOWN );
+  m_comboNodeID->Create( itemToolBar25, ID_COMBOBOX4, wxEmptyString, wxDefaultPosition, wxSize(390, -1), m_comboNodeIDStrings, wxCB_DROPDOWN );
   if (frmDeviceConfig::ShowToolTips())
     m_comboNodeID->SetToolTip(_("Set nickname or GUID for node here"));
   m_comboNodeID->SetBackgroundColour(wxColour(255, 255, 210));
@@ -2839,7 +2839,7 @@ void frmDeviceConfig::CreateControls() {
     m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
   m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
   m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
-  m_BtnActivateInterface->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Sans")));
+  m_BtnActivateInterface->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
   itemToolBar25->AddControl(m_BtnActivateInterface);
   itemToolBar25->Realize();
   itemFrame1->SetToolBar(itemToolBar25);
@@ -2875,7 +2875,7 @@ void frmDeviceConfig::CreateControls() {
   m_gridRegisters = new wxGrid;
   m_gridRegisters->Create( m_panel0, ID_GRID_REGISTERS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
   m_gridRegisters->SetBackgroundColour(wxColour(240, 240, 240));
-  m_gridRegisters->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+  m_gridRegisters->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
   m_gridRegisters->SetDefaultColSize(50);
   m_gridRegisters->SetDefaultRowSize(18);
   m_gridRegisters->SetColLabelSize(18);
@@ -2894,7 +2894,7 @@ void frmDeviceConfig::CreateControls() {
   m_gridAbstractions = new wxGrid;
   m_gridAbstractions->Create( itemPanel51, ID_GRID_ABSTRACTIONS, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
   m_gridAbstractions->SetBackgroundColour(wxColour(240, 240, 240));
-  m_gridAbstractions->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+  m_gridAbstractions->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
   m_gridAbstractions->SetDefaultColSize(50);
   m_gridAbstractions->SetDefaultRowSize(18);
   m_gridAbstractions->SetColLabelSize(18);
@@ -2913,7 +2913,7 @@ void frmDeviceConfig::CreateControls() {
   m_gridDM = new wxGrid;
   m_gridDM->Create( itemPanel54, ID_GRID_DM, wxDefaultPosition, wxSize(400, 340), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
   m_gridDM->SetBackgroundColour(wxColour(240, 240, 240));
-  m_gridDM->SetFont(wxFont(8, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Tahoma")));
+  m_gridDM->SetFont(wxFont(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Tahoma")));
   m_gridDM->SetDefaultColSize(50);
   m_gridDM->SetDefaultRowSize(18);
   m_gridDM->SetColLabelSize(18);
@@ -2972,6 +2972,11 @@ void frmDeviceConfig::CreateControls() {
   m_ctrlButtonWizard->Create( itemPanel44, ID_BUTTON19, _("Wizard"), wxDefaultPosition, wxDefaultSize, 0 );
   m_ctrlButtonWizard->Enable(false);
   itemBoxSizer63->Add(m_ctrlButtonWizard, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+
+  wxStatusBar* itemStatusBar70 = new wxStatusBar;
+  itemStatusBar70->Create( itemPanel44, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
+  itemStatusBar70->SetFieldsCount(2);
+  itemBoxSizer45->Add(itemStatusBar70, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     ////@end frmDeviceConfig content construction
 
@@ -3429,37 +3434,37 @@ wxBitmap frmDeviceConfig::GetBitmapResource(const wxString& name) {
     // Bitmap retrieval
     ////@begin frmDeviceConfig bitmap retrieval
   wxUnusedVar(name);
-  if (name == _T("open.xpm"))
+  if (name == wxT("open.xpm"))
   {
     wxBitmap bitmap(open_xpm);
     return bitmap;
   }
-  else if (name == _T("save.xpm"))
+  else if (name == wxT("save.xpm"))
   {
     wxBitmap bitmap(save_xpm);
     return bitmap;
   }
-  else if (name == _T("cut.xpm"))
+  else if (name == wxT("cut.xpm"))
   {
     wxBitmap bitmap(cut_xpm);
     return bitmap;
   }
-  else if (name == _T("copy.xpm"))
+  else if (name == wxT("copy.xpm"))
   {
     wxBitmap bitmap(copy_xpm);
     return bitmap;
   }
-  else if (name == _T("paste.xpm"))
+  else if (name == wxT("paste.xpm"))
   {
     wxBitmap bitmap(paste_xpm);
     return bitmap;
   }
-  else if (name == _T("Print.xpm"))
+  else if (name == wxT("Print.xpm"))
   {
     wxBitmap bitmap(print_xpm);
     return bitmap;
   }
-  else if (name == _T("find.xpm"))
+  else if (name == wxT("find.xpm"))
   {
     wxBitmap bitmap(find_xpm);
     return bitmap;
@@ -3476,22 +3481,22 @@ wxIcon frmDeviceConfig::GetIconResource(const wxString& name) {
     // Icon retrieval
 ////@begin frmDeviceConfig icon retrieval
   wxUnusedVar(name);
-  if (name == _T("../../../docs/vscp/logo/fatbee_v2.ico"))
+  if (name == wxT("../../../docs/vscp/logo/fatbee_v2.ico"))
   {
     wxIcon icon(fatbee_v2_xpm);
     return icon;
   }
-  else if (name == _T("icons/png/32x32/database_process.png"))
+  else if (name == wxT("icons/png/32x32/database_process.png"))
   {
     wxIcon icon(database_process_xpm);
     return icon;
   }
-  else if (name == _T("icons/png/32x32/database_accept.png"))
+  else if (name == wxT("icons/png/32x32/database_accept.png"))
   {
     wxIcon icon(database_accept_xpm);
     return icon;
   }
-  else if (name == _T("icons/png/32x32/database_down.png"))
+  else if (name == wxT("icons/png/32x32/database_down.png"))
   {
     wxIcon icon(database_down_xpm);
     return icon;

@@ -54,6 +54,7 @@
 #include "wx/frame.h"
 #include "wx/treectrl.h"
 #include "wx/html/htmlwin.h"
+#include "wx/statusbr.h"
 ////@end includes
 
 #include "../common/canalsuperwrapper.h"
@@ -155,8 +156,6 @@ public:
 
 	/// Module description file functionality
 	CMDF m_mdf;
-	
-	
 
     /// Display info about node
 	void getNodeInfo(wxCommandEvent& event);
@@ -251,7 +250,8 @@ public:
     ID_CHECKBOX4 = 10151,
     ID_TEXTCTRL40 = 10147,
     ID_TEXTCTRL = 10000,
-    ID_BUTTON_SCAN = 27003
+    ID_BUTTON_SCAN = 27003,
+    ID_STATUSBAR = 10001
   };
 ////@end frmScanforDevices member variables
 };

@@ -1477,7 +1477,7 @@ void frmVSCPSession::CreateControls()
     m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
   m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
   m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
-  m_BtnActivateInterface->SetFont(wxFont(10, wxSWISS, wxNORMAL, wxBOLD, false, wxT("Sans")));
+  m_BtnActivateInterface->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
   itemToolBar2->AddControl(m_BtnActivateInterface);
   itemToolBar2->Realize();
   itemFrame1->SetToolBar(itemToolBar2);
@@ -1496,9 +1496,9 @@ void frmVSCPSession::CreateControls()
 
   m_ctrlGridReceive = new wxGrid;
   m_ctrlGridReceive->Create( m_pPanel, ID_VSCP_GRID_RECEIVE, wxDefaultPosition, wxSize(550, 300), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
-  m_ctrlGridReceive->SetName(_T("vscprcveventgrid"));
+  m_ctrlGridReceive->SetName(wxT("vscprcveventgrid"));
   m_ctrlGridReceive->SetBackgroundColour(wxColour(204, 244, 244));
-  m_ctrlGridReceive->SetFont(wxFont(8, wxDEFAULT, wxNORMAL, wxBOLD, false, wxT("")));
+  m_ctrlGridReceive->SetFont(wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("")));
   m_ctrlGridReceive->SetDefaultColSize(100);
   m_ctrlGridReceive->SetDefaultRowSize(20);
   m_ctrlGridReceive->SetColLabelSize(18);
@@ -1557,7 +1557,7 @@ void frmVSCPSession::CreateControls()
   m_ctrlGridTransmission->Create( m_pPanel, ID_VSCP_GRID_TRANSMISSION, wxDefaultPosition, wxSize(700, 190), wxHSCROLL|wxVSCROLL );
   if (frmVSCPSession::ShowToolTips())
     m_ctrlGridTransmission->SetToolTip(_("Right click for menu / double click to transmit"));
-  m_ctrlGridTransmission->SetFont(wxFont(8, wxDEFAULT, wxNORMAL, wxBOLD, false, wxT("")));
+  m_ctrlGridTransmission->SetFont(wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("")));
   m_ctrlGridTransmission->SetDefaultColSize(100);
   m_ctrlGridTransmission->SetDefaultRowSize(18);
   m_ctrlGridTransmission->SetColLabelSize(18);
@@ -1585,6 +1585,11 @@ void frmVSCPSession::CreateControls()
   m_btnClear->Create( m_pPanel, ID_BITMAPBUTTON13, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
   m_btnClear->Show(false);
   itemBoxSizer81->Add(m_btnClear, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+
+  wxStatusBar* itemStatusBar86 = new wxStatusBar;
+  itemStatusBar86->Create( m_pPanel, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
+  itemStatusBar86->SetFieldsCount(2);
+  itemBoxSizer65->Add(itemStatusBar86, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     ////@end frmVSCPSession content construction
 
@@ -1718,52 +1723,52 @@ wxBitmap frmVSCPSession::GetBitmapResource(const wxString& name)
     // Bitmap retrieval
     ////@begin frmVSCPSession bitmap retrieval
   wxUnusedVar(name);
-  if (name == _T("open.xpm"))
+  if (name == wxT("open.xpm"))
   {
     wxBitmap bitmap(open_xpm);
     return bitmap;
   }
-  else if (name == _T("save.xpm"))
+  else if (name == wxT("save.xpm"))
   {
     wxBitmap bitmap(save_xpm);
     return bitmap;
   }
-  else if (name == _T("cut.xpm"))
+  else if (name == wxT("cut.xpm"))
   {
     wxBitmap bitmap(cut_xpm);
     return bitmap;
   }
-  else if (name == _T("copy.xpm"))
+  else if (name == wxT("copy.xpm"))
   {
     wxBitmap bitmap(copy_xpm);
     return bitmap;
   }
-  else if (name == _T("paste.xpm"))
+  else if (name == wxT("paste.xpm"))
   {
     wxBitmap bitmap(paste_xpm);
     return bitmap;
   }
-  else if (name == _T("Print.xpm"))
+  else if (name == wxT("Print.xpm"))
   {
     wxBitmap bitmap(print_xpm);
     return bitmap;
   }
-  else if (name == _T("New1.xpm"))
+  else if (name == wxT("New1.xpm"))
   {
     wxBitmap bitmap(new_xpm);
     return bitmap;
   }
-  else if (name == _T("delete.xpm"))
+  else if (name == wxT("delete.xpm"))
   {
     wxBitmap bitmap(delete_xpm);
     return bitmap;
   }
-  else if (name == _T("filesaveas.xpm"))
+  else if (name == wxT("filesaveas.xpm"))
   {
     wxBitmap bitmap(filesaveas_xpm);
     return bitmap;
   }
-  else if (name == _T("redo.xpm"))
+  else if (name == wxT("redo.xpm"))
   {
     wxBitmap bitmap(redo_xpm);
     return bitmap;
@@ -1781,7 +1786,7 @@ wxIcon frmVSCPSession::GetIconResource(const wxString& name)
     // Icon retrieval
     ////@begin frmVSCPSession icon retrieval
   wxUnusedVar(name);
-  if (name == _T("../../../docs/vscp/logo/fatbee_v2.ico"))
+  if (name == wxT("../../../docs/vscp/logo/fatbee_v2.ico"))
   {
     wxIcon icon(fatbee_v2_xpm);
     return icon;

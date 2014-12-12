@@ -56,6 +56,7 @@
 #include "wx/tglbtn.h"
 #include "wx/grid.h"
 #include "wx/html/htmlwin.h"
+#include "wx/statusbr.h"
 ////@end includes
 
 #include <wx/list.h>
@@ -807,7 +808,8 @@ public:
     ID_VSCP_GRID_TRANSMISSION = 13007,
     ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND = 13008,
     ID_BITMAPBUTTON12 = 13009,
-    ID_BITMAPBUTTON13 = 13010
+    ID_BITMAPBUTTON13 = 13010,
+    ID_STATUSBAR = 10000
   };
 ////@end frmVSCPSession member variables
 };
