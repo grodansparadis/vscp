@@ -61,14 +61,12 @@
 #include "wx/toolbook.h"
 #include "wx/grid.h"
 #include "wx/html/htmlwin.h"
-#include "wx/statusbr.h"
 ////@end includes
 
-#include <canalsuperwrapper.h>
-#include <register.h>
-#include <mdf.h>
 #include "vscpworks.h"
-
+#include "../common/canalsuperwrapper.h"
+#include "../common/register.h"
+#include "../common/mdf.h"
 
 #define MAX_CONFIG_REGISTER_PAGE	22
 
@@ -107,7 +105,6 @@ enum {
 	Menu_Popup_dm_row_wizard,
 	Menu_Popup_go_VSCP
 };
-
 
 /*!
  * frmDeviceConfig class declaration
@@ -268,6 +265,86 @@ public:
 
 
 ////@begin frmDeviceConfig event handler declarations
+  /// wxEVT_CLOSE_WINDOW event handler for ID_FRMDEVICECONFIG
+  void OnCloseWindow( wxCloseEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_REGSITERS
+  void OnMenuitemSaveRegistersClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM
+  void OnMenuitemSaveSelectedRegistersClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_LOAD_REGISTES
+  void OnMenuitemLoadRegistersClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_ADD_GUIDS
+  void OnMenuitemAddGuidsClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_GUIDS
+  void OnMenuitemSaveGuidsClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_LOAD_GUIDS
+  void OnMenuitemLoadGuidsClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_EXIT
+  void OnMenuitemExitClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP
+  void OnMenuitemVscpHelpClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_FAQ
+  void OnMenuitemVscpFaqClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_KB_SHRTCUTS
+  void OnMenuitemVscpShortcutsClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_THANKS
+  void OnMenuitemVscpThanksClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_CREDITS
+  void OnMenuitemVscpCreditsClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_GO_VSCP_SITE
+  void OnMenuitemVscpVscpSiteClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_ABOUT
+  void OnMenuitemVscpAboutClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_COMBOBOX_SELECTED event handler for ID_COMBOBOX4
+  void OnComboNodeIDSelected( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_TEXT_UPDATED event handler for ID_COMBOBOX4
+  void OnComboNodeIDUpdated( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_CHECK_LEVEL2
+  void OnBitmapbuttonTestDeviceClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON1
+  void OnInterfaceActivate( wxCommandEvent& event );
+
+  /// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_GRID_REGISTERS
+  void OnCellLeftClick( wxGridEvent& event );
+
+  /// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_GRID_REGISTERS
+  void OnCellRightClick( wxGridEvent& event );
+
+  /// wxEVT_GRID_CELL_LEFT_DCLICK event handler for ID_GRID_REGISTERS
+  void OnLeftDClick( wxGridEvent& event );
+
+  /// wxEVT_GRID_CELL_CHANGE event handler for ID_GRID_REGISTERS
+  void OnRegisterEdited( wxGridEvent& event );
+
+  /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW1
+  void OnHtmlwindowCellClicked( wxHtmlLinkEvent& event );
+
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON16
+  void OnButtonUpdateClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON17
+  void OnButtonLoadDefaultsClick( wxCommandEvent& event );
+
+  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON19
+  void OnButtonWizardClick( wxCommandEvent& event );
 
 ////@end frmDeviceConfig event handler declarations
 
@@ -444,11 +521,11 @@ public:
     ID_CHECKBOX_MDF_FROM_FILE = 10000,
     ID_BUTTON16 = 19113,
     ID_BUTTON17 = 19114,
-    ID_BUTTON19 = 19116,
-    ID_STATUSBAR = 10004
+    ID_BUTTON19 = 19116
   };
 ////@end frmDeviceConfig member variables
 };
+
 
 
 #endif
