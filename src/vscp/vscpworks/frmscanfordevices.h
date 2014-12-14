@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef _FRMSCANFORDEVICES_H_
 #define _FRMSCANFORDEVICES_H_
@@ -46,16 +46,10 @@
 #pragma interface "frmscanfordevices.h"
 #endif
 
-/*!
- * Includes
- */
-
-////@begin includes
 #include "wx/frame.h"
 #include "wx/treectrl.h"
 #include "wx/html/htmlwin.h"
 #include "wx/statusbr.h"
-////@end includes
 
 #include "../common/canalsuperwrapper.h"
 #include "../common/mdf.h"
@@ -67,26 +61,16 @@ enum {
 };
 
 
-/*!
- * Forward declarations
- */
-
-////@begin forward declarations
 class wxTreeCtrl;
 class wxHtmlWindow;
-////@end forward declarations
 
-/*!
- * Control identifiers
- */
 
-////@begin control identifiers
 #define SYMBOL_FRMSCANFORDEVICES_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_FRMSCANFORDEVICES_TITLE _("Scan for Devices")
 #define SYMBOL_FRMSCANFORDEVICES_IDNAME ID_SCANFORDEVICES
 #define SYMBOL_FRMSCANFORDEVICES_SIZE wxSize(800, 480)
 #define SYMBOL_FRMSCANFORDEVICES_POSITION wxDefaultPosition
-////@end control identifiers
+
 
 class scanElement : public wxTreeItemData 
 {
@@ -110,9 +94,19 @@ class frmScanforDevices: public wxFrame
 public:
 	/// Constructors
 	frmScanforDevices();
-	frmScanforDevices( wxWindow* parent, wxWindowID id = SYMBOL_FRMSCANFORDEVICES_IDNAME, const wxString& caption = SYMBOL_FRMSCANFORDEVICES_TITLE, const wxPoint& pos = SYMBOL_FRMSCANFORDEVICES_POSITION, const wxSize& size = SYMBOL_FRMSCANFORDEVICES_SIZE, long style = SYMBOL_FRMSCANFORDEVICES_STYLE );
+	frmScanforDevices( wxWindow* parent, 
+                            wxWindowID id = SYMBOL_FRMSCANFORDEVICES_IDNAME, 
+                            const wxString& caption = SYMBOL_FRMSCANFORDEVICES_TITLE, 
+                            const wxPoint& pos = SYMBOL_FRMSCANFORDEVICES_POSITION, 
+                            const wxSize& size = SYMBOL_FRMSCANFORDEVICES_SIZE, 
+                            long style = SYMBOL_FRMSCANFORDEVICES_STYLE );
 
-	bool Create( wxWindow* parent, wxWindowID id = SYMBOL_FRMSCANFORDEVICES_IDNAME, const wxString& caption = SYMBOL_FRMSCANFORDEVICES_TITLE, const wxPoint& pos = SYMBOL_FRMSCANFORDEVICES_POSITION, const wxSize& size = SYMBOL_FRMSCANFORDEVICES_SIZE, long style = SYMBOL_FRMSCANFORDEVICES_STYLE );
+	bool Create( wxWindow* parent, 
+                        wxWindowID id = SYMBOL_FRMSCANFORDEVICES_IDNAME, 
+                        const wxString& caption = SYMBOL_FRMSCANFORDEVICES_TITLE, 
+                        const wxPoint& pos = SYMBOL_FRMSCANFORDEVICES_POSITION, 
+                        const wxSize& size = SYMBOL_FRMSCANFORDEVICES_SIZE, 
+                        long style = SYMBOL_FRMSCANFORDEVICES_STYLE );
 
 	/// Destructor
 	~frmScanforDevices();
@@ -139,8 +133,10 @@ public:
 	canal_interface m_canalif;
 	vscp_interface m_vscpif;
 	
-	// GUID for interface or all
-	// zero if no interface selected
+	/*!
+        GUID for interface or all
+	    zero if no interface selected
+    */
 	cguid m_ifguid;
 
 	/*!
@@ -166,94 +162,87 @@ public:
 	// Get GUID for interface
 	bool fetchIterfaceGUID(void);
 
-////@begin frmScanforDevices event handler declarations
+    /// wxEVT_CLOSE_WINDOW event handler for ID_SCANFORDEVICES
+    void OnCloseWindow( wxCloseEvent& event );
 
-  /// wxEVT_CLOSE_WINDOW event handler for ID_SCANFORDEVICES
-  void OnCloseWindow( wxCloseEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENU_VSCPWORKS_EXIT
+    void OnMenuitemExitClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENU_VSCPWORKS_EXIT
-  void OnMenuitemExitClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP
+    void OnMenuitemHelpClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP
-  void OnMenuitemHelpClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_FAQ
+    void OnMenuitemHelpFaqClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_FAQ
-  void OnMenuitemHelpFaqClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_SC
+    void OnMenuitemHelpScClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_SC
-  void OnMenuitemHelpScClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_THANKS
+    void OnMenuitemHelpThanksClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_THANKS
-  void OnMenuitemHelpThanksClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_CREDITS
+    void OnMenuitemHelpCreditsClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_CREDITS
-  void OnMenuitemHelpCreditsClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_VSCP_SITE
+    void OnMenuitemHelpVscpSiteClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_VSCP_SITE
-  void OnMenuitemHelpVscpSiteClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_ABOUT
+    void OnMenuitemHelpAboutClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_HELP_ABOUT
-  void OnMenuitemHelpAboutClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_TREE_SEL_CHANGED event handler for ID_TREE_DEVICE
+    void OnTreeDeviceSelChanged( wxTreeEvent& event );
 
-  /// wxEVT_COMMAND_TREE_SEL_CHANGED event handler for ID_TREE_DEVICE
-  void OnTreeDeviceSelChanged( wxTreeEvent& event );
+    /// wxEVT_COMMAND_TREE_ITEM_RIGHT_CLICK event handler for ID_TREE_DEVICE
+    void OnTreeDeviceItemRightClick( wxTreeEvent& event );
 
-  /// wxEVT_COMMAND_TREE_ITEM_RIGHT_CLICK event handler for ID_TREE_DEVICE
-  void OnTreeDeviceItemRightClick( wxTreeEvent& event );
+    /// wxEVT_LEFT_DCLICK event handler for ID_TREE_DEVICE
+    void OnLeftDClick( wxMouseEvent& event );
 
-  /// wxEVT_LEFT_DCLICK event handler for ID_TREE_DEVICE
-  void OnLeftDClick( wxMouseEvent& event );
+    /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW3
+    void OnHtmlwindow3LinkClicked( wxHtmlLinkEvent& event );
 
-  /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW3
-  void OnHtmlwindow3LinkClicked( wxHtmlLinkEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_SCAN
+    void OnButtonScanClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_SCAN
-  void OnButtonScanClick( wxCommandEvent& event );
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-////@end frmScanforDevices event handler declarations
-
-////@begin frmScanforDevices member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-////@end frmScanforDevices member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
 	/// Should we show tooltips?
 	static bool ShowToolTips();
 
-////@begin frmScanforDevices member variables
-  wxPanel* m_pPanel;
-  wxStaticText* m_labelInterface;
-  wxTreeCtrl* m_DeviceTree;
-  wxHtmlWindow* m_htmlWnd;
-  wxCheckBox* m_slowAlgorithm;
-  wxTextCtrl* m_ctrlEditFrom;
-  wxTextCtrl* m_ctrlEditTo;
-  /// Control identifiers
-  enum {
-    ID_SCANFORDEVICES = 27000,
-    ID_MENU_VSCPWORKS_EXIT = 27001,
-    ID_MENUITEM14 = 27008,
-    ID_MENUITEM_HELP = 27018,
-    ID_MENUITEM_HELP_FAQ = 27019,
-    ID_MENUITEM_HELP_SC = 27020,
-    ID_MENUITEM_HELP_THANKS = 27021,
-    ID_MENUITEM_HELP_CREDITS = 27022,
-    ID_MENUITEM_HELP_VSCP_SITE = 27023,
-    ID_MENUITEM_HELP_ABOUT = 27024,
-    ID_PANEL_DEVICE_SCAN = 27004,
-    ID_TREE_DEVICE = 27035,
-    ID_HTMLWINDOW3 = 27002,
-    ID_CHECKBOX4 = 10151,
-    ID_TEXTCTRL40 = 10147,
-    ID_TEXTCTRL = 10000,
-    ID_BUTTON_SCAN = 27003,
-    ID_STATUSBAR = 10001
-  };
-////@end frmScanforDevices member variables
+    wxPanel* m_pPanel;
+    wxStaticText* m_labelInterface;
+    wxTreeCtrl* m_DeviceTree;
+    wxHtmlWindow* m_htmlWnd;
+    wxCheckBox* m_slowAlgorithm;
+    wxTextCtrl* m_ctrlEditFrom;
+    wxTextCtrl* m_ctrlEditTo;
+
+    /// Control identifiers
+    enum {
+        ID_SCANFORDEVICES = 27000,
+        ID_MENU_VSCPWORKS_EXIT = 27001,
+        ID_MENUITEM14 = 27008,
+        ID_MENUITEM_HELP = 27018,
+        ID_MENUITEM_HELP_FAQ = 27019,
+        ID_MENUITEM_HELP_SC = 27020,
+        ID_MENUITEM_HELP_THANKS = 27021,
+        ID_MENUITEM_HELP_CREDITS = 27022,
+        ID_MENUITEM_HELP_VSCP_SITE = 27023,
+        ID_MENUITEM_HELP_ABOUT = 27024,
+        ID_PANEL_DEVICE_SCAN = 27004,
+        ID_TREE_DEVICE = 27035,
+        ID_HTMLWINDOW3 = 27002,
+        ID_CHECKBOX4 = 10151,
+        ID_TEXTCTRL40 = 10147,
+        ID_TEXTCTRL = 10000,
+        ID_BUTTON_SCAN = 27003,
+        ID_STATUSBAR = 10001
+    };
+
 };
 
 #endif

@@ -180,62 +180,139 @@ void frmMain::CreateControls()
 
     wxMenuBar* menuBar = new wxMenuBar;
     wxMenu* itemMenu3 = new wxMenu;
-    itemMenu3->Append(ID_MENUITEM_OPEN_VSCP_SESSION, _("VSCP client window..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM_DEVICE_CONFIGURATION, _("VSCP device configuration window..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM_MDF_EDITOR, _("VSCP MDF Editor..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM_DM_EDITOR, _("VSCP Daemon Decision Matrix Editor..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM_VARIABLE_EDITOR, _("VSCP Daemon Variable Editor..."), wxEmptyString, wxITEM_NORMAL);
+
+    itemMenu3->Append( ID_MENUITEM_OPEN_VSCP_SESSION,
+                        _("VSCP client window..."), 
+                        wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENUITEM_DEVICE_CONFIGURATION, 
+                        _("VSCP device configuration window..."), 
+                        wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENUITEM_MDF_EDITOR, 
+                        _("VSCP MDF Editor..."), 
+                        wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENUITEM_DM_EDITOR, 
+                        _("VSCP Daemon Decision Matrix Editor..."), 
+                        wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENUITEM_VARIABLE_EDITOR, 
+                        _("VSCP Daemon Variable Editor..."), 
+                        wxEmptyString, wxITEM_NORMAL);
     itemMenu3->AppendSeparator();
-    itemMenu3->Append(ID_MENUITEM_SCAN, _("Scan for devices..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM_BOOTLOADER_WIZARD, _("VSCP bootloader wizard..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENUITEM_SCAN, 
+                        _("Scan for devices..."), 
+                        wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENUITEM_BOOTLOADER_WIZARD, 
+                        _("VSCP bootloader wizard..."), 
+                        wxEmptyString, 
+                        wxITEM_NORMAL);
     itemMenu3->AppendSeparator();
-    itemMenu3->Append(ID_MENUITEM_SIMPLE_UI_DESIGNER, _("VSCP Simple UI deigner..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->Append(ID_MENUITEM_MERLIN, _("Merlin Interface Designer..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENUITEM_SIMPLE_UI_DESIGNER, 
+                        _("VSCP Simple UI deigner..."), 
+                        wxEmptyString, 
+                        wxITEM_NORMAL);
     itemMenu3->AppendSeparator();
-    itemMenu3->Append(ID_MENU_VSCPWORKS_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->Append( ID_MENU_VSCPWORKS_EXIT, 
+                        _("Exit"), 
+                        wxEmptyString, 
+                        wxITEM_NORMAL);
+    
+    // VSCP Menu
     menuBar->Append(itemMenu3, _("VSCP"));
     wxMenu* itemMenu17 = new wxMenu;
-    itemMenu17->Append(ID_MENUITEM_CONFIGURATION, _("Configuration..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu17->Append( ID_MENUITEM_CONFIGURATION, 
+                            _("Configuration..."), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL);
     itemMenu17->AppendSeparator();
-    itemMenu17->Append(ID_MENUITEM_MDF_EDITOR, _("MDF Editor"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu17->Append( ID_MENUITEM_MDF_EDITOR, 
+                            _("MDF Editor"), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL );
+    
+    // Tools menu
     menuBar->Append(itemMenu17, _("Tools"));
     wxMenu* itemMenu21 = new wxMenu;
-    itemMenu21->Append(ID_MENUITEM33, _("VSCP-Works Help"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu21->Append(ID_MENUITEM34, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
-    itemMenu21->Append(ID_MENUITEM35, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu21->Append( ID_MENUITEM33, 
+                            _("VSCP-Works Help"), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL);
+    itemMenu21->Append( ID_MENUITEM34, 
+                            _("Frequently Asked Questions"), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL);
+    itemMenu21->Append( ID_MENUITEM35, 
+                            _("Keyboard shortcuts"), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL);
     itemMenu21->AppendSeparator();
-    itemMenu21->Append(ID_MENUITEM_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu21->Append(ID_MENUITEM_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu21->Append( ID_MENUITEM_THANKS, 
+                            _("Thanks..."), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL);
+    itemMenu21->Append( ID_MENUITEM_CREDITS, 
+                            _("Credits..."), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL);
     itemMenu21->AppendSeparator();
-    itemMenu21->Append(ID_MENUITEM_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu21->Append( ID_MENUITEM_VSCP_SITE, 
+                            _("Go to VSCP site"), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL);
     itemMenu21->AppendSeparator();
-    itemMenu21->Append(ID_MENUITEM_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu21, _("Help"));
-    itemFrame1->SetMenuBar(menuBar);
+    itemMenu21->Append( ID_MENUITEM_ABOUT, 
+                            _("About"), 
+                            wxEmptyString, 
+                            wxITEM_NORMAL);
+    
+    menuBar->Append (itemMenu21, _("Help") );
 
+    itemFrame1->SetMenuBar( menuBar );
+
+    // Statusbar
     wxStatusBar* itemStatusBar32 = new wxStatusBar;
-    itemStatusBar32->Create( itemFrame1, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
+    itemStatusBar32->Create( itemFrame1, 
+                                ID_STATUSBAR, 
+                                wxST_SIZEGRIP|wxNO_BORDER );
     itemStatusBar32->SetFieldsCount(2);
-    itemFrame1->SetStatusBar(itemStatusBar32);
+    itemFrame1->SetStatusBar( itemStatusBar32 );
 
-    wxToolBar* itemToolBar33 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL|wxTB_NODIVIDER, ID_TOOLBAR );
-    wxBitmap itemtool34Bitmap(itemFrame1->GetBitmapResource(wxT("open.xpm")));
+    // Toolbar
+    wxToolBar* itemToolBar33 = CreateToolBar( wxTB_FLAT | wxTB_HORIZONTAL | wxTB_NODIVIDER, 
+                                                ID_TOOLBAR );
+    wxBitmap itemtool34Bitmap( itemFrame1->GetBitmapResource( wxT("open.xpm") ) );
     wxBitmap itemtool34BitmapDisabled;
-    itemToolBar33->AddTool(ID_TOOL, wxEmptyString, itemtool34Bitmap, itemtool34BitmapDisabled, wxITEM_NORMAL, wxEmptyString, wxEmptyString);
+    itemToolBar33->AddTool( ID_TOOL, 
+                                wxEmptyString, 
+                                itemtool34Bitmap, 
+                                itemtool34BitmapDisabled, 
+                                wxITEM_NORMAL, 
+                                wxEmptyString, 
+                                wxEmptyString );
     itemToolBar33->Realize();
-    itemFrame1->SetToolBar(itemToolBar33);
+    itemFrame1->SetToolBar( itemToolBar33 );
 
     wxPanel* itemPanel35 = new wxPanel;
-    itemPanel35->Create( itemFrame1, ID_PANEL1, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    itemPanel35->SetBackgroundColour(wxColour(255, 255, 255));
+    itemPanel35->Create( itemFrame1, 
+                            ID_PANEL1, 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
+    itemPanel35->SetBackgroundColour( wxColour(255, 255, 255) );
 
-    wxBoxSizer* itemBoxSizer36 = new wxBoxSizer(wxVERTICAL);
-    itemPanel35->SetSizer(itemBoxSizer36);
+    wxBoxSizer* itemBoxSizer36 = new wxBoxSizer( wxVERTICAL );
+    itemPanel35->SetSizer( itemBoxSizer36 );
 
     wxStaticBitmap* itemStaticBitmap37 = new wxStaticBitmap;
-    itemStaticBitmap37->Create( itemPanel35, wxID_STATIC, itemFrame1->GetBitmapResource(wxT("../../../docs/vscp/logo/vscp_logo.jpg")), wxDefaultPosition, wxSize(151, 212), 0 );
-    itemStaticBitmap37->SetBackgroundColour(wxColour(255, 255, 255));
-    itemBoxSizer36->Add(itemStaticBitmap37, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    itemStaticBitmap37->Create( itemPanel35, 
+                                    wxID_STATIC, 
+                                    itemFrame1->GetBitmapResource( wxT("../../../docs/vscp/logo/vscp_logo.jpg") ), 
+                                    wxDefaultPosition, 
+                                    wxSize(151, 212),
+                                    0 );
+    itemStaticBitmap37->SetBackgroundColour( wxColour(255, 255, 255) );
+    itemBoxSizer36->Add( itemStaticBitmap37, 
+                            0, 
+                            wxALIGN_CENTER_HORIZONTAL | wxALL, 
+                            0 );
 
 }
 

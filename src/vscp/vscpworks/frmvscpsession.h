@@ -7,6 +7,7 @@
 // RCS-ID:      
 // Copyright:   (C) 2007-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+//
 // Licence:     
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -46,18 +47,12 @@
 #pragma interface "frmvscpsession.h"
 #endif
 
-/*!
- * Includes
- */
-
-////@begin includes
 #include "wx/frame.h"
 #include "wx/toolbar.h"
 #include "wx/tglbtn.h"
 #include "wx/grid.h"
 #include "wx/html/htmlwin.h"
 #include "wx/statusbr.h"
-////@end includes
 
 #include <wx/list.h>
 #include <wx/ffile.h>
@@ -74,37 +69,27 @@
 WX_DECLARE_LIST ( VscpTXObj, TXLIST );
 
 enum {
-  Menu_Help_About = wxID_ABOUT,
-  Menu_Popup_Submenu = 2000,
-  Menu_Popup_TX_Transmit,
-  Menu_Popup_TX_Add,
-  Menu_Popup_TX_Edit,
-  Menu_Popup_TX_Delete,
-  Menu_Popup_TX_Periodic,
-  Menu_Popup_TX_Clone
+    Menu_Help_About = wxID_ABOUT,
+    Menu_Popup_Submenu = 2000,
+    Menu_Popup_TX_Transmit,
+    Menu_Popup_TX_Add,
+    Menu_Popup_TX_Edit,
+    Menu_Popup_TX_Delete,
+    Menu_Popup_TX_Periodic,
+    Menu_Popup_TX_Clone
 };
 
-/*!
- * Forward declarations
- */
-
-////@begin forward declarations
+// Forward declarations
 class wxToggleButton;
 class wxGrid;
 class wxHtmlWindow;
-////@end forward declarations
 
-/*!
- * Control identifiers
- */
-
-////@begin control identifiers
-#define SYMBOL_FRMVSCPSESSION_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
+// Control identifiers
+#define SYMBOL_FRMVSCPSESSION_STYLE wxCAPTION | wxRESIZE_BORDER | wxSYSTEM_MENU | wxCLOSE_BOX
 #define SYMBOL_FRMVSCPSESSION_TITLE _("VSCP Session")
 #define SYMBOL_FRMVSCPSESSION_IDNAME ID_FRMVSCPSESSION
 #define SYMBOL_FRMVSCPSESSION_SIZE wxSize(880, 600)
 #define SYMBOL_FRMVSCPSESSION_POSITION wxPoint(100, 100)
-////@end control identifiers
 
 DECLARE_EVENT_TYPE(wxVSCP_IN_EVENT, wxID_ANY)                   // Received event
 DECLARE_EVENT_TYPE(wxVSCP_OUT_EVENT, wxID_ANY)                  // Transmitted event
@@ -114,118 +99,107 @@ DECLARE_EVENT_TYPE(wxVSCP_RCV_PREP_CONNECT_EVENT, wxID_ANY)     // Prepare to co
 DECLARE_EVENT_TYPE(wxVSCP_RCV_CONNECTED_EVENT, wxID_ANY)        // Connected
 
 // Error constants for worker threads
-#define VSCP_SESSION_ERROR_UNABLE_TO_CONNECT  -1
-#define VSCP_SESSION_ERROR_TERMINATED         -99
-
-
+#define VSCP_SESSION_ERROR_UNABLE_TO_CONNECT        -1
+#define VSCP_SESSION_ERROR_TERMINATED               -99
 
 //WX_DECLARE_LIST ( vscpEvent, eventInQueue );
 WX_DECLARE_LIST ( vscpEvent, eventOutQueue );
-
 
 
 class frmVSCPSession;
 class deviceThread;
 
   
-/*!
-  Shared object among threads.
-*/
+// Shared object among threads.
 class ctrlObj
 {
-  public:
+
+public:
   
     ctrlObj();
     ~ctrlObj();
   
-    /// Thread run control
+    // Thread run control
     bool m_bQuit;
 
-    /*!
-        Pointer to VSCP session window
-    */
+    // Pointer to VSCP session window
     frmVSCPSession *m_pVSCPSessionWnd;
   
-    /// Thread error return code for control thread
+    // Thread error return code for control thread
     long m_errorControl;
 
-    /// Thread error return code for receive thread
+    // Thread error return code for receive thread
     long m_errorReceive;
   
-    /// Chennel ID for tx channel 
+    // Chennel ID for tx channel 
     unsigned long m_txChannelID;
   
-    /// Chennel ID for rx channel 
+    // Chennel ID for rx channel 
     unsigned long m_rxChannelID;
 
-    /// Copy of the receive gridtable
+    // Copy of the receive gridtable
     BigGridTable *m_pgridTable;
   
     // Event output queue
     eventOutQueue m_outQueue;
   
-    /// Protection for output queue
+    // Protection for output queue
     wxMutex m_mutexOutQueue;
     wxSemaphore m_semOutQue;
   
-    /// Table for transmission objects
+    // Table for transmission objects
     TXLIST m_txList;
   
-    /// Interface type
+    // Interface type
     int m_interfaceType;
 
-	/*!
-		CANAL driver level
-	*/
+	// CANAL driver level
     unsigned char m_driverLevel;
   
-    /// Interface information CANAL interface type
+    // Interface information CANAL interface type
     canal_interface m_ifCANAL;
   
-    /// Interface information VSCP interface type
+    // Interface information VSCP interface type
     vscp_interface m_ifVSCP;
 
-	/*!
-		Mutex handle that is used for sharing of the device.
-	*/
+	// Mutex handle that is used for sharing of the device.
 	wxMutex m_deviceMutex;
 
-    /*!
-        GUID for CANAL device
-    */
+    // GUID for CANAL device
     unsigned char m_GUID[16];
-
 
 	// Handle for dll/dl driver interface
 	long m_openHandle;
 
 	// CANAL methods
-	LPFNDLL_CANALOPEN				      m_proc_CanalOpen;
-	LPFNDLL_CANALCLOSE				    m_proc_CanalClose;
-	LPFNDLL_CANALGETLEVEL			    m_proc_CanalGetLevel;
-	LPFNDLL_CANALSEND				      m_proc_CanalSend;
-	LPFNDLL_CANALRECEIVE			    m_proc_CanalReceive;
-	LPFNDLL_CANALDATAAVAILABLE		m_proc_CanalDataAvailable;
-	LPFNDLL_CANALGETSTATUS			  m_proc_CanalGetStatus;
-	LPFNDLL_CANALGETSTATISTICS		m_proc_CanalGetStatistics;
-	LPFNDLL_CANALSETFILTER			  m_proc_CanalSetFilter;
-	LPFNDLL_CANALSETMASK			    m_proc_CanalSetMask;
-	LPFNDLL_CANALSETBAUDRATE		  m_proc_CanalSetBaudrate;
-	LPFNDLL_CANALGETVERSION			  m_proc_CanalGetVersion;
-	LPFNDLL_CANALGETDLLVERSION		m_proc_CanalGetDllVersion;
-	LPFNDLL_CANALGETVENDORSTRING	m_proc_CanalGetVendorString;
+	LPFNDLL_CANALOPEN                   m_proc_CanalOpen;
+	LPFNDLL_CANALCLOSE                  m_proc_CanalClose;
+	LPFNDLL_CANALGETLEVEL               m_proc_CanalGetLevel;
+	LPFNDLL_CANALSEND                   m_proc_CanalSend;
+	LPFNDLL_CANALRECEIVE                m_proc_CanalReceive;
+	LPFNDLL_CANALDATAAVAILABLE          m_proc_CanalDataAvailable;
+	LPFNDLL_CANALGETSTATUS              m_proc_CanalGetStatus;
+	LPFNDLL_CANALGETSTATISTICS          m_proc_CanalGetStatistics;
+	LPFNDLL_CANALSETFILTER              m_proc_CanalSetFilter;
+	LPFNDLL_CANALSETMASK                m_proc_CanalSetMask;
+	LPFNDLL_CANALSETBAUDRATE            m_proc_CanalSetBaudrate;
+	LPFNDLL_CANALGETVERSION             m_proc_CanalGetVersion;
+	LPFNDLL_CANALGETDLLVERSION          m_proc_CanalGetDllVersion;
+	LPFNDLL_CANALGETVENDORSTRING        m_proc_CanalGetVendorString;
 	// Generation 2
-	LPFNDLL_CANALBLOCKINGSEND		  m_proc_CanalBlockingSend;
-	LPFNDLL_CANALBLOCKINGRECEIVE	m_proc_CanalBlockingReceive;
-	LPFNDLL_CANALGETDRIVERINFO		m_proc_CanalGetdriverInfo;
+	LPFNDLL_CANALBLOCKINGSEND           m_proc_CanalBlockingSend;
+	LPFNDLL_CANALBLOCKINGRECEIVE        m_proc_CanalBlockingReceive;
+	LPFNDLL_CANALGETDRIVERINFO          m_proc_CanalGetdriverInfo;
   
 };
 
 
-/*!
-	This class implement a thread that handles
-	transmit events
-*/
+///////////////////////////////////////////////////////////////////////////////
+// TXWorkerThread
+//
+// This class implement a thread that handles
+// transmit events
+//
 
 class TXWorkerThread : public wxThread
 {
@@ -257,10 +231,12 @@ public:
 
 };
 
-/*!
-	This class implement a thread that handles
-	client receive events
-*/
+///////////////////////////////////////////////////////////////////////////////
+// RXWorkerThread
+//
+//	This class implement a thread that handles
+//	client receive events
+//
 
 class RXWorkerThread : public wxThread
 {
@@ -300,16 +276,19 @@ public:
 
 
 /////////////////////////////////////////////////////////////////////
+//                          D E V I C E
+/////////////////////////////////////////////////////////////////////
 
 
 
 
 
-
-/*!
-	This class implement a thread that write data
-	to a blocking driver
-*/
+///////////////////////////////////////////////////////////////////////////////
+// deviceWriteThread
+//
+//	This class implement a thread that write data
+//	to a blocking driver
+//
 
 class deviceWriteThread : public wxThread
 {
@@ -348,10 +327,12 @@ public:
 };
 
 
-/*!
-	This class implement a thread that read data
-	from a blocking driver
-*/
+///////////////////////////////////////////////////////////////////////////////
+// deviceReceiveThread
+//
+//	This class implement a thread that read data
+//	from a blocking driver
+//
 
 class deviceReceiveThread : public wxThread
 {
@@ -389,11 +370,14 @@ public:
 
 };
 
-/*!
-	This class implement a one of thread that look
-	for specific events and react on them appropriatly.
 
-*/
+///////////////////////////////////////////////////////////////////////////////
+// deviceThread
+//
+//	This class implement a one of thread that look
+//	for specific events and react on them appropriatly.
+//
+
 
 class deviceThread : public wxThread
 {
@@ -463,17 +447,22 @@ public:
 };
 
 
+///////////////////////////////////////////////////////////////////////////////
+// RXGridCellAttrProvider
+//
 // ----------------------------------------------------------------------------
 // RX custom attr. provider: this one makes all odd rows appear grey
 // ----------------------------------------------------------------------------
+//
 
 class RXGridCellAttrProvider : public wxGridCellAttrProvider
 {
+
 public:
     RXGridCellAttrProvider();
     virtual ~RXGridCellAttrProvider();
 
-    virtual wxGridCellAttr *GetAttr(int row, int col,
+    virtual wxGridCellAttr *GetAttr( int row, int col,
                                     wxGridCellAttr::wxAttrKind  kind) const;
 
 private:
@@ -505,313 +494,306 @@ private:
 };
 
 
-/*!
- * frmVSCPSession class declaration
- */
+///////////////////////////////////////////////////////////////////////////////
+// frmVSCPSession
+//
+// frmVSCPSession class declaration
+//
 
 class frmVSCPSession: public wxFrame
 {    
-  DECLARE_CLASS( frmVSCPSession )
-  DECLARE_EVENT_TABLE()
+
+    DECLARE_CLASS( frmVSCPSession )
+    DECLARE_EVENT_TABLE()
 
 public:
-  /// Constructors
-  frmVSCPSession();
-  frmVSCPSession( wxWindow* parent, wxWindowID id = SYMBOL_FRMVSCPSESSION_IDNAME, const wxString& caption = SYMBOL_FRMVSCPSESSION_TITLE, const wxPoint& pos = SYMBOL_FRMVSCPSESSION_POSITION, const wxSize& size = SYMBOL_FRMVSCPSESSION_SIZE, long style = SYMBOL_FRMVSCPSESSION_STYLE );
 
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_FRMVSCPSESSION_IDNAME, const wxString& caption = SYMBOL_FRMVSCPSESSION_TITLE, const wxPoint& pos = SYMBOL_FRMVSCPSESSION_POSITION, const wxSize& size = SYMBOL_FRMVSCPSESSION_SIZE, long style = SYMBOL_FRMVSCPSESSION_STYLE );
+    /// Constructors
+    frmVSCPSession();
+    frmVSCPSession( wxWindow* parent, 
+                        wxWindowID id = SYMBOL_FRMVSCPSESSION_IDNAME, 
+                        const wxString& caption = SYMBOL_FRMVSCPSESSION_TITLE, 
+                        const wxPoint& pos = SYMBOL_FRMVSCPSESSION_POSITION, 
+                        const wxSize& size = SYMBOL_FRMVSCPSESSION_SIZE, 
+                        long style = SYMBOL_FRMVSCPSESSION_STYLE );
 
-  /// Destructor
-  ~frmVSCPSession();
+    bool Create( wxWindow* parent, 
+                        wxWindowID id = SYMBOL_FRMVSCPSESSION_IDNAME, 
+                        const wxString& caption = SYMBOL_FRMVSCPSESSION_TITLE, 
+                        const wxPoint& pos = SYMBOL_FRMVSCPSESSION_POSITION, 
+                        const wxSize& size = SYMBOL_FRMVSCPSESSION_SIZE, 
+                        long style = SYMBOL_FRMVSCPSESSION_STYLE );
 
-  /// Initialises member variables
-  void Init();
+    // Destructor
+    ~frmVSCPSession();
 
-  /// Creates the controls and sizers
-  void CreateControls();
+    // Initialises member variables
+    void Init();
+
+    // Creates the controls and sizers
+    void CreateControls();
   
-  /// Start the worker threads
-  void startWorkerThreads( frmVSCPSession *pFrm  );
+    // Start the worker threads
+    void startWorkerThreads( frmVSCPSession *pFrm  );
 
-  /// Stop the worker threads
-  void stopWorkerThreads( void );
+    // Stop the worker threads
+    void stopWorkerThreads( void );
   
-  /*!
-    WxEvent handler for received VSCP event
-  */
-  void eventReceive( wxCommandEvent &event );
+    // WxEvent handler for received VSCP event
+    void eventReceive( wxCommandEvent &event );
   
-  /*!
-    WxEvent handler for transmit VSCP event
-  */
-  void eventTransmit( wxCommandEvent &event );
+    // WxEvent handler for transmit VSCP event
+    void eventTransmit( wxCommandEvent &event );
 
-	/*!
-		Lost Control channel
-	*/
+	// Lost Control channel
 	void eventLostCtrlIf( wxCommandEvent &event );
 
-	/*!
-		Lost receive channel
-	*/
+	// Lost receive channel
 	void eventLostRcvIf( wxCommandEvent &event );
 
-	/*!
-		Preparing connection to remote host
-	*/
+	// Preparing connection to remote host
 	void eventPrepareConnect( wxCommandEvent &event );
   
-	/*!
-		Connected to remote host
-	*/
+	// Connected to remote host
 	void eventConnected( wxCommandEvent &event );
 
-  /*!
-    Add transmission object to the transmission list
-    @param pObj Pointer to a transmission object.
-    @param selrow row to write information to. If -1 a new
-            line is added and information is added to that
-            line.
-    @return True on success.
-  */
-  bool addToTxGrid( VscpTXObj *pObj, int selrow = -1 );
+    /*!
+        Add transmission object to the transmission list
+        @param pObj Pointer to a transmission object.
+        @param selrow row to write information to. If -1 a new
+                line is added and information is added to that
+                line.
+        @return True on success.
+    */
+    bool addToTxGrid( VscpTXObj *pObj, int selrow = -1 );
 
-  /*!
-    Write info to the HTML receive window
-    @param pRecord Receive object to write info. from.
-  */
-  void fillRxHtmlInfo( VscpRXObj *pRecord );
+    /*!
+        Write info to the HTML receive window
+        @param pRecord Receive object to write info. from.
+    */
+    void fillRxHtmlInfo( VscpRXObj *pRecord );
 
-  /// Clone a TX row
-  void OnTxCloneRow( wxCommandEvent& event );
+    /// Clone a TX row
+    void OnTxCloneRow( wxCommandEvent& event );
 
-////@begin frmVSCPSession event handler declarations
+    /// wxEVT_CLOSE_WINDOW event handler for ID_FRMVSCPSESSION
+    void OnCloseWindow( wxCloseEvent& event );
 
-  /// wxEVT_CLOSE_WINDOW event handler for ID_FRMVSCPSESSION
-  void OnCloseWindow( wxCloseEvent& event );
+    /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON_ACTIVATE
+    void OnInterfaceActivate( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON_ACTIVATE
-  void OnInterfaceActivate( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOAD_MSG_LIST
+    void LoadRXEventList( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOAD_MSG_LIST
-  void LoadRXEventList( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SAVE_MSG_LIST
+    void SaveRXEventList( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SAVE_MSG_LIST
-  void SaveRXEventList( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET
+    void OnTxLoadClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET
-  void OnTxLoadClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET
+    void OnTxSaveClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET
-  void OnTxSaveClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SESSION_EXIT
+    void OnMenuitemVscpSessionExitClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SESSION_EXIT
-  void OnMenuitemVscpSessionExitClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM4
+    void ClearRxList( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM4
-  void ClearRxList( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM5
+    void ClearTxList( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM5
-  void ClearTxList( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOG
+    void OnMenuitemVscpViewLogClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOG
-  void OnMenuitemVscpViewLogClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_COUNT
+    void OnMenuitemVscpViewCountClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_COUNT
-  void OnMenuitemVscpViewCountClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_READ_REGISTER
+    void OnMenuitemSetAutoreplyClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_READ_REGISTER
-  void OnMenuitemSetAutoreplyClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_WRITE_REGISTER
+    void OnMenuitemSetBurstCountClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_WRITE_REGISTER
-  void OnMenuitemSetBurstCountClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_READ_ALL_REGISTERS
+    void OnMenuitemSetFilterClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_READ_ALL_REGISTERS
-  void OnMenuitemSetFilterClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_RX_GRID_WIDTH
+    void OnMenuitemSaveRxCellWidth( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_RX_GRID_WIDTH
-  void OnMenuitemSaveRxCellWidth( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_TX_GRID_WIDTH
+    void OnMenuitemSaveTxCellWidth( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_SAVE_TX_GRID_WIDTH
-  void OnMenuitemSaveTxCellWidth( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM
+    void OnMenuitemConfigurationClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM
-  void OnMenuitemConfigurationClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_HELP
+    void OnMenuitemVscpHelpClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_HELP
-  void OnMenuitemVscpHelpClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_FAQ
+    void OnMenuitemVscpFaqClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_FAQ
-  void OnMenuitemVscpFaqClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SHORTCUTS
+    void OnMenuitemVscpShortcutsClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SHORTCUTS
-  void OnMenuitemVscpShortcutsClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_THANKS
+    void OnMenuitemVscpThanksClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_THANKS
-  void OnMenuitemVscpThanksClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_CREDITS
+    void OnMenuitemVscpCreditsClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_CREDITS
-  void OnMenuitemVscpCreditsClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_VSCP_SITE
+    void OnMenuitemVscpVscpSiteClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_VSCP_SITE
-  void OnMenuitemVscpVscpSiteClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_ABOUT
+    void OnMenuitemVscpAboutClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_ABOUT
-  void OnMenuitemVscpAboutClick( wxCommandEvent& event );
+    /// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_VSCP_GRID_RECEIVE
+    void OnCellReceiveLeftClick( wxGridEvent& event );
 
-  /// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_VSCP_GRID_RECEIVE
-  void OnCellReceiveLeftClick( wxGridEvent& event );
+    /// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_VSCP_GRID_RECEIVE
+    void OnGridCellReceiveRightClick( wxGridEvent& event );
 
-  /// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_VSCP_GRID_RECEIVE
-  void OnGridCellReceiveRightClick( wxGridEvent& event );
+    /// wxEVT_GRID_LABEL_LEFT_DCLICK event handler for ID_VSCP_GRID_RECEIVE
+    void OnGridLabelLeftDClick( wxGridEvent& event );
 
-  /// wxEVT_GRID_LABEL_LEFT_DCLICK event handler for ID_VSCP_GRID_RECEIVE
-  void OnGridLabelLeftDClick( wxGridEvent& event );
+    /// wxEVT_GRID_SELECT_CELL event handler for ID_VSCP_GRID_RECEIVE
+    void OnSelectCell( wxGridEvent& event );
 
-  /// wxEVT_GRID_SELECT_CELL event handler for ID_VSCP_GRID_RECEIVE
-  void OnSelectCell( wxGridEvent& event );
+    /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW_RCVINFO
+    void OnHtmlwindowRcvinfoLinkClicked( wxHtmlLinkEvent& event );
 
-  /// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW_RCVINFO
-  void OnHtmlwindowRcvinfoLinkClicked( wxHtmlLinkEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON_TX_ADD
+    void OnTxAddClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON_TX_ADD
-  void OnTxAddClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON_TX_EDIT
+    void OnTxEditClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON_TX_EDIT
-  void OnTxEditClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTONID_MENUITEM_TX_DELETE
+    void OnTxDeleteClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTONID_MENUITEM_TX_DELETE
-  void OnTxDeleteClick( wxCommandEvent& event );
+    /// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_VSCP_GRID_TRANSMISSION
+    void OnCellTxLeftClick( wxGridEvent& event );
 
-  /// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_VSCP_GRID_TRANSMISSION
-  void OnCellTxLeftClick( wxGridEvent& event );
+    /// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_VSCP_GRID_TRANSMISSION
+    void OnCellTxRightClick( wxGridEvent& event );
 
-  /// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_VSCP_GRID_TRANSMISSION
-  void OnCellTxRightClick( wxGridEvent& event );
+    /// wxEVT_GRID_CELL_LEFT_DCLICK event handler for ID_VSCP_GRID_TRANSMISSION
+    void OnGridLeftDClick( wxGridEvent& event );
 
-  /// wxEVT_GRID_CELL_LEFT_DCLICK event handler for ID_VSCP_GRID_TRANSMISSION
-  void OnGridLeftDClick( wxGridEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND
+    void OnTxSendClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND
-  void OnTxSendClick( wxCommandEvent& event );
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-////@end frmVSCPSession event handler declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
-////@begin frmVSCPSession member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-////@end frmVSCPSession member function declarations
-
-  /// Should we show tooltips?
-  static bool ShowToolTips();
+    /// Should we show tooltips?
+    static bool ShowToolTips();
   
-  
-  /// Last loaded path for TX Set 
+    /// Last loaded path for TX Set 
 	wxString m_wxStrTxSetPath;
   
-  /// TRUE as long as worker thread should run
-  bool m_bRun;
+    /// TRUE as long as worker thread should run
+    bool m_bRun;
   
-  /// Mutex to control the event grid
-  wxMutex *m_pmutexEventGrid;
+    /// Mutex to control the event grid
+    wxMutex *m_pmutexEventGrid;
   
-  /// Mutex to control the transmission grid
-  wxMutex *m_pmutexTransmissionGrid;
+    /// Mutex to control the transmission grid
+    wxMutex *m_pmutexTransmissionGrid;
   
-  /// Receive event grid Table
-  BigGridTable *m_pgridTable;
+    /// Receive event grid Table
+    BigGridTable *m_pgridTable;
   
-  /// Common control object
-  ctrlObj m_CtrlObject;
+    /// Common control object
+    ctrlObj m_CtrlObject;
 
-  /// Mutex that control the stopThreads method
-  wxMutex m_mutexStopThread; 
+    /// Mutex that control the stopThreads method
+    wxMutex m_mutexStopThread; 
   
-  // * * *   Threads  * * *
+    // * * *   Threads  * * *
   
-  /// Worker thread for control and transmit
-  TXWorkerThread * m_pTXWorkerThread;
+    /// Worker thread for control and transmit
+    TXWorkerThread * m_pTXWorkerThread;
   
-  /// Worker thread for receive
-  RXWorkerThread * m_pRXWorkerThread;
+    /// Worker thread for receive
+    RXWorkerThread * m_pRXWorkerThread;
 
 	// Device Workerthread
 	deviceThread * m_pDeviceWorkerThread;
   
   
-////@begin frmVSCPSession member variables
-  wxToggleButton* m_BtnActivateInterface;
-  wxPanel* m_pPanel;
-  wxGrid* m_ctrlGridReceive;
-  wxHtmlWindow* m_ctrlRcvHtmlInfo;
-  wxBitmapButton* m_btnAdd;
-  wxBitmapButton* m_btnEdit;
-  wxBitmapButton* m_btnDelete;
-  wxBitmapButton* m_btnLoadSet;
-  wxBitmapButton* m_btnSaveSet;
-  wxGrid* m_ctrlGridTransmission;
-  wxBitmapButton* m_btnSend;
-  wxBitmapButton* m_btnActivate;
-  wxBitmapButton* m_btnClear;
-  /// Control identifiers
-  enum {
-    ID_FRMVSCPSESSION = 13000,
-    ID_TOOLBAR_VSCP_SESSION = 13011,
-    ID_MENUITEM_VSCP_LOAD_MSG_LIST = 13012,
-    ID_MENUITEM_VSCP_SAVE_MSG_LIST = 13013,
-    ID_TOOL_VSCP_CUT = 13014,
-    ID_TOOL_VSCP_COPY = 13015,
-    ID_TOOL_VSCP_PASTE = 13016,
-    ID_TOOL_VSCP_PRINT = 13017,
-    ID_TOGGLEBUTTON_ACTIVATE = 13019,
-    ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET = 13023,
-    ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET = 13024,
-    ID_MENUITEM_VSCP_SESSION_EXIT = 13025,
-    ID_MENUITEM_VSCP_CUT = 13026,
-    ID_MENUITEM_VSCP_COPY = 13027,
-    ID_MENUITEM_VSCP_PASTE = 13028,
-    ID_MENUITEM4 = 13051,
-    ID_MENUITEM5 = 13031,
-    ID_MENUITEM_VSCP_LOG = 13029,
-    ID_MENUITEM_VSCP_COUNT = 13030,
-    ID_MENUITEM_READ_REGISTER = 13044,
-    ID_MENUITEM_WRITE_REGISTER = 13045,
-    ID_MENUITEM_READ_ALL_REGISTERS = 13046,
-    ID_MENUITEM_GET_GUID = 13048,
-    ID_MENUITEM_GET_MDF_URL = 13049,
-    ID_MENUITEM_GET_MDF = 13047,
-    ID_MENUITEM_RX_GRID_WIDTH = 13020,
-    ID_MENUITEM_SAVE_TX_GRID_WIDTH = 13050,
-    ID_MENUITEM1 = 13033,
-    ID_MENUITEM2 = 13034,
-    ID_MENUITEM3 = 13035,
-    ID_MENUITEM = 13043,
-    ID_MENUITEM_VSCP_HELP = 13036,
-    ID_MENUITEM_VSCP_FAQ = 13037,
-    ID_MENUITEM_VSCP_SHORTCUTS = 13038,
-    ID_MENUITEM_VSCP_THANKS = 13039,
-    ID_MENUITEM_VSCP_CREDITS = 13040,
-    ID_MENUITEM_VSCP_VSCP_SITE = 13041,
-    ID_MENUITEM_VSCP_ABOUT = 13042,
-    ID_PANEL_VSCP_SESSION = 13032,
-    ID_VSCP_GRID_RECEIVE = 13001,
-    ID_HTMLWINDOW_RCVINFO = 13052,
-    ID_BITMAPBUTTON_TX_ADD = 13002,
-    ID_BITMAPBUTTON_TX_EDIT = 13003,
-    ID_BITMAPBUTTONID_MENUITEM_TX_DELETE = 13004,
-    ID_BITMAPBUTTONID_MENUITEM_TX_LOAD = 13005,
-    ID_BITMAPBUTTONID_MENUITEM_TX_SAVE = 13006,
-    ID_VSCP_GRID_TRANSMISSION = 13007,
-    ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND = 13008,
-    ID_BITMAPBUTTON12 = 13009,
-    ID_BITMAPBUTTON13 = 13010,
-    ID_STATUSBAR = 10000
-  };
-////@end frmVSCPSession member variables
+    wxToggleButton* m_BtnActivateInterface;
+    wxPanel* m_pPanel;
+    wxGrid* m_ctrlGridReceive;
+    wxHtmlWindow* m_ctrlRcvHtmlInfo;
+    wxBitmapButton* m_btnAdd;
+    wxBitmapButton* m_btnEdit;
+    wxBitmapButton* m_btnDelete;
+    wxBitmapButton* m_btnLoadSet;
+    wxBitmapButton* m_btnSaveSet;
+    wxGrid* m_ctrlGridTransmission;
+    wxBitmapButton* m_btnSend;
+    wxBitmapButton* m_btnActivate;
+    wxBitmapButton* m_btnClear;
+    /// Control identifiers
+    enum {
+        ID_FRMVSCPSESSION = 13000,
+        ID_TOOLBAR_VSCP_SESSION = 13011,
+        ID_MENUITEM_VSCP_LOAD_MSG_LIST = 13012,
+        ID_MENUITEM_VSCP_SAVE_MSG_LIST = 13013,
+        ID_TOOL_VSCP_CUT = 13014,
+        ID_TOOL_VSCP_COPY = 13015,
+        ID_TOOL_VSCP_PASTE = 13016,
+        ID_TOOL_VSCP_PRINT = 13017,
+        ID_TOGGLEBUTTON_ACTIVATE = 13019,
+        ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET = 13023,
+        ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET = 13024,
+        ID_MENUITEM_VSCP_SESSION_EXIT = 13025,
+        ID_MENUITEM_VSCP_CUT = 13026,
+        ID_MENUITEM_VSCP_COPY = 13027,
+        ID_MENUITEM_VSCP_PASTE = 13028,
+        ID_MENUITEM4 = 13051,
+        ID_MENUITEM5 = 13031,
+        ID_MENUITEM_VSCP_LOG = 13029,
+        ID_MENUITEM_VSCP_COUNT = 13030,
+        ID_MENUITEM_READ_REGISTER = 13044,
+        ID_MENUITEM_WRITE_REGISTER = 13045,
+        ID_MENUITEM_READ_ALL_REGISTERS = 13046,
+        ID_MENUITEM_GET_GUID = 13048,
+        ID_MENUITEM_GET_MDF_URL = 13049,
+        ID_MENUITEM_GET_MDF = 13047,
+        ID_MENUITEM_RX_GRID_WIDTH = 13020,
+        ID_MENUITEM_SAVE_TX_GRID_WIDTH = 13050,
+        ID_MENUITEM1 = 13033,
+        ID_MENUITEM2 = 13034,
+        ID_MENUITEM3 = 13035,
+        ID_MENUITEM = 13043,
+        ID_MENUITEM_VSCP_HELP = 13036,
+        ID_MENUITEM_VSCP_FAQ = 13037,
+        ID_MENUITEM_VSCP_SHORTCUTS = 13038,
+        ID_MENUITEM_VSCP_THANKS = 13039,
+        ID_MENUITEM_VSCP_CREDITS = 13040,
+        ID_MENUITEM_VSCP_VSCP_SITE = 13041,
+        ID_MENUITEM_VSCP_ABOUT = 13042,
+        ID_PANEL_VSCP_SESSION = 13032,
+        ID_VSCP_GRID_RECEIVE = 13001,
+        ID_HTMLWINDOW_RCVINFO = 13052,
+        ID_BITMAPBUTTON_TX_ADD = 13002,
+        ID_BITMAPBUTTON_TX_EDIT = 13003,
+        ID_BITMAPBUTTONID_MENUITEM_TX_DELETE = 13004,
+        ID_BITMAPBUTTONID_MENUITEM_TX_LOAD = 13005,
+        ID_BITMAPBUTTONID_MENUITEM_TX_SAVE = 13006,
+        ID_VSCP_GRID_TRANSMISSION = 13007,
+        ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND = 13008,
+        ID_BITMAPBUTTON12 = 13009,
+        ID_BITMAPBUTTON13 = 13010,
+        ID_STATUSBAR = 10000
+    };
+
 };
 
 #endif
