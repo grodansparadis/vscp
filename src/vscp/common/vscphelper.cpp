@@ -2582,9 +2582,17 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			break;
 
 		case VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE:
+            if ( 0xff != pEvent->GUID[ 15 ]) {
+                str = wxString::Format( _("New node with nickname=0x%02X"), pEvent->GUID[ 15 ] );
+            }
+            else {
+                str = wxString::Format( _("Probe for nickname=0x%02X"),
+                                            pEvent->pdata[ 0 ] );
+            }
 			break;
 
 		case VSCP_TYPE_PROTOCOL_PROBE_ACK:
+            str = wxString::Format( _("The nicknme=0x%02X is in use"), pEvent->GUID[ 15 ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_SET_NICKNAME:
@@ -2597,12 +2605,23 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			break;
 
 		case VSCP_TYPE_PROTOCOL_READ_REGISTER:
+            str = wxString::Format( _("node=0x%02X register=0x%02X"),
+                                        pEvent->pdata[ 0 ],
+                                        pEvent->pdata[ 1 ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_RW_RESPONSE:
+            str = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
+                                        pEvent->GUID[ 15 ],
+                                        pEvent->pdata[ 0 ],
+                                        pEvent->pdata[ 1 ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_WRITE_REGISTER:
+            str = wxString::Format( _("node=0x%02X register=0x%02X content=0x%02X "),
+                                        pEvent->GUID[ 0 ],
+                                        pEvent->pdata[ 1 ],
+                                        pEvent->pdata[ 2 ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_ENTER_BOOT_LOADER:

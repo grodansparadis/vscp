@@ -263,10 +263,12 @@ public:
         Wait for a response message
 
         @param pMsg Pointer to response message
+        @param cmdcode Command to wait for reply from
+        @param saveseq Squency number when frame was sent.
         @param timeout Timeout in milliseconds
         @return True on success
     */
-    bool waitResponse( cmdResponseMsg *pMsg, uint32_t timeout );
+    bool waitResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t saveseq, uint32_t timeout );
 
     /*!
         Send command and wait for a response message

@@ -74,10 +74,6 @@
 
 extern appConfiguration g_Config;
 
-
-
-
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // frmScanforDevices type definition
 //
@@ -91,24 +87,22 @@ IMPLEMENT_CLASS(frmScanforDevices, wxFrame)
 
 BEGIN_EVENT_TABLE(frmScanforDevices, wxFrame)
 
-////@begin frmScanforDevices event table entries
-  EVT_CLOSE( frmScanforDevices::OnCloseWindow )
-  EVT_MENU( ID_MENU_VSCPWORKS_EXIT, frmScanforDevices::OnMenuitemExitClick )
-  EVT_MENU( ID_MENUITEM_HELP, frmScanforDevices::OnMenuitemHelpClick )
-  EVT_MENU( ID_MENUITEM_HELP_FAQ, frmScanforDevices::OnMenuitemHelpFaqClick )
-  EVT_MENU( ID_MENUITEM_HELP_SC, frmScanforDevices::OnMenuitemHelpScClick )
-  EVT_MENU( ID_MENUITEM_HELP_THANKS, frmScanforDevices::OnMenuitemHelpThanksClick )
-  EVT_MENU( ID_MENUITEM_HELP_CREDITS, frmScanforDevices::OnMenuitemHelpCreditsClick )
-  EVT_MENU( ID_MENUITEM_HELP_VSCP_SITE, frmScanforDevices::OnMenuitemHelpVscpSiteClick )
-  EVT_MENU( ID_MENUITEM_HELP_ABOUT, frmScanforDevices::OnMenuitemHelpAboutClick )
-  EVT_TREE_SEL_CHANGED( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceSelChanged )
-  EVT_TREE_ITEM_RIGHT_CLICK( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceItemRightClick )
-  EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW3, frmScanforDevices::OnHtmlwindow3LinkClicked )
-  EVT_BUTTON( ID_BUTTON_SCAN, frmScanforDevices::OnButtonScanClick )
-////@end frmScanforDevices event table entries
+    EVT_CLOSE( frmScanforDevices::OnCloseWindow )
+    EVT_MENU( ID_MENU_VSCPWORKS_EXIT, frmScanforDevices::OnMenuitemExitClick )
+    EVT_MENU( ID_MENUITEM_HELP, frmScanforDevices::OnMenuitemHelpClick )
+    EVT_MENU( ID_MENUITEM_HELP_FAQ, frmScanforDevices::OnMenuitemHelpFaqClick )
+    EVT_MENU( ID_MENUITEM_HELP_SC, frmScanforDevices::OnMenuitemHelpScClick )
+    EVT_MENU( ID_MENUITEM_HELP_THANKS, frmScanforDevices::OnMenuitemHelpThanksClick )
+    EVT_MENU( ID_MENUITEM_HELP_CREDITS, frmScanforDevices::OnMenuitemHelpCreditsClick )
+    EVT_MENU( ID_MENUITEM_HELP_VSCP_SITE, frmScanforDevices::OnMenuitemHelpVscpSiteClick )
+    EVT_MENU( ID_MENUITEM_HELP_ABOUT, frmScanforDevices::OnMenuitemHelpAboutClick )
+    EVT_TREE_SEL_CHANGED( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceSelChanged )
+    EVT_TREE_ITEM_RIGHT_CLICK( ID_TREE_DEVICE, frmScanforDevices::OnTreeDeviceItemRightClick )
+    EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW3, frmScanforDevices::OnHtmlwindow3LinkClicked )
+    EVT_BUTTON( ID_BUTTON_SCAN, frmScanforDevices::OnButtonScanClick )
 
-EVT_MENU(Menu_Popup_GetNodeInfo, frmScanforDevices::getNodeInfo)
-EVT_MENU(Menu_Popup_OpenConfig, frmScanforDevices::openConfiguration)
+    EVT_MENU(Menu_Popup_GetNodeInfo, frmScanforDevices::getNodeInfo)
+    EVT_MENU(Menu_Popup_OpenConfig, frmScanforDevices::openConfiguration)
 
 END_EVENT_TABLE()
 
@@ -122,7 +116,12 @@ frmScanforDevices::frmScanforDevices()
     Init();
 }
 
-frmScanforDevices::frmScanforDevices(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
+frmScanforDevices::frmScanforDevices( wxWindow* parent, 
+                                        wxWindowID id, 
+                                        const wxString& caption, 
+                                        const wxPoint& pos, 
+                                        const wxSize& size, 
+                                        long style )
 {
     Init();
     Create(parent, id, caption, pos, size, style);
@@ -133,12 +132,17 @@ frmScanforDevices::frmScanforDevices(wxWindow* parent, wxWindowID id, const wxSt
 // frmScanforDevices creator
 //
 
-bool frmScanforDevices::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
+bool frmScanforDevices::Create( wxWindow* parent, 
+                                    wxWindowID id, 
+                                    const wxString& caption, 
+                                    const wxPoint& pos, 
+                                    const wxSize& size, 
+                                    long style )
 {
-    wxFrame::Create(parent, id, caption, pos, size, style);
+    wxFrame::Create( parent, id, caption, pos, size, style );
 
     CreateControls();
-    SetIcon(GetIconResource(wxT("fatbee_v2.ico")));
+    SetIcon( GetIconResource( wxT("fatbee_v2.ico") ) );
     Centre();
 
     return true;
@@ -151,9 +155,7 @@ bool frmScanforDevices::Create(wxWindow* parent, wxWindowID id, const wxString& 
 
 frmScanforDevices::~frmScanforDevices()
 {
-    ////@begin frmScanforDevices destruction
-    ////@end frmScanforDevices destruction
-
+    ;
 }
 
 
@@ -163,15 +165,13 @@ frmScanforDevices::~frmScanforDevices()
 
 void frmScanforDevices::Init()
 {
-    ////@begin frmScanforDevices member initialisation
-  m_pPanel = NULL;
-  m_labelInterface = NULL;
-  m_DeviceTree = NULL;
-  m_htmlWnd = NULL;
-  m_slowAlgorithm = NULL;
-  m_ctrlEditFrom = NULL;
-  m_ctrlEditTo = NULL;
-    ////@end frmScanforDevices member initialisation
+    m_pPanel = NULL;
+    m_labelInterface = NULL;
+    m_DeviceTree = NULL;
+    m_htmlWnd = NULL;
+    m_slowAlgorithm = NULL;
+    m_ctrlEditFrom = NULL;
+    m_ctrlEditTo = NULL;
 }
 
 
@@ -181,112 +181,134 @@ void frmScanforDevices::Init()
 
 void frmScanforDevices::CreateControls()
 {
-    ////@begin frmScanforDevices content construction
-  frmScanforDevices* itemFrame1 = this;
+    frmScanforDevices* itemFrame1 = this;
 
-  wxMenuBar* menuBar = new wxMenuBar;
-  wxMenu* itemMenu3 = new wxMenu;
-  itemMenu3->AppendSeparator();
-  itemMenu3->Append(ID_MENU_VSCPWORKS_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu3, _("File"));
-  wxMenu* itemMenu6 = new wxMenu;
-  itemMenu6->Append(ID_MENUITEM14, _("Scan for nodes..."), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu6, _("Tools"));
-  wxMenu* itemMenu8 = new wxMenu;
-  itemMenu8->Append(ID_MENUITEM_HELP, _("VSCP-Works Help"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu8->Append(ID_MENUITEM_HELP_FAQ, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu8->Append(ID_MENUITEM_HELP_SC, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu8->AppendSeparator();
-  itemMenu8->Append(ID_MENUITEM_HELP_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu8->Append(ID_MENUITEM_HELP_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu8->AppendSeparator();
-  itemMenu8->Append(ID_MENUITEM_HELP_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu8->AppendSeparator();
-  itemMenu8->Append(ID_MENUITEM_HELP_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu8, _("Help"));
-  itemFrame1->SetMenuBar(menuBar);
+    wxMenuBar* menuBar = new wxMenuBar;
+    
+    wxMenu* itemMenu3 = new wxMenu;
+    itemMenu3->AppendSeparator();
+    itemMenu3->Append(ID_MENU_VSCPWORKS_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu3, _("File"));
+    
+    wxMenu* itemMenu6 = new wxMenu;
+    itemMenu6->Append(ID_MENUITEM14, _("Scan for nodes..."), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu6, _("Tools"));
+    
+    wxMenu* itemMenu8 = new wxMenu;
+    itemMenu8->Append(ID_MENUITEM_HELP, _("VSCP-Works Help"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu8->Append(ID_MENUITEM_HELP_FAQ, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu8->Append(ID_MENUITEM_HELP_SC, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu8->AppendSeparator();
+    itemMenu8->Append(ID_MENUITEM_HELP_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu8->Append(ID_MENUITEM_HELP_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu8->AppendSeparator();
+    itemMenu8->Append(ID_MENUITEM_HELP_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu8->AppendSeparator();
+    itemMenu8->Append(ID_MENUITEM_HELP_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu8, _("Help"));
+    itemFrame1->SetMenuBar(menuBar);
 
-  m_pPanel = new wxPanel;
-  m_pPanel->Create( itemFrame1, ID_PANEL_DEVICE_SCAN, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    m_pPanel = new wxPanel;
+    m_pPanel->Create( itemFrame1,
+                        ID_PANEL_DEVICE_SCAN, 
+                        wxDefaultPosition, 
+                        wxDefaultSize, 
+                        wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
 
-  wxBoxSizer* itemBoxSizer20 = new wxBoxSizer(wxVERTICAL);
-  m_pPanel->SetSizer(itemBoxSizer20);
+    wxBoxSizer* itemBoxSizer20 = new wxBoxSizer(wxVERTICAL);
+    m_pPanel->SetSizer(itemBoxSizer20);
 
-  wxBoxSizer* itemBoxSizer21 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer20->Add(itemBoxSizer21, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer21 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer20->Add(itemBoxSizer21, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  m_labelInterface = new wxStaticText;
-  m_labelInterface->Create( m_pPanel, wxID_STATIC, _("Searching on interface: "), wxDefaultPosition, wxDefaultSize, 0 );
-  m_labelInterface->SetName(wxT("m_staticInterfaceName"));
-  itemBoxSizer21->Add(m_labelInterface, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_labelInterface = new wxStaticText;
+    m_labelInterface->Create( m_pPanel, 
+                                wxID_STATIC, 
+                                _("Searching on interface: "), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    m_labelInterface->SetName(wxT("m_staticInterfaceName"));
+    itemBoxSizer21->Add( m_labelInterface, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
 
-  wxBoxSizer* itemBoxSizer23 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer20->Add(itemBoxSizer23, 0, wxGROW|wxALL, 5);
+    wxBoxSizer* itemBoxSizer23 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer20->Add(itemBoxSizer23, 0, wxGROW|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer24 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer23->Add(itemBoxSizer24, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
+    wxBoxSizer* itemBoxSizer24 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer23->Add(itemBoxSizer24, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
-  wxStaticText* itemStaticText25 = new wxStaticText;
-  itemStaticText25->Create( m_pPanel, wxID_STATIC, _("Found devices"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer24->Add(itemStaticText25, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxStaticText* itemStaticText25 = new wxStaticText;
+    itemStaticText25->Create( m_pPanel, wxID_STATIC, _("Found devices"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer24->Add(itemStaticText25, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  m_DeviceTree = new wxTreeCtrl;
-  m_DeviceTree->Create( m_pPanel, ID_TREE_DEVICE, wxDefaultPosition, wxSize(250, 340), wxTR_SINGLE|wxSIMPLE_BORDER );
-  m_DeviceTree->SetBackgroundColour(wxColour(231, 235, 184));
-  itemBoxSizer24->Add(m_DeviceTree, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    m_DeviceTree = new wxTreeCtrl;
+    m_DeviceTree->Create( m_pPanel, 
+                            ID_TREE_DEVICE, 
+                            wxDefaultPosition, 
+                            wxSize(250, 340), 
+                            wxTR_SINGLE | wxSIMPLE_BORDER );
+    m_DeviceTree->SetBackgroundColour( wxColour(231, 235, 184) );
+    itemBoxSizer24->Add( m_DeviceTree, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
-  wxBoxSizer* itemBoxSizer27 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer23->Add(itemBoxSizer27, 0, wxGROW|wxALL, 5);
+    wxBoxSizer* itemBoxSizer27 = new wxBoxSizer( wxVERTICAL );
+    itemBoxSizer23->Add( itemBoxSizer27, 0, wxGROW | wxALL, 5 );
 
-  wxStaticText* itemStaticText28 = new wxStaticText;
-  itemStaticText28->Create( m_pPanel, wxID_STATIC, _("Device information"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer27->Add(itemStaticText28, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxStaticText* itemStaticText28 = new wxStaticText;
+    itemStaticText28->Create( m_pPanel, 
+                                wxID_STATIC, 
+                                _("Device information"), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer27->Add( itemStaticText28, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
-  m_htmlWnd = new wxHtmlWindow;
-  m_htmlWnd->Create( m_pPanel, ID_HTMLWINDOW3, wxDefaultPosition, wxSize(400, 340), wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
-  itemBoxSizer27->Add(m_htmlWnd, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    m_htmlWnd = new wxHtmlWindow;
+    m_htmlWnd->Create( m_pPanel, 
+                            ID_HTMLWINDOW3, 
+                            wxDefaultPosition, 
+                            wxSize(400, 340), 
+                            wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
+    itemBoxSizer27->Add(m_htmlWnd, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer30 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer23->Add(itemBoxSizer30, 0, wxALIGN_BOTTOM|wxALL, 5);
+    wxBoxSizer* itemBoxSizer30 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer23->Add(itemBoxSizer30, 0, wxALIGN_BOTTOM|wxALL, 5);
 
-  m_slowAlgorithm = new wxCheckBox;
-  m_slowAlgorithm->Create( m_pPanel, ID_CHECKBOX4, _("Slow"), wxDefaultPosition, wxDefaultSize, 0 );
-  m_slowAlgorithm->SetValue(false);
-  itemBoxSizer30->Add(m_slowAlgorithm, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    m_slowAlgorithm = new wxCheckBox;
+    m_slowAlgorithm->Create( m_pPanel, ID_CHECKBOX4, _("Slow"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_slowAlgorithm->SetValue(false);
+    itemBoxSizer30->Add(m_slowAlgorithm, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxStaticText* itemStaticText32 = new wxStaticText;
-  itemStaticText32->Create( m_pPanel, wxID_STATIC, _("Scan from"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer30->Add(itemStaticText32, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    wxStaticText* itemStaticText32 = new wxStaticText;
+    itemStaticText32->Create( m_pPanel, wxID_STATIC, _("Scan from"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer30->Add(itemStaticText32, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  m_ctrlEditFrom = new wxTextCtrl;
-  m_ctrlEditFrom->Create( m_pPanel, ID_TEXTCTRL40, _("1"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer30->Add(m_ctrlEditFrom, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_ctrlEditFrom = new wxTextCtrl;
+    m_ctrlEditFrom->Create( m_pPanel, ID_TEXTCTRL40, _("1"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer30->Add(m_ctrlEditFrom, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  wxStaticText* itemStaticText34 = new wxStaticText;
-  itemStaticText34->Create( m_pPanel, wxID_STATIC, _("Scan to"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer30->Add(itemStaticText34, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    wxStaticText* itemStaticText34 = new wxStaticText;
+    itemStaticText34->Create( m_pPanel, wxID_STATIC, _("Scan to"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer30->Add(itemStaticText34, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  m_ctrlEditTo = new wxTextCtrl;
-  m_ctrlEditTo->Create( m_pPanel, ID_TEXTCTRL, _("255"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer30->Add(m_ctrlEditTo, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_ctrlEditTo = new wxTextCtrl;
+    m_ctrlEditTo->Create( m_pPanel, ID_TEXTCTRL, _("255"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer30->Add(m_ctrlEditTo, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  itemBoxSizer30->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 20);
+    itemBoxSizer30->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 20);
 
-  wxButton* itemButton37 = new wxButton;
-  itemButton37->Create( m_pPanel, ID_BUTTON_SCAN, _("Scan"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer30->Add(itemButton37, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxButton* itemButton37 = new wxButton;
+    itemButton37->Create( m_pPanel, ID_BUTTON_SCAN, _("Scan"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer30->Add(itemButton37, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxStatusBar* itemStatusBar38 = new wxStatusBar;
-  itemStatusBar38->Create( m_pPanel, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
-  itemStatusBar38->SetFieldsCount(2);
-  itemBoxSizer20->Add(itemStatusBar38, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxStatusBar* itemStatusBar38 = new wxStatusBar;
+    itemStatusBar38->Create( m_pPanel, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
+    itemStatusBar38->SetFieldsCount(2);
+    itemBoxSizer20->Add(itemStatusBar38, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  // Connect events and objects
-  m_DeviceTree->Connect(ID_TREE_DEVICE, wxEVT_LEFT_DCLICK, wxMouseEventHandler(frmScanforDevices::OnLeftDClick), NULL, this);
-    ////@end frmScanforDevices content construction
+    // Connect events and objects
+    m_DeviceTree->Connect(ID_TREE_DEVICE, wxEVT_LEFT_DCLICK, wxMouseEventHandler(frmScanforDevices::OnLeftDClick), NULL, this);
+
 }
-
-
 
 
 
@@ -306,10 +328,8 @@ bool frmScanforDevices::ShowToolTips()
 wxBitmap frmScanforDevices::GetBitmapResource(const wxString& name)
 {
     // Bitmap retrieval
-    ////@begin frmScanforDevices bitmap retrieval
-  wxUnusedVar(name);
-  return wxNullBitmap;
-    ////@end frmScanforDevices bitmap retrieval
+    wxUnusedVar(name);
+    return wxNullBitmap;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -334,28 +354,28 @@ wxIcon frmScanforDevices::GetIconResource(const wxString& name)
 
 bool frmScanforDevices::enableInterface(void)
 {
-    wxProgressDialog progressDlg(_("VSCP Works"),
-            _("Opening interface..."),
-            100,
-            this,
-            wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+    wxProgressDialog progressDlg( _("VSCP Works"),
+                                    _("Opening interface..."),
+                                    100,
+                                    this,
+                                    wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE | wxPD_APP_MODAL);
 
     progressDlg.Pulse(_("opening interface..."));
 
-    if (0 != m_csw.doCmdOpen()) {
+    if (0 != m_csw.doCmdOpen() ) {
 
         progressDlg.Pulse(_("Interface is open."));
 
         if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
-            progressDlg.Pulse(_("Checking if interface is working..."));
+            progressDlg.Pulse( _("Checking if interface is working...") );
 
             // We use a dll.
             //
             // Verify that we have a connection with the interface
             // We do that by using the status command.
             canalStatus canalstatus;
-            if (CANAL_ERROR_SUCCESS != m_csw.doCmdStatus(&canalstatus)) {
+            if ( CANAL_ERROR_SUCCESS != m_csw.doCmdStatus( &canalstatus ) ) {
                 wxString strbuf;
                 strbuf.Printf(
                         _("Unable to open interface to driver. errorcode=%lu, suberrorcode=%lu, Description: %s"),
@@ -368,7 +388,8 @@ bool frmScanforDevices::enableInterface(void)
 
             }
 
-        } else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+        } 
+        else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
             //m_staticComboText->SetLabel(_("Interface"));
 
@@ -464,9 +485,7 @@ void frmScanforDevices::OnMenuitemExitClick(wxCommandEvent& event)
 
 void frmScanforDevices::OnCloseWindow(wxCloseEvent& event)
 {
-
     event.Skip();
-
 }
 
 
@@ -630,7 +649,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
                     }
                 }
 
-            } else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+            } 
+            else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
                 cguid destguid;
                 destguid.setLSB(i);
@@ -1007,7 +1027,7 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
 
 void frmScanforDevices::openConfiguration(wxCommandEvent& event)
 {
-    frmDeviceConfig *subframe = new frmDeviceConfig(this/*->GetParent()*/, 2000, _("VSCP Configuration window"));
+    frmDeviceConfig *subframe = new frmDeviceConfig(this, 2000, _("VSCP Configuration window"));
 
     if (INTERFACE_CANAL == m_interfaceType) {
 
@@ -1057,7 +1077,8 @@ void frmScanforDevices::openConfiguration(wxCommandEvent& event)
         // Close the scan window
         Show(false);
 
-    } else if (INTERFACE_VSCP == m_interfaceType) {
+    } 
+    else if (INTERFACE_VSCP == m_interfaceType) {
 
         wxString str;
         unsigned char GUID[16];

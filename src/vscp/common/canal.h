@@ -50,8 +50,8 @@
 #endif
 
 
-#define CAN_MAX_STANDARD_ID	        0x7ff
-#define CAN_MAX_EXTENDED_ID		    0x1fffffff
+#define CAN_MAX_STANDARD_ID	                    0x7ff
+#define CAN_MAX_EXTENDED_ID		                0x1fffffff
 
 
 // CANAL version 
@@ -60,46 +60,45 @@
 // the i/f is changed. This will hopefully not
 // happen but probably will.
 
-#define CANAL_MAIN_VERSION                   1
-#define CANAL_MINOR_VERSION                  0
-#define CANAL_SUB_VERSION                    6
+#define CANAL_MAIN_VERSION                      1
+#define CANAL_MINOR_VERSION                     0
+#define CANAL_SUB_VERSION                       6
 
 
 // Canal Levels
-#define CANAL_LEVEL_STANDARD                 1	// Level I driver
-#define CANAL_LEVEL_NO_TCPIP				 2	// Limited Level II Driver
-#define CANAL_LEVEL_USES_TCPIP               3	// Full Level II Driver
+#define CANAL_LEVEL_STANDARD                    1	// Level I driver
+#define CANAL_LEVEL_NO_TCPIP				    2	// Limited Level II Driver
+#define CANAL_LEVEL_USES_TCPIP                  3	// Full Level II Driver
 
 // VSCP daemon version information positions
-#define POS_VSCPD_MAJOR_VERSION              1
-#define POS_VSCPD_MINOR_VERSION              2
-#define POS_VSCPD_SUB_VERSION                3
+#define POS_VSCPD_MAJOR_VERSION                 1
+#define POS_VSCPD_MINOR_VERSION                 2
+#define POS_VSCPD_SUB_VERSION                   3
 
 
 // VSCP Daemon client Open types
-#define CANAL_COMMAND_OPEN_VSCP_LEVEL1      1	  // VSCP Level I channel (CAN)
-#define CANAL_COMMAND_OPEN_VSCP_LEVEL2      2	  // VSCP Level II channel
-#define CANAL_COMMAND_OPEN_VSCP_CONTROL     3	  // Daemon Control channel
+#define CANAL_COMMAND_OPEN_VSCP_LEVEL1          1   // VSCP Level I channel (CAN)
+#define CANAL_COMMAND_OPEN_VSCP_LEVEL2          2	// VSCP Level II channel
+#define CANAL_COMMAND_OPEN_VSCP_CONTROL         3	// Daemon Control channel
 
 /// Interprocess success/failure codes
-#define COMMAND_FAILURE                     0
-#define COMMAND_SUCCESS                     1
+#define COMMAND_FAILURE                         0
+#define COMMAND_SUCCESS                         1
 
 /// Return types
 
-#define PACKAGE_ACK                         0
-#define PACKAGE_NACK                        1
+#define PACKAGE_ACK                             0
+#define PACKAGE_NACK                            1
 
-#define PACKAGE_TIMEOUT                     -1
-#define PACKAGE_UNKNOWN                     -1
+#define PACKAGE_TIMEOUT                         -1
+#define PACKAGE_UNKNOWN                         -1
 
-#define PACKAGE_FAILURE                     0
-#define PACKAGE_SUCCESS                     1
+#define PACKAGE_FAILURE                         0
+#define PACKAGE_SUCCESS                         1
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 
 /// * * * Data Structures
 

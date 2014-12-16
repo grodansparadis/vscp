@@ -47,15 +47,16 @@ void *workThreadReceive( void *pObject );
 
 static uint8_t addWithEscape( uint8_t *p, char c, uint8_t *pcrc ) 
 {
-	if ( NULL != pcrc ) crc8( pcrc, c );
-
 	if ( DLE == c ) {
 		*p = DLE;
+        if ( NULL != pcrc ) crc8( pcrc, DLE );
 		*(p+1) = DLE;
+        if ( NULL != pcrc ) crc8( pcrc, DLE );
 		return 2;
 	}
 	else {
-		*p = DLE;
+		*p = c;
+        if ( NULL != pcrc ) crc8( pcrc, c );
 		return 1;
 	}
 }
@@ -199,6 +200,7 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 	char szDrvParams[ MAX_PATH ];
 	char *p;
 	int nComPort = 1;	// COM1 is default
+    uint8_t saveseq;
     cmdResponseMsg Msg;
 
 	m_initFlag = flags;
@@ -228,9 +230,12 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 #endif	
 
 	// Serial port
+    nComPort = 1;   // Default com port
 	p = strtok( szDrvParams, ";" );
-	if ( NULL != p ) {		
-		nComPort = atoi( p );	
+	if ( NULL != p ) {
+        if ( NULL != ( p = strstr( p, "COM" ) ) ) {
+		    nComPort = atoi( p+3 );	
+        }
 	}
 
 	// Open the com port
@@ -246,13 +251,12 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     // Set CAN4VSCP mode in case of device in verbose mode
     if ( !( flags & CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE ) ) {
         
-        m_com.writebuf( (unsigned char *)"\r\n", 2 );                // In case of garbage in queue
-        m_com.writebuf( (unsigned char *)"MODE CAN4VSCP\r\n", 15 );  // set CAN4VSCP mode
+        //m_com.writebuf( (unsigned char *)"\r\n", 2 );                   // In case of garbage in queue
+        //m_com.writebuf( (unsigned char *)"SET MODE CAN4VSCP\r\n", 15 ); // set CAN4VSCP mode
     }
 
     // Check that we have a CAN4VSCP device at the other end 
     // ( give it four tries before giving up )
-    uint32_t cnt;
     bool bFound = false;
 
     /*
@@ -288,67 +292,6 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     }*/
 
     
-    for ( int i=0; i<4; i++ ) {
-        uint8_t saveseq = m_sequencyno; // Save the sequency ordinal
-        if ( sendCommandWait( VSCP_DRIVER_COMMAND_NOOP, 
-                                            NULL, 
-                                            0,
-                                            &Msg, 
-                                            1000 ) ) {
-            if ( (2 == Msg.sizePayload) &&  
-                        (saveseq == Msg.seq) && 
-                        (VSCP_DRVER_OPERATION_COMMAND_REPLY == Msg.op ) &&
-                        ( 0 == Msg.payload[0] ) &&
-                        ( VSCP_DRIVER_COMMAND_NOOP == Msg.payload[1] ) ) {
-                        bFound = true;
-                        break;
-                    }
-        }
-    }
-
-    // Give up if not found
-    if (!bFound) {
-        // Failure
-		close();
-		return false;
-    }
-
-
-    // Set interface in requested mode.
-    switch( flags & 3 ) {
-
-        case 0:
-            sendCommandWait( VSCP_DRIVER_COMMAND_OPEN, 
-                                        NULL, 
-                                        0, 
-                                        &Msg, 
-                                        1000 );
-            break;
-
-        case 1:
-            sendCommandWait( VSCP_DRIVER_COMMAND_LISTEN, 
-                                        NULL, 
-                                        0, 
-                                        &Msg, 
-                                        1000 );
-            break;
-
-        case 2:
-            sendCommandWait( VSCP_DRIVER_COMMAND_LOOPBACK, 
-                                        NULL, 
-                                        0, 
-                                        &Msg, 
-                                        1000 );
-            break;
-
-        default:
-            sendCommandWait( VSCP_DRIVER_COMMAND_CLOSE, 
-                                        NULL, 
-                                        0, 
-                                        &Msg, 
-                                        1000 );
-            break;
-    }
 
 	// Run run run ..... 
 	m_bRun = true;
@@ -430,6 +373,71 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 	pthread_mutex_unlock( &m_can4vscpMutex );
 
 #endif	
+
+
+    for ( int i=0; i<4; i++ ) {
+
+        saveseq = m_sequencyno;         // Save the sequency ordinal
+        if ( sendCommandWait( VSCP_DRIVER_COMMAND_NOOP, 
+                                NULL, 
+                                0,
+                                &Msg, 
+                                1000 ) ) {
+
+            bFound = true;
+
+        }
+
+    }
+
+    // Give up if not found
+    if (!bFound) {
+        // Failure
+		close();
+		return false;
+    }
+
+
+    // Set interface in requested mode.
+    switch( flags & 3 ) {
+
+        case 1:
+            if ( sendCommandWait( VSCP_DRIVER_COMMAND_LISTEN, 
+                                        NULL, 
+                                        0, 
+                                        &Msg, 
+                                        1000 ) ) {
+                // Failure
+		        close();
+		        return false;
+            }
+            break;
+
+        case 2:
+            if ( sendCommandWait( VSCP_DRIVER_COMMAND_LOOPBACK, 
+                                        NULL, 
+                                        0, 
+                                        &Msg, 
+                                        1000 ) ) {
+                // Failure
+		        close();
+		        return false;
+            }
+            break;
+
+        case 0:
+        default:
+            if ( !sendCommandWait( VSCP_DRIVER_COMMAND_OPEN, 
+                                        NULL, 
+                                        0, 
+                                        &Msg, 
+                                        1000 ) ) {
+                // Failure
+		        close();
+		        return false;
+            }
+            break;
+    }
 
 	return true;
 }
@@ -708,16 +716,13 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
     sendData[ pos++ ] = 0;
 	crc8( &crc, 0 ); 
     pos += addWithEscape( sendData + pos, (size&0xff), &crc );
-	sendData[ pos++ ] = (size&0xff);
 
     // Command code
     pos += addWithEscape( sendData + pos, cmdcode, &crc );
-	sendData[ pos++ ] = cmdcode;
 
     if ( size ) {
         for ( int i=0; i<size; i++ ) {
             pos += addWithEscape( sendData + pos, pParam[i], &crc );
-	        sendData[ pos++ ] = pParam[i];
         }
     }
 
@@ -728,7 +733,12 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
     sendData[ pos++ ] = DLE;
 	sendData[ pos++ ] = ETX;
 	
-	return sendMsg( sendData, size );
+    // Empty reply list
+    LOCK_MUTEX( m_responseMutex );
+    dll_removeAllNodes( &m_responseList );
+	UNLOCK_MUTEX( m_responseMutex );
+
+	return sendMsg( sendData, pos );
 }
 
 
@@ -737,12 +747,12 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
 //
 //
 
-bool CCan4VSCPObj::waitResponse( cmdResponseMsg *pMsg, uint32_t timeout )
+bool CCan4VSCPObj::waitResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t saveseq, uint32_t timeout )
 {
 	//uint32_t start = GetTickCount();
     uint32_t start = getClockMilliseconds();
 
-	while (  getClockMilliseconds() < ( start + timeout ) ){
+	while (  getClockMilliseconds() < ( start + timeout ) ) {
 	
 		if ( ( NULL != m_responseList.pHead ) && 
 				( NULL != m_responseList.pHead->pObject ) ) {
@@ -752,7 +762,14 @@ bool CCan4VSCPObj::waitResponse( cmdResponseMsg *pMsg, uint32_t timeout )
 			dll_removeNode( &m_responseList, m_responseList.pHead );
 			UNLOCK_MUTEX( m_responseMutex );
 
-			return true;
+            if ( (2 == pMsg->sizePayload) &&  
+                        ( saveseq == pMsg->seq ) && 
+                        ( VSCP_DRVER_OPERATION_COMMAND_REPLY == pMsg->op ) &&
+                        ( 0 == pMsg->payload[ 0 ] ) &&
+                        ( cmdcode == pMsg->payload[ 1 ] ) ) {
+                        return true;
+            }
+	
 		}
 		
         SLEEP( 10 );
@@ -772,10 +789,13 @@ bool CCan4VSCPObj::sendCommandWait( uint8_t cmdcode,
                                         cmdResponseMsg *pMsg, 
                                         uint32_t timeout )
 {
+    // Save sequence number
+    uint8_t saveseq = m_sequencyno;
+
 	// Send the command
 	if ( !sendCommand( cmdcode, pParam, size ) ) return false;	
 
-	return waitResponse( pMsg, timeout );
+	return waitResponse( pMsg, cmdcode, saveseq, timeout );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -945,13 +965,14 @@ bool CCan4VSCPObj::addToResponseQueue( void )
         dllnode *pNode = new dllnode; 
 	    if ( NULL != pNode ) {
 
-            pMsg->op = VSCP_DRVER_OPERATION_COMMAND;
-            pMsg->seq = m_bufferMsgRcv[ 1 ];
-            pMsg->channel = m_bufferMsgRcv[ 2 ];
-            pMsg->sizePayload = ( (uint16_t)m_bufferMsgRcv[ 3 ]<<8 ) + m_bufferMsgRcv[ 4 ];
+            pMsg->op = m_bufferMsgRcv[ 0 ];
+            pMsg->channel = m_bufferMsgRcv[ 1 ];
+            pMsg->seq = m_bufferMsgRcv[ 2 ];
+            pMsg->sizePayload = ( (uint16_t)m_bufferMsgRcv[ 3 ] << 8 ) + m_bufferMsgRcv[ 4 ];
+
             if ( pMsg->sizePayload ) {
                 memcpy( pMsg->payload, 
-                            m_bufferMsgRcv, 
+                            m_bufferMsgRcv + 5, 
                             ( pMsg->sizePayload > 512 ) ? 512 : pMsg->sizePayload );
             }
 
@@ -1067,7 +1088,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 					fprintf( m_flog, " STATE_STX/SUBSTATE_NONE " );
 #endif
 					m_RxMsgSubState = INCOMING_SUBSTATE_NONE;	
-					if ( m_lengthMsgRcv < 13 ) {
+					if ( m_lengthMsgRcv < sizeof( m_bufferMsgRcv ) ) {
 						m_bufferMsgRcv[ m_lengthMsgRcv++ ] = c;
 					}
 					else {
@@ -1087,7 +1108,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 					fprintf( m_flog, " STATE_STX/SUBSTATE_NONE " );
 #endif					
 					m_RxMsgSubState = INCOMING_SUBSTATE_NONE;	
-					if ( m_lengthMsgRcv < 13 ) {
+					if ( m_lengthMsgRcv < sizeof( m_bufferMsgRcv ) ) {
 						m_bufferMsgRcv[ m_lengthMsgRcv++ ] = c;
 					}
 					else {
@@ -1151,19 +1172,11 @@ void CCan4VSCPObj::readSerialData( void )
                 // [3]      Channel (always zero)
                 // [4]      Sequence number 
                 // [5/6]    Size of payload ( 12 + sizeData )
-                // [7]      CANAL flags (MSB)
-                // [8]      CANAL flags
-                // [9]      CANAL flags
-                // [10]     CANAL flags (LSB)
-                // [11]     CANAL timestamp (MSB)
-                // [12]     CANAL timestamp
-                // [13]     CANAL timestamp
-                // [14]     CANAL timestamp (LSB)
-                // [15]     CAN id (MSB)
-                // [26]     CAN id
-                // [27]     CAN id
-                // [28]     CAN id (LSB)
-                // [29-n]   CAN data (0-8 bytes) 
+                // [7]     CAN id (MSB)
+                // [8]     CAN id
+                // [9]     CAN id
+                // [10]     CAN id (LSB)
+                // [11-n]   CAN data (0-8 bytes) 
                 // [len-3]  CRC
                 // [len-2]  DLE
                 // [len-1]  ETX
@@ -1179,37 +1192,23 @@ void CCan4VSCPObj::readSerialData( void )
 						if ( NULL != pNode ) {
 							
                             pMsg->flags = 0;
-							pMsg->timestamp = GetTickCount() * 1000;
+							pMsg->timestamp = getClockMilliseconds();
                             pMsg->obid = 0;
-
-                            pMsg->timestamp = 
-									(((DWORD)m_bufferMsgRcv[11]<<24) & 0xff000000) |
-									(((DWORD)m_bufferMsgRcv[12]<<16) & 0x00ff0000) |
-									(((DWORD)m_bufferMsgRcv[13]<<8 ) & 0x0000ff00) |
-									(((DWORD)m_bufferMsgRcv[14]    ) & 0x000000ff) ;
-                            
-                            // If no timestamp give set now
-                            if ( 0 == pMsg->timestamp ) {
-                                pMsg->timestamp = GetTickCount() * 1000;
-                            }
 				
 							pMsg->id = 
-									(((DWORD)m_bufferMsgRcv[15]<<24) & 0x1f000000) |
-									(((DWORD)m_bufferMsgRcv[16]<<16) & 0x00ff0000) |
-									(((DWORD)m_bufferMsgRcv[17]<<8 ) & 0x0000ff00) |
-									(((DWORD)m_bufferMsgRcv[18]    ) & 0x000000ff) ;
+									(((DWORD)m_bufferMsgRcv[5]<<24) & 0x1f000000) |
+									(((DWORD)m_bufferMsgRcv[6]<<16) & 0x00ff0000) |
+									(((DWORD)m_bufferMsgRcv[7]<<8 ) & 0x0000ff00) |
+									(((DWORD)m_bufferMsgRcv[8]    ) & 0x000000ff) ;
 											
-							pMsg->sizeData = ( (WORD)m_bufferMsgRcv[5] << 8 ) + m_bufferMsgRcv[6] & 0x0f - 12;		
+							pMsg->sizeData = ( (WORD)m_bufferMsgRcv[3] << 8 ) + ( m_bufferMsgRcv[4] & 0x0f ) - 4;		
 											
 							memcpy( (void *)pMsg->data, 
-										(m_bufferMsgRcv + 29 ), 
+										(m_bufferMsgRcv + 10 ), 
 										pMsg->sizeData ); 
 									
 							// If extended set extended flag
-							if ( m_bufferMsgRcv[0] & 0x80 ) pMsg->flags |= CANAL_IDFLAG_EXTENDED;
-
-							// Check for RTR package
-							if ( (m_bufferMsgRcv[0] & 0x40) ) pMsg->flags |= CANAL_IDFLAG_RTR;
+							pMsg->flags |= CANAL_IDFLAG_EXTENDED;
 							
 							if ( doFilter( pMsg ) ) {
 								pNode->pObject = pMsg;
@@ -1348,19 +1347,11 @@ void *workThreadTransmit( void *pObject )
             // [3]      Channel (always zero)
             // [4]      Sequence number 
             // [5/6]    Size of payload ( 12 + sizeData )
-            // [7]      CANAL flags (MSB)
-            // [8]      CANAL flags
-            // [9]      CANAL flags
-            // [10]     CANAL flags (LSB)
-            // [11]     CANAL timestamp (MSB)
-            // [12]     CANAL timestamp
-            // [13]     CANAL timestamp
-            // [14]     CANAL timestamp (LSB)
-            // [15]     CAN id (MSB)
-            // [26]     CAN id
-            // [27]     CAN id
-            // [28]     CAN id (LSB)
-            // [29-n]   CAN data (0-8 bytes) 
+            // [7]     CAN id (MSB)
+            // [8]     CAN id
+            // [9]     CAN id
+            // [10]     CAN id (LSB)
+            // [11-n]   CAN data (0-8 bytes) 
             // [len-3]  CRC
             // [len-2]  DLE
             // [len-1]  ETX
@@ -1381,24 +1372,12 @@ void *workThreadTransmit( void *pObject )
 			crc8( &crc, 0 );
 			
 			// Sequency number
-			pos += addWithEscape( sendData + pos, sequencyno, &crc ); 
+            pos += addWithEscape( sendData + pos, pobj->m_sequencyno++, &crc ); 
 			
 			// Size of payload  6 + datalen
 			sendData[ pos++ ] = 0;
 			crc8( &crc, 0 );
-			pos += addWithEscape( sendData + pos, 12 + msg.sizeData, &crc  );
-
-            // flags
-            pos += addWithEscape( sendData + pos, (msg.flags>>24) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, (msg.flags>>16) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, (msg.flags>>8) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, msg.flags & 0xff, &crc );
-
-            // timestamp
-            pos += addWithEscape( sendData + pos, (msg.timestamp>>24) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, (msg.timestamp>>16) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, (msg.timestamp>>8) & 0xff, &crc );
-            pos += addWithEscape( sendData + pos, msg.timestamp & 0xff, &crc );
+			pos += addWithEscape( sendData + pos, 4 + msg.sizeData, &crc  );
 
             // id
             pos += addWithEscape( sendData + pos, (msg.id>>24) & 0xff, &crc );

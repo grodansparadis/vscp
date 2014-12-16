@@ -68,7 +68,7 @@
 
 VSCPInformation::VSCPInformation( void )
 {
-	m_hashClass[ 0 ] = _("CLASS1_PROTOCOL");
+    m_hashClass[ 0 ] = _("CLASS1_PROTOCOL");
 	m_hashClass[ 1 ] = _("CLASS1_ALARM");
 	m_hashClass[ 2 ] = _("CLASS1_SECURITY");
 	m_hashClass[ 10 ] = _("CLASS1_MEASUREMENT");

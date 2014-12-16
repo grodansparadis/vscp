@@ -51,9 +51,6 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
-////@end includes
-
 #include <wx/app.h>
 #include <wx/listimpl.cpp>
 #include <wx/stdpaths.h>
@@ -103,66 +100,63 @@ IMPLEMENT_CLASS(frmVSCPSession, wxFrame)
 
 BEGIN_EVENT_TABLE(frmVSCPSession, wxFrame)
 
-////@begin frmVSCPSession event table entries
-  EVT_CLOSE( frmVSCPSession::OnCloseWindow )
-  EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON_ACTIVATE, frmVSCPSession::OnInterfaceActivate )
-  EVT_MENU( ID_MENUITEM_VSCP_LOAD_MSG_LIST, frmVSCPSession::LoadRXEventList )
-  EVT_MENU( ID_MENUITEM_VSCP_SAVE_MSG_LIST, frmVSCPSession::SaveRXEventList )
-  EVT_MENU( ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, frmVSCPSession::OnTxLoadClick )
-  EVT_MENU( ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, frmVSCPSession::OnTxSaveClick )
-  EVT_MENU( ID_MENUITEM_VSCP_SESSION_EXIT, frmVSCPSession::OnMenuitemVscpSessionExitClick )
-  EVT_MENU( ID_MENUITEM4, frmVSCPSession::ClearRxList )
-  EVT_MENU( ID_MENUITEM5, frmVSCPSession::ClearTxList )
-  EVT_MENU( ID_MENUITEM_VSCP_LOG, frmVSCPSession::OnMenuitemVscpViewLogClick )
-  EVT_MENU( ID_MENUITEM_VSCP_COUNT, frmVSCPSession::OnMenuitemVscpViewCountClick )
-  EVT_MENU( ID_MENUITEM_READ_REGISTER, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-  EVT_MENU( ID_MENUITEM_WRITE_REGISTER, frmVSCPSession::OnMenuitemSetBurstCountClick )
-  EVT_MENU( ID_MENUITEM_READ_ALL_REGISTERS, frmVSCPSession::OnMenuitemSetFilterClick )
-  EVT_MENU( ID_MENUITEM_GET_GUID, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-  EVT_MENU( ID_MENUITEM_GET_MDF_URL, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-  EVT_MENU( ID_MENUITEM_GET_MDF, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-  EVT_MENU( ID_MENUITEM_RX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveRxCellWidth )
-  EVT_MENU( ID_MENUITEM_SAVE_TX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveTxCellWidth )
-  EVT_MENU( ID_MENUITEM1, frmVSCPSession::OnMenuitemSetAutoreplyClick )
-  EVT_MENU( ID_MENUITEM2, frmVSCPSession::OnMenuitemSetBurstCountClick )
-  EVT_MENU( ID_MENUITEM3, frmVSCPSession::OnMenuitemSetFilterClick )
-  EVT_MENU( ID_MENUITEM, frmVSCPSession::OnMenuitemConfigurationClick )
-  EVT_MENU( ID_MENUITEM_VSCP_HELP, frmVSCPSession::OnMenuitemVscpHelpClick )
-  EVT_MENU( ID_MENUITEM_VSCP_FAQ, frmVSCPSession::OnMenuitemVscpFaqClick )
-  EVT_MENU( ID_MENUITEM_VSCP_SHORTCUTS, frmVSCPSession::OnMenuitemVscpShortcutsClick )
-  EVT_MENU( ID_MENUITEM_VSCP_THANKS, frmVSCPSession::OnMenuitemVscpThanksClick )
-  EVT_MENU( ID_MENUITEM_VSCP_CREDITS, frmVSCPSession::OnMenuitemVscpCreditsClick )
-  EVT_MENU( ID_MENUITEM_VSCP_VSCP_SITE, frmVSCPSession::OnMenuitemVscpVscpSiteClick )
-  EVT_MENU( ID_MENUITEM_VSCP_ABOUT, frmVSCPSession::OnMenuitemVscpAboutClick )
-  EVT_GRID_CELL_LEFT_CLICK( frmVSCPSession::OnCellReceiveLeftClick )
-  EVT_GRID_CELL_RIGHT_CLICK( frmVSCPSession::OnGridCellReceiveRightClick )
-  EVT_GRID_LABEL_LEFT_DCLICK( frmVSCPSession::OnGridLabelLeftDClick )
-  EVT_GRID_SELECT_CELL( frmVSCPSession::OnSelectCell )
-  EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW_RCVINFO, frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked )
-  EVT_BUTTON( ID_BITMAPBUTTON_TX_ADD, frmVSCPSession::OnTxAddClick )
-  EVT_BUTTON( ID_BITMAPBUTTON_TX_EDIT, frmVSCPSession::OnTxEditClick )
-  EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, frmVSCPSession::OnTxDeleteClick )
-  EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, frmVSCPSession::OnTxLoadClick )
-  EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, frmVSCPSession::OnTxSaveClick )
-  EVT_GRID_CELL_LEFT_CLICK( frmVSCPSession::OnCellTxLeftClick )
-  EVT_GRID_CELL_RIGHT_CLICK( frmVSCPSession::OnCellTxRightClick )
-  EVT_GRID_CELL_LEFT_DCLICK( frmVSCPSession::OnGridLeftDClick )
-  EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, frmVSCPSession::OnTxSendClick )
-////@end frmVSCPSession event table entries
+    EVT_CLOSE( frmVSCPSession::OnCloseWindow )
+    EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON_ACTIVATE, frmVSCPSession::OnInterfaceActivate )
+    EVT_MENU( ID_MENUITEM_VSCP_LOAD_MSG_LIST, frmVSCPSession::LoadRXEventList )
+    EVT_MENU( ID_MENUITEM_VSCP_SAVE_MSG_LIST, frmVSCPSession::SaveRXEventList )
+    EVT_MENU( ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, frmVSCPSession::OnTxLoadClick )
+    EVT_MENU( ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, frmVSCPSession::OnTxSaveClick )
+    EVT_MENU( ID_MENUITEM_VSCP_SESSION_EXIT, frmVSCPSession::OnMenuitemVscpSessionExitClick )
+    EVT_MENU( ID_MENUITEM4, frmVSCPSession::ClearRxList )
+    EVT_MENU( ID_MENUITEM5, frmVSCPSession::ClearTxList )
+    EVT_MENU( ID_MENUITEM_VSCP_LOG, frmVSCPSession::OnMenuitemVscpViewLogClick )
+    EVT_MENU( ID_MENUITEM_VSCP_COUNT, frmVSCPSession::OnMenuitemVscpViewCountClick )
+    EVT_MENU( ID_MENUITEM_READ_REGISTER, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+    EVT_MENU( ID_MENUITEM_WRITE_REGISTER, frmVSCPSession::OnMenuitemSetBurstCountClick )
+    EVT_MENU( ID_MENUITEM_READ_ALL_REGISTERS, frmVSCPSession::OnMenuitemSetFilterClick )
+    EVT_MENU( ID_MENUITEM_GET_GUID, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+    EVT_MENU( ID_MENUITEM_GET_MDF_URL, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+    EVT_MENU( ID_MENUITEM_GET_MDF, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+    EVT_MENU( ID_MENUITEM_RX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveRxCellWidth )
+    EVT_MENU( ID_MENUITEM_SAVE_TX_GRID_WIDTH, frmVSCPSession::OnMenuitemSaveTxCellWidth )
+    EVT_MENU( ID_MENUITEM1, frmVSCPSession::OnMenuitemSetAutoreplyClick )
+    EVT_MENU( ID_MENUITEM2, frmVSCPSession::OnMenuitemSetBurstCountClick )
+    EVT_MENU( ID_MENUITEM3, frmVSCPSession::OnMenuitemSetFilterClick )
+    EVT_MENU( ID_MENUITEM, frmVSCPSession::OnMenuitemConfigurationClick )
+    EVT_MENU( ID_MENUITEM_VSCP_HELP, frmVSCPSession::OnMenuitemVscpHelpClick )
+    EVT_MENU( ID_MENUITEM_VSCP_FAQ, frmVSCPSession::OnMenuitemVscpFaqClick )
+    EVT_MENU( ID_MENUITEM_VSCP_SHORTCUTS, frmVSCPSession::OnMenuitemVscpShortcutsClick )
+    EVT_MENU( ID_MENUITEM_VSCP_THANKS, frmVSCPSession::OnMenuitemVscpThanksClick )
+    EVT_MENU( ID_MENUITEM_VSCP_CREDITS, frmVSCPSession::OnMenuitemVscpCreditsClick )
+    EVT_MENU( ID_MENUITEM_VSCP_VSCP_SITE, frmVSCPSession::OnMenuitemVscpVscpSiteClick )
+    EVT_MENU( ID_MENUITEM_VSCP_ABOUT, frmVSCPSession::OnMenuitemVscpAboutClick )
+    EVT_GRID_CELL_LEFT_CLICK( frmVSCPSession::OnCellReceiveLeftClick )
+    EVT_GRID_CELL_RIGHT_CLICK( frmVSCPSession::OnGridCellReceiveRightClick )
+    EVT_GRID_LABEL_LEFT_DCLICK( frmVSCPSession::OnGridLabelLeftDClick )
+    EVT_GRID_SELECT_CELL( frmVSCPSession::OnSelectCell )
+    EVT_HTML_LINK_CLICKED( ID_HTMLWINDOW_RCVINFO, frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked )
+    EVT_BUTTON( ID_BITMAPBUTTON_TX_ADD, frmVSCPSession::OnTxAddClick )
+    EVT_BUTTON( ID_BITMAPBUTTON_TX_EDIT, frmVSCPSession::OnTxEditClick )
+    EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, frmVSCPSession::OnTxDeleteClick )
+    EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, frmVSCPSession::OnTxLoadClick )
+    EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, frmVSCPSession::OnTxSaveClick )
+    EVT_GRID_CELL_LEFT_CLICK( frmVSCPSession::OnCellTxLeftClick )
+    EVT_GRID_CELL_RIGHT_CLICK( frmVSCPSession::OnCellTxRightClick )
+    EVT_GRID_CELL_LEFT_DCLICK( frmVSCPSession::OnGridLeftDClick )
+    EVT_BUTTON( ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, frmVSCPSession::OnTxSendClick )
 
-EVT_MENU(Menu_Popup_TX_Transmit, frmVSCPSession::OnTxSendClick)
-EVT_MENU(Menu_Popup_TX_Add, frmVSCPSession::OnTxAddClick)
-EVT_MENU(Menu_Popup_TX_Edit, frmVSCPSession::OnTxEditClick)
-EVT_MENU(Menu_Popup_TX_Delete, frmVSCPSession::OnTxDeleteClick)
-EVT_MENU(Menu_Popup_TX_Clone, frmVSCPSession::OnTxCloneRow)
+    EVT_MENU(Menu_Popup_TX_Transmit, frmVSCPSession::OnTxSendClick)
+    EVT_MENU(Menu_Popup_TX_Add, frmVSCPSession::OnTxAddClick)
+    EVT_MENU(Menu_Popup_TX_Edit, frmVSCPSession::OnTxEditClick)
+    EVT_MENU(Menu_Popup_TX_Delete, frmVSCPSession::OnTxDeleteClick)
+    EVT_MENU(Menu_Popup_TX_Clone, frmVSCPSession::OnTxCloneRow)
 
-EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_IN_EVENT, frmVSCPSession::eventReceive)
-EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_OUT_EVENT, frmVSCPSession::eventTransmit)
-EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_CTRL_LOST_EVENT, frmVSCPSession::eventLostCtrlIf)
-EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_PREP_CONNECT_EVENT, frmVSCPSession::eventPrepareConnect)
-EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_CONNECTED_EVENT, frmVSCPSession::eventConnected)
-EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_LOST_EVENT, frmVSCPSession::eventLostRcvIf)
-
+    EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_IN_EVENT, frmVSCPSession::eventReceive)
+    EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_OUT_EVENT, frmVSCPSession::eventTransmit)
+    EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_CTRL_LOST_EVENT, frmVSCPSession::eventLostCtrlIf)
+    EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_PREP_CONNECT_EVENT, frmVSCPSession::eventPrepareConnect)
+    EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_CONNECTED_EVENT, frmVSCPSession::eventConnected)
+    EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_LOST_EVENT, frmVSCPSession::eventLostRcvIf)
 
 END_EVENT_TABLE()
 
@@ -248,12 +242,13 @@ RXGridCellAttrProvider::~RXGridCellAttrProvider()
     m_attrOddColNote->DecRef();
 }
 
-wxGridCellAttr *RXGridCellAttrProvider::GetAttr(int row, int col,
-        wxGridCellAttr::wxAttrKind kind /* = wxGridCellAttr::Any */) const
+wxGridCellAttr *RXGridCellAttrProvider::GetAttr( int row, 
+                                                    int col,
+                                                    wxGridCellAttr::wxAttrKind kind /* = wxGridCellAttr::Any */) const
 {
     wxGridCellAttr *attr = wxGridCellAttrProvider::GetAttr(row, col, kind);
 
-    if (g_Config.m_VscpRcvFrameRxbPyamas && (row % 2)) {
+    if ( g_Config.m_VscpRcvFrameRxbPyamas && (row % 2) ) {
 
         // Odd rows    
         if (!attr) {
@@ -287,7 +282,8 @@ wxGridCellAttr *RXGridCellAttrProvider::GetAttr(int row, int col,
 
             }
 
-        } else {
+        } 
+        else {
             if (!attr->HasBackgroundColour()) {
                 wxGridCellAttr *attrNew = attr->Clone();
                 attr->DecRef();
@@ -295,7 +291,8 @@ wxGridCellAttr *RXGridCellAttrProvider::GetAttr(int row, int col,
                 attr->SetBackgroundColour(*wxLIGHT_GREY);
             }
         }
-    } else {
+    } 
+    else {
         if (!attr) {
 
             switch (col) {
@@ -379,12 +376,10 @@ frmVSCPSession::frmVSCPSession(wxWindow* parent, wxWindowID id, const wxString& 
 
 bool frmVSCPSession::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
 {
-    ////@begin frmVSCPSession creation
-  wxFrame::Create( parent, id, caption, pos, size, style );
+     wxFrame::Create( parent, id, caption, pos, size, style );
 
-  CreateControls();
-  SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
-    ////@end frmVSCPSession creation
+    CreateControls();
+    SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
 
     return true;
 }
@@ -396,9 +391,6 @@ bool frmVSCPSession::Create(wxWindow* parent, wxWindowID id, const wxString& cap
 
 frmVSCPSession::~frmVSCPSession()
 {
-    ////@begin frmVSCPSession destruction
-    ////@end frmVSCPSession destruction
-
     // Remove possible items in TXLIST
     TXLIST::iterator iter;
     for (iter = m_CtrlObject.m_txList.begin(); iter != m_CtrlObject.m_txList.end(); ++iter) {
@@ -426,23 +418,21 @@ frmVSCPSession::~frmVSCPSession()
 //
 
 void frmVSCPSession::Init()
-{
-    ////@begin frmVSCPSession member initialisation
-  m_BtnActivateInterface = NULL;
-  m_pPanel = NULL;
-  m_ctrlGridReceive = NULL;
-  m_ctrlRcvHtmlInfo = NULL;
-  m_btnAdd = NULL;
-  m_btnEdit = NULL;
-  m_btnDelete = NULL;
-  m_btnLoadSet = NULL;
-  m_btnSaveSet = NULL;
-  m_ctrlGridTransmission = NULL;
-  m_btnSend = NULL;
-  m_btnActivate = NULL;
-  m_btnClear = NULL;
-    ////@end frmVSCPSession member initialisation
-
+{      
+    m_BtnActivateInterface = NULL;
+    m_pPanel = NULL;
+    m_ctrlGridReceive = NULL;
+    m_ctrlRcvHtmlInfo = NULL;
+    m_btnAdd = NULL;
+    m_btnEdit = NULL;
+    m_btnDelete = NULL;
+    m_btnLoadSet = NULL;
+    m_btnSaveSet = NULL;
+    m_ctrlGridTransmission = NULL;
+    m_btnSend = NULL;
+    m_btnActivate = NULL;
+    m_btnClear = NULL;
+    
     m_CtrlObject.m_bQuit = false;
     m_CtrlObject.m_interfaceType = INTERFACE_VSCP;
     memset(m_CtrlObject.m_GUID, 0, 16);
@@ -605,7 +595,8 @@ void frmVSCPSession::stopWorkerThreads(void)
             m_pRXWorkerThread = NULL;
         }
 
-    } else {
+    } 
+    else {
         if (NULL != m_pDeviceWorkerThread) {
             m_pDeviceWorkerThread->Wait();
             delete m_pDeviceWorkerThread;
@@ -627,7 +618,8 @@ void frmVSCPSession::OnInterfaceActivate(wxCommandEvent& event)
         m_CtrlObject.m_bQuit = true;
         m_BtnActivateInterface->SetValue(false);
         m_BtnActivateInterface->SetLabel(_("Disconnected"));
-    } else {
+    } 
+    else {
         m_CtrlObject.m_bQuit = false;
         startWorkerThreads(this); // Start worker threads
         m_BtnActivateInterface->SetValue(true);
@@ -644,214 +636,211 @@ void frmVSCPSession::OnInterfaceActivate(wxCommandEvent& event)
 //
 
 void frmVSCPSession::CreateControls()
-{
-    ////@begin frmVSCPSession content construction
-  frmVSCPSession* itemFrame1 = this;
+{   
+    frmVSCPSession* itemFrame1 = this;
 
-  wxMenuBar* menuBar = new wxMenuBar;
-  wxMenu* itemMenu16 = new wxMenu;
-  itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_MSG_LIST, _("Load VSCP events from file..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_MSG_LIST, _("Save VSCP events to file..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu16->AppendSeparator();
-  itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, _("Load transmission set from file..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, _("Save transmission set to file..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu16->AppendSeparator();
-  itemMenu16->Append(ID_MENUITEM_VSCP_SESSION_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu16, _("File"));
-  wxMenu* itemMenu24 = new wxMenu;
-  itemMenu24->Append(ID_MENUITEM_VSCP_CUT, _("Cut"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu24->Append(ID_MENUITEM_VSCP_COPY, _("Copy"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu24->Append(ID_MENUITEM_VSCP_PASTE, _("Paste"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu24->AppendSeparator();
-  itemMenu24->Append(ID_MENUITEM4, _("Clear receive list"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu24->Append(ID_MENUITEM5, _("Clear transmission list"), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu24, _("Edit"));
-  wxMenu* itemMenu31 = new wxMenu;
-  itemMenu31->Append(ID_MENUITEM_VSCP_LOG, _("Message Log"), wxEmptyString, wxITEM_RADIO);
-  itemMenu31->Check(ID_MENUITEM_VSCP_LOG, true);
-  itemMenu31->Append(ID_MENUITEM_VSCP_COUNT, _("Message Count"), wxEmptyString, wxITEM_RADIO);
-  itemMenu31->AppendSeparator();
-  menuBar->Append(itemMenu31, _("View"));
-  wxMenu* itemMenu35 = new wxMenu;
-  itemMenu35->Append(ID_MENUITEM_READ_REGISTER, _("Read Regiister..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu35->Append(ID_MENUITEM_WRITE_REGISTER, _("Write Register..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu35->Append(ID_MENUITEM_READ_ALL_REGISTERS, _("Read all registers..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu35->AppendSeparator();
-  itemMenu35->Append(ID_MENUITEM_GET_GUID, _("Get GUID for node..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu35->Append(ID_MENUITEM_GET_MDF_URL, _("Get MDF URL..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu35->Append(ID_MENUITEM_GET_MDF, _("Get MDF..."), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu35, _("VSCP"));
-  wxMenu* itemMenu43 = new wxMenu;
-  itemMenu43->Append(ID_MENUITEM_RX_GRID_WIDTH, _("Save RX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu43->Append(ID_MENUITEM_SAVE_TX_GRID_WIDTH, _("Save TX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu43->AppendSeparator();
-  itemMenu43->Append(ID_MENUITEM1, _("Auto Reply Settings..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu43->Append(ID_MENUITEM2, _("Set Burst Count..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu43->Append(ID_MENUITEM3, _("Set Filter..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu43->AppendSeparator();
-  itemMenu43->Append(ID_MENUITEM, _("Configuration..."), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu43, _("Configuration"));
-  wxMenu* itemMenu52 = new wxMenu;
-  menuBar->Append(itemMenu52, _("Tools"));
-  wxMenu* itemMenu53 = new wxMenu;
-  itemMenu53->Append(ID_MENUITEM_VSCP_HELP, _("VSCP Works Help"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu53->Append(ID_MENUITEM_VSCP_FAQ, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu53->Append(ID_MENUITEM_VSCP_SHORTCUTS, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu53->AppendSeparator();
-  itemMenu53->Append(ID_MENUITEM_VSCP_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu53->Append(ID_MENUITEM_VSCP_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
-  itemMenu53->AppendSeparator();
-  itemMenu53->Append(ID_MENUITEM_VSCP_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
-  itemMenu53->AppendSeparator();
-  itemMenu53->Append(ID_MENUITEM_VSCP_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
-  menuBar->Append(itemMenu53, _("Help"));
-  itemFrame1->SetMenuBar(menuBar);
+    wxMenuBar* menuBar = new wxMenuBar;
+    wxMenu* itemMenu16 = new wxMenu;
+    itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_MSG_LIST, _("Load VSCP events from file..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_MSG_LIST, _("Save VSCP events to file..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu16->AppendSeparator();
+    itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, _("Load transmission set from file..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET, _("Save transmission set to file..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu16->AppendSeparator();
+    itemMenu16->Append(ID_MENUITEM_VSCP_SESSION_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu16, _("File"));
+    wxMenu* itemMenu24 = new wxMenu;
+    itemMenu24->Append(ID_MENUITEM_VSCP_CUT, _("Cut"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu24->Append(ID_MENUITEM_VSCP_COPY, _("Copy"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu24->Append(ID_MENUITEM_VSCP_PASTE, _("Paste"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu24->AppendSeparator();
+    itemMenu24->Append(ID_MENUITEM4, _("Clear receive list"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu24->Append(ID_MENUITEM5, _("Clear transmission list"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu24, _("Edit"));
+    wxMenu* itemMenu31 = new wxMenu;
+    itemMenu31->Append(ID_MENUITEM_VSCP_LOG, _("Message Log"), wxEmptyString, wxITEM_RADIO);
+    itemMenu31->Check(ID_MENUITEM_VSCP_LOG, true);
+    itemMenu31->Append(ID_MENUITEM_VSCP_COUNT, _("Message Count"), wxEmptyString, wxITEM_RADIO);
+    itemMenu31->AppendSeparator();
+    menuBar->Append(itemMenu31, _("View"));
+    wxMenu* itemMenu35 = new wxMenu;
+    itemMenu35->Append(ID_MENUITEM_READ_REGISTER, _("Read Regiister..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu35->Append(ID_MENUITEM_WRITE_REGISTER, _("Write Register..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu35->Append(ID_MENUITEM_READ_ALL_REGISTERS, _("Read all registers..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu35->AppendSeparator();
+    itemMenu35->Append(ID_MENUITEM_GET_GUID, _("Get GUID for node..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu35->Append(ID_MENUITEM_GET_MDF_URL, _("Get MDF URL..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu35->Append(ID_MENUITEM_GET_MDF, _("Get MDF..."), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu35, _("VSCP"));
+    wxMenu* itemMenu43 = new wxMenu;
+    itemMenu43->Append(ID_MENUITEM_RX_GRID_WIDTH, _("Save RX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu43->Append(ID_MENUITEM_SAVE_TX_GRID_WIDTH, _("Save TX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu43->AppendSeparator();
+    itemMenu43->Append(ID_MENUITEM1, _("Auto Reply Settings..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu43->Append(ID_MENUITEM2, _("Set Burst Count..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu43->Append(ID_MENUITEM3, _("Set Filter..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu43->AppendSeparator();
+    itemMenu43->Append(ID_MENUITEM, _("Configuration..."), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu43, _("Configuration"));
+    wxMenu* itemMenu52 = new wxMenu;
+    menuBar->Append(itemMenu52, _("Tools"));
+    wxMenu* itemMenu53 = new wxMenu;
+    itemMenu53->Append(ID_MENUITEM_VSCP_HELP, _("VSCP Works Help"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu53->Append(ID_MENUITEM_VSCP_FAQ, _("Frequently Asked Questions"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu53->Append(ID_MENUITEM_VSCP_SHORTCUTS, _("Keyboard shortcuts"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu53->AppendSeparator();
+    itemMenu53->Append(ID_MENUITEM_VSCP_THANKS, _("Thanks..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu53->Append(ID_MENUITEM_VSCP_CREDITS, _("Credits..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu53->AppendSeparator();
+    itemMenu53->Append(ID_MENUITEM_VSCP_VSCP_SITE, _("Go to VSCP site"), wxEmptyString, wxITEM_NORMAL);
+    itemMenu53->AppendSeparator();
+    itemMenu53->Append(ID_MENUITEM_VSCP_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu53, _("Help"));
+    itemFrame1->SetMenuBar(menuBar);
 
-  wxToolBar* itemToolBar2 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR_VSCP_SESSION );
-  wxBitmap itemtool3Bitmap(itemFrame1->GetBitmapResource(wxT("open.xpm")));
-  wxBitmap itemtool3BitmapDisabled;
-  itemToolBar2->AddTool(ID_MENUITEM_VSCP_LOAD_MSG_LIST, wxEmptyString, itemtool3Bitmap, itemtool3BitmapDisabled, wxITEM_NORMAL, _("Fetch data from file"), wxEmptyString);
-  wxBitmap itemtool4Bitmap(itemFrame1->GetBitmapResource(wxT("save.xpm")));
-  wxBitmap itemtool4BitmapDisabled;
-  itemToolBar2->AddTool(ID_MENUITEM_VSCP_SAVE_MSG_LIST, wxEmptyString, itemtool4Bitmap, itemtool4BitmapDisabled, wxITEM_NORMAL, _("Save data to file"), wxEmptyString);
-  itemToolBar2->AddSeparator();
-  wxBitmap itemtool6Bitmap(itemFrame1->GetBitmapResource(wxT("cut.xpm")));
-  wxBitmap itemtool6BitmapDisabled;
-  itemToolBar2->AddTool(ID_TOOL_VSCP_CUT, wxEmptyString, itemtool6Bitmap, itemtool6BitmapDisabled, wxITEM_NORMAL, _("Remove selected row(s)"), wxEmptyString);
-  wxBitmap itemtool7Bitmap(itemFrame1->GetBitmapResource(wxT("copy.xpm")));
-  wxBitmap itemtool7BitmapDisabled;
-  itemToolBar2->AddTool(ID_TOOL_VSCP_COPY, wxEmptyString, itemtool7Bitmap, itemtool7BitmapDisabled, wxITEM_NORMAL, _("Copy selected row(s) \nto the clipboard"), wxEmptyString);
-  wxBitmap itemtool8Bitmap(itemFrame1->GetBitmapResource(wxT("paste.xpm")));
-  wxBitmap itemtool8BitmapDisabled;
-  itemToolBar2->AddTool(ID_TOOL_VSCP_PASTE, wxEmptyString, itemtool8Bitmap, itemtool8BitmapDisabled, wxITEM_NORMAL, _("Paste row(s) from clipboard"), wxEmptyString);
-  itemToolBar2->AddSeparator();
-  wxBitmap itemtool10Bitmap(itemFrame1->GetBitmapResource(wxT("Print.xpm")));
-  wxBitmap itemtool10BitmapDisabled;
-  itemToolBar2->AddTool(ID_TOOL_VSCP_PRINT, wxEmptyString, itemtool10Bitmap, itemtool10BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
-  itemToolBar2->AddSeparator();
-  itemToolBar2->AddSeparator();
-  m_BtnActivateInterface = new wxToggleButton;
-  m_BtnActivateInterface->Create( itemToolBar2, ID_TOGGLEBUTTON_ACTIVATE, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0 );
-  m_BtnActivateInterface->SetValue(true);
-  if (frmVSCPSession::ShowToolTips())
-    m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
-  m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
-  m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
-  m_BtnActivateInterface->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
-  itemToolBar2->AddControl(m_BtnActivateInterface);
-  itemToolBar2->Realize();
-  itemFrame1->SetToolBar(itemToolBar2);
+    wxToolBar* itemToolBar2 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR_VSCP_SESSION );
+    wxBitmap itemtool3Bitmap(itemFrame1->GetBitmapResource(wxT("open.xpm")));
+    wxBitmap itemtool3BitmapDisabled;
+    itemToolBar2->AddTool(ID_MENUITEM_VSCP_LOAD_MSG_LIST, wxEmptyString, itemtool3Bitmap, itemtool3BitmapDisabled, wxITEM_NORMAL, _("Fetch data from file"), wxEmptyString);
+    wxBitmap itemtool4Bitmap(itemFrame1->GetBitmapResource(wxT("save.xpm")));
+    wxBitmap itemtool4BitmapDisabled;
+    itemToolBar2->AddTool(ID_MENUITEM_VSCP_SAVE_MSG_LIST, wxEmptyString, itemtool4Bitmap, itemtool4BitmapDisabled, wxITEM_NORMAL, _("Save data to file"), wxEmptyString);
+    itemToolBar2->AddSeparator();
+    wxBitmap itemtool6Bitmap(itemFrame1->GetBitmapResource(wxT("cut.xpm")));
+    wxBitmap itemtool6BitmapDisabled;
+    itemToolBar2->AddTool(ID_TOOL_VSCP_CUT, wxEmptyString, itemtool6Bitmap, itemtool6BitmapDisabled, wxITEM_NORMAL, _("Remove selected row(s)"), wxEmptyString);
+    wxBitmap itemtool7Bitmap(itemFrame1->GetBitmapResource(wxT("copy.xpm")));
+    wxBitmap itemtool7BitmapDisabled;
+    itemToolBar2->AddTool(ID_TOOL_VSCP_COPY, wxEmptyString, itemtool7Bitmap, itemtool7BitmapDisabled, wxITEM_NORMAL, _("Copy selected row(s) \nto the clipboard"), wxEmptyString);
+    wxBitmap itemtool8Bitmap(itemFrame1->GetBitmapResource(wxT("paste.xpm")));
+    wxBitmap itemtool8BitmapDisabled;
+    itemToolBar2->AddTool(ID_TOOL_VSCP_PASTE, wxEmptyString, itemtool8Bitmap, itemtool8BitmapDisabled, wxITEM_NORMAL, _("Paste row(s) from clipboard"), wxEmptyString);
+    itemToolBar2->AddSeparator();
+    wxBitmap itemtool10Bitmap(itemFrame1->GetBitmapResource(wxT("Print.xpm")));
+    wxBitmap itemtool10BitmapDisabled;
+    itemToolBar2->AddTool(ID_TOOL_VSCP_PRINT, wxEmptyString, itemtool10Bitmap, itemtool10BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
+    itemToolBar2->AddSeparator();
+    itemToolBar2->AddSeparator();
+    m_BtnActivateInterface = new wxToggleButton;
+    m_BtnActivateInterface->Create( itemToolBar2, ID_TOGGLEBUTTON_ACTIVATE, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0 );
+    m_BtnActivateInterface->SetValue(true);
+    if (frmVSCPSession::ShowToolTips())
+        m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
+    m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
+    m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
+    m_BtnActivateInterface->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
+    itemToolBar2->AddControl(m_BtnActivateInterface);
+    itemToolBar2->Realize();
+    itemFrame1->SetToolBar(itemToolBar2);
 
-  m_pPanel = new wxPanel;
-  m_pPanel->Create( itemFrame1, ID_PANEL_VSCP_SESSION, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    m_pPanel = new wxPanel;
+    m_pPanel->Create( itemFrame1, ID_PANEL_VSCP_SESSION, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
 
-  wxBoxSizer* itemBoxSizer65 = new wxBoxSizer(wxVERTICAL);
-  m_pPanel->SetSizer(itemBoxSizer65);
+    wxBoxSizer* itemBoxSizer65 = new wxBoxSizer(wxVERTICAL);
+    m_pPanel->SetSizer(itemBoxSizer65);
 
-  wxBoxSizer* itemBoxSizer66 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer65->Add(itemBoxSizer66, 0, wxGROW|wxALL, 2);
+    wxBoxSizer* itemBoxSizer66 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer65->Add(itemBoxSizer66, 0, wxGROW|wxALL, 2);
 
-  wxBoxSizer* itemBoxSizer67 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer66->Add(itemBoxSizer67, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer67 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer66->Add(itemBoxSizer67, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  m_ctrlGridReceive = new wxGrid;
-  m_ctrlGridReceive->Create( m_pPanel, ID_VSCP_GRID_RECEIVE, wxDefaultPosition, wxSize(550, 300), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
-  m_ctrlGridReceive->SetName(wxT("vscprcveventgrid"));
-  m_ctrlGridReceive->SetBackgroundColour(wxColour(204, 244, 244));
-  m_ctrlGridReceive->SetFont(wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("")));
-  m_ctrlGridReceive->SetDefaultColSize(100);
-  m_ctrlGridReceive->SetDefaultRowSize(20);
-  m_ctrlGridReceive->SetColLabelSize(18);
-  m_ctrlGridReceive->SetRowLabelSize(30);
-  itemBoxSizer67->Add(m_ctrlGridReceive, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+    m_ctrlGridReceive = new wxGrid;
+    m_ctrlGridReceive->Create( m_pPanel, ID_VSCP_GRID_RECEIVE, wxDefaultPosition, wxSize(550, 300), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+    m_ctrlGridReceive->SetName(wxT("vscprcveventgrid"));
+    m_ctrlGridReceive->SetBackgroundColour(wxColour(204, 244, 244));
+    m_ctrlGridReceive->SetFont(wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("")));
+    m_ctrlGridReceive->SetDefaultColSize(100);
+    m_ctrlGridReceive->SetDefaultRowSize(20);
+    m_ctrlGridReceive->SetColLabelSize(18);
+    m_ctrlGridReceive->SetRowLabelSize(30);
+    itemBoxSizer67->Add(m_ctrlGridReceive, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
 
-  m_ctrlRcvHtmlInfo = new wxHtmlWindow;
-  m_ctrlRcvHtmlInfo->Create( m_pPanel, ID_HTMLWINDOW_RCVINFO, wxDefaultPosition, wxSize(300, 300), wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
-  itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
+    m_ctrlRcvHtmlInfo = new wxHtmlWindow;
+    m_ctrlRcvHtmlInfo->Create( m_pPanel, ID_HTMLWINDOW_RCVINFO, wxDefaultPosition, wxSize(300, 300), wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
+    itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
-  wxBoxSizer* itemBoxSizer70 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer65->Add(itemBoxSizer70, 0, wxGROW|wxALL, 2);
+    wxBoxSizer* itemBoxSizer70 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer65->Add(itemBoxSizer70, 0, wxGROW|wxALL, 2);
 
-  wxBoxSizer* itemBoxSizer71 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer70->Add(itemBoxSizer71, 0, wxGROW|wxALL, 0);
+    wxBoxSizer* itemBoxSizer71 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer70->Add(itemBoxSizer71, 0, wxGROW|wxALL, 0);
 
-  wxBoxSizer* itemBoxSizer72 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer71->Add(itemBoxSizer72, 0, wxALIGN_TOP|wxALL, 5);
+    wxBoxSizer* itemBoxSizer72 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer71->Add(itemBoxSizer72, 0, wxALIGN_TOP|wxALL, 5);
 
-  m_btnAdd = new wxBitmapButton;
-  m_btnAdd->Create( m_pPanel, ID_BITMAPBUTTON_TX_ADD, itemFrame1->GetBitmapResource(wxT("New1.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-  if (frmVSCPSession::ShowToolTips())
-    m_btnAdd->SetToolTip(_("Add transmission line"));
-  itemBoxSizer72->Add(m_btnAdd, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_btnAdd = new wxBitmapButton;
+    m_btnAdd->Create( m_pPanel, ID_BITMAPBUTTON_TX_ADD, itemFrame1->GetBitmapResource(wxT("New1.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    if (frmVSCPSession::ShowToolTips())
+        m_btnAdd->SetToolTip(_("Add transmission line"));
+    itemBoxSizer72->Add(m_btnAdd, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  m_btnEdit = new wxBitmapButton;
-  m_btnEdit->Create( m_pPanel, ID_BITMAPBUTTON_TX_EDIT, itemFrame1->GetBitmapResource(wxT("copy.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-  if (frmVSCPSession::ShowToolTips())
-    m_btnEdit->SetToolTip(_("Edit selected line"));
-  itemBoxSizer72->Add(m_btnEdit, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_btnEdit = new wxBitmapButton;
+    m_btnEdit->Create( m_pPanel, ID_BITMAPBUTTON_TX_EDIT, itemFrame1->GetBitmapResource(wxT("copy.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    if (frmVSCPSession::ShowToolTips())
+        m_btnEdit->SetToolTip(_("Edit selected line"));
+    itemBoxSizer72->Add(m_btnEdit, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  m_btnDelete = new wxBitmapButton;
-  m_btnDelete->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, itemFrame1->GetBitmapResource(wxT("delete.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-  if (frmVSCPSession::ShowToolTips())
-    m_btnDelete->SetToolTip(_("Delete selected line"));
-  itemBoxSizer72->Add(m_btnDelete, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_btnDelete = new wxBitmapButton;
+    m_btnDelete->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_DELETE, itemFrame1->GetBitmapResource(wxT("delete.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    if (frmVSCPSession::ShowToolTips())
+        m_btnDelete->SetToolTip(_("Delete selected line"));
+    itemBoxSizer72->Add(m_btnDelete, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  itemBoxSizer72->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 2);
+    itemBoxSizer72->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 2);
 
-  m_btnLoadSet = new wxBitmapButton;
-  m_btnLoadSet->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-  if (frmVSCPSession::ShowToolTips())
-    m_btnLoadSet->SetToolTip(_("Load transmission set from file..."));
-  itemBoxSizer72->Add(m_btnLoadSet, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_btnLoadSet = new wxBitmapButton;
+    m_btnLoadSet->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_LOAD, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    if (frmVSCPSession::ShowToolTips())
+        m_btnLoadSet->SetToolTip(_("Load transmission set from file..."));
+    itemBoxSizer72->Add(m_btnLoadSet, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  m_btnSaveSet = new wxBitmapButton;
-  m_btnSaveSet->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, itemFrame1->GetBitmapResource(wxT("filesaveas.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-  if (frmVSCPSession::ShowToolTips())
-    m_btnSaveSet->SetToolTip(_("Save transmission set to file..."));
-  itemBoxSizer72->Add(m_btnSaveSet, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_btnSaveSet = new wxBitmapButton;
+    m_btnSaveSet->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_TX_SAVE, itemFrame1->GetBitmapResource(wxT("filesaveas.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    if (frmVSCPSession::ShowToolTips())
+        m_btnSaveSet->SetToolTip(_("Save transmission set to file..."));
+    itemBoxSizer72->Add(m_btnSaveSet, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  wxBoxSizer* itemBoxSizer79 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer71->Add(itemBoxSizer79, 5, wxALIGN_TOP|wxALL, 0);
+    wxBoxSizer* itemBoxSizer79 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer71->Add(itemBoxSizer79, 5, wxALIGN_TOP|wxALL, 0);
 
-  m_ctrlGridTransmission = new wxGrid;
-  m_ctrlGridTransmission->Create( m_pPanel, ID_VSCP_GRID_TRANSMISSION, wxDefaultPosition, wxSize(700, 190), wxHSCROLL|wxVSCROLL );
-  if (frmVSCPSession::ShowToolTips())
-    m_ctrlGridTransmission->SetToolTip(_("Right click for menu / double click to transmit"));
-  m_ctrlGridTransmission->SetFont(wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("")));
-  m_ctrlGridTransmission->SetDefaultColSize(100);
-  m_ctrlGridTransmission->SetDefaultRowSize(18);
-  m_ctrlGridTransmission->SetColLabelSize(18);
-  m_ctrlGridTransmission->SetRowLabelSize(30);
-  m_ctrlGridTransmission->CreateGrid(1, 6, wxGrid::wxGridSelectRows);
-  itemBoxSizer79->Add(m_ctrlGridTransmission, 5, wxGROW|wxALL, 2);
+    m_ctrlGridTransmission = new wxGrid;
+    m_ctrlGridTransmission->Create( m_pPanel, ID_VSCP_GRID_TRANSMISSION, wxDefaultPosition, wxSize(700, 190), wxHSCROLL|wxVSCROLL );
+    if (frmVSCPSession::ShowToolTips())
+        m_ctrlGridTransmission->SetToolTip(_("Right click for menu / double click to transmit"));
+    m_ctrlGridTransmission->SetFont(wxFont(8, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("")));
+    m_ctrlGridTransmission->SetDefaultColSize(100);
+    m_ctrlGridTransmission->SetDefaultRowSize(18);
+    m_ctrlGridTransmission->SetColLabelSize(18);
+    m_ctrlGridTransmission->SetRowLabelSize(30);
+    m_ctrlGridTransmission->CreateGrid(1, 6, wxGrid::wxGridSelectRows);
+    itemBoxSizer79->Add(m_ctrlGridTransmission, 5, wxGROW|wxALL, 2);
 
-  wxBoxSizer* itemBoxSizer81 = new wxBoxSizer(wxVERTICAL);
-  itemBoxSizer71->Add(itemBoxSizer81, 0, wxALIGN_TOP|wxALL, 5);
+    wxBoxSizer* itemBoxSizer81 = new wxBoxSizer(wxVERTICAL);
+    itemBoxSizer71->Add(itemBoxSizer81, 0, wxALIGN_TOP|wxALL, 5);
 
-  m_btnSend = new wxBitmapButton;
-  m_btnSend->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, itemFrame1->GetBitmapResource(wxT("redo.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-  if (frmVSCPSession::ShowToolTips())
-    m_btnSend->SetToolTip(_("Transmit event from selected row(s)"));
-  itemBoxSizer81->Add(m_btnSend, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_btnSend = new wxBitmapButton;
+    m_btnSend->Create( m_pPanel, ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND, itemFrame1->GetBitmapResource(wxT("redo.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    if (frmVSCPSession::ShowToolTips())
+        m_btnSend->SetToolTip(_("Transmit event from selected row(s)"));
+    itemBoxSizer81->Add(m_btnSend, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  itemBoxSizer81->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 2);
+    itemBoxSizer81->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 2);
 
-  m_btnActivate = new wxBitmapButton;
-  m_btnActivate->Create( m_pPanel, ID_BITMAPBUTTON12, itemFrame1->GetBitmapResource(wxT("Print.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-  m_btnActivate->Show(false);
-  itemBoxSizer81->Add(m_btnActivate, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_btnActivate = new wxBitmapButton;
+    m_btnActivate->Create( m_pPanel, ID_BITMAPBUTTON12, itemFrame1->GetBitmapResource(wxT("Print.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    m_btnActivate->Show(false);
+    itemBoxSizer81->Add(m_btnActivate, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  m_btnClear = new wxBitmapButton;
-  m_btnClear->Create( m_pPanel, ID_BITMAPBUTTON13, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
-  m_btnClear->Show(false);
-  itemBoxSizer81->Add(m_btnClear, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
+    m_btnClear = new wxBitmapButton;
+    m_btnClear->Create( m_pPanel, ID_BITMAPBUTTON13, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
+    m_btnClear->Show(false);
+    itemBoxSizer81->Add(m_btnClear, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-  wxStatusBar* itemStatusBar86 = new wxStatusBar;
-  itemStatusBar86->Create( m_pPanel, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
-  itemStatusBar86->SetFieldsCount(2);
-  itemBoxSizer65->Add(itemStatusBar86, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
-
-    ////@end frmVSCPSession content construction
+    wxStatusBar* itemStatusBar86 = new wxStatusBar;
+    itemStatusBar86->Create( m_pPanel, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
+    itemStatusBar86->SetFieldsCount(2);
+    itemBoxSizer65->Add(itemStatusBar86, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     m_ctrlGridReceive->EnableEditing(false);
 
@@ -981,60 +970,49 @@ bool frmVSCPSession::ShowToolTips()
 wxBitmap frmVSCPSession::GetBitmapResource(const wxString& name)
 {
     // Bitmap retrieval
-    ////@begin frmVSCPSession bitmap retrieval
-  wxUnusedVar(name);
-  if (name == wxT("open.xpm"))
-  {
-    wxBitmap bitmap(open_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("save.xpm"))
-  {
-    wxBitmap bitmap(save_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("cut.xpm"))
-  {
-    wxBitmap bitmap(cut_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("copy.xpm"))
-  {
-    wxBitmap bitmap(copy_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("paste.xpm"))
-  {
-    wxBitmap bitmap(paste_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("Print.xpm"))
-  {
-    wxBitmap bitmap(print_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("New1.xpm"))
-  {
-    wxBitmap bitmap(new_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("delete.xpm"))
-  {
-    wxBitmap bitmap(delete_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("filesaveas.xpm"))
-  {
-    wxBitmap bitmap(filesaveas_xpm);
-    return bitmap;
-  }
-  else if (name == wxT("redo.xpm"))
-  {
-    wxBitmap bitmap(redo_xpm);
-    return bitmap;
-  }
-  return wxNullBitmap;
-    ////@end frmVSCPSession bitmap retrieval
+    wxUnusedVar(name);
+    if (name == wxT("open.xpm")) {
+        wxBitmap bitmap(open_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("save.xpm")) {
+        wxBitmap bitmap(save_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("cut.xpm")) {
+        wxBitmap bitmap(cut_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("copy.xpm")) {
+        wxBitmap bitmap(copy_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("paste.xpm")) {
+        wxBitmap bitmap(paste_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("Print.xpm")) {
+        wxBitmap bitmap(print_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("New1.xpm")) {
+        wxBitmap bitmap(new_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("delete.xpm")) {
+        wxBitmap bitmap(delete_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("filesaveas.xpm")) {
+        wxBitmap bitmap(filesaveas_xpm);
+        return bitmap;
+    }
+    else if (name == wxT("redo.xpm")) {
+        wxBitmap bitmap(redo_xpm);
+        return bitmap;
+    }
+
+    return wxNullBitmap;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1044,15 +1022,13 @@ wxBitmap frmVSCPSession::GetBitmapResource(const wxString& name)
 wxIcon frmVSCPSession::GetIconResource(const wxString& name)
 {
     // Icon retrieval
-    ////@begin frmVSCPSession icon retrieval
-  wxUnusedVar(name);
-  if (name == wxT("../../../docs/vscp/logo/fatbee_v2.ico"))
-  {
-    wxIcon icon(fatbee_v2_xpm);
-    return icon;
-  }
-  return wxNullIcon;
-    ////@end frmVSCPSession icon retrieval
+    wxUnusedVar(name);
+    if ( name == wxT("../../../docs/vscp/logo/fatbee_v2.ico") ) {
+        wxIcon icon(fatbee_v2_xpm);
+        return icon;
+    }
+
+    return wxNullIcon;
 }
 
 
@@ -1173,28 +1149,36 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
                         } else {
                             pObj->m_nDir = VSCP_EVENT_DIRECTION_TX;
                         }
-                    } else if (subchild->GetName() == wxT("time")) {
+                    } 
+                    else if (subchild->GetName() == wxT("time")) {
                         str = subchild->GetNodeContent();
                         pObj->m_time.ParseDateTime(str);
-                    } else if (subchild->GetName() == wxT("class")) {
+                    } 
+                    else if (subchild->GetName() == wxT("class")) {
                         str = subchild->GetNodeContent();
                         pObj->m_pEvent->vscp_class = vscp_readStringValue(str);
-                    } else if (subchild->GetName() == wxT("type")) {
+                    } 
+                    else if (subchild->GetName() == wxT("type")) {
                         str = subchild->GetNodeContent();
                         pObj->m_pEvent->vscp_type = vscp_readStringValue(str);
-                    } else if (subchild->GetName() == wxT("head")) {
+                    } 
+                    else if (subchild->GetName() == wxT("head")) {
                         str = subchild->GetNodeContent();
                         pObj->m_pEvent->head = (uint8_t) vscp_readStringValue(str);
-                    } else if (subchild->GetName() == wxT("guid")) {
+                    } 
+                    else if (subchild->GetName() == wxT("guid")) {
                         str = subchild->GetNodeContent();
                         vscp_getGuidFromString(pObj->m_pEvent, str);
-                    } else if (subchild->GetName() == wxT("data")) {
+                    } 
+                    else if (subchild->GetName() == wxT("data")) {
                         str = subchild->GetNodeContent();
                         vscp_setVscpDataFromString(pObj->m_pEvent, str);
-                    } else if (subchild->GetName() == wxT("timestamp")) {
+                    } 
+                    else if (subchild->GetName() == wxT("timestamp")) {
                         str = subchild->GetNodeContent();
                         pObj->m_pEvent->timestamp = vscp_readStringValue(str);
-                    } else if (subchild->GetName() == wxT("period")) {
+                    } 
+                    else if (subchild->GetName() == wxT("period")) {
                         pObj->m_wxStrNote = subchild->GetNodeContent();
                     }
 
@@ -1237,7 +1221,6 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
 void frmVSCPSession::SaveRXEventList(wxCommandEvent& event)
 {
     wxString str;
-    //wxStandardPaths stdpaths;
 
     // First find a path to save RX data to
     wxFileDialog dlg(this,
@@ -1355,7 +1338,8 @@ void frmVSCPSession::OnCellReceiveLeftClick(wxGridEvent& event)
 {
     if (ID_VSCP_GRID_TRANSMISSION == event.GetId()) {
         m_ctrlGridTransmission->SelectRow(event.GetRow());
-    } else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
+    } 
+    else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
         m_ctrlGridReceive->SelectRow(event.GetRow());
         VscpRXObj *pRecord = m_pgridTable->readEvent(event.GetRow());
         if (NULL != pRecord) {
@@ -1383,7 +1367,8 @@ void frmVSCPSession::fillRxHtmlInfo(VscpRXObj *pRecord)
     str += _("<small><font color=\"#993399\">");
     if (VSCP_EVENT_DIRECTION_RX == pRecord->m_nDir) {
         str += _("Received event");
-    } else {
+    } 
+    else {
         str += _("Transmitted event");
     }
     str += _("</font></small><br>");
@@ -1405,7 +1390,8 @@ void frmVSCPSession::fillRxHtmlInfo(VscpRXObj *pRecord)
                 strClass.c_str(),
                 pRecord->m_pEvent->vscp_class,
                 pRecord->m_pEvent->vscp_class);
-    } else {
+    } 
+    else {
         wrkstr = wxString::Format(_("<tt>0x%04X, %d</tt>"),
                 pRecord->m_pEvent->vscp_class,
                 pRecord->m_pEvent->vscp_class);
@@ -1428,7 +1414,8 @@ void frmVSCPSession::fillRxHtmlInfo(VscpRXObj *pRecord)
                 strType.c_str(),
                 pRecord->m_pEvent->vscp_type,
                 pRecord->m_pEvent->vscp_type);
-    } else {
+    } 
+    else {
         wrkstr = wxString::Format(_("<tt>0x%04X, %d</tt>"),
                 pRecord->m_pEvent->vscp_type,
                 pRecord->m_pEvent->vscp_type);
@@ -1495,7 +1482,8 @@ bool frmVSCPSession::addToTxGrid(VscpTXObj *pObj, int selrow)
     if (-1 == selrow) {
         m_ctrlGridTransmission->AppendRows(1);
         row = m_ctrlGridTransmission->GetNumberRows();
-    } else {
+    } 
+    else {
         row = selrow + 1;
     }
 
@@ -1576,7 +1564,8 @@ void frmVSCPSession::OnCellTxRightClick(wxGridEvent& event)
         //menu.Delete(Menu_Popup_ToBeDeleted);
         //menu.Check(Menu_Popup_ToBeChecked, true);
         //menu.Enable(Menu_Popup_ToBeGreyed, false);
-    } else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
+    } 
+    else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
         menu.Append(Menu_Popup_TX_Transmit, _T("Edit row..."));
         menu.Append(Menu_Popup_TX_Transmit, _T("Add note..."));
         menu.AppendSeparator();
@@ -1607,7 +1596,8 @@ void frmVSCPSession::OnCellTxLeftClick(wxGridEvent& event)
 {
     if (ID_VSCP_GRID_TRANSMISSION == event.GetId()) {
         m_ctrlGridTransmission->SelectRow(event.GetRow());
-    } else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
+    } 
+    else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
         m_ctrlGridReceive->SelectRow(event.GetRow());
     }
 
@@ -1624,7 +1614,8 @@ void frmVSCPSession::OnGridLeftDClick(wxGridEvent& event)
     if (ID_VSCP_GRID_TRANSMISSION == event.GetId()) {
         wxCommandEvent event; // Not uses so we dont care about actual data
         OnTxSendClick(event);
-    } else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
+    } 
+    else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
         ;
     }
 
@@ -1736,10 +1727,12 @@ void frmVSCPSession::OnTxSendClick(wxCommandEvent& event)
                 m_CtrlObject.m_mutexOutQueue.Unlock();
 
             }
-        } else {
+        } 
+        else {
             wxMessageBox(_("Must select one or more rows to transmit event(s)."));
         }
-    } else {
+    } 
+    else {
         wxMessageBox(_("Needs selected transmission row(s) to transmit event(s)."));
     }
 
@@ -1768,10 +1761,12 @@ void frmVSCPSession::OnTxAddClick(wxCommandEvent& event)
                 // Add to TX grid
                 addToTxGrid(pObj);
 
-            } else {
+            } 
+            else {
                 wxMessageBox(_("Failed to get data from dialog."));
             }
-        } else {
+        } 
+        else {
             wxMessageBox(_("Failed to allocate data."));
         }
     }
@@ -1809,7 +1804,8 @@ void frmVSCPSession::OnTxEditClick(wxCommandEvent& event)
 
             }
         }
-    } else {
+    } 
+    else {
         wxMessageBox(_("No row selected so unable to edit."));
     }
 
@@ -1838,10 +1834,12 @@ void frmVSCPSession::OnTxDeleteClick(wxCommandEvent& event)
                     m_CtrlObject.m_txList.DeleteNode(node);
                 }
             }
-        } else {
+        } 
+        else {
             wxMessageBox(_("At least one row must be selected."));
         }
-    } else {
+    } 
+    else {
         wxMessageBox(_("There must be rows to delete to use this function."));
     }
 
@@ -1923,40 +1921,47 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
                         } else {
                             pObj->m_bActive = false;
                         }
-                    } else if (subchild->GetName() == wxT("name")) {
+                    } 
+                    else if (subchild->GetName() == wxT("name")) {
                         pObj->m_wxStrName = subchild->GetNodeContent();
-                    } else if (subchild->GetName() == wxT("class")) {
+                    } 
+                    else if (subchild->GetName() == wxT("class")) {
                         str = subchild->GetNodeContent();
                         pObj->m_Event.vscp_class = vscp_readStringValue(str);
-                    } else if (subchild->GetName() == wxT("type")) {
+                    } 
+                    else if (subchild->GetName() == wxT("type")) {
                         str = subchild->GetNodeContent();
                         pObj->m_Event.vscp_type = vscp_readStringValue(str);
-                    } else if (subchild->GetName() == wxT("priority")) {
+                    } 
+                    else if (subchild->GetName() == wxT("priority")) {
                         str = subchild->GetNodeContent();
                         vscp_setVscpPriority(&pObj->m_Event, vscp_readStringValue(str));
-                    } else if (subchild->GetName() == wxT("guid")) {
-#if wxCHECK_VERSION(3,0,0)                        
-                        wxString property = subchild->GetAttribute(wxT("default"), wxT("false"));
-#else
-                        wxString property = subchild->GetPropVal(wxT("default"), wxT("false"));                        
-#endif                        
-                        if (property.IsSameAs(_("true"), false)) {
+                    } 
+                    else if (subchild->GetName() == wxT("guid")) {                        
+                        wxString attribute = subchild->GetAttribute(wxT("default"), wxT("false"));
+                   
+                        if (attribute.IsSameAs(_("true"), false)) {
                             pObj->m_bUseDefaultGUID = true;
-                        } else {
+                        } 
+                        else {
                             pObj->m_bUseDefaultGUID = false;
                         }
                         str = subchild->GetNodeContent();
                         vscp_getGuidFromString(&pObj->m_Event, str);
-                    } else if (subchild->GetName() == wxT("data")) {
+                    } 
+                    else if (subchild->GetName() == wxT("data")) {
                         str = subchild->GetNodeContent();
                         vscp_setVscpDataFromString(&pObj->m_Event, str);
-                    } else if (subchild->GetName() == wxT("count")) {
+                    } 
+                    else if (subchild->GetName() == wxT("count")) {
                         str = subchild->GetNodeContent();
                         pObj->m_count = vscp_readStringValue(str);
-                    } else if (subchild->GetName() == wxT("period")) {
+                    } 
+                    else if (subchild->GetName() == wxT("period")) {
                         str = subchild->GetNodeContent();
                         pObj->m_period = vscp_readStringValue(str);
-                    } else if (subchild->GetName() == wxT("trigger")) {
+                    } 
+                    else if (subchild->GetName() == wxT("trigger")) {
                         str = subchild->GetNodeContent();
                         pObj->m_trigger = vscp_readStringValue(str);
                     }
@@ -2025,7 +2030,8 @@ void frmVSCPSession::OnTxSaveClick(wxCommandEvent& event)
             pFileStream->Write("<active>", strlen("<active>"));
             if (obj->m_bActive) {
                 pFileStream->Write("true", strlen("true"));
-            } else {
+            } 
+            else {
                 pFileStream->Write("false", strlen("false"));
             }
 
@@ -2053,7 +2059,8 @@ void frmVSCPSession::OnTxSaveClick(wxCommandEvent& event)
             pFileStream->Write("<guid default=\"", strlen("<guid default=\""));
             if (obj->m_bUseDefaultGUID) {
                 pFileStream->Write("true", strlen("true"));
-            } else {
+            } 
+            else {
                 pFileStream->Write("false", strlen("false"));
             }
 
@@ -2135,7 +2142,8 @@ void frmVSCPSession::OnTxCloneRow(wxCommandEvent& event)
             if (pObj->m_Event.sizeData) {
                 pNewObj->m_Event.pdata = new unsigned char[ pObj->m_Event.sizeData ];
                 memcpy(pNewObj->m_Event.pdata, pObj->m_Event.pdata, pObj->m_Event.sizeData);
-            } else {
+            } 
+            else {
                 pNewObj->m_Event.pdata = NULL;
             }
 
@@ -2145,7 +2153,8 @@ void frmVSCPSession::OnTxCloneRow(wxCommandEvent& event)
             // Add to TX grid
             addToTxGrid(pNewObj);
         }
-    } else {
+    } 
+    else {
         wxMessageBox(_("No row selected so unable to clone any rows."));
     }
 
@@ -2835,7 +2844,8 @@ void *deviceThread::Entry()
         while (!TestDestroy() && !m_pCtrlObject->m_bQuit) {
             wxSleep(1);
         }
-    } else {
+    } 
+    else {
         if (NULL != m_pCtrlObject->m_proc_CanalBlockingReceive) {
 
             // * * * * Blocking version * * * *
@@ -2893,7 +2903,8 @@ void *deviceThread::Entry()
             m_pwriteThread->m_bQuit = true;
             m_preceiveThread->Wait();
             m_pwriteThread->Wait();
-        } else {
+        } 
+        else {
 
             // * * * * Non blocking version * * * *
 
@@ -2915,9 +2926,9 @@ void *deviceThread::Entry()
                     if (NULL != pEvent) {
 
                         // Convert CANAL message to VSCP event
-                        vscp_convertCanalToEvent(pEvent,
-                                &msg,
-                                m_pCtrlObject->m_GUID);
+                        vscp_convertCanalToEvent( pEvent,
+                                                    &msg,
+                                                    m_pCtrlObject->m_GUID);
 
                         VscpRXObj *pRecord = new VscpRXObj;
                         wxASSERT(NULL != pRecord);
@@ -2930,11 +2941,6 @@ void *deviceThread::Entry()
 
                         eventReceive.SetClientData(pRecord);
                         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventReceive);
-
-                        //} 
-                        //else {
-                        //  delete pRecord;
-                        //}
 
                     } // record exists
 
@@ -2972,7 +2978,8 @@ void *deviceThread::Entry()
 
                         // Remove the node
                         m_pCtrlObject->m_outQueue.DeleteNode(node);
-                    } else {
+                    } 
+                    else {
                         // Give it another try
                         m_pCtrlObject->m_semOutQue.Post();
                     }
@@ -3068,16 +3075,16 @@ void *deviceReceiveThread::Entry()
     while (!TestDestroy() && !m_bQuit) {
 
         if (CANAL_ERROR_SUCCESS ==
-                (rv = m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingReceive(
-                m_pMainThreadObj->m_pCtrlObject->m_openHandle, &msg, 500))) {
+                ( rv = m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingReceive(
+                                                         m_pMainThreadObj->m_pCtrlObject->m_openHandle, &msg, 500))) {
 
             vscpEvent *pEvent = new vscpEvent;
             if (NULL != pEvent) {
 
                 // Convert CANAL message to VSCP event
                 vscp_convertCanalToEvent(pEvent,
-                        &msg,
-                        m_pMainThreadObj->m_pCtrlObject->m_GUID);
+                                            &msg,
+                                            m_pMainThreadObj->m_pCtrlObject->m_GUID);
 
                 VscpRXObj *pRecord = new VscpRXObj;
                 if (NULL != pRecord) {
@@ -3089,10 +3096,10 @@ void *deviceReceiveThread::Entry()
                     pRecord->m_nDir = VSCP_EVENT_DIRECTION_RX;
 
                     eventReceive.SetClientData(pRecord);
-                    wxPostEvent(m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd,
-                            eventReceive);
+                    wxPostEvent( m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd,
+                                    eventReceive);
 
-                }// record exists
+                } // record exists
                 else {
                     delete pEvent;
                 }
@@ -3158,6 +3165,7 @@ void *deviceWriteThread::Entry()
     if (NULL == m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingSend) return NULL;
 
     while (!TestDestroy() && !m_bQuit) {
+
         if (wxSEMA_TIMEOUT == m_pMainThreadObj->m_pCtrlObject->m_semOutQue.WaitTimeout(500)) continue;
         m_pMainThreadObj->m_pCtrlObject->m_mutexOutQueue.Lock();
 
@@ -3167,7 +3175,10 @@ void *deviceWriteThread::Entry()
         canalMsg canalMsg;
         vscp_convertEventToCanal(&canalMsg, pEvent);
         if (CANAL_ERROR_SUCCESS ==
-                m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingSend(m_pMainThreadObj->m_pCtrlObject->m_openHandle, &canalMsg, 300)) {
+                m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingSend( 
+                                                        m_pMainThreadObj->m_pCtrlObject->m_openHandle, 
+                                                        &canalMsg, 
+                                                        300)) {
 
             VscpRXObj *pRecord = new VscpRXObj;
             if (NULL != pRecord) {
@@ -3179,14 +3190,15 @@ void *deviceWriteThread::Entry()
                 pRecord->m_nDir = VSCP_EVENT_DIRECTION_TX;
 
                 eventReceive.SetClientData(pRecord);
-                wxPostEvent(m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd,
-                        eventReceive);
+                wxPostEvent( m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd,
+                                eventReceive);
             } // record 
 
             // Remove the node
-            m_pMainThreadObj->m_pCtrlObject->m_outQueue.DeleteNode(node);
+            m_pMainThreadObj->m_pCtrlObject->m_outQueue.DeleteNode( node );
 
-        } else {
+        } 
+        else {
             // Give it another try
             m_pMainThreadObj->m_pCtrlObject->m_semOutQue.Post();
         }
@@ -3216,7 +3228,7 @@ void deviceWriteThread::OnExit()
 
 void frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked(wxHtmlLinkEvent& event)
 {
-    if (event.GetLinkInfo().GetHref().StartsWith(_("http://"))) {
+    if ( event.GetLinkInfo().GetHref().StartsWith(_("http://") ) ) {
         wxLaunchDefaultBrowser(event.GetLinkInfo().GetHref());
         event.Skip(false);
         return;
