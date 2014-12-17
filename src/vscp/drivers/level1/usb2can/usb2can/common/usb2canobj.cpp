@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: usb2canobj.cpp,v $                                       
-// $Date: 2005/06/09 06:47:44 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
 
 #include "stdio.h"
 #include "usb2canobj.h"
@@ -843,7 +839,7 @@ int CUsb2canObj::writeMsg( canalMsg *pMsg )
 			
 			SetEvent( m_transmitDataGetEvent );
      		
- return CANAL_ERROR_SUCCESS;
+    return CANAL_ERROR_SUCCESS;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -961,35 +957,32 @@ int CUsb2canObj::writeMsgBlocking( canalMsg *pMsg, ULONG Timeout )
 
 int CUsb2canObj::readMsg( canalMsg *pMsg )
 {
-  int rv = CANAL_ERROR_SUCCESS;
+    int rv = CANAL_ERROR_SUCCESS;
 
-  // Must be a message pointer
-  if ( NULL == pMsg)
+    // Must be a message pointer
+    if ( NULL == pMsg) {
 	  return  CANAL_ERROR_PARAMETER;	
+    }
 
-  // Must be open
-  if ( !m_bOpen )
+    // Must be open
+    if ( !m_bOpen ) {
 	  return  CANAL_ERROR_NOT_OPEN;
+    }
 
-  if( m_receiveList.nCount == 0)
-	  return  CANAL_ERROR_FIFO_EMPTY;
+    if ( 0 == m_receiveList.nCount ) { 
+      return  CANAL_ERROR_FIFO_EMPTY;
+    }
 
-       memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );
+    memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );
 
-	   LOCK_MUTEX( m_receiveMutex );
+    LOCK_MUTEX( m_receiveMutex );
+    dll_removeNode( &m_receiveList, m_receiveList.pHead );
+    if ( m_receiveList.nCount == 0 ) {
+        ResetEvent( m_receiveDataEvent);		
+    }
+    UNLOCK_MUTEX( m_receiveMutex );
 
-	   dll_removeNode( &m_receiveList, m_receiveList.pHead );
-	   if(m_receiveList.nCount == 0)
-	   {
-		   ResetEvent( m_receiveDataEvent);		
-	   }
-       UNLOCK_MUTEX( m_receiveMutex );
-
-	   
-
-       rv = CANAL_ERROR_SUCCESS;	
-
- return rv;
+    return rv;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1204,8 +1197,6 @@ Bits from 16-31 are reserved, bits from 0-15 are user defined and can be defined
 
 int CUsb2canObj::getStatus( PCANALSTATUS pCanalStatus )
 {
-   //canalStatus CanalStatus;
-
 	// Must be a message pointer
 	if ( NULL == pCanalStatus)
 		return CANAL_ERROR_PARAMETER;	
@@ -1214,15 +1205,23 @@ int CUsb2canObj::getStatus( PCANALSTATUS pCanalStatus )
     if ( !m_bOpen )
 		return CANAL_ERROR_NOT_OPEN;
 
-	//LOCK_MUTEX( m_commandMutex );
-
-    if(! USB2CAN_status(pCanalStatus/*&CanalStatus*/) )
+    if ( !USB2CAN_status( pCanalStatus ) ) {
         return  CANAL_ERROR_HARDWARE;
-
-	//UNLOCK_MUTEX( m_commandMutex );
+    }
 
 	return CANAL_ERROR_SUCCESS;
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+// CanalGetDriverInfo
+//
+
+const char * CUsb2canObj::CanalGetDriverInfo( void )
+{
+    return NULL;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendCommandWait( )

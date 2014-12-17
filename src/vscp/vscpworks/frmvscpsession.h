@@ -65,6 +65,9 @@
 #include "../common/canaldlldef.h"
 #include "../common/canalsuperwrapper.h"
 
+#define STATUSBAR_STATUS_LEFT       0
+#define STATUSBAR_STATUS_RIGHT      1
+
 // List with transmission objects
 WX_DECLARE_LIST ( VscpTXObj, TXLIST );
 
@@ -557,6 +560,9 @@ public:
 	// Connected to remote host
 	void eventConnected( wxCommandEvent &event );
 
+    // Status change for statusbar
+    void eventStatusChange( wxCommandEvent &event );
+
     /*!
         Add transmission object to the transmission list
         @param pObj Pointer to a transmission object.
@@ -725,7 +731,7 @@ public:
 	// Device Workerthread
 	deviceThread * m_pDeviceWorkerThread;
   
-  
+    wxStatusBar* m_pitemStatusBar;
     wxToggleButton* m_BtnActivateInterface;
     wxPanel* m_pPanel;
     wxGrid* m_ctrlGridReceive;
@@ -739,6 +745,8 @@ public:
     wxBitmapButton* m_btnSend;
     wxBitmapButton* m_btnActivate;
     wxBitmapButton* m_btnClear;
+
+
     /// Control identifiers
     enum {
         ID_FRMVSCPSESSION = 13000,

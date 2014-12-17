@@ -83,6 +83,7 @@ DEFINE_EVENT_TYPE(wxVSCP_CTRL_LOST_EVENT)
 DEFINE_EVENT_TYPE(wxVSCP_RCV_PREP_CONNECT_EVENT)
 DEFINE_EVENT_TYPE(wxVSCP_RCV_CONNECTED_EVENT)
 DEFINE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT)
+DEFINE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT)
 
 extern appConfiguration g_Config;   // Global configuration for VSCP
 
@@ -157,6 +158,7 @@ BEGIN_EVENT_TABLE(frmVSCPSession, wxFrame)
     EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_PREP_CONNECT_EVENT, frmVSCPSession::eventPrepareConnect)
     EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_CONNECTED_EVENT, frmVSCPSession::eventConnected)
     EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_RCV_LOST_EVENT, frmVSCPSession::eventLostRcvIf)
+    EVT_COMMAND(ID_FRMVSCPSESSION, wxVSCP_STATUS_CHANGE_EVENT, frmVSCPSession::eventStatusChange )
 
 END_EVENT_TABLE()
 
@@ -639,6 +641,15 @@ void frmVSCPSession::CreateControls()
 {   
     frmVSCPSession* itemFrame1 = this;
 
+    // Statusbar
+    m_pitemStatusBar = new wxStatusBar;
+    m_pitemStatusBar->Create( itemFrame1, 
+                                ID_STATUSBAR, 
+                                wxST_SIZEGRIP | wxNO_BORDER );
+    m_pitemStatusBar->SetFieldsCount(2);
+    itemFrame1->SetStatusBar( m_pitemStatusBar );
+
+    // Menu
     wxMenuBar* menuBar = new wxMenuBar;
     wxMenu* itemMenu16 = new wxMenu;
     itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_MSG_LIST, _("Load VSCP events from file..."), wxEmptyString, wxITEM_NORMAL);
@@ -2270,7 +2281,7 @@ void frmVSCPSession::eventPrepareConnect(wxCommandEvent &event)
 void frmVSCPSession::eventConnected(wxCommandEvent &event)
 {
     event.SetInt(1); // Avoid warning
-    if (m_BtnActivateInterface->GetValue()) {
+    if ( m_BtnActivateInterface->GetValue() ) {
 		// show progress
     }
 }
@@ -2298,6 +2309,26 @@ void frmVSCPSession::eventLostRcvIf(wxCommandEvent &event)
     event.SetInt(1); // Avoid warning
     if (m_BtnActivateInterface->GetValue()) {
         stopWorkerThreads();
+    }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// eventStatusChange
+//
+
+void frmVSCPSession::eventStatusChange( wxCommandEvent &evt )
+{
+    switch (evt.GetInt() ) { 
+
+        case STATUSBAR_STATUS_RIGHT:
+            m_pitemStatusBar->SetStatusText( evt.GetString(), STATUSBAR_STATUS_RIGHT );   
+            break;
+
+        case STATUSBAR_STATUS_LEFT:
+        default:
+            m_pitemStatusBar->SetStatusText( evt.GetString(), STATUSBAR_STATUS_LEFT );   
+            break;
     }
 }
 
@@ -2429,12 +2460,17 @@ void *TXWorkerThread::Entry()
     wxCommandEvent eventConnectionLost(wxVSCP_CTRL_LOST_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventPrepConnection(wxVSCP_RCV_PREP_CONNECT_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventConnected(wxVSCP_RCV_CONNECTED_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    wxCommandEvent eventStatus(wxVSCP_STATUS_CHANGE_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    eventStatus.SetInt( STATUSBAR_STATUS_LEFT );
 
     /// TCP/IP Control
     VscpRemoteTcpIf tcpifControl;
 
     // Must be a valid control object pointer
     if (NULL == m_pCtrlObject) return NULL;
+
+    eventStatus.SetString("TCP/IP: (TX) Open connection in progress.");
+    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventPrepConnection);
 
@@ -2446,10 +2482,17 @@ void *TXWorkerThread::Entry()
         m_pCtrlObject->m_errorControl = VSCP_SESSION_ERROR_UNABLE_TO_CONNECT;
         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
 		//wxQueueEvent( m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost );
+        eventStatus.SetString("TCP/IP: Failed to open connection.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
+        eventStatus.SetString("TCP/IP: (TX) Failed to open connection.");
+    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
     wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnected);
+
+    eventStatus.SetString("TCP/IP: (TX) Connection open.");
+    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Get channel ID
     if (CANAL_ERROR_SUCCESS !=
@@ -2530,9 +2573,14 @@ void *RXWorkerThread::Entry()
     VscpRemoteTcpIf tcpifReceive;
     wxCommandEvent eventReceive(wxVSCP_IN_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventConnectionLost(wxVSCP_RCV_LOST_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    wxCommandEvent eventStatus(wxVSCP_STATUS_CHANGE_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    eventStatus.SetInt( STATUSBAR_STATUS_RIGHT );
 
     // Must be a valid control object pointer
     if (NULL == m_pCtrlObject) return NULL;
+
+    eventStatus.SetString("TCP/IP: (RX) Open connection in progress.");
+    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Connect to the server with the control interface
     if (VSCP_ERROR_SUCCESS != tcpifReceive.doCmdOpen(m_pCtrlObject->m_ifVSCP.m_strHost,
@@ -2541,8 +2589,13 @@ void *RXWorkerThread::Entry()
         ::wxGetApp().logMsg(_("TCP/IP Receive thread - Unable to connect to server."), DAEMON_LOGMSG_CRITICAL);
         m_pCtrlObject->m_errorReceive = VSCP_SESSION_ERROR_UNABLE_TO_CONNECT;
         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("TCP/IP: (RX) Failed to open connection.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
+
+    eventStatus.SetString("TCP/IP: (RX) Connection open.");
+    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Find the channel id
     tcpifReceive.doCmdGetChannelID((uint32_t *) & m_pCtrlObject->m_rxChannelID);
@@ -2665,14 +2718,21 @@ void *deviceThread::Entry()
 {
     wxCommandEvent eventReceive(wxVSCP_IN_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventConnectionLost(wxVSCP_RCV_LOST_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
-
+    wxCommandEvent eventStatus(wxVSCP_STATUS_CHANGE_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    eventStatus.SetInt( STATUSBAR_STATUS_LEFT );
 
     // Must have a valid pointer to the control object
     if (NULL == m_pCtrlObject) return NULL;
 
+    eventStatus.SetString("CANAL: Loading driver.");
+    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
+
     // Load dynamic library
     if (!m_wxdll.Load(m_pCtrlObject->m_ifCANAL.m_strPath, wxDL_LAZY)) {
-        ::wxGetApp().logMsg(_T("vscpd: Unable to load dynamic library."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to load dynamic library."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to load dynamic library.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2682,7 +2742,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalOpen =
             (LPFNDLL_CANALOPEN) m_wxdll.GetSymbol(_T("CanalOpen")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalOpen."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalOpen."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalOpen.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2690,7 +2753,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalClose =
             (LPFNDLL_CANALCLOSE) m_wxdll.GetSymbol(_T("CanalClose")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalClose."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalClose."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalClose.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2698,7 +2764,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalGetLevel =
             (LPFNDLL_CANALGETLEVEL) m_wxdll.GetSymbol(_T("CanalGetLevel")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalGetLevel."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalGetLevel."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalGetLevel.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2706,7 +2775,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalSend =
             (LPFNDLL_CANALSEND) m_wxdll.GetSymbol(_T("CanalSend")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalSend."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalSend."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalSend.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2714,7 +2786,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalDataAvailable =
             (LPFNDLL_CANALDATAAVAILABLE) m_wxdll.GetSymbol(_T("CanalDataAvailable")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalDataAvailable."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalDataAvailable."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalDataAvailable.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2723,7 +2798,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalReceive =
             (LPFNDLL_CANALRECEIVE) m_wxdll.GetSymbol(_T("CanalReceive")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalReceive."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalReceive."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalReceive.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2731,7 +2809,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalGetStatus =
             (LPFNDLL_CANALGETSTATUS) m_wxdll.GetSymbol(_T("CanalGetStatus")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalGetStatus."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalGetStatus."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalGetStatus.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2739,7 +2820,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalGetStatistics =
             (LPFNDLL_CANALGETSTATISTICS) m_wxdll.GetSymbol(_T("CanalGetStatistics")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalGetStatistics."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalGetStatistics."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalGetStatistics.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2747,7 +2831,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalSetFilter =
             (LPFNDLL_CANALSETFILTER) m_wxdll.GetSymbol(_T("CanalSetFilter")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalSetFilter."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalSetFilter."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalSetFilter.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2755,7 +2842,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalSetMask =
             (LPFNDLL_CANALSETMASK) m_wxdll.GetSymbol(_T("CanalSetMask")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalSetMask."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalSetMask."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalSetMask.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2763,7 +2853,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalGetVersion =
             (LPFNDLL_CANALGETVERSION) m_wxdll.GetSymbol(_T("CanalGetVersion")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalGetVersion."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalGetVersion."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalGetVersion.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2771,7 +2864,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalGetDllVersion =
             (LPFNDLL_CANALGETDLLVERSION) m_wxdll.GetSymbol(_T("CanalGetDllVersion")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalGetDllVersion."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalGetDllVersion."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalGetDllVersion.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2779,7 +2875,10 @@ void *deviceThread::Entry()
     if (NULL == (m_pCtrlObject->m_proc_CanalGetVendorString =
             (LPFNDLL_CANALGETVENDORSTRING) m_wxdll.GetSymbol(_T("CanalGetVendorString")))) {
         // Free the library
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalGetVendorString."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalGetVendorString."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalGetVendorString.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2795,30 +2894,39 @@ void *deviceThread::Entry()
     // * * * * CANAL BLOCKING SEND * * * *
     if (NULL == (m_pCtrlObject->m_proc_CanalBlockingSend =
             (LPFNDLL_CANALBLOCKINGSEND) m_wxdll.GetSymbol(_T("CanalBlockingSend")))) {
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalBlockingSend. Probably Generation 1 driver."),
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalBlockingSend. Probably Generation 1 driver."),
                 DAEMON_LOGMSG_CRITICAL);
         m_pCtrlObject->m_proc_CanalBlockingSend = NULL;
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalBlockingSend. Probably Generation 1 driver.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
     }
 
     // * * * * CANAL BLOCKING RECEIVE * * * *
     if (NULL == (m_pCtrlObject->m_proc_CanalBlockingReceive =
             (LPFNDLL_CANALBLOCKINGRECEIVE) m_wxdll.GetSymbol(_T("CanalBlockingReceive")))) {
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalBlockingReceive. Probably Generation 1 driver."),
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalBlockingReceive. Probably Generation 1 driver."),
                 DAEMON_LOGMSG_CRITICAL);
         m_pCtrlObject->m_proc_CanalBlockingReceive = NULL;
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalBlockingReceive. Probably Generation 1 driver.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
     }
 
     // * * * * CANAL GET DRIVER INFO * * * *
     if (NULL == (m_pCtrlObject->m_proc_CanalGetdriverInfo =
             (LPFNDLL_CANALGETDRIVERINFO) m_wxdll.GetSymbol(_T("CanalGetDriverInfo")))) {
-        ::wxGetApp().logMsg(_T("Unable to get dl entry for CanalGetDriverInfo. Probably Generation 1 driver."),
+        ::wxGetApp().logMsg(_T("CANAL: Unable to get dl entry for CanalGetDriverInfo. Probably Generation 1 driver."),
                 DAEMON_LOGMSG_CRITICAL);
         m_pCtrlObject->m_proc_CanalGetdriverInfo = NULL;
+        eventStatus.SetString("CANAL: Unable to get dl entry for CanalGetDriverInfo. Probably Generation 1 driver.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
     }
 
     //
     // =====================================================================================
     //
+
+    eventStatus.SetString("CANAL: Driver open in progress.");
+    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Open the device
     m_pCtrlObject->m_openHandle =
@@ -2829,9 +2937,15 @@ void *deviceThread::Entry()
 
     // Check if the driver opened properly
     if (0 == m_pCtrlObject->m_openHandle) {
-        ::wxGetApp().logMsg(_T("Driver failed to open."), DAEMON_LOGMSG_CRITICAL);
+        ::wxGetApp().logMsg(_T("CANAL: Faild to open driver."), DAEMON_LOGMSG_CRITICAL);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
+        eventStatus.SetString("CANAL: Faild to open driver.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
+
+    eventStatus.SetString("CANAL: Driver open OK.");
+    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Get Driver Level
     m_pCtrlObject->m_driverLevel = m_pCtrlObject->m_proc_CanalGetLevel(m_pCtrlObject->m_openHandle);
@@ -2846,6 +2960,7 @@ void *deviceThread::Entry()
         }
     } 
     else {
+
         if (NULL != m_pCtrlObject->m_proc_CanalBlockingReceive) {
 
             // * * * * Blocking version * * * *
@@ -2907,6 +3022,10 @@ void *deviceThread::Entry()
         else {
 
             // * * * * Non blocking version * * * *
+
+            eventStatus.SetInt( STATUSBAR_STATUS_RIGHT );
+            eventStatus.SetString("CANAL: Non blocking driver used.");
+            wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
             bool bActivity;
             while (!TestDestroy() && !m_pCtrlObject->m_bQuit) {
@@ -3061,8 +3180,9 @@ deviceReceiveThread::~deviceReceiveThread()
 
 void *deviceReceiveThread::Entry()
 {
-    wxCommandEvent eventReceive(wxVSCP_IN_EVENT,
-            frmVSCPSession::ID_FRMVSCPSESSION);
+    wxCommandEvent eventReceive(wxVSCP_IN_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    wxCommandEvent eventStatus(wxVSCP_STATUS_CHANGE_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    eventStatus.SetInt( STATUSBAR_STATUS_LEFT );
     canalMsg msg;
 
     // Must be a valid main object pointer
@@ -3070,6 +3190,9 @@ void *deviceReceiveThread::Entry()
 
     // Blocking receive method must have been found
     if (NULL == m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingReceive) return NULL;
+
+    eventStatus.SetString("CANAL: (RX) Open and working.");
+    wxPostEvent(m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     int rv;
     while (!TestDestroy() && !m_bQuit) {
@@ -3107,6 +3230,9 @@ void *deviceReceiveThread::Entry()
             }
         }
     }
+
+    eventStatus.SetString("CANAL: (RX) Terminated.");
+    wxPostEvent(m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     return NULL;
 }
@@ -3155,6 +3281,8 @@ deviceWriteThread::~deviceWriteThread()
 void *deviceWriteThread::Entry()
 {
     wxCommandEvent eventReceive(wxVSCP_IN_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    wxCommandEvent eventStatus(wxVSCP_STATUS_CHANGE_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
+    eventStatus.SetInt( STATUSBAR_STATUS_RIGHT );
     eventOutQueue::compatibility_iterator node;
     vscpEvent *pEvent;
 
@@ -3163,6 +3291,9 @@ void *deviceWriteThread::Entry()
 
     // Blocking send method must have been found
     if (NULL == m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingSend) return NULL;
+
+    eventStatus.SetString("CANAL: (TX) Open and working.");
+    wxPostEvent(m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     while (!TestDestroy() && !m_bQuit) {
 
@@ -3206,6 +3337,9 @@ void *deviceWriteThread::Entry()
         m_pMainThreadObj->m_pCtrlObject->m_mutexOutQueue.Unlock();
 
     } // while
+
+    eventStatus.SetString("CANAL: (TX) Terminated.");
+    wxPostEvent(m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     return NULL;
 }

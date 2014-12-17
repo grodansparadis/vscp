@@ -8,14 +8,17 @@ EXPORTS
 	CanalClose @2
 	CanalGetLevel @3
 	CanalSend @4
-	CanalReceive @5
-	CanalDataAvailable @6
-	CanalGetStatus @7
-	CanalGetStatistics @8
-	CanalSetFilter @9
-	CanalSetMask @10
-	CanalSetBaudrate @11
-	CanalGetVersion @12
-	CanalGetDllVersion @13
-	CanalGetVendorString @14
-
+	CanalBlockingSend @5
+	CanalReceive @6
+	CanalBlockingReceive @7
+	CanalDataAvailable @8
+	CanalGetStatus @9
+	CanalGetStatistics @10
+	CanalSetFilter @11
+	CanalSetMask @12
+	CanalSetBaudrate @13
+	CanalGetVersion @14
+	CanalGetDllVersion @15
+	CanalGetVendorString @16
+	CanalGetDriverInfo @17
+	getReceiveHandle @18

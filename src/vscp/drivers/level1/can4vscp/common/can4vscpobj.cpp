@@ -91,6 +91,7 @@ CCan4VSCPObj::CCan4VSCPObj()
     m_mask = 0;
 
     m_bRun = false;
+    m_bOpen = false;
 
     m_RxMsgState = INCOMING_STATE_NONE;
     m_RxMsgSubState = INCOMING_SUBSTATE_NONE;
@@ -102,11 +103,21 @@ CCan4VSCPObj::CCan4VSCPObj()
     m_hTreadReceive = 0;
     m_hTreadTransmit = 0;
 
+    m_receiveDataEvent = NULL;
+
+    m_transmitDataPutEvent = NULL;
+	m_transmitDataGetEvent = NULL;
+
 	// Create the device AND LIST access mutexes
     m_can4vscpMutex = CreateMutex( NULL, true, CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX );
     m_receiveMutex = CreateMutex( NULL, true, CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX );
     m_transmitMutex = CreateMutex( NULL, true, CANAL_DLL_CAN4VSCPDRV_TRANSMIT_MUTEX );
     m_responseMutex = CreateMutex( NULL, true, CANAL_DLL_CAN4VSCPDRV_RESPONSE_MUTEX );
+
+    // Events
+	m_receiveDataEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+	m_transmitDataPutEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
+	m_transmitDataGetEvent = CreateEvent( NULL, TRUE, FALSE, NULL );
 
 #else
 	
@@ -148,6 +159,11 @@ CCan4VSCPObj::~CCan4VSCPObj()
 	if ( NULL != m_receiveMutex ) CloseHandle( m_receiveMutex );
 	if ( NULL != m_transmitMutex ) CloseHandle( m_transmitMutex );
 	if ( NULL != m_responseMutex ) CloseHandle( m_responseMutex );
+
+    // events
+    if ( NULL != m_receiveDataEvent ) CloseHandle( m_receiveDataEvent );
+	if ( NULL != m_transmitDataPutEvent ) CloseHandle( m_transmitDataPutEvent );
+	if ( NULL != m_transmitDataGetEvent ) CloseHandle( m_transmitDataGetEvent );
 
 #else
 
@@ -195,7 +211,7 @@ CCan4VSCPObj::~CCan4VSCPObj()
 //  0  - Switch to CAN4VSCP mode is carried out on startup
 //  1  - No switch to CAN4VSCP mode
 
-bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
+int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 {
 	char szDrvParams[ MAX_PATH ];
 	char *p;
@@ -223,7 +239,7 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 	m_stat.cntOverruns = 0;
 
 	// if open we have noting to do
-	if ( m_bRun ) return true;
+	if ( m_bRun ) return CANAL_ERROR_SUCCESS;
 
 #ifdef DEBUG_CAN4VSCP_RECEIVE
 	m_flog = fopen( "c:\\can4vscp.txt", "w" );
@@ -245,53 +261,19 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 						NOPARITY,
 						ONESTOPBIT,
 						HANDSHAKE_NONE ) ) {
-		return false;
+		return CANAL_ERROR_INIT_FAIL;
 	}
 
     // Set CAN4VSCP mode in case of device in verbose mode
-    if ( !( flags & CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE ) ) {
-        
-        //m_com.writebuf( (unsigned char *)"\r\n", 2 );                   // In case of garbage in queue
-        //m_com.writebuf( (unsigned char *)"SET MODE CAN4VSCP\r\n", 15 ); // set CAN4VSCP mode
+    if ( !( flags & CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE ) ) {      
+        m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // In case of garbage in queue
+        SLEEP( 200 );
+        m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // set CAN4VSCP mode
     }
 
     // Check that we have a CAN4VSCP device at the other end 
     // ( give it four tries before giving up )
     bool bFound = false;
-
-    /*
-    for ( int i=0; i<4; i++ ) {
-        uint8_t saveseq = m_sequencyno;             // Save the sequency ordinal
-        sendNoopFrame();
-        uint32_t start =  getClockMilliseconds();
-        while ( getClockMilliseconds() < ( start + 1000 ) ) {
-            
-            readSerialData();                       // Read incomming data
-            
-            if ( cnt = dll_getNodeCount( &m_responseList ) ) {
-                struct dllnode *pNode;
-                pNode = m_responseList.pHead;                
-                if ( NULL == pNode ) continue;      // If there is no head there is nothing there
-  
-                while ( pNode != NULL ) {
-                    cmdResponseMsg *pMsg = (cmdResponseMsg *)pNode->pObject;
-                    if ( ( NULL != pMsg ) && 
-                            (pMsg->sizePayload) &&  
-                            (saveseq == pMsg->seq) && 
-                            (VSCP_DRVER_OPERATION_ACK == pMsg->op ) ) {
-                        bFound = true;
-                        break;
-                    }
-                    pNode = pNode->pNext;
-                }
-            }
-            else {
-                SLEEP( 100 );   
-            }
-        }
-    }*/
-
-    
 
 	// Run run run ..... 
 	m_bRun = true;
@@ -309,7 +291,7 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 										&threadId ) ) ) { 
 		// Failure
 		close();
-		return false;
+		return CANAL_ERROR_INIT_FAIL;
 	}
 
 	// Start read thread 
@@ -322,7 +304,7 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 										&threadId ) ) ) { 
 		// Failure
 		close();
-		return  false;
+		return  CANAL_ERROR_INIT_FAIL;
 	}
 	
 	// Release the mutex
@@ -375,18 +357,20 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 #endif	
 
 
-    for ( int i=0; i<4; i++ ) {
+    for ( int i=0; i<3; i++ ) {
 
         saveseq = m_sequencyno;         // Save the sequency ordinal
         if ( sendCommandWait( VSCP_DRIVER_COMMAND_NOOP, 
                                 NULL, 
                                 0,
                                 &Msg, 
-                                1000 ) ) {
+                                500 ) ) {
 
             bFound = true;
 
         }
+
+        SLEEP( 100 );
 
     }
 
@@ -394,9 +378,10 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     if (!bFound) {
         // Failure
 		close();
-		return false;
+		return CANAL_ERROR_INIT_FAIL;
     }
 
+    m_bOpen = true;
 
     // Set interface in requested mode.
     switch( flags & 3 ) {
@@ -409,7 +394,7 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                         1000 ) ) {
                 // Failure
 		        close();
-		        return false;
+		        return CANAL_ERROR_INIT_FAIL;
             }
             break;
 
@@ -421,7 +406,7 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                         1000 ) ) {
                 // Failure
 		        close();
-		        return false;
+		        return CANAL_ERROR_INIT_FAIL;
             }
             break;
 
@@ -434,12 +419,12 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
                                         1000 ) ) {
                 // Failure
 		        close();
-		        return false;
+		        return CANAL_ERROR_INIT_FAIL;
             }
             break;
     }
 
-	return true;
+	return CANAL_ERROR_SUCCESS;
 }
 
  
@@ -447,7 +432,7 @@ bool CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 // close
 //
 
-bool CCan4VSCPObj::close( void )
+int CCan4VSCPObj::close( void )
 {	
     cmdResponseMsg Msg;
     sendCommandWait( VSCP_DRIVER_COMMAND_CLOSE, 
@@ -457,9 +442,10 @@ bool CCan4VSCPObj::close( void )
                                         1000 );
 
 	// Do nothing if already terminated
-	if ( !m_bRun ) return false;
+	if ( !m_bRun ) return CANAL_ERROR_SUCCESS;
 	
 	m_bRun = false;
+    m_bOpen = false;
 
 #ifdef DEBUG_CAN4VSCP_RECEIVE
 	fclose( m_flog );
@@ -472,6 +458,10 @@ bool CCan4VSCPObj::close( void )
 	if ( m_com.isOpen() ) {
 		m_com.close();
 	}
+
+    SetEvent( m_receiveDataEvent );
+	SetEvent( m_transmitDataPutEvent );
+	SetEvent( m_transmitDataGetEvent );
 	
 	// terminate the worker thread 
 #ifdef WIN32	
@@ -498,7 +488,7 @@ bool CCan4VSCPObj::close( void )
 	
 #endif
 
-	return true;
+	return CANAL_ERROR_SUCCESS;
 }
 
 
@@ -533,10 +523,10 @@ bool CCan4VSCPObj::doFilter( canalMsg *pcanalMsg )
 // setFilter
 //
 
-bool CCan4VSCPObj::setFilter( unsigned long filter )
+int CCan4VSCPObj::setFilter( unsigned long filter )
 {
 	m_filter = filter;
-	return true;
+	return CANAL_ERROR_SUCCESS;
 }
 
 
@@ -544,10 +534,10 @@ bool CCan4VSCPObj::setFilter( unsigned long filter )
 // setMask
 //
 
-bool CCan4VSCPObj::setMask( unsigned long mask )
+int CCan4VSCPObj::setMask( unsigned long mask )
 {
 	m_mask = mask;
-	return true;
+	return CANAL_ERROR_SUCCESS;
 }
 
 
@@ -556,45 +546,108 @@ bool CCan4VSCPObj::setMask( unsigned long mask )
 // writeMsg
 //
 
-bool CCan4VSCPObj::writeMsg( canalMsg *pMsg )
+int CCan4VSCPObj::writeMsg( canalMsg *pMsg )
 {	
-	bool rv = false;
+	int rv = CANAL_ERROR_SUCCESS;
+
+    // Must be a message pointer
+	if ( NULL == pMsg ) {
+		return CANAL_ERROR_PARAMETER;	
+    }
+
+	// Must be open
+    if ( !m_bOpen ) {
+		return CANAL_ERROR_NOT_OPEN;
+    }
+
+	// Must be room for the message
+    if ( m_transmitList.nCount > CAN4VSCP_MAX_SNDMSG ) {
+        return CANAL_ERROR_FIFO_FULL;
+    }
+
+    dllnode *pNode = new dllnode;			
+	if ( NULL == pNode ) {
+        return CANAL_ERROR_MEMORY;
+    }
+						
+	canalMsg *pcanalMsg = new canalMsg;
+    if ( NULL == pcanalMsg ) {		 
+        delete pNode;            			
+        return CANAL_ERROR_MEMORY;
+    }
+
+    pNode->pObject = pcanalMsg;
+    pNode->pKey = NULL;
+    pNode->pstrKey = NULL;
+
+    pNode->pObject = pcanalMsg;
+    pNode->pKey = NULL;
+    pNode->pstrKey = NULL;
+
+    memcpy( pcanalMsg, pMsg, sizeof( canalMsg ));
+
+    LOCK_MUTEX( m_transmitMutex );
+    dll_addNode( &m_transmitList, pNode );	
+    UNLOCK_MUTEX( m_transmitMutex );
+			
+    SetEvent( m_transmitDataGetEvent );
 	
-	if ( NULL != pMsg ) {
+    return rv;		
+}
 
-		// Must be room for the message
-		if ( m_transmitList.nCount < CAN4VSCP_MAX_SNDMSG ) {
 
-			dllnode *pNode = new dllnode;
-			
-			if ( NULL != pNode ) {
-			
-				canalMsg *pcanalMsg = new canalMsg;
+//////////////////////////////////////////////////////////////////////
+// writeMsg blocking
+//
 
-				pNode->pObject = pcanalMsg;
-				pNode->pKey = NULL;
-				pNode->pstrKey = NULL;
+int CCan4VSCPObj::writeMsgBlocking( canalMsg *pMsg, uint32_t Timeout )
+{
+    DWORD res;
 
-				if ( NULL != pcanalMsg ) {
-					memcpy( pcanalMsg, pMsg, sizeof( canalMsg ) );
-				}
+    // Must be a message pointer
+    if ( NULL == pMsg) return CANAL_ERROR_PARAMETER;
 
-				LOCK_MUTEX( m_transmitMutex );
-				dll_addNode( &m_transmitList, pNode );
-				UNLOCK_MUTEX( m_transmitMutex );
- 
-				rv = true;
+    // Must be open
+    if ( !m_bOpen ) return CANAL_ERROR_NOT_OPEN;
 
-			}
-			else {
+        if ( dll_getNodeCount( &m_transmitList) > CAN4VSCP_MAX_SNDMSG ) {
 
-				delete pMsg;
+            ResetEvent( m_transmitDataPutEvent );
 
-			}
+		    res = WaitForSingleObject( m_transmitDataPutEvent, Timeout );
+
+   		    if( res == WAIT_TIMEOUT ) {
+			    return CANAL_ERROR_TIMEOUT;			
+            }
+		    else if( res == WAIT_ABANDONED ) {
+			    return CANAL_ERROR_GENERIC;
+            }
 		}
-	}
-	
-	return rv;		
+
+        dllnode *pNode = new dllnode;			
+        if ( NULL == pNode ) {
+            return CANAL_ERROR_MEMORY;
+        }
+						
+        canalMsg *pcanalMsg = new canalMsg;
+        if ( NULL == pcanalMsg ) {		 
+            delete pNode;            			
+            return CANAL_ERROR_MEMORY;
+        }
+
+        pNode->pObject = pcanalMsg;
+        pNode->pKey = NULL;
+        pNode->pstrKey = NULL;
+
+        memcpy( pcanalMsg, pMsg, sizeof( canalMsg ));
+
+        LOCK_MUTEX( m_transmitMutex );
+        dll_addNode( &m_transmitList, pNode );	
+        UNLOCK_MUTEX( m_transmitMutex );
+			
+        SetEvent( m_transmitDataGetEvent );
+  							
+	    return CANAL_ERROR_SUCCESS;
 }
 
 
@@ -602,21 +655,80 @@ bool CCan4VSCPObj::writeMsg( canalMsg *pMsg )
 // readMsg
 //
 
-bool CCan4VSCPObj::readMsg( canalMsg *pMsg )
+int CCan4VSCPObj::readMsg( canalMsg *pMsg )
 {
-	bool rv = false;
+	int rv = CANAL_ERROR_SUCCESS;
+
+    // Must be a message pointer
+    if ( NULL == pMsg) {
+	  return  CANAL_ERROR_PARAMETER;	
+    }
+
+    // Must be open
+    if ( !m_bOpen ) {
+	  return  CANAL_ERROR_NOT_OPEN;
+    }
+
+    if ( 0 == m_receiveList.nCount ) { 
+      return  CANAL_ERROR_FIFO_EMPTY;
+    }
 	
-	if ( ( NULL != m_receiveList.pHead ) && 
-			( NULL != m_receiveList.pHead->pObject ) ) {
-		
-		memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );
-		LOCK_MUTEX( m_receiveMutex );
-		dll_removeNode( &m_receiveList, m_receiveList.pHead );
-		UNLOCK_MUTEX( m_receiveMutex );
+    memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );
 
-		rv = true;
-	}
+    LOCK_MUTEX( m_receiveMutex );
+    dll_removeNode( &m_receiveList, m_receiveList.pHead );
+    if ( m_receiveList.nCount == 0 ) {
+        ResetEvent( m_receiveDataEvent);		
+    }
+    UNLOCK_MUTEX( m_receiveMutex );
 
+    return rv;
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// readMsgBlocking
+// 
+
+int CCan4VSCPObj::readMsgBlocking( canalMsg *pMsg, uint32_t timeout )
+{
+    int rv = CANAL_ERROR_SUCCESS;
+	DWORD res;
+
+	// Must be a message pointer
+	if ( NULL == pMsg)
+		return CANAL_ERROR_PARAMETER;	
+
+	// Must be open
+    if ( !m_bOpen ) {
+		return CANAL_ERROR_NOT_OPEN;
+    }
+
+    // Yes we block if inqueue is empty
+    if ( 0 == m_receiveList.nCount ) { 
+        res = WaitForSingleObject( m_receiveDataEvent, timeout );         	
+
+   	    if ( res == WAIT_TIMEOUT ) {
+            return CANAL_ERROR_TIMEOUT;			
+        }
+        else if( res == WAIT_ABANDONED ) {
+            return CANAL_ERROR_GENERIC;	
+        }
+    }
+
+    if ( m_receiveList.nCount > 0 ) { 
+        LOCK_MUTEX( m_receiveMutex );
+        memcpy( pMsg, m_receiveList.pHead->pObject, sizeof( canalMsg ) );	   
+        dll_removeNode( &m_receiveList, m_receiveList.pHead );
+        if ( 0 == m_receiveList.nCount ) {
+            ResetEvent( m_receiveDataEvent);
+	    }
+        UNLOCK_MUTEX( m_receiveMutex );	   	
+    }
+    else {
+        return  CANAL_ERROR_FIFO_EMPTY;
+    }
+	
 	return rv;
 }
 
@@ -627,13 +739,11 @@ bool CCan4VSCPObj::readMsg( canalMsg *pMsg )
 
 int CCan4VSCPObj::dataAvailable( void )
 {
-	int cnt;
-	
-	LOCK_MUTEX( m_receiveMutex );
-	cnt = dll_getNodeCount( &m_receiveList );	
-	UNLOCK_MUTEX( m_receiveMutex );
- 
-	return cnt;
+	if ( !m_bOpen ) {
+		return  0;
+    }
+
+	return m_receiveList.nCount;
 }
 
 
@@ -641,24 +751,37 @@ int CCan4VSCPObj::dataAvailable( void )
 //	getStatistics
 //
 
-bool CCan4VSCPObj::getStatistics( PCANALSTATISTICS pCanalStatistics )
+int CCan4VSCPObj::getStatistics( PCANALSTATISTICS pCanalStatistics )
 {	
 	// Must be a valid pointer
-	if ( NULL == pCanalStatistics ) return false;
+	if ( NULL == pCanalStatistics ) {
+        return CANAL_ERROR_PARAMETER;
+    }
 
 	memcpy( pCanalStatistics, &m_stat, sizeof( canalStatistics ) );
 
-	return true;
+	return CANAL_ERROR_SUCCESS;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //	getStatus
 //
 
-bool CCan4VSCPObj::getStatus( PCANALSTATUS pCanalStatus )
+int CCan4VSCPObj::getStatus( PCANALSTATUS pCanalStatus )
 {
-	return true;
+    // Must be a message pointer
+	if ( NULL == pCanalStatus ) {
+		return CANAL_ERROR_PARAMETER;	
+    }
+
+	// Must be open
+    if ( !m_bOpen ) {
+		return CANAL_ERROR_NOT_OPEN;
+    }
+
+	return CANAL_ERROR_SUCCESS;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // sendMsg
@@ -1214,6 +1337,7 @@ void CCan4VSCPObj::readSerialData( void )
 								pNode->pObject = pMsg;
 								LOCK_MUTEX( m_receiveMutex );
 								dll_addNode( &m_receiveList, pNode );
+                                SetEvent( m_receiveDataEvent ); // Signal frame in queue
 								UNLOCK_MUTEX( m_receiveMutex );
 
 								// Update statistics
@@ -1329,12 +1453,17 @@ void *workThreadTransmit( void *pObject )
 		// Noting to do if we should end...
 		if ( !pobj->m_bRun ) continue;
 
-		// Is there is an event to send
-		if ( ( NULL != pobj->m_transmitList.pHead ) && 
-				( NULL != pobj->m_transmitList.pHead->pObject ) ) {
+        if ( 0 == pobj->m_transmitList.nCount ) {
+            ResetEvent( pobj->m_transmitDataGetEvent );
+            if ( WAIT_OBJECT_0 != WaitForSingleObject( pobj->m_transmitDataGetEvent, 100 ) ) {		 
+                continue;
+            }
+        }
 
-			canalMsg msg;
-			memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) ); 
+		while( pobj->m_transmitList.nCount > 0 ) {
+
+            canalMsg msg;
+            memcpy( &msg, pobj->m_transmitList.pHead->pObject, sizeof( canalMsg ) ); 
 			LOCK_MUTEX( pobj->m_transmitMutex );
 			dll_removeNode( &pobj->m_transmitList, pobj->m_transmitList.pHead );
 			UNLOCK_MUTEX( pobj->m_transmitMutex );

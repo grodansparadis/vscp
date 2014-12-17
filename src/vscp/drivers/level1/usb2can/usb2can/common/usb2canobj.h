@@ -392,6 +392,12 @@ public:
 	*/
 	int getStatus( PCANALSTATUS pCanalStatus );
 
+    /*!
+        Get driver info
+        @return Pointer to driver xml info
+    */
+    const char * CanalGetDriverInfo( void );
+
 
 	/*!
 		Send one USB message
@@ -705,9 +711,9 @@ public:
 	pthread_mutex_t m_commandMutex;
 #endif
 	
-    HANDLE      m_receiveDataEvent;   // GS
-    HANDLE      m_transmitDataPutEvent;   // GS
-    HANDLE      m_transmitDataGetEvent;   // GS
+    HANDLE      m_receiveDataEvent;         // GS
+    HANDLE      m_transmitDataPutEvent;     // GS
+    HANDLE      m_transmitDataGetEvent;     // GS
 
 	/*!
 		Filter for outgoing messages
