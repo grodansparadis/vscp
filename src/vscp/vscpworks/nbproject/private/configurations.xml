@@ -102,6 +102,7 @@
       <in>dlgvscpmsg_symbols.h</in>
       <in>dlgvscptrmit.cpp</in>
       <in>dlgvscptrmit.h</in>
+      <in>dlgvscptrmit_images.h</in>
       <in>dlgvscptrmit_symbols.h</in>
       <in>frmcanalsession.cpp</in>
       <in>frmcanalsession.h</in>
@@ -115,9 +116,11 @@
       <in>frmdaemonvariableeditor.h</in>
       <in>frmdeviceconfig.cpp</in>
       <in>frmdeviceconfig.h</in>
+      <in>frmdeviceconfig_images.h</in>
       <in>frmdeviceconfig_symbols.h</in>
       <in>frmmain.cpp</in>
       <in>frmmain.h</in>
+      <in>frmmain_images.h</in>
       <in>frmmain_symbols.h</in>
       <in>frmmainnomidi_symbols.h</in>
       <in>frmmdfeditor.cpp</in>
@@ -125,11 +128,13 @@
       <in>frmmdfeditor_symbols.h</in>
       <in>frmscanfordevices.cpp</in>
       <in>frmscanfordevices.h</in>
+      <in>frmscanfordevices_images.h</in>
       <in>frmscanfordevices_symbols.h</in>
       <in>frmsimpleuserinterfacegenerator.cpp</in>
       <in>frmsimpleuserinterfacegenerator.h</in>
       <in>frmvscpsession.cpp</in>
       <in>frmvscpsession.h</in>
+      <in>frmvscpsession_images.h</in>
       <in>frmvscpsession_symbols.h</in>
       <in>gridtable.cpp</in>
       <in>gridtable.h</in>

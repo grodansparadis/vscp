@@ -395,7 +395,7 @@ void *workThread(void *pObject)
 #endif
 
 	
-	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+	if ( bind( sock, (struct sockaddr *)&addr, sizeof(addr) ) < 0 ) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "CReadSocketCanTread: Error in socket bind. Terminating!");
@@ -459,7 +459,9 @@ void *workThread(void *pObject)
 						}
 						pMsg->sizeData = frame.can_dlc;
 						memcpy(pMsg->data,frame.data,frame.can_dlc);
+						LOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
 						dll_addNode(&psocketcanobj->m_socketcanobj.m_rcvList, pNode);
+						UNLOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
 						
 						// Update statistics
 						psocketcanobj->m_socketcanobj.m_stat.cntReceiveData += pMsg->sizeData;
@@ -481,7 +483,7 @@ void *workThread(void *pObject)
 		//                          Transmit
 		///////////////////////////////////////////////////////////////////////
 
-		LOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
+		
 
 		if ((NULL != psocketcanobj->m_socketcanobj.m_sndList.pHead) &&
 				(NULL != psocketcanobj->m_socketcanobj.m_sndList.pHead->pObject)) {
@@ -489,7 +491,10 @@ void *workThread(void *pObject)
 			canalMsg msg;
 
 			memcpy(&msg, psocketcanobj->m_socketcanobj.m_sndList.pHead->pObject, sizeof( canalMsg));
-			dll_removeNode(&psocketcanobj->m_socketcanobj.m_sndList, psocketcanobj->m_socketcanobj.m_sndList.pHead);
+			
+			LOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
+			dll_removeNode(&psocketcanobj->m_socketcanobj.m_sndList, psocketcanobj->m_socketcanobj.m_sndList.pHead);			
+			UNLOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
 			
 			memset(&frame, 0, sizeof(struct can_frame));
 			frame.can_id = msg.id;
@@ -506,8 +511,6 @@ void *workThread(void *pObject)
 			psocketcanobj->m_socketcanobj.m_stat.cntTransmitFrames += 1;
 
 		} // if there is something to transmit
-
-		UNLOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
 
 	} // while( psocketcanobj->m_socketcanobj.m_bRun )
 	
