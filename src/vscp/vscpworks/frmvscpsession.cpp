@@ -3309,7 +3309,7 @@ void *deviceWriteThread::Entry()
                 m_pMainThreadObj->m_pCtrlObject->m_proc_CanalBlockingSend( 
                                                         m_pMainThreadObj->m_pCtrlObject->m_openHandle, 
                                                         &canalMsg, 
-                                                        300)) {
+                                                        300 ) ) {
 
             VscpRXObj *pRecord = new VscpRXObj;
             if (NULL != pRecord) {
@@ -3339,7 +3339,7 @@ void *deviceWriteThread::Entry()
     } // while
 
     eventStatus.SetString("CANAL: (TX) Terminated.");
-    wxPostEvent(m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
+    wxPostEvent( m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd, eventStatus );
 
     return NULL;
 }

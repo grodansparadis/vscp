@@ -1,0 +1,175 @@
+Return-Path: <mrx23dot@gmail.com>
+Received: from deliver ([unix socket])
+	 by mail.citynetwork.se (Cyrus v2.4.17) with LMTPA;
+	 Mon, 11 Aug 2014 20:56:49 +0200
+X-Sieve: CMU Sieve 2.4
+Received: from smtp08.citynetwork.se (unknown [192.168.222.27])
+	by mail.citynetwork.se (Postfix) with ESMTP id DBD0E31A5A
+	for <akhe@eurosource.se>; Mon, 11 Aug 2014 20:56:49 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by smtp08.citynetwork.se (Postfix) with ESMTP id D39C8E0A68
+	for <akhe@eurosource.se>; Mon, 11 Aug 2014 20:56:49 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at citynetwork.se
+Received: from smtp08.citynetwork.se ([127.0.0.1])
+	by localhost (smtp08.citynetwork.se [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id UxkXhkN429TG for <akhe@eurosource.se>;
+	Mon, 11 Aug 2014 20:56:47 +0200 (CEST)
+Received: from mail-ig0-f181.google.com (mail-ig0-f181.google.com [209.85.213.181])
+	(using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+	(No client certificate requested)
+	by smtp08.citynetwork.se (Postfix) with ESMTPS id 56117E08B4
+	for <akhe@grodansparadis.com>; Mon, 11 Aug 2014 20:56:46 +0200 (CEST)
+Received: by mail-ig0-f181.google.com with SMTP id h3so4761125igd.8
+        for <akhe@grodansparadis.com>; Mon, 11 Aug 2014 11:56:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type:content-transfer-encoding;
+        bh=3h/+xQ4MpiXlDOrXD2GxHAJNi2chIVEe3PlIMza7IHM=;
+        b=ABQHwFy+xGwbK+q3B2lHuM/wLXw0eLAsr2OpW66usvndPda4xUtBJLYIJNSPSnz3V2
+         1vkxzlRkv6/YEvcoY1fQZfWPi+Qn7SWaok8xOXCA+1pa5wI/iBpM8Mw6hgaMYpGNkIu+
+         k6CgFYCYq9ZulTwjN1NLxuoUMrttc5tnvvRnB8GtYa0e1kpR4+78cQV/V8TnApoBsuMU
+         uVtw0vzaXDi2veVQwzNolbealkfMr4faoglAxdfiHYtl0DFXOEfqP50jLxgUUxKDR0Gi
+         TrzBTkPj8TKypOnfFr5Xm/bz8xU3sZ2oTzftLHlz7BBz6QhULZN3qCy33+arw0nI93Yu
+         XH0w==
+X-Received: by 10.50.50.175 with SMTP id d15mr27771790igo.35.1407783369911;
+ Mon, 11 Aug 2014 11:56:09 -0700 (PDT)
+MIME-Version: 1.0
+Received: by 10.107.45.18 with HTTP; Mon, 11 Aug 2014 11:55:49 -0700 (PDT)
+In-Reply-To: <53E90F2C.8070904@grodansparadis.com>
+References: <CAGuhpmwhzq4wBHJtXZNZq30OYTE3fcE3wAQqJbC7UR02oGLnEg@mail.gmail.com>
+ <53E8E0F1.9090307@grodansparadis.com> <CAGuhpmxaWiWPF+JWxoR8Ad4vs0_YLiApE8N5HDSToFK=LNhzdg@mail.gmail.com>
+ <53E90F2C.8070904@grodansparadis.com>
+From: Arpad Toth <mrx23dot@gmail.com>
+Date: Mon, 11 Aug 2014 20:55:49 +0200
+Message-ID: <CAGuhpmzysHkAcXKRmZoNJVrim=wnEi826OrxMxX7fUFmtYQG8Q@mail.gmail.com>
+Subject: Re: Query process
+To: "Ake Hedman, Grodans Paradis AB" <akhe@grodansparadis.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Antivirus: avast! (VPS 141111-0, 2014-11-11), Inbound message
+X-Antivirus-Status: Clean
+
+Hi,
+
+My first intention was to get reporpuse ELM for a CAN ready devboard,
+but as I learned from the web, the chinese set the write protection
+fuse.
+
+The schematic is simple (most of it is OBD car stuff)
+http://www.outilsobdfacile.com/interface/schema-interface-elm327.jpg
+MCU: PIC18F2480 or PIC18F2580-I/SO (SOIC 28pin package), also I'm not a PIC=
+ fan.
+
+They use of the shelf UART-Bluetooth adapter.
+FT232 or similar for USB
+the black box here:
+http://make.larsi.org/electronics/ELM327/
+for $9 it's not money for it.
+K=C3=B6sz=C3=B6nettel,
+T=C3=B3th =C3=81rp=C3=A1d
+
+
+On Mon, Aug 11, 2014 at 8:45 PM, Ake Hedman, Grodans Paradis AB
+<akhe@grodansparadis.com> wrote:
+> HI,
+>
+> have yo looked inside it?  If so what uP does it use and chip for BT?
+>
+> Cheers
+> /Ake
+>
+> Arpad Toth skrev 2014-08-11 19:00:
+>
+>> Hi,
+>>
+>> Thanks for the info, I was looking DIN rail on ebay but the cheapest is
+>> $5:S
+>>
+>> I dont plan on doing CANAL driver.
+>>
+>> Elm327 is very easy, one CAN frame looks like this: simple ASCII coded
+>> string
+>>
+>> Header: FF FF FF FF and  8 x FF data bytes, no need to worry about CRC
+>>
+>> just need to parse ASCII into HEX then to BIN, seperate the fields,
+>> lookup the value in LUT, e.g. Class
+>>
+>>
+>> One extra ring buffer is needed because windows buffer doesnt spit out
+>> strings at \r termination char.
+>>
+>>
+>> I attached my C# parser. ELM also can measure bus voltage upto 28V:D
+>> And has TX/RX leds.
+>>
+>> And bluetooth version is cheaper than USB version:D
+>>
+>> My ELM327 is connected to raspberry PI, which runs C# based HomeGenie.
+>>
+>> Might be a better idea to specify a generic GET/READ INFORMATION class
+>> command.
+>>
+>>
+>> Cheers,
+>>
+>> Arpad
+>>
+>>
+>>
+>>
+>> On Mon, Aug 11, 2014 at 5:27 PM, Ake Hedman, Grodans Paradis AB
+>> <akhe@grodansparadis.com> wrote:
+>>>
+>>> Hi again,
+>>>
+>>> any chance you can take on the job to do a CANAL driver for the ELM327?
+>>>
+>>> /Ake
+>>>
+>>>
+>>> Arpad Toth skrev 2014-08-11 10:42:
+>>>>
+>>>> Hi Ake,
+>>>>
+>>>>
+>>>> I have an easy question, what is the process of querying a
+>>>> state/parameter in Zone/Subzone?
+>>>>
+>>>> In specification I only found the sending process:
+>>>> 1, Button A is pressed. Send CLASS1.CONTROL, Type=3D5, TurnOn event to
+>>>> zone/sub-zone
+>>>> 2, Node 2 respond with CLASS1.INFORMATION, Type=3D3, ON
+>>>>
+>>>> ELM327 works great on CAN bus, I made a simple adapter to RJ11 for $3,
+>>>> also written C# driver that spits out and sends VSCP parsed frames.
+>>>> Only problem is that doesn't send ACK (it's a monitoring device), so I
+>>>> need 2 CAN nodes.
+>>>>
+>>>> HomeGenie integration is coming slowly (writing high level sw is so
+>>>> boooring:)
+>>>>
+>>>> Do you have an online source for those DIN Rail clamps attached to you=
+r
+>>>> PCBs?
+>>>>
+>>>> Cheers,
+>>>> Arpad
+>>>
+>>>
+>>> --
+>>> Be Hungry - Stay Foolish!
+>>> =C3=85ke Hedman, Grodans Paradis AB
+>>> Brattbergav=C3=A4gen 17, 82050 LOS, SWEDEN
+>>> Phone: +46 (0)840011835 CellPhone: +46 (0)730-533146
+>>> http://www.grodansparadis.com http://www.vscp.org
+>>>
+>
+> --
+> Be Hungry - Stay Foolish!
+> =C3=85ke Hedman, Grodans Paradis AB
+> Brattbergav=C3=A4gen 17, 82050 LOS, SWEDEN
+> Phone: +46 (0)840011835 CellPhone: +46 (0)730-533146
+> http://www.grodansparadis.com http://www.vscp.org
+>

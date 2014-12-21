@@ -1,0 +1,214 @@
+Return-Path: <mrx23dot@gmail.com>
+Received: from deliver ([unix socket])
+	 by mail.citynetwork.se (Cyrus v2.4.17) with LMTPA;
+	 Mon, 11 Aug 2014 19:01:28 +0200
+X-Sieve: CMU Sieve 2.4
+Received: from smtp08.citynetwork.se (unknown [192.168.222.27])
+	by mail.citynetwork.se (Postfix) with ESMTP id 2356B34AA8
+	for <akhe@eurosource.se>; Mon, 11 Aug 2014 19:01:28 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by smtp08.citynetwork.se (Postfix) with ESMTP id 17075E09FC
+	for <akhe@eurosource.se>; Mon, 11 Aug 2014 19:01:28 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at citynetwork.se
+Received: from smtp08.citynetwork.se ([127.0.0.1])
+	by localhost (smtp08.citynetwork.se [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 8IgjppWYSbm8 for <akhe@eurosource.se>;
+	Mon, 11 Aug 2014 19:01:26 +0200 (CEST)
+Received: from mail-ig0-f178.google.com (mail-ig0-f178.google.com [209.85.213.178])
+	(using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+	(No client certificate requested)
+	by smtp08.citynetwork.se (Postfix) with ESMTPS id D2AB3E0811
+	for <akhe@grodansparadis.com>; Mon, 11 Aug 2014 19:01:25 +0200 (CEST)
+Received: by mail-ig0-f178.google.com with SMTP id uq10so4587797igb.17
+        for <akhe@grodansparadis.com>; Mon, 11 Aug 2014 10:00:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20120113;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :content-type;
+        bh=yDgiA8MZv6V9FX8al8sT6P4kaDEzcu0ne6NU5guwHlM=;
+        b=GjKz4x2JrVi4y7iWOzAg3UgaQtok0uOueG4+jsOSHwWKi+PZEKWd2Enk76Wp3LOGN9
+         9avNdd0sLPXuicQanDuB/gJRA1WWgkfyquzF7A7ofHxYoyWrYn/HBckjqNh3J1weQIvF
+         /z972+E8E/pqkElJI+f/I8xn1BQEJmPr5o+ZKq+khUPkTWYaUnIWFS7LRYpZKYNNvlTN
+         gh07cnKq/q8hp3uNKaqVGRvPrYkE3GW7LYB1mz6fiuZA4ot2pqTa5mPQWZl9HdXgy/Rm
+         LHcda44JQecPymWm6Do/TgCZvUtYOOPiuU/za75GHvVwgs/ijy5Rk7o33ROfWD0SCXti
+         9e9Q==
+X-Received: by 10.43.149.200 with SMTP id kl8mr34305283icc.52.1407776447172;
+ Mon, 11 Aug 2014 10:00:47 -0700 (PDT)
+MIME-Version: 1.0
+Received: by 10.107.45.18 with HTTP; Mon, 11 Aug 2014 10:00:27 -0700 (PDT)
+In-Reply-To: <53E8E0F1.9090307@grodansparadis.com>
+References: <CAGuhpmwhzq4wBHJtXZNZq30OYTE3fcE3wAQqJbC7UR02oGLnEg@mail.gmail.com>
+ <53E8E0F1.9090307@grodansparadis.com>
+From: Arpad Toth <mrx23dot@gmail.com>
+Date: Mon, 11 Aug 2014 19:00:27 +0200
+Message-ID: <CAGuhpmxaWiWPF+JWxoR8Ad4vs0_YLiApE8N5HDSToFK=LNhzdg@mail.gmail.com>
+Subject: Re: Query process
+To: "Ake Hedman, Grodans Paradis AB" <akhe@grodansparadis.com>
+Content-Type: multipart/mixed; boundary=001a11c305540ea90a05005d7fbc
+X-Antivirus: avast! (VPS 141111-0, 2014-11-11), Inbound message
+X-Antivirus-Status: Clean
+
+--001a11c305540ea90a05005d7fbc
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+Thanks for the info, I was looking DIN rail on ebay but the cheapest is $5:=
+S
+
+I dont plan on doing CANAL driver.
+
+Elm327 is very easy, one CAN frame looks like this: simple ASCII coded stri=
+ng
+
+Header: FF FF FF FF and  8 x FF data bytes, no need to worry about CRC
+
+just need to parse ASCII into HEX then to BIN, seperate the fields,
+lookup the value in LUT, e.g. Class
+
+
+One extra ring buffer is needed because windows buffer doesnt spit out
+strings at \r termination char.
+
+
+I attached my C# parser. ELM also can measure bus voltage upto 28V:D
+And has TX/RX leds.
+
+And bluetooth version is cheaper than USB version:D
+
+My ELM327 is connected to raspberry PI, which runs C# based HomeGenie.
+
+Might be a better idea to specify a generic GET/READ INFORMATION class comm=
+and.
+
+
+Cheers,
+
+Arpad
+
+
+
+
+On Mon, Aug 11, 2014 at 5:27 PM, Ake Hedman, Grodans Paradis AB
+<akhe@grodansparadis.com> wrote:
+> Hi again,
+>
+> any chance you can take on the job to do a CANAL driver for the ELM327?
+>
+> /Ake
+>
+>
+> Arpad Toth skrev 2014-08-11 10:42:
+>>
+>> Hi Ake,
+>>
+>>
+>> I have an easy question, what is the process of querying a
+>> state/parameter in Zone/Subzone?
+>>
+>> In specification I only found the sending process:
+>> 1, Button A is pressed. Send CLASS1.CONTROL, Type=3D5, TurnOn event to
+>> zone/sub-zone
+>> 2, Node 2 respond with CLASS1.INFORMATION, Type=3D3, ON
+>>
+>> ELM327 works great on CAN bus, I made a simple adapter to RJ11 for $3,
+>> also written C# driver that spits out and sends VSCP parsed frames.
+>> Only problem is that doesn't send ACK (it's a monitoring device), so I
+>> need 2 CAN nodes.
+>>
+>> HomeGenie integration is coming slowly (writing high level sw is so
+>> boooring:)
+>>
+>> Do you have an online source for those DIN Rail clamps attached to your
+>> PCBs?
+>>
+>> Cheers,
+>> Arpad
+>
+>
+> --
+> Be Hungry - Stay Foolish!
+> =C3=85ke Hedman, Grodans Paradis AB
+> Brattbergav=C3=A4gen 17, 82050 LOS, SWEDEN
+> Phone: +46 (0)840011835 CellPhone: +46 (0)730-533146
+> http://www.grodansparadis.com http://www.vscp.org
+>
+
+--001a11c305540ea90a05005d7fbc
+Content-Type: text/plain; charset=UTF-8; name="VSCP_Parser.cs"
+Content-Disposition: attachment; filename="VSCP_Parser.cs"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_hyq1oo902
+
+77u/LyoNCiAqIENyZWF0ZWQgYnkgU2hhcnBEZXZlbG9wLg0KICogVXNlcjogbXJ4MjNkb3QNCiAq
+IERhdGU6IDIwMTQuMDYuMjUuDQogKiBUaW1lOiAxOToxOQ0KICoNCiAqIFRvIGNoYW5nZSB0aGlz
+IHRlbXBsYXRlIHVzZSBUb29scyB8IE9wdGlvbnMgfCBDb2RpbmcgfCBFZGl0IFN0YW5kYXJkIEhl
+YWRlcnMuDQogKi8NCnVzaW5nIFN5c3RlbTsNCnVzaW5nIFN5c3RlbS5Db2xsZWN0aW9uczsNCg0K
+bmFtZXNwYWNlIFZTQ1BMaWINCnsNCiAgLy8vIDxzdW1tYXJ5Pg0KICAvLy8gRGVzY3JpcHRpb24g
+b2YgVlNDUF9QYXJzZXIuDQogIC8vLyA8L3N1bW1hcnk+DQogIHB1YmxpYyBjbGFzcyBWU0NQX1Bh
+cnNlcg0KICB7DQogICAgcHVibGljIFZTQ1BfUGFyc2VyKCkNCiAgICB7DQogICAgfQ0KDQovKiog
+RUxNMzI3IGluaXQgY29tbWFuZHM6DQogICAgICBVSW50MTYgREVMQVkgPSA1MDsNCiAgICAgIFNl
+bmRNZXNzYWdlKCJkdW1teVxyIik7DQogICAgICBUaHJlYWQuU2xlZXAoREVMQVkpOw0KICAgICAg
+U2VuZE1lc3NhZ2UoIkFUIFdTXHIiKTsNCiAgICAgIFRocmVhZC5TbGVlcChERUxBWSk7DQogICAg
+ICBTZW5kTWVzc2FnZSgiQVQgRTBcciIpOw0KICAgICAgVGhyZWFkLlNsZWVwKERFTEFZKTsNCiAg
+ICAgIFNlbmRNZXNzYWdlKCJBVCBTUDlcciIpOw0KICAgICAgVGhyZWFkLlNsZWVwKERFTEFZKTsN
+CiAgICAgIFNlbmRNZXNzYWdlKCJBVCBIMVxyIik7DQogICAgICBUaHJlYWQuU2xlZXAoREVMQVkp
+Ow0KICAgICAgU2VuZE1lc3NhZ2UoIkFUIEQxXHIiKTsNCiAgICAgIFRocmVhZC5TbGVlcChERUxB
+WSk7DQogICAgICBTZW5kTWVzc2FnZSgiQVQgQ0FGMFxyIik7DQogICAgICBUaHJlYWQuU2xlZXAo
+REVMQVkpOw0KICAgICAgU2VuZE1lc3NhZ2UoIkFUIEZFXHIiKTsNCiAgICAgIFRocmVhZC5TbGVl
+cChERUxBWSk7DQogICAgICBTZW5kTWVzc2FnZSgiQVQgTUFcciIpOw0KICAgICAgKi8NCiAgICBw
+dWJsaWMgdm9pZCBQcm9jZXNzRnJhbWUoc3RyaW5nIGZyYW1lKSB7DQogICAgICAvKiBTb21lIHNh
+bml0eSBjaGVjayAqLw0KICAgICAgYnl0ZSBIRFJfTEVOID0gODsgLyogbmliYmxlICovDQogICAg
+ICBieXRlIFBBWUxPQURfTUFYTEVOID0gODsgLyogbmliYmxlICovDQogICAgICBieXRlIFBBWUxP
+QURfTEVOX0ZJRUxEX0lEWCA9IEhEUl9MRU47IC8qIDAgYmFzZWQsIGluIG5pYmJsZSAqLw0KICAg
+ICAgYnl0ZSBQQVlMT0FEX0xFTl9GSUVMRF9TSVpFID0gMTsgLyogaW4gbmliYmxlICovDQogICAg
+ICBieXRlIFBBWUxPQURfSURYID0gKGJ5dGUpKFBBWUxPQURfTEVOX0ZJRUxEX0lEWCArIFBBWUxP
+QURfTEVOX0ZJRUxEX1NJWkUpOw0KICAgICAgZnJhbWUgPSBmcmFtZS5SZXBsYWNlKCIgIiwgIiIp
+LlRyaW0oKTsgLyogc2FmZXR5ICovDQoNCiAgICAgIC8qIGNoZWNrIG1pbiBsZW5ndGggKi8NCiAg
+ICAgIGlmICgoZnJhbWUuTGVuZ3RoID49IEhEUl9MRU4gKyBQQVlMT0FEX0xFTl9GSUVMRF9TSVpF
+KSAmJg0KICAgICAgICAgIGZyYW1lLkxlbmd0aCA8PSAoSERSX0xFTitQQVlMT0FEX01BWExFTitQ
+QVlMT0FEX0xFTl9GSUVMRF9TSVpFKSApIHsNCiAgICAgICAgYnl0ZSBCWVRFX0xFTiA9IDI7IC8q
+IGluIG5pYmJsZSAqLw0KICAgICAgICBzdHJpbmcgSGVhZGVyID0gZnJhbWUuU3Vic3RyaW5nKDAs
+IEhEUl9MRU4pOw0KICAgICAgICBzdHJpbmcgUGF5bG9hZCA9IGZyYW1lLlN1YnN0cmluZyhQQVlM
+T0FEX0lEWCk7DQogICAgICAgIGJ5dGUgUGF5bG9hZF9sZW4gPSAoYnl0ZSkgKGZyYW1lLlN1YnN0
+cmluZyhQQVlMT0FEX0lEWCkuTGVuZ3RoIC8gQllURV9MRU4pOw0KDQogICAgICAgIGlmICgoKGZy
+YW1lLkxlbmd0aCAtIEhEUl9MRU4pIC0gUEFZTE9BRF9MRU5fRklFTERfU0laRSA9PSBQYXlsb2Fk
+X2xlbiAqIEJZVEVfTEVOKQ0KICAgICAgICAgICAgJiYgUGF5bG9hZC5MZW5ndGggJSAyID09IDAp
+IHsNCiAgICAgICAgICBTeXN0ZW0uRGlhZ25vc3RpY3MuRGVidWcuV3JpdGVMaW5lKEhlYWRlcik7
+DQogICAgICAgICAgU3lzdGVtLkRpYWdub3N0aWNzLkRlYnVnLldyaXRlTGluZShQYXlsb2FkKTsN
+Cg0KICAgICAgICAgIFZTQ1BfUGFja2V0IHZzY3BfcGFja2V0MSA9IG5ldyBWU0NQX1BhY2tldCgp
+Ow0KICAgICAgICAgIHZzY3BfcGFja2V0MS5vcmlnX2FkZHIgPSBDb252ZXJ0LlRvQnl0ZShIZWFk
+ZXIuU3Vic3RyaW5nKEhlYWRlci5MZW5ndGggLSBCWVRFX0xFTiwgQllURV9MRU4pLCAxNik7DQog
+ICAgICAgICAgdnNjcF9wYWNrZXQxLlR5cGUgPSBDb252ZXJ0LlRvQnl0ZShIZWFkZXIuU3Vic3Ry
+aW5nKDIqQllURV9MRU4sIEJZVEVfTEVOKSwgMTYpOw0KICAgICAgICAgIHZzY3BfcGFja2V0MS5D
+bGFzcyA9ICh1c2hvcnQpKENvbnZlcnQuVG9VSW50MTYoSGVhZGVyLlN1YnN0cmluZygwLCAyKkJZ
+VEVfTEVOKSwgMTYpICYgKFVJbnQxNik1MTEpOw0KICAgICAgICAgIHZzY3BfcGFja2V0MS5IYXJk
+X2NvZGVkID0gKENvbnZlcnQuVG9Cb29sZWFuKCggQ29udmVydC5Ub0J5dGUoSGVhZGVyLlN1YnN0
+cmluZygwLCBCWVRFX0xFTiksIDE2KT4+MSkgJiAxKSk7DQogICAgICAgICAgdnNjcF9wYWNrZXQx
+LlByaW9yaXR5ID0gKGJ5dGUpKChDb252ZXJ0LlRvQnl0ZShIZWFkZXIuU3Vic3RyaW5nKDAsIEJZ
+VEVfTEVOKSwgMTYpPj4yKSAmIDcpOw0KICAgICAgICAgIHZzY3BfcGFja2V0MS5QYXlsb2FkX0xl
+biA9IFBheWxvYWRfbGVuOw0KDQoNCiAgICAgICAgICBzdHJpbmcgb25lQnl0ZV9oZXggPSAiIjsN
+CiAgICAgICAgICBieXRlIGlkeCA9IDA7DQogICAgICAgICAgZm9yICh1aW50IGkgPSAwOyBpIDwg
+UGF5bG9hZC5MZW5ndGg7IGkrKykgew0KICAgICAgICAgICAgb25lQnl0ZV9oZXggKz0gUGF5bG9h
+ZC5Ub0NoYXJBcnJheSgpLkdldFZhbHVlKGkpOw0KICAgICAgICAgICAgaWYgKG9uZUJ5dGVfaGV4
+Lkxlbmd0aCA9PSAyKXsNCiAgICAgICAgICAgICAgdnNjcF9wYWNrZXQxLlBheWxvYWRbaWR4XSA9
+IENvbnZlcnQuVG9CeXRlKG9uZUJ5dGVfaGV4LCAxNik7DQogICAgICAgICAgICAgIG9uZUJ5dGVf
+aGV4ID0gIiI7DQogICAgICAgICAgICAgIGlkeCsrOw0KICAgICAgICAgICAgfQ0KICAgICAgICAg
+IH0NCg0KDQoNCiAgICAgICAgICBTeXN0ZW0uRGlhZ25vc3RpY3MuRGVidWcuV3JpdGVMaW5lKHZz
+Y3BfcGFja2V0MS5QcmludCgpKTsNCg0KICAgICAgICAgIFZTQ1BfQ2xhc3NlcyBjbGFzczEgPSBu
+ZXcgVlNDUF9DbGFzc2VzKCk7DQogICAgICAgICAgU3lzdGVtLkRpYWdub3N0aWNzLkRlYnVnLldy
+aXRlTGluZShjbGFzczEuZ2V0TGV2MV9DbGFzc05hbWUodnNjcF9wYWNrZXQxLkNsYXNzKSk7DQoN
+CiAgICAgICAgICAvKmh0dHA6Ly93d3cubW9uby1wcm9qZWN0LmNvbS9Nb25vX0RhdGFDb252ZXJ0
+ICovDQogICAgICAgICAgLy8JU2VuZFZTQ1AodnNjcF9wYWNrZXQxKTsNCiAgICAgICAgfQ0KICAg
+ICAgfQ0KDQogICAgICAvLyAgIFZTQ1BfWm9uZURlZiB6MSA9ICBuZXcgVlNDUF9ab25lRGVmKCk7
+DQogICAgICAvLyAgIFN5c3RlbS5EaWFnbm9zdGljcy5EZWJ1Zy5Xcml0ZUxpbmUoejEuQ2F0ZWdv
+cnlfVG9fVHlwZSgzKSk7DQoNCiAgICB9DQoNCg0KICAgIHB1YmxpYyB2b2lkIFNlbmRWU0NQKFZT
+Q1BfUGFja2V0IHZzY3BfcGFja2V0KSB7DQogICAgICBzdHJpbmcgSGVhZGVyX291dCA9IENvbnZl
+cnQuVG9VSW50MTYodnNjcF9wYWNrZXQuUHJpb3JpdHkgPDwgMTAgfCBDb252ZXJ0LlRvVUludDE2
+KHZzY3BfcGFja2V0LkhhcmRfY29kZWQpPDw5IHwgdnNjcF9wYWNrZXQuQ2xhc3MpLlRvU3RyaW5n
+KCJYNCIpOw0KICAgICAgSGVhZGVyX291dCArPSB2c2NwX3BhY2tldC5UeXBlLlRvU3RyaW5nKCJY
+MiIpOw0KICAgICAgSGVhZGVyX291dCArPSB2c2NwX3BhY2tldC5vcmlnX2FkZHIuVG9TdHJpbmco
+IlgyIik7DQogICAgICBTeXN0ZW0uRGlhZ25vc3RpY3MuRGVidWcuV3JpdGVMaW5lKEhlYWRlcl9v
+dXQpOw0KICAgIH0NCg0KDQogIH0NCn0NCg==
+--001a11c305540ea90a05005d7fbc--

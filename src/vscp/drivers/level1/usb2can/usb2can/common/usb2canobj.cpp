@@ -155,7 +155,7 @@ CUsb2canObj::~CUsb2canObj()
 //                              |||||||__ SILENT
 //                              ||||||___ LOOPBACK     
 //                              |||||____ DAR (1) - DAR disable
-//                              ||||_____ STATUS_FRAMES (1) - STTAUS frames sending enable
+//                              ||||_____ STATUS_FRAMES (1) - STATUS frames sending enable
 //                              |||______ 
 //                              ||_______ 
 //                              |________ 

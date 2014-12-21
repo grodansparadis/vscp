@@ -254,7 +254,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
         }
 	}
 
-	// Open the com port
+	// Open the com port  CBR_128000 CBR_256000
 	if ( !m_com.init( nComPort,
 						CBR_115200,
 						8,
@@ -284,11 +284,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 	DWORD threadId;
 	if ( NULL == 
 			( m_hTreadTransmit = CreateThread(	NULL,
-										0,
-										(LPTHREAD_START_ROUTINE) workThreadTransmit,
-										this,
-										0,
-										&threadId ) ) ) { 
+										            0,
+										            (LPTHREAD_START_ROUTINE) workThreadTransmit,
+										            this,
+										            0,
+										            &threadId ) ) ) { 
 		// Failure
 		close();
 		return CANAL_ERROR_INIT_FAIL;
@@ -297,11 +297,11 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 	// Start read thread 
 	if ( NULL == 
 			( m_hTreadReceive = CreateThread(	NULL,
-										0,
-										(LPTHREAD_START_ROUTINE) workThreadReceive,
-										this,
-										0,
-										&threadId ) ) ) { 
+										            0,
+										            (LPTHREAD_START_ROUTINE) workThreadReceive,
+										            this,
+										            0,
+										            &threadId ) ) ) { 
 		// Failure
 		close();
 		return  CANAL_ERROR_INIT_FAIL;
@@ -529,7 +529,6 @@ int CCan4VSCPObj::setFilter( unsigned long filter )
 	return CANAL_ERROR_SUCCESS;
 }
 
-
 //////////////////////////////////////////////////////////////////////
 // setMask
 //
@@ -539,8 +538,6 @@ int CCan4VSCPObj::setMask( unsigned long mask )
 	m_mask = mask;
 	return CANAL_ERROR_SUCCESS;
 }
-
-
 
 //////////////////////////////////////////////////////////////////////
 // writeMsg
@@ -1556,9 +1553,7 @@ void *workThreadTransmit( void *pObject )
 
 					}
 					else {
-
 						delete pMsg;
-
 					}
 
 				}
@@ -1620,7 +1615,6 @@ void *workThreadReceive( void *pObject )
 		LOCK_MUTEX( pobj->m_can4vscpMutex );
 		pobj->readSerialData();
 		UNLOCK_MUTEX( pobj->m_can4vscpMutex );
-		//if ( !bData) SLEEP( 1 );	// Sleep if no data
 	
 	} // while 	 
 

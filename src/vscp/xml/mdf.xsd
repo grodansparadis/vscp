@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+********************************************************************************
+VSCP (Very Simple Control Protocol)
+http://www.vscp.org
+
+This xml schema defines the VSCP module description file (MDF) format.
+
+Author: Andreas Merkle, http://www.blue-andi.de
+
+$Author: amerkle $
+$Rev: 147 $
+$Date: 2014-04-03 19:54:19 +0200 (Do, 03 Apr 2014) $
+********************************************************************************
+-->
+<schema targetNamespace="http://www.blue-andi.de/vscp/mdf/1.0" elementFormDefault="qualified" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:mdf="http://www.blue-andi.de/vscp/mdf/1.0" attributeFormDefault="unqualified">
+
+    <element name="vscp">
+        <annotation>
+        	<documentation>Top level element of the module description file (MDF).</documentation>
+        </annotation>
+        <complexType>
+        	<sequence>
+        		<element name="module" type="mdf:module-type"
+        			minOccurs="1" maxOccurs="1">
+        		</element>
+        	</sequence>
+        	<attribute name="version" type="string" use="optional" default="1.0">
+        		<annotation>
+        			<documentation>Version of the mdf schema. "1.0" is the default.</documentation>
+        		</annotation></attribute>
+        </complexType>
+    </element>
+
+    <complexType name="module-type">
+    	<sequence>
+    		<element name="name" minOccurs="1" maxOccurs="1">
+    			<complexType>
+    				<simpleContent>
+    					<extension base="string">
+    						<attribute name="lang" type="language"
+    							use="optional" default="en">
+    						</attribute>
+    					</extension>
+    				</simpleContent>
+    			</complexType>
+    		</element>
+    		<element name="model" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="version" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="changed" type="date" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="description" minOccurs="1" maxOccurs="1">
+    			<complexType>
+    				<simpleContent>
+    					<extension base="string">
+    						<attribute name="lang" type="language"
+    							use="optional" default="en">
+    						</attribute>
+    					</extension>
+    				</simpleContent>
+    			</complexType>
+    		</element>
+    		<element name="infourl" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="buffersize" type="unsignedInt" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="manufacturer" type="mdf:manufacturer-type"
+    			minOccurs="1" maxOccurs="1">
+    		</element>
+    		<element name="picture" type="mdf:picture-type"
+    			minOccurs="0" maxOccurs="1">
+    		</element>
+    		<element name="firmware" type="mdf:firmware-type"
+    			minOccurs="0" maxOccurs="1">
+    		</element>
+    		<element name="manual" type="mdf:manual-type" minOccurs="0"
+    			maxOccurs="1">
+    		</element>
+    		<element name="boot" type="mdf:boot-type" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="registers" type="mdf:registers-type"
+    			minOccurs="1" maxOccurs="1">
+    		</element>
+    		<element name="abstractions" type="mdf:abstractions-type"
+    			minOccurs="1" maxOccurs="1">
+    		</element>
+    		<element name="alarm" type="mdf:alarm-type" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="dmatrix" type="mdf:dmatrix-type"
+    			minOccurs="1" maxOccurs="1">
+    		</element>
+    		<element name="events" type="mdf:events-type" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    	</sequence>
+
+    </complexType>
+
+    <complexType name="manufacturer-type">
+    	<sequence>
+    		<element name="name" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="address" type="mdf:address-type"
+    			minOccurs="0" maxOccurs="unbounded">
+    		</element>
+    		<element name="telephone" type="mdf:telephone-type"
+    			minOccurs="0" maxOccurs="unbounded">
+    		</element>
+    		<element name="email" type="mdf:email-type" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    		<element name="web" type="mdf:web-type" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="address-type">
+    	<sequence>
+    		<element name="street" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="city" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="postcode" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="country" type="string" minOccurs="1" maxOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="telephone-type">
+    	<sequence>
+    		<element name="number" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="description" minOccurs="1" maxOccurs="1">
+    			<complexType>
+    				<simpleContent>
+    					<extension base="string">
+    						<attribute name="lang" type="language" use="optional" default="en">
+    						</attribute>
+    					</extension>
+    				</simpleContent>
+    			</complexType>
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="email-type">
+    	<sequence>
+    		<element name="address" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="description" type="string" minOccurs="1" maxOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="web-type">
+    	<sequence>
+    		<element name="address" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="description" type="string" minOccurs="1" maxOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="boot-type">
+    	<sequence>
+    		<element name="algorithm" type="unsignedInt" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="blocksize" type="unsignedInt" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="blockcount" type="unsignedInt" minOccurs="1" maxOccurs="1"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="registers-type">
+    	<sequence>
+    		<element name="reg" type="mdf:reg-type" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="reg-type">
+    	<sequence>
+    		<group ref="mdf:name-desc-group"/>
+    		<element name="access" minOccurs="1" maxOccurs="1" type="mdf:access-type">
+    		</element>
+    		<element name="valuelist" type="mdf:valuelist-type"
+    			minOccurs="0" maxOccurs="1">
+    		</element>
+    		<element name="bit" type="mdf:bit-type" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    	<attribute name="page" type="unsignedShort" use="required"></attribute>
+    	<attribute name="offset" type="unsignedByte" use="required"></attribute>
+    </complexType>
+
+    <complexType name="valuelist-type">
+    	<sequence>
+    		<element name="item" type="mdf:item-type" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="item-type">
+    	<sequence>
+    		<group ref="mdf:name-desc-group"/>
+    	</sequence>
+    	<attribute name="value" type="mdf:c-hex-type" use="required"></attribute>
+    </complexType>
+
+    <complexType name="bit-type">
+    	<sequence>
+    		<group ref="mdf:name-desc-group"/>
+    	</sequence>
+    	<attribute name="pos" type="unsignedByte" use="required"></attribute>
+    	<attribute name="default" type="boolean" use="optional"></attribute>
+    </complexType>
+
+    <complexType name="abstraction-type">
+    	<sequence>
+    	    <group ref="mdf:name-desc-group"/>
+    		<element name="access" type="mdf:access-type"></element>
+    	</sequence>
+    	<attribute name="type" type="string" use="required"></attribute>
+    	<attribute name="page" type="unsignedShort" use="required"></attribute>
+    	<attribute name="offset" type="unsignedByte" use="required"></attribute>
+    </complexType>
+
+    <simpleType name="access-type">
+    	<restriction base="string">
+    		<enumeration value="r"></enumeration>
+    		<enumeration value="w"></enumeration>
+    		<enumeration value="rw"></enumeration>
+    	</restriction>
+    </simpleType>
+
+    <complexType name="alarm-type">
+    	<sequence>
+    		<element name="bit" type="mdf:bit-type" minOccurs="8" maxOccurs="8"></element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="dmatrix-type">
+    	<sequence>
+    		<element name="level" type="unsignedInt" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="start" minOccurs="1" maxOccurs="1">
+    			<complexType>
+    				<attribute name="page" type="unsignedShort" use="required"></attribute>
+    				<attribute name="offset" type="unsignedByte" use="required"></attribute>
+    			</complexType>
+    		</element>
+    		<element name="rowcnt" type="string" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="action" type="mdf:action-type" minOccurs="1"
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="action-type">
+    	<sequence>
+    		<group ref="mdf:name-desc-group"/>
+    		<element name="param" minOccurs="1" maxOccurs="1">
+    			<complexType>
+    				<sequence>
+    					<group ref="mdf:name-desc-group"/>
+    					<element name="bit" type="mdf:bit-type"
+    						minOccurs="1" maxOccurs="8">
+    					</element>
+    				</sequence>
+    			</complexType>
+    		</element>
+    	</sequence>
+    	<attribute name="code" type="mdf:c-hex-type" use="required"></attribute>
+    </complexType>
+
+    <complexType name="events-type">
+    	<sequence>
+    		<element name="event" type="mdf:event-type" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    </complexType>
+
+    <complexType name="event-type">
+    	<sequence>
+    		<group ref="mdf:name-desc-group"/>
+    		<element name="priority" type="unsignedByte" minOccurs="1"
+    			maxOccurs="1">
+    		</element>
+    		<element name="data" minOccurs="0" maxOccurs="unbounded">
+    			<complexType>
+    				<sequence>
+    					<group ref="mdf:name-desc-group"/>
+    				</sequence>
+    				<attribute name="offset" type="unsignedShort"
+    					use="required">
+    				</attribute>
+    			</complexType>
+    		</element>
+    	</sequence>
+    	<attribute name="class" type="mdf:c-hex-type" use="required"></attribute>
+    	<attribute name="type" type="mdf:c-hex-type" use="required"></attribute>
+    </complexType>
+
+    <group name="name-desc-group">
+        <sequence>
+    		<element name="name" minOccurs="1" maxOccurs="1">
+    			<complexType>
+    				<simpleContent>
+    					<extension base="string">
+    						<attribute name="lang" type="language" use="optional" default="en">
+    						</attribute>
+    					</extension>
+    				</simpleContent>
+    			</complexType>
+    		</element>
+    		<element name="description" minOccurs="1" maxOccurs="1">
+    			<complexType>
+    				<simpleContent>
+    					<extension base="string">
+    						<attribute name="lang" type="language" use="optional" default="en">
+    						</attribute>
+    					</extension>
+    				</simpleContent>
+    			</complexType>
+    		</element>
+    	</sequence>
+    </group>
+
+    <complexType name="abstractions-type">
+    	<sequence>
+    		<element name="abstraction" type="mdf:abstraction-type" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence>
+    </complexType>
+
+    <simpleType name="c-hex-type">
+    	<restriction base="string">
+    		<pattern value="[0-9]+"></pattern>
+    		<pattern value="0x[0-9a-fA-F]+"></pattern>
+    	</restriction>
+    </simpleType>
+
+    <complexType name="picture-type">
+    	<sequence>
+    		<element name="description">
+    			<complexType>
+    				<simpleContent>
+    					<extension base="string">
+    						<attribute name="lang" type="language" use="optional" default="en">
+    						</attribute>
+    					</extension>
+    				</simpleContent>
+    			</complexType>
+    		</element>
+    	</sequence>
+    	<attribute name="path" type="string" use="required"></attribute>
+    	<attribute name="format" type="string" use="required"></attribute>
+    	<attribute name="size" type="unsignedLong" use="required"></attribute>
+    </complexType>
+
+    <complexType name="firmware-type">
+    	<sequence>
+    		<element name="description">
+    			<complexType>
+    				<simpleContent>
+    					<extension base="string">
+    						<attribute name="lang" type="language" use="optional" default="en">
+    						</attribute>
+    					</extension>
+    				</simpleContent>
+    			</complexType>
+    		</element>
+    	</sequence>
+    	<attribute name="path" type="string" use="required"></attribute>
+    	<attribute name="format" type="string" use="required"></attribute>
+    	<attribute name="size" type="unsignedInt" use="required"></attribute>
+    	<attribute name="date" type="date" use="required"></attribute>
+    	<attribute name="version_major" type="string" use="required"></attribute>
+    	<attribute name="version_minor" type="string" use="required"></attribute>
+    	<attribute name="version_subminor" type="string" use="required"></attribute>
+    </complexType>
+
+    <complexType name="manual-type">
+    	<sequence>
+    		<element name="description">
+    			<complexType>
+    				<simpleContent>
+    					<extension base="string">
+    						<attribute name="lang" type="language" use="optional" default="en">
+    						</attribute>
+    					</extension>
+    				</simpleContent>
+    			</complexType>
+    		</element>
+    	</sequence>
+    	<attribute name="path" type="string" use="required"></attribute>
+    	<attribute name="lang" type="language" use="optional" default="en"></attribute>
+    	<attribute name="format" type="string" use="required"></attribute>
+    </complexType>
+</schema>
