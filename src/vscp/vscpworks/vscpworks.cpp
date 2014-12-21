@@ -2707,7 +2707,7 @@ bool VscpworksApp::writeConfiguration( void )
 
             // flags
             pFileStream->Write("<flags>",strlen("<flags>"));
-            buf.Printf(_("%d"), pIf->m_flags );
+            buf.Printf(_("%lu"), pIf->m_flags );
             pFileStream->Write( buf.mb_str(),strlen(buf.mb_str()));
             pFileStream->Write("</flags>\n",strlen("</flags>\n"));	
 

@@ -79,8 +79,8 @@ public:
      */
     CSocketcanObj *m_socketcanArray[ CANAL_SOCKETCAN_DRIVER_MAX_OPEN ];
 
-    /// Mutex for open/close
-    pthread_mutex_t m_objMutex;
+    /// Mutex for driver
+    pthread_mutex_t m_drvobjMutex;
 
     /// Counter for users of the interface
     unsigned long m_instanceCounter;

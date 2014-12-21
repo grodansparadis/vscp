@@ -989,13 +989,13 @@ void dlgConfiguration::CreateControls()
 
   wxImageList* itemPropertySheetDialog1ImageList = new wxImageList(16, 16, true, 5);
   {
-    wxIcon itemPropertySheetDialog1Icon0(GetIconResource(wxT("fatbee_v2.ico")));
+    wxIcon itemPropertySheetDialog1Icon0(GetIconResource(wxT("copy.xpm")));
     itemPropertySheetDialog1ImageList->Add(itemPropertySheetDialog1Icon0);
-    wxIcon itemPropertySheetDialog1Icon1(GetIconResource(wxT("fatbee_v2.ico")));
+    wxIcon itemPropertySheetDialog1Icon1(GetIconResource(wxT("copy.xpm")));
     itemPropertySheetDialog1ImageList->Add(itemPropertySheetDialog1Icon1);
-    wxIcon itemPropertySheetDialog1Icon2(GetIconResource(wxT("fatbee_v2.ico")));
+    wxIcon itemPropertySheetDialog1Icon2(GetIconResource(wxT("copy.xpm")));
     itemPropertySheetDialog1ImageList->Add(itemPropertySheetDialog1Icon2);
-    wxIcon itemPropertySheetDialog1Icon3(GetIconResource(wxT("fatbee_v2.ico")));
+    wxIcon itemPropertySheetDialog1Icon3(GetIconResource(wxT("copy.xpm")));
     itemPropertySheetDialog1ImageList->Add(itemPropertySheetDialog1Icon3);
     wxIcon itemPropertySheetDialog1Icon4(GetIconResource(wxT("copy.xpm")));
     itemPropertySheetDialog1ImageList->Add(itemPropertySheetDialog1Icon4);

@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@
-CPPFLAGS = @CPPFLAGS@ -DwxUSE_GUI=1 
+CPPFLAGS = @CPPFLAGS@ -DwxUSE_GUI=1 -I../common -I../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 STRIP = strip

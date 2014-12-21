@@ -51,19 +51,19 @@ _fini()
 CSocketcanApp::CSocketcanApp()
 {
 	m_instanceCounter = 0;
-	pthread_mutex_init(&m_objMutex, NULL);
+	pthread_mutex_init(&m_drvobjMutex, NULL);
     
 	// Init. the driver array
 	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
 		m_socketcanArray[ i ] = NULL;
 	}
 
-	UNLOCK_MUTEX(m_objMutex);
+	UNLOCK_MUTEX(m_drvobjMutex);
 }
 
 CSocketcanApp::~CSocketcanApp()
 {
-	LOCK_MUTEX(m_objMutex);
+	LOCK_MUTEX(m_drvobjMutex);
 
 	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
 
@@ -78,8 +78,8 @@ CSocketcanApp::~CSocketcanApp()
 		}
 	}
 
-	UNLOCK_MUTEX(m_objMutex);
-	pthread_mutex_destroy(&m_objMutex);
+	UNLOCK_MUTEX(m_drvobjMutex);
+	pthread_mutex_destroy(&m_drvobjMutex);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ CSocketcanApp::addDriverObject(CSocketcanObj *plog)
 {
 	long h = 0;
 
-	LOCK_MUTEX(m_objMutex);
+	LOCK_MUTEX(m_drvobjMutex);
 	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
 
 		if ( NULL == m_socketcanArray[ i ] ) {
@@ -119,7 +119,7 @@ CSocketcanApp::addDriverObject(CSocketcanObj *plog)
 			break;
 		}
 	}
-	UNLOCK_MUTEX(m_objMutex);
+	UNLOCK_MUTEX(m_drvobjMutex);
 
 	return h;
 }
@@ -156,10 +156,10 @@ CSocketcanApp::removeDriverObject(long h)
 	if (idx < 0) return;
 	if (idx >= CANAL_SOCKETCAN_DRIVER_MAX_OPEN) return;
 
-	LOCK_MUTEX(m_objMutex);
+	LOCK_MUTEX(m_drvobjMutex);
 	if (NULL != m_socketcanArray[ idx ]) delete m_socketcanArray[ idx ];
 	m_socketcanArray[ idx ] = NULL;
-	UNLOCK_MUTEX(m_objMutex);
+	UNLOCK_MUTEX(m_drvobjMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

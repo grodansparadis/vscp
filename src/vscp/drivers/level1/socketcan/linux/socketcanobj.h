@@ -61,7 +61,8 @@
 #define SOCKETCAN_MAX_RCVMSG	512	// Maximum number of received messages
 #define SOCKETCAN_MAX_SNDMSG	512	// Maximum number of received messages
 
-#define SOCKETCAN_OBJ_MUTEX     "___SOCKETCAN_OBJ_MUTEX___"
+#define SOCKETCAN_RX_MUTEX     "___SOCKETCAN_LEVEL1_RX_MUTEX___"
+#define SOCKETCAN_TX_MUTEX     "___SOCKETCAN_LEVEL1_TX_MUTEX___"
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // _socketcanobj
@@ -114,10 +115,10 @@ public:
     /*!
         Send frame
      */
-    int writeMsg(bool bExtended,
-            unsigned long id,
-            unsigned char dlc,
-            unsigned char * pdata);
+    int writeMsg( bool bExtended,
+					unsigned long id,
+					unsigned char dlc,
+					unsigned char * pdata);
 
     /*!
         Send frame
@@ -159,9 +160,7 @@ public:
     int dataAvailable(void);
 
     /*!
-        Get the status code
-
-		
+        Get the status code	
      */
     bool getStatus(PCANALSTATUS pCanalStatus);
 
@@ -170,13 +169,10 @@ public:
 
 
     /*!
-        The socketcan object MUTEX 
-        Ice: ????? socketcandrv.h have already object mutex 
-        this must be for list locking and port locking
-					
-     */
-    pthread_mutex_t m_socketcanObjMutex;
-
+        The socketcan read/write mutexes 
+	 */ 
+    pthread_mutex_t m_socketcanRcvMutex;
+	pthread_mutex_t m_socketcanSndMutex;
 
     /*!
         id for worker thread

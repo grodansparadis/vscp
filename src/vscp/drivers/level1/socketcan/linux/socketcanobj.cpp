@@ -108,11 +108,12 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 
 
 	//----------------------------------------------------------------------
-	//	Accure Mutex
+	//	Acquire Mutex
 	//----------------------------------------------------------------------
 	pthread_attr_t thread_attr;
 	pthread_attr_init(&thread_attr);
-	pthread_mutex_init(&m_socketcanObjMutex, NULL);
+	pthread_mutex_init( &m_socketcanRcvMutex, NULL );
+	pthread_mutex_init( &m_socketcanSndMutex, NULL );
 
 	m_socketcanobj.m_bRun = true;
 
@@ -164,10 +165,10 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 	//----------------------------------------------------------------------
 	// Start thread 
 	//----------------------------------------------------------------------
-	if (pthread_create(&m_threadId,
-			&thread_attr,
-			workThread,
-			this)) {
+	if ( pthread_create( &m_threadId,
+							&thread_attr,
+							workThread,
+							this)) {
 		rv = false;
 		close();
 	}
@@ -175,7 +176,8 @@ bool CSocketcanObj::open(const char *pDevice, unsigned long flags)
 	//----------------------------------------------------------------------
 	// Release the mutex for other threads to use
 	//----------------------------------------------------------------------
-	pthread_mutex_unlock(&m_socketcanObjMutex);
+	pthread_mutex_unlock(&m_socketcanRcvMutex);
+	pthread_mutex_unlock(&m_socketcanSndMutex);
 
 	return rv;
 }
@@ -195,13 +197,11 @@ int CSocketcanObj::close(void)
 	// Terminate the thread
 	m_socketcanobj.m_bRun = false;
 
-	UNLOCK_MUTEX(m_socketcanObjMutex);
-	LOCK_MUTEX(m_socketcanObjMutex);
-
 	// Give the worker thread some time to terminate
 	int *trv;
 	pthread_join(m_threadId, (void **) &trv);
-	pthread_mutex_destroy(&m_socketcanObjMutex);
+	pthread_mutex_destroy(&m_socketcanRcvMutex);
+	pthread_mutex_destroy(&m_socketcanSndMutex);
 
 	::close(m_socketcanobj.m_sock);
 
@@ -229,11 +229,9 @@ int CSocketcanObj::writeMsg(PCANALMSG pCanalMsg)
 					memcpy(pnewMsg, pCanalMsg, sizeof( canalMsg));
 				}
 
-				LOCK_MUTEX(m_socketcanObjMutex);
-
+				LOCK_MUTEX(m_socketcanSndMutex);
 				dll_addNode(&m_socketcanobj.m_sndList, pNode);
-
-				UNLOCK_MUTEX(m_socketcanObjMutex);
+				UNLOCK_MUTEX(m_socketcanSndMutex);
 
 				rv = true;
 			}
@@ -251,15 +249,13 @@ int CSocketcanObj::readMsg(canalMsg *pMsg)
 	int rv = false;
 
 	if ((NULL != m_socketcanobj.m_rcvList.pHead) &&
-
 			(NULL != m_socketcanobj.m_rcvList.pHead->pObject)) {
 
-		LOCK_MUTEX(m_socketcanObjMutex);
-
 		memcpy(pMsg, m_socketcanobj.m_rcvList.pHead->pObject, sizeof( canalMsg));
+		
+		LOCK_MUTEX(m_socketcanRcvMutex);
 		dll_removeNode(&m_socketcanobj.m_rcvList, m_socketcanobj.m_rcvList.pHead);
-
-		UNLOCK_MUTEX(m_socketcanObjMutex);
+		UNLOCK_MUTEX(m_socketcanRcvMutex);
 
 		rv = true;
 	}
@@ -275,12 +271,6 @@ bool CSocketcanObj::setFilter(unsigned long filter, unsigned long mask)
 	char buf[ 20 ];
 	char szCmd[ 80 ];
 
-	LOCK_MUTEX(m_socketcanObjMutex);
-
-	// TODO
-
-	UNLOCK_MUTEX(m_socketcanObjMutex);
-
 	return true;
 }
 
@@ -292,12 +282,6 @@ bool CSocketcanObj::setFilter(unsigned long filter)
 {
 	char buf[ 20 ];
 	char szCmd[ 80 ];
-
-	LOCK_MUTEX(m_socketcanObjMutex);
-
-	// TODO
-
-	UNLOCK_MUTEX(m_socketcanObjMutex);
 
 	return true;
 }
@@ -311,12 +295,6 @@ bool CSocketcanObj::setMask(unsigned long mask)
 	char buf[ 20 ];
 	char szCmd[ 80 ];
 
-	LOCK_MUTEX(m_socketcanObjMutex);
-
-	// TODO
-
-	UNLOCK_MUTEX(m_socketcanObjMutex);
-
 	return true;
 }
 
@@ -328,9 +306,9 @@ int CSocketcanObj::dataAvailable(void)
 {
 	int cnt;
 
-	LOCK_MUTEX(m_socketcanObjMutex);
+	LOCK_MUTEX(m_socketcanRcvMutex);
 	cnt = dll_getNodeCount(&m_socketcanobj.m_rcvList);
-	UNLOCK_MUTEX(m_socketcanObjMutex);
+	UNLOCK_MUTEX(m_socketcanRcvMutex);
 
 	return cnt;
 }
@@ -395,7 +373,7 @@ void *workThread(void *pObject)
 #endif
 
 	
-	if (bind(sock, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+	if ( bind( sock, (struct sockaddr *)&addr, sizeof(addr) ) < 0 ) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "CReadSocketCanTread: Error in socket bind. Terminating!");
@@ -409,7 +387,7 @@ void *workThread(void *pObject)
 		//                        Receive 
 		///////////////////////////////////////////////////////////////////////
 
-		LOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
+		//LOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
 
 		// Noting to do if we should end...
 		if (!psocketcanobj->m_socketcanobj.m_bRun) continue;
@@ -459,7 +437,10 @@ void *workThread(void *pObject)
 						}
 						pMsg->sizeData = frame.can_dlc;
 						memcpy(pMsg->data,frame.data,frame.can_dlc);
+						
+						LOCK_MUTEX(psocketcanobj->m_socketcanRcvMutex);
 						dll_addNode(&psocketcanobj->m_socketcanobj.m_rcvList, pNode);
+						UNLOCK_MUTEX(psocketcanobj->m_socketcanRcvMutex);
 						
 						// Update statistics
 						psocketcanobj->m_socketcanobj.m_stat.cntReceiveData += pMsg->sizeData;
@@ -475,13 +456,13 @@ void *workThread(void *pObject)
 			
 		}
 
-		UNLOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
+		//UNLOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
 
 		///////////////////////////////////////////////////////////////////////
 		//                          Transmit
 		///////////////////////////////////////////////////////////////////////
 
-		LOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
+		
 
 		if ((NULL != psocketcanobj->m_socketcanobj.m_sndList.pHead) &&
 				(NULL != psocketcanobj->m_socketcanobj.m_sndList.pHead->pObject)) {
@@ -489,7 +470,10 @@ void *workThread(void *pObject)
 			canalMsg msg;
 
 			memcpy(&msg, psocketcanobj->m_socketcanobj.m_sndList.pHead->pObject, sizeof( canalMsg));
-			dll_removeNode(&psocketcanobj->m_socketcanobj.m_sndList, psocketcanobj->m_socketcanobj.m_sndList.pHead);
+			
+			LOCK_MUTEX(psocketcanobj->m_socketcanSndMutex);
+			dll_removeNode(&psocketcanobj->m_socketcanobj.m_sndList, psocketcanobj->m_socketcanobj.m_sndList.pHead);			
+			UNLOCK_MUTEX(psocketcanobj->m_socketcanSndMutex);
 			
 			memset(&frame, 0, sizeof(struct can_frame));
 			frame.can_id = msg.id;
@@ -506,8 +490,6 @@ void *workThread(void *pObject)
 			psocketcanobj->m_socketcanobj.m_stat.cntTransmitFrames += 1;
 
 		} // if there is something to transmit
-
-		UNLOCK_MUTEX(psocketcanobj->m_socketcanObjMutex);
 
 	} // while( psocketcanobj->m_socketcanobj.m_bRun )
 	

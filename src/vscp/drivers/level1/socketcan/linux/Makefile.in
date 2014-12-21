@@ -44,7 +44,7 @@ PROJOBJS = ../../../../common/guid.o ../../../../../common/dllist.o
 all: vscpl1_socketcandrv.so test
 
 install: all
-	$(INSTALL_PROGRAM) socketcandrv.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl1_socketcandrv.so $(libdir)
 
 uninstall: 
 
