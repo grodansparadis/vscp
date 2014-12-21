@@ -892,25 +892,25 @@ void VSCPInformation::fillClassDescriptions( wxControlWithItems *pctrl,
 		switch (format) {
 
 		case WITH_DECIMAL_PREFIX:
-			str = _("(") + str.Format(_("%d"), key) + _(") ") + value;
+			str = _("(") + str.Format(_("%lu"), key) + _(") ") + value;
 			idx = pctrl->Append(str);
 			pctrl->SetClientData(idx, (void *) key);
 			break;
 
 		case WITH_HEX_PREFIX:
-			str = _("(") + str.Format(_("%04X"), key) + _(") ") + value;
+			str = _("(") + str.Format(_("%04lX"), key) + _(") ") + value;
 			idx = pctrl->Append(str);
 			pctrl->SetClientData(idx, (void *) key);
 			break;
 
 		case WITH_DECIMAL_SUFFIX:
-			str = value + _(" (") + str.Format(_("%d"), key) + _(")");
+			str = value + _(" (") + str.Format(_("%lu"), key) + _(")");
 			idx = pctrl->Append(str);
 			pctrl->SetClientData(idx, (void *) key);
 			break;
 
 		case WITH_HEX_SUFFIX:
-			str = value + _(" (") + str.Format(_("%04X"), key) + _(")");
+			str = value + _(" (") + str.Format(_("%04lX"), key) + _(")");
 			idx = pctrl->Append(str);
 			pctrl->SetClientData(idx, (void *) key);
 			break;
@@ -948,22 +948,22 @@ void VSCPInformation::fillTypeDescriptions( wxArrayString& strArray,
 			switch (format) {
 
 			case WITH_DECIMAL_PREFIX:
-				str = _("(") + str.Format(_("%d"), key) + _(") ") + value;
+				str = _("(") + str.Format(_("%lu"), key) + _(") ") + value;
 				strArray.Add(str);
 				break;
 
 			case WITH_HEX_PREFIX:
-				str = _("(") + str.Format(_("%04X"), key) + _(") ") + value;
+				str = _("(") + str.Format(_("%04lX"), key) + _(") ") + value;
 				idx = strArray.Add(str);
 				break;
 
 			case WITH_DECIMAL_SUFFIX:
-				str = value + _(" (") + str.Format(_("%d"), (key & 0xffff)) + _(")");
+				str = value + _(" (") + str.Format(_("%lu"), (key & 0xffff)) + _(")");
 				strArray.Add(str);
 				break;
 
 			case WITH_HEX_SUFFIX:
-				str = value + _(" (") + str.Format(_("%04X"), (key & 0xffff)) + _(")");
+				str = value + _(" (") + str.Format(_("%04lX"), (key & 0xffff)) + _(")");
 				idx = strArray.Add(str);
 				break;
 
@@ -1006,25 +1006,25 @@ void VSCPInformation::fillTypeDescriptions( wxControlWithItems *pctrl,
 			switch (format) {
 
 			case WITH_DECIMAL_PREFIX:
-				str = _("(") + str.Format(_("%d"), key) + _(") ") + value;
+				str = _("(") + str.Format(_("%lu"), key) + _(") ") + value;
 				idx = pctrl->Append(str);
 				pctrl->SetClientData(idx, (void *) (key));
 				break;
 
 			case WITH_HEX_PREFIX:
-				str = _("(") + str.Format(_("%04X"), key) + _(") ") + value;
+				str = _("(") + str.Format(_("%04lX"), key) + _(") ") + value;
 				idx = pctrl->Append(str);
 				pctrl->SetClientData(idx, (void *) (key));
 				break;
 
 			case WITH_DECIMAL_SUFFIX:
-				str = value + _(" (") + str.Format(_("%d"), (key & 0xffff)) + _(")");
+				str = value + _(" (") + str.Format(_("%lu"), (key & 0xffff)) + _(")");
 				idx = pctrl->Append(str);
 				pctrl->SetClientData(idx, (void *) (key));
 				break;
 
 			case WITH_HEX_SUFFIX:
-				str = value + _(" (") + str.Format(_("%04X"), (key & 0xffff)) + _(")");
+				str = value + _(" (") + str.Format(_("%04lX"), (key & 0xffff)) + _(")");
 				idx = pctrl->Append(str);
 				pctrl->SetClientData(idx, (void *) (key));
 				break;

@@ -653,13 +653,13 @@ bool dlgVSCPTrmitElement::writeEventData( VscpTXObj *pObj )
   
 	m_wxChkDefaultGUID->SetValue( pObj->m_bUseDefaultGUID );
   
-	str.Printf(_("%d"), pObj->m_count );
+	str.Printf(_("%lu"), pObj->m_count );
 	m_wxStrCount->SetValue( str );
   
-	str.Printf(_("%d"), pObj->m_period );
+	str.Printf(_("%lu"), pObj->m_period );
 	m_wxStrPeriod->SetValue( str );
   
-	str.Printf(_("%d"), pObj->m_trigger );
+	str.Printf(_("%lu"), pObj->m_trigger );
 	m_wxComboTrigger->SetValue( str );
    
     for ( i=0; i<m_wxComboClass->GetCount(); i++ ) {

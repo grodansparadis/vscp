@@ -1508,25 +1508,25 @@ bool frmVSCPSession::addToTxGrid(VscpTXObj *pObj, int selrow)
     m_ctrlGridTransmission->SetCellRenderer(row - 1, 2, new wxGridCellStringRenderer);
 
     // Period
-    m_ctrlGridTransmission->SetCellValue(row - 1, 2, wxString::Format(_("%d"), pObj->m_period));
+    m_ctrlGridTransmission->SetCellValue(row - 1, 2, wxString::Format(_("%lu"), pObj->m_period));
     m_ctrlGridTransmission->SetCellRenderer(row - 1, 2, new wxGridCellStringRenderer);
     m_ctrlGridTransmission->SetCellAlignment(wxALIGN_CENTRE, row - 1, 2);
 
     // Count
-    m_ctrlGridTransmission->SetCellValue(row - 1, 3, wxString::Format(_("%d"), pObj->m_count));
+    m_ctrlGridTransmission->SetCellValue(row - 1, 3, wxString::Format(_("%lu"), pObj->m_count));
     m_ctrlGridTransmission->SetCellRenderer(row - 1, 3, new wxGridCellStringRenderer);
     m_ctrlGridTransmission->SetCellAlignment(wxALIGN_CENTRE, row - 1, 3);
 
     // Trigger
-    m_ctrlGridTransmission->SetCellValue(row - 1, 4, wxString::Format(_("%d"), pObj->m_trigger));
+    m_ctrlGridTransmission->SetCellValue(row - 1, 4, wxString::Format(_("%lu"), pObj->m_trigger));
     m_ctrlGridTransmission->SetCellRenderer(row - 1, 4, new wxGridCellStringRenderer);
     m_ctrlGridTransmission->SetCellAlignment(wxALIGN_CENTRE, row - 1, 4);
 
     // Event
     str.Printf(_("class=%d type=%d dsize=%d \ndata="),
-            pObj->m_Event.vscp_class,
-            pObj->m_Event.vscp_type,
-            pObj->m_Event.sizeData);
+					pObj->m_Event.vscp_class,
+					pObj->m_Event.vscp_type,
+					pObj->m_Event.sizeData);
 
     for (int i = 0; i < pObj->m_Event.sizeData; i++) {
         str += wxString::Format(_("%02X "), pObj->m_Event.pdata[i]);
