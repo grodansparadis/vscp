@@ -103,6 +103,7 @@ IMPLEMENT_CLASS(frmDeviceConfig, wxFrame)
 BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
 
     EVT_CLOSE( frmDeviceConfig::OnCloseWindow )
+    EVT_SIZE( frmDeviceConfig::OnResizeWindow )
     EVT_MENU( ID_MENUITEM_SAVE_REGSITERS, frmDeviceConfig::OnMenuitemSaveRegistersClick )
     EVT_MENU( ID_MENUITEM, frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick )
     EVT_MENU( ID_MENUITEM_LOAD_REGISTES, frmDeviceConfig::OnMenuitemLoadRegistersClick )
@@ -172,11 +173,11 @@ frmDeviceConfig::frmDeviceConfig( wxWindow* parent,
 //
 
 bool frmDeviceConfig::Create( wxWindow* parent, 
-                            wxWindowID id, 
-                            const wxString& caption, 
-                            const wxPoint& pos, 
-                            const wxSize& size, 
-                            long style) 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style) 
 {
     wxFrame::Create( parent, id, caption, pos, size, style );
 
@@ -301,6 +302,7 @@ void frmDeviceConfig::CreateControls() {
     itemToolBar25->AddControl(itemStaticText35);
     wxArrayString m_comboNodeIDStrings;
     
+    // Nodeid/guid combobox
     m_comboNodeID = new wxComboBox;
     m_comboNodeID->Create( itemToolBar25, 
                                 ID_COMBOBOX4, 
@@ -314,13 +316,18 @@ void frmDeviceConfig::CreateControls() {
     }
     m_comboNodeID->SetBackgroundColour(wxColour(255, 255, 210));
     itemToolBar25->AddControl(m_comboNodeID);
+
+    // Button for connection test
     wxBitmapButton* itemBitmapButton37 = new wxBitmapButton;
     itemBitmapButton37->Create( itemToolBar25, ID_CHECK_LEVEL2, itemFrame1->GetBitmapResource(wxT("find.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     if ( frmDeviceConfig::ShowToolTips() ) {
         itemBitmapButton37->SetToolTip( _("Test if device is present.") );
     }
     itemToolBar25->AddControl(itemBitmapButton37);
+
     itemToolBar25->AddSeparator();
+    
+    // Level II Checkbox
     m_bLevel2 = new wxCheckBox;
     m_bLevel2->Create( itemToolBar25, ID_CHECKBOX_LEVEL22, _("Level II"), wxDefaultPosition, wxDefaultSize, 0 );
     m_bLevel2->SetValue(false);
@@ -431,7 +438,7 @@ void frmDeviceConfig::CreateControls() {
 
     itemBoxSizer59->Add(15, 5, 0, wxALIGN_LEFT|wxALL, 5);
 
-    wxBoxSizer* itemBoxSizer61 = new wxBoxSizer(wxVERTICAL);
+    wxBoxSizer * itemBoxSizer61 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer58->Add(itemBoxSizer61, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_StatusWnd = new wxHtmlWindow;
@@ -669,7 +676,7 @@ bool frmDeviceConfig::enableInterface(void)
         return false;
     }
 
-    // Move to top of zorder
+    // Move to top of z-order
     Raise();
 
     // Needed on Windows to make the panels size correctly
@@ -790,20 +797,11 @@ void frmDeviceConfig::OnMenuitemVscpAboutClick(wxCommandEvent& event)
 //
 
 void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event) 
-{
-    
+{    
     unsigned char nodeid;
-
     ::wxBeginBusyCursor();
 
-    wxProgressDialog progressDlg(_("VSCP Works"),
-            _("Testing if device is present"),
-            100,
-            this,
-            wxPD_ELAPSED_TIME |
-            wxPD_AUTO_HIDE |
-            wxPD_APP_MODAL |
-            wxPD_CAN_ABORT);
+    m_pitemStatusBar->SetStatusText( _("Testing if device is present"), STATUSBAR_STATUS_RIGHT ); 
 
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
 
@@ -817,26 +815,27 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event)
         }
 
         unsigned char val;
-        if (m_csw.readLevel1Register(nodeid, 0xd0, &val)) {
+        if ( m_csw.readLevel1Register(nodeid, 0xd0, &val ) ) {
             wxMessageBox(_("Device found!"));
-        } else {
+        } 
+        else {
             wxMessageBox(_("Device was not found! Check nodeid."));
         }
 
     } 
-    else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+    else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
         // Get the destination GUID
         cguid destGUID;
         destGUID.getFromString(m_comboNodeID->GetValue());
 
         unsigned char val;
-        if (m_csw.readLevel2Register(m_ifguid,
-                m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
-                &val,
-                &destGUID,
-                &progressDlg,
-                m_bLevel2->GetValue())) {
+        if ( m_csw.readLevel2Register( m_ifguid,
+                                        m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
+                                        &val,
+                                        &destGUID,
+                                        NULL,
+                                        m_bLevel2->GetValue())) {
             wxMessageBox(_("Device found!"));
         } 
         else {
@@ -844,6 +843,8 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event)
         }
 
     }
+
+    m_pitemStatusBar->SetStatusText( _(""), STATUSBAR_STATUS_RIGHT ); 
 
     ::wxEndBusyCursor();
     event.Skip(false);
@@ -6391,3 +6392,14 @@ void frmDeviceConfig::eventStatusChange( wxCommandEvent &evt )
     }
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// eventStatusChange
+//
+
+void frmDeviceConfig::OnResizeWindow( wxSizeEvent& event ) 
+{
+    wxSize sz = wxWindow::GetClientSize();
+    //m_StatusWnd->SetPosition( wxPoint(0,0) );
+    event.Skip();
+}

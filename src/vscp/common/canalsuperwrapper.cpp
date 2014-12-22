@@ -678,7 +678,6 @@ bool CCanalSuperWrapper::readLevel1Register( uint8_t nodeid,
 	bResend = false;
 	doCmdSend( &canalEvent );
 
-	//wxDateTime start = wxDateTime::Now();
 	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
 	while ( true ) {
@@ -688,8 +687,8 @@ bool CCanalSuperWrapper::readLevel1Register( uint8_t nodeid,
 		if ( doCmdDataAvailable() ) {									// Message available
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) {	// Valid event
 				if ( (unsigned short)( canalEvent.id & 0xffff ) ==
-					( 0x0a00 + nodeid ) ) {                 // Read reply?
-						if ( canalEvent.data[ 0 ] == reg ) {// Requested register?
+					( 0x0a00 + nodeid ) ) {                             // Read reply?
+						if ( canalEvent.data[ 0 ] == reg ) {            // Requested register?
 
 							if ( NULL != pcontent ) {
 								*pcontent = canalEvent.data[ 1 ];

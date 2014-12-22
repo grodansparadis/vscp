@@ -555,13 +555,14 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 														pBoth->m_pcanalif->m_flags, 0, 0 );
 
                         // Connect to device bus
-                        subframe->enableInterface();
+                        if ( subframe->enableInterface() ) {
+                            // Move window on top
+                            subframe->Raise();
 
-                        // Move window on top
-                        subframe->Raise();
-
-                        // Show the VSCP configuration windows
-                        subframe->Show( true );
+                            // Show the VSCP configuration windows
+                            subframe->Show( true );
+                        }
+                        
 
                     }
                     else if ( INTERFACE_VSCP == pBoth->m_type ) {

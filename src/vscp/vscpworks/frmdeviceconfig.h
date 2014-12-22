@@ -269,6 +269,8 @@ public:
     */
     void eventStatusChange( wxCommandEvent &evt );
 
+    /// Windows resize handler
+    void OnResizeWindow( wxSizeEvent& event );
 
     /// wxEVT_CLOSE_WINDOW event handler for ID_FRMDEVICECONFIG
     void OnCloseWindow( wxCloseEvent& event );
