@@ -31,7 +31,7 @@
 
 #define DLL_MAIN_VERSION					1
 #define DLL_MINOR_VERSION					0
-#define DLL_SUB_VERSION				        7	
+#define DLL_SUB_VERSION				        8	
 
 // This is the vendor string - Change to your own value
 #define CANAL_DLL_VENDOR "edevices, Lithuania, http://www.8devices.com"

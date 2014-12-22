@@ -577,10 +577,10 @@ public:
 public:
 
 	/// Run flag
-	bool m_bRun;
+	volatile bool m_bRun;
 
 	// Open flag
-	bool m_bOpen;
+	volatile bool m_bOpen;
 
 	/*!
 		Interface statistics
