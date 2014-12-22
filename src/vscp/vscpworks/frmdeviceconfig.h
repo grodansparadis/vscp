@@ -4,7 +4,7 @@
 // Author:      Ake Hedman
 // Modified by: 
 // Created:     Sun 04 May 2009 17:28:13 CEST
-// RCS-ID:      
+//      
 // Copyright:   (C) 2007-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
@@ -65,8 +65,8 @@
 
 #define MAX_CONFIG_REGISTER_PAGE	22
 
-#define STATUSBAR_STATUS_RIGHT  1
-#define STATUSBAR_STATUS_LEFT   0
+#define STATUSBAR_STATUS_RIGHT		1
+#define STATUSBAR_STATUS_LEFT		0
 
 class wxToggleButton;
 class wxToolbook;
@@ -77,7 +77,11 @@ class wxHtmlWindow;
 #define SYMBOL_FRMDEVICECONFIG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_FRMDEVICECONFIG_TITLE _("frmDeviceConfig")
 #define SYMBOL_FRMDEVICECONFIG_IDNAME ID_FRMDEVICECONFIG
+#ifdef WIN32
 #define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(870, 710)
+#else
+#define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(940, 750)
+#endif
 #define SYMBOL_FRMDEVICECONFIG_POSITION wxDefaultPosition
 
 DECLARE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT, wxID_ANY )       // status change

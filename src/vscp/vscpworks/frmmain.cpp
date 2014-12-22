@@ -4,7 +4,7 @@
 // Author:      Ake Hedman
 // Modified by: 
 // Created:     Mon 16 Apr 2007 18:19:49 CEST
-// RCS-ID:      
+//       
 // Copyright:   (C) 2007-2014 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
@@ -534,7 +534,11 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 
                         // Init node id combo
                         wxRect rc = subframe->m_comboNodeID->GetRect();
+#ifdef WIN32						
                         rc.SetWidth( 60 );	
+#else
+						rc.SetWidth( 80 );
+#endif						
                         subframe->m_comboNodeID->SetSize( rc );
                         wxArrayString strings;
                         for ( int i=1; i<256; i++ ) {
