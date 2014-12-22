@@ -365,7 +365,12 @@ frmVSCPSession::frmVSCPSession()
     Init();
 }
 
-frmVSCPSession::frmVSCPSession(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
+frmVSCPSession::frmVSCPSession( wxWindow* parent, 
+                                    wxWindowID id, 
+                                    const wxString& caption, 
+                                    const wxPoint& pos, 
+                                    const wxSize& size, 
+                                    long style)
 {
     Init();
     Create(parent, id, caption, pos, size, style);
@@ -376,7 +381,12 @@ frmVSCPSession::frmVSCPSession(wxWindow* parent, wxWindowID id, const wxString& 
 // frmVSCPSession creator
 //
 
-bool frmVSCPSession::Create(wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style)
+bool frmVSCPSession::Create( wxWindow* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style)
 {
      wxFrame::Create( parent, id, caption, pos, size, style );
 

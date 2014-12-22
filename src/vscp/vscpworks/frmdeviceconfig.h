@@ -457,6 +457,7 @@ public:
 	/// Should we show tooltips?
 	static bool ShowToolTips();
 
+    wxStatusBar* m_pitemStatusBar;
     wxComboBox* m_comboNodeID;
     wxCheckBox* m_bLevel2;
     wxToggleButton* m_BtnActivateInterface;
@@ -512,7 +513,8 @@ public:
         ID_CHECKBOX_MDF_FROM_FILE = 10000,
         ID_BUTTON16 = 19113,
         ID_BUTTON17 = 19114,
-        ID_BUTTON19 = 19116
+        ID_BUTTON19 = 19116,
+        ID_STATUSBAR = 20000
     };
 
 };

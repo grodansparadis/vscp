@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "frmdeviceconfig.h"
@@ -173,10 +173,10 @@ bool frmDeviceConfig::Create( wxWindow* parent,
                             const wxSize& size, 
                             long style) 
 {
-  wxFrame::Create( parent, id, caption, pos, size, style );
+    wxFrame::Create( parent, id, caption, pos, size, style );
 
-  CreateControls();
-  SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
+    CreateControls();
+    SetIcon(GetIconResource(wxT("../../../docs/vscp/logo/fatbee_v2.ico")));
     return true;
 }
 
@@ -228,6 +228,14 @@ void frmDeviceConfig::Init()
 void frmDeviceConfig::CreateControls() {
 
     frmDeviceConfig* itemFrame1 = this;
+
+    // Statusbar
+    m_pitemStatusBar = new wxStatusBar;
+    m_pitemStatusBar->Create( itemFrame1, 
+                                ID_STATUSBAR, 
+                                wxST_SIZEGRIP | wxNO_BORDER );
+    m_pitemStatusBar->SetFieldsCount(2);
+    itemFrame1->SetStatusBar( m_pitemStatusBar );
 
     wxMenuBar* menuBar = new wxMenuBar;
     
@@ -289,7 +297,13 @@ void frmDeviceConfig::CreateControls() {
     wxArrayString m_comboNodeIDStrings;
     
     m_comboNodeID = new wxComboBox;
-    m_comboNodeID->Create( itemToolBar25, ID_COMBOBOX4, wxEmptyString, wxDefaultPosition, wxSize(410, -1), m_comboNodeIDStrings, wxCB_DROPDOWN );
+    m_comboNodeID->Create( itemToolBar25, 
+                                ID_COMBOBOX4, 
+                                wxEmptyString, 
+                                wxDefaultPosition, 
+                                wxSize(410, -1), 
+                                m_comboNodeIDStrings, 
+                                wxCB_DROPDOWN );
     if ( frmDeviceConfig::ShowToolTips() ) {
         m_comboNodeID->SetToolTip( _("Set nickname or GUID for node here") );
     }

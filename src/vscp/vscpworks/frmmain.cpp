@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "frmmainnomidi.h"
@@ -51,9 +51,7 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
 #include "merlin.h"
-////@end includes
 
 #include <wx/stdpaths.h>
 #include <wx/dir.h>
@@ -538,9 +536,11 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         wxRect rc = subframe->m_comboNodeID->GetRect();
                         rc.SetWidth( 60 );	
                         subframe->m_comboNodeID->SetSize( rc );
+                        wxArrayString strings;
                         for ( int i=1; i<256; i++ ) {
-                            subframe->m_comboNodeID->Append( wxString::Format(_("0x%02x"), i));
+                            strings.Add( wxString::Format(_("0x%02x"), i ) );
                         }
+                        subframe->m_comboNodeID->Append( strings );
 
                         subframe->m_comboNodeID->SetValue(_("0x01"));
                         subframe->SetTitle(_("VSCP Registers (CANAL) - ") +  pBoth->m_pcanalif->m_strDescription );
@@ -560,7 +560,6 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         subframe->Show( true );
 
                     }
-
                     else if ( INTERFACE_VSCP == pBoth->m_type ) {
 
                         wxString str;
@@ -580,7 +579,7 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
                         if ( pBoth->m_pvscpif->m_strPassword.IsEmpty() && 
                             !pBoth->m_pvscpif->m_strUser.IsEmpty() ) {
                                 pBoth->m_pvscpif->m_strPassword = 
-                                    ::wxGetTextFromUser( _("Please enter passeword"), 
+                                    ::wxGetTextFromUser( _("Please enter password"), 
                                     _("Connection Test") );
                         }
                         
