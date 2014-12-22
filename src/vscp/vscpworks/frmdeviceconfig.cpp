@@ -72,10 +72,10 @@
 #include <wx/html/htmlcell.h>
 
 #include "vscpworks.h"
-#include "../common/canal.h"
-#include "../common/vscp.h"
-#include "../common/vscphelper.h"
-#include "../common/mdf.h"
+#include "canal.h"
+#include "vscp.h"
+#include "vscphelper.h"
+#include "mdf.h"
 #include "dlgabout.h"
 #include "dialogeditlevelidmrow.h"
 #include "dialogabstractionedit.h"
@@ -84,6 +84,9 @@
 #include "frmdeviceconfig.h"
 
 extern appConfiguration g_Config;
+
+
+DEFINE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -138,6 +141,8 @@ BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
     EVT_MENU(Menu_Popup_dm_enable_row, frmDeviceConfig::dmEnableSelectedRow)
     EVT_MENU(Menu_Popup_dm_disable_row, frmDeviceConfig::dmDisableSelectedRow)
     EVT_MENU(Menu_Popup_dm_row_wizard, frmDeviceConfig::dmRowWizard)
+
+    EVT_COMMAND(ID_FRMDEVICECONFIG, wxVSCP_STATUS_CHANGE_EVENT, frmDeviceConfig::eventStatusChange )
 
 END_EVENT_TABLE()
 
@@ -538,21 +543,10 @@ void frmDeviceConfig::OnCloseWindow(wxCloseEvent& event)
 {
     wxBusyCursor wait;
 
-    wxProgressDialog progressDlg(_("VSCP Works"),
-            _("Closing window..."),
-            100,
-            this,
-            wxPD_ELAPSED_TIME |
-            wxPD_AUTO_HIDE |
-            wxPD_APP_MODAL);
-
-    progressDlg.Pulse(_("Closing communication interface..."));
+    m_pitemStatusBar->SetStatusText( _("Closing window..."), STATUSBAR_STATUS_LEFT );
 
     // Close the communication channel
     disableInterface();
-
-    progressDlg.Update(100);
-    progressDlg.Pulse(_("Done!"));
 
     // Hide window
     Show(false);
@@ -571,6 +565,8 @@ bool frmDeviceConfig::enableInterface(void)
 {
     bool rv = true;
 
+    m_pitemStatusBar->SetStatusText( _("Opening interface..."), STATUSBAR_STATUS_LEFT );
+
     wxProgressDialog progressDlg(_("VSCP Works"),
             _("Opening interface..."),
             100,
@@ -583,6 +579,7 @@ bool frmDeviceConfig::enableInterface(void)
 
     if (0 != m_csw.doCmdOpen()) {
 
+        m_pitemStatusBar->SetStatusText( _("Interface is open."), STATUSBAR_STATUS_LEFT );
         progressDlg.Pulse(_("Interface is open."));
 
         if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
@@ -635,11 +632,13 @@ bool frmDeviceConfig::enableInterface(void)
                     // Fill the combo
                     wxString str;
                     cguid guid = m_ifguid;
+                    wxArrayString strings;
                     for (int i = 1; i < 256; i++) {
                         guid.setLSB(i);
                         guid.toString(str);
-                        m_comboNodeID->Append(str);
+                        strings.Add( str );
                     }
+                    m_comboNodeID->Append(strings);
 
                     guid.setLSB(1);
                     guid.toString(str);
@@ -663,6 +662,7 @@ bool frmDeviceConfig::enableInterface(void)
     else {
         progressDlg.Pulse(_("Failed to open Interface."));
         wxMessageBox(_("Failed to Open Interface."));
+         m_pitemStatusBar->SetStatusText( _("Failed to Open Interface."), STATUSBAR_STATUS_LEFT );
 
         m_BtnActivateInterface->SetValue(false);
         m_BtnActivateInterface->SetLabel(_("Disconnected"));
@@ -689,6 +689,7 @@ error:
 
 bool frmDeviceConfig::disableInterface(void) 
 {
+    m_pitemStatusBar->SetStatusText( _("Interface is closed."), STATUSBAR_STATUS_LEFT );
     m_csw.doCmdClose();
     return true;
 }
@@ -877,7 +878,8 @@ void frmDeviceConfig::OnInterfaceActivate(wxCommandEvent& event)
 // OnRegisterEdited
 //
 
-void frmDeviceConfig::OnRegisterEdited(wxGridEvent& event) {
+void frmDeviceConfig::OnRegisterEdited(wxGridEvent& event) 
+{
     uint8_t val;
     wxString strBuf;
     wxString str;
@@ -901,7 +903,8 @@ void frmDeviceConfig::OnRegisterEdited(wxGridEvent& event) {
 // OnCellLeftClick
 //
 
-void frmDeviceConfig::OnCellLeftClick(wxGridEvent& event) {
+void frmDeviceConfig::OnCellLeftClick(wxGridEvent& event) 
+{
     // Save clicked cell/row
     m_lastLeftClickCol = event.GetCol();
     m_lastLeftClickRow = event.GetRow();
@@ -927,7 +930,8 @@ void frmDeviceConfig::OnCellLeftClick(wxGridEvent& event) {
 // Should we show tooltips?
 //
 
-bool frmDeviceConfig::ShowToolTips() {
+bool frmDeviceConfig::ShowToolTips() 
+{
     return true;
 }
 
@@ -6366,5 +6370,24 @@ void frmDeviceConfig::OnHtmlwindowCellClicked(wxHtmlLinkEvent& event)
     }
 
     event.Skip();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// eventStatusChange
+//
+
+void frmDeviceConfig::eventStatusChange( wxCommandEvent &evt )
+{
+    switch (evt.GetInt() ) { 
+
+        case STATUSBAR_STATUS_RIGHT:
+            m_pitemStatusBar->SetStatusText( evt.GetString(), STATUSBAR_STATUS_RIGHT );   
+            break;
+
+        case STATUSBAR_STATUS_LEFT:
+        default:
+            m_pitemStatusBar->SetStatusText( evt.GetString(), STATUSBAR_STATUS_LEFT );   
+            break;
+    }
 }
 

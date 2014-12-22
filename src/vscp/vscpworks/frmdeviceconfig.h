@@ -65,6 +65,8 @@
 
 #define MAX_CONFIG_REGISTER_PAGE	22
 
+#define STATUSBAR_STATUS_RIGHT  1
+#define STATUSBAR_STATUS_LEFT   0
 
 class wxToggleButton;
 class wxToolbook;
@@ -75,8 +77,10 @@ class wxHtmlWindow;
 #define SYMBOL_FRMDEVICECONFIG_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_FRMDEVICECONFIG_TITLE _("frmDeviceConfig")
 #define SYMBOL_FRMDEVICECONFIG_IDNAME ID_FRMDEVICECONFIG
-#define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(820, 710)
+#define SYMBOL_FRMDEVICECONFIG_SIZE wxSize(870, 710)
 #define SYMBOL_FRMDEVICECONFIG_POSITION wxDefaultPosition
+
+DECLARE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT, wxID_ANY )       // status change
 
 enum {
 	Menu_Popup_Read_Value = 2000,
@@ -256,6 +260,11 @@ public:
 	 */
 	bool fetchIterfaceGUID(void);
 
+    /*!
+        Message handler that sets status messages on statusbar
+    */
+    void eventStatusChange( wxCommandEvent &evt );
+
 
     /// wxEVT_CLOSE_WINDOW event handler for ID_FRMDEVICECONFIG
     void OnCloseWindow( wxCloseEvent& event );
@@ -405,7 +414,7 @@ public:
 	};
 
 	enum {
-		m_constGridDescriptionDefaultWidth = 530
+		m_constGridDescriptionDefaultWidth = 570
 	};
 
 	enum {

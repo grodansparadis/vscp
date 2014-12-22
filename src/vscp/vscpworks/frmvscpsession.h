@@ -38,7 +38,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef _FRMVSCPSESSION_H_
 #define _FRMVSCPSESSION_H_
@@ -100,6 +100,7 @@ DECLARE_EVENT_TYPE(wxVSCP_CTRL_LOST_EVENT, wxID_ANY)            // Control threa
 DECLARE_EVENT_TYPE(wxVSCP_RCV_LOST_EVENT, wxID_ANY)             // Receive thread connection lost
 DECLARE_EVENT_TYPE(wxVSCP_RCV_PREP_CONNECT_EVENT, wxID_ANY)     // Prepare to connect
 DECLARE_EVENT_TYPE(wxVSCP_RCV_CONNECTED_EVENT, wxID_ANY)        // Connected
+//DECLARE_EVENT_TYPE(wxVSCP_STATUS_CHANGE_EVENT, wxID_ANY )       // status change
 
 // Error constants for worker threads
 #define VSCP_SESSION_ERROR_UNABLE_TO_CONNECT        -1
