@@ -574,6 +574,7 @@ const char * CanalGetDriverInfo( void );
 // History
 // =======
 //
+// 2014-12-19 DL   - problem closing port sometimes would block application
 // 2014-08-27 DL   - Exposed received message event and allowing only one instance port
 // 2007-10-31 AKHE - Blocking and driver properties added
 // 2006-05-16 AKHE - Added fastmode defines.

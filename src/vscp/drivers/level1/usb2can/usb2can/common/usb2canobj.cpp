@@ -487,7 +487,10 @@ end:
 
 bool CUsb2canObj::close( void )
 {	
-    DWORD rv;
+    DWORD rv = 0;
+	// terminate the worker thread 	
+	m_bRun = false;
+
 
     USB2CAN_close();
  	
@@ -495,18 +498,20 @@ bool CUsb2canObj::close( void )
 	SetEvent( m_transmitDataPutEvent );
 	SetEvent( m_transmitDataGetEvent );
 
-	// terminate the worker thread 	
-
-	m_bRun = false;    
-
-	while( true ) {
-		rv = CancelIo( hDataIn );
-		if ( rv ) break;
+	Sleep(10);//allow threads to finish transfers so that CancelIoEx doesn't have anything to do otherwise on reconnect may timeout
+	while (CancelIoEx(hDataIn, NULL))
+	{
+		//do nothing
 	}
 
-	while( true ) {
-		rv = CancelIo( hDataOut );
-		if ( rv ) break;
+	while (CancelIoEx(hDataOut, NULL))
+	{
+		//do nothing
+	}
+
+	if (WaitForSingleObject(m_hTreadReceive, 1000) != WAIT_OBJECT_0)
+	{
+		rv = 1;
 	}    
 
 	TerminateThread( m_hTreadReceive , rv );
@@ -514,8 +519,11 @@ bool CUsb2canObj::close( void )
 		GetExitCodeThread( m_hTreadReceive, &rv );
 		if ( STILL_ACTIVE != rv ) break;
 	}
-
-
+	rv = 0;
+	if (WaitForSingleObject(m_hTreadTransmit, 1000) != WAIT_OBJECT_0)
+	{
+		rv = 1;
+	}
 	TerminateThread( m_hTreadTransmit , rv );
 	while ( true ) {
 		GetExitCodeThread( m_hTreadTransmit, &rv );
@@ -816,14 +824,14 @@ int CUsb2canObj::writeMsg( canalMsg *pMsg )
     if( m_transmitList.nCount > USB2CAN_MAX_FIFO )
        return CANAL_ERROR_FIFO_FULL;
 
-			dllnode *pNode = new dllnode;			
+			dllnode *pNode = static_cast<dllnode*>(malloc(sizeof(dllnode)));
 			if ( NULL == pNode )
               return CANAL_ERROR_MEMORY;
 						
-			canalMsg *pcanalMsg = new canalMsg;
+			canalMsg *pcanalMsg = static_cast<canalMsg*>(malloc(sizeof(canalMsg)));
             if ( NULL == pcanalMsg )			
 			{		 
-			  delete pNode;            			
+			  free(pNode);            			
 			  return CANAL_ERROR_MEMORY;
 			}
 
@@ -835,9 +843,9 @@ int CUsb2canObj::writeMsg( canalMsg *pMsg )
 
             LOCK_MUTEX( m_transmitMutex );
 		    dll_addNode( &m_transmitList, pNode );	
+			SetEvent(m_transmitDataGetEvent);
 		    UNLOCK_MUTEX( m_transmitMutex );
 			
-			SetEvent( m_transmitDataGetEvent );
      		
     return CANAL_ERROR_SUCCESS;
 }
@@ -872,14 +880,14 @@ int CUsb2canObj::writeMsgBlocking( canalMsg *pMsg, ULONG Timeout )
            if( m_transmitList.nCount >= USB2CAN_MAX_FIFO )
 			   return CANAL_ERROR_FIFO_FULL;
 
-			dllnode *pNode = new dllnode;			
+			dllnode *pNode = static_cast<dllnode*>(malloc(sizeof(dllnode)));			
 			if ( NULL == pNode )
               return CANAL_ERROR_MEMORY;
 						
-			canalMsg *pcanalMsg = new canalMsg;
+			canalMsg *pcanalMsg = static_cast<canalMsg*>(malloc(sizeof(canalMsg)));
             if ( NULL == pcanalMsg )			
 			{		 
-			  delete pNode;            			
+			  free(pNode);            			
 			  return CANAL_ERROR_MEMORY;
 			}
 
@@ -891,9 +899,8 @@ int CUsb2canObj::writeMsgBlocking( canalMsg *pMsg, ULONG Timeout )
 
             LOCK_MUTEX( m_transmitMutex );
 		    dll_addNode( &m_transmitList, pNode );	
-		    UNLOCK_MUTEX( m_transmitMutex );
-			
 			SetEvent( m_transmitDataGetEvent );
+		    UNLOCK_MUTEX( m_transmitMutex );
   							
 	return CANAL_ERROR_SUCCESS;
 }
@@ -924,14 +931,14 @@ int CUsb2canObj::writeMsgBlocking( canalMsg *pMsg, ULONG Timeout )
            //if( m_transmitList.nCount >= USB2CAN_MAX_FIFO )
 		   //   return CANAL_ERROR_FIFO_FULL;
 
-			dllnode *pNode = new dllnode;			
+			dllnode *pNode = static_cast<dllnode*>(malloc(sizeof(dllnode)));			
 			if ( NULL == pNode )
               return CANAL_ERROR_MEMORY;
 						
-			canalMsg *pcanalMsg = new canalMsg;
+			canalMsg *pcanalMsg = static_cast<canalMsg*>(malloc(sizeof(canalMsg)));
             if ( NULL == pcanalMsg )			
 			{		 
-			  delete pNode;            			
+			  free(pNode);            			
 			  return CANAL_ERROR_MEMORY;
 			}
 
@@ -1343,9 +1350,9 @@ void workThreadTransmit( void *pObject )
 
 			          LOCK_MUTEX( pobj->m_transmitMutex );
 			          dll_removeNode( &pobj->m_transmitList, pobj->m_transmitList.pHead );
-			          UNLOCK_MUTEX( pobj->m_transmitMutex );
 
                       SetEvent( pobj->m_transmitDataPutEvent ); // Signal frame in queue                      
+			          UNLOCK_MUTEX( pobj->m_transmitMutex );
 			         }
 					else
 				 	 {
@@ -1424,11 +1431,11 @@ void workThreadReceiveData( void *pObject )
 		 {            
             index = (x * 21);
 
-            pMsg = new canalMsg;
+			pMsg = static_cast<canalMsg*>(malloc(sizeof(canalMsg)));
 
      		if ( NULL != pMsg )
 			{			 
-			  pNode = new dllnode; 
+				pNode = static_cast<dllnode*>(malloc(sizeof(dllnode)));
 
 				if ( NULL != pNode )
 				{
@@ -1475,8 +1482,8 @@ void workThreadReceiveData( void *pObject )
 				   }
 				   else 
 				   {
-	   			    delete pMsg;						
-                    delete pNode;
+	   			    free(pMsg);						
+                    free(pNode);
                     pMsg  = NULL;
                     pNode = NULL;
 				   }
@@ -1484,7 +1491,7 @@ void workThreadReceiveData( void *pObject )
 				}//if ( NULL != pNode )
 				 else
 					 {
-				      delete pMsg;
+				      free(pMsg);
                       pMsg = NULL;
 					 }
 
