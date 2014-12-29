@@ -1478,7 +1478,7 @@ bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 	if (NULL == pEventTo) return false;
 	if (NULL == pEventFrom) return false;
 
-	if (pEventFrom->sizeData > VSCP_LEVEL2_MAXDATA) return false;
+	if ( pEventFrom->sizeData > VSCP_LEVEL2_MAXDATA ) return false;
 
 	// Convert
 	pEventTo->crc = pEventFrom->crc;
@@ -1490,14 +1490,15 @@ bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 	pEventTo->vscp_type = pEventFrom->vscp_type;
 	pEventTo->sizeData = pEventFrom->sizeData;
 
-	memcpy(pEventTo->GUID, pEventFrom->GUID, 16);
+	memcpy( pEventTo->GUID, pEventFrom->GUID, 16);
 
-	if (pEventFrom->sizeData) {
+	if ( pEventFrom->sizeData ) {
 		pEventTo->pdata = new unsigned char[ pEventFrom->sizeData ];
 		if (NULL != pEventTo->pdata) {
 			memcpy(pEventTo->pdata, pEventFrom->pdata, pEventFrom->sizeData);
 		}
-	} else {
+	} 
+    else {
 		pEventTo->pdata = NULL;
 	}
 
@@ -2115,7 +2116,8 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
 		pEvent->head = vscp_readStringValue(str);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -2123,7 +2125,8 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
 		pEvent->vscp_class = vscp_readStringValue(str);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -2132,7 +2135,8 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
 		pEvent->vscp_type = vscp_readStringValue(str);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -2140,7 +2144,8 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	if (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
 		pEvent->obid = vscp_readStringValue(str);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -2155,7 +2160,8 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 			pEvent->timestamp = 0; // TODO
 #endif
 		}
-	} else {
+	} 
+    else {
 		return false;
 	}
 
@@ -2164,19 +2170,21 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 	if (tkz.HasMoreTokens()) {
 		strGUID = tkz.GetNextToken();
 		vscp_getGuidFromString(pEvent, strGUID);
-	} else {
+	} 
+    else {
 		return false;
 	}
 
 	// Handle data
 	pEvent->sizeData = 0;
+    
 	char data[ 512 ];
 	while (tkz.HasMoreTokens()) {
 		str = tkz.GetNextToken();
 		data[ pEvent->sizeData ] = vscp_readStringValue(str);
 		pEvent->sizeData++;
 	}
-
+    
 	// OK add in the data
 	if (pEvent->sizeData) {
 		uint8_t *pData = new uint8_t[ pEvent->sizeData ];
@@ -2184,7 +2192,11 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 			memcpy(pData, data, pEvent->sizeData);
 			pEvent->pdata = pData;
 		}
-	} else {
+        else {
+		    return false;
+	    }
+	} 
+    else {
 		pEvent->pdata = NULL;
 	}
 
@@ -2226,7 +2238,8 @@ void vscp_makeHtml(wxString& str)
 	for (uint32_t i = 0; i < strOriginal.Len(); i++) {
 		if (0x0a == (unsigned char) strOriginal.GetChar(i)) {
 			str += _("<br>");
-		} else {
+		} 
+        else {
 			str += strOriginal.GetChar(i);
 		}
 	}
@@ -2397,7 +2410,8 @@ wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
         strHTML += _(" # actions define =");
         strHTML += wxString::Format(_("%d "), pmdf->m_dmInfo.m_list_action.GetCount());
         strHTML += _("<br>");
-    } else {
+    } 
+    else {
         strHTML += _("No Decision Matrix is available on this device.");
         strHTML += _("<br>");
     }
@@ -2534,7 +2548,8 @@ wxString &vscp_getDeviceHtmlStatusInfo(const uint8_t *registers, CMDF *pmdf)
 
         } // manufacturer
 
-    } else {
+    } 
+    else {
         strHTML += _("No MDF info available.");
         strHTML += _("<br>");
     }
@@ -2764,7 +2779,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 
 		}
 	}
-		break;
+    break;
 
 
 		// **** CLASS ****
@@ -2775,7 +2790,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			break;
 		}
 	}
-		break;
+    break;
 
 		// **** CLASS ****
 	case VSCP_CLASS1_MEASUREMENT:
@@ -2799,12 +2814,14 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 					(long) vscp_getDataCodingBitArray(pEvent->pdata+offset, 
 					pEvent->sizeData-offset));
 		}
-			break;
+        break;
+
 		case 0x20: // byte format
             vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
 			str += _("[byte] = ?");
             str += wrkstr1;
 			break;
+
 		case 0x40: // string format
 		{
 			str += _("[string] = ");
@@ -2814,12 +2831,14 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                                         wxstr );
             str += wxstr;
 		}
-			break;
+		break;
+
 		case 0x60: // int format
             vscp_getVSCPMeasurementAsString( pEvent, wrkstr1 );
 			str += _("[int] = ");
             str += wrkstr1;
 			break;
+
 		case 0x80: // normalized int format
 		{
 			double temp = 
@@ -2827,7 +2846,8 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 												pEvent->sizeData-offset);
 			str += wxString::Format(_("[nint] = %f "), temp);
 		}
-			break;
+		break;
+
 		case 0xA0: // float format
 			if ( (pEvent->sizeData-offset) >= 5 ) {
 				float msrmt = vscp_getMeasurementAsFloat(pEvent->pdata+offset, 
@@ -2857,7 +2877,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_MASS:
 		{
@@ -2867,7 +2887,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_TIME:
 		{
@@ -2880,7 +2900,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ELECTRIC_CURRENT:
 		{
@@ -2890,7 +2910,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_TEMPERATURE:
 		{
@@ -2911,7 +2931,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			}
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_AMOUNT_OF_SUBSTANCE:
 		{
@@ -2922,7 +2942,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			}
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_INTENSITY_OF_LIGHT:
 		{
@@ -2932,7 +2952,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_FREQUENCY:
 		{
@@ -2942,7 +2962,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_RADIOACTIVITY:
 		{
@@ -2952,7 +2972,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_FORCE:
 		{
@@ -2962,7 +2982,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_PRESSURE:
 		{
@@ -2972,7 +2992,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ENERGY:
 		{
@@ -2982,7 +3002,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_POWER:
 		{
@@ -2992,7 +3012,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CHARGE:
 		{
@@ -3002,7 +3022,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_POTENTIAL:
 		{
@@ -3012,7 +3032,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CAPACITANCE:
 		{
@@ -3022,7 +3042,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_RECISTANCE:
 		{
@@ -3032,7 +3052,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ELECTRICAL_CONDUCTANCE:
 		{
@@ -3042,7 +3062,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_MAGNETIC_FIELD_STRENGTH:
 		{
@@ -3052,7 +3072,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX:
 		{
@@ -3062,7 +3082,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_MAGNETIC_FLUX_DENSITY:
 		{
@@ -3072,7 +3092,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_INDUCTANCE:
 		{
@@ -3082,7 +3102,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_FLUX_OF_LIGHT:
 		{
@@ -3092,7 +3112,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ILLUMINANCE:
 		{
@@ -3102,7 +3122,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_RADIATION_DOSE:
 		{
@@ -3112,7 +3132,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_CATALYTIC_ACITIVITY:
 		{
@@ -3122,7 +3142,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_VOLUME:
 		{
@@ -3132,7 +3152,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_SOUND_INTENSITY:
 		{
@@ -3142,7 +3162,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ANGLE:
 		{
@@ -3152,13 +3172,13 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_POSITION:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_SPEED:
 		{
@@ -3168,7 +3188,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ACCELERATION:
 		{
@@ -3178,7 +3198,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_TENSION:
 		{
@@ -3188,7 +3208,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_HUMIDITY:
 		{
@@ -3198,7 +3218,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_FLOW:
 		{
@@ -3208,7 +3228,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_THERMAL_RESISTANCE:
 		{
@@ -3218,7 +3238,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_REFRACTIVE_POWER:
 		{
@@ -3228,7 +3248,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_DYNAMIC_VISCOSITY:
 		{
@@ -3238,7 +3258,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_SOUND_IMPEDANCE:
 		{
@@ -3248,36 +3268,36 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_SOUND_RESISTANCE:
 		{
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ELECTRIC_ELASTANCE:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_LUMINOUS_ENERGY:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_LUMINANCE:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_CHEMICAL_CONCENTRATION:
 		{
 
 		}
-			break;
+		break;
 
 			/* // this type (= 46) has become "reserved"
 			case VSCP_TYPE_MEASUREMENT_ABSORBED_DOSE:
@@ -3291,20 +3311,20 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		{
 
 		}
-			break;
+		break;
 
 
 		case VSCP_TYPE_MEASUREMENT_DEWPOINT:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_RELATIVE_LEVEL:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_ALTITUDE:
 		{
@@ -3314,7 +3334,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_AREA:
 		{
@@ -3324,7 +3344,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_RADIANT_INTENSITY:
 		{
@@ -3334,7 +3354,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_RADIANCE:
 		{
@@ -3344,7 +3364,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_IRRADIANCE:
 		{
@@ -3354,7 +3374,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_SPECTRAL_RADIANCE:
 		{
@@ -3364,7 +3384,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_MEASUREMENT_SPECTRAL_IRRADIANCE:
 		{
@@ -3374,7 +3394,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				break;
 			}
 		}
-			break;
+		break;
 
 		}
 	}
@@ -3390,41 +3410,41 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_DATA_AD:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_DATA_DA:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_DATA_RELATIVE_STRENGTH:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_DATA_SIGNAL_LEVEL:
 		{
 
 		}
-			break;
+		break;
 
 		case VSCP_TYPE_DATA_SIGNAL_QUALITY:
 		{
 
 		}
-			break;
+		break;
 
 		}
 	}
-		break;
+	break;
 
 		// **** CLASS ****
 	case VSCP_CLASS1_INFORMATION:

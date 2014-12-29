@@ -170,6 +170,9 @@ static void webserv_util_make_chunk( char *obuf, const char *buf, int len) {
   strncat( obuf, "\r\n", 2);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// webserv_util_sendheader
+//
 
 static void webserv_util_sendheader( struct mg_connection *conn, const int returncode, const char *content )
 {
@@ -1583,6 +1586,7 @@ VSCPWebServerThread::websock_sendevent( struct mg_connection *conn,
     if (NULL == conn) return MG_FALSE;
 	if (NULL == pSession) return MG_FALSE;
 
+
 	CControlObject *pObject = (CControlObject *)conn->server_param;
 	if (NULL == pObject) return MG_FALSE;
 
@@ -1632,8 +1636,11 @@ VSCPWebServerThread::websock_sendevent( struct mg_connection *conn,
                         pObject->m_maxItemsInClientReceiveQueue) {
 
                 // Create copy of event
-                vscpEvent *pnewEvent = new vscpEvent;
+                vscpEvent *pnewEvent = new vscpEvent;                
+
                 if (NULL != pnewEvent) {
+
+                    pnewEvent->pdata = NULL;
 
                     vscp_copyVSCPEvent(pnewEvent, pEvent);
 
@@ -1671,7 +1678,10 @@ VSCPWebServerThread::websock_sendevent( struct mg_connection *conn,
 
             // Create copy of event
             vscpEvent *pnewEvent = new vscpEvent;
+            
             if (NULL != pnewEvent) {
+
+                pnewEvent->pdata = NULL;
 
                 vscp_copyVSCPEvent(pnewEvent, pEvent);
 
@@ -1679,10 +1689,11 @@ VSCPWebServerThread::websock_sendevent( struct mg_connection *conn,
                 pObject->m_clientOutputQueue.Append(pnewEvent);
                 pObject->m_semClientOutputQueue.Post();
                 pObject->m_mutexClientOutputQueue.Unlock();
+
             }
 
-        } else {
-            //vscp_deleteVSCPevent(pEvent);
+        } 
+        else {
             rv = false;
         }
     }
@@ -1756,7 +1767,8 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
 			p++; // Point beyond initial info "E;"
 			vscpEvent vscp_event;
 			str = wxString::FromAscii( p );
-			if (vscp_setVscpEventFromString( &vscp_event, str ) ) {
+            
+			if ( vscp_setVscpEventFromString( &vscp_event, str ) ) {
 
                 // Check if this user is allowed to send this event
                 if ( !pSession->m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( vscp_event.vscp_class, vscp_event.vscp_type ) ) {
@@ -1769,7 +1781,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
                 }
 
 				vscp_event.obid = pSession->m_pClientItem->m_clientID;
-				if ( pObject->getWebServer()->websock_sendevent( conn, pSession, &vscp_event ) ) {
+                if ( pObject->getWebServer()->websock_sendevent( conn, pSession, &vscp_event ) ) {
 					mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;EVENT" );
 				} 
 				else {
@@ -1780,6 +1792,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
 											WEBSOCK_STR_ERROR_TX_BUFFER_FULL );
 				}
 			}
+
 		}
 		break;
 

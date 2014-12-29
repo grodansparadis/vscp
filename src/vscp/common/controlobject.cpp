@@ -1208,14 +1208,17 @@ void CControlObject::sendEventToClient(CClientItem *pClientItem,
     if (NULL != pnewvscpEvent) {
         
         // Copy in the new event
-        memcpy(pnewvscpEvent, pEvent, sizeof( vscpEvent));
+        memcpy( pnewvscpEvent, pEvent, sizeof( vscpEvent) );
 
         // And data...
-        if ((pEvent->sizeData > 0) && (NULL != pEvent->pdata)) {
+        if ( ( NULL != pEvent->pdata ) && ( pEvent->sizeData > 0 ) ) {
             // Copy in data
             pnewvscpEvent->pdata = new uint8_t[ pEvent->sizeData ];
-            memcpy(pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData);
-        } else {
+            if ( NULL != pnewvscpEvent->pdata ) {
+                memcpy( pnewvscpEvent->pdata, pEvent->pdata, pEvent->sizeData );
+            }
+        } 
+        else {
             // No data
             pnewvscpEvent->pdata = NULL;
         }
@@ -1248,15 +1251,14 @@ void CControlObject::sendEventAllClients(vscpEvent *pEvent, uint32_t excludeID)
     for (it = m_clientList.m_clientItemList.begin(); it != m_clientList.m_clientItemList.end(); ++it) {
         pClientItem = *it;
 
-        if (NULL != pClientItem)
-        {
+        if ( NULL != pClientItem ) {
             wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
                     _(" ControlObject: clientid = %d"),
                     pClientItem->m_clientID);
         }
 
-        if ((NULL != pClientItem) && (excludeID != pClientItem->m_clientID)) {
-            sendEventToClient(pClientItem, pEvent);
+        if ( ( NULL != pClientItem ) && ( excludeID != pClientItem->m_clientID ) ) {
+            sendEventToClient( pClientItem, pEvent );
             wxLogTrace(_("wxTRACE_vscpd_receiveQueue"),
                     _(" ControlObject: Sent to client %d"),
                     pClientItem->m_clientID);
@@ -2478,10 +2480,10 @@ void *clientMsgWorkerThread::Entry()
     while (!TestDestroy() && !m_bQuit) {
 
         // Wait for event
-        if (wxSEMA_TIMEOUT ==
-                m_pCtrlObject->m_semClientOutputQueue.WaitTimeout(500)) continue;
+        if ( wxSEMA_TIMEOUT ==
+                m_pCtrlObject->m_semClientOutputQueue.WaitTimeout(500) ) continue;
 
-        if (m_pCtrlObject->m_clientOutputQueue.GetCount()) {
+        if ( m_pCtrlObject->m_clientOutputQueue.GetCount() ) {
             
             m_pCtrlObject->m_mutexClientOutputQueue.Lock();
             nodeVSCP = m_pCtrlObject->m_clientOutputQueue.GetFirst();
@@ -2489,17 +2491,19 @@ void *clientMsgWorkerThread::Entry()
             m_pCtrlObject->m_clientOutputQueue.DeleteNode(nodeVSCP);
             m_pCtrlObject->m_mutexClientOutputQueue.Unlock();
 
-            if ((NULL != pvscpEvent)) {
+            if ( NULL != pvscpEvent ) {
+
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
                 // * * * * Send event to all Level II clients (not to ourself )  * * * *
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
-                m_pCtrlObject->sendEventAllClients(pvscpEvent, pvscpEvent->obid);
+                m_pCtrlObject->sendEventAllClients( pvscpEvent, pvscpEvent->obid );
 
             } // Valid event
 
             // Delete the event
-            if (NULL != pvscpEvent) vscp_deleteVSCPevent(pvscpEvent);
+            if (NULL != pvscpEvent) vscp_deleteVSCPevent( pvscpEvent );
+            pvscpEvent = NULL;
 
         } // while
 
