@@ -1,4 +1,8 @@
 #include "fossa.h"
+#ifdef NS_MODULE_LINES
+#line 1 "modules/internal.h"
+/**/
+#endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
  * All rights reserved
@@ -23,50 +27,57 @@
 #define NS_FREE free
 #endif
 
+#define NS_SET_PTRPTR(_ptr, _v) do { if (_ptr) *(_ptr) = _v; } while (0)
+
+#ifndef NS_INTERNAL
+#define NS_INTERNAL static
+#endif
+
+/* internals that need to be accessible in unit tests */
+NS_INTERNAL struct ns_connection *ns_finish_connect(struct ns_connection *nc,
+                                                    int proto,
+                                                    union socket_address *sa,
+                                                    struct ns_add_sock_opts);
+
+NS_INTERNAL int ns_parse_address(const char *str, union socket_address *sa,
+                                 int *proto, char *host, size_t host_len);
+
+
 #endif  /* NS_INTERNAL_HEADER_INCLUDED */
+#ifdef NS_MODULE_LINES
+#line 1 "modules/iobuf.c"
+/**/
+#endif
 /* Copyright (c) 2014 Cesanta Software Limited
-* All rights reserved
-*
-* This software is dual-licensed: you can redistribute it and/or modify
-* it under the terms of the GNU General Public License version 2 as
-* published by the Free Software Foundation. For the terms of this
-* license, see <http://www.gnu.org/licenses/>.
-*
-* You are free to use this software under the terms of the GNU General
-* Public License, but WITHOUT ANY WARRANTY; without even the implied
-* warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-* See the GNU General Public License for more details.
-*
-* Alternatively, you can license this software under a commercial
-* license, as set out in <http://cesanta.com/>.
-*/
+ * All rights reserved
+ *
+ * This software is dual-licensed: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation. For the terms of this
+ * license, see <http://www.gnu.org/licenses/>.
+ *
+ * You are free to use this software under the terms of the GNU General
+ * Public License, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * Alternatively, you can license this software under a commercial
+ * license, as set out in <http://cesanta.com/>.
+ */
+
+/*
+ * == IO Buffers
+ */
 
 
-#define NS_CTL_MSG_MESSAGE_SIZE     8192
-#define NS_READ_BUFFER_SIZE         2048
-#define NS_UDP_RECEIVE_BUFFER_SIZE  2000
-#define NS_VPRINTF_BUFFER_SIZE      500
-
-struct ctl_msg {
-  ns_event_handler_t callback;
-  char message[NS_CTL_MSG_MESSAGE_SIZE];
-};
-
-void iobuf_resize(struct iobuf *io, size_t new_size) {
-  char *p;
-  if ((new_size > io->size || (new_size < io->size && new_size >= io->len)) &&
-      (p = (char *) NS_REALLOC(io->buf, new_size)) != NULL) {
-    io->size = new_size;
-    io->buf = p;
-  }
-}
-
+/* Initializes an IO buffer. */
 void iobuf_init(struct iobuf *iobuf, size_t initial_size) {
   iobuf->len = iobuf->size = 0;
   iobuf->buf = NULL;
   iobuf_resize(iobuf, initial_size);
 }
 
+/* Frees the space allocated for the iobuffer and resets the iobuf structure. */
 void iobuf_free(struct iobuf *iobuf) {
   if (iobuf != NULL) {
     NS_FREE(iobuf->buf);
@@ -74,19 +85,41 @@ void iobuf_free(struct iobuf *iobuf) {
   }
 }
 
+/*
+ * Appends data to the IO buffer.
+ *
+ * It returns the amount of bytes appended.
+ */
 size_t iobuf_append(struct iobuf *io, const void *buf, size_t len) {
+  return iobuf_insert(io, io->len, buf, len);
+}
+
+/*
+ * Inserts data at a specified offset in the IO buffer.
+ *
+ * Existing data will be shifted forwards and the buffer will
+ * be grown if necessary.
+ * It returns the amount of bytes inserted.
+ */
+size_t iobuf_insert(struct iobuf *io, size_t off, const void *buf, size_t len) {
   char *p = NULL;
 
   assert(io != NULL);
   assert(io->len <= io->size);
+  assert(off <= io->len);
 
-  if (len <= 0) {
-  } else if (io->len + len <= io->size) {
-    memcpy(io->buf + io->len, buf, len);
+  /* check overflow */
+  if (~(size_t)0 - (size_t)io->buf < len)
+    return 0;
+
+  if (io->len + len <= io->size) {
+    memmove(io->buf + off + len, io->buf + off, io->len - off);
+    memcpy(io->buf + off, buf, len);
     io->len += len;
   } else if ((p = (char *) NS_REALLOC(io->buf, io->len + len)) != NULL) {
     io->buf = p;
-    memcpy(io->buf + io->len, buf, len);
+    memmove(io->buf + off + len, io->buf + off, io->len - off);
+    memcpy(io->buf + off, buf, len);
     io->len += len;
     io->size = io->len;
   } else {
@@ -96,6 +129,7 @@ size_t iobuf_append(struct iobuf *io, const void *buf, size_t len) {
   return len;
 }
 
+/* Removes `n` bytes from the beginning of the buffer. */
 void iobuf_remove(struct iobuf *io, size_t n) {
   if (n > 0 && n <= io->len) {
     memmove(io->buf, io->buf + n, io->len - n);
@@ -103,38 +137,63 @@ void iobuf_remove(struct iobuf *io, size_t n) {
   }
 }
 
-static size_t ns_out(struct ns_connection *nc, const void *buf, size_t len) {
-  if (nc->flags & NSF_UDP) {
-    long n = sendto(nc->sock, buf, len, 0, &nc->sa.sa, sizeof(nc->sa.sin));
-    DBG(("%p %d send %ld (%d %s)", nc, nc->sock, n, errno, strerror(errno)));
-    return n < 0 ? 0 : n;
-  } else {
-    return iobuf_append(&nc->send_iobuf, buf, len);
+/*
+ * Resize an IO buffer.
+ *
+ * If `new_size` is smaller than buffer's `len`, the
+ * resize is not performed.
+ */
+void iobuf_resize(struct iobuf *io, size_t new_size) {
+  char *p;
+  if ((new_size > io->size || (new_size < io->size && new_size >= io->len)) &&
+      (p = (char *) NS_REALLOC(io->buf, new_size)) != NULL) {
+    io->size = new_size;
+    io->buf = p;
   }
 }
-
-#ifndef NS_DISABLE_THREADS
-void *ns_start_thread(void *(*f)(void *), void *p) {
-#ifdef _WIN32
-  return (void *) _beginthread((void (__cdecl *)(void *)) f, 0, p);
-#else
-  pthread_t thread_id = (pthread_t) 0;
-  pthread_attr_t attr;
-
-  (void) pthread_attr_init(&attr);
-  (void) pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-
-#if defined(NS_STACK_SIZE) && NS_STACK_SIZE > 1
-  (void) pthread_attr_setstacksize(&attr, NS_STACK_SIZE);
+#ifdef NS_MODULE_LINES
+#line 1 "modules/net.c"
+/**/
 #endif
+/*
+ * Copyright (c) 2014 Cesanta Software Limited
+ * All rights reserved
+ *
+ * This software is dual-licensed: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation. For the terms of this
+ * license, see <http://www.gnu.org/licenses/>.
+ *
+ * You are free to use this software under the terms of the GNU General
+ * Public License, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * Alternatively, you can license this software under a commercial
+ * license, as set out in <http://cesanta.com/>.
+ */
 
-  pthread_create(&thread_id, &attr, f, p);
-  pthread_attr_destroy(&attr);
+/*
+ * == Core API: TCP/UDP/SSL
+ *
+ * CAUTION: Fossa manager is single threaded. It does not protect
+ * it's data structures by mutexes, therefore all functions that are dealing
+ * with particular event manager should be called from the same thread,
+ * with exception of `mg_broadcast()` function. It is fine to have different
+ * event managers handled by different threads.
+ */
 
-  return (void *) thread_id;
-#endif
-}
-#endif  /* NS_DISABLE_THREADS */
+
+#define NS_CTL_MSG_MESSAGE_SIZE     8192
+#define NS_READ_BUFFER_SIZE         2048
+#define NS_UDP_RECEIVE_BUFFER_SIZE  2000
+#define NS_VPRINTF_BUFFER_SIZE      500
+#define NS_MAX_HOST_LEN             200
+
+struct ctl_msg {
+  ns_event_handler_t callback;
+  char message[NS_CTL_MSG_MESSAGE_SIZE];
+};
 
 static void ns_add_conn(struct ns_mgr *mgr, struct ns_connection *c) {
   c->next = mgr->active_connections;
@@ -149,107 +208,49 @@ static void ns_remove_conn(struct ns_connection *conn) {
   if (conn->next) conn->next->prev = conn->prev;
 }
 
-/* Print message to buffer. If buffer is large enough to hold the message,
- * return buffer. If buffer is to small, allocate large enough buffer on heap,
- * and return allocated buffer. */
-int ns_avprintf(char **buf, size_t size, const char *fmt, va_list ap) {
-  va_list ap_copy;
-  int len;
-
-  va_copy(ap_copy, ap);
-  len = vsnprintf(*buf, size, fmt, ap_copy);
-  va_end(ap_copy);
-
-  if (len < 0) {
-    /* eCos and Windows are not standard-compliant and return -1 when
-     * the buffer is too small. Keep allocating larger buffers until we
-     * succeed or out of memory. */
-    *buf = NULL;
-    while (len < 0) {
-      NS_FREE(*buf);
-      size *= 2;
-      if ((*buf = (char *) NS_MALLOC(size)) == NULL) break;
-      va_copy(ap_copy, ap);
-      len = vsnprintf(*buf, size, fmt, ap_copy);
-      va_end(ap_copy);
-    }
-  } else if (len > (int) size) {
-    /* Standard-compliant code path. Allocate a buffer that is large enough. */
-    if ((*buf = (char *) NS_MALLOC(len + 1)) == NULL) {
-      len = -1;
-    } else {
-      va_copy(ap_copy, ap);
-      len = vsnprintf(*buf, len + 1, fmt, ap_copy);
-      va_end(ap_copy);
-    }
-  }
-
-  return len;
-}
-
-int ns_vprintf(struct ns_connection *nc, const char *fmt, va_list ap) {
-  char mem[NS_VPRINTF_BUFFER_SIZE], *buf = mem;
-  int len;
-
-  if ((len = ns_avprintf(&buf, sizeof(mem), fmt, ap)) > 0) {
-    ns_out(nc, buf, len);
-  }
-  if (buf != mem && buf != NULL) {
-    NS_FREE(buf);
-  }
-
-  return len;
-}
-
-int ns_printf(struct ns_connection *conn, const char *fmt, ...) {
-  int len;
-  va_list ap;
-  va_start(ap, fmt);
-  len = ns_vprintf(conn, fmt, ap);
-  va_end(ap);
-  return len;
-}
-
-void ns_hexdump_connection(struct ns_connection *nc, const char *path,
-                           int num_bytes, int ev) {
-  const struct iobuf *io = ev == NS_SEND ? &nc->send_iobuf : &nc->recv_iobuf;
-  FILE *fp;
-  char *buf, src[60], dst[60];
-  int buf_size = num_bytes * 5 + 100;
-
-  if ((fp = fopen(path, "a")) != NULL) {
-    ns_sock_to_str(nc->sock, src, sizeof(src), 3);
-    ns_sock_to_str(nc->sock, dst, sizeof(dst), 7);
-    fprintf(fp, "%lu %p %s %s %s %d\n", (unsigned long) time(NULL),
-            nc->user_data, src,
-            ev == NS_RECV ? "<-" : ev == NS_SEND ? "->" :
-            ev == NS_ACCEPT ? "<A" : ev == NS_CONNECT ? "C>" : "XX",
-            dst, num_bytes);
-    if (num_bytes > 0 && (buf = (char *) NS_MALLOC(buf_size)) != NULL) {
-      ns_hexdump(io->buf + (ev == NS_SEND ? 0 : io->len) -
-        (ev == NS_SEND ? 0 : num_bytes), num_bytes, buf, buf_size);
-      fprintf(fp, "%s", buf);
-      NS_FREE(buf);
-    }
-    fclose(fp);
-  }
-}
-
 static void ns_call(struct ns_connection *nc, int ev, void *ev_data) {
+  ns_event_handler_t ev_handler;
+
+  /* LCOV_EXCL_START */
   if (nc->mgr->hexdump_file != NULL && ev != NS_POLL) {
     int len = (ev == NS_RECV || ev == NS_SEND) ? * (int *) ev_data : 0;
     ns_hexdump_connection(nc, nc->mgr->hexdump_file, len, ev);
   }
+  /* LCOV_EXCL_STOP */
 
   /*
    * If protocol handler is specified, call it. Otherwise, call user-specified
    * event handler.
    */
-  (nc->proto_handler ? nc->proto_handler : nc->handler)(nc, ev, ev_data);
+  ev_handler = nc->proto_handler ?  nc->proto_handler : nc->handler;
+  if (ev_handler != NULL) {
+    ev_handler(nc, ev, ev_data);
+  }
+}
+
+static size_t ns_out(struct ns_connection *nc, const void *buf, size_t len) {
+  if (nc->flags & NSF_UDP) {
+    int n = sendto(nc->sock, buf, len, 0, &nc->sa.sa, sizeof(nc->sa.sin));
+    DBG(("%p %d %d %d %s:%hu", nc, nc->sock, n, errno,
+         inet_ntoa(nc->sa.sin.sin_addr), ntohs(nc->sa.sin.sin_port)));
+    return n < 0 ? 0 : n;
+  } else {
+    return iobuf_append(&nc->send_iobuf, buf, len);
+  }
 }
 
 static void ns_destroy_conn(struct ns_connection *conn) {
-  closesocket(conn->sock);
+  if (conn->sock != INVALID_SOCKET) {
+    closesocket(conn->sock);
+    /*
+     * avoid users accidentally double close a socket
+     * because it can lead to difficult to debug situations.
+     * It would happen only if reusing a destroyed ns_connection
+     * but it's not always possible to run the code through an
+     * address sanitizer.
+     */
+    conn->sock = INVALID_SOCKET;
+  }
   iobuf_free(&conn->recv_iobuf);
   iobuf_free(&conn->send_iobuf);
 #ifdef NS_ENABLE_SSL
@@ -270,12 +271,94 @@ static void ns_close_conn(struct ns_connection *conn) {
   ns_destroy_conn(conn);
 }
 
-void ns_set_close_on_exec(sock_t sock) {
+/* Initializes Fossa manager. */
+void ns_mgr_init(struct ns_mgr *s, void *user_data) {
+  memset(s, 0, sizeof(*s));
+  s->ctl[0] = s->ctl[1] = INVALID_SOCKET;
+  s->user_data = user_data;
+
 #ifdef _WIN32
-  (void) SetHandleInformation((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
+  {
+    WSADATA data;
+    WSAStartup(MAKEWORD(2, 2), &data);
+  }
 #else
-  fcntl(sock, F_SETFD, FD_CLOEXEC);
+  /* Ignore SIGPIPE signal, so if client cancels the request, it
+   * won't kill the whole process. */
+  signal(SIGPIPE, SIG_IGN);
 #endif
+
+#ifndef NS_DISABLE_SOCKETPAIR
+  do {
+    ns_socketpair(s->ctl, SOCK_DGRAM);
+  } while (s->ctl[0] == INVALID_SOCKET);
+#endif
+
+#ifdef NS_ENABLE_SSL
+  {
+    static int init_done;
+    if (!init_done) {
+      SSL_library_init();
+      init_done++;
+    }
+  }
+#endif
+}
+
+/*
+ * De-initializes fossa manager.
+ *
+ * Closes and deallocates all active connections.
+ */
+void ns_mgr_free(struct ns_mgr *s) {
+  struct ns_connection *conn, *tmp_conn;
+
+  DBG(("%p", s));
+  if (s == NULL) return;
+  /* Do one last poll, see https://github.com/cesanta/mongoose/issues/286 */
+  ns_mgr_poll(s, 0);
+
+  if (s->ctl[0] != INVALID_SOCKET) closesocket(s->ctl[0]);
+  if (s->ctl[1] != INVALID_SOCKET) closesocket(s->ctl[1]);
+  s->ctl[0] = s->ctl[1] = INVALID_SOCKET;
+
+  for (conn = s->active_connections; conn != NULL; conn = tmp_conn) {
+    tmp_conn = conn->next;
+    ns_close_conn(conn);
+  }
+}
+
+/*
+ * Send `printf`-style formatted data to the connection.
+ *
+ * See `ns_send` for more details on send semantics.
+ */
+int ns_vprintf(struct ns_connection *nc, const char *fmt, va_list ap) {
+  char mem[NS_VPRINTF_BUFFER_SIZE], *buf = mem;
+  int len;
+
+  if ((len = ns_avprintf(&buf, sizeof(mem), fmt, ap)) > 0) {
+    ns_out(nc, buf, len);
+  }
+  if (buf != mem && buf != NULL) {
+    NS_FREE(buf);  /* LCOV_EXCL_LINE */
+  }                /* LCOV_EXCL_LINE */
+
+  return len;
+}
+
+/*
+ * Send `printf`-style formatted data to the connection.
+ *
+ * See `ns_send` for more details on send semantics.
+ */
+int ns_printf(struct ns_connection *conn, const char *fmt, ...) {
+  int len;
+  va_list ap;
+  va_start(ap, fmt);
+  len = ns_vprintf(conn, fmt, ap);
+  va_end(ap);
+  return len;
 }
 
 static void ns_set_non_blocking_mode(sock_t sock) {
@@ -289,7 +372,12 @@ static void ns_set_non_blocking_mode(sock_t sock) {
 }
 
 #ifndef NS_DISABLE_SOCKETPAIR
-int ns_socketpair2(sock_t sp[2], int sock_type) {
+/*
+ * Create a socket pair.
+ * `proto` can be either `SOCK_STREAM` or `SOCK_DGRAM`.
+ * Return 0 on failure, 1 on success.
+ */
+int ns_socketpair(sock_t sp[2], int sock_type) {
   union socket_address sa;
   sock_t sock;
   socklen_t len = sizeof(sa.sin);
@@ -312,7 +400,7 @@ int ns_socketpair2(sock_t sp[2], int sock_type) {
              (getsockname(sp[0], &sa.sa, &len) != 0 ||
               connect(sock, &sa.sa, len) != 0)) {
   } else if ((sp[1] = (sock_type == SOCK_DGRAM ? sock :
-             accept(sock, &sa.sa, &len))) == INVALID_SOCKET) {
+                       accept(sock, &sa.sa, &len))) == INVALID_SOCKET) {
   } else {
     ns_set_close_on_exec(sp[0]);
     ns_set_close_on_exec(sp[1]);
@@ -329,10 +417,6 @@ int ns_socketpair2(sock_t sp[2], int sock_type) {
 
   return ret;
 }
-
-int ns_socketpair(sock_t sp[2]) {
-  return ns_socketpair2(sp, SOCK_STREAM);
-}
 #endif  /* NS_DISABLE_SOCKETPAIR */
 
 /* TODO(lsm): use non-blocking resolver */
@@ -347,34 +431,78 @@ static int ns_resolve2(const char *host, struct in_addr *ina) {
   return 0;
 }
 
-/* Resolve FDQN "host", store IP address in the "ip".
- * Return > 0 (IP address length) on success. */
+/*
+ * Converts domain name into IP address.
+ *
+ * This is a blocking call. Returns 1 on success, 0 on failure.
+ */
 int ns_resolve(const char *host, char *buf, size_t n) {
   struct in_addr ad;
   return ns_resolve2(host, &ad) ? snprintf(buf, n, "%s", inet_ntoa(ad)) : 0;
 }
 
-/* Address format: [PROTO://][IP_ADDRESS:]PORT[:CERT][:CA_CERT] */
-static int ns_parse_address(const char *str, union socket_address *sa, int *p) {
+NS_INTERNAL struct ns_connection *ns_create_connection(
+    struct ns_mgr *mgr, ns_event_handler_t callback,
+    struct ns_add_sock_opts opts) {
+  struct ns_connection *conn;
+
+  if ((conn = (struct ns_connection *) NS_MALLOC(sizeof(*conn))) != NULL) {
+    memset(conn, 0, sizeof(*conn));
+    conn->sock = INVALID_SOCKET;
+    conn->handler = callback;
+    conn->mgr = mgr;
+    conn->last_io_time = time(NULL);
+    conn->flags = opts.flags;
+    conn->user_data = opts.user_data;
+  }
+
+  return conn;
+}
+
+/* Associate a socket to a connection and and add to the manager. */
+NS_INTERNAL void ns_set_sock(struct ns_connection *nc, sock_t sock) {
+  ns_set_non_blocking_mode(sock);
+  ns_set_close_on_exec(sock);
+  nc->sock = sock;
+  ns_add_conn(nc->mgr, nc);
+  DBG(("%p %d", nc, sock));
+}
+
+/*
+ * Address format: [PROTO://][HOST]:PORT
+ *
+ * HOST could be IPv4/IPv6 address or a host name.
+ * `host` is a destination buffer to hold parsed HOST part. Shoud be at least
+ * NS_MAX_HOST_LEN bytes long.
+ * `proto` is a returned socket type, either SOCK_STREAM or SOCK_DGRAM
+ *
+ * Return:
+ *   -1   on parse error
+ *    0   if HOST needs DNS lookup
+ *   >0   length of the address string
+ */
+NS_INTERNAL int ns_parse_address(const char *str, union socket_address *sa,
+                                 int *proto, char *host, size_t host_len) {
   unsigned int a, b, c, d, port = 0;
   int len = 0;
-  char host[200];
 #ifdef NS_ENABLE_IPV6
   char buf[100];
 #endif
 
-  /* MacOS needs that. If we do not zero it, subsequent bind() will fail. */
-  /* Also, all-zeroes in the socket address means binding to all addresses */
-  /* for both IPv4 and IPv6 (INADDR_ANY and IN6ADDR_ANY_INIT). */
+  /*
+   * MacOS needs that. If we do not zero it, subsequent bind() will fail.
+   * Also, all-zeroes in the socket address means binding to all addresses
+   * for both IPv4 and IPv6 (INADDR_ANY and IN6ADDR_ANY_INIT).
+   */
   memset(sa, 0, sizeof(*sa));
   sa->sin.sin_family = AF_INET;
 
-  *p = SOCK_STREAM;
+  *proto = SOCK_STREAM;
 
-  if (memcmp(str, "udp://", 6) == 0) {
+  if (strncmp(str, "udp://", 6) == 0) {
     str += 6;
-    *p = SOCK_DGRAM;
-  } else if (memcmp(str, "tcp://", 6) == 0) {
+    *proto = SOCK_DGRAM;
+  } else if (strncmp(str, "tcp://", 6) == 0) {
     str += 6;
   }
 
@@ -387,30 +515,36 @@ static int ns_parse_address(const char *str, union socket_address *sa, int *p) {
              inet_pton(AF_INET6, buf, &sa->sin6.sin6_addr)) {
     /* IPv6 address, e.g. [3ffe:2a00:100:7031::1]:8080 */
     sa->sin6.sin6_family = AF_INET6;
-    sa->sin6.sin6_port = htons((uint16_t) port);
-#endif
-  } else if (sscanf(str, "%199[^ :]:%u%n", host, &port, &len) == 2) {
     sa->sin.sin_port = htons((uint16_t) port);
-    ns_resolve2(host, &sa->sin.sin_addr);
-  } else if (sscanf(str, "%u%n", &port, &len) == 1) {
+#endif
+  } else if (strlen(str) < host_len &&
+             sscanf(str, "%[^ :]:%u%n", host, &port, &len) == 2) {
+    sa->sin.sin_port = htons((uint16_t) port);
+    if (ns_resolve_from_hosts_file(host, sa) != 0) {
+      return 0;
+    }
+  } else if (sscanf(str, ":%u%n", &port, &len) == 1 ||
+             sscanf(str, "%u%n", &port, &len) == 1) {
     /* If only port is specified, bind to IPv4, INADDR_ANY */
     sa->sin.sin_port = htons((uint16_t) port);
+  } else {
+    return -1;
   }
 
-  return port < 0xffff && str[len] == '\0' ? len : 0;
+  return port < 0xffffUL && str[len] == '\0' ? len : -1;
 }
 
 /* 'sa' must be an initialized address to bind to */
 static sock_t ns_open_listening_socket(union socket_address *sa, int proto) {
   socklen_t sa_len = (sa->sa.sa_family == AF_INET) ?
-    sizeof(sa->sin) : sizeof(sa->sin6);
+                     sizeof(sa->sin) : sizeof(sa->sin6);
   sock_t sock = INVALID_SOCKET;
   int on = 1;
 
   if ((sock = socket(sa->sa.sa_family, proto, 0)) != INVALID_SOCKET &&
 
 #if defined(_WIN32) && defined(SO_EXCLUSIVEADDRUSE)
-      /* http://msdn.microsoft.com/en-us/library/windows/desktop/ms740621(v=vs.85).aspx */
+      /* "Using SO_REUSEADDR and SO_EXCLUSIVEADDRUSE" http://goo.gl/RmrFTm */
       !setsockopt(sock, SOL_SOCKET, SO_EXCLUSIVEADDRUSE,
                   (void *) &on, sizeof(on)) &&
 #endif
@@ -443,7 +577,7 @@ static sock_t ns_open_listening_socket(union socket_address *sa, int proto) {
 
 #ifdef NS_ENABLE_SSL
 /* Certificate generation script is at */
-/* https://github.com/cesanta/net_skeleton/blob/master/scripts/gen_certs.sh */
+/* https://github.com/cesanta/fossa/blob/master/scripts/gen_certs.sh */
 
 static int ns_use_ca_cert(SSL_CTX *ctx, const char *cert) {
   if (ctx == NULL) {
@@ -501,48 +635,6 @@ static int ns_ssl_err(struct ns_connection *conn, int res) {
 }
 #endif  /* NS_ENABLE_SSL */
 
-struct ns_connection *ns_bind(struct ns_mgr *srv, const char *str,
-                              ns_event_handler_t callback) {
-  static struct ns_bind_opts opts;
-  return ns_bind_opt(srv, str, callback, opts);
-}
-
-struct ns_connection *ns_bind_opt(struct ns_mgr *srv, const char *str,
-                              ns_event_handler_t callback,
-                              struct ns_bind_opts opts) {
-  union socket_address sa;
-  struct ns_connection *nc = NULL;
-  int proto;
-  sock_t sock;
-  struct ns_add_sock_opts add_sock_opts;
-
-  NS_COPY_COMMON_CONNECTION_OPTIONS(&add_sock_opts, &opts);
-
-  if (ns_parse_address(str, &sa, &proto) == 0) {
-    errno = 0;
-    ns_set_error_string(opts.error_string, "cannot parse address");
-  } else if ((sock = ns_open_listening_socket(&sa, proto)) == INVALID_SOCKET) {
-    DBG(("Failed to open listener: %d", errno));
-    ns_set_error_string(opts.error_string, "failed to open listener");
-  } else if ((nc = ns_add_sock_opt(srv, sock, callback, add_sock_opts)) == NULL) {
-    /* opts.error_string set by ns_add_sock_opt */
-    DBG(("Failed to ns_add_sock"));
-    closesocket(sock);
-  } else {
-    nc->sa = sa;
-    nc->flags |= NSF_LISTENING;
-    nc->handler = callback;
-
-    if (proto == SOCK_DGRAM) {
-      nc->flags |= NSF_UDP;
-    }
-
-    DBG(("%p sock %d/%d", nc, sock, proto));
-  }
-
-  return nc;
-}
-
 static struct ns_connection *accept_conn(struct ns_connection *ls) {
   struct ns_connection *c = NULL;
   union socket_address sa;
@@ -575,65 +667,12 @@ static struct ns_connection *accept_conn(struct ns_connection *ls) {
 
 static int ns_is_error(int n) {
   return n == 0 ||
-    (n < 0 && errno != EINTR && errno != EINPROGRESS &&
-     errno != EAGAIN && errno != EWOULDBLOCK
+      (n < 0 && errno != EINTR && errno != EINPROGRESS &&
+       errno != EAGAIN && errno != EWOULDBLOCK
 #ifdef _WIN32
-     && WSAGetLastError() != WSAEINTR && WSAGetLastError() != WSAEWOULDBLOCK
+       && WSAGetLastError() != WSAEINTR && WSAGetLastError() != WSAEWOULDBLOCK
 #endif
-    );
-}
-
-void ns_sock_to_str(sock_t sock, char *buf, size_t len, int flags) {
-  union socket_address sa;
-  socklen_t slen = sizeof(sa);
-
-  if (buf != NULL && len > 0) {
-    buf[0] = '\0';
-    memset(&sa, 0, sizeof(sa));
-    if (flags & 4) {
-      getpeername(sock, &sa.sa, &slen);
-    } else {
-      getsockname(sock, &sa.sa, &slen);
-    }
-    if (flags & 1) {
-#if defined(NS_ENABLE_IPV6)
-      inet_ntop(sa.sa.sa_family, sa.sa.sa_family == AF_INET ?
-                (void *) &sa.sin.sin_addr :
-                (void *) &sa.sin6.sin6_addr, buf, len);
-#elif defined(_WIN32)
-      /* Only Windoze Vista (and newer) have inet_ntop() */
-      strncpy(buf, inet_ntoa(sa.sin.sin_addr), len);
-#else
-      inet_ntop(sa.sa.sa_family, (void *) &sa.sin.sin_addr, buf,(socklen_t)len);
-#endif
-    }
-    if (flags & 2) {
-      snprintf(buf + strlen(buf), len - (strlen(buf) + 1), "%s%d",
-               flags & 1 ? ":" : "", (int) ntohs(sa.sin.sin_port));
-    }
-  }
-}
-
-int ns_hexdump(const void *buf, int len, char *dst, int dst_len) {
-  const unsigned char *p = (const unsigned char *) buf;
-  char ascii[17] = "";
-  int i, idx, n = 0;
-
-  for (i = 0; i < len; i++) {
-    idx = i % 16;
-    if (idx == 0) {
-      if (i > 0) n += snprintf(dst + n, dst_len - n, "  %s\n", ascii);
-      n += snprintf(dst + n, dst_len - n, "%04x ", i);
-    }
-    n += snprintf(dst + n, dst_len - n, " %02x", p[i]);
-    ascii[idx] = p[i] < 0x20 || p[i] > 0x7e ? '.' : p[i];
-    ascii[idx + 1] = '\0';
-  }
-
-  while (i++ % 16) n += snprintf(dst + n, dst_len - n, "%s", "   ");
-  n += snprintf(dst + n, dst_len - n, "  %s\n\n", ascii);
-
-  return n;
+       );
 }
 
 static void ns_read_from_socket(struct ns_connection *conn) {
@@ -737,6 +776,15 @@ static void ns_write_to_socket(struct ns_connection *conn) {
   }
 }
 
+/*
+ * Send data to the connection.
+ *
+ * Number of written bytes is returned. Note that these sending
+ * functions do not actually push data to the sockets, they just append data
+ * to the output buffer. The exception is UDP connections. For UDP, data is
+ * sent immediately, and returned value indicates an actual number of bytes
+ * sent to the socket.
+ */
 int ns_send(struct ns_connection *conn, const void *buf, int len) {
   return (int) ns_out(conn, buf, len);
 }
@@ -777,6 +825,10 @@ static void ns_add_to_set(sock_t sock, fd_set *set, sock_t *max_fd) {
   }
 }
 
+/*
+ * This function performs the actual IO, and must be called in a loop
+ * (an event loop). Returns the current timestamp.
+ */
 time_t ns_mgr_poll(struct ns_mgr *mgr, int milli) {
   struct ns_connection *nc, *tmp;
   struct timeval tv;
@@ -813,7 +865,7 @@ time_t ns_mgr_poll(struct ns_mgr *mgr, int milli) {
 
     if (((nc->flags & NSF_CONNECTING) && !(nc->flags & NSF_WANT_READ)) ||
         (nc->send_iobuf.len > 0 && !(nc->flags & NSF_CONNECTING) &&
-         !(nc->flags & NSF_BUFFER_BUT_DONT_SEND))) {
+         !(nc->flags & NSF_DONT_SEND))) {
       /*DBG(("%p write_set", nc)); */
       ns_add_to_set(nc->sock, &write_set, &max_fd);
       ns_add_to_set(nc->sock, &err_set, &max_fd);
@@ -853,15 +905,15 @@ time_t ns_mgr_poll(struct ns_mgr *mgr, int milli) {
 
       if (FD_ISSET(nc->sock, &read_set)) {
         nc->last_io_time = current_time;
-        if (nc->flags & NSF_LISTENING) {
-          if (nc->flags & NSF_UDP) {
-            ns_handle_udp(nc);
-          } else {
-            /* We're not looping here, and accepting just one connection at
-             * a time. The reason is that eCos does not respect non-blocking
-             * flag on a listening socket and hangs in a loop. */
-            accept_conn(nc);
-          }
+        if (nc->flags & NSF_UDP) {
+          ns_handle_udp(nc);
+        } else if (nc->flags & NSF_LISTENING) {
+          /*
+           * We're not looping here, and accepting just one connection at
+           * a time. The reason is that eCos does not respect non-blocking
+           * flag on a listening socket and hangs in a loop.
+           */
+          accept_conn(nc);
         } else {
           ns_read_from_socket(nc);
         }
@@ -871,7 +923,7 @@ time_t ns_mgr_poll(struct ns_mgr *mgr, int milli) {
         nc->last_io_time = current_time;
         if (nc->flags & NSF_CONNECTING) {
           ns_read_from_socket(nc);
-        } else if (!(nc->flags & NSF_BUFFER_BUT_DONT_SEND) &&
+        } else if (!(nc->flags & NSF_DONT_SEND) &&
                    !(nc->flags & NSF_CLOSE_IMMEDIATELY)) {
           ns_write_to_socket(nc);
         }
@@ -883,7 +935,7 @@ time_t ns_mgr_poll(struct ns_mgr *mgr, int milli) {
     tmp = nc->next;
     if ((nc->flags & NSF_CLOSE_IMMEDIATELY) ||
         (nc->send_iobuf.len == 0 &&
-          (nc->flags & NSF_FINISHED_SENDING_DATA))) {
+         (nc->flags & NSF_SEND_AND_CLOSE))) {
       ns_close_conn(nc);
     }
   }
@@ -891,83 +943,303 @@ time_t ns_mgr_poll(struct ns_mgr *mgr, int milli) {
   return current_time;
 }
 
+/*
+ * Schedules an async connect for a resolved address and proto.
+ * Called from two places: `ns_connect_opt()` and from async resolver.
+ * When called from the async resolver, it must trigger `NS_CONNECT` event
+ * with a failure flag to indicate connection failure.
+ */
+NS_INTERNAL struct ns_connection *ns_finish_connect(struct ns_connection *nc,
+                                                    int proto,
+                                                    union socket_address *sa,
+                                                    struct ns_add_sock_opts o) {
+  sock_t sock = INVALID_SOCKET;
+  int rc;
+
+  DBG(("%p %s://%s:%hu", nc, proto == SOCK_DGRAM ? "udp" : "tcp",
+       inet_ntoa(nc->sa.sin.sin_addr), ntohs(nc->sa.sin.sin_port)));
+
+  if ((sock = socket(AF_INET, proto, 0)) == INVALID_SOCKET) {
+    int failure = errno;
+    NS_SET_PTRPTR(o.error_string, "cannot create socket");
+    ns_call(nc, NS_CONNECT, &failure);
+    ns_call(nc, NS_CLOSE, NULL);
+    ns_destroy_conn(nc);
+    return NULL;
+  }
+
+  ns_set_non_blocking_mode(sock);
+  rc = (proto == SOCK_DGRAM) ? 0 : connect(sock, &sa->sa, sizeof(sa->sin));
+
+  if (rc != 0 && ns_is_error(rc)) {
+    NS_SET_PTRPTR(o.error_string, "cannot connect to socket");
+    ns_call(nc, NS_CONNECT, &rc);
+    ns_call(nc, NS_CLOSE, NULL);
+    ns_destroy_conn(nc);
+    return NULL;
+  }
+
+  /* No ns_destroy_conn() call after this! */
+  ns_set_sock(nc, sock);
+
+  if (rc == 0) {
+    /* connect() succeeded. Trigger successful NS_CONNECT event */
+    ns_call(nc, NS_CONNECT, &rc);
+  } else {
+    nc->flags |= NSF_CONNECTING;
+  }
+
+  return nc;
+}
+
+/*
+ * Callback for the async resolver on ns_connect_opt() call.
+ * Main task of this function is to trigger NS_CONNECT event with
+ *    either failure (and dealloc the connection)
+ *    or success (and proceed with connect()
+ */
+static void resolve_cb(struct ns_dns_message *msg, void *data) {
+  struct ns_connection *nc = (struct ns_connection *) data;
+
+  if (msg == NULL || msg->answers[0].rtype != NS_DNS_A_RECORD) {
+    int failure = -1;
+    ns_call(nc, NS_CONNECT, &failure);
+    ns_call(nc, NS_CLOSE, NULL);
+    ns_destroy_conn(nc);
+  } else {
+    static struct ns_add_sock_opts opts;
+    /*
+     * Async resolver guarantees that there is at least one answer.
+     * TODO(lsm): handle IPv6 answers too
+     */
+
+    ns_dns_parse_record_data(msg, &msg->answers[0], &nc->sa.sin.sin_addr, 4);
+    /* ns_finish_connect() triggers NS_CONNECT on failure */
+    ns_finish_connect(nc, nc->flags & NSF_UDP ? SOCK_DGRAM : SOCK_STREAM,
+                      &nc->sa, opts);
+  }
+}
+
+/*
+ * Connect to a remote host.
+ *
+ * See `ns_connect_opt` for full documentation.
+ */
 struct ns_connection *ns_connect(struct ns_mgr *mgr, const char *address,
                                  ns_event_handler_t callback) {
   static struct ns_connect_opts opts;
   return ns_connect_opt(mgr, address, callback, opts);
 }
 
+/*
+ * Connect to a remote host.
+ *
+ * `address` format is `[PROTO://]HOST:PORT`. `PROTO` could be `tcp` or `udp`.
+ * `HOST` could be an IP address,
+ * IPv6 address (if Fossa is compiled with `-DNS_ENABLE_IPV6`), or a host name.
+ * If `HOST` is a name, Fossa will resolve it asynchronously. Examples of
+ * valid addresses: `google.com:80`, `udp://1.2.3.4:53`, `10.0.0.1:443`.
+ *
+ * See the `ns_connect_opts` structure for a description of the optional
+ * parameters.
+ *
+ * Returns a new outbound connection, or `NULL` on error.
+ *
+ * NOTE: New connection will receive `NS_CONNECT` as it's first event
+ * which will report connect success status.
+ * If asynchronous resolution fail, or `connect()` syscall fail for whatever
+ * reason (e.g. with `ECONNREFUSED` or `ENETUNREACH`), then `NS_CONNECT`
+ * event report failure. Code example below:
+ *
+ * [source,c]
+ * ----
+ * static void ev_handler(struct ns_connection *nc, int ev, void *ev_data) {
+ *   int connect_status;
+ *
+ *   switch (ev) {
+ *     case NS_CONNECT:
+ *       connect_status = * (int *) ev_data;
+ *       if (connect_status == 0) {
+ *         // Success
+ *       } else  {
+ *         // Error
+ *         printf("connect() error: %s\n", strerror(connect_status));
+ *       }
+ *       break;
+ *     ...
+ *   }
+ * }
+ *
+ *   ...
+ *   ns_connect(mgr, "my_site.com:80", ev_handler);
+ * ----
+ */
 struct ns_connection *ns_connect_opt(struct ns_mgr *mgr, const char *address,
                                      ns_event_handler_t callback,
                                      struct ns_connect_opts opts) {
-  sock_t sock = INVALID_SOCKET;
   struct ns_connection *nc = NULL;
-  union socket_address sa;
-  int rc, proto;
+  int proto, rc;
   struct ns_add_sock_opts add_sock_opts;
-
-  if (ns_parse_address(address, &sa, &proto) == 0) {
-    errno = 0;
-    ns_set_error_string(opts.error_string, "cannot parse address");
-    return NULL;
-  }
-  if ((sock = socket(AF_INET, proto, 0)) == INVALID_SOCKET) {
-    ns_set_error_string(opts.error_string, "cannot create socket");
-    return NULL;
-  }
-
-  ns_set_non_blocking_mode(sock);
-  rc = (proto == SOCK_DGRAM) ? 0 : connect(sock, &sa.sa, sizeof(sa.sin));
+  char host[NS_MAX_HOST_LEN];
 
   NS_COPY_COMMON_CONNECTION_OPTIONS(&add_sock_opts, &opts);
 
-  if (rc != 0 && ns_is_error(rc)) {
-    ns_set_error_string(opts.error_string, "cannot connect to socket");
-    closesocket(sock);
+  if ((nc = ns_create_connection(mgr, callback, add_sock_opts)) == NULL) {
     return NULL;
-  } else if ((nc = ns_add_sock_opt(mgr, sock, callback, add_sock_opts)) == NULL) {
-    /* opts.error_string set by ns_add_sock_opt */
-    closesocket(sock);
+  } else if ((rc = ns_parse_address(address, &nc->sa, &proto, host,
+                                    sizeof(host))) < 0) {
+    /* Address is malformed */
+    NS_SET_PTRPTR(opts.error_string, "cannot parse address");
+    ns_destroy_conn(nc);
     return NULL;
   }
 
-  nc->sa = sa;   /* Important, cause UDP conns will use sendto() */
-  nc->flags |= (proto == SOCK_DGRAM) ? NSF_UDP : NSF_CONNECTING;
+  nc->flags |= opts.flags;
+  nc->flags |= (proto == SOCK_DGRAM) ? NSF_UDP : 0;
+  nc->user_data = opts.user_data;
+
+  if (rc == 0) {
+    /*
+     * DNS resolution is required for host.
+     * ns_parse_address() fills port in nc->sa, which we pass to resolve_cb()
+     */
+
+    if (ns_resolve_async(nc->mgr, host, NS_DNS_A_RECORD, resolve_cb, nc) != 0) {
+      NS_SET_PTRPTR(opts.error_string, "cannot schedule DNS lookup");
+      ns_destroy_conn(nc);
+      return NULL;
+    }
+    return nc;
+  } else {
+    /* Address is parsed and resolved to IP. proceed with connect() */
+    return ns_finish_connect(nc, proto, &nc->sa, add_sock_opts);
+  }
+}
+
+/*
+ * Create listening connection.
+ *
+ * See `ns_bind_opt` for full documentation.
+ */
+struct ns_connection *ns_bind(struct ns_mgr *srv, const char *address,
+                              ns_event_handler_t event_handler) {
+  static struct ns_bind_opts opts;
+  return ns_bind_opt(srv, address, event_handler, opts);
+}
+
+/*
+ * Create listening connection.
+ *
+ * `address` parameter tells which address to bind to. It's format is the same
+ * as for the `ns_connect()` call, where `HOST` part is optional. `address`
+ * can be just a port number, e.g. `:8000`. To bind to a specific interface,
+ * an IP address can be specified, e.g. `1.2.3.4:8000`. By default, a TCP
+ * connection is created. To create UDP connection, prepend `udp://` prefix,
+ * e.g. `udp://:8000`. To summarize, `address` paramer has following format:
+ * `[PROTO://][IP_ADDRESS]:PORT`, where `PROTO` could be `tcp` or `udp`.
+ *
+ * See the `ns_bind_opts` structure for a description of the optional
+ * parameters.
+ *
+ * Returns a new listening connection, or `NULL` on error.
+ */
+struct ns_connection *ns_bind_opt(struct ns_mgr *mgr, const char *address,
+                              ns_event_handler_t callback,
+                              struct ns_bind_opts opts) {
+  union socket_address sa;
+  struct ns_connection *nc = NULL;
+  int proto;
+  sock_t sock;
+  struct ns_add_sock_opts add_sock_opts;
+  char host[NS_MAX_HOST_LEN];
+
+  NS_COPY_COMMON_CONNECTION_OPTIONS(&add_sock_opts, &opts);
+
+  if (ns_parse_address(address, &sa, &proto, host, sizeof(host)) <= 0) {
+    NS_SET_PTRPTR(opts.error_string, "cannot parse address");
+  } else if ((sock = ns_open_listening_socket(&sa, proto)) == INVALID_SOCKET) {
+    DBG(("Failed to open listener: %d", errno));
+    NS_SET_PTRPTR(opts.error_string, "failed to open listener");
+  } else if ((nc = ns_add_sock_opt(mgr, sock, callback,
+                                   add_sock_opts)) == NULL) {
+    /* opts.error_string set by ns_add_sock_opt */
+    DBG(("Failed to ns_add_sock"));
+    closesocket(sock);
+  } else {
+    nc->sa = sa;
+    nc->flags |= NSF_LISTENING;
+    nc->handler = callback;
+
+    if (proto == SOCK_DGRAM) {
+      nc->flags |= NSF_UDP;
+    }
+
+    DBG(("%p sock %d/%d", nc, sock, proto));
+  }
 
   return nc;
 }
 
+/*
+ * Create a connection, associate it with the given socket and event handler,
+ * and add it to the manager.
+ *
+ * For more options see the `ns_add_sock_opt` variant.
+ */
 struct ns_connection *ns_add_sock(struct ns_mgr *s, sock_t sock,
                                   ns_event_handler_t callback) {
   static struct ns_add_sock_opts opts;
   return ns_add_sock_opt(s, sock, callback, opts);
 }
 
+/*
+ * Create a connection, associate it with the given socket and event handler,
+ * and add to the manager.
+ *
+ * See the `ns_add_sock_opts` structure for a description of the options.
+ */
 struct ns_connection *ns_add_sock_opt(struct ns_mgr *s, sock_t sock,
                                       ns_event_handler_t callback,
                                       struct ns_add_sock_opts opts) {
-  struct ns_connection *conn;
-  if ((conn = (struct ns_connection *) NS_MALLOC(sizeof(*conn))) != NULL) {
-    memset(conn, 0, sizeof(*conn));
-    ns_set_non_blocking_mode(sock);
-    ns_set_close_on_exec(sock);
-    conn->sock = sock;
-    conn->handler = callback;
-    conn->mgr = s;
-    conn->last_io_time = time(NULL);
-    conn->flags = opts.flags;
-    conn->user_data = opts.user_data;
-    ns_add_conn(s, conn);
-    DBG(("%p %d", conn, sock));
+  struct ns_connection *nc = ns_create_connection(s, callback, opts);
+  if (nc != NULL) {
+    ns_set_sock(nc, sock);
   }
-  return conn;
+  return nc;
 }
 
+/*
+ * Iterates over all active connections.
+ *
+ * Returns next connection from the list
+ * of active connections, or `NULL` if there is no more connections. Below
+ * is the iteration idiom:
+ *
+ * [source,c]
+ * ----
+ * for (c = ns_next(srv, NULL); c != NULL; c = ns_next(srv, c)) {
+ *   // Do something with connection `c`
+ * }
+ * ----
+ */
 struct ns_connection *ns_next(struct ns_mgr *s, struct ns_connection *conn) {
   return conn == NULL ? s->active_connections : conn->next;
 }
 
-void ns_broadcast(struct ns_mgr *mgr, ns_event_handler_t cb,void *data, size_t len) {
+/*
+ * Passes a message of a given length to all connections.
+ *
+ * Must be called from a different thread.
+ *
+ * Fossa manager has a socketpair, `struct ns_mgr::ctl`,
+ * where `ns_broadcast()` pushes the message.
+ * `ns_mgr_poll()` wakes up, reads a message from the socket pair, and calls
+ * specified callback for each connection. Thus the callback function executes
+ * in event manager thread. Note that `ns_broadcast()` is the only function
+ * that can be, and must be, called from a different thread.
+ */
+void ns_broadcast(struct ns_mgr *mgr, ns_event_handler_t cb,
+                  void *data, size_t len) {
   struct ctl_msg ctl_msg;
   if (mgr->ctl[0] != INVALID_SOCKET && data != NULL &&
       len < sizeof(ctl_msg.message)) {
@@ -978,48 +1250,10 @@ void ns_broadcast(struct ns_mgr *mgr, ns_event_handler_t cb,void *data, size_t l
     recv(mgr->ctl[0], (char *) &len, 1, 0);
   }
 }
-
-void ns_mgr_init(struct ns_mgr *s, void *user_data) {
-  memset(s, 0, sizeof(*s));
-  s->ctl[0] = s->ctl[1] = INVALID_SOCKET;
-  s->user_data = user_data;
-
-#ifdef _WIN32
-  { WSADATA data; WSAStartup(MAKEWORD(2, 2), &data); }
-#else
-  /* Ignore SIGPIPE signal, so if client cancels the request, it
-   * won't kill the whole process. */
-  signal(SIGPIPE, SIG_IGN);
+#ifdef NS_MODULE_LINES
+#line 1 "modules/../deps/frozen/frozen.c"
+/**/
 #endif
-
-#ifndef NS_DISABLE_SOCKETPAIR
-  do {
-    ns_socketpair2(s->ctl, SOCK_DGRAM);
-  } while (s->ctl[0] == INVALID_SOCKET);
-#endif
-
-#ifdef NS_ENABLE_SSL
-  {static int init_done; if (!init_done) { SSL_library_init(); init_done++; }}
-#endif
-}
-
-void ns_mgr_free(struct ns_mgr *s) {
-  struct ns_connection *conn, *tmp_conn;
-
-  DBG(("%p", s));
-  if (s == NULL) return;
-  /* Do one last poll, see https://github.com/cesanta/mongoose/issues/286 */
-  ns_mgr_poll(s, 0);
-
-  if (s->ctl[0] != INVALID_SOCKET) closesocket(s->ctl[0]);
-  if (s->ctl[1] != INVALID_SOCKET) closesocket(s->ctl[1]);
-  s->ctl[0] = s->ctl[1] = INVALID_SOCKET;
-
-  for (conn = s->active_connections; conn != NULL; conn = tmp_conn) {
-    tmp_conn = conn->next;
-    ns_close_conn(conn);
-  }
-}
 /*
  * Copyright (c) 2004-2013 Sergey Lyubka <valenok@gmail.com>
  * Copyright (c) 2013 Cesanta Software Limited
@@ -1516,9 +1750,17 @@ int json_emit(char *buf, int buf_len, const char *fmt, ...) {
 
   return len;
 }
+#ifdef NS_MODULE_LINES
+#line 1 "modules/http.c"
+/**/
+#endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
  * All rights reserved
+ */
+
+/*
+ * == HTTP/Websocket API
  */
 
 #ifndef NS_DISABLE_HTTP_WEBSOCKET
@@ -1557,7 +1799,7 @@ static const struct {
   MIME_ENTRY("ram", "audio/x-pn-realaudio"),
   MIME_ENTRY("xml", "text/xml"),
   MIME_ENTRY("ttf", "application/x-font-ttf"),
-  MIME_ENTRY("json",  "application/json"),
+  MIME_ENTRY("json", "application/json"),
   MIME_ENTRY("xslt", "application/xml"),
   MIME_ENTRY("xsl", "application/xml"),
   MIME_ENTRY("ra", "audio/x-pn-realaudio"),
@@ -1627,8 +1869,13 @@ static int get_request_len(const char *s, int buf_len) {
   return 0;
 }
 
+/* Parses a HTTP message.
+ *
+ * Return number of bytes parsed. If HTTP message is
+ * incomplete, `0` is returned. On parse error, negative number is returned.
+ */
 int ns_parse_http(const char *s, int n, struct http_message *req) {
-  const char *end;
+  const char *end, *qs;
   int len, i;
 
   if ((len = get_request_len(s, n)) <= 0) return len;
@@ -1669,7 +1916,32 @@ int ns_parse_http(const char *s, int n, struct http_message *req) {
     }
   }
 
-  if (req->body.len == (size_t) ~0 && ns_vcasecmp(&req->method, "GET") == 0) {
+  /* If URI contains '?' character, initialize query_string */
+  if ((qs = (char *) memchr(req->uri.p, '?', req->uri.len)) != NULL) {
+    req->query_string.p = qs + 1;
+    req->query_string.len = &req->uri.p[req->uri.len] - (qs + 1);
+    req->uri.len = qs - req->uri.p;
+  }
+
+  /*
+   * ns_parse_http() is used to parse both HTTP requests and HTTP
+   * responses. If HTTP response does not have Content-Length set, then
+   * body is read until socket is closed, i.e. body.len is infinite (~0).
+   *
+   * For HTTP requests though, according to
+   * http://tools.ietf.org/html/rfc7231#section-8.1.3,
+   * only POST and PUT methods have defined body semantics.
+   * Therefore, if Content-Length is not specified and methods are
+   * not one of PUT or POST, set body length to 0.
+   *
+   * So,
+   * if it is HTTP request, and Content-Length is not set,
+   * and method is not (PUT or POST) then reset body length to zero.
+   */
+  if (req->body.len == (size_t) ~0 &&
+      !(req->method.len > 5 && !memcmp(req->method.p, "HTTP/", 5)) &&
+      ns_vcasecmp(&req->method, "PUT") != 0 &&
+      ns_vcasecmp(&req->method, "POST") != 0) {
     req->body.len = 0;
     req->message.len = len;
   }
@@ -1677,12 +1949,14 @@ int ns_parse_http(const char *s, int n, struct http_message *req) {
   return len;
 }
 
+/* Returns HTTP header if it is present in the HTTP message, or `NULL`. */
 struct ns_str *ns_get_http_header(struct http_message *hm, const char *name) {
   size_t i, len = strlen(name);
 
   for (i = 0; i < ARRAY_SIZE(hm->header_names); i++) {
     struct ns_str *h = &hm->header_names[i], *v = &hm->header_values[i];
-    if (h->p != NULL && h->len == len && !ns_ncasecmp(h->p, name, len)) return v;
+    if (h->p != NULL && h->len == len && !ns_ncasecmp(h->p, name, len))
+      return v;
   }
 
   return NULL;
@@ -1696,7 +1970,8 @@ static int is_ws_first_fragment(unsigned char flags) {
   return (flags & 0x80) == 0 && (flags & 0x0f) != 0;
 }
 
-static void handle_incoming_websocket_frame(struct ns_connection *nc, struct websocket_message *wsm) {
+static void handle_incoming_websocket_frame(struct ns_connection *nc,
+                                            struct websocket_message *wsm) {
   if (wsm->flags & 0x8) {
     nc->handler(nc, NS_WEBSOCKET_CONTROL_FRAME, wsm);
   } else {
@@ -1707,12 +1982,12 @@ static void handle_incoming_websocket_frame(struct ns_connection *nc, struct web
 static int deliver_websocket_data(struct ns_connection *nc) {
   /* Using unsigned char *, cause of integer arithmetic below */
   uint64_t i, data_len = 0, frame_len = 0, buf_len = nc->recv_iobuf.len,
-  len, mask_len = 0, header_len = 0;
+         len, mask_len = 0, header_len = 0;
   unsigned char *p = (unsigned char *) nc->recv_iobuf.buf,
-    *buf = p, *e = p + buf_len;
+              *buf = p, *e = p + buf_len;
   unsigned *sizep = (unsigned *) &p[1];  /* Size ptr for defragmented frames */
   int ok, reass = buf_len > 0 && is_ws_fragment(p[0]) &&
-    !(nc->flags & NSF_WEBSOCKET_NO_DEFRAG);
+                  !(nc->flags & NSF_WEBSOCKET_NO_DEFRAG);
 
   /* If that's a continuation frame that must be reassembled, handle it */
   if (reass && !is_ws_first_fragment(p[0]) && buf_len >= 1 + sizeof(*sizep) &&
@@ -1733,7 +2008,7 @@ static int deliver_websocket_data(struct ns_connection *nc) {
     } else if (buf_len >= 10 + mask_len) {
       header_len = 10 + mask_len;
       data_len = (((uint64_t) ntohl(* (uint32_t *) &buf[2])) << 32) +
-        ntohl(* (uint32_t *) &buf[6]);
+                 ntohl(* (uint32_t *) &buf[6]);
     }
   }
 
@@ -1806,35 +2081,59 @@ static void ns_send_ws_header(struct ns_connection *nc, int op, size_t len) {
   ns_send(nc, header, header_len);
 }
 
+/*
+ * Send websocket frame to the remote end.
+ *
+ * `op` specifies frame's type , one of:
+ *
+ * - WEBSOCKET_OP_CONTINUE
+ * - WEBSOCKET_OP_TEXT
+ * - WEBSOCKET_OP_BINARY
+ * - WEBSOCKET_OP_CLOSE
+ * - WEBSOCKET_OP_PING
+ * - WEBSOCKET_OP_PONG
+ * `data` and `data_len` contain frame data.
+ */
 void ns_send_websocket_frame(struct ns_connection *nc, int op,
                              const void *data, size_t len) {
   ns_send_ws_header(nc, op, len);
   ns_send(nc, data, len);
 
   if (op == WEBSOCKET_OP_CLOSE) {
-    nc->flags |= NSF_FINISHED_SENDING_DATA;
+    nc->flags |= NSF_SEND_AND_CLOSE;
   }
 }
 
+/*
+ * Send multiple websocket frames.
+ *
+ * Like `ns_send_websocket_frame()`, but composes a frame from multiple buffers.
+ */
 void ns_send_websocket_framev(struct ns_connection *nc, int op,
                               const struct ns_str *strv, int strvcnt) {
   int i;
   int len = 0;
-  for (i=0; i<strvcnt; i++) {
+  for (i = 0; i < strvcnt; i++) {
     len += strv[i].len;
   }
 
   ns_send_ws_header(nc, op, len);
 
-  for (i=0; i<strvcnt; i++) {
+  for (i = 0; i < strvcnt; i++) {
     ns_send(nc, strv[i].p, strv[i].len);
   }
 
   if (op == WEBSOCKET_OP_CLOSE) {
-    nc->flags |= NSF_FINISHED_SENDING_DATA;
+    nc->flags |= NSF_SEND_AND_CLOSE;
   }
 }
 
+/*
+ * Send websocket frame to the remote end.
+ *
+ * Like `ns_send_websocket_frame()`, but allows to create formatted message
+ * with `printf()`-like semantics.
+ */
 void ns_printf_websocket_frame(struct ns_connection *nc, int op,
                                const char *fmt, ...) {
   char mem[4192], *buf = mem;
@@ -1922,6 +2221,7 @@ static void http_handler(struct ns_connection *nc, int ev, void *ev_data) {
    */
   if (ev == NS_CLOSE && io->len > 0 &&
       ns_parse_http(io->buf, io->len, &hm) > 0) {
+    hm.message.len = io->len;
     hm.body.len = io->buf + io->len - hm.body.p;
     nc->handler(nc, nc->listener ? NS_HTTP_REQUEST : NS_HTTP_REPLY, &hm);
   }
@@ -1971,10 +2271,33 @@ static void http_handler(struct ns_connection *nc, int ev, void *ev_data) {
   }
 }
 
+/*
+ * Attach built-in HTTP event handler to the given connection.
+ * User-defined event handler will receive following extra events:
+ *
+ * - NS_HTTP_REQUEST: HTTP request has arrived. Parsed HTTP request is passed as
+ *   `struct http_message` through the handler's `void *ev_data` pointer.
+ * - NS_HTTP_REPLY: HTTP reply has arrived. Parsed HTTP reply is passed as
+ *   `struct http_message` through the handler's `void *ev_data` pointer.
+ * - NS_WEBSOCKET_HANDSHAKE_REQUEST: server has received websocket handshake
+ *   request. `ev_data` contains parsed HTTP request.
+ * - NS_WEBSOCKET_HANDSHAKE_DONE: server has completed Websocket handshake.
+ *   `ev_data` is `NULL`.
+ * - NS_WEBSOCKET_FRAME: new websocket frame has arrived. `ev_data` is
+ *   `struct websocket_message *`
+ */
 void ns_set_protocol_http_websocket(struct ns_connection *nc) {
   nc->proto_handler = http_handler;
 }
 
+/*
+ * Sends websocket handshake to the server.
+ *
+ * `nc` must be a valid connection, connected to a server, `uri` is an URI on the server, `extra_headers` is
+ * extra HTTP headers to send or `NULL`.
+ *
+ * This function is intended to be used by websocket client.
+ */
 void ns_send_websocket_handshake(struct ns_connection *nc, const char *uri,
                                  const char *extra_headers) {
   unsigned long random = (unsigned long) uri;
@@ -2000,7 +2323,7 @@ void ns_send_http_file(struct ns_connection *nc, const char *path,
   struct proto_data_http *dp;
 
   if ((dp = (struct proto_data_http *) NS_CALLOC(1, sizeof(*dp))) == NULL) {
-    send_http_error(nc, 500, "Server Error");
+    send_http_error(nc, 500, "Server Error");  /* LCOV_EXCL_LINE */
   } else if ((dp->fp = fopen(path, "rb")) == NULL) {
     NS_FREE(dp);
     send_http_error(nc, 500, "Server Error");
@@ -2036,18 +2359,22 @@ static void remove_double_dots(char *s) {
 }
 
 static int ns_url_decode(const char *src, int src_len, char *dst,
-                  int dst_len, int is_form_url_encoded) {
+                         int dst_len, int is_form_url_encoded) {
   int i, j, a, b;
 #define HEXTOI(x) (isdigit(x) ? x - '0' : x - 'W')
 
   for (i = j = 0; i < src_len && j < dst_len - 1; i++, j++) {
-    if (src[i] == '%' && i < src_len - 2 &&
-        isxdigit(* (const unsigned char *) (src + i + 1)) &&
-        isxdigit(* (const unsigned char *) (src + i + 2))) {
-      a = tolower(* (const unsigned char *) (src + i + 1));
-      b = tolower(* (const unsigned char *) (src + i + 2));
-      dst[j] = (char) ((HEXTOI(a) << 4) | HEXTOI(b));
-      i += 2;
+    if (src[i] == '%') {
+      if (i < src_len - 2 &&
+          isxdigit(* (const unsigned char *) (src + i + 1)) &&
+          isxdigit(* (const unsigned char *) (src + i + 2))) {
+        a = tolower(* (const unsigned char *) (src + i + 1));
+        b = tolower(* (const unsigned char *) (src + i + 2));
+        dst[j] = (char) ((HEXTOI(a) << 4) | HEXTOI(b));
+        i += 2;
+      } else {
+        return -1;
+      }
     } else if (is_form_url_encoded && src[i] == '+') {
       dst[j] = ' ';
     } else {
@@ -2060,6 +2387,14 @@ static int ns_url_decode(const char *src, int src_len, char *dst,
   return i >= src_len ? j : -1;
 }
 
+/*
+ * Fetch an HTTP form variable.
+ *
+ * Fetch a variable `name` from a `buf` into a buffer specified by
+ * `dst`, `dst_len`. Destination is always zero-terminated. Return length
+ * of a fetched variable. If not found, 0 is returned. `buf` must be
+ * valid url-encoded buffer. If destination is too small, `-1` is returned.
+ */
 int ns_get_http_var(const struct ns_str *buf, const char *name,
                     char *dst, size_t dst_len) {
   const char *p, *e, *s;
@@ -2097,6 +2432,80 @@ int ns_get_http_var(const struct ns_str *buf, const char *name,
   return len;
 }
 
+/*
+ * Send buffer `buf` of size `len` to the client using chunked HTTP encoding.
+ * This function first sends buffer size as hex number + newline, then
+ * buffer itself, then newline. For example,
+ *   `ns_send_http_chunk(nc, "foo", 3)` whill append `3\r\nfoo\r\n` string to
+ * the `nc->send_iobuf` output IO buffer.
+ *
+ * NOTE: HTTP header "Transfer-Encoding: chunked" should be sent prior to
+ * using this function.
+ *
+ * NOTE: do not forget to send empty chunk at the end of the response,
+ * to tell the client that everything was sent. Example:
+ *
+ * ```
+ *   ns_printf_http_chunk(nc, "%s", "my response!");
+ *   ns_send_http_chunk(nc, "", 0); // Tell the client we're finished
+ * ```
+ */
+void ns_send_http_chunk(struct ns_connection *nc, const char *buf, size_t len) {
+  char chunk_size[50];
+  int n;
+
+  n = snprintf(chunk_size, sizeof(chunk_size), "%lX\r\n", len);
+  ns_send(nc, chunk_size, n);
+  ns_send(nc, buf, len);
+  ns_send(nc, "\r\n", 2);
+}
+
+/*
+ * Send printf-formatted HTTP chunk.
+ * Functionality is similar to `ns_send_http_chunk()`.
+ */
+void ns_printf_http_chunk(struct ns_connection *nc, const char *fmt, ...) {
+  char mem[500], *buf = mem;
+  int len;
+  va_list ap;
+
+  va_start(ap, fmt);
+  len = ns_avprintf(&buf, sizeof(mem), fmt, ap);
+  va_end(ap);
+
+  if (len >= 0) {
+    ns_send_http_chunk(nc, buf, len);
+  }
+
+  /* LCOV_EXCL_START */
+  if (buf != mem && buf != NULL) {
+    NS_FREE(buf);
+  }
+  /* LCOV_EXCL_STOP */
+}
+
+/*
+ * Serve given HTTP request according to the `options`.
+ *
+ * Example code snippet:
+ *
+ * [source,c]
+ * .web_server.c
+ * ----
+ * static void ev_handler(struct ns_connection *nc, int ev, void *ev_data) {
+ *   struct http_message *hm = (struct http_message *) ev_data;
+ *   struct ns_serve_http_opts opts = { .document_root = "/var/www" };  // C99 syntax
+ *
+ *   switch (ev) {
+ *     case NS_HTTP_REQUEST:
+ *       ns_serve_http(nc, hm, opts);
+ *       break;
+ *     default:
+ *       break;
+ *   }
+ * }
+ * ----
+ */
 void ns_serve_http(struct ns_connection *nc, struct http_message *hm,
                    struct ns_serve_http_opts opts) {
   char path[NS_MAX_PATH];
@@ -2120,14 +2529,74 @@ void ns_serve_http(struct ns_connection *nc, struct http_message *hm,
     ns_send_http_file(nc, path, &st);
   }
 }
+
+/*
+ * Helper function that creates outbound HTTP connection.
+ *
+ * If `post_data` is NULL, then GET request is created. Otherwise, POST request
+ * is created with the specified POST data. Examples:
+ *
+ * [source,c]
+ * ----
+ *   nc1 = ns_connect_http(mgr, ev_handler_1, "http://www.google.com", NULL);
+ *   nc2 = ns_connect_http(mgr, ev_handler_1, "https://github.com", NULL);
+ *   nc3 = ns_connect_http(mgr, ev_handler_1, "my_server:8000/form_submit/",
+ *                         "var_1=value_1&var_2=value_2");
+ * ----
+ */
+struct ns_connection *ns_connect_http(struct ns_mgr *mgr,
+                                      ns_event_handler_t ev_handler,
+                                      const char *url, const char *post_data) {
+  struct ns_connection *nc;
+  char addr[1100], path[4096];  /* NOTE: keep sizes in sync with sscanf below */
+  int use_ssl = 0;
+
+  if (memcmp(url, "http://", 7) == 0) {
+    url += 7;
+  } else if (memcmp(url, "https://", 8) == 0) {
+    url += 8;
+    use_ssl = 1;
+#ifndef NS_ENABLE_SSL
+    return NULL;  /* SSL is not enabled, cannot do HTTPS URLs */
+#endif
+  }
+
+  addr[0] = path[0] = '\0';
+
+  /* addr buffer size made smaller to allow for port to be prepended */
+  sscanf(url, "%1095[^/]/%4095s", addr, path);
+  if (strchr(addr, ':') == NULL) {
+    strncat(addr, use_ssl ? ":443" : ":80",
+            sizeof(addr) - (strlen(addr) + 1));
+  }
+
+  if ((nc = ns_connect(mgr, addr, ev_handler)) != NULL) {
+    ns_set_protocol_http_websocket(nc);
+
+    if (use_ssl) {
+  #ifdef NS_ENABLE_SSL
+      ns_set_ssl(nc, NULL, NULL);
+  #endif
+    }
+
+    ns_printf(nc, "%s /%s HTTP/1.1\r\nHost: %s\r\nContent-Length: %lu\r\n\r\n",
+              post_data == NULL ? "GET" : "POST", path, addr,
+              post_data == NULL ? 0 : strlen(post_data));
+  }
+
+  return nc;
+}
+
 #endif  /* NS_DISABLE_HTTP_WEBSOCKET */
+#ifdef NS_MODULE_LINES
+#line 1 "modules/sha1.c"
+/**/
+#endif
 /* Copyright(c) By Steve Reid <steve@edmweb.com> */
 /* 100% Public Domain */
 
 #ifndef NS_DISABLE_SHA1
 
-#include <stdint.h>
-#include <string.h>
 
 static int is_big_endian(void) {
   static const int n = 1;
@@ -2261,12 +2730,28 @@ void SHA1Final(unsigned char digest[20], SHA1_CTX *context) {
   memset(&finalcount, '\0', sizeof(finalcount));
 }
 #endif  /* NS_DISABLE_SHA1 */
+#ifdef NS_MODULE_LINES
+#line 1 "modules/util.c"
+/**/
+#endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
  * All rights reserved
  */
 
+/*
+ * == Utilities
+ */
 
+
+/*
+ * Fetches substring from input string `s`, `end` into `v`.
+ * Skips initial delimiter characters. Records first non-delimiter character
+ * as the beginning of substring `v`. Then scans the rest of the string
+ * until a delimiter character or end-of-string is found.
+ *
+ * do_not_export_to_docs
+ */
 const char *ns_skip(const char *s, const char *end,
                     const char *delims, struct ns_str *v) {
   v->p = s;
@@ -2280,6 +2765,9 @@ static int lowercase(const char *s) {
   return tolower(* (const unsigned char *) s);
 }
 
+/*
+ * Cross-platform version of `strncasecmp()`.
+ */
 int ns_ncasecmp(const char *s1, const char *s2, size_t len) {
   int diff = 0;
 
@@ -2291,15 +2779,26 @@ int ns_ncasecmp(const char *s1, const char *s2, size_t len) {
   return diff;
 }
 
+/*
+ * Cross-platform version of `strcasecmp()`.
+ */
 int ns_casecmp(const char *s1, const char *s2) {
   return ns_ncasecmp(s1, s2, (size_t) ~0);
 }
 
+/*
+ * Cross-platform version of `strncasecmp()` where first string is
+ * specified by `struct ns_str`.
+ */
 int ns_vcasecmp(const struct ns_str *str2, const char *str1) {
   size_t n1 = strlen(str1), n2 = str2->len;
   return n1 == n2 ? ns_ncasecmp(str1, str2->p, n1) : n1 > n2 ? 1 : -1;
 }
 
+/*
+ * Cross-platform version of `strcmp()` where where first string is
+ * specified by `struct ns_str`.
+ */
 int ns_vcmp(const struct ns_str *str2, const char *str1) {
   size_t n1 = strlen(str1), n2 = str2->len;
   return n1 == n2 ? memcmp(str1, str2->p, n2) : n1 > n2 ? 1 : -1;
@@ -2330,6 +2829,13 @@ static void to_wchar(const char *path, wchar_t *wbuf, size_t wbuf_len) {
 }
 #endif  /* _WIN32 */
 
+/*
+ * Perform a 64-bit `stat()` call against given file.
+ *
+ * `path` should be UTF8 encoded.
+ *
+ * Return value is the same as for `stat()` syscall.
+ */
 int ns_stat(const char *path, ns_stat_t *st) {
 #ifdef _WIN32
   wchar_t wpath[MAX_PATH_SIZE];
@@ -2341,6 +2847,13 @@ int ns_stat(const char *path, ns_stat_t *st) {
 #endif
 }
 
+/*
+ * Open the given file and return a file stream.
+ *
+ * `path` and `mode` should be UTF8 encoded.
+ *
+ * Return value is the same as for the `fopen()` call.
+ */
 FILE *ns_fopen(const char *path, const char *mode) {
 #ifdef _WIN32
   wchar_t wpath[MAX_PATH_SIZE], wmode[10];
@@ -2352,19 +2865,31 @@ FILE *ns_fopen(const char *path, const char *mode) {
 #endif
 }
 
-int ns_open(const char *path, int flag, int mode) {
+/*
+ * Open the given file and return a file stream.
+ *
+ * `path` should be UTF8 encoded.
+ *
+ * Return value is the same as for the `open()` syscall.
+ */
+int ns_open(const char *path, int flag, int mode) { /* LCOV_EXCL_LINE */
 #ifdef _WIN32
   wchar_t wpath[MAX_PATH_SIZE];
   to_wchar(path, wpath, ARRAY_SIZE(wpath));
   return _wopen(wpath, flag, mode);
 #else
-  return open(path, flag, mode);
+  return open(path, flag, mode);  /* LCOV_EXCL_LINE */
 #endif
 }
 
+/*
+ * Base64-encodes chunk of memory `src`, `src_len` into the destination `dst`.
+ * Destination has to have enough space to hold encoded buffer.
+ * Destination is '\0'-terminated.
+ */
 void ns_base64_encode(const unsigned char *src, int src_len, char *dst) {
   static const char *b64 =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   int i, j, a, b, c;
 
   for (i = j = 0; i < src_len; i += 3) {
@@ -2411,6 +2936,11 @@ static unsigned char from_b64(unsigned char ch) {
   return tab[ch & 127];
 }
 
+/*
+ * Decodes base64-encoded string `s`, `len` into the destination `dst`.
+ * Destination has to have enough space to hold decoded buffer.
+ * Destination is '\0'-terminated.
+ */
 void ns_base64_decode(const unsigned char *s, int len, char *dst) {
   unsigned char a, b, c, d;
   while (len >= 4 &&
@@ -2430,35 +2960,193 @@ void ns_base64_decode(const unsigned char *s, int len, char *dst) {
   *dst = 0;
 }
 
-char *ns_error_string(const char *p) {
-  /* aprintf is not portable */
-  const int errbuf_len = 1024;
+#ifdef NS_ENABLE_THREADS
+/* Starts a new thread. */
+void *ns_start_thread(void *(*f)(void *), void *p) {
+#ifdef _WIN32
+  return (void *) _beginthread((void (__cdecl *)(void *)) f, 0, p);
+#else
+  pthread_t thread_id = (pthread_t) 0;
+  pthread_attr_t attr;
+
+  (void) pthread_attr_init(&attr);
+  (void) pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+
+#if defined(NS_STACK_SIZE) && NS_STACK_SIZE > 1
+  (void) pthread_attr_setstacksize(&attr, NS_STACK_SIZE);
+#endif
+
+  pthread_create(&thread_id, &attr, f, p);
+  pthread_attr_destroy(&attr);
+
+  return (void *) thread_id;
+#endif
+}
+#endif  /* NS_ENABLE_THREADS */
+
+/* Set close-on-exec bit for a given socket. */
+void ns_set_close_on_exec(sock_t sock) {
+#ifdef _WIN32
+  (void) SetHandleInformation((HANDLE) sock, HANDLE_FLAG_INHERIT, 0);
+#else
+  fcntl(sock, F_SETFD, FD_CLOEXEC);
+#endif
+}
+
+/*
+ * Converts socket's local or remote address into string.
+ *
+ * The `flags` parameter is a bit mask that controls the behavior.
+ * If bit 2 is set (`flags & 4`) then the remote address is stringified,
+ * otherwise local address is stringified. If bit 0 is set, then IP
+ * address is printed. If bit 1 is set, then port number is printed. If both
+ * port number and IP address are printed, they are separated by `:`.
+ */
+void ns_sock_to_str(sock_t sock, char *buf, size_t len, int flags) {
+  union socket_address sa;
+  socklen_t slen = sizeof(sa);
+
+  if (buf != NULL && len > 0) {
+    buf[0] = '\0';
+    memset(&sa, 0, sizeof(sa));
+    if (flags & 4) {
+      getpeername(sock, &sa.sa, &slen);
+    } else {
+      getsockname(sock, &sa.sa, &slen);
+    }
+    if (flags & 1) {
+#if defined(NS_ENABLE_IPV6)
+      inet_ntop(sa.sa.sa_family, sa.sa.sa_family == AF_INET ?
+                (void *) &sa.sin.sin_addr :
+                (void *) &sa.sin6.sin6_addr, buf, len);
+#elif defined(_WIN32)
+      /* Only Windoze Vista (and newer) have inet_ntop() */
+      strncpy(buf, inet_ntoa(sa.sin.sin_addr), len);
+#else
+      inet_ntop(sa.sa.sa_family, (void *) &sa.sin.sin_addr, buf,
+                (socklen_t)len);
+#endif
+    }
+    if (flags & 2) {
+      snprintf(buf + strlen(buf), len - (strlen(buf) + 1), "%s%d",
+               flags & 1 ? ":" : "", (int) ntohs(sa.sin.sin_port));
+    }
+  }
+}
+
+/*
+ * Generates hexdump of memory chunk.
+ *
+ * Takes a memory buffer `buf` of length `len` and creates a hex dump of that
+ * buffer in `dst`.
+ */
+int ns_hexdump(const void *buf, int len, char *dst, int dst_len) {
+  const unsigned char *p = (const unsigned char *) buf;
+  char ascii[17] = "";
+  int i, idx, n = 0;
+
+  for (i = 0; i < len; i++) {
+    idx = i % 16;
+    if (idx == 0) {
+      if (i > 0) n += snprintf(dst + n, dst_len - n, "  %s\n", ascii);
+      n += snprintf(dst + n, dst_len - n, "%04x ", i);
+    }
+    n += snprintf(dst + n, dst_len - n, " %02x", p[i]);
+    ascii[idx] = p[i] < 0x20 || p[i] > 0x7e ? '.' : p[i];
+    ascii[idx + 1] = '\0';
+  }
+
+  while (i++ % 16) n += snprintf(dst + n, dst_len - n, "%s", "   ");
+  n += snprintf(dst + n, dst_len - n, "  %s\n\n", ascii);
+
+  return n;
+}
+
+/*
+ * Print message to buffer. If buffer is large enough to hold the message,
+ * return buffer. If buffer is to small, allocate large enough buffer on heap,
+ * and return allocated buffer.
+ */
+int ns_avprintf(char **buf, size_t size, const char *fmt, va_list ap) {
+  va_list ap_copy;
   int len;
-  char *buf;
 
-  if (!errno) {
-    len = strlen(p) + 1;
-    buf = (char *) NS_MALLOC(len);
-    strncpy(buf, p, len);
-    return buf;
+  va_copy(ap_copy, ap);
+  len = vsnprintf(*buf, size, fmt, ap_copy);
+  va_end(ap_copy);
+
+  if (len < 0) {
+    /* eCos and Windows are not standard-compliant and return -1 when
+     * the buffer is too small. Keep allocating larger buffers until we
+     * succeed or out of memory. */
+    *buf = NULL;  /* LCOV_EXCL_START */
+    while (len < 0) {
+      NS_FREE(*buf);
+      size *= 2;
+      if ((*buf = (char *) NS_MALLOC(size)) == NULL) break;
+      va_copy(ap_copy, ap);
+      len = vsnprintf(*buf, size, fmt, ap_copy);
+      va_end(ap_copy);
+    }
+    /* LCOV_EXCL_STOP */
+  } else if (len > (int) size) {
+    /* Standard-compliant code path. Allocate a buffer that is large enough. */
+    if ((*buf = (char *) NS_MALLOC(len + 1)) == NULL) {
+      len = -1;  /* LCOV_EXCL_LINE */
+    } else {     /* LCOV_EXCL_LINE */
+      va_copy(ap_copy, ap);
+      len = vsnprintf(*buf, len + 1, fmt, ap_copy);
+      va_end(ap_copy);
+    }
   }
-  len = strlen(p) + 2 + errbuf_len + 1;
-  buf = (char *) NS_MALLOC(len);
-  snprintf(buf, len, "%s: %.*s", p, errbuf_len, strerror(errno));
-  return buf;
+
+  return len;
 }
 
-void ns_set_error_string(char **e, const char *s) {
-  if (e) {
-    *e = ns_error_string(s);
+void ns_hexdump_connection(struct ns_connection *nc, const char *path,
+                           int num_bytes, int ev) {
+  const struct iobuf *io = ev == NS_SEND ? &nc->send_iobuf : &nc->recv_iobuf;
+  FILE *fp;
+  char *buf, src[60], dst[60];
+  int buf_size = num_bytes * 5 + 100;
+
+  if ((fp = fopen(path, "a")) != NULL) {
+    ns_sock_to_str(nc->sock, src, sizeof(src), 3);
+    ns_sock_to_str(nc->sock, dst, sizeof(dst), 7);
+    fprintf(fp, "%lu %p %s %s %s %d\n", (unsigned long) time(NULL),
+            nc->user_data, src,
+            ev == NS_RECV ? "<-" : ev == NS_SEND ? "->" :
+            ev == NS_ACCEPT ? "<A" : ev == NS_CONNECT ? "C>" : "XX",
+            dst, num_bytes);
+    if (num_bytes > 0 && (buf = (char *) NS_MALLOC(buf_size)) != NULL) {
+      ns_hexdump(io->buf + (ev == NS_SEND ? 0 : io->len) -
+                 (ev == NS_SEND ? 0 : num_bytes), num_bytes, buf, buf_size);
+      fprintf(fp, "%s", buf);
+      NS_FREE(buf);
+    }
+    fclose(fp);
   }
 }
+#ifdef NS_MODULE_LINES
+#line 1 "modules/json-rpc.c"
+/**/
+#endif
 /* Copyright (c) 2014 Cesanta Software Limited */
 /* All rights reserved */
+
+/*
+ * == JSON-RPC
+ */
 
 #ifndef NS_DISABLE_JSON_RPC
 
 
+/*
+ * Create JSON-RPC reply in a given buffer.
+ *
+ * Return length of the reply, which
+ * can be larger then `len` that indicates an overflow.
+ */
 int ns_rpc_create_reply(char *buf, int len, const struct ns_rpc_request *req,
                         const char *result_fmt, ...) {
   static const struct json_token null_tok = { "null", 4, 0, JSON_TYPE_NULL };
@@ -2483,6 +3171,12 @@ int ns_rpc_create_reply(char *buf, int len, const struct ns_rpc_request *req,
   return n;
 }
 
+/*
+ * Create JSON-RPC request in a given buffer.
+ *
+ * Return length of the request, which
+ * can be larger then `len` that indicates an overflow.
+ */
 int ns_rpc_create_request(char *buf, int len, const char *method,
                           const char *id, const char *params_fmt, ...) {
   va_list ap;
@@ -2499,6 +3193,12 @@ int ns_rpc_create_request(char *buf, int len, const char *method,
   return n;
 }
 
+/*
+ * Create JSON-RPC error reply in a given buffer.
+ *
+ * Return length of the error, which
+ * can be larger then `len` that indicates an overflow.
+ */
 int ns_rpc_create_error(char *buf, int len, struct ns_rpc_request *req,
                         int code, const char *message, const char *fmt, ...) {
   va_list ap;
@@ -2519,6 +3219,15 @@ int ns_rpc_create_error(char *buf, int len, struct ns_rpc_request *req,
   return n;
 }
 
+/*
+ * Create JSON-RPC error in a given buffer.
+ *
+ * Return length of the error, which
+ * can be larger then `len` that indicates an overflow. `code` could be one of:
+ * `JSON_RPC_PARSE_ERROR`, `JSON_RPC_INVALID_REQUEST_ERROR`,
+ * `JSON_RPC_METHOD_NOT_FOUND_ERROR`, `JSON_RPC_INVALID_PARAMS_ERROR`,
+ * `JSON_RPC_INTERNAL_ERROR`, `JSON_RPC_SERVER_ERROR`.
+ */
 int ns_rpc_create_std_error(char *buf, int len, struct ns_rpc_request *req,
                             int code) {
   const char *message = NULL;
@@ -2535,6 +3244,15 @@ int ns_rpc_create_std_error(char *buf, int len, struct ns_rpc_request *req,
   return ns_rpc_create_error(buf, len, req, code, message, "N");
 }
 
+/*
+ * Dispatches a JSON-RPC request.
+ *
+ * Parses JSON-RPC request contained in `buf`, `len`. Then, dispatches the request
+ * to the correct handler method. Valid method names should be specified in NULL
+ * terminated array `methods`, and corresponding handlers in `handlers`.
+ * Result is put in `dst`, `dst_len`. Return: length of the result, which
+ * can be larger then `dst_len` that indicates an overflow.
+ */
 int ns_rpc_dispatch(const char *buf, int len, char *dst, int dst_len,
                     const char **methods, ns_rpc_handler_t *handlers) {
   struct json_token tokens[200];
@@ -2545,7 +3263,7 @@ int ns_rpc_dispatch(const char *buf, int len, char *dst, int dst_len,
   n = parse_json(buf, len, tokens, sizeof(tokens) / sizeof(tokens[0]));
   if (n <= 0) {
     int err_code = (n == JSON_STRING_INVALID) ?
-      JSON_RPC_PARSE_ERROR : JSON_RPC_SERVER_ERROR;
+                   JSON_RPC_PARSE_ERROR : JSON_RPC_SERVER_ERROR;
     return ns_rpc_create_std_error(dst, dst_len, &req, err_code);
   }
 
@@ -2573,6 +3291,13 @@ int ns_rpc_dispatch(const char *buf, int len, char *dst, int dst_len,
   return handlers[i](dst, dst_len, &req);
 }
 
+/*
+ * Parse JSON-RPC reply contained in `buf`, `len` into JSON tokens array
+ * `toks`, `max_toks`. If buffer contains valid reply, `reply` structure is
+ * populated. The result of RPC call is located in `reply.result`. On error,
+ * `error` structure is populated. Returns: the result of calling
+ * `parse_json(buf, len, toks, max_toks)`.
+ */
 int ns_rpc_parse_reply(const char *buf, int len,
                        struct json_token *toks, int max_toks,
                        struct ns_rpc_reply *rep, struct ns_rpc_error *er) {
@@ -2597,9 +3322,17 @@ int ns_rpc_parse_reply(const char *buf, int len,
 }
 
 #endif  /* NS_DISABLE_JSON_RPC */
+#ifdef NS_MODULE_LINES
+#line 1 "modules/mqtt.c"
+/**/
+#endif
 /*
  * Copyright (c) 2014 Cesanta Software Limited
  * All rights reserved
+ */
+
+/*
+ * == MQTT
  */
 
 #ifndef NS_DISABLE_MQTT
@@ -2608,23 +3341,30 @@ int ns_rpc_parse_reply(const char *buf, int len,
 static int parse_mqtt(struct iobuf *io, struct ns_mqtt_message *mm) {
   uint8_t header;
   int cmd;
-  uint8_t len;
-  int var_len;
+  size_t len = 0;
+  int var_len = 0;
+  char *vlen = &io->buf[1];
 
   if (io->len < 2) return -1;
 
   header = io->buf[0];
   cmd = header >> 4;
-  len = io->buf[1];  /* TODO(mkm) implement variable length decoding */
-  var_len = 0;
+
+  /* decode mqtt variable length */
+  do {
+    len += (*vlen & 127) << 7 * (vlen - &io->buf[1]);
+  } while ((*vlen++ & 128) != 0 && ((size_t)(vlen - io->buf) <= io->len));
 
   if (io->len < (size_t)(len - 1)) return -1;
 
-  iobuf_remove(io, 2);
+  iobuf_remove(io, 1 + (vlen - &io->buf[1]));
   mm->cmd = cmd;
   mm->qos = NS_MQTT_GET_QOS(header);
 
   switch (cmd) {
+    case NS_MQTT_CMD_CONNECT:
+      /* TODO(mkm): parse keepalive and will */
+      break;
     case NS_MQTT_CMD_CONNACK:
       mm->connack_ret_code = io->buf[1];
       var_len = 2;
@@ -2645,17 +3385,19 @@ static int parse_mqtt(struct iobuf *io, struct ns_mqtt_message *mm) {
         strncpy(mm->topic, io->buf + 2, topic_len);
         var_len = topic_len + 2;
 
-        /*
-         * TODO(mkm) it's not clear if this can happen
-         * The PUBLISH cmd is used for both client->server
-         * and server->client, but the message id seems to be only
-         * legal client->server while here we are parsing server->client.
-         */
         if (NS_MQTT_GET_QOS(header) > 0) {
           mm->message_id = ntohs(*(uint16_t*)io->buf);
           var_len += 2;
         }
       }
+      break;
+    case NS_MQTT_CMD_SUBSCRIBE:
+      /*
+       * topic expressions are left in the payload and can be parsed with
+       * `ns_mqtt_next_subscribe_topic`
+       */
+      mm->message_id = ntohs(* (uint16_t *) io->buf);
+      var_len = 2;
       break;
     default:
       printf("TODO: UNHANDLED COMMAND %d\n", cmd);
@@ -2667,6 +3409,7 @@ static int parse_mqtt(struct iobuf *io, struct ns_mqtt_message *mm) {
 }
 
 static void mqtt_handler(struct ns_connection *nc, int ev, void *ev_data) {
+  int len;
   struct iobuf *io = &nc->recv_iobuf;
   struct ns_mqtt_message mm;
   memset(&mm, 0, sizeof(mm));
@@ -2675,31 +3418,47 @@ static void mqtt_handler(struct ns_connection *nc, int ev, void *ev_data) {
 
   switch (ev) {
     case NS_RECV:
-      mm.payload_len = parse_mqtt(io, &mm);
-      if (mm.payload_len == -1) break; /* not fully buffered */
+      len = parse_mqtt(io, &mm);
+      if (len == -1) break; /* not fully buffered */
+      mm.payload.p = io->buf;
+      mm.payload.len = len;
 
       nc->handler(nc, NS_MQTT_EVENT_BASE + mm.cmd, &mm);
 
       if (mm.topic) {
         NS_FREE(mm.topic);
       }
-      iobuf_remove(io, mm.payload_len);
-      break;
-    default:
+      iobuf_remove(io, mm.payload.len);
       break;
   }
 }
 
+/*
+ * Attach built-in MQTT event handler to the given connection.
+ *
+ * The user-defined event handler will receive following extra events:
+ *
+ * - NS_MQTT_CONNACK
+ * - NS_MQTT_PUBLISH
+ * - NS_MQTT_PUBACK
+ * - NS_MQTT_PUBREC
+ * - NS_MQTT_PUBREL
+ * - NS_MQTT_PUBCOMP
+ * - NS_MQTT_SUBACK
+ */
 void ns_set_protocol_mqtt(struct ns_connection *nc) {
   nc->proto_handler = mqtt_handler;
 }
 
+/* Send MQTT handshake. */
 void ns_send_mqtt_handshake(struct ns_connection *nc, const char *client_id) {
   static struct ns_send_mqtt_handshake_opts opts;
   ns_send_mqtt_handshake_opt(nc, client_id, opts);
 }
 
-void ns_send_mqtt_handshake_opt(struct ns_connection *nc, const char *client_id, struct ns_send_mqtt_handshake_opts opts) {
+void ns_send_mqtt_handshake_opt(struct ns_connection *nc,
+                                const char *client_id,
+                                struct ns_send_mqtt_handshake_opts opts) {
   uint8_t header = NS_MQTT_CMD_CONNECT << 4;
   uint8_t rem_len;
   uint16_t keep_alive;
@@ -2727,50 +3486,1152 @@ void ns_send_mqtt_handshake_opt(struct ns_connection *nc, const char *client_id,
   ns_send(nc, client_id, strlen(client_id));
 }
 
+static void ns_mqtt_prepend_header(struct ns_connection *nc, uint8_t cmd,
+                                   uint8_t flags, size_t len) {
+  size_t off = nc->send_iobuf.len - len;
+  uint8_t header = cmd << 4 | (uint8_t)flags;
+
+  uint8_t buf[1 + sizeof(size_t)];
+  uint8_t *vlen = &buf[1];
+
+  assert(nc->send_iobuf.len >= len);
+
+  buf[0] = header;
+
+  /* mqtt variable length encoding */
+  do {
+    *vlen = len % 0x80;
+    len /= 0x80;
+    if (len > 0)
+      *vlen |= 0x80;
+    vlen++;
+  } while (len > 0);
+
+  iobuf_insert(&nc->send_iobuf, off, buf, vlen - buf);
+}
+
+/* Publish a message to a given topic. */
 void ns_mqtt_publish(struct ns_connection *nc, const char *topic,
                      uint16_t message_id, int flags,
                      const void *data, size_t len) {
-  uint8_t header = NS_MQTT_CMD_PUBLISH << 4 | (uint8_t)flags;
-  uint8_t rem_len = len + strlen(topic) + 2;
+  size_t old_len = nc->send_iobuf.len;
+
   uint16_t topic_len = htons(strlen(topic));
-  uint16_t message_id_n = htons(message_id);
+  uint16_t message_id_net = htons(message_id);
 
-  uint8_t qos = NS_MQTT_GET_QOS(flags);
-  if (qos > 0) rem_len += 2;
-
-  ns_send(nc, &header, 1);
-  ns_send(nc, &rem_len, 1); /* TODO(mkm) implement variable length encoding */
   ns_send(nc, &topic_len, 2);
   ns_send(nc, topic, strlen(topic));
-
-  if (qos > 0)
-    ns_send(nc, &message_id_n, 2);
-
+  if (NS_MQTT_GET_QOS(flags) > 0) {
+    ns_send(nc, &message_id_net, 2);
+  }
   ns_send(nc, data, len);
+
+  ns_mqtt_prepend_header(nc, NS_MQTT_CMD_PUBLISH, flags,
+                         nc->send_iobuf.len - old_len);
 }
 
+/* Subscribe to a bunch of topics. */
 void ns_mqtt_subscribe(struct ns_connection *nc,
                        const struct ns_mqtt_topic_expression *topics,
                        size_t topics_len, uint16_t message_id) {
-  uint8_t header = NS_MQTT_CMD_SUBSCRIBE << 4 | NS_MQTT_QOS(1);
-  uint8_t rem_len = 2;
+  size_t old_len = nc->send_iobuf.len;
+
   uint16_t message_id_n = htons(message_id);
-  uint16_t topic_len_n;
-
   size_t i;
-  for (i=0; i<topics_len; i++)
-    rem_len += 2 + strlen(topics[i].topic) + 1;
 
-  ns_send(nc, &header, 1);
-  ns_send(nc, &rem_len, 1); /* TODO(mkm) implement variable length encoding */
-  ns_send(nc, &message_id_n, 2);
-
-  for (i=0; i<topics_len; i++) {
-    topic_len_n = htons(strlen(topics[i].topic));
+  ns_send(nc, (char *) &message_id_n, 2);
+  for (i = 0; i < topics_len; i++) {
+    uint16_t topic_len_n = htons(strlen(topics[i].topic));
     ns_send(nc, &topic_len_n, 2);
     ns_send(nc, topics[i].topic, strlen(topics[i].topic));
     ns_send(nc, &topics[i].qos, 1);
   }
+
+  ns_mqtt_prepend_header(nc, NS_MQTT_CMD_SUBSCRIBE, NS_MQTT_QOS(1),
+                         nc->send_iobuf.len - old_len);
+}
+
+/*
+ * Extract the next topic expression from a SUBSCRIBE command payload.
+ *
+ * Topic expression name will point to a string in the payload buffer.
+ * Return the pos of the next topic expression or -1 when the list
+ * of topics is exhausted.
+ */
+int ns_mqtt_next_subscribe_topic(struct ns_mqtt_message *msg,
+                                 struct ns_str *topic,
+                                 uint8_t *qos,
+                                 int pos) {
+  unsigned char *buf = (unsigned char *) msg->payload.p + pos;
+  if ((size_t) pos >= msg->payload.len) {
+    return -1;
+  }
+
+  topic->len = buf[0] << 8 | buf[1];
+  topic->p = (char *) buf + 2;
+  *qos = buf[2 + topic->len];
+  return pos + 2 + topic->len + 1;
+}
+
+/* Unsubscribe from a bunch of topics. */
+void ns_mqtt_unsubscribe(struct ns_connection *nc, char **topics,
+                         size_t topics_len, uint16_t message_id) {
+  size_t old_len = nc->send_iobuf.len;
+
+  uint16_t message_id_n = htons(message_id);
+  size_t i;
+
+  ns_send(nc, (char *) &message_id_n, 2);
+  for (i = 0; i < topics_len; i++) {
+    uint16_t topic_len_n = htons(strlen(topics[i]));
+    ns_send(nc, &topic_len_n, 2);
+    ns_send(nc, topics[i], strlen(topics[i]));
+  }
+
+  ns_mqtt_prepend_header(nc, NS_MQTT_CMD_UNSUBSCRIBE, NS_MQTT_QOS(1),
+                         nc->send_iobuf.len - old_len);
+}
+
+/* Send a CONNACK command with a given `return_code`. */
+void ns_mqtt_connack(struct ns_connection *nc, uint8_t return_code) {
+  uint8_t unused = 0;
+  ns_send(nc, &unused, 1);
+  ns_send(nc, &return_code, 1);
+  ns_mqtt_prepend_header(nc, NS_MQTT_CMD_CONNACK, 0, 2);
+}
+
+/*
+ * Sends a command which contains only a `message_id` and a QoS level of 1.
+ *
+ * Helper function.
+ */
+static void ns_send_mqtt_short_command(struct ns_connection *nc, uint8_t cmd,
+                                       uint16_t message_id) {
+  uint16_t message_id_net = htons(message_id);
+  ns_send(nc, &message_id_net, 2);
+  ns_mqtt_prepend_header(nc, cmd, NS_MQTT_QOS(1), 2);
+}
+
+/* Send a PUBACK command with a given `message_id`. */
+void ns_mqtt_puback(struct ns_connection *nc, uint16_t message_id) {
+  ns_send_mqtt_short_command(nc, NS_MQTT_CMD_PUBACK, message_id);
+}
+
+/* Send a PUBREC command with a given `message_id`. */
+void ns_mqtt_pubrec(struct ns_connection *nc, uint16_t message_id) {
+  ns_send_mqtt_short_command(nc, NS_MQTT_CMD_PUBREC, message_id);
+}
+
+/* Send a PUBREL command with a given `message_id`. */
+void ns_mqtt_pubrel(struct ns_connection *nc, uint16_t message_id) {
+  ns_send_mqtt_short_command(nc, NS_MQTT_CMD_PUBREL, message_id);
+}
+
+/* Send a PUBCOMP command with a given `message_id`. */
+void ns_mqtt_pubcomp(struct ns_connection *nc, uint16_t message_id) {
+  ns_send_mqtt_short_command(nc, NS_MQTT_CMD_PUBCOMP, message_id);
+}
+
+/*
+ * Send a SUBACK command with a given `message_id`
+ * and a sequence of granted QoSs.
+ */
+void ns_mqtt_suback(struct ns_connection *nc, uint8_t *qoss, size_t qoss_len,
+                    uint16_t message_id) {
+  size_t i;
+  uint16_t message_id_net = htons(message_id);
+  ns_send(nc, &message_id_net, 2);
+  for (i = 0; i < qoss_len; i++) {
+    ns_send(nc, &qoss[i], 1);
+  }
+  ns_mqtt_prepend_header(nc, NS_MQTT_CMD_SUBACK, NS_MQTT_QOS(1), 2 + qoss_len);
+}
+
+/* Send a UNSUBACK command with a given `message_id`. */
+void ns_mqtt_unsuback(struct ns_connection *nc, uint16_t message_id) {
+  ns_send_mqtt_short_command(nc, NS_MQTT_CMD_UNSUBACK, message_id);
+}
+
+/* Send a PINGREQ command. */
+void ns_mqtt_ping(struct ns_connection *nc) {
+  ns_mqtt_prepend_header(nc, NS_MQTT_CMD_PINGREQ, 0, 0);
+}
+
+/* Send a PINGRESP command. */
+void ns_mqtt_pong(struct ns_connection *nc) {
+  ns_mqtt_prepend_header(nc, NS_MQTT_CMD_PINGRESP, 0, 0);
+}
+
+/* Send a DISCONNECT command. */
+void ns_mqtt_disconnect(struct ns_connection *nc) {
+  ns_mqtt_prepend_header(nc, NS_MQTT_CMD_DISCONNECT, 0, 0);
 }
 
 #endif  /* NS_DISABLE_MQTT */
+#ifdef NS_MODULE_LINES
+#line 1 "modules/mqtt-broker.c"
+/**/
+#endif
+/*
+ * Copyright (c) 2014 Cesanta Software Limited
+ * All rights reserved
+ */
+
+/*
+ * == MQTT Broker
+ */
+
+
+#ifdef NS_ENABLE_MQTT_BROKER
+
+static void ns_mqtt_session_init(struct ns_mqtt_broker *brk,
+                                 struct ns_mqtt_session *s,
+                                 struct ns_connection *nc) {
+  s->brk = brk;
+  s->subscriptions = NULL;
+  s->num_subscriptions = 0;
+  s->nc = nc;
+}
+
+static void ns_mqtt_add_session(struct ns_mqtt_session *s) {
+  s->next = s->brk->sessions;
+  s->brk->sessions = s;
+  s->prev = NULL;
+  if (s->next != NULL) s->next->prev = s;
+}
+
+static void ns_mqtt_remove_session(struct ns_mqtt_session *s) {
+  if (s->prev == NULL) s->brk->sessions = s->next;
+  if (s->prev) s->prev->next = s->next;
+  if (s->next) s->next->prev = s->prev;
+}
+
+static void ns_mqtt_destroy_session(struct ns_mqtt_session *s) {
+  size_t i;
+  for (i = 0; i < s->num_subscriptions; i++) {
+    NS_FREE((void *) s->subscriptions[i].topic);
+  }
+  NS_FREE(s);
+}
+
+static void ns_mqtt_close_session(struct ns_mqtt_session *s) {
+  ns_mqtt_remove_session(s);
+  ns_mqtt_destroy_session(s);
+}
+
+/* Initializes a MQTT broker. */
+void ns_mqtt_broker_init(struct ns_mqtt_broker *brk, void *user_data) {
+  brk->sessions = NULL;
+  brk->user_data = user_data;
+}
+
+static void ns_mqtt_broker_handle_connect(struct ns_mqtt_broker *brk,
+                                          struct ns_connection *nc) {
+  struct ns_mqtt_session *s = (struct ns_mqtt_session *) malloc(sizeof *s);
+  if (s == NULL) {
+    /* LCOV_EXCL_START */
+    ns_mqtt_connack(nc, NS_MQTT_CONNACK_SERVER_UNAVAILABLE);
+    return;
+    /* LCOV_EXCL_STOP */
+  }
+
+  /* TODO(mkm): check header (magic and version) */
+
+  ns_mqtt_session_init(brk, s, nc);
+  s->user_data = nc->user_data;
+  nc->user_data = s;
+  ns_mqtt_add_session(s);
+
+  ns_mqtt_connack(nc, NS_MQTT_CONNACK_ACCEPTED);
+}
+
+static void ns_mqtt_broker_handle_subscribe(struct ns_connection *nc,
+                                            struct ns_mqtt_message *msg) {
+  struct ns_mqtt_session *ss = (struct ns_mqtt_session *) nc->user_data;
+  uint8_t qoss[512];
+  size_t qoss_len = 0;
+  struct ns_str topic;
+  uint8_t qos;
+  int pos;
+  struct ns_mqtt_topic_expression *te;
+
+  for (pos = 0;
+       (pos = ns_mqtt_next_subscribe_topic(msg, &topic, &qos, pos)) != -1; ) {
+    qoss[qoss_len++] = qos;
+  }
+
+  ss->subscriptions = (struct ns_mqtt_topic_expression *)realloc(
+      ss->subscriptions, sizeof(*ss->subscriptions) * qoss_len);
+  for (pos = 0;
+       (pos = ns_mqtt_next_subscribe_topic(msg, &topic, &qos, pos)) != -1;
+       ss->num_subscriptions++) {
+    te = &ss->subscriptions[ss->num_subscriptions];
+    te->topic = (char *) malloc(topic.len + 1);
+    te->qos = qos;
+    strncpy((char *) te->topic, topic.p, topic.len + 1);
+  }
+
+  ns_mqtt_suback(nc, qoss, qoss_len, msg->message_id);
+}
+
+/*
+ * Matches a topic against a topic expression
+ *
+ * See http://goo.gl/iWk21X
+ *
+ * Returns 1 if it matches; 0 otherwise.
+ */
+static int ns_mqtt_match_topic_expression(const char *exp, const char *topic) {
+  /* TODO(mkm): implement real matching */
+  int len = strlen(exp);
+  if (strchr(exp, '#')) {
+    len -= 2;
+  }
+  return strncmp(exp, topic, len) == 0;
+}
+
+static void ns_mqtt_broker_handle_publish(struct ns_mqtt_broker *brk,
+                                          struct ns_mqtt_message *msg) {
+  struct ns_mqtt_session *s;
+  size_t i;
+
+  for (s = ns_mqtt_next(brk, NULL); s != NULL; s = ns_mqtt_next(brk, s)) {
+    for (i = 0; i < s->num_subscriptions; i++) {
+      if (ns_mqtt_match_topic_expression(
+              s->subscriptions[i].topic, msg->topic)) {
+        ns_mqtt_publish(s->nc, msg->topic, 0, 0,
+                        msg->payload.p, msg->payload.len);
+        break;
+      }
+    }
+  }
+}
+
+/*
+ * Process a MQTT broker message.
+ *
+ * Listening connection expects a pointer to an initialized `ns_mqtt_broker`
+ * structure in the `user_data` field.
+ *
+ * Basic usage:
+ *
+ * [source,c]
+ * -----
+ * ns_mqtt_broker_init(&brk, NULL);
+ *
+ * if ((nc = ns_bind(&mgr, address, ns_mqtt_broker)) == NULL) {
+ *   // fail;
+ * }
+ * nc->user_data = &brk;
+ * -----
+ *
+ * New incoming connections will receive a `ns_mqtt_session` structure
+ * in the connection `user_data`. The original `user_data` will be stored
+ * in the `user_data` field of the session structure. This allows the user
+ * handler to store user data before `ns_mqtt_broker` creates the session.
+ *
+ * Since only the NS_ACCEPT message is processed by the listening socket,
+ * for most events the `user_data` will thus point to a `ns_mqtt_session`.
+ */
+void ns_mqtt_broker(struct ns_connection *nc, int ev, void *data) {
+  struct ns_mqtt_message *msg = (struct ns_mqtt_message *)data;
+  struct ns_mqtt_broker *brk;
+
+  if (nc->listener) {
+    brk = (struct ns_mqtt_broker *) nc->listener->user_data;
+  } else {
+    brk = (struct ns_mqtt_broker *) nc->user_data;
+  }
+
+  switch (ev) {
+    case NS_ACCEPT:
+      ns_set_protocol_mqtt(nc);
+      break;
+    case NS_MQTT_CONNECT:
+      ns_mqtt_broker_handle_connect(brk, nc);
+      break;
+    case NS_MQTT_SUBSCRIBE:
+      ns_mqtt_broker_handle_subscribe(nc, msg);
+      break;
+    case NS_MQTT_PUBLISH:
+      ns_mqtt_broker_handle_publish(brk, msg);
+      break;
+    case NS_CLOSE:
+      if (nc->listener) {
+        ns_mqtt_close_session((struct ns_mqtt_session *) nc->user_data);
+      }
+      break;
+  }
+}
+
+/* Iterates over all mqtt sessions connections. */
+struct ns_mqtt_session *ns_mqtt_next(struct ns_mqtt_broker *brk,
+                                     struct ns_mqtt_session *s) {
+  return s == NULL ? brk->sessions : s->next;
+}
+
+#endif /* NS_ENABLE_MQTT_BROKER */
+#ifdef NS_MODULE_LINES
+#line 1 "modules/dns.c"
+/**/
+#endif
+/*
+ * Copyright (c) 2014 Cesanta Software Limited
+ * All rights reserved
+ */
+
+/*
+ * == DNS API
+ */
+
+#ifndef NS_DISABLE_DNS
+
+
+#define MAX_DNS_PACKET_LEN  2048
+
+static int ns_dns_tid = 0xa0;
+
+struct ns_dns_header {
+  uint16_t transaction_id;
+  uint16_t flags;
+  uint16_t num_questions;
+  uint16_t num_answers;
+  uint16_t num_authority_prs;
+  uint16_t num_other_prs;
+};
+
+struct ns_dns_resource_record *ns_dns_next_record(
+    struct ns_dns_message *msg, int query,
+    struct ns_dns_resource_record *prev) {
+  struct ns_dns_resource_record *rr;
+
+  for (rr = (prev == NULL ? msg->answers : prev + 1);
+       rr - msg->answers < msg->num_answers; rr++) {
+    if (rr->rtype == query) {
+      return rr;
+    }
+  }
+  return NULL;
+}
+
+/*
+ * Parses the record data from a DNS resource record.
+ *
+ *  - A:     struct in_addr *ina
+ *  - AAAA:  struct in6_addr *ina
+ *  - CNAME: char buffer
+ *
+ * Returns -1 on error.
+ *
+ * TODO(mkm): MX
+ */
+int ns_dns_parse_record_data(struct ns_dns_message *msg,
+                             struct ns_dns_resource_record *rr,
+                             void *data, size_t data_len) {
+  switch (rr->rtype) {
+    case NS_DNS_A_RECORD:
+      if (data_len < sizeof(struct in_addr)) {
+        return -1;
+      }
+      memcpy(data, rr->rdata.p, data_len);
+      return 0;
+#ifdef NS_ENABLE_IPV6
+    case NS_DNS_AAAA_RECORD:
+      if (data_len < sizeof(struct in6_addr)) {
+        return -1;  /* LCOV_EXCL_LINE */
+      }
+      memcpy(data, rr->rdata.p, data_len);
+      return 0;
+#endif
+    case NS_DNS_CNAME_RECORD:
+      ns_dns_uncompress_name(msg, &rr->rdata, (char *) data, data_len);
+      return 0;
+  }
+
+  return -1;
+}
+
+/*
+ * Insert a DNS header to an IO buffer.
+ *
+ * Returns number of bytes inserted.
+ */
+int ns_dns_insert_header(struct iobuf *io, size_t pos,
+                         struct ns_dns_message *msg) {
+  struct ns_dns_header header;
+
+  memset(&header, 0, sizeof(header));
+  header.transaction_id = msg->transaction_id;
+  header.flags = htons(msg->flags);
+  header.num_questions = htons(msg->num_questions);
+  header.num_answers = htons(msg->num_answers);
+
+  return iobuf_insert(io, pos, &header, sizeof(header));
+}
+
+/*
+ * Append already encoded body from an existing message.
+ *
+ * This is useful when generating a DNS reply message which includes
+ * all question records.
+ *
+ * Returns number of appened bytes.
+ */
+int ns_dns_copy_body(struct iobuf *io, struct ns_dns_message *msg) {
+  return iobuf_append(io, msg->pkt.p + sizeof(struct ns_dns_header),
+                      msg->pkt.len - sizeof(struct ns_dns_header));
+}
+
+static int ns_dns_encode_name(struct iobuf *io, const char *name, size_t len) {
+  const char *s;
+  unsigned char n;
+  size_t pos = io->len;
+
+  do {
+    if ((s = strchr(name, '.')) == NULL) {
+      s = name + len;
+    }
+
+    if (s - name > 127) {
+      return -1;  /* TODO(mkm) cover */
+    }
+    n = s - name;            /* chunk length */
+    iobuf_append(io, &n, 1); /* send length */
+    iobuf_append(io, name, n);
+
+    if (*s == '.') {
+      n++;
+    }
+
+    name += n;
+    len -= n;
+  } while (*s != '\0');
+  iobuf_append(io, "\0", 1);  /* Mark end of host name */
+
+  return io->len - pos;
+}
+
+/*
+ * Encode and append a DNS resource record to an IO buffer.
+ *
+ * The record metadata is taken from the `rr` parameter, while the name and data
+ * are taken from the parameters, encoded in the appropriate format depending on
+ * record type, and stored in the IO buffer. The encoded values might contain
+ * offsets within the IO buffer. It's thus important that the IO buffer doesn't
+ * get trimmed while a sequence of records are encoded while preparing a DNS reply.
+ *
+ * This function doesn't update the `name` and `rdata` pointers in the `rr` struct
+ * because they might be invalidated as soon as the IO buffer grows again.
+ *
+ * Returns the number of bytes appened or -1 in case of error.
+ */
+int ns_dns_encode_record(struct iobuf *io, struct ns_dns_resource_record *rr,
+                         const char *name, size_t nlen,
+                         const void *rdata, size_t rlen) {
+  size_t pos = io->len;
+  uint16_t u16;
+  uint32_t u32;
+
+  if (rr->kind == NS_DNS_INVALID_RECORD) {
+    return -1;  /* LCOV_EXCL_LINE */
+  }
+
+  if (ns_dns_encode_name(io, name, nlen) == -1) {
+    return -1;
+  }
+
+  u16 = htons(rr->rtype);
+  iobuf_append(io, &u16, 2);
+  u16 = htons(rr->rclass);
+  iobuf_append(io, &u16, 2);
+
+  if (rr->kind == NS_DNS_ANSWER) {
+    u32 = htonl(rr->ttl);
+    iobuf_append(io, &u32, 4);
+
+    if (rr->rtype == NS_DNS_CNAME_RECORD) {
+      int clen;
+      /* fill size after encoding */
+      size_t off = io->len;
+      iobuf_append(io, &u16, 2);
+      if ((clen = ns_dns_encode_name(io, (const char *) rdata, rlen)) == -1) {
+        return -1;
+      }
+      u16 = clen;
+      io->buf[off] = u16 >> 8;
+      io->buf[off+1] = u16 & 0xff;
+    } else {
+      u16 = htons(rlen);
+      iobuf_append(io, &u16, 2);
+      iobuf_append(io, rdata, rlen);
+    }
+  }
+
+  return io->len - pos;
+}
+
+/*
+ * Send a DNS query to the remote end.
+ */
+void ns_send_dns_query(struct ns_connection* nc, const char *name,
+                       int query_type) {
+  struct ns_dns_message msg;
+  struct iobuf pkt;
+  struct ns_dns_resource_record *rr = &msg.questions[0];
+
+  iobuf_init(&pkt, MAX_DNS_PACKET_LEN);
+  memset(&msg, 0, sizeof(msg));
+
+  msg.transaction_id = ++ns_dns_tid;
+  msg.flags = 0x100;
+  msg.num_questions = 1;
+
+  ns_dns_insert_header(&pkt, 0, &msg);
+
+  rr->rtype = query_type;
+  rr->rclass = 1; /* Class: inet */
+  rr->kind = NS_DNS_QUESTION;
+
+  if (ns_dns_encode_record(&pkt, rr, name, strlen(name), NULL, 0) == -1) {
+    /* TODO(mkm): return an error code */
+    return; /* LCOV_EXCL_LINE */
+  }
+
+  /* TCP DNS requires messages to be prefixed with len */
+  if (!(nc->flags & NSF_UDP)) {
+    uint16_t len = htons(pkt.len);
+    iobuf_insert(&pkt, 0, &len, 2);
+  }
+
+  ns_send(nc, pkt.buf, pkt.len);
+  iobuf_free(&pkt);
+}
+
+static unsigned char *ns_parse_dns_resource_record(
+    unsigned char *data, struct ns_dns_resource_record *rr, int reply) {
+  unsigned char *name = data;
+  int chunk_len, data_len;
+
+  while((chunk_len = *data)) {
+    if (((unsigned char *)data)[0] & 0xc0) {
+      data += 1;
+      break;
+    }
+    data += chunk_len + 1;
+  }
+
+  rr->name.p = (char *) name;
+  rr->name.len = data-name+1;
+
+  data++;
+
+  rr->rtype = data[0] << 8 | data[1];
+  data += 2;
+
+  rr->rclass = data[0] << 8 | data[1];
+  data += 2;
+
+  rr->kind = reply ? NS_DNS_ANSWER : NS_DNS_QUESTION;
+  if (reply) {
+    rr->ttl = data[0] << 24 | data[1] << 16 | data[2] << 8 | data[3];
+    data += 4;
+
+    data_len = *data << 8 | *(data+1);
+    data += 2;
+
+    rr->rdata.p = (char *) data;
+    rr->rdata.len = data_len;
+    data += data_len;
+  }
+  return data;
+}
+
+/* Low-level: parses a DNS response. */
+int ns_parse_dns(const char *buf, int len, struct ns_dns_message *msg) {
+  struct ns_dns_header *header = (struct ns_dns_header *) buf;
+  unsigned char *data = (unsigned char *) buf + sizeof(*header);
+  int i;
+  msg->pkt.p = buf;
+  msg->pkt.len = len;
+
+  if (len < (int)sizeof(*header)) {
+    return -1;  /* LCOV_EXCL_LINE */
+  }
+
+  msg->transaction_id = header->transaction_id;
+  msg->flags = ntohs(header->flags);
+  msg->num_questions = ntohs(header->num_questions);
+  msg->num_answers = ntohs(header->num_answers);
+
+  /* TODO(mkm): check bounds */
+
+  for (i = 0; i < msg->num_questions
+           && i < (int)ARRAY_SIZE(msg->questions); i++) {
+    data = ns_parse_dns_resource_record(data, &msg->questions[i], 0);
+  }
+
+  for (i = 0; i < msg->num_answers
+           && i < (int)ARRAY_SIZE(msg->answers); i++) {
+    data = ns_parse_dns_resource_record(data, &msg->answers[i], 1);
+  }
+
+  return 0;
+}
+
+/*
+ * Uncompress a DNS compressed name.
+ *
+ * The containing dns message is required because the compressed encoding
+ * and reference suffixes present elsewhere in the packet.
+ *
+ * If name is less than `dst_len` characters long, the remainder
+ * of `dst` is terminated with `\0' characters. Otherwise, `dst` is not terminated.
+ *
+ * If `dst_len` is 0 `dst` can be NULL.
+ * Returns the uncompressed name length.
+ */
+size_t ns_dns_uncompress_name(struct ns_dns_message *msg, struct ns_str *name,
+                              char *dst, int dst_len) {
+  int chunk_len;
+  char *old_dst = dst;
+  const unsigned char *data = (unsigned char *) name->p;
+
+  while((chunk_len = *data++)) {
+    int leeway = dst_len - (dst - old_dst);
+    if (chunk_len & 0xc0) {
+      uint16_t off = (data[-1] & (~0xc0)) << 8 | data[0];
+      data = (unsigned char *)msg->pkt.p + off;
+      continue;
+    }
+    if (chunk_len > leeway) {
+      chunk_len = leeway;
+    }
+
+    memcpy(dst, data, chunk_len);
+    data += chunk_len;
+    dst += chunk_len;
+    leeway -= chunk_len;
+    if (leeway == 0) {
+      return dst - old_dst;
+    }
+    *dst++ = '.';
+  }
+  *--dst = 0;
+  return dst - old_dst;
+}
+
+static void dns_handler(struct ns_connection *nc, int ev, void *ev_data) {
+  struct iobuf *io = &nc->recv_iobuf;
+  struct ns_dns_message msg;
+
+  /* Pass low-level events to the user handler */
+  nc->handler(nc, ev, ev_data);
+
+  switch (ev) {
+    case NS_RECV:
+      if (!(nc->flags & NSF_UDP)) {
+        iobuf_remove(&nc->recv_iobuf, 2);
+      }
+      if (ns_parse_dns(nc->recv_iobuf.buf, nc->recv_iobuf.len, &msg) == -1) {
+        /* reply + recursion allowed + format error */
+        memset(&msg, 0, sizeof(msg));
+        msg.flags = 0x8081;
+        ns_dns_insert_header(io, 0, &msg);
+        if (!(nc->flags & NSF_UDP)) {
+          uint16_t len = htons(io->len);
+          iobuf_insert(io, 0, &len, 2);
+        }
+        ns_send(nc, io->buf, io->len);
+      } else {
+        /* Call user handler with parsed message */
+        nc->handler(nc, NS_DNS_MESSAGE, &msg);
+      }
+      iobuf_remove(io, io->len);
+      break;
+  }
+}
+
+/*
+ * Attach built-in DNS event handler to the given listening connection.
+ *
+ * DNS event handler parses incoming UDP packets, treating them as DNS
+ * requests. If incoming packet gets successfully parsed by the DNS event
+ * handler, a user event handler will receive `NS_DNS_REQUEST` event, with
+ * `ev_data` pointing to the parsed `struct ns_dns_message`.
+ *
+ * See https://github.com/cesanta/fossa/tree/master/examples/captive_dns_server[captive_dns_server]
+ * example on how to handle DNS request and send DNS reply.
+ */
+void ns_set_protocol_dns(struct ns_connection *nc) {
+  nc->proto_handler = dns_handler;
+}
+
+#endif  /* NS_DISABLE_DNS */
+#ifdef NS_MODULE_LINES
+#line 1 "modules/dns-server.c"
+/**/
+#endif
+/*
+ * Copyright (c) 2014 Cesanta Software Limited
+ * All rights reserved
+ */
+
+/*
+ * == DNS server API
+ *
+ * Disabled by default; enable with `-DNS_ENABLE_DNS_SERVER`.
+ */
+
+#ifdef NS_ENABLE_DNS_SERVER
+
+
+/*
+ * Creates a DNS reply.
+ *
+ * The reply will be based on an existing query message `msg`.
+ * The query body will be appended to the output buffer.
+ * "reply + recusions allowed" will be added to the message flags and
+ * message's num_answers will be set to 0.
+ *
+ * Anwer records can be appended with `ns_dns_send_reply` or by lower
+ * level function defined in the DNS API.
+ *
+ * In order to send the reply use `ns_dns_send_reply`.
+ * It's possible to use a connection's send buffer as reply buffers,
+ * and it will work for both UDP and TCP connections.
+ *
+ * Example:
+ *
+ * [source,c]
+ * -----
+ * reply = ns_dns_create_reply(&nc->send_iobuf, msg);
+ * for (i = 0; i < msg->num_questions; i++) {
+ *   rr = &msg->questions[i];
+ *   if (rr->rtype == NS_DNS_A_RECORD) {
+ *     ns_dns_reply_record(&reply, rr, 3600, &dummy_ip_addr, 4);
+ *   }
+ * }
+ * ns_dns_send_reply(nc, &reply);
+ * -----
+ */
+struct ns_dns_reply ns_dns_create_reply(struct iobuf *io,
+                                        struct ns_dns_message *msg) {
+  struct ns_dns_reply rep;
+  rep.msg = msg;
+  rep.io = io;
+  rep.start = io->len;
+
+  /* reply + recursion allowed */
+  msg->flags |= 0x8080;
+  ns_dns_copy_body(io, msg);
+
+  msg->num_answers = 0;
+  return rep;
+}
+
+/*
+ * Sends a DNS reply through a connection.
+ *
+ * The DNS data is stored in an IO buffer pointed by reply structure in `r`.
+ * This function mutates the content of that buffer in order to ensure that
+ * the DNS header reflects size and flags of the mssage, that might have been
+ * updated either with `ns_dns_reply_record` or by direct manipulation of
+ * `r->message`.
+ *
+ * Once sent, the IO buffer will be trimmed unless the reply IO buffer
+ * is the connection's send buffer and the connection is not in UDP mode.
+ */
+int ns_dns_send_reply(struct ns_connection *nc, struct ns_dns_reply *r) {
+  size_t sent = r->io->len - r->start;
+  ns_dns_insert_header(r->io, r->start, r->msg);
+  if (!(nc->flags & NSF_UDP)) {
+    uint16_t len = htons(sent);
+    iobuf_insert(r->io, r->start, &len, 2);
+  }
+
+  if (&nc->send_iobuf != r->io || nc->flags & NSF_UDP) {
+    sent = ns_send(nc, r->io->buf + r->start, r->io->len - r->start);
+    r->io->len = r->start;
+  }
+  return sent;
+}
+
+/*
+ * Append a DNS reply record to the IO buffer and to the DNS message.
+ *
+ * The message num_answers field will be incremented. It's caller's duty
+ * to ensure num_answers is propertly initialized.
+ *
+ * Returns -1 on error.
+ */
+int ns_dns_reply_record(struct ns_dns_reply *reply,
+                        struct ns_dns_resource_record *question,
+                        const char *name, int rtype, int ttl,
+                        const void *rdata, size_t rdata_len) {
+  struct ns_dns_message *msg = (struct ns_dns_message *)reply->msg;
+  char rname[512];
+  struct ns_dns_resource_record *ans = &msg->answers[msg->num_answers];
+  if (msg->num_answers >= NS_MAX_DNS_ANSWERS) {
+    return -1;  /* LCOV_EXCL_LINE */
+  }
+
+  if (name == NULL) {
+    name = rname;
+    rname[511] = 0;
+    ns_dns_uncompress_name(msg, &question->name, rname, sizeof(rname) - 1);
+  }
+
+  *ans = *question;
+  ans->kind = NS_DNS_ANSWER;
+  ans->rtype = rtype;
+  ans->ttl = ttl;
+
+  if (ns_dns_encode_record(reply->io, ans, name, strlen(name),
+                           rdata, rdata_len) == -1) {
+    return -1;  /* LCOV_EXCL_LINE */
+  };
+
+  msg->num_answers++;
+  return 0;
+}
+
+
+#endif  /* NS_ENABLE_DNS_SERVER */
+#ifdef NS_MODULE_LINES
+#line 1 "modules/resolv.c"
+/**/
+#endif
+/*
+ * Copyright (c) 2014 Cesanta Software Limited
+ * All rights reserved
+ */
+
+/*
+ * == Name resolver
+ */
+
+#ifndef NS_DISABLE_RESOLVER
+
+
+static const char *ns_default_dns_server = "udp://8.8.8.8:53";
+NS_INTERNAL char ns_dns_server[256];
+
+struct ns_resolve_async_request {
+  char name[1024];
+  int query;
+  ns_resolve_callback_t callback;
+  void *data;
+  time_t timeout;
+  int max_retries;
+
+  /* state */
+  time_t last_time;
+  int retries;
+};
+
+/*
+ * Find what nameserver to use.
+ *
+ * Return 0 if OK, -1 if error
+ */
+static int ns_get_ip_address_of_nameserver(char *name, size_t name_len) {
+  int  ret = 0;
+
+#ifdef _WIN32
+  int  i;
+  LONG  err;
+  HKEY  hKey, hSub;
+  char  subkey[512], dhcpns[512], ns[512], value[128], *key =
+  "SYSTEM\\ControlSet001\\Services\\Tcpip\\Parameters\\Interfaces";
+
+  if ((err = RegOpenKey(HKEY_LOCAL_MACHINE,
+      key, &hKey)) != ERROR_SUCCESS) {
+    fprintf(stderr, "cannot open reg key %s: %d\n", key, err);
+    ret--;
+  } else {
+    for (ret--, i = 0; RegEnumKey(hKey, i, subkey,
+        sizeof(subkey)) == ERROR_SUCCESS; i++) {
+      DWORD type, len = sizeof(value);
+      if (RegOpenKey(hKey, subkey, &hSub) == ERROR_SUCCESS &&
+          (RegQueryValueEx(hSub, "NameServer", 0,
+          &type, value, &len) == ERROR_SUCCESS ||
+          RegQueryValueEx(hSub, "DhcpNameServer", 0,
+          &type, value, &len) == ERROR_SUCCESS)) {
+        /*
+         * See https://github.com/cesanta/fossa/issues/176
+         * The value taken from the registry can be empty, a single
+         * IP address, or multiple IP addresses separated by comma.
+         * If it's multiple IP addresses, take the first one.
+         */
+        char *comma = strchr(value, ',');
+        if (comma != NULL) {
+          *comma = '\0';
+        }
+        strncpy(name, value, name_len);
+        ret++;
+        RegCloseKey(hSub);
+        break;
+      }
+    }
+    RegCloseKey(hKey);
+  }
+#else
+  FILE  *fp;
+  char  line[512];
+
+  if ((fp = fopen("/etc/resolv.conf", "r")) == NULL) {
+    ret--;
+  } else {
+    /* Try to figure out what nameserver to use */
+    for (ret--; fgets(line, sizeof(line), fp) != NULL; ) {
+      char buf[256];
+      if (sscanf(line, "nameserver %255[^\n]s", buf) == 1) {
+        snprintf(name, name_len, "udp://%s:53", buf);
+        ret++;
+        break;
+      }
+    }
+    (void) fclose(fp);
+  }
+#endif /* _WIN32 */
+
+  return ret;
+}
+
+/*
+ * Resolve a name from `/etc/hosts`.
+ *
+ * Returns 0 on success, -1 on failure.
+ */
+int ns_resolve_from_hosts_file(const char *name, union socket_address *usa) {
+  /* TODO(mkm) cache /etc/hosts */
+  FILE *fp;
+  char line[1024];
+  char *p;
+  char alias[256];
+  unsigned int a, b, c, d;
+  int len = 0;
+
+  if ((fp = fopen("/etc/hosts", "r")) == NULL) {
+    return -1;
+  }
+
+  for (; fgets(line, sizeof(line), fp) != NULL; ) {
+    if (line[0] == '#') continue;
+
+    if (sscanf(line, "%u.%u.%u.%u%n", &a, &b, &c, &d, &len) == 0) {
+      /* TODO(mkm): handle ipv6 */
+      continue;
+    }
+    for (p = line + len; sscanf(p, "%s%n", alias, &len) == 1; p += len) {
+      if (strcmp(alias, name) == 0) {
+        usa->sin.sin_addr.s_addr = htonl(a << 24 | b << 16 | c << 8 | d);
+        return 0;
+      }
+    }
+  }
+
+  return -1;
+}
+
+static void ns_resolve_async_eh(struct ns_connection *nc, int ev, void *data) {
+  time_t now = time(NULL);
+  struct ns_resolve_async_request *req;
+  struct ns_dns_message msg;
+
+  req = (struct ns_resolve_async_request *) nc->user_data;
+
+  switch (ev) {
+    case NS_POLL:
+      if (req->retries > req->max_retries) {
+        req->callback(NULL, req->data);
+        nc->flags |= NSF_CLOSE_IMMEDIATELY;
+        break;
+      }
+      if (now - req->last_time > req->timeout) {
+        ns_send_dns_query(nc, req->name, req->query);
+        req->last_time = now;
+        req->retries++;
+      }
+      break;
+    case NS_RECV:
+      if (ns_parse_dns(nc->recv_iobuf.buf, * (int *) data, &msg) == 0 &&
+          msg.num_answers > 0) {
+        req->callback(&msg, req->data);
+      } else {
+        req->callback(NULL, req->data);
+      }
+      nc->flags |= NSF_CLOSE_IMMEDIATELY;
+      break;
+  }
+}
+
+/* See `ns_resolve_async_opt` */
+int ns_resolve_async(struct ns_mgr *mgr, const char *name, int query,
+                     ns_resolve_callback_t cb, void *data) {
+  static struct ns_resolve_async_opts opts;
+  return ns_resolve_async_opt(mgr, name, query, cb, data, opts);
+}
+
+/*
+ * Resolved a DNS name asynchronously.
+ *
+ * Upon successful resolution, the user callback will be invoked
+ * with the full DNS response message and a pointer to the user's
+ * context `data`.
+ *
+ * In case of timeout while performing the resolution the callback
+ * will receive a NULL `msg`.
+ *
+ * The DNS answers can be extracted with `ns_next_record` and
+ * `ns_dns_parse_record_data`:
+ *
+ * [source,c]
+ * ----
+ * struct in_addr ina;
+ * struct ns_dns_resource_record *rr = ns_next_record(msg, NS_DNS_A_RECORD, NULL);
+ * ns_dns_parse_record_data(msg, rr, &ina, sizeof(ina));
+ * ----
+ */
+int ns_resolve_async_opt(struct ns_mgr *mgr, const char *name, int query,
+                         ns_resolve_callback_t cb, void *data,
+                         struct ns_resolve_async_opts opts) {
+  struct ns_resolve_async_request *req;
+  struct ns_connection *dns_nc;
+  const char *nameserver = opts.nameserver_url;
+
+  /* resolve with DNS */
+  req = (struct ns_resolve_async_request *) NS_CALLOC(1, sizeof(*req));
+  if (req == NULL) {
+    return -1;
+  }
+
+  strncpy(req->name, name, sizeof(req->name));
+  req->query = query;
+  req->callback = cb;
+  req->data = data;
+  /* TODO(mkm): parse defaults out of resolve.conf */
+  req->max_retries = opts.max_retries ? opts.max_retries : 2;
+  req->timeout = opts.timeout ? opts.timeout : 5;
+
+  /* Lazily initialize dns server */
+  if (nameserver == NULL && ns_dns_server[0] == '\0'  &&
+      ns_get_ip_address_of_nameserver(ns_dns_server,
+                                      sizeof(ns_dns_server)) == -1) {
+    strncpy(ns_dns_server, ns_default_dns_server, sizeof(ns_dns_server));
+  }
+
+  if (nameserver == NULL) {
+    nameserver = ns_dns_server;
+  }
+
+  dns_nc = ns_connect(mgr, nameserver, ns_resolve_async_eh);
+  if (dns_nc == NULL) {
+    return -1;
+  }
+  dns_nc->user_data = req;
+
+  return 0;
+}
+
+#endif  /* NS_DISABLE_RESOLVE */

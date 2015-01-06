@@ -82,7 +82,8 @@
     <CustomBuildAfterTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     </CustomBuildAfterTargets>
     <CustomBuildAfterTargets Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include;</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <CustomBuildStep>
@@ -259,8 +260,8 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\common\crc8.c" />
-    <ClCompile Include="..\..\..\common\net_skeleton.c" />
     <ClCompile Include="..\..\..\common\crc.c" />
+    <ClCompile Include="..\..\..\common\fossa.c" />
     <ClCompile Include="..\..\common\guid.cpp" />
     <ClCompile Include="..\..\common\vscphelper.cpp" />
     <ClCompile Include="..\..\common\vscpremotetcpif.cpp" />
@@ -275,7 +276,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\common\net_skeleton.h" />
+    <ClInclude Include="..\..\..\common\fossa.h" />
     <ClInclude Include="..\..\common\guid.h" />
     <ClInclude Include="..\..\common\vscp.h" />
     <ClInclude Include="..\..\common\vscpremotetcpif.h" />

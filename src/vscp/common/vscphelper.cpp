@@ -2157,7 +2157,7 @@ bool vscp_setVscpEventFromString(vscpEvent *pEvent, const wxString& strEvent)
 #ifdef WIN32
 			pEvent->timestamp = GetTickCount();
 #else
-			pEvent->timestamp = 0; // TODO
+			pEvent->timestamp = ::wxGetLocalTimeMillis(); 
 #endif
 		}
 	} 
@@ -3770,5 +3770,6 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 	return str;
 
 }
+
 
 

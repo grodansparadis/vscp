@@ -745,7 +745,6 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
 {
     char buf[ 64000 ];
     size_t cnt;
-    //wxStandardPaths strpath;
     wxFile tempFile;
 
     tempFileName = wxFileName::CreateTempFileName( _("mdf"), &tempFile );
@@ -753,7 +752,6 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
         return false;
     }
 
-    //wxMessageBox( tmpPath );
 #if wxUSE_GUI!=0
     ::wxBeginBusyCursor();
 #endif
@@ -806,7 +804,6 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
 
 bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
 {
-    //wxStandardPaths stdpaths;
 	wxString localFile = remoteFile;
 
 	if ( wxNOT_FOUND == remoteFile.Find( _("http://") ) ) {
@@ -842,7 +839,7 @@ bool CMDF::load( wxString& remoteFile, bool bLocalFile, bool bSilent  )
             return false;
         }
 #else
-            return false;
+        return false;
 #endif
 	
 	}
@@ -2436,9 +2433,8 @@ uint32_t CMDF::getNumberOfRegisters( uint32_t page )
 //  getNumberOfPages
 //  
 
-uint32_t CMDF::getPages( SortedArrayLong& arraylong ) 
+uint32_t CMDF::getPages( wxArrayLong& arraylong ) 
 { 
-	//uint32_t npages = 0;
 	bool bFound;
 
 	MDF_REGISTER_LIST::iterator iterValue;
@@ -2447,7 +2443,7 @@ uint32_t CMDF::getPages( SortedArrayLong& arraylong )
 			++iterValue) {
 		CMDF_Register *pRecordValue = *iterValue;
 		if ( NULL != pRecordValue ) {
-			//if ( page == pRecordValue->m_nPage ) npages++;
+
 			bFound = false;
 			for ( uint32_t i=0; i<arraylong.Count(); i++ ) {
 				if ( pRecordValue->m_nPage== arraylong.Index( i ) ) {
@@ -2460,8 +2456,6 @@ uint32_t CMDF::getPages( SortedArrayLong& arraylong )
 
 		}
     }
-
-	//arraylong.Sort();
 
 	return arraylong.Count();
 };

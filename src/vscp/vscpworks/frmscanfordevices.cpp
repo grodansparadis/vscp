@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     23/05/2009 17:40:41
 // RCS-ID:      
-// Copyright:   (C) 2009-2014 
+// Copyright:   (C) 2009-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "frmscanfordevices.h"
@@ -65,9 +65,9 @@
 #include <wx/listimpl.cpp>
 
 #include "vscpworks.h"
-#include "../common/canal.h"
-#include "../common/vscp.h"
-#include "../common/vscphelper.h"
+#include <canal.h>
+#include <vscp.h>
+#include <vscphelper.h>
 #include "dlgabout.h"
 #include "frmscanfordevices_images.h"
 #include "frmscanfordevices.h"
@@ -626,7 +626,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
             if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
-                if (m_csw.readLevel1Register(i, 0xd0, &val, &progressDlg)) {
+                if ( CANAL_ERROR_SUCCESS == 
+                    m_csw.getDllInterface()->readLevel1Register( 0, i, 0xd0, &val ) ) {
 
                     newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), i));
                     m_DeviceTree->ExpandAll();
@@ -795,12 +796,16 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 					m_ifguid.writeGUID(eventex.data);
 
-					eventex.data[ 16 ] = i; // nodeid
-					eventex.data[ 17 ] = 0xd0; // Register to read
+					eventex.data[ 16 ] = i;     // nodeid
+					eventex.data[ 17 ] = 0xd0;  // Register to read
 
 					m_csw.doCmdSend( &eventex );
 
 				}
+                else {
+                    wxMessageBox( _("No interface specified. Please select one") );   
+                    goto error;
+                }
 			
 			} // for
                 
@@ -906,6 +911,8 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     if (m_DeviceTree->GetCount()) {
         m_DeviceTree->SelectItem(m_DeviceTree->GetRootItem());
     }
+
+error:
 
     ::wxEndBusyCursor();
 

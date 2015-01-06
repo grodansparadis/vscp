@@ -4,7 +4,7 @@
 // This file is part is part of VSCP, Very Simple Control Protocol
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
@@ -28,10 +28,6 @@
 
 // For compilers that support precompilation, includes "wx.h".
 #include "wx/wxprec.h"
-
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
@@ -84,7 +80,8 @@ clientTcpIpWorkerThread::~clientTcpIpWorkerThread()
 // tcpip_event_handler
 //
 
-void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
+//void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
+void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, int ev, void *pUser) 
 {
     char rbuf[ 2048 ];
     int pos4lf; 
@@ -160,11 +157,15 @@ void *clientTcpIpWorkerThread::Entry()
 	wxLogDebug( _("clientTcpIpWorkerThread: Starting.") );
 	
     // Set up the net_skeleton communication engine
-    ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf, clientTcpIpWorkerThread::ev_handler );
+    //ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf, clientTcpIpWorkerThread::ev_handler );
+    ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf );
     
+    //if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
+    //                            (const char *)m_hostname.mbc_str(),
+    //                             m_pvscpRemoteTcpIpIf ) ) {
     if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
                                 (const char *)m_hostname.mbc_str(),
-                                 m_pvscpRemoteTcpIpIf ) ) {
+                                 clientTcpIpWorkerThread::ev_handler ) ) {
 		wxLogDebug( _("clientTcpIpWorkerThread: Connect failed!") );
         return NULL;
     }
@@ -372,7 +373,7 @@ int VscpRemoteTcpIf::doCmdOpen( const wxString& strHostname,
 	//while ( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections &  )
 	
 	int rv;
-	if ( wxSEMA_NO_ERROR != ( rv = m_semConnected.WaitTimeout(3 * (m_responseTimeOut + 1 ) ) ) ) {
+	if ( wxSEMA_NO_ERROR != ( rv = m_semConnected.WaitTimeout( 3000 * (m_responseTimeOut + 1 ) ) ) ) {
 		m_pClientTcpIpWorkerThread->m_bRun = false;
 		wxString wxlog = wxString::Format(_("Connection failed: Code=%d - "), rv);
         wxLogDebug( wxlog+ strHostname );
@@ -2547,8 +2548,562 @@ int VscpRemoteTcpIf::setVariableVSCPtype( wxString& name, uint16_t vscp_type )
 
 
 
+
+
 ////////////////////////////////////////////////////////////////////////////////
+//                       R E G I S T E R   H E L P E R S
 ////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// readLevel2Register
+//
+
+int VscpRemoteTcpIf::readLevel2Register( uint32_t reg, 
+                                                uint16_t page,
+												uint8_t *pval,
+                                                cguid& ifGUID,
+                                                cguid *pdestGUID,                                                
+                                                bool bLevel2 )
+{
+	bool rv = CANAL_ERROR_SUCCESS;
+	uint32_t errors = 0;
+	bool bResend;
+	wxString strBuf;
+	vscpEventEx e;
+
+	// Check pointers
+	if ( NULL == pval ) return false; 
+    if (NULL == pdestGUID ) return false;
+    
+    e.head = VSCP_PRIORITY_NORMAL;
+    e.timestamp = 0;
+    e.obid = 0;
+
+	// Check if a specific interface is used
+	if ( !ifGUID.isNULL() ) {
+
+		// Event should be sent to a specific interface
+		e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+		e.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
+
+		memset( e.GUID, 0, 16 );	        // We use GUID for interface 
+		e.sizeData = 16 + 5;		        // Interface GUID + nodeid + register to read
+
+		ifGUID.writeGUID( e.data );
+
+		e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
+        e.data[ 17 ] = page>>8;             // Page MSB
+        e.data[ 18 ] = page&0xff;           // Page LSB
+		e.data[ 19 ] = reg;                 // Register to read
+        e.data[ 20 ] = 1;                   // Number of registers to read
+
+	}
+	else {
+
+		// Event should be sent to all interfaces
+
+		if ( bLevel2 ) {
+
+			// True real Level II event
+
+			e.head = VSCP_PRIORITY_NORMAL;
+			e.vscp_class = VSCP_CLASS2_PROTOCOL;
+			e.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
+
+			memset( e.GUID, 0, 16 );		    // We use GUID for interface 
+
+			e.sizeData = 22;				    // nodeid + register to read
+
+			pdestGUID->writeGUID( e.data );	    // Destination GUID
+			e.data[ 16 ] = ( reg >> 24 ) & 0xff;// Register to read
+			e.data[ 17 ] = ( reg >> 16 ) & 0xff;
+			e.data[ 18 ] = ( reg >> 8 ) & 0xff;
+			e.data[ 19 ] = reg & 0xff;
+			e.data[ 20 ] = 0x00;			    // Read one register
+			e.data[ 21 ] = 0x01;
+
+		}
+		else {
+
+			// Level I over CLASS2 to all interfaces 
+			e.head = VSCP_PRIORITY_NORMAL;
+			e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+			e.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
+
+			memset( e.GUID, 0, 16 );		    // We use GUID for interface 
+			e.sizeData = 16 + 5;			    // nodeid + register to read
+			pdestGUID->writeGUID( e.data );     // Destination GUID
+
+			e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
+            e.data[ 17 ] = page>>8;             // Page MSB
+            e.data[ 18 ] = page&0xff;           // Page LSB
+		    e.data[ 19 ] = reg;                 // Register to read
+            e.data[ 20 ] = 1;                   // Number of registers to read
+
+		}
+	}
+
+	bResend = false;
+
+	// Send the event
+	doCmdClear();
+	e.timestamp = 0;
+	doCmdSendEx( &e );
+
+	wxLongLong resendTime = ::wxGetLocalTimeMillis();
+
+	while ( true ) {
+
+		if ( doCmdDataAvailable() ) {	// Message available
+
+			if ( CANAL_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {	// Valid event
+
+				// Check for correct reply event
+                {
+                    wxString str;
+                    str = wxString::Format(_("Received Event: class=%d type=%d size=%d index=%d page=%d Register=%d content=%d"), 
+                                                e.vscp_class, 
+                                                e.vscp_type, 
+                                                e.sizeData, 
+                                                e.data[16],     // frame index
+                                                (e.data[17]<<8) + e.data[18], // page
+                                                e.data[19],     // register
+                                                e.data[20] );   // content
+                    wxLogDebug(str);
+                }
+
+				// Level I Read reply?
+				if ( ( VSCP_CLASS1_PROTOCOL == e.vscp_class ) && 
+					    ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type ) ) {   
+                    
+                    if ( ( 0 == e.data[ 0 ] ) &&                    // Frame index is first?
+                            ( (page>>8) == e.data[ 1 ] ) && 
+                            ( (page&0x0ff) == e.data[ 2 ] ) && 
+                            ( reg == e.data[ 3 ] ) ) {	            // Requested register?
+						
+                        if ( pdestGUID->isSameGUID( e.GUID ) ) {    // From correct node?
+							if ( NULL != pval ) {
+								*pval = e.data[ 4 ];
+							}
+							break;
+						}
+                        
+					} // Check for correct node
+				}
+
+				// Level II 512 Read reply?
+				else if ( !ifGUID.isNULL() && !bLevel2 && 
+					( VSCP_CLASS2_LEVEL1_PROTOCOL == e.vscp_class ) && 
+					( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type ) ) { 
+
+                    if ( pdestGUID->isSameGUID( e.GUID ) ) {
+                        
+						if ( ( 0 == e.data[ 16 ] ) &&                // Frame index is first?
+                            ( (page>>8) == e.data[ 17 ] ) && 
+                            ( (page&0x0ff) == e.data[ 18 ] ) && 
+                            ( reg == e.data[ 19 ] ) ) {	        // Requested register?
+
+							// OK get the data
+							if ( NULL != pval ) {
+								*pval = e.data[ 20 ];
+								break;
+							}
+						}
+                    }
+                
+				}
+				// Level II Read reply?
+				else if ( ifGUID.isNULL() && bLevel2 && 
+					( VSCP_CLASS2_PROTOCOL == e.vscp_class ) && 
+					( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == e.vscp_type ) ) { 
+
+					// from us
+					if ( pdestGUID->isSameGUID( e.GUID ) ) {	
+
+						uint32_t retreg = ( e.data[ 0 ]  << 24 ) +
+								(	e.data[ 1 ]  << 16 ) +
+								(	e.data[ 2 ]  << 8 ) +
+								e.data[ 3 ];
+
+						// Reg we requested?
+						if ( retreg == reg ) {
+								
+							// OK get the data
+							if ( NULL != pval ) {
+								*pval = e.data[ 4 ];
+								break;
+							}
+						}
+					}
+				}
+
+			} // valid event
+            
+            
+		}
+
+		if ( ( ::wxGetLocalTimeMillis() - resendTime ) > 
+			m_registerReadResendTimeout ) {
+				
+				errors++;
+
+				// Send again
+				e.timestamp = 0;
+				wxLongLong resendTime = ::wxGetLocalTimeMillis();
+				doCmdSendEx( &e );
+
+		}   
+
+		if ( errors > m_registerReadMaxRetries ) {
+			rv = false;
+			break;
+		}
+        
+        wxMilliSleep( 2 );
+
+	} // while
+
+	return rv;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////
+// readLevel2Registers
+//
+
+int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
+                                                uint16_t page,
+												uint8_t count,
+                                                uint8_t *pval,
+                                                cguid& ifGUID,
+												cguid *pdestGUID,
+												bool bLevel2 )
+{
+	bool rv = CANAL_ERROR_SUCCESS;
+	uint32_t errors = 0;
+	bool bResend;
+	wxString strBuf;
+	vscpEventEx e;
+    uint8_t data[256];    // This makes range checking simpler
+
+    // Max 128 bytes can be read
+    if ( count > 128 ) return false;
+
+	// Check pointers
+	if ( NULL == pval ) return false; 
+    if (NULL == pdestGUID ) return false;
+    
+    e.head = VSCP_PRIORITY_NORMAL;
+    e.timestamp = 0;
+    e.obid = 0;
+
+	// Check if a specific interface is used
+	if ( !ifGUID.isNULL() ) {
+
+		// Event should be sent to a specific interface
+		e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+		e.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
+
+		memset( e.GUID, 0, 16 );	        // We use GUID for interface 
+		e.sizeData = 16 + 5;		        // Interface GUID + nodeid + register to read
+
+		ifGUID.writeGUID( e.data );
+
+		e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
+        e.data[ 17 ] = page>>8;             // Page MSB
+        e.data[ 18 ] = page&0xff;           // Page LSB
+		e.data[ 19 ] = reg;                 // Register to read
+        e.data[ 20 ] = count;               // Read count registers
+
+	}
+	else {
+
+		// Event should be sent to all interfaces
+
+		if ( bLevel2 ) {
+
+			// True real Level II event
+
+			e.head = VSCP_PRIORITY_NORMAL;
+			e.vscp_class = VSCP_CLASS2_PROTOCOL;
+			e.vscp_type = VSCP2_TYPE_PROTOCOL_READ_REGISTER;
+
+			memset( e.GUID, 0, 16 );		    // We use GUID for interface 
+
+			e.sizeData = 22;				    // nodeid + register to read
+
+			pdestGUID->writeGUID( e.data );	    // Destination GUID
+			e.data[ 16 ] = ( reg >> 24 ) & 0xff;// Register to read
+			e.data[ 17 ] = ( reg >> 16 ) & 0xff;
+			e.data[ 18 ] = ( reg >> 8 ) & 0xff;
+			e.data[ 19 ] = reg & 0xff;
+			e.data[ 20 ] = 0;			        // Read count registers
+			e.data[ 21 ] = count;
+
+		}
+		else {
+
+			// Level I over CLASS2 to all interfaces 
+			e.head = VSCP_PRIORITY_NORMAL;
+			e.vscp_class = VSCP_CLASS2_LEVEL1_PROTOCOL;
+			e.vscp_type = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ;
+
+			memset( e.GUID, 0, 16 );		    // We use GUID for interface 
+			e.sizeData = 16 + 5;			    // nodeid + register to read
+			pdestGUID->writeGUID( e.data );     // Destination GUID
+
+			e.data[ 16 ] = pdestGUID->getLSB();	// nodeid
+            e.data[ 17 ] = page>>8;             // Page MSB
+            e.data[ 18 ] = page&0xff;           // Page LSB
+		    e.data[ 19 ] = reg;                 // Register to read
+            e.data[ 20 ] = count;               // Read count registers
+
+		}
+	}
+
+	bResend = false;
+
+	// Send the event
+	doCmdClear();
+	e.timestamp = 0;
+	doCmdSendEx( &e );
+
+    // We should get eight response frames back
+    unsigned long receive_flags = 0;
+    unsigned char nPages = count/4;
+    unsigned char lastpageCnt = count%4;
+    if ( lastpageCnt ) nPages++;
+    unsigned long allRcvValue = pow(2.0,nPages) - 1;
+
+	wxLongLong resendTime = ::wxGetLocalTimeMillis();
+
+	while ( allRcvValue != receive_flags ) {
+
+		if ( doCmdDataAvailable() ) {	// Message available
+
+			if ( CANAL_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {	// Valid event
+
+				// Check for correct reply event
+                {
+                    wxString str;
+                    str = wxString::Format(_("Received Event: class=%d type=%d size=%d index=%d page=%d Register=%d content=%d"), 
+                                                e.vscp_class, 
+                                                e.vscp_type, 
+                                                e.sizeData, 
+                                                e.data[16],     // frame index
+                                                (e.data[17]<<8) + e.data[18], // page
+                                                e.data[19],     // register
+                                                e.data[20] );   // content
+                    wxLogDebug(str);
+                }
+
+				// Level I Read reply?
+				if ( ( VSCP_CLASS1_PROTOCOL == e.vscp_class ) && 
+					    ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type ) ) {   
+                    
+                    if ( pdestGUID->isSameGUID( e.GUID ) ) {            // From correct node?
+                    
+                        if ( ( (page>>8) == e.data[ 1 ] ) && 
+                                ( (page&0x0ff) == e.data[ 2 ] )  ) {    // Requested register?
+						
+                            // Mark frame as received
+                            receive_flags |= ( 1 << e.data[ 0 ] );
+
+							if ( lastpageCnt && (count - 1) == e.data[ 0 ] ) {
+                                // Last frame
+                                for ( int i=0; i<lastpageCnt; i++ ) {
+                                    data[ e.data[ 0 ]*4 + i] = e.data[ 4 + i ];
+                                }
+                            }
+                            else {
+                                for ( int i=0; i<4; i++ ) {
+                                    data[ e.data[ 0 ]*4 + i] = e.data[ 4 + i ];
+                                }
+                            }
+	
+						}
+                        
+					} // Check for response from correct node
+
+				}
+
+				// Level II 512 Read reply?
+				else if ( !ifGUID.isNULL() && !bLevel2 && 
+					        ( VSCP_CLASS2_LEVEL1_PROTOCOL == e.vscp_class ) && 
+					        ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE == e.vscp_type ) ) { 
+
+                    if ( pdestGUID->isSameGUID( e.GUID ) ) {
+                        
+						if ( ( (page>>8) == e.data[ 17 ] ) && 
+                                ( (page&0x0ff) == e.data[ 18 ] ) ) {	    // Requested register?
+
+                            // Mark frame as received
+                            receive_flags |= ( 1 << e.data[ 16 ] );
+
+							if ( lastpageCnt && (count - 1) == e.data[ 16 ] ) {
+                                // Last frame
+                                for ( int i=0; i<lastpageCnt; i++ ) {
+                                    data[ e.data[ 16 ]*4 + i] = e.data[ 16 + 4 + i ];
+                                }
+                            }
+                            else {
+                                for ( int i=0; i<4; i++ ) {
+                                    data[ e.data[ 16 ]*4 + i] = e.data[ 16 + 4 + i ];
+                                }
+                            }
+
+						}
+
+                    } // Check for response from correct node
+                
+				} 
+
+				// Level II Read reply?
+				else if ( ifGUID.isNULL() && bLevel2 && 
+					( VSCP_CLASS2_PROTOCOL == e.vscp_class ) && 
+					( VSCP2_TYPE_PROTOCOL_READ_WRITE_RESPONSE == e.vscp_type ) ) { 
+
+					// from us
+					if ( pdestGUID->isSameGUID( e.GUID ) ) {	
+
+						uint32_t retreg = ( e.data[ 0 ]  << 24 ) +
+								( e.data[ 1 ] << 16 ) +
+								( e.data[ 2 ] << 8 ) +
+								e.data[ 3 ];
+
+						// Reg we requested?
+						if ( retreg == reg ) {
+								
+							// OK get the data
+							if ( NULL != pval ) {
+								*pval = e.data[ 4 ];
+								break;
+							}
+						}
+					}
+				}
+
+			} // valid event
+            
+            
+		}
+
+		if ( ( ::wxGetLocalTimeMillis() - resendTime ) > 
+			m_registerReadResendTimeout ) {
+				
+				errors++;
+
+				// Send again
+				e.timestamp = 0;
+				wxLongLong resendTime = ::wxGetLocalTimeMillis();
+				doCmdSendEx( &e );
+
+		}   
+
+		if ( errors > m_registerReadMaxRetries ) {
+			rv = false;
+			break;
+		}
+        
+        wxMilliSleep( 2 );
+
+	} // while
+
+    // Copy data on success
+    if ( CANAL_ERROR_SUCCESS == rv ) {
+        memcpy( pval, data, count );
+    }
+
+	return rv;
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// getMDFfromDevice2
+//
+
+bool VscpRemoteTcpIf::getMDFfromLevel2Device( cguid& ifGUID, 
+                                                cguid& destGUID, 
+                                                wxString& strurl,
+                                                bool bLevel2 )
+{
+	char url[ 33 ];
+	bool rv = true;
+
+	memset( url, 0, sizeof( url ) );
+
+	if ( bLevel2 ) {
+
+		// Level 2 device
+		uint8_t *p = (uint8_t *)url;
+		for ( int i=0; i<32; i++ ) {
+
+			if ( CANAL_ERROR_SUCCESS != readLevel2Register( 0xFFFFFFE0 + i, 
+                                                                0,          // Page = 0  
+										                        p++,        // read value
+                                                                ifGUID,
+										                        &destGUID,                                        
+										                        true ) ) {  // Yes Level II
+					rv = false;
+					goto error;
+			}
+
+		}
+
+	}
+	else {
+
+		// Level 1 device
+		uint8_t *p = (uint8_t *)url;
+		for ( int i=0; i<32; i++ ) {
+
+			if ( CANAL_ERROR_SUCCESS != readLevel2Register( 0xE0 + i, 
+                                                            0,          // Page = 0
+										                    p++,        // read value
+                                                            ifGUID,
+										                    &destGUID ) ) {
+					rv = false;
+					goto error;
+			}
+
+		}
+
+	}
+
+	strurl = strurl.From8BitData( url );
+	if ( wxNOT_FOUND == strurl.Find( _("http://") ) ) {
+		wxString str;
+		str = _("http://");
+		str += strurl;
+		strurl = str;
+	}
+
+error:
+
+	if ( !rv ) strurl.Empty();
+
+	return rv;
+}
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////
+//                         T H R E A D   H E L P E R S
+////////////////////////////////////////////////////////////////////////////////
+
+
 
 
 

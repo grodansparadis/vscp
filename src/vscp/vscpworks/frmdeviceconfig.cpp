@@ -815,7 +815,7 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event)
         }
 
         unsigned char val;
-        if ( m_csw.readLevel1Register(nodeid, 0xd0, &val ) ) {
+        if ( m_csw.getDllInterface()->readLevel1Register( 0, nodeid, 0xd0, &val ) ) {
             wxMessageBox(_("Device found!"));
         } 
         else {
@@ -1061,7 +1061,7 @@ bool frmDeviceConfig::writeChangedLevel1Registers(unsigned char nodeid)
             }
 
             val = vscp_readStringValue(m_gridRegisters->GetCellValue(i, 2));
-            if (m_csw.writeLevel1Register(nodeid, reg, &val)) {
+            if (m_csw.writeLevel1RegisterEx(nodeid, reg, &val)) {
 
                 // Update display
                 strBuf = getFormattedValue(val);
@@ -3145,9 +3145,9 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
     cguid destGUID;
 
     ::wxBeginBusyCursor();
-
+    
     // Check if we should do a full update
-    if (m_chkFullUppdate->GetValue()) {
+    if ( m_chkFullUppdate->GetValue() ) {
 
         // Update changed registers first
         if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
@@ -3162,14 +3162,13 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
 
     }
 
-    wxProgressDialog progressDlg(_("VSCP Works"),
-            _("Fetching status and MDF"),
-            256,
-            this,
-            wxPD_ELAPSED_TIME |
-            wxPD_AUTO_HIDE |
-            wxPD_APP_MODAL |
-            wxPD_CAN_ABORT);
+    wxProgressDialog progressDlg( _("VSCP Works"),
+                                    _("Updating Data"),
+                                    100,
+                                    this,
+                                    wxPD_ELAPSED_TIME |
+                                        wxPD_AUTO_HIDE |
+                                        wxPD_APP_MODAL );
 
     // Get nickname
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
@@ -3179,14 +3178,26 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
         destGUID.getFromString(m_comboNodeID->GetValue());
     }
 
-    if (m_bFirstRead) {
+    if ( m_bFirstRead ) {
 
-        if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+        // Driver
+        if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+
+            // Read standard registers           
+            progressDlg.Update( 10, _("Reading standard registers of device 1/8.")); 
+            if ( CANAL_ERROR_SUCCESS !=
+                m_csw.getDllInterface()->getRegistersfromLevel1Device( nodeid,
+                                                                            0x80,
+                                                                            0,      // page
+                                                                            128,    // count
+                                                                            m_stdRegisters.getRegs() ) ) {
+                ::wxMessageBox(_("Failed to read standard registers of device."), _("VSCP Works"), wxICON_ERROR);
+                ::wxEndBusyCursor();
+                return;
+            }
 
             // Fetch MDF from local file or server
-            if (m_chkMdfFromFile->GetValue()) {
-
-                //wxStandardPaths stdpaths;
+            if ( m_chkMdfFromFile->GetValue() ) {
 
                 // Get MDF from local file
                 wxFileDialog dlg(this,
@@ -3202,82 +3213,61 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
             } 
             else {
                 // Get MDF from device
-                progressDlg.Pulse(_("Fetching MDF path from device."));
-                strPath = m_csw.getMDFfromDevice1(nodeid);
+                progressDlg.Update( 15, _("Fetching MDF path from device. 2/8.") );
             }
 
             // We need it to continue
-            if (0 == strPath.Length()) {
+            if (0 == m_stdRegisters.getMDF().Length()) {
                 ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
                 ::wxEndBusyCursor();
                 return;
             }
 
             // Load and parse the MDF
-            if (!progressDlg.Pulse(_("Loading and parsing MDF."))) {
-                ::wxEndBusyCursor();
-                return;
-            }
-            
-            m_mdf.load(strPath, m_chkMdfFromFile->GetValue());
+            progressDlg.Update( 20, _("Loading and parsing MDF. 2/8.") );            
+            m_mdf.load( m_stdRegisters.getMDF(), m_chkMdfFromFile->GetValue() );
 
-            // Get the standard registers
-            if (!progressDlg.Pulse(_("Reading standard registers."))) {
-                ::wxEndBusyCursor();
-                return;
-            }
+            wxArrayLong pageArray;
+            uint32_t n = m_mdf.getPages( pageArray );
 
-            // First part of standard registers
-            m_csw.readLevel1Registers(this,
-                    m_stdRegisters.m_reg,
-                    nodeid, 0x80, 26);
-
-            if (false == progressDlg.Pulse()) {
-                ::wxEndBusyCursor();
-                return;
+            if ( 0 == n ) {
+                wxMessageBox( _("MDF returns zero pages (which is an error) we still will read one page."), 
+                                _("VSCP Works"), 
+                                wxICON_WARNING );
+                n = 1;
             }
 
-            // Second part of standard registers
-            m_csw.readLevel1Registers(this,
-                    (m_stdRegisters.m_reg + 0xD0 - 0x80),
-                    nodeid, 0xD0, 48);
+            m_userRegisters.init( pageArray );
 
-            // Get the application registers
-            progressDlg.Pulse(_("Reading application registers."));
-            if (false == progressDlg.Update(230)) {
-                ::wxEndBusyCursor();
-                return;
+            for ( uint32_t i=0; i<n; i++ ) {
+
+                wxString str = wxString::Format( _("Fetching user regsisters for page %d 3/8"), pageArray[i] );
+                progressDlg.Update( 30, str );
+
+                if ( CANAL_ERROR_SUCCESS !=
+                        m_csw.getDllInterface()->getRegistersfromLevel1Device( nodeid,
+                                                                                0,
+                                                                                pageArray[i],   // page
+                                                                                128,            // count
+                                                                                m_userRegisters.getRegs4Page( pageArray[i] ) ) ) {
+                    ::wxMessageBox(_("Failed to read user registers of device."), _("VSCP Works"), wxICON_ERROR );
+                    ::wxEndBusyCursor();
+                    return;
+                }
             }
 
-            SortedArrayLong pageArray;
-            uint32_t n = m_mdf.getPages(pageArray);
+            //n = m_mdf.getNumberOfRegisters(0);
 
-            if (false == progressDlg.Update(235)) {
-                ::wxEndBusyCursor();
-                return;
-            }
-
-            uint8_t tt = m_stdRegisters.getNickname();
-            n = m_mdf.getNumberOfRegisters(0);
-
-            if (false == progressDlg.Update(240)) {
-                ::wxEndBusyCursor();
-                return;
-            }
-
-            uint8_t val;
             wxString strBuf;
             wxString str;
 
+            progressDlg.Update( 20, _("Filling in register information 2/8.") );
             wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
             wxFont fontBold = defaultFont;
             fontBold.SetStyle(wxFONTSTYLE_NORMAL);
             fontBold.SetWeight(wxFONTWEIGHT_BOLD);
 
             // Fill in register descriptions
-            uint8_t progress = 0;
-            uint8_t progress_count;
-            if (m_mdf.m_list_register.GetCount()) progress_count = 256 / m_mdf.m_list_register.GetCount();
             MDF_REGISTER_LIST::iterator iter;
             for (iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter) {
 
@@ -3285,50 +3275,28 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
                 int cnt = 0;
                 if (reg->m_nPage < MAX_CONFIG_REGISTER_PAGE) {
 
-                    progressDlg.Pulse(_("Reading standard registers."));
-                    progress += progress_count;
-                    progressDlg.Update(progress);
-
-                    if (false == progressDlg.Update(256 - m_mdf.m_list_register.GetCount() + cnt)) {
-                        ::wxEndBusyCursor();
-                        return;
-                    }
-
                     // Add a new row
                     m_gridRegisters->AppendRows(1);
 
                     // Register
                     strBuf.Printf(_("%04X:%02X"), reg->m_nPage, reg->m_nOffset);
-                    progressDlg.Pulse(_("Reading page:register: ") + strBuf);
-
+   
                     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
                     m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
                     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
                     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
 
-                    if (m_csw.readLevel1Register(nodeid, reg->m_nOffset, &val)) {
-                        reg->m_value = val;
-                        getFormattedValue(val);
-                        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
-                                2,
-                                getFormattedValue(val));
-                        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
-                        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
-                    } 
-                    else {
-                        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
-                                2,
-                                _("Read error"));
-                        m_gridRegisters->SetCellAlignment(m_gridRegisters->GetNumberRows() - 1, 2, wxALIGN_CENTRE, wxALIGN_CENTRE);
-                        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
-                    }
+                    reg->m_value = m_userRegisters.getValue( reg->m_nPage, reg->m_nOffset );
+                    m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
+                                                        2,
+                                                        getFormattedValue( reg->m_value ) );
+                    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+                    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
 
-                    str.Printf(reg->m_strName +
-                            _("\n") +
-                            reg->m_strDescription);
-                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
-                            3,
-                            str);
+                    str.Printf(reg->m_strName + _("\n") + reg->m_strDescription);
+                    m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
+                                                    3,
+                                                    str);
                     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 3);
 
                     wxString strAccess;
@@ -3340,9 +3308,9 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
                         strAccess += _("-");
                     }
 
-                    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
-                            1,
-                            strAccess);
+                    m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
+                                                    1,
+                                                    strAccess);
                     // Protect cell if readonly
                     if (wxNOT_FOUND == strAccess.Find(_("w"))) {
                         m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
@@ -3355,36 +3323,37 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
                 }
             }
 
-            if (false == progressDlg.Update(255)) {
-                ::wxEndBusyCursor();
-                return;
-            }
-
             // Fill grid with standard registers
+            progressDlg.Update( 40, _("Filling in standard register information 4/8.") );
             fillStandardRegisters();
 
-            if (false == progressDlg.Update(240)) {
-                ::wxEndBusyCursor();
-                return;
-            }
-
             // Write status
+            progressDlg.Update( 50, _("Filling in status information 5/8.") );
             writeStatusInfo();
-
-            if (false == progressDlg.Update(255)) {
-                ::wxEndBusyCursor();
-                return;
-            }
             
             m_bFirstRead = false;
 
         } 
+        // Remote server/device
         else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
 
-            // Fetch MDF from local file or server
-            if (m_chkMdfFromFile->GetValue()) {
+            // Read standard registers           
+            progressDlg.Update( 10, _("Reading standard registers of device 1/8.")); 
+            if ( CANAL_ERROR_SUCCESS != 
+                m_csw.getTcpIpInterface()->readLevel2Registers( m_bLevel2->GetValue() ? 0xFFFFFF80 : 0x80,
+                                                                    0,      // page
+                                                                    128,    // count
+                                                                    m_stdRegisters.getRegs(),
+                                                                    m_ifguid,
+                                                                    &destGUID,
+                                                                    m_bLevel2->GetValue() ) ) {
+                ::wxMessageBox(_("Failed to read standard registers of device."), _("VSCP Works"), wxICON_ERROR);
+                ::wxEndBusyCursor();
+                return;
+            }
 
-                //wxStandardPaths stdpaths;
+            // Check if MDF should be fetched from local file or server
+            if (m_chkMdfFromFile->GetValue()) {
 
                 // Get MDF from local file
                 wxFileDialog dlg(this,
@@ -3400,72 +3369,61 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
             } 
             else {
                 // Get MDF from device
-                progressDlg.Pulse(_("Fetching MDF path from device."));
-                strPath = m_csw.getMDFfromDevice2( progressDlg,
-                        m_ifguid,
-                        destGUID,
-                        m_bLevel2->GetValue());
+                progressDlg.Update( 10, _("Fetching MDF path from device 2/8.") );
+                //m_csw.getTcpIpInterface()->getMDFfromLevel2Device( m_ifguid,
+                //                                                    destGUID,
+                //                                                    strPath,
+                //                                                    m_bLevel2->GetValue() );
             }
 
             // We need it to continue
-            if (0 == strPath.Length()) {
+            if ( 0 == m_stdRegisters.getMDF().Length() ) {
                 ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
                 ::wxEndBusyCursor();
                 return;
             }
 
             // Load and parse the MDF
-            if (!progressDlg.Pulse(_("Loading and parsing MDF."))) {
-                ::wxEndBusyCursor();
-                return;
-            }
+            progressDlg.Update( 20, _("Loading and parsing MDF 2/8.") );
 
-            if (!m_mdf.load(strPath, m_chkMdfFromFile->GetValue())) {
+            if (!m_mdf.load( m_stdRegisters.getMDF(), m_chkMdfFromFile->GetValue())) {
                 // We try to continue anyway
             }
 
-            // Get the standard registers
-            if (!progressDlg.Pulse(_("Reading standard registers."))) {
-                ::wxEndBusyCursor();
-                return;
+            // Get the application registers
+            progressDlg.Update( 40, _("Reading application registers 3/8.") );
+
+            wxArrayLong pageArray;
+            uint32_t n = m_mdf.getPages( pageArray );
+
+            if ( 0 == n ) {
+                wxMessageBox( _("MDF returns zero pages (which is an error) we still will read one page."), 
+                                _("VSCP Works"), 
+                                wxICON_WARNING );
+                n = 1;
             }
 
-            // First part of standard registers
-            if (!m_csw.readLevel2Registers(this,
-                    m_stdRegisters.m_reg,
-                    m_ifguid,
-                    m_bLevel2->GetValue() ? 0xFFFFFF80 : 0x80,
-                    26,
-                    &destGUID,
-                    &progressDlg,
-                    m_bLevel2->GetValue())) return;
+            m_userRegisters.init( pageArray );
 
-            if (false == progressDlg.Pulse()) return;
+            for ( uint32_t i=0; i<n; i++ ) {
 
-            // Second part of standard registers
-            if (!m_csw.readLevel2Registers(this,
-                    (m_stdRegisters.m_reg + (0xD0 - 0x80)),
-                    m_ifguid,
-                    m_bLevel2->GetValue() ? 0xFFFFFFD0 : 0xD0,
-                    48,
-                    &destGUID,
-                    &progressDlg,
-                    m_bLevel2->GetValue())) return;
+                wxString str = wxString::Format( _("Fetching user regsisters for page %d 4/8"), pageArray[i] );
+                progressDlg.Update( 30, str );
 
-            // Get the application registers
-            if (!progressDlg.Pulse(_("Reading application registers."))) return;
+                if ( CANAL_ERROR_SUCCESS != 
+                    m_csw.getTcpIpInterface()->readLevel2Registers( 0,                  // From reg=0
+                                                                    pageArray[i],       // page
+                                                                    128,                // count
+                                                                    m_userRegisters.getRegs4Page( pageArray[i] ),
+                                                                    m_ifguid,
+                                                                    &destGUID,
+                                                                    m_bLevel2->GetValue() ) ) {
+                    ::wxMessageBox(_("Failed to read user registers of device."), _("VSCP Works"), wxICON_ERROR );
+                    ::wxEndBusyCursor();
+                    return;
+                }
+            }
 
-            SortedArrayLong pageArray;
-            uint32_t n = m_mdf.getPages(pageArray);
-
-            if (!progressDlg.Pulse()) return;
-
-            uint8_t tt = m_stdRegisters.getNickname();
-            n = m_mdf.getNumberOfRegisters(0);
-
-            if (!progressDlg.Pulse()) return;
-
-            uint8_t val;
             wxString strBuf;
             wxString str;
 
@@ -3493,33 +3451,19 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
 
                     // Register
                     strBuf.Printf(_("%04X:%X"), reg->m_nPage, reg->m_nOffset);
-                    progressDlg.Pulse(_("Reading page:register: ") + strBuf);
+                    progressDlg.Update( 50, _("Reading page:register: ") + strBuf );
 
                     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 0, strBuf);
                     m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0);
                     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 0, fontBold);
                     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 0);
 
-                    if (m_csw.readLevel2Register(m_ifguid,
-                            m_bLevel2->GetValue() ? (0xFFFFFFE0 + reg->m_nOffset) : reg->m_nOffset,
-                            &val,
-                            &destGUID,
-                            &progressDlg,
-                            m_bLevel2->GetValue())) {
-                        reg->m_value = val;
-                        getFormattedValue(val);
-                        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
-                                2,
-                                getFormattedValue(val));
-                        m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
-                        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
-                    } else {
-                        m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
-                                2,
-                                _("Read error"));
-                        m_gridRegisters->SetCellAlignment(m_gridRegisters->GetNumberRows() - 1, 2, wxALIGN_CENTRE, wxALIGN_CENTRE);
-                        m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
-                    }
+                    reg->m_value = m_userRegisters.getValue( reg->m_nPage, reg->m_nOffset );
+                    m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
+                                                    2,
+                                                    getFormattedValue( reg->m_value ) );
+                    m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
+                    m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
 
                     str.Printf(reg->m_strName +
                             _("\n") +
@@ -3553,35 +3497,29 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
                 }
             }
 
-            if (!progressDlg.Pulse(_("Fill standard register information."))) return;
-
             // Fill grid with standard registers
+            progressDlg.Update( 50, _("Fill standard register information 5/8.") );
             fillStandardRegisters();
 
-            if (!progressDlg.Pulse(_("Fill status information."))) return;
-
             // Write status
+            progressDlg.Update( 60, _("Fill standard status information 6/8.") );
             writeStatusInfo();
-
-            if (!progressDlg.Pulse()) return;
 
             m_bFirstRead = false;
         }
 
-        if (!progressDlg.Pulse(_("Update DM grid."))) return;
-
-        // Update the DM grid    
+        // Update the DM grid   
+        progressDlg.Update( 70, _("Update DM grid 7/8.") );
         updateDmGrid();
 
-        if (!progressDlg.Pulse(_("Update abstraction grid."))) return;
-
         // Update abstractions
+        progressDlg.Update( 90, _("Update Abstraction grid 8/8.") );
         updateAbstractionGrid();
-
-        if (!progressDlg.Pulse(_("Done."))) return;
 
         // Enable load defaults buttons
         m_ctrlButtonLoadMDF->Enable(true);
+
+        progressDlg.Update( 100, _("Done.") );
 
     }        // next read
     else {
@@ -3738,7 +3676,7 @@ void frmDeviceConfig::OnCellRightClick(wxGridEvent& event)
 // readValueSelectedRow
 //
 
-void frmDeviceConfig::readValueSelectedRow(wxCommandEvent& WXUNUSED(event)) 
+void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) ) 
 {
     wxString strBuf;
     uint8_t nodeid = 0;
@@ -3772,8 +3710,8 @@ void frmDeviceConfig::readValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                     uint16_t savepage = m_csw.getRegisterPage(this, nodeid, &m_ifguid);
 
-                    if (m_csw.setRegisterPage(nodeid, page) &&
-                            m_csw.readLevel1Register(nodeid, reg, &val)) {
+                    if ( m_csw.setRegisterPage(nodeid, page) &&
+                            m_csw.getDllInterface()->readLevel1Register( 0, nodeid, reg, &val)) {
 
                         // Update display
                         strBuf = getFormattedValue(val);
@@ -3908,7 +3846,7 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
 
-                        m_csw.writeLevel1Register(nodeid, reg, &val);
+                        m_csw.writeLevel1RegisterEx(nodeid, reg, &val);
 
                         // Update display
                         strBuf = getFormattedValue(val);
@@ -4043,7 +3981,7 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event)) {
 
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
-                        m_csw.writeLevel1Register(nodeid, reg, &val);
+                        m_csw.writeLevel1RegisterEx(nodeid, reg, &val);
 
                         // Update display
                         strBuf = getFormattedValue(val);
@@ -4178,7 +4116,7 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
-                        m_csw.writeLevel1Register(nodeid, reg, &val);
+                        m_csw.writeLevel1RegisterEx(nodeid, reg, &val);
 
                         // Update display
                         strBuf = getFormattedValue(val);
@@ -4356,11 +4294,14 @@ void frmDeviceConfig::OnLeftDClick(wxGridEvent& event)
                     strValue = strValue.Upper();
                     if (wxNOT_FOUND != strValue.Find(_("TRUE"))) {
                         bval = true;
-                    } else if (wxNOT_FOUND != strValue.Find(_("FALSE"))) {
+                    } 
+                    else if (wxNOT_FOUND != strValue.Find(_("FALSE"))) {
                         bval = false;
-                    } else if (lv) {
+                    } 
+                    else if (lv) {
                         bval = true;
-                    } else {
+                    } 
+                    else {
                         bval = false;
                     }
 
@@ -5275,15 +5216,6 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 {
     wxString strBuf;
 
-    wxProgressDialog progressDlg(_("VSCP Works"),
-            _("Updating abstraction grid"),
-            100,
-            this,
-            wxPD_ELAPSED_TIME |
-            wxPD_AUTO_HIDE |
-            wxPD_APP_MODAL |
-            wxPD_CAN_ABORT);
-
     cguid destGUID;
     destGUID.getFromString(m_comboNodeID->GetValue());
 
@@ -5292,15 +5224,11 @@ void frmDeviceConfig::updateAbstractionGrid(void)
     fontBold.SetStyle(wxFONTSTYLE_NORMAL);
     fontBold.SetWeight(wxFONTWEIGHT_BOLD);
 
-    progressDlg.Pulse();
-
     // Delete grid rows if there are any
     m_gridAbstractions->ClearGrid();
     if (m_gridAbstractions->GetNumberRows()) {
         m_gridAbstractions->DeleteRows(0, m_gridAbstractions->GetNumberRows());
     }
-
-    progressDlg.Pulse();
 
     MDF_ABSTRACTION_LIST::iterator iter;
     for (iter = m_mdf.m_list_abstraction.begin();
@@ -5312,22 +5240,22 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         m_gridAbstractions->AppendRows(1);
 
         // Name
-        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
-                0,
-                _(" ") + abstraction->m_strName);
-        m_gridAbstractions->SetCellAlignment(wxALIGN_LEFT,
-                m_gridAbstractions->GetNumberRows() - 1,
-                0);
+        m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows() - 1,
+                                            0,
+                                            _(" ") + abstraction->m_strName );
+        m_gridAbstractions->SetCellAlignment( wxALIGN_LEFT,
+                                                m_gridAbstractions->GetNumberRows() - 1,
+                                                0 );
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 0);
 
 
         // Type
-        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
-                1,
-                abstraction->m_strName);
-        m_gridAbstractions->SetCellAlignment(wxALIGN_CENTER,
-                m_gridAbstractions->GetNumberRows() - 1,
-                1);
+        m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows() - 1,
+                                            1,
+                                            abstraction->m_strName );
+        m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER,
+                                                m_gridAbstractions->GetNumberRows() - 1,
+                                                1 );
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 1);
 
 
@@ -5341,23 +5269,23 @@ void frmDeviceConfig::updateAbstractionGrid(void)
             strBuf += _("w");
         }
 
-        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
-                2,
-                strBuf);
-        m_gridAbstractions->SetCellAlignment(wxALIGN_CENTER,
-                m_gridAbstractions->GetNumberRows() - 1,
-                2);
-        m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 2);
+        m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows() - 1,
+                                            2,
+                                            strBuf );
+        m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER,
+                                                m_gridAbstractions->GetNumberRows() - 1,
+                                                2 );
+        m_gridAbstractions->SetReadOnly( m_gridAbstractions->GetNumberRows() - 1, 2);
 
         
         // Description
-        m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
-                4,
-                _(" ") + abstraction->m_strDescription);
+        m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows() - 1,
+                                            4,
+                                            _(" ") + abstraction->m_strDescription);
 
-        m_gridAbstractions->SetCellAlignment(wxALIGN_LEFT,
-                m_gridAbstractions->GetNumberRows() - 1,
-                4);
+        m_gridAbstractions->SetCellAlignment( wxALIGN_LEFT,
+                                                m_gridAbstractions->GetNumberRows() - 1,
+                                                4 );
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 4);
         m_gridRegisters->AutoSizeRow(m_gridAbstractions->GetNumberRows() - 1);
 
@@ -5365,19 +5293,15 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         wxString strType;
         int pos = 0; // Current character
 
-        progressDlg.Pulse();
-
         strType = abstraction->getAbstractionValueType();
-        strValue = m_csw.getAbstractionValueAsString(this,
-                m_stdRegisters.getNickname(),
-                abstraction,
-                &m_ifguid,
-                &destGUID,
-                &progressDlg,
-                m_bLevel2->GetValue());
-
-        progressDlg.Pulse();
-
+        m_userRegisters.getAbstractionValueAsString( abstraction, strValue );
+        /*strValue = m_csw.getAbstractionValueAsString( this,
+                                                        m_stdRegisters.getNickname(),
+                                                        abstraction,
+                                                        &m_ifguid,
+                                                        &destGUID,
+                                                        NULL,
+                                                        m_bLevel2->GetValue());*/
         // Value
         m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,
                 3,
@@ -5412,94 +5336,81 @@ void frmDeviceConfig::updateDmGrid(void)
     uint8_t buf[ 512 ];
     uint8_t *prow = buf;
 
-    wxProgressDialog progressDlg(_("VSCP Works"),
-            _("Updating DM grid"),
-            100,
-            this,
-            wxPD_ELAPSED_TIME |
-            wxPD_AUTO_HIDE |
-            wxPD_APP_MODAL |
-            wxPD_CAN_ABORT);
-
     cguid destGUID;
     destGUID.getFromString(m_comboNodeID->GetValue());
 
     m_gridDM->ClearGrid();
 
-    for (int i = 0; i < m_mdf.m_dmInfo.m_nRowCount; i++) {
+    for (int i=0; i < m_mdf.m_dmInfo.m_nRowCount; i++) {
 
-        progressDlg.Pulse();
+        // Add a row
+        if (!m_gridDM->AppendRows(1)) continue;
 
-        if (m_csw.getDMRow(this,
-                m_stdRegisters.getNickname(),
-                &m_mdf.m_dmInfo,
-                i,
-                prow,
-                &m_ifguid,
-                &destGUID,
-                m_bLevel2->GetValue())) {
+        // O-addr
+        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
+                                                                m_mdf.m_dmInfo.m_nStartOffset + 
+                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 0, strBuf);
+        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 0);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 0);
 
-            progressDlg.Pulse();
+        // Flags
+        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
+                                                                1 + m_mdf.m_dmInfo.m_nStartOffset + 
+                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 1, strBuf);
+        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 1);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 1);
 
-            // Add a row
-            if (!m_gridDM->AppendRows(1)) continue;
+        // Class Mask
+        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
+                                                                2 + m_mdf.m_dmInfo.m_nStartOffset + 
+                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 2, strBuf);
+        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 2);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 2);
 
-            // O-addr
-            strBuf = getFormattedValue(prow[ 0 ]);
-            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 0, strBuf);
-            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 0);
-            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 0);
+        // Class Filter
+        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
+                                                                3 + m_mdf.m_dmInfo.m_nStartOffset + 
+                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 3, strBuf);
+        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 3);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 3);
 
-            // Flags
-            strBuf = getFormattedValue(prow[ 1 ]);
-            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 1, strBuf);
-            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 1);
-            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 1);
+        // Type Mask
+        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
+                                                                4 + m_mdf.m_dmInfo.m_nStartOffset + 
+                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 4, strBuf);
+        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 4);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 4);
 
-            // Class Mask
-            strBuf = getFormattedValue(prow[ 2 ]);
-            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 2, strBuf);
-            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 2);
-            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 2);
+        // Type Filter
+        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
+                                                                5 + m_mdf.m_dmInfo.m_nStartOffset + 
+                                                                 m_mdf.m_dmInfo.m_nRowSize * i ) );
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 5, strBuf);
+        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 5);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 5);
 
-            // Class Filter
-            strBuf = getFormattedValue(prow[ 3 ]);
-            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 3, strBuf);
-            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 3);
-            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 3);
+        // Action
+        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
+                                                                6 + m_mdf.m_dmInfo.m_nStartOffset + 
+                                                                 m_mdf.m_dmInfo.m_nRowSize * i ) );
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 6, strBuf);
+        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 6);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 6);
 
-            // Type Mask
-            strBuf = getFormattedValue(prow[ 4 ]);
-            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 4, strBuf);
-            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 4);
-            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 4);
+        // Action Parameter
+        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
+                                                                7 + m_mdf.m_dmInfo.m_nStartOffset + 
+                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 7, strBuf);
+        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 7);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 7);
 
-            // Type Filter
-            strBuf = getFormattedValue(prow[ 5 ]);
-            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 5, strBuf);
-            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 5);
-            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 5);
-
-            // Action
-            strBuf = getFormattedValue(prow[ 6 ]);
-            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 6, strBuf);
-            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 6);
-            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 6);
-
-            // Action Parameter
-            strBuf = getFormattedValue(prow[ 7 ]);
-            m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 7, strBuf);
-            m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 7);
-            m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 7);
-
-            m_gridDM->Update();
-
-            progressDlg.Pulse();
-        } 
-        else {
-            wxMessageBox(_("Unable to read decision matrix row!"));
-            break;
-        }
+        m_gridDM->Update();
 
     }
 }
@@ -5513,14 +5424,14 @@ void frmDeviceConfig::updateDmGridConditional(uint16_t reg, uint32_t page)
     int row = getRegisterGridRow(reg, page);
     if (-1 == row) return;
 
-    wxProgressDialog progressDlg(_("VSCP Works"),
-            _("Updating DM grid conditional"),
-            100,
-            this,
-            wxPD_ELAPSED_TIME |
-            wxPD_AUTO_HIDE |
-            wxPD_APP_MODAL |
-            wxPD_CAN_ABORT);
+    wxProgressDialog progressDlg( _("VSCP Works"),
+                                    _("Updating DM grid conditional"),
+                                    100,
+                                    this,
+                                    wxPD_ELAPSED_TIME |
+                                        wxPD_AUTO_HIDE |
+                                        wxPD_APP_MODAL |
+                                        wxPD_CAN_ABORT );
 
     if (m_mdf.m_dmInfo.m_bIndexed) {
 
@@ -5529,8 +5440,8 @@ void frmDeviceConfig::updateDmGridConditional(uint16_t reg, uint32_t page)
 
         // Must write to data part for a change
         // to take place
-        if ((reg = (m_mdf.m_dmInfo.m_nStartOffset + 1)) &&
-                (page == m_mdf.m_dmInfo.m_nStartPage)) {
+        if ( ( reg = (m_mdf.m_dmInfo.m_nStartOffset + 1) ) &&
+                ( page == m_mdf.m_dmInfo.m_nStartPage ) ) {
 
             progressDlg.Pulse();
 

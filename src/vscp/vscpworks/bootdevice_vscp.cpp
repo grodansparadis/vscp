@@ -442,49 +442,55 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
         memset(msg.data, 0x00, 8);
 
         // Read page register MSB
-        if (!m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ],
-                VSCP_REG_PAGE_SELECT_MSB,
-                &pageMSB)) {
+        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                            m_guid.m_id[ 0 ],
+                                                                            VSCP_REG_PAGE_SELECT_MSB,
+                                                                            &pageMSB ) ) {
             return false;
         }
 
 
         // Read page register LSB
-        if (!m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ],
-                VSCP_REG_PAGE_SELECT_LSB,
-                &pageLSB)) {
+        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                            m_guid.m_id[ 0 ],
+                                                                            VSCP_REG_PAGE_SELECT_LSB,
+                                                                            &pageLSB ) ) {
             return false;
         }
 
 
         // Read page register GUID0
-        if (!m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ],
-                VSCP_REG_GUID0,
-                &guid0)) {
+        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0, 
+                                                                            m_guid.m_id[ 0 ],
+                                                                            VSCP_REG_GUID0,
+                                                                            &guid0 ) ) {
             return false;
         }
 
 
         // Read page register GUID3
-        if (!m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ],
-                VSCP_REG_GUID3,
-                &guid3)) {
+        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                            m_guid.m_id[ 0 ],
+                                                                            VSCP_REG_GUID3,
+                                                                            &guid3 ) ) {
             return false;
         }
 
         // Read page register GUID5
-        if (!m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ],
-                VSCP_REG_GUID5,
-                &guid5)) {
+        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0, 
+                                                                            m_guid.m_id[ 0 ],
+                                                                            VSCP_REG_GUID5,
+                                                                            &guid5 ) ) {
             return false;
         }
 
 
 
         // Read page register GUID7
-        if (!m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ],
-                VSCP_REG_GUID7,
-                &guid7)) {
+        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0, 
+                                                                            m_guid.m_id[ 0 ],
+                                                                            VSCP_REG_GUID7,
+                                                                            &guid7 ) ) {
             return false;
         }
 
@@ -544,7 +550,8 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
 
         }
 
-    } else if (USE_TCPIP_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    } 
+    else if (USE_TCPIP_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
 
         vscpEventEx event;
         time_t tstart, tnow;
@@ -572,8 +579,6 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
         if (!wxGetApp().readLevel2Register(m_pCanalSuperWrapper, m_guid.m_id, VSCP_REG_GUID3, &guid3)) {
             return false;
         }
-
-
 
         // Read page register GUID5
         if (!wxGetApp().readLevel2Register(m_pCanalSuperWrapper, m_guid.m_id, VSCP_REG_GUID5, &guid5)) {

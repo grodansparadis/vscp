@@ -59,9 +59,9 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NS_ENABLE_SSL;NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.2/lib/vc_lib/mswu;C:\wxWidgets-3.0.2/include;C:\wxWidgets-3.0.2/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OPENSSL)\include;C:\wxWidgets-3.0.2/lib/vc_lib/mswu;C:\wxWidgets-3.0.2/include;C:\wxWidgets-3.0.2/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -69,8 +69,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\wxWidgets-3.0.2/lib/vc_lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>;wxmsw30u_xrc.lib;wxmsw30u_richtext.lib;wxmsw30u_aui.lib;wxmsw30u_html.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_ribbon.lib;wxmsw30u_core.lib;wxbase30u.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxmsw30u_adv.lib;wxmsw30u_html.lib;wxmsw30u_xrc.lib;wxbase30u_net.lib;wxbase30u_xml.lib;wxexpat.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;C:\OpenSSL-Win32\lib\VC;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ssleay32MTd.lib;wxmsw30u_xrc.lib;wxmsw30u_richtext.lib;wxmsw30u_aui.lib;wxmsw30u_html.lib;wxmsw30u_stc.lib;wxmsw30u_propgrid.lib;wxmsw30u_ribbon.lib;wxmsw30u_core.lib;wxbase30u.lib;wxtiff.lib;wxjpeg.lib;wxpng.lib;wxzlib.lib;wxregexu.lib;wxmsw30u_adv.lib;wxmsw30u_html.lib;wxmsw30u_xrc.lib;wxbase30u_net.lib;wxbase30u_xml.lib;wxexpat.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <ResourceCompile>
@@ -83,16 +83,16 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NS_ENABLE_SSL;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;__WXDEBUG__;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\wxWidgets-3.0.2/lib/vc_lib/mswud;C:\wxWidgets-3.0.2/include;C:\wxWidgets-3.0.2/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\;$(OPENSSL)\include;C:\wxWidgets-3.0.2/lib/vc_lib/mswud;C:\wxWidgets-3.0.2/include;C:\wxWidgets-3.0.2/contrib/include;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\include;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\wxWidgets-3.0.2/lib/vc_lib;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
-      <AdditionalDependencies>;wxmsw30ud_xrc.lib;wxmsw30ud_richtext.lib;wxmsw30ud_aui.lib;wxmsw30ud_html.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_ribbon.lib;wxmsw30ud_core.lib;wxbase30ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxmsw30ud_adv.lib;wxmsw30ud_html.lib;wxmsw30ud_xrc.lib;wxbase30ud_net.lib;wxbase30ud_xml.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;C:\OpenSSL-Win32\lib\VC;C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\lib;c:\Program Files (x86)\Microsoft Visual Studio 10.0\vc\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>ssleay32MTd.lib;wxmsw30ud_xrc.lib;wxmsw30ud_richtext.lib;wxmsw30ud_aui.lib;wxmsw30ud_html.lib;wxmsw30ud_stc.lib;wxmsw30ud_propgrid.lib;wxmsw30ud_ribbon.lib;wxmsw30ud_core.lib;wxbase30ud.lib;wxtiffd.lib;wxjpegd.lib;wxpngd.lib;wxzlibd.lib;wxregexud.lib;wxmsw30ud_adv.lib;wxmsw30ud_html.lib;wxmsw30ud_xrc.lib;wxbase30ud_net.lib;wxbase30ud_xml.lib;wxexpatd.lib;kernel32.lib;user32.lib;gdi32.lib;comdlg32.lib;winspool.lib;winmm.lib;shell32.lib;comctl32.lib;ole32.lib;oleaut32.lib;uuid.lib;rpcrt4.lib;advapi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <ResourceCompile>
@@ -102,7 +102,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\common\crc.h" />
-    <ClInclude Include="..\..\common\net_skeleton.h" />
+    <ClInclude Include="..\..\common\fossa.h" />
     <ClInclude Include="..\common\canal.h" />
     <ClInclude Include="..\common\canaldlldef.h" />
     <ClInclude Include="..\common\canalsuperwrapper.h" />
@@ -157,7 +157,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\common\crc.c" />
     <ClCompile Include="..\..\common\crc8.c" />
-    <ClCompile Include="..\..\common\net_skeleton.c" />
+    <ClCompile Include="..\..\common\fossa.c" />
     <ClCompile Include="..\common\canalsuperwrapper.cpp" />
     <ClCompile Include="..\common\dllwrapper.cpp" />
     <ClCompile Include="..\common\guid.cpp" />

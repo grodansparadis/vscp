@@ -21,7 +21,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-///////////////////////////////////////////////////////////////////////////////
+//
 
 /*!
 \file canalsuperwrapper.h
@@ -38,7 +38,7 @@ events.
 #include "vscpremotetcpif.h"
 #include "guid.h"
 #include "mdf.h"
-#include "../../common/dllist.h"
+#include <dllist.h>
 
 #if !defined(AFX_CANALSUPERWRAPPER_H__A908F21A_317D_4E74_9308_18D7DD6B7D49__INCLUDED_)
 #define AFX_CANALSUPERWRAPPER_H__A908F21A_317D_4E74_9308_18D7DD6B7D49__INCLUDED_
@@ -329,6 +329,12 @@ public:
 	*/
 	VscpRemoteTcpIf *getTcpIpInterface( void ) { return &m_vscptcpif; };
 
+    /*!
+	    Get a pointer to the DLL interface
+	    @return A pointer to the DLL interface
+	*/
+    CDllWrapper *getDllInterface( void ) { return &m_canalDll; };
+
 	/*!
 	Get variable value from string variable
 	\param name of variable
@@ -618,7 +624,7 @@ public:
 	Set max read retries
 	@param n Number of retries before giving up
 	*/
-	void setMaxRetries( uint32_t n ) { m_registerReadMaxRetries = n; };
+	void setMaxRetries( uint8_t n ) { m_registerReadMaxRetries = n; };
 
 
 // We don't want the graphcal UI on apps that don't use it 
@@ -632,10 +638,10 @@ public:
 	@param pval Pointer to value read
 	@return True on success false on failure.
 	*/
-	bool readLevel1Register( uint8_t nodeid, 
-								uint8_t reg, 
-								uint8_t *pval,
-								wxProgressDialog *pdlg = NULL );
+	bool readLevel1RegisterEx( uint8_t nodeid, 
+                                uint8_t reg, 
+                                uint8_t *pval,
+                                wxProgressDialog *pdlg = NULL );
 
 	/*!
 	Write level I register
@@ -644,10 +650,10 @@ public:
 	@param val Register value to write
 	@return True on success false on failure.
 	*/
-	bool writeLevel1Register( uint8_t nodeid, 
-								uint8_t reg, 
-								uint8_t *pval,
-								wxProgressDialog *pdlg = NULL );
+	bool writeLevel1RegisterEx( uint8_t nodeid, 
+                                    uint8_t reg, 
+                                    uint8_t *pval,
+                                    wxProgressDialog *pdlg = NULL );
 
 	/*!
 	Read a level 2 register
@@ -726,8 +732,8 @@ public:
 	or a 16 byte GUID if bLevel2 = true.
 	@return true on success, false on failure.
 	*/
-	wxString getMDFfromDevice1( uint8_t id,
-									bool bSilent = false );
+	wxString getMDFfromLevel1Device( uint8_t id,
+									    bool bSilent = false );
 
 	/*!
 	Get MDf file from device registers
@@ -738,11 +744,11 @@ public:
 	@param bSilent Set to true to not show error messages.
 	@return true on success, false on failure.
 	*/
-	wxString getMDFfromDevice2( wxProgressDialog& progressDlg,
-									cguid& ifGUID, 
-									cguid& destGUID,
-									bool bLevel2 = false,
-									bool bSilent = false );
+	wxString getMDFfromLevel2Device( wxProgressDialog& progressDlg,
+									    cguid& ifGUID, 
+									    cguid& destGUID,
+									    bool bLevel2 = false,
+									    bool bSilent = false );
 
 	/*!
 	 Get MDF from server or device
@@ -1468,7 +1474,7 @@ protected:
 	/*!
 	Number of retries before giving up
 	*/
-	uint32_t m_registerReadMaxRetries;
+	uint8_t m_registerReadMaxRetries;
 };
 
 #endif // !defined(AFX_CANALSUPERWRAPPER_H__A908F21A_317D_4E74_9308_18D7DD6B7D49__INCLUDED_)

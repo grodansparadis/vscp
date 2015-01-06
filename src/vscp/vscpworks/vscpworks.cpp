@@ -3377,9 +3377,10 @@ wxString VscpworksApp::getMDFfromDevice( CCanalSuperWrapper *pcsw,
 		// Level 2 device
 		uint8_t *p = (uint8_t *)url;
 		for ( int i=0; i<32; i++ ) {
-			 if ( !pcsw->readLevel1Register( *pid, 
-                                            0xE0 + i, 
-                                            p++ ) ) {
+            if ( !pcsw->getDllInterface()->readLevel1Register( 0,
+                                                                *pid, 
+                                                                0xE0 + i, 
+                                                                p++ ) ) {
 				if ( !bSilent ) {												
 					::wxMessageBox( _("Unable to read register."), _("VSCP Works"), wxICON_ERROR );
 				}
@@ -3827,9 +3828,10 @@ bool VscpworksApp::loadMDF( wxWindow *pwnd,
 
             if ( USE_DLL_INTERFACE == pcsw->getDeviceType() ) {
                 uint8_t reg;
-                if ( !pcsw->readLevel1Register( *pid,
-                                            0xe0 + i, 
-                                            &reg ) ) return false;
+                if ( !pcsw->getDllInterface()->readLevel1Register( 0,
+                                                                    *pid,
+                                                                    0xe0 + i, 
+                                                                    &reg ) ) return false;
                 mdf_url[ i ] = reg;
             }
             else {

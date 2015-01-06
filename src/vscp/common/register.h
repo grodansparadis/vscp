@@ -67,7 +67,7 @@ private:
 		True if the matrix is indexed. That is if it consist
 		of one row precided by an index into the matrix.
 	*/
-	bool m_bIndexed;
+	bool m_bIndexedDM;
 
 	/*!
 		A memory array holding the full decision matrix
@@ -79,6 +79,11 @@ private:
 	*/
 	CMDF_DecisionMatrix *m_pmdfdm;
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
 
 /*!
     \class CStandardRegisters
@@ -147,10 +152,88 @@ public:
 
 	uint8_t getStandardReg( uint8_t reg );
 
+    /*!
+        Return a pointer to the register storage
+    */
+    unsigned char *getRegs( void ) { return m_reg; };
+
+    /*!
+        Set value for register
+        @param reg Register to set value for
+        @param val Value to set register to
+    */
+    void setReg( uint8_t reg, uint8_t val ) { m_reg[ reg ] = val; };
+
+
+    /*!
+        Get value for register
+        @param reg Register to get value for
+        @return Value of requested register.
+    */
+    uint8_t getReg( uint8_t reg ) { return m_reg[ reg ]; };
+
+private:
+
 	/// Standard register storage
 	uint8_t m_reg[ 128 ];
 
+};
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+/*!
+    \class CUserRegisters
+    \brief Encapsulates the user registers of a device
+*/
+class CUserRegisters  
+{
+
+public:
+    CUserRegisters();
+    ~CUserRegisters();
+
+    // Init the standard registers
+    void init( wxArrayLong &pagesArray );
+
+    /*!
+        Return a pointer to the register storage
+    */
+    unsigned char *getRegs( void ) { return m_reg; };
+
+    /*!
+        Get array of pages
+    */
+    wxArrayLong &getArrayOfPages( void ) { return m_arrayPages; };
+
+    /*!
+        Get registers for a spcific page
+    */
+    uint8_t *getRegs4Page( uint16_t page );
+
+    /*!
+        Get the value for a spcific register on a page
+    */
+    uint8_t getValue( uint16_t page, uint8_t offset );
+
+    /*!
+        Get abstraction value as string
+        @param abstraction Abstraction record from MDF
+        @param strValue Abstraction value in string form on return if call successful
+        @return true on success
+    */
+    bool getAbstractionValueAsString( CMDF_Abstraction *pAbstraction, wxString &strValue );
+
+private:
+
+    /*! 
+        All registers are here in chuncks of 128 bytes
+    */
+    uint8_t *m_reg;   
+
+    // Array with vaid register pages
+    wxArrayLong m_arrayPages;
 };
 
 

@@ -283,13 +283,11 @@ public:
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
 
-
     uint16_t m_nOffset;
     uint8_t  m_width;
 
-    MDF_BIT_LIST  m_list_bit;        // List with bit defines
-    MDF_VALUE_LIST  m_list_value;    // List with selectable values
-
+    MDF_BIT_LIST  m_list_bit;           // List with bit defines
+    MDF_VALUE_LIST  m_list_value;       // List with selectable values
 
 };
 
@@ -422,33 +420,22 @@ public:
     */
     void clearStorage( void );
 
-#ifdef VSCP_QT
-    QString m_strName;
-    QString m_strDescription;
-    QString m_strHelpType;
-    QString m_strHelp;                 // Item help text or url
-#else
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
-#endif
 
     uint16_t m_nClass;
     uint16_t m_nType;
     uint8_t  m_nPriority;
 
-#ifdef VSCP_QT
-    QList<CMDF_EventData>  m_list_eventdata; // List with ecent data descriptions
-#else
     MDF_EVENTDATA_LIST  m_list_eventdata; // List with ecent data descriptions
-#endif
 
 };
 
-#ifndef VSCP_QT
+
 WX_DECLARE_LIST( CMDF_Event, MDF_EVENT_LIST );
-#endif
+
 
 
 /*!
@@ -467,22 +454,15 @@ public:
     CMDF_Item();
     ~CMDF_Item();
 
-#ifdef VSCP_QT
-    QString m_strItem;
-    QString m_strDescription;
-    QString m_strHelpType;
-    QString m_strHelp;                 // Item help text or url
-#else
     wxString m_strItem;    
     wxString m_strDescription;
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
-#endif
 };
 
-#ifndef VSCP_QT
+
 WX_DECLARE_LIST( CMDF_Item, MDF_ITEM_LIST );
-#endif
+
 
 /*!
   CMDF_BootLoaderInfo
@@ -530,15 +510,6 @@ public:
     */
     void clearStorage( void );
 
-#ifdef VSCP_QT
-    QString m_strStreet;
-    QString m_strTown;
-    QString m_strCity;
-    QString m_strPostCode;
-    QString m_strState;
-    QString m_strRegion;
-    QString m_strCountry;
-#else
     wxString m_strStreet;    
     wxString m_strTown;
     wxString m_strCity;
@@ -546,13 +517,12 @@ public:
     wxString m_strState;
     wxString m_strRegion;
     wxString m_strCountry;
-#endif
   
 };
 
-#ifndef VSCP_QT
+
 WX_DECLARE_LIST( CMDF_Address, MDF_ADDRESS_LIST );
-#endif
+
 
 /*!
   CMDF_Manufacturer
@@ -574,16 +544,6 @@ public:
     */
     void clearStorage( void );
 
-#ifdef VSCP_QT
-    QString m_strName;
-
-    QList<CMDF_Address> m_list_Address;
-
-    QList<CMDF_Item> m_list_Phone;
-    QList<CMDF_Item> m_list_Fax;
-    QList<CMDF_Item> m_list_Email;
-    QList<CMDF_Item> m_list_Web;
-#else
     wxString m_strName;
   
     MDF_ADDRESS_LIST m_list_Address;
@@ -592,12 +552,11 @@ public:
     MDF_ITEM_LIST m_list_Fax;
     MDF_ITEM_LIST m_list_Email;
     MDF_ITEM_LIST m_list_Web;
-#endif
 };
 
-#ifndef VSCP_QT
+
 WX_DECLARE_LIST( CMDF_Manufacturer, MDF_MANUFACTURER_LIST );
-#endif
+
 
 /*!
   CMDF_Manufacturer
@@ -622,11 +581,8 @@ public:
     /*!
         Path to firmware hex file
     */
-#ifdef VSCP_QT
-    QString m_strPath;
-#else
     wxString m_strPath;
-#endif
+
 
     /*!
         Size for firmware file (not the image)
@@ -645,11 +601,7 @@ public:
     /*!
         Description of file
     */
-#ifdef VSCP_QT
-    QString m_description;
-#else
     wxString m_description;
-#endif
 };
 
 
@@ -679,11 +631,8 @@ public:
         @param variable that will receive temporary filename for downloaded file.
         @return Return true if a valid file is downloaded.			
     */
- #ifdef VSCP_QT
-    bool downLoadMDF( QString& remoteFile, QString& tempFile );
- #else
     bool downLoadMDF( wxString& remoteFile, wxString& tempFile );
- #endif
+
 
 	/*!
 		Load MDF from local or remote storage and parse it into
@@ -694,21 +643,13 @@ public:
 		@param blocalFile Asks for a local file if set to true.
 		@return returns true on success, false on falure.
 	*/
-#ifdef VSCP_QT
-    bool load( QString& remoteFile, bool bLocalFile = false, bool bSilent = false );
-#else
 	bool load( wxString& remoteFile, bool bLocalFile = false, bool bSilent = false );
-#endif
 
     /*!
         Format an MDF description so it can be shown
         @param str String to format.
     */
-#ifdef VSCP_QT
-    void mdfDescriptionFormat( QString& str );
-#else
     void mdfDescriptionFormat( wxString& str );
-#endif
 
          
     /*!
@@ -716,11 +657,7 @@ public:
         @param path Path to downloaded MDF
         @return true if the parsing went well.
     */
-#ifdef VSCP_QT
-    bool parseMDF( QString& path );
-#else
     bool parseMDF( wxString& path );
-#endif
 
 	// Helpers
 
@@ -735,11 +672,7 @@ public:
 		Get number of register pages used
 		@return Number of regsiter pages used.
 	*/
-#ifdef VSCP_QT
-    uint32_t getPages( QList<long>& arraylong );
-#else
-	uint32_t getPages( SortedArrayLong& arraylong );
-#endif
+	uint32_t getPages( wxArrayLong& arraylong );
 
 	/*!
 		Return register class from register + page
@@ -749,19 +682,7 @@ public:
 	*/
 	CMDF_Register *getMDFRegs( uint8_t reg, uint16_t page );
 
-#ifdef VSCP_QT
-    QString m_strLocale;                       // ISO code for requested language
-                                                // defaults to "en"
 
-    QString m_strModule_Name;                  // Module name
-    QString m_strModule_Model;                 // Module Model
-    QString m_strModule_Version;               // Module version
-    QString m_strModule_Description;           // Module description
-    QString m_strModule_InfoURL;               // URL for full module information
-    QString m_changeDate;                      // Last date changed
-
-    QString m_strURL;                          // Location for MDF file
-#else
     wxString m_strLocale;                       // ISO code for requested language
                                                 // defaults to "en"
 
@@ -773,32 +694,20 @@ public:
     wxString m_changeDate;                      // Last date changed
 
     wxString m_strURL;                          // Location for MDF file
-#endif
 
     uint16_t m_Module_buffersize;               // Buffersize for module
 
     CMDF_Firmware m_firmware;                   // Firmware file
 
-#ifdef VSCP_QT
-    QList<CMDF_Manufacturer> m_list_manufacturer;  // Manufacturer information
-#else
     MDF_MANUFACTURER_LIST m_list_manufacturer;  // Manufacturer information
-#endif
 
     CMDF_DecisionMatrix m_dmInfo;               // Info about decision matrix
     CMDF_BootLoaderInfo m_bootInfo;             // Boot loader info
     
-#ifdef VSCP_QT
-    QList<CMDF_Event> m_list_event;             // Events this node can generate
-    QList<CMDF_Register> m_list_register;       // List with defined registers
-    QList<CMDF_Abstraction> m_list_abstraction; // List with defined abstractions
-    QList<CMDF_Bit> m_list_alarmbits;           // List with alarm bit defines
-#else
     MDF_EVENT_LIST m_list_event;                // Events this node can generate
     MDF_REGISTER_LIST m_list_register;          // List with defined registers
     MDF_ABSTRACTION_LIST m_list_abstraction;    // List with defined abstractions
     MDF_BIT_LIST m_list_alarmbits;              // List with alarm bit defines
-#endif
 };
 
 #endif

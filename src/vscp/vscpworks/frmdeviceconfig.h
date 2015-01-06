@@ -402,6 +402,9 @@ public:
 	/// Standard registers
 	CStandardRegisters m_stdRegisters;
 
+    /// User registers
+    CUserRegisters m_userRegisters;
+
 	/// Module description file functionality
 	CMDF m_mdf;
 

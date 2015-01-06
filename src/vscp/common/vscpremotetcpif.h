@@ -4,7 +4,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
@@ -21,7 +21,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-///////////////////////////////////////////////////////////////////////////////
+
 
 
 /*!
@@ -42,10 +42,15 @@
 #include "guid.h"
 #include "vscphelper.h"
 
-#include "../../common/net_skeleton.h"
+//#include "../../common/net_skeleton.h"
+#include <fossa.h>
 #include "wx/datetime.h"
 
+
+
+
 //---------------------------------------------------------------------------
+
 
 
 
@@ -102,8 +107,8 @@ public:
 	/*!
 		TCP/IP handler
 	*/
-	static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
-
+	//static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
+    static void ev_handler(struct ns_connection *conn, int ev, void *pUser); 
     /*! 
 		called when the thread exits - whether it terminates normally or is
 		stopped with Delete() (but not when it is Kill()ed!)
@@ -685,7 +690,60 @@ public:
     */
     int setVariableVSCPtype( wxString& name, uint16_t vscp_type );
 
-    
+
+// ------------------------------------------------------------------------
+//                           R E G I S T E R S
+// ------------------------------------------------------------------------
+
+    /*!
+        Read a level II register
+        @param reg Register to read (32-bit value for true Level II)
+        @param page Page to read from.
+        @param pval Pointer to eight bit value that will get read value.
+        @param pdestGUID GUID for remote node.
+        @param ifGUID GUID for interface this events hsould be sent on. This is
+                used to read registers of Level I devices.
+        @param bLevel2 If true this is a true Level II read operation.
+        @return CANAL_ERROR_SUCCESS on success, errocode on failure.
+    */
+
+    int readLevel2Register( uint32_t reg, 
+                                uint16_t page,
+                                uint8_t *pval,
+                                cguid& ifGUID,
+                                cguid *pdestGUID = NULL,
+                                bool bLevel2 = false );
+
+    /*!
+	Load level II register content into an array
+    @param reg First register to read..
+	@param count Number of registers to read (max 128 bytes).
+    @param page Page to read from.
+	@param pregisters Pointer to an array of count 8-bit registers.
+	@param pinterfaceGUID GUID for interface to do read on.
+	@param pdestGUID GUID for remote node.	
+	@return CANAL_ERROR_SUCCESS on success, errocode on failure.d
+	*/
+
+	int readLevel2Registers( uint32_t reg,
+                                uint16_t page,
+	                            uint8_t count,
+                                uint8_t *pval,
+                                cguid& ifGUID,
+	                            cguid *pdestGUID = NULL,
+	                            bool bLevel2 = false );
+
+    /*!
+	    Get MDf file from device registers
+	    @param pdestGUID Pointer to guid of node.
+        @param strurl URL to MDF if call is successful.
+	    @param bLevel2 Set to true if this is a level II devive 
+	    @return true on success, false on failure.
+	*/
+	bool getMDFfromLevel2Device( cguid& ifGUID, 
+                                    cguid& destGUID,
+                                    wxString &strurl,
+                                    bool bLevel2 = false );
 
 
 // ------------------------------------------------------------------------
@@ -746,8 +804,17 @@ protected:
     /// Last binary error
     //uint8_t m_lastBinaryError;
 
-    /// Server response timeout
+    /// Server response timeout in seconds
     uint8_t m_responseTimeOut;
+
+    /// Error timeout for register read/write operations
+    uint32_t m_registerReadErrorTimeout;
+
+    /// Resend timeout for read/write operations
+    uint32_t m_registerReadResendTimeout;
+
+    /// Man number of read/write retries
+    uint8_t m_registerReadMaxRetries;
 
 };
 

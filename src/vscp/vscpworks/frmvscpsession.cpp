@@ -5,7 +5,7 @@
 //  Modified by: 
 //  Created:     Sat 30 Jun 2007 14:08:14 CEST
 //  RCS-ID:      
-//  Copyright:   (C) 2007-2014 
+//  Copyright:   (C) 2007-2015                       
 //  Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //  Licence:     
 //  This program is free software; you can redistribute it and/or  
@@ -2495,7 +2495,7 @@ void *TXWorkerThread::Entry()
         eventStatus.SetString("TCP/IP: Failed to open connection.");
         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         eventStatus.SetString("TCP/IP: (TX) Failed to open connection.");
-    wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
 
@@ -2608,12 +2608,14 @@ void *RXWorkerThread::Entry()
     wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
 
     // Find the channel id
-    tcpifReceive.doCmdGetChannelID((uint32_t *) & m_pCtrlObject->m_rxChannelID);
+    tcpifReceive.doCmdGetChannelID( (uint32_t *) &m_pCtrlObject->m_rxChannelID );
 
     // Set filter
-    if (CANAL_ERROR_SUCCESS !=
+    if ( CANAL_ERROR_SUCCESS !=
             tcpifReceive.doCmdFilter(&m_pCtrlObject->m_ifVSCP.m_vscpfilter)) {
-        ::wxGetApp().logMsg(_("TCP/IP Receive thread - Failed to set filter."), DAEMON_LOGMSG_INFO);
+        ::wxGetApp().logMsg(_("TCP/IP: (RX) Receive thread - Failed to set filter."), DAEMON_LOGMSG_INFO);
+        eventStatus.SetString("TCP/IP: (RX) Receive thread - Failed to set filter.");
+        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
     }
 
     // Start Receive Loop

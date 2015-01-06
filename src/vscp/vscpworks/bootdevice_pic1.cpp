@@ -463,49 +463,55 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
 
         // Read page register MSB
-        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
-            VSCP_REG_PAGE_SELECT_MSB, 
-            &pageMSB ) ) {
+        if ( !m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                            m_guid.m_id[ 0 ], 
+                                                                            VSCP_REG_PAGE_SELECT_MSB, 
+                                                                            &pageMSB ) ) {
                 return false;
         }
 
 
         // Read page register LSB
-        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
-            VSCP_REG_PAGE_SELECT_LSB, 
-            &pageLSB ) ) {
+        if ( !m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                            m_guid.m_id[ 0 ], 
+                                                                            VSCP_REG_PAGE_SELECT_LSB, 
+                                                                            &pageLSB ) ) {
                 return false;
         }
 
 
         // Read page register GUID0
-        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
-            VSCP_REG_GUID0, 
-            &guid0 ) ) {
+        if ( !m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                            m_guid.m_id[ 0 ], 
+                                                                            VSCP_REG_GUID0, 
+                                                                            &guid0 ) ) {
                 return false;
         }
 
 
         // Read page register GUID3
-        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
-            VSCP_REG_GUID3, 
-            &guid3 ) ) {
+        if ( !m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0, 
+                                                                            m_guid.m_id[ 0 ], 
+                                                                            VSCP_REG_GUID3, 
+                                                                            &guid3 ) ) {
                 return false;
         }
 
         // Read page register GUID5
-        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
-            VSCP_REG_GUID5, 
-            &guid5 ) ) {
+        if ( !m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                            m_guid.m_id[ 0 ], 
+                                                                            VSCP_REG_GUID5, 
+                                                                            &guid5 ) ) {
                 return false;
         }
 
 
 
         // Read page register GUID7
-        if ( !m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ], 
-            VSCP_REG_GUID7, 
-            &guid7 ) ) {
+        if ( !m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                            m_guid.m_id[ 0 ], 
+                                                                            VSCP_REG_GUID7, 
+                                                                            &guid7 ) ) {
                 return false;
         }
 
@@ -913,9 +919,10 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
             // If we can read register we are ready
 			unsigned char val;
             if ( USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType() ) {
-                if ( m_pCanalSuperWrapper->readLevel1Register( m_guid.m_id[ 0 ],
-					                                    VSCP_REG_PAGE_SELECT_MSB, 
-					                                    &val ) ) {
+                if ( m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
+                                                                                    m_guid.m_id[ 0 ],
+					                                                                VSCP_REG_PAGE_SELECT_MSB, 
+					                                                                &val ) ) {
                     bReady = true;
                     break;						
 			    }
