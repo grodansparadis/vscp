@@ -2461,10 +2461,10 @@ uint32_t CMDF::getPages( wxArrayLong& arraylong )
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//  getMDFRegs
+//  getMDFRegister
 //  
 
-CMDF_Register * CMDF::getMDFRegs( uint8_t reg, uint16_t page )
+CMDF_Register * CMDF::getMDFRegister( uint8_t reg, uint16_t page )
 {
 	MDF_REGISTER_LIST::iterator iter;
 	for ( iter = m_list_register.begin(); iter != m_list_register.end(); ++iter ) {

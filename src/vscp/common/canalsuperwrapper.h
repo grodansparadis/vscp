@@ -638,7 +638,7 @@ public:
 	@param pval Pointer to value read
 	@return True on success false on failure.
 	*/
-	bool readLevel1RegisterEx( uint8_t nodeid, 
+	bool _readLevel1Register( uint8_t nodeid, 
                                 uint8_t reg, 
                                 uint8_t *pval,
                                 wxProgressDialog *pdlg = NULL );
@@ -650,7 +650,7 @@ public:
 	@param val Register value to write
 	@return True on success false on failure.
 	*/
-	bool writeLevel1RegisterEx( uint8_t nodeid, 
+	bool _writeLevel1Register( uint8_t nodeid, 
                                     uint8_t reg, 
                                     uint8_t *pval,
                                     wxProgressDialog *pdlg = NULL );
@@ -679,7 +679,7 @@ public:
 	@param pcontent Pointer to data to write. Return read data.
 	@return True on success. False otherwise.
 	*/    
-	bool writeLevel2Register( cguid& ifGUID, 
+	bool _writeLevel2Register( cguid& ifGUID, 
 								uint32_t reg, 
 								uint8_t *pcontent,
 								cguid& destGUID,

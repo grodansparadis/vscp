@@ -654,7 +654,7 @@ const char * CCanalSuperWrapper::doCmdGetDriverInfo( void )
 // readLevel1Register
 //
 
-bool CCanalSuperWrapper::readLevel1RegisterEx( uint8_t nodeid, 
+bool CCanalSuperWrapper::_readLevel1Register( uint8_t nodeid, 
 												uint8_t reg, 
 												uint8_t *pcontent,
 												wxProgressDialog *pdlg )
@@ -734,7 +734,7 @@ bool CCanalSuperWrapper::readLevel1RegisterEx( uint8_t nodeid,
 // writeLevel1Register
 //
 
-bool CCanalSuperWrapper::writeLevel1RegisterEx( uint8_t nodeid, 
+bool CCanalSuperWrapper::_writeLevel1Register( uint8_t nodeid, 
 												    uint8_t reg, 
 												    uint8_t *pval,
 												    wxProgressDialog *pdlg )
@@ -851,7 +851,7 @@ bool CCanalSuperWrapper::readLevel1Registers( wxWindow *pwnd,
 
 		progressDlg.Pulse( wxString::Format(_("Reading register %d"), i) );
 
-		if ( readLevel1RegisterEx( nodeid, i, &val ) ) {
+		if ( _readLevel1Register( nodeid, i, &val ) ) {
 			pregisters[ i-startreg ] = val;
 		}
 		else {
@@ -1070,7 +1070,7 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
 // writeLevel2Register
 //
 
-bool CCanalSuperWrapper::writeLevel2Register( cguid& ifGUID, 
+bool CCanalSuperWrapper::_writeLevel2Register( cguid& ifGUID, 
 												uint32_t reg, 
 												uint8_t *pcontent,
 												cguid& destGUID,
@@ -1659,14 +1659,14 @@ bool CCanalSuperWrapper::setRegisterPage( uint8_t nodeid,
 	if ( NULL == pdestGUID || pifGUID->isNULL() ) {
 
 		val = ( page >> 8 ) & 0xff;
-		if ( !writeLevel1RegisterEx( nodeid, 
+		if ( !_writeLevel1Register( nodeid, 
 									0x92, 
 									&val ) ) {
 				return false;
 		}
 
 		val = page & 0xff;
-		if ( !writeLevel1RegisterEx( nodeid, 
+		if ( !_writeLevel1Register( nodeid, 
 									0x93, 
 									&val ) ) {
 				return false;
@@ -1676,7 +1676,7 @@ bool CCanalSuperWrapper::setRegisterPage( uint8_t nodeid,
 	else {
 
 		val = ( page >> 8 ) & 0xff;
-		if ( writeLevel2Register( *pifGUID, 
+		if ( _writeLevel2Register( *pifGUID, 
 									bLevel2 ? 0xffffff92 : 0x92, 
 									&val,
 									*pdestGUID ) ) {
@@ -1684,7 +1684,7 @@ bool CCanalSuperWrapper::setRegisterPage( uint8_t nodeid,
 		}
 
 		val = page & 0xff;
-		if ( writeLevel2Register( *pifGUID, 
+		if ( _writeLevel2Register( *pifGUID, 
 									bLevel2 ? 0xffffff93 : 0x93, 
 									&val,
 									*pdestGUID ) ) {
@@ -1785,14 +1785,14 @@ bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
 			
 				// Set index
 				val = pdm->m_nStartOffset + row * pdm->m_nRowSize + i; // Indexed pos		
-				if ( !writeLevel1RegisterEx( nodeid, pdm->m_nStartOffset, &val ) ) {
+				if ( !_writeLevel1Register( nodeid, pdm->m_nStartOffset, &val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to set register index for decision matrix!") );
 					rv = false;
 					goto error;
 				}
 
 				// Read DM byte
-				if ( !readLevel1RegisterEx( nodeid, pdm->m_nStartOffset + 1, p++ ) ) {
+				if ( !_readLevel1Register( nodeid, pdm->m_nStartOffset + 1, p++ ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to read register in indexed decision matrix") );
 					rv = false;
 					goto error;
@@ -1802,7 +1802,7 @@ bool CCanalSuperWrapper::getDMRow( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											pdm->m_nStartOffset, 
 											&val,
 											*pdestGUID ) ) {
@@ -1917,7 +1917,7 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 
 				// Write index to string
 				
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&val ) ) {
 						if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
@@ -1925,7 +1925,7 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
@@ -1936,7 +1936,7 @@ bool CCanalSuperWrapper::getAbstractionString( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID ) ) {
@@ -2058,7 +2058,7 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 
 				// Write index
 				uint8_t val = i;
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction string index!") );
@@ -2067,7 +2067,7 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction string value!") );
@@ -2079,7 +2079,7 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 			
 				// Write index Level II
 				uint8_t idx = i;
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID,
@@ -2091,7 +2091,7 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 				}
 
 				// Write data Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											(p+i),
 											*pdestGUID,
@@ -2114,7 +2114,7 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 			// Write string to linear storage.
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											p++ ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction string!") );
@@ -2124,7 +2124,7 @@ bool CCanalSuperWrapper::writeAbstractionString( wxWindow *pwnd,
 			}
 			else {
 	
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											p++,
 											*pdestGUID,
@@ -2203,7 +2203,7 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 				// Write index
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction BitField index!") );
@@ -2212,7 +2212,7 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction BitField value!") );
@@ -2223,7 +2223,7 @@ bool CCanalSuperWrapper::getAbstractionBitField( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID ) ) {
@@ -2372,7 +2372,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 
 				// Write index to bitfield
 				uint8_t val = i;
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction BitField index!") );
@@ -2381,7 +2381,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction BitField value!") );
@@ -2394,7 +2394,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 			
 				// Write index Level II
 				uint8_t idx = i;
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID,
@@ -2406,7 +2406,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 				}
 
 				// Write data Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											(p+i),
 											*pdestGUID,
@@ -2428,7 +2428,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 			
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											p++ ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction BitField!") );
@@ -2439,7 +2439,7 @@ bool CCanalSuperWrapper::writeAbstractionBitField( wxWindow *pwnd,
 			}
 			else {
 	
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											p++,
 											*pdestGUID,
@@ -2506,7 +2506,7 @@ bool CCanalSuperWrapper::getAbstractionBool( wxWindow *pwnd,
 	if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() )) {
 
 		// Read value
-		if ( !readLevel1RegisterEx( nodeid, 
+		if ( !_readLevel1Register( nodeid, 
 									abstraction->m_nOffset, 
 									&val ) ) {
 			if ( !bSilent ) wxMessageBox( _("Failed to read abstraction boolean value!") );
@@ -2581,7 +2581,7 @@ bool CCanalSuperWrapper::writeAbstractionBool( wxWindow *pwnd,
 	}
 
 	val = bval ? true : false;
-	if ( !writeLevel1RegisterEx( nodeid, 
+	if ( !_writeLevel1Register( nodeid, 
 								abstraction->m_nOffset, 
 								&val ) ) {
 		if ( !bSilent ) wxMessageBox( _("Unable to write abstraction boolean!") );
@@ -2591,7 +2591,7 @@ bool CCanalSuperWrapper::writeAbstractionBool( wxWindow *pwnd,
 	else {
 			
 		// Write index Level II
-		if ( !writeLevel2Register( *pifGUID, 
+		if ( !_writeLevel2Register( *pifGUID, 
 									abstraction->m_nOffset, 
 									&val,
 									*pdestGUID ) ) {
@@ -2651,7 +2651,7 @@ bool CCanalSuperWrapper::getAbstraction8bitinteger( wxWindow *pwnd,
 	if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 		// Read value
-		if ( !readLevel1RegisterEx( nodeid, 
+		if ( !_readLevel1Register( nodeid, 
 									    abstraction->m_nOffset, 
 									    pval ) ) {
 			if ( !bSilent ) wxMessageBox( _("Failed to read abstraction 8-bit integer value!") );
@@ -2723,7 +2723,7 @@ bool CCanalSuperWrapper::writeAbstraction8bitinteger( wxWindow *pwnd,
 
 	if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 	
-		if ( !writeLevel1RegisterEx( nodeid, 
+		if ( !_writeLevel1Register( nodeid, 
 									abstraction->m_nOffset, 
 									&val ) ) {
 			if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 8-bit integer!") );
@@ -2734,7 +2734,7 @@ bool CCanalSuperWrapper::writeAbstraction8bitinteger( wxWindow *pwnd,
 	else {
 			
 		// Write index Level II
-		if ( !writeLevel2Register( *pifGUID, 
+		if ( !_writeLevel2Register( *pifGUID, 
 									abstraction->m_nOffset, 
 									&val,
 									*pdestGUID ) ) {
@@ -2805,7 +2805,7 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 				
 				// Write index Level I
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
@@ -2814,7 +2814,7 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
@@ -2826,7 +2826,7 @@ bool CCanalSuperWrapper::getAbstraction16bitinteger( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID ) ) {
@@ -2945,7 +2945,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 	
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -2954,7 +2954,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 				}
 		
 				// Write MSB
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -2966,7 +2966,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID,
@@ -2978,7 +2978,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 				}
 
 				// Write data Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											(p+i),
 											*pdestGUID,
@@ -2999,7 +2999,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 		if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 		
 			// Write MSB
-			if ( !writeLevel1RegisterEx( nodeid, 
+			if ( !_writeLevel1Register( nodeid, 
 										abstraction->m_nOffset, 
 										p ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3008,7 +3008,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 			}
 
 			// Write LSB
-			if ( !writeLevel1RegisterEx( nodeid, 
+			if ( !_writeLevel1Register( nodeid, 
 										abstraction->m_nOffset + 1, 
 										(p + 1) ) ) {
 				if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3020,7 +3020,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 		else {
 		
 			// Write MSB
-			if ( !writeLevel2Register( *pifGUID, 
+			if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											p,
 											*pdestGUID,
@@ -3032,7 +3032,7 @@ bool CCanalSuperWrapper::writeAbstraction16bitinteger( wxWindow *pwnd,
 			}
 
 			// Write LSB
-			if ( !writeLevel2Register( *pifGUID, 
+			if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + 1 , 
 											(p + 1),
 											*pdestGUID,
@@ -3103,7 +3103,7 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 
 				// Write index to string
 				uint8_t idx = i;
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
@@ -3112,7 +3112,7 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
@@ -3123,7 +3123,7 @@ bool CCanalSuperWrapper::getAbstraction32bitinteger( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID ) ) {
@@ -3240,7 +3240,7 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 			uint8_t idx = i;
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3250,7 +3250,7 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 		
 				// Write data
 				val = ( ( val32 >> (8 * (3-i) ) ) & 0xff );
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3261,7 +3261,7 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID,
@@ -3274,7 +3274,7 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 
 				// Write data Level II
 				val = ( ( val32 >> (8 * (3-i) ) ) & 0xff );
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											&val,
 											*pdestGUID,
@@ -3299,7 +3299,7 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 
 				// Write data
 				
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3310,7 +3310,7 @@ bool CCanalSuperWrapper::writeAbstraction32bitinteger( wxWindow *pwnd,
 			}
 			else {
 
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -3380,7 +3380,7 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 				// Write index to string
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
@@ -3389,7 +3389,7 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 				}
 				
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
@@ -3400,7 +3400,7 @@ bool CCanalSuperWrapper::getAbstraction64bitinteger( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID ) ) {
@@ -3521,7 +3521,7 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 	
 				// Index = 0
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3531,7 +3531,7 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 			
 				// Write data
 				val = ( ( val64 >> (8 * (3-i) ) ) & 0xff );
-					if ( !writeLevel1RegisterEx( nodeid, 
+					if ( !_writeLevel1Register( nodeid, 
 												abstraction->m_nOffset + 1, 
 												&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3542,7 +3542,7 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID,
@@ -3555,7 +3555,7 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 
 				// Write data Level II
 				val = ( ( val64 >> (8 * (3-i) ) ) & 0xff );
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											&val,
 											*pdestGUID,
@@ -3579,7 +3579,7 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 					
 				// Write data
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3589,7 +3589,7 @@ bool CCanalSuperWrapper::writeAbstraction64bitinteger( wxWindow *pwnd,
 			}
 			else {
 
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -3659,7 +3659,7 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() )  ) {
 
 				// Write index to string
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
@@ -3668,7 +3668,7 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 				}
 			
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
@@ -3679,7 +3679,7 @@ bool CCanalSuperWrapper::getAbstractionFloat( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID ) ) {
@@ -3800,7 +3800,7 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 	
 				// Index = 0
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3810,7 +3810,7 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 		
 				// Write data
 				val = *(p+i);
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3822,7 +3822,7 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -3834,7 +3834,7 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 				}
 
 				// Write data Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											(p+i),
 											*pdestGUID,
@@ -3858,7 +3858,7 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() )  ) {
 
 				// Write data
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -3869,7 +3869,7 @@ bool CCanalSuperWrapper::writeAbstractionFloat( wxWindow *pwnd,
 			}
 			else {
 
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -3943,7 +3943,7 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 				// Write index to string	
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
@@ -3952,7 +3952,7 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
@@ -3963,7 +3963,7 @@ bool CCanalSuperWrapper::getAbstractionDouble( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID ) ) {
@@ -4083,7 +4083,7 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 	
 				// Index = 0
 				val = i;
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4093,7 +4093,7 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 		
 				// Write data
 				val = *(p+i);
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4105,7 +4105,7 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 			
 				// Write index Level II
 				val = i;
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -4117,7 +4117,7 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 				}
 
 				// Write data Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											(p+i),
 											*pdestGUID,
@@ -4141,7 +4141,7 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 
 				// Write data
 				val = val = *(p+i);
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4151,7 +4151,7 @@ bool CCanalSuperWrapper::writetAbstractionDouble( wxWindow *pwnd,
 			}
 			else {
 
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -4224,7 +4224,7 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 				// Write index to string
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
@@ -4233,7 +4233,7 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 				}
 			
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
@@ -4244,7 +4244,7 @@ bool CCanalSuperWrapper::getAbstractionDate( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID ) ) {
@@ -4374,7 +4374,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 	
 				// Index = 0
 				val = i;
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4384,7 +4384,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 		
 				// Write data
 				val = *(p+i);
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4396,7 +4396,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 			
 				// Write index Level II
 				val = i;
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -4408,7 +4408,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 				}
 
 				// Write data Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											(p+i),
 											*pdestGUID,
@@ -4432,7 +4432,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 				// Write data
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4443,7 +4443,7 @@ bool CCanalSuperWrapper::writeAbstractionDate( wxWindow *pwnd,
 			}
 			else {
 
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -4514,7 +4514,7 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 				// Write index to string
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
@@ -4523,7 +4523,7 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
@@ -4534,7 +4534,7 @@ bool CCanalSuperWrapper::getAbstractionTime( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID ) ) {
@@ -4661,7 +4661,7 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 	
 				// Index = 0
 				val = i;
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4671,7 +4671,7 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 		
 				// Write data
 				val = *(p+i);
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4683,7 +4683,7 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 			
 				// Write index Level II
 				val = i;
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -4695,7 +4695,7 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 				}
 
 				// Write data Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset + i, 
 											(p+i),
 											*pdestGUID,
@@ -4719,7 +4719,7 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 				// Write data
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4730,7 +4730,7 @@ bool CCanalSuperWrapper::writeAbstractionTime( wxWindow *pwnd,
 			}
 			else {
 
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,
@@ -4804,7 +4804,7 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
 			if ( !bLevel2 && ( NULL == pifGUID || pifGUID->isNULL() ) ) {
 
 				// Write index to string
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset, 
 											&idx ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to write abstraction index!") );
@@ -4813,7 +4813,7 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
 				}
 
 				// Read value
-				if ( !readLevel1RegisterEx( nodeid, 
+				if ( !_readLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											(p+i) ) ) {
 					if ( !bSilent ) wxMessageBox( _("Failed to read indexed abstraction value!") );
@@ -4824,7 +4824,7 @@ bool CCanalSuperWrapper::getAbstractionGUID( wxWindow *pwnd,
 			else {
 			
 				// Write index Level II
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&idx,
 											*pdestGUID ) ) {
@@ -4946,7 +4946,7 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 	
 				// Index = 0
 				val = i;
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4956,7 +4956,7 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 		
 				// Write data
 				val = *(p+i);
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + 1, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4976,7 +4976,7 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 				
 				// Write data
 				val = val = *(p+i);
-				if ( !writeLevel1RegisterEx( nodeid, 
+				if ( !_writeLevel1Register( nodeid, 
 											abstraction->m_nOffset + i, 
 											&val ) ) {
 					if ( !bSilent ) wxMessageBox( _("Unable to write abstraction 16-bit integer!") );
@@ -4986,7 +4986,7 @@ bool CCanalSuperWrapper::writeAbstractionGUID( wxWindow *pwnd,
 			}
 			else {
 
-				if ( !writeLevel2Register( *pifGUID, 
+				if ( !_writeLevel2Register( *pifGUID, 
 											abstraction->m_nOffset, 
 											&val,
 											*pdestGUID,

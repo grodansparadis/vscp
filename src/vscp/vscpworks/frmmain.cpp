@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Mon 16 Apr 2007 18:19:49 CEST
 //       
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -204,7 +204,7 @@ void frmMain::CreateControls()
                         wxITEM_NORMAL);
     itemMenu3->AppendSeparator();
     itemMenu3->Append( ID_MENUITEM_SIMPLE_UI_DESIGNER, 
-                        _("VSCP Simple UI deigner..."), 
+                        _("VSCP Simple UI designer..."), 
                         wxEmptyString, 
                         wxITEM_NORMAL);
     itemMenu3->AppendSeparator();

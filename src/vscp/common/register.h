@@ -217,6 +217,12 @@ public:
     */
     uint8_t getValue( uint16_t page, uint8_t offset );
 
+
+    /*!
+        Set the value for a spcific register on a page
+    */
+    uint8_t setValue( uint16_t page, uint8_t offset, uint8_t value );
+
     /*!
         Get abstraction value as string
         @param abstraction Abstraction record from MDF
@@ -230,7 +236,10 @@ private:
     /*! 
         All registers are here in chuncks of 128 bytes
     */
-    uint8_t *m_reg;   
+    uint8_t *m_reg;  
+
+    /// Size for the register arrays
+    uint32_t m_size;
 
     // Array with vaid register pages
     wxArrayLong m_arrayPages;

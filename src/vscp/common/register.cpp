@@ -129,6 +129,7 @@ wxString CStandardRegisters::getFirmwareVersionString( void )
 	return str;
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //  getMDF
 // 
@@ -181,6 +182,8 @@ CUserRegisters::~CUserRegisters()
     if ( NULL != m_reg ) {
         delete [] m_reg;
     }
+
+    m_size = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -196,6 +199,8 @@ void CUserRegisters::init( wxArrayLong &pagesArray )
         delete [] m_reg;
     }
 
+
+    m_size = m_arrayPages.Count() * 128; 
     m_reg = new unsigned char [ m_arrayPages.Count() * 128 ];
 }
 
@@ -229,6 +234,19 @@ uint8_t CUserRegisters::getValue( uint16_t page, uint8_t offset )
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// setValue
+//
+
+uint8_t CUserRegisters::setValue( uint16_t page, uint8_t offset, uint8_t value )
+{
+    uint8_t *p;
+
+    if ( offset > 127 ) return 0;
+    if ( NULL == ( p = getRegs4Page( page ) ) ) return 0;
+
+    return ( p[offset] = value );
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //  getAbstractionValueAsString
@@ -293,49 +311,64 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 
 	case type_int16_t:
 		{
-			strValue.Printf( _("0x%04x"), *(pReg + pAbstraction->m_nOffset ) );
+            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            int16_t val = ( p[0] << 8 ) + p[1];
+			strValue.Printf( _("0x%04x"), val );
 		}
 		break;
 
 	case type_uint16_t:
 		{
-			strValue.Printf( _("0x%04x"), *(pReg + pAbstraction->m_nOffset ) );
+            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint16_t val = ( p[0] << 8 ) + p[1];
+			strValue.Printf( _("0x%04x"), val );
 		}
 		break;
 
 	case type_int32_t:
 		{
+            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            int32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
 			strValue.Printf( _("0x%08lx"), *(pReg + pAbstraction->m_nOffset ) );
 		}
 		break;
 
 	case type_uint32_t:
 		{
-			strValue.Printf( _("0x%08lx"), *(pReg + pAbstraction->m_nOffset ) );
+            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            uint32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
+			strValue.Printf( _("0x%08ulx"), val );
 		}
 		break;
 
 	case type_int64_t:
 		{
-			strValue.Printf( _("0x%llx"), *(pReg + pAbstraction->m_nOffset ) );
+            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            wxUINT64_SWAP_ON_LE( p );
+			strValue.Printf( _("0x%llx"), *p );
 		}
 		break;
 
 	case type_uint64_t:
 		{
-			strValue.Printf( _("0x%llx"), *(pReg + pAbstraction->m_nOffset ) );
+            uint8_t *p = pReg + pAbstraction->m_nOffset;
+            wxUINT64_SWAP_ON_LE( p );
+			strValue.Printf( _("0x%ullx"), *p );
 		}
 		break;
 
 	case type_float:
 		{
-			strValue.Printf( _("%f"), *(pReg + pAbstraction->m_nOffset ) );
+            float f = *((float *)(pReg + pAbstraction->m_nOffset )); 
+            wxINT32_SWAP_ON_BE( f );
+			strValue.Printf( _("%f"), f );
 		}
 		break;
 
 	case type_double:
 		{
-			strValue.Printf( _("%g"), *(pReg + pAbstraction->m_nOffset ) );
+            double f = *((double *)(pReg + pAbstraction->m_nOffset ));
+			strValue.Printf( _("%g"), f );
 		}
 		break;
 

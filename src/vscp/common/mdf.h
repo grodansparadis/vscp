@@ -680,7 +680,7 @@ public:
 		@param page Page top search for.
 		@return Pointer to CMDF_Register class if found else NULL.
 	*/
-	CMDF_Register *getMDFRegs( uint8_t reg, uint16_t page );
+	CMDF_Register *getMDFRegister( uint8_t reg, uint16_t page );
 
 
     wxString m_strLocale;                       // ISO code for requested language

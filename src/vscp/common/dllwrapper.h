@@ -274,6 +274,20 @@ public:
                                 unsigned char *pcontent );
 
     /*!
+        Read a number of registers
+        @param nodeid Node to read registers from
+        @param reg Start register to start to read from.
+        @param count Number of registers to read. Note: Max 128 bytes can be read!!!
+        @param pRegs Pointer to array rhat will get result
+        @return CANAL_ERROR_SUCCESS on success, error code on failure.
+    */
+    int readRegistersfromLevel1Device( unsigned char nodeid, 
+                                            unsigned short reg,
+                                            unsigned short page,
+                                            unsigned char count,
+                                            unsigned char *pRegs );
+
+    /*!
 	    Write level I register
 	    @param nodeid Nickname for node to write register on
         @param page Page to use
@@ -286,24 +300,8 @@ public:
 								unsigned char reg, 
 								unsigned char *pval );
 
-    /*!
-	    Load level I register content into an array
-	    @param pwnd Pointer to window (owner usually this) that called this method.
-	    @param pregisters Pointer to an array of 256 8-bit registers.
-	    @param nodeid nodeid The node whos registers should be read.
-	    @param bQuite No progress information if sett to true. (default is false)
-	    @param startreg First register to read. Default is 0.
-	    @param count Number of registers to read. Default is 256.
-        @param canalreginfo_callback_t Gives dynamic  information about operation
-	    @return true on success, false on failure.
-	*/
-	int readLevel1Registers( unsigned short page,
-								unsigned char *pregisters,
-								unsigned char nodeid,
-								unsigned char startreg = 0,
-								unsigned short count = 256,
-								unsigned long idCallback = 0,
-								canalreginfo_callback_t *pcallback = NULL );
+   
+
 
     /*!
         Read MDF information from a Level I device
@@ -313,19 +311,7 @@ public:
     */
     bool getMDFfromLevel1Device( unsigned char nodeid, wxString &strurl );
 
-    /*!
-        Read a number of registers
-        @param nodeid Node to read registers from
-        @param reg Start register to start to read from.
-        @param count Number of registers to read. Note: Max 128 bytes can be read!!!
-        @param pRegs Pointer to array rhat will get result
-        @return CANAL_ERROR_SUCCESS on success, error code on failure.
-    */
-    int getRegistersfromLevel1Device( unsigned char nodeid, 
-                                            unsigned short reg,
-                                            unsigned short page,
-                                            unsigned char count,
-                                            unsigned char *pRegs );
+    
 
 protected:
 

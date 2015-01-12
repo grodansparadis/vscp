@@ -485,7 +485,7 @@ public:
     wxGrid* m_gridAbstractions;
     wxGrid* m_gridDM;
     wxHtmlWindow* m_StatusWnd;
-    wxCheckBox* m_chkFullUppdate;
+    wxCheckBox* m_chkFullUpdate;
     wxCheckBox* m_chkMdfFromFile;
     wxButton* m_ctrlButtonLoadMDF;
     wxButton* m_ctrlButtonWizard;

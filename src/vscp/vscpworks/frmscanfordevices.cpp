@@ -582,7 +582,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
     wxString url;
     wxTreeItemId newitem;
 
-    ::wxBeginBusyCursor();
+    wxBusyCursor wait;
     
     bSlowAlgorithm = m_slowAlgorithm->GetValue();
     
@@ -655,11 +655,12 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
                 cguid destguid;
                 destguid.setLSB(i);
-                if (m_csw.readLevel2Register(m_ifguid,
-                        0xd0,
-                        &val,
-                        &destguid,
-                        &progressDlg)) {
+                if ( CANAL_ERROR_SUCCESS ==  
+                    m_csw.getTcpIpInterface()->readLevel2Register( 0xd0,
+                                                                    0,
+                                                                    &val,
+                                                                    m_ifguid,
+                                                                    &destguid ) ) {
 
                     newitem = m_DeviceTree->AppendItem(rootItem, wxString::Format(_("Node with nickname=%d"), i));
                     m_DeviceTree->ExpandAll();
@@ -770,9 +771,9 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 			} // while
 
 		
-		} // CANAL
+		} // TCP/IP
 		else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
-            
+           
 			// Read register at all nodes.
 			for ( uint8_t i = scanFrom; i < scanTo; i++ ) {
             
@@ -820,9 +821,9 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
             
 				progressDlg.Pulse( wxString::Format(_("Found %d"), found_list.size()));
 
-				if (m_csw.doCmdDataAvailable()) { // Message available
+				if ( m_csw.doCmdDataAvailable() ) { // Message available
 
-					if (CANAL_ERROR_SUCCESS == m_csw.doCmdReceive(&eventex)) { // Valid event
+					if ( CANAL_ERROR_SUCCESS == m_csw.doCmdReceive( &eventex ) ) { // Valid event
                     
 #if 0                    
 							{
@@ -834,7 +835,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 #endif                    
 
 						// Level I Read reply?
-						if (/*ifGUID.isNULL() &&*/ (VSCP_CLASS1_PROTOCOL == eventex.vscp_class) &&
+						if ( ( VSCP_CLASS1_PROTOCOL == eventex.vscp_class ) &&
 								(VSCP_TYPE_PROTOCOL_RW_RESPONSE == eventex.vscp_type)) {
 							if (eventex.data[ 0 ] == 0xd0) { // Requested register?
 								// Add nickname to list 
@@ -876,7 +877,7 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 				} //Event is available
 
-				if ((::wxGetLocalTimeMillis() - resendTime) > 1000 ) {
+				if ((::wxGetLocalTimeMillis() - resendTime) > 3000 ) {
 
 					// Take away duplicates
 					found_list.unique();
@@ -914,9 +915,9 @@ void frmScanforDevices::OnButtonScanClick(wxCommandEvent& event)
 
 error:
 
-    ::wxEndBusyCursor();
-
+    Raise();
     event.Skip(false);
+   
 }
 
 
@@ -941,7 +942,7 @@ void frmScanforDevices::OnTreeDeviceItemRightClick(wxTreeEvent& event)
 // OnLeftDClick
 //
 
-void frmScanforDevices::OnLeftDClick(wxMouseEvent& event)
+void frmScanforDevices::OnLeftDClick( wxMouseEvent& event )
 {
 
     event.Skip(false);
@@ -951,10 +952,12 @@ void frmScanforDevices::OnLeftDClick(wxMouseEvent& event)
 // getNodeInfo
 //
 
-void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
+void frmScanforDevices::getNodeInfo( wxCommandEvent& event )
 {
     CMDF mdf;
     wxString url;
+
+    wxBusyCursor wait;
 
     scanElement *pElement =
             (scanElement *) m_DeviceTree->GetItemData(m_DeviceTree->GetSelection());
@@ -969,57 +972,64 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
 
 		if (INTERFACE_CANAL == m_interfaceType) {
 		
-			bool bregs = m_csw.readLevel1Registers( this,
-														pElement->m_reg,
-														pElement->m_nodeid,
-														0,
-														256,
-														&progressDlg );
+            if ( CANAL_ERROR_SUCCESS == 
+                m_csw.getDllInterface()->readRegistersfromLevel1Device( pElement->m_nodeid, 
+                                                                            0x80,   // strat reg
+                                                                            0,      // page
+                                                                            128,    // count
+                                                                            pElement->m_reg + 0x80 ) ) {
 		
-			uint8_t preg_url[33];
-		    memset( preg_url, 0, sizeof(preg_url));
-			memcpy( preg_url, pElement->m_reg + 0xe0, 32 );
-			bool bmdf = m_csw.loadMDF( this,
-				                        preg_url,
-					                    url,
-						                &mdf );
+			    uint8_t preg_url[33];
+		        memset( preg_url, 0, sizeof(preg_url));
+			    memcpy( preg_url, pElement->m_reg + 0xe0, 32 );
+			    bool bmdf = m_csw.loadMDF( this,
+			    	                        preg_url,
+				    	                    url,
+					    	                &mdf );
                 
-			pElement->m_html = vscp_getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
-			m_htmlWnd->SetPage(pElement->m_html);
+			    pElement->m_html = vscp_getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
+			    m_htmlWnd->SetPage(pElement->m_html);
         
-			// Mark as loaded
-			if ( bregs ) pElement->m_bLoaded = true;
+			    // Mark as loaded
+			    pElement->m_bLoaded = true;
+
+            }
+            else {
+                wxMessageBox(_("Failed to read registers!"));
+            }
 
 		} 
         else if (INTERFACE_VSCP == m_interfaceType) {
         
 			cguid destguid;
 			destguid.setLSB( pElement->m_nodeid );
-        
-			bool bregs = m_csw.readLevel2Registers( this,
-				                                        pElement->m_reg,
-					                                    m_ifguid,
-						                                0,
-							                            256,
-								                        &destguid,
-									                    &progressDlg,
-										                false );
-            // If read fails abort
-            if (!bregs) return;
 
-	        uint8_t preg_url[33];
-		    memset( preg_url, 0, sizeof(preg_url));
-			memcpy( preg_url, pElement->m_reg + 0xe0, 32 );
-			bool bmdf = m_csw.loadMDF( this,
-				                        preg_url,
-					                    url,
-						                &mdf );
+            if ( CANAL_ERROR_SUCCESS == 
+                    m_csw.getTcpIpInterface()->readLevel2Registers( 0x80,       // reg
+                                                                        0,      // Page
+												                        128,    // count
+                                                                        pElement->m_reg + 0x80,
+                                                                        m_ifguid,
+												                        &destguid,
+												                        false ) ) {
+	            uint8_t preg_url[33];
+		        memset( preg_url, 0, sizeof(preg_url));
+			    memcpy( preg_url, pElement->m_reg + 0xe0, 32 );
+			    bool bmdf = m_csw.loadMDF( this,
+				                            preg_url,
+					                        url,
+						                    &mdf );
                 
-			pElement->m_html = vscp_getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
-			m_htmlWnd->SetPage(pElement->m_html);
+			    pElement->m_html = vscp_getDeviceHtmlStatusInfo( pElement->m_reg, bmdf ? &mdf : NULL );
+			    m_htmlWnd->SetPage(pElement->m_html);
         
-			// Mark as loaded
-			if ( bregs ) pElement->m_bLoaded = true;
+			    // Mark as loaded
+			    pElement->m_bLoaded = true;
+
+            }
+            else {
+                wxMessageBox(_("Failed to read registers!"));
+            }
 
 		}
 
@@ -1032,14 +1042,16 @@ void frmScanforDevices::getNodeInfo(wxCommandEvent& event)
 // openConfiguration
 //
 
-void frmScanforDevices::openConfiguration(wxCommandEvent& event)
+void frmScanforDevices::openConfiguration( wxCommandEvent& event )
 {
+    wxBusyCursor wait;
+    
     frmDeviceConfig *subframe = new frmDeviceConfig(this, 2000, _("VSCP Configuration window"));
 
     if (INTERFACE_CANAL == m_interfaceType) {
 
         // Hide the Level II checkbox
-        subframe->m_bLevel2->Show(false);
+        subframe->m_bLevel2->Show( false );
 
         // Init node id combo
         wxRect rc = subframe->m_comboNodeID->GetRect();
@@ -1047,21 +1059,23 @@ void frmScanforDevices::openConfiguration(wxCommandEvent& event)
         subframe->m_comboNodeID->SetSize(rc);
 
         for (int i = 1; i < 256; i++) {
-            subframe->m_comboNodeID->Append(wxString::Format(_("0x%02x"), i));
+            subframe->m_comboNodeID->Append( wxString::Format(_("0x%02x"), i) );
         }
 
-        subframe->m_comboNodeID->SetValue(_("0x01"));
-        subframe->SetTitle(_("VSCP Registers (CANAL) - ") +
-                m_canalif.m_strDescription);
+        subframe->m_comboNodeID->SetValue( _("0x01") );
+        subframe->SetTitle( _("VSCP Registers (CANAL) - ") +
+                                m_canalif.m_strDescription );
 
-        subframe->m_csw.setInterface(m_canalif.m_strDescription,
-                m_canalif.m_strPath,
-                m_canalif.m_strConfig,
-                m_canalif.m_flags, 0, 0);
+        subframe->m_csw.setInterface( m_canalif.m_strDescription,
+                                        m_canalif.m_strPath,
+                                        m_canalif.m_strConfig,
+                                        m_canalif.m_flags, 
+                                        0, 
+                                        0 );
 
         scanElement *pElement =
                 (scanElement *) m_DeviceTree->GetItemData(m_DeviceTree->GetSelection());
-        if (NULL != pElement) {
+        if ( NULL != pElement ) {
             subframe->m_comboNodeID->SetSelection(pElement->m_nodeid - 1);
         }
 
@@ -1073,19 +1087,19 @@ void frmScanforDevices::openConfiguration(wxCommandEvent& event)
 
         // subframe->OnInterfaceActivate( ev );
         wxCommandEvent ev;
-        subframe->OnButtonUpdateClick(ev);
+        subframe->OnButtonUpdateClick( ev );
 
         // Move window on top
         subframe->Raise();
 
         // Show the VSCP configuration windows
-        subframe->Show(true);
+        subframe->Show( true );
 
         // Close the scan window
-        Show(false);
+        Show( false );
 
     } 
-    else if (INTERFACE_VSCP == m_interfaceType) {
+    else if ( INTERFACE_VSCP == m_interfaceType ) {
 
         wxString str;
         unsigned char GUID[16];
@@ -1094,16 +1108,16 @@ void frmScanforDevices::openConfiguration(wxCommandEvent& event)
         // Fill the combo
         for (int i = 1; i < 256; i++) {
             GUID[0] = i;
-            vscp_writeGuidArrayToString(GUID, str);
-            subframe->m_comboNodeID->Append(str);
+            vscp_writeGuidArrayToString( GUID, str );
+            subframe->m_comboNodeID->Append( str );
         }
 
         GUID[0] = 0x01;
         vscp_writeGuidArrayToString(GUID, str);
         subframe->m_comboNodeID->SetValue(str);
 
-        subframe->SetTitle(_("VSCP Registers (TCP/IP)- ") +
-                m_vscpif.m_strDescription);
+        subframe->SetTitle( _("VSCP Registers (TCP/IP)- ") +
+                                m_vscpif.m_strDescription);
 
         // If server username is given and no password is entered we ask for it.
         if (m_vscpif.m_strPassword.IsEmpty() &&
@@ -1114,9 +1128,9 @@ void frmScanforDevices::openConfiguration(wxCommandEvent& event)
         }
 
         //subframe->m_csw = m_interfaceType;
-        subframe->m_csw.setInterface(m_vscpif.m_strHost,
-                m_vscpif.m_strUser,
-                m_vscpif.m_strPassword);
+        subframe->m_csw.setInterface( m_vscpif.m_strHost,
+                                        m_vscpif.m_strUser,
+                                        m_vscpif.m_strPassword );
 
         // Connect to host
         subframe->enableInterface();
@@ -1165,7 +1179,8 @@ void frmScanforDevices::OnHtmlwindow3LinkClicked(wxHtmlLinkEvent& event)
 // fetchIterfaceGUID
 //
 
-bool frmScanforDevices::fetchIterfaceGUID(void) {
+bool frmScanforDevices::fetchIterfaceGUID(void) 
+{
     wxString str;
 
     if (!m_csw.isOpen()) {
@@ -1210,10 +1225,12 @@ bool frmScanforDevices::fetchIterfaceGUID(void) {
 
             }
 
-        } else {
+        } 
+        else {
             wxMessageBox(_("No interfaces found."));
         }
-    } else {
+    } 
+    else {
         wxMessageBox(_("Unable to get interface list from VSCP daemon."));
     }
 

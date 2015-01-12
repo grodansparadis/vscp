@@ -747,9 +747,9 @@ void frmVSCPSession::CreateControls()
     m_BtnActivateInterface->SetValue(true);
     if (frmVSCPSession::ShowToolTips())
         m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
-    m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
-    m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
-    m_BtnActivateInterface->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
+    //m_BtnActivateInterface->SetForegroundColour(wxColour(255, 255, 255));
+    //m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
+    //m_BtnActivateInterface->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
     itemToolBar2->AddControl(m_BtnActivateInterface);
     itemToolBar2->Realize();
     itemFrame1->SetToolBar(itemToolBar2);
@@ -1054,7 +1054,7 @@ wxIcon frmVSCPSession::GetIconResource(const wxString& name)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SESSION_EXIT
+// OnMenuitemVscpSessionExitClick
 //
 
 void frmVSCPSession::OnMenuitemVscpSessionExitClick(wxCommandEvent& event)
@@ -1065,7 +1065,7 @@ void frmVSCPSession::OnMenuitemVscpSessionExitClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_GRID_SELECT_CELL event handler for ID_CtrlGridReceive
+// OnSelectCell
 //
 
 void frmVSCPSession::OnSelectCell(wxGridEvent& event)
@@ -1075,7 +1075,7 @@ void frmVSCPSession::OnSelectCell(wxGridEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOAD_MSG_LIST
+// LoadRXEventList
 //
 
 void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
@@ -1236,7 +1236,7 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SAVE_MSG_LIST
+// SaveRXEventList
 //
 
 void frmVSCPSession::SaveRXEventList(wxCommandEvent& event)
@@ -1352,7 +1352,7 @@ void frmVSCPSession::SaveRXEventList(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_GRID_TRANSMISSION
+// OnCellReceiveLeftClick
 //
 
 void frmVSCPSession::OnCellReceiveLeftClick(wxGridEvent& event)

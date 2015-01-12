@@ -61,6 +61,12 @@
 */
 #define DEFAULT_RESPONSE_TIMEOUT 		2
 
+// Default values for read/write register functions
+// used in device config and scan.
+#define SW_REGISTER_READ_RESEND_TIMEOUT		5000
+#define SW_REGISTER_READ_ERROR_TIMEOUT		2000
+#define SW_REGISTER_READ_MAX_TRIES			3
+
 /*!
 	\def TCPIP_DLL_VERSION
 	Pseudo version string
@@ -715,14 +721,15 @@ public:
                                 bool bLevel2 = false );
 
     /*!
-	Load level II register content into an array
-    @param reg First register to read..
-	@param count Number of registers to read (max 128 bytes).
-    @param page Page to read from.
-	@param pregisters Pointer to an array of count 8-bit registers.
-	@param pinterfaceGUID GUID for interface to do read on.
-	@param pdestGUID GUID for remote node.	
-	@return CANAL_ERROR_SUCCESS on success, errocode on failure.d
+	    Load level II register content into an array
+        @param reg First register to read..
+	    @param count Number of registers to read (max 128 bytes).
+        @param page Page to read from.
+	    @param pregisters Pointer to an array of count 8-bit registers.
+	    @param pinterfaceGUID GUID for interface to do read on.
+	    @param pdestGUID GUID for remote node.	
+        @param bLevel2 True for a true Level II device.
+	    @return CANAL_ERROR_SUCCESS on success, errocode on failure.
 	*/
 
 	int readLevel2Registers( uint32_t reg,
@@ -732,6 +739,22 @@ public:
                                 cguid& ifGUID,
 	                            cguid *pdestGUID = NULL,
 	                            bool bLevel2 = false );
+
+    /*!
+	    Write a level 2 register
+        @param reg Register to write.
+	    @param pval Pointer to data to write. Return read data.
+        @param interfaceGUID GUID for interface where devices sits whos register
+	            should be read with byte 0 set to nickname id for the device.
+        @param pdestGUID GUID for remote node.	
+    	@return CANAL_ERROR_SUCCESS on success, errocode on failure.
+	*/    
+	int writeLevel2Register( uint32_t reg,
+                                uint16_t page, 
+								uint8_t *pval,
+                                cguid& ifGUID,
+								cguid *pdestGUID = NULL,
+								bool bLevel2 = false );
 
     /*!
 	    Get MDf file from device registers
