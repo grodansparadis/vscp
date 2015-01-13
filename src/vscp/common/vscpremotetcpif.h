@@ -58,7 +58,7 @@
 	Default response timeout for communication with the
 	tcp/ip interface of the daemon in seconds
 */
-#define DEFAULT_RESPONSE_TIMEOUT 		    3
+#define DEFAULT_RESPONSE_TIMEOUT				3
 
 // Default values for read/write register functions
 // used in device config and scan.
@@ -123,7 +123,7 @@ public:
     /// Run as long as true
     bool m_bRun;
 
-    /// Hostname to conect to
+    /// Hostname to connect to
     wxString m_hostname;
 
     /// net_skeleton structure
