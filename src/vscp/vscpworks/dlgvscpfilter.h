@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Thu 25 Oct 2007 22:17:45 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -38,7 +38,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+// 
 
 #ifndef _DLGVSCPFILTER_H_
 #define _DLGVSCPFILTER_H_
@@ -55,7 +55,7 @@
 #include "dlgvscpfilter_symbols.h"
 ////@end includes
 
-#include "../common/vscp.h"
+#include <vscp.h>
 
 /*!
  * Forward declarations

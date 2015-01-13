@@ -1,6 +1,6 @@
 // FILE: mdf.cpp
 //
-// Copyright (C) 2002-2014 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2002-2015 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -51,10 +51,10 @@
 #include <wx/url.h>
 #include <wx/listimpl.cpp>
 
-#include "canal.h"
-#include "vscp.h"
-#include "vscphelper.h"
-#include "mdf.h"
+#include <canal.h>
+#include <vscp.h>
+#include <vscphelper.h>
+#include <mdf.h>
 
 WX_DEFINE_LIST( MDF_VALUE_LIST );
 WX_DEFINE_LIST( MDF_ABSTRACTION_LIST );

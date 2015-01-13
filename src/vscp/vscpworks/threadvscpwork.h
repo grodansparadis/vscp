@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Mon 31 May 2007 17:00:07 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence: 
 // 
@@ -18,7 +18,7 @@
 #include "wx/thread.h"
 #include "wx/socket.h"
 
-#include "../common/vscpremotetcpif.h"
+#include <vscpremotetcpif.h>
 #include "frmvscpsession.h"
 
 /*!

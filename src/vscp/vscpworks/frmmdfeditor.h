@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     09/04/2009 11:05:11
 // RCS-ID:      
-// Copyright:   (C) 2009-2014 
+// Copyright:   (C) 2009-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+// 
 
 #ifndef _FRMMDFEDITOR_H_
 #define _FRMMDFEDITOR_H_
@@ -59,7 +59,7 @@
 
 #include <wx/imaglist.h>
 
-#include "../common/mdf.h"
+#include <mdf.h>
 
 
 // Picture types for the tree control

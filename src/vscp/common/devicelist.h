@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -47,11 +47,11 @@
 
 #endif
 
-#include "../common/canaldlldef.h"
+#include "canaldlldef.h"
 
 //#include "controlobject.h"
 #include "vscpdlldef.h"
-#include "../../common/dllist.h"
+#include "common/dllist.h"
 #include "clientlist.h"
 #include "devicethread.h"
 

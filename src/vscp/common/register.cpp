@@ -1,6 +1,6 @@
 // FILE: register.h
 //
-// Copyright (C) 2012-2014 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2012-2015 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -51,11 +51,11 @@
 #include <wx/url.h>
 #include <wx/listimpl.cpp>
 
-#include "canal.h"
-#include "vscp.h"
-#include "vscphelper.h"
-#include "mdf.h"
-#include "register.h"
+#include <canal.h>
+#include <vscp.h>
+#include <vscphelper.h>
+#include <mdf.h>
+#include <register.h>
 
 
 ///////////////////////////////////////////////////////////////////////////////

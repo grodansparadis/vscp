@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     24/10/2012 14:35:37
 // RCS-ID:      
-// Copyright:   (C) 2012-2014 
+// Copyright:   (C) 2012-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  eurosource at info@eurosource.se, http://www.eurosource.se
-/////////////////////////////////////////////////////////////////////////////
+// 
 
 #ifndef _FRMSIMPLEUSERINTERFACEGENERATOR_H_
 #define _FRMSIMPLEUSERINTERFACEGENERATOR_H_

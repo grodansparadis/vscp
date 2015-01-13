@@ -65,7 +65,7 @@
 #include "frmdeviceconfig.h"
 #include "frmscanfordevices.h"
 #include "dlgconfiguration.h"
-#include "mdf.h"
+#include <mdf.h>
 #include "dlgabout.h"
 #include "frmmdfeditor.h"
 #include "devicebootloaderwizard.h"

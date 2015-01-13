@@ -1,6 +1,6 @@
 // FILE: vscphelper.cpp
 //
-// Copyright (C) 2002-2014 
+// Copyright (C) 2002-2015 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is free software; you can redistribute it and/or
@@ -54,10 +54,10 @@
 #include <sys/types.h>
 #endif
 
-#include "vscp.h"
-#include "../common/mdf.h"
-#include "../../common/crc8.h"
-#include "vscphelper.h"
+#include <vscp.h>
+#include <mdf.h>
+#include <crc8.h>
+#include <vscphelper.h>
 
 
 #define Swap8Bytes(val) \

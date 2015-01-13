@@ -4,7 +4,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
+// Copyright (C) 2000-2015 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
@@ -53,7 +53,7 @@ events.
 // Default values for read/write register functions
 // used in device config and scan.
 #define SW_REGISTER_READ_RESEND_TIMEOUT		5000
-#define SW_REGISTER_READ_ERROR_TIMEOUT		2000
+#define SW_REGISTER_READ_ERROR_TIMEOUT		4000
 #define SW_REGISTER_READ_MAX_TRIES			3
 
 /*!@{

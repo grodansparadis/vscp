@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     16/12/2009 22:26:10
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef _DEVICEBOOTLOADERWIZARD_H_
 #define _DEVICEBOOTLOADERWIZARD_H_
@@ -55,8 +55,8 @@
 #include "wx/html/htmlwin.h"
 ////@end includes
 
-#include "../common/canalsuperwrapper.h"
-#include "../common/mdf.h"
+#include "canalsuperwrapper.h"
+#include "mdf.h"
 
 #include "bootdevice.h"
 #include "bootdevice_pic1.h"
@@ -148,8 +148,8 @@ public:
     CBootDevice *m_pBootCtrl;
 
     /*!
-    The wrapper for the CANAL 
-    functionality.
+        The wrapper for the CANAL 
+        functionality.
     */
     CCanalSuperWrapper m_csw;
 
@@ -160,12 +160,12 @@ public:
     bool m_bHexFileLoaded;
 
     /*!
-    Flag to indicate thet the mdf has been fetched.
+        Flag to indicate thet the mdf has been fetched.
     */
     bool m_bMDFLoaded;
 
     /*!
-    MDF informaton for node under bootload.
+        MDF informaton for node under bootload.
     */
     CMDF m_mdf;
 

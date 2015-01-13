@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     16/12/2009 22:26:09
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //				(C) 2012 Dinesh Guleria
 // Licence:     
@@ -38,7 +38,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 
 #pragma once
@@ -47,7 +47,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../common/vscp.h"
+#include "vscp.h"
 
 #include <wx/string.h>
 

@@ -48,8 +48,8 @@
 #include <wx/listimpl.cpp>
 #include <wx/event.h>
 
-#include "vscp.h"
-#include "vscpremotetcpif.h"
+#include <vscp.h>
+#include <vscpremotetcpif.h>
 
 WX_DEFINE_LIST( EVENT_RX_QUEUE );
 WX_DEFINE_LIST( EVENT_TX_QUEUE );
@@ -210,9 +210,9 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
     m_psemInputArray = new wxSemaphore( 0, 1 ); // not signaled, max=1
 
     // Init. register read parameters
-	m_registerReadErrorTimeout = SW_REGISTER_READ_ERROR_TIMEOUT;
-	m_registerReadResendTimeout = SW_REGISTER_READ_RESEND_TIMEOUT;
-	m_registerReadMaxRetries = SW_REGISTER_READ_MAX_TRIES;
+	m_registerReadErrorTimeout = TCPIP_REGISTER_READ_ERROR_TIMEOUT;
+	m_registerReadResendTimeout = TCPIP_REGISTER_READ_RESEND_TIMEOUT;
+	m_registerReadMaxRetries = TCPIP_REGISTER_READ_MAX_TRIES;
 }
 
 

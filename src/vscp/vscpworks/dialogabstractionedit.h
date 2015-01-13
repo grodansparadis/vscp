@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     26/05/2009 20:48:56
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  D of Scandinavia at info@dofscandinavia.com, http://www.dofscandinavia.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef _DIALOGABSTRACTIONEDIT_H_
 #define _DIALOGABSTRACTIONEDIT_H_
@@ -50,7 +50,7 @@
  * Includes
  */
 
-#include "../common/mdf.h"
+#include "mdf.h"
 
 ////@begin includes
 ////@end includes

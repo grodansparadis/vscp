@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Fri 26 Oct 2007 11:57:04 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+// 
 
 #ifndef _DLGVSCPINTERFACESETTINGS_H_
 #define _DLGVSCPINTERFACESETTINGS_H_
@@ -54,7 +54,7 @@
 #include "wx/propdlg.h"
 ////@end includes
 
-#include "../common/vscp.h"
+#include <vscp.h>
 
 /*!
  * Forward declarations

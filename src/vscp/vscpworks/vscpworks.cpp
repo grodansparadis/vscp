@@ -5,7 +5,7 @@
 // Modified by:
 // Created:     Thu 28 Jun 2007 10:05:16 CEST
 // RCS-ID:
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:
 // This program is free software; you can redistribute it and/or
@@ -86,12 +86,12 @@
 
 // This file links platform dependent stuff
 #include "platform.h"
-#include "../common/vscp.h"
-#include "../common/vscphelper.h"
-#include "../common/vscpeventhelper.h"
-#include "../common/mdf.h"
-#include "../common/vscp_class.h"
-#include "../common/vscp_type.h"
+#include <vscp.h>
+#include <vscphelper.h>
+#include <vscpeventhelper.h>
+#include <mdf.h>
+#include <vscp_class.h>
+#include <vscp_type.h>
 #include "vscpworks.h"
 
 canal_nodeinfo g_nodesCANAL[ MAX_NUMBER_OF_NODES ];

@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Thu 28 Jun 2007 10:05:16 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+// 
 
 #ifndef _VSCPWORKS_H_
 #define _VSCPWORKS_H_
@@ -55,9 +55,9 @@
 #include "frmmain.h"
 ////@end includes
 
-#include "../common/vscp.h"
-#include "../common/canalsuperwrapper.h"
-#include "../common/mdf.h"
+#include <vscp.h>
+#include <canalsuperwrapper.h>
+#include <mdf.h>
 
 /*!
  * Forward declarations

@@ -4,7 +4,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://can.sourceforge.net)
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
@@ -26,19 +26,9 @@
 #if !defined(AFX_GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
 #define AFX_GUID_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
-#ifdef VSCP_QT
-
-#include <QString>
-#include <QStringList>
-
-#else
-
 #include "wx/wx.h"
 
-#endif
-
-
-#include "vscp.h"
+#include <vscp.h>
 
 class cguid  
 {

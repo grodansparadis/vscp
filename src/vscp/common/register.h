@@ -1,6 +1,6 @@
 // FILE: register.h
 //
-// Copyright (C) 2012-2014 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2012-2015 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,11 +22,11 @@
 #define _REGISTER_H_
 
 #include "wx/wx.h"
-#include "vscp.h"
-#include "vscp_class.h"
-#include "vscp_type.h"
-#include "canal.h"
-#include "guid.h"
+#include <vscp.h>
+#include <vscp_class.h>
+#include <vscp_type.h>
+#include <canal.h>
+#include <guid.h>
 
 /*!
     \class CDecisionMatrix

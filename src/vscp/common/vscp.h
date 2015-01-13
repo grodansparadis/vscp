@@ -1,6 +1,6 @@
 // FILE: vscp.h 
 //
-// Copyright (C) 2000-2014 Ake Hedman akhe@grodansparadis.com 
+// Copyright (C) 2000-2015 Ake Hedman akhe@grodansparadis.com 
 //
 // This software is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -26,10 +26,10 @@
 #ifndef _VSCP_H_
 #define _VSCP_H_
 
-#include "vscp_class.h"
-#include "vscp_type.h"
-#include "canal.h"
-#include "../../common/crc.h"
+#include <vscp_class.h>
+#include <vscp_type.h>
+#include <canal.h>
+#include <crc.h>
 
 #ifndef WIN32
 #include <stdint.h>

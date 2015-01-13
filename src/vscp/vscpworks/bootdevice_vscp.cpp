@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     16/12/2009 22:26:09
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //				(C) 2012 Dinesh Guleria
 // Licence:     
@@ -38,7 +38,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+///
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "devicebootloaderwizard.h"
@@ -65,7 +65,7 @@
 #include "bootdevice_vscp.h"
 
 #define CRC16
-#include "../../common/crc.h"
+#include "crc.h"
 
 CBootDevice_VSCP::CBootDevice_VSCP(CCanalSuperWrapper *pcsw, cguid &guid) :
 CBootDevice(pcsw, guid) {

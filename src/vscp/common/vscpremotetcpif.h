@@ -37,12 +37,11 @@
 #define AFX_VSCPTCPIF_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
 
-#include "canal.h"
-#include "vscp.h"
-#include "guid.h"
-#include "vscphelper.h"
+#include <canal.h>
+#include <vscp.h>
+#include <guid.h>
+#include <vscphelper.h>
 
-//#include "../../common/net_skeleton.h"
 #include <fossa.h>
 #include "wx/datetime.h"
 
@@ -57,15 +56,15 @@
 /*! 
 	\def DEFAULT_RESPONSE_TIMEOUT
 	Default response timeout for communication with the
-	tcp/ip interface
+	tcp/ip interface of the daemon in seconds
 */
-#define DEFAULT_RESPONSE_TIMEOUT 		2
+#define DEFAULT_RESPONSE_TIMEOUT 		    3
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define SW_REGISTER_READ_RESEND_TIMEOUT		5000
-#define SW_REGISTER_READ_ERROR_TIMEOUT		2000
-#define SW_REGISTER_READ_MAX_TRIES			3
+#define TCPIP_REGISTER_READ_RESEND_TIMEOUT		5000
+#define TCPIP_REGISTER_READ_ERROR_TIMEOUT		4000
+#define TCPIP_REGISTER_READ_MAX_TRIES			3
 
 /*!
 	\def TCPIP_DLL_VERSION

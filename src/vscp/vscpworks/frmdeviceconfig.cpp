@@ -72,10 +72,10 @@
 #include <wx/html/htmlcell.h>
 
 #include "vscpworks.h"
-#include "canal.h"
-#include "vscp.h"
-#include "vscphelper.h"
-#include "mdf.h"
+#include <canal.h>
+#include <vscp.h>
+#include <vscphelper.h>
+#include <mdf.h>
 #include "dlgabout.h"
 #include "dialogeditlevelidmrow.h"
 #include "dialogabstractionedit.h"
@@ -1068,11 +1068,11 @@ bool frmDeviceConfig::writeChangedLevel1Registers(unsigned char nodeid)
 
         if ( *wxRED == m_gridRegisters->GetCellTextColour(i, 2) ) {
 
-            progressDlg.Pulse( wxString::Format(_("Writing register %d"), i) );
-
             reg = getRegFromCell(i);
             page = getPageFromCell(i);
             val = vscp_readStringValue( m_gridRegisters->GetCellValue(i, 2 )); 
+
+            progressDlg.Pulse (wxString::Format(_("Writing register %d:%d"), page, reg ) );
             
             if ( CANAL_ERROR_SUCCESS == m_csw.getDllInterface()->writeLevel1Register(nodeid, page, reg, &val ) ) {
 
@@ -1119,7 +1119,7 @@ bool frmDeviceConfig::writeChangedLevel2Registers(void)
     uint16_t page;
 
     wxProgressDialog progressDlg( _("VSCP Works"),
-                                    _("Writing Registers"),
+                                    _("Writing modified registers"),
                                     m_gridRegisters->GetNumberRows()+1,
                                     this,
                                     wxPD_ELAPSED_TIME |
@@ -1131,7 +1131,7 @@ bool frmDeviceConfig::writeChangedLevel2Registers(void)
     // Write data from changed registers
     // *********************************
 
-    progressDlg.Pulse(_("Writing changed registers!"));
+    progressDlg.Pulse(_("Looking for changed registers..."));
 
     // Get the destination GUID
     cguid destGUID;
@@ -1158,14 +1158,14 @@ bool frmDeviceConfig::writeChangedLevel2Registers(void)
 
         if (*wxRED == m_gridRegisters->GetCellTextColour(i, 2)) {
 
-            progressDlg.Pulse(wxString::Format(_("Writing register %d"), i));
-
             reg = getRegFromCell(i);
             page = getPageFromCell(i);
 
+            progressDlg.Pulse (wxString::Format(_("Writing register %d:%d"), page, reg ) );
+
             val = vscp_readStringValue(m_gridRegisters->GetCellValue(i, 2));
 
-            if ( CANAL_ERROR_SUCCESS == 
+            if ( VSCP_ERROR_SUCCESS == 
                     m_csw.getTcpIpInterface()->writeLevel2Register( reg,
                                                                         page,
                                                                         &val,
@@ -3134,7 +3134,7 @@ void frmDeviceConfig::fillStandardRegisters()
 // OnButtonUpdateClick
 //
 
-void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event) 
+void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event ) 
 {
     
     wxString strPath;
@@ -3334,7 +3334,7 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
 
             // Read standard registers           
             progressDlg.Update( 10, _("Reading standard registers of device 1/8.")); 
-            if ( CANAL_ERROR_SUCCESS != 
+            if ( VSCP_ERROR_SUCCESS != 
                 m_csw.getTcpIpInterface()->readLevel2Registers( m_bLevel2->GetValue() ? 0xFFFFFF80 : 0x80,
                                                                     0,      // page
                                                                     128,    // count
@@ -3401,7 +3401,7 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
                 wxString str = wxString::Format( _("Fetching user regsisters for page %d 4/8"), pageArray[i] );
                 progressDlg.Update( 30, str );
 
-                if ( CANAL_ERROR_SUCCESS != 
+                if ( VSCP_ERROR_SUCCESS != 
                     m_csw.getTcpIpInterface()->readLevel2Registers( 0,                  // From reg=0
                                                                     pageArray[i],       // page
                                                                     128,                // count
@@ -3510,7 +3510,7 @@ void frmDeviceConfig::OnButtonUpdateClick(wxCommandEvent& event)
         progressDlg.Update( 100, _("Done.") );
 
     }            
-    // next read
+    // update
     else {
 
         if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
@@ -3709,7 +3709,7 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
                     cguid destGUID;
                     destGUID.getFromString(m_comboNodeID->GetValue());
 
-                    if ( CANAL_ERROR_SUCCESS == 
+                    if ( VSCP_ERROR_SUCCESS == 
                         m_csw.getTcpIpInterface()->readLevel2Registers( reg,
                                                                             page,
 	                                                                        1,
@@ -3833,7 +3833,7 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
-                        if ( CANAL_ERROR_SUCCESS == 
+                        if ( VSCP_ERROR_SUCCESS == 
                                 m_csw.getTcpIpInterface()->writeLevel2Register( reg,
                                                                             page,
                                                                             &val,
@@ -3949,7 +3949,7 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
-                        if ( CANAL_ERROR_SUCCESS == 
+                        if ( VSCP_ERROR_SUCCESS == 
                                 m_csw.getTcpIpInterface()->writeLevel2Register( reg,
                                                                                     page,
                                                                                     &val,
@@ -4067,7 +4067,7 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
-                        if ( CANAL_ERROR_SUCCESS == 
+                        if ( VSCP_ERROR_SUCCESS == 
                             m_csw.getTcpIpInterface()->writeLevel2Register( reg,
                                                                             page,
                                                                             &val,
@@ -5916,14 +5916,14 @@ bool frmDeviceConfig::fetchIterfaceGUID(void)
 
     // Get the interface list
     wxArrayString ifarray;
-    if (CANAL_ERROR_SUCCESS ==
-            m_csw.getTcpIpInterface()->doCmdInterfaceList(ifarray)) {
+    if ( VSCP_ERROR_SUCCESS ==
+            m_csw.getTcpIpInterface()->doCmdInterfaceList( ifarray ) ) {
 
-        if (ifarray.Count()) {
+        if ( ifarray.Count() ) {
 
             for (unsigned int i = 0; i < ifarray.Count(); i++) {
 
-                wxStringTokenizer tkz(ifarray[ i ], _(","));
+                wxStringTokenizer tkz( ifarray[ i ], _(",") );
                 wxString strOrdinal = tkz.GetNextToken();
                 wxString strType = tkz.GetNextToken();
                 wxString strIfGUID = tkz.GetNextToken();
@@ -5942,7 +5942,7 @@ bool frmDeviceConfig::fetchIterfaceGUID(void)
                     //m_vscpif.m_strInterfaceName. = strName;
 
                     // Save interface GUID;
-                    m_ifguid.getFromString(strIfGUID);
+                    m_ifguid.getFromString( strIfGUID );
 
                     return true;
                 }

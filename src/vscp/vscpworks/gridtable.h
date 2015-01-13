@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Thu 28 Jun 2007 10:05:16 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -44,9 +44,9 @@
 
 #include <wx/grid.h>
 #include <wx/ffile.h>
-#include "../common/vscp.h"
-#include "../common/vscpremotetcpif.h"
-#include "../common/vscphelper.h"
+#include <vscp.h>
+#include <vscpremotetcpif.h>
+#include <vscphelper.h>
 
 
 /// The event hash table

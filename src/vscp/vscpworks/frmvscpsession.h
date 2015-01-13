@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Sat 30 Jun 2007 14:08:14 CEST
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // Licence:     
@@ -62,8 +62,8 @@
 #include "vscptxobj.h"
 #include "gridtable.h"
 
-#include "../common/canaldlldef.h"
-#include "../common/canalsuperwrapper.h"
+#include <canaldlldef.h>
+#include <canalsuperwrapper.h>
 
 #define STATUSBAR_STATUS_LEFT       0
 #define STATUSBAR_STATUS_RIGHT      1

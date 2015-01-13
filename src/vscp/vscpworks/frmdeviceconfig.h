@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     Sun 04 May 2009 17:28:13 CEST
 //      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -59,9 +59,9 @@
 #include "wx/html/htmlwin.h"
 
 #include "vscpworks.h"
-#include "../common/canalsuperwrapper.h"
-#include "../common/register.h"
-#include "../common/mdf.h"
+#include <canalsuperwrapper.h>
+#include <register.h>
+#include <mdf.h>
 
 #define MAX_CONFIG_REGISTER_PAGE	22
 

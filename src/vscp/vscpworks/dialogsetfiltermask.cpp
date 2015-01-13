@@ -6,7 +6,7 @@
 // Modified by: 
 // Created:     21/03/2009 00:45:10
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -38,7 +38,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "dialogsetfiltermask.h"
@@ -55,18 +55,12 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
-////@end includes
-
-#include "../common/vscp.h"
-#include "../common/vscphelper.h"
-#include "../common/vscpeventhelper.h"
+#include "vscp.h"
+#include "vscphelper.h"
+#include "vscpeventhelper.h"
 #include "dialogsetfiltermask.h"
 
 VSCPInformation geventinfo;
-
-////@begin XPM images
-////@end XPM images
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -82,14 +76,9 @@ IMPLEMENT_DYNAMIC_CLASS( DialogSetfiltermask, wxDialog )
 
 BEGIN_EVENT_TABLE( DialogSetfiltermask, wxDialog )
 
-////@begin DialogSetfiltermask event table entries
-  EVT_COMBOBOX( ID_COMBOBOX, DialogSetfiltermask::OnComboboxSelected )
-
-  EVT_BUTTON( ID_BUTTON_ADD_EVENT, DialogSetfiltermask::OnButtonAddEventClick )
-
-  EVT_BUTTON( ID_BUTTON_REMOVE_EVENT, DialogSetfiltermask::OnButtonRemoveEventClick )
-
-////@end DialogSetfiltermask event table entries
+    EVT_COMBOBOX( ID_COMBOBOX, DialogSetfiltermask::OnComboboxSelected )
+    EVT_BUTTON( ID_BUTTON_ADD_EVENT, DialogSetfiltermask::OnButtonAddEventClick )
+    EVT_BUTTON( ID_BUTTON_REMOVE_EVENT, DialogSetfiltermask::OnButtonRemoveEventClick )
 
 END_EVENT_TABLE()
 
@@ -100,13 +89,13 @@ END_EVENT_TABLE()
 
 DialogSetfiltermask::DialogSetfiltermask()
 {
-  Init();
+    Init();
 }
 
 DialogSetfiltermask::DialogSetfiltermask( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
-  Init();
-  Create(parent, id, caption, pos, size, style);
+    Init();
+    Create(parent, id, caption, pos, size, style);
 }
 
 
@@ -116,17 +105,15 @@ DialogSetfiltermask::DialogSetfiltermask( wxWindow* parent, wxWindowID id, const
 
 bool DialogSetfiltermask::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
 {
-////@begin DialogSetfiltermask creation
-  SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
-  wxDialog::Create( parent, id, caption, pos, size, style );
+    SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
+    wxDialog::Create( parent, id, caption, pos, size, style );
 
-  CreateControls();
-  if (GetSizer())
-  {
-    GetSizer()->SetSizeHints(this);
-  }
-  Centre();
-////@end DialogSetfiltermask creation
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->SetSizeHints(this);
+    }
+
+    Centre();
   return true;
 }
 
@@ -137,8 +124,7 @@ bool DialogSetfiltermask::Create( wxWindow* parent, wxWindowID id, const wxStrin
 
 DialogSetfiltermask::~DialogSetfiltermask()
 {
-////@begin DialogSetfiltermask destruction
-////@end DialogSetfiltermask destruction
+
 }
 
 
@@ -148,12 +134,10 @@ DialogSetfiltermask::~DialogSetfiltermask()
 
 void DialogSetfiltermask::Init()
 {
-////@begin DialogSetfiltermask member initialisation
-  m_wxComboClass = NULL;
-  m_wxComboType = NULL;
-  m_statusText = NULL;
-  m_listboxEvents = NULL;
-////@end DialogSetfiltermask member initialisation
+    m_wxComboClass = NULL;
+    m_wxComboType = NULL;
+    m_statusText = NULL;
+    m_listboxEvents = NULL;
 
     m_classmask = 0;
     m_classfilter = 0;
@@ -168,74 +152,72 @@ void DialogSetfiltermask::Init()
 
 void DialogSetfiltermask::CreateControls()
 {    
-////@begin DialogSetfiltermask content construction
-  DialogSetfiltermask* itemDialog1 = this;
 
-  wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
-  itemDialog1->SetSizer(itemBoxSizer2);
+    DialogSetfiltermask* itemDialog1 = this;
 
-  wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer2->Add(itemBoxSizer3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+    wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
+    itemDialog1->SetSizer(itemBoxSizer2);
 
-  wxStaticText* itemStaticText4 = new wxStaticText;
-  itemStaticText4->Create( itemDialog1, wxID_STATIC, _("Class"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer3->Add(itemStaticText4, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
 
-  wxArrayString m_wxComboClassStrings;
-  m_wxComboClass = new wxComboBox;
-  m_wxComboClass->Create( itemDialog1, ID_COMBOBOX, wxEmptyString, wxDefaultPosition, wxSize(400, -1), m_wxComboClassStrings, wxCB_DROPDOWN );
-  itemBoxSizer3->Add(m_wxComboClass, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxStaticText* itemStaticText4 = new wxStaticText;
+    itemStaticText4->Create( itemDialog1, wxID_STATIC, _("Class"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer3->Add(itemStaticText4, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer6 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer2->Add(itemBoxSizer6, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+    wxArrayString m_wxComboClassStrings;
+    m_wxComboClass = new wxComboBox;
+    m_wxComboClass->Create( itemDialog1, ID_COMBOBOX, wxEmptyString, wxDefaultPosition, wxSize(400, -1), m_wxComboClassStrings, wxCB_DROPDOWN );
+    itemBoxSizer3->Add(m_wxComboClass, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  wxStaticText* itemStaticText7 = new wxStaticText;
-  itemStaticText7->Create( itemDialog1, wxID_STATIC, _("Type"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer6->Add(itemStaticText7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer6 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer6, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
 
-  wxArrayString m_wxComboTypeStrings;
-  m_wxComboType = new wxComboBox;
-  m_wxComboType->Create( itemDialog1, ID_COMBOBOX1, wxEmptyString, wxDefaultPosition, wxSize(400, -1), m_wxComboTypeStrings, wxCB_DROPDOWN );
-  itemBoxSizer6->Add(m_wxComboType, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxStaticText* itemStaticText7 = new wxStaticText;
+    itemStaticText7->Create( itemDialog1, wxID_STATIC, _("Type"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer6->Add(itemStaticText7, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer2->Add(itemBoxSizer9, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxArrayString m_wxComboTypeStrings;
+    m_wxComboType = new wxComboBox;
+    m_wxComboType->Create( itemDialog1, ID_COMBOBOX1, wxEmptyString, wxDefaultPosition, wxSize(400, -1), m_wxComboTypeStrings, wxCB_DROPDOWN );
+    itemBoxSizer6->Add(m_wxComboType, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  wxButton* itemButton10 = new wxButton;
-  itemButton10->Create( itemDialog1, ID_BUTTON_ADD_EVENT, _("Add event"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer9->Add(itemButton10, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer9, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxButton* itemButton11 = new wxButton;
-  itemButton11->Create( itemDialog1, ID_BUTTON_REMOVE_EVENT, _("Remove selected events"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer9->Add(itemButton11, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxButton* itemButton10 = new wxButton;
+    itemButton10->Create( itemDialog1, ID_BUTTON_ADD_EVENT, _("Add event"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer9->Add(itemButton10, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer12 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer2->Add(itemBoxSizer12, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxButton* itemButton11 = new wxButton;
+    itemButton11->Create( itemDialog1, ID_BUTTON_REMOVE_EVENT, _("Remove selected events"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer9->Add(itemButton11, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-  m_statusText = new wxStaticText;
-  m_statusText->Create( itemDialog1, wxID_STATIC, _("---"), wxDefaultPosition, wxSize(400, -1), 0 );
-  itemBoxSizer12->Add(m_statusText, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer12 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer12, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer14 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer2->Add(itemBoxSizer14, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    m_statusText = new wxStaticText;
+    m_statusText->Create( itemDialog1, wxID_STATIC, _("---"), wxDefaultPosition, wxSize(400, -1), 0 );
+    itemBoxSizer12->Add(m_statusText, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  wxArrayString m_listboxEventsStrings;
-  m_listboxEvents = new wxListBox;
-  m_listboxEvents->Create( itemDialog1, ID_LISTBOX, wxDefaultPosition, wxSize(400, 300), m_listboxEventsStrings, wxLB_SINGLE );
-  itemBoxSizer14->Add(m_listboxEvents, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer14 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer14, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxBoxSizer* itemBoxSizer16 = new wxBoxSizer(wxHORIZONTAL);
-  itemBoxSizer2->Add(itemBoxSizer16, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    wxArrayString m_listboxEventsStrings;
+    m_listboxEvents = new wxListBox;
+    m_listboxEvents->Create( itemDialog1, ID_LISTBOX, wxDefaultPosition, wxSize(400, 300), m_listboxEventsStrings, wxLB_SINGLE );
+    itemBoxSizer14->Add(m_listboxEvents, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-  wxButton* itemButton17 = new wxButton;
-  itemButton17->Create( itemDialog1, wxID_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer16->Add(itemButton17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxBoxSizer* itemBoxSizer16 = new wxBoxSizer(wxHORIZONTAL);
+    itemBoxSizer2->Add(itemBoxSizer16, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-  wxButton* itemButton18 = new wxButton;
-  itemButton18->Create( itemDialog1, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-  itemBoxSizer16->Add(itemButton18, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    wxButton* itemButton17 = new wxButton;
+    itemButton17->Create( itemDialog1, wxID_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer16->Add(itemButton17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-////@end DialogSetfiltermask content construction
+    wxButton* itemButton18 = new wxButton;
+    itemButton18->Create( itemDialog1, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer16->Add(itemButton18, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     VSCPInformation m_info;
     wxString strBuf;
@@ -279,11 +261,9 @@ bool DialogSetfiltermask::ShowToolTips()
 
 wxBitmap DialogSetfiltermask::GetBitmapResource( const wxString& name )
 {
-  // Bitmap retrieval
-////@begin DialogSetfiltermask bitmap retrieval
-  wxUnusedVar(name);
-  return wxNullBitmap;
-////@end DialogSetfiltermask bitmap retrieval
+    // Bitmap retrieval
+    wxUnusedVar(name);
+    return wxNullBitmap;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -292,11 +272,9 @@ wxBitmap DialogSetfiltermask::GetBitmapResource( const wxString& name )
 
 wxIcon DialogSetfiltermask::GetIconResource( const wxString& name )
 {
-  // Icon retrieval
-////@begin DialogSetfiltermask icon retrieval
-  wxUnusedVar(name);
-  return wxNullIcon;
-////@end DialogSetfiltermask icon retrieval
+    // Icon retrieval
+    wxUnusedVar(name);
+    return wxNullIcon;
 }
 
 

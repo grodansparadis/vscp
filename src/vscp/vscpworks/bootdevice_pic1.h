@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@
 // $Date: 2005/01/05 12:50:58 $                                  
 // $Author: akhe $                                              
 // $Revision: 1.4 $ 
-//////////////////////////////////////////////////////////////////////
+//
 
 #pragma once
 #include "bootdevice.h"
@@ -32,7 +32,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "../common/vscp.h"
+#include "vscp.h"
 
 #include <wx/string.h>
 

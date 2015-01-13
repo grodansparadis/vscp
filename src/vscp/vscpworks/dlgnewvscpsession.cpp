@@ -60,8 +60,8 @@
 ////@begin includes
 ////@end includes
 
-#include "../common/vscp.h"
-#include "../common/vscphelper.h"
+#include "vscp.h"
+#include "vscphelper.h"
 #include "vscpworks.h"
 #include "dlgnewvscpsession.h"
 #include "dlgnewvscpsession_images.h"

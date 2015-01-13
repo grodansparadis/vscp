@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     16/12/2009 22:26:09
 // RCS-ID:      
-// Copyright:   (C) 2012-2014 
+// Copyright:   (C) 2012-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -47,9 +47,9 @@
     in the VSCP main file to read/write to a remote  device.
 */
 
-#include "../common/canalsuperwrapper.h"
-#include "../common/mdf.h"
-#include "../common/guid.h"
+#include "canalsuperwrapper.h"
+#include "mdf.h"
+#include "guid.h"
 
 #include "vscpworks.h"
 

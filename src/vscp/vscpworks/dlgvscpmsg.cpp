@@ -5,7 +5,7 @@
 // Modified by: 
 // Created:     25/02/2007 22:46:25
 // RCS-ID:      
-// Copyright:   (C) 2007-2014 
+// Copyright:   (C) 2007-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
 // This program is free software; you can redistribute it and/or
@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+// 
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "dlgvscpmsg.h"
@@ -57,8 +57,8 @@
 ////@begin includes
 ////@end includes
 
-#include "../common/vscphelper.h"
-#include "../common/vscpeventhelper.h"
+#include <vscphelper.h>
+#include <vscpeventhelper.h>
 #include "dlgvscpmsg.h"
 
 extern VSCPInformation g_vscpinfo;  // VSCP class type information
