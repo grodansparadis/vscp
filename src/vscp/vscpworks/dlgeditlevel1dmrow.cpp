@@ -41,7 +41,7 @@
 // 
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "dialogeditlevelidmrow.h"
+#pragma implementation "dlgeditlevelidmrow.h"
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -58,8 +58,8 @@
 ////@begin includes
 ////@end includes
 
-#include "dialogsetfiltermask.h"
-#include "dialogeditlevelidmrow.h"
+#include "dlgsetfiltermask.h"
+#include "dlgeditlevel1dmrow.h"
 
 ////@begin XPM images
 /* XPM */

@@ -50,28 +50,21 @@
  * Includes
  */
 
-////@begin includes
-#include "dialogeditlevelidmrow_symbols.h"
-////@end includes
+#include "dlgditlevel1dmrow_symbols.h"
 
 /*!
  * Forward declarations
  */
 
-////@begin forward declarations
-////@end forward declarations
-
 /*!
  * Control identifiers
  */
 
-////@begin control identifiers
 #define SYMBOL_DIALOGEDITLEVELIDMROW_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL
 #define SYMBOL_DIALOGEDITLEVELIDMROW_TITLE _("Dialog Edit Level I DM row")
 #define SYMBOL_DIALOGEDITLEVELIDMROW_IDNAME ID_DIALOGEDITLEVELIDMROW
 #define SYMBOL_DIALOGEDITLEVELIDMROW_SIZE wxSize(400, 300)
 #define SYMBOL_DIALOGEDITLEVELIDMROW_POSITION wxDefaultPosition
-////@end control identifiers
 
 
 /*!
@@ -100,26 +93,18 @@ public:
   /// Creates the controls and sizers
   void CreateControls();
 
-////@begin DialogEditLevelIDMrow event handler declarations
-
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_SELECT_EVENTS
   void OnButtonSelectEventsClick( wxCommandEvent& event );
-
-////@end DialogEditLevelIDMrow event handler declarations
-
-////@begin DialogEditLevelIDMrow member function declarations
 
   /// Retrieves bitmap resources
   wxBitmap GetBitmapResource( const wxString& name );
 
   /// Retrieves icon resources
   wxIcon GetIconResource( const wxString& name );
-////@end DialogEditLevelIDMrow member function declarations
 
   /// Should we show tooltips?
   static bool ShowToolTips();
 
-////@begin DialogEditLevelIDMrow member variables
   wxTextCtrl* m_oaddr;
   wxCheckBox* m_chkEnableDMRow;
   wxCheckBox* m_chkCheckOAddr;
@@ -149,7 +134,7 @@ public:
     ID_COMBOCTRL_ACTION = 10025,
     ID_TEXTCTRL_ACTION_PARAMETER = 10009
   };
-////@end DialogEditLevelIDMrow member variables
+
 };
 
 #endif

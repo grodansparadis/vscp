@@ -41,7 +41,7 @@
 //
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "dialogsetfiltermask.h"
+#pragma implementation "dlgsetfiltermask.h"
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -58,7 +58,7 @@
 #include "vscp.h"
 #include "vscphelper.h"
 #include "vscpeventhelper.h"
-#include "dialogsetfiltermask.h"
+#include "dlgsetfiltermask.h"
 
 VSCPInformation geventinfo;
 

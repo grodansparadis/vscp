@@ -77,8 +77,8 @@
 #include <vscphelper.h>
 #include <mdf.h>
 #include "dlgabout.h"
-#include "dialogeditlevelidmrow.h"
-#include "dialogabstractionedit.h"
+#include "dlgeditlevel1dmrow.h"
+#include "dlgabstractionedit.h"
 #include "readregister.h"
 #include "frmdeviceconfig_images.h"
 #include "frmdeviceconfig.h"

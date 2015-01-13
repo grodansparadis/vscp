@@ -40,7 +40,7 @@
 //
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "dialogabstractionedit.h"
+#pragma implementation "dlgabstractionedit.h"
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
@@ -57,7 +57,7 @@
 ////@begin includes
 ////@end includes
 
-#include "dialogabstractionedit.h"
+#include "dlgabstractionedit.h"
 
 ////@begin XPM images
 ////@end XPM images
