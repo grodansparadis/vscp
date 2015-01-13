@@ -134,17 +134,14 @@ wxString CStandardRegisters::getFirmwareVersionString( void )
 //  getMDF
 // 
 
-wxString CStandardRegisters::getMDF( void )
+void CStandardRegisters::getMDF( wxString& remoteFile )
 {
-	wxString remoteFile;
     char url[33];
 
     memset( url, 0, sizeof( url ) );
     memcpy( url, ( m_reg + 0xe0 - 0x80 ), 32 );
     remoteFile = _("http://");
 	remoteFile += wxString::From8BitData( url );
-
-	return remoteFile;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

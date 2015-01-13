@@ -50,15 +50,6 @@
       <in>deveicebootloaderwizard.h</in>
       <in>devicebootloaderwizard.cpp</in>
       <in>devicebootloaderwizard.h</in>
-      <in>dialogabstractionedit.cpp</in>
-      <in>dialogabstractionedit.h</in>
-      <in>dialogabstractionedit_symbols.h</in>
-      <in>dialogeditlevelidmrow.cpp</in>
-      <in>dialogeditlevelidmrow.h</in>
-      <in>dialogeditlevelidmrow_symbols.h</in>
-      <in>dialogsetfiltermask.cpp</in>
-      <in>dialogsetfiltermask.h</in>
-      <in>dialogsetfiltermask_symbols.h</in>
       <in>dlgCanalRowEdit.cpp</in>
       <in>dlgCanalRowEdit.h</in>
       <in>dlgCanalRowEdit_symbols.h</in>
@@ -66,6 +57,9 @@
       <in>dlgabout.cpp</in>
       <in>dlgabout.h</in>
       <in>dlgabout_symbols.h</in>
+      <in>dlgabstractionedit.cpp</in>
+      <in>dlgabstractionedit.h</in>
+      <in>dlgabstractionedit_symbols.h</in>
       <in>dlgcanalinterfacesettings.cpp</in>
       <in>dlgcanalinterfacesettings.h</in>
       <in>dlgcanalinterfacesettings_symbols.h</in>
@@ -77,7 +71,11 @@
       <in>dlgcanmsg_symbols.h</in>
       <in>dlgconfiguration.cpp</in>
       <in>dlgconfiguration.h</in>
+      <in>dlgconfiguration_images.h</in>
       <in>dlgconfiguration_symbols.h</in>
+      <in>dlgeditlevel1dmrow.cpp</in>
+      <in>dlgeditlevel1dmrow.h</in>
+      <in>dlgeditlevel1dmrow_symbols.h</in>
       <in>dlgifsettings.cpp</in>
       <in>dlgifsettings.h</in>
       <in>dlgifsettings_symbols.h</in>
@@ -87,10 +85,14 @@
       <in>dlgnewsession_symbols.h</in>
       <in>dlgnewvscpsession.cpp</in>
       <in>dlgnewvscpsession.h</in>
+      <in>dlgnewvscpsession_images.h</in>
       <in>dlgnewvscpsession_symbols.h</in>
       <in>dlgselectdaemoninterface.cpp</in>
       <in>dlgselectdaemoninterface.h</in>
       <in>dlgselectdaemoninterface_symbols.h</in>
+      <in>dlgsetfiltermask.cpp</in>
+      <in>dlgsetfiltermask.h</in>
+      <in>dlgsetfiltermask_symbols.h</in>
       <in>dlgvscpfilter.cpp</in>
       <in>dlgvscpfilter.h</in>
       <in>dlgvscpfilter_symbols.h</in>

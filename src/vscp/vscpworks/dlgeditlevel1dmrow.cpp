@@ -41,7 +41,7 @@
 // 
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma implementation "dlgeditlevelidmrow.h"
+#pragma implementation "dlgeditlevel1dmrow.h"
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".

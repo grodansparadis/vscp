@@ -43,7 +43,7 @@
 #define _DIALOGEDITLEVELIDMROW_H_
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "dialogeditlevelidmrow.h"
+#pragma interface "dlgeditlevel1dmrow.h"
 #endif
 
 /*!

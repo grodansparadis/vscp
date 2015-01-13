@@ -37,13 +37,13 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef _DIALOGSETFILTERMASK_H_
 #define _DIALOGSETFILTERMASK_H_
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "dialogsetfiltermask.h"
+#pragma interface "dlgsetfiltermask.h"
 #endif
 
 /*!

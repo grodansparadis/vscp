@@ -1236,9 +1236,10 @@ void frmDeviceConfig::writeStatusInfo(void)
 
     strHTML += _("<b>MDF URL</b>: ");
     strHTML += _("<a href=\"");
-    strHTML += m_stdRegisters.getMDF();
+	m_stdRegisters.getMDF( str );
+    strHTML += str;
     strHTML += _("\">");
-    strHTML += m_stdRegisters.getMDF();
+    strHTML += str;
     strHTML += _("</a>");
     strHTML += _("<br>");
 
@@ -3122,7 +3123,7 @@ void frmDeviceConfig::fillStandardRegisters()
     }
 
     // Write to grid also
-    str = m_stdRegisters.getMDF();
+    m_stdRegisters.getMDF( str );
     m_gridRegisters->SetCellValue(nFirstMDFrow, 3, _("Module Description File URL, MSB\n") + str);
 
     // Make all parts of the row visible
@@ -3214,7 +3215,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
             }
 
             // We need it to continue
-            if (0 == m_stdRegisters.getMDF().Length()) {
+			wxString mdfurl;
+			m_stdRegisters.getMDF( mdfurl );
+            if (0 == mdfurl.Length()) {
                 ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
                 ::wxEndBusyCursor();
                 return;
@@ -3222,7 +3225,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
             // Load and parse the MDF
             progressDlg.Update( 20, _("Loading and parsing MDF. 2/8.") );            
-            m_mdf.load( m_stdRegisters.getMDF(), m_chkMdfFromFile->GetValue() );
+            m_mdf.load( mdfurl, m_chkMdfFromFile->GetValue() );
 
             wxArrayLong pageArray;
             uint32_t nPages = m_mdf.getPages( pageArray );
@@ -3368,7 +3371,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
             }
 
             // We need it to continue
-            if ( 0 == m_stdRegisters.getMDF().Length() ) {
+			wxString mdfurl;
+			m_stdRegisters.getMDF( mdfurl );
+            if ( 0 == mdfurl.Length() ) {
                 ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
                 ::wxEndBusyCursor();
                 return;
@@ -3377,7 +3382,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
             // Load and parse the MDF
             progressDlg.Update( 20, _("Loading and parsing MDF 2/8.") );
 
-            if (!m_mdf.load( m_stdRegisters.getMDF(), m_chkMdfFromFile->GetValue())) {
+            if (!m_mdf.load( mdfurl, m_chkMdfFromFile->GetValue())) {
                 // We try to continue anyway
             }
 

@@ -558,23 +558,6 @@ const char * CanalGetDriverInfo( void );
 #define CANUSB_ACCEPTANCE_MASK_ALL          0xFFFFFFFF
 
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-//                      Register read/write functionality
-//////////////////////////////////////////////////////////////////////////////////////////////
-
-
-/*!
-    This callback is used for lengthy operations and can be used to monitor
-    what is happening during the operations and display info to users.
-    @param id   This id is set by the user of the method that generates the 
-                callback call.
-    @param info_event This is the code for the callback.
-    @param val This is a signed value that is related to the event.
-    @param pInfo Points to something that is relevant to the event
-    @return False if an abort is requested.
-*/
-typedef bool (*canalreginfo_callback_t)(unsigned long id, enum info_event, long val, void *pInfo );
-
 #ifdef __cplusplus
 }
 #endif

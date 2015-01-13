@@ -104,7 +104,7 @@ public:
     */
     ~CStandardRegisters( void );
 
-	wxString getMDF( void );
+	void getMDF( wxString& remoteFile );
 
 	const uint8_t *getGUID( void ) { return ( m_reg + 0xD0 - 0x80 ); };
 	

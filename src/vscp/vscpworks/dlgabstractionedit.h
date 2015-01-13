@@ -43,7 +43,7 @@
 #define _DIALOGABSTRACTIONEDIT_H_
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
-#pragma interface "dialogabstractionedit.h"
+#pragma interface "dlgabstractionedit.h"
 #endif
 
 /*!
