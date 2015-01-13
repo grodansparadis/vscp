@@ -50,7 +50,7 @@
  * Includes
  */
 
-#include "dlgditlevel1dmrow_symbols.h"
+#include "dlgeditlevel1dmrow_symbols.h"
 
 /*!
  * Forward declarations
