@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef _DIALOGEDITLEVELIDMROW_H_
 #define _DIALOGEDITLEVELIDMROW_H_

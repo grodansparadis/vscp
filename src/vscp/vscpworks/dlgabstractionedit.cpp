@@ -36,7 +36,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  D of Scandinavia at info@dofscandinavia.com, http://www.dofscandinavia.com
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
 //
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
