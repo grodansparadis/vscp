@@ -35,7 +35,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
-#include "../../../../common/canal_macro.h"
+#include <canal_macro.h>
 #include "dlldrvobj.h"
 #include "can232obj.h"
 
@@ -61,7 +61,7 @@ CDllDrvObj::CDllDrvObj()
 {
 	m_instanceCounter = 0;
 #ifdef WIN32
-	m_objMutex = CreateMutex( NULL, true, "__CANAL_CAN232_MUTEX__" );
+	m_objMutex = CreateMutex( NULL, true, TEXT("__CANAL_CAN232_MUTEX__") );
 #else
 	pthread_mutex_init( &m_objMutex, NULL );
 #endif
