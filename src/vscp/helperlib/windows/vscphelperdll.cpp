@@ -37,9 +37,9 @@
 #include <wx/datetime.h>
 #include <wx/utils.h>
 
-#include "../../common/vscphelper.h"
-#include "../../common/vscpremotetcpif.h"
-#include "dlldrvobj.h"
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
+#include <dlldrvobj.h>
 #include "vscphelperdll.h"
 
 #ifdef _MSC_VER

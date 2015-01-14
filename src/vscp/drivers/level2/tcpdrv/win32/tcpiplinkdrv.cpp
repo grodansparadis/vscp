@@ -53,8 +53,8 @@
 
 
 
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
 #include "../common/vscptcpiplink.h"
 #include "tcpiplinkdrv.h"
 

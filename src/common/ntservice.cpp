@@ -21,12 +21,8 @@
     #include  "wx/ownerdrw.h"
 #endif
 
-
-//#include "stdafx.h"
-//#include <windows.h>
-//#include <stdio.h>
-#include "NTService.h"
-#include "../vscp/common/version.h"  // A little ugly hack
+#include <NTService.h>
+#include <version.h>  // A little ugly hack
 
 // 
 // Global variables.

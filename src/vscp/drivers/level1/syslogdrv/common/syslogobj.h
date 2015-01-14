@@ -42,10 +42,10 @@
 #include "wx/msw/ole/automtn.h"
 #include "wx/tokenzr.h"
 
-#include "../../../../common/canal.h"
-#include "../../../../common/vscp.h"
-#include "../../../../common/canal_macro.h"
-#include "../../../../../common/dllist.h"
+#include <canal.h>
+#include <vscp.h>
+#include <canal_macro.h>
+#include <dllist.h>
 #include "wx/hashmap.h"
 #include <wx/listimpl.cpp>
 

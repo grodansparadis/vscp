@@ -39,10 +39,10 @@
 
 #endif
 
-#include "../../vscp/common/vscp.h"
-#include "guid.h"
-#include "userlist.h"
-#include "devicelist.h"
+#include <vscp.h>
+#include <guid.h>
+#include <userlist.h>
+#include <devicelist.h>
 
 
 WX_DECLARE_LIST ( vscpEvent, CLIENTEVENTLIST );

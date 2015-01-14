@@ -58,8 +58,8 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 #include <wx/utils.h>
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
 #include "vscpbtdetect.h"
 
 static HANDLE hThisInstDll = NULL;

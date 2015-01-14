@@ -45,8 +45,8 @@
 
 #endif
 
-#include "../common/canal_macro.h"
-#include "../../common/md5.h"
+#include <canal_macro.h>
+#include <md5.h>
 #include "mkpasswd.h"
 
 // Prototypes

@@ -78,7 +78,7 @@
 
 
 #ifdef WIN32
-//#include "../common/controlobject.h"
+//#include <controlobject.h>
 #else
 
 #ifndef WIN32
@@ -88,10 +88,10 @@
 #endif
 
 
-#include "../common/canal_macro.h"
+#include <canal_macro.h>
 #include "vscpcmd.h"
-#include "../common/vscpremotetcpif.h"
-#include "../common/vscphelper.h"
+#include <vscpremotetcpif.h>
+#include <vscphelper.h>
 
 // Prototypes
 void setDataFromValue(uint8_t encoding, uint8_t type, wxString& wxstrval, uint8_t *msgdata, uint16_t *pnDataCnt);

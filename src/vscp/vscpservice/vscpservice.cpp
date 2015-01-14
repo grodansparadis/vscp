@@ -29,8 +29,8 @@
 #endif
  
 
-#include "../common/controlobject.h"
-#include "../common/version.h"
+#include <controlobject.h>
+#include <version.h>
 
 
 #include "wx/wx.h"
@@ -40,7 +40,7 @@
 
 #include "VSCPServApp.h"
 #include "vscpservice.h"
-#include "../common/controlobject.h"
+#include <controlobject.h>
 
 // External variables
 extern HANDLE  ghStopEvent;

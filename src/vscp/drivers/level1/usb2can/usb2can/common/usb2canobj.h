@@ -46,10 +46,6 @@
 
 #endif
 
-//#include "../../../common/canal.h"
-//#include "../../../common/canal_macro.h"
-//#include "../../../../common/dllist.h"
-
 #include "../vscp_common/canal.h"
 #include "../vscp_common/canal_macro.h"
 #include "../vscp_common/dllist.h"

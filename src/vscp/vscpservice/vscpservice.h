@@ -1,7 +1,7 @@
 // myservice.h
 
-#include "../../common/ntservice.h"
-#include "../common/controlobject.h"
+#include <ntservice.h>
+#include <controlobject.h>
 
 
 /*!

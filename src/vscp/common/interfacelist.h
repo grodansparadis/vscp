@@ -32,8 +32,8 @@
 
 #include <wx/socket.h>
 
-#include "vscp.h"
-#include "../../common/dllist.h"
+#include <vscp.h>
+#include <dllist.h>
 
 class CInterfaceItem
 {

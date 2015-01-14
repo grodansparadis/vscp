@@ -32,7 +32,7 @@
 #define VSCP_HELPER_PRE	WINAPI EXPORT
 #endif
 
-#include "../common/vscp.h"
+#include <vscp.h>
 
 #ifdef __cplusplus
 extern "C" {

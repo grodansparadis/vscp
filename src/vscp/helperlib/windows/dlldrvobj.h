@@ -34,8 +34,8 @@
 // Max number of open connections
 #define VSCP_HELPER_MAX_OPEN	256
 
-#include "../../common/canal_macro.h"
-#include "../../common/canalsuperwrapper.h"
+#include <canal_macro.h>
+#include <canalsuperwrapper.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CHelpDllObj

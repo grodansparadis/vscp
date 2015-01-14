@@ -47,8 +47,8 @@
 #include <wx/thread.h>
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
 #include "log.h"
 
 #ifndef _CRT_SECURE_NO_WARNINGS

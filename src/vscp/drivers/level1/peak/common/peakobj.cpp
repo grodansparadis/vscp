@@ -25,8 +25,8 @@
 // $Author: akhe $                                              
 // $Revision: 1.8 $ 
 
-#include "stdio.h"
-#include "../../../../common/canal.h"
+#include <stdio.h>
+#include <canal.h>
 #include "peakobj.h"
 #include "dlldrvobj.h"
 

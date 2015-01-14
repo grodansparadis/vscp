@@ -36,23 +36,23 @@
 #include <wx/thread.h>
 #include <wx/filename.h>
 
-#include "../../common/net_skeleton.h"
-#include "../../common/mongoose.h"
+#include <net_skeleton.h>
+#include <mongoose.h>
 
-#include "devicelist.h"
-#include "clientlist.h"
-#include "interfacelist.h"
-#include "userlist.h"
-#include "tables.h"
-#include "../../vscp/common/vscp.h"
-#include "vscpvariable.h"
-#include "vscpautomation.h"
-#include "tcpipclientthread.h"
-#include "udpclientthread.h"
-#include "udpthread.h"
-#include "daemonvscp.h"
-#include "dm.h"
-#include "vscp.h"
+#include <devicelist.h>
+#include <clientlist.h>
+#include <interfacelist.h>
+#include <userlist.h>
+#include <tables.h>
+#include <vscp.h>
+#include <vscpvariable.h>
+#include <vscpautomation.h>
+#include <tcpipclientthread.h>
+#include <udpclientthread.h>
+#include <udpthread.h>
+#include <daemonvscp.h>
+#include <dm.h>
+#include <vscp.h>
 
 // Forward declarations
 class VSCPWebServerThread;

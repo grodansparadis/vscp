@@ -49,11 +49,11 @@
 
 #endif
 
-#include "vscp.h"
-#include "vscp_class.h"
-#include "vscp_type.h"
-#include "canal.h"
-#include "../../common/crc.h"
+#include <vscp.h>
+#include <vscp_class.h>
+#include <vscp_type.h>
+#include <canal.h>
+#include <crc.h>
 
 // Forward declaration
 class CMDF;

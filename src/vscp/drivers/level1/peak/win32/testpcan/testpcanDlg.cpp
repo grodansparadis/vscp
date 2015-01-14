@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "testpcan.h"
 #include "testpcanDlg.h"
-#include "../../../../../common/canal.h"
+#include <canal.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

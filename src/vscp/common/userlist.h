@@ -28,8 +28,8 @@
 #include <wx/hashset.h>
 #include <wx/socket.h>
 
-#include "../../common/dllist.h"
-#include "vscp.h"
+#include <dllist.h>
+#include <vscp.h>
 
 
 #define VSCP_USER_RIGHT_ALLOW_RESTART					0x80000000

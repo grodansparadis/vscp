@@ -51,11 +51,11 @@
 #include <wx/file.h>
 #include <wx/wfstream.h>
 
-#include "../../../../common/canal.h"
-#include "../../../../common/vscp.h"
-#include "../../../../common/canal_macro.h"
-#include "../../../../../common/dllist.h"
-#include "../../../../common/vscpremotetcpif.h"
+#include <canal.h>
+#include <vscp.h>
+#include <canal_macro.h>
+#include <dllist.h>
+#include <vscpremotetcpif.h>
 
 // Forward declarations
 class CVSCPBTDetectWrkTread;

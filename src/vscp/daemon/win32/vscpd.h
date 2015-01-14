@@ -25,7 +25,7 @@
 
 
 
-#include "../../common/controlobject.h"
+#include <controlobject.h>
 
 
 

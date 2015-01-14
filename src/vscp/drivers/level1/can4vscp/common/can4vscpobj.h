@@ -45,10 +45,10 @@
 #endif
 
 #include <stdio.h>
-#include "../../../../common/canal.h"
-#include "../../../../common/vscp.h"
-#include "../../../../common/canal_macro.h"
-#include "../../../../../common/dllist.h"
+#include <canal.h>
+#include <vscp.h>
+#include <canal_macro.h>
+#include <dllist.h>
 
 // define to create a file c:\can4vscp.txt with input and
 // stat machine data for debugging

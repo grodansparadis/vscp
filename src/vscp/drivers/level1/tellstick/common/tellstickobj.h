@@ -31,7 +31,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../../../../../common/com_win32.h"
+#include <com_win32.h>
 
 #else
 
@@ -47,12 +47,12 @@
 #include <stdio.h>
 #include <wx/thread.h>
 
-#include "../../../../common/canal.h"
-#include "../../../../common/canal_macro.h"
-#include "../../../../common/vscp_class.h"
-#include "../../../../common/vscp_type.h"
-#include "../../../../common/vscphelper.h"
-#include "../../../../../common/dllist.h"
+#include <canal.h>
+#include <canal_macro.h>
+#include <vscp_class.h>
+#include <vscp_type.h>
+#include <vscphelper.h>
+#include <dllist.h>
 
 
 #ifdef WIN32

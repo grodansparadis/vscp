@@ -1073,20 +1073,23 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr) {
         m_type = MEM_TYPE_PROGRAM;
         return TRUE;
 
-    } else if ((m_pAddr >= MEMREG_CONFIG_START_COMMON) &&
+    } 
+    else if ((m_pAddr >= MEMREG_CONFIG_START_COMMON) &&
             ((m_pAddr < MEMREG_CONFIG_START_COMMON + BUFFER_SIZE_CONFIG_COMMON))) {
 
         // Config memory
         m_type = MEM_TYPE_CONFIG;
         return TRUE;
 
-    } else if ((m_pAddr >= MEMREG_EEPROM_START_COMMON) &&
+    } 
+    else if ((m_pAddr >= MEMREG_EEPROM_START_COMMON) &&
             ((m_pAddr <= MEMREG_EEPROM_START_COMMON + BUFFER_SIZE_EEPROM_COMMON))) {
 
         // EEPROM
         m_type = MEM_TYPE_EEPROM;
         return TRUE;
-    } else {
+    } 
+    else {
         return false;
     }
 

@@ -54,8 +54,8 @@
 
 
 
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
 #include "rawethernet.h"
 
 static HANDLE hThisInstDll = NULL;
