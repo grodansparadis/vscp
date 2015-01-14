@@ -7,6 +7,10 @@
  * http://sbs-forum.org/marcom/dc2/20_crc-8_firmware_implementations.pdf
  * http://websvn.hylands.org/filedetails.php?repname=Projects&path=%2Fcommon%2FCrc8.c&sc=1
  *
+ * This software is placed into
+ * the public domain and may be used for any purpose.  However, this
+ * notice must not be changed or removed and no warranty is either
+ * expressed or implied by its publication or distribution.
  */
 
 #include <stdio.h>
