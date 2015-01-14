@@ -42,7 +42,11 @@
 #include <guid.h>
 #include <vscphelper.h>
 
+#ifdef USE_FOSSA
 #include <fossa.h>
+#else
+#include <net_skeleton.h>
+#endif
 #include "wx/datetime.h"
 
 
@@ -111,9 +115,12 @@ public:
 
 	/*!
 		TCP/IP handler
-	*/
-	//static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
+	*/	
+#ifdef USE_FOSSA
     static void ev_handler(struct ns_connection *conn, int ev, void *pUser); 
+#else
+    static void ev_handler(struct ns_connection *conn, enum ns_event ev, void *p);
+#endif
     /*! 
 		called when the thread exits - whether it terminates normally or is
 		stopped with Delete() (but not when it is Kill()ed!)

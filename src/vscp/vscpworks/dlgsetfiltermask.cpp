@@ -113,7 +113,7 @@ bool DialogSetfiltermask::Create( wxWindow* parent, wxWindowID id, const wxStrin
     }
 
     Centre();
-  return true;
+    return true;
 }
 
 
@@ -151,7 +151,6 @@ void DialogSetfiltermask::Init()
 
 void DialogSetfiltermask::CreateControls()
 {    
-
     DialogSetfiltermask* itemDialog1 = this;
 
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
@@ -240,7 +239,7 @@ void DialogSetfiltermask::CreateControls()
     m_wxComboClass->Select( 0 );
 
     wxCommandEvent event;
-    OnComboboxSelected( event );  
+    OnComboboxSelected( event );
 
 }
 

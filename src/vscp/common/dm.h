@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -29,9 +29,9 @@
 #include <wx/dynlib.h>
 #include <wx/file.h>
 #include <wx/url.h>
-#include "../../common/dllist.h"
-#include "vscp.h"
-#include "vscpvariable.h"
+#include <dllist.h>
+#include <vscp.h>
+#include <vscpvariable.h>
 
 class CControlObject;
 class CClientItem;
@@ -45,7 +45,6 @@ WX_DECLARE_LIST ( wxDynamicLibrary, PLUGINLIST ); 	// List with DM plugins
 WX_DECLARE_LIST( int, ACTIONTIME );
 
 // Control bits
-//#define DM_CONTROL_ENABLE				0x80000000
 #define DM_CONTROL_DONT_CONTINUE_SCAN	0x40000000
 #define DM_CONTROL_CHECK_INDEX			0x00000020
 #define DM_CONTROL_CHECK_ZONE			0x00000010 
@@ -69,26 +68,26 @@ class actionThreadURL : public wxThread
 
 public:
 
-  /*!
-    Constructor
-    @param pCtrlObject Pointer to main object
-    @param url URL to access
-    @param nAccessMethod 0 for GET, 1 for PUT and 2 for POST
-    @param putdata Data if PUT is used as accessmethod.
-    @param proxy Optional proxy to use on the form <hostname>:<port number>
-    @param kind Threadtype.
-  */
-  actionThreadURL( CControlObject *pCtrlObject, 
+    /*!
+        Constructor
+        @param pCtrlObject Pointer to main object
+        @param url URL to access
+        @param nAccessMethod 0 for GET, 1 for PUT and 2 for POST
+        @param putdata Data if PUT is used as accessmethod.
+        @param proxy Optional proxy to use on the form <hostname>:<port number>
+        @param kind Threadtype.
+    */
+    actionThreadURL( CControlObject *pCtrlObject, 
                       wxString& url,
                       uint8_t nAccessMethod,
                       wxString& putdata,
                       wxString& proxy,
                       wxThreadKind kind = wxTHREAD_DETACHED );
   
-  /// Destructor
-  ~actionThreadURL();
+    /// Destructor
+    ~actionThreadURL();
 
-  virtual void *Entry();
+    virtual void *Entry();
 
   	/*! 
 		called when the thread exits - whether it terminates normally or is
@@ -98,26 +97,25 @@ public:
 
 private:
 
-
-  /*!
+    /*!
 		Control object pointer
 	*/
 	CControlObject *m_pCtrlObject;
 
-  /*!
-    URL to access  
-  */
-  wxURL m_url;
+    /*!
+        URL to access  
+    */
+    wxURL m_url;
   
-  /*!
-    Accessmethod: 0 for 'GET' and 1 for 'PUT'
-  */
-  uint8_t m_acessMethod;
+    /*!
+        Accessmethod: 0 for 'GET' and 1 for 'PUT'
+    */
+    uint8_t m_acessMethod;
 
-  /*!
-    Data for PUT
-  */
-  wxString m_putdata;
+    /*!
+        Data for PUT
+    */
+    wxString m_putdata;
 };
 
 

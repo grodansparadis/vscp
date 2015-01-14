@@ -8,7 +8,7 @@
 //
 // This file is part of the CANAL (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -35,9 +35,9 @@
 #include "wx/tokenzr.h"
 #include <wx/stdpaths.h>
  
-#include "../../common/canal_macro.h"
-#include "../../common/controlobject.h"
-#include "../../common/version.h"
+#include <canal_macro.h>
+#include <controlobject.h>
+#include <version.h>
 
 static const wxCmdLineEntryDesc cmdLineDesc[] = { 
   { 

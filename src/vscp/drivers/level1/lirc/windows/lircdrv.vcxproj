@@ -42,15 +42,15 @@
     <OutDir>.\Release\</OutDir>
     <IntDir>.\Release\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\akhe\Documents\development\expat-2.0.1\lib;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\akhe\Documents\development\expat-2.0.1\win32\bin\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(EXPAT)\expat-2.0.1\lib;$(IncludePath)</IncludePath>
+    <LibraryPath>$(EXPAT)\expat-2.0.1\win32\bin\Release;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>.\Debug\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>C:\Users\akhe\Documents\development\expat-2.0.1\lib;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\akhe\Documents\development\expat-2.0.1\win32\bin\Debug;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(EXPAT)\expat-2.0.1\lib;$(IncludePath)</IncludePath>
+    <LibraryPath>$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(EXPAT)\expat-2.0.1\win32\bin\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

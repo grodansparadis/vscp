@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -100,30 +100,30 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include "../../common/slre.h"
-#include "../../common/frozen.h"
-#include "../../common/net_skeleton.h"
-#include "../../common/mongoose.h"
+#include <slre.h>
+#include <frozen.h>
+#include <net_skeleton.h>
+#include <mongoose.h>
 
-#include "canal_macro.h"
-#include "../common/vscp.h"
-#include "../common/vscphelper.h"
-#include "../common/vscpeventhelper.h"
-#include "../common/tables.h"
-#include "../../common/configfile.h"
-#include "../../common/crc.h"
-#include "../../common/md5.h"
-#include "../../common/randpassword.h"
-#include "../common/version.h"
-#include "variablecodes.h"
-#include "actioncodes.h"
-#include "devicelist.h"
-#include "devicethread.h"
-#include "dm.h"
-#include "vscpeventhelper.h"
+#include <canal_macro.h>
+#include <vscp.h>
+#include <vscphelper.h>
+#include <vscpeventhelper.h>
+#include <tables.h>
+#include <configfile.h>
+#include <crc.h>
+#include <md5.h>
+#include <randpassword.h>
+#include <version.h>
+#include <variablecodes.h>
+#include <actioncodes.h>
+#include <devicelist.h>
+#include <devicethread.h>
+#include <dm.h>
+#include <vscpeventhelper.h>
 #include "vscpwebserver.h"
-#include "controlobject.h"
-#include "../common/webserver.h"
+#include <controlobject.h>
+#include <webserver.h>
 
 
 #ifndef _CRT_SECURE_NO_WARNINGS

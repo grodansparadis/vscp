@@ -4,7 +4,7 @@
 // This file is part is part of VSCP & Friends
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB,
+// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB,
 // <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or

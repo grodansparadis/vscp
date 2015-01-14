@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Paradise of the Frog, <akhe@paradiseofthefrog.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -49,10 +49,10 @@
 
 #include <wx/listimpl.cpp>
 
-#include "vscp.h"
-#include "vscphelper.h"
-#include "vscp_class.h"
-#include "vscp_type.h"
+#include <vscp.h>
+#include <vscphelper.h>
+#include <vscp_class.h>
+#include <vscp_type.h>
 
 #include "vscpautomation.h"
 

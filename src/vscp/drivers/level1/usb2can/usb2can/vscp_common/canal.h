@@ -4,7 +4,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://can.sourceforge.net)
 //
-// Copyright (C) 2000-2008 Ake Hedman, eurosource, <akhe@eurosource.se>
+// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,11 +20,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-// $RCSfile: canal.h,v $                                       
-// $Date: 2005/08/30 20:22:14 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.36 $ 
-///////////////////////////////////////////////////////////////////////////////
+// 
 
 
 #ifndef ___CANAL_H___

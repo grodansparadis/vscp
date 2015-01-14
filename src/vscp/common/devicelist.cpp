@@ -8,7 +8,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -51,12 +51,12 @@
 
 #endif
 
-#include "canal.h"
-#include "vscp.h"
-#include "../../common/dllist.h"
-#include "controlobject.h"
+#include <canal.h>
+#include <vscp.h>
+#include <dllist.h>
+#include <controlobject.h>
 #include "clientlist.h"
-#include "guid.h"
+#include <guid.h>
 #include "devicethread.h"
 #include "devicelist.h"
 

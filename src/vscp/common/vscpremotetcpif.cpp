@@ -81,8 +81,11 @@ clientTcpIpWorkerThread::~clientTcpIpWorkerThread()
 // tcpip_event_handler
 //
 
-//void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
+#ifdef USE_FOSSA
 void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, int ev, void *pUser) 
+#else
+void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void *pUser) 
+#endif
 {
     char rbuf[ 2048 ];
     int pos4lf; 
@@ -158,15 +161,22 @@ void *clientTcpIpWorkerThread::Entry()
 	wxLogDebug( _("clientTcpIpWorkerThread: Starting.") );
 	
     // Set up the net_skeleton communication engine
-    //ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf, clientTcpIpWorkerThread::ev_handler );
+#ifdef USE_FOSSA
     ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf );
+#else
+    ns_mgr_init( &m_mgrTcpIpConnection, m_pvscpRemoteTcpIpIf, clientTcpIpWorkerThread::ev_handler );
+#endif
     
-    //if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
-    //                            (const char *)m_hostname.mbc_str(),
-    //                             m_pvscpRemoteTcpIpIf ) ) {
+    
+#ifdef USE_FOSSA
     if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
                                 (const char *)m_hostname.mbc_str(),
                                  clientTcpIpWorkerThread::ev_handler ) ) {
+#else
+    if ( NULL == ns_connect( &m_mgrTcpIpConnection, 
+                                (const char *)m_hostname.mbc_str(),
+                                 m_pvscpRemoteTcpIpIf ) ) {
+#endif
 		wxLogDebug( _("clientTcpIpWorkerThread: Connect failed!") );
         return NULL;
     }

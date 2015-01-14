@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -37,17 +37,17 @@
 #define DWORD unsigned long
 #endif
 
-#include "vscp.h"
-#include "tcpipclientthread.h"
-#include "canal_win32_ipc.h"
-#include "canal_macro.h"
-#include "../common/canal.h"
-#include "vscphelper.h"
-#include "../../common/dllist.h"
-#include "../../common/md5.h"
-#include "../../common/net_skeleton.h"
-#include "version.h"
-#include "controlobject.h"
+#include <vscp.h>
+#include <tcpipclientthread.h>
+#include <canal_win32_ipc.h>
+#include <canal_macro.h>
+#include <canal.h>
+#include <vscphelper.h>
+#include <dllist.h>
+#include <md5.h>
+#include <net_skeleton.h>
+#include <version.h>
+#include <controlobject.h>
 
 
 //WX_DEFINE_LIST(TCPCLIENTS);

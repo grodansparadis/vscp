@@ -51,7 +51,7 @@
 
 //#include "controlobject.h"
 #include "vscpdlldef.h"
-#include "common/dllist.h"
+#include <dllist.h>
 #include "clientlist.h"
 #include "devicethread.h"
 

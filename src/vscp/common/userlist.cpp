@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -45,7 +45,7 @@
 #include <wx/xml/xml.h>
 #include <wx/tokenzr.h>
 
-#include "vscphelper.h"
+#include <vscphelper.h>
 #include "userlist.h"
 
 

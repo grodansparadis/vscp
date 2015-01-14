@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -59,9 +59,9 @@
 #include "vscp.h"
 #include "vscphelper.h"
 #include "clientlist.h"
-#include "../../common/dllist.h"
-#include "../../common/md5.h"
-#include "../../common/crc8.h"
+#include <dllist.h>
+#include <md5.h>
+#include <crc8.h>
 #include "controlobject.h"
 #include "guid.h"
 #include "vscpd_caps.h"

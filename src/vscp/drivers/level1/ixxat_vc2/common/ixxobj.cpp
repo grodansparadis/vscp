@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -20,10 +20,7 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: ixxobj.cpp,v $                                       
-// $Date: 2005/02/16 13:17:54 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.11 $ 
+// 
 
 #include "stdio.h"
 #include "ixxobj.h"

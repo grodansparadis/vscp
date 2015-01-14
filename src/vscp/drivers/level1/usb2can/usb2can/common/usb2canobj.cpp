@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://can.sourceforge.net) 
 //
-// Copyright (C) 2000-2008 Ake Hedman, D of Scandinavia, <akhe@eurosource.se>
+// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com
 // Copyright (C) 2008 Gediminas Simanskis , edevices, www.edevices.lt
 // 
 // This file is distributed in the hope that it will be useful,

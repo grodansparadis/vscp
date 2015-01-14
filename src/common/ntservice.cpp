@@ -176,7 +176,7 @@ BOOL CNTService::ParseStandardArgs(int argc, char* argv[])
 
 void CNTService::showHelp( void )
 {
-	printf("\nVSCP Service - (C) 2000-2014 Grodans Paradis AB\n");
+	printf("\nVSCP Service - (C) 2000-2015 Grodans Paradis AB\n");
 	printf("===============================================\n\n");
 	printf("Command line switches.\n");
 	printf("----------------------\n");

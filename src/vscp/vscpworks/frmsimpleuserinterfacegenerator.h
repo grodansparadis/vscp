@@ -36,7 +36,7 @@
 //  this file might be covered by the GNU General Public License.
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
-//  eurosource at info@eurosource.se, http://www.eurosource.se
+//  Ake Hedman, Grodans Paradis AB, akhe@grodansparadis.com
 // 
 
 #ifndef _FRMSIMPLEUSERINTERFACEGENERATOR_H_

@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
+// Copyright (C) 2000-2015 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -122,21 +122,21 @@
 #include "web_js.h"
 #include "web_template.h"
 
-#include "../../common/slre.h"
-#include "../../common/frozen.h"
-#include "../../common/net_skeleton.h"
-#include "../../common/mongoose.h"
+#include <slre.h>
+#include <frozen.h>
+#include <net_skeleton.h>
+#include <mongoose.h>
 
 #include "canal_macro.h"
-#include "../common/vscp.h"
-#include "../common/vscphelper.h"
-#include "../common/vscpeventhelper.h"
-#include "../common/tables.h"
-#include "../../common/configfile.h"
-#include "../../common/crc.h"
-#include "../../common/md5.h"
-#include "../../common/randpassword.h"
-#include "../common/version.h"
+#include <vscp.h>
+#include <vscphelper.h>
+#include <vscpeventhelper.h>
+#include <tables.h>
+#include <configfile.h>
+#include <crc.h>
+#include <md5.h>
+#include <randpassword.h>
+#include <version.h>
 #include "variablecodes.h"
 #include "actioncodes.h"
 #include "devicelist.h"
@@ -333,7 +333,7 @@ if ( 0 ) {
     timeinfo->tm_sec = 0;
     timeinfo->tm_mday = 3;
     timeinfo->tm_mon = 10;
-    timeinfo->tm_year = 2014;
+    timeinfo->tm_year = 2015;
     time_t ttt = mktime ( timeinfo );
     ttt = ttt + 1;
 }

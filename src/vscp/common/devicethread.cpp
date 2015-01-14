@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -52,14 +52,14 @@
 #endif
 
 #include "daemonvscp.h"
-#include "canal_win32_ipc.h"
-#include "canal_macro.h"
-#include "vscp.h"
-#include "vscpdlldef.h"
-#include "vscphelper.h"
-#include "../../common/dllist.h"
-#include "../../common/md5.h"
-#include "controlobject.h"
+#include <canal_win32_ipc.h>
+#include <canal_macro.h>
+#include <vscp.h>
+#include <vscpdlldef.h>
+#include <vscphelper.h>
+#include <dllist.h>
+#include <md5.h>
+#include <controlobject.h>
 #include "devicethread.h"
 
 

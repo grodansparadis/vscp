@@ -7,7 +7,7 @@
 //
 // This file is part of the VSCP (http://www.vscp.org)
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
@@ -43,14 +43,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "vscp.h"
-#include "vscphelper.h"
-#include "vscpeventhelper.h"
-#include "actioncodes.h"
-#include "vscpvariable.h"
-#include "controlobject.h"
-#include "vscpremotetcpif.h"
-#include "dm.h"
+#include <vscp.h>
+#include <vscphelper.h>
+#include <vscpeventhelper.h>
+#include <actioncodes.h>
+#include <vscpvariable.h>
+#include <controlobject.h>
+#include <vscpremotetcpif.h>
+#include <dm.h>
 
 
 WX_DEFINE_LIST( PLUGINLIST );
