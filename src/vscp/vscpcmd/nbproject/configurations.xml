@@ -70,7 +70,6 @@
             <incDir>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
               <pElem>/usr/local/include/wx-3.0</pElem>
-              <pElem>.</pElem>
             </incDir>
             <preprocessorList>
               <Elem>NS_ENABLE_SSL</Elem>
@@ -88,22 +87,56 @@
         </makeTool>
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../../common/frozen.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/frozen.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../../common/slre.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/slre.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
       </item>
-      <item path="../../common/v7.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/v7.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </cTool>
       </item>
       <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -117,6 +150,8 @@
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -130,6 +165,8 @@
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
@@ -156,6 +193,8 @@
           <incDir>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
@@ -164,6 +203,8 @@
         </ccTool>
       </folder>
       <item path="vscpcmd.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>

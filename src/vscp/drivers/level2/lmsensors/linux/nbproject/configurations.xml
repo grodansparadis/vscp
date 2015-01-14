@@ -58,6 +58,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -82,17 +83,25 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
             tool="0"
             flavor2="0">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -106,6 +115,8 @@
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -122,6 +133,8 @@
             flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -162,6 +175,8 @@
       <folder path="src">
         <cTool>
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -186,6 +201,8 @@
       <item path="lmsensors.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
@@ -212,6 +229,8 @@
       <item path="vscp2drv_lmsensors.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>

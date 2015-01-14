@@ -201,7 +201,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
 		// Write pid to file
 		FILE *pFile;
-		pFile = fopen("/var/run/vscpd.pid", "w");
+		pFile = fopen("/var/run/vscpd/vscpd.pid", "w");
 		if (NULL != pFile) {
 			fprintf(pFile, "%d\n", sid);
 			fclose(pFile);

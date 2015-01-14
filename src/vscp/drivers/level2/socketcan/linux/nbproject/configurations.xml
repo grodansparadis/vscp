@@ -67,18 +67,12 @@
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>../../../../daemon/linux/vscpd</executablePath>
           <cTool>
-            <incDir>
-              <pElem>include</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
-            <incDir>
-              <pElem>include</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -87,17 +81,26 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
             tool="0"
             flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>include</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -111,6 +114,9 @@
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>include</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -127,6 +133,9 @@
             flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>include</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -140,6 +149,7 @@
       <item path="../../../../common/vscptcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
+            <pElem>include</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
@@ -153,8 +163,16 @@
         </ccTool>
       </item>
       <folder path="0">
+        <cTool>
+          <incDir>
+            <pElem>include</pElem>
+          </incDir>
+        </cTool>
         <ccTool>
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>include</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
@@ -167,6 +185,9 @@
       <folder path="common">
         <cTool>
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>include</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -190,6 +211,8 @@
         </cTool>
       </item>
       <item path="socketcan.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
         <cTool flags="1">
@@ -204,6 +227,8 @@
         </cTool>
       </item>
       <item path="vscp2drv_socketcan.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>

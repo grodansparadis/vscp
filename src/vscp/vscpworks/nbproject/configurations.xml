@@ -127,6 +127,7 @@
             </incDir>
             <preprocessorList>
               <Elem>NS_ENABLE_SSL</Elem>
+              <Elem>USE_FOSSA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -136,10 +137,25 @@
         </makeTool>
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="0">
+        <cTool>
+          <preprocessorList>
+            <Elem>USE_FOSSA</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../common/crc8.c" ex="false" tool="0" flavor2="0">
+        <cTool>
+          <preprocessorList>
+            <Elem>USE_FOSSA</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../common/fossa.c" ex="false" tool="0" flavor2="0">
+        <cTool>
+          <preprocessorList>
+            <Elem>USE_FOSSA</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
       </item>

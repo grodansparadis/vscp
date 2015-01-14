@@ -70,6 +70,10 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2 -fPIC"/>
+        <element flagsID="1" commonFlags="-g -O2 -fPIC"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -80,6 +84,8 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
+              <pElem>../../../../common</pElem>
+              <pElem>../../../../../common</pElem>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
               <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>.</pElem>
@@ -92,10 +98,6 @@
             </preprocessorList>
           </cTool>
           <ccTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
@@ -107,21 +109,62 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/com.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../../../common/devicethread.cpp"
             ex="false"
             tool="1"
             flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>.</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="can232drv.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="can232obj.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <folder path="src">
         <ccTool>
@@ -130,9 +173,35 @@
           </incDir>
         </ccTool>
       </folder>
+      <folder path="src/common">
+        <ccTool>
+          <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
+        </ccTool>
+      </folder>
       <item path="test.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="vscpl1_can232drv.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
+        </ccTool>
       </item>
     </conf>
   </confs>

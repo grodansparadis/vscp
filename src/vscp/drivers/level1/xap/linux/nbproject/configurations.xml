@@ -74,6 +74,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC"/>
+        <element flagsID="1" commonFlags="-g -O2"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -85,6 +86,8 @@
           <executablePath></executablePath>
           <cTool>
             <incDir>
+              <pElem>../../../../common</pElem>
+              <pElem>../../../../../common</pElem>
               <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
               <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>.</pElem>
@@ -105,7 +108,9 @@
           </ccTool>
         </makeTool>
       </makefileType>
-      <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="0">
+      <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -122,9 +127,11 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -135,14 +142,12 @@
           </preprocessorList>
         </ccTool>
       </item>
-      <item path="../common/xapobj.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/xapobj.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <folder path="0">
         <ccTool>
-          <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-            <pElem>/usr/local/include/wx-3.0</pElem>
-          </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
@@ -152,6 +157,8 @@
       <folder path="common">
         <ccTool>
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
@@ -169,11 +176,33 @@
           </incDir>
         </ccTool>
       </folder>
-      <item path="test.cpp" ex="false" tool="1" flavor2="0">
+      <item path="test.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="vscpl1_xapdrv.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
+        </ccTool>
       </item>
       <item path="xapdrv.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+          </incDir>
+        </ccTool>
       </item>
     </conf>
   </confs>

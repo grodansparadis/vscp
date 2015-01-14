@@ -27,7 +27,7 @@ case "$1" in
   start)
     log_begin_msg "Starting VSCP daemon: $NAME"
     [ -d /var/run/vscpd ] || mkdir -p /var/run/vscpd
-#    start-stop-daemon --start --background -m --pidfile /var/run/vscpd.pid --exec $DAEMON && log_end_msg 0 || log_end_msg 1
+#    start-stop-daemon --start --background -m --pidfile /var/run/vscpd/vscpd.pid --exec $DAEMON && log_end_msg 0 || log_end_msg 1
      start-stop-daemon --start --pidfile /var/run/vscpd.pid --exec $DAEMON && log_end_msg 0 || log_end_msg 1
 
     ;;

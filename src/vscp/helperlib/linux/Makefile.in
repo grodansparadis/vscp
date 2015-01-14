@@ -10,8 +10,8 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@ -fPIC -D__LINUX__ 
-CPPFLAGS = @CPPFLAGS@ -fPIC
+CXXFLAGS = @CXXFLAGS@ -fPIC -D__LINUX__ -I../../common -I../../../common
+CPPFLAGS = @CPPFLAGS@ -fPIC -DUSE_FOSSA -I../../common -I../../../common
 CFLAGS = -fPIC -D__LINUX__ 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPHELPER_OBJECTS =  libvscphelper.o ../vscphelperlib.o ../../common/vscpremotetcpif.o ../../common/vscphelper.o ../../common/guid.o ../../../common/crc.o ../../../common/crc8.o ../../../common/net_skeleton.o 
-PROJOBJS        =  ../vscphelperlib.h ../../common/vscpremotetcpif.o ../../common/vscphelper.o  ../../../common/crc.o ../../common/guid.o ../../../common/crc8.o ../../../common/net_skeleton.o
+VSCPHELPER_OBJECTS =  libvscphelper.o ../vscphelperlib.o ../../common/vscpremotetcpif.o ../../common/vscphelper.o ../../common/guid.o ../../../common/crc.o ../../../common/crc8.o ../../../common/fossa.o 
+PROJOBJS        =  ../vscphelperlib.h ../../common/vscpremotetcpif.o ../../common/vscphelper.o  ../../../common/crc.o ../../common/guid.o ../../../common/crc8.o ../../../common/fossa.o
 
 
 
@@ -70,7 +70,7 @@ lib:   libvscphelper.so
 	ar rcs libvscphelper.a libvscphelper.o
 
 test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -I../../common -I../../../common -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
 %.so: %.o $(VSCPHELPER_OBJECTS)

@@ -10,9 +10,9 @@ top_wxsrcdir = @top_wxsrcdir@
 top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
-CXXFLAGS = @CXXFLAGS@ -fPIC
-CPPFLAGS = @CPPFLAGS@ -fPIC
-CFLAGS = -fPIC
+CXXFLAGS = @CXXFLAGS@ -fPIC 
+CPPFLAGS = @CPPFLAGS@ -fPIC 
+CFLAGS = -fPIC 
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
 DLFLAGS = -g -shared -fPIC
@@ -69,7 +69,7 @@ distclean: clean
 	
 
 test:  test.o $(PROJOBJS)
-	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
+	$(CXX) -I../common -I../../common -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
 %.so: %.o $(VSCPL1_OBJECTS)

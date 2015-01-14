@@ -39,6 +39,9 @@
         <dependencyChecking>false</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-O2 -fPIC -fPIC -fPIC -fPIC"/>
+      </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
       <makefileType>
@@ -50,10 +53,14 @@
         </makeTool>
       </makefileType>
       <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <folder path="common">
         <ccTool>
           <incDir>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
             <pElem>/usr/local/include/wx-2.8</pElem>
             <pElem>.</pElem>
