@@ -220,14 +220,10 @@ void frmMain::CreateControls()
                             _("Configuration..."), 
                             wxEmptyString, 
                             wxITEM_NORMAL);
-    itemMenu17->AppendSeparator();
-    itemMenu17->Append( ID_MENUITEM_MDF_EDITOR, 
-                            _("MDF Editor"), 
-                            wxEmptyString, 
-                            wxITEM_NORMAL );
     
     // Tools menu
     menuBar->Append(itemMenu17, _("Tools"));
+
     wxMenu* itemMenu21 = new wxMenu;
     itemMenu21->Append( ID_MENUITEM33, 
                             _("VSCP-Works Help"), 

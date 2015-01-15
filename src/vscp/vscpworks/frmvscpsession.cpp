@@ -102,7 +102,8 @@ IMPLEMENT_CLASS(frmVSCPSession, wxFrame)
 BEGIN_EVENT_TABLE(frmVSCPSession, wxFrame)
 
     EVT_CLOSE( frmVSCPSession::OnCloseWindow )
-    EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON_ACTIVATE, frmVSCPSession::OnInterfaceActivate )
+    EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON_CONNECTION_ACTIVATE, frmVSCPSession::OnInterfaceActivate )
+    EVT_TOGGLEBUTTON( ID_TOGGLEBUTTON_FILTER_ACTIVATE, frmVSCPSession::OnFilterActivate )
     EVT_MENU( ID_MENUITEM_VSCP_LOAD_MSG_LIST, frmVSCPSession::LoadRXEventList )
     EVT_MENU( ID_MENUITEM_VSCP_SAVE_MSG_LIST, frmVSCPSession::SaveRXEventList )
     EVT_MENU( ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET, frmVSCPSession::OnTxLoadClick )
@@ -619,8 +620,8 @@ void frmVSCPSession::stopWorkerThreads(void)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON_ACTIVATE
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET
+// OnInterfaceActivate
+// 
 
 void frmVSCPSession::OnInterfaceActivate(wxCommandEvent& event)
 {
@@ -638,6 +639,30 @@ void frmVSCPSession::OnInterfaceActivate(wxCommandEvent& event)
         m_BtnActivateInterface->SetLabel(_("Connected"));
     }
 
+    event.Skip();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnFilterActivate
+// 
+
+void frmVSCPSession::OnFilterActivate(wxCommandEvent& event)
+{
+    wxBusyCursor wait;
+/*
+    if (!m_BtnActivateInterface->GetValue()) {
+        m_CtrlObject.m_bQuit = true;
+        m_BtnActivateInterface->SetValue(false);
+        m_BtnActivateInterface->SetLabel(_("Disconnected"));
+    } 
+    else {
+        m_CtrlObject.m_bQuit = false;
+        startWorkerThreads(this); // Start worker threads
+        m_BtnActivateInterface->SetValue(true);
+        m_BtnActivateInterface->SetLabel(_("Connected"));
+    }
+*/
     event.Skip();
 
 }
@@ -661,6 +686,7 @@ void frmVSCPSession::CreateControls()
 
     // Menu
     wxMenuBar* menuBar = new wxMenuBar;
+
     wxMenu* itemMenu16 = new wxMenu;
     itemMenu16->Append(ID_MENUITEM_VSCP_LOAD_MSG_LIST, _("Load VSCP events from file..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu16->Append(ID_MENUITEM_VSCP_SAVE_MSG_LIST, _("Save VSCP events to file..."), wxEmptyString, wxITEM_NORMAL);
@@ -670,6 +696,7 @@ void frmVSCPSession::CreateControls()
     itemMenu16->AppendSeparator();
     itemMenu16->Append(ID_MENUITEM_VSCP_SESSION_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu16, _("File"));
+    
     wxMenu* itemMenu24 = new wxMenu;
     itemMenu24->Append(ID_MENUITEM_VSCP_CUT, _("Cut"), wxEmptyString, wxITEM_NORMAL);
     itemMenu24->Append(ID_MENUITEM_VSCP_COPY, _("Copy"), wxEmptyString, wxITEM_NORMAL);
@@ -678,12 +705,14 @@ void frmVSCPSession::CreateControls()
     itemMenu24->Append(ID_MENUITEM4, _("Clear receive list"), wxEmptyString, wxITEM_NORMAL);
     itemMenu24->Append(ID_MENUITEM5, _("Clear transmission list"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu24, _("Edit"));
+    
     wxMenu* itemMenu31 = new wxMenu;
     itemMenu31->Append(ID_MENUITEM_VSCP_LOG, _("Message Log"), wxEmptyString, wxITEM_RADIO);
     itemMenu31->Check(ID_MENUITEM_VSCP_LOG, true);
     itemMenu31->Append(ID_MENUITEM_VSCP_COUNT, _("Message Count"), wxEmptyString, wxITEM_RADIO);
     itemMenu31->AppendSeparator();
     menuBar->Append(itemMenu31, _("View"));
+    
     wxMenu* itemMenu35 = new wxMenu;
     itemMenu35->Append(ID_MENUITEM_READ_REGISTER, _("Read Regiister..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu35->Append(ID_MENUITEM_WRITE_REGISTER, _("Write Register..."), wxEmptyString, wxITEM_NORMAL);
@@ -693,6 +722,7 @@ void frmVSCPSession::CreateControls()
     itemMenu35->Append(ID_MENUITEM_GET_MDF_URL, _("Get MDF URL..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu35->Append(ID_MENUITEM_GET_MDF, _("Get MDF..."), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu35, _("VSCP"));
+    
     wxMenu* itemMenu43 = new wxMenu;
     itemMenu43->Append(ID_MENUITEM_RX_GRID_WIDTH, _("Save RX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
     itemMenu43->Append(ID_MENUITEM_SAVE_TX_GRID_WIDTH, _("Save TX Grid widths as standard"), wxEmptyString, wxITEM_NORMAL);
@@ -703,6 +733,7 @@ void frmVSCPSession::CreateControls()
     itemMenu43->AppendSeparator();
     itemMenu43->Append(ID_MENUITEM, _("Configuration..."), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu43, _("Configuration"));
+    
     wxMenu* itemMenu52 = new wxMenu;
     menuBar->Append(itemMenu52, _("Tools"));
     wxMenu* itemMenu53 = new wxMenu;
@@ -717,6 +748,7 @@ void frmVSCPSession::CreateControls()
     itemMenu53->AppendSeparator();
     itemMenu53->Append(ID_MENUITEM_VSCP_ABOUT, _("About"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu53, _("Help"));
+    
     itemFrame1->SetMenuBar(menuBar);
 
     wxToolBar* itemToolBar2 = CreateToolBar( wxTB_FLAT|wxTB_HORIZONTAL, ID_TOOLBAR_VSCP_SESSION );
@@ -742,8 +774,26 @@ void frmVSCPSession::CreateControls()
     itemToolBar2->AddTool(ID_TOOL_VSCP_PRINT, wxEmptyString, itemtool10Bitmap, itemtool10BitmapDisabled, wxITEM_NORMAL, _("Print selected or all row(s)"), wxEmptyString);
     itemToolBar2->AddSeparator();
     itemToolBar2->AddSeparator();
+
+    m_BtnActivateFilter = new wxToggleButton;
+    m_BtnActivateFilter->Create( itemToolBar2, 
+                                    ID_TOGGLEBUTTON_FILTER_ACTIVATE, 
+                                    _("Filter"), 
+                                    wxDefaultPosition, 
+                                    wxSize(40, -1), 
+                                    0 );
+    m_BtnActivateFilter->SetValue(false);
+    if (frmVSCPSession::ShowToolTips())
+        m_BtnActivateFilter->SetToolTip(_("Acticate/Deactivate the receive filter"));
+    itemToolBar2->AddControl( m_BtnActivateFilter );
+
     m_BtnActivateInterface = new wxToggleButton;
-    m_BtnActivateInterface->Create( itemToolBar2, ID_TOGGLEBUTTON_ACTIVATE, _("Connected"), wxDefaultPosition, wxSize(120, -1), 0 );
+    m_BtnActivateInterface->Create( itemToolBar2, 
+                                        ID_TOGGLEBUTTON_CONNECTION_ACTIVATE, 
+                                        _("Connected"), 
+                                        wxDefaultPosition, 
+                                        wxSize(80, -1), 
+                                        0 );
     m_BtnActivateInterface->SetValue(true);
     if (frmVSCPSession::ShowToolTips())
         m_BtnActivateInterface->SetToolTip(_("Acticate/Deactivate the interface"));
@@ -751,6 +801,10 @@ void frmVSCPSession::CreateControls()
     //m_BtnActivateInterface->SetBackgroundColour(wxColour(165, 42, 42));
     //m_BtnActivateInterface->SetFont(wxFont(10, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
     itemToolBar2->AddControl(m_BtnActivateInterface);
+
+    
+
+
     itemToolBar2->Realize();
     itemFrame1->SetToolBar(itemToolBar2);
 

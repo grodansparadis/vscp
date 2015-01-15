@@ -589,6 +589,8 @@ public:
     /// wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_TOGGLEBUTTON_ACTIVATE
     void OnInterfaceActivate( wxCommandEvent& event );
 
+    void OnFilterActivate(wxCommandEvent& event);
+
     /// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOAD_MSG_LIST
     void LoadRXEventList( wxCommandEvent& event );
 
@@ -734,6 +736,7 @@ public:
   
     wxStatusBar* m_pitemStatusBar;
     wxToggleButton* m_BtnActivateInterface;
+    wxToggleButton* m_BtnActivateFilter;
     wxPanel* m_pPanel;
     wxGrid* m_ctrlGridReceive;
     wxHtmlWindow* m_ctrlRcvHtmlInfo;
@@ -758,7 +761,8 @@ public:
         ID_TOOL_VSCP_COPY = 13015,
         ID_TOOL_VSCP_PASTE = 13016,
         ID_TOOL_VSCP_PRINT = 13017,
-        ID_TOGGLEBUTTON_ACTIVATE = 13019,
+        ID_TOGGLEBUTTON_CONNECTION_ACTIVATE = 13019,
+        ID_TOGGLEBUTTON_FILTER_ACTIVATE = 13020,
         ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET = 13023,
         ID_MENUITEM_VSCP_SAVE_TRANSMISSION_SET = 13024,
         ID_MENUITEM_VSCP_SESSION_EXIT = 13025,

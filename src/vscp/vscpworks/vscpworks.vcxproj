@@ -125,8 +125,10 @@
     <ClInclude Include="dlgabout.h" />
     <ClInclude Include="dlgabout_symbols.h" />
     <ClInclude Include="dlgabstractionedit.h" />
+    <ClInclude Include="dlgclasstypeselect.h" />
     <ClInclude Include="dlgconfiguration.h" />
     <ClInclude Include="dlgeditlevel1dmrow.h" />
+    <ClInclude Include="dlgeventfilter.h" />
     <ClInclude Include="dlgnewvscpsession.h" />
     <ClInclude Include="dlgselectdaemoninterface.h" />
     <ClInclude Include="dlgsetfiltermask.h" />
@@ -172,8 +174,10 @@
     <ClCompile Include="devicebootloaderwizard.cpp" />
     <ClCompile Include="dlgabout.cpp" />
     <ClCompile Include="dlgabstractionedit.cpp" />
+    <ClCompile Include="dlgclasstypeselect.cpp" />
     <ClCompile Include="dlgconfiguration.cpp" />
     <ClCompile Include="dlgeditlevel1dmrow.cpp" />
+    <ClCompile Include="dlgeventfilter.cpp" />
     <ClCompile Include="dlgnewvscpsession.cpp" />
     <ClCompile Include="dlgselectdaemoninterface.cpp" />
     <ClCompile Include="dlgsetfiltermask.cpp" />
