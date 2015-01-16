@@ -2549,13 +2549,13 @@ void frmVSCPSession::OnMenuitemSetFilterClick( wxCommandEvent& event )
         // Get filter values for display
         m_filterArrayDisplay.Clear();
         for ( uint16_t i=0; i<dlg.m_ctrlListDisplay->GetCount(); i++ ) {
-            m_filterArrayDisplay.Add( (uint32_t)dlg.m_ctrlListDisplay->GetClientData( i ) );
+            m_filterArrayDisplay.Add( (unsigned long)dlg.m_ctrlListDisplay->GetClientData( i ) );
         }
 
         // Get filter values for filter
         m_filterArrayFilter.Clear();
         for ( uint16_t i=0; i<dlg.m_ctrlListFilter->GetCount(); i++ ) {
-            m_filterArrayFilter.Add( (uint32_t)dlg.m_ctrlListFilter->GetClientData( i ) );
+            m_filterArrayFilter.Add( (unsigned long)dlg.m_ctrlListFilter->GetClientData( i ) );
         }
 
         if ( m_bfilterActive ) {

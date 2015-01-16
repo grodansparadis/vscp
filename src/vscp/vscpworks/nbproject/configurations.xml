@@ -48,8 +48,10 @@
       <in>devicebootloaderwizard.cpp</in>
       <in>dlgabout.cpp</in>
       <in>dlgabstractionedit.cpp</in>
+      <in>dlgclasstypeselect.cpp</in>
       <in>dlgconfiguration.cpp</in>
       <in>dlgeditlevel1dmrow.cpp</in>
+      <in>dlgeventfilter.cpp</in>
       <in>dlgnewvscpsession.cpp</in>
       <in>dlgselectdaemoninterface.cpp</in>
       <in>dlgsetfiltermask.cpp</in>
@@ -136,21 +138,21 @@
           </ccTool>
         </makeTool>
       </makefileType>
-      <item path="../../common/crc.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
           </preprocessorList>
         </cTool>
       </item>
-      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/crc8.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
           </preprocessorList>
         </cTool>
       </item>
-      <item path="../../common/fossa.c" ex="false" tool="0" flavor2="0">
+      <item path="../../common/fossa.c" ex="false" tool="0" flavor2="2">
         <cTool>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
@@ -159,95 +161,103 @@
       </item>
       <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
       </item>
-      <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/dllwrapper.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/dllwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/mdf.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/mdf.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/register.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/register.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/vscpeventhelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="0">
+      <item path="../common/vscpremotetcpif.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="bootdevice.cpp" ex="false" tool="1" flavor2="0">
+      <item path="bootdevice.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="bootdevice_pic1.cpp" ex="false" tool="1" flavor2="0">
+      <item path="bootdevice_pic1.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="bootdevice_vscp.cpp" ex="false" tool="1" flavor2="0">
+      <item path="bootdevice_vscp.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="devicebootloaderwizard.cpp" ex="false" tool="1" flavor2="0">
+      <item path="devicebootloaderwizard.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgabout.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgabout.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgabstractionedit.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgabstractionedit.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgconfiguration.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgclasstypeselect.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgeditlevel1dmrow.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgconfiguration.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgnewvscpsession.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgeditlevel1dmrow.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgselectdaemoninterface.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgeventfilter.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgsetfiltermask.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgnewvscpsession.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgvscpfilter.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgselectdaemoninterface.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgvscpinterfacesettings.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgsetfiltermask.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgvscpmsg.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgvscpfilter.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="dlgvscptrmit.cpp" ex="false" tool="1" flavor2="0">
+      <item path="dlgvscpinterfacesettings.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="dlgvscpmsg.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="dlgvscptrmit.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
@@ -258,62 +268,62 @@
           </incDir>
         </ccTool>
       </folder>
-      <item path="frmdaemondecisionmartrixeditor.cpp" ex="false" tool="1" flavor2="0">
+      <item path="frmdaemondecisionmartrixeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="frmdaemonvariableeditor.cpp" ex="false" tool="1" flavor2="0">
+      <item path="frmdaemonvariableeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="frmdeviceconfig.cpp" ex="false" tool="1" flavor2="0">
+      <item path="frmdeviceconfig.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="frmmain.cpp" ex="false" tool="1" flavor2="0">
+      <item path="frmmain.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="frmmdfeditor.cpp" ex="false" tool="1" flavor2="0">
+      <item path="frmmdfeditor.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="frmscanfordevices.cpp" ex="false" tool="1" flavor2="0">
+      <item path="frmscanfordevices.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
       <item path="frmsimpleuserinterfacegenerator.cpp"
             ex="false"
             tool="1"
-            flavor2="0">
+            flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="frmvscpsession.cpp" ex="false" tool="1" flavor2="0">
+      <item path="frmvscpsession.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="gridtable.cpp" ex="false" tool="1" flavor2="0">
+      <item path="gridtable.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="merlin.cpp" ex="false" tool="1" flavor2="0">
+      <item path="merlin.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="threadvscpwork.cpp" ex="false" tool="1" flavor2="0">
+      <item path="threadvscpwork.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="vscpbootloader.cpp" ex="false" tool="1" flavor2="0">
+      <item path="vscpbootloader.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="vscptxobj.cpp" ex="false" tool="1" flavor2="0">
+      <item path="vscptxobj.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>
-      <item path="vscpworks.cpp" ex="false" tool="1" flavor2="0">
+      <item path="vscpworks.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
         </ccTool>
       </item>

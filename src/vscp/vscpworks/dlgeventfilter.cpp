@@ -330,7 +330,7 @@ void dlgEventFilter::OnButtonAddDisplayEventClick( wxCommandEvent& event )
         uint32_t clientdata = ( ( vscp_class<<16 ) + vscp_type );
 
         for ( uint16_t i=0; i<m_ctrlListDisplay->GetCount(); i++ ) {
-            if ( clientdata == (uint32_t)m_ctrlListDisplay->GetClientData( i ) ) {
+            if ( clientdata == (unsigned long)m_ctrlListDisplay->GetClientData( i ) ) {
                 wxMessageBox( _("Class/Type is allready defined.") );
                goto error;
             }
@@ -384,7 +384,7 @@ void dlgEventFilter::OnButtonAddFilterEventClick( wxCommandEvent& event )
         uint32_t clientdata = ( ( vscp_class<<16 ) + vscp_type );
 
         for ( uint16_t i=0; i<m_ctrlListFilter->GetCount(); i++ ) {
-            if ( clientdata == (uint32_t)m_ctrlListFilter->GetClientData( i ) ) {
+            if ( clientdata == (unsigned long)m_ctrlListFilter->GetClientData( i ) ) {
                 wxMessageBox( _("Class/Type is allready defined.") );
                goto error;
             }
@@ -598,7 +598,7 @@ void dlgEventFilter::OnButtonSaveClick( wxCommandEvent& event )
       
         if ( m_ctrlListDisplay->GetCount() ) {
             for ( size_t i=0; i<m_ctrlListDisplay->GetCount(); i++ ) {
-                uint32_t clientdata = (uint32_t)m_ctrlListDisplay->GetClientData( i );
+                uint32_t clientdata = (unsigned long)m_ctrlListDisplay->GetClientData( i );
                 pFileStream->Write("<item>\n", strlen("<item>\n"));    
                 pFileStream->Write("<class>", strlen("<class>"));
                 str.Printf( _("%d"), clientdata>>16 );
@@ -615,7 +615,7 @@ void dlgEventFilter::OnButtonSaveClick( wxCommandEvent& event )
 
         if ( m_ctrlListFilter->GetCount() ) {
             for ( size_t i=0; i<m_ctrlListFilter->GetCount(); i++ ) {
-                uint32_t clientdata = (uint32_t)m_ctrlListFilter->GetClientData( i );
+                uint32_t clientdata = (unsigned long)m_ctrlListFilter->GetClientData( i );
                 pFileStream->Write("<item>\n", strlen("<item>\n"));    
                 pFileStream->Write("<class>", strlen("<class>"));
                 str.Printf( _("%d"), clientdata>>16 );
