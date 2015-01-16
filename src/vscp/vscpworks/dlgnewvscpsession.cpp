@@ -57,9 +57,6 @@
 #include <wx/notebook.h>
 #include <wx/list.h>
 
-////@begin includes
-////@end includes
-
 #include "vscp.h"
 #include "vscphelper.h"
 #include "vscpworks.h"

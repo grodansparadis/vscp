@@ -33,12 +33,7 @@
 #if !defined(VSCPEVENTHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
 #define VSCPEVENTHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
 
-#ifdef VSCP_QT
 
-#include <QString>
-#include <QStringList>
-
-#else
 
 
 #include <wx/wx.h>
@@ -47,7 +42,6 @@
 #include <sys/times.h>
 #endif
 
-#endif
 
 #include <vscp.h>
 #include <vscp_class.h>
@@ -104,19 +98,15 @@ extern "C" {
 
         /*!
           Get class description from class id
-         */
-#ifdef VSCP_QT
-#else		 
+         */		 
         wxString& getClassDescription(int vscp_class);
-#endif		
+		
 
         /*!
           Get type description from class id and type id
-         */
-#ifdef VSCP_QT
-#else		 
+         */		 
         wxString& getTypeDescription(int vscp_class, int vscp_type);
-#endif		
+	
 
 
         /*!
@@ -128,12 +118,10 @@ extern "C" {
 #ifdef VSCP_QT
 #else		 
         void fillClassDescriptions( wxArrayString& strArray, 
-					VSCPInformationFormat format = DEFAULT );
+					                    VSCPInformationFormat format = DEFAULT );
 #endif		
 
 
-#ifdef VSCP_QT
-#else
         // We don't want the graphcal UI on apps that don't use it 
 #if ( wxUSE_GUI != 0 )
         /*!
@@ -142,10 +130,9 @@ extern "C" {
             \param format Format for list. 0 is just description, 1 is
                 id + description
          */
-        void fillClassDescriptions(wxControlWithItems *pctrl, 
-					VSCPInformationFormat format = DEFAULT);
+        void fillClassDescriptions( wxControlWithItems *pctrl, 
+					                    VSCPInformationFormat format = DEFAULT);
 
-#endif
 #endif
         /*!
             Fills a string array with type descriptions
@@ -153,16 +140,14 @@ extern "C" {
             \param format Format for list. 0 is just description, 1 is
                 id + description
          */
-#ifdef VSCP_QT
-#else		 
-        void fillTypeDescriptions(wxArrayString& strArray, 
-					unsigned int vscp_class, 
-					VSCPInformationFormat format = DEFAULT);
-#endif		
+		 
+        void fillTypeDescriptions (wxArrayString& strArray, 
+					                unsigned int vscp_class, 
+					                VSCPInformationFormat format = DEFAULT);
+	
 
         // We don't want the graphcal UI on apps that don't use it 
-#ifdef VSCP_QT
-#else		
+		
 #if ( wxUSE_GUI != 0 )
         /*!
             Fills a combobox with type descriptions
@@ -174,7 +159,6 @@ extern "C" {
 					unsigned int vscp_class, 
 					VSCPInformationFormat format = DEFAULT);
 
-#endif
 #endif
 
  private:

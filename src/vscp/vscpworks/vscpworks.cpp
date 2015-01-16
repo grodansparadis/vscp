@@ -105,17 +105,12 @@ VSCPInformation g_vscpinfo;
 WX_DEFINE_LIST(LIST_CANAL_IF);
 WX_DEFINE_LIST(LIST_VSCP_IF);
 
-////@begin XPM images
-////@end XPM images
-
 
 /*!
 * Application instance implementation
 */
 
-////@begin implement app
 IMPLEMENT_APP( VscpworksApp )
-////@end implement app
 
 
 /*!
@@ -131,8 +126,6 @@ IMPLEMENT_CLASS( VscpworksApp, wxApp )
 
 BEGIN_EVENT_TABLE( VscpworksApp, wxApp )
 
-////@begin VscpworksApp event table entries
-////@end VscpworksApp event table entries
 
 END_EVENT_TABLE()
 

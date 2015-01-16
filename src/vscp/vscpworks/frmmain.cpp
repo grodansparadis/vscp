@@ -217,7 +217,7 @@ void frmMain::CreateControls()
     menuBar->Append(itemMenu3, _("VSCP"));
     wxMenu* itemMenu17 = new wxMenu;
     itemMenu17->Append( ID_MENUITEM_CONFIGURATION, 
-                            _("Configuration..."), 
+                            _("Settings..."), 
                             wxEmptyString, 
                             wxITEM_NORMAL);
     

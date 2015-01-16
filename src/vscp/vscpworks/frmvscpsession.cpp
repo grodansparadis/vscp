@@ -64,6 +64,7 @@
 #include "vscptxobj.h"
 #include "dlgvscptrmit.h"
 #include "dlgabout.h"
+#include "dlgeventfilter.h"
 #include "frmvscpsession.h"
 #include <canal.h>
 #include <vscp.h>
@@ -399,7 +400,7 @@ bool frmVSCPSession::Create( wxWindow* parent,
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// frmVSCPSession destructor
+// Dtor
 //
 
 frmVSCPSession::~frmVSCPSession()
@@ -427,7 +428,7 @@ frmVSCPSession::~frmVSCPSession()
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Member initialisation
+// Init
 //
 
 void frmVSCPSession::Init()
@@ -454,10 +455,12 @@ void frmVSCPSession::Init()
     m_pRXWorkerThread = NULL;
     m_pDeviceWorkerThread = NULL;
 
+    m_bfilterActive = false;
+    m_nfilterMode = FILTER_MODE_DISPLAY;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_CLOSE_WINDOW event handler for ID_FRMVSCPSESSION
+// OnCloseWindow
 //
 
 void frmVSCPSession::OnCloseWindow(wxCloseEvent& event)
@@ -650,26 +653,36 @@ void frmVSCPSession::OnInterfaceActivate(wxCommandEvent& event)
 void frmVSCPSession::OnFilterActivate(wxCommandEvent& event)
 {
     wxBusyCursor wait;
-/*
-    if (!m_BtnActivateInterface->GetValue()) {
-        m_CtrlObject.m_bQuit = true;
-        m_BtnActivateInterface->SetValue(false);
-        m_BtnActivateInterface->SetLabel(_("Disconnected"));
+
+    if ( !m_BtnActivateFilter->GetValue() ) {
+        m_BtnActivateFilter->SetValue(false);
+        m_bfilterActive = false;
+        m_BtnActivateFilter->SetLabel(_("Filter"));
     } 
     else {
-        m_CtrlObject.m_bQuit = false;
-        startWorkerThreads(this); // Start worker threads
-        m_BtnActivateInterface->SetValue(true);
-        m_BtnActivateInterface->SetLabel(_("Connected"));
+        if ( ( FILTER_MODE_DISPLAY == m_nfilterMode ) && ( 0 == m_filterArrayDisplay.GetCount() ) ) {
+            wxMessageBox(_("There is no class/type pairs defined to display."));
+            m_BtnActivateFilter->SetValue(false);
+            m_bfilterActive = false;
+        }
+        else if ( FILTER_MODE_FILTER == m_nfilterMode && ( 0 == m_filterArrayFilter.GetCount() ) ) {
+            wxMessageBox(_("There is no class/type pairs defined to filter."));
+            m_BtnActivateFilter->SetValue(false);
+            m_bfilterActive  = false;
+        }
+        else {
+            m_BtnActivateFilter->SetValue(true);
+            m_bfilterActive = true;
+        }
     }
-*/
+
     event.Skip();
 
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for frmVSCPSession
+// CreateControls
 //
 
 void frmVSCPSession::CreateControls()
@@ -731,8 +744,8 @@ void frmVSCPSession::CreateControls()
     itemMenu43->Append(ID_MENUITEM2, _("Set Burst Count..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu43->Append(ID_MENUITEM3, _("Set Filter..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu43->AppendSeparator();
-    itemMenu43->Append(ID_MENUITEM, _("Configuration..."), wxEmptyString, wxITEM_NORMAL);
-    menuBar->Append(itemMenu43, _("Configuration"));
+    itemMenu43->Append(ID_MENUITEM, _("Settings..."), wxEmptyString, wxITEM_NORMAL);
+    menuBar->Append(itemMenu43, _("Settings"));
     
     wxMenu* itemMenu52 = new wxMenu;
     menuBar->Append(itemMenu52, _("Tools"));
@@ -994,7 +1007,7 @@ void frmVSCPSession::CreateControls()
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_CtrlGridReceive
+// OnGridCellReceiveRightClick
 //
 
 void frmVSCPSession::OnGridCellReceiveRightClick(wxGridEvent& event)
@@ -1004,7 +1017,7 @@ void frmVSCPSession::OnGridCellReceiveRightClick(wxGridEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_GRID_LABEL_LEFT_DCLICK event handler for ID_CtrlGridReceive
+// OnGridLabelLeftDClick
 //
 
 void frmVSCPSession::OnGridLabelLeftDClick(wxGridEvent& event)
@@ -1016,7 +1029,7 @@ void frmVSCPSession::OnGridLabelLeftDClick(wxGridEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_ABOUT
+// OnMenuitemVscpAboutClick
 //
 
 void frmVSCPSession::OnMenuitemVscpAboutClick(wxCommandEvent& event)
@@ -1030,7 +1043,7 @@ void frmVSCPSession::OnMenuitemVscpAboutClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Should we show tooltips?
+// ShowToolTips
 //
 
 bool frmVSCPSession::ShowToolTips()
@@ -1039,7 +1052,7 @@ bool frmVSCPSession::ShowToolTips()
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get bitmap resources
+// GetBitmapResource
 //
 
 wxBitmap frmVSCPSession::GetBitmapResource(const wxString& name)
@@ -1091,7 +1104,7 @@ wxBitmap frmVSCPSession::GetBitmapResource(const wxString& name)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get icon resources
+// GetIconResource
 //
 
 wxIcon frmVSCPSession::GetIconResource(const wxString& name)
@@ -1135,7 +1148,6 @@ void frmVSCPSession::OnSelectCell(wxGridEvent& event)
 void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
 {
     wxString str;
-    //wxStandardPaths stdpaths;
     wxXmlDocument doc;
 
 
@@ -1182,6 +1194,7 @@ void frmVSCPSession::LoadRXEventList(wxCommandEvent& event)
 
         // start processing the XML file xxxx
         if (doc.GetRoot()->GetName() != wxT("vscprxdata")) {
+            wxMessageBox(_("File with invalid format."));
             return;
         }
 
@@ -1607,7 +1620,7 @@ bool frmVSCPSession::addToTxGrid(VscpTXObj *pObj, int selrow)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_GRID_CELL_RIGHT_CLICK event handler for ID_GRID_TRANSMISSION
+// OnCellTxRightClick
 //
 
 void frmVSCPSession::OnCellTxRightClick(wxGridEvent& event)
@@ -1618,16 +1631,16 @@ void frmVSCPSession::OnCellTxRightClick(wxGridEvent& event)
 
     if (ID_VSCP_GRID_TRANSMISSION == event.GetId()) {
 
-        menu.Append(Menu_Popup_TX_Transmit, _T("Transmit event from selected row(s)"));
+        menu.Append( Menu_Popup_TX_Transmit, _T("Transmit event from selected row(s)") );
         menu.AppendSeparator();
-        menu.Append(Menu_Popup_TX_Add, _T("Add transmission row..."));
-        menu.Append(Menu_Popup_TX_Edit, _T("Edit transmission row..."));
-        menu.Append(Menu_Popup_TX_Delete, _T("Delete transmission row..."));
+        menu.Append( Menu_Popup_TX_Add, _T("Add transmission row...") );
+        menu.Append( Menu_Popup_TX_Edit, _T("Edit transmission row...") );
+        menu.Append( Menu_Popup_TX_Delete, _T("Delete transmission row...") );
         menu.AppendSeparator();
-        menu.Append(Menu_Popup_TX_Clone, _T("Clone transmission row..."));
+        menu.Append( Menu_Popup_TX_Clone, _T("Clone transmission row...") );
         menu.AppendSeparator();
-        menu.AppendCheckItem(Menu_Popup_TX_Periodic, _T("Enable periodic transmission"));
-        menu.Check(Menu_Popup_TX_Periodic, true);
+        menu.AppendCheckItem(Menu_Popup_TX_Periodic, _T("Enable periodic transmission") );
+        menu.Check( Menu_Popup_TX_Periodic, true);
         //menu.Append(Menu_Popup_Submenu, _T("&Submenu"), CreateDummyMenu(NULL));
         //menu.Append(Menu_Popup_ToBeDeleted, _T("To be &deleted"));
         //menu.AppendCheckItem(Menu_Popup_ToBeChecked, _T("To be &checked"));
@@ -1641,19 +1654,21 @@ void frmVSCPSession::OnCellTxRightClick(wxGridEvent& event)
         //menu.Enable(Menu_Popup_ToBeGreyed, false);
     } 
     else if (ID_VSCP_GRID_RECEIVE == event.GetId()) {
-        menu.Append(Menu_Popup_TX_Transmit, _T("Edit row..."));
-        menu.Append(Menu_Popup_TX_Transmit, _T("Add note..."));
+        menu.Append( ID_MENUITEM4, _T("Clear all receive events") );
+        /*menu.AppendSeparator();
+        menu.Append( Menu_Popup_TX_Transmit, _T("Edit row..."));
+        menu.Append( Menu_Popup_TX_Transmit, _T("Add note..."));
         menu.AppendSeparator();
-        menu.Append(Menu_Popup_TX_Transmit, _T("Copy row"));
-        menu.Append(Menu_Popup_TX_Transmit, _T("Cut row"));
-        menu.Append(Menu_Popup_TX_Transmit, _T("Paste row"));
+        menu.Append( Menu_Popup_TX_Transmit, _T("Copy row"));
+        menu.Append( Menu_Popup_TX_Transmit, _T("Cut row"));
+        menu.Append( Menu_Popup_TX_Transmit, _T("Paste row"));
         menu.AppendSeparator();
-        menu.Append(Menu_Popup_TX_Transmit, _T("Transmit selected row(s)"));
-        menu.Append(Menu_Popup_TX_Transmit, _T("Edit and transmit selected row(s)"));
-        menu.Append(Menu_Popup_TX_Transmit, _T("Save row(s) as transmission object(s)"));
+        menu.Append( Menu_Popup_TX_Transmit, _T("Transmit selected row(s)"));
+        menu.Append( Menu_Popup_TX_Transmit, _T("Edit and transmit selected row(s)"));
+        menu.Append( Menu_Popup_TX_Transmit, _T("Save row(s) as transmission object(s)"));*/
         menu.AppendSeparator();
-        menu.Append(ID_MENUITEM_VSCP_LOAD_MSG_LIST, _T("Load VSCP events from file..."));
-        menu.Append(ID_MENUITEM_VSCP_SAVE_MSG_LIST, _T("Save VSCP events to file..."));
+        menu.Append( ID_MENUITEM_VSCP_LOAD_MSG_LIST, _T("Load VSCP events from file...") );
+        menu.Append( ID_MENUITEM_VSCP_SAVE_MSG_LIST, _T("Save VSCP events to file...") );
     }
 
     PopupMenu(&menu/*, pos.x, pos.y*/);
@@ -1664,7 +1679,7 @@ void frmVSCPSession::OnCellTxRightClick(wxGridEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_GRID_CELL_LEFT_CLICK event handler for ID_GRID_TRANSMISSION
+// OnCellTxLeftClick
 //
 
 void frmVSCPSession::OnCellTxLeftClick(wxGridEvent& event)
@@ -1681,7 +1696,7 @@ void frmVSCPSession::OnCellTxLeftClick(wxGridEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_GRID_CELL_LEFT_DCLICK event handler for ID_VSCP_GRID_TRANSMISSION
+// OnGridLeftDClick
 //
 
 void frmVSCPSession::OnGridLeftDClick(wxGridEvent& event)
@@ -1699,7 +1714,7 @@ void frmVSCPSession::OnGridLeftDClick(wxGridEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOG
+// OnMenuitemVscpViewLogClick
 //
 
 void frmVSCPSession::OnMenuitemVscpViewLogClick(wxCommandEvent& event)
@@ -1709,7 +1724,7 @@ void frmVSCPSession::OnMenuitemVscpViewLogClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_COUNT
+// OnMenuitemVscpViewCountClick
 //
 
 void frmVSCPSession::OnMenuitemVscpViewCountClick(wxCommandEvent& event)
@@ -1719,7 +1734,7 @@ void frmVSCPSession::OnMenuitemVscpViewCountClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_CLEAR_RX
+// ClearRxList
 //
 
 void frmVSCPSession::ClearRxList(wxCommandEvent& event)
@@ -1746,7 +1761,7 @@ void frmVSCPSession::ClearRxList(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_CLEAR_TX
+// ClearTxList
 //
 
 void frmVSCPSession::ClearTxList(wxCommandEvent& event)
@@ -1778,7 +1793,7 @@ void frmVSCPSession::ClearTxList(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTONID_MENUITEM_CANAL_SEND
+// OnTxSendClick
 //
 
 void frmVSCPSession::OnTxSendClick(wxCommandEvent& event)
@@ -1816,7 +1831,7 @@ void frmVSCPSession::OnTxSendClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON_TX_ADD
+// OnTxAddClick
 //
 
 void frmVSCPSession::OnTxAddClick(wxCommandEvent& event)
@@ -1851,7 +1866,7 @@ void frmVSCPSession::OnTxAddClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTON_TX_EDIT
+// OnTxEditClick
 //
 
 void frmVSCPSession::OnTxEditClick(wxCommandEvent& event)
@@ -1889,7 +1904,7 @@ void frmVSCPSession::OnTxEditClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTONID_MENUITEM_TX_DELETE
+// OnTxDeleteClick
 //
 
 void frmVSCPSession::OnTxDeleteClick(wxCommandEvent& event)
@@ -1923,7 +1938,7 @@ void frmVSCPSession::OnTxDeleteClick(wxCommandEvent& event)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTONID_MENUITEM_TX_LOAD
+// OnTxLoadClick
 //
 
 void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
@@ -2064,8 +2079,8 @@ void frmVSCPSession::OnTxLoadClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BITMAPBUTTONID_MENUITEM_TX_SAVE
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_LOAD_TRANSMISSION_SET
+// OnTxSaveClick
+//
 
 void frmVSCPSession::OnTxSaveClick(wxCommandEvent& event)
 {
@@ -2237,7 +2252,7 @@ void frmVSCPSession::OnTxCloneRow(wxCommandEvent& event)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_VSCP_SITE
+// OnMenuitemVscpVscpSiteClick
 //
 
 void frmVSCPSession::OnMenuitemVscpVscpSiteClick(wxCommandEvent& event)
@@ -2248,7 +2263,7 @@ void frmVSCPSession::OnMenuitemVscpVscpSiteClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_HELP
+// OnMenuitemVscpHelpClick
 //
 
 void frmVSCPSession::OnMenuitemVscpHelpClick(wxCommandEvent& event)
@@ -2259,7 +2274,7 @@ void frmVSCPSession::OnMenuitemVscpHelpClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_FAQ
+// OnMenuitemVscpFaqClick
 //
 
 void frmVSCPSession::OnMenuitemVscpFaqClick(wxCommandEvent& event)
@@ -2270,7 +2285,7 @@ void frmVSCPSession::OnMenuitemVscpFaqClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_SHORTCUTS
+// OnMenuitemVscpShortcutsClick
 //
 
 void frmVSCPSession::OnMenuitemVscpShortcutsClick(wxCommandEvent& event)
@@ -2281,7 +2296,7 @@ void frmVSCPSession::OnMenuitemVscpShortcutsClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_THANKS
+// OnMenuitemVscpThanksClick
 //
 
 void frmVSCPSession::OnMenuitemVscpThanksClick(wxCommandEvent& event)
@@ -2292,7 +2307,7 @@ void frmVSCPSession::OnMenuitemVscpThanksClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_VSCP_CREDITS
+// OnMenuitemVscpCreditsClick
 //
 
 void frmVSCPSession::OnMenuitemVscpCreditsClick(wxCommandEvent& event)
@@ -2309,8 +2324,64 @@ void frmVSCPSession::OnMenuitemVscpCreditsClick(wxCommandEvent& event)
 void frmVSCPSession::eventReceive(wxCommandEvent &event)
 {
     VscpRXObj *pRecord = (VscpRXObj *) event.GetClientData();
-    if (NULL != pRecord) {
-        m_pgridTable->writeEvent(pRecord);
+
+    if ( ( NULL != pRecord ) && ( NULL != pRecord->m_pEvent ) ) {
+
+        // Check if record should be filtered
+        if ( m_bfilterActive ) {
+            
+            uint32_t searchValue;
+
+            if ( ( FILTER_MODE_DISPLAY == m_nfilterMode ) && m_filterArrayDisplay.GetCount() ) {
+
+                // * * * If event is in list it should be displayed * * *
+                
+                // First search for class wildcard
+                searchValue = pRecord->m_pEvent->vscp_class<<16; 
+                if ( wxNOT_FOUND != m_filterArrayDisplay.Index( searchValue ) ) {
+                    // All events in this class should be displayed
+                    m_pgridTable->writeEvent(pRecord);
+                    return;
+                }
+
+                // Check if the event should be displays
+                searchValue = ( pRecord->m_pEvent->vscp_class<<16 ) +  pRecord->m_pEvent->vscp_type; 
+                if ( wxNOT_FOUND != m_filterArrayDisplay.Index( searchValue ) ) {
+                    // This event should be displayed
+                    m_pgridTable->writeEvent(pRecord);
+                    return;
+                }
+            }
+            else if ( ( FILTER_MODE_FILTER == m_nfilterMode ) && m_filterArrayFilter.GetCount() ) {
+                
+                // * * * If filter is in list it should not be displayed * * *
+
+                // First search for class wildcard
+                searchValue = pRecord->m_pEvent->vscp_class<<16; 
+                if ( wxNOT_FOUND != m_filterArrayFilter.Index( searchValue ) ) {
+                    // All events in this class should be filtered out
+                    return;
+                }
+
+                // Check if the event should be displays
+                searchValue = ( pRecord->m_pEvent->vscp_class<<16 ) +  pRecord->m_pEvent->vscp_type; 
+                if ( wxNOT_FOUND != m_filterArrayFilter.Index( searchValue ) ) {
+                    // This event is filtered out
+                    return;
+                }
+
+                // Not filtered our - Display
+                m_pgridTable->writeEvent(pRecord);
+
+            }
+            else {
+                m_pgridTable->writeEvent(pRecord);
+            }
+        }
+        else {        
+            m_pgridTable->writeEvent(pRecord);
+        }
+
     }
 }
 
@@ -2398,10 +2469,140 @@ void frmVSCPSession::eventStatusChange( wxCommandEvent &evt )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM3
+// OnMenuitemSetFilterClick
 //
 
-void frmVSCPSession::OnMenuitemSetFilterClick(wxCommandEvent& event)
+void frmVSCPSession::OnMenuitemSetFilterClick( wxCommandEvent& event )
+{
+    uint16_t vscp_class;
+    uint16_t vscp_type;
+
+    dlgEventFilter dlg(this);
+
+    // Filter active checkbox
+    dlg.m_bfilterActive = m_bfilterActive;
+    if ( m_bfilterActive ) {
+        dlg.m_ctrlCheckBoxEnable->SetValue( true );
+    }
+    else {
+        dlg.m_ctrlCheckBoxEnable->SetValue( false );
+    }
+
+    dlg.m_nfilterMode = m_nfilterMode;
+    if ( FILTER_MODE_DISPLAY == m_nfilterMode ) {
+        dlg.m_ctrlRadioDisplay->SetValue( true );
+    }
+    else if ( FILTER_MODE_FILTER == m_nfilterMode ) {
+        dlg.m_ctrlRadioFilter->SetValue( true );
+    }
+
+    // Fill in values into display combo
+    for ( size_t i=0; i<m_filterArrayDisplay.GetCount(); i++ ) {
+        
+        vscp_class = (m_filterArrayDisplay.Item(i)>>16) & 0xffff;
+        vscp_type = m_filterArrayDisplay.Item(i) & 0xffff;
+
+        wxString str = wxString::Format( _("%04X:%04X"), vscp_class, vscp_type);
+        if ( 0 != vscp_type ) {
+            str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             g_vscpinfo.getTypeDescription( vscp_class, vscp_type ) + _(" - ") +
+                             str;
+        }
+        else {
+            str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             _("[All events of class] - ") +
+                             str;
+        }
+        
+        dlg.m_ctrlListDisplay->Append( str, (void *)m_filterArrayDisplay.Item(i) ); // Yes I know
+
+    }
+
+    // Fill in values into filter combo
+    for ( size_t i=0; i<m_filterArrayFilter.GetCount(); i++ ) {
+        
+        vscp_class = (m_filterArrayFilter.Item(i)>>16) & 0xffff;
+        vscp_type = m_filterArrayFilter.Item(i) & 0xffff;
+
+        wxString str = wxString::Format( _("%04X:%04X"), vscp_class, vscp_type);
+        if ( 0 != vscp_type ) {
+            str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             g_vscpinfo.getTypeDescription( vscp_class, vscp_type ) + _(" - ") +
+                             str;
+        }
+        else {
+            str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             _("[All events of class] - ") +
+                             str;
+        }
+        
+        dlg.m_ctrlListFilter->Append( str, (void *)m_filterArrayFilter.Item(i) ); // Yes I know 
+
+    }
+
+
+    if ( wxID_OK == dlg.ShowModal() ) {
+
+        m_bfilterActive = dlg.m_bfilterActive;
+        m_nfilterMode = dlg.m_nfilterMode;
+
+        // Get filter values for display
+        m_filterArrayDisplay.Clear();
+        for ( uint16_t i=0; i<dlg.m_ctrlListDisplay->GetCount(); i++ ) {
+            m_filterArrayDisplay.Add( (uint32_t)dlg.m_ctrlListDisplay->GetClientData( i ) );
+        }
+
+        // Get filter values for filter
+        m_filterArrayFilter.Clear();
+        for ( uint16_t i=0; i<dlg.m_ctrlListFilter->GetCount(); i++ ) {
+            m_filterArrayFilter.Add( (uint32_t)dlg.m_ctrlListFilter->GetClientData( i ) );
+        }
+
+        if ( m_bfilterActive ) {
+       
+            if ( ( FILTER_MODE_DISPLAY == m_nfilterMode ) && ( 0 == m_filterArrayDisplay.GetCount() ) ) {
+                m_BtnActivateFilter->SetValue(false);
+            }
+            else if ( FILTER_MODE_FILTER == m_nfilterMode && ( 0 == m_filterArrayFilter.GetCount() ) ) {
+                m_BtnActivateFilter->SetValue(false);
+            }
+            else {
+                m_BtnActivateFilter->SetValue(true);
+            }
+        }
+
+        // Set button
+        if ( m_bfilterActive ) {
+            if ( ( FILTER_MODE_DISPLAY == m_nfilterMode ) && ( 0 == m_filterArrayDisplay.GetCount() ) ) {
+                wxMessageBox(_("There is no class/type pairs defined to display. Filter will not be activated."));
+                m_BtnActivateFilter->SetValue(false);
+                m_bfilterActive = false;
+            }
+            else if ( FILTER_MODE_FILTER == m_nfilterMode && ( 0 == m_filterArrayFilter.GetCount() ) ) {
+                wxMessageBox(_("There is no class/type pairs defined to filter.Filter will not be activated."));
+                m_BtnActivateFilter->SetValue(false);
+                m_bfilterActive  = false;
+            }
+            else {
+                m_BtnActivateFilter->SetValue(true);
+                m_bfilterActive = true;
+            }
+        }
+        else {
+            m_BtnActivateFilter->SetValue(false);
+        }
+
+    }
+
+    event.Skip();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnMenuitemSetBurstCountClick
+//
+
+void frmVSCPSession::OnMenuitemSetBurstCountClick( wxCommandEvent& event )
 {
     wxMessageBox(_("Sorry this functionality is not available yet."));
     event.Skip();
@@ -2409,18 +2610,7 @@ void frmVSCPSession::OnMenuitemSetFilterClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM2
-//
-
-void frmVSCPSession::OnMenuitemSetBurstCountClick(wxCommandEvent& event)
-{
-    wxMessageBox(_("Sorry this functionality is not available yet."));
-    event.Skip();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM
+// OnMenuitemConfigurationClick
 //
 
 void frmVSCPSession::OnMenuitemConfigurationClick(wxCommandEvent& event)
@@ -2437,7 +2627,7 @@ void frmVSCPSession::OnMenuitemConfigurationClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_READ_REGISTER
+// OnMenuitemSetAutoreplyClick
 //
 
 void frmVSCPSession::OnMenuitemSetAutoreplyClick(wxCommandEvent& event)
@@ -2448,7 +2638,7 @@ void frmVSCPSession::OnMenuitemSetAutoreplyClick(wxCommandEvent& event)
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM_RX_GRID_WIDTH
+// OnMenuitemSaveRxCellWidth
 //
 
 void frmVSCPSession::OnMenuitemSaveRxCellWidth(wxCommandEvent& event)
@@ -2465,7 +2655,7 @@ void frmVSCPSession::OnMenuitemSaveRxCellWidth(wxCommandEvent& event)
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_MENU_SELECTED event handler for ID_MENUITEM1
+// OnMenuitemSaveTxCellWidth
 //
 
 void frmVSCPSession::OnMenuitemSaveTxCellWidth(wxCommandEvent& event)

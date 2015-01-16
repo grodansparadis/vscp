@@ -1,13 +1,43 @@
 /////////////////////////////////////////////////////////////////////////////
-// Name:        dlgeventfilter.cpp
-// Purpose:     
-// Author:      Ake Hedman, Paradise of the Frog/Grodans Paradis AB
-// Modified by: 
-// Created:     13/01/2015 13:00:07
-// RCS-ID:      
-// Copyright:   Copyright (C) 2014 Grodans Paradis AB
-// Licence:     
-/////////////////////////////////////////////////////////////////////////////
+//  Name:        dlgeventfilter.cpp
+//  Purpose:     
+//  Author:      Ake Hedman
+//  Modified by: 
+//  Created:     Sat 30 Jun 2007 14:08:14 CEST
+//  RCS-ID:      
+//  Copyright:   (C) 2007-2015                       
+//  Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+//  Licence:     
+//  This program is free software; you can redistribute it and/or  
+//  modify it under the terms of the GNU General Public License
+//  as published by the Free Software Foundation; either version
+//  2 of the License, or (at your option) any later version.
+// 
+//  This file is part of the VSCP (http://www.vscp.org) 
+// 
+//  This file is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+// 
+//  You should have received a copy of the GNU General Public License
+//  along with this file see the file COPYING.  If not, write to
+//  the Free Software Foundation, 59 Temple Place - Suite 330,
+//  Boston, MA 02111-1307, USA.
+// 
+//  As a special exception, if other files instantiate templates or use macros
+//  or inline functions from this file, or you compile this file and link it
+//  with other works to produce a work based on this file, this file does not
+//  by itself cause the resulting work to be covered by the GNU General Public
+//  License. However the source code for this file must still be made available
+//  in accordance with section (3) of the GNU General Public License.
+// 
+//  This exception does not invalidate any other reasons why a work based on
+//  this file might be covered by the GNU General Public License.
+// 
+//  Alternative licenses for VSCP & Friends may be arranged by contacting 
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
+//
 
 // For compilers that support precompilation, includes "wx/wx.h".
 #include "wx/wxprec.h"
@@ -20,70 +50,92 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
-////@end includes
+#include <wx/stdpaths.h>
+#include <wx/wfstream.h>
+#include <wx/xml/xml.h>
+#include <wx/dynlib.h>
+#include <wx/progdlg.h>
 
+#include "vscp.h"
+#include "vscphelper.h"
+#include "vscpeventhelper.h"
+#include "vscpworks.h"
+#include "dlgclasstypeselect.h"
 #include "dlgeventfilter.h"
 
-////@begin XPM images
-////@end XPM images
-
+extern VSCPInformation g_vscpinfo;
 
 /*
  * EventFilter type definition
  */
 
-IMPLEMENT_DYNAMIC_CLASS( EventFilter, wxDialog )
+IMPLEMENT_DYNAMIC_CLASS( dlgEventFilter, wxDialog )
 
 
 /*
  * EventFilter event table definition
  */
 
-BEGIN_EVENT_TABLE( EventFilter, wxDialog )
+BEGIN_EVENT_TABLE( dlgEventFilter, wxDialog )
 
-////@begin EventFilter event table entries
-    EVT_LISTBOX( ID_LISTBOX_DISPLAY, EventFilter::OnListboxDisplaySelected )
-    EVT_LISTBOX_DCLICK( ID_LISTBOX_DISPLAY, EventFilter::OnListboxDisplayDoubleClicked )
-    EVT_BUTTON( ID_BUTTON5_ADD_DISPLAY_EVENT, EventFilter::OnButton5AddDisplayEventClick )
-    EVT_LISTBOX( ID_LISTBOX_FILTER, EventFilter::OnListboxFilterSelected )
-    EVT_LISTBOX_DCLICK( ID_LISTBOX_FILTER, EventFilter::OnListboxFilterDoubleClicked )
-    EVT_BUTTON( ID_BUTTON_ADD_FILTER_EVENT, EventFilter::OnButtonAddFilterEventClick )
-    EVT_RADIOBUTTON( ID_RADIOBUTTON_DISPLAY, EventFilter::OnRadiobuttonDisplaySelected )
-    EVT_RADIOBUTTON( ID_RADIOBUTTON_FILTER, EventFilter::OnRadiobuttonFilterSelected )
-    EVT_CHECKBOX( ID_CHECKBOX_ENABLE, EventFilter::OnCheckboxEnableClick )
-    EVT_BUTTON( ID_BUTTON_OK, EventFilter::OnButtonOkClick )
-    EVT_BUTTON( ID_BUTTON_CANCEL, EventFilter::OnButtonCancelClick )
-    EVT_BUTTON( ID_BUTTON_LOAD, EventFilter::OnButtonLoadClick )
-    EVT_BUTTON( ID_BUTTON_SAVE, EventFilter::OnButtonSaveClick )
-////@end EventFilter event table entries
+    EVT_LISTBOX( ID_LISTBOX_DISPLAY, dlgEventFilter::OnListboxDisplaySelected )
+    EVT_LISTBOX_DCLICK( ID_LISTBOX_DISPLAY, dlgEventFilter::OnListboxDisplayDoubleClicked )
+    EVT_BUTTON( ID_BUTTON_ADD_DISPLAY_EVENT, dlgEventFilter::OnButtonAddDisplayEventClick )
+    EVT_LISTBOX( ID_LISTBOX_FILTER, dlgEventFilter::OnListboxFilterSelected )
+    EVT_LISTBOX_DCLICK( ID_LISTBOX_FILTER, dlgEventFilter::OnListboxFilterDoubleClicked )
+    EVT_BUTTON( ID_BUTTON_ADD_FILTER_EVENT, dlgEventFilter::OnButtonAddFilterEventClick )
+    EVT_RADIOBUTTON( ID_RADIOBUTTON_DISPLAY, dlgEventFilter::OnRadiobuttonDisplaySelected )
+    EVT_RADIOBUTTON( ID_RADIOBUTTON_FILTER, dlgEventFilter::OnRadiobuttonFilterSelected )
+    EVT_CHECKBOX( ID_CHECKBOX_ENABLE, dlgEventFilter::OnCheckboxEnableClick )
+    EVT_BUTTON( wxID_OK, dlgEventFilter::OnButtonOkClick )
+    EVT_BUTTON( wxID_CANCEL, dlgEventFilter::OnButtonCancelClick )
+    EVT_BUTTON( ID_BUTTON_LOAD, dlgEventFilter::OnButtonLoadClick )
+    EVT_BUTTON( ID_BUTTON_SAVE, dlgEventFilter::OnButtonSaveClick )
+
+    EVT_MENU( Menu_Popup_Display_Add, dlgEventFilter::OnButtonAddDisplayEventClick )
+    EVT_MENU( Menu_Popup_Display_Remove, dlgEventFilter::OnRemoveDisplayRows )
+
+    EVT_MENU( Menu_Popup_Filter_Add, dlgEventFilter::OnButtonAddFilterEventClick )
+    EVT_MENU( Menu_Popup_Filter_Remove, dlgEventFilter::OnRemoveFilterRows )
 
 END_EVENT_TABLE()
 
 
-/*
- * EventFilter constructors
- */
+///////////////////////////////////////////////////////////////////////////////
+// Ctor's
+//
 
-EventFilter::EventFilter()
+dlgEventFilter::dlgEventFilter()
 {
     Init();
 }
 
-EventFilter::EventFilter( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+
+
+dlgEventFilter::dlgEventFilter( wxWindow* parent, 
+                                wxWindowID id, 
+                                const wxString& caption, 
+                                const wxPoint& pos, 
+                                const wxSize& size, 
+                                long style )
 {
     Init();
     Create(parent, id, caption, pos, size, style);
 }
 
 
-/*
- * EventFilter creator
- */
 
-bool EventFilter::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+///////////////////////////////////////////////////////////////////////////////
+// Ctor
+//
+
+bool dlgEventFilter::Create( wxWindow* parent, 
+                                    wxWindowID id, 
+                                    const wxString& caption, 
+                                    const wxPoint& pos, 
+                                    const wxSize& size, 
+                                    long style )
 {
-////@begin EventFilter creation
     SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create( parent, id, caption, pos, size, style );
 
@@ -93,46 +145,42 @@ bool EventFilter::Create( wxWindow* parent, wxWindowID id, const wxString& capti
         GetSizer()->SetSizeHints(this);
     }
     Centre();
-////@end EventFilter creation
+
     return true;
 }
 
 
-/*
- * EventFilter destructor
- */
+///////////////////////////////////////////////////////////////////////////////
+// Dtor
+//
 
-EventFilter::~EventFilter()
+dlgEventFilter::~dlgEventFilter()
 {
-////@begin EventFilter destruction
-////@end EventFilter destruction
+
 }
 
 
-/*
- * Member initialisation
- */
+///////////////////////////////////////////////////////////////////////////////
+// Init
+//
 
-void EventFilter::Init()
+void dlgEventFilter::Init()
 {
-////@begin EventFilter member initialisation
     m_ctrlListDisplay = NULL;
     m_ctrlListFilter = NULL;
     m_ctrlRadioDisplay = NULL;
     m_ctrlRadioFilter = NULL;
     m_ctrlCheckBoxEnable = NULL;
-////@end EventFilter member initialisation
 }
 
 
-/*
- * Control creation for EventFilter
- */
+///////////////////////////////////////////////////////////////////////////////
+// CreateControls
+//
 
-void EventFilter::CreateControls()
+void dlgEventFilter::CreateControls()
 {    
-////@begin EventFilter content construction
-    EventFilter* itemDialog1 = this;
+    dlgEventFilter* itemDialog1 = this;
 
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
     itemDialog1->SetSizer(itemBoxSizer2);
@@ -142,14 +190,14 @@ void EventFilter::CreateControls()
     itemBoxSizer2->Add(itemStaticText3, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxArrayString m_ctrlListDisplayStrings;
-    m_ctrlListDisplay = new wxListBox( itemDialog1, ID_LISTBOX_DISPLAY, wxDefaultPosition, wxDefaultSize, m_ctrlListDisplayStrings, wxLB_SINGLE );
-    if (EventFilter::ShowToolTips())
+    m_ctrlListDisplay = new wxListBox( itemDialog1, ID_LISTBOX_DISPLAY, wxDefaultPosition, wxDefaultSize, m_ctrlListDisplayStrings, wxLB_MULTIPLE );
+    if (dlgEventFilter::ShowToolTips())
         m_ctrlListDisplay->SetToolTip(_("Right click to add/remove/clone"));
     itemBoxSizer2->Add(m_ctrlListDisplay, 0, wxGROW|wxALL, 5);
 
-    wxButton* itemButton5 = new wxButton( itemDialog1, ID_BUTTON5_ADD_DISPLAY_EVENT, _("Add display event..."), wxDefaultPosition, wxDefaultSize, 0 );
+    wxButton* itemButton5 = new wxButton( itemDialog1, ID_BUTTON_ADD_DISPLAY_EVENT, _("Add display event..."), wxDefaultPosition, wxDefaultSize, 0 );
     itemButton5->SetDefault();
-    if (EventFilter::ShowToolTips())
+    if (dlgEventFilter::ShowToolTips())
         itemButton5->SetToolTip(_("Add event that should be displayed"));
     itemBoxSizer2->Add(itemButton5, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
@@ -160,14 +208,14 @@ void EventFilter::CreateControls()
     itemBoxSizer2->Add(itemStaticText7, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxArrayString m_ctrlListFilterStrings;
-    m_ctrlListFilter = new wxListBox( itemDialog1, ID_LISTBOX_FILTER, wxDefaultPosition, wxDefaultSize, m_ctrlListFilterStrings, wxLB_SINGLE );
-    if (EventFilter::ShowToolTips())
+    m_ctrlListFilter = new wxListBox( itemDialog1, ID_LISTBOX_FILTER, wxDefaultPosition, wxDefaultSize, m_ctrlListFilterStrings, wxLB_MULTIPLE );
+    if (dlgEventFilter::ShowToolTips())
         m_ctrlListFilter->SetToolTip(_("Right click to add/remove/clone"));
     itemBoxSizer2->Add(m_ctrlListFilter, 0, wxGROW|wxALL, 5);
 
     wxButton* itemButton9 = new wxButton( itemDialog1, ID_BUTTON_ADD_FILTER_EVENT, _("Add filter event..."), wxDefaultPosition, wxDefaultSize, 0 );
     itemButton9->SetDefault();
-    if (EventFilter::ShowToolTips())
+    if (dlgEventFilter::ShowToolTips())
         itemButton9->SetToolTip(_("Add event to filter out"));
     itemBoxSizer2->Add(itemButton9, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
@@ -176,13 +224,13 @@ void EventFilter::CreateControls()
 
     m_ctrlRadioDisplay = new wxRadioButton( itemDialog1, ID_RADIOBUTTON_DISPLAY, _("Display"), wxDefaultPosition, wxDefaultSize, 0 );
     m_ctrlRadioDisplay->SetValue(false);
-    if (EventFilter::ShowToolTips())
+    if (dlgEventFilter::ShowToolTips())
         m_ctrlRadioDisplay->SetToolTip(_("Show only events in display list"));
     itemBoxSizer10->Add(m_ctrlRadioDisplay, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_ctrlRadioFilter = new wxRadioButton( itemDialog1, ID_RADIOBUTTON_FILTER, _("Filter"), wxDefaultPosition, wxDefaultSize, 0 );
     m_ctrlRadioFilter->SetValue(true);
-    if (EventFilter::ShowToolTips())
+    if (dlgEventFilter::ShowToolTips())
         m_ctrlRadioFilter->SetToolTip(_("Filter away events in filter list"));
     itemBoxSizer10->Add(m_ctrlRadioFilter, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
@@ -190,256 +238,552 @@ void EventFilter::CreateControls()
 
     m_ctrlCheckBoxEnable = new wxCheckBox( itemDialog1, ID_CHECKBOX_ENABLE, _("Enable"), wxDefaultPosition, wxDefaultSize, 0 );
     m_ctrlCheckBoxEnable->SetValue(false);
-    if (EventFilter::ShowToolTips())
+    if (dlgEventFilter::ShowToolTips())
         m_ctrlCheckBoxEnable->SetToolTip(_("Enable/disable filter"));
     itemBoxSizer10->Add(m_ctrlCheckBoxEnable, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer15 = new wxBoxSizer(wxHORIZONTAL);
     itemBoxSizer2->Add(itemBoxSizer15, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    wxButton* itemButton16 = new wxButton( itemDialog1, ID_BUTTON_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
+    wxButton* itemButton16 = new wxButton( itemDialog1, wxID_OK, _("OK"), wxDefaultPosition, wxDefaultSize, 0 );
     itemButton16->SetDefault();
     itemBoxSizer15->Add(itemButton16, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton17 = new wxButton( itemDialog1, ID_BUTTON_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemButton17->SetDefault();
+    wxButton* itemButton17 = new wxButton( itemDialog1, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0 );
+    //itemButton17->SetDefault();
     itemBoxSizer15->Add(itemButton17, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     itemBoxSizer15->Add(5, 5, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxButton* itemButton19 = new wxButton( itemDialog1, ID_BUTTON_LOAD, _("Load"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemButton19->SetDefault();
-    if (EventFilter::ShowToolTips())
+    //itemButton19->SetDefault();
+    if (dlgEventFilter::ShowToolTips())
         itemButton19->SetToolTip(_("Load filter set from disk"));
     itemBoxSizer15->Add(itemButton19, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxButton* itemButton20 = new wxButton( itemDialog1, ID_BUTTON_SAVE, _("Save"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemButton20->SetDefault();
-    if (EventFilter::ShowToolTips())
+    //itemButton20->SetDefault();
+    if (dlgEventFilter::ShowToolTips())
         itemButton20->SetToolTip(_("Save filter set to disk"));
     itemBoxSizer15->Add(itemButton20, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     // Connect events and objects
-    m_ctrlListDisplay->Connect(ID_LISTBOX_DISPLAY, wxEVT_RIGHT_DOWN, wxMouseEventHandler(EventFilter::OnRightDown), NULL, this);
-    m_ctrlListFilter->Connect(ID_LISTBOX_FILTER, wxEVT_RIGHT_DOWN, wxMouseEventHandler(EventFilter::OnRightDown), NULL, this);
-////@end EventFilter content construction
+    m_ctrlListDisplay->Connect(ID_LISTBOX_DISPLAY, wxEVT_RIGHT_DOWN, wxMouseEventHandler(dlgEventFilter::OnRightDown), NULL, this);
+    m_ctrlListFilter->Connect(ID_LISTBOX_FILTER, wxEVT_RIGHT_DOWN, wxMouseEventHandler(dlgEventFilter::OnRightDown), NULL, this);
 }
 
 
-/*
- * Should we show tooltips?
- */
+///////////////////////////////////////////////////////////////////////////////
+// ShowToolTips
+//
 
-bool EventFilter::ShowToolTips()
+bool dlgEventFilter::ShowToolTips()
 {
     return true;
 }
 
-/*
- * Get bitmap resources
- */
+///////////////////////////////////////////////////////////////////////////////
+// GetBitmapResource
+//
 
-wxBitmap EventFilter::GetBitmapResource( const wxString& name )
+wxBitmap dlgEventFilter::GetBitmapResource( const wxString& name )
 {
     // Bitmap retrieval
-////@begin EventFilter bitmap retrieval
     wxUnusedVar(name);
     return wxNullBitmap;
-////@end EventFilter bitmap retrieval
 }
 
-/*
- * Get icon resources
- */
+///////////////////////////////////////////////////////////////////////////////
+// GetIconResource
+//
 
-wxIcon EventFilter::GetIconResource( const wxString& name )
+wxIcon dlgEventFilter::GetIconResource( const wxString& name )
 {
     // Icon retrieval
-////@begin EventFilter icon retrieval
     wxUnusedVar(name);
     return wxNullIcon;
-////@end EventFilter icon retrieval
 }
 
 
-/*
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON5_ADD_DISPLAY_EVENT
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnButtonAddDisplayEventClick
+//
 
-void EventFilter::OnButton5AddDisplayEventClick( wxCommandEvent& event )
+void dlgEventFilter::OnButtonAddDisplayEventClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON5_ADD_DISPLAY_EVENT in EventFilter.
-    // Before editing this code, remove the block markers.
-    event.Skip();
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON5_ADD_DISPLAY_EVENT in EventFilter. 
+    uint16_t vscp_class = 0;
+    uint16_t vscp_type = 0;
+
+    dlgClassTypeSelect dlg(this);
+    if (wxID_OK == dlg.ShowModal()) {
+        
+        int idxClass = dlg.m_ctrlComboClass->GetSelection();
+        if ( wxNOT_FOUND != idxClass ) {
+            vscp_class = (unsigned long)dlg.m_ctrlComboClass->GetClientData( idxClass );
+        }
+
+        int idxType = dlg.m_ctrlComboType->GetSelection();
+        if ( wxNOT_FOUND != idxType ) {
+            vscp_type = (unsigned long)dlg.m_ctrlComboType->GetClientData( idxType );
+        }
+
+        uint32_t clientdata = ( ( vscp_class<<16 ) + vscp_type );
+
+        for ( uint16_t i=0; i<m_ctrlListDisplay->GetCount(); i++ ) {
+            if ( clientdata == (uint32_t)m_ctrlListDisplay->GetClientData( i ) ) {
+                wxMessageBox( _("Class/Type is allready defined.") );
+               goto error;
+            }
+        }
+
+        wxString str = wxString::Format( _("%04X:%04X"), vscp_class, vscp_type);
+        if ( 0 != vscp_type ) {
+            str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             g_vscpinfo.getTypeDescription( vscp_class, vscp_type ) + _(" - ") +
+                             str;
+        }
+        else {
+            str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             _("[All events of class] - ") +
+                             str;
+        }
+        
+        int n = m_ctrlListDisplay->Append( str, (void *)clientdata ); // Yes I know
+ 
+
+    }
+
+error:
+
+    event.Skip(); 
 }
 
 
-/*
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ADD_FILTER_EVENT
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnButtonAddFilterEventClick
+//
 
-void EventFilter::OnButtonAddFilterEventClick( wxCommandEvent& event )
+void dlgEventFilter::OnButtonAddFilterEventClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ADD_FILTER_EVENT in EventFilter.
-    // Before editing this code, remove the block markers.
-    event.Skip();
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ADD_FILTER_EVENT in EventFilter. 
+    uint16_t vscp_class = 0;
+    uint16_t vscp_type = 0;
+
+    dlgClassTypeSelect dlg(this);
+    if (wxID_OK == dlg.ShowModal()) {
+        
+        int idxClass = dlg.m_ctrlComboClass->GetSelection();
+        if ( wxNOT_FOUND != idxClass ) {
+            vscp_class = (unsigned long)dlg.m_ctrlComboClass->GetClientData( idxClass );
+        }
+
+        int idxType = dlg.m_ctrlComboType->GetSelection();
+        if ( wxNOT_FOUND != idxType ) {
+            vscp_type = (unsigned long)dlg.m_ctrlComboType->GetClientData( idxType );
+        }
+
+        uint32_t clientdata = ( ( vscp_class<<16 ) + vscp_type );
+
+        for ( uint16_t i=0; i<m_ctrlListFilter->GetCount(); i++ ) {
+            if ( clientdata == (uint32_t)m_ctrlListFilter->GetClientData( i ) ) {
+                wxMessageBox( _("Class/Type is allready defined.") );
+               goto error;
+            }
+        }
+
+        wxString str = wxString::Format( _("%04X:%04X"), vscp_class, vscp_type);
+        if ( 0 != vscp_type ) {
+            str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             g_vscpinfo.getTypeDescription( vscp_class, vscp_type ) + _(" - ") +
+                             str;
+        }
+        else {
+            str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             _("[All events of class] - ") +
+                             str;
+        }
+        
+        int n = m_ctrlListFilter->Append( str, (void *)clientdata );
+
+    }
+
+error:
+    event.Skip(); 
 }
 
 
-/*
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnButtonOkClick
+//
 
-void EventFilter::OnButtonOkClick( wxCommandEvent& event )
+void dlgEventFilter::OnButtonOkClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK in EventFilter.
-    // Before editing this code, remove the block markers.
-    event.Skip();
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_OK in EventFilter. 
+
+    event.Skip(); 
 }
 
 
-/*
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_CANCEL
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnButtonCancelClick
+//
 
-void EventFilter::OnButtonCancelClick( wxCommandEvent& event )
+void dlgEventFilter::OnButtonCancelClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_CANCEL in EventFilter.
-    // Before editing this code, remove the block markers.
     event.Skip();
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_CANCEL in EventFilter. 
 }
 
 
-/*
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnButtonLoadClick
+//
 
-void EventFilter::OnButtonLoadClick( wxCommandEvent& event )
+void dlgEventFilter::OnButtonLoadClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD in EventFilter.
-    // Before editing this code, remove the block markers.
-    event.Skip();
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD in EventFilter. 
+    wxString str;
+    wxXmlDocument doc;
+
+    if ( m_ctrlListDisplay->GetCount() || m_ctrlListFilter->GetCount() ) {
+        if (wxYES == wxMessageBox(_("Should current rows be removed before loading new filter from file?"),
+                                    _("Remove rows?"),
+                                    wxYES_NO | wxICON_QUESTION)) {
+            m_ctrlListDisplay->Clear();
+            m_ctrlListFilter->Clear();
+        }
+    }
+
+    // First find a path to read RX data from
+    wxFileDialog dlg(this,
+            _("Choose file to load filter from "),
+            wxStandardPaths::Get().GetUserDataDir(),
+            _("filter"),
+            _("Filter (*.rxfilter)|*.rxfilter|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
+    if (wxID_OK == dlg.ShowModal()) {
+
+        wxBusyCursor wait;
+        wxProgressDialog progressDlg(_("VSCP Works"),
+                _("Prepare to loading filters..."),
+                100,
+                this,
+                wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+
+
+        if (!doc.Load(dlg.GetPath())) {
+            return;
+        }
+
+        // start processing the XML file xxxx
+        if (doc.GetRoot()->GetName() != wxT("vscprxfilter")) {
+            wxMessageBox(_("File with invalid format."));
+            return;
+        }
+
+        wxXmlNode *child = doc.GetRoot()->GetChildren();
+        while (child) {
+
+            if ( child->GetName() == wxT("item") ) {
+
+                long val;
+                uint16_t vscp_class = 0;
+                uint16_t vscp_type = 0;
+                uint8_t filtertype = FILTER_MODE_DISPLAY;
+
+                wxXmlNode *subchild = child->GetChildren();
+                while (subchild) {
+            
+                    if ( subchild->GetName() == wxT("class")) {
+                        str = subchild->GetNodeContent();
+                        str.ToLong( &val );
+                        vscp_class = val;
+                    }
+                    else if ( subchild->GetName() == wxT("type")) {
+                        str = subchild->GetNodeContent();
+                        str.ToLong( &val );
+                        vscp_type = val;
+                    }
+                    else if ( subchild->GetName() == wxT("filter")) {
+                        str = subchild->GetNodeContent();
+                        str.ToLong( &val );
+                        filtertype = val;
+                    }
+
+                    subchild = subchild->GetNext();
+
+                } // while subchild
+
+
+                if ( FILTER_MODE_DISPLAY == filtertype ) {
+
+                    uint32_t clientdata = (vscp_class<<16) + vscp_type;
+                
+                    wxString str = wxString::Format( _("%04X:%04X"), vscp_class, vscp_type);
+                    if ( 0 != vscp_type ) {
+                        str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             g_vscpinfo.getTypeDescription( vscp_class, vscp_type ) + _(" - ") +
+                             str;
+                    }
+                    else {
+                        str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             _("[All events of class] - ") +
+                             str;
+                    }
+        
+                    m_ctrlListDisplay->Append( str, (void *)clientdata ); // Yes I know
+
+                }
+                else if ( FILTER_MODE_FILTER == filtertype ) {
+
+                    uint32_t clientdata = (vscp_class<<16) + vscp_type;
+                
+                    wxString str = wxString::Format( _("%04X:%04X"), vscp_class, vscp_type);
+                    if ( 0 != vscp_type ) {
+                        str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             g_vscpinfo.getTypeDescription( vscp_class, vscp_type ) + _(" - ") +
+                             str;
+                    }
+                    else {
+                        str = g_vscpinfo.getClassDescription( vscp_class ) + _(":") + 
+                             _("[All events of class] - ") +
+                             str;
+                    }
+        
+                    m_ctrlListFilter->Append( str, (void *)clientdata ); // Yes I know
+                
+                }
+
+            }
+
+            child = child->GetNext();
+
+        } // while child
+    }
+
+    event.Skip(); 
 }
 
 
-/*
- * wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_SAVE
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnButtonSaveClick
+//
 
-void EventFilter::OnButtonSaveClick( wxCommandEvent& event )
+void dlgEventFilter::OnButtonSaveClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_SAVE in EventFilter.
-    // Before editing this code, remove the block markers.
+    wxString str;
+
+    // First find a path to save RX data to
+    wxFileDialog dlg(this,
+            _("Please choose a file to save this filter to "),
+            wxStandardPaths::Get().GetUserDataDir(),
+            _("filter"),
+            _("Filter (*.rxfilter)|*.rxfilter|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
+    if (wxID_OK == dlg.ShowModal()) {
+
+        wxBusyCursor wait;
+
+        wxProgressDialog progressDlg(_("VSCP Works"),
+                _("Saving filter..."),
+                100,
+                this,
+                wxPD_ELAPSED_TIME | wxPD_AUTO_HIDE | wxPD_APP_MODAL);
+
+        wxFFileOutputStream *pFileStream = new wxFFileOutputStream(dlg.GetPath());
+        if (NULL == pFileStream) {
+            wxMessageBox(_("Failed to create file."));
+            return;
+        }
+
+        pFileStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+                strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n"));
+
+        // Filter data start
+        pFileStream->Write("<vscprxfilter>\n", strlen("<vscprxfilter>\n"));
+      
+        if ( m_ctrlListDisplay->GetCount() ) {
+            for ( size_t i=0; i<m_ctrlListDisplay->GetCount(); i++ ) {
+                uint32_t clientdata = (uint32_t)m_ctrlListDisplay->GetClientData( i );
+                pFileStream->Write("<item>\n", strlen("<item>\n"));    
+                pFileStream->Write("<class>", strlen("<class>"));
+                str.Printf( _("%d"), clientdata>>16 );
+                pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+                pFileStream->Write("</class>\n", strlen("</class>\n"));
+                pFileStream->Write("<type>", strlen("<type>"));
+                str.Printf( _("%d"), clientdata & 0xffff );
+                pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+                pFileStream->Write("</type>\n", strlen("</type>\n"));
+                pFileStream->Write("<filter>0</filter>\n", strlen("<filter>0</filter>\n"));
+                pFileStream->Write("</item>\n", strlen("</item>\n"));
+            }
+        }
+
+        if ( m_ctrlListFilter->GetCount() ) {
+            for ( size_t i=0; i<m_ctrlListFilter->GetCount(); i++ ) {
+                uint32_t clientdata = (uint32_t)m_ctrlListFilter->GetClientData( i );
+                pFileStream->Write("<item>\n", strlen("<item>\n"));    
+                pFileStream->Write("<class>", strlen("<class>"));
+                str.Printf( _("%d"), clientdata>>16 );
+                pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+                pFileStream->Write("</class>\n", strlen("</class>\n"));
+                pFileStream->Write("<type>", strlen("<type>"));
+                str.Printf( _("%d"), clientdata & 0xffff );
+                pFileStream->Write(str.mb_str(), strlen(str.mb_str()));
+                pFileStream->Write("</type>\n", strlen("</type>\n"));
+                pFileStream->Write("<filter>1</filter>\n", strlen("<filter>1</filter>\n"));
+                pFileStream->Write("</item>\n", strlen("</item>\n"));
+            }
+        }
+
+        // Transmission set end
+        pFileStream->Write("</vscprxfilter>\n", strlen("</vscprxfilter>\n"));
+
+        // Close the file
+        pFileStream->Close();
+
+        // Clean up
+        delete pFileStream;
+
+    }
+
     event.Skip();
-////@end wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_SAVE in EventFilter. 
 }
 
 
-/*
- * wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX_DISPLAY
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnListboxDisplaySelected
+//
 
-void EventFilter::OnListboxDisplaySelected( wxCommandEvent& event )
+void dlgEventFilter::OnListboxDisplaySelected( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX_DISPLAY in EventFilter.
-    // Before editing this code, remove the block markers.
-    event.Skip();
-////@end wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX_DISPLAY in EventFilter. 
+
+    event.Skip(); 
 }
 
 
-/*
- * wxEVT_COMMAND_LISTBOX_DOUBLECLICKED event handler for ID_LISTBOX_DISPLAY
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnListboxDisplayDoubleClicked
+//
 
-void EventFilter::OnListboxDisplayDoubleClicked( wxCommandEvent& event )
+void dlgEventFilter::OnListboxDisplayDoubleClicked( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_LISTBOX_DOUBLECLICKED event handler for ID_LISTBOX_DISPLAY in EventFilter.
-    // Before editing this code, remove the block markers.
+
     event.Skip();
-////@end wxEVT_COMMAND_LISTBOX_DOUBLECLICKED event handler for ID_LISTBOX_DISPLAY in EventFilter. 
 }
 
 
-/*
- * wxEVT_RIGHT_DOWN event handler for ID_LISTBOX_DISPLAY
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnRightDown
+//
 
-void EventFilter::OnRightDown( wxMouseEvent& event )
+void dlgEventFilter::OnRightDown( wxMouseEvent& event )
 {
-////@begin wxEVT_RIGHT_DOWN event handler for ID_LISTBOX_DISPLAY in EventFilter.
-    // Before editing this code, remove the block markers.
+    wxMenu menu;
+    wxPoint pos = ClientToScreen(event.GetPosition());
+
+    if (ID_LISTBOX_DISPLAY == event.GetId()) {
+        menu.Append( Menu_Popup_Display_Add, _T("Add") );
+        menu.Append( Menu_Popup_Display_Remove, _T("Remove") );
+        menu.AppendSeparator();
+    } 
+    else if (ID_LISTBOX_FILTER == event.GetId()) {
+        menu.Append( Menu_Popup_Filter_Add, _T("Add") );
+        menu.Append( Menu_Popup_Filter_Remove, _T("Remove") );
+        menu.AppendSeparator();
+    }
+
+    PopupMenu(&menu/*, pos.x, pos.y*/);
     event.Skip();
-////@end wxEVT_RIGHT_DOWN event handler for ID_LISTBOX_DISPLAY in EventFilter. 
 }
 
 
-/*
- * wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX_FILTER
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnListboxFilterSelected
+//
 
-void EventFilter::OnListboxFilterSelected( wxCommandEvent& event )
+void dlgEventFilter::OnListboxFilterSelected( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX_FILTER in EventFilter.
-    // Before editing this code, remove the block markers.
+
     event.Skip();
-////@end wxEVT_COMMAND_LISTBOX_SELECTED event handler for ID_LISTBOX_FILTER in EventFilter. 
 }
 
 
-/*
- * wxEVT_COMMAND_LISTBOX_DOUBLECLICKED event handler for ID_LISTBOX_FILTER
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnListboxFilterDoubleClicked
+//
 
-void EventFilter::OnListboxFilterDoubleClicked( wxCommandEvent& event )
+void dlgEventFilter::OnListboxFilterDoubleClicked( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_LISTBOX_DOUBLECLICKED event handler for ID_LISTBOX_FILTER in EventFilter.
-    // Before editing this code, remove the block markers.
+
     event.Skip();
-////@end wxEVT_COMMAND_LISTBOX_DOUBLECLICKED event handler for ID_LISTBOX_FILTER in EventFilter. 
 }
 
 
-/*
- * wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_CHECKBOX_ENABLE
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnCheckboxEnableClick
+//
 
-void EventFilter::OnCheckboxEnableClick( wxCommandEvent& event )
+void dlgEventFilter::OnCheckboxEnableClick( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_CHECKBOX_ENABLE in EventFilter.
-    // Before editing this code, remove the block markers.
+    m_bfilterActive = m_ctrlCheckBoxEnable->GetValue();
     event.Skip();
-////@end wxEVT_COMMAND_CHECKBOX_CLICKED event handler for ID_CHECKBOX_ENABLE in EventFilter. 
 }
 
 
-/*
- * wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for ID_RADIOBUTTON_FILTER
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnRadiobuttonFilterSelected
+//
 
-void EventFilter::OnRadiobuttonFilterSelected( wxCommandEvent& event )
+void dlgEventFilter::OnRadiobuttonFilterSelected( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for ID_RADIOBUTTON_FILTER in EventFilter.
-    // Before editing this code, remove the block markers.
-    event.Skip();
-////@end wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for ID_RADIOBUTTON_FILTER in EventFilter. 
+    m_nfilterMode = FILTER_MODE_FILTER;
+    event.Skip(); 
 }
 
 
-/*
- * wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for ID_RADIOBUTTON_DISPLAY
- */
+///////////////////////////////////////////////////////////////////////////////
+// OnRadiobuttonDisplaySelected
+//
 
-void EventFilter::OnRadiobuttonDisplaySelected( wxCommandEvent& event )
+void dlgEventFilter::OnRadiobuttonDisplaySelected( wxCommandEvent& event )
 {
-////@begin wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for ID_RADIOBUTTON_DISPLAY in EventFilter.
-    // Before editing this code, remove the block markers.
-    event.Skip();
-////@end wxEVT_COMMAND_RADIOBUTTON_SELECTED event handler for ID_RADIOBUTTON_DISPLAY in EventFilter. 
+    m_nfilterMode = FILTER_MODE_DISPLAY;
+    event.Skip(); 
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// OnRemoveDisplayRows
+//
+
+void dlgEventFilter::OnRemoveDisplayRows( wxCommandEvent& event )
+{
+    wxBusyCursor wait;
+
+    if ( m_ctrlListDisplay->GetCount() ) {
+        wxArrayInt selrows;
+        m_ctrlListDisplay->GetSelections( selrows );
+        if (selrows.GetCount()) {
+            for (int i = selrows.GetCount() - 1; i >= 0; i--) {
+                m_ctrlListDisplay->Delete( i );
+            }
+        }
+    }
+
+    event.Skip();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// OnRemoveFilterRows
+//
+
+void dlgEventFilter::OnRemoveFilterRows( wxCommandEvent& event )
+{
+    wxBusyCursor wait;
+
+    if ( m_ctrlListFilter->GetCount() ) {
+        wxArrayInt selrows;
+        m_ctrlListFilter->GetSelections( selrows );
+        if (selrows.GetCount()) {
+            for (int i = selrows.GetCount() - 1; i >= 0; i--) {
+                m_ctrlListFilter->Delete( i );
+            }
+        }
+    }
+
+    event.Skip();
+}

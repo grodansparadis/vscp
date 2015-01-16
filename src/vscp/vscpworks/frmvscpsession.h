@@ -62,14 +62,18 @@
 #include "vscptxobj.h"
 #include "gridtable.h"
 
+#include "dlgeventfilter.h"
+
 #include <canaldlldef.h>
 #include <canalsuperwrapper.h>
 
+// Statusbar id's
 #define STATUSBAR_STATUS_LEFT       0
 #define STATUSBAR_STATUS_RIGHT      1
 
 // List with transmission objects
 WX_DECLARE_LIST ( VscpTXObj, TXLIST );
+
 
 enum {
     Menu_Help_About = wxID_ABOUT,
@@ -722,6 +726,12 @@ public:
 
     /// Mutex that control the stopThreads method
     wxMutex m_mutexStopThread; 
+
+    // Filters
+    bool m_bfilterActive;
+    int m_nfilterMode;
+    wxArrayLong m_filterArrayDisplay;
+    wxArrayLong m_filterArrayFilter;
   
     // * * *   Threads  * * *
   
