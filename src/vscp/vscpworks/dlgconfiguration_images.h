@@ -788,7 +788,7 @@ static const char *fatbee_v2_xpm[] = {
 /* XPM */
 static char *copy_xpm[] = {
 /* columns rows colors chars-per-pixel */
-"16 15 4 1",
+"16 16 4 1",
 "  c None",
 ". c Black",
 "X c Gray100",
@@ -808,6 +808,7 @@ static char *copy_xpm[] = {
 "       oX.....Xo",
 "       oXXXXXXXo",
 "       ooooooooo",
+"                ",
 "                "
 };
 
