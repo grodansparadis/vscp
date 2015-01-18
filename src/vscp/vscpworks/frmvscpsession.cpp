@@ -793,11 +793,11 @@ void frmVSCPSession::CreateControls()
                                     ID_TOGGLEBUTTON_FILTER_ACTIVATE, 
                                     _("Filter"), 
                                     wxDefaultPosition, 
-                                    wxSize(40, -1), 
+                                    wxSize(-1, -1), 
                                     0 );
     m_BtnActivateFilter->SetValue(false);
     if (frmVSCPSession::ShowToolTips())
-        m_BtnActivateFilter->SetToolTip(_("Acticate/Deactivate the receive filter"));
+        m_BtnActivateFilter->SetToolTip(_("Activate/Deactivate the receive filter"));
     itemToolBar2->AddControl( m_BtnActivateFilter );
 
     m_BtnActivateInterface = new wxToggleButton;
@@ -805,7 +805,7 @@ void frmVSCPSession::CreateControls()
                                         ID_TOGGLEBUTTON_CONNECTION_ACTIVATE, 
                                         _("Connected"), 
                                         wxDefaultPosition, 
-                                        wxSize(80, -1), 
+                                        wxSize(-1, -1), 
                                         0 );
     m_BtnActivateInterface->SetValue(true);
     if (frmVSCPSession::ShowToolTips())
