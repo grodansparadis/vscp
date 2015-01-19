@@ -105,16 +105,8 @@
           <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
           <executablePath>vscpworks</executablePath>
           <cTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
-              <pElem>../common</pElem>
-              <pElem>../../common</pElem>
-              <pElem>.</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>NS_ENABLE_SSL</Elem>
-              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>wxUSE_GUI=1</Elem>
@@ -122,16 +114,17 @@
           </cTool>
           <ccTool>
             <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+              <pElem>/usr/local/include/wx-2.8</pElem>
               <pElem>../common</pElem>
               <pElem>../../common</pElem>
             </incDir>
             <preprocessorList>
               <Elem>NS_ENABLE_SSL</Elem>
               <Elem>USE_FOSSA</Elem>
-              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
+              <Elem>_LARGE_FILES</Elem>
+              <Elem>__WXDEBUG__</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>wxUSE_GUI=1</Elem>
             </preprocessorList>
@@ -140,26 +133,65 @@
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
         <cTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/crc8.c" ex="false" tool="0" flavor2="2">
         <cTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/fossa.c" ex="false" tool="0" flavor2="2">
         <cTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
           <preprocessorList>
             <Elem>USE_FOSSA</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
           </preprocessorList>
         </cTool>
       </item>
       <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
