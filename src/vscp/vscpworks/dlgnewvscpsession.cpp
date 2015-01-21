@@ -346,7 +346,6 @@ void dlgNewVSCPSession::OnButtonAddClick(wxCommandEvent& event)
                 pInfo->m_strPassword = dlg.m_RemoteServerPassword->GetValue();
                 pInfo->m_strPassword.Trim(false);
                 pInfo->m_strPassword.Trim();
-                //dlg.m_RemoteServerPort->GetValue().ToULong(&pInfo->m_port);
                 pInfo->m_bLevel2 = dlg.m_fullLevel2->GetValue();
                 wxString str;
 
@@ -408,7 +407,6 @@ void dlgNewVSCPSession::OnButtonEditClick(wxCommandEvent& event)
                     dlg.m_RemoteServerURL->SetValue(pBoth->m_pvscpif->m_strHost);
                     dlg.m_RemoteServerUsername->SetValue(pBoth->m_pvscpif->m_strUser);
                     dlg.m_RemoteServerPassword->SetValue(pBoth->m_pvscpif->m_strPassword);
-                    //dlg.m_RemoteServerPort->SetValue(wxString::Format(_("%lu"), pBoth->m_pvscpif->m_port));
                     dlg.m_RemoteInterfaceName->SetValue(pBoth->m_pvscpif->m_strInterfaceName);
                     memcpy(&dlg.m_vscpfilter, &pBoth->m_pvscpif->m_vscpfilter, sizeof( vscpEventFilter));
 
@@ -436,7 +434,6 @@ void dlgNewVSCPSession::OnButtonEditClick(wxCommandEvent& event)
                         pBoth->m_pvscpif->m_strUser = dlg.m_RemoteServerUsername->GetValue();
                         pBoth->m_pvscpif->m_strPassword = dlg.m_RemoteServerPassword->GetValue();
                         pBoth->m_pvscpif->m_strInterfaceName = dlg.m_RemoteInterfaceName->GetValue();
-                        //dlg.m_RemoteServerPort->GetValue().ToULong(&pBoth->m_pvscpif->m_port);
                         pBoth->m_pvscpif->m_bLevel2 = dlg.m_fullLevel2->GetValue();
 
                         memcpy(&pBoth->m_pvscpif->m_vscpfilter, &dlg.m_vscpfilter, sizeof( vscpEventFilter));
@@ -601,7 +598,6 @@ void dlgNewVSCPSession::OnButtonCloneClick(wxCommandEvent& event)
                         pInfo->m_strUser = pBoth->m_pvscpif->m_strUser;
                         pInfo->m_strPassword = pBoth->m_pvscpif->m_strPassword;
                         pInfo->m_strInterfaceName = pBoth->m_pvscpif->m_strInterfaceName;
-                        pInfo->m_port = pBoth->m_pvscpif->m_port;
                         pInfo->m_bLevel2 = pBoth->m_pvscpif->m_bLevel2;
                         memcpy( &pInfo->m_vscpfilter, 
                                     &pBoth->m_pvscpif->m_vscpfilter, 

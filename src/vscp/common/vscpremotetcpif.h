@@ -65,12 +65,12 @@
 	Default response timeout for communication with the
 	tcp/ip interface of the daemon in seconds
 */
-#define DEFAULT_RESPONSE_TIMEOUT				3
+#define TCPIP_DEFAULT_RESPONSE_TIMEOUT		    3
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define TCPIP_REGISTER_READ_RESEND_TIMEOUT		5000
-#define TCPIP_REGISTER_READ_ERROR_TIMEOUT		4000
+#define TCPIP_REGISTER_READ_RESEND_TIMEOUT		1000
+#define TCPIP_REGISTER_READ_ERROR_TIMEOUT		5000
 #define TCPIP_REGISTER_READ_MAX_TRIES			3
 
 /*!
@@ -166,6 +166,17 @@ public:
         \param to Timeout value in seconds. (Default = 2 seconds.)
     */
     void setResponseTimeout( uint8_t to ) { if ( to ) m_responseTimeOut = to; };
+
+
+    /*!
+        Set register read/write timings
+    */
+    void setRegisterOperationTiming( uint8_t retries, uint32_t resendto, uint32_t errorto )
+    {
+        m_registerOpMaxRetries = retries;
+        m_registerOpResendTimeout = resendto;
+        m_registerOpErrorTimeout = errorto;
+    };
     
     /*!
      Returns TRUE if we are connected false otherwise.
@@ -827,26 +838,17 @@ protected:
 
     clientTcpIpWorkerThread *m_pClientTcpIpWorkerThread;
 
-    /// Response string
-    //wxString m_strReply;
-
-    /// Error storage
-    uint32_t m_err;
-
-    /// Last binary error
-    //uint8_t m_lastBinaryError;
-
     /// Server response timeout in seconds
     uint8_t m_responseTimeOut;
 
     /// Error timeout for register read/write operations
-    uint32_t m_registerReadErrorTimeout;
+    uint32_t m_registerOpErrorTimeout;
 
     /// Resend timeout for read/write operations
-    uint32_t m_registerReadResendTimeout;
+    uint32_t m_registerOpResendTimeout;
 
     /// Man number of read/write retries
-    uint8_t m_registerReadMaxRetries;
+    uint8_t m_registerOpMaxRetries;
 
 };
 

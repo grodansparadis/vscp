@@ -442,7 +442,6 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
                             subframe->m_CtrlObject.m_ifVSCP.m_strHost = pBoth->m_pvscpif->m_strHost;
                             subframe->m_CtrlObject.m_ifVSCP.m_strUser = pBoth->m_pvscpif->m_strUser;
                             subframe->m_CtrlObject.m_ifVSCP.m_strPassword = pBoth->m_pvscpif->m_strPassword;
-                            subframe->m_CtrlObject.m_ifVSCP.m_port = pBoth->m_pvscpif->m_port;
                             memcpy( &subframe->m_CtrlObject.m_ifVSCP.m_vscpfilter, 
                                 &pBoth->m_pvscpif->m_vscpfilter, 
                                 sizeof( vscpEventFilter ) );
@@ -589,7 +588,6 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 						subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
 						subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;
 						subframe->m_vscpif.m_strPassword = pBoth->m_pvscpif->m_strPassword;
-						subframe->m_vscpif.m_port = pBoth->m_pvscpif->m_port;
                         subframe->m_vscpif.m_strInterfaceName = pBoth->m_pvscpif->m_strInterfaceName;
 						memcpy( subframe->m_vscpif.m_GUID, pBoth->m_pvscpif->m_GUID, 16 );
 						memcpy( &subframe->m_vscpif.m_vscpfilter, 
@@ -728,7 +726,6 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 						subframe->m_vscpif.m_strHost = pBoth->m_pvscpif->m_strHost;
 						subframe->m_vscpif.m_strUser = pBoth->m_pvscpif->m_strUser;
 						subframe->m_vscpif.m_strPassword = pBoth->m_pvscpif->m_strPassword;
-						subframe->m_vscpif.m_port = pBoth->m_pvscpif->m_port;
                         subframe->m_vscpif.m_strInterfaceName = pBoth->m_pvscpif->m_strInterfaceName;
 						memcpy( subframe->m_vscpif.m_GUID, pBoth->m_pvscpif->m_GUID, 16 );
 						memcpy( &subframe->m_vscpif.m_vscpfilter, 

@@ -3189,8 +3189,6 @@ void *deviceThread::Entry()
             m_pCtrlObject->m_proc_CanalOpen((const char *) m_pCtrlObject->m_ifCANAL.m_strConfig.mb_str(wxConvUTF8),
             m_pCtrlObject->m_ifCANAL.m_flags);
 
-
-
     // Check if the driver opened properly
     if (0 == m_pCtrlObject->m_openHandle) {
         ::wxGetApp().logMsg(_T("CANAL: Faild to open driver."), DAEMON_LOGMSG_CRITICAL);

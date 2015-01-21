@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// VscpRemoteTcpIf.cpp: 
+// VscpRemoteTcpIf.cpp
 //
 // This file is part of the VSCP (http://www.vscp.org) 
 //
@@ -24,6 +24,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+//
 
 #ifdef __GNUG__
     //#pragma implementation
@@ -57,7 +58,6 @@
 WX_DEFINE_LIST( EVENT_RX_QUEUE );
 WX_DEFINE_LIST( EVENT_TX_QUEUE );
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // CTOR
 //
@@ -65,8 +65,7 @@ WX_DEFINE_LIST( EVENT_TX_QUEUE );
 clientTcpIpWorkerThread::clientTcpIpWorkerThread() : wxThread( wxTHREAD_JOINABLE )	
 {
     m_bRun = true;  // Run my friend run
-    m_pvscpRemoteTcpIpIf = NULL;
-   
+    m_pvscpRemoteTcpIpIf = NULL; 
 }
 
 
@@ -219,13 +218,13 @@ VscpRemoteTcpIf::VscpRemoteTcpIf()
     m_bConnected = false;
     m_pClientTcpIpWorkerThread = NULL;
     m_bModeReceiveLoop = false;
-    m_responseTimeOut = DEFAULT_RESPONSE_TIMEOUT;
+    m_responseTimeOut = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
     m_psemInputArray = new wxSemaphore( 0, 1 ); // not signaled, max=1
 
     // Init. register read parameters
-	m_registerReadErrorTimeout = TCPIP_REGISTER_READ_ERROR_TIMEOUT;
-	m_registerReadResendTimeout = TCPIP_REGISTER_READ_RESEND_TIMEOUT;
-	m_registerReadMaxRetries = TCPIP_REGISTER_READ_MAX_TRIES;
+	m_registerOpErrorTimeout = TCPIP_REGISTER_READ_ERROR_TIMEOUT;
+	m_registerOpResendTimeout = TCPIP_REGISTER_READ_RESEND_TIMEOUT;
+	m_registerOpMaxRetries = TCPIP_REGISTER_READ_MAX_TRIES;
 }
 
 
@@ -2768,7 +2767,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
 		}
 
 		if ( ( ::wxGetLocalTimeMillis() - resendTime ) > 
-			m_registerReadResendTimeout ) {
+			m_registerOpResendTimeout ) {
 				
 				errors++;
 
@@ -2779,7 +2778,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
 
 		}   
 
-		if ( errors > m_registerReadMaxRetries ) {
+		if ( errors > m_registerOpMaxRetries ) {
 			rv = false;
 			break;
 		}
@@ -3014,12 +3013,12 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
             
 		}
 
-		if ( ( ::wxGetLocalTimeMillis() - resendTime ) >  m_registerReadResendTimeout ) {			
+		if ( ( ::wxGetLocalTimeMillis() - resendTime ) >  m_registerOpResendTimeout ) {			
 				errors++;
 			    resendTime = ::wxGetLocalTimeMillis();
 		}   
 
-		if ( errors > m_registerReadMaxRetries ) {
+		if ( errors > m_registerOpMaxRetries ) {
 			rv = CANAL_ERROR_TIMEOUT;
 			break;
 		}
@@ -3202,10 +3201,10 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 			wxMilliSleep( 2 );
 		}
 
-		if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerReadErrorTimeout ) {
+		if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
             errors++;
 		}
-		else if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadResendTimeout ) {
+		else if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerOpResendTimeout ) {
             // Send again
             if ( !bResend) {
                 doCmdSendEx( &e );
@@ -3213,7 +3212,7 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
             bResend = true;
 		}
 
-		if ( errors > m_registerReadMaxRetries ) {
+		if ( errors > m_registerOpMaxRetries ) {
 			rv = CANAL_ERROR_TIMEOUT;
 			break;
 		}
@@ -3322,7 +3321,6 @@ ctrlObjVscpTcpIf::ctrlObjVscpTcpIf()
     m_port = 9598;						// VSCP_LEVEL2_TCP_PORT;
     m_rxState = RX_TREAD_STATE_NONE;
     m_bQuit = false; 	 				// Dont even think of quiting yet...
-    m_error = 0;      				    // No error
     m_rxChannelID = 0;				    // No receive channel
     m_txChannelID = 0;				    // No transmit channel
     m_bFilterOwnTx = false;		        // Don't filter TX

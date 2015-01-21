@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #ifndef _DLGNEWVSCPSESSION_H_
 #define _DLGNEWVSCPSESSION_H_
@@ -50,27 +50,21 @@
  * Includes
  */
 
-////@begin includes
-////@end includes
 
 /*!
  * Forward declarations
  */
 
-////@begin forward declarations
-////@end forward declarations
 
 /*!
  * Control identifiers
  */
 
-////@begin control identifiers
 #define SYMBOL_DLGNEWVSCPSESSION_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX
 #define SYMBOL_DLGNEWVSCPSESSION_TITLE _("Select interface to use for session")
 #define SYMBOL_DLGNEWVSCPSESSION_IDNAME ID_DIALOG_NEW_VSCP_SESSION
 #define SYMBOL_DLGNEWVSCPSESSION_SIZE wxSize(400, 300)
 #define SYMBOL_DLGNEWVSCPSESSION_POSITION wxDefaultPosition
-////@end control identifiers
 
 
 /*!
@@ -85,10 +79,20 @@ class dlgNewVSCPSession: public wxDialog
 public:
   /// Constructors
   dlgNewVSCPSession();
-  dlgNewVSCPSession( wxWindow* parent, wxWindowID id = SYMBOL_DLGNEWVSCPSESSION_IDNAME, const wxString& caption = SYMBOL_DLGNEWVSCPSESSION_TITLE, const wxPoint& pos = SYMBOL_DLGNEWVSCPSESSION_POSITION, const wxSize& size = SYMBOL_DLGNEWVSCPSESSION_SIZE, long style = SYMBOL_DLGNEWVSCPSESSION_STYLE );
+  dlgNewVSCPSession( wxWindow* parent, 
+                        wxWindowID id = SYMBOL_DLGNEWVSCPSESSION_IDNAME, 
+                        const wxString& caption = SYMBOL_DLGNEWVSCPSESSION_TITLE, 
+                        const wxPoint& pos = SYMBOL_DLGNEWVSCPSESSION_POSITION, 
+                        const wxSize& size = SYMBOL_DLGNEWVSCPSESSION_SIZE, 
+                        long style = SYMBOL_DLGNEWVSCPSESSION_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DLGNEWVSCPSESSION_IDNAME, const wxString& caption = SYMBOL_DLGNEWVSCPSESSION_TITLE, const wxPoint& pos = SYMBOL_DLGNEWVSCPSESSION_POSITION, const wxSize& size = SYMBOL_DLGNEWVSCPSESSION_SIZE, long style = SYMBOL_DLGNEWVSCPSESSION_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DLGNEWVSCPSESSION_IDNAME, 
+                    const wxString& caption = SYMBOL_DLGNEWVSCPSESSION_TITLE, 
+                    const wxPoint& pos = SYMBOL_DLGNEWVSCPSESSION_POSITION, 
+                    const wxSize& size = SYMBOL_DLGNEWVSCPSESSION_SIZE, 
+                    long style = SYMBOL_DLGNEWVSCPSESSION_STYLE );
 
   /// Destructor
   ~dlgNewVSCPSession();
@@ -108,8 +112,6 @@ public:
     Cleanup listbox (both visual and object data).
   */
   void cleanupListbox( void );
-
-////@begin dlgNewVSCPSession event handler declarations
 
   /// wxEVT_INIT_DIALOG event handler for ID_DIALOG_NEW_VSCP_SESSION
   void OnInitDialog( wxInitDialogEvent& event );
@@ -141,16 +143,13 @@ public:
   /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON
   void OnButtonCloneClick( wxCommandEvent& event );
 
-////@end dlgNewVSCPSession event handler declarations
-
-////@begin dlgNewVSCPSession member function declarations
 
   /// Retrieves bitmap resources
   wxBitmap GetBitmapResource( const wxString& name );
 
   /// Retrieves icon resources
   wxIcon GetIconResource( const wxString& name );
-////@end dlgNewVSCPSession member function declarations
+
 
   /// Should we show tooltips?
   static bool ShowToolTips();
@@ -158,7 +157,7 @@ public:
 	// Flag for unconnected mode line
 	bool m_bShowUnconnectedMode;
 
-////@begin dlgNewVSCPSession member variables
+
   wxListBox* m_ctrlListInterfaces;
   /// Control identifiers
   enum {
@@ -169,7 +168,7 @@ public:
     ID_BUTTON_REMOVE = 14004,
     ID_BUTTON = 14005
   };
-////@end dlgNewVSCPSession member variables
+
 };
 
 #endif

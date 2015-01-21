@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "dlgconfiguration.h"
@@ -55,9 +55,7 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
 #include "wx/bookctrl.h"
-////@end includes
 
 #include <wx/colordlg.h>
 #include <wx/imaglist.h>
@@ -82,10 +80,10 @@ IMPLEMENT_DYNAMIC_CLASS( dlgConfiguration, wxPropertySheetDialog )
 
 BEGIN_EVENT_TABLE( dlgConfiguration, wxPropertySheetDialog )
 
-  EVT_BUTTON( ID_BUTTON4, dlgConfiguration::OnButtonSetRxGridTextColourClick )
-  EVT_BUTTON( ID_BUTTON5, dlgConfiguration::SetRxGridBackgroundColourClick )
-  EVT_BUTTON( ID_BUTTON6, dlgConfiguration::OnButtonSetTxGridTextColourClick )
-  EVT_BUTTON( ID_BUTTON7, dlgConfiguration::OnButtonSetTxGridBackgroundColourClick )
+    EVT_BUTTON( ID_BUTTON4, dlgConfiguration::OnButtonSetRxGridTextColourClick )
+    EVT_BUTTON( ID_BUTTON5, dlgConfiguration::SetRxGridBackgroundColourClick )
+    EVT_BUTTON( ID_BUTTON6, dlgConfiguration::OnButtonSetTxGridTextColourClick )
+    EVT_BUTTON( ID_BUTTON7, dlgConfiguration::OnButtonSetTxGridBackgroundColourClick )
 
 END_EVENT_TABLE()
 
@@ -132,7 +130,7 @@ bool dlgConfiguration::Create( wxWindow* parent, wxWindowID id, const wxString& 
 
 dlgConfiguration::~dlgConfiguration()
 {
-    
+    ;   
 }
 
 
@@ -180,32 +178,37 @@ void dlgConfiguration::CreateControls()
         wxIcon itemPropertySheetDialog1Icon4(GetIconResource(wxT("copy.xpm")));
         itemPropertySheetDialog1ImageList->Add(itemPropertySheetDialog1Icon4);
     }
-    GetBookCtrl()->AssignImageList(itemPropertySheetDialog1ImageList);
+    GetBookCtrl()->AssignImageList( itemPropertySheetDialog1ImageList );
 
+    // General
     wxPanel* itemPanel2 = new wxPanel;
     itemPanel2->Create( GetBookCtrl(), ID_PANEL_GENERAL, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
     itemPanel2->SetName(wxT("general"));
     wxBoxSizer* itemBoxSizer3 = new wxBoxSizer(wxVERTICAL);
     itemPanel2->SetSizer(itemBoxSizer3);
 
-    wxGridSizer* itemGridSizer4 = new wxGridSizer(24, 2, 0, 0);
-    itemBoxSizer3->Add(itemGridSizer4, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+    wxGridSizer* itemGridSizerGeneral = new wxGridSizer(24, 2, 0, 0);
+    itemBoxSizer3->Add(itemGridSizerGeneral, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+
+    itemGridSizerGeneral->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizerGeneral->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
     wxStaticText* itemStaticText5 = new wxStaticText;
     itemStaticText5->Create( itemPanel2, wxID_STATIC, _("Logfile :"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer4->Add(itemStaticText5, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemStaticText5, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     
     wxBoxSizer* itemBoxSizer6 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer4->Add(itemBoxSizer6, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemBoxSizer6, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     m_labelLogFile = new wxStaticText;
     m_labelLogFile->Create( itemPanel2, wxID_STATIC, _("---"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer6->Add(m_labelLogFile, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText8 = new wxStaticText;
     itemStaticText8->Create( itemPanel2, wxID_STATIC, _("Enable logging :"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer4->Add(itemStaticText8, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemStaticText8, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer9 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer4->Add(itemBoxSizer9, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemBoxSizer9, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     m_checkEnableLogging = new wxCheckBox;
     m_checkEnableLogging->Create( itemPanel2, ID_CHECKBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
     m_checkEnableLogging->SetValue(false);
@@ -213,10 +216,10 @@ void dlgConfiguration::CreateControls()
 
     wxStaticText* itemStaticText11 = new wxStaticText;
     itemStaticText11->Create( itemPanel2, wxID_STATIC, _("Log Level :"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer4->Add(itemStaticText11, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemStaticText11, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer12 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer4->Add(itemBoxSizer12, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemBoxSizer12, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     wxArrayString m_comboLogLevelStrings;
     m_comboLogLevelStrings.Add(_("DEBUG - Highest"));
     m_comboLogLevelStrings.Add(_("INFO"));
@@ -230,16 +233,16 @@ void dlgConfiguration::CreateControls()
     m_comboLogLevel->Create( itemPanel2, ID_CHOICE3, wxDefaultPosition, wxDefaultSize, m_comboLogLevelStrings, 0 );
     itemBoxSizer12->Add(m_comboLogLevel, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    itemGridSizer4->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizerGeneral->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    itemGridSizer4->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizerGeneral->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     wxStaticText* itemStaticText16 = new wxStaticText;
     itemStaticText16->Create( itemPanel2, wxID_STATIC, _("Confirm deletes :"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer4->Add(itemStaticText16, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemStaticText16, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer17 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer4->Add(itemBoxSizer17, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemBoxSizer17, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     m_checkConfirmDeletes = new wxCheckBox;
     m_checkConfirmDeletes->Create( itemPanel2, ID_CHECKBOX3, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
     m_checkConfirmDeletes->SetValue(false);
@@ -247,10 +250,10 @@ void dlgConfiguration::CreateControls()
 
     wxStaticText* itemStaticText19 = new wxStaticText;
     itemStaticText19->Create( itemPanel2, wxID_STATIC, _("Base to use for numbers :"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer4->Add(itemStaticText19, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerGeneral->Add(itemStaticText19, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer20 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer4->Add(itemBoxSizer20, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 0);
+    itemGridSizerGeneral->Add(itemBoxSizer20, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 0);
     wxArrayString m_comboNumericalBaseStrings;
     m_comboNumericalBaseStrings.Add(_("Hexadecimal"));
     m_comboNumericalBaseStrings.Add(_("Decimal"));
@@ -260,146 +263,279 @@ void dlgConfiguration::CreateControls()
 
     GetBookCtrl()->AddPage(itemPanel2, _("General"), false, 0);
 
-    wxPanel* itemPanel22 = new wxPanel;
-    itemPanel22->Create( GetBookCtrl(), ID_PANEL_COMMUNICATION, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* itemBoxSizer23 = new wxBoxSizer(wxVERTICAL);
-    itemPanel22->SetSizer(itemBoxSizer23);
 
-    wxGridSizer* itemGridSizer24 = new wxGridSizer(24, 2, 0, 0);
-    itemBoxSizer23->Add(itemGridSizer24, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
-    wxStaticText* itemStaticText25 = new wxStaticText;
-    itemStaticText25->Create( itemPanel22, wxID_STATIC, _("Max number of register read/write retries :"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer24->Add(itemStaticText25, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    // =============================================================================================================================
 
-    wxBoxSizer* itemBoxSizer26 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer24->Add(itemBoxSizer26, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    // Communication
+    wxPanel* itemPanelCommunication = new wxPanel;
+    itemPanelCommunication->Create( GetBookCtrl(), ID_PANEL_COMMUNICATION, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* itemBoxSizerCommunication = new wxBoxSizer(wxVERTICAL);
+    itemPanelCommunication->SetSizer( itemBoxSizerCommunication );
+
+    // ---
+
+    wxGridSizer* itemGridSizerCommunication = new wxGridSizer(24, 2, 0, 0);
+    itemBoxSizerCommunication->Add( itemGridSizerCommunication, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1 );
+
+    // ---
+
+    itemGridSizerCommunication->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizerCommunication->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    // -- Header ( Level I )
+
+    wxStaticText* itemStaticTextCANALCaption = new wxStaticText;
+    itemStaticTextCANALCaption->Create( itemPanelCommunication, wxID_STATIC, _("Level I (CANAL)"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticTextCANALCaption->SetFont(wxFont(12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
+    itemGridSizerCommunication->Add(itemStaticTextCANALCaption, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    itemGridSizerCommunication->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    // -- Numer of retries
+
+    wxStaticText* itemStaticTextRetries = new wxStaticText;
+    itemStaticTextRetries->Create( itemPanelCommunication, wxID_STATIC, _("Max number of register read/write retries :"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerCommunication->Add(itemStaticTextRetries, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    wxBoxSizer* itemBoxSizerRetries = new wxBoxSizer(wxHORIZONTAL);
+    itemGridSizerCommunication->Add(itemBoxSizerRetries, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
     m_maxRetries = new wxSpinCtrl;
-    m_maxRetries->Create( itemPanel22, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 5, 1 );
-    itemBoxSizer26->Add(m_maxRetries, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_maxRetries->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 1 );
+    itemBoxSizerRetries->Add( m_maxRetries, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxStaticText* itemStaticText28 = new wxStaticText;
-    itemStaticText28->Create( itemPanel22, wxID_STATIC, _("Register read/write timeout in seconds :"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer24->Add(itemStaticText28, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    // -- Resend timeout
 
-    wxBoxSizer* itemBoxSizer29 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer24->Add(itemBoxSizer29, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    wxStaticText* itemStaticTextResend = new wxStaticText;
+    itemStaticTextResend->Create( itemPanelCommunication, wxID_STATIC, _("Read/write timeout in milliseconds before resend :"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerCommunication->Add(itemStaticTextResend, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    wxBoxSizer* itemBoxSizerResend = new wxBoxSizer(wxHORIZONTAL);
+    itemGridSizerCommunication->Add(itemBoxSizerResend, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
     m_readTimeout = new wxSpinCtrl;
-    m_readTimeout->Create( itemPanel22, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 1 );
-    itemBoxSizer29->Add(m_readTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    m_readTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 100, 10000, 1000 );
+    itemBoxSizerResend->Add(m_readTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    GetBookCtrl()->AddPage(itemPanel22, _("Communication"), false, 1);
+    // -- Total timeout
 
-    wxPanel* itemPanel31 = new wxPanel;
-    itemPanel31->Create( GetBookCtrl(), ID_PANEL_COLORS, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* itemBoxSizer32 = new wxBoxSizer(wxHORIZONTAL);
-    itemPanel31->SetSizer(itemBoxSizer32);
+    wxStaticText* itemStaticTextTotal = new wxStaticText;
+    itemStaticTextTotal->Create( itemPanelCommunication, wxID_STATIC, _("Total register read/write timeout in milliseconds :"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerCommunication->Add(itemStaticTextTotal, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    GetBookCtrl()->AddPage(itemPanel31, _("Colours"), false, 2);
+    wxBoxSizer* itemBoxSizerTotal = new wxBoxSizer(wxHORIZONTAL);
+    itemGridSizerCommunication->Add(itemBoxSizerTotal, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    
+    m_totalTimeout = new wxSpinCtrl;
+    m_totalTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1000, 20000, 1000 );
+    itemBoxSizerTotal->Add(m_totalTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxPanel* itemPanel33 = new wxPanel;
-    itemPanel33->Create( GetBookCtrl(), ID_PANEL_RECEIVE, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* itemBoxSizer34 = new wxBoxSizer(wxVERTICAL);
-    itemPanel33->SetSizer(itemBoxSizer34);
+    // -------------------------------------------------------------------------
 
-    wxGridSizer* itemGridSizer35 = new wxGridSizer(24, 2, 0, 0);
-    itemBoxSizer34->Add(itemGridSizer35, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
-    itemGridSizer35->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerCommunication->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizerCommunication->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+
+    // -- Header Level II / TCP/IP
+
+    wxStaticText* itemStaticTextTCPIPCaption = new wxStaticText;
+    itemStaticTextTCPIPCaption->Create( itemPanelCommunication, wxID_STATIC, _("Level II (TCP/IP)"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticTextTCPIPCaption->SetFont(wxFont(12, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT("Sans")));
+    itemGridSizerCommunication->Add(itemStaticTextTCPIPCaption, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    itemGridSizerCommunication->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    // --
+
+
+    // -- TCP/IP - General resend timout in seconds
+
+    wxStaticText* itemStaticTextTCPIPResponse = new wxStaticText;
+    itemStaticTextTCPIPResponse->Create( itemPanelCommunication, wxID_STATIC, _("Command respons timout in seconds :"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerCommunication->Add( itemStaticTextTCPIPResponse, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    wxBoxSizer* itemBoxSizerTCPIPResponse = new wxBoxSizer(wxHORIZONTAL);
+    itemGridSizerCommunication->Add( itemBoxSizerTCPIPResponse, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    
+    m_maxTCPIPResponse = new wxSpinCtrl;
+    m_maxTCPIPResponse->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
+    itemBoxSizerTCPIPResponse->Add( m_maxTCPIPResponse, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5 );
+
+    // -- Numer of retries
+
+    wxStaticText* itemStaticTextTCPIPRetries = new wxStaticText;
+    itemStaticTextTCPIPRetries->Create( itemPanelCommunication, wxID_STATIC, _("Max number of register read/write retries :"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerCommunication->Add(itemStaticTextTCPIPRetries, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    wxBoxSizer* itemBoxSizerTCPIPRetries = new wxBoxSizer(wxHORIZONTAL);
+    itemGridSizerCommunication->Add(itemBoxSizerTCPIPRetries, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    m_maxTCPIPRetries = new wxSpinCtrl;
+    m_maxTCPIPRetries->Create( itemPanelCommunication, ID_SPINCTRL, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1, 10, 3 );
+    itemBoxSizerTCPIPRetries->Add(m_maxTCPIPRetries, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    // -- Resend timeout
+
+    wxStaticText* itemStaticTextTCPIPResend = new wxStaticText;
+    itemStaticTextTCPIPResend->Create( itemPanelCommunication, wxID_STATIC, _("Read/write timeout in milliseconds before resend :"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerCommunication->Add(itemStaticTextTCPIPResend, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    wxBoxSizer* itemBoxSizerTCPIPResend = new wxBoxSizer(wxHORIZONTAL);
+    itemGridSizerCommunication->Add(itemBoxSizerTCPIPResend, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    m_tcpipReadTimeout = new wxSpinCtrl;
+    m_tcpipReadTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 100, 10000, 10000 );
+    itemBoxSizerTCPIPResend->Add(m_tcpipReadTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    // -- Total timeout
+
+    wxStaticText* itemStaticTexttcpipTotal = new wxStaticText;
+    itemStaticTexttcpipTotal->Create( itemPanelCommunication, wxID_STATIC, _("Total register read/write timeout in milliseconds :"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerCommunication->Add(itemStaticTexttcpipTotal, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    wxBoxSizer* itemBoxSizertcpipTotal = new wxBoxSizer(wxHORIZONTAL);
+    itemGridSizerCommunication->Add(itemBoxSizertcpipTotal, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    
+    m_tcpipTotalTimeout = new wxSpinCtrl;
+    m_tcpipTotalTimeout->Create( itemPanelCommunication, ID_SPINCTRL1, wxT("1"), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 1000, 20000, 3000 );
+    itemBoxSizertcpipTotal->Add(m_tcpipTotalTimeout, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    // ------------------------------------------------------------------------
+
+
+    GetBookCtrl()->AddPage(itemPanelCommunication, _("Communication"), false, 1);
+
+
+    // =============================================================================================================================
+
+
+    // Colours
+    wxPanel* itemPanelColours = new wxPanel;
+    itemPanelColours->Create( GetBookCtrl(), ID_PANEL_COLORS, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* itemBoxSizerColours = new wxBoxSizer(wxHORIZONTAL);
+    itemPanelColours->SetSizer( itemBoxSizerColours );
+
+    itemGridSizerCommunication->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizerCommunication->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
+    GetBookCtrl()->AddPage( itemPanelColours, _("Colours"), false, 2 );
+
+    
+
+
+    // =============================================================================================================================
+
+    
+
+    // VSCP Receive view
+    wxPanel* itemPanelReceiveView = new wxPanel;
+    itemPanelReceiveView->Create( GetBookCtrl(), ID_PANEL_RECEIVE, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* itemBoxSizerReceiveView = new wxBoxSizer(wxVERTICAL);
+    itemPanelReceiveView->SetSizer(itemBoxSizerReceiveView);
+
+    wxGridSizer* itemGridSizerReceiveView = new wxGridSizer(24, 2, 0, 0);
+    itemBoxSizerReceiveView->Add(itemGridSizerReceiveView, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+
+    itemGridSizerReceiveView->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizerReceiveView->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
     m_ChkAutoScroll = new wxCheckBox;
-    m_ChkAutoScroll->Create( itemPanel33, ID_ChkAutoScroll, _("Autoscroll"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_ChkAutoScroll->Create( itemPanelReceiveView, ID_ChkAutoScroll, _("Autoscroll"), wxDefaultPosition, wxDefaultSize, 0 );
     m_ChkAutoScroll->SetValue(true);
-    itemGridSizer35->Add(m_ChkAutoScroll, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(m_ChkAutoScroll, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    itemGridSizer35->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_chkPyjamasLook = new wxCheckBox;
-    m_chkPyjamasLook->Create( itemPanel33, ID_ChkPyjamasLook, _("Pyjamas Look"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_chkPyjamasLook->Create( itemPanelReceiveView, ID_ChkPyjamasLook, _("Pyjamas Look"), wxDefaultPosition, wxDefaultSize, 0 );
     m_chkPyjamasLook->SetValue(true);
-    itemGridSizer35->Add(m_chkPyjamasLook, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(m_chkPyjamasLook, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    itemGridSizer35->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     m_chkUseSymbols = new wxCheckBox;
-    m_chkUseSymbols->Create( itemPanel33, ID_CHECKBOX, _("Use symbols for class and type"), wxDefaultPosition, wxDefaultSize, 0 );
+    m_chkUseSymbols->Create( itemPanelReceiveView, ID_CHECKBOX, _("Use symbols for class and type"), wxDefaultPosition, wxDefaultSize, 0 );
     m_chkUseSymbols->SetValue(true);
-    itemGridSizer35->Add(m_chkUseSymbols, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(m_chkUseSymbols, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    itemGridSizer35->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
-    itemGridSizer35->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(0, 0, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxStaticText* itemStaticText44 = new wxStaticText;
-    itemStaticText44->Create( itemPanel33, wxID_STATIC, _("Text colour for receive event table:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer35->Add(itemStaticText44, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemStaticText44->Create( itemPanelReceiveView, wxID_STATIC, _("Text colour for receive event table:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerReceiveView->Add(itemStaticText44, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer45 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer35->Add(itemBoxSizer45, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(itemBoxSizer45, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     m_editRxForeGroundColour = new wxTextCtrl;
-    m_editRxForeGroundColour->Create( itemPanel33, ID_EditRxForeGroundColour, wxEmptyString, wxDefaultPosition, wxSize(100, -1), wxTE_READONLY );
+    m_editRxForeGroundColour->Create( itemPanelReceiveView, ID_EditRxForeGroundColour, wxEmptyString, wxDefaultPosition, wxSize(100, -1), wxTE_READONLY );
     itemBoxSizer45->Add(m_editRxForeGroundColour, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxButton* itemButton47 = new wxButton;
-    itemButton47->Create( itemPanel33, ID_BUTTON4, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton47->Create( itemPanelReceiveView, ID_BUTTON4, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer45->Add(itemButton47, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxStaticText* itemStaticText48 = new wxStaticText;
-    itemStaticText48->Create( itemPanel33, wxID_STATIC, _("Background colour for receive event table:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer35->Add(itemStaticText48, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemStaticText48->Create( itemPanelReceiveView, wxID_STATIC, _("Background colour for receive event table:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerReceiveView->Add(itemStaticText48, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer49 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer35->Add(itemBoxSizer49, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(itemBoxSizer49, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     m_editRxBackGroundColour = new wxTextCtrl;
-    m_editRxBackGroundColour->Create( itemPanel33, ID_EditRxBackGroundColour, wxEmptyString, wxDefaultPosition, wxSize(100, -1), wxTE_READONLY );
+    m_editRxBackGroundColour->Create( itemPanelReceiveView, ID_EditRxBackGroundColour, wxEmptyString, wxDefaultPosition, wxSize(100, -1), wxTE_READONLY );
     itemBoxSizer49->Add(m_editRxBackGroundColour, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxButton* itemButton51 = new wxButton;
-    itemButton51->Create( itemPanel33, ID_BUTTON5, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton51->Create( itemPanelReceiveView, ID_BUTTON5, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer49->Add(itemButton51, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxStaticText* itemStaticText52 = new wxStaticText;
-    itemStaticText52->Create( itemPanel33, wxID_STATIC, _("Text colour for transmission event table:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer35->Add(itemStaticText52, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemStaticText52->Create( itemPanelReceiveView, wxID_STATIC, _("Text colour for transmission event table:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerReceiveView->Add(itemStaticText52, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer53 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer35->Add(itemBoxSizer53, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(itemBoxSizer53, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     m_editTxForeGroundColour = new wxTextCtrl;
-    m_editTxForeGroundColour->Create( itemPanel33, ID_EditTxForeGroundColour, wxEmptyString, wxDefaultPosition, wxSize(100, -1), wxTE_READONLY );
+    m_editTxForeGroundColour->Create( itemPanelReceiveView, ID_EditTxForeGroundColour, wxEmptyString, wxDefaultPosition, wxSize(100, -1), wxTE_READONLY );
     itemBoxSizer53->Add(m_editTxForeGroundColour, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxButton* itemButton55 = new wxButton;
-    itemButton55->Create( itemPanel33, ID_BUTTON6, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton55->Create( itemPanelReceiveView, ID_BUTTON6, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer53->Add(itemButton55, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxStaticText* itemStaticText56 = new wxStaticText;
-    itemStaticText56->Create( itemPanel33, wxID_STATIC, _("Background colour for transmission event table:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer35->Add(itemStaticText56, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemStaticText56->Create( itemPanelReceiveView, wxID_STATIC, _("Background colour for transmission event table:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerReceiveView->Add(itemStaticText56, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer57 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer35->Add(itemBoxSizer57, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerReceiveView->Add(itemBoxSizer57, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     m_editTxBackGroundColour = new wxTextCtrl;
-    m_editTxBackGroundColour->Create( itemPanel33, ID_EditTxBackGroundColour, wxEmptyString, wxDefaultPosition, wxSize(100, -1), wxTE_READONLY );
+    m_editTxBackGroundColour->Create( itemPanelReceiveView, ID_EditTxBackGroundColour, wxEmptyString, wxDefaultPosition, wxSize(100, -1), wxTE_READONLY );
     itemBoxSizer57->Add(m_editTxBackGroundColour, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxButton* itemButton59 = new wxButton;
-    itemButton59->Create( itemPanel33, ID_BUTTON7, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton59->Create( itemPanelReceiveView, ID_BUTTON7, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer57->Add(itemButton59, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer60 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer34->Add(itemBoxSizer60, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    itemBoxSizerReceiveView->Add(itemBoxSizer60, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
     wxBoxSizer* itemBoxSizer61 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer60->Add(itemBoxSizer61, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxButton* itemButton62 = new wxButton;
-    itemButton62->Create( itemPanel33, ID_BUTTON, _("Up"), wxDefaultPosition, wxSize(60, -1), 0 );
+    itemButton62->Create( itemPanelReceiveView, ID_BUTTON, _("Up"), wxDefaultPosition, wxSize(60, -1), 0 );
     itemBoxSizer61->Add(itemButton62, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxButton* itemButton63 = new wxButton;
-    itemButton63->Create( itemPanel33, ID_BUTTON1, _("Down"), wxDefaultPosition, wxSize(60, -1), 0 );
+    itemButton63->Create( itemPanelReceiveView, ID_BUTTON1, _("Down"), wxDefaultPosition, wxSize(60, -1), 0 );
     itemBoxSizer61->Add(itemButton63, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer64 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer60->Add(itemBoxSizer64, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxStaticText* itemStaticText65 = new wxStaticText;
-    itemStaticText65->Create( itemPanel33, wxID_STATIC, _("Visible fields"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText65->Create( itemPanelReceiveView, wxID_STATIC, _("Visible fields"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer64->Add(itemStaticText65, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxArrayString itemCheckListBox66Strings;
@@ -414,23 +550,23 @@ void dlgConfiguration::CreateControls()
     itemCheckListBox66Strings.Add(_("Timestamp"));
     itemCheckListBox66Strings.Add(_("Note"));
     wxCheckListBox* itemCheckListBox66 = new wxCheckListBox;
-    itemCheckListBox66->Create( itemPanel33, ID_CHECKLISTBOX1, wxDefaultPosition, wxDefaultSize, itemCheckListBox66Strings, wxLB_SINGLE );
+    itemCheckListBox66->Create( itemPanelReceiveView, ID_CHECKLISTBOX1, wxDefaultPosition, wxDefaultSize, itemCheckListBox66Strings, wxLB_SINGLE );
     itemBoxSizer64->Add(itemCheckListBox66, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer67 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer60->Add(itemBoxSizer67, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxButton* itemButton68 = new wxButton;
-    itemButton68->Create( itemPanel33, ID_BUTTON3, _("-->"), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton68->Create( itemPanelReceiveView, ID_BUTTON3, _("-->"), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer67->Add(itemButton68, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxButton* itemButton69 = new wxButton;
-    itemButton69->Create( itemPanel33, ID_BUTTON8, _("<--"), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton69->Create( itemPanelReceiveView, ID_BUTTON8, _("<--"), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer67->Add(itemButton69, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer70 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer60->Add(itemBoxSizer70, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxStaticText* itemStaticText71 = new wxStaticText;
-    itemStaticText71->Create( itemPanel33, wxID_STATIC, _("Hidden fields"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText71->Create( itemPanelReceiveView, wxID_STATIC, _("Hidden fields"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer70->Add(itemStaticText71, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxArrayString itemCheckListBox72Strings;
@@ -445,90 +581,99 @@ void dlgConfiguration::CreateControls()
     itemCheckListBox72Strings.Add(_("Timestamp"));
     itemCheckListBox72Strings.Add(_("Note"));
     wxCheckListBox* itemCheckListBox72 = new wxCheckListBox;
-    itemCheckListBox72->Create( itemPanel33, ID_CHECKLISTBOX, wxDefaultPosition, wxDefaultSize, itemCheckListBox72Strings, wxLB_SINGLE );
+    itemCheckListBox72->Create( itemPanelReceiveView, ID_CHECKLISTBOX, wxDefaultPosition, wxDefaultSize, itemCheckListBox72Strings, wxLB_SINGLE );
     itemBoxSizer70->Add(itemCheckListBox72, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    GetBookCtrl()->AddPage(itemPanel33, _("VSCP Receive View"), false, 3);
+    GetBookCtrl()->AddPage(itemPanelReceiveView, _("VSCP Receive View"), false, 3);
 
-    wxPanel* itemPanel73 = new wxPanel;
-    itemPanel73->Create( GetBookCtrl(), ID_PANEL_TRANSMIT, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
-    wxBoxSizer* itemBoxSizer74 = new wxBoxSizer(wxVERTICAL);
-    itemPanel73->SetSizer(itemBoxSizer74);
 
-    wxGridSizer* itemGridSizer75 = new wxGridSizer(24, 2, 0, 0);
-    itemBoxSizer74->Add(itemGridSizer75, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+    // =============================================================================================================================
+
+
+    // VSCP Tramit view
+    wxPanel* itemPanelTransmitView = new wxPanel;
+    itemPanelTransmitView->Create( GetBookCtrl(), ID_PANEL_TRANSMIT, wxDefaultPosition, wxDefaultSize, wxSUNKEN_BORDER|wxTAB_TRAVERSAL );
+    wxBoxSizer* itemBoxSizerTransmitView = new wxBoxSizer(wxVERTICAL);
+    itemPanelTransmitView->SetSizer(itemBoxSizerTransmitView);
+
+    wxGridSizer* itemGridSizerTransmitView = new wxGridSizer(24, 2, 0, 0);
+    itemBoxSizerTransmitView->Add(itemGridSizerTransmitView, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 1);
+
+    itemGridSizerTransmitView->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+    itemGridSizerTransmitView->Add(5, 5, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5);
+
     wxStaticText* itemStaticText76 = new wxStaticText;
-    itemStaticText76->Create( itemPanel73, wxID_STATIC, _("Background colour for event table:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer75->Add(itemStaticText76, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemStaticText76->Create( itemPanelTransmitView, wxID_STATIC, _("Background colour for event table:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerTransmitView->Add(itemStaticText76, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer77 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer75->Add(itemBoxSizer77, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerTransmitView->Add(itemBoxSizer77, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     wxTextCtrl* itemTextCtrl78 = new wxTextCtrl;
-    itemTextCtrl78->Create( itemPanel73, ID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxSize(100, -1), 0 );
+    itemTextCtrl78->Create( itemPanelTransmitView, ID_TEXTCTRL, wxEmptyString, wxDefaultPosition, wxSize(100, -1), 0 );
     itemBoxSizer77->Add(itemTextCtrl78, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxButton* itemButton79 = new wxButton;
-    itemButton79->Create( itemPanel73, ID_BUTTON2, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton79->Create( itemPanelTransmitView, ID_BUTTON2, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer77->Add(itemButton79, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxStaticText* itemStaticText80 = new wxStaticText;
-    itemStaticText80->Create( itemPanel73, wxID_STATIC, _("Background colour for event table:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer75->Add(itemStaticText80, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemStaticText80->Create( itemPanelTransmitView, wxID_STATIC, _("Background colour for event table:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerTransmitView->Add(itemStaticText80, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer81 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer75->Add(itemBoxSizer81, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerTransmitView->Add(itemBoxSizer81, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     wxTextCtrl* itemTextCtrl82 = new wxTextCtrl;
-    itemTextCtrl82->Create( itemPanel73, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxSize(100, -1), 0 );
+    itemTextCtrl82->Create( itemPanelTransmitView, ID_TEXTCTRL1, wxEmptyString, wxDefaultPosition, wxSize(100, -1), 0 );
     itemBoxSizer81->Add(itemTextCtrl82, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxButton* itemButton83 = new wxButton;
-    itemButton83->Create( itemPanel73, ID_BUTTON9, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton83->Create( itemPanelTransmitView, ID_BUTTON9, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer81->Add(itemButton83, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxStaticText* itemStaticText84 = new wxStaticText;
-    itemStaticText84->Create( itemPanel73, wxID_STATIC, _("Background colour for transmission table:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer75->Add(itemStaticText84, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemStaticText84->Create( itemPanelTransmitView, wxID_STATIC, _("Background colour for transmission table:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerTransmitView->Add(itemStaticText84, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer85 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer75->Add(itemBoxSizer85, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerTransmitView->Add(itemBoxSizer85, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     wxTextCtrl* itemTextCtrl86 = new wxTextCtrl;
-    itemTextCtrl86->Create( itemPanel73, ID_TEXTCTRL3, wxEmptyString, wxDefaultPosition, wxSize(100, -1), 0 );
+    itemTextCtrl86->Create( itemPanelTransmitView, ID_TEXTCTRL3, wxEmptyString, wxDefaultPosition, wxSize(100, -1), 0 );
     itemBoxSizer85->Add(itemTextCtrl86, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxButton* itemButton87 = new wxButton;
-    itemButton87->Create( itemPanel73, ID_BUTTON10, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton87->Create( itemPanelTransmitView, ID_BUTTON10, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer85->Add(itemButton87, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxStaticText* itemStaticText88 = new wxStaticText;
-    itemStaticText88->Create( itemPanel73, wxID_STATIC, _("Background colour for transmission table:"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemGridSizer75->Add(itemStaticText88, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemStaticText88->Create( itemPanelTransmitView, wxID_STATIC, _("Background colour for transmission table:"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemGridSizerTransmitView->Add(itemStaticText88, 0, wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer89 = new wxBoxSizer(wxHORIZONTAL);
-    itemGridSizer75->Add(itemBoxSizer89, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
+    itemGridSizerTransmitView->Add(itemBoxSizer89, 0, wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL|wxALL, 1);
     wxTextCtrl* itemTextCtrl90 = new wxTextCtrl;
-    itemTextCtrl90->Create( itemPanel73, ID_TEXTCTRL4, wxEmptyString, wxDefaultPosition, wxSize(100, -1), 0 );
+    itemTextCtrl90->Create( itemPanelTransmitView, ID_TEXTCTRL4, wxEmptyString, wxDefaultPosition, wxSize(100, -1), 0 );
     itemBoxSizer89->Add(itemTextCtrl90, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxButton* itemButton91 = new wxButton;
-    itemButton91->Create( itemPanel73, ID_BUTTON11, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton91->Create( itemPanelTransmitView, ID_BUTTON11, _("..."), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer89->Add(itemButton91, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
     wxBoxSizer* itemBoxSizer92 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer74->Add(itemBoxSizer92, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    itemBoxSizerTransmitView->Add(itemBoxSizer92, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
     wxBoxSizer* itemBoxSizer93 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer92->Add(itemBoxSizer93, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxButton* itemButton94 = new wxButton;
-    itemButton94->Create( itemPanel73, ID_BUTTON12, _("Up"), wxDefaultPosition, wxSize(60, -1), 0 );
+    itemButton94->Create( itemPanelTransmitView, ID_BUTTON12, _("Up"), wxDefaultPosition, wxSize(60, -1), 0 );
     itemBoxSizer93->Add(itemButton94, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxButton* itemButton95 = new wxButton;
-    itemButton95->Create( itemPanel73, ID_BUTTON13, _("Down"), wxDefaultPosition, wxSize(60, -1), 0 );
+    itemButton95->Create( itemPanelTransmitView, ID_BUTTON13, _("Down"), wxDefaultPosition, wxSize(60, -1), 0 );
     itemBoxSizer93->Add(itemButton95, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer96 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer92->Add(itemBoxSizer96, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxStaticText* itemStaticText97 = new wxStaticText;
-    itemStaticText97->Create( itemPanel73, wxID_STATIC, _("Visible fields"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText97->Create( itemPanelTransmitView, wxID_STATIC, _("Visible fields"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer96->Add(itemStaticText97, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxArrayString itemCheckListBox98Strings;
@@ -543,23 +688,23 @@ void dlgConfiguration::CreateControls()
     itemCheckListBox98Strings.Add(_("Timestamp"));
     itemCheckListBox98Strings.Add(_("Note"));
     wxCheckListBox* itemCheckListBox98 = new wxCheckListBox;
-    itemCheckListBox98->Create( itemPanel73, ID_CHECKLISTBOX2, wxDefaultPosition, wxDefaultSize, itemCheckListBox98Strings, wxLB_SINGLE );
+    itemCheckListBox98->Create( itemPanelTransmitView, ID_CHECKLISTBOX2, wxDefaultPosition, wxDefaultSize, itemCheckListBox98Strings, wxLB_SINGLE );
     itemBoxSizer96->Add(itemCheckListBox98, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer99 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer92->Add(itemBoxSizer99, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxButton* itemButton100 = new wxButton;
-    itemButton100->Create( itemPanel73, ID_BUTTON14, _("-->"), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton100->Create( itemPanelTransmitView, ID_BUTTON14, _("-->"), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer99->Add(itemButton100, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxButton* itemButton101 = new wxButton;
-    itemButton101->Create( itemPanel73, ID_BUTTON15, _("<--"), wxDefaultPosition, wxSize(40, -1), 0 );
+    itemButton101->Create( itemPanelTransmitView, ID_BUTTON15, _("<--"), wxDefaultPosition, wxSize(40, -1), 0 );
     itemBoxSizer99->Add(itemButton101, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxBoxSizer* itemBoxSizer102 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer92->Add(itemBoxSizer102, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
     wxStaticText* itemStaticText103 = new wxStaticText;
-    itemStaticText103->Create( itemPanel73, wxID_STATIC, _("Hidden fields"), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText103->Create( itemPanelTransmitView, wxID_STATIC, _("Hidden fields"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer102->Add(itemStaticText103, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     wxArrayString itemCheckListBox104Strings;
@@ -574,13 +719,13 @@ void dlgConfiguration::CreateControls()
     itemCheckListBox104Strings.Add(_("Timestamp"));
     itemCheckListBox104Strings.Add(_("Note"));
     wxCheckListBox* itemCheckListBox104 = new wxCheckListBox;
-    itemCheckListBox104->Create( itemPanel73, ID_CHECKLISTBOX3, wxDefaultPosition, wxDefaultSize, itemCheckListBox104Strings, wxLB_SINGLE );
+    itemCheckListBox104->Create( itemPanelTransmitView, ID_CHECKLISTBOX3, wxDefaultPosition, wxDefaultSize, itemCheckListBox104Strings, wxLB_SINGLE );
     itemBoxSizer102->Add(itemCheckListBox104, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
-    GetBookCtrl()->AddPage(itemPanel73, _("VSCP Transmission View"), false, 4);
+    GetBookCtrl()->AddPage(itemPanelTransmitView, _("VSCP Transmission View"), false, 4);
 
     // Connect events and objects
-    itemPanel33->Connect(ID_PANEL_RECEIVE, wxEVT_INIT_DIALOG, wxInitDialogEventHandler(dlgConfiguration::OnInitDialog), NULL, this);
+    itemPanelReceiveView->Connect(ID_PANEL_RECEIVE, wxEVT_INIT_DIALOG, wxInitDialogEventHandler(dlgConfiguration::OnInitDialog), NULL, this);
 
 
     ////////////////////////////////////////////////////////////////////
@@ -629,8 +774,16 @@ void dlgConfiguration::CreateControls()
         g_Config.m_VscpRcvFrameTxBgColour.Green(),
         g_Config.m_VscpRcvFrameTxBgColour.Blue()));
 
-	m_maxRetries->SetValue( g_Config.m_VscpRegisterReadMaxRetries );
-	m_readTimeout->SetValue( g_Config.m_VscpRegisterReadErrorTimeout );
+    // CANAL Communication parameters
+	m_maxRetries->SetValue( g_Config.m_CANALRegMaxRetries );
+	m_readTimeout->SetValue( g_Config.m_CANALRegResendTimeout );
+    m_totalTimeout->SetValue( g_Config.m_CANALRegErrorTimeout );
+
+    // TCP(P communication parameters
+    m_maxTCPIPResponse->SetValue( g_Config.m_TCPIPResponseTimeout );
+    m_maxTCPIPRetries->SetValue( g_Config.m_TCPIPRegMaxRetries );
+	m_tcpipReadTimeout->SetValue( g_Config.m_TCPIPRegResendTimeout );
+    m_tcpipTotalTimeout->SetValue( g_Config.m_TCPIPRegErrorTimeout );
 
 	m_labelLogFile->SetLabel( g_Config.m_strPathLogFile );
 	m_checkEnableLogging->SetValue( g_Config.m_bEnableLog );
@@ -651,8 +804,16 @@ bool dlgConfiguration::getDialogData( bool bWriteToConfigFile )
     g_Config.m_bAutoscollRcv = m_ChkAutoScroll->GetValue();
     g_Config.m_VscpRcvFrameRxbPyamas = m_chkPyjamasLook->GetValue();	
     g_Config.m_UseSymbolicNames = m_chkUseSymbols->GetValue();
-	g_Config.m_VscpRegisterReadMaxRetries = m_maxRetries->GetValue();
-	g_Config.m_VscpRegisterReadErrorTimeout = m_readTimeout->GetValue();
+	
+    g_Config.m_CANALRegMaxRetries = m_maxRetries->GetValue();
+    g_Config.m_CANALRegResendTimeout = m_readTimeout->GetValue();
+	g_Config.m_CANALRegErrorTimeout = m_totalTimeout->GetValue();
+
+    g_Config.m_TCPIPResponseTimeout = m_maxTCPIPResponse->GetValue();
+    g_Config.m_TCPIPRegMaxRetries = m_maxTCPIPRetries->GetValue();
+    g_Config.m_TCPIPRegResendTimeout = m_tcpipReadTimeout->GetValue();	       
+    g_Config.m_TCPIPRegErrorTimeout = m_tcpipTotalTimeout->GetValue();
+
 	g_Config.m_logLevel = m_comboLogLevel->GetSelection();
 	g_Config.m_bEnableLog = m_checkEnableLogging->GetValue();
 	g_Config.m_bConfirmDelete = m_checkConfirmDeletes->GetValue();

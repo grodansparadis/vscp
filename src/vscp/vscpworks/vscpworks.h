@@ -50,10 +50,8 @@
  * Includes
  */
 
-////@begin includes
 #include "wx/image.h"
 #include "frmmain.h"
-////@end includes
 
 #include <vscp.h>
 #include <canalsuperwrapper.h>
@@ -63,19 +61,10 @@
  * Forward declarations
  */
 
-////@begin forward declarations
-////@end forward declarations
 
 /*!
  * Control identifiers
  */
-
-////@begin control identifiers
-////@end control identifiers
-
-//#ifndev BOOL
-//#define BOOL (int)
-//#endif
 
 
 
@@ -131,9 +120,9 @@
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define VSCP_REGISTER_READ_RESEND_TIMEOUT       2000
-#define VSCP_REGISTER_READ_ERROR_TIMEOUT        5000
-#define VSCP_REGISTER_READ_MAX_TRIES            2
+#define VSCP_CANAL_RESEND_TIMEOUT               1000
+#define VSCP_CANAL_ERROR_TIMEOUT                5000
+#define VSCP_CANAL_MAX_TRIES                    3
 
 #define VSCP_DEVCONFIG_NUMBERBASE_HEX			0
 #define VSCP_DEVCONFIG_NUMBERBASE_DECIMAL		1
@@ -170,7 +159,7 @@ typedef struct {
     wxString m_strUser;				// Username
     wxString m_strPassword;			// Password
 	bool m_bLevel2;					// Full Level II communication
-    unsigned long m_port;			// Port to use on server
+    //unsigned long m_port;			// Port to use on server
 	wxString m_strInterfaceName;	// Name for remote interface
     unsigned char m_GUID[16];		// GUID for interface
 	vscpEventFilter m_vscpfilter;	// Filter to apply
@@ -265,9 +254,17 @@ typedef struct {
     LIST_CANAL_IF m_canalIfList;
     LIST_VSCP_IF m_vscpIfList;
 
-    uint32_t m_VscpRegisterReadResendTimeout;	// Timeout before register read retries
-    uint32_t m_VscpRegisterReadErrorTimeout;	// Timeout before register read is considered and error
-    uint8_t	m_VscpRegisterReadMaxRetries;		// Max number of retries to read a register.
+    // DLL communication settings
+    uint8_t	m_CANALRegMaxRetries;		        // Max number of retries to read a register.
+    uint32_t m_CANALRegResendTimeout;	        // Timeout before register read retries    
+    uint32_t m_CANALRegErrorTimeout;	        // Timeout before register read is considered and error
+
+    // TCP/IP communication settings
+    uint32_t m_TCPIPResponseTimeout;            // General repons time in seconds (for all communiction)
+    uint8_t	m_TCPIPRegMaxRetries;		        // Max number of retries to read a register.
+    uint32_t m_TCPIPRegResendTimeout;	        // Timeout before register read retries
+    uint32_t m_TCPIPRegErrorTimeout;	        // Timeout before register read is considered and error
+    
 
 	// device configuration
 	uint8_t m_Numberbase;						// Number base for register values
