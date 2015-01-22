@@ -7,4 +7,14 @@
         <activeConfTypeElem>0</activeConfTypeElem>
         <activeConfIndexElem>0</activeConfIndexElem>
     </data>
+    <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
+        <group>
+            <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/frmvscpsession.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/dlgconfiguration.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/dlgclasstypeselect.h</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/frmdeviceconfig.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/dlgeventfilter.cpp</file>
+        </group>
+    </open-files>
 </project-private>

@@ -178,7 +178,7 @@ void dlgConfiguration::CreateControls()
         wxIcon itemPropertySheetDialog1Icon3( GetIconResource( wxT("copy.xpm") ) );
         itemPropertySheetDialog1ImageList->Add( itemPropertySheetDialog1Icon3);
         wxIcon itemPropertySheetDialog1Icon4( GetIconResource( wxT("copy.xpm") ) );
-        itemPropertySheetDialog1ImageList->Add( itemPropertySheetDialog1Icon4 );
+        itemPropertySheetDialog1ImageList->Add(itemPropertySheetDialog1Icon4 );
     }
     GetBookCtrl()->AssignImageList(itemPropertySheetDialog1ImageList);
 
