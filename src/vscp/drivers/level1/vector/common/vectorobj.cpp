@@ -308,7 +308,6 @@ bool CVectorObj::open( const char *szFileName, unsigned long flags )
 		}
 	}
 
-
 	// Filter
 	p = strtok( NULL, ";" );
 	if ( NULL != p ) {		
@@ -319,7 +318,6 @@ bool CVectorObj::open( const char *szFileName, unsigned long flags )
 			m_Vector_filter = atol( p );
 		}
 	}
-
 
 	// Mask
 	p = strtok( NULL, ";" );

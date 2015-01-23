@@ -2720,6 +2720,9 @@ void *TXWorkerThread::Entry()
     /// TCP/IP Control
     VscpRemoteTcpIf tcpifControl;
 
+    // Set timing
+    tcpifControl.setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
+
     // Must be a valid control object pointer
     if (NULL == m_pCtrlObject) return NULL;
 
@@ -2825,6 +2828,10 @@ void *RXWorkerThread::Entry()
 {
     int rv;
     VscpRemoteTcpIf tcpifReceive;
+
+    // Set timing
+    tcpifReceive.setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
+
     wxCommandEvent eventReceive(wxVSCP_IN_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventConnectionLost(wxVSCP_RCV_LOST_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);
     wxCommandEvent eventStatus(wxVSCP_STATUS_CHANGE_EVENT, frmVSCPSession::ID_FRMVSCPSESSION);

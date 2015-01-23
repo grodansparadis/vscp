@@ -15,7 +15,7 @@ different sets of external resources to run successfully:
                 - wxExpat,
                 - various other libraries to compile drivers for specific hardware.
 
-       This project is descibed in the section "VSCP Project (complete)" below and is the
+       This project is described in the section "VSCP Project (complete)" below and is the
        project used for distributing the project. 
                    
    2.) vscp_project_minimal.sln
@@ -23,7 +23,7 @@ different sets of external resources to run successfully:
                 - Free version of Visual Studio (no MFC required),
                 - wxWidgets.
 
-       This project is descibed in the section "VSCP Project Minimal" below.
+       This project is described in the section "VSCP Project Minimal" below.
 
 Both of these project files can be found in the directory $(VSCP_HOME)/src/vscp
 
@@ -34,25 +34,25 @@ VSCP Project (complete)
 
 This is the "original" project and includes all sub-projects.
 
-- to build the Vector CANAL driver the propritary Vector libs/includes is needed.
-- to build the peak CANAL drivr the propritary PEAK libs/includes is needed.
-- to build the ccs CANAL driver the propritary CCS libs/includes is needed.
-- to build the IXXAT CANAL driver the propritary IXXAT libs/includes is needed.
+- to build the Vector CANAL driver the proprietary Vector libs/includes is needed.
+- to build the peak CANAL driver the proprietary PEAK libs/includes is needed.
+- to build the ccs CANAL driver the proprietary CCS libs/includes is needed.
+- to build the IXXAT CANAL driver the proprietary IXXAT libs/includes is needed.
 
 1.) Define environment variable VSCP_HOME that points to the VSCP base folder (c:\development\vscp_software).
     define environment variable VSCP_FIRMWARE that points to VSCP firmware base folder 
     (c:\development\vscp_firmware)
 
-2.) Install and build wxWidgets 2.8.12 or higher but others will probably 
+2.) Install and build wxWidgets 3.0.2 or higher but others will probably 
     do to. You find the build files in the build folder of the wxWidgets project. 
 
 3.) Make an environment variable WXWIN that points to the wxWidgets installation directory.
-    (e.g. c:\wxWidgets-2.8.12).
+    (e.g. c:\wxWidgets-3.0.2).
 
 4.) Add the wxwin include directory to the list of include files under 
-    tools->options->directories ('projects and solutions->VC++ Direcories' on 2003/2005/2008) 
+    tools->options->directories ('projects and solutions->VC++ Directories' on 2003/2005/2008) 
         $(WXWIN)\include 
-        (c:\wxWidgets-2.8.12\include).
+        (c:\wxWidgets-3.0.2\include).
     This is not needed on Visual Studio 2010 as it looks.
 
 5.) expat(http://expat.sourceforge.net/) is needed to build the daemon and other applications in the suit.
@@ -74,7 +74,7 @@ This is the "original" project and includes all sub-projects.
     IXXAT VCI driver version 2 is installed (http://www.ixxat.com/download_vci_en.html).   C:\Program Files\IXXAT\VCI 2.20
 
 9.) To build the CANAL PEAK driver you need to install the PEAK driver and support libraries 
-    from here http://www.peak-system.com/Support.55.0.html?&L=1 Yuou need the driver and the PCAN-Basic API.
+    from here http://www.peak-system.com/Support.55.0.html?&L=1 You need the driver and the PCAN-Basic API.
     Make an environment variable named PCANBASICAPI that points to the location where you unpack the
     PCAN-BASIC API
         

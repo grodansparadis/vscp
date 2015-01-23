@@ -847,7 +847,7 @@ protected:
     /// Resend timeout for read/write operations
     uint32_t m_registerOpResendTimeout;
 
-    /// Man number of read/write retries
+    /// Number of read/write retries
     uint8_t m_registerOpMaxRetries;
 
 };

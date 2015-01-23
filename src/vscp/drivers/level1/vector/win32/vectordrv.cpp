@@ -21,10 +21,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: vectordrv.cpp,v $                                       
-// $Date: 2005/01/05 12:16:19 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 
 
 #define WIN32_LEAN_AND_MEAN

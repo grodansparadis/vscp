@@ -238,32 +238,6 @@ public:
 	ctrlObj *m_pCtrlObject;
 
 
-    //////////////////////////////////////////////
-    //              T I M I N G                 //
-    //////////////////////////////////////////////
-
-    // The timing parameters is a copy of the timing
-    // of the vscpremotetcpif class and they are initiated
-    // to the same values. They should be set to new
-    // values before the tread is run if modified values
-    // is needed
-
-    /// Server response timeout in seconds
-    uint8_t m_responseTimeOut;
-
-    /// Error timeout for register read/write operations
-    uint32_t m_registerOpErrorTimeout;
-
-    /// Resend timeout for read/write operations
-    uint32_t m_registerOpResendTimeout;
-
-    /// Man number of read/write retries
-    uint8_t m_registerOpMaxRetries;
-
-    //////////////////////////////////////////////
-    //              T I M I N G                 //
-    //////////////////////////////////////////////
-
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -300,32 +274,6 @@ public:
 		Pointer to control object.
 	*/
 	ctrlObj *m_pCtrlObject;
-  
-    //////////////////////////////////////////////
-    //              T I M I N G                 //
-    //////////////////////////////////////////////
-
-    // The timing parameters is a copy of the timing
-    // of the vscpremotetcpif class and they are initiated
-    // to the same values. They should be set to new
-    // values before the tread is run if modified values
-    // is needed
-
-    /// Server response timeout in seconds
-    uint8_t m_responseTimeOut;
-
-    /// Error timeout for register read/write operations
-    uint32_t m_registerOpErrorTimeout;
-
-    /// Resend timeout for read/write operations
-    uint32_t m_registerOpResendTimeout;
-
-    /// Man number of read/write retries
-    uint8_t m_registerOpMaxRetries;
-
-    //////////////////////////////////////////////
-    //              T I M I N G                 //
-    //////////////////////////////////////////////
 
 };
 

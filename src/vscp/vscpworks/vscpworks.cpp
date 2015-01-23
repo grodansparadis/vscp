@@ -1486,7 +1486,6 @@ bool VscpworksApp::readConfiguration( void )
     unsigned long val;
     wxString strcfgfile;
     wxXmlDocument doc;
-    //wxStandardPaths strpath;
 
     strcfgfile = wxStandardPaths::Get().GetUserDataDir();
     strcfgfile += _("/vscpworks.conf");
@@ -1494,7 +1493,6 @@ bool VscpworksApp::readConfiguration( void )
     if ( !wxFileName::FileExists( strcfgfile ) ) {
         return false;
     }
-
 
     if (!doc.Load( strcfgfile ) ) {
         // test global location

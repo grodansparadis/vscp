@@ -167,3 +167,4 @@ src/vscp/helperlib/linux/examples/bigtest
 /src/vscp/drivers/level1/can4vscp/win32/*.filters
 /src/vscp/vscpworks/*.bak
 /src/vscp/vscpworks/*.aps
+/src/vscp/vscp_project.v12.suo
