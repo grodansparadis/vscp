@@ -113,12 +113,12 @@ public:
     /*!
         Fill in VSCP class info in combo
     */
-    void dlgClassTypeSelect::fillClassCombo( void );
+    void fillClassCombo( void );
 
     /*!
         Fill in VSCP type info in combo
     */
-    void dlgClassTypeSelect::fillTypeCombo( unsigned int vscp_class );
+    void fillTypeCombo( unsigned int vscp_class );
 
 
     /// Retrieves bitmap resources

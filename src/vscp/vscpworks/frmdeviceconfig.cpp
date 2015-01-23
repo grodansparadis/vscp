@@ -910,7 +910,7 @@ void frmDeviceConfig::OnRegisterEdited(wxGridEvent& event)
     if (2 == event.GetCol()) {
         str = m_gridRegisters->GetCellValue(event.GetRow(), event.GetCol());
         val = vscp_readStringValue(str);
-        strBuf.Printf(_("0x%02lx"), val);
+        strBuf.Printf(_("0x%02x"), val);
         m_gridRegisters->SetCellValue(event.GetRow(), event.GetCol(), strBuf);
 
         m_gridRegisters->SetCellTextColour(event.GetRow(),
@@ -2621,7 +2621,7 @@ void frmDeviceConfig::fillStandardRegisters()
 
 
     m_gridRegisters->AppendRows(1);
-    strBuf.Printf(_("0x%02lx"), 0xd3);
+    strBuf.Printf(_("0x%02x"), 0xd3 );
     if (!m_bLevel2->GetValue()) {
         strBuf = _("D3");
     } 
@@ -2690,7 +2690,7 @@ void frmDeviceConfig::fillStandardRegisters()
 
 
     m_gridRegisters->AppendRows(1);
-    strBuf.Printf(_("0x%02lx"), 0xd5);
+    strBuf.Printf(_("0x%02x"), 0xd5);
     if (!m_bLevel2->GetValue()) {
         strBuf = _("D5");
     } 
@@ -2793,7 +2793,7 @@ void frmDeviceConfig::fillStandardRegisters()
 
 
     m_gridRegisters->AppendRows(1);
-    strBuf.Printf(_("0x%02lx"), 0xd8);
+    strBuf.Printf(_("0x%02x"), 0xd8);
     if (!m_bLevel2->GetValue()) {
         strBuf = _("D8");
     } 
@@ -3078,7 +3078,7 @@ void frmDeviceConfig::fillStandardRegisters()
         }
 
         if (!m_bLevel2->GetValue()) {
-            strBuf.Printf(_("%02lX"), 0xe0 + i);
+            strBuf.Printf(_("%02X"), 0xe0 + i);
         } 
         else {
             strBuf.Printf(_("%08lX"), 0xFFFFFFE0 + i);
@@ -3241,7 +3241,8 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
             for ( uint32_t i=0; i<nPages; i++ ) {
 
-                wxString str = wxString::Format( _("Fetching user registers for page %d 3/8"), pageArray[i] );
+				long currpage = pageArray.Item( i );
+                wxString str = wxString::Format( _("Fetching user registers for page %ld 3/8"), currpage );
                 progressDlg.Update( 25, str );
 
                 if ( CANAL_ERROR_SUCCESS !=
@@ -4989,7 +4990,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
             wxString strBuf;
 
             // O-addr
-            strBuf.Printf(_("0x%02lx"), vscp_readStringValue(dlg.m_oaddr->GetValue()));
+            strBuf.Printf(_("0x%02x"), (uint8_t)vscp_readStringValue(dlg.m_oaddr->GetValue()));
             m_gridRegisters->SetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
@@ -4997,7 +4998,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
             // class mask
             uint16_t class_mask = vscp_readStringValue(dlg.m_classMask->GetValue());
-            strBuf.Printf(_("0x%02lx"), class_mask & 0xff);
+            strBuf.Printf(_("0x%02x"), class_mask & 0xff);
             m_gridRegisters->SetCellValue(2 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
@@ -5005,21 +5006,21 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
             // class filter
             uint16_t class_filter = vscp_readStringValue(dlg.m_classFilter->GetValue());
-            strBuf.Printf(_("0x%02lx"), class_filter & 0xff);
+            strBuf.Printf(_("0x%02x"), class_filter & 0xff);
             m_gridRegisters->SetCellValue(3 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
                     strBuf);
 
             // type mask
-            strBuf.Printf(_("0x%02lx"), vscp_readStringValue(dlg.m_typeMask->GetValue()));
+            strBuf.Printf(_("0x%02x"), vscp_readStringValue(dlg.m_typeMask->GetValue()));
             m_gridRegisters->SetCellValue(4 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
                     strBuf);
 
             // type filter
-            strBuf.Printf(_("0x%02lx"), vscp_readStringValue(dlg.m_typeFilter->GetValue()));
+            strBuf.Printf(_("0x%02x"), vscp_readStringValue(dlg.m_typeFilter->GetValue()));
             m_gridRegisters->SetCellValue(5 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
@@ -5035,7 +5036,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
             if (dlg.m_chkHardOAddr->GetValue()) flags |= 0x20;
             if (dlg.m_chkMatchZone->GetValue()) flags |= 0x10;
             if (dlg.m_chkMatchSubzone->GetValue()) flags |= 0x08;
-            strBuf.Printf(_("0x%02lx"), flags);
+            strBuf.Printf(_("0x%02x"), flags);
             m_gridRegisters->SetCellValue(1 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
@@ -5045,9 +5046,9 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
             int idx = 0;
             if (wxNOT_FOUND != (idx = dlg.m_comboAction->GetSelection())) {
                 uint32_t data = (uintptr_t) dlg.m_comboAction->GetClientData(idx);
-                strBuf.Printf(_("0x%02lx"), data);
+                strBuf.Printf(_("0x%02x"), data);
             } else {
-                strBuf.Printf(_("0x%02lx"), 0);
+                strBuf.Printf(_("0x%02x"), 0);
             }
             m_gridRegisters->SetCellValue(6 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
@@ -5055,7 +5056,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                     strBuf);
 
             // Action Parameter
-            strBuf.Printf(_("0x%02lx"), vscp_readStringValue(dlg.m_actionParam->GetValue()));
+            strBuf.Printf(_("0x%02x"), (uint8_t)vscp_readStringValue(dlg.m_actionParam->GetValue()));
             m_gridRegisters->SetCellValue(7 + m_mdf.m_dmInfo.m_nStartOffset +
                     m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
                     2,
@@ -5881,7 +5882,7 @@ wxString frmDeviceConfig::getFormattedValue(uint8_t val)
         return wxString::Format(_("0x%02X"), val);
     } 
     else {
-        return wxString::Format(_("0x%02lx"), val);
+        return wxString::Format(_("%d"), val);
     }
 }
 
