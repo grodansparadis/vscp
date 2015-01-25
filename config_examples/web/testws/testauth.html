@@ -25,7 +25,8 @@
   };
 
   window.onload = function() {
-    var url = 'ws://' + "127.0.0.1:8080"+ '/ws';
+    //var url = 'ws://' + "127.0.0.1:8080"+ '/ws';
+	var url = vscp_setting_url + '/ws';
     var num_messages = 0;
 
     websocket = new WebSocket(url);

@@ -4,14 +4,14 @@ Summary
 First of all. You don't need to build this package yourself. Everything here is 
 installed for you in the binary version (see https://sourceforge.net/projects/m2m/files/vscp/).
 
-To build the VSCP Project for WIN32 there are 2 project files which
+To build the VSCP Project for WIN32/WIN64 there are 2 project files which
 differ in the number of sub-projects included. They also require
 different sets of external resources to run successfully:
 
    1.) vscp_project.sln
        Requires:
-                - Microsoft Visual Studio with Microsoft Foundation Classes (MFC).
-                - wxWidgets,
+                - Microsoft Visual Studio 2013 (Can be downloaded free).
+                - wxWidgets 3.0.0 or greater,
                 - wxExpat,
                 - various other libraries to compile drivers for specific hardware.
 
@@ -35,8 +35,8 @@ VSCP Project (complete)
 This is the "original" project and includes all sub-projects.
 
 - to build the Vector CANAL driver the proprietary Vector libs/includes is needed.
-- to build the peak CANAL driver the proprietary PEAK libs/includes is needed.
-- to build the ccs CANAL driver the proprietary CCS libs/includes is needed.
+- to build the Peak CANAL driver the proprietary PEAK libs/includes is needed.
+- to build the CSS CANAL driver the proprietary CCS libs/includes is needed.
 - to build the IXXAT CANAL driver the proprietary IXXAT libs/includes is needed.
 
 1.) Define environment variable VSCP_HOME that points to the VSCP base folder (c:\development\vscp_software).

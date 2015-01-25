@@ -22,6 +22,18 @@
 	
     <script type="text/javascript">
 	
+	var setTime = function( d ) {
+		var date = new Date(d*1000);
+		var date_year = date.getFullYear();
+		var date_month = date.getMonth();
+		var date_day = date.getDate();
+		var date_hour = date.getHours();
+		var date_minute = date.getMinutes();
+		var date_second = date.getSeconds();
+		return date_year + '-' + date_month + '-' + date_day + ' ' + date_hour + ':' + date_minute + ':' + date_second;
+   }
+	
+	
     var lineChartData = [
 	{
 		label: "Temperature",
@@ -114,7 +126,8 @@ opening the event page in an other window and send temperature events using demo
 <script>
   var lineBarChart1 = $('#lineBarChart1').epoch({
     type: 'time.bar',
-	tickFormats: { time: function(d) { return new Date(time*1000).toISOString() } },
+	ticks: { left: 5, bottom: 5, right: 5 },
+	tickFormats: { time: 'AAAA' },
     data: lineChartData,
 	axes: ['left', 'right', 'bottom']
   });
@@ -126,6 +139,7 @@ opening the event page in an other window and send temperature events using demo
 <script>
   var lineBarChart2 = $('#lineBarChart2').epoch({
     type: 'time.line',
+	ticks: { left: 5, bottom: 5, right: 5 },
 	tickFormats: { time: function(d) { return new Date(time*1000).toISOString() } },
     data: lineChartData,
 	axes: ['left', 'right', 'bottom']
@@ -138,6 +152,7 @@ opening the event page in an other window and send temperature events using demo
 <script>
 var areaChartInstance1 = $('#lineAreaChart1').epoch({
     type: 'time.area',
+	ticks: { left: 5, bottom: 5, right: 5 },
 	tickFormats: { time: function(d) { return new Date(time*1000).toISOString() } },
     data: lineChartData,
     axes: ['left', 'right', 'bottom']

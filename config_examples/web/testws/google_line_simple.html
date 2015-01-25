@@ -39,9 +39,7 @@
                 if ((VSCP_CLASS1_MEASUREMENT == vscpclass) &&
                     (VSCP_TYPE_MEASUREMENT_TEMPERATURE == vscptype)) {
                 
-                    var value;
-                    
-                    vscpws_toFixed(vscpws_measurementClass10Decode(vscpdata), 1);
+                    var value = vscpws_toFixed(vscpws_measurementClass10Decode(vscpdata), 1);
                                 
                     // Should be a Celsius value
                     switch(vscpws_getDatacoding(vscpdata[0])) {
@@ -59,6 +57,8 @@
                     var strTime = d.toTimeString();    
                     strTime = "" + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
                     // d.toTimeString()
+					console.log( value );
+					console.log( parseFloat(value) );
                     data.addRows([
                         [ strTime, parseFloat(value) ]
                     ]);
