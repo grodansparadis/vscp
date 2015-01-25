@@ -2876,7 +2876,7 @@ void *RXWorkerThread::Entry()
     while (!TestDestroy() && !m_pCtrlObject->m_bQuit) {
 
         if (CANAL_ERROR_SUCCESS ==
-                (rv = tcpifReceive.doCmdBlockingReceive(&event, 1000))) {
+                (rv = tcpifReceive.doCmdBlockingReceive(&event, 10))) {
 
             if (NULL != m_pCtrlObject->m_pVSCPSessionWnd) {
 
@@ -2899,15 +2899,16 @@ void *RXWorkerThread::Entry()
                             pRecord->m_nDir = VSCP_EVENT_DIRECTION_RX;
                         }
 
-                        eventReceive.SetClientData(pRecord);
-                        wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventReceive);
+                        eventReceive.SetClientData( pRecord );
+                        wxPostEvent( m_pCtrlObject->m_pVSCPSessionWnd, eventReceive );
 
                         // Remove data if any
                         if (NULL != event.pdata) {
                             delete [] event.pdata;
                         }
 
-                    } else {
+                    } 
+					else {
                         delete pRecord;
                     }
 
