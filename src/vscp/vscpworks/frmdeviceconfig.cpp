@@ -3522,8 +3522,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
     }
 
-    //::wxEndBusyCursor();
-
     event.Skip(false);
 }
 
