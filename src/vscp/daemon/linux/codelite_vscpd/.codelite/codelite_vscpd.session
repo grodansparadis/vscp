@@ -4,58 +4,65 @@
   <wxString Value="/home/akhe/vscp_software/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace" Name="m_workspaceName"/>
   <TabInfoArray Name="TabInfoArray">
     <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/web_template.h" Name="FileName"/>
-      <int Value="126" Name="FirstVisibleLine"/>
-      <int Value="146" Name="CurrentLine"/>
+      <wxString Value="/home/akhe/vscp_software/src/vscp/vscpworks/dlgabstractionedit.cpp" Name="FileName"/>
+      <int Value="398" Name="FirstVisibleLine"/>
+      <int Value="417" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/vscpwebserver.cpp" Name="FileName"/>
-      <int Value="6081" Name="FirstVisibleLine"/>
-      <int Value="6114" Name="CurrentLine"/>
+      <wxString Value="/home/akhe/vscp_software/src/vscp/vscpworks/dlgconfiguration.cpp" Name="FileName"/>
+      <int Value="31" Name="FirstVisibleLine"/>
+      <int Value="34" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
-      <wxString Value="/usr/local/include/wx-3.0/wx/string.h" Name="FileName"/>
-      <int Value="1206" Name="FirstVisibleLine"/>
-      <int Value="1216" Name="CurrentLine"/>
+      <wxString Value="/home/akhe/vscp_software/src/vscp/vscpworks/frmdeviceconfig.cpp" Name="FileName"/>
+      <int Value="4129" Name="FirstVisibleLine"/>
+      <int Value="4139" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/vscpvariable.h" Name="FileName"/>
-      <int Value="461" Name="FirstVisibleLine"/>
-      <int Value="173" Name="CurrentLine"/>
+      <wxString Value="/usr/local/src/wxWidgets-3.0.2/include/wx/generic/grid.h" Name="FileName"/>
+      <int Value="2407" Name="FirstVisibleLine"/>
+      <int Value="2417" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/vscpvariable.cpp" Name="FileName"/>
-      <int Value="238" Name="FirstVisibleLine"/>
-      <int Value="271" Name="CurrentLine"/>
+      <wxString Value="/usr/local/src/wxWidgets-3.0.2/src/common/list.cpp" Name="FileName"/>
+      <int Value="298" Name="FirstVisibleLine"/>
+      <int Value="308" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
     </TabInfo>
     <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/dm.h" Name="FileName"/>
-      <int Value="761" Name="FirstVisibleLine"/>
-      <int Value="770" Name="CurrentLine"/>
+      <wxString Value="/home/akhe/vscp_software/src/vscp/common/mdf.h" Name="FileName"/>
+      <int Value="157" Name="FirstVisibleLine"/>
+      <int Value="167" Name="CurrentLine"/>
       <wxArrayString Name="Bookmarks"/>
       <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/dm.cpp" Name="FileName"/>
-      <int Value="3159" Name="FirstVisibleLine"/>
-      <int Value="3169" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds">
-        <IntVectorItem Value="3342"/>
-      </IntVector>
     </TabInfo>
   </TabInfoArray>
   <SerializedObject Name="m_breakpoints">
-    <long Value="0" Name="Count"/>
+    <long Value="1" Name="Count"/>
+    <SerializedObject Name="Breakpoint0">
+      <wxString Value="/home/akhe/vscp_software/src/vscp/vscpworks/frmdeviceconfig.cpp" Name="file"/>
+      <int Value="4139" Name="lineno"/>
+      <wxString Value="" Name="function_name"/>
+      <wxString Value="" Name="memory_address"/>
+      <int Value="1" Name="bp_type"/>
+      <int Value="0" Name="watchpoint_type"/>
+      <wxString Value="" Name="watchpt_data"/>
+      <CData Name="commandlist"/>
+      <bool Value="0" Name="regex"/>
+      <bool Value="0" Name="is_temp"/>
+      <bool Value="1" Name="is_enabled"/>
+      <int Value="0" Name="ignore_number"/>
+      <wxString Value="" Name="conditions"/>
+      <int Value="0" Name="origin"/>
+    </SerializedObject>
   </SerializedObject>
 </Session>

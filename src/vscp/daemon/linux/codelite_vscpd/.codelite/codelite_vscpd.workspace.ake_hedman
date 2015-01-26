@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Workspace>
+  <Project Name="codelite_uvscpd">
+    <Options/>
+  </Project>
   <SubversionPath>
     <![CDATA[/home/akhe/vscp_software/src/vscp/daemon/linux/codelite_vscpd]]>
   </SubversionPath>

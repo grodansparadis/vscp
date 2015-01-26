@@ -24,10 +24,10 @@
 #if !defined(AFX_VSCPD_H__3D1CDB8C_8027_46D5_9284_67750BEA4B7E__INCLUDED_)
 #define AFX_VSCPD_H__3D1CDB8C_8027_46D5_9284_67750BEA4B7E__INCLUDED_
 
-#include "../../common/controlobject.h"
+#include <controlobject.h>
 
 // Inlcude the CANAL definitions
-#include "../../common/canal.h"
+#include <canal.h>
 
 /// Nams of mutex's
 

@@ -51,9 +51,9 @@
 #include <wx/stdpaths.h>
 
 #include "vscpd.h"
-#include "../../../common/crc.h"
-#include "../../common/controlobject.h"
-#include "../../common/version.h"
+#include <crc.h>
+#include <controlobject.h>
+#include <version.h>
 
 #define DEBUG
 
@@ -73,8 +73,6 @@ void sighandler(int sig)
 	gbStopDaemon = true;
 	syslog(LOG_CRIT, "vscpd: signal received, forced to stop.: %m");
 	wxLogError(_("vscpd: signal received, forced to stop.: %m"));
-	//sleep( 3 );
-	//exit(-1);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -163,7 +161,7 @@ int main(int argc, char **argv)
 	}
 
 	wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
-	if (!theApp.init(strcfgfile)) {
+	if ( !theApp.init( strcfgfile ) ) {
 		wxLogDebug(_("ControlObject: Failed to configure. Terminating."));
 	}
 	
@@ -188,7 +186,8 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 			// Failure
 			printf("Failed to fork.");
 			return -1;
-		} else if (0 != pid) {
+		} 
+		else if (0 != pid) {
 			exit(0); // Parent goes by by.
 		}
 
@@ -207,7 +206,10 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 			fclose(pFile);
 		}
 
-		(void)chdir("/"); // Change working directory
+		if ( chdir("/") ) { // Change working directory
+			syslog( LOG_WARNING, "VSCPD: Failed to change dir to rootdir");
+		}
+
 		umask(0); // Clear out file mode creation mask
 
 		// Close out the standard file descriptors 
@@ -255,7 +257,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
 
 	wxLogDebug(_("VSCPD: init"));
-	if (!gpobj->init(strcfgfile)) {
+	if ( !gpobj->init( strcfgfile ) ) {
 		syslog(LOG_CRIT, "Can't initialize daemon. Exiting.");
 		return FALSE;
 	}
@@ -271,7 +273,7 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 	}
 
 	// Remove the pid file
-	//    unlink("/var/run/vscpd.pid");
+	//    unlink("/var/run/vsdcp/vscpd.pid");
 	
 
 	return FALSE;
