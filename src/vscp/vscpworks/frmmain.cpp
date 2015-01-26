@@ -366,8 +366,8 @@ void frmMain::OnCloseWindow( wxCloseEvent& event )
     wxRect rc = GetRect();
     g_Config.m_xpos = rc.x;  
     g_Config.m_ypos = rc.y;
-    g_Config.m_sizeWidth = rc.width;
-    g_Config.m_sizeHeight = rc.height;
+    //g_Config.m_sizeWidth = rc.width;
+    //g_Config.m_sizeHeight = rc.height;
 
     event.Skip();
 }

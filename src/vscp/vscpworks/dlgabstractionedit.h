@@ -70,93 +70,90 @@
 #define SYMBOL_DIALOGABSTRACTIONEDIT_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL
 #define SYMBOL_DIALOGABSTRACTIONEDIT_TITLE _("Dialog Abstraction Item Edit")
 #define SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME ID_DIALOGABSTRACTIONEDIT
-#define SYMBOL_DIALOGABSTRACTIONEDIT_SIZE wxSize(350, -1)
+#define SYMBOL_DIALOGABSTRACTIONEDIT_SIZE wxSize( -1, -1 )
 #define SYMBOL_DIALOGABSTRACTIONEDIT_POSITION wxDefaultPosition
 ////@end control identifiers
-
 
 /*!
  * DialogAbstractionEdit class declaration
  */
 
-class DialogAbstractionEdit: public wxDialog
-{    
-  DECLARE_DYNAMIC_CLASS( DialogAbstractionEdit )
-  DECLARE_EVENT_TABLE()
+class DialogAbstractionEdit : public wxDialog {
+	DECLARE_DYNAMIC_CLASS(DialogAbstractionEdit)
+	DECLARE_EVENT_TABLE()
 
 public:
-  /// Constructors
-  DialogAbstractionEdit();
-  DialogAbstractionEdit( wxWindow* parent, wxWindowID id = SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME, const wxString& caption = SYMBOL_DIALOGABSTRACTIONEDIT_TITLE, const wxPoint& pos = SYMBOL_DIALOGABSTRACTIONEDIT_POSITION, const wxSize& size = SYMBOL_DIALOGABSTRACTIONEDIT_SIZE, long style = SYMBOL_DIALOGABSTRACTIONEDIT_STYLE );
+	/// Constructors
+	DialogAbstractionEdit();
+	DialogAbstractionEdit(wxWindow* parent, wxWindowID id = SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME, const wxString& caption = SYMBOL_DIALOGABSTRACTIONEDIT_TITLE, const wxPoint& pos = SYMBOL_DIALOGABSTRACTIONEDIT_POSITION, const wxSize& size = SYMBOL_DIALOGABSTRACTIONEDIT_SIZE, long style = SYMBOL_DIALOGABSTRACTIONEDIT_STYLE);
 
-  /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME, const wxString& caption = SYMBOL_DIALOGABSTRACTIONEDIT_TITLE, const wxPoint& pos = SYMBOL_DIALOGABSTRACTIONEDIT_POSITION, const wxSize& size = SYMBOL_DIALOGABSTRACTIONEDIT_SIZE, long style = SYMBOL_DIALOGABSTRACTIONEDIT_STYLE );
+	/// Creation
+	bool Create(wxWindow* parent, wxWindowID id = SYMBOL_DIALOGABSTRACTIONEDIT_IDNAME, const wxString& caption = SYMBOL_DIALOGABSTRACTIONEDIT_TITLE, const wxPoint& pos = SYMBOL_DIALOGABSTRACTIONEDIT_POSITION, const wxSize& size = SYMBOL_DIALOGABSTRACTIONEDIT_SIZE, long style = SYMBOL_DIALOGABSTRACTIONEDIT_STYLE);
 
-  /// Destructor
-  ~DialogAbstractionEdit();
+	/// Destructor
+	~DialogAbstractionEdit();
 
-  /// Initialises member variables
-  void Init();
+	/// Initialises member variables
+	void Init();
 
-  /// Creates the controls and sizers
-  void CreateControls();
+	/// Creates the controls and sizers
+	void CreateControls();
 
-  /// Transfers data to the window
-  bool TransferDataToWindow( CMDF_Abstraction *pAbstraction, wxString &strValue );
+	/// Transfers data to the window
+	bool TransferDataToWindow(CMDF_Abstraction *pAbstraction, wxString &strValue);
 
-  /// Transfers data from the window
-  bool TransferDataFromWindow( wxString &strValue );
+	/// Transfers data from the window
+	bool TransferDataFromWindow(wxString &strValue);
 
-////@begin DialogAbstractionEdit event handler declarations
+	/// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON18
+	void OnButtonDefaultClick(wxCommandEvent& event);
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON18
-  void OnButtonDefaultClick( wxCommandEvent& event );
+	int GetTest() const
+	{
+		return m_nType;
+	}
 
-////@end DialogAbstractionEdit event handler declarations
+	void SetTest(int value)
+	{
+		m_nType = value;
+	}
 
-////@begin DialogAbstractionEdit member function declarations
+	/// Retrieves bitmap resources
+	wxBitmap GetBitmapResource(const wxString& name);
 
-  int GetTest() const { return m_nType ; }
-  void SetTest(int value) { m_nType = value ; }
+	/// Retrieves icon resources
+	wxIcon GetIconResource(const wxString& name);
 
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
+	/// Should we show tooltips?
+	static bool ShowToolTips();
 
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-////@end DialogAbstractionEdit member function declarations
+	/// Pointer to the abstraction we are working with
+	CMDF_Abstraction *m_pAbstraction;
 
-  /// Should we show tooltips?
-  static bool ShowToolTips();
+	wxStaticText* m_abstractionName;
+	wxStaticText* m_abstractionId;
+	wxStaticText* m_abstractionType;
+	wxStaticText* m_abstractionWidth;
+	wxStaticText* m_abstractionRegisterPage;
+	wxStaticText* m_abstractionRegisterOffset;
+	wxStaticText* m_abstractionDescription;
+	wxStaticText* m_abstractionHelp;
+	wxStaticText* m_abstractionAccessRights;
+	wxStaticText* m_abstractionDefaultValue;
+	wxStaticText* m_singleValueLabel;
+	wxTextCtrl* m_abstractionValue;
+	wxStaticText* m_multipleValueLabel;
+	wxChoice* m_abstractionComboValue;
+	int m_nType; // Abstraction type
+	/// Control identifiers
 
-    /// Pointer to the abstraction we are working with
-    CMDF_Abstraction *m_pAbstraction;
-
-////@begin DialogAbstractionEdit member variables
-  wxStaticText* m_abstractionName;
-  wxStaticText* m_abstractionId;
-  wxStaticText* m_abstractionType;
-  wxStaticText* m_abstractionWidth;
-  wxStaticText* m_abstractionRegisterPage;
-  wxStaticText* m_abstractionRegisterOffset;
-  wxStaticText* m_abstractionDescription;
-  wxStaticText* m_abstractionHelp;
-  wxStaticText* m_abstractionAccessRights;
-  wxStaticText* m_abstractionDefaultValue;
-  wxStaticText* m_singleValueLabel;
-  wxTextCtrl* m_abstractionValue;
-  wxStaticText* m_multipleValueLabel;
-  wxChoice* m_abstractionComboValue;
-  int m_nType; // Abstraction type
-  /// Control identifiers
-  enum {
-    ID_DIALOGABSTRACTIONEDIT = 10042,
-    ID_BUTTON18 = 10145,
-    ID_TEXTCTRL_ABSTRACTION_VALUE = 10002,
-    ID_CHOICE1 = 10043
-  };
-////@end DialogAbstractionEdit member variables
+	enum {
+		ID_DIALOGABSTRACTIONEDIT = 10042,
+		ID_BUTTON18 = 10145,
+		ID_TEXTCTRL_ABSTRACTION_VALUE = 10002,
+		ID_CHOICE1 = 10043
+	};
 };
 
 #endif
-  // _DIALOGABSTRACTIONEDIT_H_
+// _DIALOGABSTRACTIONEDIT_H_

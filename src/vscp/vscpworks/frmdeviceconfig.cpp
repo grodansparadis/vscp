@@ -4116,7 +4116,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
     cguid destGUID;
     destGUID.getFromString(m_comboNodeID->GetValue());
 
-    if (ID_GRID_REGISTERS == event.GetId()) {
+    if ( ID_GRID_REGISTERS == event.GetId() ) {
         m_gridRegisters->SelectRow( event.GetRow() );
     } 
     else if ( ID_GRID_ABSTRACTIONS == event.GetId() ) {
@@ -4127,8 +4127,8 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
         uint8_t val = 0;
 
         DialogAbstractionEdit dlg(this);
-        strValue = m_gridAbstractions->GetCellValue(event.GetRow(), 3);
-        dlg.TransferDataToWindow(m_mdf.m_list_abstraction[ event.GetRow() ],
+        strValue = m_gridAbstractions->GetCellValue( event.GetRow(), 3 );
+        dlg.TransferDataToWindow( m_mdf.m_list_abstraction[ event.GetRow() ],
                 strValue);
 
         m_gridAbstractions->SelectRow( event.GetRow() );
@@ -4138,6 +4138,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
             wxString newValue;
             dlg.TransferDataFromWindow(newValue);
+			
             // If value is not changed do nothing.
             if (newValue == strValue) goto error;
             strValue = newValue;

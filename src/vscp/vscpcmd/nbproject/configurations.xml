@@ -203,8 +203,6 @@
         </ccTool>
       </folder>
       <item path="vscpcmd.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool flags="0">
-        </ccTool>
       </item>
     </conf>
   </confs>
