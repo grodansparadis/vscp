@@ -495,16 +495,15 @@
         </ccTool>
       </item>
       <item path="frmmain.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
+        <ccTool flags="0">
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>../common</pElem>
             <pElem>../../common</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>

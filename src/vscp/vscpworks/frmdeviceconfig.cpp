@@ -4146,6 +4146,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
             wxString newValue;
             dlg.TransferDataFromWindow(newValue);
+			
             // If value is not changed do nothing.
             if (newValue == strValue) goto error;
             strValue = newValue;
