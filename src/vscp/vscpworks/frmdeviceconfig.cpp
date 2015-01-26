@@ -3190,7 +3190,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                                                                             128,    // count
                                                                             m_stdRegisters.getRegs() ) ) {
                 ::wxMessageBox(_("Failed to read standard registers of device."), _("VSCP Works"), wxICON_ERROR);
-                ::wxEndBusyCursor();
                 return;
             }
 
@@ -3219,7 +3218,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 			m_stdRegisters.getMDF( mdfurl );
             if (0 == mdfurl.Length()) {
                 ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
-                ::wxEndBusyCursor();
                 return;
             }
 
@@ -3252,7 +3250,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                                                                                     128,            // count
                                                                                     m_userRegisters.getRegs4Page( pageArray[i] ) ) ) {
                     ::wxMessageBox(_("Failed to read user registers of device."), _("VSCP Works"), wxICON_ERROR );
-                    ::wxEndBusyCursor();
                     return;
                 }
 
@@ -3347,7 +3344,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                                                                     &destGUID,
                                                                     m_bLevel2->GetValue() ) ) {
                 ::wxMessageBox(_("Failed to read standard registers of device."), _("VSCP Works"), wxICON_ERROR);
-                ::wxEndBusyCursor();
                 return;
             }
 
@@ -3376,7 +3372,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 			m_stdRegisters.getMDF( mdfurl );
             if ( 0 == mdfurl.Length() ) {
                 ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
-                ::wxEndBusyCursor();
                 return;
             }
 
@@ -3416,7 +3411,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                                                                     &destGUID,
                                                                     m_bLevel2->GetValue() ) ) {
                     ::wxMessageBox(_("Failed to read user registers of device."), _("VSCP Works"), wxICON_ERROR );
-                    ::wxEndBusyCursor();
                     return;
                 }
 

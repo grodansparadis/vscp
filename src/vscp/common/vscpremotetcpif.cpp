@@ -1039,23 +1039,26 @@ int VscpRemoteTcpIf::doCmdQuitReceiveLoop( void )
 // doCmdBlockingReceive
 //
 
-int VscpRemoteTcpIf::doCmdBlockingReceive( vscpEvent *pEvent, uint32_t timeout )
+int VscpRemoteTcpIf::doCmdBlockingReceive(vscpEvent *pEvent, uint32_t timeout)
 {
-    int rv = VSCP_ERROR_SUCCESS;
-    wxString strLine;
-    
-    // Check pointer
-    if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
-    
-    // Must be connected
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+	int rv = VSCP_ERROR_SUCCESS;
+	wxString strLine;
 
-    // If not receive loop active terminate
-    if ( !m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
+	// Check pointer
+	if (NULL == pEvent) return VSCP_ERROR_PARAMETER;
 
-    if ( wxSEMA_TIMEOUT == m_psemInputArray->WaitTimeout( timeout ) ) {
-        return VSCP_ERROR_TIMEOUT;
-    }
+	// Must be connected
+	if (!m_bConnected) return VSCP_ERROR_CONNECTION;
+
+	// If not receive loop active terminate
+	if (!m_bModeReceiveLoop) return VSCP_ERROR_PARAMETER;
+
+	if ( !m_inputStrArray.Count() ) {
+		// No need to wait for stuff if already there
+		if ( !m_inputStrArray.Count() && (wxSEMA_TIMEOUT == m_psemInputArray->WaitTimeout(timeout) ) ) {
+			return VSCP_ERROR_TIMEOUT;
+		}
+	}
 
     // We have a possible incoming event
     if ( !m_inputStrArray.Count() ) {

@@ -28,6 +28,7 @@
 #define VSCPD_MINOR_VERSION 	0
 #define VSCPD_SUB_VERSION   	0
 
+
 #define VSCPD_SUB_SUB_VERSION   57
 
 #define VSCPD_DISPLAY_VERSION "1.0.0.57 Neon"
