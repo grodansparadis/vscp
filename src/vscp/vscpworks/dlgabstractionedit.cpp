@@ -488,7 +488,7 @@ bool DialogAbstractionEdit::TransferDataToWindow( CMDF_Abstraction *pAbstraction
 			m_abstractionDefaultValue->SetLabel( pAbstraction->m_strDefault );
 		}
 		else {
-			m_abstractionDefaultValue->SetLabel( _("No default value") );
+            m_abstractionDefaultValue->SetLabel( strValue );
 		}
 
 		// Access
