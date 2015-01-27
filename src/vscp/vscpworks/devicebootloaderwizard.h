@@ -50,10 +50,9 @@
 * Includes
 */
 
-////@begin includes
+
 #include "wx/wizard.h"
 #include "wx/html/htmlwin.h"
-////@end includes
 
 #include "canalsuperwrapper.h"
 #include "mdf.h"
@@ -65,7 +64,6 @@
 * Forward declarations
 */
 
-////@begin forward declarations
 class WizardPage;
 class WizardPage1;
 class WizardPage6;
@@ -74,33 +72,37 @@ class WizardPage2;
 class wxHtmlWindow;
 class WizardPage5;
 class WizardPage7;
-////@end forward declarations
+
 
 /*!
 * Control identifiers
 */
 
-////@begin control identifiers
+
 #define SYMBOL_DEVICEBOOTLOADERWIZARD_IDNAME ID_DEVICEBOOTLOADERWIZARD
-////@end control identifiers
 
 
-/*!
-* DeviceBootloaderwizard class declaration
-*/
 
-class DeviceBootloaderwizard: public wxWizard
-{    
+///////////////////////////////////////////////////////////////////////////////
+// DeviceBootloaderwizard class declaration
+//
+
+class DeviceBootloaderwizard : public wxWizard
+{
     DECLARE_DYNAMIC_CLASS( DeviceBootloaderwizard )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
     DeviceBootloaderwizard();
-    DeviceBootloaderwizard( wxWindow* parent, wxWindowID id = SYMBOL_DEVICEBOOTLOADERWIZARD_IDNAME, const wxPoint& pos = wxDefaultPosition );
+    DeviceBootloaderwizard( wxWindow* parent,
+                            wxWindowID id = SYMBOL_DEVICEBOOTLOADERWIZARD_IDNAME,
+                            const wxPoint& pos = wxDefaultPosition );
 
     /// Creation
-    bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DEVICEBOOTLOADERWIZARD_IDNAME, const wxPoint& pos = wxDefaultPosition );
+    bool Create( wxWindow* parent,
+                 wxWindowID id = SYMBOL_DEVICEBOOTLOADERWIZARD_IDNAME,
+                 const wxPoint& pos = wxDefaultPosition );
 
     /// Destructor
     ~DeviceBootloaderwizard();
@@ -111,35 +113,26 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    ////@begin DeviceBootloaderwizard event handler declarations
+    /// Runs the wizard
+    bool Run();
 
-    ////@end DeviceBootloaderwizard event handler declarations
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-    ////@begin DeviceBootloaderwizard member function declarations
-
-  /// Runs the wizard
-  bool Run();
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-    ////@end DeviceBootloaderwizard member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    ////@begin DeviceBootloaderwizard member variables
-  WizardPage1* m_pgSelecInterface;
-  WizardPage6* m_pgSelecDeviceId;
-  WizardPage3* m_pgSelecAlgorithm;
-  WizardPage2* m_pgLoadFile;
-  /// Control identifiers
-  enum {
-    ID_DEVICEBOOTLOADERWIZARD = 32000
-  };
-    ////@end DeviceBootloaderwizard member variables
+    WizardPage1* m_pgSelecInterface;
+    WizardPage6* m_pgSelecDeviceId;
+    WizardPage3* m_pgSelecAlgorithm;
+    WizardPage2* m_pgLoadFile;
+    /// Control identifiers
+    enum {
+        ID_DEVICEBOOTLOADERWIZARD = 32000
+    };
 
     /*!
         Bootcontrol code
@@ -148,7 +141,7 @@ public:
     CBootDevice *m_pBootCtrl;
 
     /*!
-        The wrapper for the CANAL 
+        The wrapper for the CANAL
         functionality.
     */
     CCanalSuperWrapper m_csw;
@@ -161,7 +154,7 @@ public:
 
     /*!
         Flag to indicate thet the mdf has been fetched.
-    */
+        */
     bool m_bMDFLoaded;
 
     /*!
@@ -171,16 +164,17 @@ public:
 
     /*!
         GUID for node to bootload
-    */
+     */
     cguid m_guid;
 };
 
-/*!
-* WizardPage class declaration
-*/
 
-class WizardPage: public wxWizardPageSimple
-{    
+///////////////////////////////////////////////////////////////////////////////
+// WizardPage class declaration
+//
+
+class WizardPage : public wxWizardPageSimple
+{
     DECLARE_DYNAMIC_CLASS( WizardPage )
     DECLARE_EVENT_TABLE()
 
@@ -202,36 +196,29 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    ////@begin WizardPage event handler declarations
 
-    ////@end WizardPage event handler declarations
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-    ////@begin WizardPage member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-    ////@end WizardPage member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    ////@begin WizardPage member variables
-  /// Control identifiers
-  enum {
-    ID_WIZARDPAGE = 32001
-  };
-    ////@end WizardPage member variables
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE = 32001
+    };
+
 };
 
-/*!
-* WizardPage1 class declaration
-*/
+///////////////////////////////////////////////////////////////////////////////
+// WizardPage1 class declaration
+//
 
-class WizardPage1: public wxWizardPageSimple
-{    
+class WizardPage1 : public wxWizardPageSimple
+{
     DECLARE_DYNAMIC_CLASS( WizardPage1 )
     DECLARE_EVENT_TABLE()
 
@@ -253,44 +240,37 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    ////@begin WizardPage1 event handler declarations
+    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_SELECT_INTERFACE
+    void OnWizardpageSelectInterfacePageChanging( wxWizardEvent& event );
 
-  /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_SELECT_INTERFACE
-  void OnWizardpageSelectInterfacePageChanging( wxWizardEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON20
+    void OnButtonSelectInterfaceClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON20
-  void OnButtonSelectInterfaceClick( wxCommandEvent& event );
 
-    ////@end WizardPage1 event handler declarations
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-    ////@begin WizardPage1 member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-    ////@end WizardPage1 member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    ////@begin WizardPage1 member variables
-  wxStaticText* m_labelInterfaceSelected;
-  /// Control identifiers
-  enum {
-    ID_WIZARDPAGE_SELECT_INTERFACE = 32002,
-    ID_BUTTON20 = 32003
-  };
-    ////@end WizardPage1 member variables
+    wxStaticText* m_labelInterfaceSelected;
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_SELECT_INTERFACE = 32002,
+        ID_BUTTON20 = 32003
+    };
+
 };
 
-/*!
-* WizardPage2 class declaration
-*/
+///////////////////////////////////////////////////////////////////////////////
+// WizardPage2 class declaration
+//
 
-class WizardPage2: public wxWizardPageSimple
-{    
+class WizardPage2 : public wxWizardPageSimple
+{
     DECLARE_DYNAMIC_CLASS( WizardPage2 )
     DECLARE_EVENT_TABLE()
 
@@ -312,52 +292,45 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    ////@begin WizardPage2 event handler declarations
+    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_LOAD_FILE
+    void OnWizardpage3PageChanging( wxWizardEvent& event );
 
-  /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_LOAD_FILE
-  void OnWizardpage3PageChanging( wxWizardEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD_FILE
+    void OnButtonChooseFileClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD_FILE
-  void OnButtonChooseFileClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD_FILE_FROM_MDF
+    void OnButtonLoadFileFromMdfClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD_FILE_FROM_MDF
-  void OnButtonLoadFileFromMdfClick( wxCommandEvent& event );
 
-    ////@end WizardPage2 event handler declarations
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-    ////@begin WizardPage2 member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-    ////@end WizardPage2 member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    ////@begin WizardPage2 member variables
-  wxHtmlWindow* m_hexFileInfo;
-  wxStaticText* m_selectedFile;
-  wxButton* m_ctrlBtnLoadFile;
-  wxButton* m_ctrlBtnLoadFileFromMDF;
-  /// Control identifiers
-  enum {
-    ID_WIZARDPAGE_LOAD_FILE = 32007,
-    ID_HTMLWINDOW4 = 32008,
-    ID_BUTTON_LOAD_FILE = 32009,
-    ID_BUTTON_LOAD_FILE_FROM_MDF = 32013
-  };
-    ////@end WizardPage2 member variables
+    wxHtmlWindow* m_hexFileInfo;
+    wxStaticText* m_selectedFile;
+    wxButton* m_ctrlBtnLoadFile;
+    wxButton* m_ctrlBtnLoadFileFromMDF;
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_LOAD_FILE = 32007,
+        ID_HTMLWINDOW4 = 32008,
+        ID_BUTTON_LOAD_FILE = 32009,
+        ID_BUTTON_LOAD_FILE_FROM_MDF = 32013
+    };
+
 };
 
-/*!
-* WizardPage3 class declaration
-*/
+///////////////////////////////////////////////////////////////////////////////
+// WizardPage3 class declaration
+//
 
-class WizardPage3: public wxWizardPageSimple
-{    
+class WizardPage3 : public wxWizardPageSimple
+{
     DECLARE_DYNAMIC_CLASS( WizardPage3 )
     DECLARE_EVENT_TABLE()
 
@@ -379,50 +352,43 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    ////@begin WizardPage3 event handler declarations
 
-  /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_BOOTLOADER_ALGORITHM
-  void OnWizardpage2PageChanging( wxWizardEvent& event );
+    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_BOOTLOADER_ALGORITHM
+    void OnWizardpage2PageChanging( wxWizardEvent& event );
 
-  /// wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_CHOICE2
-  void OnBootLoaderAlgorithmSelected( wxCommandEvent& event );
+    /// wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_CHOICE2
+    void OnBootLoaderAlgorithmSelected( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ALGORITHM_FROM_MDF
-  void OnButtonAlgorithmFromMdfClick( wxCommandEvent& event );
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ALGORITHM_FROM_MDF
+    void OnButtonAlgorithmFromMdfClick( wxCommandEvent& event );
 
-    ////@end WizardPage3 event handler declarations
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-    ////@begin WizardPage3 member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-    ////@end WizardPage3 member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    ////@begin WizardPage3 member variables
-  wxChoice* m_nBootAlgorithm;
-  /// Control identifiers
-  enum {
-    ID_WIZARDPAGE_BOOTLOADER_ALGORITHM = 32004,
-    ID_CHOICE2 = 32005,
-    ID_BUTTON_ALGORITHM_FROM_MDF = 32006
-  };
-    ////@end WizardPage3 member variables
+    wxChoice* m_nBootAlgorithm;
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_BOOTLOADER_ALGORITHM = 32004,
+        ID_CHOICE2 = 32005,
+        ID_BUTTON_ALGORITHM_FROM_MDF = 32006
+    };
+
 };
 
 
 
-/*!
-* WizardPage5 class declaration
-*/
+///////////////////////////////////////////////////////////////////////////////
+// WizardPage5 class declaration
+//
 
-class WizardPage5: public wxWizardPageSimple
-{    
+class WizardPage5 : public wxWizardPageSimple
+{
     DECLARE_DYNAMIC_CLASS( WizardPage5 )
     DECLARE_EVENT_TABLE()
 
@@ -444,39 +410,31 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    ////@begin WizardPage5 event handler declarations
+    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_PRE_BOOTLOAD
+    void OnWizardpagePreBootloadPageChanging( wxWizardEvent& event );
 
-  /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_PRE_BOOTLOAD
-  void OnWizardpagePreBootloadPageChanging( wxWizardEvent& event );
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-    ////@end WizardPage5 event handler declarations
-
-    ////@begin WizardPage5 member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-    ////@end WizardPage5 member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    ////@begin WizardPage5 member variables
-  /// Control identifiers
-  enum {
-    ID_WIZARDPAGE_PRE_BOOTLOAD = 32010
-  };
-    ////@end WizardPage5 member variables
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_PRE_BOOTLOAD = 32010
+    };
+
 };
 
-/*!
-* WizardPage6 class declaration
-*/
+///////////////////////////////////////////////////////////////////////////////
+// WizardPage6 class declaration
+//
 
-class WizardPage6: public wxWizardPageSimple
-{    
+class WizardPage6 : public wxWizardPageSimple
+{
     DECLARE_DYNAMIC_CLASS( WizardPage6 )
     DECLARE_EVENT_TABLE()
 
@@ -498,38 +456,30 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    ////@begin WizardPage6 event handler declarations
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-    ////@end WizardPage6 event handler declarations
-
-    ////@begin WizardPage6 member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-    ////@end WizardPage6 member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    ////@begin WizardPage6 member variables
-  wxComboBox* m_comboNodeID;
-  /// Control identifiers
-  enum {
-    ID_WIZARDPAGE_NICKNAME_SELECTION = 32011,
-    ID_COMBOBOX_NODEID = 19037
-  };
-    ////@end WizardPage6 member variables
+    wxComboBox* m_comboNodeID;
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_NICKNAME_SELECTION = 32011,
+        ID_COMBOBOX_NODEID = 19037
+    };
+
 };
 
-/*!
-* WizardPage7 class declaration
-*/
+///////////////////////////////////////////////////////////////////////////////
+// WizardPage7 class declaration
+//
 
-class WizardPage7: public wxWizardPageSimple
-{    
+class WizardPage7 : public wxWizardPageSimple
+{
     DECLARE_DYNAMIC_CLASS( WizardPage7 )
     DECLARE_EVENT_TABLE()
 
@@ -551,32 +501,24 @@ public:
     /// Creates the controls and sizers
     void CreateControls();
 
-    ////@begin WizardPage7 event handler declarations
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON21
+    void OnButtonProgramClick( wxCommandEvent& event );
 
-  /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON21
-  void OnButtonProgramClick( wxCommandEvent& event );
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
 
-    ////@end WizardPage7 event handler declarations
-
-    ////@begin WizardPage7 member function declarations
-
-  /// Retrieves bitmap resources
-  wxBitmap GetBitmapResource( const wxString& name );
-
-  /// Retrieves icon resources
-  wxIcon GetIconResource( const wxString& name );
-    ////@end WizardPage7 member function declarations
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
 
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    ////@begin WizardPage7 member variables
-  /// Control identifiers
-  enum {
-    ID_WIZARDPAGE_BOOTLOAD = 32012,
-    ID_BUTTON21 = 32015
-  };
-    ////@end WizardPage7 member variables
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_BOOTLOAD = 32012,
+        ID_BUTTON21 = 32015
+    };
+
 };
 
 #endif
