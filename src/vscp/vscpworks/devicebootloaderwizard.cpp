@@ -54,18 +54,12 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
-////@end includes
-
 #include "vscpworks.h"
 #include "devicebootloaderwizard.h"
+#include "devicebootloaderwizard_images.h"
 #include "dlgnewvscpsession.h"
 #include "bootdevice_vscp.h"
 #include "bootdevice_pic1.h"
-
-
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,7 +103,12 @@ bool DeviceBootloaderwizard::Create( wxWindow* parent, wxWindowID id, const wxPo
 
     SetExtraStyle( wxWS_EX_BLOCK_EVENTS | wxWIZARD_EX_HELPBUTTON );
     wxBitmap wizardBitmap( GetBitmapResource( wxT( "vscp_logo.jpg" ) ) );
-    wxWizard::Create( parent, id, _( "VSCP  Bootloader Wizard" ), wizardBitmap, pos, wxDEFAULT_DIALOG_STYLE | wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX );
+    wxWizard::Create( parent, 
+                        id, 
+                        _( "VSCP  Bootloader Wizard" ), 
+                        wizardBitmap, 
+                        pos, 
+                        wxDEFAULT_DIALOG_STYLE | wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX );
 
     CreateControls();
 
@@ -159,31 +158,31 @@ void DeviceBootloaderwizard::CreateControls()
 {
     DeviceBootloaderwizard* itemWizard1 = this;
 
-    WizardPage* itemWizardPageSimple2 = new WizardPage;
+    WizardPageStart* itemWizardPageSimple2 = new WizardPageStart;
     itemWizardPageSimple2->Create( itemWizard1 );
     itemWizard1->GetPageAreaSizer()->Add( itemWizardPageSimple2 );
 
-    m_pgSelecInterface = new WizardPage1;
+    m_pgSelecInterface = new WizardPageSelecInterface;
     m_pgSelecInterface->Create( itemWizard1 );
     itemWizard1->GetPageAreaSizer()->Add( m_pgSelecInterface );
 
-    m_pgSelecDeviceId = new WizardPage6;
+    m_pgSelecDeviceId = new WizardPageSetGUID;
     m_pgSelecDeviceId->Create( itemWizard1 );
     itemWizard1->GetPageAreaSizer()->Add( m_pgSelecDeviceId );
 
-    m_pgSelecAlgorithm = new WizardPage3;
+    m_pgSelecAlgorithm = new WizardPageSelectBootloader;
     m_pgSelecAlgorithm->Create( itemWizard1 );
     itemWizard1->GetPageAreaSizer()->Add( m_pgSelecAlgorithm );
 
-    m_pgLoadFile = new WizardPage2;
+    m_pgLoadFile = new WizardPageSelectFirmware;
     m_pgLoadFile->Create( itemWizard1 );
     itemWizard1->GetPageAreaSizer()->Add( m_pgLoadFile );
 
-    WizardPage5* itemWizardPageSimple40 = new WizardPage5;
+    WizardPageBootload* itemWizardPageSimple40 = new WizardPageBootload;
     itemWizardPageSimple40->Create( itemWizard1 );
     itemWizard1->GetPageAreaSizer()->Add( itemWizardPageSimple40 );
 
-    WizardPage7* itemWizardPageSimple47 = new WizardPage7;
+    WizardPageProgramDevice* itemWizardPageSimple47 = new WizardPageProgramDevice;
     itemWizardPageSimple47->Create( itemWizard1 );
     itemWizard1->GetPageAreaSizer()->Add( itemWizardPageSimple47 );
 
@@ -221,8 +220,7 @@ bool DeviceBootloaderwizard::Run()
     //m_bootCtrlPic1.loadIntelHexFile( _("C:\\development\\m2m\\firmware\\pic\\kelvin\\smart\\project\\kelvin_smart2_release_258_reloc.hex") );
 
     wxWindowList::compatibility_iterator node = GetChildren().GetFirst();
-    while ( node )
-    {
+    while ( node ) {
         wxWizardPage* startPage = wxDynamicCast( node->GetData(), wxWizardPage );
         if ( startPage ) return RunWizard( startPage );
         node = node->GetNext();
@@ -269,17 +267,17 @@ wxIcon DeviceBootloaderwizard::GetIconResource( const wxString& name )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage type definition
+// WizardPageStart type definition
 //
 
-IMPLEMENT_DYNAMIC_CLASS( WizardPage, wxWizardPageSimple )
+IMPLEMENT_DYNAMIC_CLASS( WizardPageStart, wxWizardPageSimple )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WizardPage event table definition
 //
 
-BEGIN_EVENT_TABLE( WizardPage, wxWizardPageSimple )
+BEGIN_EVENT_TABLE( WizardPageStart, wxWizardPageSimple )
 
 END_EVENT_TABLE()
 
@@ -288,12 +286,12 @@ END_EVENT_TABLE()
 // WizardPage constructors
 //
 
-WizardPage::WizardPage()
+WizardPageStart::WizardPageStart()
 {
     Init();
 }
 
-WizardPage::WizardPage( wxWizard* parent )
+WizardPageStart::WizardPageStart( wxWizard* parent )
 {
     Init();
     Create( parent );
@@ -301,10 +299,10 @@ WizardPage::WizardPage( wxWizard* parent )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage creator
+// WizardPageStart creator
 //
 
-bool WizardPage::Create( wxWizard* parent )
+bool WizardPageStart::Create( wxWizard* parent )
 {
     wxBitmap wizardBitmap( wxNullBitmap );
     wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
@@ -322,7 +320,7 @@ bool WizardPage::Create( wxWizard* parent )
 // WizardPage destructor
 //
 
-WizardPage::~WizardPage()
+WizardPageStart::~WizardPageStart()
 {
 
 }
@@ -332,7 +330,7 @@ WizardPage::~WizardPage()
 // Member initialisation
 //
 
-void WizardPage::Init()
+void WizardPageStart::Init()
 {
 
 }
@@ -342,23 +340,37 @@ void WizardPage::Init()
 // Control creation for WizardPage
 //
 
-void WizardPage::CreateControls()
+void WizardPageStart::CreateControls()
 {
-    WizardPage* itemWizardPageSimple2 = this;
+    WizardPageStart* itemWizardPageSimple2 = this;
 
     wxBoxSizer* itemBoxSizer3 = new wxBoxSizer( wxVERTICAL );
     itemWizardPageSimple2->SetSizer( itemBoxSizer3 );
 
     wxStaticText* itemStaticText4 = new wxStaticText;
-    itemStaticText4->Create( itemWizardPageSimple2, wxID_STATIC, _( "VSCP Bootloader wizard will now walk you through \nthe steps needed to update the firmware of your \nremote device" ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText4->Create( itemWizardPageSimple2, 
+                                wxID_STATIC, 
+                                _( "VSCP Bootloader wizard will now walk you through \nthe steps needed to update the firmware of your \nremote device" ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
     itemBoxSizer3->Add( itemStaticText4, 0, wxALIGN_LEFT | wxALL, 5 );
 
     wxStaticText* itemStaticText5 = new wxStaticText;
-    itemStaticText5->Create( itemWizardPageSimple2, wxID_STATIC, _( "The node you need to update can be located on a VSCP bus \nconnected to a server on a remote location or be connected\nto an interface on your local computer. " ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText5->Create( itemWizardPageSimple2, 
+                                wxID_STATIC, 
+                                _( "The node you need to update can be located on a VSCP bus \nconnected to a server on a remote location or be connected\nto an interface on your local computer. " ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
     itemBoxSizer3->Add( itemStaticText5, 0, wxALIGN_LEFT | wxALL, 5 );
 
     wxStaticText* itemStaticText6 = new wxStaticText;
-    itemStaticText6->Create( itemWizardPageSimple2, wxID_STATIC, _( "Please don't turn of the power off the remote node \nuntil the firmware update process is completed." ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText6->Create( itemWizardPageSimple2, wxID_STATIC, 
+                                _( "Please don't turn of the power off the remote node \nuntil the firmware update process is completed." ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
     itemBoxSizer3->Add( itemStaticText6, 0, wxALIGN_LEFT | wxALL, 5 );
 
 }
@@ -368,7 +380,7 @@ void WizardPage::CreateControls()
 // Should we show tooltips?
 //
 
-bool WizardPage::ShowToolTips()
+bool WizardPageStart::ShowToolTips()
 {
     return true;
 }
@@ -377,7 +389,7 @@ bool WizardPage::ShowToolTips()
 // Get bitmap resources
 //
 
-wxBitmap WizardPage::GetBitmapResource( const wxString& name )
+wxBitmap WizardPageStart::GetBitmapResource( const wxString& name )
 {
     // Bitmap retrieval
     wxUnusedVar( name );
@@ -388,7 +400,7 @@ wxBitmap WizardPage::GetBitmapResource( const wxString& name )
 // Get icon resources
 //
 
-wxIcon WizardPage::GetIconResource( const wxString& name )
+wxIcon WizardPageStart::GetIconResource( const wxString& name )
 {
     // Icon retrieval
     wxUnusedVar( name );
@@ -396,35 +408,41 @@ wxIcon WizardPage::GetIconResource( const wxString& name )
 }
 
 
+
+//*******************************************************************************************************************
+//*******************************************************************************************************************
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage1 type definition
+// WizardPageSelecInterface type definition
 //
 
-IMPLEMENT_DYNAMIC_CLASS( WizardPage1, wxWizardPageSimple )
+IMPLEMENT_DYNAMIC_CLASS( WizardPageSelecInterface, wxWizardPageSimple )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage1 event table definition
+// WizardPageSelecInterface event table definition
 //
 
-BEGIN_EVENT_TABLE( WizardPage1, wxWizardPageSimple )
+BEGIN_EVENT_TABLE( WizardPageSelecInterface, wxWizardPageSimple )
 
-EVT_WIZARD_PAGE_CHANGING( -1, WizardPage1::OnWizardpageSelectInterfacePageChanging )
-EVT_BUTTON( ID_BUTTON20, WizardPage1::OnButtonSelectInterfaceClick )
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelecInterface::OnWizardpageSelectInterfacePageChanging )
+EVT_BUTTON( ID_BUTTON20, WizardPageSelecInterface::OnButtonSelectInterfaceClick )
 
 END_EVENT_TABLE()
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage1 constructors
+// WizardPageSelecInterface constructors
 //
 
-WizardPage1::WizardPage1()
+WizardPageSelecInterface::WizardPageSelecInterface()
 {
     Init();
 }
 
-WizardPage1::WizardPage1( wxWizard* parent )
+WizardPageSelecInterface::WizardPageSelecInterface( wxWizard* parent )
 {
     Init();
     Create( parent );
@@ -432,10 +450,10 @@ WizardPage1::WizardPage1( wxWizard* parent )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage1 creator
+// WizardPageSelecInterface creator
 //
 
-bool WizardPage1::Create( wxWizard* parent )
+bool WizardPageSelecInterface::Create( wxWizard* parent )
 {
     wxBitmap wizardBitmap( wxNullBitmap );
     wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
@@ -450,10 +468,10 @@ bool WizardPage1::Create( wxWizard* parent )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage1 destructor
+// WizardPageSelecInterface destructor
 //
 
-WizardPage1::~WizardPage1()
+WizardPageSelecInterface::~WizardPageSelecInterface()
 {
     
 }
@@ -463,7 +481,7 @@ WizardPage1::~WizardPage1()
 // Member initialisation
 //
 
-void WizardPage1::Init()
+void WizardPageSelecInterface::Init()
 {
     m_labelInterfaceSelected = NULL;
 }
@@ -473,26 +491,42 @@ void WizardPage1::Init()
 // Control creation for WizardPage1
 //
 
-void WizardPage1::CreateControls()
+void WizardPageSelecInterface::CreateControls()
 {
-    WizardPage1* itemWizardPageSimple7 = this;
+    WizardPageSelecInterface* itemWizardPageSimple7 = this;
 
     wxBoxSizer* itemBoxSizer8 = new wxBoxSizer( wxVERTICAL );
     itemWizardPageSimple7->SetSizer( itemBoxSizer8 );
 
     wxStaticText* itemStaticText9 = new wxStaticText;
-    itemStaticText9->Create( itemWizardPageSimple7, wxID_STATIC, _( "Select the interface you want to use " ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText9->Create( itemWizardPageSimple7, 
+                                wxID_STATIC, 
+                                _( "Select the interface you want to use " ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
     itemBoxSizer8->Add( itemStaticText9, 0, wxALIGN_LEFT | wxALL, 5 );
 
     wxStaticText* itemStaticText10 = new wxStaticText;
-    itemStaticText10->Create( itemWizardPageSimple7, wxID_STATIC, _( "If you want to use a remote VSCP server connected \nnode you must  select interface and node on that \nserver as well. " ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText10->Create( itemWizardPageSimple7, 
+                                wxID_STATIC, 
+                                _( "If you want to use a remote VSCP server connected \nnode you must  select interface and node on that \nserver as well. " ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
     itemBoxSizer8->Add( itemStaticText10, 0, wxALIGN_LEFT | wxALL, 5 );
 
     itemBoxSizer8->Add( 5, 80, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     m_labelInterfaceSelected = new wxStaticText;
-    m_labelInterfaceSelected->Create( itemWizardPageSimple7, wxID_STATIC, _( "no interface selected" ), wxDefaultPosition, wxDefaultSize, 0 );
-    m_labelInterfaceSelected->SetFont( wxFont( 8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT( "Arial Rounded MT Bold" ) ) );
+    m_labelInterfaceSelected->Create( itemWizardPageSimple7, 
+                                        wxID_STATIC, 
+                                        _( "no interface selected" ), 
+                                        wxDefaultPosition, 
+                                        wxDefaultSize, 
+                                        0 );
+    m_labelInterfaceSelected->SetFont(
+        wxFont( 8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT( "Arial Rounded MT Bold" ) ) );
     itemBoxSizer8->Add( m_labelInterfaceSelected, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     wxButton* itemButton13 = new wxButton;
@@ -505,7 +539,7 @@ void WizardPage1::CreateControls()
 // Should we show tooltips?
 //
 
-bool WizardPage1::ShowToolTips()
+bool WizardPageSelecInterface::ShowToolTips()
 {
     return true;
 }
@@ -514,7 +548,7 @@ bool WizardPage1::ShowToolTips()
 // Get bitmap resources
 //
 
-wxBitmap WizardPage1::GetBitmapResource( const wxString& name )
+wxBitmap WizardPageSelecInterface::GetBitmapResource( const wxString& name )
 {
     // Bitmap retrieval
     wxUnusedVar( name );
@@ -525,745 +559,35 @@ wxBitmap WizardPage1::GetBitmapResource( const wxString& name )
 // Get icon resources
 //
 
-wxIcon WizardPage1::GetIconResource( const wxString& name )
+wxIcon WizardPageSelecInterface::GetIconResource( const wxString& name )
 {
     // Icon retrieval
     wxUnusedVar( name );
     return wxNullIcon;
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage2 type definition
+// WizardPageSelecInterface
 //
 
-IMPLEMENT_DYNAMIC_CLASS( WizardPage2, wxWizardPageSimple )
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage2 event table definition
-//
-
-BEGIN_EVENT_TABLE( WizardPage2, wxWizardPageSimple )
-
-EVT_WIZARD_PAGE_CHANGING( -1, WizardPage2::OnWizardpage3PageChanging )
-EVT_BUTTON( ID_BUTTON_LOAD_FILE, WizardPage2::OnButtonChooseFileClick )
-EVT_BUTTON( ID_BUTTON_LOAD_FILE_FROM_MDF, WizardPage2::OnButtonLoadFileFromMdfClick )
-
-END_EVENT_TABLE()
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage2 constructors
-//
-
-WizardPage2::WizardPage2()
+void WizardPageSelecInterface::OnWizardpageSelectInterfacePageChanging( wxWizardEvent& event )
 {
-    Init();
-}
-
-WizardPage2::WizardPage2( wxWizard* parent )
-{
-    Init();
-    Create( parent );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage2 creator
-//
-
-bool WizardPage2::Create( wxWizard* parent )
-{
-    wxBitmap wizardBitmap( wxNullBitmap );
-    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
-
-    CreateControls();
-    if ( GetSizer() ) {
-        GetSizer()->Fit( this );
+    // An interface must have been selected to be allowed to continue
+    if ( event.GetDirection() ) {
+        if ( !( ( DeviceBootloaderwizard * )GetParent() )->m_bInterfaceSelected ) {
+            wxMessageBox( _( "An interface must be selected before you can continue!" ) );
+            event.Veto();
+        }
     }
-    return true;
+    //event.Skip(); 
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage2 destructor
+// OnButtonSelectInterfaceClick
 //
 
-WizardPage2::~WizardPage2()
-{
-    
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Member initialisation
-//
-
-void WizardPage2::Init()
-{
-    m_hexFileInfo = NULL;
-    m_selectedFile = NULL;
-    m_ctrlBtnLoadFile = NULL;
-    m_ctrlBtnLoadFileFromMDF = NULL;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for WizardPage2
-//
-
-void WizardPage2::CreateControls()
-{
-    WizardPage2* itemWizardPageSimple30 = this;
-
-    wxBoxSizer* itemBoxSizer31 = new wxBoxSizer( wxVERTICAL );
-    itemWizardPageSimple30->SetSizer( itemBoxSizer31 );
-
-    wxStaticText* itemStaticText32 = new wxStaticText;
-    itemStaticText32->Create( itemWizardPageSimple30, wxID_STATIC, _( "Select firmware hex file to use " ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer31->Add( itemStaticText32, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    wxStaticText* itemStaticText33 = new wxStaticText;
-    itemStaticText33->Create( itemWizardPageSimple30, wxID_STATIC, _( "File content" ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemStaticText33->SetFont( wxFont( 8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT( "Tahoma" ) ) );
-    itemBoxSizer31->Add( itemStaticText33, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    m_hexFileInfo = new wxHtmlWindow;
-    m_hexFileInfo->Create( itemWizardPageSimple30, ID_HTMLWINDOW4, wxDefaultPosition, wxSize( 300, 150 ), wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
-    itemBoxSizer31->Add( m_hexFileInfo, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    itemBoxSizer31->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    m_selectedFile = new wxStaticText;
-    m_selectedFile->Create( itemWizardPageSimple30, wxID_STATIC, _( "no file selected yet" ), wxDefaultPosition, wxSize( 250, -1 ), 0 );
-    m_selectedFile->SetFont( wxFont( 8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT( "Arial Rounded MT Bold" ) ) );
-    itemBoxSizer31->Add( m_selectedFile, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxBoxSizer* itemBoxSizer37 = new wxBoxSizer( wxHORIZONTAL );
-    itemBoxSizer31->Add( itemBoxSizer37, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    m_ctrlBtnLoadFile = new wxButton;
-    m_ctrlBtnLoadFile->Create( itemWizardPageSimple30, ID_BUTTON_LOAD_FILE, _( "Load local file..." ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer37->Add( m_ctrlBtnLoadFile, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-
-    m_ctrlBtnLoadFileFromMDF = new wxButton;
-    m_ctrlBtnLoadFileFromMDF->Create( itemWizardPageSimple30, ID_BUTTON_LOAD_FILE_FROM_MDF, _( "Load remote file from MDF..." ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer37->Add( m_ctrlBtnLoadFileFromMDF, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Should we show tooltips?
-//
-
-bool WizardPage2::ShowToolTips()
-{
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get bitmap resources
-//
-
-wxBitmap WizardPage2::GetBitmapResource( const wxString& name )
-{
-    // Bitmap retrieval
-    wxUnusedVar( name );
-    return wxNullBitmap;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get icon resources
-//
-
-wxIcon WizardPage2::GetIconResource( const wxString& name )
-{
-    // Icon retrieval
-    wxUnusedVar( name );
-    return wxNullIcon;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage3 type definition
-//
-
-IMPLEMENT_DYNAMIC_CLASS( WizardPage3, wxWizardPageSimple )
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage3 event table definition
-//
-
-BEGIN_EVENT_TABLE( WizardPage3, wxWizardPageSimple )
-
-EVT_WIZARD_PAGE_CHANGING( -1, WizardPage3::OnWizardpage2PageChanging )
-EVT_CHOICE( ID_CHOICE2, WizardPage3::OnBootLoaderAlgorithmSelected )
-EVT_BUTTON( ID_BUTTON_ALGORITHM_FROM_MDF, WizardPage3::OnButtonAlgorithmFromMdfClick )
-
-END_EVENT_TABLE()
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage3 constructors
-//
-
-WizardPage3::WizardPage3()
-{
-    Init();
-}
-
-WizardPage3::WizardPage3( wxWizard* parent )
-{
-    Init();
-    Create( parent );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage3 creator
-//
-
-bool WizardPage3::Create( wxWizard* parent )
-{
-    wxBitmap wizardBitmap( wxNullBitmap );
-    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
-
-    CreateControls();
-    if ( GetSizer() ) {
-        GetSizer()->Fit( this );
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage3 destructor
-//
-
-WizardPage3::~WizardPage3()
-{
-    
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Member initialisation
-//
-
-void WizardPage3::Init()
-{
-    m_nBootAlgorithm = NULL;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for WizardPage3
-//
-
-void WizardPage3::CreateControls()
-{
-    WizardPage3* itemWizardPageSimple21 = this;
-
-    wxBoxSizer* itemBoxSizer22 = new wxBoxSizer( wxVERTICAL );
-    itemWizardPageSimple21->SetSizer( itemBoxSizer22 );
-
-    wxStaticText* itemStaticText23 = new wxStaticText;
-    itemStaticText23->Create( itemWizardPageSimple21, wxID_STATIC, _( "Select the bootloader algorithm to use " ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer22->Add( itemStaticText23, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    wxStaticText* itemStaticText24 = new wxStaticText;
-    itemStaticText24->Create( itemWizardPageSimple21, wxID_STATIC, _( "If you load bootloader info from the MDF file the algorithm will \nbe set for you." ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer22->Add( itemStaticText24, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    itemBoxSizer22->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxStaticText* itemStaticText26 = new wxStaticText;
-    itemStaticText26->Create( itemWizardPageSimple21, wxID_STATIC, _( "Boot algorithm" ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer22->Add( itemStaticText26, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxArrayString m_nBootAlgorithmStrings;
-    m_nBootAlgorithmStrings.Add( _( "VSCP standard algorithm" ) );
-    m_nBootAlgorithmStrings.Add( _( "Microchip pic algorith 1" ) );
-    m_nBootAlgorithm = new wxChoice;
-    m_nBootAlgorithm->Create( itemWizardPageSimple21, ID_CHOICE2, wxDefaultPosition, wxDefaultSize, m_nBootAlgorithmStrings, 0 );
-    m_nBootAlgorithm->SetStringSelection( _( "VSCP standard algorithm" ) );
-    itemBoxSizer22->Add( m_nBootAlgorithm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    itemBoxSizer22->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxButton* itemButton29 = new wxButton;
-    itemButton29->Create( itemWizardPageSimple21, ID_BUTTON_ALGORITHM_FROM_MDF, _( "Select algorithm from MDF..." ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer22->Add( itemButton29, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Should we show tooltips?
-//
-
-bool WizardPage3::ShowToolTips()
-{
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get bitmap resources
-//
-
-wxBitmap WizardPage3::GetBitmapResource( const wxString& name )
-{
-    // Bitmap retrieval
-    wxUnusedVar( name );
-    return wxNullBitmap;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get icon resources
-//
-
-wxIcon WizardPage3::GetIconResource( const wxString& name )
-{
-    // Icon retrieval
-    wxUnusedVar( name );
-    return wxNullIcon;
-}
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage5 type definition
-//
-
-IMPLEMENT_DYNAMIC_CLASS( WizardPage5, wxWizardPageSimple )
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage5 event table definition
-//
-
-BEGIN_EVENT_TABLE( WizardPage5, wxWizardPageSimple )
-
-EVT_WIZARD_PAGE_CHANGING( -1, WizardPage5::OnWizardpagePreBootloadPageChanging )
-
-END_EVENT_TABLE()
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage5 constructors
-//
-
-WizardPage5::WizardPage5()
-{
-    Init();
-}
-
-WizardPage5::WizardPage5( wxWizard* parent )
-{
-    Init();
-    Create( parent );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage5 creator
-//
-
-bool WizardPage5::Create( wxWizard* parent )
-{
-    wxBitmap wizardBitmap( wxNullBitmap );
-    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
-
-    CreateControls();
-    if ( GetSizer() ) {
-        GetSizer()->Fit( this );
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage5 destructor
-//
-
-WizardPage5::~WizardPage5()
-{
-    
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Member initialisation
-//
-
-void WizardPage5::Init()
-{
-    
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for WizardPage5
-//
-
-void WizardPage5::CreateControls()
-{
-    WizardPage5* itemWizardPageSimple40 = this;
-
-    wxBoxSizer* itemBoxSizer41 = new wxBoxSizer( wxVERTICAL );
-    itemWizardPageSimple40->SetSizer( itemBoxSizer41 );
-
-    wxStaticText* itemStaticText42 = new wxStaticText;
-    itemStaticText42->Create( itemWizardPageSimple40, wxID_STATIC, _( "Ready for the bootloader process" ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer41->Add( itemStaticText42, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    wxStaticText* itemStaticText43 = new wxStaticText;
-    itemStaticText43->Create( itemWizardPageSimple40, wxID_STATIC, _( "When you click on the next button you will go to the bootloader page\nthat will start loading the firmware file you have selected into the \ndevice of your choice. It is important not to abandon this process \nbefore it has finished.\n\nIf you don't want to continue with the firmware load process \nclick the cancel button." ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer41->Add( itemStaticText43, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    itemBoxSizer41->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    itemBoxSizer41->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxStaticText* itemStaticText46 = new wxStaticText;
-    itemStaticText46->Create( itemWizardPageSimple40, wxID_STATIC, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer41->Add( itemStaticText46, 0, wxALIGN_LEFT | wxALL, 5 );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Should we show tooltips?
-//
-
-bool WizardPage5::ShowToolTips()
-{
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get bitmap resources
-//
-
-wxBitmap WizardPage5::GetBitmapResource( const wxString& name )
-{
-    // Bitmap retrieval
-    wxUnusedVar( name );
-    return wxNullBitmap;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get icon resources
-//
-
-wxIcon WizardPage5::GetIconResource( const wxString& name )
-{
-    // Icon retrieval
-    wxUnusedVar( name );
-    return wxNullIcon;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage6 type definition
-//
-
-IMPLEMENT_DYNAMIC_CLASS( WizardPage6, wxWizardPageSimple )
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage6 event table definition
-//
-
-BEGIN_EVENT_TABLE( WizardPage6, wxWizardPageSimple )
-
-END_EVENT_TABLE()
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage6 constructors
-//
-
-WizardPage6::WizardPage6()
-{
-    Init();
-}
-
-WizardPage6::WizardPage6( wxWizard* parent )
-{
-    Init();
-    Create( parent );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage6 creator
-//
-
-bool WizardPage6::Create( wxWizard* parent )
-{
-    wxBitmap wizardBitmap( wxNullBitmap );
-    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
-
-    CreateControls();
-    if ( GetSizer() ) {
-        GetSizer()->Fit( this );
-    }
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage6 destructor
-//
-
-WizardPage6::~WizardPage6()
-{
-    
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Member initialisation
-//
-
-void WizardPage6::Init()
-{
-    m_comboNodeID = NULL;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for WizardPage6
-//
-
-void WizardPage6::CreateControls()
-{
-    WizardPage6* itemWizardPageSimple14 = this;
-
-    wxBoxSizer* itemBoxSizer15 = new wxBoxSizer( wxVERTICAL );
-    itemWizardPageSimple14->SetSizer( itemBoxSizer15 );
-
-    wxStaticText* itemStaticText16 = new wxStaticText;
-    itemStaticText16->Create( itemWizardPageSimple14, 
-                                wxID_STATIC, 
-                                _( "Select device to bootload" ), 
-                                wxDefaultPosition, 
-                                wxDefaultSize, 
-                                0 );
-    itemBoxSizer15->Add( itemStaticText16, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    wxStaticText* itemStaticText17 = new wxStaticText;
-    itemStaticText17->Create( itemWizardPageSimple14, 
-                                wxID_STATIC, 
-                                _( "Enter the nickname or the full GUID for the device you want to work with" ), 
-                                wxDefaultPosition, 
-                                wxDefaultSize, 
-                                0 );
-    itemBoxSizer15->Add( itemStaticText17, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    itemBoxSizer15->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxArrayString m_comboNodeIDStrings;
-    m_comboNodeID = new wxComboBox;
-    m_comboNodeID->Create( itemWizardPageSimple14, 
-                            ID_COMBOBOX_NODEID, 
-                            wxEmptyString, 
-                            wxDefaultPosition, 
-                            wxSize( 370, -1 ), 
-                            m_comboNodeIDStrings, 
-                            wxCB_DROPDOWN );
-    if ( WizardPage6::ShowToolTips() )
-        m_comboNodeID->SetToolTip( _( "Set nickname or GUID for node here" ) );
-    m_comboNodeID->SetBackgroundColour( wxColour( 255, 255, 210 ) );
-    itemBoxSizer15->Add( m_comboNodeID, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    itemBoxSizer15->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    ////@end WizardPage6 content construction
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Should we show tooltips?
-//
-
-bool WizardPage6::ShowToolTips()
-{
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get bitmap resources
-//
-
-wxBitmap WizardPage6::GetBitmapResource( const wxString& name )
-{
-    // Bitmap retrieval
-    wxUnusedVar( name );
-    return wxNullBitmap;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get icon resources
-//
-
-wxIcon WizardPage6::GetIconResource( const wxString& name )
-{
-    // Icon retrieval
-    wxUnusedVar( name );
-    return wxNullIcon;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage7 type definition
-//
-
-IMPLEMENT_DYNAMIC_CLASS( WizardPage7, wxWizardPageSimple )
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage7 event table definition
-//
-
-BEGIN_EVENT_TABLE( WizardPage7, wxWizardPageSimple )
-
-EVT_BUTTON( ID_BUTTON21, WizardPage7::OnButtonProgramClick )
-
-END_EVENT_TABLE()
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage7 constructors
-//
-
-WizardPage7::WizardPage7()
-{
-    Init();
-}
-
-WizardPage7::WizardPage7( wxWizard* parent )
-{
-    Init();
-    Create( parent );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage7 creator
-//
-
-bool WizardPage7::Create( wxWizard* parent )
-{
-    wxBitmap wizardBitmap( wxNullBitmap );
-    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
-
-    CreateControls();
-    if ( GetSizer() ) {
-        GetSizer()->Fit( this );
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPage7 destructor
-//
-
-WizardPage7::~WizardPage7()
-{
-    
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Member initialisation
-//
-
-void WizardPage7::Init()
-{
-    
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for WizardPage7
-//
-
-void WizardPage7::CreateControls()
-{
-    WizardPage7* itemWizardPageSimple47 = this;
-
-    wxBoxSizer* itemBoxSizer48 = new wxBoxSizer( wxVERTICAL );
-    itemWizardPageSimple47->SetSizer( itemBoxSizer48 );
-
-    wxStaticText* itemStaticText49 = new wxStaticText;
-    itemStaticText49->Create( itemWizardPageSimple47, wxID_STATIC, _( "Firmware update" ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer48->Add( itemStaticText49, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    wxStaticText* itemStaticText50 = new wxStaticText;
-    itemStaticText50->Create( itemWizardPageSimple47, wxID_STATIC, _( "Press the program device button to load firmware to the selected device." ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer48->Add( itemStaticText50, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxButton* itemButton54 = new wxButton;
-    itemButton54->Create( itemWizardPageSimple47, ID_BUTTON21, _( "Program selected device" ), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer48->Add( itemButton54, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxStaticText* itemStaticText56 = new wxStaticText;
-    itemStaticText56->Create( itemWizardPageSimple47, wxID_STATIC, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer48->Add( itemStaticText56, 0, wxALIGN_LEFT | wxALL, 5 );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Should we show tooltips?
-//
-
-bool WizardPage7::ShowToolTips()
-{
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get bitmap resources
-//
-
-wxBitmap WizardPage7::GetBitmapResource( const wxString& name )
-{
-    // Bitmap retrieval
-    wxUnusedVar( name );
-    return wxNullBitmap;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get icon resources
-//
-
-wxIcon WizardPage7::GetIconResource( const wxString& name )
-{
-    // Icon retrieval
-    wxUnusedVar( name );
-    return wxNullIcon;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON20
-//
-
-void WizardPage1::OnButtonSelectInterfaceClick( wxCommandEvent& event )
+void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& event )
 {
     int selidx = -1;
     dlgNewVSCPSession dlg( this );
@@ -1383,11 +707,195 @@ void WizardPage1::OnButtonSelectInterfaceClick( wxCommandEvent& event )
 }
 
 
+
+//*******************************************************************************************************************
+//*******************************************************************************************************************
+
+
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_CHOOSE_FILE
+// WizardPageSelectFirmware type definition
 //
 
-void WizardPage2::OnButtonChooseFileClick( wxCommandEvent& event )
+IMPLEMENT_DYNAMIC_CLASS( WizardPageSelectFirmware, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage2 event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageSelectFirmware, wxWizardPageSimple )
+
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelectFirmware::OnWizardpage3PageChanging )
+EVT_BUTTON( ID_BUTTON_LOAD_FILE, WizardPageSelectFirmware::OnButtonChooseFileClick )
+EVT_BUTTON( ID_BUTTON_LOAD_FILE_FROM_MDF, WizardPageSelectFirmware::OnButtonLoadFileFromMdfClick )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage2 constructors
+//
+
+WizardPageSelectFirmware::WizardPageSelectFirmware()
+{
+    Init();
+}
+
+WizardPageSelectFirmware::WizardPageSelectFirmware( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectFirmware creator
+//
+
+bool WizardPageSelectFirmware::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectFirmware destructor
+//
+
+WizardPageSelectFirmware::~WizardPageSelectFirmware()
+{
+    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageSelectFirmware::Init()
+{
+    m_hexFileInfo = NULL;
+    m_selectedFile = NULL;
+    m_ctrlBtnLoadFile = NULL;
+    m_ctrlBtnLoadFileFromMDF = NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPage2
+//
+
+void WizardPageSelectFirmware::CreateControls()
+{
+    WizardPageSelectFirmware* itemWizardPageSimple30 = this;
+
+    wxBoxSizer* itemBoxSizer31 = new wxBoxSizer( wxVERTICAL );
+    itemWizardPageSimple30->SetSizer( itemBoxSizer31 );
+
+    wxStaticText* itemStaticText32 = new wxStaticText;
+    itemStaticText32->Create( itemWizardPageSimple30, 
+                                wxID_STATIC, 
+                                _( "Select firmware hex file to use " ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer31->Add( itemStaticText32, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticText33 = new wxStaticText;
+    itemStaticText33->Create( itemWizardPageSimple30, wxID_STATIC, _( "File content" ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText33->SetFont( wxFont( 8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_BOLD, false, wxT( "Tahoma" ) ) );
+    itemBoxSizer31->Add( itemStaticText33, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    m_hexFileInfo = new wxHtmlWindow;
+    m_hexFileInfo->Create( itemWizardPageSimple30, 
+                            ID_HTMLWINDOW4, 
+                            wxDefaultPosition, 
+                            wxSize( 300, 150 ), 
+                            wxHW_SCROLLBAR_AUTO | wxSUNKEN_BORDER | wxHSCROLL | wxVSCROLL );
+    itemBoxSizer31->Add( m_hexFileInfo, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    itemBoxSizer31->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    m_selectedFile = new wxStaticText;
+    m_selectedFile->Create( itemWizardPageSimple30, 
+                                wxID_STATIC, 
+                                _( "no file selected yet" ), 
+                                wxDefaultPosition, 
+                                wxSize( 250, -1 ), 
+                                0 );
+    m_selectedFile->SetFont( 
+        wxFont( 8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxT( "Arial Rounded MT Bold" ) ) );
+    itemBoxSizer31->Add( m_selectedFile, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxBoxSizer* itemBoxSizer37 = new wxBoxSizer( wxHORIZONTAL );
+    itemBoxSizer31->Add( itemBoxSizer37, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    m_ctrlBtnLoadFile = new wxButton;
+    m_ctrlBtnLoadFile->Create( itemWizardPageSimple30, 
+                                ID_BUTTON_LOAD_FILE, 
+                                _( "Load local file..." ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer37->Add( m_ctrlBtnLoadFile, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+
+    m_ctrlBtnLoadFileFromMDF = new wxButton;
+    m_ctrlBtnLoadFileFromMDF->Create( itemWizardPageSimple30, 
+                                        ID_BUTTON_LOAD_FILE_FROM_MDF, 
+                                        _( "Load remote file from MDF..." ), 
+                                        wxDefaultPosition, 
+                                        wxDefaultSize, 
+                                        0 );
+    itemBoxSizer37->Add( m_ctrlBtnLoadFileFromMDF, 0, wxALIGN_CENTER_VERTICAL | wxALL, 5 );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageSelectFirmware::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageSelectFirmware::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageSelectFirmware::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnButtonChooseFileClick
+//
+
+void WizardPageSelectFirmware::OnButtonChooseFileClick( wxCommandEvent& event )
 {
     m_selectedFile->SetLabel( _( "---" ) );
 
@@ -1428,27 +936,10 @@ void WizardPage2::OnButtonChooseFileClick( wxCommandEvent& event )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE1
+// OnWizardpage3PageChanging
 //
 
-void WizardPage1::OnWizardpageSelectInterfacePageChanging( wxWizardEvent& event )
-{
-    // An interface must have been selected to be allowed to continue
-    if ( event.GetDirection() ) {
-        if ( !( ( DeviceBootloaderwizard * )GetParent() )->m_bInterfaceSelected ) {
-            wxMessageBox( _( "An interface must be selected before you can continue!" ) );
-            event.Veto();
-        }
-    }
-    //event.Skip(); 
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE2
-//
-
-void WizardPage2::OnWizardpage3PageChanging( wxWizardEvent& event )
+void WizardPageSelectFirmware::OnWizardpage3PageChanging( wxWizardEvent& event )
 {
     // A hex file must have been loaded to be allowed to continue
     if ( event.GetDirection() ) {
@@ -1460,116 +951,11 @@ void WizardPage2::OnWizardpage3PageChanging( wxWizardEvent& event )
     //event.Skip(); 
 }
 
-
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE3
+// OnButtonLoadFileFromMdfClick
 //
 
-void WizardPage3::OnWizardpage2PageChanging( wxWizardEvent& event )
-{
-
-    event.Skip();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_CHOICE2
-//
-
-void WizardPage3::OnBootLoaderAlgorithmSelected( wxCommandEvent& event )
-{
-    // Remove previous 
-    if ( NULL != ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl ) {
-        delete ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl;
-        ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl = NULL;
-    }
-
-    switch ( m_nBootAlgorithm->GetSelection() ) {
-
-        case 0: // VSCP Standard algorithm
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl =
-                new CBootDevice_VSCP(
-                &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
-                ( ( DeviceBootloaderwizard * )GetParent() )->m_guid );
-            break;
-
-        case 1: // Microchip PIC 1 algorithm
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl =
-                new CBootDevice_PIC1(
-                &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
-                ( ( DeviceBootloaderwizard * )GetParent() )->m_guid );
-            break;
-
-        case 2:
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl = NULL;
-            break;
-
-    }
-
-    event.Skip();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ALGORITHM_FROM_MDF
-//
-
-void WizardPage3::OnButtonAlgorithmFromMdfClick( wxCommandEvent& event )
-{
-    wxString strID;
-    uint8_t id[ 16 ];
-    wxString url;
-    bool rv = true;
-
-    // Get selected id
-    strID = ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->GetValue();
-
-    // Get the device nickname/GUID
-    if ( USE_DLL_INTERFACE == ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.getDeviceType() ) {
-        *id = vscp_readStringValue( strID );
-    }
-    else if ( USE_TCPIP_INTERFACE == ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.getDeviceType() ) {
-        vscp_getGuidFromStringToArray( id, strID );
-    }
-
-    // Open the interface
-    if ( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.doCmdOpen() ) {
-
-        rv = wxGetApp().loadMDF( this,
-                                 &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
-                                 &( ( DeviceBootloaderwizard * )GetParent() )->m_mdf,
-                                 url,
-                                 id );
-
-        if ( rv ) {
-            // MDF has been fetched -
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_bMDFLoaded = true;
-
-            // MDF has been fetched - Set algorithm
-            m_nBootAlgorithm->SetSelection( ( ( DeviceBootloaderwizard * )GetParent() )->m_mdf.m_bootInfo.m_nAlgorithm );
-            OnBootLoaderAlgorithmSelected( event );
-        }
-        else {
-            wxMessageBox( _( "Failed to fetch MDF! \nIs the device active and available?" ) );
-        }
-
-        // Close the interface
-        ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.doCmdClose();
-
-    }
-    else {
-        wxMessageBox( _( "Failed to open communication interface!" ) );
-    }
-
-    event.Skip();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD_FILE_FROM_MDF
-//
-
-void WizardPage2::OnButtonLoadFileFromMdfClick( wxCommandEvent& event )
+void WizardPageSelectFirmware::OnButtonLoadFileFromMdfClick( wxCommandEvent& event )
 {
     wxString strID;
     uint8_t id[ 16 ];
@@ -1664,11 +1050,427 @@ void WizardPage2::OnButtonLoadFileFromMdfClick( wxCommandEvent& event )
 }
 
 
+
+
+//*******************************************************************************************************************
+//*******************************************************************************************************************
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectBootloader type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( WizardPageSelectBootloader, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage3 event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageSelectBootloader, wxWizardPageSimple )
+
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelectBootloader::OnWizardpage2PageChanging )
+EVT_CHOICE( ID_CHOICE2, WizardPageSelectBootloader::OnBootLoaderAlgorithmSelected )
+EVT_BUTTON( ID_BUTTON_ALGORITHM_FROM_MDF, WizardPageSelectBootloader::OnButtonAlgorithmFromMdfClick )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectBootloader constructors
+//
+
+WizardPageSelectBootloader::WizardPageSelectBootloader()
+{
+    Init();
+}
+
+WizardPageSelectBootloader::WizardPageSelectBootloader( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage3 creator
+//
+
+bool WizardPageSelectBootloader::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectBootloader destructor
+//
+
+WizardPageSelectBootloader::~WizardPageSelectBootloader()
+{
+    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageSelectBootloader::Init()
+{
+    m_nBootAlgorithm = NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPage3
+//
+
+void WizardPageSelectBootloader::CreateControls()
+{
+    WizardPageSelectBootloader* itemWizardPageSimple21 = this;
+
+    wxBoxSizer* itemBoxSizer22 = new wxBoxSizer( wxVERTICAL );
+    itemWizardPageSimple21->SetSizer( itemBoxSizer22 );
+
+    wxStaticText* itemStaticText23 = new wxStaticText;
+    itemStaticText23->Create( itemWizardPageSimple21, 
+                                wxID_STATIC, 
+                                _( "Select the bootloader algorithm to use " ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer22->Add( itemStaticText23, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticText24 = new wxStaticText;
+    itemStaticText24->Create( itemWizardPageSimple21, 
+                                wxID_STATIC, 
+                                _( "If you load bootloader info from the MDF file the algorithm will \nbe set for you." ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer22->Add( itemStaticText24, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    itemBoxSizer22->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxStaticText* itemStaticText26 = new wxStaticText;
+    itemStaticText26->Create( itemWizardPageSimple21, 
+                                wxID_STATIC, 
+                                _( "Boot algorithm" ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer22->Add( itemStaticText26, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxArrayString m_nBootAlgorithmStrings;
+    m_nBootAlgorithmStrings.Add( _( "VSCP standard algorithm" ) );
+    m_nBootAlgorithmStrings.Add( _( "Microchip pic algorith 1" ) );
+    m_nBootAlgorithm = new wxChoice;
+    m_nBootAlgorithm->Create( itemWizardPageSimple21, ID_CHOICE2, wxDefaultPosition, wxDefaultSize, m_nBootAlgorithmStrings, 0 );
+    m_nBootAlgorithm->SetStringSelection( _( "VSCP standard algorithm" ) );
+    itemBoxSizer22->Add( m_nBootAlgorithm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    itemBoxSizer22->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxButton* itemButton29 = new wxButton;
+    itemButton29->Create( itemWizardPageSimple21, 
+                            ID_BUTTON_ALGORITHM_FROM_MDF, 
+                            _( "Select algorithm from MDF..." ), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
+    itemBoxSizer22->Add( itemButton29, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageSelectBootloader::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageSelectBootloader::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageSelectBootloader::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnBootLoaderAlgorithmSelected
+//
+
+void WizardPageSelectBootloader::OnBootLoaderAlgorithmSelected( wxCommandEvent& event )
+{
+    // Remove previous 
+    if ( NULL != ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl ) {
+        delete ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl;
+        ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl = NULL;
+    }
+
+    switch ( m_nBootAlgorithm->GetSelection() ) {
+
+        case 0: // VSCP Standard algorithm
+            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl =
+                new CBootDevice_VSCP(
+                &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
+                ( ( DeviceBootloaderwizard * )GetParent() )->m_guid );
+            break;
+
+        case 1: // Microchip PIC 1 algorithm
+            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl =
+                new CBootDevice_PIC1(
+                &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
+                ( ( DeviceBootloaderwizard * )GetParent() )->m_guid );
+            break;
+
+        case 2:
+            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl = NULL;
+            break;
+
+    }
+
+    event.Skip();
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnButtonAlgorithmFromMdfClick
+//
+
+void WizardPageSelectBootloader::OnButtonAlgorithmFromMdfClick( wxCommandEvent& event )
+{
+    wxString strID;
+    uint8_t id[ 16 ];
+    wxString url;
+    bool rv = true;
+
+    // Get selected id
+    strID = ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->GetValue();
+
+    // Get the device nickname/GUID
+    if ( USE_DLL_INTERFACE == ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.getDeviceType() ) {
+        *id = vscp_readStringValue( strID );
+    }
+    else if ( USE_TCPIP_INTERFACE == ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.getDeviceType() ) {
+        vscp_getGuidFromStringToArray( id, strID );
+    }
+
+    // Open the interface
+    if ( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.doCmdOpen() ) {
+
+        rv = wxGetApp().loadMDF( this,
+                                 &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
+                                 &( ( DeviceBootloaderwizard * )GetParent() )->m_mdf,
+                                 url,
+                                 id );
+
+        if ( rv ) {
+            // MDF has been fetched -
+            ( ( DeviceBootloaderwizard * )GetParent() )->m_bMDFLoaded = true;
+
+            // MDF has been fetched - Set algorithm
+            m_nBootAlgorithm->SetSelection( ( ( DeviceBootloaderwizard * )GetParent() )->m_mdf.m_bootInfo.m_nAlgorithm );
+            OnBootLoaderAlgorithmSelected( event );
+        }
+        else {
+            wxMessageBox( _( "Failed to fetch MDF! \nIs the device active and available?" ) );
+        }
+
+        // Close the interface
+        ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.doCmdClose();
+
+    }
+    else {
+        wxMessageBox( _( "Failed to open communication interface!" ) );
+    }
+
+    event.Skip();
+}
+
+
+//*******************************************************************************************************************
+//*******************************************************************************************************************
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageBootload type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( WizardPageBootload, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageBootload event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageBootload, wxWizardPageSimple )
+
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageBootload::OnWizardpagePreBootloadPageChanging )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageBootload constructors
+//
+
+WizardPageBootload::WizardPageBootload()
+{
+    Init();
+}
+
+WizardPageBootload::WizardPageBootload( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage5 creator
+//
+
+bool WizardPageBootload::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage5 destructor
+//
+
+WizardPageBootload::~WizardPageBootload()
+{
+    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageBootload::Init()
+{
+    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPage5
+//
+
+void WizardPageBootload::CreateControls()
+{
+    WizardPageBootload* itemWizardPageSimple40 = this;
+
+    wxBoxSizer* itemBoxSizer41 = new wxBoxSizer( wxVERTICAL );
+    itemWizardPageSimple40->SetSizer( itemBoxSizer41 );
+
+    wxStaticText* itemStaticText42 = new wxStaticText;
+    itemStaticText42->Create( itemWizardPageSimple40, 
+                                wxID_STATIC, 
+                                _( "Ready for the bootloader process" ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer41->Add( itemStaticText42, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticText43 = new wxStaticText;
+    itemStaticText43->Create( itemWizardPageSimple40, 
+                                wxID_STATIC, 
+                                _( "When you click on the next button you will go to the bootloader page\nthat will start loading the firmware file you have selected into the \ndevice of your choice. It is important not to abandon this process \nbefore it has finished.\n\nIf you don't want to continue with the firmware load process \nclick the cancel button." ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer41->Add( itemStaticText43, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    itemBoxSizer41->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    itemBoxSizer41->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxStaticText* itemStaticText46 = new wxStaticText;
+    itemStaticText46->Create( itemWizardPageSimple40, wxID_STATIC, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer41->Add( itemStaticText46, 0, wxALIGN_LEFT | wxALL, 5 );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageBootload::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageBootload::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageBootload::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE5
 //
 
-void WizardPage5::OnWizardpagePreBootloadPageChanging( wxWizardEvent& event )
+void WizardPageBootload::OnWizardpagePreBootloadPageChanging( wxWizardEvent& event )
 {
     event.Skip();
 }
@@ -1676,12 +1478,338 @@ void WizardPage5::OnWizardpagePreBootloadPageChanging( wxWizardEvent& event )
 
 
 
+//*******************************************************************************************************************
+//*******************************************************************************************************************
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON21
+// WizardPageSetGUID type definition
 //
 
-void WizardPage7::OnButtonProgramClick( wxCommandEvent& event )
+IMPLEMENT_DYNAMIC_CLASS( WizardPageSetGUID, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSetGUID event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageSetGUID, wxWizardPageSimple )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage6 constructors
+//
+
+WizardPageSetGUID::WizardPageSetGUID()
+{
+    Init();
+}
+
+WizardPageSetGUID::WizardPageSetGUID( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage6 creator
+//
+
+bool WizardPageSetGUID::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage6 destructor
+//
+
+WizardPageSetGUID::~WizardPageSetGUID()
+{
+    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageSetGUID::Init()
+{
+    m_comboNodeID = NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPage6
+//
+
+void WizardPageSetGUID::CreateControls()
+{
+    WizardPageSetGUID* itemWizardPageSimple14 = this;
+
+    wxBoxSizer* itemBoxSizer15 = new wxBoxSizer( wxVERTICAL );
+    itemWizardPageSimple14->SetSizer( itemBoxSizer15 );
+
+    wxStaticText* itemStaticText16 = new wxStaticText;
+    itemStaticText16->Create( itemWizardPageSimple14, 
+                                wxID_STATIC, 
+                                _( "Select device to bootload" ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer15->Add( itemStaticText16, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticText17 = new wxStaticText;
+    itemStaticText17->Create( itemWizardPageSimple14, 
+                                wxID_STATIC, 
+                                _( "Enter the nickname or the full GUID for the device you want to work with" ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer15->Add( itemStaticText17, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    itemBoxSizer15->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxArrayString m_comboNodeIDStrings;
+    m_comboNodeID = new wxComboBox;
+    m_comboNodeID->Create( itemWizardPageSimple14, 
+                            ID_COMBOBOX_NODEID, 
+                            wxEmptyString, 
+                            wxDefaultPosition, 
+                            wxSize( 370, -1 ), 
+                            m_comboNodeIDStrings, 
+                            wxCB_DROPDOWN );
+    if ( WizardPageSetGUID::ShowToolTips() )
+        m_comboNodeID->SetToolTip( _( "Set nickname or GUID for node here" ) );
+    m_comboNodeID->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+    itemBoxSizer15->Add( m_comboNodeID, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    itemBoxSizer15->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    ////@end WizardPage6 content construction
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageSetGUID::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageSetGUID::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageSetGUID::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+
+
+//*******************************************************************************************************************
+//*******************************************************************************************************************
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageProgramDevice type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( WizardPageProgramDevice, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage7 event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageProgramDevice, wxWizardPageSimple )
+
+EVT_BUTTON( ID_BUTTON21, WizardPageProgramDevice::OnButtonProgramClick )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage7 constructors
+//
+
+WizardPageProgramDevice::WizardPageProgramDevice()
+{
+    Init();
+}
+
+WizardPageProgramDevice::WizardPageProgramDevice( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage7 creator
+//
+
+bool WizardPageProgramDevice::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPage7 destructor
+//
+
+WizardPageProgramDevice::~WizardPageProgramDevice()
+{
+    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageProgramDevice::Init()
+{
+    
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPage7
+//
+
+void WizardPageProgramDevice::CreateControls()
+{
+    WizardPageProgramDevice* itemWizardPageSimple47 = this;
+
+    wxBoxSizer* itemBoxSizer48 = new wxBoxSizer( wxVERTICAL );
+    itemWizardPageSimple47->SetSizer( itemBoxSizer48 );
+
+    wxStaticText* itemStaticText49 = new wxStaticText;
+    itemStaticText49->Create( itemWizardPageSimple47, wxID_STATIC, _( "Firmware update" ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer48->Add( itemStaticText49, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticText50 = new wxStaticText;
+    itemStaticText50->Create( itemWizardPageSimple47, 
+                                wxID_STATIC, 
+                                _( "Press the program device button to load firmware to the selected device." ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
+    itemBoxSizer48->Add( itemStaticText50, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxButton* itemButton54 = new wxButton;
+    itemButton54->Create( itemWizardPageSimple47, 
+                            ID_BUTTON21, 
+                            _( "Program selected device" ), 
+                            wxDefaultPosition, 
+                            wxDefaultSize, 
+                            0 );
+    itemBoxSizer48->Add( itemButton54, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxStaticText* itemStaticText56 = new wxStaticText;
+    itemStaticText56->Create( itemWizardPageSimple47, wxID_STATIC, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    itemBoxSizer48->Add( itemStaticText56, 0, wxALIGN_LEFT | wxALL, 5 );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageProgramDevice::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageProgramDevice::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageProgramDevice::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE3
+//
+
+void WizardPageSelectBootloader::OnWizardpage2PageChanging( wxWizardEvent& event )
+{
+
+    event.Skip();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnButtonProgramClick
+//
+
+void WizardPageProgramDevice::OnButtonProgramClick( wxCommandEvent& event )
 {
     wxString strID;
     wxBusyCursor busy;
@@ -1719,4 +1847,10 @@ void WizardPage7::OnButtonProgramClick( wxCommandEvent& event )
 
     event.Skip();
 }
+
+
+
+
+
+
 

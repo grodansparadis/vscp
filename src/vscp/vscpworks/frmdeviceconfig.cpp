@@ -3160,13 +3160,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
     }
 
-    wxProgressDialog progressDlg( _("VSCP Works"),
-                                    _("Updating Data"),
-                                    100,
-                                    this,
-                                    wxPD_ELAPSED_TIME |
-                                        wxPD_AUTO_HIDE |
-                                        wxPD_APP_MODAL );
+    
 
     // Get nickname
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
@@ -3177,6 +3171,30 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
     }
 
     if ( m_bFirstRead ) {
+
+        // Check if MDF should be fetched from local file or server
+        if ( m_chkMdfFromFile->GetValue() ) {
+
+            // Get MDF from local file
+            wxFileDialog dlg( this,
+                              _( "Choose file to load MDF from " ),
+                              wxStandardPaths::Get().GetUserDataDir(),
+                              _( "" ),
+                              _( "Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*" ) );
+
+            if ( wxID_OK == dlg.ShowModal() ) {
+                strPath = dlg.GetPath();
+            }
+
+        }
+
+        wxProgressDialog progressDlg( _( "VSCP Works" ),
+                                      _( "Updating Data" ),
+                                      100,
+                                      this,
+                                      wxPD_ELAPSED_TIME |
+                                      wxPD_AUTO_HIDE |
+                                      wxPD_APP_MODAL );
 
         // Driver
         if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
@@ -3193,37 +3211,25 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                 return;
             }
 
+ 
             // Fetch MDF from local file or server
-            if ( m_chkMdfFromFile->GetValue() ) {
+            if ( !m_chkMdfFromFile->GetValue() ) {
 
-                // Get MDF from local file
-                wxFileDialog dlg(this,
-                        _("Choose file to load MDF from "),
-                        wxStandardPaths::Get().GetUserDataDir(),
-                        _(""),
-                        _("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
-
-                if (wxID_OK == dlg.ShowModal()) {
-                    strPath = dlg.GetPath();
-                }
-
-            } 
-            else {
                 // Get MDF from device
                 progressDlg.Update( 15, _("Fetching MDF path from device. 2/8.") );
-            }
 
-            // We need it to continue
-			wxString mdfurl;
-			m_stdRegisters.getMDF( mdfurl );
-            if (0 == mdfurl.Length()) {
-                ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
-                return;
+                // We need it to continue
+                m_stdRegisters.getMDF( strPath );
+                if ( 0 == strPath.Length() ) {
+                    ::wxMessageBox( _( "Empty MDF path returned." ), _( "VSCP Works" ), wxICON_ERROR );
+                    return;
+                }
+
             }
 
             // Load and parse the MDF
             progressDlg.Update( 20, _("Loading and parsing MDF. 2/8.") );            
-            m_mdf.load( mdfurl, m_chkMdfFromFile->GetValue() );
+            m_mdf.load( strPath, m_chkMdfFromFile->GetValue() );
 
             wxArrayLong pageArray;
             uint32_t nPages = m_mdf.getPages( pageArray );
@@ -3348,38 +3354,27 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
             }
 
             // Check if MDF should be fetched from local file or server
-            if (m_chkMdfFromFile->GetValue()) {
+            if ( !m_chkMdfFromFile->GetValue() ) {
 
-                // Get MDF from local file
-                wxFileDialog dlg(this,
-                        _("Choose file to load MDF from "),
-                        wxStandardPaths::Get().GetUserDataDir(),
-                        _(""),
-                        _("Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*"));
-
-                if (wxID_OK == dlg.ShowModal()) {
-                    strPath = dlg.GetPath();
-                }
-
-            } 
-            else {
                 // Get MDF from device
                 progressDlg.Update( 10, _("Fetching MDF path from device 2/8.") );
+
+                // We need it to continue
+                m_stdRegisters.getMDF( strPath );
+                if ( 0 == strPath.Length() ) {
+                    ::wxMessageBox( _( "Empty MDF path returned." ), _( "VSCP Works" ), wxICON_ERROR );
+                    return;
+                }
+
             }
 
-            // We need it to continue
-			wxString mdfurl;
-			m_stdRegisters.getMDF( mdfurl );
-            if ( 0 == mdfurl.Length() ) {
-                ::wxMessageBox(_("Empty MDF path returned."), _("VSCP Works"), wxICON_ERROR);
-                return;
-            }
-
+            
             // Load and parse the MDF
             progressDlg.Update( 20, _("Loading and parsing MDF 2/8.") );
 
-            if (!m_mdf.load( mdfurl, m_chkMdfFromFile->GetValue())) {
+            if ( !m_mdf.load( strPath, m_chkMdfFromFile->GetValue() ) ) {
                 // We try to continue anyway
+                wxMessageBox(_("Failed to load MDF but will try to continue anyway.") );
             }
 
             // Get the application registers

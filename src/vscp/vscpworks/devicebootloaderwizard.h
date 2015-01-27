@@ -64,14 +64,15 @@
 * Forward declarations
 */
 
-class WizardPage;
-class WizardPage1;
-class WizardPage6;
-class WizardPage3;
-class WizardPage2;
+class WizardPageStart;
+class WizardPageSelecInterface;
+class WizardPageSelectFirmware;
+class WizardPageSelectBootloader;
+class WizardPageBootload;
+class WizardPageSetGUID;
+class WizardPageProgramDevice;
+
 class wxHtmlWindow;
-class WizardPage5;
-class WizardPage7;
 
 
 /*!
@@ -125,10 +126,11 @@ public:
     /// Should we show tooltips?
     static bool ShowToolTips();
 
-    WizardPage1* m_pgSelecInterface;
-    WizardPage6* m_pgSelecDeviceId;
-    WizardPage3* m_pgSelecAlgorithm;
-    WizardPage2* m_pgLoadFile;
+    WizardPageSelecInterface* m_pgSelecInterface;
+    WizardPageSetGUID* m_pgSelecDeviceId;
+    WizardPageSelectBootloader* m_pgSelecAlgorithm;
+    WizardPageSelectFirmware* m_pgLoadFile;
+
     /// Control identifiers
     enum {
         ID_DEVICEBOOTLOADERWIZARD = 32000
@@ -170,25 +172,25 @@ public:
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardPage class declaration
+// WizardPageStart class declaration
 //
 
-class WizardPage : public wxWizardPageSimple
+class WizardPageStart : public wxWizardPageSimple
 {
     DECLARE_DYNAMIC_CLASS( WizardPage )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    WizardPage();
+    WizardPageStart();
 
-    WizardPage( wxWizard* parent );
+    WizardPageStart( wxWizard* parent );
 
     /// Creation
     bool Create( wxWizard* parent );
 
     /// Destructor
-    ~WizardPage();
+    ~WizardPageStart();
 
     /// Initialises member variables
     void Init();
@@ -214,25 +216,25 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardPage1 class declaration
+// WizardPageSelecInterface class declaration
 //
 
-class WizardPage1 : public wxWizardPageSimple
+class WizardPageSelecInterface : public wxWizardPageSimple
 {
     DECLARE_DYNAMIC_CLASS( WizardPage1 )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    WizardPage1();
+    WizardPageSelecInterface();
 
-    WizardPage1( wxWizard* parent );
+    WizardPageSelecInterface( wxWizard* parent );
 
     /// Creation
     bool Create( wxWizard* parent );
 
     /// Destructor
-    ~WizardPage1();
+    ~WizardPageSelecInterface();
 
     /// Initialises member variables
     void Init();
@@ -266,25 +268,25 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardPage2 class declaration
+// WizardPageSelectFirmware class declaration
 //
 
-class WizardPage2 : public wxWizardPageSimple
+class WizardPageSelectFirmware : public wxWizardPageSimple
 {
     DECLARE_DYNAMIC_CLASS( WizardPage2 )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    WizardPage2();
+    WizardPageSelectFirmware();
 
-    WizardPage2( wxWizard* parent );
+    WizardPageSelectFirmware( wxWizard* parent );
 
     /// Creation
     bool Create( wxWizard* parent );
 
     /// Destructor
-    ~WizardPage2();
+    ~WizardPageSelectFirmware();
 
     /// Initialises member variables
     void Init();
@@ -329,22 +331,22 @@ public:
 // WizardPage3 class declaration
 //
 
-class WizardPage3 : public wxWizardPageSimple
+class WizardPageSelectBootloader : public wxWizardPageSimple
 {
     DECLARE_DYNAMIC_CLASS( WizardPage3 )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    WizardPage3();
+    WizardPageSelectBootloader();
 
-    WizardPage3( wxWizard* parent );
+    WizardPageSelectBootloader( wxWizard* parent );
 
     /// Creation
     bool Create( wxWizard* parent );
 
     /// Destructor
-    ~WizardPage3();
+    ~WizardPageSelectBootloader();
 
     /// Initialises member variables
     void Init();
@@ -384,25 +386,25 @@ public:
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardPage5 class declaration
+// WizardPageBootload class declaration
 //
 
-class WizardPage5 : public wxWizardPageSimple
+class WizardPageBootload : public wxWizardPageSimple
 {
     DECLARE_DYNAMIC_CLASS( WizardPage5 )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    WizardPage5();
+    WizardPageBootload();
 
-    WizardPage5( wxWizard* parent );
+    WizardPageBootload( wxWizard* parent );
 
     /// Creation
     bool Create( wxWizard* parent );
 
     /// Destructor
-    ~WizardPage5();
+    ~WizardPageBootload();
 
     /// Initialises member variables
     void Init();
@@ -430,25 +432,25 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardPage6 class declaration
+// WizardPageSetGUID class declaration
 //
 
-class WizardPage6 : public wxWizardPageSimple
+class WizardPageSetGUID : public wxWizardPageSimple
 {
     DECLARE_DYNAMIC_CLASS( WizardPage6 )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    WizardPage6();
+    WizardPageSetGUID();
 
-    WizardPage6( wxWizard* parent );
+    WizardPageSetGUID( wxWizard* parent );
 
     /// Creation
     bool Create( wxWizard* parent );
 
     /// Destructor
-    ~WizardPage6();
+    ~WizardPageSetGUID();
 
     /// Initialises member variables
     void Init();
@@ -475,25 +477,25 @@ public:
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-// WizardPage7 class declaration
+// WizardPageProgramDevice class declaration
 //
 
-class WizardPage7 : public wxWizardPageSimple
+class WizardPageProgramDevice : public wxWizardPageSimple
 {
-    DECLARE_DYNAMIC_CLASS( WizardPage7 )
+    DECLARE_DYNAMIC_CLASS( WizardPageProgramDevice )
     DECLARE_EVENT_TABLE()
 
 public:
     /// Constructors
-    WizardPage7();
+    WizardPageProgramDevice();
 
-    WizardPage7( wxWizard* parent );
+    WizardPageProgramDevice( wxWizard* parent );
 
     /// Creation
     bool Create( wxWizard* parent );
 
     /// Destructor
-    ~WizardPage7();
+    ~WizardPageProgramDevice();
 
     /// Initialises member variables
     void Init();
