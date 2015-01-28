@@ -3211,7 +3211,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                 ::wxMessageBox(_("Failed to read standard registers of device."), _("VSCP Works"), wxICON_ERROR);
                 return;
             }
-
  
             // Fetch MDF from local file or server
             if ( !m_chkMdfFromFile->GetValue() ) {

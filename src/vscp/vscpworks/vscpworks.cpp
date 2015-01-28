@@ -2286,7 +2286,7 @@ bool VscpworksApp::readConfiguration( void )
                     
                     // Both string needs to have a value
                     if ( strFrom.Length() && strTo.Length() ) {
-                        g_Config.m_mfProxyHashTable[ strFrom ] = strFrom;
+                        g_Config.m_mfProxyHashTable[ strFrom ] = strTo;
                     }
                 }
 
