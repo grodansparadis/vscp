@@ -3230,6 +3230,8 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
             // translate mdf path if translation available for this url
             wxString translate = g_Config.m_mfProxyHashTable[ strPath  ];
             if ( translate.Length() ) {
+                ::wxGetApp().logMsg( wxString::Format( _( "Device URL %s translated to %s." ), strPath.mbc_str(), translate.mbc_str() ),
+                                     VSCPWORKS_LOGMSG_INFO );
                 strPath = translate;
             }
 
@@ -3377,6 +3379,8 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
             // translate mdf path if translation available for this url
             wxString translate = g_Config.m_mfProxyHashTable[ strPath ];
             if ( translate.Length() ) {
+                ::wxGetApp().logMsg( wxString::Format( _( "Device URL %s translated to %s." ), strPath.mbc_str(), translate.mbc_str() ),
+                                     VSCPWORKS_LOGMSG_INFO );
                 strPath = translate;
             }
 

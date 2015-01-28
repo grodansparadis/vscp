@@ -73,25 +73,25 @@
 #define VSCPWORKS_MAIN_WINDOW_DEFAULT_WIDTH     600
 #define VSCPWORKS_MAIN_WINDOW_DEFAULT_HEGHT     311
 
-#define MAX_NUMBER_OF_NODES         256
+#define MAX_NUMBER_OF_NODES             256
 
-#define DAEMON_LOGMSG_DEBUG         0
-#define DAEMON_LOGMSG_INFO          1
-#define DAEMON_LOGMSG_NOTICE        2
-#define DAEMON_LOGMSG_WARNING       3
-#define DAEMON_LOGMSG_ERROR         4
-#define DAEMON_LOGMSG_CRITICAL      5
-#define DAEMON_LOGMSG_ALERT         6
-#define DAEMON_LOGMSG_EMERGENCY     7
+#define VSCPWORKS_LOGMSG_DEBUG          0
+#define VSCPWORKS_LOGMSG_INFO           1
+#define VSCPWORKS_LOGMSG_NOTICE         2
+#define VSCPWORKS_LOGMSG_WARNING        3
+#define VSCPWORKS_LOGMSG_ERROR          4
+#define VSCPWORKS_LOGMSG_CRITICAL       5
+#define VSCPWORKS_LOGMSG_ALERT          6
+#define VSCPWORKS_LOGMSG_EMERGENCY      7
 
-#define VCSP_TRMIT_FIELD_COUNT      6
+#define VCSP_TRMIT_FIELD_COUNT          6
 
-#define VCSP_TRMIT_FIELD_WIDTH_0   30
-#define VCSP_TRMIT_FIELD_WIDTH_1   200
-#define VCSP_TRMIT_FIELD_WIDTH_2   60
-#define VCSP_TRMIT_FIELD_WIDTH_3   60
-#define VCSP_TRMIT_FIELD_WIDTH_4   120
-#define VCSP_TRMIT_FIELD_WIDTH_5   900
+#define VCSP_TRMIT_FIELD_WIDTH_0        30
+#define VCSP_TRMIT_FIELD_WIDTH_1        200
+#define VCSP_TRMIT_FIELD_WIDTH_2        60
+#define VCSP_TRMIT_FIELD_WIDTH_3        60
+#define VCSP_TRMIT_FIELD_WIDTH_4        120
+#define VCSP_TRMIT_FIELD_WIDTH_5        900
 
 #define VCSP_TRMIT_FIELD_TEXT_0  _("x")
 #define VCSP_TRMIT_FIELD_TEXT_1  _("Name")
@@ -319,7 +319,16 @@ public:
   /*!
     Log message
   */
-  void logMsg( const wxString& wxstr, unsigned char level );
+  void logMsg( const wxString& wxstr, unsigned char level = VSCPWORKS_LOGMSG_INFO );
+
+  /*!
+    Handler for asserts
+  */
+  static void AssertHandler( const wxString &file,
+                                    int line,
+                                    const wxString &func,
+                                    const wxString &cond,
+                                    const wxString &msg );
 
   /*!
     Read XML configuration from file

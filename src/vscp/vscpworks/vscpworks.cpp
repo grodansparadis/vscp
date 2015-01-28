@@ -61,6 +61,7 @@
 #include <wx/wfstream.h>
 #include <wx/filename.h>
 #include <wx/stdpaths.h>
+#include <wx/debug.h> 
 
 #ifdef __WXMSW__
 #include <wx/msw/regconf.h>
@@ -197,6 +198,9 @@ void VscpworksApp::Init()
 	g_Config.m_strPathLogFile = wxStandardPaths::Get().GetTempDir();
 	g_Config.m_strPathLogFile += _("/vscpworks.log");
 	g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
+
+    // Set assert handler
+    wxSetAssertHandler( VscpworksApp::AssertHandler );
 
     int i,j;
     for ( i=0; i<MAX_NUMBER_OF_NODES; i++ ) {
@@ -425,6 +429,27 @@ void VscpworksApp::logMsg( const wxString& wxstr, unsigned char level )
 #endif
 }
 
+
+/////////////////////////////////////////////////////////////////////////////
+// AssertHandler
+//
+
+void VscpworksApp::AssertHandler( const wxString &file, 
+                                        int line, 
+                                        const wxString &func, 
+                                        const wxString &cond, 
+                                        const wxString &msg )
+{
+    wxString logmsg = _("ASSERT - ");
+    logmsg += _( " file: " ) + file;
+    logmsg += wxString::Format( _( " line:%d" ), line );
+    logmsg += _( " func: " ) + func;
+    logmsg += _( " cond: " ) + cond;
+    logmsg += _( " msg: " ) + msg;
+
+    ::wxGetApp().logMsg( logmsg, 
+                        VSCPWORKS_LOGMSG_ALERT );
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1587,33 +1612,33 @@ bool VscpworksApp::readConfiguration( void )
                     }
 
                     // level
-                    g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;                   
+                    g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;                   
                     wxString level = subchild->GetAttribute(_("level"), _("0"));
                       
 					level = level.Upper();
 					if ( wxNOT_FOUND  != level.Find(_("DEBUG")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_DEBUG;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_DEBUG;
 					}
 					if ( wxNOT_FOUND  != level.Find(_("INFO")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_INFO;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_INFO;
 					}
 					if ( wxNOT_FOUND  != level.Find(_("WARNING")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_WARNING;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_WARNING;
 					}
 					if ( wxNOT_FOUND  != level.Find(_("ERROR")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_ERROR;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_ERROR;
 					}
 					if ( wxNOT_FOUND  != level.Find(_("CRITICAL")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_CRITICAL;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_CRITICAL;
 					}
 					if ( wxNOT_FOUND  != level.Find(_("ALERT")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_ALERT;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_ALERT;
 					}
 					if ( wxNOT_FOUND  != level.Find(_("EMERGENCY")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
 					}
 					else {
-						g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
 					}
                     if ( level.ToULong( &val, 10 ) ) {
                         g_Config.m_logLevel = val;
@@ -1722,32 +1747,32 @@ bool VscpworksApp::readConfiguration( void )
                 }
 				else if (subchild->GetName() == _("loglevel")) {
 
-                    g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+                    g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
 					wxString str = subchild->GetNodeContent();
 					str = str.Upper();
 					if ( wxNOT_FOUND  != str.Find(_("DEBUG")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_DEBUG;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_DEBUG;
 					}
 					if ( wxNOT_FOUND  != str.Find(_("INFO")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_INFO;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_INFO;
 					}
 					if ( wxNOT_FOUND  != str.Find(_("WARNING")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_WARNING;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_WARNING;
 					}
 					if ( wxNOT_FOUND  != str.Find(_("ERROR")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_ERROR;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_ERROR;
 					}
 					if ( wxNOT_FOUND  != str.Find(_("CRITICAL")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_CRITICAL;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_CRITICAL;
 					}
 					if ( wxNOT_FOUND  != str.Find(_("ALERT")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_ALERT;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_ALERT;
 					}
 					if ( wxNOT_FOUND  != str.Find(_("EMERGENCY")) ) {
-						g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
 					}
 					else {
-						g_Config.m_logLevel = DAEMON_LOGMSG_EMERGENCY;
+                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
 					}
 
                 }
@@ -2386,31 +2411,31 @@ bool VscpworksApp::writeConfiguration( void )
 
     switch ( g_Config.m_logLevel ) {
 	
-	case DAEMON_LOGMSG_DEBUG:
+        case VSCPWORKS_LOGMSG_DEBUG:
 		pFileStream->Write("debug",strlen("debug"));
 		break;
 
-	case DAEMON_LOGMSG_INFO:
+        case VSCPWORKS_LOGMSG_INFO:
 		pFileStream->Write("info",strlen("info"));
 		break;
 
-	case DAEMON_LOGMSG_NOTICE:
+        case VSCPWORKS_LOGMSG_NOTICE:
 		pFileStream->Write("notice",strlen("notice"));
 		break;
 
-	case DAEMON_LOGMSG_WARNING:
+        case VSCPWORKS_LOGMSG_WARNING:
 		pFileStream->Write("warning",strlen("warning"));
 		break;
 
-	case DAEMON_LOGMSG_ERROR:
+        case VSCPWORKS_LOGMSG_ERROR:
 		pFileStream->Write("error",strlen("error"));
 		break;
 
-	case DAEMON_LOGMSG_CRITICAL:
+        case VSCPWORKS_LOGMSG_CRITICAL:
 		pFileStream->Write("critical",strlen("critical"));
 		break;
 
-	case DAEMON_LOGMSG_ALERT:
+        case VSCPWORKS_LOGMSG_ALERT:
 		pFileStream->Write("alert",strlen("alert"));
 		break;
 
@@ -3927,6 +3952,8 @@ bool VscpworksApp::loadMDF( wxWindow *pwnd,
 
     return rv;
 }
+
+
 
 
 //////////////////////////////////////////////////////////////////////////////
