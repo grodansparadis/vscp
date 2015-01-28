@@ -2274,6 +2274,26 @@ bool VscpworksApp::readConfiguration( void )
             } // while interface
 
         } // vscpinterface
+        else if ( child->GetName() == _( "mdfurl" ) ) {
+
+            wxXmlNode *subchild = child->GetChildren();
+            while ( subchild ) {
+
+                if ( subchild->GetName() == _( "translate" ) ) {
+
+                    wxString strFrom = subchild->GetAttribute( _( "from" ), _( "" ) );
+                    wxString strTo = subchild->GetAttribute( _( "to" ), _( "" ) );
+                    
+                    // Both string needs to have a value
+                    if ( strFrom.Length() && strTo.Length() ) {
+                        g_Config.m_mfProxyHashTable[ strFrom ] = strFrom;
+                    }
+                }
+
+                subchild = subchild->GetNext();
+
+            }
+        }
 
         child = child->GetNext();
 
@@ -2312,7 +2332,7 @@ bool VscpworksApp::writeConfiguration( void )
         strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n") );
 
     // VSCP Works configuration start
-    pFileStream->Write("<vscpworksconfig>\n",strlen("<vscpworksconfig>\n"));
+    pFileStream->Write("<vscpworksconfig>\n\n",strlen("<vscpworksconfig>\n\n"));
 
 
 
@@ -2467,10 +2487,36 @@ bool VscpworksApp::writeConfiguration( void )
     pFileStream->Write("</ConfirmDelete>\n",strlen("</ConfirmDelete>\n"));
 
     // /General
-    pFileStream->Write("</general>\n",strlen("</general>\n"));
+    pFileStream->Write("</general>\n\n",strlen("</general>\n\n"));
 
 
     // **************************************************************************
+
+
+    // mdfurl
+    pFileStream->Write( "<mdfurl>\n", strlen( "<mdfurl>\n" ) );
+
+    MdfProxyHash::iterator it;
+    for ( it = g_Config.m_mfProxyHashTable.begin(); it != g_Config.m_mfProxyHashTable.end(); ++it )
+    {
+        wxString key = it->first, value = it->second;
+        pFileStream->Write( "<translate ", strlen( "<translate " ) );
+
+        pFileStream->Write( "from=\"", strlen( "from=\"" ) );
+        pFileStream->Write( key, key.Length() );
+        pFileStream->Write( "\" ", strlen( "\" " ) );
+
+        pFileStream->Write( "to=\"", strlen( "to=\"" ) );
+        pFileStream->Write( value, value.Length() );
+        pFileStream->Write( "\" ", strlen( "\" " ) );
+
+        pFileStream->Write( "/>\n", strlen( "/>\n" ) );
+    }
+
+    pFileStream->Write( "</mdfurl>\n\n", strlen( "</mdfurl>\n\n" ) );
+
+    // **************************************************************************
+
 
 
     // vscpclient
@@ -2646,7 +2692,7 @@ bool VscpworksApp::writeConfiguration( void )
     pFileStream->Write("</VscpRcvFrameLineColour>\n",strlen("</VscpRcvFrameLineColour>\n"));
 
     // /vscpclient
-    pFileStream->Write("</vscpclient>\n",strlen("</vscpclient>\n"));
+    pFileStream->Write("</vscpclient>\n\n",strlen("</vscpclient>\n\n"));
 
 
 
@@ -2689,7 +2735,7 @@ bool VscpworksApp::writeConfiguration( void )
             pFileStream->Write("</flags>\n",strlen("</flags>\n"));	
 
             // CANAL Driver interface stop
-            pFileStream->Write("</canaldriver>\n",strlen("</canaldriver>\n"));
+            pFileStream->Write("</canaldriver>\n\n",strlen("</canaldriver>\n\n"));
 
         }
 
@@ -2791,14 +2837,14 @@ bool VscpworksApp::writeConfiguration( void )
             pFileStream->Write ( "</mask>\n",strlen ( "</mask>\n" ) );
 
             // VSCP Daemon interface stop
-            pFileStream->Write("</vscpdaemon>\n",strlen("</vscpdaemon>\n"));
+            pFileStream->Write("</vscpdaemon>\n\n",strlen("</vscpdaemon>\n\n"));
 
         }
 
     }
 
     // Interfaces stop
-    pFileStream->Write("</vscpinterface>\n",strlen("</vscpinterface>\n"));
+    pFileStream->Write("</vscpinterface>\n\n",strlen("</vscpinterface>\n\n"));
 
 
 

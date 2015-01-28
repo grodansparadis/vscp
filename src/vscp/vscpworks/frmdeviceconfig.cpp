@@ -654,7 +654,7 @@ bool frmDeviceConfig::enableInterface(void)
 
                 progressDlg.Pulse(_("Fetching interface GUID."));
 
-                if (fetchIterfaceGUID()) {
+                if ( fetchIterfaceGUID() ) {
 
                     progressDlg.Pulse(_("Interface GUID found."));
 
@@ -3180,7 +3180,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                               _( "Choose file to load MDF from " ),
                               wxStandardPaths::Get().GetUserDataDir(),
                               _( "" ),
-                              _( "Module Description Files (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*" ) );
+                              _( "MDF (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*" ) );
 
             if ( wxID_OK == dlg.ShowModal() ) {
                 strPath = dlg.GetPath();
@@ -3201,6 +3201,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
             // Read standard registers           
             progressDlg.Update( 10, _("Reading standard registers of device 1/8.")); 
+
             if ( CANAL_ERROR_SUCCESS !=
                 m_csw.getDllInterface()->readRegistersfromLevel1Device( nodeid,
                                                                             0x80,
@@ -3225,6 +3226,12 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                     return;
                 }
 
+            }
+
+            // translate mdf path if translation available for this url
+            wxString translate = g_Config.m_mfProxyHashTable[ strPath  ];
+            if ( translate.Length() ) {
+                strPath = translate;
             }
 
             // Load and parse the MDF
@@ -3366,6 +3373,12 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                     return;
                 }
 
+            }
+
+            // translate mdf path if translation available for this url
+            wxString translate = g_Config.m_mfProxyHashTable[ strPath ];
+            if ( translate.Length() ) {
+                strPath = translate;
             }
 
             
@@ -4960,7 +4973,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                 iter != m_mdf.m_dmInfo.m_list_action.end(); ++iter) {
             CMDF_Action *action = *iter;
             int idx = dlg.m_comboAction->Append(action->m_strName);
-            dlg.m_comboAction->SetClientData(idx, (void *)action->m_nCode); // Yes - ponter conversion
+            dlg.m_comboAction->SetClientData(idx, (void *)action->m_nCode); // Yes - pointer conversion
             if (reg == action->m_nCode) {
                 dlg.m_comboAction->SetSelection(idx);
             }
@@ -5897,6 +5910,7 @@ int frmDeviceConfig::getRegisterGridRow(uint32_t reg, uint16_t page)
 bool frmDeviceConfig::fetchIterfaceGUID(void) 
 {
     wxString str;
+    wxArrayString ifarray;
 
     if (!m_csw.isOpen()) {
         wxMessageBox(_("TCP/IP connection to daemon must be open."));
@@ -5909,47 +5923,58 @@ bool frmDeviceConfig::fetchIterfaceGUID(void)
     }
 
     // Get the interface list
-    wxArrayString ifarray;
-    if ( VSCP_ERROR_SUCCESS ==
-            m_csw.getTcpIpInterface()->doCmdInterfaceList( ifarray ) ) {
+    while ( true ) {
 
-        if ( ifarray.Count() ) {
+        if ( VSCP_ERROR_SUCCESS ==
+             m_csw.getTcpIpInterface()->doCmdInterfaceList( ifarray ) ) {
 
-            for (unsigned int i = 0; i < ifarray.Count(); i++) {
+            if ( ifarray.Count() ) {
 
-                wxStringTokenizer tkz( ifarray[ i ], _(",") );
-                wxString strOrdinal = tkz.GetNextToken();
-                wxString strType = tkz.GetNextToken();
-                wxString strIfGUID = tkz.GetNextToken();
-                wxString strDescription = tkz.GetNextToken();
+                for ( unsigned int i = 0; i < ifarray.Count(); i++ ) {
 
-                int pos;
-                wxString strName;
-                if (wxNOT_FOUND != (pos = strDescription.Find(_(" ")))) {
-                    strName = strDescription.Left(pos);
-                    strName.Trim();
-                }
+                    wxStringTokenizer tkz( ifarray[ i ], _( "," ) );
+                    wxString strOrdinal = tkz.GetNextToken();
+                    wxString strType = tkz.GetNextToken();
+                    wxString strIfGUID = tkz.GetNextToken();
+                    wxString strDescription = tkz.GetNextToken();
 
-                if (strName.Upper() == m_vscpif.m_strInterfaceName.Upper()) {
+                    int pos;
+                    wxString strName;
+                    if ( wxNOT_FOUND != ( pos = strDescription.Find( _( " " ) ) ) ) {
+                        strName = strDescription.Left( pos );
+                        strName.Trim();
+                    }
 
-                    // Save the name
-                    //m_vscpif.m_strInterfaceName. = strName;
+                    if ( strName.Upper() == m_vscpif.m_strInterfaceName.Upper() ) {
 
-                    // Save interface GUID;
-                    m_ifguid.getFromString( strIfGUID );
+                        // Save the name
+                        //m_vscpif.m_strInterfaceName. = strName;
 
-                    return true;
+                        // Save interface GUID;
+                        m_ifguid.getFromString( strIfGUID );
+
+                        return true;
+                    }
+
                 }
 
             }
-
-        } 
-        else {
-            wxMessageBox(_("No interfaces found."));
+            else {
+                if ( wxYES != wxMessageBox( _( "No interfaces found. Try to find again?" ), 
+                                                _( "Fetching interfaces" ), 
+                                                wxYES_NO ) ) {
+                    break;
+                }
+            }
         }
-    } 
-    else {
-        wxMessageBox(_("Unable to get interface list from VSCP daemon."));
+        else {
+            if ( wxYES != wxMessageBox( _( "Unable to get interface list from VSCP daemon. Try to get again?" ), 
+                                            _( "Fetching interfaces" ), 
+                                            wxYES_NO ) ) {
+                break;
+            }
+        }
+
     }
 
     return false;

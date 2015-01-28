@@ -2454,7 +2454,7 @@ void ns_send_http_chunk(struct ns_connection *nc, const char *buf, size_t len) {
   char chunk_size[50];
   int n;
 
-  n = snprintf(chunk_size, sizeof(chunk_size), "%lX\r\n", len);
+  n = snprintf(chunk_size, sizeof(chunk_size), "%zX\r\n", len);
   ns_send(nc, chunk_size, n);
   ns_send(nc, buf, len);
   ns_send(nc, "\r\n", 2);

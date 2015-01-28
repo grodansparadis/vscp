@@ -127,6 +127,7 @@
 #define VSCP_DEVCONFIG_NUMBERBASE_HEX			0
 #define VSCP_DEVCONFIG_NUMBERBASE_DECIMAL		1
 
+WX_DECLARE_STRING_HASH_MAP( wxString, MdfProxyHash );
 
 // Structure for CANAL nodes
 typedef struct {
@@ -272,7 +273,8 @@ typedef struct {
 	// Confirm switch 
 	bool m_bConfirmDelete;						// Must confirm session rx/tx etc list delete
 
-	
+    MdfProxyHash m_mfProxyHashTable;            // Translate devices stored URL to whatever is read from
+                                                // cnfiguration file
     
 } appConfiguration;	
 

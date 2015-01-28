@@ -686,7 +686,7 @@ extern "C" {
 
     /*!
       Set VSCP data from a string
-      \param pEvent Ponter to a VSCP event to write parsed data to.
+      \param pEvent Pointer to a VSCP event to write parsed data to.
       \param str A string with comma or whitespace separated data in decimal
       or hexadecimal form. Data can span multiple lines.
       \return true on success, false on failure.

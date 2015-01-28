@@ -110,7 +110,7 @@ public:
   
     /*!
         Send a CAN message 
-        @param pMsg Ponter to CAN message to send
+        @param pMsg Pointer to CAN message to send
         @return CANAL_ERROR_SUCCESS on success or CANAL error if failure.
     */
     int doCmdSend( canalMsg *pMsg );
@@ -118,7 +118,7 @@ public:
 	/*!
 		Send a CAN message and block if it can't
 		be sent right away.
-		@param pMsg Ponter to CAN message to send
+		@param pMsg Pointer to CAN message to send
 		@param timeout Time to wait in milliseconds or zero to wait forever.
 		@return CANAL_ERROR_SUCCESS on success or CANAL error if failure.
 					Return CANAL_ERROR_NOT_SUPPORTED if blocking operations is not
