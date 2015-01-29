@@ -69,7 +69,7 @@
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define TCPIP_REGISTER_READ_RESEND_TIMEOUT		1000
+#define TCPIP_REGISTER_READ_RESEND_TIMEOUT		2000
 #define TCPIP_REGISTER_READ_ERROR_TIMEOUT		5000
 #define TCPIP_REGISTER_READ_MAX_TRIES			3
 
