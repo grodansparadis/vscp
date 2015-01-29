@@ -2356,7 +2356,7 @@ bool VscpworksApp::writeConfiguration( void )
         pFileStream->Write("false",strlen("false"));
     }
 
-    pFileStream->Write("\" level=\"",strlen("\" level=\""));
+    pFileStream->Write("\" level=\"",strlen("\" level=\"") );
 
     switch ( g_Config.m_logLevel ) {
 	

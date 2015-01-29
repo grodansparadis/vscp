@@ -206,6 +206,12 @@ public:
     ID_PANEL1 = 10031
   };
 
+
+  /*!
+    Bitmap for VSCP Logo
+  */
+  wxStaticBitmap* m_pStaticBitmapLogo;
+
 };
 
 #endif

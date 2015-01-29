@@ -263,48 +263,49 @@ void frmMain::CreateControls()
     itemFrame1->SetMenuBar( menuBar );
 
     // Statusbar
-    wxStatusBar* itemStatusBar32 = new wxStatusBar;
-    itemStatusBar32->Create( itemFrame1, 
+    wxStatusBar* itemStatusBar = new wxStatusBar;
+    itemStatusBar->Create( itemFrame1,
                                 ID_STATUSBAR, 
                                 wxST_SIZEGRIP|wxNO_BORDER );
-    itemStatusBar32->SetFieldsCount(2);
-    itemFrame1->SetStatusBar( itemStatusBar32 );
+    itemStatusBar->SetFieldsCount( 2 );
+    itemFrame1->SetStatusBar( itemStatusBar );
 
     // Toolbar
-    wxToolBar* itemToolBar33 = CreateToolBar( wxTB_FLAT | wxTB_HORIZONTAL | wxTB_NODIVIDER, 
+    wxToolBar* itemToolBar = CreateToolBar( wxTB_FLAT | wxTB_HORIZONTAL | wxTB_NODIVIDER, 
                                                 ID_TOOLBAR );
     wxBitmap itemtool34Bitmap( itemFrame1->GetBitmapResource( wxT("open.xpm") ) );
     wxBitmap itemtool34BitmapDisabled;
-    itemToolBar33->AddTool( ID_TOOL, 
+    itemToolBar->AddTool( ID_TOOL,
                                 wxEmptyString, 
                                 itemtool34Bitmap, 
                                 itemtool34BitmapDisabled, 
                                 wxITEM_NORMAL, 
                                 wxEmptyString, 
                                 wxEmptyString );
-    itemToolBar33->Realize();
-    itemFrame1->SetToolBar( itemToolBar33 );
+    itemToolBar->Realize();
+    itemFrame1->SetToolBar( itemToolBar );
 
-    wxPanel* itemPanel35 = new wxPanel;
-    itemPanel35->Create( itemFrame1, 
+
+    wxPanel* itemPanel = new wxPanel;
+    itemPanel->Create( itemFrame1,
                             ID_PANEL1, 
                             wxDefaultPosition, 
                             wxDefaultSize, 
                             wxSUNKEN_BORDER | wxTAB_TRAVERSAL );
-    itemPanel35->SetBackgroundColour( wxColour(255, 255, 255) );
+    itemPanel->SetBackgroundColour( wxColour( 255, 255, 255 ) );
 
-    wxBoxSizer* itemBoxSizer36 = new wxBoxSizer( wxVERTICAL );
-    itemPanel35->SetSizer( itemBoxSizer36 );
+    wxBoxSizer* itemBoxSizerPanel = new wxBoxSizer( wxVERTICAL );
+    itemPanel->SetSizer( itemBoxSizerPanel );
 
-    wxStaticBitmap* itemStaticBitmap37 = new wxStaticBitmap;
-    itemStaticBitmap37->Create( itemPanel35, 
+    m_pStaticBitmapLogo = new wxStaticBitmap;
+    m_pStaticBitmapLogo->Create( itemPanel,
                                     wxID_STATIC, 
                                     itemFrame1->GetBitmapResource( wxT("../../../docs/vscp/logo/vscp_logo.jpg") ), 
                                     wxDefaultPosition, 
                                     wxSize(151, 212),
                                     0 );
-    itemStaticBitmap37->SetBackgroundColour( wxColour(255, 255, 255) );
-    itemBoxSizer36->Add( itemStaticBitmap37, 
+    m_pStaticBitmapLogo->SetBackgroundColour( wxColour( 255, 255, 255 ) );
+    itemBoxSizerPanel->Add( m_pStaticBitmapLogo,
                             0, 
                             wxALIGN_CENTER_HORIZONTAL | wxALL, 
                             0 );
@@ -380,7 +381,8 @@ void frmMain::OnCloseWindow( wxCloseEvent& event )
 
 void frmMain::OnPaint( wxPaintEvent& event )
 {
-	wxPaintDC dc(this);
+    /*
+    wxPaintDC dc( m_pStaticBitmapLogo );
 
 	dc.DrawText(wxT("Version: "), 40, 60); 
 
@@ -397,6 +399,7 @@ void frmMain::OnPaint( wxPaintEvent& event )
 	// draw a line
 	dc.SetPen( wxPen( wxColor(0,0,0), 3 ) );	    // black line, 3 pixels thick
 	dc.DrawLine( 300, 100, 700, 300 );			    // draw line across the rectangle
+    */
 
 	event.Skip( false );
 }

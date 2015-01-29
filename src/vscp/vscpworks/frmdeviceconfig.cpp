@@ -3397,18 +3397,18 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
             progressDlg.Update( 40, _("Reading application registers 3/8.") );
 
             wxArrayLong pageArray;
-            uint32_t n = m_mdf.getPages( pageArray );
+            uint32_t nPage = m_mdf.getPages( pageArray );
 
-            if ( 0 == n ) {
+            if ( 0 == nPage ) {
                 wxMessageBox( _("MDF returns zero pages (which is an error) we still will read one page."), 
                                 _("VSCP Works"), 
                                 wxICON_WARNING );
-                n = 1;
+                nPage = 1;
             }
 
             m_userRegisters.init( pageArray );
 
-            for ( uint32_t i=0; i<n; i++ ) {
+            for ( uint32_t i = 0; i<nPage; i++ ) {
 
                 wxString str = wxString::Format( _("Fetching user regsisters for page %d 4/8"), pageArray[i] );
                 progressDlg.Update( 30, str );
