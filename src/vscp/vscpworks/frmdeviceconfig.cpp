@@ -1955,7 +1955,7 @@ void frmDeviceConfig::fillStandardRegisters()
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
-            _("89"));
+            getFormattedValue(m_stdRegisters.getStandardReg(0x89)));
     m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
