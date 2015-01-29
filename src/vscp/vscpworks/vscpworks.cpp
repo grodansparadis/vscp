@@ -294,10 +294,10 @@ void VscpworksApp::Init()
     g_Config.m_CANALRegErrorTimeout = VSCP_CANAL_ERROR_TIMEOUT;
     g_Config.m_CANALRegMaxRetries = VSCP_CANAL_MAX_TRIES;
 
-    g_Config.m_TCPIPResponseTimeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
-    g_Config.m_TCPIPRegMaxRetries = TCPIP_REGISTER_READ_MAX_TRIES;
-    g_Config.m_TCPIPRegResendTimeout = TCPIP_REGISTER_READ_RESEND_TIMEOUT;	       
-    g_Config.m_TCPIPRegErrorTimeout = TCPIP_REGISTER_READ_ERROR_TIMEOUT;
+    g_Config.m_TCPIPResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+    g_Config.m_TCPIPRegMaxRetries = VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES;
+    g_Config.m_TCPIPRegResendTimeout = VSCPWORKS_TCPIP_REGISTER_READ_RESEND_TIMEOUT;
+    g_Config.m_TCPIPRegErrorTimeout = VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT;
 
 	g_Config.m_Numberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
 
@@ -1677,7 +1677,7 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPResponseTimeout")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPResponseTimeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+                    g_Config.m_TCPIPResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         g_Config.m_TCPIPResponseTimeout = val;
                     }
@@ -1686,7 +1686,7 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPReadMaxRetries")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPRegMaxRetries = TCPIP_REGISTER_READ_MAX_TRIES;
+                    g_Config.m_TCPIPRegMaxRetries = VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         g_Config.m_TCPIPRegMaxRetries = val;
                     }
@@ -1695,7 +1695,7 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPReadResendTimeout")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPRegResendTimeout = TCPIP_REGISTER_READ_ERROR_TIMEOUT;
+                    g_Config.m_TCPIPRegResendTimeout = VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         g_Config.m_TCPIPRegResendTimeout = val;
                     }
@@ -1704,7 +1704,7 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPReadErrorTimeout")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPRegErrorTimeout = VSCP_CANAL_ERROR_TIMEOUT;
+                    g_Config.m_TCPIPRegErrorTimeout = VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         g_Config.m_TCPIPRegErrorTimeout = val;
                     }

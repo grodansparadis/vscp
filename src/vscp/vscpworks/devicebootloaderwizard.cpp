@@ -622,9 +622,7 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
 
                 if ( INTERFACE_CANAL == pBoth->m_type ) {
 
-                    m_labelInterfaceSelected->SetLabel(
-                        _( "CANAL - " ) +
-                        pBoth->m_pcanalif->m_strDescription );
+                    m_labelInterfaceSelected->SetLabel( _( "CANAL - " ) + pBoth->m_pcanalif->m_strDescription );
 
                     // Init node id combo
 
@@ -650,9 +648,9 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
 
                     // Set the selected interface
                     ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.setInterface( pBoth->m_pcanalif->m_strDescription,
-                                                                                     pBoth->m_pcanalif->m_strPath,
-                                                                                     pBoth->m_pcanalif->m_strConfig,
-                                                                                     pBoth->m_pcanalif->m_flags, 0, 0 );
+                                                                                        pBoth->m_pcanalif->m_strPath,
+                                                                                        pBoth->m_pcanalif->m_strConfig,
+                                                                                        pBoth->m_pcanalif->m_flags, 0, 0 );
 
                 }
                 else if ( ( INTERFACE_VSCP == pBoth->m_type ) &&
@@ -662,9 +660,36 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                     unsigned char GUID[ 16 ];
                     memcpy( GUID, pBoth->m_pvscpif->m_GUID, 16 );
 
-                    m_labelInterfaceSelected->SetLabel(
-                        _( "TCP/IP - " ) +
-                        pBoth->m_pvscpif->m_strDescription );
+                    m_labelInterfaceSelected->SetLabel( _( "TCP/IP - " ) + pBoth->m_pvscpif->m_strDescription );
+
+                    // Set the selected interface
+                    ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
+                                                                                        pBoth->m_pvscpif->m_strUser,
+                                                                                        pBoth->m_pvscpif->m_strPassword );
+
+                    if ( fetchIterfaceGUID() ) {
+
+                        progressDlg.Pulse( _( "Interface GUID found." ) );
+
+                        // Fill the combo
+                        wxString str;
+                        cguid guid = m_ifguid;
+                        wxArrayString strings;
+                        for ( int i = 1; i < 256; i++ ) {
+                            guid.setLSB( i );
+                            guid.toString( str );
+                            strings.Add( str );
+                        }
+                        m_comboNodeID->Append( strings );
+
+                        guid.setLSB( 1 );
+                        guid.toString( str );
+                        m_comboNodeID->SetValue( str );
+
+                    }
+                    else {
+                        m_comboNodeID->SetValue( _( "Enter full GUID of remote node here" ) );
+                    }
 
                     // Empty combo
                     ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->Clear();
@@ -683,11 +708,6 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                     GUID[ 15 ] = 0x01;
                     vscp_writeGuidArrayToString( GUID, str );
                     ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->SetValue( str );
-
-                    // Set the selected interface
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
-                                                                                     pBoth->m_pvscpif->m_strUser,
-                                                                                     pBoth->m_pvscpif->m_strPassword );
 
                 }
 
