@@ -165,6 +165,7 @@ void frmMain::Init()
             wxMessageBox(_("Failed to create directory. ") + wxStandardPaths::Get().GetUserDataDir() );
         }
     }
+
 }
 
 
