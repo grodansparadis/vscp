@@ -3246,7 +3246,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                 wxMessageBox( _("MDF returns zero pages (which is an error) we still will read one page."), 
                                 _("VSCP Works"), 
                                 wxICON_WARNING );
+                // Add standard page
                 nPages = 1;
+                pageArray.Add(0);
             }
 
             m_userRegisters.init( pageArray );
