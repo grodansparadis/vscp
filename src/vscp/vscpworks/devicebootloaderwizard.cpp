@@ -657,8 +657,10 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                           ( NULL != pBoth->m_pcanalif ) ) {
 
                     wxString str;
-                    unsigned char GUID[ 16 ];
-                    memcpy( GUID, pBoth->m_pvscpif->m_GUID, 16 );
+                    cguid guid;
+                    guid.getFromArray( pBoth->m_pvscpif->m_GUID  );
+                    //unsigned char GUID[ 16 ];
+                    //memcpy( GUID, pBoth->m_pvscpif->m_GUID, 16 );
 
                     m_labelInterfaceSelected->SetLabel( _( "TCP/IP - " ) + pBoth->m_pvscpif->m_strDescription );
 
@@ -667,9 +669,7 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                                                                                         pBoth->m_pvscpif->m_strUser,
                                                                                         pBoth->m_pvscpif->m_strPassword );
 
-                    if ( fetchIterfaceGUID() ) {
-
-                        progressDlg.Pulse( _( "Interface GUID found." ) );
+                    /*if ( fetchIterfaceGUID() ) {
 
                         // Fill the combo
                         wxString str;
@@ -680,7 +680,7 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                             guid.toString( str );
                             strings.Add( str );
                         }
-                        m_comboNodeID->Append( strings );
+                        ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->Append( strings );
 
                         guid.setLSB( 1 );
                         guid.toString( str );
@@ -688,7 +688,7 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
 
                     }
                     else {
-                        m_comboNodeID->SetValue( _( "Enter full GUID of remote node here" ) );
+                        ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->SetValue( _( "Enter full GUID of remote node here" ) );
                     }
 
                     // Empty combo
@@ -708,7 +708,7 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                     GUID[ 15 ] = 0x01;
                     vscp_writeGuidArrayToString( GUID, str );
                     ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->SetValue( str );
-
+                    */
                 }
 
                 /*

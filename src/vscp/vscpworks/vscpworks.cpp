@@ -3466,6 +3466,10 @@ wxString VscpworksApp::formatString( const wxString& str, const unsigned int wid
     return strWrk;
 }
 
+
+
+
+
 //////////////////////////////////////////////////////////////////////////////
 // getLevel1DmInfo
 //

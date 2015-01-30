@@ -126,7 +126,7 @@
 
 #define VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT		    3
 #define VSCPWORKS_TCPIP_REGISTER_READ_RESEND_TIMEOUT		2000
-#define VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT		    5000
+#define VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT		    6000
 #define VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES			    3
 
 #define VSCP_DEVCONFIG_NUMBERBASE_HEX			0
@@ -412,6 +412,9 @@ public:
 		@return Fromated string.
 	*/
 	wxString formatString( const wxString& str, const unsigned int width = 80 );
+
+
+    
   
   /*!
     Get Decision Matrix info for a Level I Node
