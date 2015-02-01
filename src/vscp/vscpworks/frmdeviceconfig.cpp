@@ -837,7 +837,7 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event)
         }
 
         unsigned char val;
-        if ( m_csw.getDllInterface()->readLevel1Register( 0, nodeid, 0xd0, &val ) ) {
+        if ( CANAL_ERROR_SUCCESS == m_csw.getDllInterface()->readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
             wxMessageBox(_("Device found!"));
         } 
         else {
@@ -852,12 +852,13 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event)
         destGUID.getFromString(m_comboNodeID->GetValue());
 
         unsigned char val;
-        if ( m_csw.readLevel2Register( m_ifguid,
-                                        m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
-                                        &val,
-                                        &destGUID,
-                                        NULL,
-                                        m_bLevel2->GetValue())) {
+        if ( VSCP_ERROR_SUCCESS == 
+             m_csw.getTcpIpInterface()->readLevel2Register( m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
+                                            0,      // page
+                                            &val,
+                                            m_ifguid,
+                                            &destGUID,                                            
+                                            m_bLevel2->GetValue())) {
             wxMessageBox(_("Device found!"));
         } 
         else {

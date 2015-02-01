@@ -44,13 +44,15 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(ProjectDir)\Release\</OutDir>
     <IntDir>$(ProjectDir)\Release\</IntDir>
-    <IncludePath>$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Program Files %28x86%29\Visual Leak Detector\include</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)vscpworks/Debug\</OutDir>
     <IntDir>$(SolutionDir)VCProjectDebug\</IntDir>
-    <IncludePath>$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <IncludePath>$(VSCP_HOME)/src/common;$(VSCP_HOME)/src/vscp/common;$(VC_IncludePath);$(WindowsSDK_IncludePath);C:\Program Files %28x86%29\Visual Leak Detector\include</IncludePath>
+    <LibraryPath>C:\Program Files %28x86%29\Visual Leak Detector\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>

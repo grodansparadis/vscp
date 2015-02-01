@@ -44,11 +44,14 @@
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
+//#include "wx/wxprec.h"
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
+//#include <vld.h>
+
+// https://msdn.microsoft.com/en-us/library/x98tx3cf.aspx
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
@@ -92,17 +95,18 @@
 #include <vscp_type.h>
 #include "vscpworks.h"
 
+// Global nodes info
 canal_nodeinfo g_nodesCANAL[ MAX_NUMBER_OF_NODES ];
 vscp_nodeinfo g_nodesVSCP[ MAX_NUMBER_OF_NODES ];
 int g_cntCanalNodes;
 int g_cntVscpNodes;
+
 appConfiguration g_Config;
 VSCPInformation g_vscpinfo;
 
 // Lists for interfaces
 WX_DEFINE_LIST(LIST_CANAL_IF);
 WX_DEFINE_LIST(LIST_VSCP_IF);
-
 
 /*!
 * Application instance implementation
@@ -369,8 +373,9 @@ int VscpworksApp::OnExit()
     }
     g_Config.m_vscpIfList.clear();
 
-	return wxApp::OnExit();
+    //_CrtDumpMemoryLeaks();
 
+    return wxApp::OnExit();
 }
 
 

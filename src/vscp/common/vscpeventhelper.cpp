@@ -778,7 +778,8 @@ VSCPInformation::VSCPInformation( void )
 
 VSCPInformation::~VSCPInformation(void)
 {
-
+    m_hashClass.begin();
+    m_hashType.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

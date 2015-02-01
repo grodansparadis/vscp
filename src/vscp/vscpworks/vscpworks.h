@@ -66,8 +66,6 @@
  * Control identifiers
  */
 
-
-
 #define VSCPWORKS_CONFIG_FILE_NAME   _("vscpworks.conf")
 
 #define VSCPWORKS_MAIN_WINDOW_DEFAULT_WIDTH     600
@@ -120,17 +118,17 @@
 
 // Default values for read/write register functions
 // used in device config and scan.
-#define VSCP_CANAL_RESEND_TIMEOUT               1000
-#define VSCP_CANAL_ERROR_TIMEOUT                5000
-#define VSCP_CANAL_MAX_TRIES                    3
+#define VSCP_CANAL_RESEND_TIMEOUT                           1000
+#define VSCP_CANAL_ERROR_TIMEOUT                            5000
+#define VSCP_CANAL_MAX_TRIES                                3
 
 #define VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT		    3
 #define VSCPWORKS_TCPIP_REGISTER_READ_RESEND_TIMEOUT		2000
 #define VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT		    6000
 #define VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES			    3
 
-#define VSCP_DEVCONFIG_NUMBERBASE_HEX			0
-#define VSCP_DEVCONFIG_NUMBERBASE_DECIMAL		1
+#define VSCP_DEVCONFIG_NUMBERBASE_HEX			            0
+#define VSCP_DEVCONFIG_NUMBERBASE_DECIMAL		            1
 
 WX_DECLARE_STRING_HASH_MAP( wxString, MdfProxyHash );
 
@@ -176,9 +174,9 @@ typedef struct {
 
 // Structure for VSCP drivers
 typedef struct {
-  int m_type;
-  canal_interface *m_pcanalif;
-  vscp_interface *m_pvscpif;
+    int m_type;
+    canal_interface *m_pcanalif;
+    vscp_interface *m_pvscpif;
 } both_interface;
 
 // Lists for interfaces
