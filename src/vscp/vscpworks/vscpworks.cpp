@@ -46,7 +46,7 @@
 // For compilers that support precompilation, includes "wx/wx.h".
 //#include "wx/wxprec.h"
 
-//#include <vld.h>
+#include <vld.h>
 
 // https://msdn.microsoft.com/en-us/library/x98tx3cf.aspx
 //#define _CRTDBG_MAP_ALLOC
@@ -307,7 +307,6 @@ void VscpworksApp::Init()
 
 	g_Config.m_bConfirmDelete = true;
 
-    wxASSERT( false );
 }
 
 /*!
