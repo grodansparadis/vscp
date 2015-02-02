@@ -327,11 +327,13 @@ public:
   /*!
     Handler for asserts
   */
+#if (wxMAJOR_VERSION >= 3)
   static void AssertHandler( const wxString &file,
                                     int line,
                                     const wxString &func,
                                     const wxString &cond,
                                     const wxString &msg );
+#endif
 
   /*!
     Read XML configuration from file

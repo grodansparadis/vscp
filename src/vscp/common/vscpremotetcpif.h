@@ -792,7 +792,7 @@ public:
 //                   G R A P H I C A L   H E L P E R S
 // ------------------------------------------------------------------------
 
-#if ( wxUSE_GUI != 0 )
+
 
     /*!
         Fetch guid for a tcp/ip interface from it's name.
@@ -801,6 +801,8 @@ public:
         @param Returns true on success.
     */
     int fetchIterfaceGUID( const wxString& ifName, cguid& guid );
+
+#if ( wxUSE_GUI != 0 )
 
 #endif
 

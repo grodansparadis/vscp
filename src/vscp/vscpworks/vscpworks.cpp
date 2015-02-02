@@ -203,7 +203,9 @@ void VscpworksApp::Init()
 	g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
 
     // Set assert handler
+#if (wxMAJOR_VERSION >= 3)
     wxSetAssertHandler( VscpworksApp::AssertHandler );
+#endif
 
     int i,j;
     for ( i=0; i<MAX_NUMBER_OF_NODES; i++ ) {
@@ -436,7 +438,7 @@ void VscpworksApp::logMsg( const wxString& wxstr, unsigned char level )
 /////////////////////////////////////////////////////////////////////////////
 // AssertHandler
 //
-
+#if (wxMAJOR_VERSION >= 3)
 void VscpworksApp::AssertHandler( const wxString &file, 
                                         int line, 
                                         const wxString &func, 
@@ -453,7 +455,7 @@ void VscpworksApp::AssertHandler( const wxString &file,
     ::wxGetApp().logMsg( logmsg, 
                         VSCPWORKS_LOGMSG_ALERT );
 }
-
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // loadConfigData
