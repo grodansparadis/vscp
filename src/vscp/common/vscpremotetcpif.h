@@ -802,6 +802,8 @@ public:
     */
     int fetchIterfaceGUID( const wxString& ifName, cguid& guid );
 
+
+
 #if ( wxUSE_GUI != 0 )
 
 #endif
