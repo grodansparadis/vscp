@@ -3080,8 +3080,8 @@ vscpws_stateButton.prototype.setValue = function(value, bUpdate)
             }
             cmd += ",";
             for (i=0;i<this.tansmitt_data_on.length;i++) {
-                    cmd += this.tansmitt_data_on[i].toString() + ",";
-                    if (i<this.tansmitt_data_on.length-1) cmd += ",";   // No comma for last
+                    cmd += this.tansmitt_data_on[i].toString();
+                    if ( i < this.tansmitt_data_on.length-1 ) cmd += ",";   // No comma for last
             }
             
             if (vscpws_debug) console.log(cmd);
@@ -3205,7 +3205,8 @@ vscpws_stateButton.prototype.onVSCPOpen = function()
 {
     //if (vscpws_debug) console.log('Open VSCP websocket');
     //this.bConnected = true;
-    //this.socket_vscp.send("C;" + "open");
+    
+	this.socket_vscp.send("C;" + "challenge");
    
     // Draw the state
     this.draw();
@@ -3237,8 +3238,7 @@ vscpws_stateButton.prototype.onVSCPMessage = function(msg)
     if (vscpws_debug) console.log('onVSCPMessage -' + this.instanceName + " " + msg.data);
 	
     msgitems = msg.data.split(';');
-    
-				
+    			
     if ("+" == msgitems[0]){        // check for positive reply
     
         if (vscpws_debug) console.log("Positive reply "+msg.data);
@@ -3250,7 +3250,7 @@ vscpws_stateButton.prototype.onVSCPMessage = function(msg)
 			this.socket_vscp.send(msg);
         }
         else if ( "AUTH1" == msgitems[1] ) {
-        
+			        
             // We are authenticated and ready to go to work         
             this.socket_vscp.send("C;" + "OPEN");
    
@@ -3497,7 +3497,7 @@ function vscpws_simpleTextEvent( username,           // Username for websocket s
 }
 
 //-----------------------------------------------------------------------------
-// onVSCPOpen
+// setExtraParameters
 //-----------------------------------------------------------------------------
 
 vscpws_simpleTextEvent.prototype.setExtraParameters = 
@@ -3527,6 +3527,8 @@ vscpws_simpleTextEvent.prototype.onVSCPOpen = function()
     
     // Set filter
     //this.setFilter();
+	
+	this.socket_vscp.send("C;" + "challenge");
 };
 
 //-----------------------------------------------------------------------------
@@ -3708,7 +3710,6 @@ vscpws_simpleTextEvent.prototype.onVSCPMessage = function(msg)
                 vscpws_units[vscptype][vscpws_getDatacodingUnit(vscpdata[0])],
                 vscpws_getDatacodingUnit(vscpdata[0]),
                 vscpws_getSensorIndexFromDataCoding(vscpdata[0]));
-            document.getElementById(this.elementId).style.color = 'green';
             
         } 
         // Floating point
@@ -3823,27 +3824,16 @@ vscpws_simpleTextEvent.prototype.closeConnection = function()
 	this.socket_vscp.send("C;" + "close");
 }
 
-//-----------------------------------------------------------------------------
-// setTextValidityExpire
-//-----------------------------------------------------------------------------
 
-vscpws_simpleTextEvent.prototype.setTextValidityExpire = function(interval)
-{
-    var t = this;
-    // First set default parameter
-    interval = typeof interval !== 'undefined' ? interval : 90000;
-    setInterval(function(){t.time4TextValidityExpire();}, interval);
-}
 
-//-----------------------------------------------------------------------------
-// time4TextValidityExpire
-//-----------------------------------------------------------------------------
 
-vscpws_simpleTextEvent.prototype.time4TextValidityExpire = function()
-{
-    if (vscpws_debug) console.log("time4TextValidityExpire");
-    document.getElementById(this.elementId).style.color = 'gray';
-}
+
+
+
+
+
+
+
 
 // ----------------------------------------------------------------------------
 
@@ -4068,7 +4058,7 @@ vscpws_thermometerCelsius.prototype.draw = function()
 };
 
 //-----------------------------------------------------------------------------
-// onVSCPOpen
+// setExtraParameters
 //-----------------------------------------------------------------------------
 
 vscpws_thermometerCelsius.prototype.setExtraParameters = 
@@ -4097,6 +4087,8 @@ vscpws_thermometerCelsius.prototype.onVSCPOpen = function()
     
     // Set filter
     //this.setFilter();
+	
+	this.socket_vscp.send("C;" + "challenge");
     
     this.draw();
 };
@@ -4564,7 +4556,7 @@ vscpws_speedometerCelius.prototype.draw = function()
 };
 
 //-----------------------------------------------------------------------------
-// onVSCPOpen
+// setExtraParameters
 //-----------------------------------------------------------------------------
 
 vscpws_speedometerCelius.prototype.setExtraParameters = 
@@ -4603,6 +4595,8 @@ vscpws_speedometerCelius.prototype.onVSCPOpen = function()
     
     // Set filter
     //this.setFilter();
+	
+	this.socket_vscp.send("C;" + "challenge");
     
     this.draw();
 };
@@ -5046,7 +5040,7 @@ function vscpws_Event( username,            // Username for websocket serever
 }
 
 //-----------------------------------------------------------------------------
-// onVSCPOpen
+// isOpen
 //-----------------------------------------------------------------------------
 
 vscpws_Event.prototype.isOpen = function() 
@@ -5060,6 +5054,8 @@ vscpws_Event.prototype.isOpen = function()
 
 vscpws_Event.prototype.onVSCPOpen = function() 
 {
+	this.socket_vscp.send("C;" + "challenge");
+	
     if (this.elementId) document.getElementById(this.elementId).textContent = 
             " undefined ";
     if (vscpws_debug) console.log('Open VSCP websocket');
@@ -5384,7 +5380,7 @@ function vscpws_Variable( username,             // Username for websocket server
 }
 
 //-----------------------------------------------------------------------------
-// onVSCPOpen
+// isOpen
 //-----------------------------------------------------------------------------
 
 vscpws_Variable.prototype.isOpen = function() 
@@ -5398,6 +5394,8 @@ vscpws_Variable.prototype.isOpen = function()
 
 vscpws_Variable.prototype.onVSCPOpen = function() 
 {
+	this.socket_vscp.send("C;" + "challenge");
+	
     if (this.elementId) document.getElementById(this.elementId).textContent = 
             " undefined ";
     if (vscpws_debug) console.log('Open VSCP websocket');
@@ -5775,7 +5773,7 @@ function vscpws_Table( username,                // Username for websocket server
 }
 
 //-----------------------------------------------------------------------------
-// onVSCPOpen
+// isOpen
 //-----------------------------------------------------------------------------
 
 vscpws_Table.prototype.isOpen = function() 
@@ -5793,6 +5791,8 @@ vscpws_Table.prototype.onVSCPOpen = function()
             " undefined ";
     if (vscpws_debug) console.log('Open VSCP websocket');
     
+	this.socket_vscp.send("C;" + "challenge");
+	
     // Start monitoring
     //this.SetInterval( this.interval );
 };

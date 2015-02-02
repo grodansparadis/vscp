@@ -837,7 +837,7 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event)
         }
 
         unsigned char val;
-        if ( m_csw.getDllInterface()->readLevel1Register( 0, nodeid, 0xd0, &val ) ) {
+        if ( CANAL_ERROR_SUCCESS == m_csw.getDllInterface()->readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
             wxMessageBox(_("Device found!"));
         } 
         else {
@@ -852,12 +852,13 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event)
         destGUID.getFromString(m_comboNodeID->GetValue());
 
         unsigned char val;
-        if ( m_csw.readLevel2Register( m_ifguid,
-                                        m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
-                                        &val,
-                                        &destGUID,
-                                        NULL,
-                                        m_bLevel2->GetValue())) {
+        if ( VSCP_ERROR_SUCCESS == 
+             m_csw.getTcpIpInterface()->readLevel2Register( m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
+                                            0,      // page
+                                            &val,
+                                            m_ifguid,
+                                            &destGUID,                                            
+                                            m_bLevel2->GetValue())) {
             wxMessageBox(_("Device found!"));
         } 
         else {
@@ -1955,7 +1956,7 @@ void frmDeviceConfig::fillStandardRegisters()
 
     m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1,
             2,
-            _("89"));
+            getFormattedValue(m_stdRegisters.getStandardReg(0x89)));
     m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
     m_gridRegisters->SetReadOnly(m_gridRegisters->GetNumberRows() - 1, 2);
 
@@ -3246,7 +3247,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                 wxMessageBox( _("MDF returns zero pages (which is an error) we still will read one page."), 
                                 _("VSCP Works"), 
                                 wxICON_WARNING );
+                // Add standard page
                 nPages = 1;
+                pageArray.Add(0);
             }
 
             m_userRegisters.init( pageArray );
@@ -3397,18 +3400,22 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
             progressDlg.Update( 40, _("Reading application registers 3/8.") );
 
             wxArrayLong pageArray;
-            uint32_t n = m_mdf.getPages( pageArray );
+            uint32_t nPage = m_mdf.getPages( pageArray );
 
-            if ( 0 == n ) {
+            if ( 0 == nPage ) {
                 wxMessageBox( _("MDF returns zero pages (which is an error) we still will read one page."), 
                                 _("VSCP Works"), 
                                 wxICON_WARNING );
-                n = 1;
+
+                // Add standard page
+                nPage = 1;
+                pageArray.Add(0);
+
             }
 
             m_userRegisters.init( pageArray );
 
-            for ( uint32_t i=0; i<n; i++ ) {
+            for ( uint32_t i = 0; i<nPage; i++ ) {
 
                 wxString str = wxString::Format( _("Fetching user regsisters for page %d 4/8"), pageArray[i] );
                 progressDlg.Update( 30, str );

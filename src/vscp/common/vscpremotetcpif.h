@@ -788,10 +788,23 @@ public:
                                     wxString &strurl,
                                     bool bLevel2 = false );
 
+// ------------------------------------------------------------------------
+//                   G R A P H I C A L   H E L P E R S
+// ------------------------------------------------------------------------
 
-// ------------------------------------------------------------------------
-//                   T H R E A D E D  I N T E R F A C E
-// ------------------------------------------------------------------------
+#if ( wxUSE_GUI != 0 )
+
+    /*!
+        Fetch guid for a tcp/ip interface from it's name.
+        @param ifName Interface name
+        @param guid Returnd GUID for interface
+        @param Returns true on success.
+    */
+    bool fetchIterfaceGUID( const wxString& ifName, cguid& guid );
+
+#endif
+
+
 
 
 

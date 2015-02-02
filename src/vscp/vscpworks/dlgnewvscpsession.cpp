@@ -234,7 +234,7 @@ void dlgNewVSCPSession::OnInitDialog(wxInitDialogEvent& event)
 {
     event.Skip();
 
-    fillListBox(wxString(_("")));
+    fillListBox( wxString(_("") ) );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -513,7 +513,7 @@ void dlgNewVSCPSession::fillListBox(const wxString& strDecription)
 {
     cleanupListbox();
 
-    if (m_bShowUnconnectedMode) {
+    if ( m_bShowUnconnectedMode ) {
         both_interface *pBoth = new both_interface; // Dummy for unconnected mode
         wxASSERT(NULL != pBoth);
         pBoth->m_pcanalif = NULL;

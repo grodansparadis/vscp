@@ -33,9 +33,15 @@
     websocket.onopen = function(ev) {
       out('CONNECTED');
 	  console.log("Connected");
+	  
+	  var msg = 'C;CHALLENGE';
+      out('SENT: ' + msg);
+      websocket.send(msg);
+	  
       var msg = 'C;NOOP';
       out('SENT: ' + msg);
       websocket.send(msg);
+	  
     };
 	
     websocket.onclose = function(ev) {
@@ -57,7 +63,7 @@
 		// Check for positive reply
 		if ( '+' == res[0] ) {
 			if ( "AUTH0" == res[1] ) {
-				out('<span style="color: red;">Authentication 0 -  Login challang</span>');
+				out('<span style="color: red;">Authentication 0 -  Login challenge</span>');
 				var msg = "C;AUTH;" + user + ";" + vscp_make_websocket_auth_hash( user, passwordhash, res[2] );
 				websocket.send( msg );
 				out('SENT: ' + msg);

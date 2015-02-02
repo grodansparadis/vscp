@@ -2592,7 +2592,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
                                                 cguid *pdestGUID,                                                
                                                 bool bLevel2 )
 {
-	bool rv = CANAL_ERROR_SUCCESS;
+	int rv = VSCP_ERROR_SUCCESS;
 	uint32_t errors = 0;
 	bool bResend;
 	wxString strBuf;
@@ -2683,7 +2683,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
 
 		if ( doCmdDataAvailable() ) {	// Message available
 
-			if ( CANAL_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {	// Valid event
+            if ( VSCP_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {	// Valid event
 
 				// Check for correct reply event
                 {
@@ -2782,7 +2782,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
 		}   
 
 		if ( errors > m_registerOpMaxRetries ) {
-			rv = false;
+            rv = VSCP_ERROR_TIMEOUT;
 			break;
 		}
         
@@ -3297,6 +3297,92 @@ error:
 
 
 
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                           Graphical helpers
+///////////////////////////////////////////////////////////////////////////////
+
+
+#if ( wxUSE_GUI != 0 )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// fetchIterfaceGUID
+//
+/*
+bool VscpRemoteTcpIf::fetchIterfaceGUID( VscpRemoteTcpIf *ptcpipif, const wxString& ifName, cguid& guid )
+{
+    wxString str;
+    wxArrayString ifarray;
+
+    if ( m_bConnected ) {
+        wxMessageBox( _( "TCP/IP connection to daemon must be open." ) );
+        return false;
+    }
+
+    // Get the interface list
+    while ( true ) {
+
+        if ( VSCP_ERROR_SUCCESS ==
+             doCmdInterfaceList( ifarray ) ) {
+
+            if ( ifarray.Count() ) {
+
+                for ( unsigned int i = 0; i < ifarray.Count(); i++ ) {
+
+                    wxStringTokenizer tkz( ifarray[ i ], _( "," ) );
+                    wxString strOrdinal = tkz.GetNextToken();
+                    wxString strType = tkz.GetNextToken();
+                    wxString strIfGUID = tkz.GetNextToken();
+                    wxString strDescription = tkz.GetNextToken();
+
+                    int pos;
+                    wxString strName;
+                    if ( wxNOT_FOUND != ( pos = strDescription.Find( _( " " ) ) ) ) {
+                        strName = strDescription.Left( pos );
+                        strName.Trim();
+                    }
+
+                    if ( strName.Upper() == ifName.Upper() ) {
+
+                        // Save interface GUID;
+                        guid.getFromString( strIfGUID );
+                        return true;
+
+                    }
+
+                }
+
+            }
+            else {
+                if ( wxYES != wxMessageBox( _( "No interfaces found. Try to find again?" ),
+                    _( "Fetching interfaces" ),
+                    wxYES_NO ) ) {
+                    break;
+                }
+            }
+        }
+        else {
+            if ( wxYES != wxMessageBox( _( "Unable to get interface list from VSCP daemon. Try to get again?" ),
+                _( "Fetching interfaces" ),
+                wxYES_NO ) ) {
+                break;
+            }
+        }
+
+    }
+
+    return false;
+}
+
+*/
+
+#endif
 
 
 

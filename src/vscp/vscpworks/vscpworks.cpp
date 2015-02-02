@@ -44,11 +44,14 @@
 #endif
 
 // For compilers that support precompilation, includes "wx/wx.h".
-#include "wx/wxprec.h"
+//#include "wx/wxprec.h"
 
-#ifdef __BORLANDC__
-#pragma hdrstop
-#endif
+#include <vld.h>
+
+// https://msdn.microsoft.com/en-us/library/x98tx3cf.aspx
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
 
 #ifndef WX_PRECOMP
 #include "wx/wx.h"
@@ -92,17 +95,18 @@
 #include <vscp_type.h>
 #include "vscpworks.h"
 
+// Global nodes info
 canal_nodeinfo g_nodesCANAL[ MAX_NUMBER_OF_NODES ];
 vscp_nodeinfo g_nodesVSCP[ MAX_NUMBER_OF_NODES ];
 int g_cntCanalNodes;
 int g_cntVscpNodes;
+
 appConfiguration g_Config;
 VSCPInformation g_vscpinfo;
 
 // Lists for interfaces
 WX_DEFINE_LIST(LIST_CANAL_IF);
 WX_DEFINE_LIST(LIST_VSCP_IF);
-
 
 /*!
 * Application instance implementation
@@ -194,9 +198,8 @@ void VscpworksApp::Init()
     }
     */
 
-	//wxStandardPaths stdPath;
 	g_Config.m_strPathLogFile = wxStandardPaths::Get().GetTempDir();
-	g_Config.m_strPathLogFile += _("/vscpworks.log");
+	g_Config.m_strPathLogFile += _("\\vscpworks.log");
 	g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
 
     // Set assert handler
@@ -295,14 +298,15 @@ void VscpworksApp::Init()
     g_Config.m_CANALRegErrorTimeout = VSCP_CANAL_ERROR_TIMEOUT;
     g_Config.m_CANALRegMaxRetries = VSCP_CANAL_MAX_TRIES;
 
-    g_Config.m_TCPIPResponseTimeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
-    g_Config.m_TCPIPRegMaxRetries = TCPIP_REGISTER_READ_MAX_TRIES;
-    g_Config.m_TCPIPRegResendTimeout = TCPIP_REGISTER_READ_RESEND_TIMEOUT;	       
-    g_Config.m_TCPIPRegErrorTimeout = TCPIP_REGISTER_READ_ERROR_TIMEOUT;
+    g_Config.m_TCPIPResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+    g_Config.m_TCPIPRegMaxRetries = VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES;
+    g_Config.m_TCPIPRegResendTimeout = VSCPWORKS_TCPIP_REGISTER_READ_RESEND_TIMEOUT;
+    g_Config.m_TCPIPRegErrorTimeout = VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT;
 
 	g_Config.m_Numberbase = VSCP_DEVCONFIG_NUMBERBASE_HEX;
 
 	g_Config.m_bConfirmDelete = true;
+
 }
 
 /*!
@@ -368,8 +372,9 @@ int VscpworksApp::OnExit()
     }
     g_Config.m_vscpIfList.clear();
 
-	return wxApp::OnExit();
+    //_CrtDumpMemoryLeaks();
 
+    return wxApp::OnExit();
 }
 
 
@@ -1596,9 +1601,6 @@ bool VscpworksApp::readConfiguration( void )
                 }
                 else if (subchild->GetName() == _("path2logfile")) {
 
-					unsigned long val;
-					//wxStandardPaths stdPath;
-
 					g_Config.m_strPathLogFile = subchild->GetNodeContent();
 					if ( 0 == g_Config.m_strPathLogFile.Length() ) {
 						g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
@@ -1619,30 +1621,27 @@ bool VscpworksApp::readConfiguration( void )
 					if ( wxNOT_FOUND  != level.Find(_("DEBUG")) ) {
                         g_Config.m_logLevel = VSCPWORKS_LOGMSG_DEBUG;
 					}
-					if ( wxNOT_FOUND  != level.Find(_("INFO")) ) {
+					else if ( wxNOT_FOUND  != level.Find(_("INFO")) ) {
                         g_Config.m_logLevel = VSCPWORKS_LOGMSG_INFO;
 					}
-					if ( wxNOT_FOUND  != level.Find(_("WARNING")) ) {
+					else if ( wxNOT_FOUND  != level.Find(_("WARNING")) ) {
                         g_Config.m_logLevel = VSCPWORKS_LOGMSG_WARNING;
 					}
-					if ( wxNOT_FOUND  != level.Find(_("ERROR")) ) {
+					else if ( wxNOT_FOUND  != level.Find(_("ERROR")) ) {
                         g_Config.m_logLevel = VSCPWORKS_LOGMSG_ERROR;
 					}
-					if ( wxNOT_FOUND  != level.Find(_("CRITICAL")) ) {
+					else if ( wxNOT_FOUND  != level.Find(_("CRITICAL")) ) {
                         g_Config.m_logLevel = VSCPWORKS_LOGMSG_CRITICAL;
 					}
-					if ( wxNOT_FOUND  != level.Find(_("ALERT")) ) {
+					else if ( wxNOT_FOUND  != level.Find(_("ALERT")) ) {
                         g_Config.m_logLevel = VSCPWORKS_LOGMSG_ALERT;
 					}
-					if ( wxNOT_FOUND  != level.Find(_("EMERGENCY")) ) {
+					else if ( wxNOT_FOUND  != level.Find(_("EMERGENCY")) ) {
                         g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
 					}
 					else {
                         g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
 					}
-                    if ( level.ToULong( &val, 10 ) ) {
-                        g_Config.m_logLevel = val;
-                    }
 
                 }
 
@@ -1682,7 +1681,7 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPResponseTimeout")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPResponseTimeout = TCPIP_DEFAULT_RESPONSE_TIMEOUT;
+                    g_Config.m_TCPIPResponseTimeout = VSCPWORKS_TCPIP_DEFAULT_RESPONSE_TIMEOUT;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         g_Config.m_TCPIPResponseTimeout = val;
                     }
@@ -1691,7 +1690,7 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPReadMaxRetries")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPRegMaxRetries = TCPIP_REGISTER_READ_MAX_TRIES;
+                    g_Config.m_TCPIPRegMaxRetries = VSCPWORKS_TCPIP_REGISTER_READ_MAX_TRIES;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         g_Config.m_TCPIPRegMaxRetries = val;
                     }
@@ -1700,7 +1699,7 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPReadResendTimeout")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPRegResendTimeout = TCPIP_REGISTER_READ_ERROR_TIMEOUT;
+                    g_Config.m_TCPIPRegResendTimeout = VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         g_Config.m_TCPIPRegResendTimeout = val;
                     }
@@ -1709,7 +1708,7 @@ bool VscpworksApp::readConfiguration( void )
                 else if (subchild->GetName() == _("TCPIPReadErrorTimeout")) {
 
                     unsigned long val;
-                    g_Config.m_TCPIPRegErrorTimeout = VSCP_CANAL_ERROR_TIMEOUT;
+                    g_Config.m_TCPIPRegErrorTimeout = VSCPWORKS_TCPIP_REGISTER_READ_ERROR_TIMEOUT;
                     if ( subchild->GetNodeContent().ToULong( &val, 10 ) ) {
                         g_Config.m_TCPIPRegErrorTimeout = val;
                     }
@@ -1745,42 +1744,9 @@ bool VscpworksApp::readConfiguration( void )
 					}
 
                 }
-				else if (subchild->GetName() == _("loglevel")) {
-
-                    g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
-					wxString str = subchild->GetNodeContent();
-					str = str.Upper();
-					if ( wxNOT_FOUND  != str.Find(_("DEBUG")) ) {
-                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_DEBUG;
-					}
-					if ( wxNOT_FOUND  != str.Find(_("INFO")) ) {
-                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_INFO;
-					}
-					if ( wxNOT_FOUND  != str.Find(_("WARNING")) ) {
-                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_WARNING;
-					}
-					if ( wxNOT_FOUND  != str.Find(_("ERROR")) ) {
-                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_ERROR;
-					}
-					if ( wxNOT_FOUND  != str.Find(_("CRITICAL")) ) {
-                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_CRITICAL;
-					}
-					if ( wxNOT_FOUND  != str.Find(_("ALERT")) ) {
-                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_ALERT;
-					}
-					if ( wxNOT_FOUND  != str.Find(_("EMERGENCY")) ) {
-                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
-					}
-					else {
-                        g_Config.m_logLevel = VSCPWORKS_LOGMSG_EMERGENCY;
-					}
-
-                }
-
 
                 subchild = subchild->GetNext();
             }
-
 
         } 
         else if (child->GetName() == _("vscpclient")) {
@@ -2206,18 +2172,6 @@ bool VscpworksApp::readConfiguration( void )
                             pVSCPif->m_strHost = subsubchild->GetNodeContent();
                             pVSCPif->m_strHost.Trim(false);
                         }
-                        /*else if (subsubchild->GetName() == _("port")) {
-
-                            unsigned long val;
-                            pVSCPif->m_port = 9598;
-                            if (  subsubchild->GetNodeContent().ToULong( &val, 10 ) ) {
-                                pVSCPif->m_port = val;
-                            }
-                            else if (subsubchild->GetNodeContent().ToULong( &val, 16 ) ) {
-                                pVSCPif->m_port = val;
-                            }
-
-                        }*/
                         else if (subsubchild->GetName() == _("username")) {
 
                             pVSCPif->m_strUser = subsubchild->GetNodeContent().Trim();
@@ -2324,7 +2278,6 @@ bool VscpworksApp::readConfiguration( void )
 
     } // while child
 
-
     return true;
 }
 
@@ -2407,7 +2360,7 @@ bool VscpworksApp::writeConfiguration( void )
         pFileStream->Write("false",strlen("false"));
     }
 
-    pFileStream->Write("\" level=\"",strlen("\" level=\""));
+    pFileStream->Write("\" level=\"",strlen("\" level=\"") );
 
     switch ( g_Config.m_logLevel ) {
 	
@@ -2793,12 +2746,6 @@ bool VscpworksApp::writeConfiguration( void )
             pFileStream->Write("<host>",strlen("<host>"));
             pFileStream->Write( pIf->m_strHost.mb_str(), strlen( pIf->m_strHost.mb_str() ) );
             pFileStream->Write("</host>\n",strlen("</host>\n"));
-
-            // port
-            //pFileStream->Write("<port>",strlen("<port>"));
-            //buf.Printf(_("%d"), pIf->m_port );
-            //pFileStream->Write( buf.mb_str(),strlen(buf.mb_str()) );
-            //pFileStream->Write("</port>\n",strlen("</port>\n"));
 
             // username
             pFileStream->Write("<username>",strlen("<username>"));
@@ -3522,6 +3469,10 @@ wxString VscpworksApp::formatString( const wxString& str, const unsigned int wid
 
     return strWrk;
 }
+
+
+
+
 
 //////////////////////////////////////////////////////////////////////////////
 // getLevel1DmInfo
