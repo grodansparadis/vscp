@@ -3619,7 +3619,7 @@ void deviceWriteThread::OnExit()
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// wxEVT_COMMAND_HTML_LINK_CLICKED event handler for ID_HTMLWINDOW_RCVINFO
+// OnHtmlwindowRcvinfoLinkClicked
 //
 
 void frmVSCPSession::OnHtmlwindowRcvinfoLinkClicked(wxHtmlLinkEvent& event)

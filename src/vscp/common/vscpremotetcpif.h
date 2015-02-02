@@ -800,7 +800,7 @@ public:
         @param guid Returnd GUID for interface
         @param Returns true on success.
     */
-    bool fetchIterfaceGUID( const wxString& ifName, cguid& guid );
+    int fetchIterfaceGUID( const wxString& ifName, cguid& guid );
 
 #endif
 

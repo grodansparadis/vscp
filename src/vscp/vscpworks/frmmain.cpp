@@ -556,8 +556,14 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 														pBoth->m_pcanalif->m_strConfig,
 														pBoth->m_pcanalif->m_flags, 0, 0 );
 
+                        // DLL timings
+                        subframe->m_csw.getDllInterface()->setMaxRetries( g_Config.m_CANALRegMaxRetries );
+                        subframe->m_csw.getDllInterface()->setReadResendTimeout( g_Config.m_CANALRegResendTimeout );
+                        subframe->m_csw.getDllInterface()->setReadTimeout( g_Config.m_CANALRegErrorTimeout );
+
                         // Connect to device bus
                         if ( subframe->enableInterface() ) {
+
                             // Move window on top
                             subframe->Raise();
 
@@ -600,6 +606,12 @@ void frmMain::OnMenuitemOpenConfigSessionClick( wxCommandEvent& event )
 						memcpy( &subframe->m_vscpif.m_vscpfilter, 
 									&pBoth->m_pvscpif->m_vscpfilter, 
 									sizeof( vscpEventFilter ) );
+
+                        // TCP/IP timings
+                        subframe->m_csw.getTcpIpInterface()->setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
+                                                                                         g_Config.m_TCPIPRegResendTimeout,
+                                                                                         g_Config.m_TCPIPRegErrorTimeout );
+                        subframe->m_csw.getTcpIpInterface()->setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
 
                         subframe->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
                                                         pBoth->m_pvscpif->m_strUser,
@@ -689,6 +701,11 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 														pBoth->m_pcanalif->m_strConfig,
 														pBoth->m_pcanalif->m_flags, 0, 0 );
 
+                        // DLL timings
+                        subframe->m_csw.getDllInterface()->setMaxRetries( g_Config.m_CANALRegMaxRetries );
+                        subframe->m_csw.getDllInterface()->setReadResendTimeout( g_Config.m_CANALRegResendTimeout );
+                        subframe->m_csw.getDllInterface()->setReadTimeout( g_Config.m_CANALRegErrorTimeout );
+
                         // Connect to device bus
                         subframe->enableInterface();
 
@@ -738,6 +755,13 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 						memcpy( &subframe->m_vscpif.m_vscpfilter, 
 									&pBoth->m_pvscpif->m_vscpfilter, 
 									sizeof( vscpEventFilter ) );
+
+                        // TCP/IP timings
+                        subframe->m_csw.getTcpIpInterface()->setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
+                                                                          g_Config.m_TCPIPRegResendTimeout,
+                                                                          g_Config.m_TCPIPRegErrorTimeout );
+                        subframe->m_csw.getTcpIpInterface()->setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
+
                         
                         // Set information about interface we search on
                         str = _("Searching on interface: ");
@@ -773,6 +797,33 @@ void frmMain::OnMenuitemScanClick( wxCommandEvent& event )
 
     event.Skip( false );
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnMenuitemBootloaderWizardClick
+//
+
+void frmMain::OnMenuitemBootloaderWizardClick( wxCommandEvent& event )
+{
+    DeviceBootloaderwizard *wizard = new DeviceBootloaderwizard( this );
+
+    // DLL timings
+    wizard->m_canaldllif.setMaxRetries( g_Config.m_CANALRegMaxRetries );
+    wizard->m_canaldllif.setReadResendTimeout( g_Config.m_CANALRegResendTimeout );
+    wizard->m_canaldllif.setReadTimeout( g_Config.m_CANALRegErrorTimeout );
+    
+    // TCP/IP timings
+    wizard->m_vscptcpipif.setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
+                                                      g_Config.m_TCPIPRegResendTimeout,
+                                                      g_Config.m_TCPIPRegErrorTimeout );
+    wizard->m_vscptcpipif.setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
+    
+    // Go
+    wizard->Run();
+
+    event.Skip( false );
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 // OnMenuitemAppExitClick
@@ -883,19 +934,6 @@ void frmMain::OnMenuitemVSCPSiteClick( wxCommandEvent& event )
     // vscp works main window / help / vscp site [wiki-url]
     ::wxLaunchDefaultBrowser( _("http://www.vscp.org"), wxBROWSER_NEW_WINDOW );
     event.Skip( false );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnMenuitemBootloaderWizardClick
-//
-
-void frmMain::OnMenuitemBootloaderWizardClick( wxCommandEvent& event )
-{
-    DeviceBootloaderwizard *wizard = new DeviceBootloaderwizard( this );
-    wizard->Run();
-
-    event.Skip( false);
 }
 
 

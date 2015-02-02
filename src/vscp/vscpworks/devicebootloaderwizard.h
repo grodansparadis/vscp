@@ -148,6 +148,23 @@ public:
     */
     CCanalSuperWrapper m_csw;
 
+    /*!
+        Interface description for current selected interface
+    */
+    both_interface *m_pBoth;
+
+    /*!
+        DLL interface
+    */
+    CDllWrapper m_canaldllif;
+
+
+    /*!
+    TCP/IP interface
+    */
+    VscpRemoteTcpIf m_vscptcpipif;
+
+
     /// Flag for interface selection
     bool m_bInterfaceSelected;
 
@@ -243,7 +260,7 @@ public:
     void CreateControls();
 
     /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_SELECT_INTERFACE
-    void OnWizardpageSelectInterfacePageChanging( wxWizardEvent& event );
+    void OnWizardPageChanging( wxWizardEvent& event );
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON20
     void OnButtonSelectInterfaceClick( wxCommandEvent& event );
@@ -263,6 +280,55 @@ public:
     enum {
         ID_WIZARDPAGE_SELECT_INTERFACE = 32002,
         ID_BUTTON20 = 32003
+    };
+
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+// WizardPageSetGUID class declaration
+//
+
+class WizardPageSetGUID : public wxWizardPageSimple
+{
+    DECLARE_DYNAMIC_CLASS( WizardPage6 )
+    DECLARE_EVENT_TABLE()
+
+public:
+    /// Constructors
+    WizardPageSetGUID();
+
+    WizardPageSetGUID( wxWizard* parent );
+
+    /// Creation
+    bool Create( wxWizard* parent );
+
+    /// Destructor
+    ~WizardPageSetGUID();
+
+    /// Initialises member variables
+    void Init();
+
+    /// Creates the controls and sizers
+    void CreateControls();
+
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
+
+    /// Should we show tooltips?
+    static bool ShowToolTips();
+
+    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_SELECT_INTERFACE
+    void OnWizardPageChanging( wxWizardEvent& event );
+
+    wxComboBox* m_comboNodeID;
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_NICKNAME_SELECTION = 32011,
+        ID_COMBOBOX_NODEID = 19037
     };
 
 };
@@ -431,50 +497,7 @@ public:
 
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// WizardPageSetGUID class declaration
-//
 
-class WizardPageSetGUID : public wxWizardPageSimple
-{
-    DECLARE_DYNAMIC_CLASS( WizardPage6 )
-    DECLARE_EVENT_TABLE()
-
-public:
-    /// Constructors
-    WizardPageSetGUID();
-
-    WizardPageSetGUID( wxWizard* parent );
-
-    /// Creation
-    bool Create( wxWizard* parent );
-
-    /// Destructor
-    ~WizardPageSetGUID();
-
-    /// Initialises member variables
-    void Init();
-
-    /// Creates the controls and sizers
-    void CreateControls();
-
-    /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
-
-    /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
-
-    /// Should we show tooltips?
-    static bool ShowToolTips();
-
-    wxComboBox* m_comboNodeID;
-    /// Control identifiers
-    enum {
-        ID_WIZARDPAGE_NICKNAME_SELECTION = 32011,
-        ID_COMBOBOX_NODEID = 19037
-    };
-
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 // WizardPageProgramDevice class declaration

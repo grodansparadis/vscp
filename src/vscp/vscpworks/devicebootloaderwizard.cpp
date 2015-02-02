@@ -104,11 +104,11 @@ bool DeviceBootloaderwizard::Create( wxWindow* parent, wxWindowID id, const wxPo
     SetExtraStyle( wxWS_EX_BLOCK_EVENTS | wxWIZARD_EX_HELPBUTTON );
     wxBitmap wizardBitmap( GetBitmapResource( wxT( "vscp_logo.jpg" ) ) );
     wxWizard::Create( parent,
-                      id,
-                      _( "VSCP  Bootloader Wizard" ),
-                      wizardBitmap,
-                      pos,
-                      wxDEFAULT_DIALOG_STYLE | wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX );
+                        id,
+                        _( "VSCP  Bootloader Wizard" ),
+                        wizardBitmap,
+                        pos,
+                        wxDEFAULT_DIALOG_STYLE | wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX );
 
     CreateControls();
 
@@ -140,12 +140,16 @@ void DeviceBootloaderwizard::Init()
     m_pgSelecAlgorithm = NULL;
     m_pgLoadFile = NULL;
 
+    m_pBoth = NULL;
+
     m_bInterfaceSelected = false; // No interface selected
     m_bMDFLoaded = false;         // No MDF loaded
     m_bHexFileLoaded = false;     // No firmware file loaded yet
 
     // Default boot device is VSCP
     m_pBootCtrl = new CBootDevice_VSCP( &m_csw, m_guid );
+
+
 
 }
 
@@ -443,7 +447,7 @@ IMPLEMENT_DYNAMIC_CLASS( WizardPageSelecInterface, wxWizardPageSimple )
 
 BEGIN_EVENT_TABLE( WizardPageSelecInterface, wxWizardPageSimple )
 
-EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelecInterface::OnWizardpageSelectInterfacePageChanging )
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelecInterface::OnWizardPageChanging )
 EVT_BUTTON( ID_BUTTON20, WizardPageSelecInterface::OnButtonSelectInterfaceClick )
 
 END_EVENT_TABLE()
@@ -583,19 +587,21 @@ wxIcon WizardPageSelecInterface::GetIconResource( const wxString& name )
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSelecInterface
+// OnWizardPageChanging
 //
 
-void WizardPageSelecInterface::OnWizardpageSelectInterfacePageChanging( wxWizardEvent& event )
+void WizardPageSelecInterface::OnWizardPageChanging( wxWizardEvent& event )
 {
     // An interface must have been selected to be allowed to continue
     if ( event.GetDirection() ) {
+
         if ( !( ( DeviceBootloaderwizard * )GetParent() )->m_bInterfaceSelected ) {
             wxMessageBox( _( "An interface must be selected before you can continue!" ) );
             event.Veto();
         }
+
     }
-    //event.Skip(); 
+    
 }
 
 
@@ -608,31 +614,33 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
     int selidx = -1;
     dlgNewVSCPSession dlg( this );
     dlg.m_bShowUnconnectedMode = false; // Don't show "unconnected mode"
+    DeviceBootloaderwizard *pParent = ( DeviceBootloaderwizard * )GetParent();
 
     if ( wxID_OK == dlg.ShowModal() ) {
 
         if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
 
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_bInterfaceSelected = true;
+            pParent->m_bInterfaceSelected = true;
 
-            both_interface *pBoth =
+            pParent->m_pBoth =
                 ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx );
 
-            if ( NULL != pBoth ) {
+            if ( NULL != pParent->m_pBoth ) {
 
-                if ( INTERFACE_CANAL == pBoth->m_type ) {
+                if ( INTERFACE_CANAL == pParent->m_pBoth->m_type ) {
 
-                    m_labelInterfaceSelected->SetLabel( _( "CANAL - " ) + pBoth->m_pcanalif->m_strDescription );
+                    m_labelInterfaceSelected->SetLabel( _( "CANAL - " ) + 
+                                                        pParent->m_pBoth->m_pcanalif->m_strDescription );
 
                     // Init node id combo
 
                     // Set size of combo
-                    wxRect rc = ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->GetRect();
+                    wxRect rc = pParent->m_pgSelecDeviceId->m_comboNodeID->GetRect();
                     rc.SetWidth( 60 );
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->SetSize( rc );
+                    pParent->m_pgSelecDeviceId->m_comboNodeID->SetSize( rc );
 
                     // Empty combo
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->Clear();
+                    pParent->m_pgSelecDeviceId->m_comboNodeID->Clear();
 
                     // Write all id values
                     wxArrayString strArray;
@@ -641,101 +649,91 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                     }
 
                     // Add to combo
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->Append( strArray );
+                    pParent->m_pgSelecDeviceId->m_comboNodeID->Append( strArray );
 
                     // Select one id
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->SetValue( _( "0x01" ) );
+                    pParent->m_pgSelecDeviceId->m_comboNodeID->SetValue( _( "0x01" ) );
 
                     // Set the selected interface
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.setInterface( pBoth->m_pcanalif->m_strDescription,
-                                                                                        pBoth->m_pcanalif->m_strPath,
-                                                                                        pBoth->m_pcanalif->m_strConfig,
-                                                                                        pBoth->m_pcanalif->m_flags, 0, 0 );
+                    pParent->m_csw.setInterface( pParent->m_pBoth->m_pcanalif->m_strDescription,
+                                                    pParent->m_pBoth->m_pcanalif->m_strPath,
+                                                    pParent->m_pBoth->m_pcanalif->m_strConfig,
+                                                    pParent->m_pBoth->m_pcanalif->m_flags, 0, 0 );
 
                 }
-                else if ( ( INTERFACE_VSCP == pBoth->m_type ) &&
-                          ( NULL != pBoth->m_pcanalif ) ) {
+                else if ( ( INTERFACE_VSCP == pParent->m_pBoth->m_type ) &&
+                          ( NULL != pParent->m_pBoth->m_pcanalif ) ) {
 
                     wxString str;
                     cguid guid;
-                    guid.getFromArray( pBoth->m_pvscpif->m_GUID  );
-                    //unsigned char GUID[ 16 ];
-                    //memcpy( GUID, pBoth->m_pvscpif->m_GUID, 16 );
 
-                    m_labelInterfaceSelected->SetLabel( _( "TCP/IP - " ) + pBoth->m_pvscpif->m_strDescription );
+                    if ( 0 == pParent->m_pBoth->m_pvscpif->m_strInterfaceName.Length() ) {
+                        wxMessageBox( _( "The connection must have an interface on the VSCP daemon selected" ),
+                                      _( "Open new VSCP session" ),
+                                      wxICON_STOP );
+                        event.Skip();
+                        return;
+                    }
 
-                    // Set the selected interface
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.setInterface( pBoth->m_pvscpif->m_strHost,
-                                                                                        pBoth->m_pvscpif->m_strUser,
-                                                                                        pBoth->m_pvscpif->m_strPassword );
+                    m_labelInterfaceSelected->SetLabel( _( "TCP/IP - " ) + 
+                                                        pParent->m_pBoth->m_pvscpif->m_strDescription );
 
-                    /*if ( fetchIterfaceGUID() ) {
+                    if ( VSCP_ERROR_SUCCESS == 
+                         pParent->m_vscptcpipif.doCmdOpen( pParent->m_pBoth->m_pvscpif->m_strHost,
+                                                            pParent->m_pBoth->m_pvscpif->m_strUser,
+                                                            pParent->m_pBoth->m_pvscpif->m_strPassword ) ) {
+
+                        if ( VSCP_ERROR_SUCCESS == 
+                             pParent->m_vscptcpipif.fetchIterfaceGUID( pParent->m_pBoth->m_pvscpif->m_strInterfaceName,
+                                                                        guid ) ) {
+                            guid.writeGUID( pParent->m_pBoth->m_pvscpif->m_GUID );
+                        }
+                        else {
+                            wxMessageBox( _( "Unable to fetch interfaces from the remote server" ),
+                                          _( "Open new VSCP session" ),
+                                          wxICON_STOP );
+                        }
+
+                        // Close the connection
+                        pParent->m_vscptcpipif.doCmdClose();
+
+                        // Empty combo
+                        pParent->m_pgSelecDeviceId->m_comboNodeID->Clear();
 
                         // Fill the combo
                         wxString str;
-                        cguid guid = m_ifguid;
                         wxArrayString strings;
                         for ( int i = 1; i < 256; i++ ) {
                             guid.setLSB( i );
                             guid.toString( str );
                             strings.Add( str );
                         }
-                        ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->Append( strings );
+                        pParent->m_pgSelecDeviceId->m_comboNodeID->Append( strings );
 
                         guid.setLSB( 1 );
                         guid.toString( str );
-                        m_comboNodeID->SetValue( str );
+                        pParent->m_pgSelecDeviceId->m_comboNodeID->SetValue( str );
 
                     }
                     else {
-                        ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->SetValue( _( "Enter full GUID of remote node here" ) );
+                        wxMessageBox( _( "Unable to connect to the remote server" ),
+                                      _( "Open new VSCP session" ),
+                                      wxICON_STOP );
                     }
 
-                    // Empty combo
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->Clear();
-
-                    // Fill the combo
-                    wxArrayString strArray;
-                    for ( int i = 1; i<256; i++ ) {
-                        GUID[ 15 ] = i;
-                        vscp_writeGuidArrayToString( GUID, str );
-                        strArray.Add( str );
-                    }
-
-                    // Add to combo
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->Append( strArray );
-
-                    GUID[ 15 ] = 0x01;
-                    vscp_writeGuidArrayToString( GUID, str );
-                    ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->SetValue( str );
-                    */
                 }
-
-                /*
-                if ( INTERFACE_VSCP == subframe->m_CtrlObject.m_interfaceType ) {
-
-                // If server username is given and no password is entered we ask for it.
-                if ( subframe->m_CtrlObject.m_ifVSCP.m_strPassword.IsEmpty() &&
-                !subframe->m_CtrlObject.m_ifVSCP.m_strUser.IsEmpty() ) {
-                subframe->m_CtrlObject.m_ifVSCP.m_strPassword =
-                ::wxGetTextFromUser( _("Please enter passeword"),
-                _("Connection Test") );
-                }
-
-                }
-                */
-
 
             } // VSCP connection
 
         }
         else {
 
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_bInterfaceSelected = false;
+            pParent->m_bInterfaceSelected = false;
 
             wxMessageBox( _( "You have to select an interface to connect to!" ),
                           _( "Open new VSCP session" ),
                           wxICON_STOP );
+
         }
 
         // Clean up listbox
@@ -744,6 +742,234 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
     } // dialog
 
     event.Skip();
+}
+
+
+
+
+
+
+//*******************************************************************************************************************
+//                                               WizardPageSetGUID
+//*******************************************************************************************************************
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSetGUID type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( WizardPageSetGUID, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSetGUID event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageSetGUID, wxWizardPageSimple )
+
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSetGUID::OnWizardPageChanging )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSetGUID constructors
+//
+
+WizardPageSetGUID::WizardPageSetGUID()
+{
+    Init();
+}
+
+WizardPageSetGUID::WizardPageSetGUID( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSetGUID creator
+//
+
+bool WizardPageSetGUID::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSetGUID destructor
+//
+
+WizardPageSetGUID::~WizardPageSetGUID()
+{
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageSetGUID::Init()
+{
+    m_comboNodeID = NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPageSetGUID
+//
+
+void WizardPageSetGUID::CreateControls()
+{
+    WizardPageSetGUID* itemWizardPageSimple14 = this;
+
+    wxBoxSizer* itemBoxSizer15 = new wxBoxSizer( wxVERTICAL );
+    itemWizardPageSimple14->SetSizer( itemBoxSizer15 );
+
+    wxStaticText* itemStaticText16 = new wxStaticText;
+    itemStaticText16->Create( itemWizardPageSimple14,
+                              wxID_STATIC,
+                              _( "Select device to bootload" ),
+                              wxDefaultPosition,
+                              wxDefaultSize,
+                              0 );
+    itemBoxSizer15->Add( itemStaticText16, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticText17 = new wxStaticText;
+    itemStaticText17->Create( itemWizardPageSimple14,
+                              wxID_STATIC,
+                              _( "Enter the nickname or the full GUID for the device you want to work with" ),
+                              wxDefaultPosition,
+                              wxDefaultSize,
+                              0 );
+    itemBoxSizer15->Add( itemStaticText17, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    itemBoxSizer15->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxArrayString m_comboNodeIDStrings;
+    m_comboNodeID = new wxComboBox;
+    m_comboNodeID->Create( itemWizardPageSimple14,
+                           ID_COMBOBOX_NODEID,
+                           wxEmptyString,
+                           wxDefaultPosition,
+                           wxSize( 370, -1 ),
+                           m_comboNodeIDStrings,
+                           wxCB_DROPDOWN );
+    if ( WizardPageSetGUID::ShowToolTips() )
+        m_comboNodeID->SetToolTip( _( "Set nickname or GUID for node here" ) );
+    m_comboNodeID->SetBackgroundColour( wxColour( 255, 255, 210 ) );
+    itemBoxSizer15->Add( m_comboNodeID, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    itemBoxSizer15->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageSetGUID::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageSetGUID::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageSetGUID::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnWizardPageChanging
+//
+
+void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
+{
+    // An node must be there to be allowed to continue
+    if ( event.GetDirection() ) {  // Forward
+        /*
+        if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+
+            // Get Interface id
+            nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
+
+            if ( ( 0 == nodeid ) || ( nodeid > 254 ) ) {
+                wxMessageBox( _( "Invalid Node ID! Must be between 1-254" ) );
+                ::wxEndBusyCursor();
+                return;
+            }
+
+            unsigned char val;
+            if ( CANAL_ERROR_SUCCESS == m_csw.getDllInterface()->readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
+                wxMessageBox( _( "Device found!" ) );
+            }
+            else {
+                wxMessageBox( _( "Device was not found! Check nodeid." ) );
+            }
+
+        }
+        else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+
+            // Get the destination GUID
+            cguid destGUID;
+            destGUID.getFromString( m_comboNodeID->GetValue() );
+
+            unsigned char val;
+            if ( VSCP_ERROR_SUCCESS ==
+                 m_csw.getTcpIpInterface()->readLevel2Register( m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
+                 0,      // page
+                 &val,
+                 m_ifguid,
+                 &destGUID,
+                 m_bLevel2->GetValue() ) ) {
+                wxMessageBox( _( "Device found!" ) );
+            }
+            else {
+                wxMessageBox( _( "Device was not found! Check interface GUID + nodeid." ) );
+            }
+
+        }
+
+        if ( !( ( DeviceBootloaderwizard * )GetParent() )->m_bInterfaceSelected ) {
+            wxMessageBox( _( "An interface must be selected before you can continue!" ) );
+            event.Veto();
+        }
+        */
+    }
+    else {  // Backward
+    
+    }
+
 }
 
 
@@ -966,14 +1192,12 @@ void WizardPageSelectFirmware::OnButtonChooseFileClick( wxCommandEvent& event )
 
             wxString str = pdlg->GetFilename();
             m_selectedFile->SetLabel( pdlg->GetFilename() );
-            ( ( DeviceBootloaderwizard * )GetParent() )->
-                m_pBootCtrl->showInfo( m_hexFileInfo );
+            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl->showInfo( m_hexFileInfo );
         }
 
     }
 
     pdlg->Destroy();
-    //delete pdlg;
 
     event.Skip();
 }
@@ -1524,166 +1748,6 @@ wxIcon WizardPageBootload::GetIconResource( const wxString& name )
 void WizardPageBootload::OnWizardpagePreBootloadPageChanging( wxWizardEvent& event )
 {
     event.Skip();
-}
-
-
-
-
-//*******************************************************************************************************************
-//                                               WizardPageSetGUID
-//*******************************************************************************************************************
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSetGUID type definition
-//
-
-IMPLEMENT_DYNAMIC_CLASS( WizardPageSetGUID, wxWizardPageSimple )
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSetGUID event table definition
-//
-
-BEGIN_EVENT_TABLE( WizardPageSetGUID, wxWizardPageSimple )
-
-END_EVENT_TABLE()
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSetGUID constructors
-//
-
-WizardPageSetGUID::WizardPageSetGUID()
-{
-    Init();
-}
-
-WizardPageSetGUID::WizardPageSetGUID( wxWizard* parent )
-{
-    Init();
-    Create( parent );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSetGUID creator
-//
-
-bool WizardPageSetGUID::Create( wxWizard* parent )
-{
-    wxBitmap wizardBitmap( wxNullBitmap );
-    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
-
-    CreateControls();
-    if ( GetSizer() ) {
-        GetSizer()->Fit( this );
-    }
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSetGUID destructor
-//
-
-WizardPageSetGUID::~WizardPageSetGUID()
-{
-
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Member initialisation
-//
-
-void WizardPageSetGUID::Init()
-{
-    m_comboNodeID = NULL;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for WizardPageSetGUID
-//
-
-void WizardPageSetGUID::CreateControls()
-{
-    WizardPageSetGUID* itemWizardPageSimple14 = this;
-
-    wxBoxSizer* itemBoxSizer15 = new wxBoxSizer( wxVERTICAL );
-    itemWizardPageSimple14->SetSizer( itemBoxSizer15 );
-
-    wxStaticText* itemStaticText16 = new wxStaticText;
-    itemStaticText16->Create( itemWizardPageSimple14,
-                              wxID_STATIC,
-                              _( "Select device to bootload" ),
-                              wxDefaultPosition,
-                              wxDefaultSize,
-                              0 );
-    itemBoxSizer15->Add( itemStaticText16, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    wxStaticText* itemStaticText17 = new wxStaticText;
-    itemStaticText17->Create( itemWizardPageSimple14,
-                              wxID_STATIC,
-                              _( "Enter the nickname or the full GUID for the device you want to work with" ),
-                              wxDefaultPosition,
-                              wxDefaultSize,
-                              0 );
-    itemBoxSizer15->Add( itemStaticText17, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    itemBoxSizer15->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxArrayString m_comboNodeIDStrings;
-    m_comboNodeID = new wxComboBox;
-    m_comboNodeID->Create( itemWizardPageSimple14,
-                           ID_COMBOBOX_NODEID,
-                           wxEmptyString,
-                           wxDefaultPosition,
-                           wxSize( 370, -1 ),
-                           m_comboNodeIDStrings,
-                           wxCB_DROPDOWN );
-    if ( WizardPageSetGUID::ShowToolTips() )
-        m_comboNodeID->SetToolTip( _( "Set nickname or GUID for node here" ) );
-    m_comboNodeID->SetBackgroundColour( wxColour( 255, 255, 210 ) );
-    itemBoxSizer15->Add( m_comboNodeID, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    itemBoxSizer15->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Should we show tooltips?
-//
-
-bool WizardPageSetGUID::ShowToolTips()
-{
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get bitmap resources
-//
-
-wxBitmap WizardPageSetGUID::GetBitmapResource( const wxString& name )
-{
-    // Bitmap retrieval
-    wxUnusedVar( name );
-    return wxNullBitmap;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get icon resources
-//
-
-wxIcon WizardPageSetGUID::GetIconResource( const wxString& name )
-{
-    // Icon retrieval
-    wxUnusedVar( name );
-    return wxNullIcon;
 }
 
 

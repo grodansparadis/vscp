@@ -1445,7 +1445,7 @@ protected:
 
 
 	/*!
-	CANAL TCP/IP interface
+	    TCP/IP interface
 	*/
 	VscpRemoteTcpIf m_vscptcpif;
 

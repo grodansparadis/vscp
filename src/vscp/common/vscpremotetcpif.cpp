@@ -3308,21 +3308,20 @@ error:
 ///////////////////////////////////////////////////////////////////////////////
 
 
-#if ( wxUSE_GUI != 0 )
+
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // fetchIterfaceGUID
 //
-/*
-bool VscpRemoteTcpIf::fetchIterfaceGUID( VscpRemoteTcpIf *ptcpipif, const wxString& ifName, cguid& guid )
+
+int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
 {
     wxString str;
     wxArrayString ifarray;
 
-    if ( m_bConnected ) {
-        wxMessageBox( _( "TCP/IP connection to daemon must be open." ) );
-        return false;
+    if ( !m_bConnected ) {
+        return VSCP_ERROR_NOT_OPEN;
     }
 
     // Get the interface list
@@ -3352,13 +3351,14 @@ bool VscpRemoteTcpIf::fetchIterfaceGUID( VscpRemoteTcpIf *ptcpipif, const wxStri
 
                         // Save interface GUID;
                         guid.getFromString( strIfGUID );
-                        return true;
+                        return VSCP_ERROR_SUCCESS;
 
                     }
 
                 }
 
             }
+#if ( wxUSE_GUI != 0 )
             else {
                 if ( wxYES != wxMessageBox( _( "No interfaces found. Try to find again?" ),
                     _( "Fetching interfaces" ),
@@ -3366,7 +3366,9 @@ bool VscpRemoteTcpIf::fetchIterfaceGUID( VscpRemoteTcpIf *ptcpipif, const wxStri
                     break;
                 }
             }
+#endif
         }
+#if ( wxUSE_GUI != 0 )
         else {
             if ( wxYES != wxMessageBox( _( "Unable to get interface list from VSCP daemon. Try to get again?" ),
                 _( "Fetching interfaces" ),
@@ -3374,15 +3376,13 @@ bool VscpRemoteTcpIf::fetchIterfaceGUID( VscpRemoteTcpIf *ptcpipif, const wxStri
                 break;
             }
         }
-
+#endif
     }
 
-    return false;
+    return VSCP_ERROR_OPERATION_FAILED;
 }
 
-*/
 
-#endif
 
 
 

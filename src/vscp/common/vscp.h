@@ -510,6 +510,7 @@ struct myNode {
 #define VSCP_ERROR_PASSWORD                39      // Login error password
 #define VSCP_ERROR_CONNECTION              40      // Could not connect   
 #define VSCP_ERROR_INVALID_HANDLE          41      // The handle is not valid
+#define VSCP_ERROR_OPERATION_FAILED        42      // Opration failed for some reason
 
 
 #ifdef __cplusplus
