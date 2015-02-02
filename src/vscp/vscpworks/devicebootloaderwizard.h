@@ -182,9 +182,15 @@ public:
     CMDF m_mdf;
 
     /*!
+    GUID for interface where node is located
+    */
+    cguid m_ifguid;
+
+    /*!
         GUID for node to bootload
      */
     cguid m_guid;
+    
 };
 
 

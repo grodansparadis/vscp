@@ -393,40 +393,38 @@ void VscpworksApp::logMsg( const wxString& wxstr, unsigned char level )
 
     wxLogDebug( wxdebugmsg );
 
-#ifdef WIN32
-#ifdef BUILD_VSCPD_SERVICE
-#endif
-#else
+#ifndef WIN32
+
     switch ( level ) {
-        case DAEMON_LOGMSG_DEBUG:
+        case VSCPWORKS_LOGMSG_DEBUG:
             syslog( LOG_DEBUG, "%s", (const char *)wxdebugmsg.ToAscii()  );
             break;
 
-        case DAEMON_LOGMSG_INFO:
+        case VSCPWORKS_LOGMSG_INFO:
             syslog( LOG_INFO, "%s", (const char *)wxdebugmsg.ToAscii() );
             break;
 
-        case DAEMON_LOGMSG_NOTICE:
+        case VSCPWORKS_LOGMSG_NOTICE:
             syslog( LOG_NOTICE, "%s", (const char *)wxdebugmsg.ToAscii() );
             break;
 
-        case DAEMON_LOGMSG_WARNING:
+        case VSCPWORKS_LOGMSG_WARNING:
             syslog( LOG_WARNING, "%s", (const char *)wxdebugmsg.ToAscii() );
             break;
 
-        case DAEMON_LOGMSG_ERROR:
+        case VSCPWORKS_LOGMSG_ERROR:
             syslog( LOG_ERR, "%s", (const char *)wxdebugmsg.ToAscii() );
             break;
 
-        case DAEMON_LOGMSG_CRITICAL:
+        case VSCPWORKS_LOGMSG_CRITICAL:
             syslog( LOG_CRIT, "%s", (const char *)wxdebugmsg.ToAscii() );
             break;
 
-        case DAEMON_LOGMSG_ALERT:
+        case VSCPWORKS_LOGMSG_ALERT:
             syslog( LOG_ALERT, "%s", (const char *)wxdebugmsg.ToAscii() );
             break;
 
-        case DAEMON_LOGMSG_EMERGENCY:
+        case VSCPWORKS_LOGMSG_EMERGENCY:
             syslog( LOG_EMERG, "%s", (const char *)wxdebugmsg.ToAscii() );
             break;
 

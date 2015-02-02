@@ -665,7 +665,6 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                           ( NULL != pParent->m_pBoth->m_pcanalif ) ) {
 
                     wxString str;
-                    cguid guid;
 
                     if ( 0 == pParent->m_pBoth->m_pvscpif->m_strInterfaceName.Length() ) {
                         wxMessageBox( _( "The connection must have an interface on the VSCP daemon selected" ),
@@ -685,8 +684,9 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
 
                         if ( VSCP_ERROR_SUCCESS == 
                              pParent->m_vscptcpipif.fetchIterfaceGUID( pParent->m_pBoth->m_pvscpif->m_strInterfaceName,
-                                                                        guid ) ) {
-                            guid.writeGUID( pParent->m_pBoth->m_pvscpif->m_GUID );
+                                                                        pParent->m_ifguid ) ) {
+                            pParent->m_ifguid.writeGUID( pParent->m_pBoth->m_pvscpif->m_GUID );
+                            pParent->m_guid = pParent->m_ifguid;
                         }
                         else {
                             wxMessageBox( _( "Unable to fetch interfaces from the remote server" ),
@@ -704,14 +704,14 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                         wxString str;
                         wxArrayString strings;
                         for ( int i = 1; i < 256; i++ ) {
-                            guid.setLSB( i );
-                            guid.toString( str );
+                            pParent->m_guid.setLSB( i );
+                            pParent->m_guid.toString( str );
                             strings.Add( str );
                         }
                         pParent->m_pgSelecDeviceId->m_comboNodeID->Append( strings );
 
-                        guid.setLSB( 1 );
-                        guid.toString( str );
+                        pParent->m_guid.setLSB( 1 );
+                        pParent->m_guid.toString( str );
                         pParent->m_pgSelecDeviceId->m_comboNodeID->SetValue( str );
 
                     }
@@ -915,22 +915,25 @@ wxIcon WizardPageSetGUID::GetIconResource( const wxString& name )
 
 void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
 {
+    DeviceBootloaderwizard *pParent = ( DeviceBootloaderwizard * )GetParent();
+
     // An node must be there to be allowed to continue
     if ( event.GetDirection() ) {  // Forward
-        /*
-        if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+        
+        if ( USE_DLL_INTERFACE == pParent->m_pBoth->m_type ) {
 
             // Get Interface id
-            nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
+            uint8_t nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
+            pParent->m_guid.setLSB( nodeid ); // Save for  the future
 
             if ( ( 0 == nodeid ) || ( nodeid > 254 ) ) {
                 wxMessageBox( _( "Invalid Node ID! Must be between 1-254" ) );
-                ::wxEndBusyCursor();
                 return;
             }
 
             unsigned char val;
-            if ( CANAL_ERROR_SUCCESS == m_csw.getDllInterface()->readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
+            if ( CANAL_ERROR_SUCCESS == 
+                    pParent->m_canaldllif.readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
                 wxMessageBox( _( "Device found!" ) );
             }
             else {
@@ -938,20 +941,18 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             }
 
         }
-        else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+        else if ( USE_TCPIP_INTERFACE == pParent->m_pBoth->m_type ) {
 
             // Get the destination GUID
-            cguid destGUID;
-            destGUID.getFromString( m_comboNodeID->GetValue() );
+            pParent->m_guid.getFromString( m_comboNodeID->GetValue() );
 
             unsigned char val;
             if ( VSCP_ERROR_SUCCESS ==
-                 m_csw.getTcpIpInterface()->readLevel2Register( m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
-                 0,      // page
-                 &val,
-                 m_ifguid,
-                 &destGUID,
-                 m_bLevel2->GetValue() ) ) {
+                 pParent->m_vscptcpipif.readLevel2Register( 0xd0,
+                                                                0,      // page
+                                                                &val,
+                                                                pParent->m_ifguid,
+                                                                &pParent->m_guid ) ) {
                 wxMessageBox( _( "Device found!" ) );
             }
             else {
@@ -964,7 +965,7 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             wxMessageBox( _( "An interface must be selected before you can continue!" ) );
             event.Veto();
         }
-        */
+        
     }
     else {  // Backward
     

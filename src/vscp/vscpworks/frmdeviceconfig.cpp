@@ -854,7 +854,7 @@ void frmDeviceConfig::OnBitmapbuttonTestDeviceClick(wxCommandEvent& event)
         unsigned char val;
         if ( VSCP_ERROR_SUCCESS == 
              m_csw.getTcpIpInterface()->readLevel2Register( m_bLevel2->GetValue() ? 0xffffffd0 : 0xd0,
-                                            0,      // page
+                                            0,          // page
                                             &val,
                                             m_ifguid,
                                             &destGUID,                                            
