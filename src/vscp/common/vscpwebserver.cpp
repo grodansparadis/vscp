@@ -185,8 +185,9 @@ static void webserv_util_sendheader( struct mg_connection *conn, const int retur
 	mg_send_header( conn, "Date", date );
 	mg_send_header( conn, "Connection", "keep-alive" );
 	mg_send_header( conn, "Transfer-Encoding", "chunked" );
-	mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
-												"pre-check=0, no-store, no-cache, must-revalidate");
+	mg_send_header(conn, "Cache-Control", 
+								"max-age=0, post-check=0, "
+								"pre-check=0, no-store, no-cache, must-revalidate");
 }
 
 
@@ -222,7 +223,8 @@ void *VSCPWebServerThread::Entry()
 	clock_t ticks,oldus;
 		
 	// Create the server
-	m_pCtrlObject->m_pwebserver = mg_create_server( m_pCtrlObject, VSCPWebServerThread::websrv_event_handler );
+	m_pCtrlObject->m_pwebserver = mg_create_server( m_pCtrlObject, 
+										VSCPWebServerThread::websrv_event_handler );
 		
 	// Set options
 
@@ -432,13 +434,17 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 {
 	wxString strTok;
 	int rv = MG_TRUE;
-
+	
 	// Check pointer
     if (NULL == conn) return MG_FALSE;
 	if (NULL == pSession) return MG_FALSE;
 	
 	CControlObject *pCtrlObject = (CControlObject *)conn->server_param;
 	if (NULL == pCtrlObject) return MG_FALSE;
+	
+	pCtrlObject->logMsg ( _("[Websocket] Command = ") + strCmd + _("\n"), 
+										DAEMON_LOGMSG_DEBUG, 
+										DAEMON_LOGTYPE_GENERAL );
 
 	//mg_websocket_write( conn, WEBSOCKET_OPCODE_TEXT, conn->content, conn->content_len );
 	//if ( conn->content_len == 4 && memcmp( conn->content, "exit", 4 ) ) {
@@ -465,7 +471,25 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
     //                                NOOP
     //-------------------------------------------------------------------------
     if (0 == strTok.Find(_("NOOP"))) {
-        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;NOOP" );
+        
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, "+;NOOP" );
+		
+		// Send authentication challange  
+		if ( !pSession->bAuthenticated ) {
+			
+		}
+	}
+	else if (0 == strTok.Find(_("CHALLENGE"))) {
+        		
+		// Send authentication challenge  
+		if ( !pSession->bAuthenticated ) {
+			// Start authentication
+			mg_websocket_printf( conn, 
+									WEBSOCKET_OPCODE_TEXT, 
+									"+;AUTH0;%s", 
+									pSession->m_sid );
+		}
+		
 	}
     // ------------------------------------------------------------------------
     //                                AUTH
@@ -1918,7 +1942,7 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *conn, const char
     ret = (struct websock_session *)calloc(1, sizeof(struct websock_session));
     if  (NULL == ret ) {
 #ifndef WIN32
-        syslog(LOG_ERR, "calloc error: %s\n", strerror(errno));
+        syslog( LOG_ERR, "calloc error: %s\n", strerror(errno));
 #endif
         return NULL;
     }
@@ -2682,7 +2706,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 		case MG_WS_CONNECT:
 
 			// New websocket connection. Send connection ID back to the client.
-			if ( conn->is_websocket ) {
+			//if ( conn->is_websocket ) {
 
 				// Get session
 				pWebSockSession = websock_get_session( conn );
@@ -2704,14 +2728,14 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 											pWebSockSession->m_sid );
 				}
 				else {
-					// No authenticateion will be performed
+					// No authentication will be performed
 					
 					pWebSockSession->bAuthenticated = true;	// Authenticated
 					mg_websocket_printf( conn, 
 											WEBSOCKET_OPCODE_TEXT, 
 											"+;AUTH1" );
 				}
-			}
+			//}
 			return MG_TRUE;  // keep socket open
 
 		case MG_REPLY:
@@ -2735,7 +2759,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			return MG_FALSE;
 
 		case MG_CLOSE:
-			if ( conn->is_websocket ) {
+			//if ( conn->is_websocket ) {
 				//	free( conn->connection_param );
 				conn->connection_param = NULL;
 				pWebSockSession = websock_get_session( conn );
@@ -2744,7 +2768,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 					pObject->getWebServer()->websock_expire_sessions( conn );
                     return MG_TRUE;
 				}
-			}
+			//}
 			return MG_FALSE;
 
 		default: 
