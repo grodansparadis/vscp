@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     handle = vscphlp_newSession();
 
     if ( VSCP_ERROR_SUCCESS == vscphlp_open( handle, 
-                 				"192.168.1.9:9598",
+                 				"127.0.0.1:9598",
                  				"admin",
     	             			"secret" ) ) {
 	printf("\avscphlp_open: Success!\n");
