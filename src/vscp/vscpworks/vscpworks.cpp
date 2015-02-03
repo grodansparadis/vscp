@@ -140,6 +140,11 @@ VscpworksApp::VscpworksApp()
 	// Fix for menu problems in UBUNTU
 	// http://trac.wxwidgets.org/ticket/14302
 	wxSetEnv(wxT("UBUNTU_MENUPROXY"), wxT("0"));
+
+    // Set assert handler
+#if (wxMAJOR_VERSION >= 3)
+    wxSetAssertHandler( VscpworksApp::AssertHandler );
+#endif
 	
 	// net_skeleton generates on no receiving socket at other end
 	// we can safely dismiss.
@@ -202,10 +207,7 @@ void VscpworksApp::Init()
 	g_Config.m_strPathLogFile += _("\\vscpworks.log");
 	g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
 
-    // Set assert handler
-#if (wxMAJOR_VERSION >= 3)
-    wxSetAssertHandler( VscpworksApp::AssertHandler );
-#endif
+
 
     int i,j;
     for ( i=0; i<MAX_NUMBER_OF_NODES; i++ ) {
