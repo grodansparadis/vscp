@@ -3478,7 +3478,8 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                     m_gridRegisters->SetCellAlignment(wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2);
                     m_gridRegisters->SetCellFont(m_gridRegisters->GetNumberRows() - 1, 2, fontBold);
 
-                    str.Printf(reg->m_strName + _("\n") + reg->m_strDescription);
+                    //str.Printf(reg->m_strName + _("\n") + reg->m_strDescription);
+                    str = reg->m_strName + _( "\n" ) + reg->m_strDescription;
                     m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
                                                     3,
                                                     str);
@@ -5257,6 +5258,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                                                         &destGUID,
                                                         NULL,
                                                         m_bLevel2->GetValue());*/
+        
+        
         // Value
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows() - 1,
                                             3,
@@ -5267,6 +5270,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
                 3);
         m_gridAbstractions->SetCellFont(m_gridAbstractions->GetNumberRows() - 1, 3, fontBold);
         m_gridAbstractions->SetReadOnly(m_gridAbstractions->GetNumberRows() - 1, 3);
+
+
 
         // Type
         m_gridAbstractions->SetCellValue(m_gridAbstractions->GetNumberRows() - 1,

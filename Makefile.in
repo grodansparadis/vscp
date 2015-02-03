@@ -24,7 +24,7 @@ install:
 	mkdir -p /srv/vscp/web/images
 	mkdir -p /srv/vscp/web/lib
 	mkdir -p /srv/vscp/web/testws
-	mkdir -p /srv/vscp/logs
+	mkdir -p /var/logs/vscp
 	mkdir -p /srv/vscp/tables
 	mkdir -p /etc/vscp
 	$(INSTALL_PROGRAM) -b -m755 vscpd.startup_script_debian /etc/init.d/vscpd
@@ -32,7 +32,6 @@ install:
 #	$(INSTALL_PROGRAM) -b -m744 config_examples/web/index.html /srv/vscp/web/
 #	$(INSTALL_PROGRAM) -b -m744 -D config_examples/web/* /srv/vscp/web/
 	cp -r config_examples/web/* /srv/vscp/web/
-	
 	#$(INSTALL_PROGRAM) -b -m744 config_examples/mimetypes.xml_distro /etc/vscp/mimetypes.xml
 	#$(INSTALL_PROGRAM) -b -m744 config_examples/variables.xml_distro /srv/vscp/variables.xml
 	#$(INSTALL_PROGRAM) -b -m744 config_examples/dm.xml_distro /srv/vscp/dm.xml

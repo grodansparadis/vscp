@@ -43,18 +43,18 @@
         <!-- file. The debug level will determine how much information   -->
         <!-- you will get into this file.                                -->
         
-        <generallogfile enable="true">/srv/vscp/logs/vscp_log_general</generallogfile>
+        <generallogfile enable="true">/var/log/vscp/vscp_log_general</generallogfile>
         
         <!-- Security logging will be done to this path must be set to            -->
         <!-- get security logging saved into a file.                              -->
         
-        <securitylogfile enable="true">/srv/vscp/logs/vscp_log_security</securitylogfile>
+        <securitylogfile enable="true">/var/log/vscp/vscp_log_security</securitylogfile>
         
         <!-- Access logging will be done to this path must be set to              -->
         <!-- get access logging for tcp/ip udp webserver websocket and rest       -->
         <!-- saved into a file.                                                   -->
         
-        <accesslogfile enable="true">/srv/vscp/logs/vscp_log_access</accesslogfile>
+        <accesslogfile enable="true">/var/log/vscp/vscp_log_access</accesslogfile>
 
         <!-- It is possible to enable/disable the TCP/IP interface                -->
         <!-- You can open TCP/IP interfaces on several ports or on                -->
@@ -89,7 +89,7 @@
                 path="/srv/vscp/dm.xml" 
                 enablelogging="true" 
                 loglevel="debug" 
-                logpath="/srv/vscp/logs/vscp_log_dm"  />      
+                logpath="/var/log/vscp/vscp_log_dm"  />      
 
         <!-- Set to true to enable daemon variables         -->
         <!-- Set to false to disable.                       -->
