@@ -98,16 +98,24 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
 
     switch (ev) {
 	
-		case NS_CONNECT: // connect() succeeded or failed. int *success_status
-			wxLogDebug( _("ev_handler: TCP/IP connect.") );
-			ns_send( conn, "\r\n", 2 ); 
-			pTcpIfSession->m_semConnected.Post();
-            pTcpIfSession->m_bConnected = true;
-            conn->flags |= NSF_USER_1;  // We should terminate 
-			break;
+        case NS_CONNECT: // connect() succeeded or failed. int *success_status
+            {
+                int connect_status = * (int *)pUser;
+                if (connect_status == 0) {
+                    wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
+                    ns_send( conn, "\r\n", 2 ); 
+                    pTcpIfSession->m_semConnected.Post();
+                    pTcpIfSession->m_bConnected = true;
+                    conn->flags |= NSF_USER_1;  // We should terminate
+                } 
+                else {
+                    wxLogDebug( _("ev_handler: TCP/IP connect fail.") );  
+                }
+            }
+            break;
 
         case NS_CLOSE:
-			wxLogDebug( _("ev_handler: TCP/IP close.") );
+            wxLogDebug( _("ev_handler: TCP/IP close.") );
             pTcpIfSession->m_bConnected = false;
             break;
 
