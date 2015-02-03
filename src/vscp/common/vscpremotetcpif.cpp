@@ -184,7 +184,7 @@ void *clientTcpIpWorkerThread::Entry()
     }
 	
 	wxLogDebug( _("clientTcpIpWorkerThread: Before loop.") );
-	wxSleep( 1 );
+	//wxSleep( 1 );
 		
     // Event loop
     while ( !TestDestroy() && m_bRun ) {
