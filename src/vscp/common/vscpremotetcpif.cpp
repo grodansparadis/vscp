@@ -75,7 +75,7 @@ clientTcpIpWorkerThread::clientTcpIpWorkerThread() : wxThread( wxTHREAD_JOINABLE
 
 clientTcpIpWorkerThread::~clientTcpIpWorkerThread()
 {
-    m_pvscpRemoteTcpIpIf = NULL;;
+    m_pvscpRemoteTcpIpIf = NULL;
 }
 
 

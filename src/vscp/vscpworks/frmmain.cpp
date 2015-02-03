@@ -439,8 +439,6 @@ void frmMain::OnMenuitemOpenVscpSessionClick( wxCommandEvent& event )
                             subframe->m_CtrlObject.m_ifCANAL.m_strPath = pBoth->m_pcanalif->m_strPath;
                             subframe->m_CtrlObject.m_ifCANAL.m_strConfig = pBoth->m_pcanalif->m_strConfig;
                             subframe->m_CtrlObject.m_ifCANAL.m_flags= pBoth->m_pcanalif->m_flags;
-                            delete subframe;
-                            return;
                         }
                         else if ( INTERFACE_VSCP == pBoth->m_type ) {
                             subframe->SetTitle(_("VSCP Session (TCP/IP)- ") +  pBoth->m_pvscpif->m_strDescription );
