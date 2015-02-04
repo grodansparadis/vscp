@@ -19,120 +19,72 @@
 #ifndef V7_HEADER_INCLUDED
 #define V7_HEADER_INCLUDED
 
+#define _POSIX_C_SOURCE 200809L
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
+#include <stddef.h>   /* For size_t */
+
 #define V7_VERSION "1.0"
 
-/* Conditional compilation */
-/* #define V7_DEBUG */
-/* #define V7_DISABLE_CRYPTO */
-
-/*
- * If V7_CACHE_OBJS is defined, then v7_freeval() will not actually free
- * the structure, but append it to the list of free structures.
- * Subsequent allocations try to grab a structure from the free list,
- * which speeds up allocation.
- * #define V7_CACHE_OBJS
- */
-
-/* Maximum length of the string literal */
-#define MAX_STRING_LITERAL_LENGTH 2000
-
-#define RE_MAX_SUB 32
-#define RE_MAX_RANGES 32
-#define RE_MAX_SETS 16
-#define RE_MAX_REP 0xFFFF
-#define RE_MAX_THREADS 1000
-#define V7_RE_MAX_REPL_SUB 255
-
-typedef unsigned short uint16_t;
-typedef signed char sint8_t;
-
-#define reg_malloc malloc
-#define reg_free free
-
-#ifndef V7_EX_TRY_CATCH
-#define V7_EX_TRY_CATCH(catch_point) setjmp(catch_point)
-#define V7_EX_THROW(c, m, message) \
-  do {                             \
-    m = message;                   \
-    longjmp(c, 1);                 \
-  } while (0)
-#endif
+enum v7_err {
+  V7_OK,
+  V7_SYNTAX_ERROR,
+  V7_EXEC_EXCEPTION
+};
 
 struct v7;     /* Opaque structure. V7 engine handler. */
 struct v7_val; /* Opaque structure. Holds V7 value, which has v7_type type. */
 
-enum v7_type {
-  V7_TYPE_UNDEF,
-  V7_TYPE_NULL,
-  V7_TYPE_BOOL,
-  V7_TYPE_STR,
-  V7_TYPE_NUM,
-  V7_TYPE_OBJ,
-  V7_NUM_TYPES
-};
 
-enum v7_err {
-  V7_OK,
-  V7_ERROR,
-  V7_EVAL_ERROR,
-  V7_RANGE_ERROR,
-  V7_REFERENCE_ERROR,
-  V7_SYNTAX_ERROR,
-  V7_TYPE_ERROR,
-  V7_URI_ERROR,
-  V7_OUT_OF_MEMORY,
-  V7_INTERNAL_ERROR,
-  V7_STACK_OVERFLOW,
-  V7_STACK_UNDERFLOW,
-  V7_CALLED_NON_FUNCTION,
-  V7_NOT_IMPLEMENTED,
-  V7_STR_TOO_LONG,
-  V7_REGEXP_ERROR,
-  V7_NUM_ERRORS
-};
+/* TODO(lsm): fix this. */
+#include <inttypes.h>
+typedef uint64_t v7_val_t;
 
-/* This structure is passed as an argument to the C/JS glue function */
-struct v7_c_func_arg {
-  struct v7 *v7;
-  struct v7_val *this_obj;
-  struct v7_val **args;
-  int num_args;
-  int called_as_constructor;
-};
-typedef enum v7_err (*v7_func_t)(struct v7_c_func_arg *arg);
+typedef v7_val_t (*v7_cfunction_t)(struct v7 *, v7_val_t, v7_val_t);
 
-struct v7 *v7_create(void);    /* Creates and initializes V7 engine */
-void v7_destroy(struct v7 **); /* Cleanes up and deallocates V7 engine */
+struct v7 *v7_create(void);
+void v7_destroy(struct v7 *);
+enum v7_err v7_exec(struct v7 *, v7_val_t *, const char *str);
+enum v7_err v7_exec_file(struct v7 *, v7_val_t *, const char *path);
+enum v7_err v7_exec_with(struct v7 *, v7_val_t *, const char *str, v7_val_t);
 
-struct v7_val *v7_exec(struct v7 *, const char *str); /* Executes string */
-struct v7_val *v7_exec_file(struct v7 *, const char *path); /* Executes file */
+v7_val_t v7_create_object(struct v7 *v7);
+v7_val_t v7_create_array(struct v7 *v7);
+v7_val_t v7_create_cfunction(v7_cfunction_t func);
+v7_val_t v7_create_number(double num);
+v7_val_t v7_create_boolean(int is_true);
+v7_val_t v7_create_null(void);
+v7_val_t v7_create_undefined(void);
+v7_val_t v7_create_string(struct v7 *v7, const char *, size_t, int);
+v7_val_t v7_create_regexp(struct v7 *, const char *, size_t, const char *, size_t);
 
-struct v7_val *v7_global(struct v7 *); /* Returns global obj (root namespace) */
-char *v7_stringify(const struct v7_val *v, char *buf, int bsiz);
-const char *v7_get_error_string(const struct v7 *); /* Returns error string */
-int v7_is_true(const struct v7_val *);
-void v7_copy(struct v7 *v7, struct v7_val *from, struct v7_val *to);
+int v7_is_object(v7_val_t);
+int v7_is_function(v7_val_t);
+int v7_is_cfunction(v7_val_t);
+int v7_is_string(v7_val_t);
+int v7_is_boolean(v7_val_t);
+int v7_is_double(v7_val_t);
+int v7_is_null(v7_val_t);
+int v7_is_undefined(v7_val_t);
+int v7_is_regexp(v7_val_t);
 
-enum v7_err v7_set(struct v7 *, struct v7_val *, const char *, struct v7_val *);
-enum v7_err v7_del(struct v7 *, struct v7_val *obj, const char *key);
-struct v7_val *v7_get(struct v7_val *obj, const char *key);
+void *v7_to_foreign(v7_val_t);
+int v7_to_boolean(v7_val_t);
+double v7_to_double(v7_val_t);
+v7_cfunction_t v7_to_cfunction(v7_val_t);
+const char *v7_to_string(struct v7 *, v7_val_t *, size_t *);
 
-struct v7_val *v7_call(struct v7 *v7, struct v7_val *this_obj, int num_args);
-
-struct v7_val *v7_push_number(struct v7 *, double num);
-struct v7_val *v7_push_bool(struct v7 *, int is_true);
-struct v7_val *v7_push_string(struct v7 *, const char *str, unsigned long, int);
-struct v7_val *v7_push_new_object(struct v7 *);
-struct v7_val *v7_push_val(struct v7 *, struct v7_val *);
-struct v7_val *v7_push_func(struct v7 *, v7_func_t);
-
-enum v7_type v7_type(const struct v7_val *);
-double v7_number(const struct v7_val *);
-const char *v7_string(const struct v7_val *, unsigned long *len);
+v7_val_t v7_get_global_object(struct v7 *);
+v7_val_t v7_get(struct v7 *v7, v7_val_t obj, const char *name, size_t len);
+int v7_set(struct v7 *v7, v7_val_t obj, const char *, size_t, v7_val_t val);
+char *v7_to_json(struct v7 *, v7_val_t, char *, size_t);
+int v7_is_true(struct v7 *v7, v7_val_t v);
+void v7_array_append(struct v7 *, v7_val_t arr, v7_val_t v);
+v7_val_t v7_array_at(struct v7 *, v7_val_t arr, long index);
+v7_val_t v7_apply(struct v7 *, v7_val_t, v7_val_t, v7_val_t);
 
 #ifdef __cplusplus
 }
