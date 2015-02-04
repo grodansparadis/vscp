@@ -35,10 +35,27 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPL1_OBJECTS =  vscpl1.o  ../common/vscpremotetcpif.o ../common/vscphelper.o ../common/guid.o ../../common/crc.o ../../common/crc8.o ../../common/net_skeleton.o
-PROJOBJS        =  ../common/vscpremotetcpif.o ../common/vscphelper.o  ../../common/crc.o ../../common/crc8.o ../common/guid.o ../../common/net_skeleton.o
+VSCPL1_OBJECTS =  vscpl1.o\
+	../common/vscpremotetcpif.o\
+	../common/vscphelper.o\
+	../common/guid.o\
+	../../common/crc.o\
+	../../common/crc8.o\
+	../../common/net_skeleton.o
+	
+PROJOBJS  =  ../common/vscpremotetcpif.o\
+	../common/vscphelper.o\
+	../common/guid.o\
+	../../common/crc.o\
+	../../common/crc8.o\
+	../../common/net_skeleton.o
 
-
+ALWAYS_BUILD = ../common/vscpremotetcpif.o\
+	../common/vscphelper.o\
+	../common/guid.o\
+	../../common/crc.o\
+	../../common/crc8.o\
+	../../common/net_skeleton.o
 
 ### Targets: ###
 
@@ -75,10 +92,14 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(VSCPL1_OBJECTS)
 	$(CXX) -o $@ $(VSCPL1_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE: 
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
 
 

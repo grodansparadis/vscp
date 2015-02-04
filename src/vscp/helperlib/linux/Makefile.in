@@ -35,10 +35,29 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPHELPER_OBJECTS =  libvscphelper.o ../vscphelperlib.o ../../common/vscpremotetcpif.o ../../common/vscphelper.o ../../common/guid.o ../../../common/crc.o ../../../common/crc8.o ../../../common/fossa.o 
-PROJOBJS        =  ../vscphelperlib.h ../../common/vscpremotetcpif.o ../../common/vscphelper.o  ../../../common/crc.o ../../common/guid.o ../../../common/crc8.o ../../../common/fossa.o
+VSCPHELPER_OBJECTS =  libvscphelper.o\
+	../vscphelperlib.o\
+	../../common/vscpremotetcpif.o\
+	../../common/vscphelper.o\
+	../../common/guid.o\
+	../../../common/crc.o\
+	../../../common/crc8.o\
+	../../../common/fossa.o
 
+PROJOBJS = ../vscphelperlib.h\
+	../../common/vscpremotetcpif.o\
+	../../common/vscphelper.o\
+	../../../common/crc.o\
+	../../common/guid.o\
+	../../../common/crc8.o\
+	../../../common/fossa.o
 
+ALWAYS_BUILD = ../../common/vscpremotetcpif.o\
+	../../common/vscphelper.o\
+	../../common/guid.o\
+	../../../common/crc.o\
+	../../../common/crc8.o\
+	../../../common/fossa.o
 
 ### Targets: ###
 
@@ -76,10 +95,14 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(VSCPHELPER_OBJECTS)
 	$(CXX) -o $@ $(VSCPHELPER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE: 
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
 
 

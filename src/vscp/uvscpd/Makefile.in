@@ -33,8 +33,11 @@ DESTDIR =
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-UVSCPD_OBJECTS =  uvscpd.o websocket.o base64_enc.o sha1.c \
-        ../common/vscphelper.o \
+UVSCPD_OBJECTS =  uvscpd.o\
+	websocket.o\
+	base64_enc.o\
+	sha1.c \
+	../common/vscphelper.o \
 	../../common/dllist.o \
 	../../common/crc.o \
 	../../common/crc8.o \
@@ -42,6 +45,13 @@ UVSCPD_OBJECTS =  uvscpd.o websocket.o base64_enc.o sha1.c \
 	../../common/configfile.o \
 	../../common/randpassword.o 
 
+ALWAYS_BUILD = ../common/vscphelper.o \
+	../../common/dllist.o \
+	../../common/crc.o \
+	../../common/crc8.o \
+	../../common/md5.o \
+	../../common/configfile.o \
+	../../common/randpassword.o
 
 ### Targets: ###
 
@@ -67,10 +77,12 @@ distclean: clean
 uvscpd: $(UVSCPD_OBJECTS)
 	$(CXX) -o $@ $(UVSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 	
+$(ALWAYS_BUILD):  .FORCE
 
+.FORCE: 
 
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 

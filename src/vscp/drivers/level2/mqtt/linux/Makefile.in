@@ -32,13 +32,32 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.6
+WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-MQTT_OBJECTS = mqtt.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
-PROJOBJS =  mqtt.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+MQTT_OBJECTS = mqtt.o\
+	../../../../common/vscpremotetcpif.o\
+	../../../../common/vscphelper.o\
+	../../../../common/guid.o\
+	../../../../../common/crc.o\
+	../../../../../common/crc8.o\
+	../../../../../common/net_skeleton.o\
 
+	
+PROJOBJS =  mqtt.o\
+	../../../../common/vscpremotetcpif.o\
+	../../../../common/vscphelper.o\
+	../../../../common/guid.o\
+	../../../../../common/crc.o\
+	../../../../../common/crc8.o\
+	../../../../../common/net_skeleton.o\
 
+ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
+	../../../../common/vscphelper.o\
+	../../../../common/guid.o\
+	../../../../../common/crc.o\
+	../../../../../common/crc8.o\
+	../../../../../common/net_skeleton.o\
 
 ### Targets: ###
 
@@ -72,10 +91,14 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(MQTT_OBJECTS)
 	$(CXX) -o $@ vscp2drv_mqtt.o $(MQTT_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE: 
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
 
 

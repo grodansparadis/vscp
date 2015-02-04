@@ -32,12 +32,17 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.6
+WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-XAPDRV_OBJECTS =  vscpl1_xapdrv.o ../common/xapobj.o 
-PROJOBJS        =     ../../../../common/guid.o  ../../../../../common/dllist.o 
+XAPDRV_OBJECTS =  vscpl1_xapdrv.o\
+	../common/xapobj.o 
+	
+PROJOBJS = ../../../../common/guid.o\
+	../../../../../common/dllist.o 
 
+ALWAYS_BUILD = ../../../../common/guid.o\
+	../../../../../common/dllist.o 
 
 ### Targets: ###
 
@@ -73,10 +78,15 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(XAPDRV_OBJECTS)
 	$(CXX) -o $@ $(XAPDRV_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE: 
+
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
 
 

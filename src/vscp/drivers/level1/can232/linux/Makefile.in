@@ -32,12 +32,21 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.6
+WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CAN232DRV_OBJECTS =  vscpl1_can232drv.o can232obj.o ../../../../common/guid.o ../../../../../common/dllist.o  ../../../../../common/com.o
-PROJOBJS = ../../../../common/guid.o ../../../../../common/dllist.o 
+CAN232DRV_OBJECTS = vscpl1_can232drv.o\
+	can232obj.o\
+	../../../../common/guid.o\
+	../../../../../common/dllist.o\
+	../../../../../common/com.o
 
+PROJOBJS = ../../../../common/guid.o\
+	../../../../../common/dllist.o 
+
+ALWAYS_BUILD = ../../../../common/guid.o\
+	../../../../../common/dllist.o\
+	../../../../../common/com.o
 
 ### Targets: ###
 
@@ -71,10 +80,14 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(CAN232DRV_OBJECTS)
 	$(CXX) -o $@ $(CAN232DRV_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE: 
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
 
 

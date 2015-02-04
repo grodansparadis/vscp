@@ -119,5 +119,5 @@ $(ALWAYS_BUILD):  .FORCE
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data always .FORCE
+.PHONY: all install uninstall clean distclean data .FORCE
 

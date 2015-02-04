@@ -32,12 +32,31 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.6
+WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-SOCKETCAN_OBJECTS = socketcan.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
-PROJOBJS =  socketcan.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+SOCKETCAN_OBJECTS = socketcan.o\
+	../../../../common/vscpremotetcpif.o\
+	../../../../common/vscphelper.o\
+	../../../../common/guid.o\
+	../../../../../common/crc.o\
+	../../../../../common/crc8.o\
+	../../../../../common/net_skeleton.o\
 
+PROJOBJS =  socketcan.o\
+	../../../../common/vscpremotetcpif.o\
+	../../../../common/vscphelper.o\
+	../../../../common/guid.o\
+	../../../../../common/crc.o\
+	../../../../../common/crc8.o\
+	../../../../../common/net_skeleton.o\
+
+ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
+	../../../../common/vscphelper.o\
+	../../../../common/guid.o\
+	../../../../../common/crc.o\
+	../../../../../common/crc8.o\
+	../../../../../common/net_skeleton.o\
 
 
 ### Targets: ###
@@ -72,10 +91,14 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(SOCKETCAN_OBJECTS)
 	$(CXX) -o $@ vscp2drv_socketcan.o $(SOCKETCAN_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE: 
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
 
 

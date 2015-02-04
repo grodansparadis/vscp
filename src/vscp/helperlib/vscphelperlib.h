@@ -420,7 +420,13 @@ int vscphlp_writeVscpEventToString( const vscpEvent *pEvent, char *p, int size )
 int vscphlp_writeVscpEventExToString( const vscpEventEx *pEvent, char *p, int size );
 int vscphlp_setVscpEventFromString( vscpEvent *pEvent, const char *p );
 int vscphlp_setVscpEventExFromString( vscpEventEx *pEvent, const char *p );
-
+int vscphlp_setVscpDataFromString( vscpEvent *pEvent, const char *pstr );
+int vscphlp_getVSCPMeasurementAsString( const vscpEvent *pEvent, 
+                                           char *pResult, 
+                                           int size );
+int vscphlp_setVscpDataArrayFromString( unsigned char *pData,
+												unsigned short *psizeData,
+												const char *pstr );
 
 unsigned char vscphlp_getMeasurementDataCoding( const vscpEvent *pEvent );
 unsigned long long vscphlp_getDataCodingBitArray(const unsigned char *pCode, int size );

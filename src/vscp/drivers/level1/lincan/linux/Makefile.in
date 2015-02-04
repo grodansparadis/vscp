@@ -31,12 +31,18 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.6
+WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALLINCAN_OBJECTS =  lincan.o ../../../../common/dllist.o ../../../common/devicelist.o
-PROJOBJS        =       ../../../../common/dllist.o ../../../common/devicelist.o
+CANALLINCAN_OBJECTS =  lincan.o\
+	../../../../common/dllist.o\
+	../../../common/devicelist.o
+	
+PROJOBJS = ../../../../common/dllist.o\
+	../../../common/devicelist.o
 
+ALWAYS_BUILD = ./../../../common/dllist.o\
+	../../../common/devicelist.o
 
 ### Targets: ###
 
@@ -72,10 +78,14 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(CANALLINCAN_OBJECTS)
 	$(CXX) -o $@ $(CANALLINCAN_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE:
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
 
 

@@ -32,7 +32,7 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.6
+WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
 LMSENSOROBJ =  lmsensors.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o

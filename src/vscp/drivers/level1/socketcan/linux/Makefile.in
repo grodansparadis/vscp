@@ -32,12 +32,19 @@ DLLPREFIX = lib
 
 ### Variables: ###
 
-WX_RELEASE = 2.6
+WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALSOCKETCAN_OBJECTS =  vscpl1_socketcandrv.o socketcanobj.o ../../../../common/guid.o ../../../../../common/dllist.o 
-PROJOBJS = ../../../../common/guid.o ../../../../../common/dllist.o
+CANALSOCKETCAN_OBJECTS = vscpl1_socketcandrv.o\
+	socketcanobj.o\
+	../../../../common/guid.o\
+	../../../../../common/dllist.o 
 
+PROJOBJS = ../../../../common/guid.o\
+	../../../../../common/dllist.o
+
+ALWAYS_BUILD = ../../../../common/guid.o\
+	../../../../../common/dllist.o
 
 ### Targets: ###
 
@@ -71,10 +78,14 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(CANALSOCKETCAN_OBJECTS)
 	$(CXX) -o $@ $(CANALSOCKETCAN_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE: 
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
 
 

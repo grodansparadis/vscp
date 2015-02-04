@@ -33,7 +33,8 @@ DESTDIR =
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPD_OBJECTS =  vscpd.o ../../common/daemonvscp.o \
+VSCPD_OBJECTS =  vscpd.o \
+	../../common/daemonvscp.o \
 	../../common/clientlist.o \
 	../../common/controlobject.o \
 	../../common/devicelist.o \
@@ -56,9 +57,27 @@ VSCPD_OBJECTS =  vscpd.o ../../common/daemonvscp.o \
 	../../../common/dllist.o \
 	../../../common/configfile.o \
 	../../../common/crc.o \
+	../../../common/crc8.o \
 	../../../common/md5.o \
 	../../../common/randpassword.o \
+	../../../common/net_skeleton.o \
+	../../../common/mongoose.o  \
+	../../../common/slre.o \
+	../../../common/frozen.o \
+
+# Add object files that always should be built here
+ALWAYS_BUILD = ../../common/vscphelper.o \
+	../../common/vscpremotetcpif.o \
+	../../common/devicelist.o \
+	../../common/mdf.o \
+	../../common/guid.o \
+	../../common/register.o \
+	../../../common/dllist.o \
+	../../../common/configfile.o \
+	../../../common/crc.o \
 	../../../common/crc8.o \
+	../../../common/md5.o \
+	../../../common/randpassword.o \
 	../../../common/net_skeleton.o \
 	../../../common/mongoose.o  \
 	../../../common/slre.o \
@@ -89,8 +108,12 @@ distclean: clean
 vscpd: $(VSCPD_OBJECTS)
 	$(CXX) -o $@ $(VSCPD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
+$(ALWAYS_BUILD):  .FORCE
+
+.FORCE: 
+
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 

@@ -34,9 +34,16 @@ DESTDIR =
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-MKPASSWD_OBJECTS =  \
-	mkpasswd.o ../../common/md5.o ../common/vscphelper.o ../../common/crc.o ../../common/crc8.o
+MKPASSWD_OBJECTS =  mkpasswd.o\
+	../common/vscphelper.o\
+	../../common/md5.o\
+	../../common/crc.o\
+	../../common/crc8.o
 
+ALWAYS_BUILD = ../common/vscphelper.o\
+	../../common/md5.o\
+	../../common/crc.o\
+	../../common/crc8.o
 
 ### Targets: ###
 
@@ -61,10 +68,12 @@ distclean: clean
 mkpasswd: $(MKPASSWD_OBJECTS)
 	$(CXX) -o $@ $(MKPASSWD_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 	
+$(ALWAYS_BUILD):  .FORCE
 
+.FORCE: 
 
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data .FORCE
 
