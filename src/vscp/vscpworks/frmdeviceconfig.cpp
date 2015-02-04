@@ -5148,15 +5148,6 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
         }
 
     } 
-    else if (ID_GRID_ABSTRACTIONS == event.GetId()) {
-
-        // Update the DM grid    
-        updateDmGrid();
-
-        // Update abstractions
-        updateAbstractionGrid();
-
-    }
 
 error:
 
