@@ -9,7 +9,8 @@ INSTALL_DIR = /usr/bin/install -c -d
 PROJ_SUBDIRS=@PROJ_SUBDIRS@
 
 all:
-	@for d in $(PROJ_SUBDIRS); do (echo && echo && cd $$d && $(MAKE)); done
+	@for d in $(PROJ_SUBDIRS); do (echo "====================================================" &&\
+	echo "Building in dir " $$d && echo "====================================================" && cd $$d && $(MAKE)); done
 
 clean:
 	@for d in $(PROJ_SUBDIRS); do (cd $$d && $(MAKE) clean); done

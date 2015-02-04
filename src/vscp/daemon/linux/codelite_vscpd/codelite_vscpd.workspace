@@ -3,19 +3,22 @@
   <Project Name="codelite_vscpd" Path="codelite_vscpd.project" Active="No"/>
   <Project Name="codelite_vscpworks" Path="../../../vscpworks/codelite_vscpworks.project" Active="Yes"/>
   <Project Name="codelite_uvscpd" Path="../../../uvscpd/codelite_uvscpd.project" Active="No"/>
+  <Environment>
+    <![CDATA[]]>
+  </Environment>
+  <Project Name="codelite_helperlib" Path="../../../helperlib/linux/codelite_helperlib.project"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Project Name="codelite_vscpd" ConfigName="Debug"/>
       <Project Name="codelite_vscpworks" ConfigName="Debug"/>
       <Project Name="codelite_uvscpd" ConfigName="Debug"/>
+      <Project Name="codelite_helperlib" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Project Name="codelite_vscpd" ConfigName="Release"/>
       <Project Name="codelite_vscpworks" ConfigName="Release"/>
       <Project Name="codelite_uvscpd" ConfigName="Release"/>
+      <Project Name="codelite_helperlib" ConfigName="Release"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
-  <Environment>
-    <![CDATA[]]>
-  </Environment>
 </CodeLite_Workspace>
