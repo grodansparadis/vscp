@@ -33,9 +33,60 @@ DESTDIR =
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-VSCPWORKS_OBJECTS =  \
-	vscpworks.o dlgvscpmsg.o frmmain.o frmvscpsession.o dlgnewvscpsession.o dlgconfiguration.o dlgvscpinterfacesettings.o dlgvscpfilter.o vscpbootloader.o dlgvscptrmit.o frmdeviceconfig.o frmscanfordevices.o dlgselectdaemoninterface.o frmmdfeditor.o dlgabout.o ../common/canalsuperwrapper.o ../../common/crc.o ../../common/crc8.o ../../common/fossa.o ../common/dllwrapper.o ../common/guid.o threadvscpwork.o ../common/vscphelper.o ../common/vscpeventhelper.o ../common/vscpremotetcpif.o ../common/mdf.o ../common/register.o vscptxobj.o gridtable.o dlgeditlevel1dmrow.o dlgsetfiltermask.o dlgabstractionedit.o devicebootloaderwizard.o bootdevice.o bootdevice_pic1.o bootdevice_vscp.o merlin.o frmdaemondecisionmartrixeditor.o frmdaemonvariableeditor.o frmsimpleuserinterfacegenerator.o dlgeventfilter.o dlgclasstypeselect.o $(RESOURCEOBJECT)
+VSCPWORKS_OBJECTS =  vscpworks.o dlgvscpmsg.o \
+	frmmain.o \
+	frmvscpsession.o \
+	dlgnewvscpsession.o \
+	dlgconfiguration.o \
+	dlgvscpinterfacesettings.o \
+	dlgvscpfilter.o \
+	vscpbootloader.o \
+	dlgvscptrmit.o \
+	frmdeviceconfig.o \
+	frmscanfordevices.o \
+	dlgselectdaemoninterface.o \
+	frmmdfeditor.o \
+	dlgabout.o \
+	vscptxobj.o \
+	gridtable.o \
+	dlgeditlevel1dmrow.o \
+	dlgsetfiltermask.o \
+	dlgabstractionedit.o \
+	devicebootloaderwizard.o \
+	bootdevice.o \
+	bootdevice_pic1.o \
+	bootdevice_vscp.o \
+	merlin.o \
+	frmdaemondecisionmartrixeditor.o \
+	frmdaemonvariableeditor.o \
+	frmsimpleuserinterfacegenerator.o \
+	dlgeventfilter.o \
+	dlgclasstypeselect.o \
+	threadvscpwork.o \
+	../../common/crc.o \
+	../../common/crc8.o \
+	../../common/fossa.o \
+	../common/canalsuperwrapper.o \
+	../common/dllwrapper.o \
+	../common/guid.o \
+	../common/vscphelper.o \
+	../common/vscpeventhelper.o \
+	../common/vscpremotetcpif.o \
+	../common/mdf.o \
+	../common/register.o \
+	$(RESOURCEOBJECT)
 
+ALWAYS_BUILD = ../../common/crc.o \
+	../../common/crc8.o \
+	../../common/fossa.o \
+	../common/canalsuperwrapper.o \
+	../common/dllwrapper.o \
+	../common/guid.o \
+	../common/vscphelper.o \
+	../common/vscpeventhelper.o \
+	../common/vscpremotetcpif.o \
+	../common/mdf.o \
+	../common/register.o \
 
 ### Targets: ###
 
@@ -61,10 +112,12 @@ distclean: clean
 vscpworks: $(VSCPWORKS_OBJECTS)
 	$(CXX) -o $@ $(VSCPWORKS_OBJECTS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 	
+$(ALWAYS_BUILD):  .FORCE
 
+.FORCE: 
 
 # Include dependency info, if present:
 -include .deps/*.d
 
-.PHONY: all install uninstall clean distclean data
+.PHONY: all install uninstall clean distclean data always .FORCE
 
