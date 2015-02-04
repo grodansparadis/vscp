@@ -4292,7 +4292,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                     // Octet width is the number of bytes needed to store the bits
                     uint8_t octetwidth =
                             m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth / 8 +
-                            (m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth % 8) ? 1 : 0;
+                            ((m_mdf.m_list_abstraction[ event.GetRow() ]->m_nWidth % 8) ? 1 : 0);
 
                     uint8_t *p;
                     p = new uint8_t[ octetwidth ];
