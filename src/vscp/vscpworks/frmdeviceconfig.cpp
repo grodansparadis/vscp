@@ -3422,7 +3422,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
             for ( uint32_t i = 0; i<nPage; i++ ) {
 
-                wxString str = wxString::Format( _("Fetching user regsisters for page %d 4/8"), pageArray[i] );
+                wxString str = wxString::Format( _("Fetching user registers for page %d 4/8"), pageArray[i] );
                 progressDlg.Update( 30, str );
 
                 if ( VSCP_ERROR_SUCCESS != 
