@@ -3160,7 +3160,6 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
         m_bFirstRead = true;
 
     }
-
     
 
     // Get nickname
@@ -3185,6 +3184,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
             if ( wxID_OK == dlg.ShowModal() ) {
                 strPath = dlg.GetPath();
+            }
+            else {
+                return;
             }
 
         }
