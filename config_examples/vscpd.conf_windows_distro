@@ -149,10 +149,10 @@
         <!-- zone/subzone server use    -->
         <zone>1</zone>
         <sub-zone>2</sub-zone>
-        <!-- sunrise/sunset events data -->
-        <longitude>15.1604167</longitude>
-        <latitude>61.7441833</latitude>
-        <timezone>2</timezone>
+        <!-- sunrise/sunset events data (use comma or period as decimal separator according to your locale) -->
+        <longitude>15,1604167</longitude>
+        <latitude>61,7441833</latitude>
+        <timezone>1</timezone>
         <sunrise enable="true" />
         <sunrise-twilight enable="true" />
         <sunset enable="true" />

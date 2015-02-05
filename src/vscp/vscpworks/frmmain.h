@@ -212,6 +212,8 @@ public:
   */
   wxStaticBitmap* m_pStaticBitmapLogo;
 
+  wxStatusBar* m_pitemStatusBar;
+
 };
 
 #endif

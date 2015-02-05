@@ -8099,12 +8099,145 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
     buildPage += _("<br>");
     buildPage += _("&nbsp;&nbsp;<b>Automation:</b> ");
     if ( pObject->m_automation.isAutomationEnabled() ) {
-        buildPage += _("enabled.");
+        buildPage += _("enabled.<br>");
     }
     else {
-        buildPage += _("disabled");
+        buildPage += _("disabled<br>");
     }
+
+
+
+    if ( pObject->m_automation.isSendHeartbeat() ) {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Heartbeat will be sent.<br>" );
+    }
+    else {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Heartbeat will be sent<br>" );
+    }
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for heartbeat</b>: " );
+    buildPage += wxString::Format( _( "%ld" ), pObject->m_automation.getIntervalHeartbeat() ) + _( " seconds<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Heartbeat last sent @</b>: " );
+    buildPage += pObject->m_automation.getHeartbeatSent().FormatISODate() + _( " " );
+    buildPage += pObject->m_automation.getHeartbeatSent().FormatISOTime() + _( "<br>" );
+
+    
+
+    if ( pObject->m_automation.isSendSegmentControllerHeartbeat() ) {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Segment controller heartbeat will be sent.<br>" );
+    }
+    else {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Segment controller heartbeat will be sent<br>" );
+    }
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Period for Segment controller heartbeat</b>: " );
+    buildPage += wxString::Format( _( "%ld" ), pObject->m_automation.getIntervalSegmentControllerHeartbeat() ) + _( " seconds<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Segment controller heartbeat last sent @</b>: " );
+    buildPage += pObject->m_automation.getSegmentControllerHeartbeatSent().FormatISODate() + _( " " );
+    buildPage += pObject->m_automation.getSegmentControllerHeartbeatSent().FormatISOTime() + _( "<br>" );
+
+
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Longitude</b>: " );
+    buildPage += wxString::Format( _("%f"), pObject->m_automation.getLongitude() ) + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Latitude</b>: " );
+    buildPage += wxString::Format( _( "%f" ), pObject->m_automation.getLatitude() ) + _( "<br>" );
+
+    int hours, minutes;
+    pObject->m_automation.convert2HourMinute( pObject->m_automation.getDayLength(), &hours, &minutes );
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Length of day</b>: " );
+    buildPage += wxString::Format( _( "%d:%d" ), hours, minutes ) + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Declination</b>: " );
+    buildPage += wxString::Format( _( "%f" ), pObject->m_automation.getDeclination() ) + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Sun max altitude</b>: " );
+    buildPage += wxString::Format( _( "%f" ), pObject->m_automation.getSunMaxAltitude() ) + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Last Calculation</b>: " );
+    buildPage += pObject->m_automation.getLastCalculation().FormatISOTime() + _("<br>");
+
+
+    if ( pObject->m_automation.isSendSunriseEvent() ) {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event should be sent.<br>" );
+    }
+    else {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event should not be sent.<br>" );
+    }
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time</b>: " );
+    buildPage += pObject->m_automation.getCivilTwilightSunriseTime().FormatISOTime() + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunrise Time sent @</b>: " );
+    buildPage += pObject->m_automation.getCivilTwilightSunriseTimeSent().FormatISODate() + _( " " );
+    buildPage += pObject->m_automation.getCivilTwilightSunriseTimeSent().FormatISOTime() + _( "<br>" );
+
+
+
+    if ( pObject->m_automation.isSendSunriseEvent() ) {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise event should be sent.<br>" );
+    }
+    else {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise event should not be sent.<br>" );
+    }
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time</b>: " );
+    buildPage += pObject->m_automation.getSunriseTime().FormatISOTime() + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunrise Time sent @</b>: " );
+    buildPage += pObject->m_automation.getSunriseTimeSent().FormatISODate() + _( " " );
+    buildPage += pObject->m_automation.getSunriseTimeSent().FormatISOTime() + _( "<br>" );
+
+
+    if ( pObject->m_automation.isSendSunsetEvent() ) {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunset event should be sent.<br>" );
+    }
+    else {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunset event should not be sent.<br>" );
+    }
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time</b>: " );
+    buildPage += pObject->m_automation.getSunsetTime().FormatISOTime() + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Sunset Time sent @</b>: " );
+    buildPage += pObject->m_automation.getSunsetTimeSent().FormatISODate() + _( " " );
+    buildPage += pObject->m_automation.getSunsetTimeSent().FormatISOTime() + _( "<br>" );
+
+
+
+    if ( pObject->m_automation.isSendSunsetTwilightEvent() ) {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Twilight sunset event should be sent.<br>" );
+    }
+    else {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Twilight sunset should not be sent.<br>" );
+    }
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time</b>: " );
+    buildPage += pObject->m_automation.getCivilTwilightSunsetTime().FormatISOTime() + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Civil Twilight Sunset Time sent @</b>: " );
+    buildPage += pObject->m_automation.getCivilTwilightSunsetTimeSent().FormatISODate() + _( " " );
+    buildPage += pObject->m_automation.getCivilTwilightSunsetTimeSent().FormatISOTime() + _( "<br>" );
+
+
+    if ( pObject->m_automation.isSendCalculatedNoonEvent() ) {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Calculated noon event should be sent.<br>" );
+    }
+    else {
+        buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Calculated noon should not be sent.<br>" );
+    }
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time</b>: " );
+    buildPage += pObject->m_automation.getNoonTime().FormatISOTime() + _( "<br>" );
+
+    buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Calculated Noon Time sent @</b>: " );
+    buildPage += pObject->m_automation.getNoonTimeSent().FormatISODate() + _( " " );
+    buildPage += pObject->m_automation.getNoonTimeSent().FormatISOTime() + _( "<br>" );
+
     buildPage += _("</div>");
+
 
     buildPage += _("<hr>");
 

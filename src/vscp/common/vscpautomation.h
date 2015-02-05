@@ -176,7 +176,44 @@ public:
     void enableAutomation( void ) { m_bAutomation = true; };
     void disableAutomation( void ) { m_bAutomation = false; };
     bool isAutomationEnabled( void ) { return m_bAutomation; }; 
-    
+
+    wxDateTime &getLastCalculation( void ) { return m_lastCalculation; };
+
+    wxDateTime &getCivilTwilightSunriseTime( void ) { return m_civilTwilightSunriseTime; };
+    wxDateTime &getCivilTwilightSunriseTimeSent( void ) { return m_civilTwilightSunriseTime_sent; };
+
+    wxDateTime &getSunriseTime( void ) { return m_SunriseTime; };
+    wxDateTime &getSunriseTimeSent( void ) { return m_SunriseTime_sent; };
+
+    wxDateTime &getSunsetTime( void ) { return m_SunsetTime; };
+    wxDateTime &getSunsetTimeSent( void ) { return m_SunsetTime_sent; };
+
+    wxDateTime &getCivilTwilightSunsetTime( void ) { return m_civilTwilightSunsetTime; };
+    wxDateTime &getCivilTwilightSunsetTimeSent( void ) { return m_civilTwilightSunsetTime_sent; };
+
+    wxDateTime &getNoonTime( void ) { return m_noonTime; };
+    wxDateTime &getNoonTimeSent( void ) { return m_noonTime_sent; };
+
+    double getLongitude( void ) { return m_longitude; };
+    double getLatitude( void ) { return m_latitude; };
+    double getDayLength( void ) { return m_daylength; }; // use convert2HourMinute to hh:mm
+    double getDeclination( void ) { return m_declination; };
+    double getSunMaxAltitude( void ) { return m_SunMaxAltitude; };
+
+    bool isSendSunriseEvent( void ) { return m_bSunRiseEvent; };
+    bool isSendSunriseTwilightEvent( void ) { return m_bSunRiseTwilightEvent; };
+    bool isSendSunsetEvent( void ) { return m_bSunSetEvent; };
+    bool isSendSunsetTwilightEvent( void ) { return m_bSunSetTwilightEvent; }; 
+    bool isSendCalculatedNoonEvent( void ) { return m_bCalculatedNoonEvent; };
+
+    bool  isSendSegmentControllerHeartbeat( void ) { return m_bSegmentControllerHeartbeat; };
+    long getIntervalSegmentControllerHeartbeat( void ) { return m_intervalSegmentControllerHeartbeat; };
+    wxDateTime &getSegmentControllerHeartbeatSent( void ) { return m_SegmentHeartbeat_sent; };
+
+    bool  isSendHeartbeat( void ) { return m_bHeartBeatEvent; };
+    long getIntervalHeartbeat( void ) { return m_intervalHeartBeat; };
+    wxDateTime &getHeartbeatSent( void ) { return m_Heartbeat_sent; };
+
 private:
 
     bool m_bAutomation;
@@ -258,14 +295,19 @@ private:
     */
     bool m_bSunSetTwilightEvent;
 
+    /*!
+        Enable/Disable calculated noon event
+    */
+    bool m_bCalculatedNoonEvent;
 
-     /*!
+
+    /*!
         calculations holders.
         ---------------------
-        Structure holding calculated values
+        Calculated values
         use convert2HourMinute to convert from
         double to hour/minutes
-     */
+    */
     double m_declination;
     double m_daylength;               // hours/minutes
     double m_SunMaxAltitude;
@@ -297,7 +339,7 @@ private:
     wxDateTime m_noonTime_sent;
 
     /*!
-        Set tto true when calculations has been done and
+        Set to true when calculations has been done and
         time is 12:00
     */
     bool m_bCalulationHasBeenDone;

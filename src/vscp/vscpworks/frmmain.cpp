@@ -56,6 +56,8 @@
 #include <wx/stdpaths.h>
 #include <wx/dir.h>
 
+#include <mdf.h>
+#include <version.h>
 #include "vscpworks.h"
 #include "frmmain.h"
 #include "dlgnewcanalsession.h"
@@ -65,7 +67,6 @@
 #include "frmdeviceconfig.h"
 #include "frmscanfordevices.h"
 #include "dlgconfiguration.h"
-#include <mdf.h>
 #include "dlgabout.h"
 #include "frmmdfeditor.h"
 #include "devicebootloaderwizard.h"
@@ -263,12 +264,12 @@ void frmMain::CreateControls()
     itemFrame1->SetMenuBar( menuBar );
 
     // Statusbar
-    wxStatusBar* itemStatusBar = new wxStatusBar;
-    itemStatusBar->Create( itemFrame1,
+    m_pitemStatusBar = new wxStatusBar;
+    m_pitemStatusBar->Create( itemFrame1,
                                 ID_STATUSBAR, 
                                 wxST_SIZEGRIP|wxNO_BORDER );
-    itemStatusBar->SetFieldsCount( 2 );
-    itemFrame1->SetStatusBar( itemStatusBar );
+    //m_pitemStatusBar->SetFieldsCount( 2 );
+    itemFrame1->SetStatusBar( m_pitemStatusBar );
 
     // Toolbar
     wxToolBar* itemToolBar = CreateToolBar( wxTB_FLAT | wxTB_HORIZONTAL | wxTB_NODIVIDER, 
@@ -310,6 +311,7 @@ void frmMain::CreateControls()
                             wxALIGN_CENTER_HORIZONTAL | wxALL, 
                             0 );
 
+    m_pitemStatusBar->SetStatusText( _( VSCPD_COPYRIGHT ) + _(" - ") + _( VSCPD_DISPLAY_VERSION ) );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
