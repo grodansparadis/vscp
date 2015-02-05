@@ -3686,7 +3686,7 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
 
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
         // Get Interface id
-        nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
+        nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
     }
 
     if ( m_gridRegisters->GetNumberRows() ) {
@@ -3700,7 +3700,7 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
                 uint8_t val;
 
                 uint16_t page;
-                page = getPageFromCell(selrows[i]);
+                page = getPageFromCell( selrows[i] );
 
                 uint32_t reg;
                 reg = getRegFromCell(selrows[i]);
@@ -5878,7 +5878,7 @@ uint16_t frmDeviceConfig::getPageFromCell(int row)
 {
     wxString str = m_gridRegisters->GetCellValue(row, 0);
     if (wxNOT_FOUND != str.Find(_(":"))) {
-        return vscp_readStringValue(_("0x") + m_gridRegisters->GetCellValue(row, 0).Trim());
+        return vscp_readStringValue( _("0x") + m_gridRegisters->GetCellValue(row, 0).Trim() );
     }
 
     return 0;

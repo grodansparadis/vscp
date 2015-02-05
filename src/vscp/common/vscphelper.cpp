@@ -897,13 +897,10 @@ uint32_t vscp_readStringValue(const wxString& strval)
 	str.Trim(false);
 	str.MakeLower();
 	if (wxNOT_FOUND != str.Find(_("0x"))) {
-		if ( !str.ToULong(&val, 16) ) {
-			val = 0;
-		}
-	} else {
-		if ( !str.ToULong(&val) ) {
-			val = 0;
-		}
+        str.ToULong( &val, 16 );
+	} 
+    else {
+        str.ToULong( &val );
 	}
 
 	return val;
@@ -2612,7 +2609,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			break;
 
 		case VSCP_TYPE_PROTOCOL_PROBE_ACK:
-            str = wxString::Format( _("The nicknme=0x%02X is in use"), pEvent->GUID[ 15 ] );
+            str = wxString::Format( _("The nickname=0x%02X is in use"), pEvent->GUID[ 15 ] );
 			break;
 
 		case VSCP_TYPE_PROTOCOL_SET_NICKNAME:
