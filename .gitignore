@@ -168,3 +168,16 @@ src/vscp/helperlib/linux/examples/bigtest
 /src/vscp/vscpworks/*.bak
 /src/vscp/vscpworks/*.aps
 /src/vscp/vscp_project.v12.suo
+backup-012120151433-pre-vscp.tgz
+backup-012120151454-pre-vscp.tgz
+backup-012120151559-pre-vscp.tgz
+src/vscp/daemon/linux/codelite_vscpd/.codelite/codelite_vscpd.tags
+src/vscp/daemon/linux/codelite_vscpd/.codelite/cppcheck.list
+src/vscp/daemon/linux/codelite_vscpd/.codelite/valgrind.memcheck.log.xml
+src/vscp/drivers/level1/usb2can/usb2can/common/dlldrvobj.cpp.rej
+src/vscp/drivers/level1/usb2can/usb2can/vscp_common/canal.h.rej
+src/vscp/helperlib/linux/Makefile~
+src/vscp/helperlib/linux/examples/example1
+src/vscp/linuxvscpl2/
+src/vscp/vscpworks/Makefile~
+src/vscp/vscpworks/core
