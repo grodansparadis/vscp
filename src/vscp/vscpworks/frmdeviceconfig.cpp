@@ -4959,14 +4959,14 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
         (flags & 0x08) ? dlg.m_chkMatchSubzone->SetValue(true) : dlg.m_chkMatchSubzone->SetValue(false);
 
         // Class Mask
-        reg = vscp_readStringValue(m_gridDM->GetCellValue(event.GetRow(), 2)) +
-                ((flags & 0x02) << 9);
+        reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 2)) +
+                                                            ((flags & 0x02) << 9);
         str = wxString::Format(_("%d"), reg);
         dlg.m_classMask->ChangeValue(str);
 
         // Class Filter
-        reg = vscp_readStringValue(m_gridDM->GetCellValue(event.GetRow(), 3)) +
-                ((flags & 0x01) << 9);
+        reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 3)) +
+                                                            ((flags & 0x01) << 9);
         str = wxString::Format(_("%d"), reg);
         dlg.m_classFilter->ChangeValue(str);
 
@@ -4984,7 +4984,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
         dlg.m_comboAction->SetClientData(0, 0);
         dlg.m_comboAction->SetSelection(0);
 
-        reg = vscp_readStringValue(m_gridDM->GetCellValue(event.GetRow(), 6));
+        reg = vscp_readStringValue( m_gridDM->GetCellValue( event.GetRow(), 6 ) );
 
         MDF_ACTION_LIST::iterator iter;
         for (iter = m_mdf.m_dmInfo.m_list_action.begin();
@@ -5009,41 +5009,41 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
             wxString strBuf;
 
             // O-addr
-            strBuf.Printf(_("0x%02x"), (uint8_t)vscp_readStringValue(dlg.m_oaddr->GetValue()));
-            m_gridRegisters->SetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    2,
-                    strBuf);
+            strBuf.Printf(_("0x%02x"), (uint8_t)vscp_readStringValue( dlg.m_oaddr->GetValue() ) );
+            m_gridRegisters->SetCellValue( m_mdf.m_dmInfo.m_nStartOffset +
+                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                           2,
+                                           strBuf);
 
             // class mask
             uint16_t class_mask = vscp_readStringValue(dlg.m_classMask->GetValue());
             strBuf.Printf(_("0x%02x"), class_mask & 0xff);
             m_gridRegisters->SetCellValue(2 + m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    2,
-                    strBuf);
+                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                            2,
+                                            strBuf);
 
             // class filter
             uint16_t class_filter = vscp_readStringValue(dlg.m_classFilter->GetValue());
             strBuf.Printf(_("0x%02x"), class_filter & 0xff);
             m_gridRegisters->SetCellValue(3 + m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    2,
-                    strBuf);
+                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                            2,
+                                            strBuf);
 
             // type mask
             strBuf.Printf(_("0x%02x"), vscp_readStringValue(dlg.m_typeMask->GetValue()));
             m_gridRegisters->SetCellValue(4 + m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    2,
-                    strBuf);
+                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                            2,
+                                            strBuf);
 
             // type filter
             strBuf.Printf(_("0x%02x"), vscp_readStringValue(dlg.m_typeFilter->GetValue()));
             m_gridRegisters->SetCellValue(5 + m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    2,
-                    strBuf);
+                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                            2,
+                                            strBuf);
 
             // flags
             uint8_t flags = 0;
@@ -5057,63 +5057,57 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
             if (dlg.m_chkMatchSubzone->GetValue()) flags |= 0x08;
             strBuf.Printf(_("0x%02x"), flags);
             m_gridRegisters->SetCellValue(1 + m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    2,
-                    strBuf);
+                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                            2,
+                                            strBuf);
 
             // Action
             int idx = 0;
             if (wxNOT_FOUND != (idx = dlg.m_comboAction->GetSelection())) {
                 uint32_t data = (uintptr_t) dlg.m_comboAction->GetClientData(idx);
                 strBuf.Printf(_("0x%02x"), data);
-            } else {
+            } 
+            else {
                 strBuf.Printf(_("0x%02x"), 0);
             }
             m_gridRegisters->SetCellValue(6 + m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    2,
-                    strBuf);
+                                            m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                            2,
+                                            strBuf);
 
             // Action Parameter
             strBuf.Printf(_("0x%02x"), (uint8_t)vscp_readStringValue(dlg.m_actionParam->GetValue()));
             m_gridRegisters->SetCellValue(7 + m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    2,
-                    strBuf);
+                                            m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                            2,
+                                            strBuf);
 
-            int row = getRegisterGridRow(m_mdf.m_dmInfo.m_nStartOffset +
-                    m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                    m_mdf.m_dmInfo.m_nStartPage);
+            int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset +
+                                            m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
+                                            m_mdf.m_dmInfo.m_nStartPage);
 
             // Visual indication
             if (-1 != row) {
 
                 for (int i = 0; i < m_mdf.m_dmInfo.m_nRowSize; i++) {
 
-                    if (m_mdf.m_dmInfo.m_bIndexed) {
+                    if ( m_mdf.m_dmInfo.m_bIndexed ) {
 
                         // Index
                         strBuf = getFormattedValue(0);
-                        m_gridRegisters->SetCellValue(
-                                row,
-                                2,
-                                strBuf);
+                        m_gridRegisters->SetCellValue( row,
+                                                        2,
+                                                        strBuf);
 
-                        m_gridRegisters->SetCellTextColour(
-                                row,
-                                2, *wxRED);
+                        m_gridRegisters->SetCellTextColour( row, 2, *wxRED);
 
                         // Value
-                        strBuf = getFormattedValue(
-                                vscp_readStringValue(dlg.m_oaddr->GetValue()));
-                        m_gridRegisters->SetCellValue(
-                                row + 1,
-                                2,
-                                strBuf);
+                        strBuf = getFormattedValue( vscp_readStringValue( dlg.m_oaddr->GetValue() ) );
+                        m_gridRegisters->SetCellValue( row + 1,
+                                                        2,
+                                                        strBuf);
 
-                        m_gridRegisters->SetCellTextColour(
-                                row + 1,
-                                2, *wxRED);
+                        m_gridRegisters->SetCellTextColour( row + 1, 2, *wxRED);
 
                     } 
                     else {
@@ -5122,17 +5116,14 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
                             // Index
                             strBuf = getFormattedValue(vscp_readStringValue(
-                                    m_gridRegisters->GetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
-                                    m_mdf.m_dmInfo.m_nRowSize *
-                                    event.GetRow() + i, 2)));
-                            m_gridRegisters->SetCellValue(
-                                    row + i,
-                                    2,
-                                    strBuf);
+                                        m_gridRegisters->GetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
+                                        m_mdf.m_dmInfo.m_nRowSize *
+                                        event.GetRow() + i, 2)));
+                            m_gridRegisters->SetCellValue( row + i,
+                                                            2,
+                                                            strBuf);
 
-                            m_gridRegisters->SetCellTextColour(
-                                    row + i,
-                                    2, *wxRED);
+                            m_gridRegisters->SetCellTextColour( row + i, 2, *wxRED);
 
                         }
 

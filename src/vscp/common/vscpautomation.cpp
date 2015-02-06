@@ -437,6 +437,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.GetMinute() == m_SunriseTime.GetMinute() ) ) {
 
         m_SunriseTime += span24;   // Add 24h's
+        m_SunriseTime_sent = now;
 
         // Send VSCP_CLASS1_INFORMATION, Type=44/VSCP_TYPE_INFORMATION_SUNRISE
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -458,6 +459,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.GetMinute() == m_civilTwilightSunriseTime.GetMinute() ) ) {
 
         m_civilTwilightSunriseTime += span24;   // Add 24h's
+        m_civilTwilightSunriseTime_sent = now;
 
         // Send VSCP_CLASS1_INFORMATION, Type=52/VSCP_TYPE_INFORMATION_SUNRISE_TWILIGHT_START
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -479,6 +481,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.GetMinute() == m_civilTwilightSunsetTime.GetMinute() ) ) {
 
         m_civilTwilightSunsetTime += span24;   // Add 24h's
+        m_civilTwilightSunsetTime_sent = now;
 
         // Send VSCP_CLASS1_INFORMATION, Type=53/VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -500,6 +503,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.GetMinute() == m_SunsetTime.GetMinute() ) ) {
 
         m_SunsetTime += span24;   // Add 24h's
+        m_SunsetTime_sent = now;
 
         // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
         pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
@@ -521,6 +525,7 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
          ( now.GetMinute() == m_noonTime.GetMinute() ) ) {
 
         m_noonTime += span24;   // Add 24h's
+        m_noonTime_sent = now;
 
         // Send VSCP_CLASS1_INFORMATION, Type=58/VSCP_TYPE_INFORMATION_CALCULATED_NOON
         pEventEx->obid = 0;         // IMPORTANT Must be set by caller before event is sent

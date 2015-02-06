@@ -172,6 +172,11 @@ void *daemonVSCPThread::Entry()
             // Check if automation event should be sent and send it if so
             vscpEventEx eventEx;
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
+
+                m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%s" ),
+                    eventEx.vscp_class, eventEx.vscp_type ),
+                    DAEMON_LOGMSG_INFO,
+                    DAEMON_LOGTYPE_GENERAL );
             
                 // Yes event should be sent
                 eventEx.obid = pClientItem->m_clientID;
