@@ -173,7 +173,7 @@ void *daemonVSCPThread::Entry()
             vscpEventEx eventEx;
             if ( m_pCtrlObject->m_automation.doWork( &eventEx ) ) {
 
-                m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%s" ),
+                m_pCtrlObject->logMsg( wxString::Format( _( "Automation event sent: Class=%d Type=%d" ),
                     eventEx.vscp_class, eventEx.vscp_type ),
                     DAEMON_LOGMSG_INFO,
                     DAEMON_LOGTYPE_GENERAL );
