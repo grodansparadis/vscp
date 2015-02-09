@@ -419,7 +419,7 @@ void CVSCPAutomation::calcSun( void )
 bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
 {
     wxDateTime now = wxDateTime::Now();
-    wxTimeSpan span24( 24 );  // one hour span
+    wxTimeSpan span24( 24 );  // Tewntyfour hour span
 
     // Every 24h calculate Sunrise/sunset parameters at noon
     // Events are just sent once per 24h/period

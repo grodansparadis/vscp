@@ -311,7 +311,10 @@ void frmMain::CreateControls()
                             wxALIGN_CENTER_HORIZONTAL | wxALL, 
                             0 );
 
-    m_pitemStatusBar->SetStatusText( _( VSCPD_COPYRIGHT ) + _(" - ") + _( VSCPD_DISPLAY_VERSION ) );
+    wxString strVersion = _( VSCPD_COPYRIGHT );
+    strVersion += _( " - " );
+    strVersion += _( VSCPD_DISPLAY_VERSION );
+    m_pitemStatusBar->SetStatusText( strVersion );
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -808,15 +811,15 @@ void frmMain::OnMenuitemBootloaderWizardClick( wxCommandEvent& event )
     DeviceBootloaderwizard *wizard = new DeviceBootloaderwizard( this );
 
     // DLL timings
-    wizard->m_canaldllif.setMaxRetries( g_Config.m_CANALRegMaxRetries );
-    wizard->m_canaldllif.setReadResendTimeout( g_Config.m_CANALRegResendTimeout );
-    wizard->m_canaldllif.setReadTimeout( g_Config.m_CANALRegErrorTimeout );
+    wizard->m_dll.setMaxRetries( g_Config.m_CANALRegMaxRetries );
+    wizard->m_dll.setReadResendTimeout( g_Config.m_CANALRegResendTimeout );
+    wizard->m_dll.setReadTimeout( g_Config.m_CANALRegErrorTimeout );
     
     // TCP/IP timings
-    wizard->m_vscptcpipif.setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
+    wizard->m_tcpip.setRegisterOperationTiming( g_Config.m_TCPIPRegMaxRetries,
                                                       g_Config.m_TCPIPRegResendTimeout,
                                                       g_Config.m_TCPIPRegErrorTimeout );
-    wizard->m_vscptcpipif.setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
+    wizard->m_tcpip.setResponseTimeout( g_Config.m_TCPIPResponseTimeout );
     
     // Go
     wizard->Run();

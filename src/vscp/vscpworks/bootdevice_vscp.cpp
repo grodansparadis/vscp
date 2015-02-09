@@ -55,9 +55,6 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
-////@end includes
-
 #include <stdio.h>
 #include <wx/html/htmlwin.h>
 #include <wx/progdlg.h>
@@ -67,20 +64,19 @@
 #define CRC16
 #include "crc.h"
 
-CBootDevice_VSCP::CBootDevice_VSCP(CCanalSuperWrapper *pcsw, cguid &guid) :
-CBootDevice(pcsw, guid) {
-    // Create buffers
-    m_pbufPrg = new unsigned char [ BUFFER_SIZE_PROGRAM_COMMON ];
-    m_pbufCfg = new unsigned char [ BUFFER_SIZE_CONFIG_COMMON ];
-    m_pbufEEPROM = new unsigned char [ BUFFER_SIZE_EEPROM_COMMON ];
 
-    //m_bHandshake = true;		// No handshake as default
-    m_pAddr = 0;
-    m_type = MEM_TYPE_PROGRAM;
+CBootDevice_VSCP::CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid ) :
+    CBootDevice( pdll, nodeid )
+{
+    init();
+    m_type = USE_DLL_INTERFACE;
+}
 
-    // Response timeout
-    setResponseTimeout(BOOT_COMMAND_RESPONSE_TIMEOUT);
-    crcInit();
+CBootDevice_VSCP::CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid ) :
+    CBootDevice( ptcpip, guid, ifguid )
+{
+    init();
+    m_type = USE_TCPIP_INTERFACE;
 }
 
 CBootDevice_VSCP::~CBootDevice_VSCP(void) {
@@ -90,6 +86,24 @@ CBootDevice_VSCP::~CBootDevice_VSCP(void) {
 
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+// init
+//
+
+void CBootDevice_VSCP::init( void )
+{
+    // Create buffers
+    m_pbufPrg = new unsigned char[ BUFFER_SIZE_PROGRAM_COMMON ];
+    m_pbufCfg = new unsigned char[ BUFFER_SIZE_CONFIG_COMMON ];
+    m_pbufEEPROM = new unsigned char[ BUFFER_SIZE_EEPROM_COMMON ];
+
+    //m_bHandshake = true;		// No handshake as default
+    m_pAddr = 0;
+    m_type = MEM_TYPE_PROGRAM;
+
+    crcInit();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // loadBinaryFile
@@ -416,7 +430,8 @@ void CBootDevice_VSCP::showInfo(wxHtmlWindow *phtmlWnd) {
 // setDeviceInBootMode
 //
 
-bool CBootDevice_VSCP::setDeviceInBootMode(void) {
+bool CBootDevice_VSCP::setDeviceInBootMode( void ) 
+{
     bool bRun;
 
     /*    uint8_t pageMSB;
@@ -426,71 +441,50 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
         uint8_t guid5;
         uint8_t guid7;
     )*/
+
     uint16_t vscpclass;
     uint8_t vscptype;
     uint8_t nodeid;
     uint8_t priority = 0;
 
-
     wxBusyCursor busy;
 
-    if (USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    if ( USE_DLL_INTERFACE == m_type ) {
 
         canalMsg msg, rcvmsg;
         time_t tstart, tnow;
 
-        memset(msg.data, 0x00, 8);
-
-        // Read page register MSB
-        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
-                                                                            m_guid.m_id[ 0 ],
-                                                                            VSCP_REG_PAGE_SELECT_MSB,
-                                                                            &pageMSB ) ) {
-            return false;
-        }
-
-
-        // Read page register LSB
-        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
-                                                                            m_guid.m_id[ 0 ],
-                                                                            VSCP_REG_PAGE_SELECT_LSB,
-                                                                            &pageLSB ) ) {
-            return false;
-        }
-
+        memset( msg.data, 0x00, 8 );
 
         // Read page register GUID0
-        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0, 
-                                                                            m_guid.m_id[ 0 ],
-                                                                            VSCP_REG_GUID0,
-                                                                            &guid0 ) ) {
+        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+                                            0,
+                                            VSCP_REG_GUID0,
+                                            &pageMSB ) ) {
             return false;
         }
 
-
         // Read page register GUID3
-        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0,
-                                                                            m_guid.m_id[ 0 ],
-                                                                            VSCP_REG_GUID3,
-                                                                            &guid3 ) ) {
+        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+                                            0,
+                                            VSCP_REG_GUID3,
+                                            &pageMSB ) ) {
             return false;
         }
 
         // Read page register GUID5
-        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0, 
-                                                                            m_guid.m_id[ 0 ],
-                                                                            VSCP_REG_GUID5,
-                                                                            &guid5 ) ) {
+        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+                                            0,
+                                            VSCP_REG_GUID5,
+                                            &pageMSB ) ) {
             return false;
         }
 
-
-
         // Read page register GUID7
-        if (!m_pCanalSuperWrapper->getDllInterface()->readLevel1Register( 0, 
-                                                                            m_guid.m_id[ 0 ],
-                                                                            VSCP_REG_GUID7,
-                                                                            &guid7 ) ) {
+        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+                                            0,
+                                            VSCP_REG_GUID7,
+                                            &pageMSB ) ) {
             return false;
         }
 
@@ -510,13 +504,13 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
 
         // Send message
         msg.id = ((uint32_t) priority << 26) |
-                ((uint32_t) vscpclass << 16) |
-                ((uint32_t) vscptype << 8) |
-                nodeid; // nodeaddress (our address)
+                    ((uint32_t) vscpclass << 16) |
+                    ((uint32_t) vscptype << 8) |
+                    nodeid; // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
         msg.sizeData = 8;
-        if (CANAL_ERROR_SUCCESS == m_pCanalSuperWrapper->doCmdSend(&msg)) {
+        if ( CANAL_ERROR_SUCCESS == m_pdll->doCmdSend( &msg ) ) {
 
             bRun = true;
 
@@ -528,19 +522,20 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
                 time(&tnow);
                 if ((unsigned long) (tnow - tstart) > 5) {
                     bRun = false;
-                    wxMessageBox(_T("1111"));
                 }
 
-                if (m_pCanalSuperWrapper->doCmdDataAvailable()) {
+                if ( m_pdll->doCmdDataAvailable() ) {
 
-                    m_pCanalSuperWrapper->doCmdReceive(&rcvmsg);
+                    m_pdll->doCmdReceive( &rcvmsg );
 
                     vscptype = VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER;
 
-                    if ((uint32_t) (rcvmsg.id & 0x01ffffff) == (uint32_t) (((uint32_t) vscpclass << 16) | ((uint32_t) vscptype << 8) | nodeid)) {
+                    if ((uint32_t) (rcvmsg.id & 0x01ffffff) == 
+                         (uint32_t) (((uint32_t) vscpclass << 16) | ((uint32_t) vscptype << 8) | nodeid)) {
                         // OK in bootmode - return
 
-                        falsh_memory_block_size = (uint32_t) (((uint32_t) rcvmsg.data[ 0 ] << 24) | ((uint32_t) rcvmsg.data[ 1 ] << 16) | ((uint32_t) rcvmsg.data[ 2 ] << 8) | rcvmsg.data[ 3 ]);
+                        falsh_memory_block_size = 
+                            (uint32_t) (((uint32_t) rcvmsg.data[ 0 ] << 24) | ((uint32_t) rcvmsg.data[ 1 ] << 16) | ((uint32_t) rcvmsg.data[ 2 ] << 8) | rcvmsg.data[ 3 ]);
 
                         return true;
                     }
@@ -551,64 +546,51 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
         }
 
     } 
-    else if (USE_TCPIP_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    else if ( USE_TCPIP_INTERFACE == m_type ) {
 
-        vscpEventEx event;
+        vscpEventEx evex;
         time_t tstart, tnow;
 
-
-        // Read page register MSB
-        if (!wxGetApp().readLevel2Register(m_pCanalSuperWrapper, m_guid.m_id, VSCP_REG_PAGE_SELECT_MSB, &pageMSB)) {
-            return false;
-        }
-
-
-        // Read page register LSB
-        if (!wxGetApp().readLevel2Register(m_pCanalSuperWrapper, m_guid.m_id, VSCP_REG_PAGE_SELECT_LSB, &pageLSB)) {
-            return false;
-        }
-
-
         // Read page register GUID0
-        if (!wxGetApp().readLevel2Register(m_pCanalSuperWrapper, m_guid.m_id, VSCP_REG_GUID0, &guid0)) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid ) ) {
             return false;
         }
 
 
         // Read page register GUID3
-        if (!wxGetApp().readLevel2Register(m_pCanalSuperWrapper, m_guid.m_id, VSCP_REG_GUID3, &guid3)) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid0, m_ifguid ) ) {
             return false;
         }
 
         // Read page register GUID5
-        if (!wxGetApp().readLevel2Register(m_pCanalSuperWrapper, m_guid.m_id, VSCP_REG_GUID5, &guid5)) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid0, m_ifguid ) ) {
             return false;
         }
 
         // Read page register GUID7
-        if (!wxGetApp().readLevel2Register(m_pCanalSuperWrapper, m_guid.m_id, VSCP_REG_GUID7, &guid7)) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid0, m_ifguid ) ) {
             return false;
         }
 
         // Set device in boot mode
 
         // Send message
-        event.head = 0;
-        event.vscp_class = 512; // CLASS2.PROTOCOL1
-        event.vscp_type = VSCP_ENTER_BOOTLODER_MODE; // We want to enter bootloader mode
-        memset(event.GUID, 0, 16); // We use interface GUID
-        event.sizeData = 16 + 8; // Interface GUID
-        memcpy(event.data, m_guid.m_id, 16); // Address node
-        event.data[ 16 ] = m_guid.m_id[ 0 ]; // Nickname to read register from
-        event.data[ 17 ] = VSCP_BOOTLOADER_VSCP; // VSCP bootload algorithm	
-        event.data[ 18 ] = guid0;
-        event.data[ 19 ] = guid3;
-        event.data[ 20 ] = guid5;
-        event.data[ 21 ] = guid7;
-        event.data[ 22 ] = pageMSB;
-        event.data[ 23 ] = pageLSB;
+        evex.head = 0;
+        evex.vscp_class = 512; // CLASS2.PROTOCOL1
+        evex.vscp_type = VSCP_ENTER_BOOTLODER_MODE; // We want to enter bootloader mode
+        memset( evex.GUID, 0, 16 ); // We use interface GUID
+        evex.sizeData = 16 + 8; // Interface GUID
+        memcpy( evex.data, m_guid.m_id, 16 ); // Address node
+        evex.data[ 16 ] = m_guid.m_id[ 0 ]; // Nickname to read register from
+        evex.data[ 17 ] = VSCP_BOOTLOADER_VSCP; // VSCP bootload algorithm	
+        evex.data[ 18 ] = guid0;
+        evex.data[ 19 ] = guid3;
+        evex.data[ 20 ] = guid5;
+        evex.data[ 21 ] = guid7;
+        evex.data[ 22 ] = pageMSB;
+        evex.data[ 23 ] = pageLSB;
 
-        if (CANAL_ERROR_SUCCESS == m_pCanalSuperWrapper->doCmdSend(&event)) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &evex ) ) {
 
             bRun = true;
 
@@ -623,14 +605,14 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
                 }
 
                 //vscpEventEx rcvmsg;
-                if (m_pCanalSuperWrapper->doCmdDataAvailable()) {
+                if ( m_ptcpip->doCmdDataAvailable() ) {
 
-                    m_pCanalSuperWrapper->doCmdReceive(&event);
+                    m_ptcpip->doCmdReceiveEx( &evex );
 
                     // Check for response  ---  Type = 13 (0x0D) ACK boot loader mode.
                     // Ignore data  --  Flash block size
                     // Ignore data  --  Number of block s available.                    
-                    if (VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER == event.vscp_type) {
+                    if ( VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER == evex.vscp_type ) {
                         // OK in bootmode - return
                         return true;
                     }
@@ -638,6 +620,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
                 }
             }
         }
+
     }
 
     return false;
@@ -648,7 +631,8 @@ bool CBootDevice_VSCP::setDeviceInBootMode(void) {
 // doFirmwareLoad
 //
 
-bool CBootDevice_VSCP::doFirmwareLoad(void) {
+bool CBootDevice_VSCP::doFirmwareLoad( void ) 
+{
     bool bRun = true;
     bool rv = true;
     bool flag_crc = true;
@@ -664,7 +648,6 @@ uint8_t guid7;
     // 9-bit --- 2^9 = 512
     // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
     BTL_BLOCK = 1; // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
-
     uint8_t temp;
 
     wxBusyCursor busy;
@@ -728,7 +711,6 @@ uint8_t guid7;
 
     if (rv && m_bPrgData) {
 
-
         addr = m_minFlashAddr;
         if (writeDeviceControlRegs(addr)) {
 
@@ -778,7 +760,7 @@ uint8_t guid7;
                     // Check for the ACK  ---- VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK
                     // Send -- VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
                     // Check for the ACK  ---- VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
-                    if (USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+                    if ( USE_DLL_INTERFACE == m_type ) {
 
                         flag_crc = sendVSCPCommandSeqenceLevel1();
 
@@ -826,7 +808,7 @@ uint8_t guid7;
                         // Check for the ACK  ---- VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK
                         // Send -- VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
                         // Check for the ACK  ---- VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
-                        if (USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+                        if ( USE_DLL_INTERFACE == m_type ) {
                             flag_crc = sendVSCPCommandSeqenceLevel1();
                         } else {
                             flag_crc = sendVSCPCommandSeqenceLevel2();
@@ -938,7 +920,8 @@ uint8_t guid7;
 
         wxMessageBox(_T(" ACTIVATE_NEW_IMAGE TX fails"));
 
-    } else {
+    } 
+    else {
 
     }
 
@@ -970,7 +953,8 @@ uint8_t guid7;
 // write 8 byte packets
 //
 
-bool CBootDevice_VSCP::writeFrimwareSector(void) {
+bool CBootDevice_VSCP::writeFrimwareSector(void)
+{
     canalMsg msg;
     vscpEventEx event;
     bool rv = true;
@@ -980,7 +964,7 @@ bool CBootDevice_VSCP::writeFrimwareSector(void) {
     uint8_t nodeid;
     uint8_t priority = 0;
 
-    if (NULL == m_pCanalSuperWrapper) return FALSE;
+    if ( NULL == m_pdll ) return FALSE;
 
     nodeid = m_guid.m_id[ 0 ]; // Nickname to read register from
     vscpclass = VSCP_CLASS1_PROTOCOL; // Class
@@ -988,7 +972,7 @@ bool CBootDevice_VSCP::writeFrimwareSector(void) {
     priority = VSCP_PRIORITY_LOW_COMMON;
 
     // Send event
-    if (USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    if ( USE_DLL_INTERFACE == m_type ) {
         // Send message
         msg.id = ((uint32_t) priority << 26) |
                 ((uint32_t) vscpclass << 16) |
@@ -996,14 +980,16 @@ bool CBootDevice_VSCP::writeFrimwareSector(void) {
                 nodeid; // nodeaddress (our address)
         msg.flags = CANAL_IDFLAG_EXTENDED;
         msg.sizeData = 8;
-    } else if (USE_TCPIP_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    } 
+    else if ( USE_TCPIP_INTERFACE == m_type ) {
         event.head = 0;
         event.vscp_class = 512; // CLASS2.PROTOCOL1
         event.vscp_type = vscptype;
         memset(event.GUID, 0, 16); // We use interface GUID
         event.sizeData = 16 + 8; // Interface GUID
         memcpy(event.data, m_guid.m_id, 16); // Address node
-    } else {
+    } 
+    else {
         return false;
     }
 
@@ -1034,9 +1020,10 @@ bool CBootDevice_VSCP::writeFrimwareSector(void) {
         }
 
         // Write data into frame
-        if (USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+        if ( USE_DLL_INTERFACE == m_type ) {
             msg.data[ i ] = b;
-        } else {
+        } 
+        else {
             event.data[ 16 + i] = b;
         }
 
@@ -1045,10 +1032,11 @@ bool CBootDevice_VSCP::writeFrimwareSector(void) {
 
     }
 
-    if (USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
-        m_pCanalSuperWrapper->doCmdSend(&msg);
-    } else {
-        m_pCanalSuperWrapper->doCmdSend(&event);
+    if ( USE_DLL_INTERFACE == m_type ) {
+        m_pdll->doCmdSend( &msg );
+    } 
+    else {
+        m_ptcpip->doCmdSendEx(&event);
     }
 
 
@@ -1060,9 +1048,8 @@ bool CBootDevice_VSCP::writeFrimwareSector(void) {
 // writeDeviceControlRegs
 //
 
-bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr) {
-
-    if (NULL == m_pCanalSuperWrapper) return FALSE;
+bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr) 
+{
 
     // Save the internal addresss
     m_pAddr = addr;
@@ -1102,16 +1089,16 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr) {
 // PageAddress : Page to be programmed
 // This command have no ACK
 
-bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress) {
+bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress) 
+{
     uint16_t vscpclass;
     uint8_t vscptype;
     uint8_t nodeid;
     uint8_t priority;
 
-
     wxBusyCursor busy;
 
-    if (USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    if ( USE_DLL_INTERFACE == m_type ) {
 
         canalMsg msg;
 
@@ -1140,15 +1127,13 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress) {
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
         msg.sizeData = 8;
-        if (CANAL_ERROR_SUCCESS == m_pCanalSuperWrapper->doCmdSend(&msg)) {
-
+        if (CANAL_ERROR_SUCCESS == m_pdll->doCmdSend(&msg)) {
             wxMilliSleep(1);
-
             return true;
-
         }
 
-    } else if (USE_TCPIP_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    }
+    else if ( USE_TCPIP_INTERFACE == m_type ) {
 
         // Start block data transfer.
 
@@ -1171,7 +1156,7 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress) {
         event.data[ 22 ] = 0x00;
         event.data[ 23 ] = 0x00;
 
-        if (CANAL_ERROR_SUCCESS == m_pCanalSuperWrapper->doCmdSend(&event)) {
+        if (CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx(&event)) {
 
         }
     }
@@ -1186,13 +1171,14 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress) {
 // Index tells which Type & class to send.
 //
 
-bool CBootDevice_VSCP::sendVSCPBootCommand(uint8_t index) {
+bool CBootDevice_VSCP::sendVSCPBootCommand(uint8_t index) 
+{
     uint16_t vscpclass;
     uint8_t vscptype;
     uint8_t nodeid;
     uint8_t priority = 0;
 
-    if (USE_DLL_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    if ( USE_DLL_INTERFACE == m_type ) {
 
         canalMsg msg; // rcvmsg;
         //        time_t tstart, tnow;
@@ -1231,7 +1217,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand(uint8_t index) {
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
 
-        if (CANAL_ERROR_SUCCESS == m_pCanalSuperWrapper->doCmdSend(&msg)) {
+        if (CANAL_ERROR_SUCCESS == m_pdll->doCmdSend(&msg)) {
 
             //bRun = true;
 
@@ -1241,7 +1227,8 @@ bool CBootDevice_VSCP::sendVSCPBootCommand(uint8_t index) {
 
         }
 
-    } else if (USE_TCPIP_INTERFACE == m_pCanalSuperWrapper->getDeviceType()) {
+    }
+    else if ( USE_TCPIP_INTERFACE == m_type ) {
 
         vscpEventEx event;
         //        time_t tstart, tnow;
@@ -1282,7 +1269,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand(uint8_t index) {
 
         }
 
-        if (CANAL_ERROR_SUCCESS == m_pCanalSuperWrapper->doCmdSend(&event)) {
+        if (CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx(&event)) {
 
             wxMilliSleep(1);
 
@@ -1425,7 +1412,7 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index) {
 
     canalMsg rcvmsg; // msg, 
 
-    if (NULL == m_pCanalSuperWrapper) return FALSE;
+    if ( NULL == m_pdll ) return FALSE;
 
     // Get system time
     //time( &tstart );
@@ -1433,11 +1420,11 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index) {
     bool bRun = true;
     while (bRun) {
 
-        if (m_pCanalSuperWrapper->doCmdDataAvailable()) {
+        if ( m_pdll->doCmdDataAvailable() ) {
 
             //if(m_type==0xff)
             //wxMessageBox( _T("123456") );
-            m_pCanalSuperWrapper->doCmdReceive(&rcvmsg);
+            m_pdll->doCmdReceive( &rcvmsg );
 
 
 
@@ -1517,15 +1504,15 @@ bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index) {
     //time_t tstart, tnow;
     bool rv = false;
 
-    if (NULL == m_pCanalSuperWrapper) return FALSE;
+    if (NULL == m_ptcpip) return FALSE;
 
 
     bool bRun = true;
     while (bRun) {
 
-        if (m_pCanalSuperWrapper->doCmdDataAvailable()) {
+        if ( m_ptcpip->doCmdDataAvailable() ) {
 
-            m_pCanalSuperWrapper->doCmdReceive(&event);
+            m_ptcpip->doCmdReceiveEx( &event );
 
             if ((VSCP_CLASS1_PROTOCOL == event.vscp_class) &&
                     (m_guid.m_id[ 0 ] == event.GUID[0])) { // correct id

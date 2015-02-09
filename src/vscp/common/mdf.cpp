@@ -759,26 +759,16 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
         return false;
     }
 
-#if wxUSE_GUI!=0
-    ::wxBeginBusyCursor();
-#endif
     // Create and open http stream
     wxURL url( remoteFile );	
     if ( wxURL_NOERR != url.GetError() ) {
-#if wxUSE_GUI!=0
-        ::wxEndBusyCursor();
-#endif
         return false;
     }
 
     wxInputStream *in_stream;
     if ( NULL == ( in_stream = url.GetInputStream() ) ) {
-#if wxUSE_GUI!=0
-        ::wxEndBusyCursor();
-#endif
         return false;	
     }
-
 
     do  {
 
@@ -798,9 +788,7 @@ bool CMDF::downLoadMDF( wxString& remoteFile, wxString &tempFileName )
 
     // Close the file
     tempFile.Close();
-#if wxUSE_GUI!=0
-    ::wxEndBusyCursor();
-#endif
+
     return true;
 }
 

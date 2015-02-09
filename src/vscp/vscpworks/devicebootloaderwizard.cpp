@@ -126,6 +126,14 @@ DeviceBootloaderwizard::~DeviceBootloaderwizard()
         delete m_pBootCtrl;
     }
 
+    // Close the interface.
+    if ( USE_DLL_INTERFACE == m_iftype ) {
+        m_dll.doCmdClose();
+    }
+    else if ( USE_TCPIP_INTERFACE == m_iftype ) {
+        m_tcpip.doCmdClose();
+    }
+
 }
 
 
@@ -140,14 +148,12 @@ void DeviceBootloaderwizard::Init()
     m_pgSelecAlgorithm = NULL;
     m_pgLoadFile = NULL;
 
-    m_pBoth = NULL;
-
     m_bInterfaceSelected = false; // No interface selected
     m_bMDFLoaded = false;         // No MDF loaded
     m_bHexFileLoaded = false;     // No firmware file loaded yet
 
-    // Default boot device is VSCP
-    m_pBootCtrl = new CBootDevice_VSCP( &m_csw, m_guid );
+    // Default boot device is none
+    m_pBootCtrl = NULL;
 
 
 
@@ -530,7 +536,7 @@ void WizardPageSelecInterface::CreateControls()
     wxStaticText* itemStaticText10 = new wxStaticText;
     itemStaticText10->Create( itemWizardPageSimple7,
                               wxID_STATIC,
-                              _( "If you want to use a remote VSCP server connected \nnode you must  select interface and node on that \nserver as well. " ),
+                              _( "If you want to use a remote VSCP server \nnode you must  select interface and node on that \nserver as well. " ),
                               wxDefaultPosition,
                               wxDefaultSize,
                               0 );
@@ -586,23 +592,7 @@ wxIcon WizardPageSelecInterface::GetIconResource( const wxString& name )
     return wxNullIcon;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnWizardPageChanging
-//
 
-void WizardPageSelecInterface::OnWizardPageChanging( wxWizardEvent& event )
-{
-    // An interface must have been selected to be allowed to continue
-    if ( event.GetDirection() ) {
-
-        if ( !( ( DeviceBootloaderwizard * )GetParent() )->m_bInterfaceSelected ) {
-            wxMessageBox( _( "An interface must be selected before you can continue!" ) );
-            event.Veto();
-        }
-
-    }
-    
-}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -614,33 +604,43 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
     int selidx = -1;
     dlgNewVSCPSession dlg( this );
     dlg.m_bShowUnconnectedMode = false; // Don't show "unconnected mode"
-    DeviceBootloaderwizard *pParent = ( DeviceBootloaderwizard * )GetParent();
+
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
 
     if ( wxID_OK == dlg.ShowModal() ) {
 
         if ( wxNOT_FOUND != ( selidx = dlg.m_ctrlListInterfaces->GetSelection() ) ) {
 
-            pParent->m_bInterfaceSelected = true;
+            pblw->m_bInterfaceSelected = true;
 
-            pParent->m_pBoth =
-                ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx );
+            if ( NULL != ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) ) {
 
-            if ( NULL != pParent->m_pBoth ) {
+                pblw->m_iftype = ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_type;
 
-                if ( INTERFACE_CANAL == pParent->m_pBoth->m_type ) {
+                if ( ( INTERFACE_CANAL == pblw->m_iftype ) ) {
+
+                    // Save interface parameters
+                    pblw->m_canalif.m_strPath =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pcanalif->m_strPath;
+                    pblw->m_canalif.m_strConfig =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pcanalif->m_strConfig;
+                    pblw->m_canalif.m_strDescription =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pcanalif->m_strDescription;
+                    pblw->m_canalif.m_flags =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pcanalif->m_flags;
 
                     m_labelInterfaceSelected->SetLabel( _( "CANAL - " ) + 
-                                                        pParent->m_pBoth->m_pcanalif->m_strDescription );
+                                                        pblw->m_canalif.m_strDescription );
 
                     // Init node id combo
 
                     // Set size of combo
-                    wxRect rc = pParent->m_pgSelecDeviceId->m_comboNodeID->GetRect();
+                    wxRect rc = pblw->m_pgSelecDeviceId->m_comboNodeID->GetRect();
                     rc.SetWidth( 60 );
-                    pParent->m_pgSelecDeviceId->m_comboNodeID->SetSize( rc );
+                    pblw->m_pgSelecDeviceId->m_comboNodeID->SetSize( rc );
 
                     // Empty combo
-                    pParent->m_pgSelecDeviceId->m_comboNodeID->Clear();
+                    pblw->m_pgSelecDeviceId->m_comboNodeID->Clear();
 
                     // Write all id values
                     wxArrayString strArray;
@@ -649,24 +649,38 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                     }
 
                     // Add to combo
-                    pParent->m_pgSelecDeviceId->m_comboNodeID->Append( strArray );
+                    pblw->m_pgSelecDeviceId->m_comboNodeID->Append( strArray );
 
                     // Select one id
-                    pParent->m_pgSelecDeviceId->m_comboNodeID->SetValue( _( "0x01" ) );
-
-                    // Set the selected interface
-                    pParent->m_csw.setInterface( pParent->m_pBoth->m_pcanalif->m_strDescription,
-                                                    pParent->m_pBoth->m_pcanalif->m_strPath,
-                                                    pParent->m_pBoth->m_pcanalif->m_strConfig,
-                                                    pParent->m_pBoth->m_pcanalif->m_flags, 0, 0 );
+                    pblw->m_pgSelecDeviceId->m_comboNodeID->SetValue( _( "0x01" ) );
 
                 }
-                else if ( ( INTERFACE_VSCP == pParent->m_pBoth->m_type ) &&
-                          ( NULL != pParent->m_pBoth->m_pcanalif ) ) {
+                else if ( ( INTERFACE_VSCP == pblw->m_iftype ) ) {
 
                     wxString str;
 
-                    if ( 0 == pParent->m_pBoth->m_pvscpif->m_strInterfaceName.Length() ) {
+                    // Save interface parameters
+                    pblw->m_vscpif.m_bLevel2 =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pvscpif->m_bLevel2;
+                    pblw->m_vscpif.m_strHost =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pvscpif->m_strHost;
+                    pblw->m_vscpif.m_strUser =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pvscpif->m_strUser;
+                    pblw->m_vscpif.m_strPassword =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pvscpif->m_strPassword;
+                    pblw->m_vscpif.m_strInterfaceName =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pvscpif->m_strInterfaceName;
+                    pblw->m_vscpif.m_strDescription =
+                        ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pvscpif->m_strDescription;
+                    memcpy( pblw->m_vscpif.m_GUID,
+                            ( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pvscpif->m_GUID, 16 );
+                    memcpy( &pblw->m_vscpif.m_vscpfilter,
+                            &( ( both_interface * )dlg.m_ctrlListInterfaces->GetClientData( selidx ) )->m_pvscpif->m_vscpfilter, 
+                            sizeof( vscpEventFilter ) );
+                    // We use the GUID class in further work
+                    pblw->m_guid.getFromArray( pblw->m_vscpif.m_GUID  );
+
+                    if ( 0 == pblw->m_vscpif.m_strInterfaceName.Length() ) {
                         wxMessageBox( _( "The connection must have an interface on the VSCP daemon selected" ),
                                       _( "Open new VSCP session" ),
                                       wxICON_STOP );
@@ -675,51 +689,9 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
                     }
 
                     m_labelInterfaceSelected->SetLabel( _( "TCP/IP - " ) + 
-                                                        pParent->m_pBoth->m_pvscpif->m_strDescription );
+                                                        pblw->m_vscpif.m_strDescription );
 
-                    if ( VSCP_ERROR_SUCCESS == 
-                         pParent->m_vscptcpipif.doCmdOpen( pParent->m_pBoth->m_pvscpif->m_strHost,
-                                                            pParent->m_pBoth->m_pvscpif->m_strUser,
-                                                            pParent->m_pBoth->m_pvscpif->m_strPassword ) ) {
-
-                        if ( VSCP_ERROR_SUCCESS == 
-                             pParent->m_vscptcpipif.fetchIterfaceGUID( pParent->m_pBoth->m_pvscpif->m_strInterfaceName,
-                                                                        pParent->m_ifguid ) ) {
-                            pParent->m_ifguid.writeGUID( pParent->m_pBoth->m_pvscpif->m_GUID );
-                            pParent->m_guid = pParent->m_ifguid;
-                        }
-                        else {
-                            wxMessageBox( _( "Unable to fetch interfaces from the remote server" ),
-                                          _( "Open new VSCP session" ),
-                                          wxICON_STOP );
-                        }
-
-                        // Close the connection
-                        pParent->m_vscptcpipif.doCmdClose();
-
-                        // Empty combo
-                        pParent->m_pgSelecDeviceId->m_comboNodeID->Clear();
-
-                        // Fill the combo
-                        wxString str;
-                        wxArrayString strings;
-                        for ( int i = 1; i < 256; i++ ) {
-                            pParent->m_guid.setLSB( i );
-                            pParent->m_guid.toString( str );
-                            strings.Add( str );
-                        }
-                        pParent->m_pgSelecDeviceId->m_comboNodeID->Append( strings );
-
-                        pParent->m_guid.setLSB( 1 );
-                        pParent->m_guid.toString( str );
-                        pParent->m_pgSelecDeviceId->m_comboNodeID->SetValue( str );
-
-                    }
-                    else {
-                        wxMessageBox( _( "Unable to connect to the remote server" ),
-                                      _( "Open new VSCP session" ),
-                                      wxICON_STOP );
-                    }
+                    // Combo is filled when next is clicked
 
                 }
 
@@ -728,7 +700,7 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
         }
         else {
 
-            pParent->m_bInterfaceSelected = false;
+            pblw->m_bInterfaceSelected = false;
 
             wxMessageBox( _( "You have to select an interface to connect to!" ),
                           _( "Open new VSCP session" ),
@@ -744,6 +716,94 @@ void WizardPageSelecInterface::OnButtonSelectInterfaceClick( wxCommandEvent& eve
     event.Skip();
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnWizardPageChanging
+//
+
+void WizardPageSelecInterface::OnWizardPageChanging( wxWizardEvent& event )
+{
+    wxBusyCursor wait;
+
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
+
+    // An interface must have been selected to be allowed to continue
+    if ( event.GetDirection() ) {
+
+        if ( !( ( DeviceBootloaderwizard * )GetParent() )->m_bInterfaceSelected ) {
+            wxMessageBox( _( "An interface must be selected before you can continue!" ) );
+            event.Veto();
+        }
+
+        // * * * Open the interface * * *
+       
+        // Get the device nickname/GUID
+        if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+
+            if ( -1 != pblw->m_dll.doCmdOpen( pblw->m_canalif.m_strPath,
+                                                pblw->m_canalif.m_strConfig,
+                                                pblw->m_canalif.m_flags ) ) {
+            }
+            else {
+                wxMessageBox(_("Unable to open CANAL interface."));
+                event.Veto();
+            }
+
+        }
+        else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+
+            // Open the interface
+            if ( VSCP_ERROR_SUCCESS == pblw->m_tcpip.doCmdOpen( pblw->m_vscpif.m_strHost,
+                                                                    pblw->m_vscpif.m_strUser,
+                                                                    pblw->m_vscpif.m_strPassword ) ) {
+            }
+            else {
+                wxMessageBox( _( "Unable to open TCP/IP interface." ) );
+
+                event.Veto();
+                return;
+            }
+
+            // Select interface (if one should be selected)
+            if ( VSCP_ERROR_SUCCESS ==
+                pblw->m_tcpip.fetchIterfaceGUID( pblw->m_vscpif.m_strInterfaceName,
+                                                    pblw->m_ifguid ) ) {
+                    pblw->m_ifguid.writeGUID( pblw->m_vscpif.m_GUID );
+                    pblw->m_guid = pblw->m_ifguid;
+            }
+            else {
+                wxMessageBox( _( "Unable to fetch interfaces from the remote server" ),
+                                  _( "Open new VSCP session" ),
+                                  wxICON_STOP );
+                    
+                // Close the connection
+                pblw->m_tcpip.doCmdClose();
+
+                event.Veto();
+                return;
+            }
+
+            // Empty combo
+            pblw->m_pgSelecDeviceId->m_comboNodeID->Clear();
+
+            // Fill the combo
+            wxString str;
+            wxArrayString strings;
+            for ( int i = 1; i < 256; i++ ) {
+                pblw->m_guid.setLSB( i );
+                pblw->m_guid.toString( str );
+                strings.Add( str );
+            }
+            pblw->m_pgSelecDeviceId->m_comboNodeID->Append( strings );
+
+            pblw->m_guid.setLSB( 1 );
+            pblw->m_guid.toString( str );
+            pblw->m_pgSelecDeviceId->m_comboNodeID->SetValue( str );       
+
+        }
+
+    }
+
+}
 
 
 
@@ -915,16 +975,18 @@ wxIcon WizardPageSetGUID::GetIconResource( const wxString& name )
 
 void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
 {
-    DeviceBootloaderwizard *pParent = ( DeviceBootloaderwizard * )GetParent();
+    wxBusyCursor wait;
+
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
 
     // An node must be there to be allowed to continue
     if ( event.GetDirection() ) {  // Forward
         
-        if ( USE_DLL_INTERFACE == pParent->m_pBoth->m_type ) {
+        if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
 
             // Get Interface id
             uint8_t nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
-            pParent->m_guid.setLSB( nodeid ); // Save for  the future
+            pblw->m_guid.setLSB( nodeid ); // Save for  the future
 
             if ( ( 0 == nodeid ) || ( nodeid > 254 ) ) {
                 wxMessageBox( _( "Invalid Node ID! Must be between 1-254" ) );
@@ -933,30 +995,30 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
 
             unsigned char val;
             if ( CANAL_ERROR_SUCCESS == 
-                    pParent->m_canaldllif.readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
+                 pblw->m_dll.readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
                 wxMessageBox( _( "Device found!" ) );
             }
             else {
-                wxMessageBox( _( "Device was not found! Check nodeid." ) );
+                wxMessageBox( _( "Device was not found! Check nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
             }
 
         }
-        else if ( USE_TCPIP_INTERFACE == pParent->m_pBoth->m_type ) {
+        else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
 
             // Get the destination GUID
-            pParent->m_guid.getFromString( m_comboNodeID->GetValue() );
+            pblw->m_guid.getFromString( m_comboNodeID->GetValue() );
 
             unsigned char val;
             if ( VSCP_ERROR_SUCCESS ==
-                 pParent->m_vscptcpipif.readLevel2Register( 0xd0,
-                                                                0,      // page
-                                                                &val,
-                                                                pParent->m_ifguid,
-                                                                &pParent->m_guid ) ) {
+                 pblw->m_tcpip.readLevel2Register( 0xd0,
+                                                    0,      // page
+                                                    &val,
+                                                    pblw->m_ifguid,
+                                                    &pblw->m_guid ) ) {
                 wxMessageBox( _( "Device found!" ) );
             }
             else {
-                wxMessageBox( _( "Device was not found! Check interface GUID + nodeid." ) );
+                wxMessageBox( _( "Device was not found! Check interface GUID + nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
             }
 
         }
@@ -967,8 +1029,16 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
         }
         
     }
-    else {  // Backward
-    
+    else {  // Backwards
+
+        // Close the interface.
+        if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+            pblw->m_dll.doCmdClose();
+        }
+        else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+            pblw->m_tcpip.doCmdClose();
+        }
+
     }
 
 }
@@ -1205,30 +1275,16 @@ void WizardPageSelectFirmware::OnButtonChooseFileClick( wxCommandEvent& event )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnWizardpage3PageChanging
-//
-
-void WizardPageSelectFirmware::OnWizardpage3PageChanging( wxWizardEvent& event )
-{
-    // A hex file must have been loaded to be allowed to continue
-    if ( event.GetDirection() ) {
-        if ( !( ( DeviceBootloaderwizard * )GetParent() )->m_bHexFileLoaded ) {
-            wxMessageBox( _( "Firmware code must be loaded before you can continue!" ) );
-            event.Veto();
-        }
-    }
-    //event.Skip(); 
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OnButtonLoadFileFromMdfClick
 //
 
 void WizardPageSelectFirmware::OnButtonLoadFileFromMdfClick( wxCommandEvent& event )
 {
     wxString strID;
-    uint8_t id[ 16 ];
-    wxString url;
+    cguid guid;
+    wxString mdfurl;
+
+    wxBusyCursor wait;
     DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
 
     if ( NULL == pblw ) return;
@@ -1237,6 +1293,7 @@ void WizardPageSelectFirmware::OnButtonLoadFileFromMdfClick( wxCommandEvent& eve
 
     // Get selected id
     strID = pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue();
+    guid.getFromString( strID );
 
     // Check if the mdf has been loaded and load it if not
     if ( !pblw->m_bMDFLoaded ) {
@@ -1244,78 +1301,117 @@ void WizardPageSelectFirmware::OnButtonLoadFileFromMdfClick( wxCommandEvent& eve
         // Must load MDF
 
         // Get the device nickname/GUID
-        if ( USE_DLL_INTERFACE == pblw->m_csw.getDeviceType() ) {
-            *id = vscp_readStringValue( strID );
-        }
-        else if ( USE_TCPIP_INTERFACE == pblw->m_csw.getDeviceType() ) {
-            vscp_getGuidFromStringToArray( id, strID );
-        }
+        if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+            
+            if ( pblw->m_dll.getMDFUrlFromLevel1Device( pblw->m_guid.getLSB(), mdfurl ) ) {
 
-        // Open the interface
-        if ( pblw->m_csw.doCmdOpen() ) {
-
-            bool rv = wxGetApp().loadMDF( this,
-                                          &pblw->m_csw,
-                                          &pblw->m_mdf,
-                                          url,
-                                          id );
-
-            if ( rv ) {
-                // MDF has been fetched -
+                // Mark MDF has been fetched
                 pblw->m_bMDFLoaded = true;
 
             }
             else {
-                rv = false;
                 wxMessageBox( _( "Failed to fetch MDF! \nIs the device active and available?" ) );
+                return;
             }
-
-            // Close the interface
-            pblw->m_csw.doCmdClose();
 
             // Download the MDF file
-            rv = pblw->m_mdf.downLoadMDF( pblw->m_mdf.m_strURL, url );
-            if ( !rv ) {
+            if ( !pblw->m_mdf.downLoadMDF(pblw->m_mdf.m_strURL, mdfurl ) ) {
+
                 wxMessageBox( _( "Failed to download mDF file! [" ) +
-                              pblw->m_mdf.m_strURL +
-                              _( "]" ) );
+                                  pblw->m_mdf.m_strURL +
+                                  _( "]" ) );
+                return;
             }
-            else {
 
-                // Parse the file
-                if ( pblw->m_mdf.parseMDF( url ) ) {
-
-                    if ( !pblw->m_pBootCtrl->loadBinaryFile(
-                        pblw->m_mdf.m_firmware.m_strPath,
-                        HEXFILE_TYPE_INTEL_HEX8 ) ) {
-
-                        wxMessageBox( _T( "Failed to load input file.!" ),
-                                      _T( "ERROR" ),
-                                      wxICON_WARNING | wxOK,
-                                      this );
-                    }
-                    else {
-
-                        // Allow wizard continue
-                        pblw->m_bHexFileLoaded = true;
-
-                        m_selectedFile->SetLabel( url );
-                        pblw->m_pBootCtrl->showInfo( m_hexFileInfo );
-                    }
-                }
-                else {
-                    rv = false;
-                    wxMessageBox( _( "Failed to parse file!" ) );
-                }
+            // Parse the file
+            if ( pblw->m_mdf.parseMDF( mdfurl ) ) {
+                wxMessageBox( _( "Failed to parse file!" ) );
+                return;
             }
+
+            if ( !pblw->m_pBootCtrl->loadBinaryFile( pblw->m_mdf.m_firmware.m_strPath,
+                HEXFILE_TYPE_INTEL_HEX8 ) ) {
+
+                wxMessageBox( _T( "Failed to load input file.!" ),
+                              _T( "ERROR" ),
+                              wxICON_WARNING | wxOK,
+                              this );
+                return;
+            }
+         
+            // Allow wizard continue
+            pblw->m_bHexFileLoaded = true;
+
+            m_selectedFile->SetLabel( mdfurl );
+            pblw->m_pBootCtrl->showInfo( m_hexFileInfo );
+ 
         }
-        else {
-            rv = false;
-            wxMessageBox( _( "Failed to open communication interface!" ) );
+        else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+
+            if ( !pblw->m_tcpip.getMDFUrlFromLevel2Device( pblw->m_ifguid,
+                                                            guid,
+                                                            mdfurl ) ) {
+                wxMessageBox( _( "Failed to fetch MDF! \nIs the device active and available?" ) );
+                return;
+            }
+                    
+            // MDF has been fetched 
+            pblw->m_bMDFLoaded = true;
+
+            // Download the MDF file
+            if ( !pblw->m_mdf.downLoadMDF( pblw->m_mdf.m_strURL, mdfurl ) ) {
+                wxMessageBox( _( "Failed to download mDF file! [" ) +
+                                  pblw->m_mdf.m_strURL +
+                                  _( "]" ) );
+                return;
+            }
+
+            // Parse the file
+            if ( !pblw->m_mdf.parseMDF( mdfurl ) ) {
+                wxMessageBox( _( "Failed to parse file!" ) );
+                return;
+            }
+
+            if ( !pblw->m_pBootCtrl->loadBinaryFile( pblw->m_mdf.m_firmware.m_strPath,
+                                                                    HEXFILE_TYPE_INTEL_HEX8 ) ) {
+
+                wxMessageBox( _T( "Failed to load input file.!" ),
+                                          _T( "ERROR" ),
+                                          wxICON_WARNING | wxOK,
+                                          this );
+                return;
+            }
+
+            // Allow wizard continue
+            pblw->m_bHexFileLoaded = true;
+
+            m_selectedFile->SetLabel( mdfurl );
+            pblw->m_pBootCtrl->showInfo( m_hexFileInfo );
+
         }
+
     }
 
     event.Skip();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnWizardpage3PageChanging
+//
+
+void WizardPageSelectFirmware::OnWizardpage3PageChanging( wxWizardEvent& event )
+{
+    wxBusyCursor wait;
+
+    // A hex file must have been loaded to be allowed to continue
+    if ( event.GetDirection() ) {
+        if ( !( ( DeviceBootloaderwizard * )GetParent() )->m_bHexFileLoaded ) {
+            wxMessageBox( _( "Firmware code must be loaded before you can continue!" ) );
+            event.Veto();
+        }
+    }
+
+    //event.Skip(); 
 }
 
 
@@ -1502,30 +1598,28 @@ wxIcon WizardPageSelectBootloader::GetIconResource( const wxString& name )
 
 void WizardPageSelectBootloader::OnBootLoaderAlgorithmSelected( wxCommandEvent& event )
 {
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
+
     // Remove previous 
-    if ( NULL != ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl ) {
-        delete ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl;
-        ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl = NULL;
+    if ( NULL != pblw->m_pBootCtrl ) {
+        delete pblw->m_pBootCtrl;
+        pblw->m_pBootCtrl = NULL;
     }
 
     switch ( m_nBootAlgorithm->GetSelection() ) {
 
         case 0: // VSCP Standard algorithm
             ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl =
-                new CBootDevice_VSCP(
-                &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
-                ( ( DeviceBootloaderwizard * )GetParent() )->m_guid );
+                new CBootDevice_VSCP( &pblw->m_tcpip, pblw->m_guid, pblw->m_ifguid );
             break;
 
         case 1: // Microchip PIC 1 algorithm
             ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl =
-                new CBootDevice_PIC1(
-                &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
-                ( ( DeviceBootloaderwizard * )GetParent() )->m_guid );
+                new CBootDevice_PIC1( &pblw->m_dll, pblw->m_guid.getLSB() );
             break;
 
         case 2:
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl = NULL;
+            pblw->m_pBootCtrl = NULL;
             break;
 
     }
@@ -1541,48 +1635,54 @@ void WizardPageSelectBootloader::OnBootLoaderAlgorithmSelected( wxCommandEvent& 
 void WizardPageSelectBootloader::OnButtonAlgorithmFromMdfClick( wxCommandEvent& event )
 {
     wxString strID;
-    uint8_t id[ 16 ];
-    wxString url;
+    wxString mdfurl;
     bool rv = true;
 
+    wxBusyCursor wait;
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
+
     // Get selected id
-    strID = ( ( DeviceBootloaderwizard * )GetParent() )->m_pgSelecDeviceId->m_comboNodeID->GetValue();
+    strID = pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue();
 
     // Get the device nickname/GUID
-    if ( USE_DLL_INTERFACE == ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.getDeviceType() ) {
-        *id = vscp_readStringValue( strID );
-    }
-    else if ( USE_TCPIP_INTERFACE == ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.getDeviceType() ) {
-        vscp_getGuidFromStringToArray( id, strID );
-    }
-
-    // Open the interface
-    if ( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.doCmdOpen() ) {
-
-        rv = wxGetApp().loadMDF( this,
-                                 &( ( ( DeviceBootloaderwizard * )GetParent() )->m_csw ),
-                                 &( ( DeviceBootloaderwizard * )GetParent() )->m_mdf,
-                                 url,
-                                 id );
-
-        if ( rv ) {
-            // MDF has been fetched -
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_bMDFLoaded = true;
-
-            // MDF has been fetched - Set algorithm
-            m_nBootAlgorithm->SetSelection( ( ( DeviceBootloaderwizard * )GetParent() )->m_mdf.m_bootInfo.m_nAlgorithm );
-            OnBootLoaderAlgorithmSelected( event );
+    if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+        
+        if ( !pblw->m_dll.getMDFUrlFromLevel1Device( pblw->m_guid.getLSB(), mdfurl ) ) {
+            wxMessageBox( _( "Failed to fetch MDF url! \nIs the device active and available?" ) );
+            return;
         }
-        else {
-            wxMessageBox( _( "Failed to fetch MDF! \nIs the device active and available?" ) );
+                
+        if ( !pblw->m_mdf.load( mdfurl ) ) {
+            wxMessageBox( _( "Failed to load MDF!" ) );
+            return;
+        }
+         
+        // MDF has been fetched -
+        pblw->m_bMDFLoaded = true;
+
+        // MDF has been fetched - Set algorithm
+        m_nBootAlgorithm->SetSelection( pblw->m_mdf.m_bootInfo.m_nAlgorithm );
+        OnBootLoaderAlgorithmSelected( event );
+  
+    }
+    else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+        
+        if ( !pblw->m_tcpip.getMDFUrlFromLevel2Device( pblw->m_ifguid, pblw->m_guid, mdfurl ) ) {
+            wxMessageBox( _( "Failed to fetch MDF url! \nIs the device active and available?" ) );
+            return;
         }
 
-        // Close the interface
-        ( ( DeviceBootloaderwizard * )GetParent() )->m_csw.doCmdClose();
+        if ( !pblw->m_mdf.load( mdfurl ) ) {
+            wxMessageBox( _( "Failed to load MDF!" ) );
+        } 
+         
+        // MDF has been fetched -
+        pblw->m_bMDFLoaded = true;
 
-    }
-    else {
-        wxMessageBox( _( "Failed to open communication interface!" ) );
+        // MDF has been fetched - Set algorithm
+        m_nBootAlgorithm->SetSelection( pblw->m_mdf.m_bootInfo.m_nAlgorithm );
+        OnBootLoaderAlgorithmSelected( event );
+
     }
 
     event.Skip();
@@ -1937,33 +2037,62 @@ void WizardPageProgramDevice::OnButtonProgramClick( wxCommandEvent& event )
     DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
 
     // Get the device nickname/GUID
-    if ( USE_DLL_INTERFACE == pblw->m_csw.getDeviceType() ) {
-        pblw->m_pBootCtrl->m_guid.m_id[ 0 ] =
-            vscp_readStringValue( pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() );
-    }
-    else if ( USE_TCPIP_INTERFACE == pblw->m_csw.getDeviceType() ) {
-        vscp_getGuidFromStringToArray( pblw->m_pBootCtrl->m_guid.m_id,
-                                       pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() );
-    }
+    if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+        
+        //pblw->m_pBootCtrl->m_guid.setLSB( 
+        //    vscp_readStringValue( pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() ) );
 
-    // Open the interface
-    if ( pblw->m_csw.doCmdOpen() ) {
+        // Open the interface
+        if ( -1 != pblw->m_dll.doCmdOpen( pblw->m_canalif.m_strPath,
+                                            pblw->m_canalif.m_strConfig,
+                                            pblw->m_canalif.m_flags ) ) {
 
-        if ( !pblw->m_pBootCtrl->setDeviceInBootMode() ) {
-            wxMessageBox( _( "Failed to set device in boot mode! \nWill still try to load firmware." ) );
+            if ( !pblw->m_pBootCtrl->setDeviceInBootMode() ) {
+                wxMessageBox( _( "Failed to set device in boot mode! \nWill still try to load firmware." ) );
+            }
+
+            if ( !pblw->m_pBootCtrl->doFirmwareLoad() ) {
+                wxMessageBox( _( "Failed to load firmware code into device!" ) );
+            }
+
+            // Close the interface
+            pblw->m_dll.doCmdClose();
+
+        }
+        else {
+            wxMessageBox( _( "Failed to open communication interface!" ) );
         }
 
-        if ( !pblw->m_pBootCtrl->doFirmwareLoad() ) {
-            wxMessageBox( _( "Failed to load firmware code into device!" ) );
+    }
+    else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+        
+        //vscp_getGuidFromStringToArray( pblw->m_pBootCtrl->m_guid.m_id,
+        //                               pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() );
+
+        // Open the interface
+        if ( VSCP_ERROR_SUCCESS == pblw->m_tcpip.doCmdOpen( pblw->m_vscpif.m_strHost,
+                                                                pblw->m_vscpif.m_strUser,
+                                                                pblw->m_vscpif.m_strPassword ) ) {
+
+            if ( !pblw->m_pBootCtrl->setDeviceInBootMode() ) {
+                wxMessageBox( _( "Failed to set device in boot mode! \nWill still try to load firmware." ) );
+            }
+
+            if ( !pblw->m_pBootCtrl->doFirmwareLoad() ) {
+                wxMessageBox( _( "Failed to load firmware code into device!" ) );
+            }
+
+            // Close the interface
+            pblw->m_tcpip.doCmdClose();
+
+        }
+        else {
+            wxMessageBox( _( "Failed to open communication interface!" ) );
         }
 
-        // Close the interface
-        pblw->m_csw.doCmdClose();
+    }
 
-    }
-    else {
-        wxMessageBox( _( "Failed to open communication interface!" ) );
-    }
+    
 
     event.Skip();
 }

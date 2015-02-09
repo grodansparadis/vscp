@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+// 
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "devicebootloaderwizard.h"
@@ -54,29 +54,35 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
-////@end includes
-
-
 #include "bootdevice.h"
 
-CBootDevice::CBootDevice( CCanalSuperWrapper *pcsw, cguid &guid )
+
+///////////////////////////////////////////////////////////////////////////////
+// Ctor
+//
+
+CBootDevice::CBootDevice( CDllWrapper *pdll, uint8_t nodeid )
 {
-    m_minFlashAddr = 0;
-	m_maxFlashAddr = 0xffffffff;
-	m_totalCntData = 0;
+    init();
 
-    m_pbufPrg = NULL;
-    m_pbufCfg = NULL;
-    m_pbufEEPROM = NULL;
-
-    m_responseTimeout = BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT;
-
-    m_pCanalSuperWrapper = pcsw;
-
+    m_type = USE_DLL_INTERFACE;
+    m_pdll = pdll;
 }
 
-CBootDevice::~CBootDevice(void)
+CBootDevice::CBootDevice( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid )
+{
+    init();
+
+    m_type = USE_TCPIP_INTERFACE;
+    m_ptcpip = ptcpip;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Dtor
+//
+
+CBootDevice::~CBootDevice( void )
 {
     if ( NULL != m_pbufPrg ) {
         delete [] m_pbufPrg;
@@ -93,6 +99,24 @@ CBootDevice::~CBootDevice(void)
         m_pbufEEPROM = NULL;
     }
 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// init
+//
+
+void CBootDevice::init( void )
+{
+    m_minFlashAddr = 0;
+    m_maxFlashAddr = 0xffffffff;
+    m_totalCntData = 0;
+
+    m_pbufPrg = NULL;
+    m_pbufCfg = NULL;
+    m_pbufEEPROM = NULL;
+
+    m_pdll = NULL;
+    m_ptcpip = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

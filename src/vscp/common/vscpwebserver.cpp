@@ -8087,7 +8087,8 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
 
     buildPage += _("<hr>");
 
-    // VSCP Internal intelligence
+
+    // VSCP Internal automation intelligence
     buildPage += _("<div id=\"small\">");
     buildPage += _("<b>VSCP internal event logic:</b> ");
     if ( pObject->m_bVSCPDaemon ) {

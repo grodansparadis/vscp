@@ -143,27 +143,25 @@ public:
     CBootDevice *m_pBootCtrl;
 
     /*!
-        The wrapper for the CANAL
-        functionality.
+    Type of the current selected interface
     */
-    CCanalSuperWrapper m_csw;
+    uint8_t m_iftype;
 
-    /*!
-        Interface description for current selected interface
-    */
-    both_interface *m_pBoth;
+    /// Holder for dll i/f
+    canal_interface m_canalif;
 
     /*!
         DLL interface
     */
-    CDllWrapper m_canaldllif;
+    CDllWrapper m_dll;
 
+    /// Holder for tcp/ip i/f
+    vscp_interface m_vscpif;
 
     /*!
-    TCP/IP interface
+        TCP/IP interface
     */
-    VscpRemoteTcpIf m_vscptcpipif;
-
+    VscpRemoteTcpIf m_tcpip;
 
     /// Flag for interface selection
     bool m_bInterfaceSelected;
@@ -181,13 +179,18 @@ public:
     */
     CMDF m_mdf;
 
+
     /*!
-    GUID for interface where node is located
+        GUID for interface where node is located
+        Set from interface name
     */
     cguid m_ifguid;
 
     /*!
         GUID for node to bootload
+        Note! This is a duplicate to m_vscpif.m_GUID
+        here for convinience.
+        node is for CANAL node is stored in lsb
      */
     cguid m_guid;
     

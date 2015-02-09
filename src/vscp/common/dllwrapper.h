@@ -74,9 +74,9 @@ public:
         initialize the dll wrapper
     
         @param strPath to the canal dll
-        @return	true on success
+        @return	CANAL_ERROR_SUCCESS on success
     */
-    int initialize( wxString& strPath ); 
+    int initialize( const wxString& strPath ); 
   
     /*!
         Open communication channel.
@@ -85,7 +85,17 @@ public:
 	    @param flags CANAL flags for the channel.
         @return Channel handler on success. -1 on error.
     */
-    long doCmdOpen( const wxString& strConfiguration = (_("")), unsigned long flags = 0L );
+    long doCmdOpen( const wxString& strConfiguration = ( _( "" ) ), unsigned long flags = 0L );
+
+    /*!
+        Open communication channel.
+
+        @param strPath to the canal dll
+        @param strConfiguration is name of channel.
+        @param flags CANAL flags for the channel.
+        @return Channel handler on success. -1 on error.
+    */
+    long doCmdOpen( const wxString& strPath, const wxString& strConfiguration = ( _( "" ) ), unsigned long flags = 0L );
   
   
     /*!
@@ -309,7 +319,7 @@ public:
         @param strurl MDF URL or empty string on failure.
         @return true on success.
     */
-    bool getMDFfromLevel1Device( unsigned char nodeid, wxString &strurl );
+    bool getMDFUrlFromLevel1Device( unsigned char nodeid, wxString &strurl );
 
     
 

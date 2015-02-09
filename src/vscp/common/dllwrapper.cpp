@@ -72,7 +72,7 @@ CDllWrapper::~CDllWrapper()
 // initialize
 //
 
-int CDllWrapper::initialize( wxString& strPath )
+int CDllWrapper::initialize( const wxString& strPath )
 {
 	// Check that the file exists
 	if ( !( ::wxFileExists( strPath ) ) ) return CANAL_ERROR_PARAMETER;  
@@ -252,6 +252,19 @@ long CDllWrapper::doCmdOpen( const wxString& strConfiguration, unsigned long fla
   
   
 	return ( m_devid = m_proc_CanalOpen( szCfg, flags ) );
+}
+
+
+long CDllWrapper::doCmdOpen( const wxString& strPath, const wxString&strConfiguration, unsigned long flags )
+{
+    if ( !m_bInit ) {
+        // Initialize
+        if ( CANAL_ERROR_SUCCESS != initialize( strPath ) ) {
+            return -1;
+        }
+    }
+
+    return doCmdOpen( strConfiguration, flags );
 }
 
 
@@ -745,10 +758,10 @@ int CDllWrapper::writeLevel1Register( unsigned char nodeid,
 
 
 //////////////////////////////////////////////////////////////////////////////
-// getMDFfromLevel1Device
+// getMDFUrlFromLevel1Device
 //
 
-bool CDllWrapper::getMDFfromLevel1Device( unsigned char nodeid, wxString &strurl  )
+bool CDllWrapper::getMDFUrlFromLevel1Device( unsigned char nodeid, wxString &strurl  )
 {
 	char url[ 33 ];
     unsigned char *p = (unsigned char *)url;

@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: IntelHex.h,v $                                       
-// $Date: 2005/01/05 12:50:58 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
 //
 
 #pragma once
@@ -67,8 +63,10 @@
 // CONTROL is defined as follows
 //
 // Bit 0:	MODE_WRT_UNLCK		Set this to allow write and erase to memory. 
-// Bit 1:	MODE_ERASE_ONLY		Set this to only erase program memory on a put command. 					Must be on a 64-bit boundary.
-// Bit 2:	MODE_AUTO_ERASE		Set this to automatically erase program memory while writing 					data.
+// Bit 1:	MODE_ERASE_ONLY		Set this to only erase program memory on a put command. 					
+//                              Must be on a 64-bit boundary.
+// Bit 2:	MODE_AUTO_ERASE		Set this to automatically erase program memory while writing 					
+//                              data.
 // Bit 3:	MODE_AUTO_INC		Set this to automatically increment the pointer after a write.
 // Bit 4:	MODE_ACK			Set to get acknowledge.
 // Bit 5:	undefined.			
@@ -93,7 +91,6 @@
 #define	MEM_TYPE_PROGRAM	        0x00
 #define MEM_TYPE_CONFIG		        0x01
 #define MEM_TYPE_EEPROM		        0x02
-
 
 // CAN message ID's
 #define ID_PUT_BASE_INFO			0x00001000	// Write address information.
@@ -133,11 +130,32 @@ typedef struct _bootclientItem {
 
 class CBootDevice_PIC1 : public CBootDevice
 {
+
 public:
 
-    /// Constructors
-    CBootDevice_PIC1(CCanalSuperWrapper *pcsw, cguid &guid);
+    /*!
+        Constructor
+
+        @param pdll Pointer to opended CANAL object.
+        @param nodeid Nickname/nodeid for node that should be loaded
+        with new code.
+    */
+    CBootDevice_PIC1( CDllWrapper *pdll, uint8_t nodeid );
+
+    /*!
+        Constructor
+
+        @param ptcpip Pointer to opened TCP/IP interface object.
+        @param guid GUID for node to bootload.
+        @param ifguid GUID for interface node is located on
+    */
+    CBootDevice_PIC1( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid );
+
+    // Dtor
     ~CBootDevice_PIC1(void);
+
+    /// Initialize data
+    void init( void );
 
     /*!
 		Load a binary file to the image

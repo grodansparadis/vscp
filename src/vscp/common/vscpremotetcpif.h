@@ -783,10 +783,10 @@ public:
 	    @param bLevel2 Set to true if this is a level II devive 
 	    @return true on success, false on failure.
 	*/
-	bool getMDFfromLevel2Device( cguid& ifGUID, 
-                                    cguid& destGUID,
-                                    wxString &strurl,
-                                    bool bLevel2 = false );
+	bool getMDFUrlFromLevel2Device( cguid& ifGUID, 
+                                        cguid& destGUID,
+                                        wxString &strurl,
+                                        bool bLevel2 = false );
 
 // ------------------------------------------------------------------------
 //                   G R A P H I C A L   H E L P E R S

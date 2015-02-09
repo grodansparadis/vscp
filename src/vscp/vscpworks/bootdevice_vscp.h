@@ -72,9 +72,29 @@ class CBootDevice_VSCP :
 {
 public:
 
-    /// Constructors
-    CBootDevice_VSCP(CCanalSuperWrapper *pcsw, cguid &guid);
+    /*!
+        Constructor
+
+        @param pdll Pointer to opended CANAL object.
+        @param nodeid Nickname/nodeid for node that should be loaded
+        with new code.
+    */
+    CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid );
+
+    /*!
+        Constructor
+
+        @param ptcpip Pointer to opened TCP/IP interface object.
+        @param guid GUID for node to bootload.
+        @param ifguid GUID for interface node is located on
+    */
+    CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid );
+
+    /// Dtor
     ~CBootDevice_VSCP(void);
+
+    // Initialise data
+    void init( void );
 
     /*!
 		Load a binary file to the image
@@ -186,11 +206,11 @@ private:
 	/// Memory type to program
 	uint8_t m_type;
 
-	uint32_t BTL_PAGE ;					// page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
-	                                            // 9-bit --- 2^9 = 512
-												// AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
+	uint32_t BTL_PAGE ;	        // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
+	                            // 9-bit --- 2^9 = 512
+                                // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
 
-	uint32_t BTL_BLOCK;          // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
+	uint32_t BTL_BLOCK;         // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
 
 	uint32_t falsh_memory_block_size;	// flash memory block size -- returned in --- VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER
 

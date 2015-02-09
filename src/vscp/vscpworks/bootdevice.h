@@ -37,7 +37,7 @@
 // 
 //  Alternative licenses for VSCP & Friends may be arranged by contacting 
 //  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
-/////////////////////////////////////////////////////////////////////////////
+//
 
 #pragma once
 
@@ -47,7 +47,6 @@
     in the VSCP main file to read/write to a remote  device.
 */
 
-#include "canalsuperwrapper.h"
 #include "mdf.h"
 #include "guid.h"
 
@@ -60,11 +59,10 @@ class wxHtmlWindow;
 #define BOOT_COMMAND_DEFAULT_RESPONSE_TIMEOUT	5000
 
 // Hexfiles type
-#define HEXFILE_TYPE_INTEL_HEX8     	0
-#define HEXFILE_TYPE_INTEL_HEX16    	1
-#define HEXFILE_TYPE_INTEL_HEX32    	2
-#define HEXFILE_TYPE_INTEL_SRECORD  	3
-
+#define HEXFILE_TYPE_INTEL_HEX8     	        0
+#define HEXFILE_TYPE_INTEL_HEX16    	        1
+#define HEXFILE_TYPE_INTEL_HEX32    	        2
+#define HEXFILE_TYPE_INTEL_SRECORD  	        3
 
 class CBootDevice
 {
@@ -73,18 +71,30 @@ public:
     /*! 
         Constructor
 
-        @param pcsw Pointer to Canalsuper wrapper
-        @param guid GUID for device
-            depending on if the device sits on a Level I or 
-            a Level II link this is a nickname (in LSB) or
-            a full GUID.
+        @param pdll Pointer to opended CANAL object.
+        @param nodeid Nickname/nodeid for node that should be loaded
+                        with new code.
     */
-    CBootDevice( CCanalSuperWrapper *pcsw, cguid &guid );
+    CBootDevice( CDllWrapper *pdll, uint8_t nodeid );
+
+    /*!
+        Constructor 
+
+        @param ptcpip Pointer to opened TCP/IP interface object.
+        @param guid GUID for node to bootload.
+        @param ifguid GUID for interface node is located on
+    */
+    CBootDevice( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid );
 
     /*!
         Destructor
     */
      virtual ~CBootDevice(void);
+
+     /*!
+        Init data
+     */
+     void init( void );
 
     /*!
 		Load a binary file to the image
@@ -118,41 +128,36 @@ public:
     */
     virtual bool doFirmwareLoad( void ) = 0;
 
+protected:
+
+    /// Type of interface
+    uint8_t m_type;
+
+    /// node id for a CANAL node
+    uint8_t m_nodeid;
+
     /*!
-        Set response timeout in milliseconds
+        Pointer to DLL communication object (Expected to be iopen)
     */
-    void setResponseTimeout( uint16_t timeout ) { m_responseTimeout = timeout; };
+    CDllWrapper *m_pdll;
 
     /*!
-        Get response timeout in milliseconds
-    */
-    uint16_t getResponseTimeout( void ) { return m_responseTimeout; };
-
-
-
-public:
-
-    /*!
-        GUID or nickname
-            Nickname is in lsb
+        GUID for tcp/ip node
     */
     cguid m_guid;
 
-protected:
-
+    /*!
+        GUID for remote interface
+    */
+    cguid m_ifguid;
 
     /*!
-        Communication interface to use. 
+        Pointer to TCP/IP communication object (Expected to be open)
     */
-    CCanalSuperWrapper *m_pCanalSuperWrapper;
+    VscpRemoteTcpIf *m_ptcpip;
 
     /// Checksum for firmware
     uint32_t m_checksum;
-
-    /// Response timeout in milliseconds
-    uint32_t m_responseTimeout;
-
-    
 
      /*!
 		Flag for flash memory programming or not	
@@ -169,11 +174,6 @@ protected:
 	*/
 	bool m_bEEPROMMemory;
 
-
-
-
-
-
     /// Program memory buffer
 	uint8_t *m_pbufPrg;
 
@@ -183,11 +183,6 @@ protected:
 	/// EEPROM memory buffer
 	uint8_t *m_pbufEEPROM;
 
-
-
-
-
-
 	/// True if there is at least one program data byte
 	bool m_bPrgData;
 
@@ -196,10 +191,6 @@ protected:
 
 	/// True if there is at least one EEPROM data byte
 	bool m_bEEPROMData;
-
-	
-    
-    
     
     /// Lowest flash address
 	unsigned long m_minFlashAddr;
@@ -207,19 +198,11 @@ protected:
 	/// Highest flash address
 	unsigned long m_maxFlashAddr;
 
-
-
-
-
 	/// Lowest config address
 	unsigned long m_minConfigAddr;
 
     /// Highest config address
 	unsigned long m_maxConfigAddr;
-
-
-
-
 
 	/// Lowest EEPROM address
 	unsigned long m_minEEPROMAddr;
@@ -227,9 +210,6 @@ protected:
 	/// Highest EEPROM address
 	unsigned long m_maxEEPROMAddr;
 
-
-
-    
     /// # data bytes in file
 	unsigned long m_totalCntData;
 

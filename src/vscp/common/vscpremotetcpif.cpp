@@ -3238,13 +3238,13 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 
 
 //////////////////////////////////////////////////////////////////////////////
-// getMDFfromDevice2
+// getMDFUrlFromLevel2Device
 //
 
-bool VscpRemoteTcpIf::getMDFfromLevel2Device( cguid& ifGUID, 
-                                                cguid& destGUID, 
-                                                wxString& strurl,
-                                                bool bLevel2 )
+bool VscpRemoteTcpIf::getMDFUrlFromLevel2Device( cguid& ifGUID,
+                                                    cguid& destGUID, 
+                                                    wxString& strurl,
+                                                    bool bLevel2 )
 {
 	char url[ 33 ];
 	bool rv = true;
@@ -3328,6 +3328,7 @@ int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
 {
     wxString str;
     wxArrayString ifarray;
+    uint8_t cnt = 0;
 
     if ( !m_bConnected ) {
         return VSCP_ERROR_NOT_OPEN;
@@ -3336,10 +3337,11 @@ int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
     // Get the interface list
     while ( true ) {
 
-        if ( VSCP_ERROR_SUCCESS ==
-             doCmdInterfaceList( ifarray ) ) {
+        if ( VSCP_ERROR_SUCCESS == doCmdInterfaceList( ifarray ) ) {
 
             if ( ifarray.Count() ) {
+
+                cnt++;
 
                 for ( unsigned int i = 0; i < ifarray.Count(); i++ ) {
 
@@ -3374,6 +3376,9 @@ int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
                     wxYES_NO ) ) {
                     break;
                 }
+                else {
+                    cnt = 0;
+                }
             }
 #endif
         }
@@ -3384,8 +3389,15 @@ int VscpRemoteTcpIf::fetchIterfaceGUID( const wxString& ifName, cguid& guid )
                 wxYES_NO ) ) {
                 break;
             }
-        }
+            else {
+                cnt = 0;
+            }
+        }        
 #endif
+
+        // Give up after tree tries
+        if ( cnt > 3 ) break;
+
     }
 
     return VSCP_ERROR_OPERATION_FAILED;
