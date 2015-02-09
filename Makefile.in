@@ -27,7 +27,7 @@ install:
 	mkdir -p /srv/vscp/web/images
 	mkdir -p /srv/vscp/web/lib
 	mkdir -p /srv/vscp/web/testws
-	mkdir -p /var/logs/vscp
+	mkdir -p /var/log/vscp
 	mkdir -p /srv/vscp/tables
 	mkdir -p /etc/vscp
 # startup script	
