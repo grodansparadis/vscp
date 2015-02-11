@@ -60,6 +60,12 @@
 #include "bootdevice.h"
 #include "bootdevice_pic1.h"
 
+// Bootloader index in selection combo
+#define BOOTLOADER_VSCP       0
+#define BOOTLOADER_PIC1       1
+
+#define BOOT_LOADER_WIZARD_TITLE _( "VSCP  Bootloader Wizard" )
+
 /*!
 * Forward declarations
 */
@@ -163,16 +169,22 @@ public:
     */
     VscpRemoteTcpIf m_tcpip;
 
+    /// True if node found
+    bool m_bDeviceFound;
+
     /// Flag for interface selection
     bool m_bInterfaceSelected;
 
+
     /// Flag for firmware file loaded
     bool m_bHexFileLoaded;
+
 
     /*!
         Flag to indicate thet the mdf has been fetched.
         */
     bool m_bMDFLoaded;
+
 
     /*!
         MDF informaton for node under bootload.
@@ -186,6 +198,7 @@ public:
     */
     cguid m_ifguid;
 
+
     /*!
         GUID for node to bootload
         Note! This is a duplicate to m_vscpif.m_GUID
@@ -193,7 +206,7 @@ public:
         node is for CANAL node is stored in lsb
      */
     cguid m_guid;
-    
+   
 };
 
 
@@ -342,6 +355,74 @@ public:
 
 };
 
+
+///////////////////////////////////////////////////////////////////////////////
+// WizardPage3 class declaration
+//
+
+class WizardPageSelectBootloader : public wxWizardPageSimple
+{
+    DECLARE_DYNAMIC_CLASS( WizardPage3 )
+    DECLARE_EVENT_TABLE()
+
+public:
+    /// Constructors
+    WizardPageSelectBootloader();
+
+    WizardPageSelectBootloader( wxWizard* parent );
+
+    /// Creation
+    bool Create( wxWizard* parent );
+
+    /// Destructor
+    ~WizardPageSelectBootloader();
+
+    /// Initialises member variables
+    void Init();
+
+    /// Creates the controls and sizers
+    void CreateControls();
+
+    /*!
+        Select bootloader
+    */
+    void selectBootLoader( int nBootloader = BOOTLOADER_VSCP );
+
+    /*!
+        Fetch bootloader algorithm from mdf
+    */
+    void fetchAlgorithmFromMdf( void );
+
+
+    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_BOOTLOADER_ALGORITHM
+    void OnWizardPageChanging( wxWizardEvent& event );
+
+    /// wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_CHOICE2
+    void OnBootLoaderAlgorithmSelected( wxCommandEvent& event );
+
+    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ALGORITHM_FROM_MDF
+    void OnButtonAlgorithmFromMdfClick( wxCommandEvent& event );
+
+    /// Retrieves bitmap resources
+    wxBitmap GetBitmapResource( const wxString& name );
+
+    /// Retrieves icon resources
+    wxIcon GetIconResource( const wxString& name );
+
+    /// Should we show tooltips?
+    static bool ShowToolTips();
+
+    wxChoice* m_nBootAlgorithm;
+    /// Control identifiers
+    enum {
+        ID_WIZARDPAGE_BOOTLOADER_ALGORITHM = 32004,
+        ID_CHOICE2 = 32005,
+        ID_BUTTON_ALGORITHM_FROM_MDF = 32006
+    };
+
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // WizardPageSelectFirmware class declaration
 //
@@ -370,7 +451,7 @@ public:
     void CreateControls();
 
     /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_LOAD_FILE
-    void OnWizardpage3PageChanging( wxWizardEvent& event );
+    void OnWizardpagePageChanging( wxWizardEvent& event );
 
     /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_LOAD_FILE
     void OnButtonChooseFileClick( wxCommandEvent& event );
@@ -401,63 +482,6 @@ public:
     };
 
 };
-
-///////////////////////////////////////////////////////////////////////////////
-// WizardPage3 class declaration
-//
-
-class WizardPageSelectBootloader : public wxWizardPageSimple
-{
-    DECLARE_DYNAMIC_CLASS( WizardPage3 )
-    DECLARE_EVENT_TABLE()
-
-public:
-    /// Constructors
-    WizardPageSelectBootloader();
-
-    WizardPageSelectBootloader( wxWizard* parent );
-
-    /// Creation
-    bool Create( wxWizard* parent );
-
-    /// Destructor
-    ~WizardPageSelectBootloader();
-
-    /// Initialises member variables
-    void Init();
-
-    /// Creates the controls and sizers
-    void CreateControls();
-
-
-    /// wxEVT_WIZARD_PAGE_CHANGING event handler for ID_WIZARDPAGE_BOOTLOADER_ALGORITHM
-    void OnWizardpage2PageChanging( wxWizardEvent& event );
-
-    /// wxEVT_COMMAND_CHOICE_SELECTED event handler for ID_CHOICE2
-    void OnBootLoaderAlgorithmSelected( wxCommandEvent& event );
-
-    /// wxEVT_COMMAND_BUTTON_CLICKED event handler for ID_BUTTON_ALGORITHM_FROM_MDF
-    void OnButtonAlgorithmFromMdfClick( wxCommandEvent& event );
-
-    /// Retrieves bitmap resources
-    wxBitmap GetBitmapResource( const wxString& name );
-
-    /// Retrieves icon resources
-    wxIcon GetIconResource( const wxString& name );
-
-    /// Should we show tooltips?
-    static bool ShowToolTips();
-
-    wxChoice* m_nBootAlgorithm;
-    /// Control identifiers
-    enum {
-        ID_WIZARDPAGE_BOOTLOADER_ALGORITHM = 32004,
-        ID_CHOICE2 = 32005,
-        ID_BUTTON_ALGORITHM_FROM_MDF = 32006
-    };
-
-};
-
 
 
 ///////////////////////////////////////////////////////////////////////////////

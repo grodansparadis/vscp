@@ -65,15 +65,15 @@
 #include "crc.h"
 
 
-CBootDevice_VSCP::CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid ) :
-    CBootDevice( pdll, nodeid )
+CBootDevice_VSCP::CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound ) :
+CBootDevice( pdll, nodeid, bDeviceFound )
 {
     init();
     m_type = USE_DLL_INTERFACE;
 }
 
-CBootDevice_VSCP::CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid ) :
-    CBootDevice( ptcpip, guid, ifguid )
+CBootDevice_VSCP::CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound ) :
+CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
 {
     init();
     m_type = USE_TCPIP_INTERFACE;
@@ -83,7 +83,6 @@ CBootDevice_VSCP::~CBootDevice_VSCP(void) {
     //	delete [] m_pbufPrg;
     //	delete [] m_pbufCfg;
     //	delete [] m_pbufEEPROM;
-
 }
 
 
@@ -1297,7 +1296,8 @@ bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel1(void) {
 
         wxMessageBox(_T(" Response PROTOCOL_BLOCK_DATA_ACK fails"));
 
-    } else {
+    } 
+    else {
 
         if (crc_16_host != crc_16_remote) {
             m_pAddr -= falsh_memory_block_size;
@@ -1316,7 +1316,8 @@ bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel1(void) {
 
         wxMessageBox(_T(" PROGRAM_BLOCK_DATA TX fails"));
 
-    } else {
+    } 
+    else {
 
     }
 
@@ -1374,7 +1375,8 @@ bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel2(void) {
 
         wxMessageBox(_T(" PROGRAM_BLOCK_DATA TX fails"));
 
-    } else {
+    } 
+    else {
 
     }
 
@@ -1388,6 +1390,7 @@ bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel2(void) {
         wxMessageBox(_T(" Response PROGRAM_BLOCK_DATA_ACK fails"));
     }
     else {
+
     }
 
     return true;
@@ -1438,6 +1441,7 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index) {
                     bRun = false;
 
                 }
+
                 // Case -- index = 1
                 if (index == VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK) {
 

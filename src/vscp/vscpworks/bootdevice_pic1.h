@@ -20,6 +20,12 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
+// For info see http://ww1.microchip.com/downloads/en/AppNotes/00247a.pdf 
+// this bootloader expects a slightly moified version of the bootloader 
+// described but in most aspects it is the same.
+// Repository for the bootloade is here https://github.com/grodansparadis/vscp_pic1_bootloader
+//
+// Protocol is describe here https://github.com/grodansparadis/vscp_pic1_bootloader/blob/master/CANIO.asm
 //
 
 #pragma once
@@ -32,18 +38,18 @@
 
 #include <wx/string.h>
 
-#define MEMREG_PRG_START		0x000000
-#define MEMREG_PRG_END			0x2fffff
+#define MEMREG_PRG_START		        0x000000
+#define MEMREG_PRG_END			        0x2fffff
 
-#define MEMREG_CONFIG_START		0x300000
-#define MEMREG_CONFIG_END		0x3fffff
+#define MEMREG_CONFIG_START		        0x300000
+#define MEMREG_CONFIG_END		        0x3fffff
 
-#define MEMREG_EEPROM_START		0xf00000
-#define MEMREG_EEPROM_END		0xffffff
+#define MEMREG_EEPROM_START		        0xf00000
+#define MEMREG_EEPROM_END		        0xffffff
 
-#define BUFFER_SIZE_PROGRAM		0x10000
-#define BUFFER_SIZE_CONFIG		0x2000
-#define BUFFER_SIZE_EEPROM		0x400
+#define BUFFER_SIZE_PROGRAM		        0x10000
+#define BUFFER_SIZE_CONFIG		        0x2000
+#define BUFFER_SIZE_EEPROM		        0x400
 
 
 #define INTEL_LINETYPE_DATA				0	// Data record.
@@ -117,6 +123,8 @@
 #define VSCP_REG_GUID5				0xD5
 #define VSCP_REG_GUID7				0xD7
 
+#define PIC_BOOTLOADER_RESPONSE_TIMEOUT     5
+
 typedef struct _bootclientItem {
 	unsigned char m_nickname;		// Nickname for node
 	unsigned char m_bootalgorithm;	// Bootloader algorithm to use
@@ -140,7 +148,7 @@ public:
         @param nodeid Nickname/nodeid for node that should be loaded
         with new code.
     */
-    CBootDevice_PIC1( CDllWrapper *pdll, uint8_t nodeid );
+    CBootDevice_PIC1( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound = true );
 
     /*!
         Constructor
@@ -149,7 +157,7 @@ public:
         @param guid GUID for node to bootload.
         @param ifguid GUID for interface node is located on
     */
-    CBootDevice_PIC1( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid );
+    CBootDevice_PIC1( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound = true );
 
     // Dtor
     ~CBootDevice_PIC1(void);
@@ -245,7 +253,7 @@ private:
 	/// Internal address pointer
 	uint32_t m_pAddr;
 
-	/// Memory type to program
-	uint8_t m_type;
+    /// memory type
+    uint8_t m_memtype;
 
 };

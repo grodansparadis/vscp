@@ -61,20 +61,25 @@
 // Ctor
 //
 
-CBootDevice::CBootDevice( CDllWrapper *pdll, uint8_t nodeid )
+CBootDevice::CBootDevice( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound )
 {
     init();
 
     m_type = USE_DLL_INTERFACE;
     m_pdll = pdll;
+    m_nodeid = nodeid;
+    m_bDeviceFound = bDeviceFound;
 }
 
-CBootDevice::CBootDevice( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid )
+CBootDevice::CBootDevice( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound )
 {
     init();
 
     m_type = USE_TCPIP_INTERFACE;
     m_ptcpip = ptcpip;
+    m_guid = guid;
+    m_ifguid = ifguid;
+    m_bDeviceFound = bDeviceFound;
 }
 
 
@@ -117,6 +122,8 @@ void CBootDevice::init( void )
 
     m_pdll = NULL;
     m_ptcpip = NULL;
+
+    m_bDeviceFound = false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

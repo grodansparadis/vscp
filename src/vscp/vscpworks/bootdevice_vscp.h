@@ -79,7 +79,7 @@ public:
         @param nodeid Nickname/nodeid for node that should be loaded
         with new code.
     */
-    CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid );
+    CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound = true );
 
     /*!
         Constructor
@@ -88,7 +88,7 @@ public:
         @param guid GUID for node to bootload.
         @param ifguid GUID for interface node is located on
     */
-    CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid );
+    CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound = true );
 
     /// Dtor
     ~CBootDevice_VSCP(void);
@@ -202,9 +202,6 @@ private:
 
 	/// Internal address pointer
 	uint32_t m_pAddr;
-
-	/// Memory type to program
-	uint8_t m_type;
 
 	uint32_t BTL_PAGE ;	        // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
 	                            // 9-bit --- 2^9 = 512

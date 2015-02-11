@@ -74,8 +74,9 @@ public:
         @param pdll Pointer to opended CANAL object.
         @param nodeid Nickname/nodeid for node that should be loaded
                         with new code.
+        @param bDeviceFound True if VSCP device previously has ben found.
     */
-    CBootDevice( CDllWrapper *pdll, uint8_t nodeid );
+    CBootDevice( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound = true );
 
     /*!
         Constructor 
@@ -83,8 +84,12 @@ public:
         @param ptcpip Pointer to opened TCP/IP interface object.
         @param guid GUID for node to bootload.
         @param ifguid GUID for interface node is located on
+        @param bDeviceFound True if VSCP device previously has ben found.
     */
-    CBootDevice( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid );
+    CBootDevice( VscpRemoteTcpIf *ptcpip,
+                    cguid &guid,
+                    cguid &ifguid,
+                    bool bDeviceFound = true );
 
     /*!
         Destructor
@@ -155,6 +160,13 @@ protected:
         Pointer to TCP/IP communication object (Expected to be open)
     */
     VscpRemoteTcpIf *m_ptcpip;
+
+    /*! 
+        Set if VSCP Device found. If set to false then the VSCP daevice is
+        not found but can still be a device without firmware taht can be 
+        loaded.
+    */
+    bool m_bDeviceFound;
 
     /// Checksum for firmware
     uint32_t m_checksum;

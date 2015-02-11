@@ -878,7 +878,7 @@ int VscpRemoteTcpIf::doCmdReceive( vscpEvent *pEvent )
      // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
         
-    wxString strCmd(_("RETR\r\n"));
+    wxString strCmd(_("RETR 1\r\n"));
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.mb_str(),
                     strCmd.length() );
@@ -917,7 +917,7 @@ int VscpRemoteTcpIf::doCmdReceiveEx( vscpEventEx *pEventEx )
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
     
-    wxString strCmd(_("RETR\r\n"));
+    wxString strCmd(_("RETR 1\r\n"));
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                     strCmd.mb_str(), 
                     strCmd.length() );

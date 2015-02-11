@@ -924,7 +924,7 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 
 void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CControlObject *pCtrlObject )
 {
-    unsigned short cnt=1;	// # of messages to read
+    unsigned short cnt = 1;	// # of messages to read
 	CClientItem *pClientItem = (CClientItem *)conn->user_data;
 
     // Must be accredited to do this
@@ -940,7 +940,8 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
 
 
     // Read cnt messages
-    while ( cnt-- ) {
+    while ( cnt ) {
+
         wxString strOut;
 
         if ( !pClientItem->m_bOpen ) {
@@ -952,6 +953,8 @@ void VSCPClientThread::handleClientReceive ( struct ns_connection *conn, CContro
 				return;
 			}
         }
+
+        cnt--;
 
     } // while
 

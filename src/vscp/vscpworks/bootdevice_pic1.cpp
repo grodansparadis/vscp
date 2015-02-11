@@ -46,14 +46,14 @@
 // Constructor
 //
 
-CBootDevice_PIC1::CBootDevice_PIC1( CDllWrapper *pdll, uint8_t nodeid ) :
-            CBootDevice( pdll, nodeid )
+CBootDevice_PIC1::CBootDevice_PIC1( CDllWrapper *pdll, uint8_t nodeid, bool bDeviceFound ) :
+CBootDevice( pdll, nodeid, bDeviceFound )
 {
 	init();
 }
 
-CBootDevice_PIC1::CBootDevice_PIC1( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid ) :
-    CBootDevice( ptcpip, guid, ifguid )
+CBootDevice_PIC1::CBootDevice_PIC1( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound ) :
+CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
 {
     init();
 }
@@ -77,7 +77,7 @@ void CBootDevice_PIC1::init( void )
 
     m_bHandshake = true;		// No handshake as default
     m_pAddr = 0;
-    m_type = MEM_TYPE_PROGRAM;
+    m_memtype = MEM_TYPE_PROGRAM;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -875,58 +875,63 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
 		}
 	}
 
-	// Check if checksum is correct and reset device(s)
-	addr = m_minFlashAddr;
-	uint16_t calc_chksum  = ( 0x10000 - ( m_checksum & 0xffff ) );
-	if ( !writeDeviceControlRegs( addr, 
-									MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_ACK,
-									CMD_CHK_RUN, 
-									( calc_chksum & 0xff ), 
-									( (calc_chksum >> 8 ) & 0xff ) 
-									) ) {
-		wxMessageBox( _T("Failed to do finalizing and restart at node(s).Possible checksum error.") );
-		rv = FALSE;
-		bRun = false;
-	}
-	else {
-		
-        bool bReady = false;
-		for ( int i=0; i<10; i++ ) {
 
-            // Do the device RESET
-			writeDeviceControlRegs( 0x0000, 
-									    0,
-										CMD_RESET, 
-										0, 
-										0 );
+    if ( rv ) {
 
-            wxSleep( 1 );
-				
-			// Verify that clients got out of boot mode.
-            // If we can read register we are ready
-			unsigned char val;
+        // Check if checksum is correct and reset device(s)
+        addr = m_minFlashAddr;
+        uint16_t calc_chksum = ( 0x10000 - ( m_checksum & 0xffff ) );
+        if ( !writeDeviceControlRegs( addr,
+            MODE_WRT_UNLCK | MODE_AUTO_ERASE | MODE_ACK,
+            CMD_CHK_RUN,
+            ( calc_chksum & 0xff ),
+            ( ( calc_chksum >> 8 ) & 0xff )
+            ) ) {
+            wxMessageBox( _T( "Failed to do finalizing and restart at node(s).Possible checksum error." ) );
+            rv = FALSE;
+            bRun = false;
+        }
+        else {
 
-            if ( USE_DLL_INTERFACE == m_type ) {
-                if ( m_pdll->readLevel1Register( 0,
-                                                    m_guid.m_id[ 0 ],
-					                                VSCP_REG_PAGE_SELECT_MSB, 
-					                                &val ) ) {
-                    bReady = true;
-                    break;						
-			    }
-            }
-            else if ( USE_TCPIP_INTERFACE == m_type ) {
-                if ( m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 0, &val, m_ifguid ) ) {
-                    bReady = true;
-                    break;	
+            bool bReady = false;
+            for ( int i = 0; i < 10; i++ ) {
+
+                // Do the device RESET
+                writeDeviceControlRegs( 0x0000,
+                                        0,
+                                        CMD_RESET,
+                                        0,
+                                        0 );
+
+                wxSleep( 1 );
+
+                // Verify that clients got out of boot mode.
+                // If we can read register we are ready
+                unsigned char val;
+
+                if ( USE_DLL_INTERFACE == m_type ) {
+                    if ( m_pdll->readLevel1Register( 0,
+                        m_guid.m_id[ 0 ],
+                        VSCP_REG_PAGE_SELECT_MSB,
+                        &val ) ) {
+                        bReady = true;
+                        break;
+                    }
                 }
+                else if ( USE_TCPIP_INTERFACE == m_type ) {
+                    if ( m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 0, &val, m_ifguid ) ) {
+                        bReady = true;
+                        break;
+                    }
+                }
+
             }
 
-		}
+            if ( !bReady ) {
+                wxMessageBox( _T( "Could not veriy that device came out of reset." ) );
+                rv = FALSE;
+            }
 
-        if ( !bReady ) { 
-            wxMessageBox( _T("Could not veriy that device came out of reset.") );
-		    rv = FALSE;
         }
 
     }
@@ -964,7 +969,7 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
         event.vscp_type = ( ID_PUT_DATA >> 8 );
         memset( event.GUID, 0, 16 );                // We use interface GUID
         event.sizeData = 16 + 8;                    // Interface GUID
-        memcpy( event.data, m_guid.m_id, 16 );      // Address node
+        memcpy( event.data, m_ifguid.m_id, 16 );    // Address node in i/f
     }
     else {
         return false;
@@ -973,7 +978,7 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
     uint8_t b;
     for ( int i = 0; i < 8; i++ ) {
 
-        switch ( m_type ) {
+        switch ( m_memtype ) {
 
             case MEM_TYPE_PROGRAM:
                 b = m_pbufPrg[ m_pAddr ];
@@ -1055,31 +1060,33 @@ bool CBootDevice_PIC1::writeDeviceControlRegs( uint32_t addr,
 	if ( ( m_pAddr < MEMREG_PRG_END ) && ( m_pAddr < BUFFER_SIZE_PROGRAM ) ) {
 							
 		// Flash memory
-		m_type = MEM_TYPE_PROGRAM;				 
+        m_memtype = MEM_TYPE_PROGRAM;
 								
 	}
 	else if ( ( m_pAddr >= MEMREG_CONFIG_START ) && 
 				( ( m_pAddr < MEMREG_CONFIG_START + BUFFER_SIZE_CONFIG ) ) ) {
 							
 		// Config memory
-		m_type = MEM_TYPE_CONFIG;			 
+        m_memtype = MEM_TYPE_CONFIG;
 
 	}
 	else if ( ( m_pAddr >= MEMREG_EEPROM_START ) && 
 				( ( m_pAddr <= MEMREG_EEPROM_START + BUFFER_SIZE_EEPROM ) ) ) {
 
 		// EEPROM
-		m_type = MEM_TYPE_EEPROM;	
+        m_memtype = MEM_TYPE_EEPROM;
+
 	}
 	else {
 		return false;
 	}
 
     if ( USE_DLL_INTERFACE == m_type ) {
+        
         msg.id = ID_PUT_BASE_INFO;
 	    msg.flags = CANAL_IDFLAG_EXTENDED;
 	    msg.sizeData = 8;
-        msg.id += m_guid.m_id[ 0 ]; // Add node id. 
+        msg.id += m_nodeid; // Add node id. 
 	    msg.data[ 0 ]  = ( unsigned char )( addr & 0xff );
 	    msg.data[ 1 ]  = ( unsigned char )( ( addr >> 8 ) & 0xff );
     	msg.data[ 2 ]  = ( unsigned char )( ( addr >> 16 ) & 0xff );
@@ -1088,14 +1095,16 @@ bool CBootDevice_PIC1::writeDeviceControlRegs( uint32_t addr,
 	    msg.data[ 5 ]  = cmd;
 	    msg.data[ 6 ]  = cmdData0;
 	    msg.data[ 7 ]  = cmdData1;
+
     }
     else if ( USE_TCPIP_INTERFACE == m_type ) {
+        
         event.head = 0;
         event.vscp_class = 512;                     // CLASS2.PROTOCOL1
         event.vscp_type = ID_PUT_BASE_INFO >> 8;
         memset( event.GUID, 0, 16 );                // We use interface GUID
         event.sizeData = 16 + 8;                    // Interface GUID
-        memcpy( event.data, m_guid.m_id, 16 );      // Address node
+        memcpy( event.data, m_ifguid.m_id, 16 );    // Address node in i/f
         event.data[ 16 ]  = ( unsigned char )( addr & 0xff );
 	    event.data[ 17 ]  = ( unsigned char )( ( addr >> 8 ) & 0xff );
     	event.data[ 18 ]  = ( unsigned char )( ( addr >> 16 ) & 0xff );
@@ -1104,6 +1113,7 @@ bool CBootDevice_PIC1::writeDeviceControlRegs( uint32_t addr,
 	    event.data[ 21 ]  = cmd;
 	    event.data[ 22 ]  = cmdData0;
 	    event.data[ 23 ]  = cmdData1;
+
     }
     else {
         return false;
@@ -1118,6 +1128,7 @@ bool CBootDevice_PIC1::writeDeviceControlRegs( uint32_t addr,
 
 	// Send message
     if ( USE_DLL_INTERFACE == m_type ) {
+
 	    if ( CANAL_ERROR_SUCCESS == m_pdll->doCmdSend( &msg ) ) {
 		
 		    // Message queued - ( wait for response from client(s) ).
@@ -1129,8 +1140,10 @@ bool CBootDevice_PIC1::writeDeviceControlRegs( uint32_t addr,
 	    else {
 		    rv = false;
 	    }
+
     }
     else {
+
 	    if ( CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &event ) ) {
 		
 		    // Message queued - ( wait for response from client(s) ).
@@ -1142,6 +1155,7 @@ bool CBootDevice_PIC1::writeDeviceControlRegs( uint32_t addr,
 	    else {
 		    rv = false;
 	    }    
+
     }
 
 	return rv;
@@ -1164,27 +1178,29 @@ bool CBootDevice_PIC1::checkResponseLevel1( uint32_t id )
     bool bRun = true;
     while( bRun ) {
 
-        if ( m_pdll->doCmdDataAvailable() ) {
+        //if ( m_pdll->doCmdDataAvailable() ) {
 
-            m_pdll->doCmdReceive( &msg );
+            if ( CANAL_ERROR_SUCCESS == m_pdll->doCmdReceive( &msg ) ) {
 
-            if ( ( ( msg.id & 0xffffff00 ) == id ) ) {		// correct id
+                if ( ( ( msg.id & 0xffffff00 ) == id ) ) {		// correct id
 
-                if ( (int)( msg.id & 0xff ) == m_guid.m_id[ 0 ] ) {
+                    if ( ( int )( msg.id & 0xff ) == m_nodeid ) {
 
-                    // Response received from all - return success
-                    rv = true;
-                    bRun = false;
+                        // Response received from all - return success
+                        rv = true;
+                        bRun = false;
+                        return true;
 
-                } // id found
+                    } // id found
+                }
 
             } // id
 
-        } // received message
+        //} // received message
 
         // check for timeout
         time( &tnow );
-        if ( (unsigned long)( tnow - tstart ) > 5 ) {
+        if ( (unsigned long)( tnow - tstart ) > PIC_BOOTLOADER_RESPONSE_TIMEOUT ) {
             rv = false;
             bRun = false;
         }
@@ -1211,24 +1227,26 @@ bool CBootDevice_PIC1::checkResponseLevel2( uint32_t id )
     bool bRun = true;
     while( bRun ) {
 
-        if ( m_ptcpip->doCmdDataAvailable() ) {
+        //if ( m_ptcpip->doCmdDataAvailable() ) {
 
-            m_ptcpip->doCmdReceiveEx( &event );
+            if ( VSCP_ERROR_SUCCESS == m_ptcpip->doCmdReceiveEx( &event ) ) {
 
-            if ( ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
-                ( m_guid.m_id[ 0 ] == event.GUID[0] ) ) {    // correct id
+                if ( ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) &&
+                     ( m_guid.getLSB() == event.GUID[ 15 ] ) ) {    // correct id
 
                     // Response received from all - return success
                     rv = true;
                     bRun = false;
+                    return true;
 
-            } // id
+                } // id
+            }
 
-        } // received message
+        //} // received message
 
         // check for timeout
         time( &tnow );
-        if ( ( unsigned long )( tnow - tstart ) > 5 ) {
+        if ( ( tnow - tstart ) > PIC_BOOTLOADER_RESPONSE_TIMEOUT ) {
             rv = false;
             bRun = false;
         }

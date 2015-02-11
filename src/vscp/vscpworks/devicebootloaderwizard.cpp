@@ -100,12 +100,11 @@ DeviceBootloaderwizard::DeviceBootloaderwizard( wxWindow* parent, wxWindowID id,
 
 bool DeviceBootloaderwizard::Create( wxWindow* parent, wxWindowID id, const wxPoint& pos )
 {
-
     SetExtraStyle( wxWS_EX_BLOCK_EVENTS | wxWIZARD_EX_HELPBUTTON );
     wxBitmap wizardBitmap( GetBitmapResource( wxT( "vscp_logo.jpg" ) ) );
     wxWizard::Create( parent,
                         id,
-                        _( "VSCP  Bootloader Wizard" ),
+                        BOOT_LOADER_WIZARD_TITLE,
                         wizardBitmap,
                         pos,
                         wxDEFAULT_DIALOG_STYLE | wxCAPTION | wxSYSTEM_MENU | wxCLOSE_BOX );
@@ -148,15 +147,13 @@ void DeviceBootloaderwizard::Init()
     m_pgSelecAlgorithm = NULL;
     m_pgLoadFile = NULL;
 
-    m_bInterfaceSelected = false; // No interface selected
-    m_bMDFLoaded = false;         // No MDF loaded
-    m_bHexFileLoaded = false;     // No firmware file loaded yet
+    m_bDeviceFound = false;           // No node found
+    m_bInterfaceSelected = false;   // No interface selected
+    m_bMDFLoaded = false;           // No MDF loaded
+    m_bHexFileLoaded = false;       // No firmware file loaded yet
 
     // Default boot device is none
     m_pBootCtrl = NULL;
-
-
-
 }
 
 
@@ -864,6 +861,7 @@ bool WizardPageSetGUID::Create( wxWizard* parent )
     if ( GetSizer() ) {
         GetSizer()->Fit( this );
     }
+
     return true;
 }
 
@@ -996,10 +994,14 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             unsigned char val;
             if ( CANAL_ERROR_SUCCESS == 
                  pblw->m_dll.readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
-                wxMessageBox( _( "Device found!" ) );
+                //wxMessageBox( _( "Device found!" ) );
+                pblw->m_bDeviceFound = true;
+                pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE + _( " - Device found!" ) );
+                pblw->m_pgSelecAlgorithm->fetchAlgorithmFromMdf();
             }
             else {
                 wxMessageBox( _( "Device was not found! Check nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
+                pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE + _( " - Unknown device" ) );
             }
 
         }
@@ -1015,10 +1017,14 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
                                                     &val,
                                                     pblw->m_ifguid,
                                                     &pblw->m_guid ) ) {
-                wxMessageBox( _( "Device found!" ) );
+                //wxMessageBox( _( "Device found!" ) );
+                pblw->m_bDeviceFound = true;
+                pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE + _( " - Device found!" )  );
+                pblw->m_pgSelecAlgorithm->fetchAlgorithmFromMdf();
             }
             else {
                 wxMessageBox( _( "Device was not found! Check interface GUID + nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
+                pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE + _( " - Unknown device" ) );
             }
 
         }
@@ -1030,6 +1036,8 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
         
     }
     else {  // Backwards
+
+        pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE );
 
         // Close the interface.
         if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
@@ -1043,6 +1051,358 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
 
 }
 
+
+
+
+
+//*******************************************************************************************************************
+//                                          WizardPageSelectBootloader
+//*******************************************************************************************************************
+
+
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectBootloader type definition
+//
+
+IMPLEMENT_DYNAMIC_CLASS( WizardPageSelectBootloader, wxWizardPageSimple )
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectBootloader event table definition
+//
+
+BEGIN_EVENT_TABLE( WizardPageSelectBootloader, wxWizardPageSimple )
+
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelectBootloader::OnWizardPageChanging )
+EVT_CHOICE( ID_CHOICE2, WizardPageSelectBootloader::OnBootLoaderAlgorithmSelected )
+EVT_BUTTON( ID_BUTTON_ALGORITHM_FROM_MDF, WizardPageSelectBootloader::OnButtonAlgorithmFromMdfClick )
+
+END_EVENT_TABLE()
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectBootloader constructors
+//
+
+WizardPageSelectBootloader::WizardPageSelectBootloader()
+{
+    Init();
+}
+
+WizardPageSelectBootloader::WizardPageSelectBootloader( wxWizard* parent )
+{
+    Init();
+    Create( parent );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectBootloader creator
+//
+
+bool WizardPageSelectBootloader::Create( wxWizard* parent )
+{
+    wxBitmap wizardBitmap( wxNullBitmap );
+    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
+
+    CreateControls();
+    if ( GetSizer() ) {
+        GetSizer()->Fit( this );
+    }
+
+    return true;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// WizardPageSelectBootloader destructor
+//
+
+WizardPageSelectBootloader::~WizardPageSelectBootloader()
+{
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Member initialisation
+//
+
+void WizardPageSelectBootloader::Init()
+{
+    m_nBootAlgorithm = NULL;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Control creation for WizardPageSelectBootloader
+//
+
+void WizardPageSelectBootloader::CreateControls()
+{
+    WizardPageSelectBootloader* itemWizardPageSimple21 = this;
+
+    wxBoxSizer* itemBoxSizer22 = new wxBoxSizer( wxVERTICAL );
+    itemWizardPageSimple21->SetSizer( itemBoxSizer22 );
+
+    wxStaticText* itemStaticText23 = new wxStaticText;
+    itemStaticText23->Create( itemWizardPageSimple21,
+                              wxID_STATIC,
+                              _( "Select the bootloader algorithm to use " ),
+                              wxDefaultPosition,
+                              wxDefaultSize,
+                              0 );
+    itemBoxSizer22->Add( itemStaticText23, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    wxStaticText* itemStaticText24 = new wxStaticText;
+    itemStaticText24->Create( itemWizardPageSimple21,
+                              wxID_STATIC,
+                              _( "If you load bootloader info from the MDF file the algorithm will \nbe set for you." ),
+                              wxDefaultPosition,
+                              wxDefaultSize,
+                              0 );
+    itemBoxSizer22->Add( itemStaticText24, 0, wxALIGN_LEFT | wxALL, 5 );
+
+    itemBoxSizer22->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxStaticText* itemStaticText26 = new wxStaticText;
+    itemStaticText26->Create( itemWizardPageSimple21,
+                              wxID_STATIC,
+                              _( "Boot algorithm" ),
+                              wxDefaultPosition,
+                              wxDefaultSize,
+                              0 );
+    itemBoxSizer22->Add( itemStaticText26, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxArrayString m_nBootAlgorithmStrings;
+    m_nBootAlgorithmStrings.Add( _( "VSCP standard algorithm" ) );
+    m_nBootAlgorithmStrings.Add( _( "Microchip pic algorith 1" ) );
+    m_nBootAlgorithm = new wxChoice;
+    m_nBootAlgorithm->Create( itemWizardPageSimple21, 
+                                ID_CHOICE2, 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                m_nBootAlgorithmStrings, 
+                                0 );
+    m_nBootAlgorithm->SetStringSelection( _( "VSCP standard algorithm" ) );
+    itemBoxSizer22->Add( m_nBootAlgorithm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    itemBoxSizer22->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+
+    wxButton* itemButton29 = new wxButton;
+    itemButton29->Create( itemWizardPageSimple21,
+                          ID_BUTTON_ALGORITHM_FROM_MDF,
+                          _( "Select algorithm from MDF..." ),
+                          wxDefaultPosition,
+                          wxDefaultSize,
+                          0 );
+    itemBoxSizer22->Add( itemButton29, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Should we show tooltips?
+//
+
+bool WizardPageSelectBootloader::ShowToolTips()
+{
+    return true;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get bitmap resources
+//
+
+wxBitmap WizardPageSelectBootloader::GetBitmapResource( const wxString& name )
+{
+    // Bitmap retrieval
+    wxUnusedVar( name );
+    return wxNullBitmap;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Get icon resources
+//
+
+wxIcon WizardPageSelectBootloader::GetIconResource( const wxString& name )
+{
+    // Icon retrieval
+    wxUnusedVar( name );
+    return wxNullIcon;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnBootLoaderAlgorithmSelected
+//
+
+void WizardPageSelectBootloader::OnBootLoaderAlgorithmSelected( wxCommandEvent& event )
+{
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
+    selectBootLoader( m_nBootAlgorithm->GetSelection() );
+
+    event.Skip();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// selectBootLoader
+//
+
+void WizardPageSelectBootloader::selectBootLoader( int nBootloader )
+{
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
+
+    // Remove previous 
+    if ( NULL != pblw->m_pBootCtrl ) {
+        delete pblw->m_pBootCtrl;
+        pblw->m_pBootCtrl = NULL;
+    }
+
+    switch ( nBootloader ) {
+
+        case BOOTLOADER_VSCP: // VSCP Standard algorithm
+            if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+                pblw->m_pBootCtrl =
+                    new CBootDevice_VSCP( &pblw->m_dll, pblw->m_guid.getLSB(), pblw->m_bDeviceFound );
+            }
+            else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+                pblw->m_pBootCtrl =
+                    new CBootDevice_VSCP( &pblw->m_tcpip, pblw->m_guid, pblw->m_ifguid, pblw->m_bDeviceFound );
+            }
+            else {
+                pblw->m_pBootCtrl = NULL;
+            }
+            break;
+
+        case BOOTLOADER_PIC1: // Microchip PIC 1 algorithm
+            if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+                pblw->m_pBootCtrl =
+                    new CBootDevice_PIC1( &pblw->m_dll, pblw->m_guid.getLSB(), pblw->m_bDeviceFound );
+            }
+            else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+                pblw->m_pBootCtrl =
+                    new CBootDevice_PIC1( &pblw->m_tcpip, pblw->m_guid, pblw->m_ifguid, pblw->m_bDeviceFound );
+            }
+            else {
+                pblw->m_pBootCtrl = NULL;
+            }
+            break;
+
+        default:
+            pblw->m_pBootCtrl = NULL;
+            break;
+
+    }
+
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnButtonAlgorithmFromMdfClick
+//
+
+void WizardPageSelectBootloader::OnButtonAlgorithmFromMdfClick( wxCommandEvent& event )
+{
+    fetchAlgorithmFromMdf();
+    event.Skip();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// doAlgorithmFromMdfClick
+//
+
+void WizardPageSelectBootloader::fetchAlgorithmFromMdf( void )
+{
+    wxString strID;
+    wxString mdfurl;
+    bool rv = true;
+
+    wxBusyCursor wait;
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
+
+    // Get selected id
+    strID = pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue();
+
+    // Get the device nickname/GUID
+    if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+
+        if ( !pblw->m_dll.getMDFUrlFromLevel1Device( pblw->m_guid.getLSB(), mdfurl ) ) {
+            wxMessageBox( _( "Failed to fetch MDF url! \nIs the device active and available?" ) );
+            return;
+        }
+
+        if ( !pblw->m_mdf.load( mdfurl ) ) {
+            wxMessageBox( _( "Failed to load MDF!" ) );
+            return;
+        }
+
+        // MDF has been fetched
+        pblw->m_bMDFLoaded = true;
+
+        // MDF has been fetched - Set algorithm
+        m_nBootAlgorithm->SetSelection( pblw->m_mdf.m_bootInfo.m_nAlgorithm );
+        selectBootLoader( pblw->m_mdf.m_bootInfo.m_nAlgorithm );
+
+    }
+    else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+
+        if ( !pblw->m_tcpip.getMDFUrlFromLevel2Device( pblw->m_ifguid, pblw->m_guid, mdfurl ) ) {
+            wxMessageBox( _( "Failed to fetch MDF url! \nIs the device active and available?" ) );
+            return;
+        }
+
+        if ( !pblw->m_mdf.load( mdfurl ) ) {
+            wxMessageBox( _( "Failed to load MDF!" ) );
+        }
+
+        // MDF has been fetched -
+        pblw->m_bMDFLoaded = true;
+
+        // MDF has been fetched - Set algorithm
+        m_nBootAlgorithm->SetSelection( pblw->m_mdf.m_bootInfo.m_nAlgorithm );
+        selectBootLoader( pblw->m_mdf.m_bootInfo.m_nAlgorithm );
+
+    }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnWizardPageChanging
+//
+
+void WizardPageSelectBootloader::OnWizardPageChanging( wxWizardEvent& event )
+{
+    wxBusyCursor wait;
+
+    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
+
+    if ( event.GetDirection() ) {  // Forward
+
+        if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+            ;
+        }
+        else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+            ;
+        }
+
+    }
+    else {  // Backwards
+
+        pblw->m_bDeviceFound = false;
+
+        if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
+            ;
+        }
+        else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+            ;
+        }
+
+    }
+
+    event.Skip();
+
+}
 
 
 
@@ -1068,7 +1428,7 @@ IMPLEMENT_DYNAMIC_CLASS( WizardPageSelectFirmware, wxWizardPageSimple )
 
 BEGIN_EVENT_TABLE( WizardPageSelectFirmware, wxWizardPageSimple )
 
-EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelectFirmware::OnWizardpage3PageChanging )
+EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelectFirmware::OnWizardpagePageChanging )
 EVT_BUTTON( ID_BUTTON_LOAD_FILE, WizardPageSelectFirmware::OnButtonChooseFileClick )
 EVT_BUTTON( ID_BUTTON_LOAD_FILE_FROM_MDF, WizardPageSelectFirmware::OnButtonLoadFileFromMdfClick )
 
@@ -1396,10 +1756,10 @@ void WizardPageSelectFirmware::OnButtonLoadFileFromMdfClick( wxCommandEvent& eve
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnWizardpage3PageChanging
+// OnWizardpagePageChanging
 //
 
-void WizardPageSelectFirmware::OnWizardpage3PageChanging( wxWizardEvent& event )
+void WizardPageSelectFirmware::OnWizardpagePageChanging( wxWizardEvent& event )
 {
     wxBusyCursor wait;
 
@@ -1418,275 +1778,7 @@ void WizardPageSelectFirmware::OnWizardpage3PageChanging( wxWizardEvent& event )
 
 
 
-//*******************************************************************************************************************
-//                                          WizardPageSelectBootloader
-//*******************************************************************************************************************
 
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSelectBootloader type definition
-//
-
-IMPLEMENT_DYNAMIC_CLASS( WizardPageSelectBootloader, wxWizardPageSimple )
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSelectBootloader event table definition
-//
-
-BEGIN_EVENT_TABLE( WizardPageSelectBootloader, wxWizardPageSimple )
-
-EVT_WIZARD_PAGE_CHANGING( -1, WizardPageSelectBootloader::OnWizardpage2PageChanging )
-EVT_CHOICE( ID_CHOICE2, WizardPageSelectBootloader::OnBootLoaderAlgorithmSelected )
-EVT_BUTTON( ID_BUTTON_ALGORITHM_FROM_MDF, WizardPageSelectBootloader::OnButtonAlgorithmFromMdfClick )
-
-END_EVENT_TABLE()
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSelectBootloader constructors
-//
-
-WizardPageSelectBootloader::WizardPageSelectBootloader()
-{
-    Init();
-}
-
-WizardPageSelectBootloader::WizardPageSelectBootloader( wxWizard* parent )
-{
-    Init();
-    Create( parent );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSelectBootloader creator
-//
-
-bool WizardPageSelectBootloader::Create( wxWizard* parent )
-{
-    wxBitmap wizardBitmap( wxNullBitmap );
-    wxWizardPageSimple::Create( parent, NULL, NULL, wizardBitmap );
-
-    CreateControls();
-    if ( GetSizer() ) {
-        GetSizer()->Fit( this );
-    }
-
-    return true;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// WizardPageSelectBootloader destructor
-//
-
-WizardPageSelectBootloader::~WizardPageSelectBootloader()
-{
-
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Member initialisation
-//
-
-void WizardPageSelectBootloader::Init()
-{
-    m_nBootAlgorithm = NULL;
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Control creation for WizardPageSelectBootloader
-//
-
-void WizardPageSelectBootloader::CreateControls()
-{
-    WizardPageSelectBootloader* itemWizardPageSimple21 = this;
-
-    wxBoxSizer* itemBoxSizer22 = new wxBoxSizer( wxVERTICAL );
-    itemWizardPageSimple21->SetSizer( itemBoxSizer22 );
-
-    wxStaticText* itemStaticText23 = new wxStaticText;
-    itemStaticText23->Create( itemWizardPageSimple21,
-                              wxID_STATIC,
-                              _( "Select the bootloader algorithm to use " ),
-                              wxDefaultPosition,
-                              wxDefaultSize,
-                              0 );
-    itemBoxSizer22->Add( itemStaticText23, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    wxStaticText* itemStaticText24 = new wxStaticText;
-    itemStaticText24->Create( itemWizardPageSimple21,
-                              wxID_STATIC,
-                              _( "If you load bootloader info from the MDF file the algorithm will \nbe set for you." ),
-                              wxDefaultPosition,
-                              wxDefaultSize,
-                              0 );
-    itemBoxSizer22->Add( itemStaticText24, 0, wxALIGN_LEFT | wxALL, 5 );
-
-    itemBoxSizer22->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxStaticText* itemStaticText26 = new wxStaticText;
-    itemStaticText26->Create( itemWizardPageSimple21,
-                              wxID_STATIC,
-                              _( "Boot algorithm" ),
-                              wxDefaultPosition,
-                              wxDefaultSize,
-                              0 );
-    itemBoxSizer22->Add( itemStaticText26, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxArrayString m_nBootAlgorithmStrings;
-    m_nBootAlgorithmStrings.Add( _( "VSCP standard algorithm" ) );
-    m_nBootAlgorithmStrings.Add( _( "Microchip pic algorith 1" ) );
-    m_nBootAlgorithm = new wxChoice;
-    m_nBootAlgorithm->Create( itemWizardPageSimple21, ID_CHOICE2, wxDefaultPosition, wxDefaultSize, m_nBootAlgorithmStrings, 0 );
-    m_nBootAlgorithm->SetStringSelection( _( "VSCP standard algorithm" ) );
-    itemBoxSizer22->Add( m_nBootAlgorithm, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    itemBoxSizer22->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-
-    wxButton* itemButton29 = new wxButton;
-    itemButton29->Create( itemWizardPageSimple21,
-                          ID_BUTTON_ALGORITHM_FROM_MDF,
-                          _( "Select algorithm from MDF..." ),
-                          wxDefaultPosition,
-                          wxDefaultSize,
-                          0 );
-    itemBoxSizer22->Add( itemButton29, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Should we show tooltips?
-//
-
-bool WizardPageSelectBootloader::ShowToolTips()
-{
-    return true;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get bitmap resources
-//
-
-wxBitmap WizardPageSelectBootloader::GetBitmapResource( const wxString& name )
-{
-    // Bitmap retrieval
-    wxUnusedVar( name );
-    return wxNullBitmap;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Get icon resources
-//
-
-wxIcon WizardPageSelectBootloader::GetIconResource( const wxString& name )
-{
-    // Icon retrieval
-    wxUnusedVar( name );
-    return wxNullIcon;
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnBootLoaderAlgorithmSelected
-//
-
-void WizardPageSelectBootloader::OnBootLoaderAlgorithmSelected( wxCommandEvent& event )
-{
-    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
-
-    // Remove previous 
-    if ( NULL != pblw->m_pBootCtrl ) {
-        delete pblw->m_pBootCtrl;
-        pblw->m_pBootCtrl = NULL;
-    }
-
-    switch ( m_nBootAlgorithm->GetSelection() ) {
-
-        case 0: // VSCP Standard algorithm
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl =
-                new CBootDevice_VSCP( &pblw->m_tcpip, pblw->m_guid, pblw->m_ifguid );
-            break;
-
-        case 1: // Microchip PIC 1 algorithm
-            ( ( DeviceBootloaderwizard * )GetParent() )->m_pBootCtrl =
-                new CBootDevice_PIC1( &pblw->m_dll, pblw->m_guid.getLSB() );
-            break;
-
-        case 2:
-            pblw->m_pBootCtrl = NULL;
-            break;
-
-    }
-
-    event.Skip();
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnButtonAlgorithmFromMdfClick
-//
-
-void WizardPageSelectBootloader::OnButtonAlgorithmFromMdfClick( wxCommandEvent& event )
-{
-    wxString strID;
-    wxString mdfurl;
-    bool rv = true;
-
-    wxBusyCursor wait;
-    DeviceBootloaderwizard *pblw = ( DeviceBootloaderwizard * )GetParent();
-
-    // Get selected id
-    strID = pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue();
-
-    // Get the device nickname/GUID
-    if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
-        
-        if ( !pblw->m_dll.getMDFUrlFromLevel1Device( pblw->m_guid.getLSB(), mdfurl ) ) {
-            wxMessageBox( _( "Failed to fetch MDF url! \nIs the device active and available?" ) );
-            return;
-        }
-                
-        if ( !pblw->m_mdf.load( mdfurl ) ) {
-            wxMessageBox( _( "Failed to load MDF!" ) );
-            return;
-        }
-         
-        // MDF has been fetched -
-        pblw->m_bMDFLoaded = true;
-
-        // MDF has been fetched - Set algorithm
-        m_nBootAlgorithm->SetSelection( pblw->m_mdf.m_bootInfo.m_nAlgorithm );
-        OnBootLoaderAlgorithmSelected( event );
-  
-    }
-    else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
-        
-        if ( !pblw->m_tcpip.getMDFUrlFromLevel2Device( pblw->m_ifguid, pblw->m_guid, mdfurl ) ) {
-            wxMessageBox( _( "Failed to fetch MDF url! \nIs the device active and available?" ) );
-            return;
-        }
-
-        if ( !pblw->m_mdf.load( mdfurl ) ) {
-            wxMessageBox( _( "Failed to load MDF!" ) );
-        } 
-         
-        // MDF has been fetched -
-        pblw->m_bMDFLoaded = true;
-
-        // MDF has been fetched - Set algorithm
-        m_nBootAlgorithm->SetSelection( pblw->m_mdf.m_bootInfo.m_nAlgorithm );
-        OnBootLoaderAlgorithmSelected( event );
-
-    }
-
-    event.Skip();
-}
 
 
 
@@ -1947,16 +2039,21 @@ void WizardPageProgramDevice::CreateControls()
     itemWizardPageSimple47->SetSizer( itemBoxSizer48 );
 
     wxStaticText* itemStaticText49 = new wxStaticText;
-    itemStaticText49->Create( itemWizardPageSimple47, wxID_STATIC, _( "Firmware update" ), wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText49->Create( itemWizardPageSimple47, 
+                                wxID_STATIC, 
+                                _( "Firmware update" ), 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
     itemBoxSizer48->Add( itemStaticText49, 0, wxALIGN_LEFT | wxALL, 5 );
 
     wxStaticText* itemStaticText50 = new wxStaticText;
     itemStaticText50->Create( itemWizardPageSimple47,
-                              wxID_STATIC,
-                              _( "Press the program device button to load firmware to the selected device." ),
-                              wxDefaultPosition,
-                              wxDefaultSize,
-                              0 );
+                                wxID_STATIC,
+                                _( "Press the program device button to load firmware to the selected device." ),
+                                wxDefaultPosition,
+                                wxDefaultSize,
+                                0 );
     itemBoxSizer48->Add( itemStaticText50, 0, wxALIGN_LEFT | wxALL, 5 );
 
     itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
@@ -1967,17 +2064,22 @@ void WizardPageProgramDevice::CreateControls()
 
     wxButton* itemButton54 = new wxButton;
     itemButton54->Create( itemWizardPageSimple47,
-                          ID_BUTTON21,
-                          _( "Program selected device" ),
-                          wxDefaultPosition,
-                          wxDefaultSize,
-                          0 );
+                            ID_BUTTON21,
+                            _( "Program selected device" ),
+                            wxDefaultPosition,
+                            wxDefaultSize,
+                            0 );
     itemBoxSizer48->Add( itemButton54, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     itemBoxSizer48->Add( 5, 5, 0, wxALIGN_CENTER_HORIZONTAL | wxALL, 5 );
 
     wxStaticText* itemStaticText56 = new wxStaticText;
-    itemStaticText56->Create( itemWizardPageSimple47, wxID_STATIC, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0 );
+    itemStaticText56->Create( itemWizardPageSimple47, 
+                                wxID_STATIC, 
+                                wxEmptyString, 
+                                wxDefaultPosition, 
+                                wxDefaultSize, 
+                                0 );
     itemBoxSizer48->Add( itemStaticText56, 0, wxALIGN_LEFT | wxALL, 5 );
 }
 
@@ -2016,16 +2118,6 @@ wxIcon WizardPageProgramDevice::GetIconResource( const wxString& name )
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// OnWizardpage2PageChanging
-//
-
-void WizardPageSelectBootloader::OnWizardpage2PageChanging( wxWizardEvent& event )
-{
-
-    event.Skip();
-}
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OnButtonProgramClick
 //
 
@@ -2038,61 +2130,33 @@ void WizardPageProgramDevice::OnButtonProgramClick( wxCommandEvent& event )
 
     // Get the device nickname/GUID
     if ( USE_DLL_INTERFACE == pblw->m_iftype ) {
-        
-        //pblw->m_pBootCtrl->m_guid.setLSB( 
-        //    vscp_readStringValue( pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() ) );
 
-        // Open the interface
-        if ( -1 != pblw->m_dll.doCmdOpen( pblw->m_canalif.m_strPath,
-                                            pblw->m_canalif.m_strConfig,
-                                            pblw->m_canalif.m_flags ) ) {
-
+        if ( pblw->m_bDeviceFound ) {
             if ( !pblw->m_pBootCtrl->setDeviceInBootMode() ) {
                 wxMessageBox( _( "Failed to set device in boot mode! \nWill still try to load firmware." ) );
             }
-
-            if ( !pblw->m_pBootCtrl->doFirmwareLoad() ) {
-                wxMessageBox( _( "Failed to load firmware code into device!" ) );
-            }
-
-            // Close the interface
-            pblw->m_dll.doCmdClose();
-
         }
-        else {
-            wxMessageBox( _( "Failed to open communication interface!" ) );
+
+        if ( !pblw->m_pBootCtrl->doFirmwareLoad() ) {
+            wxMessageBox( _( "Failed to load firmware code into device!" ) );
         }
 
     }
     else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
+
+        pblw->m_tcpip.setResponseTimeout( 10 );
         
-        //vscp_getGuidFromStringToArray( pblw->m_pBootCtrl->m_guid.m_id,
-        //                               pblw->m_pgSelecDeviceId->m_comboNodeID->GetValue() );
-
-        // Open the interface
-        if ( VSCP_ERROR_SUCCESS == pblw->m_tcpip.doCmdOpen( pblw->m_vscpif.m_strHost,
-                                                                pblw->m_vscpif.m_strUser,
-                                                                pblw->m_vscpif.m_strPassword ) ) {
-
+        if ( pblw->m_bDeviceFound ) {
             if ( !pblw->m_pBootCtrl->setDeviceInBootMode() ) {
                 wxMessageBox( _( "Failed to set device in boot mode! \nWill still try to load firmware." ) );
             }
-
-            if ( !pblw->m_pBootCtrl->doFirmwareLoad() ) {
-                wxMessageBox( _( "Failed to load firmware code into device!" ) );
-            }
-
-            // Close the interface
-            pblw->m_tcpip.doCmdClose();
-
         }
-        else {
-            wxMessageBox( _( "Failed to open communication interface!" ) );
+
+        if ( !pblw->m_pBootCtrl->doFirmwareLoad() ) {
+            wxMessageBox( _( "Failed to load firmware code into device!" ) );
         }
 
     }
-
-    
 
     event.Skip();
 }
