@@ -437,6 +437,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         // Send message
         msg.id = ID_PUT_BASE_INFO;
         msg.flags = CANAL_IDFLAG_EXTENDED;
+        memset( msg.data, 0, 8 );
         msg.sizeData = 8;
         if ( CANAL_ERROR_SUCCESS == m_pdll->doCmdSend( &msg ) ) {
 
@@ -457,13 +458,13 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
                     m_pdll->doCmdReceive( &rcvmsg );
 
                     // Is this a read/write reply from the node?
-                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_BASE_INFO + m_guid.m_id[ 0 ] ) ) {
+                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_BASE_INFO + m_nodeid ) ) {
                         // yes already in bootmode - return
                         return true;
                     }
 
                     // Is this a read/write reply from the node?
-                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_DATA + m_guid.m_id[ 0 ] ) ) {
+                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_DATA + m_nodeid ) ) {
                         // yes already in bootmode - return
                         return true;
                     }
@@ -473,23 +474,23 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         }
 
         // Read page register Page select MSB
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
-            0,
-            VSCP_REG_GUID0,
-            &pageSelectMsb ) ) {
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
+                                            0,
+                                            VSCP_REG_PAGE_SELECT_MSB,
+                                            &pageSelectMsb ) ) {
             return false;
         }
 
         // Read page register page select lsb
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
-            0,
-            VSCP_REG_GUID0,
-            &pageSelectLsb ) ) {
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
+                                            0,
+                                            VSCP_REG_PAGE_SELECT_LSB,
+                                            &pageSelectLsb ) ) {
             return false;
         }
         
         // Read page register GUID0
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
                                             0,
                                             VSCP_REG_GUID0,
                                             &guid0 ) ) {
@@ -497,7 +498,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         }
 
         // Read page register GUID3
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
                                             0,
                                             VSCP_REG_GUID3,
                                             &guid3 ) ) {
@@ -505,7 +506,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         }
 
         // Read page register GUID5
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
                                             0,
                                             VSCP_REG_GUID5,
                                             &guid5 ) ) {
@@ -513,7 +514,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         }
 
         // Read page register GUID7
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
                                             0,
                                             VSCP_REG_GUID7,
                                             &guid7 ) ) {
@@ -521,7 +522,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         }
 
         // Set device in boot mode
-        msg.data[ 0 ] = m_guid.m_id[ 0 ];	    // Nickname to read register from
+        msg.data[ 0 ] = m_nodeid;	            // Nickname to read register from
         msg.data[ 1 ] = VSCP_BOOTLOADER_PIC1;	// VSCP PIC1 bootload algorithm	
         msg.data[ 2 ] = guid0;
         msg.data[ 3 ] = guid3;
@@ -544,7 +545,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
             while( bRun ) {
 
                 time( &tnow );
-                if ( (unsigned long)( tnow - tstart ) > 5 ) {
+                if ( ( unsigned long )( tnow - tstart ) > PIC_BOOTLOADER_RESPONSE_TIMEOUT ) {
                     bRun = false;
                 }
 
@@ -553,13 +554,13 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
                     m_pdll->doCmdReceive( &rcvmsg );
 
                     // Is this a read/write reply from the node?
-                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_BASE_INFO + m_guid.m_id[ 0 ] ) ) {
+                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_BASE_INFO + m_nodeid ) ) {
                         // OK in bootmode - return
                         return true;
                     }
 
                     // Is this a read/write reply from the node?
-                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_DATA + m_guid.m_id[ 0 ] ) ) {
+                    if ( ( rcvmsg.id & 0xffffff ) == (uint32_t)( ID_RESPONSE_PUT_DATA + m_nodeid ) ) {
                         // OK in bootmode - return
                         return true;
                     }
@@ -578,14 +579,15 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         vscpEventEx event;
         time_t tstart, tnow;
 
+        memset( event.data, 0, sizeof( event.data ) );
         event.head = 0;
         event.vscp_class = 512;                     // CLASS2.PROTOCOL1
         event.vscp_type = ( ID_PUT_BASE_INFO >> 8 );// Special bootloader command
         memset( event.GUID, 0, 16 );                // We use interface GUID
         event.sizeData = 16;                        // Interface GUID
-        memcpy( event.data, m_guid.m_id, 16 );      // Address node
+        memcpy( event.data, m_ifguid.m_id, 16 );    // Address node i/f
 
-        if ( CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &event ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &event ) ) {
 
             bRun = true;
 
@@ -595,7 +597,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
             while( bRun ) {
             
                 time( &tnow );
-                if ( (unsigned long)( tnow - tstart ) > 5 ) {
+                if ( ( unsigned long )( tnow - tstart ) > PIC_BOOTLOADER_RESPONSE_TIMEOUT ) {
                     bRun = false;
                 }
 
@@ -619,23 +621,33 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         
         }
 
-        // Read page register GUID0
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid ) ) {
+        // Read page register MSB
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 0, &pageSelectMsb, m_ifguid, &m_guid ) ) {
             return false;
         }
 
-        // Read page register GUID3
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid0, m_ifguid ) ) {
+        // Read page register LSB
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_LSB, 0, &pageSelectLsb, m_ifguid, &m_guid ) ) {
             return false;
         }
 
-        // Read page register GUID5
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid0, m_ifguid ) ) {
+        // Read GUID0
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid, &m_guid ) ) {
             return false;
         }
 
-        // Read page register GUID7
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid0, m_ifguid ) ) {
+        // Read GUID3
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid3, m_ifguid, &m_guid ) ) {
+            return false;
+        }
+
+        // Read GUID5
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid5, m_ifguid, &m_guid ) ) {
+            return false;
+        }
+
+        // Read GUID7
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid7, m_ifguid, &m_guid ) ) {
             return false;
         }
 
@@ -643,13 +655,13 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
     
         // Send message
         event.head = 0;
-        event.vscp_class = 512;                     // CLASS2.PROTOCOL1
-        event.vscp_type = VSCP_ENTER_BOOTLODER_MODE;// We want to enter bootloader mode
-        memset( event.GUID, 0, 16 );                // We use interface GUID
-        event.sizeData = 16 + 8;                    // Interface GUID
-        memcpy( event.data, m_guid.m_id, 16 );      // Address node
-        event.data[ 16 ] = m_guid.m_id[ 0 ];	    // Nickname to read register from
-        event.data[ 17 ] = VSCP_BOOTLOADER_PIC1;	// VSCP PIC1 bootload algorithm	
+        event.vscp_class = 512;                         // CLASS2.PROTOCOL1
+        event.vscp_type = VSCP_ENTER_BOOTLODER_MODE;    // We want to enter bootloader mode
+        memset( event.GUID, 0, sizeof( event.data ) );  // We use interface GUID
+        event.sizeData = 16 + 8;                        // Interface GUID
+        memcpy( event.data, m_ifguid.m_id, 16 );        // Address node i/f
+        event.data[ 16 ] = m_guid.getLSB();	            // Nickname for device 
+        event.data[ 17 ] = VSCP_BOOTLOADER_PIC1;	    // VSCP PIC1 bootload algorithm	
         event.data[ 18 ] = guid0;
         event.data[ 19 ] = guid3;
         event.data[ 20 ] = guid5;
@@ -657,7 +669,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         event.data[ 22 ] = pageSelectMsb;
         event.data[ 23 ] = pageSelectLsb;
 
-        if ( CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &event ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &event ) ) {
     
             bRun = true;
 
@@ -667,14 +679,13 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
             while( bRun ) {
 
                 time( &tnow );
-                if ( (unsigned long)( tnow - tstart ) > 5 ) {
+                if ( ( unsigned long )( tnow - tstart ) > PIC_BOOTLOADER_RESPONSE_TIMEOUT ) {
                     bRun = false;
                 }
 
                 //vscpEventEx rcvmsg;
-                if ( m_ptcpip->doCmdDataAvailable() ) {
 
-                    m_ptcpip->doCmdReceiveEx( &event );
+                if ( VSCP_ERROR_SUCCESS == m_ptcpip->doCmdReceiveEx( &event ) ) {
 
                     // Is this a read/write reply from the node?
                     if ( ( ID_RESPONSE_PUT_BASE_INFO >> 8 ) == event.vscp_type ) {
@@ -688,7 +699,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
                         return true;
                     }
 
-                }			
+                }		
             }
         }
     }
@@ -910,16 +921,20 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
                 unsigned char val;
 
                 if ( USE_DLL_INTERFACE == m_type ) {
-                    if ( m_pdll->readLevel1Register( 0,
-                        m_guid.m_id[ 0 ],
-                        VSCP_REG_PAGE_SELECT_MSB,
-                        &val ) ) {
+                    if ( CANAL_ERROR_SUCCESS == m_pdll->readLevel1Register( m_nodeid,
+                                                        0,
+                                                        VSCP_REG_GUID0,
+                                                        &val ) ) {
                         bReady = true;
                         break;
                     }
                 }
                 else if ( USE_TCPIP_INTERFACE == m_type ) {
-                    if ( m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 0, &val, m_ifguid ) ) {
+                    if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID0,
+                                                        0, 
+                                                        &val, 
+                                                        m_ifguid, 
+                                                        &m_guid ) ) {
                         bReady = true;
                         break;
                     }

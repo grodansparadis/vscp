@@ -1179,7 +1179,9 @@ void WizardPageSelectBootloader::CreateControls()
 
     wxArrayString m_nBootAlgorithmStrings;
     m_nBootAlgorithmStrings.Add( _( "VSCP standard algorithm" ) );
-    m_nBootAlgorithmStrings.Add( _( "Microchip pic algorith 1" ) );
+    m_nBootAlgorithmStrings.Add( _( "Microchip pic algorithm 1" ) );
+    m_nBootAlgorithmStrings.Add( _( "AVR algorithm 1 (not active)" ) );
+    m_nBootAlgorithmStrings.Add( _( "ARM algorithm 1 (not active)" ) );
     m_nBootAlgorithm = new wxChoice;
     m_nBootAlgorithm->Create( itemWizardPageSimple21, 
                                 ID_CHOICE2, 
@@ -2144,7 +2146,7 @@ void WizardPageProgramDevice::OnButtonProgramClick( wxCommandEvent& event )
     }
     else if ( USE_TCPIP_INTERFACE == pblw->m_iftype ) {
 
-        pblw->m_tcpip.setResponseTimeout( 10 );
+        pblw->m_tcpip.setResponseTimeout( 5 );  // Extend timeout time.
         
         if ( pblw->m_bDeviceFound ) {
             if ( !pblw->m_pBootCtrl->setDeviceInBootMode() ) {
