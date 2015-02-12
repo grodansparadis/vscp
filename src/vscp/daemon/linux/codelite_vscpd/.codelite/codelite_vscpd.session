@@ -1,79 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Session Name="/home/akhe/vscp_software/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace">
-  <int Value="6" Name="m_selectedTab"/>
+  <int Value="0" Name="m_selectedTab"/>
   <wxString Value="/home/akhe/vscp_software/src/vscp/daemon/linux/codelite_vscpd/codelite_vscpd.workspace" Name="m_workspaceName"/>
-  <TabInfoArray Name="TabInfoArray">
-    <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/vscpworks/dlgabstractionedit.cpp" Name="FileName"/>
-      <int Value="419" Name="FirstVisibleLine"/>
-      <int Value="417" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/vscpworks/dlgconfiguration.cpp" Name="FileName"/>
-      <int Value="36" Name="FirstVisibleLine"/>
-      <int Value="34" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/vscpworks/frmdeviceconfig.cpp" Name="FileName"/>
-      <int Value="4141" Name="FirstVisibleLine"/>
-      <int Value="4139" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/usr/local/src/wxWidgets-3.0.2/include/wx/generic/grid.h" Name="FileName"/>
-      <int Value="2419" Name="FirstVisibleLine"/>
-      <int Value="2417" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/usr/local/src/wxWidgets-3.0.2/src/common/list.cpp" Name="FileName"/>
-      <int Value="310" Name="FirstVisibleLine"/>
-      <int Value="308" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/mdf.h" Name="FileName"/>
-      <int Value="169" Name="FirstVisibleLine"/>
-      <int Value="167" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/vscpwebserver.cpp" Name="FileName"/>
-      <int Value="2550" Name="FirstVisibleLine"/>
-      <int Value="2341" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/home/akhe/vscp_software/src/vscp/common/controlobject.cpp" Name="FileName"/>
-      <int Value="404" Name="FirstVisibleLine"/>
-      <int Value="443" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/usr/local/include/wx-3.0/wx/buffer.h" Name="FileName"/>
-      <int Value="62" Name="FirstVisibleLine"/>
-      <int Value="72" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-    <TabInfo>
-      <wxString Value="/usr/local/include/wx-3.0/wx/strvararg.h" Name="FileName"/>
-      <int Value="133" Name="FirstVisibleLine"/>
-      <int Value="143" Name="CurrentLine"/>
-      <wxArrayString Name="Bookmarks"/>
-      <IntVector Name="CollapsedFolds"/>
-    </TabInfo>
-  </TabInfoArray>
+  <TabInfoArray Name="TabInfoArray"/>
   <SerializedObject Name="m_breakpoints">
     <long Value="1" Name="Count"/>
     <SerializedObject Name="Breakpoint0">
