@@ -85,7 +85,6 @@ VSCPInformation::VSCPInformation( void )
 	m_hashClass[ 50 ] = _("CLASS1_AOL");
 	m_hashClass[ 60 ] = _("CLASS1_MEASUREMENT64");
 	m_hashClass[ 65 ] = _("CLASS1_MEASUREZONE");
-	m_hashClass[ 65 ] = _("CLASS1_MEASUREZONE70");
 	m_hashClass[ 85 ] = _("CLASS1_SETVALUEZONE");
     m_hashClass[ 90 ] = _("CLASS1_WEATHER");
     m_hashClass[ 95 ] = _("CLASS1_WEATHER_FORECAST");
