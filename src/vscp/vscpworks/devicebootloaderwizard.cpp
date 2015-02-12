@@ -992,16 +992,22 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             }
 
             unsigned char val;
+            wxString strTitle;
+
             if ( CANAL_ERROR_SUCCESS == 
                  pblw->m_dll.readLevel1Register( nodeid, 0, 0xd0, &val ) ) {
                 //wxMessageBox( _( "Device found!" ) );
                 pblw->m_bDeviceFound = true;
-                pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE + _( " - Device found!" ) );
+                strTitle = BOOT_LOADER_WIZARD_TITLE;
+                strTitle += _( " - Device found!" );
+                pblw->SetTitle( strTitle );
                 pblw->m_pgSelecAlgorithm->fetchAlgorithmFromMdf();
             }
             else {
+                strTitle = BOOT_LOADER_WIZARD_TITLE;
+                strTitle += _( " - Unknown device" );
                 wxMessageBox( _( "Device was not found! Check nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
-                pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE + _( " - Unknown device" ) );
+                pblw->SetTitle( strTitle );
             }
 
         }
@@ -1011,20 +1017,25 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             pblw->m_guid.getFromString( m_comboNodeID->GetValue() );
 
             unsigned char val;
+            wxString strTitle;
+
             if ( VSCP_ERROR_SUCCESS ==
                  pblw->m_tcpip.readLevel2Register( 0xd0,
                                                     0,      // page
                                                     &val,
                                                     pblw->m_ifguid,
                                                     &pblw->m_guid ) ) {
-                //wxMessageBox( _( "Device found!" ) );
                 pblw->m_bDeviceFound = true;
-                pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE + _( " - Device found!" )  );
+                strTitle = BOOT_LOADER_WIZARD_TITLE;
+                strTitle += _( " - Device found!" );
+                pblw->SetTitle( strTitle  );
                 pblw->m_pgSelecAlgorithm->fetchAlgorithmFromMdf();
             }
             else {
                 wxMessageBox( _( "Device was not found! Check interface GUID + nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
-                pblw->SetTitle( BOOT_LOADER_WIZARD_TITLE + _( " - Unknown device" ) );
+                strTitle = BOOT_LOADER_WIZARD_TITLE;
+                strTitle += _( " - Unknown device" );
+                pblw->SetTitle( strTitle );
             }
 
         }

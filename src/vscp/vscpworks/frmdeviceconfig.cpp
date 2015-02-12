@@ -55,9 +55,7 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
 #include "wx/imaglist.h"
-////@end includes
 
 #include <wx/progdlg.h>
 #include <wx/file.h>
