@@ -5705,7 +5705,6 @@ void frmDeviceConfig::OnMenuitemSaveSelectedRegistersClick(wxCommandEvent& event
 
 void frmDeviceConfig::OnMenuitemLoadRegistersClick(wxCommandEvent& event) 
 {
-    //wxStandardPaths stdpaths;
     wxXmlDocument doc;
 
     wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();

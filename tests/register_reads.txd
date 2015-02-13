@@ -1,0 +1,42 @@
+<?xml version = "1.0" encoding = "UTF-8" ?>
+<vscptxset>
+<set>
+<active>true</active>
+<name>Read register 0xD0 (GUID firts byte)</name>
+<class>0</class>
+<type>9</type>
+<priority>7</priority>
+<guid default="true" >00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+<sizedata>2</sizedata>
+<data>0x01,0xD0</data>
+<count>1</count>
+<period>0</period>
+<trigger>0</trigger>
+</set>
+<set>
+<active>true</active>
+<name>Read all registers</name>
+<class>0</class>
+<type>37</type>
+<priority>7</priority>
+<guid default="true" >00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+<sizedata>5</sizedata>
+<data>0x01,0x00,0x00,0x00,0xFF</data>
+<count>1</count>
+<period>0</period>
+<trigger>0</trigger>
+</set>
+<set>
+<active>false</active>
+<name>Read all standard registers</name>
+<class>0</class>
+<type>37</type>
+<priority>7</priority>
+<guid default="true" >00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
+<sizedata>5</sizedata>
+<data>0x01,0x00,0x00,0x80,0xFF</data>
+<count>1</count>
+<period>0</period>
+<trigger>0</trigger>
+</set>
+</vscptxset>
