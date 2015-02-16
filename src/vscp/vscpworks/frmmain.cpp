@@ -824,6 +824,8 @@ void frmMain::OnMenuitemBootloaderWizardClick( wxCommandEvent& event )
     // Go
     wizard->Run();
 
+    delete wizard;
+
     event.Skip( false );
 }
 

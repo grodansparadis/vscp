@@ -53,10 +53,6 @@
 #include "dlgeditlevel1dmrow_symbols.h"
 
 /*!
- * Forward declarations
- */
-
-/*!
  * Control identifiers
  */
 
@@ -79,10 +75,20 @@ class DialogEditLevelIDMrow: public wxDialog
 public:
   /// Constructors
   DialogEditLevelIDMrow();
-  DialogEditLevelIDMrow( wxWindow* parent, wxWindowID id = SYMBOL_DIALOGEDITLEVELIDMROW_IDNAME, const wxString& caption = SYMBOL_DIALOGEDITLEVELIDMROW_TITLE, const wxPoint& pos = SYMBOL_DIALOGEDITLEVELIDMROW_POSITION, const wxSize& size = SYMBOL_DIALOGEDITLEVELIDMROW_SIZE, long style = SYMBOL_DIALOGEDITLEVELIDMROW_STYLE );
+  DialogEditLevelIDMrow( wxWindow* parent, 
+                            wxWindowID id = SYMBOL_DIALOGEDITLEVELIDMROW_IDNAME, 
+                            const wxString& caption = SYMBOL_DIALOGEDITLEVELIDMROW_TITLE, 
+                            const wxPoint& pos = SYMBOL_DIALOGEDITLEVELIDMROW_POSITION, 
+                            const wxSize& size = SYMBOL_DIALOGEDITLEVELIDMROW_SIZE, 
+                            long style = SYMBOL_DIALOGEDITLEVELIDMROW_STYLE );
 
   /// Creation
-  bool Create( wxWindow* parent, wxWindowID id = SYMBOL_DIALOGEDITLEVELIDMROW_IDNAME, const wxString& caption = SYMBOL_DIALOGEDITLEVELIDMROW_TITLE, const wxPoint& pos = SYMBOL_DIALOGEDITLEVELIDMROW_POSITION, const wxSize& size = SYMBOL_DIALOGEDITLEVELIDMROW_SIZE, long style = SYMBOL_DIALOGEDITLEVELIDMROW_STYLE );
+  bool Create( wxWindow* parent, 
+                    wxWindowID id = SYMBOL_DIALOGEDITLEVELIDMROW_IDNAME, 
+                    const wxString& caption = SYMBOL_DIALOGEDITLEVELIDMROW_TITLE, 
+                    const wxPoint& pos = SYMBOL_DIALOGEDITLEVELIDMROW_POSITION, 
+                    const wxSize& size = SYMBOL_DIALOGEDITLEVELIDMROW_SIZE, 
+                    long style = SYMBOL_DIALOGEDITLEVELIDMROW_STYLE );
 
   /// Destructor
   ~DialogEditLevelIDMrow();

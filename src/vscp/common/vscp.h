@@ -43,11 +43,11 @@
 #endif
 
 // TODO should be moved to platform file.  /AKHE
-#define SIZEOF_CHAR         1
-#define SIZEOF_SHORT        2
-#define SIZEOF_INT          4
+#define SIZEOF_CHAR                         1
+#define SIZEOF_SHORT                        2
+#define SIZEOF_INT                          4
 //#ifndef _MSC_EXTENSIONS
-#define SIZEOF_LONG_LONG    8
+#define SIZEOF_LONG_LONG                    8
 //#endif
 
 
@@ -164,7 +164,6 @@ typedef unsigned short                      uint64_t;
 #define VSCPD_SEND_OBJ_MUTEX                _("____VSCPD_SEND_OBJ_MUTEX____")
 #define VSCPD_RECEIVE_OBJ_MUTEX             _("____VSCPD_RECEIVE_OBJ_MUTEX____")
 #define VSCPD_CLIENT_MUTEX                  _("____VSCPD_CLIENT_MUTEX____")
-
 
 #define	VSCP_LEVEL2_UDP_PORT                9598
 #define	VSCP_LEVEL2_TCP_PORT                9598
@@ -464,6 +463,17 @@ struct myNode {
 // 0xe0 - 0xff
 #define VSCP_STD_REGISTER_DEVICE_URL            0xE0
 
+// Level I Decision Matrix
+#define VSCP_LEVEL1_DM_ROW_SIZE                 8
+
+#define VSCP_LEVEL1_DM_OFFSET_OADDR             0
+#define VSCP_LEVEL1_DM_OFFSET_FLAGS             1
+#define VSCP_LEVEL1_DM_OFFSET_CLASS_MASK        2
+#define VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER      3
+#define VSCP_LEVEL1_DM_OFFSET_TYPE_MASK         4
+#define VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER       5
+#define VSCP_LEVEL1_DM_OFFSET_ACTION            6
+#define VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM      7
 
 // Bits for VSCP server 16-bit capability code
 // used by CLASS1.PROTOCOL, HIGH END SERVER RESPONSE

@@ -431,9 +431,6 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         calcSun();     
         m_bCalulationHasBeenDone = true;
     }
-    else {
-        m_bCalulationHasBeenDone = false;
-    }
 	
 	// Trigger for next noon calculation
 	if ( 12 != wxDateTime::Now().GetHour() ) {
@@ -462,7 +459,6 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->data[ 2 ] = m_subzone;    // subzone
 
         return true;
-
     }
 
     // Civil Twilight Sunrise Time
@@ -487,7 +483,6 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->data[ 2 ] = 0;    // subzone
 
         return true;
-
     }
 
     // Civil Twilight Sunset Time
@@ -512,7 +507,6 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->data[ 2 ] = 0;    // subzone
 
         return true;
-
     }
 
     // Sunset Time
@@ -537,7 +531,6 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->data[ 2 ] = 0;    // subzone
 
         return true;
-
     }
 
     // Noon Time
@@ -562,7 +555,6 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->data[ 2 ] = 0;    // subzone
 
         return true;
-
     }
 
     // Heartbeat
@@ -591,7 +583,6 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     if ( m_bSegmentControllerHeartbeat && 
          ( ( wxDateTime::Now() - m_SegmentHeartbeat_sent ) > SegmetnControllerHeartBeatPeriod ) ) {
 
-        
         m_SegmentHeartbeat_sent = wxDateTime::Now();
 
         // Send VSCP_CLASS1_PROTOCOL, Type=1/VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT

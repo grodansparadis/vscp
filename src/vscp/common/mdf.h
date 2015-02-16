@@ -240,6 +240,7 @@ public:
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
 
+    uint16_t m_rowInGrid;               // Helper for display
   
     uint16_t m_nPage;
     uint16_t m_nOffset;
@@ -366,8 +367,6 @@ public:
 	bool m_bIndexed;
 
     MDF_ACTION_LIST  m_list_action; // Action description
-
-
 };
 
 /*!

@@ -8158,8 +8158,8 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
     buildPage += wxString::Format( _( "%f" ), pObject->m_automation.getSunMaxAltitude() ) + _( "<br>" );
 
     buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;<b>Last Calculation</b>: " );
+    buildPage += pObject->m_automation.getLastCalculation().FormatISODate() + _( " " );
     buildPage += pObject->m_automation.getLastCalculation().FormatISOTime() + _("<br>");
-
 
     if ( pObject->m_automation.isSendSunriseEvent() ) {
         buildPage += _( "&nbsp;&nbsp;&nbsp;&nbsp;Sunrise twilight event should be sent.<br>" );

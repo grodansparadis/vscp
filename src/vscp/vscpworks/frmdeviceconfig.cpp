@@ -3161,10 +3161,10 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
     
 
     // Get nickname
-    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+    if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
         nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
     } 
-    else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+    else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
         destGUID.getFromString(m_comboNodeID->GetValue());
     }
 
@@ -3175,10 +3175,10 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
             // Get MDF from local file
             wxFileDialog dlg( this,
-                              _( "Choose file to load MDF from " ),
-                              wxStandardPaths::Get().GetUserDataDir(),
-                              _( "" ),
-                              _( "MDF (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*" ) );
+                                _( "Choose file to load MDF from " ),
+                                wxStandardPaths::Get().GetUserDataDir(),
+                                _( "" ),
+                                _( "MDF (*.mdf)|*.mdf|XML Files (*.xml)|*.xml|All files (*.*)|*.*" ) );
 
             if ( wxID_OK == dlg.ShowModal() ) {
                 strPath = dlg.GetPath();
@@ -3190,12 +3190,12 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
         }
 
         wxProgressDialog progressDlg( _( "VSCP Works" ),
-                                      _( "Updating Data" ),
-                                      100,
-                                      this,
-                                      wxPD_ELAPSED_TIME |
-                                      wxPD_AUTO_HIDE |
-                                      wxPD_APP_MODAL );
+                                        _( "Updating Data" ),
+                                        100,
+                                        this,
+                                         wxPD_ELAPSED_TIME |
+                                            wxPD_AUTO_HIDE |
+                                            wxPD_APP_MODAL );
 
         // Driver
         if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
@@ -3209,7 +3209,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                                                                             0,      // page
                                                                             128,    // count
                                                                             m_stdRegisters.getRegs() ) ) {
-                ::wxMessageBox(_("Failed to read standard registers of device."), _("VSCP Works"), wxICON_ERROR);
+                ::wxMessageBox( _("Failed to read standard registers of device."), 
+                                    _("VSCP Works"), 
+                                    wxICON_ERROR);
                 return;
             }
  
@@ -3222,7 +3224,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                 // We need it to continue
                 m_stdRegisters.getMDF( strPath );
                 if ( 0 == strPath.Length() ) {
-                    ::wxMessageBox( _( "Empty MDF path returned." ), _( "VSCP Works" ), wxICON_ERROR );
+                    ::wxMessageBox( _( "Empty MDF path returned." ), 
+                                        _( "VSCP Works" ), 
+                                        wxICON_ERROR );
                     return;
                 }
 
@@ -3234,7 +3238,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                 ::wxGetApp().logMsg( wxString::Format( _( "Device URL %s translated to %s." ), 
                                                         ( const char * )strPath.c_str(), 
                                                         ( const char * )translate.c_str() ),
-                                     VSCPWORKS_LOGMSG_INFO );
+                                                        VSCPWORKS_LOGMSG_INFO );
                 strPath = translate;
             }
 
@@ -3285,13 +3289,16 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
             // Fill in register descriptions
             MDF_REGISTER_LIST::iterator iter;
-            for (iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter) {
+            for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
 
                 CMDF_Register *reg = *iter;
                 int cnt = 0;
 
                 // Add a new row
                 m_gridRegisters->AppendRows( 1 );
+
+                // Save position in grid for others to refere to
+                reg->m_rowInGrid = m_gridRegisters->GetNumberRows() - 1;
 
                 // Register
                 strBuf.Printf( _("%04X:%02X"), reg->m_nPage, reg->m_nOffset );
@@ -3351,7 +3358,7 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
 
         } 
         // Remote server/device
-        else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+        else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
             // Read standard registers           
             progressDlg.Update( 10, _("Reading standard registers of device 1/8.")); 
@@ -3782,15 +3789,15 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     cguid destGUID;
 
     // Select the row
-    m_gridRegisters->SelectRow(m_lastLeftClickRow);
+    m_gridRegisters->SelectRow( m_lastLeftClickRow );
 
-    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+    if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
         // Get Interface id
         nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
 
     }
-    else if (USE_TCPIP_INTERFACE == m_csw.getDeviceType()) {
+    else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
 
         // Get Interface GUID
         destGUID.getFromString(m_comboNodeID->GetValue());
@@ -3798,13 +3805,13 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     }
 
 
-    if (m_gridRegisters->GetNumberRows()) {
+    if ( m_gridRegisters->GetNumberRows() ) {
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
         if (selrows.GetCount()) {
 
-            for (int i = selrows.GetCount() - 1; i >= 0; i--) {
+            for (int i=selrows.GetCount()-1; i >= 0; i--) {
 
                 // Must be writable
                 wxString permissions =
@@ -3814,28 +3821,27 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
                 } 
                 else {
                     uint8_t val =
-                            vscp_readStringValue(m_gridRegisters->GetCellValue(selrows[i], 2));
+                            vscp_readStringValue( m_gridRegisters->GetCellValue( selrows[i], 2 ) );
 
                     uint16_t page;
-                    page = getPageFromCell(selrows[i]);
+                    page = getPageFromCell( selrows[i] );
 
                     uint32_t reg;
-                    reg = getRegFromCell(selrows[i]);
+                    reg = getRegFromCell( selrows[i] );
 
 
-                    if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
+                    if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
 
                         // We don't test for errors here as some registers have reserved bits
                         // etc and therefore will not read the same as written
                         if ( CANAL_ERROR_SUCCESS ==
-                            m_csw.getDllInterface()->writeLevel1Register(nodeid, page, reg, &val) ) {
+                            m_csw.getDllInterface()->writeLevel1Register( nodeid, page, reg, &val ) ) {
 
                             // Set value
                             m_userRegisters.setValue( page, reg, val );
 
                             // Update display
                             strBuf = getFormattedValue(val);
-
                             m_gridRegisters->SetCellValue(selrows[i], 2, strBuf);
 
                             m_gridRegisters->SelectRow(selrows[i]);
@@ -4369,7 +4375,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                             NULL,
                             m_bLevel2->GetValue());
                 }
-                    break;
+                break;
 
                 case type_int8_t:
                 case type_uint8_t:
@@ -4402,7 +4408,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                             NULL,
                             m_bLevel2->GetValue());
                 }
-                    break;
+                break;
 
 
                 case type_int16_t:
@@ -4512,7 +4518,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                             NULL,
                             m_bLevel2->GetValue());
                 }
-                    break;
+                break;
 
                 case type_int64_t:
                 case type_uint64_t:
@@ -4902,7 +4908,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
                             for (int i = 0; i < 3; i++) {
 
-                                strBuf = getFormattedValue(p[ i ]);
+                                strBuf = getFormattedValue( p[i] );
                                 m_gridRegisters->SetCellValue(
                                         m_mdf.m_list_abstraction[ event.GetRow() ]->m_nOffset + i,
                                         2,
@@ -4930,26 +4936,33 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
             } // case
 
             // Update registers
-            OnButtonUpdateClick(event);
+            OnButtonUpdateClick( event );
 
             m_gridAbstractions->SelectRow( event.GetRow() );
 
         }
 
     } 
-    else if (ID_GRID_DM == event.GetId()) {
+    else if ( ID_GRID_DM == event.GetId() ) {
 
         wxString str;
+        uint8_t saverow[ VSCP_LEVEL1_DM_ROW_SIZE ];
         DialogEditLevelIDMrow dlg(this);
-
+        
         m_gridDM->SelectRow( event.GetRow() );
 
+        // Save original values
+        for ( int i = 0; i < VSCP_LEVEL1_DM_ROW_SIZE; i++ ) {
+            saverow[ i ] = vscp_readStringValue( m_gridDM->GetCellValue( event.GetRow(), i ) );
+        }
+
         // Originating address
-        str = m_gridDM->GetCellValue(event.GetRow(), 0);
-        dlg.m_oaddr->ChangeValue(str);
+        str = m_gridDM->GetCellValue( event.GetRow(), 0 );
+        dlg.m_oaddr->ChangeValue( str );        
 
         // flags
-        uint8_t flags = vscp_readStringValue(m_gridDM->GetCellValue(event.GetRow(), 1));
+        uint8_t flags = vscp_readStringValue( m_gridDM->GetCellValue(event.GetRow(), 1) );
+        
         (flags & 0x80) ? dlg.m_chkEnableDMRow->SetValue(true) : dlg.m_chkEnableDMRow->SetValue(false);
         (flags & 0x40) ? dlg.m_chkCheckOAddr->SetValue(true) : dlg.m_chkCheckOAddr->SetValue(false);
         (flags & 0x20) ? dlg.m_chkHardOAddr->SetValue(true) : dlg.m_chkHardOAddr->SetValue(false);
@@ -4957,24 +4970,23 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
         (flags & 0x08) ? dlg.m_chkMatchSubzone->SetValue(true) : dlg.m_chkMatchSubzone->SetValue(false);
 
         // Class Mask
-        reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 2)) +
-                                                            ((flags & 0x02) << 9);
-        str = wxString::Format(_("%d"), reg);
-        dlg.m_classMask->ChangeValue(str);
+        reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 2)) + ( (flags & 0x02) << 9 );
+        str = wxString::Format( _("%d"), reg );
+        dlg.m_classMask->ChangeValue( str );
 
         // Class Filter
-        reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 3)) +
+        reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 3) ) +
                                                             ((flags & 0x01) << 9);
         str = wxString::Format(_("%d"), reg);
-        dlg.m_classFilter->ChangeValue(str);
+        dlg.m_classFilter->ChangeValue( str );
 
         // Type Mask
-        str = m_gridDM->GetCellValue(event.GetRow(), 4);
-        dlg.m_typeMask->ChangeValue(str);
+        str = m_gridDM->GetCellValue( event.GetRow(), 4 );
+        dlg.m_typeMask->ChangeValue( str );
 
         // Type Filter
-        str = m_gridDM->GetCellValue(event.GetRow(), 5);
-        dlg.m_typeFilter->ChangeValue(str);
+        str = m_gridDM->GetCellValue (event.GetRow(), 5 );
+        dlg.m_typeFilter->ChangeValue( str );
 
         // Action
         dlg.m_comboAction->Clear();
@@ -4984,14 +4996,16 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
         reg = vscp_readStringValue( m_gridDM->GetCellValue( event.GetRow(), 6 ) );
 
+        // Fill in possible actions
+        dlg.m_comboAction->Clear();
         MDF_ACTION_LIST::iterator iter;
         for (iter = m_mdf.m_dmInfo.m_list_action.begin();
                 iter != m_mdf.m_dmInfo.m_list_action.end(); ++iter) {
             CMDF_Action *action = *iter;
-            int idx = dlg.m_comboAction->Append(action->m_strName);
-            dlg.m_comboAction->SetClientData(idx, (void *)action->m_nCode); // Yes - pointer conversion
-            if (reg == action->m_nCode) {
-                dlg.m_comboAction->SetSelection(idx);
+            int idx = dlg.m_comboAction->Append( action->m_strName );
+            dlg.m_comboAction->SetClientData (idx, (void *)action->m_nCode ); // Yes - pointer conversion
+            if ( reg == action->m_nCode ) {
+                dlg.m_comboAction->SetSelection( idx );
             }
         }
 
@@ -4999,146 +5013,165 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
         str = m_gridDM->GetCellValue(event.GetRow(), 7);
         dlg.m_actionParam->ChangeValue(str);
 
-        // Show the dialog
-        if (wxID_OK == dlg.ShowModal()) {
+
+
+        // ********************  Show the dialog  ********************
+        if ( wxID_OK == dlg.ShowModal() ) {
 
             // OK Clicked 
 
+            bool bNeedUpdate = false;
             wxString strBuf;
 
+
+            // Get the row in the grid
+            uint16_t row =
+                m_mdf.getMDFRegister( m_mdf.m_dmInfo.m_nStartOffset, m_mdf.m_dmInfo.m_nStartPage )->m_rowInGrid +
+                ( m_mdf.m_dmInfo.m_nRowSize * event.GetRow() );
+
+
             // O-addr
-            strBuf.Printf(_("0x%02x"), (uint8_t)vscp_readStringValue( dlg.m_oaddr->GetValue() ) );
-            m_gridRegisters->SetCellValue( m_mdf.m_dmInfo.m_nStartOffset +
-                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                           2,
-                                           strBuf);
+            if ( saverow[ VSCP_LEVEL1_DM_OFFSET_OADDR ] != 
+                    vscp_readStringValue( dlg.m_oaddr->GetValue() ) ) {
+
+                bNeedUpdate = true;
+
+                strBuf = getFormattedValue( vscp_readStringValue( dlg.m_oaddr->GetValue() ) );
+                m_gridRegisters->SetCellValue( VSCP_LEVEL1_DM_OFFSET_OADDR + row,
+                                               2,
+                                               strBuf );
+                m_gridRegisters->SetCellTextColour( VSCP_LEVEL1_DM_OFFSET_OADDR + row, 2, *wxRED );
+            }
+
 
             // class mask
-            uint16_t class_mask = vscp_readStringValue(dlg.m_classMask->GetValue());
-            strBuf.Printf(_("0x%02x"), class_mask & 0xff);
-            m_gridRegisters->SetCellValue(2 + m_mdf.m_dmInfo.m_nStartOffset +
-                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                            2,
-                                            strBuf);
+            uint16_t class_mask = vscp_readStringValue( dlg.m_classMask->GetValue() );
+            if ( saverow[ VSCP_LEVEL1_DM_OFFSET_CLASS_MASK ] != ( class_mask & 0xff ) ) {
+
+                bNeedUpdate = true;
+
+                strBuf = getFormattedValue( class_mask & 0xff );
+                m_gridRegisters->SetCellValue( VSCP_LEVEL1_DM_OFFSET_CLASS_MASK + row,
+                                               2,
+                                               strBuf );
+                m_gridRegisters->SetCellTextColour( VSCP_LEVEL1_DM_OFFSET_CLASS_MASK + row, 2, *wxRED );
+            }
+
 
             // class filter
-            uint16_t class_filter = vscp_readStringValue(dlg.m_classFilter->GetValue());
-            strBuf.Printf(_("0x%02x"), class_filter & 0xff);
-            m_gridRegisters->SetCellValue(3 + m_mdf.m_dmInfo.m_nStartOffset +
-                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                            2,
-                                            strBuf);
+            uint16_t class_filter;
+            if ( saverow[ VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER ] != 
+                    vscp_readStringValue( dlg.m_classFilter->GetValue() ) ) {
+
+                bNeedUpdate = true;
+
+                class_filter = vscp_readStringValue( dlg.m_classFilter->GetValue() );
+                strBuf = getFormattedValue( class_filter & 0xff );
+                m_gridRegisters->SetCellValue( VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER + row,
+                                               2,
+                                               strBuf );
+                m_gridRegisters->SetCellTextColour( VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER + row, 2, *wxRED );
+            }
+
 
             // type mask
-            strBuf.Printf(_("0x%02x"), vscp_readStringValue(dlg.m_typeMask->GetValue()));
-            m_gridRegisters->SetCellValue(4 + m_mdf.m_dmInfo.m_nStartOffset +
-                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                            2,
-                                            strBuf);
+            if ( saverow[ VSCP_LEVEL1_DM_OFFSET_TYPE_MASK ] != 
+                    vscp_readStringValue( dlg.m_typeMask->GetValue() ) ) {
+
+                bNeedUpdate = true;
+
+                strBuf = getFormattedValue( vscp_readStringValue( dlg.m_typeMask->GetValue() ) );
+                m_gridRegisters->SetCellValue( VSCP_LEVEL1_DM_OFFSET_TYPE_MASK + row,
+                                               2,
+                                               strBuf );
+                m_gridRegisters->SetCellTextColour( VSCP_LEVEL1_DM_OFFSET_TYPE_MASK + row, 2, *wxRED );
+            }
+
 
             // type filter
-            strBuf.Printf(_("0x%02x"), vscp_readStringValue(dlg.m_typeFilter->GetValue()));
-            m_gridRegisters->SetCellValue(5 + m_mdf.m_dmInfo.m_nStartOffset +
-                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                            2,
-                                            strBuf);
+            if ( saverow[ VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER ] != 
+                    vscp_readStringValue( dlg.m_typeFilter->GetValue() ) ) {
+
+                bNeedUpdate = true;
+
+                strBuf = getFormattedValue( vscp_readStringValue( dlg.m_typeFilter->GetValue() ) );
+                m_gridRegisters->SetCellValue( VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER + row,
+                                               2,
+                                               strBuf );
+                m_gridRegisters->SetCellTextColour( VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER + row, 2, *wxRED );
+            }
+
 
             // flags
             uint8_t flags = 0;
 
-            if (0x100 & class_mask) flags |= 0x02;
-            if (0x100 & class_filter) flags |= 0x01;
-            if (dlg.m_chkEnableDMRow->GetValue()) flags |= 0x80;
-            if (dlg.m_chkCheckOAddr->GetValue()) flags |= 0x40;
-            if (dlg.m_chkHardOAddr->GetValue()) flags |= 0x20;
-            if (dlg.m_chkMatchZone->GetValue()) flags |= 0x10;
-            if (dlg.m_chkMatchSubzone->GetValue()) flags |= 0x08;
-            strBuf.Printf(_("0x%02x"), flags);
-            m_gridRegisters->SetCellValue(1 + m_mdf.m_dmInfo.m_nStartOffset +
-                                                m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                            2,
-                                            strBuf);
+            if ( 0x100 & class_mask ) flags |= 0x02;
+            if ( 0x100 & class_filter ) flags |= 0x01;
+            if ( dlg.m_chkEnableDMRow->GetValue() ) flags |= 0x80;
+            if ( dlg.m_chkCheckOAddr->GetValue() ) flags |= 0x40;
+            if ( dlg.m_chkHardOAddr->GetValue() ) flags |= 0x20;
+            if ( dlg.m_chkMatchZone->GetValue() ) flags |= 0x10;
+            if ( dlg.m_chkMatchSubzone->GetValue() ) flags |= 0x08;
+
+            if ( saverow[ VSCP_LEVEL1_DM_OFFSET_FLAGS ] != flags ) {
+
+                bNeedUpdate = true;
+
+                strBuf = getFormattedValue( flags );
+                m_gridRegisters->SetCellValue( VSCP_LEVEL1_DM_OFFSET_FLAGS + row,
+                                               2,
+                                               strBuf );
+                m_gridRegisters->SetCellTextColour( VSCP_LEVEL1_DM_OFFSET_FLAGS + row, 2, *wxRED );
+            }
+
 
             // Action
             int idx = 0;
-            if (wxNOT_FOUND != (idx = dlg.m_comboAction->GetSelection())) {
-                uint32_t data = (uintptr_t) dlg.m_comboAction->GetClientData(idx);
-                strBuf.Printf(_("0x%02x"), data);
-            } 
-            else {
-                strBuf.Printf(_("0x%02x"), 0);
+            uint32_t data;
+
+            if ( wxNOT_FOUND != ( idx = dlg.m_comboAction->GetSelection() ) ) {
+                data = ( uintptr_t )dlg.m_comboAction->GetClientData( idx );
+
             }
-            m_gridRegisters->SetCellValue(6 + m_mdf.m_dmInfo.m_nStartOffset +
-                                            m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                            2,
-                                            strBuf);
+            else {
+                data = 0;
+            }
+
+            if ( saverow[ VSCP_LEVEL1_DM_OFFSET_ACTION ] != data ) {
+
+                bNeedUpdate = true;
+
+                strBuf = getFormattedValue( data );
+                m_gridRegisters->SetCellValue( VSCP_LEVEL1_DM_OFFSET_ACTION + row,
+                                               2,
+                                               strBuf );
+                m_gridRegisters->SetCellTextColour( VSCP_LEVEL1_DM_OFFSET_ACTION + row, 2, *wxRED );
+            }
+
 
             // Action Parameter
-            strBuf.Printf(_("0x%02x"), (uint8_t)vscp_readStringValue(dlg.m_actionParam->GetValue()));
-            m_gridRegisters->SetCellValue(7 + m_mdf.m_dmInfo.m_nStartOffset +
-                                            m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                            2,
-                                            strBuf);
+            if ( saverow[ VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM ] != 
+                    vscp_readStringValue( dlg.m_actionParam->GetValue() ) ) {
 
-            int row = getRegisterGridRow( m_mdf.m_dmInfo.m_nStartOffset +
-                                            m_mdf.m_dmInfo.m_nRowSize * event.GetRow(),
-                                            m_mdf.m_dmInfo.m_nStartPage);
+                bNeedUpdate = true;
 
-            // Visual indication
-            if (-1 != row) {
-
-                for (int i = 0; i < m_mdf.m_dmInfo.m_nRowSize; i++) {
-
-                    if ( m_mdf.m_dmInfo.m_bIndexed ) {
-
-                        // Index
-                        strBuf = getFormattedValue(0);
-                        m_gridRegisters->SetCellValue( row,
-                                                        2,
-                                                        strBuf);
-
-                        m_gridRegisters->SetCellTextColour( row, 2, *wxRED);
-
-                        // Value
-                        strBuf = getFormattedValue( vscp_readStringValue( dlg.m_oaddr->GetValue() ) );
-                        m_gridRegisters->SetCellValue( row + 1,
-                                                        2,
-                                                        strBuf);
-
-                        m_gridRegisters->SetCellTextColour( row + 1, 2, *wxRED);
-
-                    } 
-                    else {
-
-                        for (int i = 0; i < m_mdf.m_dmInfo.m_nRowSize; i++) {
-
-                            // Index
-                            strBuf = getFormattedValue(vscp_readStringValue(
-                                        m_gridRegisters->GetCellValue(m_mdf.m_dmInfo.m_nStartOffset +
-                                        m_mdf.m_dmInfo.m_nRowSize *
-                                        event.GetRow() + i, 2)));
-                            m_gridRegisters->SetCellValue( row + i,
-                                                            2,
-                                                            strBuf);
-
-                            m_gridRegisters->SetCellTextColour( row + i, 2, *wxRED);
-
-                        }
-
-                    }
-                }
-            } 
-            else {
-                wxMessageBox(_("It's a problem with the MDF for this device. DM rows not in register definition."));
+                strBuf = getFormattedValue( vscp_readStringValue( dlg.m_actionParam->GetValue() ) );
+                m_gridRegisters->SetCellValue( VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM + row,
+                                               2,
+                                               strBuf );
+                m_gridRegisters->SetCellTextColour( VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM + row, 2, *wxRED );
             }
 
-            // Update registers
-            OnButtonUpdateClick(event);
-
+            if ( bNeedUpdate ) {
+                // Update registers
+                OnButtonUpdateClick( event );
+            }
+          
             m_gridDM->SelectRow( event.GetRow() );
+
         }
 
-    } 
+    } // DM
 
 error:
 
@@ -5289,69 +5322,74 @@ void frmDeviceConfig::updateDmGrid(void)
         // Add a row
         if ( !m_gridDM->AppendRows(1) ) continue;
 
+        // Get the row in the grid
+        uint16_t row =
+            m_mdf.getMDFRegister( m_mdf.m_dmInfo.m_nStartOffset, m_mdf.m_dmInfo.m_nStartPage )->m_rowInGrid +
+                                    ( m_mdf.m_dmInfo.m_nRowSize * i );
+
         // O-addr
-        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
-                                                                m_mdf.m_dmInfo.m_nStartOffset + 
-                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
-        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 0, strBuf);
+        m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 
+                                    VSCP_LEVEL1_DM_OFFSET_OADDR,
+                                    m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_OADDR, 
+                                                                    2 ) );
         m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 0);
-        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 0);
+        m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 0);
 
         // Flags
-        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
-                                                                1 + m_mdf.m_dmInfo.m_nStartOffset + 
-                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
-        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 1, strBuf);
-        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 1);
-        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 1);
+        m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 
+                                    VSCP_LEVEL1_DM_OFFSET_FLAGS,
+                                    m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_FLAGS,
+                                                                    2 ) );
+        m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 1);
+        m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 1);
 
         // Class Mask
-        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
-                                                                2 + m_mdf.m_dmInfo.m_nStartOffset + 
-                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
-        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 2, strBuf);
-        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 2);
-        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 2);
+        m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 
+                                    VSCP_LEVEL1_DM_OFFSET_CLASS_MASK,
+                                    m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_CLASS_MASK,
+                                                                    2 ) );
+        m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows()-1, 2);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 2);
 
         // Class Filter
-        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
-                                                                3 + m_mdf.m_dmInfo.m_nStartOffset + 
-                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
-        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 3, strBuf);
-        m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 3);
-        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 3);
+        m_gridDM->SetCellValue(m_gridDM->GetNumberRows()-1, 
+                                        VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER,
+                                        m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_CLASS_FILTER,
+                                                                        2 ) );
+        m_gridDM->SetCellAlignment( wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 3 );
+        m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 3);
 
         // Type Mask
-        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
-                                                                4 + m_mdf.m_dmInfo.m_nStartOffset + 
-                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
-        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 4, strBuf);
+        m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 
+                                    VSCP_LEVEL1_DM_OFFSET_TYPE_MASK,
+                                    m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_TYPE_MASK,
+                                                                    2 ) );
         m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 4);
-        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 4);
+        m_gridDM->SetReadOnly( m_gridDM->GetNumberRows()-1, 4);
 
         // Type Filter
-        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
-                                                                5 + m_mdf.m_dmInfo.m_nStartOffset + 
-                                                                 m_mdf.m_dmInfo.m_nRowSize * i ) );
-        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 5, strBuf);
+        m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 
+                                    VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER,
+                                    m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_TYPE_FILTER,
+                                                                    2 ) );
         m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 5);
-        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 5);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 5);
 
         // Action
-        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
-                                                                6 + m_mdf.m_dmInfo.m_nStartOffset + 
-                                                                 m_mdf.m_dmInfo.m_nRowSize * i ) );
-        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 6, strBuf);
+        m_gridDM->SetCellValue( m_gridDM->GetNumberRows() 1, 
+                                    VSCP_LEVEL1_DM_OFFSET_ACTION,
+                                    m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_ACTION,
+                                                                    2 ) );
         m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 6);
-        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 6);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 6);
 
         // Action Parameter
-        strBuf = getFormattedValue( m_userRegisters.getValue( m_mdf.m_dmInfo.m_nStartPage, 
-                                                                7 + m_mdf.m_dmInfo.m_nStartOffset + 
-                                                                m_mdf.m_dmInfo.m_nRowSize * i ) );
-        m_gridDM->SetCellValue(m_gridDM->GetNumberRows() - 1, 7, strBuf);
+        m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 
+                                    VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM,
+                                    m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_ACTION_PARAM,
+                                                                    2 ) );
         m_gridDM->SetCellAlignment(wxALIGN_CENTRE, m_gridDM->GetNumberRows() - 1, 7);
-        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows() - 1, 7);
+        m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 7);
 
         m_gridDM->Update();
 
@@ -5364,18 +5402,7 @@ void frmDeviceConfig::updateDmGrid(void)
 
 void frmDeviceConfig::updateDmGridConditional(uint16_t reg, uint32_t page) 
 {
-    int row = getRegisterGridRow(reg, page);
-    if (-1 == row) return;
-
-    // Must write to data part for a change
-    // to take place
-    if ( ( reg >= ( m_mdf.m_dmInfo.m_nStartOffset ) ) &&
-                ( reg < ( m_mdf.m_dmInfo.m_nStartOffset + ( m_mdf.m_dmInfo.m_nRowCount * m_mdf.m_dmInfo.m_nRowSize ) ) ) &&
-                ( page == m_mdf.m_dmInfo.m_nStartPage ) ) {
-
-        updateDmGrid();
-
-    }
+    updateDmGrid();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -5384,6 +5411,8 @@ void frmDeviceConfig::updateDmGridConditional(uint16_t reg, uint32_t page)
 
 void frmDeviceConfig::updateAbstractionGridConditional(uint16_t reg, uint32_t page) 
 {
+    updateAbstractionGrid();
+ /*
     uint16_t rowAbstraction = 0;
 
     cguid destGUID;
@@ -5466,6 +5495,7 @@ void frmDeviceConfig::updateAbstractionGridConditional(uint16_t reg, uint32_t pa
         rowAbstraction++;
 
     }
+*/
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
