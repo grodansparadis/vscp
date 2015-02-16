@@ -5376,7 +5376,7 @@ void frmDeviceConfig::updateDmGrid(void)
         m_gridDM->SetReadOnly(m_gridDM->GetNumberRows()-1, 5);
 
         // Action
-        m_gridDM->SetCellValue( m_gridDM->GetNumberRows() 1, 
+        m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 
                                     VSCP_LEVEL1_DM_OFFSET_ACTION,
                                     m_gridRegisters->GetCellValue( row + VSCP_LEVEL1_DM_OFFSET_ACTION,
                                                                     2 ) );
