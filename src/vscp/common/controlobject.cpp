@@ -523,8 +523,7 @@ bool CControlObject::init(wxString& strcfgfile)
     }
 #endif
 
-    // Calculate sunset etc
-    m_automation.calcSun();
+    
 
     //::wxLogDebug(_("Using configuration file: ") + strcfgfile + _("\n"));
 
@@ -577,6 +576,9 @@ bool CControlObject::init(wxString& strcfgfile)
     if ( m_bLogAccessEnable ) {
         m_fileLogAccess.Open( m_logAccessFileName.GetFullPath(), wxFile::write_append );
     }
+
+    // Calculate sunset etc
+    m_automation.calcSun();
 
     wxString str = _("VSCP Daemon started\n");
     str += _("Version: ");

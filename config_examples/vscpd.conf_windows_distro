@@ -152,13 +152,13 @@
         <!-- sunrise/sunset events data (use comma or period as decimal separator according to your locale) -->
         <longitude>15,1604167</longitude>
         <latitude>61,7441833</latitude>
-        <timezone>1</timezone>
         <sunrise enable="true" />
         <sunrise-twilight enable="true" />
         <sunset enable="true" />
         <sunset-twilight enable="true" />
         <!-- Settings for 2014 (Sweden)                              -->
         <!-- Not needed on systems that is dayligt saving time aware -->
+		<timezone>1</timezone>
         <daylightsavingtime-start>2014-03-30 02:00:00</daylightsavingtime-start>
         <daylightsavingtime-end>2014-10-26 02:00:00</daylightsavingtime-end>
         <segmentcontoller-event enable="true" interval="60" />

@@ -162,7 +162,7 @@
         <sunset enable="true" />
         <sunset-twilight enable="true" />
         <!-- Settings if OS does not give Daylight saving time -->
-	<timezone>2</timezone>
+        <timezone>1</timezone>
         <daylightsavingtime-start>2014-03-30 02:00:00</daylightsavingtime-start>
         <daylightsavingtime-end>2014-10-26 02:00:00</daylightsavingtime-end>
 	<!-- High level events -->
