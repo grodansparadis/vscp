@@ -309,18 +309,20 @@ double vscp_getDataCodingNormalizedInteger(const uint8_t *pCode,
 #ifdef WIN32
 	if ( decibyte & 0x80 ) {
         decibyte &= 0x7f;
-        value = value * (pow(10.0, decibyte));
+        value = value / ( pow( 10.0, decibyte ) );
     }
     else {
-        value = value / (pow(10.0, decibyte));
+        decibyte &= 0x7f;
+        value = value * ( pow( 10.0, decibyte ) );
     }
 #else
     if ( decibyte & 0x80 ) {
         decibyte &= 0x7f;
-        value = value * (pow(10, decibyte));
+        value = value / (pow(10, decibyte));
     }
     else {
-        value = value / (pow(10, decibyte));
+        decibyte &= 0x7f;
+        value = value * (pow(10, decibyte));
     }
 #endif
 	return value;
@@ -2844,8 +2846,8 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 		case 0x80: // normalized int format
 		{
 			double temp = 
-				vscp_getDataCodingNormalizedInteger(pEvent->pdata+offset, 
-												pEvent->sizeData-offset);
+				vscp_getDataCodingNormalizedInteger( pEvent->pdata+offset, 
+												        pEvent->sizeData-offset );
 			str += wxString::Format(_("[nint] = %f "), temp);
 		}
 		break;
