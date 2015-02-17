@@ -1,6 +1,6 @@
 //
 // vscpwslib javascript websocket library
-// Copyright (C) 2012-2014 Ake Hedman, Grodans Paradis AB
+// Copyright (C) 2012-2015 Ake Hedman, Grodans Paradis AB
 // <akhe@grodansparadis.com>
 //
 // Licence:     
@@ -1206,7 +1206,7 @@ function vscpws_getSensorIndexFromDataCoding(data) {
 /////////////////////////////////////////////////////////////////////////////
 // vscpws_measurementClass10Decode
 //
-// data is event data array where first databyte is datacoding
+// data is event data array where first data byte is data coding
 // Always return float.
 
 function vscpws_measurementClass10Decode(data){
@@ -1214,7 +1214,7 @@ function vscpws_measurementClass10Decode(data){
     var rval = 0.0;
     var mask = 0;
         
-    switch ( vscpws_getDatacoding(data[0]) ){
+    switch ( vscpws_getDatacoding( data[0] ) ){
         case 0: // Bits
         case 1: // Bytes
         case 3: // Integer   
@@ -1242,7 +1242,7 @@ function vscpws_measurementClass10Decode(data){
                 var exp = data[1];
                 var newdata = new Array(data.length-2);
                 
-                for (i=2;i<data.length;i++) {
+                for ( i=2;i<data.length;i++ ) {
                     newdata[i-2] = data[i];
                 }
                 
@@ -1251,10 +1251,11 @@ function vscpws_measurementClass10Decode(data){
                 // Handle mantissa
                 if ( exp & 0x80 ) {
                     exp &= 0x7f;
-                    rval = rval * Math.pow(10,exp);
+					rval = rval / Math.pow(10,exp);                    
                 }
                 else { 
-                    rval = rval / Math.pow(10,exp);
+					exp &= 0x7f;
+                    rval = rval * Math.pow(10,exp);
                 }
                 
             }
