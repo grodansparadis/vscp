@@ -424,16 +424,15 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
     wxDateTime now = wxDateTime::Now();
     wxTimeSpan span24( 24 );  // Twentyfour hour span
 
-    // Every 24h calculate Sunrise/sunset parameters at noon
-    // Events are just sent once per 24h/period
+    // Calculate Sunrise/sunset parameters once a day
     if ( !m_bCalulationHasBeenDone && 
-			( 0 == wxDateTime::Now().GetSecond() ) ) {
+			( 0 == wxDateTime::Now().GetHour() ) ) {
         calcSun();     
         m_bCalulationHasBeenDone = true;
     }
 	
 	// Trigger for next noon calculation
-	if ( 0 != wxDateTime::Now().GetSecond() ) {
+	if ( 0 != wxDateTime::Now().GetHour() ) {
 		m_bCalulationHasBeenDone = false;
 	}		
 

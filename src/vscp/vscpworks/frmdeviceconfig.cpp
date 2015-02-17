@@ -3469,6 +3469,9 @@ void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event )
                     // Add a new row
                     m_gridRegisters->AppendRows(1);
 
+                    // Save position in grid for others to refere to
+                    reg->m_rowInGrid = m_gridRegisters->GetNumberRows()-1;
+
                     // Register
                     strBuf.Printf(_("%04X:%X"), reg->m_nPage, reg->m_nOffset);
                     progressDlg.Update( 50, _("Reading page:register: ") + strBuf );

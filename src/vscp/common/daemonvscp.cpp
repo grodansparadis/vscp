@@ -293,7 +293,7 @@ void *daemonVSCPThread::Entry()
 
             }
 
-            // Level I node heart beat   - collect 
+            // Level I node heart beat - collect 
             else if ( ( VSCP_CLASS1_INFORMATION == pEvent->vscp_class ) && 
                 ( VSCP_TYPE_INFORMATION_NODE_HEARTBEAT == pEvent->vscp_type ) ) {
                 
