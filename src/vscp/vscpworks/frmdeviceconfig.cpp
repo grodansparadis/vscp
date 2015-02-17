@@ -4649,6 +4649,7 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
                 case type_unknown:
                 default:
                     break;
+
             } // case
 
             // Update registers
