@@ -1209,7 +1209,11 @@ void frmDeviceConfig::writeStatusInfo(void)
     wxString str;
 
     strHTML = _("<html><body>");
-    strHTML += _("<h1>Node data</h1>");
+
+    strHTML += _( "<h1>" );
+    strHTML += m_mdf.m_strModule_Name;
+    strHTML += _( "</h1>" );
+    strHTML += _("<h3>Node data</h3>");
     strHTML += _("<font color=\"#009900\">");
 
     strHTML += _("<b>Node id</b> : ");
