@@ -99,6 +99,9 @@ enum {
 };
 
 
+// Grid positions
+#define GRID_COLUMN_VALUE           2
+#define GRID_COLUMN_DESCRIPTION     3
 
 class frmDeviceConfig : public wxFrame {
 	DECLARE_CLASS(frmDeviceConfig)
@@ -238,6 +241,12 @@ public:
 	    Fill grid with standard registers
 	 */
 	void fillStandardRegisters(void);
+
+
+    /*!
+        Do a full update
+    */
+    void doUpdate( void );
 
 	/*!
 	    Get formatted value according to set configuration

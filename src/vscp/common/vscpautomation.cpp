@@ -484,6 +484,30 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         return true;
     }
 
+    // Sunset Time
+    if ( ( now.GetYear() == m_SunsetTime.GetYear() ) &&
+         ( now.GetMonth() == m_SunsetTime.GetMonth() ) &&
+         ( now.GetDay() == m_SunsetTime.GetDay() ) &&
+         ( now.GetHour() == m_SunsetTime.GetHour() ) &&
+         ( now.GetMinute() == m_SunsetTime.GetMinute() ) ) {
+
+        m_SunsetTime += span24;   // Add 24h's
+        m_SunsetTime_sent = wxDateTime::Now();
+
+        // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
+        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
+        pEventEx->head = 0;
+        pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
+        pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET;
+        pEventEx->sizeData = 3;
+        // IMPORTANT - GUID must be set by caller before event is sent
+        pEventEx->data[ 0 ] = 0;    // index
+        pEventEx->data[ 1 ] = 0;    // zone
+        pEventEx->data[ 2 ] = 0;    // subzone
+
+        return true;
+    }
+
     // Civil Twilight Sunset Time
     if ( ( now.GetYear() == m_civilTwilightSunsetTime.GetYear() ) && 
 		 ( now.GetMonth() == m_civilTwilightSunsetTime.GetMonth() ) &&
@@ -499,30 +523,6 @@ bool CVSCPAutomation::doWork( vscpEventEx *pEventEx )
         pEventEx->head = 0;
         pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
         pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET_TWILIGHT_START;
-        pEventEx->sizeData = 3;
-        // IMPORTANT - GUID must be set by caller before event is sent
-        pEventEx->data[ 0 ] = 0;    // index
-        pEventEx->data[ 1 ] = 0;    // zone
-        pEventEx->data[ 2 ] = 0;    // subzone
-
-        return true;
-    }
-
-    // Sunset Time
-    if ( ( now.GetYear() == m_SunsetTime.GetYear() ) && 
-		 ( now.GetMonth() == m_SunsetTime.GetMonth() ) &&
-		 ( now.GetDay() == m_SunsetTime.GetDay() ) &&
-		 ( now.GetHour() == m_SunsetTime.GetHour() ) && 
-         ( now.GetMinute() == m_SunsetTime.GetMinute() ) ) {
-
-        m_SunsetTime += span24;   // Add 24h's
-        m_SunsetTime_sent = wxDateTime::Now();
-
-        // Send VSCP_CLASS1_INFORMATION, Type=45/VSCP_TYPE_INFORMATION_SUNSET
-        pEventEx->obid = 0;     // IMPORTANT Must be set by caller before event is sent
-        pEventEx->head = 0;
-        pEventEx->vscp_class = VSCP_CLASS1_INFORMATION;
-        pEventEx->vscp_type = VSCP_TYPE_INFORMATION_SUNSET;
         pEventEx->sizeData = 3;
         // IMPORTANT - GUID must be set by caller before event is sent
         pEventEx->data[ 0 ] = 0;    // index
