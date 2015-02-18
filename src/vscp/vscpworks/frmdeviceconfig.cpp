@@ -3577,47 +3577,50 @@ void frmDeviceConfig::OnButtonLoadDefaultsClick( wxCommandEvent& event )
     wxString str;
     uint8_t val;
     uint8_t nodeid = 0;
+    cguid destGUID;
     uint32_t row = 0;
 
     wxBusyCursor wait;
 
     // Get nickname
-    nodeid = vscp_readStringValue(m_comboNodeID->GetValue());
+    if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+        nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
+    }
+    else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+        destGUID.getFromString( m_comboNodeID->GetValue() );
+    }
 
-    wxFont defaultFont = m_gridRegisters->GetDefaultCellFont();
-    wxFont fontBold = defaultFont;
-    fontBold.SetStyle(wxFONTSTYLE_NORMAL);
-    fontBold.SetWeight(wxFONTWEIGHT_BOLD);
-
-    // Fill in register descriptions
-    uint8_t progress = 0;
-    uint8_t progress_count;
-    if (m_mdf.m_list_register.GetCount()) progress_count = 256 / m_mdf.m_list_register.GetCount();
     MDF_REGISTER_LIST::iterator iter;
     for (iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter) {
 
         CMDF_Register *reg = *iter;
         int cnt = 0;
 
-            if ( wxNOT_FOUND == reg->m_strDefault.Find(_("UNDEF") ) ) {
+        if ( wxNOT_FOUND == reg->m_strDefault.Find( _("UNDEF") ) && 
+             ( MDF_ACCESS_WRITE & reg->m_nAccess ) ) {
 
-                val = vscp_readStringValue(reg->m_strDefault);
-                strBuf = getFormattedValue(val);
-                m_gridRegisters->SelectRow(row);
-                m_gridRegisters->SetCellValue(row, 2, strBuf);
-                m_gridRegisters->MakeCellVisible(row, 2);
-                m_gridRegisters->SetCellTextColour(row, 2, *wxRED);
+            if ( -1 != ( row = reg->m_rowInGrid ) ) {
+
+                val = vscp_readStringValue( reg->m_strDefault );
+                strBuf = getFormattedValue( val );
+
+                m_gridRegisters->SelectRow( row );
+                m_gridRegisters->SetCellValue( row, GRID_COLUMN_VALUE, strBuf );
+                m_gridRegisters->MakeCellVisible( row, GRID_COLUMN_VALUE );
+                m_gridRegisters->SetCellTextColour( row, GRID_COLUMN_VALUE, *wxRED );
                 m_gridRegisters->Update();
 
-            // Make all parts of the row visible
-            m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
+                // Make all parts of the row visible
+                m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows() - 1 );
 
-            row++;
+            }
+
         }
 
     }
 
-    OnButtonUpdateClick( event );
+    // Write changes
+    doUpdate();
 
     // Update the DM grid    
     updateDmGrid();
@@ -3906,7 +3909,8 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
             }
 
-        } else {
+        }
+        else {
             wxMessageBox(_("No rows selected!"));
         }
     }

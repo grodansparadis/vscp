@@ -1512,7 +1512,8 @@ bool CMDF::parseMDF( wxString& path )
 
                             CMDF_Register *pRegister = new CMDF_Register;
                             wxASSERT( NULL != pRegister );
-                            m_list_register.Append( pRegister );                            
+                            m_list_register.Append( pRegister );  
+                            pRegister->m_rowInGrid = -1; // Set when reg is written to grid
                             pRegister->m_nPage = vscp_readStringValue( child3->GetAttribute( wxT( "page" ), wxT("0") ) );                           
                             pRegister->m_nOffset = vscp_readStringValue( child3->GetAttribute( wxT( "offset" ), wxT("0") ) );                         
                             pRegister->m_nWidth = vscp_readStringValue( child3->GetAttribute( wxT( "width" ), wxT("8") ) );                           

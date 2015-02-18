@@ -240,7 +240,7 @@ public:
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
 
-    uint16_t m_rowInGrid;               // Helper for display
+    long m_rowInGrid;                   // Helper for display (row reg is displayed on)
   
     uint16_t m_nPage;
     uint16_t m_nOffset;
