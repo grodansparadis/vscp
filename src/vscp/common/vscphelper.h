@@ -785,6 +785,10 @@ extern "C" {
 	 
 	wxString& vscp_getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
 
+    // Endiness functions
+    int vscp_littleEndian( void ) { int x = 1; return *( char* )&x; };
+    int vscp_bigEndian( void ) { return !vscp_littleEndian(); };
+
 
 #ifdef __cplusplus
 }
