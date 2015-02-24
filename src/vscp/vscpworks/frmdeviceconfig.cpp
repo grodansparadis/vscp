@@ -1615,7 +1615,7 @@ void frmDeviceConfig::clearAllContent(void)
     // Clear the text area
     m_StatusWnd->SetPage(_(""));
 
-    // Diable the "extra buttons"
+    // Disable the "extra buttons"
     m_ctrlButtonLoadMDF->Enable(false);
     m_ctrlButtonWizard->Enable(false);
 

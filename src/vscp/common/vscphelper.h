@@ -36,8 +36,8 @@
  */
 
 
-#if !defined(VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
-#define VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_
+#if !defined(VSCPHELPER_H__INCLUDED_)
+#define VSCPHELPER_H__INCLUDED_
 
 
 #include <wx/wx.h>
@@ -82,6 +82,16 @@ extern "C" {
 	// ***************************************************************************
 	//                                General Helpers
 	// ***************************************************************************
+	
+	/*!
+		Return non zero if endiness is little endian
+	 */
+    int vscp_littleEndian( void );
+	
+	/*!
+		Return non zero if endiness is big endian
+	 */
+    int vscp_bigEndian( void );
 
 	/*!
       Read a numerical value from a string
@@ -785,14 +795,12 @@ extern "C" {
 	 
 	wxString& vscp_getDeviceHtmlStatusInfo( const uint8_t *registers, CMDF *pmdf );
 
-    // Endiness functions
-    int vscp_littleEndian( void ) { int x = 1; return *( char* )&x; };
-    int vscp_bigEndian( void ) { return !vscp_littleEndian(); };
+
 
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif // #if !defined(AFX_VSCPHELPER_H__C2A773AD_8886_40F0_96C4_4DCA663402B2__INCLUDED_)
+#endif // #if !defined(AFX_VSCPHELPER_H__INCLUDED_)
 

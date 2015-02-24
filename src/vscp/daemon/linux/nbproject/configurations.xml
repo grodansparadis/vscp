@@ -287,7 +287,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -303,7 +302,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -319,7 +317,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -350,7 +347,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -366,7 +362,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -397,7 +392,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -443,7 +437,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -459,7 +452,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -475,7 +467,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -505,7 +496,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -538,7 +528,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -584,7 +573,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -600,7 +588,6 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -615,12 +602,13 @@
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
       <item path="vscpd.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>
