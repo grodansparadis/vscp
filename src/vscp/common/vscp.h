@@ -36,10 +36,11 @@
 #include <vscp_type.h>
 #include <canal.h>
 #include <crc.h>
+#include <inttypes.h>
 
 #ifndef WIN32
-#include <stdint.h>
-#include <sys/types.h>
+//#include <stdint.h>
+//#include <sys/types.h>
 #endif
 
 // TODO should be moved to platform file.  /AKHE

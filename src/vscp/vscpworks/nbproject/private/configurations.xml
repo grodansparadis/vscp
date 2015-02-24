@@ -51,6 +51,7 @@
       <in>devicebootloaderwizard.cpp</in>
       <in>devicebootloaderwizard.h</in>
       <in>devicebootloaderwizard_images.h</in>
+      <in>dialogeditlevelidmrow_images.h</in>
       <in>dlgCanalRowEdit.cpp</in>
       <in>dlgCanalRowEdit.h</in>
       <in>dlgCanalRowEdit_symbols.h</in>
@@ -199,6 +200,8 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
           </DebugOptions>
