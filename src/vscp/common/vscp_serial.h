@@ -133,7 +133,7 @@ typedef struct {
         Max number of VSCP frames in
         multifram payload
     */
-    uint8_t maxVscpFrames;
+    uint8_t maxVscpFrames; 
 
     /*!
         Max number of CANAL frames in
