@@ -642,12 +642,12 @@ public:
 
 	/*!
 		Load MDF from local or remote storage and parse it into
-		a MDF stucture.
-		@param Filename or URL to MDF file. If emtpty and bSilent is false
+		a MDF structure.
+		@param Filename or URL to MDF file. If empty and bSilent is false
 				the method will ask for this parameter.
 		@param bSilent No dialogs are shown if set to true.
 		@param blocalFile Asks for a local file if set to true.
-		@return returns true on success, false on falure.
+		@return returns true on success, false on failure.
 	*/
 	bool load( wxString& remoteFile, bool bLocalFile = false, bool bSilent = false );
 

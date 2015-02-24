@@ -3256,7 +3256,10 @@ void frmDeviceConfig::doUpdate( void )
 
             // Load and parse the MDF
             progressDlg.Update( 20, _( "Loading and parsing MDF. 2/8." ) );
-            m_mdf.load( strPath, m_chkMdfFromFile->GetValue() );
+            if ( !m_mdf.load( strPath, m_chkMdfFromFile->GetValue() ) ) {
+				// We try to continue anyway
+                wxMessageBox( _( "Failed to load MDF but will try to continue anyway." ) );
+			}
 
             wxArrayLong pageArray;
             uint32_t nPages = m_mdf.getPages( pageArray );
