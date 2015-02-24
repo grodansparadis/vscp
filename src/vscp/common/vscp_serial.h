@@ -24,6 +24,8 @@
 #ifndef _VSCP_SERIAL_H_
 #define _VSCP_SERIAL_H_
 
+#include <vscp.h>
+
 // Outgoing VSCP event
 // -------------------
 // [0]		DLE
@@ -78,44 +80,67 @@
 // Serial protocol defines
 
 // VSCP Driver states
-#define STATE_VSCP_DRIVER_WAIT_FOR_FRAME_START      0
-#define STATE_VSCP_DRIVER_WAIT_FOR_FRAME_END        1
-#define STATE_VSCP_DRIVER_FRAME_RECEIVED            2
+#define STATE_VSCP_SERIAL_DRIVER_WAIT_FOR_FRAME_START       0
+#define STATE_VSCP_SERIAL_DRIVER_WAIT_FOR_FRAME_END         1
+#define STATE_VSCP_SERIAL_DRIVER_FRAME_RECEIVED             2
 
 // VSCP Driver positions in frame
-#define VSCP_DRIVER_POS_FRAME_TYPE                  0
-#define VSCP_DRIVER_POS_FRAME_CHANNEL               1
-#define VSCP_DRIVER_POS_FRAME_SEQUENCY              2
-#define VSCP_DRIVER_POS_FRAME_SIZE_PAYLOAD_MSB      3
-#define VSCP_DRIVER_POS_FRAME_SIZE_PAYLOAD_LSB      4
-#define VSCP_DRIVER_POS_FRAME_PAYLOAD               5
+#define VSCP_SERIAL_DRIVER_POS_FRAME_TYPE                   0
+#define VSCP_SERIAL_DRIVER_POS_FRAME_CHANNEL                1
+#define VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY               2
+#define VSCP_SERIAL_DRIVER_POS_FRAME_SIZE_PAYLOAD_MSB       3
+#define VSCP_SERIAL_DRIVER_POS_FRAME_SIZE_PAYLOAD_LSB       4
+#define VSCP_SERIAL_DRIVER_POS_FRAME_PAYLOAD                5
 
 // VSCP Driver operations
-#define VSCP_DRVER_OPERATION_NOOP                   0
-#define VSCP_DRVER_OPERATION_VSCP_EVENT             1
-#define VSCP_DRVER_OPERATION_CANAL                  2
-#define VSCP_DRVER_OPERATION_CONFIGURE              3
-#define VSCP_DRVER_OPERATION_POLL                   4
-#define VSCP_DRVER_OPERATION_NO_EVENT               5
-#define VSCP_DRVER_OPERATION_SENT_ACK               249
-#define VSCP_DRVER_OPERATION_SENT_NACK              250
-#define VSCP_DRVER_OPERATION_ACK                    251
-#define VSCP_DRVER_OPERATION_NACK                   252
-#define VSCP_DRVER_OPERATION_ERROR                  253
-#define VSCP_DRVER_OPERATION_COMMAND_REPLY          254
-#define VSCP_DRVER_OPERATION_COMMAND                255
+#define VSCP_SERIAL_DRIVER_OPERATION_NOOP                   0
+#define VSCP_SERIAL_DRIVER_OPERATION_VSCP_EVENT             1
+#define VSCP_SERIAL_DRIVER_OPERATION_CANAL                  2
+#define VSCP_SERIAL_DRIVER_OPERATION_CONFIGURE              3
+#define VSCP_SERIAL_DRIVER_OPERATION_POLL                   4
+#define VSCP_SERIAL_DRIVER_OPERATION_NO_EVENT               5
+#define VSCP_SERIAL_DRIVER_OPERATION_MULTI_FRAME_CANAL      6
+#define VSCP_SERIAL_DRIVER_OPERATION_MULTI_FRAME_VSCP       7
+#define VSCP_SERIAL_DRIVER_OPERATION_CAPS_REQUEST           8
+#define VSCP_SERIAL_DRIVER_OPERATION_CAPS_RESPONSE          9
+#define VSCP_SERIAL_DRIVER_OPERATION_SENT_ACK               249
+#define VSCP_SERIAL_DRIVER_OPERATION_SENT_NACK              250
+#define VSCP_SERIAL_DRIVER_OPERATION_ACK                    251
+#define VSCP_SERIAL_DRIVER_OPERATION_NACK                   252
+#define VSCP_SERIAL_DRIVER_OPERATION_ERROR                  253
+#define VSCP_SERIAL_DRIVER_OPERATION_COMMAND_REPLY          254
+#define VSCP_SERIAL_DRIVER_OPERATION_COMMAND                255
 
 // VSCP Driver errors
-#define ERROR_VSCP_DRIVER_CHECKSUM                  1
-#define ERROR_VSCP_DRIVER_UNKNOWN_OPERATION         2
+#define VSCP_SERIAL_DRIVER_ERROR_CHECKSUM                   1
+#define VSCP_SERIAL_DRIVER_ERROR_UNKNOWN_OPERATION          2
 
 // VSCP driver commands
-#define VSCP_DRIVER_COMMAND_NOOP                    0
-#define VSCP_DRIVER_COMMAND_OPEN                    1
-#define VSCP_DRIVER_COMMAND_LISTEN                  2
-#define VSCP_DRIVER_COMMAND_LOOPBACK                3
-#define VSCP_DRIVER_COMMAND_CLOSE                   4
-#define VSCP_DRIVER_COMMAND_SET_FILTER              5
+#define VSCP_SERIAL_DRIVER_COMMAND_NOOP                     0
+#define VSCP_SERIAL_DRIVER_COMMAND_OPEN                     1
+#define VSCP_SERIAL_DRIVER_COMMAND_LISTEN                   2
+#define VSCP_SERIAL_DRIVER_COMMAND_LOOPBACK                 3
+#define VSCP_SERIAL_DRIVER_COMMAND_CLOSE                    4
+#define VSCP_SERIAL_DRIVER_COMMAND_SET_FILTER               5
 
+// Packed size for capabilities structure
+#define VSCP_SERIAL_DRIVER_CAPS_SIZE                        4   
+
+// Capabilities structure
+typedef struct {
+    
+    /*!
+        Max number of VSCP frames in
+        multifram payload
+    */
+    uint8_t maxVscpFrames;
+
+    /*!
+        Max number of CANAL frames in
+        multiframe payload.
+    */
+    uint8_t maxCanalFrames;
+
+} vscp_serial_caps;
 
 #endif

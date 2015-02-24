@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <canal.h>
 #include <vscp.h>
+#include <vscp_serial.h>
 #include <canal_macro.h>
 #include <dllist.h>
 
@@ -108,40 +109,25 @@
 #define EMERGENCY_BUS_OFF		                0x20
 
 // VSCP Driver positions in frame
-#define VSCP_DRIVER_POS_FRAME_TYPE              0
-#define VSCP_DRIVER_POS_FRAME_CHANNEL           1
-#define VSCP_DRIVER_POS_FRAME_SEQUENCY          2
-#define VSCP_DRIVER_POS_FRAME_SIZE_PAYLOAD_MSB  3
-#define VSCP_DRIVER_POS_FRAME_SIZE_PAYLOAD_LSB  4
-#define VSCP_DRIVER_POS_FRAME_PAYLOAD           5
-
-// VSCP Driver operations
-#define VSCP_DRVER_OPERATION_NOOP                   0
-#define VSCP_DRVER_OPERATION_VSCP_EVENT             1
-#define VSCP_DRVER_OPERATION_CANAL                  2
-#define VSCP_DRVER_OPERATION_CONFIGURE              3
-#define VSCP_DRVER_OPERATION_POLL                   4
-#define VSCP_DRVER_OPERATION_NO_EVENT               5
-#define VSCP_DRVER_OPERATION_SENT_ACK               249
-#define VSCP_DRVER_OPERATION_SENT_NACK              250
-#define VSCP_DRVER_OPERATION_ACK                    251
-#define VSCP_DRVER_OPERATION_NACK                   252
-#define VSCP_DRVER_OPERATION_ERROR                  253
-#define VSCP_DRVER_OPERATION_COMMAND_REPLY          254
-#define VSCP_DRVER_OPERATION_COMMAND                255
-
-// VSCP Driver errors
-#define ERROR_VSCP_DRIVER_CHECKSUM                  1
-#define ERROR_VSCP_DRIVER_UNKNOWN_OPERATION         2
+#define VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE                 0
+#define VSCP_CAN4VSCP_DRIVER_POS_FRAME_CHANNEL              1
+#define VSCP_CAN4VSCP_DRIVER_POS_FRAME_SEQUENCY             2
+#define VSCP_CAN4VSCP_DRIVER_POS_FRAME_SIZE_PAYLOAD_MSB     3
+#define VSCP_CAN4VSCP_DRIVER_POS_FRAME_SIZE_PAYLOAD_LSB     4
+#define VSCP_CAN4VSCP_DRIVER_POS_FRAME_PAYLOAD              5
 
 // VSCP driver commands
-#define VSCP_DRIVER_COMMAND_NOOP                    0
-#define VSCP_DRIVER_COMMAND_OPEN                    1
-#define VSCP_DRIVER_COMMAND_LISTEN                  2
-#define VSCP_DRIVER_COMMAND_LOOPBACK                3
-#define VSCP_DRIVER_COMMAND_CLOSE                   4
-#define VSCP_DRIVER_COMMAND_SET_FILTER              5
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_NOOP                   0
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_OPEN                   1
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_LISTEN                 2
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_LOOPBACK               3
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_CLOSE                  4
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_SET_FILTER             5
 
+
+// Capabilities for this driver
+#define CAN4VSCP_DRIVER_MAX_VSCP_FRAMES                     2
+#define CAN4VSCP_DRIVER_MAX_CANAL_FRAMES                    10
 
 //
 // The command response structure
@@ -267,6 +253,11 @@ public:
     */
     int getStatus( PCANALSTATUS pCanalStatus );
 
+    /*!
+        Get device cababilities
+        Device capabilities are set in member variables
+    */
+    bool getDeviceCapabilities( void );
 
     /*!
         Send a command
@@ -282,7 +273,7 @@ public:
 
 
     /*!
-        Wait for a response message
+        Wait for a command response message
 
         @param pMsg Pointer to response message
         @param cmdcode Command to wait for reply from
@@ -290,10 +281,10 @@ public:
         @param timeout Timeout in milliseconds
         @return True on success
     */
-    bool waitResponse( cmdResponseMsg *pMsg, 
-                            uint8_t cmdcode, 
-                            uint8_t saveseq, 
-                            uint32_t timeout );
+    bool waitCommandResponse( cmdResponseMsg *pMsg, 
+                                uint8_t cmdcode, 
+                                uint8_t saveseq, 
+                                uint32_t timeout );
 
     /*!
         Send command and wait for a response message
@@ -308,7 +299,6 @@ public:
                                 uint8_t size, 
                                 cmdResponseMsg *pMsg, 
                                 uint32_t timeout );
-
 
     /*!
         Send command on the serial channel
@@ -371,6 +361,10 @@ public:
     */
     void readSerialData( void );
 
+    // Endiness functions
+    int little_endian() { int x = 1; return *( char* )&x; };
+    int big_endian() { return !little_endian(); };
+
 public:
 
     /// Run flag
@@ -379,6 +373,20 @@ public:
     // Open flag
 	bool m_bOpen;
 
+    // * * * Capabilities * * *
+    vscp_serial_caps m_caps;
+
+    /*! 
+        Max number of VSCP frames in 
+        multifram payload
+    */
+    uint8_t m_capsMaxVscpFrames;
+
+    /*!
+        Max number of CANAL frames in
+        multiframe payload.
+    */
+    uint8_t m_capsMaxCanalFrames;
 
     /*!
     Interface statistics

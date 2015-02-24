@@ -691,6 +691,7 @@ static void ns_read_from_socket(struct ns_connection *conn) {
       int ssl_err = ns_ssl_err(conn, res);
       if (res == 1) {
         conn->flags |= NSF_SSL_HANDSHAKE_DONE;
+        conn->flags &= ~(NSF_WANT_READ | NSF_WANT_WRITE);
       } else if (ssl_err == SSL_ERROR_WANT_READ ||
                  ssl_err == SSL_ERROR_WANT_WRITE) {
         return; /* Call us again */
@@ -725,6 +726,7 @@ static void ns_read_from_socket(struct ns_connection *conn) {
       int ssl_err = ns_ssl_err(conn, res);
       if (res == 1) {
         conn->flags |= NSF_SSL_HANDSHAKE_DONE;
+        conn->flags &= ~(NSF_WANT_READ | NSF_WANT_WRITE);
       } else if (ssl_err == SSL_ERROR_WANT_READ ||
                  ssl_err == SSL_ERROR_WANT_WRITE) {
         return; /* Call us again */
@@ -762,6 +764,9 @@ static void ns_write_to_socket(struct ns_connection *conn) {
       } else {
         conn->flags |= NSF_CLOSE_IMMEDIATELY;
       }
+    } else {
+      /* Successful SSL operation, clear off SSL wait flags */
+      conn->flags &= ~(NSF_WANT_READ | NSF_WANT_WRITE);
     }
   } else
 #endif
@@ -977,6 +982,7 @@ NS_INTERNAL struct ns_connection *ns_finish_connect(struct ns_connection *nc,
     ns_call(nc, NS_CONNECT, &rc);
     ns_call(nc, NS_CLOSE, NULL);
     ns_destroy_conn(nc);
+    close(sock);
     return NULL;
   }
 
@@ -2302,7 +2308,7 @@ void ns_set_protocol_http_websocket(struct ns_connection *nc) {
 void ns_send_websocket_handshake(struct ns_connection *nc, const char *uri,
                                  const char *extra_headers) {
   unsigned long random = (unsigned long) uri;
-  char key[sizeof(random) * 2];
+  char key[sizeof(random) * 3];
 
   ns_base64_encode((unsigned char *) &random, sizeof(random), key);
   ns_printf(nc, "GET %s HTTP/1.1\r\n"
@@ -4795,6 +4801,7 @@ int ns_resolve_from_hosts_file(const char *name, union socket_address *usa) {
     }
   }
 
+  fclose(fp);
   return -1;
 }
 
@@ -4891,6 +4898,7 @@ int ns_resolve_async_opt(struct ns_mgr *mgr, const char *name, int query,
 
   dns_nc = ns_connect(mgr, nameserver, ns_resolve_async_eh);
   if (dns_nc == NULL) {
+    free(req);
     return -1;
   }
   dns_nc->user_data = req;

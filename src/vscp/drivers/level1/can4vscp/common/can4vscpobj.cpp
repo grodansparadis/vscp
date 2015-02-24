@@ -90,6 +90,10 @@ CCan4VSCPObj::CCan4VSCPObj()
     m_filter = 0;
     m_mask = 0;
 
+    // Default capabilities of connected device
+    m_caps.maxVscpFrames = 1;    // We expect: One VSCP frame handled.
+    m_caps.maxCanalFrames = 1;   // We expect: One CANAL frame handled.
+
     m_bRun = false;
     m_bOpen = false;
 
@@ -360,7 +364,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     for ( int i=0; i<3; i++ ) {
 
         saveseq = m_sequencyno;         // Save the sequency ordinal
-        if ( sendCommandWait( VSCP_DRIVER_COMMAND_NOOP, 
+        if ( sendCommandWait( VSCP_SERIAL_DRIVER_COMMAND_NOOP,
                                 NULL, 
                                 0,
                                 &Msg, 
@@ -383,11 +387,15 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
     m_bOpen = true;
 
+    // Get capabilities of device
+    // We skip response and use defaults if call is not successful
+    getDeviceCapabilities();
+
     // Set interface in requested mode.
     switch( flags & 3 ) {
 
         case 1:
-            if ( sendCommandWait( VSCP_DRIVER_COMMAND_LISTEN, 
+            if ( sendCommandWait( VSCP_SERIAL_DRIVER_COMMAND_LISTEN,
                                         NULL, 
                                         0, 
                                         &Msg, 
@@ -399,7 +407,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
             break;
 
         case 2:
-            if ( sendCommandWait( VSCP_DRIVER_COMMAND_LOOPBACK, 
+            if ( sendCommandWait( VSCP_SERIAL_DRIVER_COMMAND_LOOPBACK,
                                         NULL, 
                                         0, 
                                         &Msg, 
@@ -412,7 +420,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 
         case 0:
         default:
-            if ( !sendCommandWait( VSCP_DRIVER_COMMAND_OPEN, 
+            if ( !sendCommandWait( VSCP_SERIAL_DRIVER_COMMAND_OPEN,
                                         NULL, 
                                         0, 
                                         &Msg, 
@@ -435,7 +443,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 int CCan4VSCPObj::close( void )
 {	
     cmdResponseMsg Msg;
-    sendCommandWait( VSCP_DRIVER_COMMAND_CLOSE, 
+    sendCommandWait( VSCP_SERIAL_DRIVER_COMMAND_CLOSE,
                                         NULL, 
                                         0, 
                                         &Msg, 
@@ -781,6 +789,97 @@ int CCan4VSCPObj::getStatus( PCANALSTATUS pCanalStatus )
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// getDeviceCapabilities
+//
+
+bool CCan4VSCPObj::getDeviceCapabilities( void )
+{
+    uint8_t crc = 0;
+    uint8_t pos = 0;
+    uint8_t sendData[ 512 ];
+
+    sendData[ pos++ ] = DLE;
+    sendData[ pos++ ] = STX;
+
+    // Frame type
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_COMMAND;
+    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_COMMAND );
+
+    // Channel
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+
+    // Sequency number
+    pos += addWithEscape( sendData + pos, m_sequencyno++, &crc );
+
+    // Size of payload  
+    sendData[ pos++ ] = 0;
+    crc8( &crc, 0 );
+    pos += addWithEscape( sendData + pos, ( sizeof( m_caps ) & 0xff ), &crc );
+
+    // Command code
+    pos += addWithEscape( sendData + pos, VSCP_SERIAL_DRIVER_OPERATION_CAPS_REQUEST, &crc );
+
+    // Payload: Our capabilities
+    uint8_t *p = &m_caps.maxVscpFrames;
+    pos += addWithEscape( sendData + pos, p[ 1 ], &crc );
+    pos += addWithEscape( sendData + pos, p[ 0 ], &crc );
+
+    p = &m_caps.maxCanalFrames;
+    pos += addWithEscape( sendData + pos, p[ 1 ], &crc );
+    pos += addWithEscape( sendData + pos, p[ 0 ], &crc );
+
+    // Checksum
+    pos += addWithEscape( sendData + pos, crc, NULL );
+
+    // End of frame
+    sendData[ pos++ ] = DLE;
+    sendData[ pos++ ] = ETX;
+
+    // Empty reply list
+    LOCK_MUTEX( m_responseMutex );
+    dll_removeAllNodes( &m_responseList );
+    UNLOCK_MUTEX( m_responseMutex );
+
+    if ( !sendMsg( sendData, pos ) ) return FALSE;
+
+    // Wait for reply
+
+    uint8_t saveseq = m_sequencyno;         // Save the sequency ordinal
+    cmdResponseMsg msgResponse;
+    uint32_t start = getClockMilliseconds();
+
+    while ( getClockMilliseconds() < ( start + 500 ) ) {
+
+        if ( ( NULL != m_responseList.pHead ) &&
+             ( NULL != m_responseList.pHead->pObject ) ) {
+
+            memcpy( &msgResponse, m_responseList.pHead->pObject, sizeof( cmdResponseMsg ) );
+            LOCK_MUTEX( m_responseMutex );
+            dll_removeNode( &m_responseList, m_responseList.pHead );
+            UNLOCK_MUTEX( m_responseMutex );
+
+            if ( ( VSCP_SERIAL_DRIVER_CAPS_SIZE == msgResponse.sizePayload ) &&
+                 ( saveseq == msgResponse.seq ) &&
+                 ( VSCP_SERIAL_DRIVER_OPERATION_CAPS_RESPONSE == msgResponse.op )  ) {
+                
+                m_caps.maxVscpFrames = (((uint16_t)msgResponse.payload[ 0 ]) << 8) + msgResponse.payload[ 1 ];
+                if ( !m_caps.maxVscpFrames ) m_caps.maxVscpFrames = 1;      // Zero not allowed
+
+                m_caps.maxCanalFrames = ((( uint16_t )msgResponse.payload[ 2 ]) << 8) + msgResponse.payload[ 3 ];
+                if ( !m_caps.maxCanalFrames ) m_caps.maxCanalFrames = 1;    // Zero not allowed
+            }
+
+        }
+
+        SLEEP( 10 );
+    }
+
+    return TRUE;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // sendMsg
 //
 
@@ -822,8 +921,8 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
 	sendData[ pos++ ] = STX;
 			
 	// Frame type
-	sendData[ pos++ ] = VSCP_DRVER_OPERATION_COMMAND;
-	crc8( &crc, VSCP_DRVER_OPERATION_COMMAND );
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_COMMAND;
+    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_COMMAND );
 			
 	// Channel
 	sendData[ pos++ ] = 0;
@@ -863,11 +962,11 @@ bool CCan4VSCPObj::sendCommand( uint8_t cmdcode, uint8_t *pParam, uint8_t size )
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// waitResponse
+// waitCommandResponse
 //
 //
 
-bool CCan4VSCPObj::waitResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t saveseq, uint32_t timeout )
+bool CCan4VSCPObj::waitCommandResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t saveseq, uint32_t timeout )
 {
 	//uint32_t start = GetTickCount();
     uint32_t start = getClockMilliseconds();
@@ -884,7 +983,7 @@ bool CCan4VSCPObj::waitResponse( cmdResponseMsg *pMsg, uint8_t cmdcode, uint8_t 
 
             if ( (2 == pMsg->sizePayload) &&  
                         ( saveseq == pMsg->seq ) && 
-                        ( VSCP_DRVER_OPERATION_COMMAND_REPLY == pMsg->op ) &&
+                        ( VSCP_SERIAL_DRIVER_OPERATION_COMMAND_REPLY == pMsg->op ) &&
                         ( 0 == pMsg->payload[ 0 ] ) &&
                         ( cmdcode == pMsg->payload[ 1 ] ) ) {
                         return true;
@@ -915,7 +1014,7 @@ bool CCan4VSCPObj::sendCommandWait( uint8_t cmdcode,
 	// Send the command
 	if ( !sendCommand( cmdcode, pParam, size ) ) return false;	
 
-	return waitResponse( pMsg, cmdcode, saveseq, timeout );
+	return waitCommandResponse( pMsg, cmdcode, saveseq, timeout );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -948,8 +1047,8 @@ void CCan4VSCPObj::sendACK( uint8_t seq )
 	sendData[ pos++ ] = STX;
 			
 	// Frame type
-	sendData[ pos++ ] = VSCP_DRVER_OPERATION_ACK;
-	crc8( &crc, VSCP_DRVER_OPERATION_ACK );
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_ACK;
+    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_ACK );
 			
 	// Channel
 	sendData[ pos++ ] = 0;
@@ -995,8 +1094,8 @@ void CCan4VSCPObj::sendNACK( uint8_t seq )
 	sendData[ pos++ ] = STX;
 			
 	// Frame type
-	sendData[ pos++ ] = VSCP_DRVER_OPERATION_NACK;
-	crc8( &crc, VSCP_DRVER_OPERATION_NACK );
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_NACK;
+    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_NACK );
 			
 	// Channel
 	sendData[ pos++ ] = 0;
@@ -1041,8 +1140,8 @@ void CCan4VSCPObj::sendNoopFrame( void )
 	sendData[ pos++ ] = STX;
 			
 	// Frame type
-	sendData[ pos++ ] = VSCP_DRVER_OPERATION_NOOP;
-	crc8( &crc, VSCP_DRVER_OPERATION_NOOP );
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_NOOP;
+    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_NOOP );
 			
 	// Channel
 	sendData[ pos++ ] = 0;
@@ -1278,17 +1377,17 @@ void CCan4VSCPObj::readSerialData( void )
 		if ( serialData2StateMachine() && checkCRC() ) {
 		
 			// Check if NOOP frame
-			if ( VSCP_DRVER_OPERATION_NOOP == ( m_bufferMsgRcv[ 0 ]  ) ) {
-				sendACK( m_bufferMsgRcv[ VSCP_DRIVER_POS_FRAME_SEQUENCY ] );
+            if ( VSCP_SERIAL_DRIVER_OPERATION_NOOP == ( m_bufferMsgRcv[ 0 ] ) ) {
+                sendACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );
 			}
             // Check for CANAL message frame
-			else if ( VSCP_DRVER_OPERATION_CANAL == ( m_bufferMsgRcv[ 0 ]  ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
 			
                 // CANAL message
                 // -------------
-                // [0]      DLE
-                // [1]      STX
-                // [2]      Frame type (2 - CANAL message.)
+                // [0]      DLE  - Not in buffer!!!!
+                // [1]      STX  - Not in buffer!!!!
+                // [2]      Frame type (2 - CANAL message.) - First in buffer
                 // [3]      Channel (always zero)
                 // [4]      Sequence number 
                 // [5/6]    Size of payload ( 12 + sizeData )
@@ -1322,12 +1421,14 @@ void CCan4VSCPObj::readSerialData( void )
 									(((DWORD)m_bufferMsgRcv[8]    ) & 0x000000ff) ;
 											
 							pMsg->sizeData = ( (WORD)m_bufferMsgRcv[3] << 8 ) + ( m_bufferMsgRcv[4] & 0x0f ) - 4;		
-											
-							memcpy( (void *)pMsg->data, 
-										(m_bufferMsgRcv + 10 ), 
-										pMsg->sizeData ); 
 									
-							// If extended set extended flag
+                            if ( pMsg->sizeData ) {
+                                memcpy( ( void * )pMsg->data,
+                                        ( m_bufferMsgRcv + 10 ),
+                                        pMsg->sizeData );
+                            }
+									
+                            // Allways extended so set extended flag
 							pMsg->flags |= CANAL_IDFLAG_EXTENDED;
 							
 							if ( doFilter( pMsg ) ) {
@@ -1352,54 +1453,157 @@ void CCan4VSCPObj::readSerialData( void )
 							delete pMsg;
 						}
 					}  // No pMsg 
-				} // No room in receive queue
+				}
+                // No room in receive queue
 				else {
 					// Full buffer
 					m_stat.cntOverruns++;
 				}
 			}
 			// Check for VSCP event frame
-			else if ( VSCP_DRVER_OPERATION_VSCP_EVENT == ( m_bufferMsgRcv[ 0 ]  ) ) {
-				sendNACK( m_bufferMsgRcv[ VSCP_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_VSCP_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
+                sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle VSCP events
 			}
 			// Check for configure frame
-			else if ( VSCP_DRVER_OPERATION_CONFIGURE == ( m_bufferMsgRcv[ 0 ]  ) ) {
-				sendNACK( m_bufferMsgRcv[ VSCP_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle configure
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_CONFIGURE == ( m_bufferMsgRcv[ 0 ] ) ) {
+                sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle configure
 			}
 			// Check for poll frame
-			else if ( VSCP_DRVER_OPERATION_POLL == ( m_bufferMsgRcv[ 0 ]  ) ) {
-				sendNACK( m_bufferMsgRcv[ VSCP_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle configure
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_POLL == ( m_bufferMsgRcv[ 0 ] ) ) {
+                sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle poll
 			}
 			// Check for no event frame
-			else if ( VSCP_DRVER_OPERATION_NO_EVENT == ( m_bufferMsgRcv[ 0 ]  ) ) {
-				sendNACK( m_bufferMsgRcv[ VSCP_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle configure
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_NO_EVENT == ( m_bufferMsgRcv[ 0 ] ) ) {
+                sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle no event
 			}
+            // Check for multiframe VSCP message frame
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_MULTI_FRAME_VSCP == ( m_bufferMsgRcv[ 0 ] ) ) {
+                sendNACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );	// We don't handle vscp multi frame
+            }
+            // Check for multiframe CANAL message frame
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_MULTI_FRAME_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
+                // CANAL message
+                // -------------
+                // [0]      DLE  - Not in buffer!!!!
+                // [1]      STX  - Not in bugger!!!!
+                // [2]      Frame type (2 - CANAL message.) - First in buffer
+                // [3]      Channel (always zero)
+                // [4]      Sequence number 
+                // [5/6]    Size of payload ( 5 + sizeData ) * number of frames
+                // ---------------------------------------------
+                // [7]      CAN id (MSB)
+                // [8]      CAN id
+                // [9]      CAN id
+                // [10]     CAN id (LSB)
+                // [11]     dlc
+                // [11-n]   CAN data (0-8 bytes) 
+                // ---------------------------------------------
+                // [n+1]    Possible other CANAL frame
+                // ---------------------------------------------
+                // [len-3]  CRC
+                // [len-2]  DLE
+                // [len-1]  ETX
+
+                // Payload size
+                long sizePayload = ( ( uint16_t )m_bufferMsgRcv[ 3 ] << 8 ) + m_bufferMsgRcv[ 4 ];
+
+                // Save pos for oayload
+                uint8_t *posFrame = m_bufferMsgRcv + 5;
+
+                while ( sizePayload >> 0 ) {
+
+                    if ( m_receiveList.nCount < CAN4VSCP_MAX_RCVMSG ) {
+
+                        PCANALMSG pMsg = new canalMsg;
+
+                        if ( NULL != pMsg ) {
+
+                            pMsg->flags = 0;
+                            dllnode *pNode = new dllnode;
+                            if ( NULL != pNode ) {
+
+                                pMsg->flags = 0;
+                                pMsg->timestamp = getClockMilliseconds();
+                                pMsg->obid = 0;
+
+                                pMsg->id =
+                                    ( ( ( DWORD )posFrame[ 0 ] << 24 ) & 0x1f000000 ) |
+                                    ( ( ( DWORD )posFrame[ 1 ] << 16 ) & 0x00ff0000 ) |
+                                    ( ( ( DWORD )posFrame[ 2 ] << 8 ) & 0x0000ff00 ) |
+                                    ( ( ( DWORD )posFrame[ 3 ] ) & 0x000000ff );
+
+                                pMsg->sizeData = posFrame[ 4 ];
+
+                                if ( pMsg->sizeData ) {
+                                    memcpy( ( void * )pMsg->data,
+                                            ( posFrame + 5 ),
+                                            pMsg->sizeData );
+                                }
+
+                                // Allways extended so set extended flag
+                                pMsg->flags |= CANAL_IDFLAG_EXTENDED;
+
+                                if ( doFilter( pMsg ) ) {
+                                    pNode->pObject = pMsg;
+                                    LOCK_MUTEX( m_receiveMutex );
+                                    dll_addNode( &m_receiveList, pNode );
+                                    SetEvent( m_receiveDataEvent ); // Signal frame in queue
+                                    UNLOCK_MUTEX( m_receiveMutex );
+
+                                    // Update statistics
+                                    m_stat.cntReceiveData += pMsg->sizeData;
+                                    m_stat.cntReceiveFrames += 1;
+                                }
+                                else {
+                                    // Message was filtered
+                                    delete pMsg;
+                                    delete pNode;
+                                }
+
+                                // Get ready for next payload frame
+                                posFrame += ( 5 + posFrame[ 4 ] );
+                                sizePayload -= ( 5 + posFrame[ 4 ] );
+
+                            } // No pNode
+                            else {
+                                delete pMsg;
+                            }
+
+                        }  // No pMsg 
+                    } 
+                    // No room in receive queue
+                    else {
+                        // Full buffer
+                        m_stat.cntOverruns++;
+                    }
+                }
+            }
 			// Check for sent ACK frame
-			else if ( VSCP_DRVER_OPERATION_SENT_ACK == ( m_bufferMsgRcv[ 0 ]  ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 				addToResponseQueue();
 			}
 			// Check for sent NACK frame
-			else if ( VSCP_DRVER_OPERATION_SENT_NACK == ( m_bufferMsgRcv[ 0 ]  ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 				addToResponseQueue();
 			}
 			// Check for ACK frame
-			else if ( VSCP_DRVER_OPERATION_SENT_ACK == ( m_bufferMsgRcv[ 0 ]  ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check for NACK frame
-			else if ( VSCP_DRVER_OPERATION_SENT_NACK == ( m_bufferMsgRcv[ 0 ]  ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_NACK == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check for ERROR frame
-			else if ( VSCP_DRVER_OPERATION_ERROR == ( m_bufferMsgRcv[ 0 ]  ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_ERROR == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check for command reply frame
-			else if ( VSCP_DRVER_OPERATION_COMMAND_REPLY == ( m_bufferMsgRcv[ 0 ]  ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_COMMAND_REPLY == ( m_bufferMsgRcv[ 0 ] ) ) {
 			    addToResponseQueue();
 			}
 			// Check if command frame
-			else if ( VSCP_DRVER_OPERATION_COMMAND == ( m_bufferMsgRcv[ 0 ]  ) ) {
+            else if ( VSCP_SERIAL_DRIVER_OPERATION_COMMAND == ( m_bufferMsgRcv[ 0 ] ) ) {
                 addToResponseQueue();
 			} 
 
@@ -1490,8 +1694,8 @@ void *workThreadTransmit( void *pObject )
 			sendData[ pos++ ] = STX;
 			
 			// Frame type
-			sendData[ pos++ ] = VSCP_DRVER_OPERATION_CANAL;
-			crc8( &crc, VSCP_DRVER_OPERATION_CANAL );
+            sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_CANAL;
+            crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_CANAL );
 			
 			// Channel
 			sendData[ pos++ ] = 0;
