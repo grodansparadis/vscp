@@ -507,41 +507,43 @@ int CDllWrapper::readLevel1Register( unsigned char nodeid,
 {
 	int rv = CANAL_ERROR_SUCCESS;
 	unsigned long errors = 0;
-	bool bResend;
+	//bool bResend;
 	wxString strBuf;
-	canalMsg canalEvent;
+    unsigned long resendTime = m_registerReadResendTimeout;
+	canalMsg canalSendEvent;
+    canalMsg canalReceiveEvent;
 
 	// Check pointer
 	if ( NULL == val ) return CANAL_ERROR_PARAMETER;
 
-	canalEvent.flags = CANAL_IDFLAG_EXTENDED;
-	canalEvent.obid = 0;
-	canalEvent.id = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ << 8;
-	canalEvent.sizeData = 5;
-	canalEvent.data[ 0 ] = nodeid;              // Node to read from
-    canalEvent.data[ 1 ] = (page>>8) & 0xff;    // MSB of page
-    canalEvent.data[ 2 ] = page & 0xff;         // LSB of page
-	canalEvent.data[ 3 ] = reg;                 // Register to write
-    canalEvent.data[ 4 ] = 1;                   // Read one register
+    canalSendEvent.flags = CANAL_IDFLAG_EXTENDED;
+    canalSendEvent.obid = 0;
+    canalSendEvent.id = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ << 8;
+    canalSendEvent.sizeData = 5;
+    canalSendEvent.data[ 0 ] = nodeid;                  // Node to read from
+    canalSendEvent.data[ 1 ] = ( page >> 8 ) & 0xff;    // MSB of page
+    canalSendEvent.data[ 2 ] = page & 0xff;             // LSB of page
+    canalSendEvent.data[ 3 ] = reg;                     // Register to write
+    canalSendEvent.data[ 4 ] = 1;                       // Read one register
 
-	bResend = false;
-	doCmdSend( &canalEvent );
+	//bResend = false;
+    doCmdSend( &canalSendEvent );
 
 	wxLongLong startTime = ::wxGetLocalTimeMillis();
-
+    
 	while ( true ) {
 
-        if ( doCmdDataAvailable() ) {									// Message available
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) {	// Valid event
-                if ( 5 != canalEvent.sizeData ) continue;
-                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+        if ( doCmdDataAvailable() ) {									        // Message available
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) {	// Valid event
+                if ( 5 != canalReceiveEvent.sizeData ) continue;
+                if ( ( unsigned short )( canalReceiveEvent.id & 0xffff ) ==
                     ( ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE << 8 ) + nodeid ) ) {  // Read reply?
-                        if ( ( 0 == canalEvent.data[ 0 ] ) &&
-                                ( (page >> 8) == canalEvent.data[ 1 ] ) &&
-                                ( (page & 0xff ) == canalEvent.data[ 2 ] ) &&
-                                ( canalEvent.data[ 3 ] == reg ) ) {	    // Requested register?
+                    if ( ( 0 == canalReceiveEvent.data[ 0 ] ) &&
+                         ( ( page >> 8 ) == canalReceiveEvent.data[ 1 ] ) &&
+                         ( ( page & 0xff ) == canalReceiveEvent.data[ 2 ] ) &&
+                         ( canalReceiveEvent.data[ 3 ] == reg ) ) {	            // Requested register?
 
-                            *val = canalEvent.data[ 4 ];
+                            *val = canalReceiveEvent.data[ 4 ];
 							break;
                         }
 
@@ -554,20 +556,14 @@ int CDllWrapper::readLevel1Register( unsigned char nodeid,
 
 		// Check for read error timeout
 		if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadErrorTimeout ) {
-            errors++;
+            rv = CANAL_ERROR_TIMEOUT;
+            break;
 		}
 		// Should we resend?
-		else if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadResendTimeout ) {
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
 		    // Send again
-			if ( !bResend) {
-			    doCmdSend( &canalEvent );
-			}
-			bResend = true;
-		}
-
-		if ( errors > m_registerReadMaxRetries ) {
-			rv = CANAL_ERROR_TIMEOUT;
-			break;
+            doCmdSend( &canalSendEvent );
+            resendTime += m_registerReadResendTimeout;
 		}
 
 	} // while
@@ -588,27 +584,29 @@ int CDllWrapper::readRegistersfromLevel1Device( unsigned char nodeid,
                                                     unsigned char count,
                                                     unsigned char *pRegs )
 {
-	bool rv = CANAL_ERROR_SUCCESS;
+	int rv = CANAL_ERROR_SUCCESS;
     int fcnt = 0;
     unsigned char data[256];    // This makes range checking simpler
 
     // Max 128 bytes can be read
     if ( count > 128 ) return false;
 
-    canalMsg canalEvent;
+    unsigned long resendTime = m_registerReadResendTimeout;
+    canalMsg canalSendEvent;
+    canalMsg canalReceiveEvent;
 
-	canalEvent.flags = CANAL_IDFLAG_EXTENDED;
-	canalEvent.obid = 0;
-    canalEvent.id = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ << 8;
-	canalEvent.sizeData = 5;
-	canalEvent.data[ 0 ] = nodeid;      // Node to read from
-    canalEvent.data[ 1 ] = page>>8;     // MSB of page
-    canalEvent.data[ 2 ] = page & 0xff; // LSB of page
-	canalEvent.data[ 3 ] = reg;         // Start register to read
-    canalEvent.data[ 4 ] = count;       // All 32 bytes
+    canalSendEvent.flags = CANAL_IDFLAG_EXTENDED;
+    canalSendEvent.obid = 0;
+    canalSendEvent.id = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ << 8;
+    canalSendEvent.sizeData = 5;
+    canalSendEvent.data[ 0 ] = nodeid;          // Node to read from
+    canalSendEvent.data[ 1 ] = page >> 8;       // MSB of page
+    canalSendEvent.data[ 2 ] = page & 0xff;     // LSB of page
+    canalSendEvent.data[ 3 ] = reg;             // Start register to read
+    canalSendEvent.data[ 4 ] = count;           // All 32 bytes
 
     // Send it away
-	doCmdSend( &canalEvent );
+    doCmdSend( &canalSendEvent );
 
     wxLongLong startTime = ::wxGetLocalTimeMillis();
 
@@ -621,29 +619,29 @@ int CDllWrapper::readRegistersfromLevel1Device( unsigned char nodeid,
 
     while ( allRcvValue != receive_flags ) {
 
-        if ( doCmdDataAvailable() ) {									    // Message available
+        if ( doCmdDataAvailable() ) {									            // Message available
 			
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) {     // Valid event
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) {      // Valid event
                 
                 //if ( 8 != canalEvent.sizeData ) continue;
 				
-                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+                if ( ( unsigned short )( canalReceiveEvent.id & 0xffff ) ==
 					( ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE << 8 ) + nodeid ) ) {  // Read reply?
                         
                         fcnt++;
 
                         // Mark frame as received
-                        receive_flags |= ( 1 << canalEvent.data[ 0 ] );
+                        receive_flags |= ( 1 << canalReceiveEvent.data[ 0 ] );
 
-                        if ( lastpageCnt && (count - 1) == canalEvent.data[ 0 ] ) {
+                        if ( lastpageCnt && ( count - 1 ) == canalReceiveEvent.data[ 0 ] ) {
                             // Last frame
                             for ( int i=0;i<lastpageCnt; i++ ) {
-                                data[ canalEvent.data[ 0 ]*4 + i] = canalEvent.data[ 4 + i ];
+                                data[ canalReceiveEvent.data[ 0 ] * 4 + i ] = canalReceiveEvent.data[ 4 + i ];
                             }
                         }
                         else {
                             for ( int i=0;i<4; i++ ) {
-                                data[ canalEvent.data[ 0 ]*4 + i] = canalEvent.data[ 4 + i ];
+                                data[ canalReceiveEvent.data[ 0 ] * 4 + i ] = canalReceiveEvent.data[ 4 + i ];
                             }
                         }
 
@@ -655,7 +653,7 @@ int CDllWrapper::readRegistersfromLevel1Device( unsigned char nodeid,
         }  
 
         if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadErrorTimeout ) {
-            rv = false;
+            rv = CANAL_ERROR_TIMEOUT;
             goto error;
 		}
 
@@ -686,45 +684,47 @@ int CDllWrapper::writeLevel1Register( unsigned char nodeid,
 	unsigned long errors = 0;
 	bool bResend;
 	wxString strBuf;
-	canalMsg canalEvent;
+    unsigned long resendTime = m_registerReadResendTimeout;
+    canalMsg canalSendEvent;
+    canalMsg canalReceiveEvent;
 
-	canalEvent.flags = CANAL_IDFLAG_EXTENDED;
-	canalEvent.obid = 0;
-    canalEvent.id = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE << 8;
-	canalEvent.sizeData = 5;
-	canalEvent.data[ 0 ] = nodeid;              // Node to read from
-    canalEvent.data[ 1 ] = (page>>8) & 0xff;    // MSB of page
-    canalEvent.data[ 2 ] = page & 0xff;         // LSB of page
-	canalEvent.data[ 3 ] = reg;                 // Register to write
-    canalEvent.data[ 4 ] = *pval;               // Value
+    canalSendEvent.flags = CANAL_IDFLAG_EXTENDED;
+    canalSendEvent.obid = 0;
+    canalSendEvent.id = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_WRITE << 8;
+    canalSendEvent.sizeData = 5;
+    canalSendEvent.data[ 0 ] = nodeid;                  // Node to read from
+    canalSendEvent.data[ 1 ] = ( page >> 8 ) & 0xff;    // MSB of page
+    canalSendEvent.data[ 2 ] = page & 0xff;             // LSB of page
+    canalSendEvent.data[ 3 ] = reg;                     // Register to write
+    canalSendEvent.data[ 4 ] = *pval;                   // Value
 
 	bResend = false;
-	doCmdSend( &canalEvent );
+    doCmdSend( &canalSendEvent );
 
 	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
 	while ( true ) {
 
 		if ( doCmdDataAvailable() ) {									// Message available
-			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) { // Valid event
-                if ( 5 != canalEvent.sizeData ) continue;
-				if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) { // Valid event
+                if ( 5 != canalReceiveEvent.sizeData ) continue;
+                if ( ( unsigned short )( canalReceiveEvent.id & 0xffff ) ==
 					( ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE << 8 ) + nodeid ) ) {  // Read reply?
-						if ( ( 0 == canalEvent.data[ 0 ] ) &&
-                            ( (page >> 8) == canalEvent.data[ 1 ] ) &&
-                            ( (page & 0xff ) == canalEvent.data[ 2 ] ) &&
-                            ( canalEvent.data[ 3 ] == reg ) ) {			// Requested register?
+                    if ( ( 0 == canalReceiveEvent.data[ 0 ] ) &&
+                         ( ( page >> 8 ) == canalReceiveEvent.data[ 1 ] ) &&
+                         ( ( page & 0xff ) == canalReceiveEvent.data[ 2 ] ) &&
+                         ( canalReceiveEvent.data[ 3 ] == reg ) ) {			// Requested register?
 
-							if ( *pval != canalEvent.data[ 4 ] ) rv = CANAL_ERROR_REGISTER;
+                        if ( *pval != canalReceiveEvent.data[ 4 ] ) rv = CANAL_ERROR_REGISTER;
 							
                             // Save read value
-							*pval = canalEvent.data[ 4 ];
+                        *pval = canalReceiveEvent.data[ 4 ];
 							break;
 
 						} // Check for correct node
 
 						// Save read value
-						*pval = canalEvent.data[ 4 ];
+                        *pval = canalReceiveEvent.data[ 4 ];
 
 				} // Check for correct reply event 
 			}
@@ -733,20 +733,16 @@ int CDllWrapper::writeLevel1Register( unsigned char nodeid,
 			wxMilliSleep( 2 );
         }
 
+        // Check for read error timeout
         if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadErrorTimeout ) {
-            errors++;
-		}
-        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerReadResendTimeout ) {
-            // Send again
-            if ( !bResend) {
-                doCmdSend( &canalEvent );
-            }
-            bResend = true;
-        }
-
-        if ( errors > m_registerReadMaxRetries ) {
-            rv = false;
+            rv = CANAL_ERROR_TIMEOUT;
             break;
+        }
+        // Should we resend?
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
+            // Send again
+            doCmdSend( &canalSendEvent );
+            resendTime += m_registerReadResendTimeout;
         }
 
     } // while
@@ -766,21 +762,22 @@ bool CDllWrapper::getMDFUrlFromLevel1Device( unsigned char nodeid, wxString &str
 	char url[ 33 ];
     unsigned char *p = (unsigned char *)url;
 	bool rv = true;
+    unsigned long resendTime = m_registerReadResendTimeout;
+    canalMsg canalSendEvent;
+    canalMsg canalReceiveEvent;
 
-    canalMsg canalEvent;
-
-	canalEvent.flags = CANAL_IDFLAG_EXTENDED;
-	canalEvent.obid = 0;
-    canalEvent.id = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ << 8;
-	canalEvent.sizeData = 5;
-	canalEvent.data[ 0 ] = nodeid;  // Node to read from
-    canalEvent.data[ 1 ] = 0;       // MSB of page
-    canalEvent.data[ 2 ] = 0;       // LSB of page
-	canalEvent.data[ 3 ] = 0xE0;    // Register to write
-    canalEvent.data[ 4 ] = 32;      // All 32 bytes
+    canalSendEvent.flags = CANAL_IDFLAG_EXTENDED;
+    canalSendEvent.obid = 0;
+    canalSendEvent.id = VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_READ << 8;
+    canalSendEvent.sizeData = 5;
+    canalSendEvent.data[ 0 ] = nodeid;  // Node to read from
+    canalSendEvent.data[ 1 ] = 0;       // MSB of page
+    canalSendEvent.data[ 2 ] = 0;       // LSB of page
+    canalSendEvent.data[ 3 ] = 0xE0;    // Register to write
+    canalSendEvent.data[ 4 ] = 32;      // All 32 bytes
 
     // Send it away
-	doCmdSend( &canalEvent );
+    doCmdSend( &canalSendEvent );
 
     wxLongLong startTime = ::wxGetLocalTimeMillis();
 
@@ -790,22 +787,22 @@ bool CDllWrapper::getMDFUrlFromLevel1Device( unsigned char nodeid, wxString &str
 
         if ( doCmdDataAvailable() ) {	// Message available
 			
-            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) { // Valid event
+            if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) { // Valid event
                 
-                if ( 8 != canalEvent.sizeData ) continue;
+                if ( 8 != canalReceiveEvent.sizeData ) continue;
 				
-                if ( (unsigned short)( canalEvent.id & 0xffff ) ==
+                if ( ( unsigned short )( canalReceiveEvent.id & 0xffff ) ==
 					( ( VSCP_TYPE_PROTOCOL_EXTENDED_PAGE_RESPONSE << 8 ) + nodeid ) ) {  // Read reply?
                         
-                        // Check bounds
-                        if ( canalEvent.data[ 0 ] > 7 ) continue;
+                    // Check bounds
+                    if ( canalReceiveEvent.data[ 0 ] > 7 ) continue;
 
-                        // Mark frame as received
-                        receive_flags |= ( 1 << canalEvent.data[ 0 ] );
+                    // Mark frame as received
+                    receive_flags |= ( 1 << canalReceiveEvent.data[ 0 ] );
 
-                        for ( int i=0;i<4; i++ ) {
-                            url[ canalEvent.data[ 0 ]*4 + i] = canalEvent.data[ 4 + i ];
-                        }
+                    for ( int i=0;i<4; i++ ) {
+                        url[ canalReceiveEvent.data[ 0 ] * 4 + i ] = canalReceiveEvent.data[ 4 + i ];
+                    }
 
 				} // Check for correct reply event 
 			}

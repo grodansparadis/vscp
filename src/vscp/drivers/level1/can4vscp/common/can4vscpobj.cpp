@@ -3,7 +3,7 @@
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; either version
-// 2 of the License, or (at your option) any later version.
+// 2 of the License, oDEBUG_CAN4VSCP_RECEIVEr (at your option) any later version.
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
@@ -246,7 +246,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
 	if ( m_bRun ) return CANAL_ERROR_SUCCESS;
 
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-	m_flog = fopen( "c:\\can4vscp.txt", "w" );
+	m_flog = fopen( "c:/tmp/can4vscp.txt", "w" );
 #endif	
 
 	// Serial port
@@ -802,8 +802,8 @@ bool CCan4VSCPObj::getDeviceCapabilities( void )
     sendData[ pos++ ] = STX;
 
     // Frame type
-    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_COMMAND;
-    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_COMMAND );
+    sendData[ pos++ ] = VSCP_SERIAL_DRIVER_OPERATION_CAPS_REQUEST;
+    crc8( &crc, VSCP_SERIAL_DRIVER_OPERATION_CAPS_REQUEST );
 
     // Channel
     sendData[ pos++ ] = 0;
@@ -813,21 +813,12 @@ bool CCan4VSCPObj::getDeviceCapabilities( void )
     pos += addWithEscape( sendData + pos, m_sequencyno++, &crc );
 
     // Size of payload  
-    sendData[ pos++ ] = 0;
-    crc8( &crc, 0 );
-    pos += addWithEscape( sendData + pos, ( sizeof( m_caps ) & 0xff ), &crc );
-
-    // Command code
-    pos += addWithEscape( sendData + pos, VSCP_SERIAL_DRIVER_OPERATION_CAPS_REQUEST, &crc );
+    pos += addWithEscape( sendData + pos, 0, &crc );
+    pos += addWithEscape( sendData + pos, 2, &crc );
 
     // Payload: Our capabilities
-    uint8_t *p = &m_caps.maxVscpFrames;
-    pos += addWithEscape( sendData + pos, p[ 1 ], &crc );
-    pos += addWithEscape( sendData + pos, p[ 0 ], &crc );
-
-    p = &m_caps.maxCanalFrames;
-    pos += addWithEscape( sendData + pos, p[ 1 ], &crc );
-    pos += addWithEscape( sendData + pos, p[ 0 ], &crc );
+    pos += addWithEscape( sendData + pos, 1, &crc );
+    pos += addWithEscape( sendData + pos, 10, &crc );
 
     // Checksum
     pos += addWithEscape( sendData + pos, crc, NULL );
@@ -1232,7 +1223,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 	c = m_com.readChar( &cnt );
 #ifdef DEBUG_CAN4VSCP_RECEIVE
 	if ( cnt ) {
-		sprintf( dbgbuf, "%02X ", c );
+		sprintf( dbgbuf, "cnt=%02X \n", c );
 		fwrite( dbgbuf, 1, strlen( dbgbuf), m_flog );
 	}
 #endif
@@ -1246,7 +1237,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 				
 				if ( ( INCOMING_SUBSTATE_NONE == m_RxMsgSubState ) && ( DLE == c ) ) {
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_NONE/SUBSATE_DLE " );
+					fprintf( m_flog, " STATE_NONE/SUBSATE_DLE \n" );
 #endif
 					m_RxMsgSubState = INCOMING_SUBSTATE_DLE;		
 				}
@@ -1260,7 +1251,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 				}
 				else {
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_NONE/SUBSATE_NONE " );
+					fprintf( m_flog, " STATE_NONE/SUBSATE_NONE \n" );
 #endif
 					m_lengthMsgRcv = 0;
 					m_RxMsgState = INCOMING_STATE_NONE;		
@@ -1273,7 +1264,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 			
 				if ( ( INCOMING_SUBSTATE_NONE == m_RxMsgSubState ) && ( DLE == c ) ) {
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_STX/SUBSTATE_DLE " );
+					fprintf( m_flog, " STATE_STX/SUBSTATE_DLE \n" );
 #endif
 					m_RxMsgSubState = INCOMING_SUBSTATE_DLE;
 				}
@@ -1281,7 +1272,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 					// This is strange as a DEL STX is not expected here
 					// We try to sync up again...
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_STX/SUBSTATE_NONE " );
+					fprintf( m_flog, " STATE_STX/SUBSTATE_NONE \n" );
 #endif
 					m_RxMsgState = INCOMING_STATE_STX;		
 					m_RxMsgSubState = INCOMING_SUBSTATE_NONE;
@@ -1291,12 +1282,12 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 						
 					// We have a packet 
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_NONE/SUBSTATE_NONE " );
+					fprintf( m_flog, " STATE_NONE/SUBSTATE_NONE\n" );
 #endif
 					m_RxMsgState = INCOMING_STATE_NONE;
 					m_RxMsgSubState = INCOMING_SUBSTATE_NONE;
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " ***FRAME*** " );
+					fprintf( m_flog, " ***FRAME*** \n" );
 #endif
 					return true;
 						
@@ -1304,7 +1295,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 				else if ( ( INCOMING_SUBSTATE_DLE == m_RxMsgSubState ) && ( DLE == c ) ) {
 					// Byte stuffed DLE  i.e. DLE DLE == DLE
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_STX/SUBSTATE_NONE " );
+					fprintf( m_flog, " STATE_STX/SUBSTATE_NONE\n" );
 #endif
 					m_RxMsgSubState = INCOMING_SUBSTATE_NONE;	
 					if ( m_lengthMsgRcv < sizeof( m_bufferMsgRcv ) ) {
@@ -1314,7 +1305,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 						// This packet has wrong format as it have
 						// to many databytes - start over!
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_NONE/SUBSTATE_NONE " );
+					    fprintf( m_flog, " STATE_NONE/SUBSTATE_NONE\n" );
 #endif
 						m_lengthMsgRcv = 0;
 						m_RxMsgState = INCOMING_STATE_NONE;		
@@ -1324,7 +1315,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 				// We come here if data is received 
 				else {
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_STX/SUBSTATE_NONE " );
+					fprintf( m_flog, " STATE_STX/SUBSTATE_NONE\n " );
 #endif					
 					m_RxMsgSubState = INCOMING_SUBSTATE_NONE;	
 					if ( m_lengthMsgRcv < sizeof( m_bufferMsgRcv ) ) {
@@ -1335,7 +1326,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 						// to many databytes - start over!
 						m_lengthMsgRcv = 0;
 #ifdef DEBUG_CAN4VSCP_RECEIVE
-					fprintf( m_flog, " STATE_NONE/SUBSTATE_NONE " );
+					    fprintf( m_flog, " STATE_NONE/SUBSTATE_NONE\n " );
 #endif
 						m_RxMsgState = INCOMING_STATE_NONE;		
 						m_RxMsgSubState = INCOMING_SUBSTATE_NONE;	
@@ -1352,7 +1343,7 @@ bool CCan4VSCPObj::serialData2StateMachine( void )
 		c = m_com.readChar( &cnt );
 #ifdef DEBUG_CAN4VSCP_RECEIVE
 		if ( cnt ) {
-			sprintf( dbgbuf, "%02X ", c );
+			sprintf( dbgbuf, "Rcv=%02X\n", c );
 			fwrite( dbgbuf, 1, strlen( dbgbuf), m_flog );
 		}
 #endif
@@ -1374,8 +1365,37 @@ void CCan4VSCPObj::readSerialData( void )
 	
 	do {
 
-		if ( serialData2StateMachine() && checkCRC() ) {
+		if ( serialData2StateMachine() ) {
 		
+#ifdef DEBUG_CAN4VSCP_RECEIVE
+            fprintf( m_flog, " OPERATION\n" );
+            fprintf( m_flog, 
+                        " Operation=%d payload=%d\n", 
+                        m_bufferMsgRcv[ 0 ], 
+                        m_bufferMsgRcv[ 3 ] * 256 + m_bufferMsgRcv[ 4 ] );
+            for ( int g = 0; g<( m_bufferMsgRcv[ 3 ] * 256 + m_bufferMsgRcv[ 4 ] ); g++ ) {
+                fprintf( m_flog, " %02X", m_bufferMsgRcv[ 5 + g ] );
+            }
+            fprintf( m_flog, "\n" );
+            
+#endif
+
+            // Check CRC
+            if ( !checkCRC() ) {
+#ifdef DEBUG_CAN4VSCP_RECEIVE
+                fprintf( m_flog, " CRC Failed!\n" );
+                fprintf( m_flog,
+                         " Operation=%d payload=%d\n",
+                         m_bufferMsgRcv[ 0 ],
+                         m_bufferMsgRcv[ 3 ] * 256 + m_bufferMsgRcv[ 4 ] );
+                for ( int g = 0; g<( m_bufferMsgRcv[ 3 ] * 256 + m_bufferMsgRcv[ 4 ] ); g++ ) {
+                    fprintf( m_flog, " %02X", m_bufferMsgRcv[ 5 + g ] );
+                }
+                fprintf( m_flog, "\n" );
+#endif
+                continue;
+            }
+
 			// Check if NOOP frame
             if ( VSCP_SERIAL_DRIVER_OPERATION_NOOP == ( m_bufferMsgRcv[ 0 ] ) ) {
                 sendACK( m_bufferMsgRcv[ VSCP_SERIAL_DRIVER_POS_FRAME_SEQUENCY ] );
@@ -1385,20 +1405,21 @@ void CCan4VSCPObj::readSerialData( void )
 			
                 // CANAL message
                 // -------------
-                // [0]      DLE  - Not in buffer!!!!
-                // [1]      STX  - Not in buffer!!!!
-                // [2]      Frame type (2 - CANAL message.) - First in buffer
-                // [3]      Channel (always zero)
-                // [4]      Sequence number 
-                // [5/6]    Size of payload ( 12 + sizeData )
-                // [7]     CAN id (MSB)
-                // [8]     CAN id
-                // [9]     CAN id
-                // [10]     CAN id (LSB)
-                // [11-n]   CAN data (0-8 bytes) 
-                // [len-3]  CRC
-                // [len-2]  DLE
-                // [len-1]  ETX
+                // [0]      -   DLE  - Not in buffer!!!!
+                // [1]      -   STX  - Not in buffer!!!!
+                // [2]      0   Frame type (2 - CANAL message.) - First in buffer
+                // [3]      1   Channel (always zero)
+                // [4]      2   Sequence number 
+                // [5/6]    3/4   Size of payload ( 12 + sizeData )
+                // [7]      5   CAN id (MSB)
+                // [8]      6   CAN id
+                // [9]      7   CAN id
+                // [10]     8   CAN id (LSB)
+                // [11]     9   dlc
+                // [12-n]   10  CAN data (0-8 bytes) 
+                // [len-3]  -   CRC
+                // [len-2]  -   DLE
+                // [len-1]  -   ETX
 
 				if (  m_receiveList.nCount < CAN4VSCP_MAX_RCVMSG ) {					
 					
@@ -1420,7 +1441,8 @@ void CCan4VSCPObj::readSerialData( void )
 									(((DWORD)m_bufferMsgRcv[7]<<8 ) & 0x0000ff00) |
 									(((DWORD)m_bufferMsgRcv[8]    ) & 0x000000ff) ;
 											
-							pMsg->sizeData = ( (WORD)m_bufferMsgRcv[3] << 8 ) + ( m_bufferMsgRcv[4] & 0x0f ) - 4;		
+							pMsg->sizeData = m_bufferMsgRcv[9];	
+                            if ( pMsg->sizeData > 8 ) pMsg->sizeData = 8;   // Something is very wrong - Save the world
 									
                             if ( pMsg->sizeData ) {
                                 memcpy( ( void * )pMsg->data,
@@ -1482,6 +1504,7 @@ void CCan4VSCPObj::readSerialData( void )
             }
             // Check for multiframe CANAL message frame
             else if ( VSCP_SERIAL_DRIVER_OPERATION_MULTI_FRAME_CANAL == ( m_bufferMsgRcv[ 0 ] ) ) {
+
                 // CANAL message
                 // -------------
                 // [0]      DLE  - Not in buffer!!!!
@@ -1507,10 +1530,10 @@ void CCan4VSCPObj::readSerialData( void )
                 // Payload size
                 long sizePayload = ( ( uint16_t )m_bufferMsgRcv[ 3 ] << 8 ) + m_bufferMsgRcv[ 4 ];
 
-                // Save pos for oayload
+                // Save pos for payload
                 uint8_t *posFrame = m_bufferMsgRcv + 5;
 
-                while ( sizePayload >> 0 ) {
+                while ( sizePayload > 0 ) {
 
                     if ( m_receiveList.nCount < CAN4VSCP_MAX_RCVMSG ) {
 
@@ -1533,6 +1556,7 @@ void CCan4VSCPObj::readSerialData( void )
                                     ( ( ( DWORD )posFrame[ 3 ] ) & 0x000000ff );
 
                                 pMsg->sizeData = posFrame[ 4 ];
+                                if ( pMsg->sizeData > 8 ) pMsg->sizeData = 8;   // Something is very wrong - Save the world
 
                                 if ( pMsg->sizeData ) {
                                     memcpy( ( void * )pMsg->data,
@@ -1561,8 +1585,9 @@ void CCan4VSCPObj::readSerialData( void )
                                 }
 
                                 // Get ready for next payload frame
-                                posFrame += ( 5 + posFrame[ 4 ] );
                                 sizePayload -= ( 5 + posFrame[ 4 ] );
+                                posFrame += ( 5 + posFrame[ 4 ] );
+                                
 
                             } // No pNode
                             else {
@@ -1576,7 +1601,7 @@ void CCan4VSCPObj::readSerialData( void )
                         // Full buffer
                         m_stat.cntOverruns++;
                     }
-                }
+                } // while
             }
 			// Check for sent ACK frame
             else if ( VSCP_SERIAL_DRIVER_OPERATION_SENT_ACK == ( m_bufferMsgRcv[ 0 ] ) ) {
@@ -1610,7 +1635,7 @@ void CCan4VSCPObj::readSerialData( void )
 			m_RxMsgState = INCOMING_STATE_NONE;			// reset state for next msg
 			m_RxMsgSubState = INCOMING_SUBSTATE_NONE;
 
-		}
+		} // frame & crc 
 
 	} while ( cnt != 0 );							
 							

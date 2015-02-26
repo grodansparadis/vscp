@@ -203,6 +203,8 @@ void VscpworksApp::Init()
     }
     */
 
+    m_bUseGlobalConfig = false; // Store config in users folder
+
 	g_Config.m_strPathLogFile = wxStandardPaths::Get().GetTempDir();
 	g_Config.m_strPathLogFile += _("\\vscpworks.log");
 	g_Config.m_strPathTemp = wxStandardPaths::Get().GetTempDir();
@@ -1523,15 +1525,18 @@ bool VscpworksApp::readConfiguration( void )
     strcfgfile += _("/vscpworks.conf");
 
     if ( !wxFileName::FileExists( strcfgfile ) ) {
-        return false;
+        strcfgfile = wxStandardPaths::Get().GetConfigDir() + _( "/vscpworks.conf" );
+        if ( wxFileName::FileExists( strcfgfile ) ) {
+            m_bUseGlobalConfig = true;
+        }
+        else {
+            return false;
+        }
     }
 
     if (!doc.Load( strcfgfile ) ) {
         // test global location
-        strcfgfile = wxStandardPaths::Get().GetConfigDir() + _("/vscp/vscpworks.conf");
-        if (!doc.Load( strcfgfile ) ) {
-            return false;
-        }
+        return false;
     }
 
     // start processing the XML file
@@ -2297,8 +2302,13 @@ bool VscpworksApp::writeConfiguration( void )
     wxString buf;
     //wxStandardPaths strpath;
 
-    strcfgfile = wxStandardPaths::Get().GetUserDataDir();
-    strcfgfile += _("/vscpworks.conf");
+    if ( !m_bUseGlobalConfig ) {
+        strcfgfile = wxStandardPaths::Get().GetUserDataDir();
+        strcfgfile += _( "/vscpworks.conf" );
+    }
+    else {
+        strcfgfile = wxStandardPaths::Get().GetConfigDir() + _( "/vscpworks.conf" );
+    }
 
 	// Backup
     if ( wxFileName::FileExists( strcfgfile ) ) {

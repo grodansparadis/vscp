@@ -509,16 +509,13 @@ public:
   */
   wxString addMDFInfo( CMDF *pmdf );
 
-////@begin VscpworksApp event handler declarations
+  /*!
+    This variable is true if the configuration is fetched from
+    the global paces /progdata instead of user data location. 
+    Typically this happesn when a windows machine has no password.
+  */
+  bool m_bUseGlobalConfig;
 
-////@end VscpworksApp event handler declarations
-
-////@begin VscpworksApp member function declarations
-
-////@end VscpworksApp member function declarations
-
-////@begin VscpworksApp member variables
-////@end VscpworksApp member variables
 };
 
 /*!
