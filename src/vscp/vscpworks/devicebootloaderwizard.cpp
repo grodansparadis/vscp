@@ -1006,7 +1006,7 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             else {
                 strTitle = BOOT_LOADER_WIZARD_TITLE;
                 strTitle += _( " - Unknown device" );
-                wxMessageBox( _( "Device was not found! Check nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
+                wxMessageBox( _( "Device was not found! Check nodeid.\nThis may be no problem if the node is in bootloader mode already." ) );
                 pblw->SetTitle( strTitle );
             }
 
@@ -1032,7 +1032,7 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
                 pblw->m_pgSelecAlgorithm->fetchAlgorithmFromMdf();
             }
             else {
-                wxMessageBox( _( "Device was not found! Check interface GUID + nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
+                wxMessageBox( _( "Device was not found! Check interface GUID + nodeid.\nThis may be no problem if the node is in bootloader mode already." ) );
                 strTitle = BOOT_LOADER_WIZARD_TITLE;
                 strTitle += _( " - Unknown device" );
                 pblw->SetTitle( strTitle );
@@ -1368,6 +1368,7 @@ void WizardPageSelectBootloader::fetchAlgorithmFromMdf( void )
 
         if ( !pblw->m_mdf.load( mdfurl ) ) {
             wxMessageBox( _( "Failed to load MDF!" ) );
+            return;
         }
 
         // MDF has been fetched -

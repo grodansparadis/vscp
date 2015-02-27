@@ -272,7 +272,7 @@ int CCan4VSCPObj::open( const char *pConfig, unsigned long flags )
     if ( !( flags & CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE ) ) {      
         m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // In case of garbage in queue
         SLEEP( 200 );
-        m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // set CAN4VSCP mode
+        m_com.writebuf( (unsigned char *)"SET MODE VSCP\r\n", 19 );     // set CAN4VSCP mode twice
     }
 
     // Check that we have a CAN4VSCP device at the other end 

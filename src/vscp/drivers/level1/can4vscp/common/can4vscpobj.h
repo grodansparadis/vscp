@@ -51,9 +51,9 @@
 #include <canal_macro.h>
 #include <dllist.h>
 
-// define to create a file c:\can4vscp.txt with input and
+// define to create a file c:/tmp/can4vscp.txt with input and
 // stat machine data for debugging
-#define DEBUG_CAN4VSCP_RECEIVE
+//#define DEBUG_CAN4VSCP_RECEIVE
 
 #define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX			TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
 #define CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX		TEXT("___CANAL__DLL_CAN4VSCPDRV_RECEIVE_MUTEX____")
