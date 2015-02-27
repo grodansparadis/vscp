@@ -648,7 +648,7 @@ bool frmDeviceConfig::enableInterface(void)
             progressDlg.Pulse(_("TCP/IP Interface Open."));
 
             // Should we fetch interface GUID
-            if (m_vscpif.m_strInterfaceName.Length()) {
+            if ( m_vscpif.m_strInterfaceName.Length() ) {
 
                 progressDlg.Pulse(_("Fetching interface GUID."));
 
@@ -5727,6 +5727,13 @@ bool frmDeviceConfig::fetchIterfaceGUID(void)
                         return true;
                     }
 
+                }
+
+                // If here the if was not found
+                if ( wxYES != wxMessageBox( _( "Selected interfaces was not found. Try to find again?" ),
+                    _( "VSCP Works" ),
+                    wxYES_NO ) ) {
+                    break;
                 }
 
             }
