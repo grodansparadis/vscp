@@ -1006,7 +1006,7 @@ void WizardPageSetGUID::OnWizardPageChanging( wxWizardEvent& event )
             else {
                 strTitle = BOOT_LOADER_WIZARD_TITLE;
                 strTitle += _( " - Unknown device" );
-                wxMessageBox( _( "Device was not found! Check nodeid.\nThis may be no problem if the node is in bootloader mode alredy." ) );
+                wxMessageBox( _( "Device was not found! Check nodeid.\nThis may be no problem if the node is in bootloader mode already." ) );
                 pblw->SetTitle( strTitle );
             }
 
