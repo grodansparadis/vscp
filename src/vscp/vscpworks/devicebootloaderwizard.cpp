@@ -1368,6 +1368,7 @@ void WizardPageSelectBootloader::fetchAlgorithmFromMdf( void )
 
         if ( !pblw->m_mdf.load( mdfurl ) ) {
             wxMessageBox( _( "Failed to load MDF!" ) );
+            return;
         }
 
         // MDF has been fetched -
