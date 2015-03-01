@@ -327,6 +327,7 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <ClInclude Include="..\..\..\..\common\canal_macro.h" />
     <ClInclude Include="..\..\..\..\common\vscp.h" />
     <ClInclude Include="..\..\..\..\common\vscp_class.h" />
+    <ClInclude Include="..\..\..\..\common\vscp_serial.h" />
     <ClInclude Include="..\..\..\..\common\vscp_type.h" />
     <ClInclude Include="callback.h" />
     <ClInclude Include="..\common\can4vscpobj.h" />

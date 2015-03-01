@@ -2602,8 +2602,6 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
                                                 bool bLevel2 )
 {
 	int rv = VSCP_ERROR_SUCCESS;
-	uint32_t errors = 0;
-	bool bResend;
 	wxString strBuf;
 	vscpEventEx e;
 
@@ -2679,14 +2677,13 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
 		}
 	}
 
-	bResend = false;
-
 	// Send the event
 	doCmdClear();
 	e.timestamp = 0;
 	doCmdSendEx( &e );
 
-	wxLongLong resendTime = ::wxGetLocalTimeMillis();
+    wxLongLong resendTime = m_registerOpResendTimeout;
+	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
 	while ( true ) {
 
@@ -2778,22 +2775,16 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
             
 		}
 
-		if ( ( ::wxGetLocalTimeMillis() - resendTime ) > 
-			m_registerOpResendTimeout ) {
-				
-				errors++;
-
-				// Send again
-				e.timestamp = 0;
-				wxLongLong resendTime = ::wxGetLocalTimeMillis();
-				doCmdSendEx( &e );
-
-		}   
-
-		if ( errors > m_registerOpMaxRetries ) {
-            rv = VSCP_ERROR_TIMEOUT;
-			break;
-		}
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
+            rv = CANAL_ERROR_TIMEOUT;
+            break;
+        }
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
+            // Send again
+            e.timestamp = 0;
+            doCmdSendEx( &e );
+            resendTime += m_registerOpResendTimeout;
+        }
         
         wxMilliSleep( 2 );
 
@@ -2817,8 +2808,6 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
 												bool bLevel2 )
 {
 	int rv = CANAL_ERROR_SUCCESS;
-	uint32_t errors = 0;
-	bool bResend;
 	wxString strBuf;
 	vscpEventEx e;
     uint8_t data[256];    // This makes range checking simpler
@@ -2898,8 +2887,6 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
 		}
 	}
 
-	bResend = false;
-
 	// Send the event
 	doCmdClear();
 	e.timestamp = 0;
@@ -2912,7 +2899,8 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
     if ( lastpageCnt ) nPages++;
     unsigned long allRcvValue = pow(2.0,nPages) - 1;
 
-	wxLongLong resendTime = ::wxGetLocalTimeMillis();
+    unsigned long resendTime = m_registerOpResendTimeout;
+	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
 	while ( allRcvValue != receive_flags ) {
 
@@ -3025,15 +3013,15 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
             
 		}
 
-		if ( ( ::wxGetLocalTimeMillis() - resendTime ) >  m_registerOpResendTimeout ) {			
-				errors++;
-			    resendTime = ::wxGetLocalTimeMillis();
-		}   
-
-		if ( errors > m_registerOpMaxRetries ) {
-			rv = CANAL_ERROR_TIMEOUT;
-			break;
-		}
+        if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
+            rv = CANAL_ERROR_TIMEOUT;
+            break;
+        }
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
+            // Send again
+            doCmdSendEx( &e );
+            resendTime += m_registerOpResendTimeout;
+        }
         
         wxMilliSleep( 2 );
 
@@ -3061,8 +3049,6 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 {
 	int rv = CANAL_ERROR_SUCCESS;
 	bool bInterface = false;                // No specific interface set
-	uint32_t errors = 0;
-	bool bResend;
 	wxString strBuf;
 	vscpEventEx e;
 
@@ -3127,12 +3113,11 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 		}
 
 	}
-
-	bResend = false;
     
     // Send the event
 	doCmdSendEx( &e );
 
+    unsigned long resendTime = m_registerOpResendTimeout;
 	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
 	while ( true ) {
@@ -3214,20 +3199,15 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 		}
 
 		if ( ( ::wxGetLocalTimeMillis() - startTime ) >  m_registerOpErrorTimeout ) {
-            errors++;
+            rv = CANAL_ERROR_TIMEOUT;
+            break;
 		}
-		else if ( ( ::wxGetLocalTimeMillis() - startTime ) > m_registerOpResendTimeout ) {
+        else if ( ( ::wxGetLocalTimeMillis() - startTime ) > resendTime ) {
             // Send again
-            if ( !bResend) {
-                doCmdSendEx( &e );
-            }
-            bResend = true;
+            doCmdSendEx( &e );
+            resendTime += m_registerOpResendTimeout;
 		}
 
-		if ( errors > m_registerOpMaxRetries ) {
-			rv = CANAL_ERROR_TIMEOUT;
-			break;
-		}
 
 	} // while
 

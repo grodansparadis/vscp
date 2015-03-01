@@ -101,7 +101,6 @@ bool CComm::init( unsigned char nComPort,
 	}
 
 	dcbCommPort.Parity = nParity;
-	dcbCommPort.fDtrControl = DTR_CONTROL_ENABLE;
 	dcbCommPort.fDtrControl = DTR_CONTROL_DISABLE;
 	//dcbCommPort.fDsrSensitivity = DTR_CONTROL_DISABLE;
 	dcbCommPort.ByteSize = nDatabits;

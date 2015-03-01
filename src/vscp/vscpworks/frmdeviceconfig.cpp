@@ -648,7 +648,7 @@ bool frmDeviceConfig::enableInterface(void)
             progressDlg.Pulse(_("TCP/IP Interface Open."));
 
             // Should we fetch interface GUID
-            if (m_vscpif.m_strInterfaceName.Length()) {
+            if ( m_vscpif.m_strInterfaceName.Length() ) {
 
                 progressDlg.Pulse(_("Fetching interface GUID."));
 
@@ -3215,16 +3215,21 @@ void frmDeviceConfig::doUpdate( void )
             // Read standard registers           
             progressDlg.Update( 10, _( "Reading standard registers of device 1/8." ) );
 
+read_stdregs1_again:
+
             if ( CANAL_ERROR_SUCCESS !=
                  m_csw.getDllInterface()->readRegistersfromLevel1Device( nodeid,
                  0x80,
                  0,      // page
                  128,    // count
                  m_stdRegisters.getRegs() ) ) {
-                ::wxMessageBox( _( "Failed to read standard registers of device." ),
-                                _( "VSCP Works" ),
-                                wxICON_ERROR );
-                return;
+                if ( wxYES != ::wxMessageBox( _( "Failed to read standard registers from device. Try again?" ),
+                                                _( "VSCP Works" ),
+                                                wxYES_NO | wxCANCEL ) )   {
+                    return;
+                }
+
+                goto read_stdregs1_again;
             }
 
             // Fetch MDF from local file or server
@@ -3281,14 +3286,22 @@ void frmDeviceConfig::doUpdate( void )
                 wxString str = wxString::Format( _( "Fetching user registers for page %ld 3/8" ), currpage );
                 progressDlg.Update( 25, str );
 
+read_pageregs1_again:
+
                 if ( CANAL_ERROR_SUCCESS !=
                      m_csw.getDllInterface()->readRegistersfromLevel1Device( nodeid,
-                     0,
-                     pageArray[ i ],   // page
-                     128,            // count
-                     m_userRegisters.getRegs4Page( pageArray[ i ] ) ) ) {
-                    ::wxMessageBox( _( "Failed to read user registers of device." ), _( "VSCP Works" ), wxICON_ERROR );
-                    return;
+                                0,
+                                pageArray[ i ],   // page
+                                128,            // count
+                                m_userRegisters.getRegs4Page( pageArray[ i ] ) ) ) {
+                    if ( wxYES != ::wxMessageBox( _( "Failed to read user registers from device. Try again?" ),
+                                                    _( "VSCP Works" ),
+                                                    wxYES_NO | wxCANCEL ) ) {
+                        return;
+                    }
+
+                    goto read_pageregs1_again;
+                    
                 }
 
             }
@@ -3722,7 +3735,7 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
 
             for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 
-                uint8_t val;
+                uint8_t val=0;
 
                 uint16_t page;
                 page = getPageFromCell( selrows[i] );
@@ -5714,6 +5727,13 @@ bool frmDeviceConfig::fetchIterfaceGUID(void)
                         return true;
                     }
 
+                }
+
+                // If here the if was not found
+                if ( wxYES != wxMessageBox( _( "Selected interfaces was not found. Try to find again?" ),
+                    _( "VSCP Works" ),
+                    wxYES_NO ) ) {
+                    break;
                 }
 
             }
