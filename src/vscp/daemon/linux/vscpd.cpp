@@ -162,6 +162,7 @@ int main(int argc, char **argv)
 
 	wxLogDebug(_("ControlObject: Configfile =") + strcfgfile);
 	if ( !theApp.init( strcfgfile ) ) {
+		printf("ControlObject: Failed to configure. Terminating.");
 		wxLogDebug(_("ControlObject: Failed to configure. Terminating."));
 	}
 	
@@ -258,22 +259,25 @@ BOOL VSCPApp::init(wxString& strcfgfile)
 
 	wxLogDebug(_("VSCPD: init"));
 	if ( !gpobj->init( strcfgfile ) ) {
+		printf("Can't initialize daemon. Exiting.");
 		syslog(LOG_CRIT, "Can't initialize daemon. Exiting.");
 		return FALSE;
 	}
 
 	wxLogDebug(_("VSCPD: run"));
 	if (!gpobj->run()) {
+		printf("Unable to start the VSCPD application. Exiting.");
 		syslog(LOG_CRIT, "Unable to start the VSCPD application. Exiting.");
 	}
 
 	wxLogDebug(_("VSCPD: cleanup"));
 	if (!gpobj->cleanup()) {
+		printf("Unable to clean up the VSCPD application.");
 		syslog(LOG_CRIT, "Unable to clean up the VSCPD application.");
 	}
 
 	// Remove the pid file
-	//    unlink("/var/run/vsdcp/vscpd.pid");
+	unlink("/var/run/vscp/vscpd/vscpd.pid");
 	
 
 	return FALSE;
