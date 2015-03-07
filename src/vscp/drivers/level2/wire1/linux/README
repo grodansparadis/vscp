@@ -1,0 +1,26 @@
+This is a Level II driver for the linux 1 wire interface
+
+guid is fetched from device string
+
+
+Configuration string
+
+    device
+
+device is the device file to fetch data from (/sys/bus/w1/devices/10-00080192afa8/w1_slave)
+
+Variables
+
+_device  	- The path to the device (/sys/bus/w1/devices/10-00080192afa8/w1_slave)
+_interval 	- Interval in seconds betrwen reads.
+-useifguid	- Use if guid instead of 1wire guid
+
+
+Format for a temperature reading
+
+cat /sys/bus/w1/devices/10-00080192afa8/w1_slave 
+09 00 4b 46 ff ff 06 10 9f : crc=9f YES
+09 00 4b 46 ff ff 06 10 9f t=4375
+
+
+
