@@ -69,7 +69,7 @@ using namespace std;
 
 // Defult seconds between events
 #define DEFAULT_INTERVAL			30 
-#define DEFAULT_UNIT				2		// Celsius	
+#define DEFAULT_UNIT				1		// Celsius	
 #define DEFAULT_CODING				0		// Normalized integer
 
 // Forward declarations
@@ -195,6 +195,12 @@ public:
 	int m_index;		// Index for events that needs index
 	int m_unit;			// Unit for events that need unit
 	int m_coding;		// 0=normalizes/1=string/2=float
+	
+	FILE * m_pFile;
+	char m_line1[80];
+	char m_line2[80];
+	unsigned int m_id[9];
+	int m_temperature;
 };
 
 

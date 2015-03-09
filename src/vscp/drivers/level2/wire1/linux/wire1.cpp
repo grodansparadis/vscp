@@ -1,4 +1,4 @@
-// socketcan.cpp: implementation of the Csocketcan class.
+// wire1.cpp: implementation 
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -67,6 +67,12 @@
 #include <vscp_class.h>
 #include "wire1.h"
 
+// Dallas 1-wire GUID base
+uint8_t guid1w[] = {
+    0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,
+    0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+}; 
+
 
 //////////////////////////////////////////////////////////////////////
 // CWire1
@@ -99,15 +105,14 @@ CWire1::~CWire1()
 
 bool
 CWire1::open(const char *pUsername,
-		const char *pPassword,
-		const char *pHost,
-		short port,
-		const char *pPrefix,
-		const char *pConfig)
+                const char *pPassword,
+                const char *pHost,
+                short port,
+                const char *pPrefix,
+                const char *pConfig)
 {
 	bool rv = true;
 	wxString wxstr = wxString::FromAscii(pConfig);
-    wxString strVariableName;
 
 	m_username = wxString::FromAscii(pUsername);
 	m_password = wxString::FromAscii(pPassword);
@@ -187,9 +192,9 @@ CWire1::open(const char *pUsername,
 		if (NULL != pthreadWork) {
 			
 			// Get sample interval
-			strVariableName = m_prefix +
+			wxString strVariableName = m_prefix +
 					wxString::FromAscii("_interval") + strIteration;
-			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_interval)) {
+			if (VSCP_ERROR_SUCCESS == m_srv.getVariableInt(strVariableName, &pthreadWork->m_interval)) {
 				// Node need to log error as optional
 			}
 			
@@ -197,10 +202,10 @@ CWire1::open(const char *pUsername,
 			if ( 0 == pthreadWork->m_interval ) continue;
 
 			// Get the path
-			wxString strVariableName = m_prefix +
+			strVariableName = m_prefix +
 					wxString::FromAscii("_path") + strIteration;
 			
-			if (!m_srv.getVariableString(strVariableName, &pthreadWork->m_path)) {
+			if ( VSCP_ERROR_SUCCESS != m_srv.getVariableString(strVariableName, &pthreadWork->m_path)) {
 				syslog(LOG_ERR,
 						"%s prefix=%s i=%d",
 						(const char *) "Failed to read variable _path.",
@@ -215,36 +220,35 @@ CWire1::open(const char *pUsername,
 				// Node need to log error as optional
 			}
 
-			// Get sample interval
-			strVariableName = m_prefix +
-					wxString::FromAscii("_interval") + strIteration;
-			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_interval)) {
-				// Node need to log error as optional
-			}
-
 			// Get unit
 			strVariableName = m_prefix +
 					wxString::FromAscii("_unit") + strIteration;
-			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_unit)) {
+			if ( VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName, &pthreadWork->m_unit)) {
 				// Node need to log error as optional
 			}
 			
-			// Check read value
-			if ( pthreadWork->m_unit > 3 ) pthreadWork->m_unit = 2; // Celsius
+			// Check read unit value
+			if ( pthreadWork->m_unit > 3 ) pthreadWork->m_unit = DEFAULT_UNIT; // Celsius
 			
 			// Get index
 			strVariableName = m_prefix +
 					wxString::FromAscii("_index") + strIteration;
-			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_unit)) {
+			if ( VSCP_ERROR_SUCCESS != m_srv.getVariableInt(strVariableName, &pthreadWork->m_index)) {
 				// Node need to log error as optional
 			}
+            
+            // Check read index value
+			if ( pthreadWork->m_index > 7 ) pthreadWork->m_index = 0;
             
             // Get coding
 			strVariableName = m_prefix +
 					wxString::FromAscii("_coding") + strIteration;
-			if (!m_srv.getVariableInt( strVariableName, &pthreadWork->m_coding)) {
+			if ( VSCP_ERROR_SUCCESS != m_srv.getVariableInt( strVariableName, &pthreadWork->m_coding)) {
 				// Node need to log error as optional
 			}
+            
+            // Check read coding value
+			if ( pthreadWork->m_coding > 2 ) pthreadWork->m_coding = 0;
 
 			// start the workerthread
 			pthreadWork->m_pObj = this;
@@ -332,73 +336,81 @@ CWrkTread::Entry()
 	// Check pointers
 	if (NULL == m_pObj) return NULL;
 
-	FILE * pFile;
-	char line1[80];
-	char line2[80];
-	unsigned int id[9];
-	int temperature;
+    // Open the file
+	if ( NULL == ( m_pFile = fopen( m_path.mbc_str() , "r") ) ) {
+        syslog(LOG_ERR,
+                    "%s",
+                    (const char *) "Workerthread. File to open 1-wire data file. Terminating!");
+
+		return NULL;
+    }
 	
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
+        
+        // Go to beginning
+        fseek( m_pFile, SEEK_SET, 0 );
 
-		// Open the file
-		if ( pFile = fopen( m_path , "r") ) {
-			syslog(LOG_ERR,
-				"%s",
-				(const char *) "Workerthread. File to open 1-wire data file. Terminating!");
-			// Close the channel
-			m_srv.doCmdClose();
-			return NULL;
-        }
-		
         // Read line 1
-		if ( !fgets( line1, sizeof( line1 ), pFile ) ) {
-			
-			// Close the file
-			fclose (pFile);
-			
+		if ( NULL == fgets( m_line1, sizeof( m_line1 )-1, m_pFile ) ) {
+						
 			syslog(LOG_ERR,
-				"%s",
-				(const char *) "Workerthread. Failed to read 1-wire data from file. Terminating!");
+                    "%s",
+                    (const char *) "Workerthread. Failed to read 1-wire data from file.");
 			
-            // Close the channel
-			m_srv.doCmdClose();
-			return NULL;
+			wxSleep( 2 );   // We sleep before trying again.
+			continue;       // Try again
 		}
 	
 		// Read line 2
-		if ( !fgets ( line2, sizeof( line2 ) , pFile ) ) {
-			
-            // Close the file
-			fclose (pFile);
-			
+		if ( NULL == fgets( m_line2, sizeof( m_line2 )-1, m_pFile ) ) {
+						
 			syslog(LOG_ERR,
-				"%s",
-				(const char *) "Workerthread. Failed to read 1-wire data from file. Terminating!");
+                    "%s",
+                    (const char *) "Workerthread. Failed to read 1-wire data from file.");
             
-			// Close the channel
-			m_srv.doCmdClose();
-			return NULL;
+			wxSleep( 2 );   // We sleep before trying again.
+			continue;       // Try again
 		}
-	
-		// Close the file
-		fclose (pFile);
+
 		
 		// 08 00 4b 46 ff ff 0d 10 ff : crc=ff YES
-		sscanf( line1, "%02x %02x %02x %02x %02x %02x %02x %02x %02x",
-				&id[0],&id[1],&id[2],&id[3],&id[4],&id[5],&id[6],&id[7],&id[8] );
+		sscanf( m_line1, "%02x %02x %02x %02x %02x %02x %02x %02x %02x",
+ 				&m_id[0],&m_id[1],&m_id[2],&m_id[3],&m_id[4],&m_id[5],&m_id[6],&m_id[7],&m_id[8] );
 				
-		if ( NULL == strstr( line1, "YES" ) ) {
+		if ( NULL == strstr( m_line1, "YES" ) ) {
             wxSleep( 2 );   // We sleep before trying again.
 			continue;       // Try again
 		}	
 		
-		sscanf( line2, "%*s %*s %*s %*s %*s %*s %*s %*s %*s t=%d", &temperature );
+		sscanf( m_line2, "%*s %*s %*s %*s %*s %*s %*s %*s %*s t=%d", &m_temperature );
 				
-        double val = temperature;
+        double val = (double)m_temperature/1000;
         bool bNegative = false;
 		if (val < 0) {
             bNegative = true;
             val = (val< 0) ? -1.0 * val : val;
+        }
+        
+        // If unit is other than Celsius do conversion
+        if ( 0 == m_unit )  {       // Kelvin?
+            val += 273.15;
+        }
+        else if ( 2 == m_unit ) {   // Fahrenheit
+            val = (9.0 / 5.0) * val + 32.0;
+        }
+        
+        
+        // If no GUID set we use the 1-wire GUID
+        if ( m_guid.isNULL() ) {
+            m_guid.getFromArray( guid1w );
+            m_guid.setAt( 8, m_id[0] );
+            m_guid.setAt( 9, m_id[1] );
+            m_guid.setAt( 10, m_id[2] );
+            m_guid.setAt( 11, m_id[3] );
+            m_guid.setAt( 12, m_id[4] );
+            m_guid.setAt( 13, m_id[5] );
+            m_guid.setAt( 14, m_id[6] );
+            m_guid.setAt( 15, m_id[7] );
         }
 
         vscpEvent *pEvent = new vscpEvent();
@@ -508,9 +520,12 @@ CWrkTread::Entry()
 
 		} // event
 
-		::wxSleep(m_interval ? m_interval : 1);
+		::wxSleep( m_interval ? m_interval : 10 );
         
 	}
+    
+    // Close the file
+	fclose (m_pFile);
 
 	return NULL;
 

@@ -357,7 +357,7 @@ typedef  VSCPStatus * PVSCPSTATUS;
 */
 
 typedef struct structVSCPChannelInfo {
-	unsigned char channelType;      // Leve I, Level II etc from canal.h 
+	unsigned char channelType;      // Level I, Level II etc from canal.h 
 	unsigned short channel;         // daemon channel number
 	char GUID[ 16 ];                // Channel GUID id
 	

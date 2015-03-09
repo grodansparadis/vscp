@@ -47,7 +47,6 @@ int main()
 			putchar('|');
 			puts( line1 );
 			putchar('|');
-
 		}
 		else {
 			printf("Failed to read line 1");
@@ -60,9 +59,9 @@ int main()
 	
 		// Read line 2
 		if ( fgets ( line2, sizeof( line2 ) , pFile ) != NULL ) {
-			putchar('|');
+			putchar('*');
 			puts( line2 );
-			putchar('|');
+			putchar('*');
 		}
 		else {
 			printf("Failed to read line 2");
