@@ -335,17 +335,17 @@ CWrkTread::Entry()
 {
 	// Check pointers
 	if (NULL == m_pObj) return NULL;
-
-    // Open the file
-	if ( NULL == ( m_pFile = fopen( m_path.mbc_str() , "r") ) ) {
-        syslog(LOG_ERR,
+	
+	while (!TestDestroy() && !m_pObj->m_bQuit) {
+        
+        // Open the file
+        if ( NULL == ( m_pFile = fopen( m_path.mbc_str() , "r") ) ) {
+            syslog(LOG_ERR,
                     "%s",
                     (const char *) "Workerthread. File to open 1-wire data file. Terminating!");
 
-		return NULL;
-    }
-	
-	while (!TestDestroy() && !m_pObj->m_bQuit) {
+            return NULL;
+        }
         
         // Go to beginning
         fseek( m_pFile, SEEK_SET, 0 );
@@ -353,6 +353,9 @@ CWrkTread::Entry()
         // Read line 1
 		if ( NULL == fgets( m_line1, sizeof( m_line1 )-1, m_pFile ) ) {
 						
+            // Close the file
+            fclose (m_pFile);
+    
 			syslog(LOG_ERR,
                     "%s",
                     (const char *) "Workerthread. Failed to read 1-wire data from file.");
@@ -364,6 +367,9 @@ CWrkTread::Entry()
 		// Read line 2
 		if ( NULL == fgets( m_line2, sizeof( m_line2 )-1, m_pFile ) ) {
 						
+            // Close the file
+            fclose (m_pFile);
+            
 			syslog(LOG_ERR,
                     "%s",
                     (const char *) "Workerthread. Failed to read 1-wire data from file.");
@@ -378,9 +384,14 @@ CWrkTread::Entry()
  				&m_id[0],&m_id[1],&m_id[2],&m_id[3],&m_id[4],&m_id[5],&m_id[6],&m_id[7],&m_id[8] );
 				
 		if ( NULL == strstr( m_line1, "YES" ) ) {
+            // Close the file
+            fclose (m_pFile);
             wxSleep( 2 );   // We sleep before trying again.
 			continue;       // Try again
 		}	
+        
+        // Close the file
+        fclose (m_pFile);
 		
 		sscanf( m_line2, "%*s %*s %*s %*s %*s %*s %*s %*s %*s t=%d", &m_temperature );
 				
@@ -525,7 +536,7 @@ CWrkTread::Entry()
 	}
     
     // Close the file
-	fclose (m_pFile);
+	//fclose (m_pFile);
 
 	return NULL;
 
