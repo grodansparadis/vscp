@@ -51,23 +51,23 @@
 #include <wx/file.h>
 #include <wx/wfstream.h>
 
-#include "../../../../common/canal.h"
-#include "../../../../common/vscp.h"
-#include "../../../../common/canal_macro.h"
-#include "../../../../../common/dllist.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/guid.h"
+#include <canal.h>
+#include <vscp.h>
+#include <canal_macro.h>
+#include <dllist.h>
+#include <vscpremotetcpif.h>
+#include <guid.h>
 
 #include <list>
 #include <string>
 
 using namespace std;
 
-#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2LMSENSORS_OBJ_MUTEX____"
+#define VSCP_LEVEL2_DLL_LMSENSORS_OBJ_MUTEX "___VSCP__DLL_L2LMSENSORS_OBJ_MUTEX____"
 
 #define VSCP_LMSENSORS_LIST_MAX_MSG		2048
 
-// Deafult seconds between events
+// Defult seconds between events
 #define DEFAULT_INTERVAL    10    
 
 // Forward declarations

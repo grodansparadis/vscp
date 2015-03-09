@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
+// Copyright (C) 2000-2015 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -60,27 +60,24 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 
-#include "../../../../common/vscp.h"
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/vscp_type.h"
-#include "../../../../common/vscp_class.h"
-#include "socketcan.h"
+#include <vscp.h>
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
+#include <vscp_type.h>
+#include <vscp_class.h>
+#include "wire1.h"
 
-// queues
-//WX_DEFINE_LIST(VSCPEVENTLIST_SEND);
-//WX_DEFINE_LIST(VSCPEVENTLIST_RECEIVE);
 
 //////////////////////////////////////////////////////////////////////
-// Csocketcan
+// CWire1
 //
 
-Csocketcan::Csocketcan()
+CWire1::CWire1()
 {
 	m_bQuit = false;
-	m_pthreadWorker = NULL;
-	m_interface = _("vcan0");
-	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
+	m_pthreadWork = NULL;
+	m_nSensors = 1;	// Default is one sensor
+    vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
 
@@ -88,7 +85,7 @@ Csocketcan::Csocketcan()
 // ~Csocketcan
 //
 
-Csocketcan::~Csocketcan()
+CWire1::~CWire1()
 {
 	close();
 	::wxUninitialize();
@@ -101,7 +98,7 @@ Csocketcan::~Csocketcan()
 //
 
 bool
-Csocketcan::open(const char *pUsername,
+CWire1::open(const char *pUsername,
 		const char *pPassword,
 		const char *pHost,
 		short port,
@@ -110,6 +107,7 @@ Csocketcan::open(const char *pUsername,
 {
 	bool rv = true;
 	wxString wxstr = wxString::FromAscii(pConfig);
+    wxString strVariableName;
 
 	m_username = wxString::FromAscii(pUsername);
 	m_password = wxString::FromAscii(pPassword);
@@ -123,19 +121,18 @@ Csocketcan::open(const char *pUsername,
 	// 
 	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Check for socketcan interface in configuration string
+	// Check for # of sensors in configuration string
 	if (tkz.HasMoreTokens()) {
-		// Interface
-		m_interface = tkz.GetNextToken();
+		// Path
+		m_nSensors = vscp_readStringValue(tkz.GetNextToken());
 	}
-
 
 	// First log on to the host and get configuration 
 	// variables
 
-	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_host,
-												m_username,
-												m_password ) ) {
+	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
+                                                    m_username,
+                                                    m_password ) ) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");
@@ -145,61 +142,124 @@ Csocketcan::open(const char *pUsername,
 	// Find the channel id
 	uint32_t ChannelID;
 	m_srv.doCmdGetChannelID(&ChannelID);
-    
-	//m_srv.doCmdGetGUID( m_ifguid );
 
 	// The server should hold configuration data for each sensor
 	// we want to monitor.
 	// 
 	// We look for 
 	//
-	//	 _interface - The socketcan interface to use. Typically this 
-	//	 is “can0, can0, can1...
+	//	 _numberofsensors - This is the number of sensors 
+	// 	   that the driver is supposed
+	//	   to read. Sensors are numbered staring with zero. 
 	//
-	//   _filter - Standard VSCP filter in string form. 
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received.
-	//	 _mask - Standard VSCP mask in string form.
-	//				   1,0x0000,0x0006,
-	//				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
-	//				as priority,class,type,GUID
-	//				Used to filter what events that is received from 
-	//				the socketcan interface. If not give all events 
-	//				are received. 
+	//   _guid[n] - GUID for sensor n. guid0, guid1, guid2 etc. If not
+	//     give the 1wire guid + the sensor id is used.
+	//
+	//	 _path[n] - Path to value for the sensor value file
+	//				/sys/bus/w1/devices/10-00080192afa8/w1_slave
+	//	 		 
+	//   _interval[n]  - Interval in Seconds the event should be sent out. 
+	//						Zero disables.   
+	//
+    //   _unit[n] - 0=Kelvin, 1=Celsius (default), 2=Fahrenheit 
+	//
+	//   _index[n] - Sensorindex 0-7
 	//
 
-	wxString str;
-	wxString strName = m_prefix +
-			wxString::FromAscii("_interface");
-	m_srv.getVariableString(strName, &m_interface);
+	// Get configuration data
+	int varNumberOfSensors = 0;
 
-	strName = m_prefix +
-			wxString::FromAscii("_filter");
-	if (m_srv.getVariableString(strName, &str)) {
-		vscp_readFilterFromString(&m_vscpfilter, str);
+	wxString strNumberOfSensors = m_prefix +
+			wxString::FromAscii("_numberofsensors");
+
+	if ( !m_srv.getVariableInt(strNumberOfSensors, &varNumberOfSensors ) ) {	
+		// We use default 1 or config parameter supplied
 	}
 
-	strName = m_prefix +
-			wxString::FromAscii("_mask");
-	if (m_srv.getVariableString(strName, &str)) {
-		vscp_readMaskFromString(&m_vscpfilter, str);
-	}
-	
-	m_srv.doClrInputQueue();
+	// Read in the configuration values for each sensor
+	for (int i = 0; i < varNumberOfSensors; i++) {
 
-	// start the workerthread
-	m_pthreadWorker = new CSocketCanWorkerTread();
-	if (NULL != m_pthreadWorker) {
-		m_pthreadWorker->m_pObj = this;
-		m_pthreadWorker->Create();
-		m_pthreadWorker->Run();
-	} 
-	else {
-		rv = false;
+		wxString strIteration;
+		strIteration.Printf(_("%d"), i);
+		strIteration.Trim();
+
+		CWrkTread *pthreadWork = new CWrkTread();
+		if (NULL != pthreadWork) {
+			
+			// Get sample interval
+			strVariableName = m_prefix +
+					wxString::FromAscii("_interval") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_interval)) {
+				// Node need to log error as optional
+			}
+			
+			// Disabled if interval is zero
+			if ( 0 == pthreadWork->m_interval ) continue;
+
+			// Get the path
+			wxString strVariableName = m_prefix +
+					wxString::FromAscii("_path") + strIteration;
+			
+			if (!m_srv.getVariableString(strVariableName, &pthreadWork->m_path)) {
+				syslog(LOG_ERR,
+						"%s prefix=%s i=%d",
+						(const char *) "Failed to read variable _path.",
+						(const char *)m_prefix.ToAscii(),
+						i);
+			}
+
+			// Get GUID
+			strVariableName = m_prefix +
+					wxString::FromAscii("_guid") + strIteration;
+			if (!m_srv.getVariableGUID(strVariableName, pthreadWork->m_guid)) {
+				// Node need to log error as optional
+			}
+
+			// Get sample interval
+			strVariableName = m_prefix +
+					wxString::FromAscii("_interval") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_interval)) {
+				// Node need to log error as optional
+			}
+
+			// Get unit
+			strVariableName = m_prefix +
+					wxString::FromAscii("_unit") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_unit)) {
+				// Node need to log error as optional
+			}
+			
+			// Check read value
+			if ( pthreadWork->m_unit > 3 ) pthreadWork->m_unit = 2; // Celsius
+			
+			// Get index
+			strVariableName = m_prefix +
+					wxString::FromAscii("_index") + strIteration;
+			if (!m_srv.getVariableInt(strVariableName, &pthreadWork->m_unit)) {
+				// Node need to log error as optional
+			}
+            
+            // Get coding
+			strVariableName = m_prefix +
+					wxString::FromAscii("_coding") + strIteration;
+			if (!m_srv.getVariableInt( strVariableName, &pthreadWork->m_coding)) {
+				// Node need to log error as optional
+			}
+
+			// start the workerthread
+			pthreadWork->m_pObj = this;
+			pthreadWork->Create();
+			pthreadWork->Run();
+
+		}
+		else {
+			syslog(LOG_ERR,
+					"%s prefix=%s i=%d",
+					(const char *) "Failed to start workerthread.",
+					(const char *)m_prefix.ToAscii(),
+					i);
+			rv = false;
+		}
 	}
 
 	// Close the channel
@@ -214,7 +274,7 @@ Csocketcan::open(const char *pUsername,
 //
 
 void
-Csocketcan::close(void)
+CWire1::close(void)
 {
 	// Do nothing if already terminated
 	if (m_bQuit) return;
@@ -229,7 +289,7 @@ Csocketcan::close(void)
 //
 
 bool 
-Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
+CWire1::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
 	//m_sendQueue.Append((vscpEvent *)pEvent);
@@ -242,15 +302,21 @@ Csocketcan::addEvent2SendQueue(const vscpEvent *pEvent)
 
 
 //////////////////////////////////////////////////////////////////////
-//                Workerthread - CSocketCanWorkerTread
+//                           Workerthread
 //////////////////////////////////////////////////////////////////////
 
-CSocketCanWorkerTread::CSocketCanWorkerTread()
+CWrkTread::CWrkTread()
 {
 	m_pObj = NULL;
+	m_path.Empty();
+	m_guid.clear(); // Interface GUID
+	m_interval = DEFAULT_INTERVAL; 
+    m_index = 0;
+	m_unit = DEFAULT_UNIT;
+    m_coding = DEFAULT_CODING;
 }
 
-CSocketCanWorkerTread::~CSocketCanWorkerTread()
+CWrkTread::~CWrkTread()
 {
 	;
 }
@@ -261,211 +327,190 @@ CSocketCanWorkerTread::~CSocketCanWorkerTread()
 //
 
 void *
-CSocketCanWorkerTread::Entry()
+CWrkTread::Entry()
 {
-	int sock;
-	char devname[IFNAMSIZ + 1];
-	fd_set rdfs;
-	struct timeval tv;
-	struct sockaddr_can addr;
-	struct ifreq ifr;
-	struct cmsghdr *cmsg;
-	struct canfd_frame frame;
-	char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(__u32))];
-	const int canfd_on = 1;
-
-	::wxInitialize();
-			
 	// Check pointers
 	if (NULL == m_pObj) return NULL;
 
-	strncpy(devname, m_pObj->m_interface.ToAscii(), sizeof(devname) - 1);
-#if DEBUG	
-	syslog(LOG_ERR, "CWriteSocketCanTread: Interface: %s\n", ifname);
-#endif	
+	FILE * pFile;
+	char line1[80];
+	char line2[80];
+	unsigned int id[9];
+	int temperature;
 	
-    while (!TestDestroy() && !m_pObj->m_bQuit) {
+	while (!TestDestroy() && !m_pObj->m_bQuit) {
 
-        sock = socket(PF_CAN, SOCK_RAW, CAN_RAW);
-        if (sock < 0) {
+		// Open the file
+		if ( pFile = fopen( m_path , "r") ) {
+			syslog(LOG_ERR,
+				"%s",
+				(const char *) "Workerthread. File to open 1-wire data file. Terminating!");
+			// Close the channel
+			m_srv.doCmdClose();
+			return NULL;
+        }
+		
+        // Read line 1
+		if ( !fgets( line1, sizeof( line1 ), pFile ) ) {
+			
+			// Close the file
+			fclose (pFile);
+			
+			syslog(LOG_ERR,
+				"%s",
+				(const char *) "Workerthread. Failed to read 1-wire data from file. Terminating!");
+			
+            // Close the channel
+			m_srv.doCmdClose();
+			return NULL;
+		}
+	
+		// Read line 2
+		if ( !fgets ( line2, sizeof( line2 ) , pFile ) ) {
+			
+            // Close the file
+			fclose (pFile);
+			
+			syslog(LOG_ERR,
+				"%s",
+				(const char *) "Workerthread. Failed to read 1-wire data from file. Terminating!");
             
-            if (ENETDOWN == errno) {
-                sleep(1);
-                continue;
-            }
-            
-            syslog(LOG_ERR,
-                    "%s",
-                    (const char *) "CReadSocketCanTread: Error while opening socket. Terminating!");
-            
-            m_pObj->m_bQuit;
-            continue;
+			// Close the channel
+			m_srv.doCmdClose();
+			return NULL;
+		}
+	
+		// Close the file
+		fclose (pFile);
+		
+		// 08 00 4b 46 ff ff 0d 10 ff : crc=ff YES
+		sscanf( line1, "%02x %02x %02x %02x %02x %02x %02x %02x %02x",
+				&id[0],&id[1],&id[2],&id[3],&id[4],&id[5],&id[6],&id[7],&id[8] );
+				
+		if ( NULL == strstr( line1, "YES" ) ) {
+            wxSleep( 2 );   // We sleep before trying again.
+			continue;       // Try again
+		}	
+		
+		sscanf( line2, "%*s %*s %*s %*s %*s %*s %*s %*s %*s t=%d", &temperature );
+				
+        double val = temperature;
+        bool bNegative = false;
+		if (val < 0) {
+            bNegative = true;
+            val = (val< 0) ? -1.0 * val : val;
         }
 
-        strcpy(ifr.ifr_name, devname);
-        ioctl(sock, SIOCGIFINDEX, &ifr);
+        vscpEvent *pEvent = new vscpEvent();
+        if (NULL != pEvent) {
 
-        addr.can_family = AF_CAN;
-        addr.can_ifindex = ifr.ifr_ifindex;
+            pEvent->pdata = NULL;
+            pEvent->sizeData = 0;
 
-#ifdef DEBUG
-        printf("using interface name '%s'.\n", ifr.ifr_name);
-#endif
+            m_guid.writeGUID(pEvent->GUID);
+            pEvent->vscp_class = VSCP_CLASS1_MEASUREMENT;
+            pEvent->vscp_type = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
 
-        // try to switch the socket into CAN FD mode 
-        setsockopt(sock,
-                SOL_CAN_RAW,
-                CAN_RAW_FD_FRAMES,
-                &canfd_on,
-                sizeof(canfd_on));
-
-        if (bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
-            syslog(LOG_ERR,
-                    "%s",
-                    (const char *) "CReadSocketCanTread: Error in socket bind. Terminating!");
-            close(sock);
-            sleep(2);
-            continue;
-        }
-
-        bool bInnerLoop = true;
-        while (!TestDestroy() && !m_pObj->m_bQuit && bInnerLoop) {
-
-            FD_ZERO(&rdfs);
-            FD_SET(sock, &rdfs);
-
-            tv.tv_sec = 0;
-            tv.tv_usec = 5000; // 5ms timeout 
-
-            int ret;
-            if ( ( ret = select(sock + 1, &rdfs, NULL, NULL, &tv ) ) <  0) {
-                // Error
-                if (ENETDOWN == errno) {
-                    // We try to get contact with the net
-                    // again if it goes down
-                    bInnerLoop = false;
-                }
-                else {
-                    m_pObj->m_bQuit = true;
-                }
-                continue;
-            }
-
-            if ( ret ) {
-
-                // There is data to read
-
-                ret = read(sock, &frame, sizeof(struct can_frame));
-                if (ret < 0) {
-                    if (ENETDOWN == errno) {
-                        // We try to get contact with the net
-                        // again if it goes down
-                        bInnerLoop = false;
-                        sleep(2);
+            switch ( m_coding ) {
+                
+                case 0:     // Normalized integer
+                {
+                    uint8_t buf[8];
+                    uint16_t size;
+                    if ( vscp_convertFloatToNormalizedEventData( buf,
+                                        &size,
+                                        val,
+                                        m_unit,
+                                        m_index ) ) {
+                            
+                        pEvent->pdata = new uint8_t[size];
+                        if (NULL != pEvent->pdata) {
+                            pEvent->sizeData = size;
+                            memcpy( pEvent->pdata, buf, size);
+                        }
+                        else {
+                            pEvent->sizeData = 0;
+                            pEvent->pdata = NULL;
+                        }
                     }
+                }
+                break;
+
+                case 1:     // String
+                {
+                    pEvent->sizeData = 8;
+                    pEvent->pdata = new uint8_t[8];
+
+                    if (NULL != pEvent->pdata) {
+                        wxString str;
+                        str.Printf(_("%lf"), val);
+                        if (str.Length() > 7) {
+                            str = str.Left(7);
+                        }
+
+                        strcpy((char *) (pEvent->pdata + 1), str.ToAscii());
+
+                    } 
                     else {
-                        m_pObj->m_bQuit = true;
+                       pEvent->sizeData = 0;
+                       pEvent->pdata = NULL;
                     }
-                    continue;
+
+                    // Set data coding
+                    pEvent->pdata[0] = VSCP_DATACODING_NORMALIZED;
+
                 }
+                break;
 
-                // Must be Extended
-                if (!(frame.can_id & CAN_EFF_FLAG)) continue;
+                case 2:
+                {
+                    pEvent->sizeData = 7;
+                    pEvent->pdata = new uint8_t[7];
 
-                // Mask of control bits
-                frame.can_id &= CAN_EFF_MASK;
+                    if (NULL != pEvent->pdata) {
+                        uint8_t buf[6];
+                        float f = (float) val;
+                        uint8_t *p = (uint8_t *) & f;
+                        memcpy(buf, p, 6);
+                        // If on a little endian platform we
+                        // have to change byte order
+                        if (wxIsPlatformLittleEndian()) {
+                            for (int i = 0; i < 6; i++) {
+                                pEvent->pdata[1 + i] = buf[5 - i];
+                            }
+                        } 
+                        else {
+                            memcpy(pEvent->pdata + 1, buf, 6);
+                        }
 
-                vscpEvent *pEvent = new vscpEvent();
-                if (NULL != pEvent) {
-
-                    pEvent->pdata = new uint8_t[frame.len];
-                    if (NULL == pEvent->pdata) {
-                        delete pEvent;
-                        continue;
-                    }
-
-                    // GUID will be set to GUID of interface
-                    // by driver interface with LSB set to nickname
-                    memset(pEvent->GUID, 0, 16);
-                    pEvent->GUID[VSCP_GUID_LSB] = frame.can_id & 0xff;
-
-                    // Set VSCP class
-                    pEvent->vscp_class = vscp_getVSCPclassFromCANALid(frame.can_id);
-
-                    // Set VSCP type
-                    pEvent->vscp_type = vscp_getVSCPtypeFromCANALid(frame.can_id);
-
-                    // Copy data if any
-                    pEvent->sizeData = frame.len;
-                    if (frame.len) {
-                        memcpy(pEvent->pdata, frame.data, frame.len);
-                    }
-
-                    if (vscp_doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
-                        m_pObj->m_mutexReceiveQueue.Lock();
-                        //m_pObj->m_receiveQueue.Append(pEvent);
-                        m_pObj->m_receiveList.push_back(pEvent);
-                        m_pObj->m_semReceiveQueue.Post();
-                        m_pObj->m_mutexReceiveQueue.Unlock();
-                    } else {
-                        vscp_deleteVSCPevent(pEvent);
+                        // Set data coding
+                        pEvent->pdata[0] = VSCP_DATACODING_SINGLE;
+                    } 
+                    else {
+                        pEvent->sizeData = 0;
+                        pEvent->pdata = NULL;
                     }
                 }
+                break;
+                
+            } // switch
+                
 
-            } else {
+            if (vscp_doLevel2Filter(pEvent, &m_pObj->m_vscpfilter)) {
+                m_pObj->m_mutexReceiveQueue.Lock();
+                m_pObj->m_receiveList.push_back(pEvent);
+                m_pObj->m_semReceiveQueue.Post();
+                m_pObj->m_mutexReceiveQueue.Unlock();
+            }
+            else {
+                vscp_deleteVSCPevent(pEvent);
+            }
 
-                // Check if there is event(s) to send
-                if (m_pObj->m_sendList.size() /*m_pObj->m_sendQueue.GetCount()*/) {
+		} // event
 
-                    // Yes there are data to send
-                    // So send it out on the CAN bus
-
-                    //VSCPEVENTLIST_SEND::compatibility_iterator nodeClient;
-                    m_pObj->m_mutexSendQueue.Lock();
-                    //nodeClient = m_pObj->m_sendQueue.GetFirst();
-                    vscpEvent *pEvent = m_pObj->m_sendList.front();
-                    m_pObj->m_sendList.pop_front();
-                    m_pObj->m_mutexSendQueue.Unlock();
-
-                    if (NULL == pEvent) continue;
-
-                    // Class must be a Level I class or a Level II
-                    // mirror class
-                    if (pEvent->vscp_class < 512) {
-                        frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
-                        frame.can_id |= CAN_EFF_FLAG; // Always extended
-                        if (0 != pEvent->sizeData) {
-                            frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-                            memcpy(frame.data, pEvent->pdata, frame.len);
-                        }
-                    } else if (pEvent->vscp_class < 1024) {
-                        pEvent->vscp_class -= 512;
-                        frame.can_id = vscp_getCANALidFromVSCPevent(pEvent);
-                        frame.can_id |= CAN_EFF_FLAG; // Always extended
-                        if (0 != pEvent->sizeData) {
-                            frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
-                            memcpy(frame.data, pEvent->pdata + 16, frame.len);
-                        }
-                    }
-
-                    // Remove the event
-                    m_pObj->m_mutexSendQueue.Lock();
-                    //m_pObj->m_sendQueue.DeleteNode(nodeClient);
-                    vscp_deleteVSCPevent(pEvent);
-                    m_pObj->m_mutexSendQueue.Unlock();
-
-
-                    // Write the data
-                    int nbytes = write(sock, &frame, sizeof(struct can_frame));
-
-                } // event to send
-            }  // No data to read
-        } // Inner loop
-
-        // Close the socket
-        close(sock);
-
-    } // Outer loop
+		::wxSleep(m_interval ? m_interval : 1);
+        
+	}
 
 	return NULL;
 
@@ -476,7 +521,7 @@ CSocketCanWorkerTread::Entry()
 //
 
 void
-CSocketCanWorkerTread::OnExit()
+CWrkTread::OnExit()
 {
 	;
 }

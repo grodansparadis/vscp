@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+<persistent>
+
+<!-- ******************************************************** --> 
+<!--            VSCP wire1 Level II driver variables          --> 
+<!-- ******************************************************** -->
+<!-- Number of sensors to read --> 
+<variable type="int" > 	
+	<name>wire1_numberofsensors</name>          	
+	<value>2</value>      
+</variable>
+ 
+<!-- ******************************************************** --> 
+<!--           Variables for temperature sensor 1             --> 
+<!-- ******************************************************** -->
+ 
+<!-- Interval for temperature reports --> 
+<variable type="int" >           	
+	<name>wire1_interval0</name>          	
+	<value>10</value>      
+</variable>
+ 
+<!-- VSCP GUID -->
+<!-- We use the automatically generated GUID 
+     (1-wire guid + sensor id)  -->
+ 
+<!-- Path to sensor data file for sensor 1 -->  
+<variable type="string" >                   	
+	<name>wire1_path0</name>          	
+	<value>/sys/bus/w1/devices/10-000801929d3d/w1_slave</value>      
+</variable>
+ 
+ 
+<!-- ******************************************************** --> 
+<!--           Variables for temperature sensor 2             --> 
+<!-- ******************************************************** -->
+ 
+<!-- Interval for temperature sensor 2 --> 
+<variable type="int" >           	
+	<name>wire1_interval1</name>          	
+	<value>10</value>      
+</variable>
+ 
+<!-- VSCP GUID -->
+<!-- We use the automatically generated GUID 
+     (1-wire GUID + sensor id)  --> 	
+ 
+<!-- Path to sensor data file for sensor 2 -->  
+<variable type="string" >                   	
+	<name>wire1_path1</name>          	
+	<value>/sys/bus/w1/devices/10-00080192afa8/w1_slave</value>      
+</variable>
+
+</persistent>

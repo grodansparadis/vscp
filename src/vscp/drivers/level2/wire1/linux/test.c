@@ -1,13 +1,14 @@
-// test.cpp : 
+// readw1.cpp : 
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public License
 // as published by the Free Software Foundation; either version
 // 2 of the License, or (at your option) any later version.
 //
-// This file is part of the VSCP (http://www.vscp.org)
+// This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2007 Johan Hedlund,  <kungjohan@gmail.com>
+// Copyright (C) 2000-2015 Ake Hedman, 
+// Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This file is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,54 +23,74 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <string.h>
- 
-#include <net/if.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
- 
-#include <linux/can.h>
-#include <linux/can/raw.h>
- 
-int
-main(void)
+
+int main()
 {
-        int s;
-        int nbytes;
-        struct sockaddr_can addr;
-        struct can_frame frame;
-        struct ifreq ifr;
- 
-        char *ifname = "can0";
- 
-        if((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-                perror("Error while opening socket");
-                return -1;
-        }
- 
-        strcpy(ifr.ifr_name, ifname);
-        ioctl(s, SIOCGIFINDEX, &ifr);
- 
-        addr.can_family  = AF_CAN;
-        addr.can_ifindex = ifr.ifr_ifindex; 
- 
-        printf("%s at index %d\n", ifname, ifr.ifr_ifindex);
- 
-        if(bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-                perror("Error in socket bind");
-                return -2;
-        }
- 
-        frame.can_id  = 0x123;
-        frame.can_dlc = 2;
-        frame.data[0] = 0x11;
-        frame.data[1] = 0x22;
- 
-        nbytes = write(s, &frame, sizeof(struct can_frame));
- 
-        printf("Wrote %d bytes\n", nbytes);
- 
-        return 0;
+	FILE * pFile;
+	char line1[80];
+	char line2[80];
+	unsigned int id[9];
+	int temperature;
+
+	pFile = fopen ("/sys/bus/w1/devices/10-00080192afa8/w1_slave" , "r");
+	if (pFile == NULL) {
+		perror ("Error opening file\n");
+		return -1;
+   }
+   else {
+	
+		// Read line 1
+		if ( fgets( line1, sizeof( line1 ), pFile ) != NULL ) {
+			putchar('|');
+			puts( line1 );
+			putchar('|');
+
+		}
+		else {
+			printf("Failed to read line 1");
+			
+			// Close the file
+			fclose (pFile);
+			
+			return -1;
+		}
+	
+		// Read line 2
+		if ( fgets ( line2, sizeof( line2 ) , pFile ) != NULL ) {
+			putchar('|');
+			puts( line2 );
+			putchar('|');
+		}
+		else {
+			printf("Failed to read line 2");
+			
+			// Close the file
+			fclose (pFile);
+			
+			return -1;
+		}
+	
+		// Close the file
+		fclose (pFile);
+		
+		// 08 00 4b 46 ff ff 0d 10 ff : crc=ff YES
+		sscanf( line1, "%02x %02x %02x %02x %02x %02x %02x %02x %02x",
+				&id[0],&id[1],&id[2],&id[3],&id[4],&id[5],&id[6],&id[7],&id[8] );
+		
+		printf("\n\n%02x %02x %02x %02x %02x %02x %02x %02x %02x\n",
+				id[0],id[1],id[2],id[3],id[4],id[5],id[6],id[7],id[8]);
+		
+		if ( NULL != strstr( line1, "YES" ) ) {
+			printf("YES found\n");
+		}	
+		
+		sscanf( line2, "%*s %*s %*s %*s %*s %*s %*s %*s %*s t=%d", &temperature );
+				
+		printf("Temperature is %f \n", (float)temperature/1000 );
+   }
+   
+	return 0;
 }

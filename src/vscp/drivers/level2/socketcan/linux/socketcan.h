@@ -51,19 +51,19 @@
 #include <wx/file.h>
 #include <wx/wfstream.h>
 
-#include "../../../../common/canal.h"
-#include "../../../../common/vscp.h"
-#include "../../../../common/canal_macro.h"
-#include "../../../../../common/dllist.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/guid.h"
+#include <canal.h>
+#include <vscp.h>
+#include <canal_macro.h>
+#include <dllist.h>
+#include <vscpremotetcpif.h>
+#include <guid.h>
 
 #include <list>
 #include <string>
 
 using namespace std;
 
-#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2SOCKETCAN_OBJ_MUTEX____"
+#define VSCP_LEVEL2_DLL_SOCKETCAN_OBJ_MUTEX "___VSCP__DLL_L2SOCKETCAN_OBJ_MUTEX____"
 
 #define VSCP_SOCKETCAN_LIST_MAX_MSG		2048
   

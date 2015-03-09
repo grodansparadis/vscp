@@ -53,10 +53,10 @@
 #include <wx/thread.h>
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/vscp_type.h"
-#include "../../../../common/vscp_class.h"
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
+#include <vscp_type.h>
+#include <vscp_class.h>
 #include "lmsensors.h"
 
 
@@ -96,7 +96,6 @@ Clmsensors::open(const char *pUsername,
                     const char *pPrefix,
                     const char *pConfig)
 {
-
 	bool rv = true;
 	wxString wxstr = wxString::FromAscii(pConfig);
 
@@ -121,9 +120,9 @@ Clmsensors::open(const char *pUsername,
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen( m_host,
-                            m_username,
-                            m_password) <= 0) {
+	if ( VSCP_ERROR_SUCCESS !=  m_srv.doCmdOpen( m_host,
+                                                    m_username,
+                                                    m_password )) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");

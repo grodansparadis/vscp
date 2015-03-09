@@ -167,9 +167,9 @@ CRawEthernet::open(const char *pUsername,
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen(m_host,
-			m_username,
-			m_password) <= 0) {
+	if ( VSCP_ERROR_SUCCESS !=  m_srv.doCmdOpen( m_host,
+                                                    m_username,
+                                                    m_password ) ) {
 		syslog(LOG_ERR,
 				"%s",
 				(const char *) "Unable to connect to VSCP TCP/IP interface. Terminating!");

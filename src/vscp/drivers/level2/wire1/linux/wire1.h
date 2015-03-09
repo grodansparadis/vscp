@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
+// Copyright (C) 2000-2015 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -51,40 +51,41 @@
 #include <wx/file.h>
 #include <wx/wfstream.h>
 
-#include "../../../../common/canal.h"
-#include "../../../../common/vscp.h"
-#include "../../../../common/canal_macro.h"
-#include "../../../../../common/dllist.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/guid.h"
+#include <canal.h>
+#include <vscp.h>
+#include <canal_macro.h>
+#include <dllist.h>
+#include <vscpremotetcpif.h>
+#include <guid.h>
 
 #include <list>
 #include <string>
 
 using namespace std;
 
-#define VSCP_LEVEL2_DLL_LOGGER_OBJ_MUTEX "___VSCP__DLL_L2SOCKETCAN_OBJ_MUTEX____"
+#define VSCP_LEVEL2_DLL_WIRE1_OBJ_MUTEX "___VSCP__DLL_L2WIRE1_OBJ_MUTEX____"
 
-#define VSCP_SOCKETCAN_LIST_MAX_MSG		2048
-  
-// Input and output queue
-//WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_SEND);
-//WX_DECLARE_LIST(vscpEvent, VSCPEVENTLIST_RECEIVE);
+#define VSCP_WIRE1_LIST_MAX_MSG		2048
+
+// Defult seconds between events
+#define DEFAULT_INTERVAL			30 
+#define DEFAULT_UNIT				2		// Celsius	
+#define DEFAULT_CODING				0		// Normalized integer
 
 // Forward declarations
-class CSocketCanWorkerTread;
+class CWrkTread;
 class VscpRemoteTcpIf;
 class wxFile;
 
 
-class Csocketcan {
+class CWire1 {
 public:
 
     /// Constructor
-    Csocketcan();
+    CWire1();
 
     /// Destructor
-    virtual ~Csocketcan();
+    virtual ~CWire1();
 
     /*! 
         Open
@@ -126,26 +127,20 @@ public:
 
     /// Server supplied port
     short m_port;
-    
-    /// socketcan interface to use
-    wxString m_interface;
-    
+	
+	/// Number of sensors
+    int m_nSensors;
+        
     /// Filter
     vscpEventFilter m_vscpfilter;
-	
-	/// Get GUID for this interface.
-	//cguid m_ifguid;
 
-    /// Pointer to worker threads
-    CSocketCanWorkerTread *m_pthreadWorker;
+    /// Pointer to worker thread
+    CWrkTread *m_pthreadWork;
     
      /// VSCP server interface
     VscpRemoteTcpIf m_srv;
 	
-	// Queue
-	//VSCPEVENTLIST_SEND m_sendQueue;			// Things we should send
-	//VSCPEVENTLIST_RECEIVE m_receiveQueue;		// Thing this driver receive
-	
+	// Queue	
 	std::list<vscpEvent *> m_sendList;
 	std::list<vscpEvent *> m_receiveList;
 	
@@ -161,19 +156,20 @@ public:
 
 };
 
+
 ///////////////////////////////////////////////////////////////////////////////
-//				                Worker Treads
+//				                Worker Tread
 ///////////////////////////////////////////////////////////////////////////////
 
 
-class CSocketCanWorkerTread : public wxThread {
+class CWrkTread : public wxThread {
 public:
 
     /// Constructor
-    CSocketCanWorkerTread();
+    CWrkTread();
 
     /// Destructor
-    ~CSocketCanWorkerTread();
+    ~CWrkTread();
 
     /*!
         Thread code entry point
@@ -190,8 +186,15 @@ public:
     VscpRemoteTcpIf m_srv;
 
     /// Sensor object
-    Csocketcan *m_pObj;
-
+    CWire1 *m_pObj;
+    
+    /// Data object for specific sensor
+    wxString m_path;
+    cguid m_guid;
+    int m_interval;
+	int m_index;		// Index for events that needs index
+	int m_unit;			// Unit for events that need unit
+	int m_coding;		// 0=normalizes/1=string/2=float
 };
 
 

@@ -11,7 +11,7 @@ top_builddir = @top_builddir@
 top_wxbuilddir = @top_wxbuilddir@
 CXX = @CXX@
 CXXFLAGS = @CXXFLAGS@ -fPIC -I../../../../common -I../../../../../common
-CPPFLAGS = -I include  @CPPFLAGS@ -fPIC -I../../../../common -I../../../../../common
+CPPFLAGS = -I include  @CPPFLAGS@ -DUSE_FOSSA -fPIC -I../../../../common -I../../../../../common
 CFLAGS = -fPIC -I../../../../common -I../../../../../common
 LDFLAGS = @LDFLAGS@
 EXTRALIBS = @EXTRALIBS@
@@ -35,36 +35,36 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-SOCKETCAN_OBJECTS = socketcan.o\
+WIRE1_OBJECTS = wire1.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o\
+	../../../../../common/fossa.o\
 
-PROJOBJS =  socketcan.o\
+PROJOBJS =  wire1.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o\
+	../../../../../common/fossa.o\
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o\
+	../../../../../common/fossa.o\
 
 
 ### Targets: ###
 
-all: vscp2drv_socketcan.so test
+all: vscpl2drv_wire1.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscp2drv_socketcan.so $(libdir)
+	$(INSTALL_PROGRAM) vscpil2drv_wire1.so $(libdir)
 
 uninstall: 
 
@@ -77,7 +77,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscp2drv_socketcan.so
+	rm -f vscpl2drv_wire1.so
 	rm -f test
 
 distclean: clean
@@ -88,8 +88,8 @@ test:  test.o $(PROJOBJS)
 	$(CXX) -o $@ test.o $(PROJOBJS) $(LDFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS)
 
 # Build the Linux DL
-%.so: %.o $(SOCKETCAN_OBJECTS)
-	$(CXX) -o $@ vscp2drv_socketcan.o $(SOCKETCAN_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+%.so: %.o $(WIRE1_OBJECTS)
+	$(CXX) -o $@ vscpl2drv_wire1.o $(WIRE1_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 $(ALWAYS_BUILD):  .FORCE
 
