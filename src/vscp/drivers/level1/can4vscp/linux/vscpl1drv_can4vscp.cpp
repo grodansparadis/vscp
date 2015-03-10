@@ -1,4 +1,4 @@
-// can232drv.cpp : Defines the initialization routines for the DLL.
+// vscpl1drv_can4vscp.cpp : Defines the initialization routines for the DLL.
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014
+// Copyright (C) 2000-2015
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -23,7 +23,7 @@
 //
 
 
-#include "vscpl1_socketcandrv.h"
+#include "vscpl1drv_can4vscp.h"
 #include "stdio.h"
 #include "stdlib.h"
 

@@ -25,7 +25,7 @@
 #if !defined(AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
 #define AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
 
-#include "socketcanobj.h"
+#include "can4vscpobj.h"
 
 // This is the version info for this DLL - Change to your own value
 #define DLL_VERSION		1
