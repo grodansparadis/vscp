@@ -65,7 +65,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_ALLOW_KEYWORD_MACROS;wxUSE_GUI=0;_WINDLL;WIN32;NDEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;_ALLOW_KEYWORD_MACROS;wxUSE_GUI=0;_WINDLL;WIN32;NDEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Release\rawethernet.pch</PrecompiledHeaderOutputFile>
@@ -121,7 +121,7 @@
       <MinimalRebuild>true</MinimalRebuild>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_ALLOW_KEYWORD_MACROS;wxUSE_GUI=0;WIN32;_DEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;_ALLOW_KEYWORD_MACROS;wxUSE_GUI=0;WIN32;_DEBUG;_WINDOWS;_USRDLL;TCPIPLINKDRV_EXPORTS;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\rawethernet.pch</PrecompiledHeaderOutputFile>
@@ -167,7 +167,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\..\common\crc.c" />
     <ClCompile Include="..\..\..\..\..\common\crc8.c" />
-    <ClCompile Include="..\..\..\..\..\common\net_skeleton.c" />
+    <ClCompile Include="..\..\..\..\..\common\fossa.c" />
     <ClCompile Include="..\..\..\..\common\guid.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
     <ClCompile Include="..\..\..\..\common\vscpremotetcpif.cpp" />
@@ -181,6 +181,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\common\crc.h" />
     <ClInclude Include="..\..\..\..\..\common\crc8.h" />
+    <ClInclude Include="..\..\..\..\..\common\fossa.h" />
     <ClInclude Include="..\..\..\..\common\guid.h" />
     <ClInclude Include="..\..\..\..\common\vscp.h" />
     <ClInclude Include="..\..\..\..\common\vscphelper.h" />
