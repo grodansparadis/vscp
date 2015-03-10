@@ -41,7 +41,6 @@ CANCMD_OBJECTS =  vscpcmd.o\
 	../common/guid.o\
 	../../common/net_skeleton.o\
 	../../common/frozen.o\
-	../../common/v7.o
 
 ALWAYS_BUILD = ../common/vscpremotetcpif.o\
 	../common/vscphelper.o\
@@ -50,7 +49,6 @@ ALWAYS_BUILD = ../common/vscpremotetcpif.o\
 	../../common/crc8.o\
 	../../common/net_skeleton.o\
 	../../common/frozen.o\
-	../../common/v7.o
 
 ### Targets: ###
 

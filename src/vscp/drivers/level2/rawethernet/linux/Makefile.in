@@ -42,16 +42,14 @@ RAWETH_OBJECTS = ../../../../../common/fossa.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 
-PROJOBJS =  rawethernet.o\
-	../../../../common/vscpremotetcpif.o\
+PROJOBJS =  ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 	../../../../../common/fossa.o
 
-PROJOBJS =  rawethernet.o\
-	../../../../common/vscpremotetcpif.o\
+PROJOBJS =  ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
