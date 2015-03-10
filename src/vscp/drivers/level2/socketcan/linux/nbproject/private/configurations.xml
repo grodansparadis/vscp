@@ -29,13 +29,13 @@
           <in>can.h</in>
         </df>
       </df>
-      <in>config.h</in>
       <in>readsock.c</in>
       <in>socketcan.cpp</in>
       <in>socketcan.h</in>
       <in>test.c</in>
       <in>vscp2drv_socketcan.cpp</in>
-      <in>vscp2drv_socketcan.h</in>
+      <in>vscpl2drv_socketcan.cpp</in>
+      <in>vscpl2drv_socketcan.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

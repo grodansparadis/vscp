@@ -45,7 +45,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "vscp2drv_tcpiplink.h"
+#include "vscpl2drv_tcpiplink.h"
 #include "vscptcpiplink.h"
 
 void _init() __attribute__((constructor));
