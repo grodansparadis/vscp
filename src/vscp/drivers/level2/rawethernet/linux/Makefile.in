@@ -69,10 +69,10 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 
 ### Targets: ###
 
-all: vscp2drv_raweth.so test
+all: vscpl2drv_raweth.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscp2drv_raweth.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl2drv_raweth.so $(libdir)
 
 uninstall: 
 
@@ -85,7 +85,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscp2drv_raweth.so
+	rm -f vscpl2drv_raweth.so
 	rm -f test
 
 distclean: clean
@@ -97,7 +97,7 @@ test:  test.o $(PROJOBJS)
 
 # Build the Linux DL
 %.so: %.o $(RAWETH_OBJECTS)
-	$(CXX) -o $@ vscp2drv_raweth.o $(RAWETH_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@ vscpl2drv_raweth.o $(RAWETH_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 $(ALWAYS_BUILD):  .FORCE
 

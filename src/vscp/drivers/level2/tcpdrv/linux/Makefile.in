@@ -60,10 +60,10 @@ ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
 
 ### Targets: ###
 
-all: vscp2drv_tcpiplink.so test
+all: vscpl2drv_tcpiplink.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscp2drv_tcpiplink.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl2drv_tcpiplink.so $(libdir)
 
 uninstall: 
 
@@ -76,7 +76,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscp2drv_tcpiplink.so
+	rm -f vscpl2drv_tcpiplink.so
 	rm -f test
 
 distclean: clean
@@ -88,7 +88,7 @@ test:  test.o $(PROJOBJS)
 
 # Build the Linux DL
 %.so: %.o $(VSCPTCPIP_OBJECTS)
-	$(CXX) -o $@ vscp2drv_tcpiplink.o $(VSCPTCPIP_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@ vscpl2drv_tcpiplink.o $(VSCPTCPIP_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 $(ALWAYS_BUILD):  .FORCE
 

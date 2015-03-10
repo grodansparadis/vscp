@@ -42,10 +42,10 @@ PROJOBJS = lmsensors.o ../../../../../common/crc.o  ../../../../../common/crc8.o
 
 ### Targets: ###
 
-all: vscp2drv_lmsensors.so
+all: vscpl2drv_lmsensors.so
 
 install: all
-	$(INSTALL_PROGRAM) vscp2drv_lmsensors.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl2drv_lmsensors.so $(libdir)
 
 uninstall: 
 
@@ -59,7 +59,7 @@ clean:
 	rm -f ../../../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscp2drv_lmsensors.so
+	rm -f vscpl2drv_lmsensors.so
 	rm -f test
 
 distclean: clean
@@ -67,7 +67,7 @@ distclean: clean
 
 # Build the Linux DL
 %.so: %.o $(LMSENSOROBJ)
-	$(CXX) -o $@ vscp2drv_lmsensors.o $(LMSENSOROBJ) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@ vscpl2drv_lmsensors.o $(LMSENSOROBJ) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 # Include dependency info, if present:
 -include .deps/*.d

@@ -13,6 +13,7 @@
       <itemPath>../../../../../common/crc8.c</itemPath>
       <itemPath>../../../../../common/crc8.h</itemPath>
       <itemPath>../../../../../common/dllist.h</itemPath>
+      <itemPath>../../../../../common/fossa.h</itemPath>
       <itemPath>../../../../common/guid.cpp</itemPath>
       <itemPath>../../../../common/guid.h</itemPath>
       <itemPath>../../../../common/mdf.h</itemPath>

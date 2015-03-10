@@ -44,7 +44,7 @@
 #include "wx/tokenzr.h"
 
 #include "lmsensors.h"
-#include "vscp2drv_lmsensors.h"
+#include "vscpl2drv_lmsensors.h"
 #include "stdio.h"
 #include "stdlib.h"
 
