@@ -181,3 +181,9 @@ src/vscp/helperlib/linux/examples/example1
 src/vscp/linuxvscpl2/
 src/vscp/vscpworks/Makefile~
 src/vscp/vscpworks/core
+backup-021720151228-pre-vscp-software.tgz
+backup-021720151241-pre-vscp-software.tgz
+src/vscp/daemon/linux/core
+src/vscp/drivers/level2/wire1/linux/a.out
+src/vscp/drivers/level2/wire1/linux/test
+vscp-software_1.0.1-1_amd64.deb
