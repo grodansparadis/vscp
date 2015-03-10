@@ -64,7 +64,7 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 all: vscpl2drv_wire1.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpil2drv_wire1.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl2drv_wire1.so $(libdir)
 
 uninstall: 
 
