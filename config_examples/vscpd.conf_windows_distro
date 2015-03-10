@@ -215,7 +215,7 @@
         <!-- Level II Logger  -->
         <driver enable="false" >
             <name>VSCPLoggerDriver1</name>	
-            <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level2\logger\win32\Debug\vscpl2_loggerdrv.dll</path>
+            <path>/usr/local/lib/vscpl2drv_logger.dll</path>
             <config>C:\tmp/vscp_level2.log</config> 		
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -223,7 +223,7 @@
         <!-- Level II lmsensors  -->
         <driver enable="false" >
             <name>lmsensors</name>
-            <path>/usr/local/lib/vscp2drv_lmsensors.so</path>
+            <path>/usr/local/lib/vscpl2drv_lmsensors.so</path>
             <config>2</config>
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -231,7 +231,7 @@
         <!-- Level II mqtt  -->
         <driver enable="false" >
             <name>VSCPMQTTDriver1</name>
-            <path>/usr/local/lib/vscp2drv_mqtt.so</path>
+            <path>/usr/local/lib/vscpl2drv_mqtt.so</path>
             <config>subscribe;vscp;localhost;1883;;60</config>
             <guid>08:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>	
@@ -239,7 +239,7 @@
         <!-- Level II tcp/ip link  -->
         <driver enable="false" >                 
             <name>tcpiplink1</name>
-            <path>/usr/local/lib/vscp2drv_tcpiplink.so</path>
+            <path>/usr/local/lib/vscpl2drv_tcpiplink.so</path>
             <config>192.168.1.2;9598;admin;secret</config>                 
             <guid>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</guid>
         </driver>
@@ -248,7 +248,7 @@
         <driver enable="false"> 		   	 			
             <name>rawethernet1</name> 		   	 		
             <config>eth0</config>
-            <path>/usr/local/lib/vscp2drv_raweth.so</path>
+            <path>/usr/local/lib/vscpl2drv_raweth.so</path>
         </driver>
  
 
