@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<meta charset="utf-8" />
+<html>
+<head>
+<meta charset="UTF-8">
 <title>VSCP WebSocket authentication test</title>
 <!-- Don't cache the page -->
 <META HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <META HTTP-EQUIV="Expires" CONTENT="-1">
 
-<script src="settings.js"></script>
-<script src="../lib/md5.js"></script>
+<script type="text/javascript" src="settings.js"></script>
+<script type="text/javascript" src="../lib/md5.js"></script>
 <script type="text/javascript" src="../lib/vscpwslib.js"></script>
 
-<script language="javascript" type="text/javascript">
+</head>
+<body>
+<script type="text/javascript">
 	var user = "admin";
 	var authdomain = "mydomain.com";
 	var passwordhash = "d50c3180375c27927c22e42a379c3f67";
@@ -92,8 +96,10 @@
   };
 </script>
 
-<style> div {font: small Verdana; } </style>
 <h2>VSCP WebSocket authentication test</h2>
-
-<div id="output"></div>
+<p>
+<a href="index.html">Go back to main page</a>
+</p>
+<div id="output" style="font: small Verdana;"></div>
+</body>
 </html>
