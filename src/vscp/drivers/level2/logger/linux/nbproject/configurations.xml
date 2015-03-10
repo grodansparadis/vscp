@@ -81,8 +81,8 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <flagsDictionary>
-        <element flagsID="0" commonFlags="-O2 -fPIC"/>
-        <element flagsID="1" commonFlags="-g -O2 -fPIC"/>
+        <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
+        <element flagsID="1" commonFlags="-g -O2 -fPIC -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>

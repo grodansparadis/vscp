@@ -25,7 +25,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "../common/log.h"
-#include "vscpl2_loggerdrv.h"
+#include "vscpl2drv_logger.h"
 
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));

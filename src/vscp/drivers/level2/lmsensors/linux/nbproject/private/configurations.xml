@@ -8,7 +8,8 @@
       <in>test.c</in>
       <in>test.cpp</in>
       <in>vscp2drv_lmsensors.cpp</in>
-      <in>vscp2drv_lmsensors.h</in>
+      <in>vscpl2drv_lmsensors.cpp</in>
+      <in>vscpl2drv_lmsensors.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

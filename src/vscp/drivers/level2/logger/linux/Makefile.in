@@ -60,10 +60,10 @@ ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 
 ### Targets: ###
 
-all: vscpl2_loggerdrv.so test
+all: vscpl2drv_logger.so test
 
 install: all
-	$(INSTALL_PROGRAM) vscpl2_loggerdrv.so $(libdir)
+	$(INSTALL_PROGRAM) vscpl2drv_logger.so $(libdir)
 
 uninstall: 
 
@@ -75,7 +75,7 @@ clean:
 	rm -f ../common/*.o
 	rm -f ../../../../common/*.o
 	rm -f ../../../../../common/*.o
-	rm -f vscpl2_loggerdrv.so
+	rm -f vscpl2drv_logger.so
 	rm -f test
 	rm -rf ../common/*~
 	rm -rf *~
@@ -89,7 +89,7 @@ test:  test.o $(PROJOBJS)
 
 # Build the Linux DL
 %.so: %.o $(VSCPL2LOGGER_OBJECTS)
-	$(CXX) -o $@ vscpl2_loggerdrv.o $(VSCPL2LOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
+	$(CXX) -o $@ vscpl2drv_logger.o $(VSCPL2LOGGER_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
 $(ALWAYS_BUILD):  .FORCE
 
