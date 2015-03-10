@@ -6,7 +6,8 @@
       <in>test.c</in>
       <in>vscp2drv_tcpip.cpp</in>
       <in>vscp2drv_tcpiplink.cpp</in>
-      <in>vscp2drv_tcpiplink.h</in>
+      <in>vscpl2drv_tcpiplink.cpp</in>
+      <in>vscpl2drv_tcpiplink.h</in>
       <in>vscptcpiplink.cpp</in>
       <in>vscptcpiplink.h</in>
     </df>
