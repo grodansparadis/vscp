@@ -33,6 +33,7 @@
       <in>mqtt.cpp</in>
       <in>test.c</in>
       <in>vscp2drv_mqtt.cpp</in>
+      <in>vscpl2drv_mqtt.cpp</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -200,7 +201,11 @@
         <cTool flags="1">
         </cTool>
       </item>
-      <item path="vscp2drv_mqtt.cpp" ex="false" tool="1" flavor2="0">
+      <item path="vscp2drv_mqtt.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
+      </item>
+      <item path="vscpl2drv_mqtt.cpp" ex="false" tool="1" flavor2="0">
         <ccTool flags="0">
         </ccTool>
       </item>

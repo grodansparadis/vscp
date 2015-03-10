@@ -6,7 +6,8 @@
       <in>rawethernet.h</in>
       <in>test.c</in>
       <in>vscp2drv_raweth.cpp</in>
-      <in>vscp2drv_raweth.h</in>
+      <in>vscpl2drv_raweth.cpp</in>
+      <in>vscpl2drv_raweth.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

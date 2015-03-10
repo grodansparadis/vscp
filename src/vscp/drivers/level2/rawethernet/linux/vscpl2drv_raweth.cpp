@@ -54,11 +54,11 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/vscp_type.h"
-#include "../../../../common/vscp_class.h"
-#include "rawethernet.h"
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
+#include <vscp_type.h>
+#include <vscp_class.h>
+#include "vscpl2drv_raweth.h"
 
 
 //////////////////////////////////////////////////////////////////////

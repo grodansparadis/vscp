@@ -8,7 +8,8 @@
       <in>publish.c</in>
       <in>test.c</in>
       <in>vscp2drv_mqtt.cpp</in>
-      <in>vscp2drv_mqtt.h</in>
+      <in>vscpl2drv_mqtt.cpp</in>
+      <in>vscpl2drv_mqtt.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

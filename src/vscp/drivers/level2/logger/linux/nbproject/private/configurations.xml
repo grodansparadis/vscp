@@ -5,7 +5,8 @@
       <in>config.h</in>
       <in>test.cpp</in>
       <in>vscpl2_loggerdrv.cpp</in>
-      <in>vscpl2_loggerdrv.h</in>
+      <in>vscpl2drv_logger.cpp</in>
+      <in>vscpl2drv_logger.h</in>
       <in>vscpl2logger.cpp</in>
     </df>
     <itemPath>../common/log.cpp</itemPath>

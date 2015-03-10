@@ -35,8 +35,7 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-RAWETH_OBJECTS = rawethernet.o\
-	../../../../../common/net_skeleton.o\
+RAWETH_OBJECTS = ../../../../../common/fossa.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
@@ -50,7 +49,7 @@ PROJOBJS =  rawethernet.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o
+	../../../../../common/fossa.o
 
 PROJOBJS =  rawethernet.o\
 	../../../../common/vscpremotetcpif.o\
@@ -58,14 +57,14 @@ PROJOBJS =  rawethernet.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o
+	../../../../../common/fossa.o
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o
+	../../../../../common/fossa.o
 
 ### Targets: ###
 

@@ -45,7 +45,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "vscp2drv_mqtt.h"
+#include "vscpl2drv_mqtt.h"
 #include "mqtt.h"
 
 void _init() __attribute__((constructor));
