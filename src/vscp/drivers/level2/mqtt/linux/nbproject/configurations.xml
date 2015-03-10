@@ -13,6 +13,7 @@
       <itemPath>../../../../../common/crc8.c</itemPath>
       <itemPath>../../../../../common/crc8.h</itemPath>
       <itemPath>../../../../../common/dllist.h</itemPath>
+      <itemPath>../../../../../common/fossa.h</itemPath>
       <itemPath>../../../../common/guid.cpp</itemPath>
       <itemPath>../../../../common/guid.h</itemPath>
       <itemPath>../../../../common/mdf.h</itemPath>
@@ -54,6 +55,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -72,7 +74,7 @@
               <pElem>/usr/local/include/wx-3.0</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>NS_ENABLE_SSL</Elem>
+              <Elem>USE_FOSSA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -87,13 +89,19 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
             tool="0"
             flavor2="0">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -106,7 +114,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -122,7 +130,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -141,7 +149,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -172,7 +180,7 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -185,10 +193,16 @@
         </cTool>
       </folder>
       <item path="mqtt.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="vscp2drv_mqtt.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+        </ccTool>
       </item>
     </conf>
   </confs>

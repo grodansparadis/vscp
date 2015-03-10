@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
+// Copyright (C) 2000-2015 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -60,11 +60,11 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 
-#include "../../../../common/vscp.h"
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/vscp_type.h"
-#include "../../../../common/vscp_class.h"
+#include <vscp.h>
+#include <vscphelper.h>
+#include <vscpremotetcpif.h>
+#include <vscp_type.h>
+#include <vscp_class.h>
 #include "socketcan.h"
 
 // queues
@@ -179,13 +179,13 @@ Csocketcan::open(const char *pUsername,
 
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
-	if (m_srv.getVariableString(strName, &str)) {
+	if (VSCP_ERROR_SUCCESS == m_srv.getVariableString(strName, &str)) {
 		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
-	if (m_srv.getVariableString(strName, &str)) {
+	if (VSCP_ERROR_SUCCESS == m_srv.getVariableString(strName, &str)) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 	

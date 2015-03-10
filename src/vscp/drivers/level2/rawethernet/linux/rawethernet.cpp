@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP Project (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
+// Copyright (C) 2000-2015 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -228,13 +228,13 @@ CRawEthernet::open(const char *pUsername,
 
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
-	if (m_srv.getVariableString(strName, &str)) {
+	if (VSCP_ERROR_SUCCESS ==  m_srv.getVariableString(strName, &str)) {
 		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
-	if (m_srv.getVariableString(strName, &str)) {
+	if (VSCP_ERROR_SUCCESS == m_srv.getVariableString(strName, &str)) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 

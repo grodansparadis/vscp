@@ -55,6 +55,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -73,7 +74,7 @@
               <pElem>/usr/local/include/wx-3.0</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>NS_ENABLE_SSL</Elem>
+              <Elem>USE_FOSSA</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__LINUX__</Elem>
@@ -89,24 +90,32 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
             tool="0"
             flavor2="0">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -114,13 +123,15 @@
       <item path="../../../../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
+            <pElem>../../../../common</pElem>
+            <pElem>../../../../../common</pElem>
             <pElem>include</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -139,7 +150,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
@@ -173,6 +184,8 @@
         </ccTool>
       </folder>
       <item path="test.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="vscp2drv_tcpip.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -197,7 +210,7 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
           </preprocessorList>
@@ -213,7 +226,7 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
             <Elem>__LINUX__</Elem>
           </preprocessorList>
