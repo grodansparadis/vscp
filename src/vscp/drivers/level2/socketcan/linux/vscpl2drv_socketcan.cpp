@@ -45,7 +45,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
-#include "vscp2drv_socketcan.h"
+#include "vscpl2drv_socketcan.h"
 #include "socketcan.h"
 
 void _init() __attribute__((constructor));

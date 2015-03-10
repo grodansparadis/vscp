@@ -35,8 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-LMSENSOROBJ =  lmsensors.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
-PROJOBJS = lmsensors.o ../../../../../common/crc.o  ../../../../../common/crc8.o ../../../../../common/net_skeleton.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o 
+LMSENSOROBJ =  lmsensors.o ../../../../../common/crc.o ../../../../../common/crc8.o ../../../../../common/fossa.o ../../../../common/vscpremotetcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o
+PROJOBJS = lmsensors.o ../../../../../common/crc.o  ../../../../../common/crc8.o ../../../../../common/fossa.o ../../../../common/vscptcpif.o ../../../../common/vscphelper.o ../../../../common/guid.o 
 
 
 

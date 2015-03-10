@@ -41,7 +41,7 @@ VSCPTCPIP_OBJECTS = vscptcpiplink.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o\
+	../../../../../common/fossa.o\
 
 PROJOBJS =  vscptcpiplink.o\
 	../../../../common/vscpremotetcpif.o\
@@ -49,14 +49,14 @@ PROJOBJS =  vscptcpiplink.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o\
+	../../../../../common/fossa.o\
 
 ALWAYS_BUILD = 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
-	../../../../../common/net_skeleton.o\
+	../../../../../common/fossa.o\
 
 ### Targets: ###
 

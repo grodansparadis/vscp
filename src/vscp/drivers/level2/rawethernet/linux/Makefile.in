@@ -42,7 +42,6 @@ RAWETH_OBJECTS = ../../../../../common/fossa.o\
 	../../../../../common/crc.o\
 	../../../../../common/crc8.o\
 
-
 PROJOBJS =  rawethernet.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
