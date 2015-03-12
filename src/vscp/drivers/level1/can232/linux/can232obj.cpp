@@ -669,8 +669,8 @@ void *workThread(void *pObject)
                     // add message to it
                     if (pcan232obj->m_can232obj.m_rcvList.nCount < CAN232_MAX_RCVMSG) {
                         PCANALMSG pMsg = new canalMsg;
-                        pMsg->flags = 0;
                         if (NULL != pMsg) {
+                            pMsg->flags = 0;
                             dllnode *pNode = new dllnode;
                             if (NULL != pNode) {
                                 printf("workThread R - m_receiveBuf = [%s]\n", pcan232obj->m_can232obj.m_receiveBuf);
