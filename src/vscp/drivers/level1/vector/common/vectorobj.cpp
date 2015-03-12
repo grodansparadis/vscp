@@ -1045,7 +1045,7 @@ void *workThreadReceive( void *pObject )
 					}
 				}
 		
-				delete peventarray;
+				delete[] peventarray;
 			}
 		}
 

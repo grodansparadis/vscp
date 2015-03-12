@@ -160,7 +160,7 @@ void Cserver::reply(const char *command,int client,bool success,const char *data
 	strcat(packet,"END\n");
 	
 	if (clients[client]!=INVALID_SOCKET) ::send(clients[client],packet,length,0);
-	if (packet) delete packet;
+	if (packet) delete[] packet;
 	return;
 }
 
@@ -411,7 +411,7 @@ void Cserver::ThreadProc(void)
 											if (response) sprintf(response,"DATA\n1\nbad send packet\n");
 									}
 									reply(cur,i,copyDataResult==1,response);
-									if (response) delete(response);
+									if (response) delete[] response;
 									cur=nl+1;
 								}
 							}
