@@ -94,6 +94,7 @@ static int find_conn(int s, int dev_id, long arg)
   struct hci_conn_list_req *cl;
   struct hci_conn_info *ci;
   int i;
+  int rv = 0;
 
   if (!(cl = malloc(10 * sizeof(*ci) + sizeof(*cl)))) {
     perror("Can't allocate memory\n");
@@ -110,11 +111,15 @@ static int find_conn(int s, int dev_id, long arg)
 
   for (i=0; i < cl->conn_num; i++, ci++) {
     if (!bacmp((bdaddr_t *)arg, &ci->bdaddr)) {
-      return 1;
+      rv = 1;
+      break;
     }
   }
+  
+  free(cl);
+  cl = NULL;
 
-  return 0;
+  return rv;
 
 }
 
