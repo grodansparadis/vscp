@@ -47,6 +47,8 @@ void winlirc_debug(char *format, ...)
 	fprintf(debugfile,s);
 	fflush(debugfile);
 #endif
+
+	va_end(args);
 }
 
 
