@@ -263,7 +263,7 @@ void CCcsdrvTestDlg::OnButtonSend()
 	msg.sizeData = atoi( m_strDLC );
 	msg.id = atol( m_strCANID );
 	if ( m_bExteded ) {
-		msg.flags |= CANAL_IDFLAG_EXTENDED;
+		msg.flags = CANAL_IDFLAG_EXTENDED;
 	}
 
 	if ( m_drvobj.writeMsg( &msg ) ) {
