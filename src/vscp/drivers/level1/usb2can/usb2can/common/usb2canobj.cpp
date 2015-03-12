@@ -740,6 +740,7 @@ bool  CUsb2canObj::USB2CAN_status(canalStatus *pCanalStatus)
 		(((DWORD)inmsg.data[3]    ) & 0x000000ff) ;   
         
     CanalStatus.lasterrorcode = 0;
+    CanalStatus.lasterrorsubcode = 0;
 
     *pCanalStatus = CanalStatus;
 
