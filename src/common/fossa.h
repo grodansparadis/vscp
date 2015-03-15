@@ -24,9 +24,7 @@
 #undef _UNICODE                 /* Use multibyte encoding on Windows */
 #define _MBCS                   /* Use multibyte encoding on Windows */
 #define _INTEGRAL_MAX_BITS 64   /* Enable _stati64() on Windows */
-#ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS /* Disable deprecation warning in VS2005+ */
-#endif
 #undef WIN32_LEAN_AND_MEAN      /* Let windows.h always include winsock2.h */
 #undef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 600       /* For flockfile() on Linux */
@@ -1157,16 +1155,15 @@ extern "C" {
 
 void ns_coap_free_options(struct ns_coap_message *cm);
 struct ns_coap_option *ns_coap_add_option(struct ns_coap_message *cm,
-                                          uint16_t number, char* value,
+                                          uint32_t number, char* value,
                                           size_t len);
 int ns_set_protocol_coap(struct ns_connection *nc);
 uint32_t ns_coap_send_ack(struct ns_connection *nc, uint16_t msg_id);
 uint32_t ns_coap_send_message(struct ns_connection *nc,
                               struct ns_coap_message *cm);
 
-/* Should be visible for unit tests */
-NS_INTERNAL uint32_t coap_parse(struct iobuf *io, struct ns_coap_message *cm);
-NS_INTERNAL uint32_t coap_compose(struct ns_coap_message *cm, struct iobuf *io);
+uint32_t ns_coap_parse(struct iobuf *io, struct ns_coap_message *cm);
+uint32_t ns_coap_compose(struct ns_coap_message *cm, struct iobuf *io);
 
 #ifdef __cplusplus
 }
