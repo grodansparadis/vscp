@@ -35,16 +35,21 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-CANALSOCKETCAN_OBJECTS = vscpl1drv_can4vscp.o\
-	can4vscpobj.o\
+CAN4VSCP_OBJECTS = vscpl1drv_can4vscp.o\
+	../common/can4vscpobj.o\
 	../../../../common/guid.o\
-	../../../../../common/dllist.o 
+	../../../../../common/dllist.o\
+	../../../../../common/crc8.o\
+	../../../../../common/com.o
 
 PROJOBJS = ../../../../common/guid.o\
+	../../../../../common/crc8.o\
 	../../../../../common/dllist.o
 
 ALWAYS_BUILD = ../../../../common/guid.o\
-	../../../../../common/dllist.o
+	../../../../../common/dllist.o\
+	../../../../../common/crc8.o\
+	../../../../../common/com.o
 
 ### Targets: ###
 

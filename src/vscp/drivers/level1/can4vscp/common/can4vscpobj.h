@@ -38,9 +38,11 @@
 #define _POSIX
 #include <stdio.h>
 #include <unistd.h>
+#include <semaphore.h>
 #include <string.h>
 #include <pthread.h>
 #include <syslog.h>
+#include <com.h>
 
 #endif
 
@@ -55,32 +57,32 @@
 // stat machine data for debugging
 //#define DEBUG_CAN4VSCP_RECEIVE
 
-#define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX			TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX		TEXT("___CANAL__DLL_CAN4VSCPDRV_RECEIVE_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_TRANSMIT_MUTEX	TEXT("___CANAL__DLL_CAN4VSCPDRV_TRANSMIT_MUTEX____")
-#define CANAL_DLL_CAN4VSCPDRV_RESPONSE_MUTEX	TEXT("___CANAL__DLL_CAN4VSCPDRV_RESPONSE_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_OBJ_MUTEX	        TEXT("___CANAL__DLL_CAN4VSCPDRV_OBJ_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_RECEIVE_MUTEX     TEXT("___CANAL__DLL_CAN4VSCPDRV_RECEIVE_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_TRANSMIT_MUTEX    TEXT("___CANAL__DLL_CAN4VSCPDRV_TRANSMIT_MUTEX____")
+#define CANAL_DLL_CAN4VSCPDRV_RESPONSE_MUTEX    TEXT("___CANAL__DLL_CAN4VSCPDRV_RESPONSE_MUTEX____")
 
 // Flags
-#define CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE     4
+#define CAN4VSCP_FLAG_NO_SWITCH_TO_NEW_MODE         4
 
 // Max messages in input queue
-#define CAN4VSCP_MAX_RCVMSG			            1024
+#define CAN4VSCP_MAX_RCVMSG                         1024
 
 // Max messages in output queue
-#define CAN4VSCP_MAX_SNDMSG			            1024
+#define CAN4VSCP_MAX_SNDMSG                         1024
 
 // Max number of response messages in respnse queue
 #define CAN4VSCP_MAX_RESPONSEMSG	            32
 
 // Byte stuffing start and end characters
-#define DLE						                0x10
-#define STX						                0x02
-#define ETX						                0x03
+#define DLE                                         0x10
+#define STX                                         0x02
+#define ETX                                         0x03
 
 // RX State machine
-#define INCOMING_STATE_NONE			            0	// Waiting for <STX>
-#define INCOMING_STATE_STX			            1	// Reading data
-#define INCOMING_STATE_ETX			            2	// <ETX> has been received
+#define INCOMING_STATE_NONE			    0	// Waiting for <STX>
+#define INCOMING_STATE_STX			    1	// Reading data
+#define INCOMING_STATE_ETX			    2	// <ETX> has been received
 #define INCOMING_STATE_COMPLETE		            3	// Frame received
 
 #define INCOMING_SUBSTATE_NONE		            0	// Idle
@@ -88,25 +90,25 @@
 
 
 // Can4VSCP Commands
-#define RESET_NOOP			                    0x00	// No Operation
-#define	GET_TX_ERR_CNT			                0x02	// Get TX error count
-#define	GET_RX_ERR_CNT			                0x03	// Get RX error count
-#define	GET_CANSTAT				                0x04	// Get CAN statistics
-#define	GET_COMSTAT				                0x05
-#define	GET_MSGFILTER1			                0x06	// Get message filter 1
-#define	GET_MSGFILTER2			                0x07	// Get message filter 2
-#define	SET_MSGFILTER1			                0x08	// Set message filter 1
-#define	SET_MSGFILTER2			                0x09	// Set message filter 2
+#define RESET_NOOP                                  0x00	// No Operation
+#define	GET_TX_ERR_CNT			            0x02	// Get TX error count
+#define	GET_RX_ERR_CNT			            0x03	// Get RX error count
+#define	GET_CANSTAT				    0x04	// Get CAN statistics
+#define	GET_COMSTAT				    0x05
+#define	GET_MSGFILTER1			            0x06	// Get message filter 1
+#define	GET_MSGFILTER2			            0x07	// Get message filter 2
+#define	SET_MSGFILTER1			            0x08	// Set message filter 1
+#define	SET_MSGFILTER2			            0x09	// Set message filter 2
 
 
 
 // Emergency flags
-#define EMERGENCY_OVERFLOW		                0x01
-#define EMERGENCY_RCV_WARNING	                0x02
-#define EMERGENCY_TX_WARNING	                0x04
-#define EMERGENCY_TXBUS_PASSIVE	                0x08
-#define EMERGENCY_RXBUS_PASSIVE	                0x10
-#define EMERGENCY_BUS_OFF		                0x20
+#define EMERGENCY_OVERFLOW		            0x01
+#define EMERGENCY_RCV_WARNING                       0x02
+#define EMERGENCY_TX_WARNING                        0x04
+#define EMERGENCY_TXBUS_PASSIVE                     0x08
+#define EMERGENCY_RXBUS_PASSIVE                     0x10
+#define EMERGENCY_BUS_OFF		            0x20
 
 // VSCP Driver positions in frame
 #define VSCP_CAN4VSCP_DRIVER_POS_FRAME_TYPE                 0
@@ -117,33 +119,31 @@
 #define VSCP_CAN4VSCP_DRIVER_POS_FRAME_PAYLOAD              5
 
 // VSCP driver commands
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_NOOP                   0
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_OPEN                   1
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_LISTEN                 2
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_LOOPBACK               3
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_CLOSE                  4
-#define VSCP_CAN4VSCP_DRIVER_COMMAND_SET_FILTER             5
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_NOOP           0
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_OPEN           1
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_LISTEN         2
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_LOOPBACK       3
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_CLOSE          4
+#define VSCP_CAN4VSCP_DRIVER_COMMAND_SET_FILTER     5
 
 
 // Capabilities for this driver
-#define CAN4VSCP_DRIVER_MAX_VSCP_FRAMES                     2
-#define CAN4VSCP_DRIVER_MAX_CANAL_FRAMES                    10
+#define CAN4VSCP_DRIVER_MAX_VSCP_FRAMES             2
+#define CAN4VSCP_DRIVER_MAX_CANAL_FRAMES            10
 
 //
 // The command response structure
 //
+
 typedef struct {
-    uint8_t op;             // Operation == framtype
-    uint8_t	seq;            // Sequency number
-    uint8_t	channel;        // Channel
-    uint16_t sizePayload;   // Size of payload
+    uint8_t op; // Operation == framtype
+    uint8_t seq; // Sequency number
+    uint8_t channel; // Channel
+    uint16_t sizePayload; // Size of payload
     uint8_t payload[ 512 ];
 } cmdResponseMsg;
 
-
-class CCan4VSCPObj
-{
-
+class CCan4VSCPObj {
 public:
 
     /// Constructor
@@ -158,20 +158,20 @@ public:
 
         @param pcanalMsg Pointer to CAN message
         @return True if message is accepted false if rejected
-    */
-    bool doFilter( canalMsg *pcanalMsg );
+     */
+    bool doFilter(canalMsg *pcanalMsg);
 
 
     /*!
         Set Filter
-    */
-    int setFilter( unsigned long filter );
+     */
+    int setFilter(unsigned long filter);
 
 
     /*!
         Set Mask
-    */
-    int setMask( unsigned long mask);
+     */
+    int setMask(unsigned long mask);
 
 
 #ifdef DEBUG_CAN4VSCP_RECEIVE
@@ -185,44 +185,44 @@ public:
         @param pConfig	Configuration string
         @param flags 	bit 1 = 0 Append, bit 1 = 1 Rewrite
         @return True on success.
-    */
-    int open( const char *pConfig, unsigned long flags = 0 );
+     */
+    int open(const char *pConfig, unsigned long flags = 0);
 
 
     /*!
         Flush and close the log file
-    */
-    int close( void );
+     */
+    int close(void);
 
 
     /*!
         Get Interface statistics
         @param pCanalStatistics Pointer to CANAL statistics structure
         @return True on success.
-    */
-    int getStatistics( PCANALSTATISTICS pCanalStatistics );
+     */
+    int getStatistics(PCANALSTATISTICS pCanalStatistics);
 
 
     /*!
         Write a message out to the device (non blocking)
         @param pcanalMsg Pointer to CAN message
         @return True on success.
-    */
-    int writeMsg( canalMsg *pMsg );
+     */
+    int writeMsg(canalMsg *pMsg);
 
     /*!
         Write a message out to the device (blocking)
         @param pcanalMsg Pointer to CAN message
         @return CANAL return code. CANAL_ERROR_SUCCESS on success.
-    */
-    int writeMsgBlocking( canalMsg *pMsg, uint32_t Timeout );
+     */
+    int writeMsgBlocking(canalMsg *pMsg, uint32_t Timeout);
 
     /*!
         Read a message fro the device
         @param pcanalMsg Pointer to CAN message
         @return True on success.
-    */
-    int readMsg( canalMsg *pMsg );
+     */
+    int readMsg(canalMsg *pMsg);
 
 
     /*!
@@ -230,34 +230,39 @@ public:
         @param pcanalMsg Pointer to CAN message
         @param timout Timout in millisconds
         @return CANAL return code. CANAL_ERROR_SUCCESS on success.
-    */
-    int readMsgBlocking( canalMsg *pMsg, uint32_t timeout );
+     */
+    int readMsgBlocking(canalMsg *pMsg, uint32_t timeout);
 
 
     /*!
         Check for data availability
         @return Number of packages in the queue
-    */
-    int dataAvailable( void );
+     */
+    int dataAvailable(void);
 
     /*!
-		Handle for receive event to know when to call readMsg
-		@return Handle
-	*/
-	HANDLE getReceiveHandle( void ) { return m_receiveDataEvent; }
+                Handle for receive event to know when to call readMsg
+                @return Handle
+     */
+#ifdef WIN32	
+
+    HANDLE getReceiveHandle(void) {
+        return m_receiveDataEvent;
+    }
+#endif	
 
     /*!
         Get device status
         @param pCanalStatus Pointer to CANAL status structure
         @return True on success.
-    */
-    int getStatus( PCANALSTATUS pCanalStatus );
+     */
+    int getStatus(PCANALSTATUS pCanalStatus);
 
     /*!
-        Get device cababilities
+        Get device capabilities
         Device capabilities are set in member variables
-    */
-    bool getDeviceCapabilities( void );
+     */
+    bool getDeviceCapabilities(void);
 
     /*!
         Send a command
@@ -266,10 +271,10 @@ public:
         @param data Pointer to data to send
         @param dataSize Size for datablock
         @return True on success.
-    */
-    bool sendCommand( uint8_t cmdcode, 
-                        uint8_t *pParam = NULL, 
-                        uint8_t size = 0 );
+     */
+    bool sendCommand(uint8_t cmdcode,
+            uint8_t *pParam = NULL,
+            uint8_t size = 0);
 
 
     /*!
@@ -280,11 +285,11 @@ public:
         @param saveseq Squency number when frame was sent.
         @param timeout Timeout in milliseconds
         @return True on success
-    */
-    bool waitCommandResponse( cmdResponseMsg *pMsg, 
-                                uint8_t cmdcode, 
-                                uint8_t saveseq, 
-                                uint32_t timeout );
+     */
+    bool waitCommandResponse(cmdResponseMsg *pMsg,
+            uint8_t cmdcode,
+            uint8_t saveseq,
+            uint32_t timeout);
 
     /*!
         Send command and wait for a response message
@@ -293,12 +298,12 @@ public:
         @param pMsg Pointer to response message
         @param timeout Timeout in milliseconds
         @return True on success
-    */
-    bool sendCommandWait( uint8_t cmdcode, 
-                                uint8_t *pParam, 
-                                uint8_t size, 
-                                cmdResponseMsg *pMsg, 
-                                uint32_t timeout );
+     */
+    bool sendCommandWait(uint8_t cmdcode,
+            uint8_t *pParam,
+            uint8_t size,
+            cmdResponseMsg *pMsg,
+            uint32_t timeout);
 
     /*!
         Send command on the serial channel
@@ -306,64 +311,71 @@ public:
         @param buffer Contains data to send
         @param size Total number of bytes to send
         @return true on success
-    */
-    bool sendMsg( uint8_t *buffer, short size );
+     */
+    bool sendMsg(uint8_t *buffer, short size);
 
     /*!
         Check CRC for frame in buffer defined by
         content in m_bufferMsgRcv and with length
         m_lengthMsgRcv
-    */
-    bool checkCRC( void );
+     */
+    bool checkCRC(void);
 
     /*!
         Send ACK
         \param seq Sequency number
-    */
-    void sendACK( uint8_t seq );
+     */
+    void sendACK(uint8_t seq);
 
     /*!
         Send NACK
         \param seq Sequency number
-    */
-    void sendNACK( uint8_t seq );
+     */
+    void sendNACK(uint8_t seq);
 
     /*!
         Send NOOP frame
-    */
-    void sendNoopFrame( void );
+     */
+    void sendNoopFrame(void);
 
     /*!
         Send Open Frame
         \mode is 0=Nomal. 1=Listen, 2=Loopback, 3=Configuration
-    */
-    void sendOpenInterfaceFrame( uint8_t mode );
+     */
+    void sendOpenInterfaceFrame(uint8_t mode);
 
     /*!
         Send Close Interface frame
-    */
-    void sendCloseInterfaceFrame( void );
+     */
+    void sendCloseInterfaceFrame(void);
 
     /*!
         Add current frame in buffer to response queue
         \return true on success
-    */
-    bool addToResponseQueue( void );
+     */
+    bool addToResponseQueue(void);
 
     /*!
         Read serial data and feed to state machine
         @return true when a full frame is received.
-    */
-    bool serialData2StateMachine( void );
+     */
+    bool serialData2StateMachine(void);
 
     /*!
         Do reading and interpreet data
-    */
-    void readSerialData( void );
+     */
+    void readSerialData(void);
 
     // Endiness functions
-    int little_endian() { int x = 1; return *( char* )&x; };
-    int big_endian() { return !little_endian(); };
+
+    int little_endian() {
+        int x = 1;
+        return *(char*) &x;
+    };
+
+    int big_endian() {
+        return !little_endian();
+    };
 
 public:
 
@@ -371,7 +383,7 @@ public:
     bool m_bRun;
 
     // Open flag
-	bool m_bOpen;
+    bool m_bOpen;
 
     // * * * Capabilities * * *
     vscp_serial_caps m_caps;
@@ -379,18 +391,18 @@ public:
     /*! 
         Max number of VSCP frames in 
         multifram payload
-    */
+     */
     uint8_t m_capsMaxVscpFrames;
 
     /*!
         Max number of CANAL frames in
         multiframe payload.
-    */
+     */
     uint8_t m_capsMaxCanalFrames;
 
     /*!
     Interface statistics
-    */
+     */
     canalStatistics m_stat;
 
 
@@ -430,7 +442,7 @@ public:
     Bit 30 - Bus Warning status
     Bit 31 - Bus off status 
 
-    */
+     */
     canalStatus m_status;
 
 
@@ -439,7 +451,7 @@ public:
 
         This is the transmit queue for messages going out to the
         device
-    */
+     */
     DoubleLinkedList m_transmitList;
 
     /*! 
@@ -447,7 +459,7 @@ public:
 
         This is the receive queue for messages going in to the
         device
-    */
+     */
     DoubleLinkedList m_receiveList;
 
 
@@ -455,13 +467,13 @@ public:
         Response queue
 
         This is the receive queue for command response messages
-    */
+     */
     DoubleLinkedList m_responseList;
 
 
     /*!
         Tread id Receive
-    */
+     */
 #ifdef WIN32
     HANDLE m_hTreadReceive;
 #else
@@ -470,7 +482,7 @@ public:
 
     /*!
         Tread id Transmit
-    */
+     */
 #ifdef WIN32
     HANDLE m_hTreadTransmit;
 #else
@@ -479,21 +491,26 @@ public:
 
     /*!
         Mutex for device.
-    */
+     */
 #ifdef WIN32	
     HANDLE m_can4vscpMutex;
 #else
     pthread_mutex_t m_can4vscpMutex;
 #endif
 
-    HANDLE      m_receiveDataEvent;         // GS
-    HANDLE      m_transmitDataPutEvent;     // GS
-    HANDLE      m_transmitDataGetEvent;     // GS
-
+#ifdef WIN32	
+    HANDLE m_receiveDataEvent; // GS
+    HANDLE m_transmitDataPutEvent; // GS
+    HANDLE m_transmitDataGetEvent; // GS
+#else
+    sem_t m_receiveDataSem;
+    sem_t m_transmitDataPutSem;
+    sem_t m_transmitDataGetSem;
+#endif
 
     /*!
         Mutex for receive queue.
-    */
+     */
 #ifdef WIN32	
     HANDLE m_receiveMutex;
 #else
@@ -502,7 +519,7 @@ public:
 
     /*!
         Mutex for transmit queue.
-    */
+     */
 #ifdef WIN32	
     HANDLE m_transmitMutex;
 #else
@@ -511,7 +528,7 @@ public:
 
     /*!
         Mutex for command response queue.
-    */
+     */
 #ifdef WIN32	
     HANDLE m_responseMutex;
 #else
@@ -530,12 +547,12 @@ public:
     1				1					1			Accept
 
     Formula is !( ( filter \EEd ) & mask )
-    */
+     */
     uint32_t m_filter;
 
     /*!
         Mask for outgoing messages	
-    */
+     */
     uint32_t m_mask;
 
 
@@ -546,56 +563,71 @@ public:
 
     /*!
         flags 
-    */
+     */
     uint32_t m_initFlag;
 
-
+#ifdef WIN32
     CComm m_com;
+#else
+    Comm m_com;
+
+    /*!
+        The can232 object MUTEX 	
+     */
+    pthread_mutex_t m_can4vscpObjMutex;
+
+
+    /*!
+            id for worker thread
+     */
+    pthread_t m_threadId;
+
+#endif	
 
 
     /*!
         State for incoming frames
-    */
-    int  m_RxMsgState;
+     */
+    int m_RxMsgState;
 
     /*!
         Substate for incoming frames
-    */
+     */
     int m_RxMsgSubState;
 
 
     /*!
         General receive buffer
-    */
+     */
     uint8_t m_bufferRx[ 0x10000 ];
 
     /*!
         Message receive buffer
-    */
+     */
     uint8_t m_bufferMsgRcv[ 512 ];
 
     /*!
         Current length for received message
-    */
+     */
     uint16_t m_lengthMsgRcv;
 
 
     /*!
         Sequency number
         This number is increase for every frame sent.
-    */
+     */
     uint8_t m_sequencyno;
 
 
     /*!
         Transmit queue handle
-    */
+     */
     uint16_t m_hTxQue;
 
     /*!
         Receive queue handle
-    */
-    uint16_t m_hRxQue;	
+     */
+    uint16_t m_hRxQue;
 
 
 };

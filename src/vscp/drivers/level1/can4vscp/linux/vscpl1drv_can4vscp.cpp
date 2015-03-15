@@ -33,95 +33,85 @@ void _fini() __attribute__((destructor));
 void
 _init()
 {
-	printf("initializing\n");
+    printf("initializing\n");
 }
 
 void
 _fini()
 {
-	printf("finishing\n");
+    printf("finishing\n");
 }
 
 ////////////////////////////////////////////////////////////////////////////
-// CSocketcanApp
-
+// Ccan4vscpApp
 ////////////////////////////////////////////////////////////////////////////
-// CSocketcanApp construction
+// Ccan4vscpApp construction
 
-CSocketcanApp::CSocketcanApp()
+Ccan4vscpApp::Ccan4vscpApp()
 {
-	m_instanceCounter = 0;
-	pthread_mutex_init(&m_drvobjMutex, NULL);
+    m_instanceCounter = 0;
+    pthread_mutex_init(&m_drvobjMutex, NULL);
     
-	// Init. the driver array
-	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
-		m_socketcanArray[ i ] = NULL;
-	}
+    // Init. the driver array
+    for (int i = 0; i < CANAL_CAN4VSCP_DRIVER_MAX_OPEN; i++) {
+        m_socketcanArray[ i ] = NULL;
+    }
 
-	UNLOCK_MUTEX(m_drvobjMutex);
+    UNLOCK_MUTEX(m_drvobjMutex);
 }
 
-CSocketcanApp::~CSocketcanApp()
+Ccan4vscpApp::~Ccan4vscpApp()
 {
-	LOCK_MUTEX(m_drvobjMutex);
+    LOCK_MUTEX(m_drvobjMutex);
 
-	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
+    for (int i = 0; i < CANAL_CAN4VSCP_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_socketcanArray[ i ]) {
-			CSocketcanObj *pCAN232Obj = getDriverObject(i);
+        if (NULL == m_socketcanArray[ i ]) {
+            CCan4VSCPObj *pCAN232Obj = getDriverObject(i);
 
-			if (NULL != pCAN232Obj) {
-				pCAN232Obj->close();
-				delete m_socketcanArray[ i ];
-				m_socketcanArray[ i ] = NULL;
-			}
-		}
-	}
+            if (NULL != pCAN232Obj) {
+                pCAN232Obj->close();
+                delete m_socketcanArray[ i ];
+                m_socketcanArray[ i ] = NULL;
+            }
+        }
+    }
 
-	UNLOCK_MUTEX(m_drvobjMutex);
-	pthread_mutex_destroy(&m_drvobjMutex);
+    UNLOCK_MUTEX(m_drvobjMutex);
+    pthread_mutex_destroy(&m_drvobjMutex);
 }
+
 
 /////////////////////////////////////////////////////////////////////////////
-// The one and only CSocketcanApp object
+// The one and only Ccan4vscpApp object
 
-CSocketcanApp theApp;
+Ccan4vscpApp theApp;
 
-
-
-
-///////////////////////////////////////////////////////////////////////////////
-// CreateObject
-
-//extern "C" CSocketcanApp* CreateObject( void ) {
-//	CSocketcanApp *theapp = new CSocketcanApp;
-//	return ( ( CSocketcanApp * ) theapp );
-//}
 
 ///////////////////////////////////////////////////////////////////////////////
 // addDriverObject
 //
 
-//long CSocketcanApp::addDriverObject( CLog *plog )
+//long Ccan4vscpApp::addDriverObject( CLog *plog )
 
 long
-CSocketcanApp::addDriverObject(CSocketcanObj *plog)
+Ccan4vscpApp::addDriverObject(CCan4VSCPObj *plog)
 {
-	long h = 0;
+    long h = 0;
 
-	LOCK_MUTEX(m_drvobjMutex);
-	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
+    LOCK_MUTEX(m_drvobjMutex);
+    for (int i = 0; i < CANAL_CAN4VSCP_DRIVER_MAX_OPEN; i++) {
 
-		if ( NULL == m_socketcanArray[ i ] ) {
+        if ( NULL == m_socketcanArray[ i ] ) {
 
-			m_socketcanArray[ i ] = plog;
-			h = i + 1681;
-			break;
-		}
-	}
-	UNLOCK_MUTEX(m_drvobjMutex);
+            m_socketcanArray[ i ] = plog;
+            h = i + 1681;
+            break;
+        }
+    }
+    UNLOCK_MUTEX(m_drvobjMutex);
 
-	return h;
+    return h;
 }
 
 
@@ -129,17 +119,17 @@ CSocketcanApp::addDriverObject(CSocketcanObj *plog)
 // getDriverObject
 //
 
-//CLog * CSocketcanApp::getDriverObject( long h )
+//CLog * Ccan4vscpApp::getDriverObject( long h )
 
-CSocketcanObj *
-CSocketcanApp::getDriverObject(long h)
+CCan4VSCPObj *
+Ccan4vscpApp::getDriverObject(long h)
 {
-	long idx = h - 1681;
+    long idx = h - 1681;
 
-	// Check if valid handle
-	if (idx < 0) return NULL;
-	if (idx >= CANAL_SOCKETCAN_DRIVER_MAX_OPEN) return NULL;
-	return m_socketcanArray[ idx ];
+    // Check if valid handle
+    if (idx < 0) return NULL;
+    if (idx >= CANAL_CAN4VSCP_DRIVER_MAX_OPEN) return NULL;
+    return m_socketcanArray[ idx ];
 }
 
 
@@ -148,28 +138,28 @@ CSocketcanApp::getDriverObject(long h)
 //
 
 void
-CSocketcanApp::removeDriverObject(long h)
+Ccan4vscpApp::removeDriverObject(long h)
 {
-	long idx = h - 1681;
+    long idx = h - 1681;
 
-	// Check if valid handle
-	if (idx < 0) return;
-	if (idx >= CANAL_SOCKETCAN_DRIVER_MAX_OPEN) return;
+    // Check if valid handle
+    if (idx < 0) return;
+    if (idx >= CANAL_CAN4VSCP_DRIVER_MAX_OPEN) return;
 
-	LOCK_MUTEX(m_drvobjMutex);
-	if (NULL != m_socketcanArray[ idx ]) delete m_socketcanArray[ idx ];
-	m_socketcanArray[ idx ] = NULL;
-	UNLOCK_MUTEX(m_drvobjMutex);
+    LOCK_MUTEX(m_drvobjMutex);
+    if (NULL != m_socketcanArray[ idx ]) delete m_socketcanArray[ idx ];
+    m_socketcanArray[ idx ] = NULL;
+    UNLOCK_MUTEX(m_drvobjMutex);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // InitInstance
 
 BOOL
-CSocketcanApp::InitInstance()
+Ccan4vscpApp::InitInstance()
 {
-	m_instanceCounter++;
-	return TRUE;
+    m_instanceCounter++;
+    return TRUE;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -183,20 +173,21 @@ CSocketcanApp::InitInstance()
 extern "C" long
 CanalOpen(const char *pDevice, unsigned long flags)
 {
-	long h = 0;
+    long h = 0;
 
-	CSocketcanObj *pdrvObj = new CSocketcanObj();
-	if (NULL != pdrvObj) {
-		if (pdrvObj->open(pDevice, flags)) {
-			if (!(h = theApp.addDriverObject(pdrvObj))) {
-				delete pdrvObj;
-			}
-		} else {
-			delete pdrvObj;
-		}
-	}
+    CCan4VSCPObj *pdrvObj = new CCan4VSCPObj();
+    if (NULL != pdrvObj) {
+        if ( CANAL_ERROR_SUCCESS == pdrvObj->open(pDevice, flags)) {
+            if (!(h = theApp.addDriverObject(pdrvObj))) {
+                delete pdrvObj;
+            }
+        } 
+        else {
+            delete pdrvObj;
+        }
+    }
 
-	return h;
+    return h;
 }
 
 
@@ -207,16 +198,16 @@ CanalOpen(const char *pDevice, unsigned long flags)
 extern "C" int
 CanalClose(long handle)
 {
-	int rv = 0;
+    int rv = 0;
 
-	CSocketcanObj *pLog = theApp.getDriverObject(handle);
-	if (NULL == pLog) return 0;
+    CCan4VSCPObj *pLog = theApp.getDriverObject(handle);
+    if (NULL == pLog) return 0;
 
-	pLog->close();
-	theApp.removeDriverObject(handle);
+    pLog->close();
+    theApp.removeDriverObject(handle);
 
-	rv = 1;
-	return CANAL_ERROR_SUCCESS;
+    rv = 1;
+    return CANAL_ERROR_SUCCESS;
 }
 
 
@@ -227,7 +218,7 @@ CanalClose(long handle)
 extern "C" unsigned long
 CanalGetLevel(long handle)
 {
-	return CANAL_LEVEL_STANDARD;
+    return CANAL_LEVEL_STANDARD;
 }
 
 
@@ -238,10 +229,23 @@ CanalGetLevel(long handle)
 extern "C" int
 CanalSend(long handle, PCANALMSG pCanalMsg)
 {
-	CSocketcanObj *pdrvObj = theApp.getDriverObject(handle);
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
+	
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->writeMsg( pCanalMsg );
+}
 
-	if (NULL == pdrvObj) return 0;
-	return( pdrvObj->writeMsg(pCanalMsg) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
+///////////////////////////////////////////////////////////////////////////////
+// CanalBlockingSend
+//
+
+extern "C" int
+CanalBlockingSend(long handle, PCANALMSG pCanalMsg, unsigned long to)
+{
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
+
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->writeMsgBlocking( pCanalMsg, to );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -251,10 +255,23 @@ CanalSend(long handle, PCANALMSG pCanalMsg)
 extern "C" int
 CanalReceive(long handle, PCANALMSG pCanalMsg)
 {
-	CSocketcanObj *pdrvObj = theApp.getDriverObject(handle);
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
 
-	if (NULL == pdrvObj) return 0;
-	return( pdrvObj->readMsg(pCanalMsg) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->readMsg( pCanalMsg );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CanalBlockingReceive
+//
+
+extern "C" int
+CanalBlockingReceive(long handle, PCANALMSG pCanalMsg, unsigned long to )
+{
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
+
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->readMsgBlocking( pCanalMsg, to );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -264,10 +281,10 @@ CanalReceive(long handle, PCANALMSG pCanalMsg)
 extern "C" int
 CanalDataAvailable(long handle)
 {
-	CSocketcanObj *pdrvObj = theApp.getDriverObject(handle);
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
 
-	if (NULL == pdrvObj) return 0;
-	return pdrvObj->dataAvailable();
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->dataAvailable();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -277,10 +294,10 @@ CanalDataAvailable(long handle)
 extern "C" int
 CanalGetStatus(long handle, PCANALSTATUS pCanalStatus)
 {
-	CSocketcanObj *pdrvObj = theApp.getDriverObject(handle);
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
 
-	if (NULL == pdrvObj) return 0;
-	return( pdrvObj->getStatus(pCanalStatus) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->getStatus( pCanalStatus );
 
 }
 
@@ -291,10 +308,10 @@ CanalGetStatus(long handle, PCANALSTATUS pCanalStatus)
 extern "C" int
 CanalGetStatistics(long handle, PCANALSTATISTICS pCanalStatistics)
 {
-	CSocketcanObj *pdrvObj = theApp.getDriverObject(handle);
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
 
-	if (NULL == pdrvObj) return 0;
-	return( pdrvObj->getStatistics(pCanalStatistics) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->getStatistics( pCanalStatistics );
 
 }
 
@@ -305,10 +322,10 @@ CanalGetStatistics(long handle, PCANALSTATISTICS pCanalStatistics)
 extern "C" int
 CanalSetFilter(long handle, unsigned long filter)
 {
-	CSocketcanObj *pdrvObj = theApp.getDriverObject(handle);
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
 
-	if (NULL == pdrvObj) return 0;
-	return( pdrvObj->setFilter(filter) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->setFilter( filter );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -318,10 +335,10 @@ CanalSetFilter(long handle, unsigned long filter)
 extern "C" int
 CanalSetMask(long handle, unsigned long mask)
 {
-	CSocketcanObj *pdrvObj = theApp.getDriverObject(handle);
+    CCan4VSCPObj *pdrvObj = theApp.getDriverObject(handle);
 
-	if (NULL == pdrvObj) return 0;
-	return( pdrvObj->setMask(mask) ? CANAL_ERROR_SUCCESS : CANAL_ERROR_GENERIC);
+    if (NULL == pdrvObj) return 0;
+    return pdrvObj->setMask( mask );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -331,8 +348,8 @@ CanalSetMask(long handle, unsigned long mask)
 extern "C" int
 CanalSetBaudrate(long handle, unsigned long baudrate)
 {
-	// Not supported in this DLL
-	return CANAL_ERROR_NOT_SUPPORTED;
+    // Not supported in this DLL
+    return CANAL_ERROR_NOT_SUPPORTED;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -342,14 +359,14 @@ CanalSetBaudrate(long handle, unsigned long baudrate)
 extern "C" unsigned long
 CanalGetVersion(void)
 {
-	unsigned long version;
-	unsigned char *p = (unsigned char *) &version;
+    unsigned long version;
+    unsigned char *p = (unsigned char *) &version;
 
-	*p = CANAL_MAIN_VERSION;
-	*(p + 1) = CANAL_MINOR_VERSION;
-	*(p + 2) = CANAL_SUB_VERSION;
-	*(p + 3) = 0;
-	return version;
+    *p = CANAL_MAIN_VERSION;
+    *(p + 1) = CANAL_MINOR_VERSION;
+    *(p + 2) = CANAL_SUB_VERSION;
+    *(p + 3) = 0;
+    return version;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -359,7 +376,7 @@ CanalGetVersion(void)
 extern "C" unsigned long
 CanalGetDllVersion(void)
 {
-	return DLL_VERSION;
+    return DLL_VERSION;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -369,8 +386,16 @@ CanalGetDllVersion(void)
 extern "C" const char *
 CanalGetVendorString(void)
 {
-	return CANAL_DLL_VENDOR;
+    return CANAL_DLL_VENDOR;
 }
 
 
+///////////////////////////////////////////////////////////////////////////////
+// CanalGetDriverInfo
+//
 
+extern "C" const char *
+CanalGetDriverInfo(void)
+{
+    return CANAL_DLL_VENDOR;
+}

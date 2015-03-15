@@ -4,7 +4,7 @@
 // This file is part is part of CANAL (CAN Abstraction Layer)
 // http://www.vscp.org)
 //
-// Copyright (C) 2000-2012 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This library is free software; you can redistribute it and/or
@@ -73,7 +73,7 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
     //----------------------------------------------------------------------
     //	Set default parameters
     //----------------------------------------------------------------------
-    char MODEMDEVICE[20] = "/dev/ttyS0";
+    char modemDevice[80] = "/dev/ttyS0";
     char nBaudRate[10] = "57600";
     unsigned long nMask = 0;
     unsigned long nFilter = 0;
@@ -83,7 +83,7 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
 
 
     //----------------------------------------------------------------------
-    //	Accure Mutex
+    //	acquire Mutex
     //----------------------------------------------------------------------
     pthread_attr_t thread_attr;
     pthread_attr_init(&thread_attr);
@@ -99,7 +99,7 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
     //----------------------------------------------------------------------
     // Port
     p = strtok((char *) pDevice, ";");
-    if (NULL != p) strncpy(MODEMDEVICE, p, strlen(p));
+    if (NULL != p) strncpy(modemDevice, p, strlen(p));
 
     // Baudrate
     p = strtok(NULL, ";");
@@ -142,18 +142,18 @@ bool CCAN232Obj::open(const char *pDevice, unsigned long flags)
     //----------------------------------------------------------------------
     // Open Serial Port
     //----------------------------------------------------------------------
-    if (!m_can232obj.m_comm.open(MODEMDEVICE)) {
-        syslog(LOG_CRIT, "can232obj: Open [%s] failed\n", MODEMDEVICE);
+    if (!m_can232obj.m_comm.open(modemDevice)) {
+        syslog(LOG_CRIT, "can232obj: Open [%s] failed\n", modemDevice);
         return 0;
     }
 
-    syslog(LOG_CRIT, "can232obj: Open [%s] successful\n", MODEMDEVICE);
+    syslog(LOG_CRIT, "can232obj: Open [%s] successful\n", modemDevice);
     rv = true;
 
     //----------------------------------------------------------------------
     // Comm::setParam( char *baud, char *parity, char *bits, int HWFlow, int SWFlow )
     //----------------------------------------------------------------------
-    m_can232obj.m_comm.setParam(nBaudRate, (char*) "N", (char*) "8", 0, 0);
+    m_can232obj.m_comm.setParam(nBaudRate, (char*)"N", (char*)"8", 0, 0);
 
     //----------------------------------------------------------------------
     //

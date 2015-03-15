@@ -6,7 +6,7 @@
  *  \date   2002-2014
  *
  *
-// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
@@ -32,8 +32,8 @@
 
 Comm::Comm( void )
 {
-  pthread_mutex_init( &m_mutex, NULL );
-  m_fd = 0;
+    pthread_mutex_init( &m_mutex, NULL );
+    m_fd = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -41,8 +41,8 @@ Comm::Comm( void )
 
 Comm::~Comm( void )
 {
-  close();
-  pthread_mutex_destroy( &m_mutex );
+    close();
+    pthread_mutex_destroy( &m_mutex );
 }
 
 
@@ -51,21 +51,186 @@ Comm::~Comm( void )
 
 bool Comm::open( char *szDevice )	
 {
-  // Not allowed to open if already open
-  if ( m_fd != 0 ) return false;
+    // Not allowed to open if already open
+    if ( m_fd != 0 ) return false;
 
-  if ( NULL != szDevice ) {
-    if ( -1 == ( m_fd = ::open( szDevice, O_RDWR | O_NONBLOCK ) ) ) {	
-      return false;
+    if ( NULL != szDevice ) {
+        if ( -1 == ( m_fd = ::open( szDevice, O_RDWR | O_NONBLOCK ) ) ) {	
+            return false;
+        }
     }
-  }
-  else {
-    if ( -1 == ( m_fd = ::open( m_szDevice, O_RDWR | O_NONBLOCK ) ) ) {	
-      return false;
-    }	
-  }	
-  flock( m_fd, LOCK_EX );
-  return true;
+    else {
+        if ( -1 == ( m_fd = ::open( m_szDevice, O_RDWR | O_NONBLOCK ) ) ) {	
+            return false;
+        }	
+    } 	
+  
+    flock( m_fd, LOCK_EX );
+    return true;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// setParam
+//
+// Set port parameters.
+//
+
+void Comm::setParam( char *baud, 
+                        char *parity,
+                        char *bits,
+                        int HWFlow,
+                        int SWFlow )
+{
+    int spd = -1;
+    int newbaud;
+    int bit = bits[0];
+    struct termios tty;
+  
+    tcgetattr(m_fd, &tty);	
+  
+    // We generate mark and space parity ourself. 
+    if ( bit == '7' && ( parity[0] == 'M' || parity[0] == 'S' ) ) {
+        bit = '8';
+    }
+
+    // Check if 'baudr' is really a number 
+    if ( ( newbaud = ( atol(baud) / 100)) == 0 && baud[0] != '0')  {
+        newbaud = -1;
+    }
+  
+    switch( newbaud )  {
+        case 0:
+#ifdef B0
+            spd = B0;	
+            break;
+#else
+            spd = 0;	
+            break;
+#endif
+        case 3:		
+            spd = B300;	
+            break;
+			
+        case 6:		
+            spd = B600;	
+            break;
+			
+        case 12:	
+            spd = B1200;	
+            break;
+      
+        case 24:	
+            spd = B2400;	
+            break;
+            
+        case 48:	
+            spd = B4800;	
+            break;
+            
+        case 96:	
+            spd = B9600;	
+            break;
+            
+#ifdef B19200
+        case 192:	
+            spd = B19200;	
+            break;
+#else /* B19200 */
+#  ifdef EXTA
+  case 192:	
+    spd = EXTA;	
+    break;
+#   else /* EXTA */
+  case 192:	
+    spd = B9600;	
+    break;
+#   endif /* EXTA */
+#endif	 /* B19200 */
+#ifdef B38400
+        case 384:	
+            spd = B38400;	
+            break;
+#else /* B38400 */
+#  ifdef EXTB
+  case 384:	
+    spd = EXTB;	
+    break;
+#   else /* EXTB */
+  case 384:	
+    spd = B9600;	
+    break;
+#   endif /* EXTB */
+#endif	 /* B38400 */
+#ifdef B57600
+        case 576:	
+            spd = B57600;	
+            break;
+#endif
+#ifdef B115200
+        case 1152:	
+            spd = B115200;	
+            break;
+#endif
+    } // Switch
+  
+  
+    if (spd != -1)  {
+        cfsetospeed( &tty, (speed_t)spd );
+        cfsetispeed( &tty, (speed_t)spd );
+    }
+
+    switch (bit)  {
+        case '5':
+            tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS5;
+            break;
+    
+        case '6':
+            tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS6;
+            break;
+			
+        case '7':
+            tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS7;
+            break;
+    
+        case '8':
+        default:
+            tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
+            break;
+    }		
+  
+    // Set into raw, no echo mode 
+    tty.c_iflag =  IGNBRK;
+    tty.c_lflag = 0;
+    tty.c_oflag = 0;
+    tty.c_cflag |= CLOCAL | CREAD;
+#ifdef _DCDFLOW
+    tty.c_cflag &= ~CRTSCTS;
+#endif
+    tty.c_cc[VMIN] = 1;
+    tty.c_cc[VTIME] = 5;
+  
+    if ( SWFlow ) {
+        tty.c_iflag |= IXON | IXOFF;
+    }
+    else {
+        tty.c_iflag &= ~(IXON|IXOFF|IXANY);
+    } 
+  
+    tty.c_cflag &= ~(PARENB | PARODD);
+    if (parity[0] == 'E') {
+        tty.c_cflag |= PARENB;
+    }
+    else if (parity[0] == 'O') {
+        tty.c_cflag |= PARODD;
+    }
+
+    tcsetattr( m_fd, TCSANOW, &tty );
+    RtsOn();
+  
+#ifndef _DCDFLOW
+    setHWFlow( HWFlow );
+#endif
 }
 	
 
@@ -77,15 +242,17 @@ bool Comm::open( char *szDevice )
 
 int Comm::comm_gets( char *Buffer, int max )
 {
-  unsigned char c;
-  int x=0;
-  Buffer = NULL;
-  do {
-    read( m_fd, &c, 1 );
-    Buffer[ x++ ] = c;
-  } while( isCharReady() && ( x<max ) );
-  Buffer[x-1]=0;
-  return x;
+    unsigned char c;
+    int x=0;
+    Buffer = NULL;
+    do {
+        (void)read( m_fd, &c, 1 );
+        Buffer[ x++ ] = c;
+    } while( isCharReady() && ( x<max ) );
+    
+    Buffer[x-1]=0;
+    
+    return x;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -96,45 +263,45 @@ int Comm::comm_gets( char *Buffer, int max )
 
 int Comm::comm_gets( char *Buffer, int nChars, long timeout )
 {
-  fd_set filedescr;
-  struct timeval tval;
-  int cnt;
-  int us_to = 0;
-  int s_to = 0;
+    fd_set filedescr;
+    struct timeval tval;
+    int cnt;
+    int us_to = 0;
+    int s_to = 0;
 	
-  if ( timeout > 1000000 ) {
-    s_to = ( timeout/1000000 );
+    if ( timeout > 1000000 ) {
+        s_to = ( timeout/1000000 );
     
-    if ( s_to > 60 ) s_to = 60; // max one minute			
-    us_to = timeout - ( long )s_to*1000000L; 
-  }
-  else {
-    us_to = timeout;	
-  }
-	
-  // loop to wait until each byte is available and read it
-  for ( cnt = 0; cnt < nChars; cnt++ ) {
-    // set a descriptor to wait for a character available
-    FD_ZERO( &filedescr );
-    FD_SET( m_fd, &filedescr );
-    
-    // set timeout  
-    tval.tv_sec = s_to;
-    tval.tv_usec = us_to;
-    
-    // if byte available read or return bytes read 
-    if ( select( m_fd+1, &filedescr, NULL, NULL, &tval ) != 0 ) {
-      if ( read( m_fd, &Buffer[cnt], 1 ) != 1 ) {
-	return cnt;
-      }
+        if ( s_to > 60 ) s_to = 60; // max one minute			
+        us_to = timeout - ( long )s_to*1000000L; 
     }
     else {
-      return cnt;
+        us_to = timeout;	
     }
-  }
+	
+    // loop to wait until each byte is available and read it
+    for ( cnt = 0; cnt < nChars; cnt++ ) {
+        // set a descriptor to wait for a character available
+        FD_ZERO( &filedescr );
+        FD_SET( m_fd, &filedescr );
+    
+        // set timeout  
+        tval.tv_sec = s_to;
+        tval.tv_usec = us_to;
+    
+        // if byte available read or return bytes read 
+        if ( select( m_fd+1, &filedescr, NULL, NULL, &tval ) != 0 ) {
+            if ( read( m_fd, &Buffer[cnt], 1 ) != 1 ) {
+                return cnt;
+            }
+        }
+        else {
+            return cnt;
+        }
+    }
    
-  // success, so return desired length
-  return nChars;
+    // success, so return desired length
+    return nChars;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -145,13 +312,13 @@ int Comm::comm_gets( char *Buffer, int nChars, long timeout )
 
 int Comm::comm_puts(char *Buffer, bool bDrain )
 {
-  int rv = write( m_fd, Buffer, strlen( Buffer ) );
+    int rv = write( m_fd, Buffer, strlen( Buffer ) );
   
-  if ( bDrain ) {
-    Drain();
-  }
+    if ( bDrain ) {
+        Drain();
+    }
 	
-  return rv;
+    return rv;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -161,13 +328,13 @@ int Comm::comm_puts(char *Buffer, bool bDrain )
 
 int Comm::comm_puts( char *Buffer, int len, bool bDrain )
 {
-  int rv = write( m_fd, Buffer, len );		
+    int rv = write( m_fd, Buffer, len );		
 	
-  if ( bDrain ) {
-    Drain();
-  }
+    if ( bDrain ) {
+        Drain();
+    }
 	
-  return rv;
+    return rv;
 }
 
 
@@ -179,9 +346,9 @@ int Comm::comm_puts( char *Buffer, int len, bool bDrain )
 
 unsigned char Comm::comm_getc(void)
 {
-  unsigned char c = 0;
-  read( m_fd, &c, 1 );
-  return c;
+    unsigned char c = 0;
+    (void)read( m_fd, &c, 1 );
+    return c;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -192,10 +359,10 @@ unsigned char Comm::comm_getc(void)
 
 char Comm::readChar( int *cnt )
 {
-  unsigned char c = 0;
+    unsigned char c = 0;
 
-  *cnt = read( m_fd, &c, 1 );
-  return c;
+    *cnt = read( m_fd, &c, 1 );
+    return c;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -206,12 +373,12 @@ char Comm::readChar( int *cnt )
 
 void Comm::comm_putc(unsigned char c, bool bDrain )
 {
-  write( m_fd, &c, 1 );
-  //printf("Char=%2X\n", c );
+    (void)write( m_fd, &c, 1 );
+    //printf("Char=%2X\n", c );
  
-  if ( bDrain ) {
-    Drain();
-  }	
+    if ( bDrain ) {
+        Drain();
+    }	
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -222,17 +389,17 @@ void Comm::comm_putc(unsigned char c, bool bDrain )
 
 void Comm::setHWFlow( int on )	
 {		
-  struct termios tty;
+    struct termios tty;
   
-  tcgetattr(m_fd, &tty);
-  if (on) {
-    tty.c_cflag |= CRTSCTS;
-  }
-  else {
-    tty.c_cflag &= ~CRTSCTS;
-  }
+    tcgetattr(m_fd, &tty);
+    if (on) {
+        tty.c_cflag |= CRTSCTS;
+    }
+    else {
+        tty.c_cflag &= ~CRTSCTS;
+    }
   
-  tcsetattr(m_fd, TCSANOW, &tty);
+    tcsetattr(m_fd, TCSANOW, &tty);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -243,13 +410,13 @@ void Comm::setHWFlow( int on )
 
 void Comm::ToggleDTR( int delay )
 {		
-  int f;
-  f = TIOCM_DTR;
-  ioctl( m_fd, TIOCMBIC, &f );
-  if ( 0 < delay ) {
-    sleep( delay );
-  }
-  ioctl( m_fd, TIOCMBIS, &f );	
+    int f;
+    f = TIOCM_DTR;
+    ioctl( m_fd, TIOCMBIC, &f );
+    if ( 0 < delay ) {
+        sleep( delay );
+    }
+    ioctl( m_fd, TIOCMBIS, &f );	
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -260,7 +427,7 @@ void Comm::ToggleDTR( int delay )
 
 void Comm::SendBreak( void )
 {		
-  tcsendbreak(m_fd, 0);
+    tcsendbreak(m_fd, 0);
 }
 
 
@@ -273,10 +440,10 @@ void Comm::SendBreak( void )
 int Comm::getDCD( void )
 
 {		
-  int mcs;
+    int mcs;
   
-  ioctl(m_fd, TIOCMGET, &mcs);
-  return(mcs & TIOCM_CAR ? 1 : 0);
+    ioctl(m_fd, TIOCMGET, &mcs);
+    return(mcs & TIOCM_CAR ? 1 : 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -287,7 +454,7 @@ int Comm::getDCD( void )
 
 void Comm::Flush( void )
 {
-  ioctl( m_fd, TCFLSH, 2);
+    ioctl( m_fd, TCFLSH, 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -298,7 +465,7 @@ void Comm::Flush( void )
 
 void Comm::Drain( void )
 {
-  tcdrain( m_fd );	
+    tcdrain( m_fd );	
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -307,9 +474,9 @@ void Comm::Drain( void )
 
 void Comm::FlushInQue( void )
 {
-  while( isCharReady() ) {
-    comm_getc();
-  }
+    while( isCharReady() ) {
+        comm_getc();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -320,10 +487,10 @@ void Comm::FlushInQue( void )
 
 int Comm::isCharReady( void )
 {	
-  long i = -1;
+    long i = -1;
   
-  (void) ioctl( m_fd, FIONREAD, &i );
-  return( (int)i );
+    (void) ioctl( m_fd, FIONREAD, &i );
+    return( (int)i );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -335,19 +502,19 @@ int Comm::isCharReady( void )
 int Comm::getMaxBaud( void )
 {		
 #ifdef B115200
-  return(1152);
+    return(1152);
 #elif defined(B57600)
-  return(576);
+    return(576);
 #elif defined(B38400)
-  return(384);
+    return(384);
 #elif defined(EXTB)
-  return(384);
+    return(384);
 #elif defined(B19200)
-  return(192);
+    return(192);
 #elif defined(EXTA)
-  return(192);
+    return(192);
 #else
-  return(96);
+    return(96);
 #endif
 }
 
@@ -359,9 +526,9 @@ int Comm::getMaxBaud( void )
 
 void Comm::DtrOn()
 {		
-  int f;
-  f = TIOCM_DTR;
-  ioctl( m_fd, TIOCMBIS, &f );
+    int f;
+    f = TIOCM_DTR;
+    ioctl( m_fd, TIOCMBIS, &f );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -372,9 +539,9 @@ void Comm::DtrOn()
 	
 void Comm::DtrOff()
 {
-  int f;
-  f = TIOCM_DTR;
-  ioctl( m_fd, TIOCMBIC, &f );
+    int f;
+    f = TIOCM_DTR;
+    ioctl( m_fd, TIOCMBIC, &f );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -385,9 +552,9 @@ void Comm::DtrOff()
 	
 void Comm::RtsOn()
 {
-  int f;
-  f = TIOCM_RTS;
-  ioctl( m_fd, TIOCMBIS, &f );
+    int f;
+    f = TIOCM_RTS;
+    ioctl( m_fd, TIOCMBIS, &f );
 }
 	
 ///////////////////////////////////////////////////////////////////////////////
@@ -398,9 +565,9 @@ void Comm::RtsOn()
 	
 void Comm::RtsOff()
 {
-  int f;
-  f = TIOCM_RTS;
-  ioctl( m_fd, TIOCMBIC, &f );
+    int f;
+    f = TIOCM_RTS;
+    ioctl( m_fd, TIOCMBIC, &f );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -423,170 +590,12 @@ void Comm::RtsOff()
 
 int Comm::isTransmitterEmpty()
 {
-  int rv;
-  ioctl( m_fd, TIOCSERGETLSR, &rv );
-  return rv;
+    int rv;
+    ioctl( m_fd, TIOCSERGETLSR, &rv );
+    return rv;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// setParam
-//
-// Set port parameters.
-//
 
-void Comm::setParam( char *baud, 
-		     							char *parity,
-		     							char *bits,
-		     							int HWFlow,
-		     							int SWFlow )
-{
-  int spd = -1;
-  int newbaud;
-  int bit = bits[0];
-  struct termios tty;
-  
-  tcgetattr(m_fd, &tty);	
-  
-  // We generate mark and space parity ourself. 
-  if ( bit == '7' && ( parity[0] == 'M' || parity[0] == 'S' ) ) {
-    bit = '8';
-  }
-
-  // Check if 'baudr' is really a number 
-  if ( ( newbaud = ( atol(baud) / 100)) == 0 && baud[0] != '0')  {
-    newbaud = -1;
-  }
-  
-  switch( newbaud )  {
-  case 0:
-#ifdef B0
-    spd = B0;	
-    break;
-#else
-    spd = 0;	
-    break;
-#endif
-  case 3:		
-    spd = B300;	
-    break;
-			
-  case 6:		
-    spd = B600;	
-    break;
-			
-  case 12:	
-    spd = B1200;	
-    break;
-  case 24:	
-    spd = B2400;	
-    break;
-  case 48:	
-    spd = B4800;	
-    break;
-  case 96:	
-    spd = B9600;	
-    break;
-#ifdef B19200
-  case 192:	
-    spd = B19200;	
-    break;
-#else /* B19200 */
-#  ifdef EXTA
-  case 192:	
-    spd = EXTA;	
-    break;
-#   else /* EXTA */
-  case 192:	
-    spd = B9600;	
-    break;
-#   endif /* EXTA */
-#endif	 /* B19200 */
-#ifdef B38400
-  case 384:	
-    spd = B38400;	
-    break;
-#else /* B38400 */
-#  ifdef EXTB
-  case 384:	
-    spd = EXTB;	
-    break;
-#   else /* EXTB */
-  case 384:	
-    spd = B9600;	
-    break;
-#   endif /* EXTB */
-#endif	 /* B38400 */
-#ifdef B57600
-  case 576:	
-    spd = B57600;	
-    break;
-#endif
-#ifdef B115200
-  case 1152:	
-    spd = B115200;	
-    break;
-#endif
-  } // Switch
-  
-  
-  if (spd != -1)  {
-    cfsetospeed( &tty, (speed_t)spd );
-    cfsetispeed( &tty, (speed_t)spd );
-  }
-
-  switch (bit)  {
-  case '5':
-    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS5;
-    break;
-    
-  case '6':
-    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS6;
-    break;
-			
-  case '7':
-    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS7;
-    break;
-    
-  case '8':
-  default:
-    tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8;
-    break;
-  }		
-  
-  // Set into raw, no echo mode 
-  tty.c_iflag =  IGNBRK;
-  tty.c_lflag = 0;
-  tty.c_oflag = 0;
-  tty.c_cflag |= CLOCAL | CREAD;
-#ifdef _DCDFLOW
-  tty.c_cflag &= ~CRTSCTS;
-#endif
-  tty.c_cc[VMIN] = 1;
-  tty.c_cc[VTIME] = 5;
-  
-  if ( SWFlow ) {
-    tty.c_iflag |= IXON | IXOFF;
-
-  }
-  else {
-    tty.c_iflag &= ~(IXON|IXOFF|IXANY);
-  }
-  
-  tty.c_cflag &= ~(PARENB | PARODD);
-  if (parity[0] == 'E') {
-    tty.c_cflag |= PARENB;
-  }
-  else if (parity[0] == 'O') {
-    tty.c_cflag |= PARODD;
-  }
-
-  tcsetattr( m_fd, TCSANOW, &tty );
-  RtsOn();
-  
-#ifndef _DCDFLOW
-  setHWFlow( HWFlow );
-#endif
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // msGettick
@@ -597,13 +606,13 @@ void Comm::setParam( char *baud,
 
 long Comm::msGettick(void)
 {
-  struct timezone tmzone;
-  struct timeval  tmval;
-  long ms; 
+    struct timezone tmzone;
+    struct timeval  tmval;
+    long ms; 
   
-  gettimeofday(&tmval,&tmzone);
-  ms = (tmval.tv_sec & 0xFFFF) * 1000 + tmval.tv_usec / 1000;   
-  return ms;
+    gettimeofday(&tmval,&tmzone);
+    ms = (tmval.tv_sec & 0xFFFF) * 1000 + tmval.tv_usec / 1000;   
+    return ms;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -615,11 +624,11 @@ long Comm::msGettick(void)
 
 void Comm::msDelay(int len)
 {
-  struct timespec s;              // Set aside memory space on the stack      
+    struct timespec s;              // Set aside memory space on the stack      
 
-  s.tv_sec = len / 1000;
-  s.tv_nsec = (len - (s.tv_sec * 1000)) * 1000000;   
-  nanosleep(&s, NULL);
+    s.tv_sec = len / 1000;
+    s.tv_nsec = (len - (s.tv_sec * 1000)) * 1000000;   
+    nanosleep(&s, NULL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -627,11 +636,11 @@ void Comm::msDelay(int len)
 
 void Comm::drainInput( void )
 {
-  int cnt;
-  char c;
+    int cnt;
+    char c;
   
-  do {
-    c = readChar( &cnt );
-  } while (cnt && ( -1 != cnt) );	
+    do {
+        c = readChar( &cnt );
+    } while (cnt && ( -1 != cnt) );	
 }
 

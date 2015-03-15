@@ -1,4 +1,4 @@
-// can232drv.h : main header file for the can232drv.dll
+// vscpl1drv_can4vscp.h : main header file for the can232drv.dll
 // Linux version
 //
 // This program is free software; you can redistribute it and/or
@@ -8,7 +8,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014
+// Copyright (C) 2000-2015
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -25,7 +25,7 @@
 #if !defined(AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
 #define AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
 
-#include "can4vscpobj.h"
+#include "../common/can4vscpobj.h"
 
 // This is the version info for this DLL - Change to your own value
 #define DLL_VERSION		1
@@ -34,20 +34,42 @@
 #define CANAL_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
 
 // Max number of open connections
-#define CANAL_SOCKETCAN_DRIVER_MAX_OPEN	256
+#define CANAL_CAN4VSCP_DRIVER_MAX_OPEN	256
+
+
+#define CANAL_CAN4VSCP_DRIVER_INFO  "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>"\
+"<!-- Configuration strings are given as a semicolon separated list          -->"\
+"<!-- This list is described with and item tag for each configuration option -->"\
+"<!-- Items can be of different types, string, number                        -->"\
+"<config>"\
+"   <description>Description of the driver<description>"\
+"   <level>1|2</level>"\
+"   <blocking>yes|no</blocking>"\
+"   <!-- pos is the position on the configuration line i.e."\
+"             item0;item1;item2;item3;item4....."\
+"   -->" \
+"   <item pos=\"nn\" type=\"string\"/>"\
+"   <item pos=\"nn\" ttype=\"number\"/>"\
+"   <item pos=\"nn\" ttype=\"choice\">"\
+"       <choice>first option</choice>"\
+"       <choice>second option</choice>"\
+"       <choice>.............</choice>"\
+"       <choice>last option</choice>"\
+"   </item>"\
+"</config>"
 
 /////////////////////////////////////////////////////////////////////////////
-// CSocketcanApp
+// Ccan4vscpApp
 // 
 
-class CSocketcanApp {
+class Ccan4vscpApp {
 public:
 
     /// Constructor
-    CSocketcanApp();
+    Ccan4vscpApp();
 
     /// Destructor
-    ~CSocketcanApp();
+    ~Ccan4vscpApp();
 
     /*!
             Add a driver object
@@ -55,7 +77,7 @@ public:
             @parm plog Object to add
             @return handle or 0 for error
      */
-    long addDriverObject(CSocketcanObj *plog);
+    long addDriverObject(CCan4VSCPObj *plog);
 
     /*!
         Get a driver object from its handle
@@ -64,7 +86,7 @@ public:
         @return pointer to object or NULL if invalid
                 handle.
      */
-    CSocketcanObj *getDriverObject(long h);
+    CCan4VSCPObj *getDriverObject(long h);
 
     /*!
         Remove a driver object
@@ -77,7 +99,7 @@ public:
         The log file object
         This is the array with driver objects (max 256 objects
      */
-    CSocketcanObj *m_socketcanArray[ CANAL_SOCKETCAN_DRIVER_MAX_OPEN ];
+    CCan4VSCPObj *m_socketcanArray[ CANAL_CAN4VSCP_DRIVER_MAX_OPEN ];
 
     /// Mutex for driver
     pthread_mutex_t m_drvobjMutex;
@@ -95,7 +117,7 @@ public:
 //
 
 extern "C" {
-    CSocketcanApp *CreateObject(void);
+    Ccan4vscpApp *CreateObject(void);
 }
 
 #endif // !defined(AFX_LOGGERDLL_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

@@ -90,7 +90,6 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -98,7 +97,6 @@
           </cTool>
           <ccTool>
             <preprocessorList>
-              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__LINUX__</Elem>
@@ -114,10 +112,13 @@
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
+            <pElem>.</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../../../common/devicethread.cpp"
@@ -126,10 +127,13 @@
             flavor2="4">
         <ccTool>
           <incDir>
+            <pElem>.</pElem>
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
-            <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
@@ -149,6 +153,9 @@
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <item path="can232obj.cpp" ex="false" tool="1" flavor2="0">

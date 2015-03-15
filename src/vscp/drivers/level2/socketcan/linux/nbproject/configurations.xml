@@ -14,6 +14,7 @@
       <itemPath>../../../../../common/crc8.c</itemPath>
       <itemPath>../../../../../common/crc8.h</itemPath>
       <itemPath>../../../../../common/dllist.h</itemPath>
+      <itemPath>../../../../../common/fossa.c</itemPath>
       <itemPath>../../../../../common/fossa.h</itemPath>
       <itemPath>../../../../common/guid.cpp</itemPath>
       <itemPath>../../../../common/guid.h</itemPath>
@@ -35,6 +36,7 @@
       <in>socketcan.cpp</in>
       <in>test.c</in>
       <in>vscp2drv_socketcan.cpp</in>
+      <in>vscpl2drv_socketcan.cpp</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -84,6 +86,8 @@
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="2">
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="2">
+      </item>
+      <item path="../../../../../common/fossa.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
@@ -219,6 +223,8 @@
         </cTool>
       </item>
       <item path="vscp2drv_socketcan.cpp" ex="false" tool="1" flavor2="4">
+      </item>
+      <item path="vscpl2drv_socketcan.cpp" ex="false" tool="1" flavor2="0">
       </item>
     </conf>
   </confs>

@@ -57,7 +57,6 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
-        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>

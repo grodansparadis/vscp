@@ -3,9 +3,9 @@
  *  \brief interface for the Linux comm class.
  *  \author Ake Hedman, Grodans Paradis AB, 
  *  \author <akhe@grodansparadis.com>
- *  \date   2002-2014
+ *  \date   2002-2015
  *
-// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
+// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 //
 // This software is placed into
 // the public domain and may be used for any purpose.  However, this
@@ -90,6 +90,11 @@ public:
 	*/
   int getFD( void ) { return m_fd; }
   
+  /*!
+		Return true if interface is open.
+   */
+  bool isOpen( void ) { return (getFD() ? true : false); };
+  
   /*! 
 		Set port parameters
 
@@ -100,10 +105,10 @@ public:
 		\param SWFlow Set to zero to disable software flow control.
 	*/
   void setParam( char *baud, 
-									char *parity, 
-									char *bits, 
-									int HWFlow=0, 
-									int SWFlow=0 );
+					char *parity, 
+					char *bits, 
+					int HWFlow=0, 
+					int SWFlow=0 );
   
   /*! 
 		Set hardware flow control
@@ -227,7 +232,7 @@ public:
 		\param Buffer Buffer for data to send.
 		\paran len Number of bytes to send.
 		\param bDrain Set to TRUE if we should wait for the character to be sent.
-		\return Non zero if OK, zeror on failure.
+		\return Non zero if OK, zero on failure.
   */
   int comm_puts( char *Buffer, int len, bool bDrain=false  );
   
