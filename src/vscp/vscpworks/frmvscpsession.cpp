@@ -2705,6 +2705,7 @@ TXWorkerThread::~TXWorkerThread()
 //
 // Is there any messages to read from devices. Read it/them and send
 // it/them to all other devices clients.
+//
 
 void *TXWorkerThread::Entry()
 {
@@ -2757,7 +2758,7 @@ void *TXWorkerThread::Entry()
         ::wxGetApp().logMsg( _( "VSCP TX thread - Unable to get channel ID." ), VSCPWORKS_LOGMSG_INFO );
     }
 
-    while (!TestDestroy() && !m_pCtrlObject->m_bQuit) {
+    while (!TestDestroy() && !m_pCtrlObject->m_bQuit && tcpifControl.isConnected() ) {
         if (wxSEMA_TIMEOUT == m_pCtrlObject->m_semOutQue.WaitTimeout(500)) continue;
         m_pCtrlObject->m_mutexOutQueue.Lock();
         node = m_pCtrlObject->m_outQueue.GetFirst();
@@ -2873,7 +2874,7 @@ void *RXWorkerThread::Entry()
     tcpifReceive.doCmdEnterReceiveLoop();
 
     vscpEvent event;
-    while (!TestDestroy() && !m_pCtrlObject->m_bQuit) {
+    while (!TestDestroy() && !m_pCtrlObject->m_bQuit && tcpifReceive.isConnected()) {
 
         if (CANAL_ERROR_SUCCESS ==
                 (rv = tcpifReceive.doCmdBlockingReceive(&event, 10))) {
@@ -3199,9 +3200,9 @@ void *deviceThread::Entry()
 
     // Check if the driver opened properly
     if (0 == m_pCtrlObject->m_openHandle) {
-        ::wxGetApp().logMsg( _T( "CANAL: Faild to open driver." ), VSCPWORKS_LOGMSG_CRITICAL );
+        ::wxGetApp().logMsg( _T( "CANAL: Failed to open driver." ), VSCPWORKS_LOGMSG_CRITICAL );
         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventConnectionLost);
-        eventStatus.SetString(_("CANAL: Faild to open driver."));
+        eventStatus.SetString(_("CANAL: Failed to open driver."));
         wxPostEvent(m_pCtrlObject->m_pVSCPSessionWnd, eventStatus);
         return NULL;
     }
@@ -3329,7 +3330,7 @@ void *deviceThread::Entry()
 
 
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                //             Send messages (if any) in the outqueue
+                //             Send messages (if any) in the out queue
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
                 if (m_pCtrlObject->m_outQueue.GetCount()) {
 
@@ -3379,7 +3380,7 @@ void *deviceThread::Entry()
 
         } // if blocking/non blocking
 
-    } // not TCIP Driver
+    } // not TCPIP Driver
 
     // Close CANAL channel
     m_pCtrlObject->m_proc_CanalClose(m_pCtrlObject->m_openHandle);
@@ -3484,7 +3485,8 @@ void *deviceReceiveThread::Entry()
                     wxPostEvent( m_pMainThreadObj->m_pCtrlObject->m_pVSCPSessionWnd,
                                     eventReceive);
 
-                } // record exists
+                } 
+				// record exists
                 else {
                     delete pEvent;
                 }
