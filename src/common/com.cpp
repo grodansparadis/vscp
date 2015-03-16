@@ -59,6 +59,9 @@ bool Comm::open(char *szDevice)
 		if (-1 == (m_fd = ::open(szDevice, O_RDWR | O_NONBLOCK))) {
 			return false;
 		}
+		
+		// Zero fd is not good
+		if ( !m_fd ) return false;
 	}
 	else {
 		if (-1 == (m_fd = ::open(m_szDevice, O_RDWR | O_NONBLOCK))) {
@@ -67,6 +70,19 @@ bool Comm::open(char *szDevice)
 	}
 	flock(m_fd, LOCK_EX);
 	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// close
+//
+
+void Comm::close(void)
+{
+	if (m_fd) {   // Prevent closing std in
+		::close(m_fd);
+		flock(m_fd, LOCK_UN);
+		m_fd = 0;
+	}
 }
 
 
