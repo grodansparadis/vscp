@@ -99,7 +99,7 @@ CControlObject::convertToASCII( unsigned char *p )
 		}
 		
 		p++;
-		*pWrite++;
+		pWrite++;
 
 	}
 

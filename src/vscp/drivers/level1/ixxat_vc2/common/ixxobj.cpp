@@ -1109,7 +1109,7 @@ void *workThreadReceive( void *pObject )
 					}
 				}
 		
-				delete pobjarray;
+				delete[] pobjarray;
 			}
 		}
 

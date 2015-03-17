@@ -200,7 +200,6 @@ void Cconfdlg::OnLearn()
 			"WinLIRC / Initialization Error");
 		MessageBox(	"There was an error initializing WinLIRC.\n"
 					"Please check the port settings and try again.\n","Error");
-		fclose(tmp);
 		return;
 	}
 
