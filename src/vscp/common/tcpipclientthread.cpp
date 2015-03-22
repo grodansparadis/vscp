@@ -772,12 +772,13 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
         }
 
         // Handle data
-        event.sizeData = 0;
-        while ( tkz.HasMoreTokens() ) {
-            str = tkz.GetNextToken();
-            data[ event.sizeData++ ] = vscp_readStringValue( str );
+        if (512 < tkz.CountTokens()) {
+            ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+            return;	
         }
-        
+
+        event.sizeData = tkz.CountTokens();
+                
         if ( event.sizeData > 0 ) {
             // Copy in data
             event.pdata = new uint8_t[ event.sizeData ];
