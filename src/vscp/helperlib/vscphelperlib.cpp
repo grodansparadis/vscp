@@ -64,9 +64,6 @@ extern CVSCPLApp theApp;
 //-----------------------------------------------------------------------------
 
 
-
-
-
 //-------------------------------------------------------------------------
 //
 // To use any of the methods below this point you have to 
@@ -201,8 +198,8 @@ int vscphlp_clearInputQueue( long handle )
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_openInterface( long handle,
-												            const char *pInterface,
-                                                            unsigned long flags )
+												        const char *pInterface,
+                                                        unsigned long flags )
 #else
 extern "C" int vscphlp_openInterface( long handle,
 										const char *pInterface,
@@ -222,9 +219,9 @@ extern "C" int vscphlp_openInterface( long handle,
 //
 #ifdef WIN32
 extern "C" int WINAPI EXPORT vscphlp_open( const long handle,
-												    const char *pHostname, 
-                                                    const char *pUsername, 
-                                                    const char *pPassword )
+												const char *pHostname, 
+                                                const char *pUsername, 
+                                                const char *pPassword )
 #else
 extern "C" int vscphlp_open( const long handle,
 									const char *pHostname, 

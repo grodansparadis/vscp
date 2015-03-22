@@ -33,7 +33,7 @@
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 
-// Different on Kernel 2.6 and cansocket examples
+// Different on Kernel 2.6 and socketcan examples
 // currently using locally from can-utils
 // TODO remove include form makefile when they are in sync
 #include <linux/can.h>

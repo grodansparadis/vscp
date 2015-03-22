@@ -67,7 +67,7 @@ CSocketcanApp::~CSocketcanApp()
 
 	for (int i = 0; i < CANAL_SOCKETCAN_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_socketcanArray[ i ]) {
+		if (NULL != m_socketcanArray[ i ]) {
 			CSocketcanObj *pCAN232Obj = getDriverObject(i);
 
 			if (NULL != pCAN232Obj) {

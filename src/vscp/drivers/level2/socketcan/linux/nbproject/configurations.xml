@@ -35,7 +35,6 @@
       <in>readsock.c</in>
       <in>socketcan.cpp</in>
       <in>test.c</in>
-      <in>vscp2drv_socketcan.cpp</in>
       <in>vscpl2drv_socketcan.cpp</in>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -221,8 +220,6 @@
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </cTool>
-      </item>
-      <item path="vscp2drv_socketcan.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="vscpl2drv_socketcan.cpp" ex="false" tool="1" flavor2="0">
       </item>

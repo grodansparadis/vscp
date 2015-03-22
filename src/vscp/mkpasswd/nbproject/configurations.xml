@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="90">
+<configurationDescriptor version="95">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="common"
                    displayName="common"
@@ -76,16 +76,10 @@
         </makeTool>
       </makefileType>
       <item path="../../common/crc.c" ex="false" tool="0" flavor2="2">
-        <cTool>
-        </cTool>
       </item>
       <item path="../../common/md5.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
       <item path="../common/vscphelper.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
       <folder path="common">
         <ccTool>
@@ -95,8 +89,6 @@
         </ccTool>
       </folder>
       <item path="mkpasswd.cpp" ex="false" tool="1" flavor2="4">
-        <ccTool>
-        </ccTool>
       </item>
     </conf>
   </confs>

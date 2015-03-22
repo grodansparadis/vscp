@@ -80,7 +80,7 @@ CVSCPL2App::~CVSCPL2App()
 	
 	for ( int i = 0; i<VSCP_LEVEL1_INTERFACE_MAX_OPEN; i++ ) {
 		
-		if ( NULL == m_pvscpifArray[ i ] ) {
+		if ( NULL != m_pvscpifArray[ i ] ) {
 			
 			Clmsensors *plmif =  getDriverObject( i );
 			if ( NULL != plmif ) { 

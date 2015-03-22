@@ -87,7 +87,7 @@ CVSCPDrvApp::~CVSCPDrvApp()
 
 	for (int i = 0; i < VSCP_WIRE1_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_psockcanArray[ i ]) {
+		if (NULL != m_psockcanArray[ i ]) {
 
 			CWire1 *psockcan = getDriverObject(i);
 			if (NULL != psockcan) {

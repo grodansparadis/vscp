@@ -580,7 +580,6 @@ int VscpRemoteTcpIf::doCmdClear( void )
 // doCmdSend
 //
 
-
 int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
 {	
     uint16_t i;
@@ -810,8 +809,7 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
         strWrk.ToLong( &val );
         pEvent->obid = (uint16_t)val; 
         
-    }
-    
+    }  
     
     // Get Timestamp
     pEvent->timestamp = 0;
@@ -823,7 +821,6 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
         pEvent->timestamp = (uint16_t)val; 
         
     }
-    
 
     // Get GUID
     if ( strTokens.HasMoreTokens() ) {
@@ -831,8 +828,7 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
     }
     
     // Must have a GUID
-    if ( 0 == strGUID.length() ) return false;
-    
+    if ( 0 == strGUID.length() ) return false;  
                 
     // Handle data
     pEvent->sizeData = 0;
@@ -848,7 +844,6 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
 
     // Continue to handle GUID
     vscp_getGuidFromString( pEvent, strGUID );
-  
 
     // Copy in the data
     pEvent->pdata = new unsigned char[ pEvent->sizeData ];
@@ -857,7 +852,6 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
     }
   
     return true;
-  
 }
 
 
@@ -1012,6 +1006,7 @@ int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
     m_mutexArray.Unlock();
 
     m_bModeReceiveLoop = true;
+	
     return VSCP_ERROR_SUCCESS;
 }
 
