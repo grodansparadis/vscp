@@ -1517,10 +1517,13 @@ bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 	memcpy( pEventTo->GUID, pEventFrom->GUID, 16);
 
 	if ( pEventFrom->sizeData ) {
+
 		pEventTo->pdata = new unsigned char[ pEventFrom->sizeData ];
-		if (NULL != pEventTo->pdata) {
-			memcpy(pEventTo->pdata, pEventFrom->pdata, pEventFrom->sizeData);
-		}
+        if ( NULL == pEventTo->pdata ) {
+            return false;
+        }
+        
+        memcpy( pEventTo->pdata, pEventFrom->pdata, pEventFrom->sizeData );
 	} 
     else {
 		pEventTo->pdata = NULL;
@@ -1536,7 +1539,10 @@ bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 
 void vscp_deleteVSCPevent(vscpEvent *pEvent)
 {
-	if (pEvent->sizeData) delete [] pEvent->pdata;
+    if ( NULL != pEvent->pdata ) {
+        delete[] pEvent->pdata;
+        
+    }
 	delete pEvent;
 }
 
