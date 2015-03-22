@@ -597,18 +597,18 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
     if ( ( pEvent->sizeData > 0 ) && ( NULL == pEvent->pdata ) ) return VSCP_ERROR_GENERIC;
 
     //send head,class,type,obid,timestamp,GUID,data1,data2,data3....
-    strBuf.Printf( _("SEND %d,%d,%d,%lu,%lu,"),
-                        pEvent->head,
-                        pEvent->vscp_class,
-                        pEvent->vscp_type,
-                        pEvent->obid,
-                        pEvent->timestamp );
+    strBuf.Printf( _("SEND %u,%u,%u,%u,%u,"),
+                    pEvent->head,
+                    pEvent->vscp_class,
+                    pEvent->vscp_type,
+                    pEvent->obid,
+                    pEvent->timestamp );
 
     // GUID
     for ( i=0; i<16; i++ ) {
     
         guidsum += pEvent->GUID[ i ];
-        strWrk.Printf( _("%d"), pEvent->GUID[ i ] );	
+        strWrk.Printf( _("%02X"), pEvent->GUID[ i ] );	
         if ( i != 15 ) {
             strWrk += _(":");
         }
@@ -627,7 +627,7 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
 
     // Data
     for ( i=0; i<pEvent->sizeData; i++ ) {
-        strWrk.Printf( _("%d"), pEvent->pdata[ i ] );
+        strWrk.Printf( _("%u"), pEvent->pdata[ i ] );
         strBuf += strWrk;
         if ( i != ( pEvent->sizeData - 1 ) ) {
             strBuf += _(",");
@@ -667,12 +667,12 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
     
     //send head,class,type,obid,timestamp,GUID,data1,data2,data3....
-    strBuf.Printf( _("SEND %d,%d,%d,%lu,%lu,"),
+    strBuf.Printf( _("SEND %u,%u,%u,%u,%u,"),
                     pEvent->head,
-                              pEvent->vscp_class,
-                              pEvent->vscp_type,
-                              pEvent->obid,
-                              pEvent->timestamp );
+                    pEvent->vscp_class,
+                    pEvent->vscp_type,
+                    pEvent->obid,
+                    pEvent->timestamp );
 
     // GUID
     for ( i=0; i<16; i++ ) {
@@ -697,7 +697,7 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
 
     // Data
     for ( i=0; i<pEvent->sizeData; i++ ) {
-        strWrk.Printf( _("%d"), pEvent->data[ i ] );
+        strWrk.Printf( _("%u"), pEvent->data[ i ] );
         strBuf += strWrk;
         if ( i != ( pEvent->sizeData - 1 ) ) {
             strBuf += _(",");
