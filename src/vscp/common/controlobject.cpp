@@ -917,6 +917,7 @@ bool CControlObject::stopClientWorkerThread(void)
         m_pclientMsgWorkerThread->m_bQuit = true;
         m_pclientMsgWorkerThread->Wait();
         delete m_pclientMsgWorkerThread;
+        m_pclientMsgWorkerThread = NULL;
         m_mutexclientMsgWorkerThread.Unlock();
     }
     return true;
@@ -968,6 +969,7 @@ bool CControlObject::stopTcpWorkerThread(void)
         m_pVSCPClientThread->m_bQuit = true;
         m_pVSCPClientThread->Wait();
         delete m_pVSCPClientThread;
+        m_pVSCPClientThread = NULL;
         m_mutexTcpClientListenThread.Unlock();
     }
 
@@ -1075,6 +1077,7 @@ bool CControlObject::stopWebServerThread(void)
         m_pwebServerThread->m_bQuit = true;
         m_pwebServerThread->Wait();
         delete m_pwebServerThread;
+        m_pwebServerThread = NULL;
         m_mutexwebServerThread.Unlock();
     }
     return true;
@@ -1127,6 +1130,7 @@ bool CControlObject::stopDaemonWorkerThread(void)
         m_pdaemonVSCPThread->m_bQuit = true;
         m_pdaemonVSCPThread->Wait();
         delete m_pdaemonVSCPThread;
+        m_pdaemonVSCPThread = NULL;
         m_mutexdaemonVSCPThread.Unlock();
     }
     return true;
