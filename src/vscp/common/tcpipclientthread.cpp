@@ -689,7 +689,6 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 {
     bool bSent = false;
     bool bVariable = false;
-    char data[ 512 ];
     vscpEvent event;
     wxString nameVariable;
     CClientItem *pClientItem = NULL;
@@ -831,10 +830,24 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
         event.sizeData = tkz.CountTokens();
                 
         if ( event.sizeData > 0 ) {
+            unsigned int    index   = 0;
+
             // Copy in data
             event.pdata = new uint8_t[ event.sizeData ];
-            if ( NULL != event.pdata ) {
-                memcpy ( event.pdata, data, event.sizeData );
+            
+            if ( NULL == event.pdata ) {
+                ns_send( conn,  MSG_INTERNAL_MEMORY_ERROR, strlen ( MSG_INTERNAL_MEMORY_ERROR ) );
+                return;
+            }
+
+            while ( tkz.HasMoreTokens() && ( event.sizeData > index) ) {
+                str = tkz.GetNextToken();
+                event.pdata[ index++ ] = vscp_readStringValue( str );
+            }
+
+            if ( tkz.HasMoreTokens() ) {
+                ns_send( conn,  MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+                return;	
             }
         }
         else {
