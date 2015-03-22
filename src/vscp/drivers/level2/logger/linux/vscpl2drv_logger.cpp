@@ -72,7 +72,7 @@ CLoggerApp::~CLoggerApp()
 
 	for (int i = 0; i < VSCP_LOGGER_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_logArray[ i ]) {
+		if (NULL != m_logArray[ i ]) {
 
 			CVSCPLog *pLog = getDriverObject(i);
 			if (NULL != pLog) {

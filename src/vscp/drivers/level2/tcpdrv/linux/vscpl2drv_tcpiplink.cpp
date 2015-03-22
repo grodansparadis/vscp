@@ -85,7 +85,7 @@ CVSCPDrvApp::~CVSCPDrvApp()
 
 	for (int i = 0; i < VSCP_TCPIPLINK_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_ptcpiplinkArray[ i ]) {
+		if (NULL != m_ptcpiplinkArray[ i ]) {
 
 			CTcpipLink *psockcan = getDriverObject(i);
 			if (NULL != psockcan) {

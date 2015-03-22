@@ -72,7 +72,7 @@ CLoggerdllApp::~CLoggerdllApp() {
 
     for (int i = 0; i < CANAL_LOGGER_DRIVER_MAX_OPEN; i++) {
 
-        if (NULL == m_logArray[ i ]) {
+        if (NULL != m_logArray[ i ]) {
 
             CLog *pLog = getDriverObject(i);
             if (NULL != pLog) {

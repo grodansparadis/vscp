@@ -66,7 +66,7 @@ Ccan4vscpApp::~Ccan4vscpApp()
 
     for (int i = 0; i < CANAL_CAN4VSCP_DRIVER_MAX_OPEN; i++) {
 
-        if (NULL == m_socketcanArray[ i ]) {
+        if (NULL != m_socketcanArray[ i ]) {
             CCan4VSCPObj *pCAN232Obj = getDriverObject(i);
 
             if (NULL != pCAN232Obj) {

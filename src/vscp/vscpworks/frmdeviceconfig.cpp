@@ -78,6 +78,7 @@
 #include "dlgeditlevel1dmrow.h"
 #include "dlgabstractionedit.h"
 #include "readregister.h"
+#include "dlgsetmanufactdata.h"
 #include "frmdeviceconfig_images.h"
 #include "frmdeviceconfig.h"
 
@@ -108,6 +109,7 @@ BEGIN_EVENT_TABLE(frmDeviceConfig, wxFrame)
     EVT_MENU( ID_MENUITEM_ADD_GUIDS, frmDeviceConfig::OnMenuitemAddGuidsClick )
     EVT_MENU( ID_MENUITEM_SAVE_GUIDS, frmDeviceConfig::OnMenuitemSaveGuidsClick )
     EVT_MENU( ID_MENUITEM_LOAD_GUIDS, frmDeviceConfig::OnMenuitemLoadGuidsClick )
+    EVT_MENU( ID_MENUITEM_SET_MANUFACTURER_INFO, frmDeviceConfig::OnMenuitemSetManufacturerInfoClick )
     EVT_MENU( ID_MENUITEM_EXIT, frmDeviceConfig::OnMenuitemExitClick )
     EVT_MENU( ID_MENUITEM_HELP, frmDeviceConfig::OnMenuitemVscpHelpClick )
     EVT_MENU( ID_MENUITEM_FAQ, frmDeviceConfig::OnMenuitemVscpFaqClick )
@@ -251,6 +253,8 @@ void frmDeviceConfig::CreateControls() {
     itemMenu3->Append(ID_MENUITEM_ADD_GUIDS, _("Add GUID..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->Append(ID_MENUITEM_SAVE_GUIDS, _("Save GUID's..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->Append(ID_MENUITEM_LOAD_GUIDS, _("Load GUID's..."), wxEmptyString, wxITEM_NORMAL);
+    itemMenu3->AppendSeparator();
+    itemMenu3->Append( ID_MENUITEM_SET_MANUFACTURER_INFO, _( "Set manufacturer info..." ), wxEmptyString, wxITEM_NORMAL );
     itemMenu3->AppendSeparator();
     itemMenu3->Append(ID_MENUITEM_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu3, _("File"));
@@ -678,10 +682,8 @@ bool frmDeviceConfig::enableInterface(void)
 
             } 
             else {
-
                 // No interface selected
                 m_comboNodeID->SetValue(_("Enter full GUID of remote node here"));
-
             }
 
         }
@@ -5865,6 +5867,22 @@ void frmDeviceConfig::OnMenuitemLoadGuidsClick(wxCommandEvent& event)
 
     event.Skip(false);
 
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// OnMenuitemSetManufacturerInfoClick
+//
+
+void frmDeviceConfig::OnMenuitemSetManufacturerInfoClick( wxCommandEvent& event )
+{
+    CsetManufactData dlg( this );
+
+    if ( wxID_OK == dlg.ShowModal() ) {
+
+    }
+
+    event.Skip( false );
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

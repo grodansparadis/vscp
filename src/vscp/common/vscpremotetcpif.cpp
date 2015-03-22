@@ -91,14 +91,14 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
 {
     char rbuf[ 2048 ];
     int pos4lf = 0;
-	struct iobuf *io = NULL;
+    struct iobuf *io = NULL;
     VscpRemoteTcpIf *pTcpIfSession = NULL;
     
-    if ( NULL == conn) return;
+    if ( NULL == conn ) return;
 
-	io = &conn->recv_iobuf;
-    pTcpIfSession = (VscpRemoteTcpIf *)conn->mgr->user_data;
-    
+    io = &conn->recv_iobuf;
+    pTcpIfSession = ( VscpRemoteTcpIf * )conn->mgr->user_data;
+
     if ( NULL == pTcpIfSession ) return;
 
     switch (ev) {
@@ -106,11 +106,9 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
         case NS_CONNECT: // connect() succeeded or failed. int *success_status
             {
                 int connect_status = 0;
-                
-                if (NULL == pUser) return;
-            
-                connect_status = * (int *)pUser;
-                
+                if ( NULL == pUser ) return;
+                connect_status = *( int * )pUser;
+
                 if (connect_status == 0) {
                     wxLogDebug( _("ev_handler: TCP/IP connect OK.") );
                     ns_send( conn, "\r\n", 2 ); 
@@ -134,10 +132,8 @@ void clientTcpIpWorkerThread::ev_handler(struct ns_connection *conn, enum ns_eve
 			// Read new data
 			memset( rbuf, 0, sizeof( rbuf ) );
             if ( 0 < io->len ) {
-            
                 // Protect rbuf for out of bounce access
-                if (sizeof(rbuf) < io->len) return;
-            
+                if ( sizeof( rbuf ) < io->len ) return;
 			    memcpy( rbuf, io->buf, io->len );
 			    iobuf_remove(io, io->len); 
                 pTcpIfSession->m_readBuffer += wxString::FromUTF8( rbuf );
@@ -594,25 +590,23 @@ int VscpRemoteTcpIf::doCmdClear( void )
 // doCmdSend
 //
 
-
 int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
 {	
     uint16_t i;
-    wxString strBuf, strWrk, strGUID;
-    unsigned char guidsum = 0;
     
     if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
     
-    if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
+    wxString strBuf, strWrk, strGUID;
+    unsigned char guidsum = 0;
     
     // Must be a valid data pointer if data 
     if ( ( pEvent->sizeData > 0 ) && ( NULL == pEvent->pdata ) ) return VSCP_ERROR_GENERIC;
 
     //send head,class,type,obid,timestamp,GUID,data1,data2,data3....
-    strBuf.Printf( _("SEND %u,%u,%u,%u,%u,"),
+    strBuf.Printf( _( "SEND %u,%u,%u,%u,%u," ),
                     pEvent->head,
                     pEvent->vscp_class,
                     pEvent->vscp_type,
@@ -623,7 +617,7 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
     for ( i=0; i<16; i++ ) {
     
         guidsum += pEvent->GUID[ i ];
-        strWrk.Printf( _("%02X"), pEvent->GUID[ i ] );	
+        strWrk.Printf( _( "%02X" ), pEvent->GUID[ i ] );
         if ( i != 15 ) {
             strWrk += _(":");
         }
@@ -638,13 +632,12 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
         strBuf += strGUID;
     }
 
-    if (0 < pEvent->sizeData) {
-        strBuf += _(",");
-    }
+    strBuf += _(",");
 
     // Data
     for ( i=0; i<pEvent->sizeData; i++ ) {
-        strWrk.Printf( _("%u"), pEvent->pdata[ i ] );
+        strWrk.Printf( _( "%u" ), pEvent->pdata[ i ] );
+
         strBuf += strWrk;
         if ( i != ( pEvent->sizeData - 1 ) ) {
             strBuf += _(",");
@@ -682,11 +675,11 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
-    
+
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
     
     //send head,class,type,obid,timestamp,GUID,data1,data2,data3....
-    strBuf.Printf( _("SEND %u,%u,%u,%u,%u,"),
+    strBuf.Printf( _( "SEND %u,%u,%u,%u,%u,"),
                     pEvent->head,
                     pEvent->vscp_class,
                     pEvent->vscp_type,
@@ -712,9 +705,7 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
         strBuf += strGUID;
     }
 
-    if (0 < pEvent->sizeData) {
-        strBuf += _(",");
-    }
+    strBuf += _(",");
 
     // Data
     for ( i=0; i<pEvent->sizeData; i++ ) {
@@ -755,8 +746,9 @@ int VscpRemoteTcpIf::doCmdSendLevel1( const canalMsg *pCanalMsg )
   
     // If receive loop active terminate
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
-    
-    if (NULL == pCanalMsg) return VSCP_ERROR_PARAMETER;
+
+    if ( NULL == pCanalMsg ) return VSCP_ERROR_PARAMETER;
+
     
     event.vscp_class = (unsigned short)( 0x1ff & ( pCanalMsg->id >> 16 ) );
     event.vscp_type = (unsigned char)( 0xff & ( pCanalMsg->id >> 8 ) ); 
@@ -769,8 +761,8 @@ int VscpRemoteTcpIf::doCmdSendLevel1( const canalMsg *pCanalMsg )
     event.GUID[ 0 ] = pCanalMsg->id & 0xff;
 
     // Protect event.data for out ouf bounce access
-    if (sizeof(event.data) < pCanalMsg->sizeData) return VSCP_ERROR_PARAMETER;
-    
+    if ( sizeof( event.data ) < pCanalMsg->sizeData ) return VSCP_ERROR_PARAMETER;
+
     event.sizeData = pCanalMsg->sizeData;
     memcpy( event.data, pCanalMsg->data, pCanalMsg->sizeData );
 
@@ -836,8 +828,7 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
         strWrk.ToLong( &val );
         pEvent->obid = (uint16_t)val; 
         
-    }
-    
+    }  
     
     // Get Timestamp
     pEvent->timestamp = 0;
@@ -849,7 +840,6 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
         pEvent->timestamp = (uint16_t)val; 
         
     }
-    
 
     // Get GUID
     if ( strTokens.HasMoreTokens() ) {
@@ -857,8 +847,7 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
     }
     
     // Must have a GUID
-    if ( 0 == strGUID.length() ) return false;
-    
+    if ( 0 == strGUID.length() ) return false;  
                 
     // Handle data
     pEvent->sizeData = 0;
@@ -874,7 +863,6 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
 
     // Continue to handle GUID
     vscp_getGuidFromString( pEvent, strGUID );
-  
 
     // Copy in the data
     pEvent->pdata = new unsigned char[ pEvent->sizeData ];
@@ -883,7 +871,6 @@ bool VscpRemoteTcpIf::getEventFromLine( const wxString& strLine, vscpEvent *pEve
     }
   
     return true;
-  
 }
 
 
@@ -1038,6 +1025,7 @@ int VscpRemoteTcpIf::doCmdEnterReceiveLoop( void )
     m_mutexArray.Unlock();
 
     m_bModeReceiveLoop = true;
+	
     return VSCP_ERROR_SUCCESS;
 }
 

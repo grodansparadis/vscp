@@ -92,7 +92,7 @@ CVSCPLApp::~CVSCPLApp()
 
     for (int i = 0; i < VSCP_INTERFACE_MAX_OPEN; i++) {
 
-        if (NULL != m_pvscpifArray[ i ]) {
+        if ( NULL != m_pvscpifArray[ i ] ) {
 
             VscpRemoteTcpIf *pvscpif = getDriverObject(i);
             if (NULL != pvscpif) {

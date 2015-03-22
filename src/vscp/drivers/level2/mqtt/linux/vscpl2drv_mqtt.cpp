@@ -85,7 +85,7 @@ CVSCPDrvApp::~CVSCPDrvApp()
 
 	for (int i = 0; i < VSCP_MQTT_DRIVER_MAX_OPEN; i++) {
 
-		if (NULL == m_psockcanArray[ i ]) {
+		if (NULL != m_psockcanArray[ i ]) {
 
 			Cmqtt *psockcan = getDriverObject(i);
 			if (NULL != psockcan) {

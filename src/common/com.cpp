@@ -60,7 +60,7 @@ bool Comm::open(char *szDevice)
 			return false;
 		}
 		
-		// Zero fd is not good
+		// Zero fd is not good (std io is probably closed)
 		if ( !m_fd ) return false;
 	}
 	else {

@@ -74,7 +74,7 @@ CCan232drvdllApp::~CCan232drvdllApp ()
   for (int i = 0; i < CANAL_LOGGER_DRIVER_MAX_OPEN; i++)
     {
 
-      if (NULL == m_logArray[ i ])
+      if (NULL != m_logArray[ i ])
         {
           CCAN232Obj *pCAN232Obj = getDriverObject (i);
 
