@@ -632,7 +632,9 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
         strBuf += strGUID;
     }
 
-    strBuf += _(",");
+    if ( 0 < pEvent->sizeData ) {
+        strBuf += _(",");
+    }
 
     // Data
     for ( i=0; i<pEvent->sizeData; i++ ) {
@@ -705,7 +707,9 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
         strBuf += strGUID;
     }
 
-    strBuf += _(",");
+    if ( 0 < pEvent->sizeData ) {
+        strBuf += _(",");
+    }
 
     // Data
     for ( i=0; i<pEvent->sizeData; i++ ) {
