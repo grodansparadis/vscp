@@ -854,6 +854,12 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
 	    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
         
         ns_send( conn, MSG_MOT_ALLOWED_TO_SEND_EVENT, strlen ( MSG_MOT_ALLOWED_TO_SEND_EVENT ) );
+        
+        if (NULL != event.pdata) {
+            delete[] event.pdata;
+            event.pdata = NULL;
+        }
+        
         return;
     }
 
@@ -864,8 +870,11 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
         vscp_copyVSCPEvent( pEvent, &event );
         
         // We don't need the original event anymore
-        if (pEvent->sizeData) delete [] event.pdata;
-        event.pdata = NULL;
+        if (NULL != event.pdata) {
+            delete [] event.pdata;
+            event.pdata = NULL;
+            event.sizeData = 0;
+        }
 
         // Save the originating clients id so
         // this client don't get the message back
