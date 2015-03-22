@@ -1,13 +1,43 @@
 /////////////////////////////////////////////////////////////////////////////
 // Name:        dlgsetmanufactdata.cpp
 // Purpose:     
-// Author:      Anthemion Software Ltd
+// Author:      Ake Hedman
 // Modified by: 
-// Created:     21/03/2015 14:17:23
+// Created:     Thu 25 Oct 2007 22:17:45 CEST
 // RCS-ID:      
-// Copyright:   (c) Anthemion Software Ltd
+// Copyright:   (C) 2007-2015 
+// Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // Licence:     
-/////////////////////////////////////////////////////////////////////////////
+// This program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public License
+// as published by the Free Software Foundation; either version
+// 2 of the License, or (at your option) any later version.
+// 
+// This file is part of the VSCP (http://www.vscp.org) 
+// 
+// This file is distributed in the hope that it will be useful,
+//  but WITHOUT ANY WARRANTY; without even the implied warranty of
+//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//  GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this file see the file COPYING.  If not, write to
+// the Free Software Foundation, 59 Temple Place - Suite 330,
+//  Boston, MA 02111-1307, USA.
+// 
+//  As a special exception, if other files instantiate templates or use macros
+//  or inline functions from this file, or you compile this file and link it
+//  with other works to produce a work based on this file, this file does not
+//  by itself cause the resulting work to be covered by the GNU General Public
+//  License. However the source code for this file must still be made available
+//  in accordance with section (3) of the GNU General Public License.
+// 
+//  This exception does not invalidate any other reasons why a work based on
+//  this file might be covered by the GNU General Public License.
+// 
+//  Alternative licenses for VSCP & Friends may be arranged by contacting 
+//  Grodans Paradis AB at info@grodansparadis.com, http://www.grodansparadis.com
+//
 
 #if defined(__GNUG__) && !defined(NO_GCC_PRAGMA)
 #pragma implementation "dlgsetmanufactdata.h"
@@ -24,13 +54,7 @@
 #include "wx/wx.h"
 #endif
 
-////@begin includes
-////@end includes
-
 #include "dlgsetmanufactdata.h"
-
-////@begin XPM images
-////@end XPM images
 
 
 /*!
@@ -46,8 +70,6 @@ IMPLEMENT_DYNAMIC_CLASS( CsetManufactData, wxDialog )
 
 BEGIN_EVENT_TABLE( CsetManufactData, wxDialog )
 
-////@begin CsetManufactData event table entries
-////@end CsetManufactData event table entries
 
 END_EVENT_TABLE()
 
@@ -61,7 +83,12 @@ CsetManufactData::CsetManufactData()
     Init();
 }
 
-CsetManufactData::CsetManufactData( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+CsetManufactData::CsetManufactData( wxWindow* parent, 
+                                        wxWindowID id, 
+                                        const wxString& caption, 
+                                        const wxPoint& pos, 
+                                        const wxSize& size, 
+                                        long style )
 {
     Init();
     Create(parent, id, caption, pos, size, style);
@@ -72,9 +99,13 @@ CsetManufactData::CsetManufactData( wxWindow* parent, wxWindowID id, const wxStr
  * CsetManufactData creator
  */
 
-bool CsetManufactData::Create( wxWindow* parent, wxWindowID id, const wxString& caption, const wxPoint& pos, const wxSize& size, long style )
+bool CsetManufactData::Create( wxWindow* parent, 
+                                    wxWindowID id, 
+                                    const wxString& caption, 
+                                    const wxPoint& pos, 
+                                    const wxSize& size, 
+                                    long style )
 {
-////@begin CsetManufactData creation
     SetExtraStyle(wxWS_EX_BLOCK_EVENTS);
     wxDialog::Create( parent, id, caption, pos, size, style );
 
@@ -84,7 +115,7 @@ bool CsetManufactData::Create( wxWindow* parent, wxWindowID id, const wxString& 
         GetSizer()->SetSizeHints(this);
     }
     Centre();
-////@end CsetManufactData creation
+
     return true;
 }
 
@@ -95,8 +126,7 @@ bool CsetManufactData::Create( wxWindow* parent, wxWindowID id, const wxString& 
 
 CsetManufactData::~CsetManufactData()
 {
-////@begin CsetManufactData destruction
-////@end CsetManufactData destruction
+    
 }
 
 
@@ -106,11 +136,9 @@ CsetManufactData::~CsetManufactData()
 
 void CsetManufactData::Init()
 {
-////@begin CsetManufactData member initialisation
     m_pctrlGUID = NULL;
     m_pctrlManDevId = NULL;
     m_pctrlManDevSubId = NULL;
-////@end CsetManufactData member initialisation
 }
 
 
@@ -120,7 +148,6 @@ void CsetManufactData::Init()
 
 void CsetManufactData::CreateControls()
 {    
-////@begin CsetManufactData content construction
     CsetManufactData* itemDialog1 = this;
 
     wxBoxSizer* itemBoxSizer2 = new wxBoxSizer(wxVERTICAL);
@@ -168,8 +195,6 @@ void CsetManufactData::CreateControls()
 
     wxButton* itemButton16 = new wxButton( itemDialog1, ID_BUTTON_WRITE, _("Write to device"), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer12->Add(itemButton16, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
-
-////@end CsetManufactData content construction
 }
 
 
@@ -189,10 +214,8 @@ bool CsetManufactData::ShowToolTips()
 wxBitmap CsetManufactData::GetBitmapResource( const wxString& name )
 {
     // Bitmap retrieval
-////@begin CsetManufactData bitmap retrieval
     wxUnusedVar(name);
     return wxNullBitmap;
-////@end CsetManufactData bitmap retrieval
 }
 
 /*!
@@ -202,8 +225,6 @@ wxBitmap CsetManufactData::GetBitmapResource( const wxString& name )
 wxIcon CsetManufactData::GetIconResource( const wxString& name )
 {
     // Icon retrieval
-////@begin CsetManufactData icon retrieval
     wxUnusedVar(name);
     return wxNullIcon;
-////@end CsetManufactData icon retrieval
 }
