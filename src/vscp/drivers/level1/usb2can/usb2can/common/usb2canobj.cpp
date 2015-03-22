@@ -726,22 +726,25 @@ bool  CUsb2canObj::USB2CAN_status(canalStatus *pCanalStatus)
 	outmsg.opt1 = 0;
 	outmsg.opt2 = 0;
 
-   if(! sendCommandWait( &outmsg,&inmsg,500 ))		
-	  return  false;	
+    if(! sendCommandWait( &outmsg,&inmsg,500 ))		
+        return  false;	
 
 	// opt1 from hardware : "0" - OK, "255" - ERROR
-	if( inmsg.opt1 != 0 )
-	  return  false;
+    if( inmsg.opt1 != 0 )
+        return  false;
 
-   CanalStatus.channel_status = 
+    CanalStatus.channel_status = 
 		(((DWORD)inmsg.data[0]<<24) & 0xff000000) |
 		(((DWORD)inmsg.data[1]<<16) & 0x00ff0000) |
 		(((DWORD)inmsg.data[2]<<8 ) & 0x0000ff00) |
 		(((DWORD)inmsg.data[3]    ) & 0x000000ff) ;   
+        
+    CanalStatus.lasterrorcode = 0;
+    CanalStatus.lasterrorsubcode = 0;
 
-   *pCanalStatus = CanalStatus;
+    *pCanalStatus = CanalStatus;
 
-   return true;      
+    return true;      
 }
 
 

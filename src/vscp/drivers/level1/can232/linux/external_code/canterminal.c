@@ -153,10 +153,10 @@ printf("\nOpening port on %s.",DEVICE);fflush(stdout);
 
 	if(fcntl(Port, F_SETOWN, getpid())>=0)
 	{
-		flag|=FASYNC;
+		flag = FASYNC;
 		if(fcntl(Port, F_SETFL, flag)>=0)
 		{
-printf("\nAll Set for Polling... FD = %d",Port);
+			printf("\nAll Set for Polling... FD = %d",Port);
 		}
 	}
 

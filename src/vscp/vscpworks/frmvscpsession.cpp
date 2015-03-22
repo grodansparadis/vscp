@@ -3332,7 +3332,7 @@ void *deviceThread::Entry()
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
                 //             Send messages (if any) in the out queue
                 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-                if (m_pCtrlObject->m_outQueue.GetCount()) {
+                if  ( m_pCtrlObject->m_outQueue.GetCount() ) {
 
                     m_pCtrlObject->m_mutexOutQueue.Lock();
 

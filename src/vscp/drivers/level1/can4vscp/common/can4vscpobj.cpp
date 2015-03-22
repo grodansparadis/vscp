@@ -35,6 +35,7 @@
 #else
 #include <limits.h>
 #include <errno.h>
+#include <math.h>
 #endif
 
 
@@ -77,7 +78,13 @@ static uint8_t addWithEscape( uint8_t *p, char c, uint8_t *pcrc )
 
 static uint32_t getClockMilliseconds()
 {
-    return ( 1000 * clock() ) / CLOCKS_PER_SEC;
+#ifdef WIN32	
+    return ( ( 1000*(float)clock() ) / CLOCKS_PER_SEC);
+#else
+    timeval curTime;
+	gettimeofday(&curTime, NULL);
+	return  1000 * curTime.tv_sec + curTime.tv_usec / 1000;
+#endif	
 }
 
 
@@ -109,6 +116,7 @@ CCan4VSCPObj::CCan4VSCPObj()
     m_RxMsgSubState = INCOMING_SUBSTATE_NONE;
 
     m_sequencyno = 0;   // No frames sent yet
+	
 
 #ifdef WIN32
 	
@@ -183,15 +191,15 @@ CCan4VSCPObj::~CCan4VSCPObj()
 	if ( NULL != m_transmitDataGetEvent ) CloseHandle( m_transmitDataGetEvent );
 
 #else
-
-	pthread_mutex_destroy( &m_can4vscpMutex );
-	pthread_mutex_destroy( &m_receiveMutex );
-	pthread_mutex_destroy( &m_transmitMutex );
-	pthread_mutex_destroy( &m_responseMutex );
 	
 	sem_destroy( &m_receiveDataSem );
     sem_destroy( &m_transmitDataPutSem );
     sem_destroy( &m_transmitDataGetSem );
+
+	pthread_mutex_destroy( &m_can4vscpMutex );
+	pthread_mutex_destroy( &m_receiveMutex );
+	pthread_mutex_destroy( &m_transmitMutex );
+	pthread_mutex_destroy( &m_responseMutex );	
 
 #endif
 }
@@ -542,12 +550,13 @@ int CCan4VSCPObj::close( void )
     m_bRun = false;
     m_bOpen = false;
 
+	SLEEP( 1000 );	// Give working threads some time to terminate
+
 #ifdef DEBUG_CAN4VSCP_RECEIVE
 	fclose( m_flog );
 #endif
  
     UNLOCK_MUTEX( m_can4vscpMutex );
-    LOCK_MUTEX( m_can4vscpMutex );
 
     // Close the com port if its open
     if ( m_com.isOpen() ) {
@@ -979,7 +988,7 @@ bool CCan4VSCPObj::getDeviceCapabilities( void )
     uint8_t saveseq = m_sequencyno;         // Save the sequency ordinal
     cmdResponseMsg msgResponse;
     uint32_t start = getClockMilliseconds();
-
+	
     while ( getClockMilliseconds() < ( start + 500 ) ) {
 
         if ( ( NULL != m_responseList.pHead ) &&
@@ -1003,7 +1012,8 @@ bool CCan4VSCPObj::getDeviceCapabilities( void )
 
         }
 
-        SLEEP( 10 );
+        SLEEP( 1 );
+		
     }
 
     return TRUE;
@@ -1961,7 +1971,7 @@ void *workThreadTransmit( void *pObject )
 
 
 		// No data to write
-		SLEEP( 1 );
+		SLEEP( 100 );
 
 	
 	} // while 	 
@@ -2008,6 +2018,8 @@ void *workThreadReceive( void *pObject )
         pobj->readSerialData();
         UNLOCK_MUTEX( pobj->m_can4vscpMutex );
 	
+		SLEEP( 100 );
+		
     } // while 	 
 
 
