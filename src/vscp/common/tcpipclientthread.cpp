@@ -137,9 +137,23 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 	char rbuf[ 2048 ];
     int pos4lf; 
 
-	struct iobuf *io = &conn->recv_iobuf;
-	CControlObject *pCtrlObject = (CControlObject *)conn->mgr->user_data;
-	CClientItem *pClientItem = ( CClientItem *)conn->user_data;
+	struct iobuf *io = NULL;
+	CControlObject *pCtrlObject = NULL;
+	CClientItem *pClientItem = NULL;
+    
+    if (NULL == conn) {
+        return;
+    }
+    
+    io = &conn->recv_iobuf;
+    pClientItem = ( CClientItem *)conn->user_data;
+    
+    if ((NULL == conn->mgr) || (NULL == conn->mgr->user_data)) {
+        conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+        return;
+    }
+    
+    pCtrlObject = (CControlObject *)conn->mgr->user_data;
 
 	switch (ev) {
 	
@@ -204,10 +218,26 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 			pCtrlObject->m_wxClientMutex.Lock();
 			pCtrlObject->removeClient( pClientItem );
 			pCtrlObject->m_wxClientMutex.Unlock();
+
+            // Remove client item
+            conn->user_data = NULL;
+
 			break;
 
 		case NS_RECV:
+        
+            if (NULL == pClientItem) {
+                pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Remote client died\n" ), DAEMON_LOGMSG_ERROR );
+                conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+                return;
+            }
 
+            if (sizeof(rbuf) < io->len) {
+                pCtrlObject->logMsg ( _T ( "[TCP/IP Client] Received io->buf size exceeds limit.\n" ), DAEMON_LOGMSG_ERROR );
+                conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
+                return;
+            }
+        
 			// Read new data
 			memset( rbuf, 0, sizeof( rbuf ) );
 			memcpy( rbuf, io->buf, io->len );
@@ -254,16 +284,22 @@ VSCPClientThread::ev_handler(struct ns_connection *conn, enum ns_event ev, void 
 void 
 VSCPClientThread::CommandHandler( struct ns_connection *conn, CControlObject *pCtrlObject, wxString& strCommand )
 {
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+	CClientItem *pClientItem = NULL;
+    bool repeat = false;
+    
+    if ( NULL == conn ) {
+        return;
+    }
+    
+    pClientItem = (CClientItem *)conn->user_data;
 	
-	if ( NULL == pClientItem ) {
-		pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
+	if ( NULL == pCtrlObject ) {
 		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
 		return;
 	}
-
-	if ( NULL == pCtrlObject ) {
-		pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ControlObject pointer is NULL in command handeler.\n" ), DAEMON_LOGMSG_ERROR );
+    
+	if ( NULL == pClientItem ) {
+		pCtrlObject->logMsg ( _T ( "[TCP/IP Client] ClientItem pointer is NULL in command handler.\n" ), DAEMON_LOGMSG_ERROR );
 		conn->flags |= NSF_CLOSE_IMMEDIATELY;	// Close connection
 		return;
 	}
@@ -656,8 +692,23 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
     char data[ 512 ];
     vscpEvent event;
     wxString nameVariable;
+    CClientItem *pClientItem = NULL;
+    
+    if (NULL == conn) {
+        return;
+    }
 
-	CClientItem *pClientItem = (CClientItem *)conn->user_data;
+    if (NULL == pCtrlObject) {
+        ns_send( conn, MSG_PARAMETER_ERROR, strlen ( MSG_PARAMETER_ERROR ) );
+        return;
+    }
+
+	pClientItem = (CClientItem *)conn->user_data;
+    
+    if (NULL == pClientItem) {
+        ns_send( conn, MSG_INTERNAL_ERROR, strlen ( MSG_INTERNAL_ERROR ) );
+        return;
+    }
 
     // Must be accredited to do this
     if ( !pClientItem->m_bAuthorized ) {
