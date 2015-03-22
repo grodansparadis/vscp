@@ -1409,6 +1409,9 @@ int canwriteMsg( ChannelObj *pchannelObj, CANHANDLE channel, canalMsg *pMsg, BOO
     VirtualChannelObj *pvirtualChannelObj;
     dllnode *pvirtualNode;
 
+    // Must be a channel to work on
+    if ( NULL == pchannelObj) return CANAL_ERROR_PARAMETER;
+    
     // Must be open
     if ( !pchannelObj->m_bOpen ) return CANAL_ERROR_NOT_OPEN;
 

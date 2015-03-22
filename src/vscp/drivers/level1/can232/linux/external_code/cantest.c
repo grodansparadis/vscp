@@ -177,7 +177,7 @@ printf("\n%d bytes in buffer :\n",a);fflush(stdout);
 	for (b=0;b<a;b++)
 	{
 		printf("%02x",IB[b]);
-		if((IB[b]>=' ')&&(IB[b]<127)) printf("'%c':");
+		if((IB[b]>=' ')&&(IB[b]<127)) printf("'%c':", IB[b]);
 			else printf("'.'");
 		if(b%8) printf("\n");
 		fflush(stdout);

@@ -154,6 +154,7 @@
     <ClInclude Include="dlgnewvscpsession.h" />
     <ClInclude Include="dlgselectdaemoninterface.h" />
     <ClInclude Include="dlgsetfiltermask.h" />
+    <ClInclude Include="dlgsetmanufactdata.h" />
     <ClInclude Include="dlgvscpfilter.h" />
     <ClInclude Include="dlgvscpinterfacesettings.h" />
     <ClInclude Include="dlgvscpmsg.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="dlgnewvscpsession.cpp" />
     <ClCompile Include="dlgselectdaemoninterface.cpp" />
     <ClCompile Include="dlgsetfiltermask.cpp" />
+    <ClCompile Include="dlgsetmanufactdata.cpp" />
     <ClCompile Include="dlgvscpfilter.cpp" />
     <ClCompile Include="dlgvscpinterfacesettings.cpp" />
     <ClCompile Include="dlgvscpmsg.cpp" />

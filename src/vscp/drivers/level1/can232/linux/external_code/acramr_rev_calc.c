@@ -135,7 +135,9 @@ register int	a;
 		SizeOfResultsBuffer+=20;
 		if((ResultsBuffer=(int*)realloc((void*)ResultsBuffer,(size_t)SizeOfResultsBuffer*sizeof(int)))==NULL)
 		{
-			printf("\n\nError allocating %d numbers for result buffer... Terminated...\n\n");fflush(stdout);
+			printf("\n\nError allocating %d numbers for result buffer... Terminated...\n\n",
+				(SizeOfResultsBuffer * sizeof(int)));
+			fflush(stdout);
 			exit(0);
 		}
 	}
