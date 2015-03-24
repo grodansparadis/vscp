@@ -828,6 +828,8 @@ void VSCPClientThread::handleClientSend( struct ns_connection *conn, CControlObj
             
             unsigned int index = 0;
 
+			event.pdata = new uint8_t[ event.sizeData ];
+            
             if ( NULL == event.pdata ) {
                 ns_send( conn, MSG_INTERNAL_MEMORY_ERROR, strlen( MSG_INTERNAL_MEMORY_ERROR ) );
                 return;
