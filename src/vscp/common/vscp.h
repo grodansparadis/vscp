@@ -379,7 +379,7 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 // Data format masks
 #define VSCP_MASK_DATACODING_TYPE       0xE0  // Bits 5,6,7
 #define VSCP_MASK_DATACODING_UNIT       0x18  // Bits 3,4
-#define VSCP_MASK_DATACODING_INDEX      0x03  // Bits 0,1,2
+#define VSCP_MASK_DATACODING_INDEX      0x07  // Bits 0,1,2
 
 // Theese bits are coded in the three MSB bytes of the first data byte
 // in a paket and tells the type of the data that follows.
