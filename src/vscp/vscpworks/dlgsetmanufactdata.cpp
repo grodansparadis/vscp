@@ -193,8 +193,6 @@ void CsetManufactData::CreateControls()
     wxButton* itemButton15 = new wxButton( itemDialog1, ID_BUTTON_LOAD, _("Load from file..."), wxDefaultPosition, wxDefaultSize, 0 );
     itemBoxSizer12->Add(itemButton15, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 
-    wxButton* itemButton16 = new wxButton( itemDialog1, ID_BUTTON_WRITE, _("Write to device"), wxDefaultPosition, wxDefaultSize, 0 );
-    itemBoxSizer12->Add(itemButton16, 0, wxALIGN_CENTER_VERTICAL|wxALL, 5);
 }
 
 

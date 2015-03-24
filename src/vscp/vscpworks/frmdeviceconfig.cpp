@@ -253,8 +253,10 @@ void frmDeviceConfig::CreateControls() {
     itemMenu3->Append(ID_MENUITEM_ADD_GUIDS, _("Add GUID..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->Append(ID_MENUITEM_SAVE_GUIDS, _("Save GUID's..."), wxEmptyString, wxITEM_NORMAL);
     itemMenu3->Append(ID_MENUITEM_LOAD_GUIDS, _("Load GUID's..."), wxEmptyString, wxITEM_NORMAL);
-    itemMenu3->AppendSeparator();
-    itemMenu3->Append( ID_MENUITEM_SET_MANUFACTURER_INFO, _( "Set manufacturer info..." ), wxEmptyString, wxITEM_NORMAL );
+    if ( g_Config.bGuidWritable ) {
+        itemMenu3->AppendSeparator();    
+        itemMenu3->Append( ID_MENUITEM_SET_MANUFACTURER_INFO, _( "Set manufacturer info..." ), wxEmptyString, wxITEM_NORMAL );
+    }
     itemMenu3->AppendSeparator();
     itemMenu3->Append(ID_MENUITEM_EXIT, _("Exit"), wxEmptyString, wxITEM_NORMAL);
     menuBar->Append(itemMenu3, _("File"));
@@ -5876,9 +5878,134 @@ void frmDeviceConfig::OnMenuitemLoadGuidsClick(wxCommandEvent& event)
 
 void frmDeviceConfig::OnMenuitemSetManufacturerInfoClick( wxCommandEvent& event )
 {
+    uint8_t val;
+    uint8_t pos = 0;
+    wxString wxstr;
+    wxString strBuf;
+    uint8_t nodeid = 0;
+    uint8_t err = 0;
+    cguid destGUID;
+
     CsetManufactData dlg( this );
 
+    // Get nickname
+    if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+        nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
+    }
+    else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+        destGUID.getFromString( m_comboNodeID->GetValue() );
+    }
+
+
+    g_Config.m_manufacturerGuid.toString( wxstr );
+    dlg.m_pctrlGUID->SetValue( wxstr );
+    
+    wxstr = wxString::Format( _( "0x%08X" ), g_Config.m_manufacturerId );
+    dlg.m_pctrlManDevId->SetValue( wxstr );
+
+    wxstr = wxString::Format( _( "0x%08X" ), g_Config.m_manufacturerSubId );
+    dlg.m_pctrlManDevSubId->SetValue( wxstr );
+
     if ( wxID_OK == dlg.ShowModal() ) {
+
+        // Save values to next run
+        g_Config.m_manufacturerGuid.getFromString( dlg.m_pctrlGUID->GetValue() );
+        g_Config.m_manufacturerId = vscp_readStringValue( dlg.m_pctrlManDevId->GetValue() );
+        g_Config.m_manufacturerSubId = vscp_readStringValue( dlg.m_pctrlManDevSubId->GetValue() );
+        
+        if ( !g_Config.bGuidWritable ) {
+            wxMessageBox(_("Can't write to protected storage. Please enable first!"));
+            return;
+        }
+
+        // Write values to device
+        wxProgressDialog progressDlg( _( "VSCP Works" ),
+                                      _( "Writing manufacturing registers" ),
+                                      16 + 8,
+                                      this,
+                                      wxPD_ELAPSED_TIME |
+                                      wxPD_AUTO_HIDE |
+                                      wxPD_APP_MODAL );
+
+        if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+            
+            // Start with GUID
+            for ( int i = 0; i<16; i++ ) {
+
+                val = g_Config.m_manufacturerGuid.getAt( i );
+                if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->writeLevel1Register( nodeid, 0xffff, 0xd0+i, &val ) ) {              
+                    err++;
+                }
+                pos++;
+
+            }
+
+            // Manufacturer id
+            for ( int i = 0; i < 4; i++ ) {
+                val = ( ( g_Config.m_manufacturerId ) >> ( 24 - ( i * 8 ) ) ) & 0xff;
+                if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->writeLevel1Register( nodeid, 0xffff, 0x89 + i, &val ) ) {
+                    err++;
+                }
+                pos++;
+            }
+
+            // Manufacturer Subid
+            for ( int i = 0; i < 4; i++ ) {
+                val = ( ( g_Config.m_manufacturerSubId ) >> ( 24 - ( i * 8 ) ) ) & 0xff;
+                if ( CANAL_ERROR_SUCCESS != m_csw.getDllInterface()->writeLevel1Register( nodeid, 0xffff, 0x8d + i, &val ) ) {
+                    err++;
+                }
+                pos++;
+            }
+
+        }
+        else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+         
+            // Start with GUID
+            for ( int i = 0; i<16; i++ ) {
+
+                val = g_Config.m_manufacturerGuid.getAt( i );
+                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0xd0,
+                                                                                                0xffff,
+                                                                                                &val,
+                                                                                                m_ifguid,
+                                                                                                &destGUID,
+                                                                                                m_bLevel2->GetValue() ) ) {
+                    err++;
+                }
+                pos++;
+
+            }
+
+            // Manufacturer id
+            for ( int i = 0; i < 4; i++ ) {
+                val = ( ( g_Config.m_manufacturerId ) >> ( 24 - ( i * 8 ) ) ) & 0xff;
+                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0x89,
+                                                                                                0xffff,
+                                                                                                &val,
+                                                                                                m_ifguid,
+                                                                                                &destGUID,
+                                                                                                m_bLevel2->GetValue() ) ) {
+                    err++;
+                }
+                pos++;
+            }
+
+            // Manufacturer Subid
+            for ( int i = 0; i < 4; i++ ) {
+                val = ( ( g_Config.m_manufacturerSubId ) >> ( 24 - ( i * 8 ) ) ) & 0xff;
+                if ( CANAL_ERROR_SUCCESS != m_csw.getTcpIpInterface()->writeLevel2Register( 0x8d,
+                                                                                                0xffff,
+                                                                                                &val,
+                                                                                                m_ifguid,
+                                                                                                &destGUID,
+                                                                                                m_bLevel2->GetValue() ) ) {
+                    err++;
+                }
+                pos++;
+            }
+
+        }
 
     }
 

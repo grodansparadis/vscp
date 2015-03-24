@@ -313,6 +313,9 @@ void VscpworksApp::Init()
 
 	g_Config.m_bConfirmDelete = true;
 
+    g_Config.bGuidWritable = false;
+    g_Config.m_manufacturerId = 0;
+    g_Config.m_manufacturerSubId = 0;
 }
 
 /*!
@@ -1751,6 +1754,38 @@ bool VscpworksApp::readConfiguration( void )
 					}
 
                 }
+                else if ( subchild->GetName() == _( "GuidWriteEnable" ) ) {
+
+                    wxString wxstr = subchild->GetNodeContent();
+                    if ( wxNOT_FOUND != wxstr.Find( _( "enable" ) ) ) {
+                        g_Config.bGuidWritable = true;
+                    }
+
+                }
+                else if ( subchild->GetName() == _( "ManufacturerGuid" ) ) {
+
+                    wxString wxstr = subchild->GetNodeContent();
+                    if ( 0 != wxstr.Length() ) {
+                        g_Config.m_manufacturerGuid.getFromString( wxstr );
+                    }
+
+                }
+                else if ( subchild->GetName() == _( "ManufacturerId" ) ) {
+
+                    wxString wxstr = subchild->GetNodeContent();
+                    if ( 0 != wxstr.Length() ) {
+                        g_Config.m_manufacturerId = vscp_readStringValue( wxstr );
+                    }
+
+                }
+                else if ( subchild->GetName() == _( "ManufacturerSubId" ) ) {
+
+                    wxString wxstr = subchild->GetNodeContent();
+                    if ( 0 != wxstr.Length() ) {
+                        g_Config.m_manufacturerSubId = vscp_readStringValue( wxstr );
+                    }
+
+                }
 
                 subchild = subchild->GetNext();
             }
@@ -2310,19 +2345,19 @@ bool VscpworksApp::writeConfiguration( void )
         strcfgfile = wxStandardPaths::Get().GetConfigDir() + _( "/vscpworks.conf" );
     }
 
-	// Backup
+    // Backup
     if ( wxFileName::FileExists( strcfgfile ) ) {
-	    ::wxCopyFile( strcfgfile, strcfgfile + _(".bak") );
+        ::wxCopyFile( strcfgfile, strcfgfile + _( ".bak" ) );
     }
 
     wxFFileOutputStream *pFileStream = new wxFFileOutputStream( strcfgfile );
     if ( NULL == pFileStream ) return false;
 
-    pFileStream->Write("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n", 
-        strlen("<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n") );
+    pFileStream->Write( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n",
+                        strlen( "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>\n" ) );
 
     // VSCP Works configuration start
-    pFileStream->Write("<vscpworksconfig>\n\n",strlen("<vscpworksconfig>\n\n"));
+    pFileStream->Write( "<vscpworksconfig>\n\n", strlen( "<vscpworksconfig>\n\n" ) );
 
 
 
@@ -2332,149 +2367,186 @@ bool VscpworksApp::writeConfiguration( void )
 
 
     // General
-    pFileStream->Write("<general>\n",strlen("<general>\n"));
+    pFileStream->Write( "<general>\n", strlen( "<general>\n" ) );
 
     // Width// General
-    pFileStream->Write("<width>",strlen("<width>"));
-    buf.Printf(_("%d"), g_Config.m_sizeWidth );
-    pFileStream->Write( buf.mb_str(),strlen(buf.mb_str()) );
-    pFileStream->Write("</width>\n",strlen("</width>\n"));
+    pFileStream->Write( "<width>", strlen( "<width>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_sizeWidth );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</width>\n", strlen( "</width>\n" ) );
 
     // Height
-    pFileStream->Write("<height>",strlen("<height>"));
-    buf.Printf(_("%d"), g_Config.m_sizeHeight );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</height>\n",strlen("</height>\n"));
+    pFileStream->Write( "<height>", strlen( "<height>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_sizeHeight );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</height>\n", strlen( "</height>\n" ) );
 
     // Xpos
-    pFileStream->Write("<xpos>",strlen("<xpos>"));
-    buf.Printf(_("%d"), g_Config.m_xpos );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</xpos>\n",strlen("</xpos>\n"));
+    pFileStream->Write( "<xpos>", strlen( "<xpos>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_xpos );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</xpos>\n", strlen( "</xpos>\n" ) );
 
     // Ypos
-    pFileStream->Write("<ypos>",strlen("<ypos>"));
-    buf.Printf(_("%d"), g_Config.m_ypos );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</ypos>\n",strlen("</ypos>\n"));
+    pFileStream->Write( "<ypos>", strlen( "<ypos>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_ypos );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</ypos>\n", strlen( "</ypos>\n" ) );
 
     // Path2TempFile
-    pFileStream->Write("<path2tempfile>",strlen("<path2tempfile>"));
+    pFileStream->Write( "<path2tempfile>", strlen( "<path2tempfile>" ) );
     pFileStream->Write( g_Config.m_strPathTemp.mb_str(), strlen( g_Config.m_strPathTemp.mb_str() ) );
-    pFileStream->Write("</path2tempfile>\n",strlen("</path2tempfile>\n"));
+    pFileStream->Write( "</path2tempfile>\n", strlen( "</path2tempfile>\n" ) );
 
     // Path2LogFile  
-    pFileStream->Write("<path2logfile enable=\"",strlen("<path2logfile enable=\""));
+    pFileStream->Write( "<path2logfile enable=\"", strlen( "<path2logfile enable=\"" ) );
     if ( g_Config.m_bEnableLog ) {
-        pFileStream->Write("true",strlen("true"));
+        pFileStream->Write( "true", strlen( "true" ) );
     }
     else {
-        pFileStream->Write("false",strlen("false"));
+        pFileStream->Write( "false", strlen( "false" ) );
     }
 
-    pFileStream->Write("\" level=\"",strlen("\" level=\"") );
+    pFileStream->Write( "\" level=\"", strlen( "\" level=\"" ) );
 
     switch ( g_Config.m_logLevel ) {
-	
+
         case VSCPWORKS_LOGMSG_DEBUG:
-		pFileStream->Write("debug",strlen("debug"));
-		break;
+            pFileStream->Write( "debug", strlen( "debug" ) );
+            break;
 
         case VSCPWORKS_LOGMSG_INFO:
-		pFileStream->Write("info",strlen("info"));
-		break;
+            pFileStream->Write( "info", strlen( "info" ) );
+            break;
 
         case VSCPWORKS_LOGMSG_NOTICE:
-		pFileStream->Write("notice",strlen("notice"));
-		break;
+            pFileStream->Write( "notice", strlen( "notice" ) );
+            break;
 
         case VSCPWORKS_LOGMSG_WARNING:
-		pFileStream->Write("warning",strlen("warning"));
-		break;
+            pFileStream->Write( "warning", strlen( "warning" ) );
+            break;
 
         case VSCPWORKS_LOGMSG_ERROR:
-		pFileStream->Write("error",strlen("error"));
-		break;
+            pFileStream->Write( "error", strlen( "error" ) );
+            break;
 
         case VSCPWORKS_LOGMSG_CRITICAL:
-		pFileStream->Write("critical",strlen("critical"));
-		break;
+            pFileStream->Write( "critical", strlen( "critical" ) );
+            break;
 
         case VSCPWORKS_LOGMSG_ALERT:
-		pFileStream->Write("alert",strlen("alert"));
-		break;
+            pFileStream->Write( "alert", strlen( "alert" ) );
+            break;
 
-	default:
-		pFileStream->Write("emergency",strlen("emergency"));
-		break;
-	}
+        default:
+            pFileStream->Write( "emergency", strlen( "emergency" ) );
+            break;
+    }
 
-    pFileStream->Write("\" >",strlen("\" >"));
+    pFileStream->Write( "\" >", strlen( "\" >" ) );
     pFileStream->Write( g_Config.m_strPathLogFile.mb_str(), strlen( g_Config.m_strPathLogFile.mb_str() ) );
-    pFileStream->Write("</path2logfile>\n",strlen("</path2logfile>\n") );
+    pFileStream->Write( "</path2logfile>\n", strlen( "</path2logfile>\n" ) );
 
     // CANALReadMaxRetries
-    pFileStream->Write("<CANALReadMaxRetries>",strlen("<CANALReadMaxRetries>"));
-    buf.Printf(_("%d"), g_Config.m_CANALRegMaxRetries );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</CANALReadMaxRetries>\n",strlen("</CANALReadMaxRetries>\n"));
+    pFileStream->Write( "<CANALReadMaxRetries>", strlen( "<CANALReadMaxRetries>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_CANALRegMaxRetries );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</CANALReadMaxRetries>\n", strlen( "</CANALReadMaxRetries>\n" ) );
 
     // CANALReadResendTimeout
-    pFileStream->Write("<CANALReadResendTimeout>",strlen("<CANALReadResendTimeout>"));
-    buf.Printf(_("%d"), g_Config.m_CANALRegResendTimeout );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</CANALReadResendTimeout>\n",strlen("</CANALReadResendTimeout>\n"));
+    pFileStream->Write( "<CANALReadResendTimeout>", strlen( "<CANALReadResendTimeout>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_CANALRegResendTimeout );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</CANALReadResendTimeout>\n", strlen( "</CANALReadResendTimeout>\n" ) );
 
     // CANALReadErrorTimeout
-    pFileStream->Write("<CANALReadErrorTimeout>",strlen("<CANALReadErrorTimeout>"));
-    buf.Printf(_("%d"), g_Config.m_CANALRegErrorTimeout );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</CANALReadErrorTimeout>\n",strlen("</CANALReadErrorTimeout>\n"));
+    pFileStream->Write( "<CANALReadErrorTimeout>", strlen( "<CANALReadErrorTimeout>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_CANALRegErrorTimeout );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</CANALReadErrorTimeout>\n", strlen( "</CANALReadErrorTimeout>\n" ) );
 
-    
+
     // TCPIPResponseTimeout
-    pFileStream->Write("<TCPIPResponseTimeout>",strlen("<TCPIPResponseTimeout>"));
-    buf.Printf(_("%d"), g_Config.m_TCPIPResponseTimeout );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</TCPIPResponseTimeout>\n",strlen("</TCPIPResponseTimeout>\n"));
+    pFileStream->Write( "<TCPIPResponseTimeout>", strlen( "<TCPIPResponseTimeout>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_TCPIPResponseTimeout );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</TCPIPResponseTimeout>\n", strlen( "</TCPIPResponseTimeout>\n" ) );
 
     // TCPIPReadMaxRetries
-    pFileStream->Write("<TCPIPReadMaxRetries>",strlen("<TCPIPReadMaxRetries>"));
-    buf.Printf(_("%d"), g_Config.m_TCPIPRegMaxRetries );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</TCPIPReadMaxRetries>\n",strlen("</TCPIPReadMaxRetries>\n"));
+    pFileStream->Write( "<TCPIPReadMaxRetries>", strlen( "<TCPIPReadMaxRetries>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_TCPIPRegMaxRetries );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</TCPIPReadMaxRetries>\n", strlen( "</TCPIPReadMaxRetries>\n" ) );
 
     // TCPIPReadResendTimeout
-    pFileStream->Write("<TCPIPReadResendTimeout>",strlen("<TCPIPReadResendTimeout>"));
-    buf.Printf(_("%d"), g_Config.m_TCPIPRegResendTimeout );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</TCPIPReadResendTimeout>\n",strlen("</TCPIPReadResendTimeout>\n"));
+    pFileStream->Write( "<TCPIPReadResendTimeout>", strlen( "<TCPIPReadResendTimeout>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_TCPIPRegResendTimeout );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</TCPIPReadResendTimeout>\n", strlen( "</TCPIPReadResendTimeout>\n" ) );
 
     // TCPIPReadErrorTimeout
-    pFileStream->Write("<TCPIPReadErrorTimeout>",strlen("<TCPIPReadErrorTimeout>"));
-    buf.Printf(_("%d"), g_Config.m_TCPIPRegErrorTimeout );
-    pFileStream->Write( buf.mb_str(), strlen(buf.mb_str()) );
-    pFileStream->Write("</TCPIPReadErrorTimeout>\n",strlen("</TCPIPReadErrorTimeout>\n"));
+    pFileStream->Write( "<TCPIPReadErrorTimeout>", strlen( "<TCPIPReadErrorTimeout>" ) );
+    buf.Printf( _( "%d" ), g_Config.m_TCPIPRegErrorTimeout );
+    pFileStream->Write( buf.mb_str(), strlen( buf.mb_str() ) );
+    pFileStream->Write( "</TCPIPReadErrorTimeout>\n", strlen( "</TCPIPReadErrorTimeout>\n" ) );
 
-	// ConfigNumberBase
-    pFileStream->Write("<NumberBase>",strlen("<NumberBase>"));
-	if ( VSCP_DEVCONFIG_NUMBERBASE_DECIMAL== g_Config.m_Numberbase ) {
-		pFileStream->Write("Decimal",strlen("Decimal"));	
-	}
-	else {
-		pFileStream->Write("Hex",strlen("Hex"));
-	}
-    pFileStream->Write("</NumberBase>\n",strlen("</NumberBase>\n"));
+    // ConfigNumberBase
+    pFileStream->Write( "<NumberBase>", strlen( "<NumberBase>" ) );
+    if ( VSCP_DEVCONFIG_NUMBERBASE_DECIMAL == g_Config.m_Numberbase ) {
+        pFileStream->Write( "Decimal", strlen( "Decimal" ) );
+    }
+    else {
+        pFileStream->Write( "Hex", strlen( "Hex" ) );
+    }
+    pFileStream->Write( "</NumberBase>\n", strlen( "</NumberBase>\n" ) );
 
-	// ConfirmDelete
-    pFileStream->Write("<ConfirmDelete>",strlen("<ConfirmDelete>"));
-	if ( g_Config.m_bConfirmDelete ) {
-		pFileStream->Write("true",strlen("true"));	
-	}
-	else {
-		pFileStream->Write("false",strlen("false"));
-	}
-    pFileStream->Write("</ConfirmDelete>\n",strlen("</ConfirmDelete>\n"));
+    // ConfirmDelete
+    pFileStream->Write( "<ConfirmDelete>", strlen( "<ConfirmDelete>" ) );
+    if ( g_Config.m_bConfirmDelete ) {
+        pFileStream->Write( "true", strlen( "true" ) );
+    }
+    else {
+        pFileStream->Write( "false", strlen( "false" ) );
+    }
+    pFileStream->Write( "</ConfirmDelete>\n", strlen( "</ConfirmDelete>\n" ) );
+
+
+    
+    pFileStream->Write( "<GuidWriteEnable>", strlen( "<GuidWriteEnable>" ) );
+    if ( g_Config.bGuidWritable ) {    
+        pFileStream->Write( "enable", strlen( "enable" ) );
+    }
+    else {
+        pFileStream->Write( "do-not-use", strlen( "do-not-use" ) );
+    }
+    pFileStream->Write( "</GuidWriteEnable>\n", strlen( "</GuidWriteEnable>\n" ) );
+
+    pFileStream->Write( "<ManufacturerGuid>", strlen( "<ManufacturerGuid>" ) );
+    {
+        wxString wxstr;
+        g_Config.m_manufacturerGuid.toString( wxstr );
+        pFileStream->Write( wxstr.mb_str(), strlen( wxstr.mb_str() ) );
+    }
+    pFileStream->Write( "</ManufacturerGuid>\n", strlen( "</ManufacturerGuid>\n" ) );
+
+
+    pFileStream->Write( "<ManufacturerId>", strlen( "<ManufacturerId>" ) );
+    {
+        wxString wxstr;
+        wxstr = wxString::Format( _( "0x%08X" ), g_Config.m_manufacturerId );
+        pFileStream->Write( wxstr.mb_str(), strlen( wxstr.mb_str() ) );
+    }
+    pFileStream->Write( "</ManufacturerId>\n", strlen( "</ManufacturerId>\n" ) );
+
+
+    pFileStream->Write( "<ManufacturerSubId>", strlen( "<ManufacturerSubId>" ) );
+    {
+        wxString wxstr;
+        wxstr = wxString::Format( _( "0x%08X" ), g_Config.m_manufacturerSubId );
+        pFileStream->Write( wxstr.mb_str(), strlen( wxstr.mb_str() ) );
+    }
+    pFileStream->Write( "</ManufacturerSubId>\n", strlen( "</ManufacturerSubId>\n" ) );
 
     // /General
     pFileStream->Write("</general>\n\n",strlen("</general>\n\n"));

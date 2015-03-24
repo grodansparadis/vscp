@@ -21,10 +21,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: can232drv.cpp,v $                                       
-// $Date: 2005/01/05 12:16:13 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.4 $ 
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>

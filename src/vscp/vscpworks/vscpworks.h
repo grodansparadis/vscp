@@ -277,8 +277,13 @@ typedef struct {
 	bool m_bConfirmDelete;						// Must confirm session rx/tx etc list delete
 
     MdfProxyHash m_mfProxyHashTable;            // Translate devices stored URL to whatever is read from
-                                                // cnfiguration file
-    
+                                                // configuration file
+    // Save data from Manufacturer dialog.
+    bool bGuidWritable;                         // Should be trye for manufacturing information to be writable
+    cguid m_manufacturerGuid;                   // Last used manufacturer GUID
+    uint32_t m_manufacturerId;
+    uint32_t m_manufacturerSubId;
+
 } appConfiguration;	
 
 

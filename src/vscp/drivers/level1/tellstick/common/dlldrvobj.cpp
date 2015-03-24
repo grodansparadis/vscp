@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dlldrvobj.cpp,v $                                       
-// $Date: 2005/05/23 21:32:53 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.2 $ 
 //
 // Linux
 // =====
@@ -80,7 +76,7 @@ CDllDrvObj::~CDllDrvObj()
 	
 	for ( int i = 0; i<CANAL_TELLSTICK_DRIVER_MAX_OPEN; i++ ) {
 		
-		if ( NULL == m_drvObjArray[ i ] ) {
+		if ( NULL != m_drvObjArray[ i ] ) {
 			
 			CTellstickObj *pdrvObj =  getDriverObject( i );
 			if ( NULL != pdrvObj ) { 

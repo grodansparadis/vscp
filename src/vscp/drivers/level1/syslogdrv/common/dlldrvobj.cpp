@@ -20,10 +20,6 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
-// $RCSfile: dlldrvobj.cpp,v $                                       
-// $Date: 2005/03/04 12:49:14 $                                  
-// $Author: akhe $                                              
-// $Revision: 1.1 $ 
 //
 // Linux
 // =====
@@ -80,7 +76,7 @@ CDllDrvObj::~CDllDrvObj()
 	
 	for ( int i = 0; i<CANAL_SYSLOG_DRIVER_MAX_OPEN; i++ ) {
 		
-		if ( NULL == m_drvObjArray[ i ] ) {
+		if ( NULL != m_drvObjArray[ i ] ) {
 			
 			CSysLogObj *pdrvObj =  getDriverObject( i );
 			if ( NULL != pdrvObj ) { 

@@ -415,12 +415,12 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 {
     bool bRun;
 
-    uint8_t pageSelectMsb;
-    uint8_t pageSelectLsb;
-    uint8_t guid0;
-    uint8_t guid3;
-    uint8_t guid5;
-    uint8_t guid7;
+    uint8_t pageSelectMsb = 0;
+    uint8_t pageSelectLsb = 0;
+    uint8_t guid0 = 0;
+    uint8_t guid3 = 0;
+    uint8_t guid5 = 0;
+    uint8_t guid7 = 0;
 
     wxBusyCursor busy;
 
@@ -475,50 +475,50 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
         // Read page register Page select MSB
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                            0,
-                                            VSCP_REG_PAGE_SELECT_MSB,
-                                            &pageSelectMsb ) ) {
+                                                                    0,
+                                                                    VSCP_REG_PAGE_SELECT_MSB,
+                                                                    &pageSelectMsb ) ) {
             return false;
         }
 
         // Read page register page select lsb
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                            0,
-                                            VSCP_REG_PAGE_SELECT_LSB,
-                                            &pageSelectLsb ) ) {
+                                                                    0,
+                                                                    VSCP_REG_PAGE_SELECT_LSB,
+                                                                    &pageSelectLsb ) ) {
             return false;
         }
         
         // Read page register GUID0
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                            0,
-                                            VSCP_REG_GUID0,
-                                            &guid0 ) ) {
-                                            return false;
+                                                                    0,
+                                                                    VSCP_REG_GUID0,
+                                                                    &guid0 ) ) {
+            return false;
         }
 
         // Read page register GUID3
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                            0,
-                                            VSCP_REG_GUID3,
-                                            &guid3 ) ) {
-                                            return false;
+                                                                    0,
+                                                                    VSCP_REG_GUID3,
+                                                                     &guid3 ) ) {
+            return false;
         }
 
         // Read page register GUID5
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                            0,
-                                            VSCP_REG_GUID5,
-                                            &guid5 ) ) {
-                                            return false;
+                                                                    0,
+                                                                    VSCP_REG_GUID5,
+                                                                    &guid5 ) ) {
+            return false;
         }
 
         // Read page register GUID7
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                            0,
-                                            VSCP_REG_GUID7,
-                                            &guid7 ) ) {
-                                            return false;
+                                                                    0,
+                                                                    VSCP_REG_GUID7,
+                                                                    &guid7 ) ) {
+                                                                    return false;
         }
 
         // Set device in boot mode
@@ -905,45 +905,67 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
         else {
 
             bool bReady = false;
-            for ( int i = 0; i < 10; i++ ) {
 
-                // Do the device RESET
-                writeDeviceControlRegs( 0x0000,
-                                        0,
-                                        CMD_RESET,
-                                        0,
-                                        0 );
+            // Do the device RESET
+            writeDeviceControlRegs( 0x0000,
+                                    0,
+                                    CMD_RESET,
+                                    0,
+                                    0 );
 
-                wxSleep( 1 );
+            pDlg->Update( progress, "Reset sent." );
 
-                // Verify that clients got out of boot mode.
-                // If we can read register we are ready
-                unsigned char val;
+            wxSleep( 5 );
 
-                if ( USE_DLL_INTERFACE == m_type ) {
-                    if ( CANAL_ERROR_SUCCESS == m_pdll->readLevel1Register( m_nodeid,
-                                                        0,
-                                                        VSCP_REG_GUID0,
-                                                        &val ) ) {
-                        bReady = true;
-                        break;
+            // No use to check if we got out of bootloader mode if id is init. id.
+            if ( ( ( USE_DLL_INTERFACE == m_type ) && ( 0xfe != m_nodeid ) ) ||
+                 ( ( USE_TCPIP_INTERFACE == m_type ) && ( 0xfe != m_guid.getAt( 15 ) ) ) ) {
+
+
+                for ( int i = 0; i < 3; i++ ) {
+
+                    // Do the device RESET
+                    writeDeviceControlRegs( 0x0000,
+                                            0,
+                                            CMD_RESET,
+                                            0,
+                                            0 );
+
+                    wxString str = wxString::Format(_("Trying to verify restart %d"), i );
+                    pDlg->Update( progress, str );
+
+                    wxSleep( 5 );
+
+                    // Verify that clients got out of boot mode.
+                    // If we can read register we are ready
+                    unsigned char val;
+
+                    if ( USE_DLL_INTERFACE == m_type ) {
+                        if ( CANAL_ERROR_SUCCESS == m_pdll->readLevel1Register( m_nodeid,
+                            0,
+                            VSCP_REG_GUID0,
+                            &val ) ) {
+                            bReady = true;
+                            break;
+                        }
                     }
-                }
-                else if ( USE_TCPIP_INTERFACE == m_type ) {
-                    if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID0,
-                                                        0, 
-                                                        &val, 
-                                                        m_ifguid, 
-                                                        &m_guid ) ) {
-                        bReady = true;
-                        break;
+                    else if ( USE_TCPIP_INTERFACE == m_type ) {
+                        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID0,
+                            0,
+                            &val,
+                            m_ifguid,
+                            &m_guid ) ) {
+                            bReady = true;
+                            break;
+                        }
                     }
-                }
 
+                }
             }
 
             if ( !bReady ) {
-                wxMessageBox( _T( "Could not veriy that device came out of reset." ) );
+                pDlg->Update( progress, "Could not verify that device came out of reset." );
+                wxMessageBox( _T( "Could not verify that device came out of reset." ) );
                 rv = FALSE;
             }
 

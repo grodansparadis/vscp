@@ -366,12 +366,12 @@ typedef struct structVSCPChannelInfo {
 typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 
 // Bootloaders
-#define VSCP_BOOTLOADER_VSCP						0x00	// VSCP bootloader algorithm
-#define VSCP_BOOTLOADER_PIC1						0x01	// PIC algorithm 0
-#define VSCP_BOOTLOADER_AVR1						0x10	// AVR algorithm 0
-#define VSCP_BOOTLOADER_LPC1						0x20	// NXP/Philips LPC algorithm 0
-#define VSCP_BOOTLOADER_ST						    0x30	// ST STR algorithm 0
-#define VSCP_BOOTLOADER_NONE						0xff
+#define VSCP_BOOTLOADER_VSCP            0x00	// VSCP bootloader algorithm
+#define VSCP_BOOTLOADER_PIC1            0x01	// PIC algorithm 0
+#define VSCP_BOOTLOADER_AVR1            0x10	// AVR algorithm 0
+#define VSCP_BOOTLOADER_LPC1            0x20	// NXP/Philips LPC algorithm 0
+#define VSCP_BOOTLOADER_ST              0x30	// ST STR algorithm 0
+#define VSCP_BOOTLOADER_NONE            0xff
 
 
 //			* * * Data Coding for VSCP packets * * *

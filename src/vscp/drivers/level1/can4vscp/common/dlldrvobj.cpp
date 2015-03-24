@@ -76,7 +76,7 @@ CDllDrvObj::~CDllDrvObj()
 	
 	for ( int i = 0; i<CANAL_CAN4VSCP_DRIVER_MAX_OPEN; i++ ) {
 		
-		if ( NULL == m_drvObjArray[ i ] ) {
+		if ( NULL != m_drvObjArray[ i ] ) {
 			
 			CCan4VSCPObj *pdrvObj =  getDriverObject( i );
 			if ( NULL != pdrvObj ) { 

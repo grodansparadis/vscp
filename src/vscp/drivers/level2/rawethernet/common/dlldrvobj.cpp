@@ -76,7 +76,7 @@ CDllDrvObj::~CDllDrvObj()
 	
 	for ( int i = 0; i<VSCP_LOGGER_DRIVER_MAX_OPEN; i++ ) {
 		
-		if ( NULL == m_drvObjArray[ i ] ) {
+		if ( NULL != m_drvObjArray[ i ] ) {
 			
 			CRawEthernet *pdrvObj =  getDriverObject( i );
 			if ( NULL != pdrvObj ) { 

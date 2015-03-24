@@ -2609,7 +2609,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 	// Check pointer
 	if (NULL == pEvent) return str;
 	
-		// If class >= 512 and class <1024 we
+	// If class >= 512 and class <1024 we
 	// have GUID in front of data. 
 	if ( ( pEvent->vscp_class >= VSCP_CLASS2_LEVEL1_PROTOCOL) && 
 			(pEvent->vscp_class < VSCP_CLASS2_PROTOCOL) ) {
