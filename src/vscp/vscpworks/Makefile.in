@@ -63,6 +63,7 @@ VSCPWORKS_OBJECTS =  vscpworks.o dlgvscpmsg.o \
 	dlgeventfilter.o \
 	dlgclasstypeselect.o \
 	threadvscpwork.o \
+	dlgsetmanufactdata.o\
 	../../common/crc.o \
 	../../common/crc8.o \
 	../../common/fossa.o \
