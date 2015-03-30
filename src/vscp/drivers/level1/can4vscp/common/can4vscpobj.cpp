@@ -850,7 +850,7 @@ int CCan4VSCPObj::readMsgBlocking( canalMsg *pMsg, uint32_t Timeout )
     // Yes we block if in queue is empty
     if ( 0 == m_receiveList.nCount ) { 
 #ifdef WIN32        
-        res = WaitForSingleObject( m_receiveDataEvent, timeout );         	
+        res = WaitForSingleObject( m_receiveDataEvent, Timeout );         	
 
    	    if ( res == WAIT_TIMEOUT ) {
             return CANAL_ERROR_TIMEOUT;			
