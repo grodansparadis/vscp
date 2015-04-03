@@ -116,6 +116,9 @@ CDeviceItem::CDeviceItem()
 	m_proc_VSCPGetDllVersion = NULL;
 	m_proc_VSCPGetVendorString = NULL;
     m_proc_VSCPGetdriverInfo = NULL;
+    m_proc_VSCPGetWebPageTemplate = NULL;
+    m_proc_VSCPGetWebPageInfo = NULL;
+    m_proc_VSCPWebPageupdate = NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

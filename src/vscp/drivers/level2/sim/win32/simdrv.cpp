@@ -231,12 +231,12 @@ VSCPOpen(const char *pUsername,
 	CSim *pdrvObj = new CSim();
 	if (NULL != pdrvObj) {
 
-		if (pdrvObj->open(pUsername,
-                            pPassword,
-                            pHost,
-                            port,
-                            pPrefix,
-                            pParameter)) {
+        if ( pdrvObj->open( pUsername,
+                                pPassword,
+                                pHost,
+                                port,
+                                pPrefix,
+                                pParameter ) ) {
 
 			if (!(h = theApp->addDriverObject(pdrvObj))) {
 				delete pdrvObj;

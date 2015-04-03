@@ -1880,7 +1880,7 @@ int VscpRemoteTcpIf::deleteVariable( wxString& name )
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VARIABLE REMOVE ") + name + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -1900,7 +1900,7 @@ int VscpRemoteTcpIf::createVariable( wxString& name, wxString& type, wxString& s
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     wxString strPersistent = ( bPersistent ) ? _("TRUE") : _("FALSE");
     strCmd = _("VARIABLE WRITE ") + name + _(";") + type + _(";") + strPersistent + _(";") + strValue + _("\r\n");
@@ -1921,7 +1921,7 @@ int VscpRemoteTcpIf::saveVariablesToDisk( void )
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VARIABLE SAVE\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -1942,7 +1942,7 @@ int VscpRemoteTcpIf::getVariableString( wxString& name, wxString *strValue )
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -1972,7 +1972,7 @@ int VscpRemoteTcpIf::setVariableString( wxString& name, const wxString& strValue
 {
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VARIABLE WRITE ") + name + _(";STRING;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -1992,7 +1992,7 @@ int VscpRemoteTcpIf::getVariableBool( wxString& name, bool *bValue )
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -2029,7 +2029,7 @@ int VscpRemoteTcpIf::setVariableBool( wxString& name, const bool bValue )
     wxString strCmd;
     wxString strValue;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     if ( bValue ) {
         strValue = _("TRUE");
@@ -2056,7 +2056,7 @@ int VscpRemoteTcpIf::getVariableInt( wxString& name, int *value )
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -2091,7 +2091,7 @@ int VscpRemoteTcpIf::setVariableInt( wxString& name, int value )
     wxString strCmd;
     wxString strValue;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strValue.Printf(  _("%d"), value );
     strCmd = _("VARIABLE WRITE ") + name + _(";INT;;") + strValue + _("\r\n");
@@ -2112,7 +2112,7 @@ int VscpRemoteTcpIf::getVariableLong( wxString& name, long *value )
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -2146,7 +2146,7 @@ int VscpRemoteTcpIf::setVariableLong( wxString& name, long value )
     wxString strCmd;
     wxString strValue;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strValue.Printf( _("%d"), value );
     strCmd = _("VARIABLE WRITE ") + name + _(";LONG;;") + strValue + _("\r\n");
@@ -2167,7 +2167,7 @@ int VscpRemoteTcpIf::getVariableDouble( wxString& name, double *value )
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -2201,7 +2201,7 @@ int VscpRemoteTcpIf::setVariableDouble( wxString& name, double value )
     wxString strCmd;
     wxString strValue;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strValue.Printf( _("%f"), value );
     strCmd = _("VARIABLE WRITE ") + name + _(";DOUBLE;;") + strValue + _("\r\n");
@@ -2222,7 +2222,7 @@ int VscpRemoteTcpIf::getVariableMeasurement( wxString& name, wxString& strValue 
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -2252,7 +2252,7 @@ int VscpRemoteTcpIf::setVariableMeasurement( wxString& name, wxString& strValue 
 {
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strCmd = _("VARIABLE WRITE ") + name + _(";MEASUREMENT;;") + strValue + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -2273,7 +2273,7 @@ int VscpRemoteTcpIf::getVariableEvent( wxString& name, vscpEvent *pEvent )
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     // Check pointer
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
@@ -2306,7 +2306,7 @@ int VscpRemoteTcpIf::setVariableEvent( wxString& name, vscpEvent *pEvent )
     wxString strCmd;
     wxString strValue;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     vscp_writeVscpEventToString( pEvent, strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(";EVENT;;") + strValue + _("\r\n");
@@ -2327,7 +2327,7 @@ int VscpRemoteTcpIf::getVariableEventEx( wxString& name, vscpEventEx *pEvent )
     wxString strLine;
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     // Check pointer
     if ( NULL == pEvent ) return VSCP_ERROR_ERROR;
@@ -2360,7 +2360,7 @@ int VscpRemoteTcpIf::setVariableEventEx( wxString& name, vscpEventEx *pEvent )
     wxString strCmd;
     wxString strValue;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     vscp_writeVscpEventExToString( pEvent, strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(";EVENT;;") + strValue + _("\r\n");
@@ -2381,7 +2381,7 @@ int VscpRemoteTcpIf::getVariableGUID( wxString& name, cguid& guid )
     wxString strLine;
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     strCmd = _("VARIABLE READ ") + name + _("\r\n");
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
@@ -2411,7 +2411,7 @@ int VscpRemoteTcpIf::setVariableGUID( wxString& name, cguid& guid )
     wxString strCmd;
     wxString strValue;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     guid.toString( strValue );
     strCmd = _("VARIABLE WRITE ") + name + _(";EVENTGUID;;") + strValue + _("\r\n");
@@ -2432,7 +2432,7 @@ int VscpRemoteTcpIf::getVariableVSCPdata( wxString& name, uint8_t *pData, uint16
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     // Check pointer
     if ( NULL == pData ) return VSCP_ERROR_ERROR;
@@ -2466,7 +2466,7 @@ int VscpRemoteTcpIf::setVariableVSCPdata( wxString& name, uint8_t *pData, uint16
     wxString strCmd;
     wxString strValue;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
     
     vscp_writeVscpDataWithSizeToString( size, pData, strValue, false, false );
     strCmd = _("VARIABLE WRITE ") + name + _(";EVENTDATA;;") + strValue + _("\r\n");
@@ -2487,7 +2487,7 @@ int VscpRemoteTcpIf::getVariableVSCPclass( wxString& name, uint16_t *vscp_class 
     wxString strLine;
     wxString strCmd;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     // Check pointer
     if ( NULL == vscp_class ) return VSCP_ERROR_ERROR;
@@ -2522,7 +2522,7 @@ int VscpRemoteTcpIf::setVariableVSCPclass( wxString& name, uint16_t vscp_class )
     wxString strCmd;
     wxString strValue;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strValue.Printf( _("%d"), vscp_class );
     strCmd = _("VARIABLE WRITE ") + name + _(";EVENTCLASS;;") + strValue + _("\r\n");
@@ -2544,7 +2544,7 @@ int VscpRemoteTcpIf::getVariableVSCPtype( wxString& name, uint16_t *vscp_type )
     wxString strLine;
     wxString strCmd;
     
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     // Check pointer
     if ( NULL == vscp_type ) return VSCP_ERROR_ERROR;
@@ -2580,7 +2580,7 @@ int VscpRemoteTcpIf::setVariableVSCPtype( wxString& name, uint16_t vscp_type )
     wxString strCmd;
     wxString strValue;
 
-    if ( !m_bConnected ) return VSCP_ERROR_SUCCESS; // Already closed.
+    if ( !m_bConnected ) return VSCP_ERROR_NOT_OPEN; // Connection closed.
 
     strValue.Printf( _("%d"), vscp_type );
     strCmd = _("VARIABLE WRITE ") + name + _(";EVENTTYPE;;") + strValue + _("\r\n");

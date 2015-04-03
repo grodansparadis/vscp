@@ -153,7 +153,7 @@
 
 
 // Lists
-WX_DEFINE_LIST(TRIGGERLIST) // websocket triggers
+WX_DEFINE_LIST(TRIGGERLIST)     // websocket triggers
 WX_DEFINE_LIST(CanalMsgList);
 WX_DEFINE_LIST(VSCPEventList);
 
@@ -646,7 +646,7 @@ bool CControlObject::init(wxString& strcfgfile)
         logMsg(_("WebServer interface disabled.\n"), DAEMON_LOGMSG_INFO);
     }
 	
-	// Load level 1 drivers if the are enabled
+	// Load drivers if the are enabled
     if (m_bEnableLevel1Drivers) {
         logMsg(_("Level I drivers enabled.\n"), DAEMON_LOGMSG_INFO);
         startDeviceWorkerThreads();

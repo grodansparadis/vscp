@@ -12,3 +12,6 @@ EXPORTS
     VSCPGetDllVersion @6
     VSCPGetVendorString @7
     VSCPGetDriverInfo @8
+	VSCPGetWebPageTemplate @9
+	VSCPGetWebPageInfo @10
+	VSCPWebPageupdate @11

@@ -6,62 +6,67 @@
 -->
 <variable type="integer" >       
 	<name>sim1_NumberOfNodes</name>         
-    value>1</value>
-    <note>Number of simulated nodes this driver should act as.</note> 
+    <value>1</value>
+    <note>
+		Number of simulated nodes this driver should act as. Each of them should
+		have an entry below with the index of the driver ordinal as the last character
+		in there name. All variables names start with the driver unique prefix "sim_" 
+		in this case.
+	</note> 
 </variable>
 
 <variable type="integer" >       
-	<name>sim1_bLevel1</name>         
-    value>1</value>
+	<name>sim1_bLevel0</name>         
+    <value>1</value>
     <note>This is a Level I node.</note> 
 </variable>
 
 <variable type="guid" >       
-	<name>sim1_guid1</name>         
-    value>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>
+	<name>sim1_guid0</name>         
+    <value>01:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>
     <note>GUID for the node.</note> 
 </variable>
 
 <variable type="string" >       
-	<name>sim1_path1</name>         
-    value>c:/tmp/simulationdata.txt</value>
-    <note>GUID for the node.</note> 
+	<name>sim1_path0</name>         
+    <value>c:/tmp/simtempdata.txt</value>
+    <note>Path to simulation data. Leave blank to use internal values.</note> 
 </variable>
 
 <variable type="integer" >       
-	<name>sim1_interval1</name>         
-    value>10</value>
+	<name>sim1_interval0</name>         
+    <value>10</value>
     <note>Interval between measurement events.</note> 
 </variable>
 
 <variable type="long" >       
-	<name>sim1_measurementclass1</name>         
-    value>0x0a</value>
-    <note>.</note> 
+	<name>sim1_measurementclass0</name>         
+    <value>0x0a</value>
+    <note>CLASS1_MEASUREMENT</note> 
 </variable>
 
 <variable type="long" >       
-	<name>sim1_measurementtype1</name>         
-    value>6</value>
-    <note>.</note> 
+	<name>sim1_measurementtype0</name>         
+    <value>6</value>
+    <note>Measurement type is temperature.</note> 
 </variable>
 
 <variable type="integer" >       
-	<name>sim1_unit1</name>         
-    value>1</value>
-    <note>Degrees Celsius.</note> 
+	<name>sim1_unit0</name>         
+    <value>1</value>
+    <note>Degrees Celsius (0=Kelvin, 1=Fahrenheit).</note> 
 </variable>
 
 <variable type="integer" >       
-	<name>sim1_coding1</name>         
-    value>1</value>
-    <note>.</note> 
+	<name>sim1_coding0</name>         
+    <value>0</value>
+    <note>Coding as normalized integer. (1=string, 2=float)</note> 
 </variable>
 
 <variable type="integer" >       
-	<name>sim1_index1</name>         
-    value>1</value>
-    <note>.</note> 
+	<name>sim1_index0</name>         
+    <value>0</value>
+    <note>Sensor index (0-7).</note> 
 </variable>
 
 

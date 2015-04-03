@@ -163,9 +163,9 @@ CSim::open(const char *pUsername,
 	// First log on to the host and get configuration 
 	// variables
 
-	if ( m_srvLocal.doCmdOpen(m_hostLocal,
-								m_usernameLocal,
-								m_passwordLocal) <= 0) {
+    if ( VSCP_ERROR_SUCCESS != m_srvLocal.doCmdOpen( m_hostLocal,
+								                        m_usernameLocal,
+								                        m_passwordLocal) ) {
 #ifndef WIN32
 		syslog(LOG_ERR,
 				"%s",
@@ -190,7 +190,9 @@ CSim::open(const char *pUsername,
     int value;
 	wxString strName = m_prefix +
 			wxString::FromAscii("_NumberOfNodes");
-    m_srvLocal.getVariableInt( strName, &m_nNodes );
+    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+        m_nNodes = value;
+    }
 
     // No more than max nodes possible
     if ( m_nNodes > SIM_MAX_NODES ) {
@@ -205,46 +207,64 @@ CSim::open(const char *pUsername,
 
         m_pthreadWork[ i ] = new CWrkTread();
         if ( NULL != m_pthreadWork[ i ] ) {
-            
+
+            bool bvalue;
             strName = m_prefix +
-                wxString::FromAscii( "bLevel" ) + strIteration;
-            m_srvLocal.getVariableBool( strName, &m_pthreadWork[ i ]->m_bLevel2 );
+                wxString::FromAscii( "_bLevel" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableBool( strName, &bvalue ) ) {
+                m_pthreadWork[ i ]->m_bLevel2 = bvalue;
+            }
+
+            cguid guidval;
+            strName = m_prefix +
+                wxString::FromAscii( "_guid" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableGUID(strName, guidval ) ) {
+                m_pthreadWork[ i ]->m_guid = guidval;
+            }
+
+            wxString strvalue;
+            strName = m_prefix +
+                wxString::FromAscii( "_path" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString( strName, &strvalue ) ) {
+                m_pthreadWork[ i ]->m_path = strvalue;
+            }
 
             strName = m_prefix +
-                wxString::FromAscii( "guid" ) + strIteration;
-            m_srvLocal.getVariableGUID( strName, m_pthreadWork[ i ]->m_guid );
+                wxString::FromAscii( "_interval" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+                m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_INTERVAL ] = value;
+            }
 
             strName = m_prefix +
-            wxString::FromAscii( "guid" ) + strIteration;
-            m_srvLocal.getVariableString( strName, &m_pthreadWork[ i ]->m_path );
+                wxString::FromAscii( "_unit" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+                m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_UNIT ] = value;
+            }
 
             strName = m_prefix +
-                wxString::FromAscii( "interval" ) + strIteration;
-            m_srvLocal.getVariableInt( strName, &value );
-            m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_INTERVAL ] = value;
+                wxString::FromAscii( "_index" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+                m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_INDEX ] = value;
+            }
 
             strName = m_prefix +
-                wxString::FromAscii( "unit" ) + strIteration;
-            m_srvLocal.getVariableInt( strName, &value );
-            m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_UNIT ] = value;
+                wxString::FromAscii( "_coding" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+                m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_CODING ] = value;
+            }
+
+            long lvalue;
+            strName = m_prefix +
+                wxString::FromAscii( "_measurementclass" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableLong( strName, &lvalue ) ) {
+                m_pthreadWork[ i ]->m_measurementClass = lvalue;
+            }
 
             strName = m_prefix +
-                wxString::FromAscii( "index" ) + strIteration;
-            m_srvLocal.getVariableInt( strName, &value );
-            m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_INDEX ] = value;
-
-            strName = m_prefix +
-                wxString::FromAscii( "coding" ) + strIteration;
-            m_srvLocal.getVariableInt( strName, &value );
-            m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_CODING ] = value;
-
-            strName = m_prefix +
-                wxString::FromAscii( "measurementclass" ) + strIteration;
-            m_srvLocal.getVariableLong( strName, &m_pthreadWork[ i ]->m_measurementClass );
-
-            strName = m_prefix +
-                wxString::FromAscii( "measurementtype" ) + strIteration;
-            m_srvLocal.getVariableLong( strName, &m_pthreadWork[ i ]->m_measurementType );
+                wxString::FromAscii( "_measurementtype" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableLong( strName, &lvalue ) ) {
+                m_pthreadWork[ i ]->m_measurementType = lvalue;
+            }
 
             // start the workerthread
             m_pthreadWork[ i ]->m_pObj = this;
@@ -810,6 +830,7 @@ CWrkTread::Entry()
 {
     wxString str;
     double val;
+    uint16_t measurement_index = 0;
     wxTextFile tfile;
     std::list<double> simlist;
 	bool bRemoteConnectionLost = false;
@@ -843,14 +864,14 @@ CWrkTread::Entry()
 
         // read the first line
         str = tfile.GetFirstLine();
-        str.ToDouble( &val );
+        str.ToCDouble( &val );
         simlist.push_back( val );
 
         // read all lines one by one
         // until the end of the file
         while ( !tfile.Eof() ) {
             str = tfile.GetNextLine();
-            str.ToDouble( &val );
+            str.ToCDouble( &val );
             simlist.push_back( val );
         }
 
@@ -874,7 +895,17 @@ CWrkTread::Entry()
             if ( m_registers[ SIM_USER0_REG_INTERVAL ] &&
                  ( ( ::wxGetLocalTimeMillis() - lastSendEvent ) > ( ( uint32_t )m_registers[ SIM_USER0_REG_INTERVAL ] * 1000 ) ) ) {
 
+                // Save new time
+                lastSendEvent = ::wxGetLocalTimeMillis();
+
+                // Get next value
+                val = simlist.front();
+                simlist.pop_front();
+                simlist.push_back( val );
+
                 eventEx.head = VSCP_PRIORITY_NORMAL;
+                memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
+                eventEx.timestamp = 0;
                 eventEx.sizeData = 0;
                 eventEx.vscp_class = m_measurementClass;
                 eventEx.vscp_type = m_measurementType;
@@ -1013,7 +1044,12 @@ CWrkTread::Entry()
             // Should a heartbeat event be sent (every 30 seconds)
             if ( ( ::wxGetLocalTimeMillis() - lastSendHeartbeat ) > 30000 ) {
              
+                // Save new time
+                lastSendHeartbeat = ::wxGetLocalTimeMillis();
+
                 eventEx.head = VSCP_PRIORITY_NORMAL;
+                memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
+                eventEx.timestamp = 0;
                 eventEx.sizeData = 3;
                 eventEx.data[ 0 ] = 0;
                 eventEx.data[ 1 ] = m_registers[ SIM_USER0_REG_ZONE ];       // Zone

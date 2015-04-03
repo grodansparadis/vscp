@@ -480,7 +480,8 @@ void *deviceThread::Entry()
 			delete m_pwriteThread;
 		}
 
-	} else if (VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel) {
+	} 
+    else if (VSCP_DRIVER_LEVEL2 == m_pDeviceItem->m_driverLevel) {
        
 		// Now find methods in library
 		{
@@ -584,7 +585,7 @@ void *deviceThread::Entry()
         
 		// Username, password, host and port can be set in configuration file. Read in them here
 		// if they are.
-		wxString strHost(_("localhost:9598"));
+		wxString strHost(_("127.0.0.1:9598"));
 
 		wxStringTokenizer tkz(m_pDeviceItem->m_strParameter, _(";"));
 		if (tkz.HasMoreTokens()) {
@@ -628,12 +629,18 @@ void *deviceThread::Entry()
 
         // Open up the driver
         m_pDeviceItem->m_openHandle =
-                m_pDeviceItem->m_proc_VSCPOpen( m_pCtrlObject->m_driverUsername.mbc_str(),
-                (const char *)m_pCtrlObject->m_driverPassword.mbc_str(),
-                (const char *)strHost.mbc_str(),
-                0,
-                (const char *)m_pDeviceItem->m_strName.mbc_str(),
-                (const char *)m_pDeviceItem->m_strParameter.mbc_str());
+            m_pDeviceItem->m_proc_VSCPOpen( m_pCtrlObject->m_driverUsername.mbc_str(),
+                                                ( const char * )m_pCtrlObject->m_driverPassword.mbc_str(),
+                                                ( const char * )strHost.mbc_str(),
+                                                0,
+                                                ( const char * )m_pDeviceItem->m_strName.mbc_str(),
+                                                ( const char * )m_pDeviceItem->m_strParameter.mbc_str() );
+
+        if ( 0 == m_pDeviceItem->m_openHandle ) {
+            // Free the library
+            m_pCtrlObject->logMsg( _T( "Unable to open the library.\n" ), DAEMON_LOGMSG_CRITICAL );
+            return NULL;
+        }
 
         /////////////////////////////////////////////////////////////////////////////
         // Device write worker thread
