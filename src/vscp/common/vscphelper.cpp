@@ -862,13 +862,13 @@ bool vscp_makeFloatMeasurementEvent( vscpEvent *pEvent,
     if ( ( NULL == pEvent->pdata ) && 
             ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ) {
         offset = 0;
-        pEvent->pdata = new uint8_t[ 16 + 5 ];
+        pEvent->pdata = new uint8_t[ 5 ];
         if ( NULL == pEvent->pdata ) return false;
     }
     else if ( ( NULL == pEvent->pdata ) &&
             ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ) {
         offset = 16;
-        pEvent->pdata = new uint8_t[ 5 ];
+        pEvent->pdata = new uint8_t[ 16 + 5 ];
         if ( NULL == pEvent->pdata ) return false;
     }
     else {
