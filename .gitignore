@@ -189,3 +189,5 @@ src/vscp/drivers/level2/wire1/linux/test
 vscp-software_1.0.1-1_amd64.deb
 /config_examples/web/testws/google_line_simple - Copy.html
 src/vscp/drivers/level1/can4vscp/linux/test
+/config_examples/simuation/temp1.txt
+/src/vscp/helperlib/windows/*.aps

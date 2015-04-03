@@ -1,0 +1,70 @@
+
+<!-- 
+	One simulated node that report temperature values 
+	The NumberOfNodes can be specified in the driver configuration 
+	string instead and does not need to be in configuration file.
+-->
+<variable type="integer" >       
+	<name>sim1_NumberOfNodes</name>         
+    value>1</value>
+    <note>Number of simulated nodes this driver should act as.</note> 
+</variable>
+
+<variable type="integer" >       
+	<name>sim1_bLevel1</name>         
+    value>1</value>
+    <note>This is a Level I node.</note> 
+</variable>
+
+<variable type="guid" >       
+	<name>sim1_guid1</name>         
+    value>00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>
+    <note>GUID for the node.</note> 
+</variable>
+
+<variable type="string" >       
+	<name>sim1_path1</name>         
+    value>c:/tmp/simulationdata.txt</value>
+    <note>GUID for the node.</note> 
+</variable>
+
+<variable type="integer" >       
+	<name>sim1_interval1</name>         
+    value>10</value>
+    <note>Interval between measurement events.</note> 
+</variable>
+
+<variable type="long" >       
+	<name>sim1_measurementclass1</name>         
+    value>0x0a</value>
+    <note>.</note> 
+</variable>
+
+<variable type="long" >       
+	<name>sim1_measurementtype1</name>         
+    value>6</value>
+    <note>.</note> 
+</variable>
+
+<variable type="integer" >       
+	<name>sim1_unit1</name>         
+    value>1</value>
+    <note>Degrees Celsius.</note> 
+</variable>
+
+<variable type="integer" >       
+	<name>sim1_coding1</name>         
+    value>1</value>
+    <note>.</note> 
+</variable>
+
+<variable type="integer" >       
+	<name>sim1_index1</name>         
+    value>1</value>
+    <note>.</note> 
+</variable>
+
+
+
+
+
