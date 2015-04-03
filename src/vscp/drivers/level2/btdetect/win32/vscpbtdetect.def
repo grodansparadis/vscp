@@ -5,8 +5,13 @@ LIBRARY      "vscpbtdetect"
 EXPORTS
     ; Explicit exports can go here
 	VSCPOpen @1
-	VSCPClose @2
-	VSCPGetLevel @3
-	VSCPGetDllVersion @4
-	VSCPGetVendorString @5
-	VSCPGetDriverInfo @6
+    VSCPClose @2
+    VSCPBlockingSend @3
+    VSCPBlockingReceive @4 
+    VSCPGetLevel @5
+    VSCPGetDllVersion @6
+    VSCPGetVendorString @7
+    VSCPGetDriverInfo @8
+	VSCPGetWebPageTemplate @9
+	VSCPGetWebPageInfo @10
+	VSCPWebPageupdate @11
