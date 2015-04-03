@@ -794,7 +794,7 @@ bool vscp_convertFloatToFloatEventData( uint8_t *pdata,
     void *p = (void *)&value;
 
     *psize = 5;
-    pdata[0] = VSCP_DATACODING_SINGLE + unit + sensoridx;  // float + unit + sensorindex
+    pdata[0] = VSCP_DATACODING_SINGLE + (unit << 3) + sensoridx;  // float + unit + sensorindex
     memcpy( pdata + 1, p, 4 );
           
     return true;
@@ -875,11 +875,50 @@ bool vscp_makeFloatMeasurementEvent( vscpEvent *pEvent,
         return false;
     }
 
-    return vscp_convertFloatToFloatEventData( pEvent->pdata+offset,
+    return vscp_convertFloatToFloatEventData( pEvent->pdata + offset,
                                                 &pEvent->sizeData, 
                                                 value,
                                                 unit,
                                                 sensoridx );
+}
+
+
+//////////////////////////////////////////////////////////////////////////////
+// vscp_makeStringMeasurementEvent
+//
+
+bool vscp_makeStringMeasurementEvent( vscpEvent *pEvent,
+                                        double value,
+                                        uint8_t unit,
+                                        uint8_t sensoridx )
+{
+    uint8_t offset = 0;
+    wxString strValue;
+
+    strValue = wxString::Format(_("%g"), value );
+    pEvent->sizeData = ( strValue.Length() > 7 ) ? 8 : ( strValue.Length() + 1 );
+
+    // Allocate data if needed
+    if ( ( NULL == pEvent->pdata ) &&
+         ( VSCP_CLASS1_MEASUREMENT == pEvent->vscp_class ) ) {
+        offset = 0;
+        pEvent->pdata = new uint8_t[ pEvent->sizeData + 1 ];
+        if ( NULL == pEvent->pdata ) return false;
+    }
+    else if ( ( NULL == pEvent->pdata ) &&
+              ( VSCP_CLASS2_LEVEL1_MEASUREMENT == pEvent->vscp_class ) ) {
+        offset = 16;
+        pEvent->pdata = new uint8_t[ 16 + pEvent->sizeData + 1 ];
+        if ( NULL == pEvent->pdata ) return false;
+    }
+    else {
+        return false;
+    }
+
+    pEvent->pdata[ offset + 0 ] = VSCP_DATACODING_STRING + unit + sensoridx;  // float + unit + sensorindex
+    memcpy( pEvent->pdata + offset + 1, strValue, pEvent->sizeData - 1 );
+
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////////
