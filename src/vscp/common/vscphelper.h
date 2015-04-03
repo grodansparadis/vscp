@@ -266,7 +266,7 @@ extern "C" {
       Convert an integer measurement value into VSCP data with the
       first byte being the normalizer byte
       CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
-      \param value Floating point value to convert.
+      \param value integer value to convert.
       \param pdata Pointer to beginning of VSCP returned event data.
       \param psize Pointer to size for returned data.
       \param unit Untit for the data. Zero is default.
@@ -295,6 +295,23 @@ extern "C" {
                                             float value,
                                             uint8_t unit,
                                             uint8_t sensoridx );
+
+    /*!
+	  Convert a floating point measurement value into VSCP data as a
+      string for
+	  CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT
+      \param value Floating point value to convert.
+      \param pEvent Pointer to event with pdata set to NULL. cscp_class and
+                    vscp_type must be set to CLASS1.MEASUREMENT, CLASS2_LEVEL1.MEASUREMENT,
+	  \param psize Pointer to size for returned data.
+	  \param unit Unit for the data. Zero is default.
+	  \param sensoridx Sensor index 0-7. Zero is default.
+      \return true on success, false on failure.
+     */
+    bool vscp_makeStringMeasurementEvent( vscpEvent *pEvent,
+                                          double value,
+                                          uint8_t unit,
+                                          uint8_t sensoridx );
 	
 	/*!
       Get data in the VSCP data coding format to a string. Works for

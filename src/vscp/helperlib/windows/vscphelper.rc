@@ -10,7 +10,7 @@
 #ifndef APSTUDIO_INVOKED
 #include "targetver.h"
 #endif
-#include "afxres.h"
+//#include "afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -47,7 +47,7 @@ BEGIN
 	"#pragma code_page(1252)\r\n"
     "#include ""res\\VSCPhelperdll.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
 #ifndef _AFXDLL
-    "#include ""afxres.rc""  	// Standard components\r\n"
+//    "#include ""afxres.rc""  	// Standard components\r\n"
 #endif
     "#endif\r\n"
     "\0"
@@ -83,13 +83,13 @@ BEGIN
 	BEGIN
         BLOCK "040904e4"
 		BEGIN
-            VALUE "CompanyName", "TODO: <Company name>"
-            VALUE "FileDescription", "TODO: <File description>"
+            VALUE "CompanyName", "Paradise of the Frog/Grodans Paradis AB"
+            VALUE "FileDescription", "Helper library for the VSCP project"
 			VALUE "FileVersion",     "1.0.0.1"
-			VALUE "InternalName",    "VSCP helper dll.dll"
-            VALUE "LegalCopyright", "TODO: (c) <Company name>.  All rights reserved."
-			VALUE "OriginalFilename","VSCP helper dll.dll"
-            VALUE "ProductName", "TODO: <Product name>"
+			VALUE "InternalName",    "VSCP helper lib.dll"
+            VALUE "LegalCopyright", "(c) Grodans Paradis AB.  All rights reserved."
+			VALUE "OriginalFilename","VSCP helper lib.dll"
+            VALUE "ProductName", "VSCP & Friends"
 			VALUE "ProductVersion",  "1.0.0.1"
 		END
 	END

@@ -1,0 +1,42 @@
+VSCP Simulation node
+====================
+
+
+0:00 - Zone
+0:01 - Subzone
+0:02 - Index (used for classes that have index)
+0:03 - Unit
+0:04 - Coding	
+0:05 - Control register measurements
+		bit 0 - 		
+		bit 1 - 
+		bit 2 - 
+		bit 3 - 
+		bit 4 - 
+		bit 5 - 
+		bit 6 - 
+		bit 7 - Enable 		
+0:06 - Interval: Seconds between events	(0-disable)	
+
+
+
+1:00 - Index for automatic button event
+1:01 - Zone for automatic button event
+1:02 - Subzone for automatic button event
+1:03 - Interval for automatic button event
+		If interval is set to non-zero a TurnOn/TurnOff
+		even will be sent with a half-period that is equal to 
+		the interval set here. Set to zero to disable.
+
+2:00 - Decision matrix		
+
+Actions
+-------
+00 - NOOP
+01 - Reply on TurnOn event   
+		A On-event is sent as a reply. 
+		Action parameter holds the index parameter.
+02 - Reply on TurnOff event  
+		A Off-event is sent as a reply.
+		Action parameter holds the index parameter.
+03 - 		

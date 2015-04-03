@@ -79,7 +79,7 @@ static uint8_t addWithEscape( uint8_t *p, char c, uint8_t *pcrc )
 static uint32_t getClockMilliseconds()
 {
 #ifdef WIN32	
-    return ( ( 1000*(float)clock() ) / CLOCKS_PER_SEC);
+    return (uint32_t)( ( 1000*(float)clock() ) / CLOCKS_PER_SEC);
 #else
     timeval curTime;
 	gettimeofday(&curTime, NULL);
@@ -826,7 +826,7 @@ int CCan4VSCPObj::readMsg( canalMsg *pMsg )
 // readMsgBlocking
 // 
 
-int CCan4VSCPObj::readMsgBlocking( canalMsg *pMsg, uint32_t Timeout )
+int CCan4VSCPObj::readMsgBlocking( canalMsg *pMsg, uint32_t timeout )
 {
     int rv = CANAL_ERROR_SUCCESS;
 #ifdef WIN32    
@@ -850,7 +850,7 @@ int CCan4VSCPObj::readMsgBlocking( canalMsg *pMsg, uint32_t Timeout )
     // Yes we block if in queue is empty
     if ( 0 == m_receiveList.nCount ) { 
 #ifdef WIN32        
-        res = WaitForSingleObject( m_receiveDataEvent, Timeout );         	
+        res = WaitForSingleObject( m_receiveDataEvent, timeout );         	
 
    	    if ( res == WAIT_TIMEOUT ) {
             return CANAL_ERROR_TIMEOUT;			

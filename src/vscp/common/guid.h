@@ -122,6 +122,11 @@ public:
         Get LSB GUID position
     */
     uint8_t getLSB( void ) { return m_id[ 15 ]; };
+
+    /*!
+    Get Nickname GUID position
+    */
+    uint8_t getNickname( void ) { return m_id[ 15 ]; };
     
     /*!
         Fill array with GUID MSB first (STANDARD way)
