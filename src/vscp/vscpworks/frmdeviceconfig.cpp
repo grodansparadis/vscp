@@ -2552,7 +2552,7 @@ void frmDeviceConfig::fillStandardRegisters()
 
     // Write to grid also
     vscp_writeGuidArrayToString(m_stdRegisters.getGUID(), str);
-    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 15, LSB\nGUID=") + str);
+    m_gridRegisters->SetCellValue(m_gridRegisters->GetNumberRows() - 1, 3, _("GUID Byte 15, MSB\nGUID=") + str);
 
     // Make all parts of the row visible
     m_gridRegisters->AutoSizeRow(m_gridRegisters->GetNumberRows() - 1);
