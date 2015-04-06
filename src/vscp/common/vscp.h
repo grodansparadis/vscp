@@ -458,8 +458,8 @@ struct myNode {
 #define VSCP_STD_REGISTER_BUFFER_SIZE           0x98
 #define VSCP_STD_REGISTER_PAGES_COUNT           0x99
 
-// 0xc0 - 0xcf
-#define VSCP_STD_REGISTER_GUID                  0xC0
+// 0xd0 - 0xdf
+#define VSCP_STD_REGISTER_GUID                  0xD0
 
 // 0xe0 - 0xff
 #define VSCP_STD_REGISTER_DEVICE_URL            0xE0
