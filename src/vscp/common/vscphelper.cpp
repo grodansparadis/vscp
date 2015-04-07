@@ -688,10 +688,10 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
     // No data assigned yet
     *psize = 0;
 
-    unit &= 3;      // Mask of invalid bits
-    unit <<= 3;     // Shift to correct position
+    unit &= 3;          // Mask of invalid bits
+    unit <<= 3;         // Shift to correct position
 
-    sensoridx &= 7;   // Mask of invalid bits
+    sensoridx &= 7;     // Mask of invalid bits
 
     char buf[128];
     bool bNegative = (value>0) ? false : true ;
@@ -708,7 +708,13 @@ bool vscp_convertFloatToNormalizedEventData( uint8_t *pdata,
         ndigits = strlen(pos)-1;
     }
     else {
-       ndigits=0;
+        pos = strchr( buf, ',' );
+        if ( NULL != pos ) {
+            ndigits = strlen( pos ) - 1;
+        }
+        else {
+            ndigits = 0;
+        }
     }
 
     (void)modf( value, &intpart );
@@ -894,6 +900,11 @@ bool vscp_makeStringMeasurementEvent( vscpEvent *pEvent,
 {
     uint8_t offset = 0;
     wxString strValue;
+
+    unit &= 3;          // Mask of invalid bits
+    unit <<= 3;         // Shift to correct position
+
+    sensoridx &= 7;     // Mask of invalid bits
 
     strValue = wxString::Format(_("%g"), value );
     pEvent->sizeData = ( strValue.Length() > 7 ) ? 8 : ( strValue.Length() + 1 );

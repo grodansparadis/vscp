@@ -68,7 +68,7 @@
 // Globals
 
 uint8_t gdefaultGUID[] = {
-    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
@@ -77,6 +77,23 @@ uint8_t gdeviceURL[] = "www.eurosource.se/vscpsim_001.xml";
 uint8_t gdefaultDM[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+// Zero indicates end of table
+double gsimdata[] = {
+    20.92, 20.10, 20.00, 20.20, 20.10, 20.20, 20.40, 20.60,
+    20.50, 20.60, 20.80, 21.00, 21.30, 21.60, 21.50, 21.30,
+    21.70, 21.90, 22.10, 23.20, 23.30, 23.40, 23.20, 23.30,
+    23.10, 23.91, 24.52, 25.13, 26.37, 27.87, 29.45, 29.57,
+    29.91, 30.22, 30.33, 30.54, 30.67, 30.60, 30.45, 30.54,
+    30.33, 30.44, 30.39, 30.20, 29.92, 29.91, 29.76, 29.77,
+    29.61, 29.50, 29.44, 29.20, 28.77, 28.45, 28.20, 28.49,
+    27.99, 28.25, 27.87, 27.30, 26.67, 25.34, 25.27, 25.19,
+    24.11, 24.02, 23.87, 23.45, 23.21, 23.28, 23.01, 22.78,
+    22.55, 22.43, 22.36, 21.67, 21.33, 21.12, 20.78, 20.67,
+    20.54, 20.51, 20.49, 20.45, 20.41, 20.37, 20.34, 20.29,
+    20.21, 20.15, 20.11, 20.09, 20.01, 20.00, 19.82, 19,43,
+    0.0
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -220,6 +237,7 @@ CSim::open(const char *pUsername,
                 wxString::FromAscii( "_guid" ) + strIteration;
             if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableGUID(strName, guidval ) ) {
                 m_pthreadWork[ i ]->m_guid = guidval;
+                memcpy( m_pthreadWork[ i ]->m_registers + VSCP_REG_GUID, guidval.getGUID(), 16 );
             }
 
             wxString strvalue;
@@ -232,25 +250,25 @@ CSim::open(const char *pUsername,
             strName = m_prefix +
                 wxString::FromAscii( "_interval" ) + strIteration;
             if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
-                m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_INTERVAL ] = value;
+                m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_INTERVAL ] = value;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_unit" ) + strIteration;
             if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
-                m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_UNIT ] = value;
+                m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_UNIT ] = value;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_index" ) + strIteration;
             if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
-                m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_INDEX ] = value;
+                m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_INDEX ] = value;
             }
 
             strName = m_prefix +
                 wxString::FromAscii( "_coding" ) + strIteration;
             if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
-                m_pthreadWork[ i ]->m_registers[ SIM_USER0_REG_CODING ] = value;
+                m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_CODING ] = value;
             }
 
             long lvalue;
@@ -264,6 +282,23 @@ CSim::open(const char *pUsername,
                 wxString::FromAscii( "_measurementtype" ) + strIteration;
             if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableLong( strName, &lvalue ) ) {
                 m_pthreadWork[ i ]->m_measurementType = lvalue;
+            }
+
+            strName = m_prefix +
+                wxString::FromAscii( "_decisionmatrix" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString( strName, &strvalue ) ) {
+                wxStringTokenizer tkz( strvalue, _( "," ) );
+
+                for ( int k = 0; k < ( 8 * SIM_DECISION_MATRIX_ROWS ); k++ ) {
+                    if ( tkz.HasMoreTokens() ) {
+                        m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_DECISION_MATRIX + k ] = 
+                            vscp_readStringValue( tkz.GetNextToken() );
+                    }
+                    else {
+                        break;
+                    }
+                }
+
             }
 
             // start the workerthread
@@ -343,13 +378,13 @@ CWrkTread::CWrkTread()
 
     // Init user regs
     memset( m_registers, 0, sizeof( m_registers ) );  // Nill user regs
-    m_registers[ SIM_USER0_REG_INTERVAL ] = SIM_DEFAULT_INTERVAL;
-    m_registers[ SIM_USER0_REG_UNIT ] = SIM_DEFAULT_UNIT;
-    m_registers[ SIM_USER0_REG_INDEX ] = SIM_DEFAULT_INDEX;
-    m_registers[ SIM_USER0_REG_CODING ] = SIM_DEFAULT_CODING;
+    m_registers[ SIM_USER_REG_INTERVAL ] = SIM_DEFAULT_INTERVAL;
+    m_registers[ SIM_USER_REG_UNIT ] = SIM_DEFAULT_UNIT;
+    m_registers[ SIM_USER_REG_INDEX ] = SIM_DEFAULT_INDEX;
+    m_registers[ SIM_USER_REG_CODING ] = SIM_DEFAULT_CODING;
     m_measurementClass = VSCP_CLASS1_MEASUREMENT;
     m_measurementType = VSCP_TYPE_MEASUREMENT_TEMPERATURE;
-    memcpy( m_registers + SIM_USER0_REG_DECISION_MATRIX, gdefaultDM, 8 * SIM_DECISION_MATRIX_ROWS );
+    memcpy( m_registers + SIM_USER_REG_DECISION_MATRIX, gdefaultDM, 8 * SIM_DECISION_MATRIX_ROWS );
 
     // init standard regs
     m_registers[ VSCP_REG_FIRMWARE_MAJOR_VERSION ] = VSCP_DLL_VERSION_MAJOR;
@@ -721,21 +756,21 @@ void CWrkTread::doDM( vscpEvent *pEvent )
     for ( i = 0; i < SIM_DESCION_MATRIX_ROWS; i++ ) {
 
         // Get DM flags for this row
-        dmflags = m_registers[ SIM_USER0_REG_DECISION_MATRIX + 1 + ( 8 * i ) ];
+        dmflags = m_registers[ SIM_USER_REG_DECISION_MATRIX + 1 + ( 8 * i ) ];
 
         // Is the DM row enabled?
         if ( dmflags & VSCP_DM_FLAG_ENABLED ) {
 
             // Should the originating id be checked and if so is it the same?
             if ( ( dmflags & VSCP_DM_FLAG_CHECK_OADDR ) &&
-                 ( pEvent->GUID[ 15 ] != m_registers[ SIM_USER0_REG_DECISION_MATRIX + ( 8 * i ) ] ) ) {
+                 ( pEvent->GUID[ 15 ] != m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) ] ) ) {
                 continue;
             }
 
             // Check if zone should match and if so if it match
             if ( dmflags & VSCP_DM_FLAG_CHECK_ZONE ) {
                 if ( 255 != pEvent->pdata[ 1 ] ) {
-                    if ( pEvent->pdata[ 1 ] != m_registers[ SIM_USER0_REG_ZONE ] ) {
+                    if ( pEvent->pdata[ 1 ] != m_registers[ SIM_USER_REG_ZONE ] ) {
                         continue;
                     }
                 }
@@ -744,24 +779,24 @@ void CWrkTread::doDM( vscpEvent *pEvent )
             // Check if subzone should match and if so if it match
             if ( dmflags & VSCP_DM_FLAG_CHECK_SUBZONE ) {
                 if ( 255 != pEvent->pdata[ 1 ] ) {
-                    if ( pEvent->pdata[ 1 ] != m_registers[ SIM_USER0_REG_SUBZONE ] ) {
+                    if ( pEvent->pdata[ 1 ] != m_registers[ SIM_USER_REG_SUBZONE ] ) {
                         continue;
                     }
                 }
             }
 
             class_filter = ( dmflags & VSCP_DM_FLAG_CLASS_FILTER ) * 256 +
-                                        m_registers[ SIM_USER0_REG_DECISION_MATRIX +
+                                        m_registers[ SIM_USER_REG_DECISION_MATRIX +
                                         ( 8 * i ) +
                                         VSCP_DM_POS_CLASSFILTER ];
             class_mask = ( dmflags & VSCP_DM_FLAG_CLASS_MASK ) * 256 +
-                                        m_registers[ SIM_USER0_REG_DECISION_MATRIX +
+                                        m_registers[ SIM_USER_REG_DECISION_MATRIX +
                                         ( 8 * i ) +
                                         VSCP_DM_POS_CLASSMASK ];
-            type_filter = m_registers[ SIM_USER0_REG_DECISION_MATRIX +
+            type_filter = m_registers[ SIM_USER_REG_DECISION_MATRIX +
                                         ( 8 * i ) +
                                         VSCP_DM_POS_TYPEFILTER ];
-            type_mask = m_registers[ SIM_USER0_REG_DECISION_MATRIX +
+            type_mask = m_registers[ SIM_USER_REG_DECISION_MATRIX +
                                         ( 8 * i ) +
                                         VSCP_DM_POS_TYPEMASK ];
 
@@ -769,14 +804,14 @@ void CWrkTread::doDM( vscpEvent *pEvent )
                  !( ( type_filter ^ pEvent->vscp_type ) & type_mask ) ) {
 
                 // OK Trigger this action
-                switch ( m_registers[ SIM_USER0_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTION ] ) {
+                switch ( m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTION ] ) {
 
                     case SIM_ACTION_REPLY_TURNON: // Enable relays in arg. bitarry
-                        doActionReplyTurnOn( pEvent, dmflags, m_registers[ SIM_USER0_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTIONPARAM ] );
+                        doActionReplyTurnOn( pEvent, dmflags, m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTIONPARAM ] );
                         break;
 
                     case SIM_ACTION_REPLY_TURNOFF: // Enable relays in arg. bitarry
-                        doActionReplyTurnOn( pEvent, dmflags, m_registers[ SIM_USER0_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTIONPARAM ] );
+                        doActionReplyTurnOn( pEvent, dmflags, m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTIONPARAM ] );
                         break;
                 } // case
             } // Filter/mask
@@ -794,9 +829,9 @@ void CWrkTread::doActionReplyTurnOn( vscpEvent *pEvent, uint8_t dmflags, uint8_t
     vscpEventEx eventEx;
     eventEx.head = VSCP_PRIORITY_NORMAL;
     eventEx.sizeData = 3;
-    eventEx.data[ 0 ] = m_registers[ SIM_USER0_REG_INDEX ];      // Index
-    eventEx.data[ 1 ] = m_registers[ SIM_USER0_REG_ZONE ];       // Zone
-    eventEx.data[ 2 ] = m_registers[ SIM_USER0_REG_SUBZONE ];    // Subzone
+    eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
+    eventEx.data[ 1 ] = m_registers[ SIM_USER_REG_ZONE ];       // Zone
+    eventEx.data[ 2 ] = m_registers[ SIM_USER_REG_SUBZONE ];    // Subzone
     eventEx.vscp_class = VSCP_CLASS1_INFORMATION;
     eventEx.vscp_type = VSCP_TYPE_INFORMATION_ON;
 
@@ -812,9 +847,9 @@ void CWrkTread::doActionReplyTurnOff( vscpEvent *pEvent, uint8_t dmflags, uint8_
     vscpEventEx eventEx;
     eventEx.head = VSCP_PRIORITY_NORMAL;
     eventEx.sizeData = 3;
-    eventEx.data[ 0 ] = m_registers[ SIM_USER0_REG_INDEX ];      // Index
-    eventEx.data[ 1 ] = m_registers[ SIM_USER0_REG_ZONE ];       // Zone
-    eventEx.data[ 2 ] = m_registers[ SIM_USER0_REG_SUBZONE ];    // Subzone
+    eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
+    eventEx.data[ 1 ] = m_registers[ SIM_USER_REG_ZONE ];       // Zone
+    eventEx.data[ 2 ] = m_registers[ SIM_USER_REG_SUBZONE ];    // Subzone
     eventEx.vscp_class = VSCP_CLASS1_INFORMATION;
     eventEx.vscp_type = VSCP_TYPE_INFORMATION_OFF;
 
@@ -829,6 +864,7 @@ void *
 CWrkTread::Entry()
 {
     wxString str;
+    size_t pos;
     double val;
     uint16_t measurement_index = 0;
     wxTextFile tfile;
@@ -859,11 +895,15 @@ CWrkTread::Entry()
                     "%s",
                     ( const char * ) "Unable to load simulation data" );
 #endif
-            return NULL;
+            goto dumb_fill_data;
         }
 
         // read the first line
         str = tfile.GetFirstLine();
+        // Replace possible comma with period
+        if ( wxNOT_FOUND != ( pos = str.Find( ',' ) ) ) {
+            str[ pos ] = '.';
+        }
         str.ToCDouble( &val );
         simlist.push_back( val );
 
@@ -871,6 +911,10 @@ CWrkTread::Entry()
         // until the end of the file
         while ( !tfile.Eof() ) {
             str = tfile.GetNextLine();
+            // Replace possible comma with period
+            if ( wxNOT_FOUND != ( pos = str.Find( ',' ) ) ) {
+                str[ pos ] = '.';
+            }
             str.ToCDouble( &val );
             simlist.push_back( val );
         }
@@ -878,13 +922,16 @@ CWrkTread::Entry()
         tfile.Close();
     }
     else {
-        // We construct our own simulation data
-        for ( int i = 0; i < 100; i++ ) {
-            simlist.push_back( i );
+
+dumb_fill_data:
+
+        int i = 0;
+        while ( 1 ) {
+            if ( !gsimdata[ i ] ) break;
+            simlist.push_back( gsimdata[ i ] );
+            i++;
         }
-        for ( int i = 100; i > 0; i-- ) {
-            simlist.push_back( i );
-        }
+
     }
     
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
@@ -892,8 +939,8 @@ CWrkTread::Entry()
         if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 500 ) ) {
          
             // Should a simulated measurement event be sent?
-            if ( m_registers[ SIM_USER0_REG_INTERVAL ] &&
-                 ( ( ::wxGetLocalTimeMillis() - lastSendEvent ) > ( ( uint32_t )m_registers[ SIM_USER0_REG_INTERVAL ] * 1000 ) ) ) {
+            if ( m_registers[ SIM_USER_REG_INTERVAL ] &&
+                 ( ( ::wxGetLocalTimeMillis() - lastSendEvent ) > ( ( uint32_t )m_registers[ SIM_USER_REG_INTERVAL ] * 1000 ) ) ) {
 
                 // Save new time
                 lastSendEvent = ::wxGetLocalTimeMillis();
@@ -915,13 +962,13 @@ CWrkTread::Entry()
                     vscpEvent *pEvent = new vscpEvent();
                     if ( NULL != pEvent ) {
                         
-                        if ( SIM_CODING_NORMALIZED == m_registers[ SIM_USER0_REG_CODING ] ) {
+                        if ( SIM_CODING_NORMALIZED == m_registers[ SIM_USER_REG_CODING ] ) {
 
                             if ( vscp_convertFloatToNormalizedEventData( eventEx.data,
                                                                             &eventEx.sizeData,
                                                                             val,
-                                                                            m_registers[ SIM_USER0_REG_UNIT ] << 3,
-                                                                            m_registers[ SIM_USER0_REG_INDEX ] ) ) {
+                                                                            m_registers[ SIM_USER_REG_UNIT ],
+                                                                            m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
                                 if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
 
@@ -955,34 +1002,30 @@ CWrkTread::Entry()
 #endif
                             }
                         }
-                        else if ( SIM_CODING_FLOAT == m_registers[ SIM_USER0_REG_CODING ] ) {
+                        else if ( SIM_CODING_FLOAT == m_registers[ SIM_USER_REG_CODING ] ) {
+
+                            pEvent->head = VSCP_PRIORITY_NORMAL;
+                            memcpy( pEvent->GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
+                            pEvent->timestamp = 0;
+                            pEvent->sizeData = 0;
+                            pEvent->vscp_class = m_measurementClass;
+                            pEvent->vscp_type = m_measurementType;
+                            pEvent->pdata = NULL;
 
                             if ( vscp_makeFloatMeasurementEvent( pEvent,
                                                                     val,
-                                                                    m_registers[ SIM_USER0_REG_UNIT ],
-                                                                    m_registers[ SIM_USER0_REG_INDEX ] ) ) {
+                                                                    m_registers[ SIM_USER_REG_UNIT ],
+                                                                    m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
-                                if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
-
-                                    // OK send the event
-                                    if ( vscp_doLevel2Filter( pEvent, &m_vscpfilter ) ) {
-                                        m_pObj->m_mutexReceiveQueue.Lock();
-                                        m_pObj->m_receiveList.push_back( pEvent );
-                                        m_pObj->m_semReceiveQueue.Post();
-                                        m_pObj->m_mutexReceiveQueue.Unlock();
-                                    }
-                                    else {
-                                        vscp_deleteVSCPevent( pEvent );
-                                    }
-
+                                // OK send the event
+                                if ( vscp_doLevel2Filter( pEvent, &m_vscpfilter ) ) {
+                                    m_pObj->m_mutexReceiveQueue.Lock();
+                                    m_pObj->m_receiveList.push_back( pEvent );
+                                    m_pObj->m_semReceiveQueue.Post();
+                                    m_pObj->m_mutexReceiveQueue.Unlock();
                                 }
                                 else {
                                     vscp_deleteVSCPevent( pEvent );
-#ifndef WIN32
-                                    syslog( LOG_ERR,
-                                            "%s",
-                                            ( const char * ) "Faild to convert event." );
-#endif
                                 }
 
                             }
@@ -996,34 +1039,30 @@ CWrkTread::Entry()
                             }
                             
                         }
-                        else if ( SIM_CODING_STRING == m_registers[ SIM_USER0_REG_CODING ] ) {
+                        else if ( SIM_CODING_STRING == m_registers[ SIM_USER_REG_CODING ] ) {
+
+                            pEvent->head = VSCP_PRIORITY_NORMAL;
+                            memcpy( pEvent->GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
+                            pEvent->timestamp = 0;
+                            pEvent->sizeData = 0;
+                            pEvent->vscp_class = m_measurementClass;
+                            pEvent->vscp_type = m_measurementType;
+                            pEvent->pdata = NULL;
 
                             if ( vscp_makeStringMeasurementEvent( pEvent,
                                                                     val,
-                                                                    m_registers[ SIM_USER0_REG_UNIT ],
-                                                                    m_registers[ SIM_USER0_REG_INDEX ] ) ) {
+                                                                    m_registers[ SIM_USER_REG_UNIT ],
+                                                                    m_registers[ SIM_USER_REG_INDEX ] ) ) {
 
-                                if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
-
-                                    // OK send the event
-                                    if ( vscp_doLevel2Filter( pEvent, &m_vscpfilter ) ) {
-                                        m_pObj->m_mutexReceiveQueue.Lock();
-                                        m_pObj->m_receiveList.push_back( pEvent );
-                                        m_pObj->m_semReceiveQueue.Post();
-                                        m_pObj->m_mutexReceiveQueue.Unlock();
-                                    }
-                                    else {
-                                        vscp_deleteVSCPevent( pEvent );
-                                    }
-
+                                // OK send the event
+                                if ( vscp_doLevel2Filter( pEvent, &m_vscpfilter ) ) {
+                                    m_pObj->m_mutexReceiveQueue.Lock();
+                                    m_pObj->m_receiveList.push_back( pEvent );
+                                    m_pObj->m_semReceiveQueue.Post();
+                                    m_pObj->m_mutexReceiveQueue.Unlock();
                                 }
                                 else {
                                     vscp_deleteVSCPevent( pEvent );
-#ifndef WIN32
-                                    syslog( LOG_ERR,
-                                            "%s",
-                                            ( const char * ) "Faild to convert event." );
-#endif
                                 }
 
                             }
@@ -1052,8 +1091,8 @@ CWrkTread::Entry()
                 eventEx.timestamp = 0;
                 eventEx.sizeData = 3;
                 eventEx.data[ 0 ] = 0;
-                eventEx.data[ 1 ] = m_registers[ SIM_USER0_REG_ZONE ];       // Zone
-                eventEx.data[ 2 ] = m_registers[ SIM_USER0_REG_SUBZONE ];    // Subzone
+                eventEx.data[ 1 ] = m_registers[ SIM_USER_REG_ZONE ];       // Zone
+                eventEx.data[ 2 ] = m_registers[ SIM_USER_REG_SUBZONE ];    // Subzone
                 eventEx.vscp_class = VSCP_CLASS1_INFORMATION;
                 eventEx.vscp_type = VSCP_TYPE_INFORMATION_NODE_HEARTBEAT;
 

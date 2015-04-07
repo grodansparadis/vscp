@@ -39,5 +39,5 @@
 //  eurosource at info@eurosource.se, http://www.eurosource.se
 /////////////////////////////////////////////////////////////////////////////
 
-#define ID_READREGIISTER_SYMBOL_0 _("Static text")
-#define ID_READREGIISTER_SYMBOL_1 _("Read Regiister")
+#define ID_READREGISTER_SYMBOL_0 _("Static text")
+#define ID_READREGISTER_SYMBOL_1 _("Read Register")

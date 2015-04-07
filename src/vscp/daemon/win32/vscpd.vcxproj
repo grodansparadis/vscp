@@ -122,7 +122,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;$(OPENSSL)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NS_ENABLE_SSL;NOEMBED_NET_SKELETON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;DEBUG;WIN32;_CONSOLE;WINVER=0x0601;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\vscpd.pch</PrecompiledHeaderOutputFile>
@@ -166,7 +166,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;WIN32;_CONSOLE;WINVER=0x400;_WIN32_WINNT=0x0400;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;_CRT_SECURE_NO_WARNINGS;_DEBUG;WIN32;_CONSOLE;WINVER=0x400;_WIN32_WINNT=0x0400;_MT;wxUSE_GUI=0;__WXDEBUG__;WXDEBUG=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\vscpd.pch</PrecompiledHeaderOutputFile>
@@ -210,7 +210,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>.\;$(OPENSSL)\include;$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NS_ENABLE_SSL;NOEMBED_NET_SKELETON;_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0400;_MT;wxUSE_GUI=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NS_ENABLE_SSL;NOEMBED_NET_SKELETON;_CRT_SECURE_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0400;_MT;wxUSE_GUI=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Release\vscpd.pch</PrecompiledHeaderOutputFile>
@@ -255,7 +255,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(wxwin)\include\msvc;$(WXWIN)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;WINVER=0x0400;_WIN32_WINNT=0x0400;_MT;wxUSE_GUI=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;WIN32;_CONSOLE;WINVER=0x0400;_WIN32_WINNT=0x0400;_MT;wxUSE_GUI=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Release\vscpd.pch</PrecompiledHeaderOutputFile>
