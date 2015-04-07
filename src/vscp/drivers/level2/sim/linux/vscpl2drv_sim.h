@@ -36,8 +36,13 @@
 #include "../../../../common/canal.h"
 #include "../../../../common/vscpremotetcpif.h"
 #include "../../../../common/canal_macro.h"
+#include "../common/simulation.h"
 
-#include "vscpsim.h"
+#ifdef WIN32
+#include <simdrv.h>
+#else
+#include <vscpl2drv_sim.h>
+#endif
 
 #ifndef BOOL
 typedef int BOOL;
@@ -51,15 +56,21 @@ typedef int BOOL;
 #define FALSE 0
 #endif
 
+#include "../common/simulation.h"
+
 // This is the version info for this DLL - Change to your own value
-#define VSCP_DLL_VERSION        0x000001
+#define VSCP_DLL_VERSION		                0x010000
+
+#define VSCP_DLL_VERSION_MAJOR                  0x01
+#define VSCP_DLL_VERSION_MINOR                  0x00
+#define VSCP_DLL_VERSION_SUBMINOR               0x00
 
 // This is the vendor string - Change to your own value
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
-
+							
 // Driver information.
 #define VSCP_TCPIPLINK_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
-"<!-- Version 0.0.1    2013-05-11   -->" \
+"<!-- Version 0.0.1    2011-01-20   -->" \
 "<config level=\"1|2\"blocking\"true|false\" description=\"bla bla bla bla\">" \
 "   <item pos=\"0\" type=\"string\" description\"Serial number for Tellstick\"/>" \
 "   <item pos=\"1\" type=\"path\" description\"Path to configuration file\"/>" \

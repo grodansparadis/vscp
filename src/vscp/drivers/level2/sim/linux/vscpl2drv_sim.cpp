@@ -46,7 +46,7 @@
 #include "stdlib.h"
 
 #include "vscpl2drv_sim.h"
-#include "sim.h"
+#include "../common/simulation.h"
 
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));
