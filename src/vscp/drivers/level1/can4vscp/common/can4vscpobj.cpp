@@ -835,7 +835,7 @@ int CCan4VSCPObj::readMsgBlocking( canalMsg *pMsg, uint32_t timeout )
     int res;
     struct timespec to = { 0, 0 };
     clock_gettime( CLOCK_REALTIME, &to );
-    to.tv_sec += Timeout/1000;
+    to.tv_sec += timeout/1000;
 #endif    
 
     // Must be a message pointer
