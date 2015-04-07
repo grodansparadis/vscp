@@ -62,7 +62,11 @@
 #include <vscpremotetcpif.h>
 #include <vscp_type.h>
 #include <vscp_class.h>
-#include "simdrv.h"
+#ifdef WIN32
+#include <simdrv.h>
+#else
+#include <vscpl2drv_sim.h>
+#endif
 #include "simulation.h"
 
 // Globals

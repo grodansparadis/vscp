@@ -99,6 +99,8 @@
       <in>dlgsetfiltermask.cpp</in>
       <in>dlgsetfiltermask.h</in>
       <in>dlgsetfiltermask_symbols.h</in>
+      <in>dlgsetmanufactdata.cpp</in>
+      <in>dlgsetmanufactdata.h</in>
       <in>dlgvscpfilter.cpp</in>
       <in>dlgvscpfilter.h</in>
       <in>dlgvscpfilter_symbols.h</in>
