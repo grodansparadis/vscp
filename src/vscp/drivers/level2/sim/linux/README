@@ -1,17 +1,6 @@
-This is a Level II driver for a TCP/IP link to another VSCP daemon or
-another machine that exports the limited TCP/IP command set.
+This is a Level II driver for one or several simulated nodes
 
-Configuration string
-
-    host;port;user;password;filter;mask
-
-Variables
-
-_host       - The remote host.
-_port       - The port to connect to on remote host.
-_user       - User credentials for remote host.
-_password   - Password credentials for remote host
-_filter     - Filter for incoming events
-_mask       - Mask for incoming events
+See http://www.vscp.org/docs/vscpd/doku.php?id=level2_driver_simulation
+for current documentation-
 
 
