@@ -898,13 +898,17 @@ CWrkTread::Entry()
             goto dumb_fill_data;
         }
 
+        // Set C locale
+        setlocale( LC_NUMERIC, "C" );
+
         // read the first line
         str = tfile.GetFirstLine();
         // Replace possible comma with period
         if ( wxNOT_FOUND != ( pos = str.Find( ',' ) ) ) {
             str[ pos ] = '.';
         }
-        str.ToCDouble( &val );
+
+        str.ToDouble( &val );
         simlist.push_back( val );
 
         // read all lines one by one
@@ -915,11 +919,14 @@ CWrkTread::Entry()
             if ( wxNOT_FOUND != ( pos = str.Find( ',' ) ) ) {
                 str[ pos ] = '.';
             }
-            str.ToCDouble( &val );
+            str.ToDouble( &val );
             simlist.push_back( val );
         }
 
         tfile.Close();
+
+        // Restore locale
+        setlocale( LC_CTYPE, "" );
     }
     else {
 

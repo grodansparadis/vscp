@@ -275,7 +275,6 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
   </ItemGroup>
   <ItemGroup>
     <None Include="vscphelper.def" />
-    <None Include="res\vscphelper.rc2" />
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -288,9 +287,6 @@ if exist "$(VSCP_HOME)\src\vscp\Build\$(ConfigurationName)" copy /Y "$(OutDir)/$
     <ClInclude Include="Resource.h" />
     <ClInclude Include="..\..\common\vscphelper.h" />
     <ClInclude Include="vscphelperdll.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="vscphelper.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
