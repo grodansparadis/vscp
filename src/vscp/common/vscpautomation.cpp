@@ -165,12 +165,15 @@ int CVSCPAutomation::getTimeZoneDiffHours( void )
     time_t rawtime;
     struct tm *timeinfo;
     struct tm *timeinfo_gmt;
+    int h1, h2;
 
     time ( &rawtime );
     timeinfo = localtime( &rawtime );
+    h2 = timeinfo->tm_hour;
     timeinfo_gmt = gmtime( &rawtime );
+    h1 = timeinfo_gmt->tm_hour;
 
-    return ( timeinfo->tm_hour - timeinfo_gmt->tm_hour );
+    return ( h2 - h1 );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -307,7 +310,7 @@ void CVSCPAutomation::calcSun( void )
 	degs = 180.0 / pi;
 	rads = pi / 180.0;
 
-	//  get the date and time from the user
+	// get the date and time from the user
 	// read system date and extract the year
 
 	// First get time 

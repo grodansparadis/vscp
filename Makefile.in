@@ -67,13 +67,14 @@ endif
 	@echo " - Start the VSCP daemon with 'sudo /etc/init.d/vscpd start'"
 	@echo "   or 'vscpd -s' to start the daemon in the  foreground."
 	@echo
-	@echo " - Admin interface is at http://localhost:8080/vscp"	
+	@echo " - Admin interface is at http://localhost:8080/vscp"
+        @echo "   Username: admin, Password: secret"	
 	@echo
 	@echo " - If you have installed the sample content it is located at"
 	@echo "   http://localhost:8080. Remember to change the ip address"
 	@echo "   in the file /srv/vscp/web/testws/settings.js to your local"
 	@echo "   ip address ($(IPADDRESS)) to be able to access this content from other "
-	@echo "   machines than your local machine."	
+	@echo "   machines than your local machine."
 	@echo
 	@echo " - You can reach core functionality in the telnet interface on"	
 	@echo "   this machine at port 9598. Username: admin, Password: secret"
@@ -81,6 +82,7 @@ endif
 	@echo " - The configuration file for the VSCP daemon is at /etc/vscd/vscpd.conf and"
 	@echo "   you can read about the different available options here "
 	@echo "   http://www.vscp.org/docs/vscpd/doku.php?id=configuring_the_vscp_daemon"
+        @echo "   Other configuration files is under /srv/vscp"
 	@echo	
 	@echo " - Documentation is at http://www.vscp.org/docs/vscpd/doku.php asd more general"
 	@echo "   documentation is at http://www.vscp.org/docs"

@@ -89,20 +89,20 @@ using namespace std;
 #define SIM_DECISION_MATRIX_ROWS                2
 
 // User registers
-#define SIM_USER0_REG_ZONE                      0x00
-#define SIM_USER0_REG_SUBZONE                   0x01
-#define SIM_USER0_REG_INDEX                     0x02
-#define SIM_USER0_REG_UNIT                      0x03
-#define SIM_USER0_REG_CODING                    0x04
-#define SIM_USER0_REG_CONTROL_MEASUREMENTS      0x05
-#define SIM_USER0_REG_INTERVAL                  0x06
+#define SIM_USER_REG_ZONE                       0x00
+#define SIM_USER_REG_SUBZONE                    0x01
+#define SIM_USER_REG_INDEX                      0x02
+#define SIM_USER_REG_UNIT                       0x03
+#define SIM_USER_REG_CODING                     0x04
+#define SIM_USER_REG_CONTROL_MEASUREMENTS       0x05
+#define SIM_USER_REG_INTERVAL                   0x06
 
-#define SIM_USER0_REG_BUTTON_INDEX              0x30
-#define SIM_USER0_REG_BUTTON_ZONE               0x31
-#define SIM_USER0_REG_BUTTON_SUBZONE            0x32
-#define SIM_USER0_REG_BUTTON_INTERVAL           0x33
+#define SIM_USER_REG_BUTTON_INDEX               0x30
+#define SIM_USER_REG_BUTTON_ZONE                0x31
+#define SIM_USER_REG_BUTTON_SUBZONE             0x32
+#define SIM_USER_REG_BUTTON_INTERVAL            0x33
 
-#define SIM_USER0_REG_DECISION_MATRIX           0x60
+#define SIM_USER_REG_DECISION_MATRIX            0x60
 
 // Standard registers
 
