@@ -236,6 +236,18 @@ CSim::open(const char *pUsername,
                 m_pthreadWork[ i ]->m_bLevel2 = bvalue;
             }
 
+            strName = m_prefix +
+                wxString::FromAscii( "_zone" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+                m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_ZONE ] = value;
+            }
+
+            strName = m_prefix +
+                wxString::FromAscii( "_subzone" ) + strIteration;
+            if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableInt( strName, &value ) ) {
+                m_pthreadWork[ i ]->m_registers[ SIM_USER_REG_SUBZONE ] = value;
+            }
+
             cguid guidval;
             strName = m_prefix +
                 wxString::FromAscii( "_guid" ) + strIteration;
@@ -782,8 +794,8 @@ void CWrkTread::doDM( vscpEvent *pEvent )
 
             // Check if subzone should match and if so if it match
             if ( dmflags & VSCP_DM_FLAG_CHECK_SUBZONE ) {
-                if ( 255 != pEvent->pdata[ 1 ] ) {
-                    if ( pEvent->pdata[ 1 ] != m_registers[ SIM_USER_REG_SUBZONE ] ) {
+                if ( 255 != pEvent->pdata[ 2 ] ) {
+                    if ( pEvent->pdata[ 2 ] != m_registers[ SIM_USER_REG_SUBZONE ] ) {
                         continue;
                     }
                 }
@@ -811,13 +823,18 @@ void CWrkTread::doDM( vscpEvent *pEvent )
                 switch ( m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTION ] ) {
 
                     case SIM_ACTION_REPLY_TURNON: // Enable relays in arg. bitarry
-                        doActionReplyTurnOn( pEvent, dmflags, m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTIONPARAM ] );
+                        doActionReplyTurnOn( pEvent, 
+                                             dmflags, 
+                                             m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTIONPARAM ] );
                         break;
 
                     case SIM_ACTION_REPLY_TURNOFF: // Enable relays in arg. bitarry
-                        doActionReplyTurnOn( pEvent, dmflags, m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTIONPARAM ] );
+                        doActionReplyTurnOff( pEvent, 
+                                              dmflags, 
+                                              m_registers[ SIM_USER_REG_DECISION_MATRIX + ( 8 * i ) + VSCP_DM_POS_ACTIONPARAM ] );
                         break;
                 } // case
+
             } // Filter/mask
         } // Row enabled
     } // for each row
@@ -832,10 +849,13 @@ void CWrkTread::doActionReplyTurnOn( vscpEvent *pEvent, uint8_t dmflags, uint8_t
 {
     vscpEventEx eventEx;
     eventEx.head = VSCP_PRIORITY_NORMAL;
+    memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
+    eventEx.timestamp = 0;
     eventEx.sizeData = 3;
-    eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
-    eventEx.data[ 1 ] = m_registers[ SIM_USER_REG_ZONE ];       // Zone
-    eventEx.data[ 2 ] = m_registers[ SIM_USER_REG_SUBZONE ];    // Subzone
+    //eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
+    eventEx.data[ 0 ] = dmparam;
+    eventEx.data[ 1 ] = pEvent->pdata[ 1 ];     // Zone
+    eventEx.data[ 2 ] = pEvent->pdata[ 2 ];     // Subzone  
     eventEx.vscp_class = VSCP_CLASS1_INFORMATION;
     eventEx.vscp_type = VSCP_TYPE_INFORMATION_ON;
 
@@ -850,10 +870,13 @@ void CWrkTread::doActionReplyTurnOff( vscpEvent *pEvent, uint8_t dmflags, uint8_
 {
     vscpEventEx eventEx;
     eventEx.head = VSCP_PRIORITY_NORMAL;
+    memcpy( eventEx.GUID, m_registers + VSCP_STD_REGISTER_GUID, 16 );
+    eventEx.timestamp = 0;
     eventEx.sizeData = 3;
-    eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
-    eventEx.data[ 1 ] = m_registers[ SIM_USER_REG_ZONE ];       // Zone
-    eventEx.data[ 2 ] = m_registers[ SIM_USER_REG_SUBZONE ];    // Subzone
+    //eventEx.data[ 0 ] = m_registers[ SIM_USER_REG_INDEX ];      // Index
+    eventEx.data[ 0 ] = dmparam;
+    eventEx.data[ 1 ] = pEvent->pdata[ 1 ];     // Zone
+    eventEx.data[ 2 ] = pEvent->pdata[ 2 ];     // Subzone
     eventEx.vscp_class = VSCP_CLASS1_INFORMATION;
     eventEx.vscp_type = VSCP_TYPE_INFORMATION_OFF;
 

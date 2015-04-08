@@ -913,7 +913,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
                                     0,
                                     0 );
 
-            pDlg->Update( progress, "Reset sent." );
+            pDlg->Update( progress, _("Reset sent.") );
 
             wxSleep( 5 );
 
@@ -964,7 +964,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
             }
 
             if ( !bReady ) {
-                pDlg->Update( progress, "Could not verify that device came out of reset." );
+                pDlg->Update( progress, _("Could not verify that device came out of reset.") );
                 wxMessageBox( _T( "Could not verify that device came out of reset." ) );
                 rv = FALSE;
             }

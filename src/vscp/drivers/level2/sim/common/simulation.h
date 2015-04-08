@@ -86,7 +86,7 @@ using namespace std;
 #define VSCP_MAJOR_VERSION		                1
 #define VSCP_MINOR_VERSION                      5
 
-#define SIM_DECISION_MATRIX_ROWS                2
+#define SIM_DECISION_MATRIX_ROWS                8
 
 // User registers
 #define SIM_USER_REG_ZONE                       0x00
@@ -102,7 +102,7 @@ using namespace std;
 #define SIM_USER_REG_BUTTON_SUBZONE             0x32
 #define SIM_USER_REG_BUTTON_INTERVAL            0x33
 
-#define SIM_USER_REG_DECISION_MATRIX            0x60
+#define SIM_USER_REG_DECISION_MATRIX            0x40
 
 // Standard registers
 
