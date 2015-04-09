@@ -26,12 +26,12 @@
 
 #define VSCPD_MAJOR_VERSION 	1
 #define VSCPD_MINOR_VERSION 	0
-#define VSCPD_SUB_VERSION   	0
+#define VSCPD_SUB_VERSION   	1
 
 
-#define VSCPD_SUB_SUB_VERSION   92
+#define VSCPD_SUB_SUB_VERSION   0
 
-#define VSCPD_DISPLAY_VERSION "1.0.0.92 Neon"
+#define VSCPD_DISPLAY_VERSION "1.0.1.0 Neon"
 
 #define VSCPD_COPYRIGHT "Copyright (C) 2000-2015, Grodans Paradis AB, http://www.paradiseofthefrog.com"
 #define VSCPD_COPYRIGHT_HTML "Copyright (C) 2000-2015, <a href=\"mailto:info@paradiseofthefrog.com\">Grodans Paradis AB</a>, <a href=\"http://www.paradiseofthefrog.com\">http://www.paradiseofthefrog.com</a>"

@@ -1953,7 +1953,7 @@ int VscpRemoteTcpIf::getVariableString( wxString& name, wxString *strValue )
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;   
     m_mutexArray.Lock();
     //strLine = m_inputStrArray[ m_inputStrArray.Count()-2 ];
-    for ( int i = 0; i <= m_inputStrArray.Count() - 2; i++ ) {
+    for ( unsigned int i = 0; i <= m_inputStrArray.Count() - 2; i++ ) {
         strLine += m_inputStrArray[ i ];
     }
     m_mutexArray.Unlock();

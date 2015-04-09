@@ -1,0 +1,69 @@
+
+<!-- 
+	This node is a Bluetooth proximity sensor driver that send out the identification id when a
+	Bluetooth device is within range. The id is the Bluetooth id of the device.
+-->
+  <variable type="integer">
+    <name>btprox1_paustime</name>
+    <note>Pause in seconds between detection attempts.</note>
+    <value>1</value>
+  </variable>
+
+  <variable type="integer">
+    <name>btprox1_zone</name>
+    <note>Zone to use for token events.</note>
+    <value>2</value>
+  </variable>
+
+  <variable type="integer">
+    <name>btprox1_subzone</name>
+    <note>Sub-zone to use for token events.</note>
+    <value>1</value>
+  </variable>
+  
+  <variable type="integer">
+    <name>btprox1_detectindex</name>
+    <note>Index to use for detect events.</note>
+    <value>0</value>
+  </variable>
+  
+  <variable type="integer">
+    <name>btprox1_detectzone</name>
+    <note>Zone to use for detect events.</note>
+    <value>3</value>
+  </variable>
+
+  <variable type="integer">
+    <name>btprox1_detectsubzone</name>
+    <note>Sub-zone to use for detect events.</note>
+    <value>1</value>
+  </variable>
+  
+  <variable type="boolean">
+    <name>btprox1_send_token_activity</name>
+    <note>Set to true to enable token events.</note>
+    <value>true</value>
+  </variable>
+  
+  <variable type="boolean">
+    <name>btprox1_send_detect </name>
+    <note>Set to true to enable detect events.</note>
+    <value>true</value>
+  </variable>
+  
+  <variable type="boolean">
+    <name>btprox1_disable_radio_detect</name>
+    <note>Normally also the radio unit is detected. Set this variable to true to disable this.</note>
+    <value>false</value>
+  </variable>
+
+  <variable type="guid">
+    <name>btprox1_guid</name>
+    <note>GUID for the driver.</note>
+    <value>11:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>
+  </variable>
+
+
+
+
+

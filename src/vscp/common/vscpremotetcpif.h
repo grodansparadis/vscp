@@ -481,12 +481,14 @@ public:
     /*!
         Delete a named variable
         \param name Name of variable to delete.
+        \return VSCP_ERROR_SUCCESS on success
     */
     int deleteVariable( wxString& name );
 
 
     /*!
         Save all variables to disk
+        \return VSCP_ERROR_SUCCESS on success
     */
     int saveVariablesToDisk( void );
 
@@ -496,6 +498,7 @@ public:
         \param type of variabel either in string or mnenomic form
         \param value Initial value for the variable
         \param bPersistet True if the variable should be persistent (default=false)
+        \return VSCP_ERROR_SUCCESS on success
     */
     int createVariable( wxString& name, wxString& type, wxString& strValue, bool bPersistent=false  );
 
@@ -504,7 +507,7 @@ public:
         Get variable value from string variable
         \param name of variable
         \param strValue pointer to string that get the value of the string variable.
-        \return true if the variable is of type string and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type string and the operation
         was successful.
     */
     int getVariableString( wxString& name, wxString *strValue  );
@@ -513,7 +516,7 @@ public:
         Set variable value from string variable
         \param name of variable
         \param strValue value to set string variable to.
-        \return true if the variable is of type string and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type string and the operation
         was successful.
     */
     int setVariableString( wxString& name, const wxString& strValue );
@@ -523,7 +526,7 @@ public:
         Get variable value from boolean variable
         \param name of variable
         \param bValue pointer to boolean variable that get the value of the string variable.
-        \return true if the variable is of type bool and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type bool and the operation
         was successful.
     */
     int getVariableBool( wxString& name, bool *bValue );
@@ -532,7 +535,7 @@ public:
         Set variable value from boolean variable
         \param name of variable
         \param bValue boolean variable with the value to set.
-        \return true if the variable is of type bool and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type bool and the operation
         was successful.
     */
     int setVariableBool( wxString& name, const bool bValue );
@@ -541,7 +544,7 @@ public:
         Get variable value from integer variable
         \param name of variable
         \param value pointer to integer variable that get the value of the string variable.
-        \return true if the variable is of type integer and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type integer and the operation
         was successful.
     */
     int getVariableInt( wxString& name, int *value );
@@ -550,7 +553,7 @@ public:
         Set variable value from integer variable
         \param name of variable. 
         \param value integer variable with the value to set.
-        \return true if the variable is of type integer and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type integer and the operation
         was successful.
     */
     int setVariableInt( wxString& name, int value );
@@ -559,7 +562,7 @@ public:
         Get variable value from long variable
         \param name of variable
         \param value pointer to long variable that get the value of the string variable.
-        \return true if the variable is of type long and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type long and the operation
         was successful.
     */
     int getVariableLong( wxString& name, long *value );
@@ -568,7 +571,7 @@ public:
         Set variable value from long variable
         \param name of variable
         \param value long variable with the value to set.
-        \return true if the variable is of type long and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type long and the operation
         was successful.
     */
     int setVariableLong( wxString& name, long value );
@@ -577,7 +580,7 @@ public:
         Get variable value from double variable
         \param name of variable
         \param value double variable with the value to set.
-        \return true if the variable is of type double and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
     */
     int getVariableDouble( wxString& name, double *value );
@@ -586,7 +589,7 @@ public:
         Set variable value from double variable
         \param name of variable
         \param value The double value to set.
-        \return true if the variable is of type double and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
     */
     int setVariableDouble( wxString& name, double value );
@@ -596,7 +599,7 @@ public:
         \param name of variable
         \param strValue String that get that get the 
         value of the measurement.
-        \return true if the variable is of type measurement and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type measurement and the operation
         was successful.
     */
     int getVariableMeasurement( wxString& name, wxString& strValue );
@@ -605,7 +608,7 @@ public:
         set variable value from double variable
         \param name of variable
         \param strValue pointer to double variable that get the value of the string variable.
-        \return true if the variable is of type double and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type double and the operation
         was successful.
     */
     int setVariableMeasurement( wxString& name, wxString& strValue );
@@ -614,7 +617,7 @@ public:
         Get variable value from event variable
         \param name of variable
         \param pEvent pointer to event variable that get the value of the string variable.
-        \return true if the variable is of type VSCP event and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type VSCP event and the operation
         was successful.
     */
     int getVariableEvent( wxString& name, vscpEvent *pEvent );
@@ -623,7 +626,7 @@ public:
         set variable value from VSCP event
         \param name of variable
         \param pEvent pointer to event that is used to set the variable.
-        \return true if the operation was successful.
+        \return VSCP_ERROR_SUCCESS if the operation was successful.
     */
     int setVariableEvent( wxString& name, vscpEvent *pEvent );
 
@@ -631,7 +634,7 @@ public:
         Get variable value from event variable
         \param name of variable
         \param pEvent pointer to event variable that get the value of the string variable.
-        \return true if the variable is of type VSCP event and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type VSCP event and the operation
         was successful.
     */
     int getVariableEventEx( wxString& name, vscpEventEx *pEvent );
@@ -640,7 +643,7 @@ public:
         set variable value from VSCP event
         \param name of variable
         \param pEvent pointer to event that is used to set the variable.
-        \return true if the operation was successful.
+        \return VSCP_ERROR_SUCCESS if the operation was successful.
     */
     int setVariableEventEx( wxString& name, vscpEventEx *pEvent );
 
@@ -648,7 +651,7 @@ public:
         Get variable value from GUID variable
         \param name of variable
         \param pGUID pointer to event variable that get the value of the GUID variable.
-        \return true if the variable is of type VSCP GUID and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type VSCP GUID and the operation
         was successful.
     */
     int getVariableGUID( wxString& name, cguid& pGUID );
@@ -657,7 +660,7 @@ public:
         set variable value from GUID
         \param name of variable
         \param pGUID pointer to GUID that is used to set the variable.
-        \return true if the operation was successful.
+        \return VSCP_ERROR_SUCCESS if the operation was successful.
     */
     int setVariableGUID( wxString& name, cguid& pGUID );
 
@@ -667,7 +670,7 @@ public:
         \param psizeData pointer to variable that will hold the size of the data array
         \param pData pointer to VSCP data array variable (unsigned char [8] ) that get the 
         value of the string variable.
-        \return true if the variable is of type VSCP data and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type VSCP data and the operation
         was successful.
     */
     int getVariableVSCPdata( wxString& name, uint8_t *psizeData, uint16_t *pData );
@@ -677,7 +680,7 @@ public:
         \param name of variable.
         \param sizeData Size of data.
         \param pData Pointer to data array to set data from.
-        \return true if the operation was successful.
+        \return VSCP_ERROR_SUCCESS if the operation was successful.
     */
     int setVariableVSCPdata( wxString& name, uint8_t *pData, uint16_t size );
 
@@ -685,7 +688,7 @@ public:
         Get variable value from class variable
         \param name of variable
         \param vscp_class pointer to int that get the value of the class variable.
-        \return true if the variable is of type VSCP class and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type VSCP class and the operation
         was successful.
     */
     int getVariableVSCPclass( wxString& name, uint16_t *vscp_class );
@@ -694,7 +697,7 @@ public:
         set variable value from vscp_class.
         \param name of variable.
         \param vscp_class to write to variable.
-        \return true if the operation was successful.
+        \return VSCP_ERROR_SUCCESS if the operation was successful.
     */
     int setVariableVSCPclass( wxString& name, uint16_t vscp_class );
 
@@ -702,7 +705,7 @@ public:
         Get variable value from type variable
         \param name of variable
         \param vscp_type pointer to int that get the value of the type variable.
-        \return true if the variable is of type VSCP type and the operation
+        \return VSCP_ERROR_SUCCESS if the variable is of type VSCP type and the operation
         was successful.
     */
     int getVariableVSCPtype( wxString& name, uint16_t *vscp_type );
@@ -712,7 +715,7 @@ public:
         set variable value from vscp_type.
         \param name of variable.
         \param vscp_type to write to variable.
-        \return true if the operation was successful.
+        \return VSCP_ERROR_SUCCESS if the operation was successful.
     */
     int setVariableVSCPtype( wxString& name, uint16_t vscp_type );
 

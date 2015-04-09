@@ -57,6 +57,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "usb2can", "drivers\level1\u
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vscpl2_simdrv", "drivers\level2\sim\win32\simdrv.vcxproj", "{F3F118D4-E5F1-4505-A1B1-53957BE30DD5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bttest", "drivers\level2\btdetect\win32\test\bttest\bttest\bttest.vcxproj", "{F6C07100-95D5-4CEF-9B64-9CB690E346DB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -327,6 +329,15 @@ Global
 		{F3F118D4-E5F1-4505-A1B1-53957BE30DD5}.Template|Win32.ActiveCfg = Release|Win32
 		{F3F118D4-E5F1-4505-A1B1-53957BE30DD5}.Template|Win32.Build.0 = Release|Win32
 		{F3F118D4-E5F1-4505-A1B1-53957BE30DD5}.Template|x64.ActiveCfg = Release|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Debug|Win32.Build.0 = Debug|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Debug|x64.ActiveCfg = Debug|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Release|Win32.ActiveCfg = Release|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Release|Win32.Build.0 = Release|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Release|x64.ActiveCfg = Release|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Template|Win32.ActiveCfg = Release|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Template|Win32.Build.0 = Release|Win32
+		{F6C07100-95D5-4CEF-9B64-9CB690E346DB}.Template|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

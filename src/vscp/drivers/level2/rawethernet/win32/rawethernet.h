@@ -99,6 +99,8 @@ public:
 
 	/*!
 		Add event to send queue 
+        @param pEvent Event to add to queue
+        @return True on success
 	*/
 	bool addEvent2SendQueue(const vscpEvent *pEvent);
 

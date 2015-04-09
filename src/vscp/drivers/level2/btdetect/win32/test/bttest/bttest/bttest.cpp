@@ -65,6 +65,12 @@ int _tmain(int argc, _TCHAR* argv[])
 
       m_bt_dev = BluetoothFindFirstDevice(&m_search_params, &m_device_info);
 
+      if ( NULL == m_bt_dev ) {
+          wprintf( L"\t\tNo Bluetooth device detected.\r\n" );
+          Sleep( 1000 );
+          continue;
+      }
+
       int m_device_id = 0;
       do {
         m_device_id++;
@@ -85,7 +91,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     BluetoothFindRadioClose(m_bt);
 
-    Sleep(10000);
+    Sleep(1000);
   }
 
   return 0;

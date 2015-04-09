@@ -193,14 +193,7 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 	CRawEthernet *pdrvObj = theApp->getDriverObject(handle);
 	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
-    //vscpEvent *pEventNew = new vscpEvent;
-    //if ( NULL != pEventNew ) {
-    //    copyVSCPEvent( pEventNew, pEvent );
     pdrvObj->addEvent2SendQueue( pEvent );
-	//}
-    //else {
-    //    return CANAL_ERROR_MEMORY;
-    //}
     
 	return CANAL_ERROR_SUCCESS;
 }
@@ -224,18 +217,13 @@ VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
         return CANAL_ERROR_TIMEOUT;
     }
     
-    //VSCPEVENTLIST_RECEIVE::compatibility_iterator nodeClient;
-
 	pdrvObj->m_mutexReceiveQueue.Lock();
-	//nodeClient = pdrvObj->m_receiveQueue.GetFirst();
-	//vscpEvent *pLocalEvent = nodeClient->GetData();
     vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
     pdrvObj->m_receiveList.pop_front();
 	pdrvObj->m_mutexReceiveQueue.Unlock();
     if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
     
     vscp_copyVSCPEvent( pEvent, pLocalEvent );
-    //pdrvObj->m_receiveQueue.DeleteNode(nodeClient);
     vscp_deleteVSCPevent( pLocalEvent );
 	
 	return CANAL_ERROR_SUCCESS;
@@ -300,6 +288,44 @@ extern "C" const char * VSCPGetDriverInfo(void)
 #endif
 {
 	return VSCP_LOGGER_DRIVERINFO;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPGetWebPageTemplate
+// 
+
+extern "C" long
+VSCPGetWebPageTemplate( long handle, const char *url, char *page )
+{
+    page = NULL;
+
+    // Not implemented
+    return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPWebPageInfo
+// 
+
+extern "C" int
+VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
+{
+    // Not implemented
+    return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPWebPageupdate
+// 
+
+extern "C" int
+VSCPWebPageupdate( long handle, const char *url )
+{
+    // Not implemented
+    return -1;
 }
 
 

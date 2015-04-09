@@ -181,6 +181,56 @@ extern "C" int VSCPClose( long handle )
 	return CANAL_ERROR_SUCCESS;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingSend
+// 
+
+extern "C" int
+VSCPBlockingSend( long handle, const vscpEvent *pEvent, unsigned long timeout )
+{
+    /*int rv = 0;
+
+    CVSCPBTDetect *pdrvObj = theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return CANAL_ERROR_MEMORY;
+
+    pdrvObj->addEvent2SendQueue( pEvent );*/
+
+    // No transmit available
+    return CANAL_ERROR_NOT_SUPPORTED;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingReceive
+// 
+
+extern "C" int
+VSCPBlockingReceive( long handle, vscpEvent *pEvent, unsigned long timeout )
+{
+    int rv = 0;
+
+    // Check pointer
+    if ( NULL == pEvent ) return CANAL_ERROR_PARAMETER;
+
+    CVSCPBTDetect *pdrvObj = theApp->getDriverObject( handle );
+    if ( NULL == pdrvObj ) return CANAL_ERROR_MEMORY;
+
+    if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
+        return CANAL_ERROR_TIMEOUT;
+    }
+
+    pdrvObj->m_mutexReceiveQueue.Lock();
+    vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
+    pdrvObj->m_receiveList.pop_front();
+    pdrvObj->m_mutexReceiveQueue.Unlock();
+    if ( NULL == pLocalEvent ) return CANAL_ERROR_MEMORY;
+
+    vscp_copyVSCPEvent( pEvent, pLocalEvent );
+    vscp_deleteVSCPevent( pLocalEvent );
+
+    return CANAL_ERROR_SUCCESS;
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //  VSCPGetLevel
@@ -237,7 +287,42 @@ extern "C" const char * VSCPGetDriverInfo( void )
 	return VSCP_LOGGER_DRIVERINFO;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPGetWebPageTemplate
+// 
 
+extern "C" long
+VSCPGetWebPageTemplate( long handle, const char *url, char *page )
+{
+    page = NULL;
+
+    // Not implemented
+    return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPWebPageInfo
+// 
+
+extern "C" int
+VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
+{
+    // Not implemented
+    return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPWebPageupdate
+// 
+
+extern "C" int
+VSCPWebPageupdate( long handle, const char *url )
+{
+    // Not implemented
+    return -1;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                            T H E  C O D E
@@ -289,20 +374,12 @@ bool CVSCPBTDetect::open( const char *pUsername,
     m_port = port;
     m_prefix = pPrefix;
 
-    // Parse the configuration string. It should
-    // have the following form
-    // username;password;host;prefix;port;filename
-    wxStringTokenizer tkz( pConfig, ";\n" );
-
-    // Filename
-    //if ( tkz.HasMoreTokens() ) {
-    //    m_path = tkz.GetNextToken();     
-    //}
+    // No configuration string to parse
 
     // start the workerthread
     m_pthreadWork = new CVSCPBTDetectWrkTread();
     if ( NULL != m_pthreadWork ) {
-        m_pthreadWork->m_pobj = this;
+        m_pthreadWork->m_pObj = this;
         m_pthreadWork->Create();
         m_pthreadWork->Run();
     }
@@ -326,6 +403,20 @@ void CVSCPBTDetect::close( void )
     wxSleep( 1 );       // Give the thread some time to terminate
 }
 
+
+//////////////////////////////////////////////////////////////////////
+// addEvent2SendQueue
+//
+
+bool
+CVSCPBTDetect::addEvent2SendQueue( const vscpEvent *pEvent )
+{
+    m_mutexSendQueue.Lock();
+    m_sendList.push_back( ( vscpEvent * )pEvent );
+    m_semSendQueue.Post();
+    m_mutexSendQueue.Unlock();
+    return true;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -377,6 +468,40 @@ CVSCPBTDetectWrkTread::~CVSCPBTDetectWrkTread()
 
 
 //////////////////////////////////////////////////////////////////////
+// sendEvent
+//
+
+bool CVSCPBTDetectWrkTread::sendEvent( vscpEventEx& eventEx )
+{
+    vscpEvent *pEvent = new vscpEvent();
+    if ( NULL != pEvent ) {
+
+        if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
+
+            // OK send the event
+            m_pObj->m_mutexReceiveQueue.Lock();
+            m_pObj->m_receiveList.push_back( pEvent );
+            m_pObj->m_semReceiveQueue.Post();
+            m_pObj->m_mutexReceiveQueue.Unlock();
+
+        }
+        else {
+            vscp_deleteVSCPevent( pEvent );
+#ifndef WIN32
+            syslog( LOG_ERR,
+                    "%s",
+                    ( const char * ) "Faild to convert event." );
+#endif
+            return false;
+        }
+
+    }
+
+    return true;
+}
+
+
+//////////////////////////////////////////////////////////////////////
 // Entry
 //
 
@@ -414,9 +539,9 @@ void *CVSCPBTDetectWrkTread::Entry()
     // First log on to the host and get configuration 
     // variables
     
-    if ( m_srv.doCmdOpen( m_pobj->m_host,
-                                m_pobj->m_username,
-                                m_pobj->m_password ) <= 0 ) {
+    if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_pObj->m_host,
+                                                    m_pObj->m_username,
+                                                    m_pObj->m_password ) ) {
         return NULL;
     }
 
@@ -440,14 +565,14 @@ void *CVSCPBTDetectWrkTread::Entry()
     //      prefix_onaddresses - List with addresses that will generate on-event
     //      prefix_offaddresses - List with addresses that will generate off-event
 
-    bool bSendTokenActivity = true; // Sending Token Activity is default behaviour.
-    bool bSendDetect = false;       // Sending detect events must be enabled.
-    uint16_t pausTime = 1;         // default svan period is one seconds.
-    uint8_t zone = 0;               // Zone for token activity.
-    uint8_t subzone = 0;            // Subzone for token activity.
-    uint8_t detectIndex = 0;       // Index used for detect event.
-    uint8_t detectZone = 0;        // Zone used for detect event.
-    uint8_t detectSubzone = 0;     // Subzone used for detect events.
+    bool bSendTokenActivity = true;     // Sending Token Activity is default behaviour.
+    bool bSendDetect = false;           // Sending detect events must be enabled.
+    uint16_t pausTime = 1;              // default svan period is one seconds.
+    uint8_t zone = 0;                   // Zone for token activity.
+    uint8_t subzone = 0;                // Subzone for token activity.
+    uint8_t detectIndex = 0;            // Index used for detect event.
+    uint8_t detectZone = 0;             // Zone used for detect event.
+    uint8_t detectSubzone = 0;          // Subzone used for detect events.
     bool bDisableRadiodetect= false;    // Don't report radio discovery.
 
     wxString        strAddress;
@@ -457,43 +582,46 @@ void *CVSCPBTDetectWrkTread::Entry()
 
     int intvalue;
     bool bvalue;
-    if ( m_srv.getVariableInt( m_pobj->m_prefix + _("_paustime"), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_paustime" ), &intvalue ) ) {
         if ( intvalue >= 0 ) pausTime = intvalue;
     }
 
-    if ( m_srv.getVariableInt( m_pobj->m_prefix + _("_zone"), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_zone" ), &intvalue ) ) {
         zone = intvalue;
     }
 
-    if ( m_srv.getVariableInt( m_pobj->m_prefix + _("_subzone"), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_subzone" ), &intvalue ) ) {
         subzone = intvalue;
     }
 
-    if ( m_srv.getVariableInt( m_pobj->m_prefix + _("_detectindex"), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_detectindex" ), &intvalue ) ) {
         detectIndex = intvalue;
     }
 
-    if ( m_srv.getVariableInt( m_pobj->m_prefix + _("_detectzone"), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_detectzone" ), &intvalue ) ) {
         detectZone = intvalue;
     }
 
-    if ( m_srv.getVariableInt( m_pobj->m_prefix + _("_detectsubzone"), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_detectsubzone" ), &intvalue ) ) {
         detectSubzone = intvalue;
     }
 
-    if ( m_srv.getVariableBool( m_pobj->m_prefix + _("_send_token_activity"), &bvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableBool( m_pObj->m_prefix + _( "_send_token_activity" ), &bvalue ) ) {
         bSendTokenActivity = bvalue;
     }
 
-    if ( m_srv.getVariableBool( m_pobj->m_prefix + _("_send_detect"), &bvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableBool( m_pObj->m_prefix + _( "_send_detect" ), &bvalue ) ) {
         bSendDetect = bvalue;
     }
 
-    if ( m_srv.getVariableBool( m_pobj->m_prefix + _("_disable_radio_detect"), &bvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableBool( m_pObj->m_prefix + _( "_disable_radio_detect" ), &bvalue ) ) {
         bDisableRadiodetect = bvalue;
     }
 
-	while ( !TestDestroy() && !m_pobj->m_bQuit ) {
+    // Close the channel
+    m_srv.doCmdClose();
+
+    while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
         bt = BluetoothFindFirstRadio( &bt_find_radio, &radio );
     
@@ -603,39 +731,39 @@ void *CVSCPBTDetectWrkTread::Entry()
 
                 if ( bSendTokenActivity ) {
 
-                    vscpEventEx ievent;
+                    vscpEventEx evx;
 
-                    memset( ievent.GUID, 0, 16 );   // Use interface GUID
-                    ievent.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
-                    ievent.vscp_type = VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY;
-                    ievent.timestamp = wxDateTime::Now().GetTicks();
-                    ievent.head = VSCP_PRIORITY_NORMAL;
-                    ievent.sizeData = 8;
-                    ievent.data[ 0 ] = (18 << 2) + 2;   // Bluetooth device + "Released" 
-                    ievent.data[ 1 ] = zone;
-                    ievent.data[ 2 ] = subzone;
-                    ievent.data[ 3 ] = 0;               // Frame 0
-                    ievent.data[ 4 ] = pDev->m_address[ 0 ];
-                    ievent.data[ 5 ] = pDev->m_address[ 1 ];
-                    ievent.data[ 6 ] = pDev->m_address[ 2 ];
-                    ievent.data[ 7 ] = pDev->m_address[ 3 ];
+                    memset( evx.GUID, 0, 16 );   // Use interface GUID
+                    evx.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
+                    evx.vscp_type = VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY;
+                    evx.timestamp = wxDateTime::Now().GetTicks();
+                    evx.head = VSCP_PRIORITY_NORMAL;
+                    evx.sizeData = 8;
+                    evx.data[ 0 ] = ( 18 << 2 ) + 2;   // Bluetooth device + "Released" 
+                    evx.data[ 1 ] = zone;
+                    evx.data[ 2 ] = subzone;
+                    evx.data[ 3 ] = 0;               // Frame 0
+                    evx.data[ 4 ] = pDev->m_address[ 0 ];
+                    evx.data[ 5 ] = pDev->m_address[ 1 ];
+                    evx.data[ 6 ] = pDev->m_address[ 2 ];
+                    evx.data[ 7 ] = pDev->m_address[ 3 ];
+   
+                    sendEvent( evx ); // Send the event
 
-                    m_srv.doCmdSendEx( &ievent );    // Send the event
+                    memset( evx.GUID, 0, 16 );   // Use interface GUID
+                    evx.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
+                    evx.vscp_type = VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY;
+                    evx.timestamp = wxDateTime::Now().GetMillisecond();
+                    evx.head = VSCP_PRIORITY_NORMAL;
+                    evx.sizeData = 6;
+                    evx.data[ 0 ] = ( 18 << 2 ) + 2;   // Bluetooth device + "Released" 
+                    evx.data[ 1 ] = zone;
+                    evx.data[ 2 ] = subzone;
+                    evx.data[ 3 ] = 1;               // Frame 1
+                    evx.data[ 4 ] = pDev->m_address[ 4 ];
+                    evx.data[ 5 ] = pDev->m_address[ 5 ];
 
-                    memset( ievent.GUID, 0, 16 );   // Use interface GUID
-                    ievent.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
-                    ievent.vscp_type = VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY;
-                    ievent.timestamp = wxDateTime::Now().GetMillisecond();
-                    ievent.head = VSCP_PRIORITY_NORMAL;
-                    ievent.sizeData = 6;
-                    ievent.data[ 0 ] = (18 << 2) + 2;   // Bluetooth device + "Released" 
-                    ievent.data[ 1 ] = zone;
-                    ievent.data[ 2 ] = subzone;
-                    ievent.data[ 3 ] = 1;               // Frame 1
-                    ievent.data[ 4 ] = pDev->m_address[ 4 ];
-                    ievent.data[ 5 ] = pDev->m_address[ 5 ];
-
-                    m_srv.doCmdSendEx( &ievent );    // Sen dthe event
+                    sendEvent( evx );
 
                 }
 
@@ -667,45 +795,44 @@ void *CVSCPBTDetectWrkTread::Entry()
 
             // Save it in previously found devices
             deviceHashPrev[ key ] =  pDev;
-
             deviceHashNow[ key ] = NULL;
 
             if ( bSendTokenActivity ) {
 
                 // Tell the world we found it
-                vscpEventEx ievent;
+                vscpEventEx evx;
 
-                memset( ievent.GUID, 0, 16 );   // Use interface GUID
-                ievent.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
-                ievent.vscp_type = VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY;
-                ievent.timestamp = wxDateTime::Now().GetMillisecond();
-                ievent.head = VSCP_PRIORITY_NORMAL;
-                ievent.sizeData = 8;
-                ievent.data[ 0 ] = (18 << 2) + 1;   // Bluetooth device + "Touched" 
-                ievent.data[ 1 ] = zone;
-                ievent.data[ 2 ] = subzone;
-                ievent.data[ 3 ] = 0;               // Frame 0
-                ievent.data[ 4 ] = pDev->m_address[ 0 ];
-                ievent.data[ 5 ] = pDev->m_address[ 1 ];
-                ievent.data[ 6 ] = pDev->m_address[ 2 ];
-                ievent.data[ 7 ] = pDev->m_address[ 3 ];
+                memset( evx.GUID, 0, 16 );   // Use interface GUID
+                evx.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
+                evx.vscp_type = VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY;
+                evx.timestamp = wxDateTime::Now().GetMillisecond();
+                evx.head = VSCP_PRIORITY_NORMAL;
+                evx.sizeData = 8;
+                evx.data[ 0 ] = ( 18 << 2 ) + 1;   // Bluetooth device + "Touched" 
+                evx.data[ 1 ] = zone;
+                evx.data[ 2 ] = subzone;
+                evx.data[ 3 ] = 0;               // Frame 0
+                evx.data[ 4 ] = pDev->m_address[ 0 ];
+                evx.data[ 5 ] = pDev->m_address[ 1 ];
+                evx.data[ 6 ] = pDev->m_address[ 2 ];
+                evx.data[ 7 ] = pDev->m_address[ 3 ];
 
-                m_srv.doCmdSendEx( &ievent );    // Send the event
+                sendEvent( evx );    // Send the event
 
-                memset( ievent.GUID, 0, 16 );   // Use interface GUID
-                ievent.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
-                ievent.vscp_type = VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY;
-                ievent.timestamp = wxDateTime::Now().GetMillisecond();
-                ievent.head = VSCP_PRIORITY_NORMAL;
-                ievent.sizeData = 6;
-                ievent.data[ 0 ] = (18 << 2) + 1;   // Bluetooth device + "Touched" 
-                ievent.data[ 1 ] = zone;
-                ievent.data[ 2 ] = subzone;
-                ievent.data[ 3 ] = 1;               // Frame 1
-                ievent.data[ 4 ] = pDev->m_address[ 4 ];
-                ievent.data[ 5 ] = pDev->m_address[ 5 ];
+                memset( evx.GUID, 0, 16 );   // Use interface GUID
+                evx.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
+                evx.vscp_type = VSCP_TYPE_INFORMATION_TOKEN_ACTIVITY;
+                evx.timestamp = wxDateTime::Now().GetMillisecond();
+                evx.head = VSCP_PRIORITY_NORMAL;
+                evx.sizeData = 6;
+                evx.data[ 0 ] = ( 18 << 2 ) + 1;   // Bluetooth device + "Touched" 
+                evx.data[ 1 ] = zone;
+                evx.data[ 2 ] = subzone;
+                evx.data[ 3 ] = 1;               // Frame 1
+                evx.data[ 4 ] = pDev->m_address[ 4 ];
+                evx.data[ 5 ] = pDev->m_address[ 5 ];
 
-                m_srv.doCmdSendEx( &ievent );    // Send the event
+                sendEvent( evx );    // Send the event
             
             }
 
@@ -713,55 +840,27 @@ void *CVSCPBTDetectWrkTread::Entry()
             if ( bSendDetect ) {
             
                 // Tell the world we detected it
-                vscpEventEx ievent;
+                vscpEventEx evx;
 
-                memset( ievent.GUID, 0, 16 );   // Use interface GUID
-                ievent.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
-                ievent.vscp_type = VSCP_TYPE_INFORMATION_DETECT;
-                ievent.timestamp = wxDateTime::Now().GetMillisecond();
-                ievent.head = VSCP_PRIORITY_NORMAL;
-                ievent.sizeData = 3;
-                ievent.data[ 0 ] = detectIndex;   
-                ievent.data[ 1 ] = detectZone;
-                ievent.data[ 2 ] = detectSubzone;
+                memset( evx.GUID, 0, 16 );   // Use interface GUID
+                evx.vscp_class = VSCP_CLASS2_LEVEL1_INFORMATION;
+                evx.vscp_type = VSCP_TYPE_INFORMATION_DETECT;
+                evx.timestamp = wxDateTime::Now().GetMillisecond();
+                evx.head = VSCP_PRIORITY_NORMAL;
+                evx.sizeData = 3;
+                evx.data[ 0 ] = detectIndex;
+                evx.data[ 1 ] = detectZone;
+                evx.data[ 2 ] = detectSubzone;
 
-                m_srv.doCmdSendEx( &ievent );    // Send the event
+                sendEvent( evx );    // Send the event
             
-            }
-
-            
-       
+            }       
             
         }
 
         wxSleep( pausTime );
 
     } // detect loop
-
-
-/*
-        if ( CANAL_ERROR_SUCCESS == 
-            ( rv = m_srv.doCmdBlockReceive( &event, 1000 ) ) ) {
-          
-            //pRecord->m_time = wxDateTime::Now();
-            //m_pLog->writeEvent( &event );
-          
-            // We are done with the event - remove data if any
-            if ( NULL != event.pdata ) {
-                delete [] event.pdata;
-                event.pdata = NULL;
-            }
-
-        } // Event received
-*/
-
-
-    
-        
- 
-
-    // Close the channel
-    m_srv.doCmdClose();
 
     return NULL;  
 }

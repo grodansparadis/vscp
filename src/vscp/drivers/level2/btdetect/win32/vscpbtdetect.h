@@ -57,6 +57,11 @@
 #include <dllist.h>
 #include <vscpremotetcpif.h>
 
+#include <list>
+#include <string>
+
+using namespace std;
+
 // Forward declarations
 class CVSCPBTDetectWrkTread;
 class VscpTcpIf;
@@ -99,7 +104,7 @@ public:
 	/// Destructor
 	virtual ~CVSCPBTDetect();
 
-    	/*! 
+    /*! 
 		Open the Bluetooth detecter
 
 		@param Configuration string
@@ -118,6 +123,13 @@ public:
 		Flush and close the log file
 	*/
 	void close( void );
+
+    /*!
+        Add event to send queue
+        @param pEvent Event to add to queue
+        @return True on success
+    */
+    bool addEvent2SendQueue( const vscpEvent *pEvent );
 
 public:
 
@@ -145,6 +157,19 @@ public:
     /// Pointer to worker thread
     CVSCPBTDetectWrkTread *m_pthreadWork;
 
+    // Queue
+    std::list<vscpEvent *> m_sendList;
+    std::list<vscpEvent *> m_receiveList;
+
+    /*!
+    Event object to indicate that there is an event in the output queue
+    */
+    wxSemaphore m_semSendQueue;
+    wxSemaphore m_semReceiveQueue;
+
+    // Mutex to protect the output queue
+    wxMutex m_mutexSendQueue;
+    wxMutex m_mutexReceiveQueue;
 };
 
 
@@ -176,11 +201,14 @@ public:
 	*/
  	virtual void OnExit();
 
+    /// Send event
+    bool CVSCPBTDetectWrkTread::sendEvent( vscpEventEx& eventEx );
+
     /// VSCP server interface
     VscpRemoteTcpIf m_srv;
 
     /// Mama pointer
-    CVSCPBTDetect *m_pobj;
+    CVSCPBTDetect *m_pObj;
 };
 
 
