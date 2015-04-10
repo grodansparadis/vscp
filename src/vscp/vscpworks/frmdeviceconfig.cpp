@@ -4066,7 +4066,7 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     destGUID.getFromString(m_comboNodeID->GetValue());
 
     // Select the row
-    m_gridRegisters->SelectRow(m_lastLeftClickRow);
+    //m_gridRegisters->SelectRow(m_lastLeftClickRow);
 
     if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
         // Get Interface id
@@ -4077,7 +4077,7 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
-        if (selrows.GetCount()) {
+        if ( selrows.GetCount() ) {
 
             for (int i = selrows.GetCount() - 1; i >= 0; i--) {
 

@@ -50,31 +50,24 @@
  * Includes
  */
 
-////@begin includes
 #include "dlgabout_symbols.h"
 #include "wx/html/htmlwin.h"
-////@end includes
 
 /*!
  * Forward declarations
  */
 
-////@begin forward declarations
-////@end forward declarations
+
 
 /*!
  * Control identifiers
  */
 
-////@begin control identifiers
 #define SYMBOL_DLGABOUT_STYLE wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU|wxCLOSE_BOX|wxTAB_TRAVERSAL
 #define SYMBOL_DLGABOUT_TITLE _("About VSCP Works...")
 #define SYMBOL_DLGABOUT_IDNAME ID_DLGABOUT
 #define SYMBOL_DLGABOUT_SIZE wxSize(400, 500)
 #define SYMBOL_DLGABOUT_POSITION wxDefaultPosition
-////@end control identifiers
-
-
 
 
 /*!
@@ -103,29 +96,21 @@ public:
   /// Creates the controls and sizers
   void CreateControls();
 
-////@begin dlgAbout event handler declarations
-
-////@end dlgAbout event handler declarations
-
-////@begin dlgAbout member function declarations
-
   /// Retrieves bitmap resources
   wxBitmap GetBitmapResource( const wxString& name );
 
   /// Retrieves icon resources
   wxIcon GetIconResource( const wxString& name );
-////@end dlgAbout member function declarations
 
   /// Should we show tooltips?
   static bool ShowToolTips();
 
-////@begin dlgAbout member variables
   /// Control identifiers
   enum {
     ID_DLGABOUT = 26000,
     ID_HTMLWINDOW = 26001
   };
-////@end dlgAbout member variables
+
 };
 
 #endif
