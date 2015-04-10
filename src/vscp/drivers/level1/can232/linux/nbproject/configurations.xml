@@ -72,6 +72,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC"/>
+        <element flagsID="1" commonFlags="-g -O2 -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -85,19 +86,18 @@
             <incDir>
               <pElem>../../../../common</pElem>
               <pElem>../../../../../common</pElem>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+              <pElem>/usr/local/lib/wx/include/gtk2-unicode-static-3.0</pElem>
               <pElem>/usr/local/include/wx-3.0</pElem>
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>WXUSINGDLL</Elem>
+              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
             </preprocessorList>
           </cTool>
           <ccTool>
             <preprocessorList>
-              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__LINUX__</Elem>
               <Elem>__WXGTK__</Elem>
@@ -106,8 +106,12 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/com.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+        </ccTool>
       </item>
       <item path="../../../../../common/dllist.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="../../../../common/devicelist.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
@@ -117,7 +121,7 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -132,7 +136,7 @@
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -141,7 +145,7 @@
           <incDir>
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-static-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>.</pElem>
           </incDir>
@@ -155,6 +159,7 @@
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -163,9 +168,12 @@
           <incDir>
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-static-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
       <folder path="src">
@@ -173,6 +181,9 @@
           <incDir>
             <pElem>.</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </folder>
       <folder path="src/common">
@@ -180,7 +191,7 @@
           <incDir>
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-static-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
         </ccTool>
@@ -193,16 +204,22 @@
             <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
-      <item path="vscpl1_can232drv.cpp" ex="false" tool="1" flavor2="0">
+      <item path="vscpl1_can232drv.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
           <incDir>
             <pElem>../../../../common</pElem>
             <pElem>../../../../../common</pElem>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-static-3.0</pElem>
             <pElem>/usr/local/include/wx-3.0</pElem>
           </incDir>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
         </ccTool>
       </item>
     </conf>

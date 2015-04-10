@@ -617,7 +617,7 @@ int CDllWrapper::readRegistersfromLevel1Device( unsigned char nodeid,
     if ( lastpageCnt ) nPages++;
     unsigned long allRcvValue = pow(2.0,nPages) - 1;
 
-    while ( allRcvValue != receive_flags ) {
+    while ( allRcvValue != (receive_flags & 0xffffffff ) ) {   // Mask for systems where long is > 32 bits
 
         if ( doCmdDataAvailable() ) {									            // Message available
 			

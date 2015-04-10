@@ -2923,7 +2923,7 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
     unsigned long resendTime = m_registerOpResendTimeout;
 	wxLongLong startTime = ::wxGetLocalTimeMillis();
 
-	while ( allRcvValue != receive_flags ) {
+	while ( allRcvValue != (receive_flags & 0xffffffff ) ) {	// mask for systems where long is > 32 bits
 
 		if ( doCmdDataAvailable() ) {	// Message available
 

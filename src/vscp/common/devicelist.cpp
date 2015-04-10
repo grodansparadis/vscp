@@ -253,7 +253,8 @@ bool CDeviceList::addItem(wxString strName,
             // Set buffer sizes and flags
             pDeviceItem->m_DeviceFlags = flags;
 
-        } else {
+        } 
+		else {
             //wxGetApp.logMsg(_("Driver does not exist."), DAEMON_LOGMSG_INFO );
             delete pDeviceItem;
             rv = false;

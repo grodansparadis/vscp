@@ -13,6 +13,8 @@
             <file>file:/home/akhe/vscp_software/src/vscp/drivers/level1/can4vscp/linux/vscpl1drv_can4vscp.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/drivers/level1/can4vscp/common/can4vscpobj.h</file>
             <file>file:/home/akhe/vscp_software/src/vscp/drivers/level1/can4vscp/linux/vscpl1drv_can4vscp.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/common/com.h</file>
+            <file>file:/home/akhe/vscp_software/src/common/com.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/drivers/level1/can4vscp/common/can4vscpobj.cpp</file>
         </group>
     </open-files>
