@@ -144,7 +144,7 @@ bool CBootDevice_VSCP::loadBinaryFile(const wxString& path, uint16_t type) {
 
     // Init config memory buffer
     if (NULL == m_pbufCfg) return false;
-    memset(m_pbufPrg, 0xff, BUFFER_SIZE_CONFIG_COMMON);
+    memset(m_pbufCfg, 0xff, BUFFER_SIZE_CONFIG_COMMON);
 
     // Init. EEPROM memory pointers
     m_minEEPROMAddr = 0xffffffff;
