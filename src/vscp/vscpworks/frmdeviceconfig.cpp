@@ -3890,7 +3890,7 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
                             updateAbstractionGridConditional(reg, page);
                         }
                         else {
-                            wxMessageBox(_("Failed to write value."));
+                            wxMessageBox( _("Failed to write value.") );
                         }
 
                     } 
@@ -3953,9 +3953,6 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     // Get the destination GUID
     cguid destGUID;
     destGUID.getFromString( m_comboNodeID->GetValue() );
-
-    // Select the row
-    m_gridRegisters->SelectRow( m_lastLeftClickRow );
 
     if (USE_DLL_INTERFACE == m_csw.getDeviceType()) {
         // Get Interface id
@@ -4064,9 +4061,6 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     // Get the destination GUID
     cguid destGUID;
     destGUID.getFromString(m_comboNodeID->GetValue());
-
-    // Select the row
-    //m_gridRegisters->SelectRow(m_lastLeftClickRow);
 
     if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
         // Get Interface id
