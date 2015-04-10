@@ -523,14 +523,13 @@ void *CRawEthernetTxTread::Entry()
 {
 	pcap_t *fp;
 	char errbuf[ PCAP_ERRBUF_SIZE ];
-	//uint8_t packet[ 512 ];
 
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen(m_pobj->m_host,
-			m_pobj->m_username,
-			m_pobj->m_password) <= 0) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.doCmdOpen( m_pobj->m_host,
+			                                        m_pobj->m_username,
+			                                        m_pobj->m_password ) ) {
 		return NULL;
 	}
 
@@ -547,12 +546,12 @@ void *CRawEthernetTxTread::Entry()
 
 	// Interface
 	wxString varInterface;
-	if (m_srv.getVariableString(m_pobj->m_prefix + _T("_interface"), &varInterface)) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_pobj->m_prefix + _T( "_interface" ), &varInterface ) ) {
 		m_pobj->m_interface = varInterface;
 	}
 
 	wxString varLocalMac;
-	if (m_srv.getVariableString(m_pobj->m_prefix + _T("_localmac"), &varLocalMac)) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_pobj->m_prefix + _T( "_localmac" ), &varLocalMac ) ) {
 		varLocalMac.MakeUpper();
 		wxStringTokenizer tkz(varLocalMac, ":\n");
 		for (int i = 0; i < 6; i++) {

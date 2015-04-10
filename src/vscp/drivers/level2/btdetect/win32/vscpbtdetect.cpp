@@ -582,7 +582,7 @@ void *CVSCPBTDetectWrkTread::Entry()
 
     int intvalue;
     bool bvalue;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_paustime" ), &intvalue ) ) {
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableInt( m_pObj->m_prefix + _( "_pausetime" ), &intvalue ) ) {
         if ( intvalue >= 0 ) pausTime = intvalue;
     }
 

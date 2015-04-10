@@ -53,10 +53,10 @@
 #include <wx/tokenzr.h>
 #include <wx/datetime.h>
 
-#include "../../../../common/vscphelper.h"
-#include "../../../../common/vscpremotetcpif.h"
-#include "../../../../common/vscp_type.h"
-#include "../../../../common/vscp_class.h"
+#include <vscphelper.h>
+#include <common/vscpremotetcpif.h>
+#include <common/vscp_type.h>
+#include <common/vscp_class.h>
 #include "mqtt.h"
 
 //////////////////////////////////////////////////////////////////////
@@ -473,7 +473,7 @@ Cmqtt::open(const char *pUsername,
 	m_srv.doCmdClose();
 
 
-	// start the workerthread
+	// start the worker thread
 	m_pthreadWork = new CWrkThread();
 	if (NULL != m_pthreadWork) {
 		m_pthreadWork->m_pObj = this;

@@ -159,9 +159,9 @@ CTcpipLink::open(const char *pUsername,
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srvLocal.doCmdOpen(m_hostLocal,
-								m_usernameLocal,
-								m_passwordLocal) <= 0) {
+    if ( VSCP_ERROR_SUCCESS == m_srvLocal.doCmdOpen( m_hostLocal,
+								                        m_usernameLocal,
+								                        m_passwordLocal ) ) {
 #ifndef WIN32
 		syslog(LOG_ERR,
 				"%s",
@@ -221,13 +221,13 @@ CTcpipLink::open(const char *pUsername,
 
 	strName = m_prefix +
 			wxString::FromAscii("_filter");
-	if (m_srvLocal.getVariableString(strName, &str)) {
+    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString( strName, &str ) ) {
 		vscp_readFilterFromString(&m_vscpfilter, str);
 	}
 
 	strName = m_prefix +
 			wxString::FromAscii("_mask");
-	if (m_srvLocal.getVariableString(strName, &str)) {
+    if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableString( strName, &str ) ) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
 

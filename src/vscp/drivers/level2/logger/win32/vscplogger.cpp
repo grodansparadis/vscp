@@ -41,8 +41,7 @@ static CDllDrvObj *theApp = NULL;
 
 BOOL APIENTRY DllMain( HANDLE hInstDll, 
                        DWORD  ul_reason_for_call, 
-                       LPVOID lpReserved
-					 )
+                       LPVOID lpReserved )
 {
     switch( ul_reason_for_call ) {
 
