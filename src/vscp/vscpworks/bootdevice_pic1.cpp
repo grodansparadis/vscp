@@ -121,7 +121,7 @@ bool CBootDevice_PIC1::loadBinaryFile( const wxString& path, uint16_t typeHexfil
 
 	// Init config memory buffer
 	if ( NULL == m_pbufCfg ) return false;
-	memset( m_pbufPrg, 0xff, BUFFER_SIZE_CONFIG );
+	memset( m_pbufCfg, 0xff, BUFFER_SIZE_CONFIG );
 
 	// Init. EEPROM memory pointers
 	m_minEEPROMAddr = 0xffffffff;
