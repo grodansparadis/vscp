@@ -652,7 +652,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 // doFirmwareLoad
 //
 
-bool CBootDevice_VSCP::doFirmwareLoad( void ) 
+bool CBootDevice_VSCP::doFirmwareLoad( void )
 {
     bool bRun = true;
     bool rv = true;
@@ -1106,9 +1106,9 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr)
 
 bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress) 
 {
-    uint16_t vscpclass;
-    uint8_t vscptype;
-    uint8_t priority;
+    uint16_t vscpclass = 0;
+    uint8_t vscptype = 0;
+    uint8_t priority = 0;
 
     wxBusyCursor busy;
 
@@ -1116,21 +1116,16 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress)
 
         canalMsg msg;
 
-
         memset(msg.data, 0x00, 8);
 
         vscpclass = VSCP_CLASS1_PROTOCOL;           // Class
         vscptype = VSCP_TYPE_PROTOCOL_START_BLOCK;  // Start block data transfer.
         priority = VSCP_PRIORITY_LOW_COMMON;
         // block data transfer
-        msg.data[ 0 ] = 0;                          //MSB 
-        msg.data[ 1 ] = 0;
-        msg.data[ 2 ] = (PageAddress & 0xFF00) >> 8;
-        msg.data[ 3 ] = (PageAddress & 0x00FF);     //LSB
-        msg.data[ 4 ] = 0x00;           // Byte4 (optional) Type of Memory we want to write
-        msg.data[ 5 ] = 0x00;           // Byte5 (optional) Bank/Image to be written
-        msg.data[ 6 ] = 0x00;
-        msg.data[ 7 ] = 0x00;
+        msg.data[ 0 ] = 0x00;                           // Block number MSB 
+        msg.data[ 1 ] = 0x00;                           // Block number
+        msg.data[ 2 ] = (PageAddress & 0xFF00) >> 8;    // Block number
+        msg.data[ 3 ] = (PageAddress & 0x00FF);         // Block number LSB
 
         // Send message
         msg.id = ((uint32_t) priority << 26) |
@@ -1139,7 +1134,7 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress)
                 m_nodeid;                           // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
-        msg.sizeData = 8;
+        msg.sizeData = 4;
         if (CANAL_ERROR_SUCCESS == m_pdll->doCmdSend(&msg)) {
             wxMilliSleep(1);
             return true;
@@ -1151,26 +1146,22 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress)
         // Start block data transfer.
 
         vscpEventEx event;
-        // Set device in boot mode
 
         // Send message
         event.head = 0;
         event.vscp_class = 512;                             // CLASS2.PROTOCOL1
         event.vscp_type = VSCP_TYPE_PROTOCOL_START_BLOCK;   // We want to Start block data transfer.
         memset(event.GUID, 0, 16);                          // We use interface GUID
-        event.sizeData = 16 + 8;                            // Interface GUID
+        event.sizeData = 16 + 4;                            // Interface GUID
         memcpy(event.data, m_guid.m_id, 16);                // Address node
-        event.data[ 16 ] = 0;                               //MSB 
-        event.data[ 17 ] = 0x00;
-        event.data[ 18 ] = (PageAddress & 0xFF00) >> 8;
-        event.data[ 19 ] = (PageAddress & 0x00FF);          //LSB
-        event.data[ 20 ] = 0x00;                    // Byte4 (optional) Type of Memory we want to write
-        event.data[ 21 ] = 0x00;                    // Byte5 (optional) Bank/Image to be written
-        event.data[ 22 ] = 0x00;
-        event.data[ 23 ] = 0x00;
+        event.data[ 16 ] = 0x00;                            // Block number MSB
+        event.data[ 17 ] = 0x00;                            // Block number
+        event.data[ 18 ] = (PageAddress & 0xFF00) >> 8;     // Block number
+        event.data[ 19 ] = (PageAddress & 0x00FF);          // Block number LSB
 
         if (CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx(&event)) {
-
+            wxMilliSleep(1);
+            return true;
         }
     }
 
