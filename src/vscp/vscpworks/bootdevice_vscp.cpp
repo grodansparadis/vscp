@@ -453,7 +453,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         memset( msg.data, 0x00, 8 );
 
         // Read page register GUID0
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+        if ( !m_pdll->readLevel1Register( m_nodeid,
                                             0,
                                             VSCP_REG_GUID0,
                                             &pageMSB ) ) {
@@ -461,7 +461,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         }
 
         // Read page register GUID3
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+        if ( !m_pdll->readLevel1Register( m_nodeid,
                                             0,
                                             VSCP_REG_GUID3,
                                             &pageMSB ) ) {
@@ -469,7 +469,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         }
 
         // Read page register GUID5
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+        if ( !m_pdll->readLevel1Register( m_nodeid,
                                             0,
                                             VSCP_REG_GUID5,
                                             &pageMSB ) ) {
@@ -477,19 +477,18 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         }
 
         // Read page register GUID7
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
+        if ( !m_pdll->readLevel1Register( m_nodeid,
                                             0,
                                             VSCP_REG_GUID7,
                                             &pageMSB ) ) {
             return false;
         }
 
-        nodeid = m_guid.m_id[ 0 ]; // Nickname to read register from
         vscpclass = VSCP_CLASS1_PROTOCOL; // Class
         vscptype = VSCP_ENTER_BOOTLODER_MODE;
         priority = VSCP_PRIORITY_LOW_COMMON;
         // Set device in boot mode
-        msg.data[ 0 ] = m_guid.m_id[ 0 ]; // Nickname to read register from
+        msg.data[ 0 ] = m_nodeid; // Nickname to read register from
         msg.data[ 1 ] = VSCP_BOOTLOADER_VSCP; // VSCP AVR1 bootload algorithm	
         msg.data[ 2 ] = guid0;
         msg.data[ 3 ] = guid3;
@@ -502,7 +501,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         msg.id = ((uint32_t) priority << 26) |
                     ((uint32_t) vscpclass << 16) |
                     ((uint32_t) vscptype << 8) |
-                    nodeid; // nodeaddress (our address)
+                    m_nodeid; // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
         msg.sizeData = 8;
@@ -577,7 +576,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         memset( evex.GUID, 0, 16 ); // We use interface GUID
         evex.sizeData = 16 + 8; // Interface GUID
         memcpy( evex.data, m_guid.m_id, 16 ); // Address node
-        evex.data[ 16 ] = m_guid.m_id[ 0 ]; // Nickname to read register from
+        evex.data[ 16 ] = m_guid.getLSB(); // Nickname to read register from
         evex.data[ 17 ] = VSCP_BOOTLOADER_VSCP; // VSCP bootload algorithm	
         evex.data[ 18 ] = guid0;
         evex.data[ 19 ] = guid3;
@@ -1083,7 +1082,6 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress)
 {
     uint16_t vscpclass;
     uint8_t vscptype;
-    uint8_t nodeid;
     uint8_t priority;
 
     wxBusyCursor busy;
@@ -1095,7 +1093,6 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress)
 
         memset(msg.data, 0x00, 8);
 
-        nodeid = m_guid.m_id[ 0 ];                  // Nickname to read register from
         vscpclass = VSCP_CLASS1_PROTOCOL;           // Class
         vscptype = VSCP_TYPE_PROTOCOL_START_BLOCK;  // Start block data transfer.
         priority = VSCP_PRIORITY_LOW_COMMON;
@@ -1176,7 +1173,6 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         memset(msg.data, 0x00, 8);
 
         if (index == VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE) {
-            nodeid = m_guid.m_id[ 0 ];                          // Nickname to read register from
             vscpclass = VSCP_CLASS1_PROTOCOL;                   // Class
             vscptype = VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE;
             priority = VSCP_PRIORITY_LOW_COMMON;
@@ -1185,7 +1181,6 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         }
 
         if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
-            nodeid = m_guid.m_id[ 0 ];                          // Nickname to read register from
             vscpclass = VSCP_CLASS1_PROTOCOL;                   // Class
             vscptype = VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA;
             priority = VSCP_PRIORITY_LOW_COMMON;
@@ -1203,7 +1198,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         msg.id = ((uint32_t) priority << 26) |
                 ((uint32_t) vscpclass << 16) |
                 ((uint32_t) vscptype << 8) |
-                nodeid;                                         // nodeaddress (our address)
+                m_nodeid;                                         // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
 
@@ -1235,8 +1230,8 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             memset(event.GUID, 0, 16);                                  // We use interface GUID
             event.sizeData = 16 + 0;                                    // Interface GUID
             memcpy(event.data, m_guid.m_id, 16);                        // Address node
-            /*event.data[ 16 ]  = m_guid.m_id[ 0 ];	    // Nickname to read register from
-            event.data[ 17 ]  = VSCP_BOOTLOADER_AVR;	// VSCP PIC1 bootload algorithm	
+            /*event.data[ 16 ]  = m_guid.getLSB();	                    // Nickname to read register from
+            event.data[ 17 ]  = VSCP_BOOTLOADER_AVR;	                // VSCP PIC1 bootload algorithm	
             event.data[ 18 ]  = guid0;
             event.data[ 19 ]  = guid3;
             event.data[ 20 ]  = guid5;
@@ -1509,7 +1504,7 @@ bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index)
             m_ptcpip->doCmdReceiveEx( &event );
 
             if ((VSCP_CLASS1_PROTOCOL == event.vscp_class) &&
-                    (m_guid.m_id[ 0 ] == event.GUID[0])) { // correct id
+                (m_guid.getLSB() == event.GUID[ 15 ])) { // correct id
 
                 // Case -- index = 0  --- not implemented always return true 
                 if (index == 0) {
