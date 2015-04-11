@@ -657,20 +657,7 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
     bool bRun = true;
     bool rv = true;
     bool flag_crc = true;
-    /*
-    uint8_t pageMSB;
-uint8_t pageLSB;
-uint8_t guid0;
-uint8_t guid3;
-uint8_t guid5;
-uint8_t guid7;
-     */
-    BTL_PAGE = 0; // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
-    // 9-bit --- 2^9 = 512
-    // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
-    BTL_BLOCK = 1; // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
-    uint8_t temp;
-
+    
     wxBusyCursor busy;
 
     m_checksum = 0;
@@ -682,6 +669,11 @@ uint8_t guid7;
     uint32_t nConfigPackets = 0;
     uint32_t nEEPROMPackets = 0;
 
+    BTL_PAGE = 0; // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
+    // 9-bit --- 2^9 = 512
+    // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
+    BTL_BLOCK = 1; // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
+    
     // Flash memory
     if (m_bPrgData) {
         nFlashPackets = (m_maxFlashAddr - m_minFlashAddr) / 8;
@@ -723,7 +715,7 @@ uint8_t guid7;
     // Initialize checksum
     addr = m_minFlashAddr;
     if (!writeDeviceControlRegs(addr)) {
-        wxMessageBox(_T("Memmory not fall in any catofy FLASH , Config, EEPROM."));
+        wxMessageBox(_T("Memmory not fall in any category of FLASH , Config, EEPROM."));
         rv = FALSE;
         bRun = false;
     }
@@ -735,21 +727,19 @@ uint8_t guid7;
         addr = m_minFlashAddr;
         if (writeDeviceControlRegs(addr)) {
 
-            for (unsigned long blk = 0; ((blk < nFlashPackets) && bRun);) { // nFlashPackets  = number of 8 byte packets
+            for ( unsigned long blk = 0; ( ( blk < nFlashPackets ) && bRun);) { // nFlashPackets  = number of 8 byte packets
 
                 if (BTL_BLOCK == 1) {
                     // Send the start block
-                    temp = sendVSCPCommandStartBlock(BTL_PAGE);
-                    if (temp != (uint8_t) true)
+                    if (true != sendVSCPCommandStartBlock(BTL_PAGE))
                         wxMessageBox(_T("start Block error"));
                 }
 
                 //prevent overflow                                //  BUFFERSIZE         128  words = 256 bytes -- i.e 32*8 = 256
-                if (BTL_BLOCK <= falsh_memory_block_size / 8 /*32*/) {
+                if (BTL_BLOCK <= (falsh_memory_block_size / 8) /*32*/) {
 
-
-                    wxStatusStr.Printf(_("Loading flash... %08x"), addr);
-                    //					wxStatusStr.Printf( _("%d %d %d "), m_maxFlashAddr, m_minFlashAddr,  nFlashPackets);
+				    wxStatusStr.Printf( _("Loading flash... %0X"), addr );
+                    
                     if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
                         wxMessageBox(_T("Aborted by user."));
                         rv = FALSE;
@@ -770,7 +760,7 @@ uint8_t guid7;
 
                 BTL_BLOCK++;
 
-                if (BTL_BLOCK > falsh_memory_block_size / 8 /*32*/) {
+                if (BTL_BLOCK > (falsh_memory_block_size / 8) /*32*/) {
 
 #ifdef PRINT_DEBUG_EVENTS				
                     uart_puts("BOOT_FULLBLOCK");
@@ -800,7 +790,7 @@ uint8_t guid7;
                 }
             }
 
-            if ((BTL_BLOCK < falsh_memory_block_size / 8 /*32*/) && (BTL_BLOCK > 1)) {
+            if ((BTL_BLOCK < (falsh_memory_block_size / 8) /*32*/) && (BTL_BLOCK > 1)) {
                 //while(1);
                 //wxMessageBox( _T("Enter") );
                 BTL_PAGE -= 1; // Just decrement well in advance if -- CRC fails
@@ -841,8 +831,7 @@ uint8_t guid7;
 
                             // Send the start block
                             // BTL_PAGE already decremented at the start -- for this last page
-                            temp = sendVSCPCommandStartBlock(BTL_PAGE);
-                            if (temp != (uint8_t) true)
+                            if (true != sendVSCPCommandStartBlock(BTL_PAGE))
                                 wxMessageBox(_T("start Block error"));
                         }
 
@@ -850,24 +839,17 @@ uint8_t guid7;
                     }
                 }
             }
-            wxMilliSleep(1);
-            wxMilliSleep(1);
-            wxMilliSleep(1);
-            wxMilliSleep(1);
-            wxMilliSleep(1);
-            //wxMessageBox( _T("xxxxxxxxx") );	
-        } else {
+		else {
             wxMessageBox(_T("Failed to send control info for flash data to node(s)."));
             rv = FALSE;
         }
 
-        //rv = false;// so that next case do not execute
     }
-    //wxMessageBox( _T("Failed to send control info for flash data to node(s).") );	
+
     // * * * config memory * * *
 
     if (rv && m_bConfigData) {
-        //wxMessageBox( _T("xxxxttttttt") );	
+
         // Send the start block
         addr = m_minConfigAddr;
         if (writeDeviceControlRegs(addr)) {
@@ -892,7 +874,8 @@ uint8_t guid7;
                 addr += 8;
 
             }
-        } else {
+		}
+		else {
             wxMessageBox(_T("Failed to send control info for config data to node(s)."));
             rv = FALSE;
         }
@@ -926,7 +909,8 @@ uint8_t guid7;
                 addr += 8;
 
             }
-        } else {
+		}
+		else {
             wxMessageBox(_T("Failed to send control info for EEPROM data to node(s)."));
             rv = FALSE;
         }
@@ -968,27 +952,19 @@ uint8_t guid7;
     return rv;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // writeFrimwareSector
-// write 8 byte packets
 //
 
-bool CBootDevice_VSCP::writeFrimwareSector(void)
+bool CBootDevice_VSCP::writeFrimwareSector( void )
 {
     canalMsg msg;
     vscpEventEx event;
     bool rv = true;
 
-    uint16_t vscpclass;
-    uint8_t vscptype;
-    uint8_t priority = 0;
-
-    if ( NULL == m_pdll ) return FALSE;
-
-    vscpclass = VSCP_CLASS1_PROTOCOL;           // Class
-    vscptype = VSCP_TYPE_PROTOCOL_BLOCK_DATA;
-    priority = VSCP_PRIORITY_LOW_COMMON;
+    uint16_t vscpclass = VSCP_CLASS1_PROTOCOL;
+    uint8_t vscptype = VSCP_TYPE_PROTOCOL_BLOCK_DATA;
+    uint8_t priority = VSCP_PRIORITY_LOW_COMMON;
 
     // Send event
     if ( USE_DLL_INTERFACE == m_type ) {
@@ -1039,10 +1015,13 @@ bool CBootDevice_VSCP::writeFrimwareSector(void)
 
         // Write data into frame
         if ( USE_DLL_INTERFACE == m_type ) {
-            msg.data[ i ] = b;
-        } 
-        else {
+            msg.data[ i ] = b;    
+        }
+        else if ( USE_TCPIP_INTERFACE == m_type ) {
             event.data[ 16 + i] = b;
+        }
+        else {
+            return false;
         }
 
         // Update address
@@ -1053,10 +1032,12 @@ bool CBootDevice_VSCP::writeFrimwareSector(void)
     if ( USE_DLL_INTERFACE == m_type ) {
         m_pdll->doCmdSend( &msg );
     } 
-    else {
+    else if ( USE_TCPIP_INTERFACE == m_type ) {
         m_ptcpip->doCmdSendEx(&event);
     }
-
+    else {
+        rv = false;
+    }
 
     return rv;
 }
