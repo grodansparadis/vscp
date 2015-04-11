@@ -69,20 +69,17 @@ CBootDevice_VSCP::CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid, bool bDev
 CBootDevice( pdll, nodeid, bDeviceFound )
 {
     init();
-    m_type = USE_DLL_INTERFACE;
 }
 
 CBootDevice_VSCP::CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound ) :
 CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
 {
     init();
-    m_type = USE_TCPIP_INTERFACE;
 }
 
-CBootDevice_VSCP::~CBootDevice_VSCP(void) {
-    //	delete [] m_pbufPrg;
-    //	delete [] m_pbufCfg;
-    //	delete [] m_pbufEEPROM;
+CBootDevice_VSCP::~CBootDevice_VSCP(void)
+{
+    ;
 }
 
 
@@ -551,23 +548,23 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         time_t tstart, tnow;
 
         // Read page register GUID0
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid, &m_guid ) ) {
             return false;
         }
 
 
         // Read page register GUID3
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid3, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid3, m_ifguid, &m_guid ) ) {
             return false;
         }
 
         // Read page register GUID5
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid5, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid5, m_ifguid, &m_guid ) ) {
             return false;
         }
 
         // Read page register GUID7
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid7, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid7, m_ifguid, &m_guid ) ) {
             return false;
         }
 
