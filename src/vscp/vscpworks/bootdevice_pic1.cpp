@@ -523,7 +523,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
         // Set device in boot mode
         msg.data[ 0 ] = m_nodeid;	            // Nickname to read register from
-        msg.data[ 1 ] = VSCP_BOOTLOADER_PIC1;	// VSCP PIC1 bootload algorithm	
+        msg.data[ 1 ] = VSCP_BOOTLOADER_PIC1;	// VSCP PIC1 bootloader algorithm	
         msg.data[ 2 ] = guid0;
         msg.data[ 3 ] = guid3;
         msg.data[ 4 ] = guid5;
@@ -661,7 +661,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         event.sizeData = 16 + 8;                        // Interface GUID
         memcpy( event.data, m_ifguid.m_id, 16 );        // Address node i/f
         event.data[ 16 ] = m_guid.getLSB();	            // Nickname for device 
-        event.data[ 17 ] = VSCP_BOOTLOADER_PIC1;	    // VSCP PIC1 bootload algorithm	
+        event.data[ 17 ] = VSCP_BOOTLOADER_PIC1;	    // VSCP PIC1 bootloader algorithm	
         event.data[ 18 ] = guid0;
         event.data[ 19 ] = guid3;
         event.data[ 20 ] = guid5;
@@ -1041,8 +1041,11 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
         if ( USE_DLL_INTERFACE == m_type ) {
             msg.data[ i ] = b;    
         }
-        if ( USE_TCPIP_INTERFACE == m_type ) {
+        else if ( USE_TCPIP_INTERFACE == m_type ) {
             event.data[ 16 + i] = b;
+        }
+        else {
+            return false;
         }
 
         // Update address
@@ -1053,10 +1056,13 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
     if ( USE_DLL_INTERFACE == m_type ) {
         m_pdll->doCmdSend( &msg );
     }
-    if ( USE_TCPIP_INTERFACE == m_type ) {
+    else if ( USE_TCPIP_INTERFACE == m_type ) {
         m_ptcpip->doCmdSendEx( &event );    
     }
-
+    else {
+        return false;
+    }
+    
     // Message queued - ( wait for response from client(s) ).
     if ( m_bHandshake ) {
 
