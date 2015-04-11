@@ -203,6 +203,9 @@ private:
 	/// Internal address pointer
 	uint32_t m_pAddr;
 
+    /// memory type
+    uint8_t m_memtype;
+    
 	uint32_t BTL_PAGE ;	        // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
 	                            // 9-bit --- 2^9 = 512
                                 // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
