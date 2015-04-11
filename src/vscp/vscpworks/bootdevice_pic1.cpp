@@ -657,8 +657,9 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         event.head = 0;
         event.vscp_class = 512;                         // CLASS2.PROTOCOL1
         event.vscp_type = VSCP_ENTER_BOOTLODER_MODE;    // We want to enter bootloader mode
-        memset( event.data, 0, sizeof( event.data ) );  // We use interface GUID
+        memset( event.GUID, 0, 16 );                    // We use interface GUID
         event.sizeData = 16 + 8;                        // Interface GUID
+        memset( event.data, 0, sizeof( event.data ) );
         memcpy( event.data, m_ifguid.m_id, 16 );        // Address node i/f
         event.data[ 16 ] = m_guid.getLSB();	            // Nickname for device 
         event.data[ 17 ] = VSCP_BOOTLOADER_PIC1;	    // VSCP PIC1 bootloader algorithm	
