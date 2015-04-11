@@ -99,7 +99,7 @@ void CBootDevice_VSCP::init( void )
 
     //m_bHandshake = true;		// No handshake as default
     m_pAddr = 0;
-    m_type = MEM_TYPE_PROGRAM;
+    m_memtype = MEM_TYPE_PROGRAM;
 
     crcInit();
 }
@@ -551,23 +551,23 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         time_t tstart, tnow;
 
         // Read page register GUID0
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid, &m_guid ) ) {
             return false;
         }
 
 
         // Read page register GUID3
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid0, m_ifguid ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid3, m_ifguid, &m_guid ) ) {
             return false;
         }
 
         // Read page register GUID5
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid0, m_ifguid ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid5, m_ifguid, &m_guid ) ) {
             return false;
         }
 
         // Read page register GUID7
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid0, m_ifguid ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid7, m_ifguid, &m_guid ) ) {
             return false;
         }
 
@@ -993,7 +993,7 @@ bool CBootDevice_VSCP::writeFrimwareSector(void)
     uint8_t b;
     for (int i = 0; i < 8; i++) {
 
-        switch (m_type) {
+        switch (m_memtype) {
 
             case MEM_TYPE_PROGRAM:
                 b = m_pbufPrg[ m_pAddr ];
@@ -1046,14 +1046,13 @@ bool CBootDevice_VSCP::writeFrimwareSector(void)
 
 bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr) 
 {
-
     // Save the internal addresss
     m_pAddr = addr;
 
     if ((m_pAddr < MEMREG_PRG_END_COMMON) && (m_pAddr < BUFFER_SIZE_PROGRAM_COMMON)) {
 
         // Flash memory
-        m_type = MEM_TYPE_PROGRAM;
+        m_memtype = MEM_TYPE_PROGRAM;
         return TRUE;
 
     } 
@@ -1061,7 +1060,7 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr)
             ((m_pAddr < MEMREG_CONFIG_START_COMMON + BUFFER_SIZE_CONFIG_COMMON))) {
 
         // Config memory
-        m_type = MEM_TYPE_CONFIG;
+        m_memtype = MEM_TYPE_CONFIG;
         return TRUE;
 
     } 
@@ -1069,14 +1068,12 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr)
             ((m_pAddr <= MEMREG_EEPROM_START_COMMON + BUFFER_SIZE_EEPROM_COMMON))) {
 
         // EEPROM
-        m_type = MEM_TYPE_EEPROM;
+        m_memtype = MEM_TYPE_EEPROM;
         return TRUE;
     } 
     else {
         return false;
     }
-
-
 }
 
 
