@@ -557,17 +557,17 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 
 
         // Read page register GUID3
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid0, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid3, m_ifguid, &m_guid ) ) {
             return false;
         }
 
         // Read page register GUID5
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid0, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid5, m_ifguid, &m_guid ) ) {
             return false;
         }
 
         // Read page register GUID7
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid0, m_ifguid, &m_guid ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid7, m_ifguid, &m_guid ) ) {
             return false;
         }
 
