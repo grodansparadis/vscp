@@ -475,50 +475,50 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
         // Read page register Page select MSB
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_PAGE_SELECT_MSB,
-                                                                    &pageSelectMsb ) ) {
+                                                                0,
+                                                                VSCP_REG_PAGE_SELECT_MSB,
+                                                                &pageSelectMsb ) ) {
             return false;
         }
 
         // Read page register page select lsb
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_PAGE_SELECT_LSB,
-                                                                    &pageSelectLsb ) ) {
+                                                                0,
+                                                                VSCP_REG_PAGE_SELECT_LSB,
+                                                                &pageSelectLsb ) ) {
             return false;
         }
         
         // Read page register GUID0
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_GUID0,
-                                                                    &guid0 ) ) {
+                                                                0,
+                                                                VSCP_REG_GUID0,
+                                                                &guid0 ) ) {
             return false;
         }
 
         // Read page register GUID3
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_GUID3,
-                                                                     &guid3 ) ) {
+                                                                0,
+                                                                VSCP_REG_GUID3,
+                                                                &guid3 ) ) {
             return false;
         }
 
         // Read page register GUID5
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_GUID5,
-                                                                    &guid5 ) ) {
+                                                                0,
+                                                                VSCP_REG_GUID5,
+                                                                &guid5 ) ) {
             return false;
         }
 
         // Read page register GUID7
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_GUID7,
-                                                                    &guid7 ) ) {
-                                                                    return false;
+                                                                0,
+                                                                VSCP_REG_GUID7,
+                                                                &guid7 ) ) {
+            return false;
         }
 
         // Set device in boot mode
@@ -657,7 +657,7 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         event.head = 0;
         event.vscp_class = 512;                         // CLASS2.PROTOCOL1
         event.vscp_type = VSCP_ENTER_BOOTLODER_MODE;    // We want to enter bootloader mode
-        memset( event.GUID, 0, sizeof( event.data ) );  // We use interface GUID
+        memset( event.data, 0, sizeof( event.data ) );  // We use interface GUID
         event.sizeData = 16 + 8;                        // Interface GUID
         memcpy( event.data, m_ifguid.m_id, 16 );        // Address node i/f
         event.data[ 16 ] = m_guid.getLSB();	            // Nickname for device 
