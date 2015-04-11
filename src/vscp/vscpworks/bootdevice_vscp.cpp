@@ -69,20 +69,17 @@ CBootDevice_VSCP::CBootDevice_VSCP( CDllWrapper *pdll, uint8_t nodeid, bool bDev
 CBootDevice( pdll, nodeid, bDeviceFound )
 {
     init();
-    m_type = USE_DLL_INTERFACE;
 }
 
 CBootDevice_VSCP::CBootDevice_VSCP( VscpRemoteTcpIf *ptcpip, cguid &guid, cguid &ifguid, bool bDeviceFound ) :
 CBootDevice( ptcpip, guid, ifguid, bDeviceFound )
 {
     init();
-    m_type = USE_TCPIP_INTERFACE;
 }
 
-CBootDevice_VSCP::~CBootDevice_VSCP(void) {
-    //	delete [] m_pbufPrg;
-    //	delete [] m_pbufCfg;
-    //	delete [] m_pbufEEPROM;
+CBootDevice_VSCP::~CBootDevice_VSCP(void)
+{
+    ;
 }
 
 
