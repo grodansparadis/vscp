@@ -1102,8 +1102,11 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             vscpclass = VSCP_CLASS1_PROTOCOL;                   // Class
             vscptype = VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE;
             priority = VSCP_PRIORITY_LOW_COMMON;
-
-            msg.sizeData = 0;
+            
+            msg.data[ 0 ] = 0x00;
+            msg.data[ 1 ] = 0x00;
+            
+            msg.sizeData = 2;
         }
 
         if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
@@ -1142,28 +1145,17 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
     else if ( USE_TCPIP_INTERFACE == m_type ) {
 
         vscpEventEx event;
-        //        time_t tstart, tnow;
-
-
-        // Set device in boot mode
-
-        // Send message
+        
+        memset(&event, 0, sizeof(event));
 
         if (index == VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE) {
             event.head = 0;
             event.vscp_class = 512;                                     // CLASS2.PROTOCOL1
             event.vscp_type = VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE;    // Activate new Image
-            memset(event.GUID, 0, 16);                                  // We use interface GUID
-            event.sizeData = 16 + 0;                                    // Interface GUID
+            event.sizeData = 16 + 2;                                    // Interface GUID
             memcpy(event.data, m_guid.m_id, 16);                        // Address node
-            /*event.data[ 16 ]  = m_guid.getLSB();	                    // Nickname to read register from
-            event.data[ 17 ]  = VSCP_BOOTLOADER_AVR;	                // VSCP PIC1 bootload algorithm	
-            event.data[ 18 ]  = guid0;
-            event.data[ 19 ]  = guid3;
-            event.data[ 20 ]  = guid5;
-            event.data[ 21 ]  = guid7;
-            event.data[ 22 ]  = pageMSB;
-            event.data[ 23 ]  = pageLSB;*/
+            event.data[ 16 ]  = 0x00;
+            event.data[ 17 ]  = 0x00;
         }
 
         if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
@@ -1355,9 +1347,8 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
                     bRun = false;
 
                 }
-
                 // Case -- index = 1
-                if (index == VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK) {
+                else if (index == VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK) {
 
 
                     vscpclass = VSCP_CLASS1_PROTOCOL;
@@ -1368,8 +1359,9 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
                         // Calculate CRC in host
                         crc_16_host = crcFast(&m_pbufPrg[ m_pAddr - m_blockSize ], m_blockSize);
                         // GET CRC in remote node
-                        crc_16_remote = (uint16_t) ((uint16_t) (rcvmsg.data[0] << 8) | (uint16_t) (rcvmsg.data[1]));
-
+                        crc_16_remote = ( ( ( uint16_t ) rcvmsg.data[0] ) << 8 ) |
+                                        ( ( ( uint16_t ) rcvmsg.data[1] ) << 0 );
+                                        
                         // Response received from all - return success
                         rv = true;
                         bRun = false;
@@ -1377,8 +1369,7 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
                     }
 
                 }
-
-                if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK) {
+                else if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK) {
 
                     vscpclass = VSCP_CLASS1_PROTOCOL;
                     vscptype = VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK;
@@ -1440,14 +1431,15 @@ bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index)
 
                 }
                 // Case -- index = VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK
-                if (index == VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK) {
+                else if (index == VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK) {
 
                     if (event.vscp_type == VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK) {
 
                         // Calculate CRC in host
                         crc_16_host = crcFast(&m_pbufPrg[ m_pAddr - m_blockSize ], m_blockSize);
                         // GET CRC in remote node
-                        crc_16_remote = (uint16_t) ((uint16_t) (event.data[16] << 8) | (uint16_t) (event.data[17]));
+                        crc_16_remote = ( ( ( uint16_t ) event.data[16] ) << 8 ) |
+                                        ( ( ( uint16_t ) event.data[17] ) << 0 );
 
                         // Response received from all - return success
                         rv = true;
@@ -1457,7 +1449,7 @@ bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index)
 
                 }
                 // Case -- index = VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
-                if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK) {
+                else if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK) {
 
                     if (event.vscp_type == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK) {
 
