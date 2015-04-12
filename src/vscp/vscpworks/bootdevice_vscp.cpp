@@ -430,13 +430,12 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 {
     bool bRun;
 
-    /*    uint8_t pageMSB;
-        uint8_t pageLSB;
-        uint8_t guid0;
-        uint8_t guid3;
-        uint8_t guid5;
-        uint8_t guid7;
-    )*/
+    uint8_t pageSelectMsb = 0;
+    uint8_t pageSelectLsb = 0;
+    uint8_t guid0 = 0;
+    uint8_t guid3 = 0;
+    uint8_t guid5 = 0;
+    uint8_t guid7 = 0;
 
     uint16_t vscpclass;
     uint8_t vscptype;
@@ -452,57 +451,73 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 
         memset( msg.data, 0x00, 8 );
 
+        // Read page register Page select MSB
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
+                                                                0,
+                                                                VSCP_REG_PAGE_SELECT_MSB,
+                                                                &pageSelectMsb ) ) {
+            return false;
+        }
+
+        // Read page register page select lsb
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
+                                                                0,
+                                                                VSCP_REG_PAGE_SELECT_LSB,
+                                                                &pageSelectLsb ) ) {
+            return false;
+        }
+        
         // Read page register GUID0
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
-                                            0,
-                                            VSCP_REG_GUID0,
-                                            &pageMSB ) ) {
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
+                                                                0,
+                                                                VSCP_REG_GUID0,
+                                                                &guid0 ) ) {
             return false;
         }
 
         // Read page register GUID3
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
-                                            0,
-                                            VSCP_REG_GUID3,
-                                            &pageMSB ) ) {
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
+                                                                0,
+                                                                VSCP_REG_GUID3,
+                                                                &guid3 ) ) {
             return false;
         }
 
         // Read page register GUID5
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
-                                            0,
-                                            VSCP_REG_GUID5,
-                                            &pageMSB ) ) {
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
+                                                                0,
+                                                                VSCP_REG_GUID5,
+                                                                &guid5 ) ) {
             return false;
         }
 
         // Read page register GUID7
-        if ( !m_pdll->readLevel1Register( m_guid.m_id[ 0 ],
-                                            0,
-                                            VSCP_REG_GUID7,
-                                            &pageMSB ) ) {
+        if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
+                                                                0,
+                                                                VSCP_REG_GUID7,
+                                                                &guid7 ) ) {
             return false;
         }
 
-        nodeid = m_guid.m_id[ 0 ]; // Nickname to read register from
-        vscpclass = VSCP_CLASS1_PROTOCOL; // Class
-        vscptype = VSCP_ENTER_BOOTLODER_MODE;
-        priority = VSCP_PRIORITY_LOW_COMMON;
+        vscpclass   = VSCP_CLASS1_PROTOCOL;
+        vscptype    = VSCP_ENTER_BOOTLODER_MODE;
+        priority    = VSCP_PRIORITY_LOW_COMMON;
+        
         // Set device in boot mode
-        msg.data[ 0 ] = m_guid.m_id[ 0 ]; // Nickname to read register from
-        msg.data[ 1 ] = VSCP_BOOTLOADER_VSCP; // VSCP AVR1 bootload algorithm	
+        msg.data[ 0 ] = m_nodeid;               // Nickname to read register from
+        msg.data[ 1 ] = VSCP_BOOTLOADER_VSCP;   // VSCP standard bootloader algorithm	
         msg.data[ 2 ] = guid0;
         msg.data[ 3 ] = guid3;
         msg.data[ 4 ] = guid5;
         msg.data[ 5 ] = guid7;
-        msg.data[ 6 ] = pageMSB;
-        msg.data[ 7 ] = pageLSB;
+        msg.data[ 6 ] = pageSelectMsb;
+        msg.data[ 7 ] = pageSelectLsb;
 
         // Send message
         msg.id = ((uint32_t) priority << 26) |
                     ((uint32_t) vscpclass << 16) |
                     ((uint32_t) vscptype << 8) |
-                    nodeid; // nodeaddress (our address)
+                    m_nodeid; // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
         msg.sizeData = 8;
@@ -544,26 +559,35 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
     } 
     else if ( USE_TCPIP_INTERFACE == m_type ) {
 
-        vscpEventEx evex;
+        vscpEventEx event;
         time_t tstart, tnow;
 
-        // Read page register GUID0
+        // Read page register MSB
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_MSB, 0, &pageSelectMsb, m_ifguid, &m_guid ) ) {
+            return false;
+        }
+
+        // Read page register LSB
+        if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_PAGE_SELECT_LSB, 0, &pageSelectLsb, m_ifguid, &m_guid ) ) {
+            return false;
+        }
+
+        // Read GUID0
         if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID0, 0, &guid0, m_ifguid, &m_guid ) ) {
             return false;
         }
 
-
-        // Read page register GUID3
+        // Read GUID3
         if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID3, 0, &guid3, m_ifguid, &m_guid ) ) {
             return false;
         }
 
-        // Read page register GUID5
+        // Read GUID5
         if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID5, 0, &guid5, m_ifguid, &m_guid ) ) {
             return false;
         }
 
-        // Read page register GUID7
+        // Read GUID7
         if ( VSCP_ERROR_SUCCESS != m_ptcpip->readLevel2Register( VSCP_REG_GUID7, 0, &guid7, m_ifguid, &m_guid ) ) {
             return false;
         }
@@ -571,22 +595,23 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
         // Set device in boot mode
 
         // Send message
-        evex.head = 0;
-        evex.vscp_class = 512; // CLASS2.PROTOCOL1
-        evex.vscp_type = VSCP_ENTER_BOOTLODER_MODE; // We want to enter bootloader mode
-        memset( evex.GUID, 0, 16 ); // We use interface GUID
-        evex.sizeData = 16 + 8; // Interface GUID
-        memcpy( evex.data, m_guid.m_id, 16 ); // Address node
-        evex.data[ 16 ] = m_guid.m_id[ 0 ]; // Nickname to read register from
-        evex.data[ 17 ] = VSCP_BOOTLOADER_VSCP; // VSCP bootload algorithm	
-        evex.data[ 18 ] = guid0;
-        evex.data[ 19 ] = guid3;
-        evex.data[ 20 ] = guid5;
-        evex.data[ 21 ] = guid7;
-        evex.data[ 22 ] = pageMSB;
-        evex.data[ 23 ] = pageLSB;
+        event.head = 0;
+        event.vscp_class = 512;                         // CLASS2.PROTOCOL1
+        event.vscp_type = VSCP_ENTER_BOOTLODER_MODE;    // We want to enter bootloader mode
+        memset( event.GUID, 0, 16 );                    // We use interface GUID
+        event.sizeData = 16 + 8;                        // Interface GUID
+        memset( event.data, 0, sizeof( event.data ) );
+        memcpy( event.data, m_ifguid.m_id, 16 );        // Address node i/f
+        event.data[ 16 ] = m_guid.getLSB();	            // Nickname for device 
+        event.data[ 17 ] = VSCP_BOOTLOADER_VSCP;	    // VSCP standard bootloader algorithm	
+        event.data[ 18 ] = guid0;
+        event.data[ 19 ] = guid3;
+        event.data[ 20 ] = guid5;
+        event.data[ 21 ] = guid7;
+        event.data[ 22 ] = pageSelectMsb;
+        event.data[ 23 ] = pageSelectLsb;
 
-        if ( VSCP_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &evex ) ) {
+        if ( VSCP_ERROR_SUCCESS == m_ptcpip->doCmdSendEx( &event ) ) {
 
             bRun = true;
 
@@ -603,12 +628,12 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
                 //vscpEventEx rcvmsg;
                 if ( m_ptcpip->doCmdDataAvailable() ) {
 
-                    m_ptcpip->doCmdReceiveEx( &evex );
+                    m_ptcpip->doCmdReceiveEx( &event );
 
                     // Check for response  ---  Type = 13 (0x0D) ACK boot loader mode.
                     // Ignore data  --  Flash block size
                     // Ignore data  --  Number of block s available.                    
-                    if ( VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER == evex.vscp_type ) {
+                    if ( VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER == event.vscp_type ) {
                         // OK in bootmode - return
                         return true;
                     }
@@ -627,25 +652,12 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 // doFirmwareLoad
 //
 
-bool CBootDevice_VSCP::doFirmwareLoad( void ) 
+bool CBootDevice_VSCP::doFirmwareLoad( void )
 {
     bool bRun = true;
     bool rv = true;
     bool flag_crc = true;
-    /*
-    uint8_t pageMSB;
-uint8_t pageLSB;
-uint8_t guid0;
-uint8_t guid3;
-uint8_t guid5;
-uint8_t guid7;
-     */
-    BTL_PAGE = 0; // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
-    // 9-bit --- 2^9 = 512
-    // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
-    BTL_BLOCK = 1; // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
-    uint8_t temp;
-
+    
     wxBusyCursor busy;
 
     m_checksum = 0;
@@ -657,6 +669,11 @@ uint8_t guid7;
     uint32_t nConfigPackets = 0;
     uint32_t nEEPROMPackets = 0;
 
+    BTL_PAGE = 0; // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
+    // 9-bit --- 2^9 = 512
+    // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
+    BTL_BLOCK = 1; // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
+    
     // Flash memory
     if (m_bPrgData) {
         nFlashPackets = (m_maxFlashAddr - m_minFlashAddr) / 8;
@@ -698,7 +715,7 @@ uint8_t guid7;
     // Initialize checksum
     addr = m_minFlashAddr;
     if (!writeDeviceControlRegs(addr)) {
-        wxMessageBox(_T("Memmory not fall in any catofy FLASH , Config, EEPROM."));
+        wxMessageBox(_T("Memmory not fall in any category of FLASH , Config, EEPROM."));
         rv = FALSE;
         bRun = false;
     }
@@ -710,21 +727,19 @@ uint8_t guid7;
         addr = m_minFlashAddr;
         if (writeDeviceControlRegs(addr)) {
 
-            for (unsigned long blk = 0; ((blk < nFlashPackets) && bRun);) { // nFlashPackets  = number of 8 byte packets
+            for ( unsigned long blk = 0; ( ( blk < nFlashPackets ) && bRun);) { // nFlashPackets  = number of 8 byte packets
 
                 if (BTL_BLOCK == 1) {
                     // Send the start block
-                    temp = sendVSCPCommandStartBlock(BTL_PAGE);
-                    if (temp != (uint8_t) true)
+                    if (true != sendVSCPCommandStartBlock(BTL_PAGE))
                         wxMessageBox(_T("start Block error"));
                 }
 
                 //prevent overflow                                //  BUFFERSIZE         128  words = 256 bytes -- i.e 32*8 = 256
-                if (BTL_BLOCK <= falsh_memory_block_size / 8 /*32*/) {
+                if (BTL_BLOCK <= (falsh_memory_block_size / 8) /*32*/) {
 
-
-                    wxStatusStr.Printf(_("Loading flash... %08x"), addr);
-                    //					wxStatusStr.Printf( _("%d %d %d "), m_maxFlashAddr, m_minFlashAddr,  nFlashPackets);
+				    wxStatusStr.Printf( _("Loading flash... %0X"), addr );
+                    
                     if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
                         wxMessageBox(_T("Aborted by user."));
                         rv = FALSE;
@@ -745,7 +760,7 @@ uint8_t guid7;
 
                 BTL_BLOCK++;
 
-                if (BTL_BLOCK > falsh_memory_block_size / 8 /*32*/) {
+                if (BTL_BLOCK > (falsh_memory_block_size / 8) /*32*/) {
 
 #ifdef PRINT_DEBUG_EVENTS				
                     uart_puts("BOOT_FULLBLOCK");
@@ -775,7 +790,7 @@ uint8_t guid7;
                 }
             }
 
-            if ((BTL_BLOCK < falsh_memory_block_size / 8 /*32*/) && (BTL_BLOCK > 1)) {
+            if ((BTL_BLOCK < (falsh_memory_block_size / 8) /*32*/) && (BTL_BLOCK > 1)) {
                 //while(1);
                 //wxMessageBox( _T("Enter") );
                 BTL_PAGE -= 1; // Just decrement well in advance if -- CRC fails
@@ -816,8 +831,7 @@ uint8_t guid7;
 
                             // Send the start block
                             // BTL_PAGE already decremented at the start -- for this last page
-                            temp = sendVSCPCommandStartBlock(BTL_PAGE);
-                            if (temp != (uint8_t) true)
+                            if (true != sendVSCPCommandStartBlock(BTL_PAGE))
                                 wxMessageBox(_T("start Block error"));
                         }
 
@@ -825,24 +839,17 @@ uint8_t guid7;
                     }
                 }
             }
-            wxMilliSleep(1);
-            wxMilliSleep(1);
-            wxMilliSleep(1);
-            wxMilliSleep(1);
-            wxMilliSleep(1);
-            //wxMessageBox( _T("xxxxxxxxx") );	
-        } else {
+		else {
             wxMessageBox(_T("Failed to send control info for flash data to node(s)."));
             rv = FALSE;
         }
 
-        //rv = false;// so that next case do not execute
     }
-    //wxMessageBox( _T("Failed to send control info for flash data to node(s).") );	
+
     // * * * config memory * * *
 
     if (rv && m_bConfigData) {
-        //wxMessageBox( _T("xxxxttttttt") );	
+
         // Send the start block
         addr = m_minConfigAddr;
         if (writeDeviceControlRegs(addr)) {
@@ -867,7 +874,8 @@ uint8_t guid7;
                 addr += 8;
 
             }
-        } else {
+		}
+		else {
             wxMessageBox(_T("Failed to send control info for config data to node(s)."));
             rv = FALSE;
         }
@@ -901,7 +909,8 @@ uint8_t guid7;
                 addr += 8;
 
             }
-        } else {
+		}
+		else {
             wxMessageBox(_T("Failed to send control info for EEPROM data to node(s)."));
             rv = FALSE;
         }
@@ -943,27 +952,19 @@ uint8_t guid7;
     return rv;
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // writeFrimwareSector
-// write 8 byte packets
 //
 
-bool CBootDevice_VSCP::writeFrimwareSector(void)
+bool CBootDevice_VSCP::writeFrimwareSector( void )
 {
     canalMsg msg;
     vscpEventEx event;
     bool rv = true;
 
-    uint16_t vscpclass;
-    uint8_t vscptype;
-    uint8_t priority = 0;
-
-    if ( NULL == m_pdll ) return FALSE;
-
-    vscpclass = VSCP_CLASS1_PROTOCOL;           // Class
-    vscptype = VSCP_TYPE_PROTOCOL_BLOCK_DATA;
-    priority = VSCP_PRIORITY_LOW_COMMON;
+    uint16_t vscpclass = VSCP_CLASS1_PROTOCOL;
+    uint8_t vscptype = VSCP_TYPE_PROTOCOL_BLOCK_DATA;
+    uint8_t priority = VSCP_PRIORITY_LOW_COMMON;
 
     // Send event
     if ( USE_DLL_INTERFACE == m_type ) {
@@ -1014,10 +1015,13 @@ bool CBootDevice_VSCP::writeFrimwareSector(void)
 
         // Write data into frame
         if ( USE_DLL_INTERFACE == m_type ) {
-            msg.data[ i ] = b;
-        } 
-        else {
+            msg.data[ i ] = b;    
+        }
+        else if ( USE_TCPIP_INTERFACE == m_type ) {
             event.data[ 16 + i] = b;
+        }
+        else {
+            return false;
         }
 
         // Update address
@@ -1028,10 +1032,12 @@ bool CBootDevice_VSCP::writeFrimwareSector(void)
     if ( USE_DLL_INTERFACE == m_type ) {
         m_pdll->doCmdSend( &msg );
     } 
-    else {
+    else if ( USE_TCPIP_INTERFACE == m_type ) {
         m_ptcpip->doCmdSendEx(&event);
     }
-
+    else {
+        rv = false;
+    }
 
     return rv;
 }
@@ -1081,10 +1087,9 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr)
 
 bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress) 
 {
-    uint16_t vscpclass;
-    uint8_t vscptype;
-    uint8_t nodeid;
-    uint8_t priority;
+    uint16_t vscpclass = 0;
+    uint8_t vscptype = 0;
+    uint8_t priority = 0;
 
     wxBusyCursor busy;
 
@@ -1092,22 +1097,16 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress)
 
         canalMsg msg;
 
-
         memset(msg.data, 0x00, 8);
 
-        nodeid = m_guid.m_id[ 0 ];                  // Nickname to read register from
         vscpclass = VSCP_CLASS1_PROTOCOL;           // Class
         vscptype = VSCP_TYPE_PROTOCOL_START_BLOCK;  // Start block data transfer.
         priority = VSCP_PRIORITY_LOW_COMMON;
         // block data transfer
-        msg.data[ 0 ] = 0;                          //MSB 
-        msg.data[ 1 ] = 0;
-        msg.data[ 2 ] = (PageAddress & 0xFF00) >> 8;
-        msg.data[ 3 ] = (PageAddress & 0x00FF);     //LSB
-        msg.data[ 4 ] = 0x00;           // Byte4 (optional) Type of Memory we want to write
-        msg.data[ 5 ] = 0x00;           // Byte5 (optional) Bank/Image to be written
-        msg.data[ 6 ] = 0x00;
-        msg.data[ 7 ] = 0x00;
+        msg.data[ 0 ] = 0x00;                           // Block number MSB 
+        msg.data[ 1 ] = 0x00;                           // Block number
+        msg.data[ 2 ] = (PageAddress & 0xFF00) >> 8;    // Block number
+        msg.data[ 3 ] = (PageAddress & 0x00FF);         // Block number LSB
 
         // Send message
         msg.id = ((uint32_t) priority << 26) |
@@ -1116,7 +1115,7 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress)
                 m_nodeid;                           // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
-        msg.sizeData = 8;
+        msg.sizeData = 4;
         if (CANAL_ERROR_SUCCESS == m_pdll->doCmdSend(&msg)) {
             wxMilliSleep(1);
             return true;
@@ -1128,26 +1127,22 @@ bool CBootDevice_VSCP::sendVSCPCommandStartBlock(uint16_t PageAddress)
         // Start block data transfer.
 
         vscpEventEx event;
-        // Set device in boot mode
 
         // Send message
         event.head = 0;
         event.vscp_class = 512;                             // CLASS2.PROTOCOL1
         event.vscp_type = VSCP_TYPE_PROTOCOL_START_BLOCK;   // We want to Start block data transfer.
         memset(event.GUID, 0, 16);                          // We use interface GUID
-        event.sizeData = 16 + 8;                            // Interface GUID
+        event.sizeData = 16 + 4;                            // Interface GUID
         memcpy(event.data, m_guid.m_id, 16);                // Address node
-        event.data[ 16 ] = 0;                               //MSB 
-        event.data[ 17 ] = 0x00;
-        event.data[ 18 ] = (PageAddress & 0xFF00) >> 8;
-        event.data[ 19 ] = (PageAddress & 0x00FF);          //LSB
-        event.data[ 20 ] = 0x00;                    // Byte4 (optional) Type of Memory we want to write
-        event.data[ 21 ] = 0x00;                    // Byte5 (optional) Bank/Image to be written
-        event.data[ 22 ] = 0x00;
-        event.data[ 23 ] = 0x00;
+        event.data[ 16 ] = 0x00;                            // Block number MSB
+        event.data[ 17 ] = 0x00;                            // Block number
+        event.data[ 18 ] = (PageAddress & 0xFF00) >> 8;     // Block number
+        event.data[ 19 ] = (PageAddress & 0x00FF);          // Block number LSB
 
         if (CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx(&event)) {
-
+            wxMilliSleep(1);
+            return true;
         }
     }
 
@@ -1176,7 +1171,6 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         memset(msg.data, 0x00, 8);
 
         if (index == VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE) {
-            nodeid = m_guid.m_id[ 0 ];                          // Nickname to read register from
             vscpclass = VSCP_CLASS1_PROTOCOL;                   // Class
             vscptype = VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE;
             priority = VSCP_PRIORITY_LOW_COMMON;
@@ -1185,7 +1179,6 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         }
 
         if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
-            nodeid = m_guid.m_id[ 0 ];                          // Nickname to read register from
             vscpclass = VSCP_CLASS1_PROTOCOL;                   // Class
             vscptype = VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA;
             priority = VSCP_PRIORITY_LOW_COMMON;
@@ -1203,7 +1196,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         msg.id = ((uint32_t) priority << 26) |
                 ((uint32_t) vscpclass << 16) |
                 ((uint32_t) vscptype << 8) |
-                nodeid;                                         // nodeaddress (our address)
+                m_nodeid;                                         // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
 
@@ -1235,8 +1228,8 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             memset(event.GUID, 0, 16);                                  // We use interface GUID
             event.sizeData = 16 + 0;                                    // Interface GUID
             memcpy(event.data, m_guid.m_id, 16);                        // Address node
-            /*event.data[ 16 ]  = m_guid.m_id[ 0 ];	    // Nickname to read register from
-            event.data[ 17 ]  = VSCP_BOOTLOADER_AVR;	// VSCP PIC1 bootload algorithm	
+            /*event.data[ 16 ]  = m_guid.getLSB();	                    // Nickname to read register from
+            event.data[ 17 ]  = VSCP_BOOTLOADER_AVR;	                // VSCP PIC1 bootload algorithm	
             event.data[ 18 ]  = guid0;
             event.data[ 19 ]  = guid3;
             event.data[ 20 ]  = guid5;
@@ -1509,7 +1502,7 @@ bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index)
             m_ptcpip->doCmdReceiveEx( &event );
 
             if ((VSCP_CLASS1_PROTOCOL == event.vscp_class) &&
-                    (m_guid.m_id[ 0 ] == event.GUID[0])) { // correct id
+                (m_guid.getLSB() == event.GUID[ 15 ])) { // correct id
 
                 // Case -- index = 0  --- not implemented always return true 
                 if (index == 0) {

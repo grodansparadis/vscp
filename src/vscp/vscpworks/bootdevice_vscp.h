@@ -216,15 +216,6 @@ private:
 
 	//uint32_t total_memory_blocks;		// Total flash memory blocks -- returned in --- VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER
 
-	uint32_t xxx;
-
-	uint8_t pageMSB;
-    uint8_t pageLSB;
-    uint8_t guid0;
-    uint8_t guid3;
-    uint8_t guid5;
-    uint8_t guid7;
-
 	//uint8_t *ptr;  // Block pointer -- to calculate CRC
 	uint16_t crc_16_remote;
 	uint16_t crc_16_host;
