@@ -206,17 +206,18 @@ private:
     /// memory type
     uint8_t m_memtype;
     
-	uint32_t BTL_PAGE ;	        // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
-	                            // 9-bit --- 2^9 = 512
-                                // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
+    /// Current page
+    uint32_t m_page;
+    
+    /// Current block number
+    uint32_t m_blockNumber;
+    
+    /// Block size in byte
+    uint32_t m_blockSize;
+    
+    /// Number of blocks
+    uint32_t m_numBlocks;
 
-	uint32_t BTL_BLOCK;         // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
-
-	uint32_t falsh_memory_block_size;	// flash memory block size -- returned in --- VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER
-
-	//uint32_t total_memory_blocks;		// Total flash memory blocks -- returned in --- VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER
-
-	//uint8_t *ptr;  // Block pointer -- to calculate CRC
 	uint16_t crc_16_remote;
 	uint16_t crc_16_host;
 };
