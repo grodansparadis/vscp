@@ -777,13 +777,13 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
                                     0,
                                     0 ) ) {
 		wxMessageBox( _T("Failed to initialize checksum at node(s).") );
-		rv = FALSE;
+		rv = false;
 		bRun = false;
 	}
 
 	// * * * flash memory * * *
 
-	if ( rv ) {
+	if ( rv && m_bPrgData ) {
 			
 		// Send the start block
 		addr = m_minFlashAddr;
@@ -794,13 +794,13 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
 				wxStatusStr.Printf( _("Loading flash... %0X"), addr );
 				if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
 					wxMessageBox( _T("Aborted by user.") );
-					rv = FALSE;
+					rv = false;
 					bRun = false;
 				}
 
 				if ( !writeFrimwareSector() ) {
 					wxMessageBox( _T("Failed to write flash data to node(s).") );
-					rv = FALSE;
+					rv = false;
 					bRun = false;
 				}
 				
@@ -812,7 +812,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
 		}
 		else {
 			wxMessageBox( _T("Failed to send control info for flash data to node(s).") );	
-			rv = FALSE;
+			rv = false;
 		}
 
 	}
@@ -830,13 +830,13 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
 				wxStatusStr.Printf(_("Loading config memory... %0X"), addr );
 				if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
 					wxMessageBox( _T("Aborted by user.") );
-					rv = FALSE;
+					rv = false;
 					bRun = false;
 				}
 
 				if ( !writeFrimwareSector() ) {
 					wxMessageBox( _T("Failed to write config data to node(s).") );
-					rv = FALSE;
+					rv = false;
 					bRun = false;
 				}
 				
@@ -848,7 +848,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
 		}
 		else {
 			wxMessageBox( _T("Failed to send control info for config data to node(s).") );	
-			rv = FALSE;
+			rv = false;
 		}
 	}
 
@@ -865,13 +865,13 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
 				wxStatusStr.Printf(_("Loading EEPROM memory... %0X"), addr );
 				if (  !( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
 					wxMessageBox( _T("Aborted by user.") );
-					rv = FALSE;
+					rv = false;
 					bRun = false;
 				}
 
 				if ( !writeFrimwareSector() ) {
 					wxMessageBox( _T("Failed to write EEPROM data to node(s).") );
-					rv = FALSE;
+					rv = false;
 					bRun = false;
 				}
 				
@@ -883,7 +883,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
 		}
 		else {
 			wxMessageBox( _T("Failed to send control info for EEPROM data to node(s).") );	
-			rv = FALSE;
+			rv = false;
 		}
 	}
 
@@ -900,7 +900,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
             ( ( calc_chksum >> 8 ) & 0xff )
             ) ) {
             wxMessageBox( _T( "Failed to do finalizing and restart at node(s).Possible checksum error." ) );
-            rv = FALSE;
+            rv = false;
             bRun = false;
         }
         else {
@@ -967,7 +967,7 @@ bool CBootDevice_PIC1::doFirmwareLoad( void )
             if ( !bReady ) {
                 pDlg->Update( progress, _("Could not verify that device came out of reset.") );
                 wxMessageBox( _T( "Could not verify that device came out of reset." ) );
-                rv = FALSE;
+                rv = false;
             }
 
         }

@@ -515,9 +515,9 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 
         // Send message
         msg.id = ((uint32_t) priority << 26) |
-                    ((uint32_t) vscpclass << 16) |
-                    ((uint32_t) vscptype << 8) |
-                    m_nodeid; // nodeaddress (our address)
+                 ((uint32_t) vscpclass << 16) |
+                 ((uint32_t) vscptype << 8) |
+                 m_nodeid; // nodeaddress (our address)
 
         msg.flags = CANAL_IDFLAG_EXTENDED;
         msg.sizeData = 8;
@@ -545,9 +545,16 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
                          (uint32_t) (((uint32_t) vscpclass << 16) | ((uint32_t) vscptype << 8) | nodeid)) {
                         // OK in bootmode - return
 
-                        falsh_memory_block_size = 
-                            (uint32_t) (((uint32_t) rcvmsg.data[ 0 ] << 24) | ((uint32_t) rcvmsg.data[ 1 ] << 16) | ((uint32_t) rcvmsg.data[ 2 ] << 8) | rcvmsg.data[ 3 ]);
+                        m_blockSize = ((uint32_t) rcvmsg.data[ 0 ] << 24) |
+                                      ((uint32_t) rcvmsg.data[ 1 ] << 16) |
+                                      ((uint32_t) rcvmsg.data[ 2 ] <<  8) |
+                                      ((uint32_t) rcvmsg.data[ 3 ] <<  0);
 
+                        m_numBlocks = ((uint32_t) rcvmsg.data[ 4 ] << 24) |
+                                      ((uint32_t) rcvmsg.data[ 5 ] << 16) |
+                                      ((uint32_t) rcvmsg.data[ 6 ] <<  8) |
+                                      ((uint32_t) rcvmsg.data[ 7 ] <<  0);
+                                      
                         return true;
                     }
 
@@ -631,10 +638,19 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
                     m_ptcpip->doCmdReceiveEx( &event );
 
                     // Check for response  ---  Type = 13 (0x0D) ACK boot loader mode.
-                    // Ignore data  --  Flash block size
-                    // Ignore data  --  Number of block s available.                    
                     if ( VSCP_TYPE_PROTOCOL_ACK_BOOT_LOADER == event.vscp_type ) {
                         // OK in bootmode - return
+                        
+                        m_blockSize = ((uint32_t) event.data[ 0 ] << 24) |
+                                      ((uint32_t) event.data[ 1 ] << 16) |
+                                      ((uint32_t) event.data[ 2 ] <<  8) |
+                                      ((uint32_t) event.data[ 3 ] <<  0);
+
+                        m_numBlocks = ((uint32_t) event.data[ 4 ] << 24) |
+                                      ((uint32_t) event.data[ 5 ] << 16) |
+                                      ((uint32_t) event.data[ 6 ] <<  8) |
+                                      ((uint32_t) event.data[ 7 ] <<  0);
+                        
                         return true;
                     }
 
@@ -668,11 +684,6 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
     uint32_t nFlashPackets = 0;
     uint32_t nConfigPackets = 0;
     uint32_t nEEPROMPackets = 0;
-
-    BTL_PAGE = 0; // page to program in AVR -- after every 32*8 bytes = 256 byte ---- increment by 1
-    // 9-bit --- 2^9 = 512
-    // AT90CAN128  -- have --- Page Size = 256 bytes  ---- 512 pages  =  512 * 256  == 128 Kbyte
-    BTL_BLOCK = 1; // There are 32 -- 8 bye block -- in one page  ---- page size = 256 byte
     
     // Flash memory
     if (m_bPrgData) {
@@ -716,7 +727,7 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
     addr = m_minFlashAddr;
     if (!writeDeviceControlRegs(addr)) {
         wxMessageBox(_T("Memmory not fall in any category of FLASH , Config, EEPROM."));
-        rv = FALSE;
+        rv = false;
         bRun = false;
     }
 
@@ -727,123 +738,54 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
         addr = m_minFlashAddr;
         if (writeDeviceControlRegs(addr)) {
 
-            for ( unsigned long blk = 0; ( ( blk < nFlashPackets ) && bRun);) { // nFlashPackets  = number of 8 byte packets
+            // nFlashPackets  = number of 8 byte packets
+            m_blockNumber = 0;
+            for ( unsigned long blk = 0; ( ( blk < nFlashPackets ) && ( true == bRun ) ); blk++) {
 
-                if (BTL_BLOCK == 1) {
-                    // Send the start block
-                    if (true != sendVSCPCommandStartBlock(BTL_PAGE))
-                        wxMessageBox(_T("start Block error"));
-                }
-
-                //prevent overflow                                //  BUFFERSIZE         128  words = 256 bytes -- i.e 32*8 = 256
-                if (BTL_BLOCK <= (falsh_memory_block_size / 8) /*32*/) {
-
-				    wxStatusStr.Printf( _("Loading flash... %0X"), addr );
-                    
-                    if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
-                        wxMessageBox(_T("Aborted by user."));
-                        rv = FALSE;
+                // Start block data transfer
+                if ( 0 == ( blk  % ( m_blockSize / 8 ) ) ) {
+                    if ( true != sendVSCPCommandStartBlock( blk * 8 / m_blockSize ) )
+                        wxMessageBox( _T("start Block error") );
                         bRun = false;
-                    }
-
-                    if (!writeFrimwareSector()) {
-                        wxMessageBox(_T("Failed to write flash data to node(s)."));
-                        rv = FALSE;
-                        bRun = false;
-                    }
-
-                    wxMilliSleep(1);
-                    progress++;
-                    addr += 8;
-                    blk++;
                 }
-
-                BTL_BLOCK++;
-
-                if (BTL_BLOCK > (falsh_memory_block_size / 8) /*32*/) {
-
-#ifdef PRINT_DEBUG_EVENTS				
-                    uart_puts("BOOT_FULLBLOCK");
-#endif
-                    // todo: check CRC of written data, if ok send confirm block event
-                    BTL_BLOCK = 1;
-
-                    // Check for the ACK  ---- VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK
-                    // Send -- VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
-                    // Check for the ACK  ---- VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
+                
+				wxStatusStr.Printf( _("Loading flash... %0X"), addr );
+				if (  false == ( bRun = pDlg->Update( progress, wxStatusStr ) ) ) {
+					wxMessageBox( _T("Aborted by user.") );
+					rv = false;
+					bRun = false;
+				}
+                
+				if ( false == writeFrimwareSector() ) {
+					wxMessageBox( _T("Failed to write flash data to node(s).") );
+					rv = false;
+					bRun = false;
+				}
+                
+                /* After a complete block, wait for the block data acknowledge. */
+                if ( 0 == ( ( blk + 1 )  % ( m_blockSize / 8 ) ) ) {
+                
                     if ( USE_DLL_INTERFACE == m_type ) {
 
                         flag_crc = sendVSCPCommandSeqenceLevel1();
-
-                    } else {
+                    }
+                    else if ( USE_TCPIP_INTERFACE == m_type ) {
 
                         flag_crc = sendVSCPCommandSeqenceLevel2();
                     }
-
-                    if (flag_crc == false) {
-                        blk -= falsh_memory_block_size;
-                    } else {
-                        // increment the page number
-                        BTL_PAGE++;
-                    }
-
+                    
+                    m_blockNumber++;
                 }
+
+                wxMilliSleep(1);
+                progress++;
+                addr += 8;
             }
-
-            if ((BTL_BLOCK < (falsh_memory_block_size / 8) /*32*/) && (BTL_BLOCK > 1)) {
-                //while(1);
-                //wxMessageBox( _T("Enter") );
-                BTL_PAGE -= 1; // Just decrement well in advance if -- CRC fails
-                //m_type = 0xFF;  // This will send packet as 0xFF  --- in function  --- writeFrimwareSector()    ----------------- no need buffer already 0xff in memset
-
-                while (BTL_BLOCK <= falsh_memory_block_size / 8 /*32*/ && bRun) {
-
-                    if (!writeFrimwareSector()) {
-                        wxMessageBox(_T("Failed to write flash data to node(s)."));
-                        rv = FALSE;
-                        bRun = false;
-                    }
-
-                    wxMilliSleep(1);
-                    progress++;
-                    addr += 8;
-
-                    BTL_BLOCK++;
-
-
-                    if (BTL_BLOCK > falsh_memory_block_size / 8 /*32*/) {
-#ifdef PRINT_DEBUG_EVENTS				
-                        uart_puts("BOOT_FULLBLOCK");
-#endif
-
-                        // Check for the ACK  ---- VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK
-                        // Send -- VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA
-                        // Check for the ACK  ---- VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA_ACK
-                        if ( USE_DLL_INTERFACE == m_type ) {
-                            flag_crc = sendVSCPCommandSeqenceLevel1();
-                        } else {
-                            flag_crc = sendVSCPCommandSeqenceLevel2();
-                        }
-
-                        //check for crc valid flag
-                        if (flag_crc == false) {
-                            BTL_BLOCK = 1;
-
-                            // Send the start block
-                            // BTL_PAGE already decremented at the start -- for this last page
-                            if (true != sendVSCPCommandStartBlock(BTL_PAGE))
-                                wxMessageBox(_T("start Block error"));
-                        }
-
-
-                    }
-                }
-            }
+        }
 		else {
             wxMessageBox(_T("Failed to send control info for flash data to node(s)."));
-            rv = FALSE;
+            rv = false;
         }
-
     }
 
     // * * * config memory * * *
@@ -859,13 +801,13 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
                 wxStatusStr.Printf(_("Loading config memory... %0X"), addr);
                 if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
                     wxMessageBox(_T("Aborted by user."));
-                    rv = FALSE;
+                    rv = false;
                     bRun = false;
                 }
 
                 if (!writeFrimwareSector()) {
                     wxMessageBox(_T("Failed to write config data to node(s)."));
-                    rv = FALSE;
+                    rv = false;
                     bRun = false;
                 }
 
@@ -877,7 +819,7 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
 		}
 		else {
             wxMessageBox(_T("Failed to send control info for config data to node(s)."));
-            rv = FALSE;
+            rv = false;
         }
     }
 
@@ -894,13 +836,13 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
                 wxStatusStr.Printf(_("Loading EEPROM memory... %0X"), addr);
                 if (!(bRun = pDlg->Update(progress, wxStatusStr))) {
                     wxMessageBox(_T("Aborted by user."));
-                    rv = FALSE;
+                    rv = false;
                     bRun = false;
                 }
 
                 if (!writeFrimwareSector()) {
                     wxMessageBox(_T("Failed to write EEPROM data to node(s)."));
-                    rv = FALSE;
+                    rv = false;
                     bRun = false;
                 }
 
@@ -912,7 +854,7 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
 		}
 		else {
             wxMessageBox(_T("Failed to send control info for EEPROM data to node(s)."));
-            rv = FALSE;
+            rv = false;
         }
     }
 
@@ -924,30 +866,16 @@ bool CBootDevice_VSCP::doFirmwareLoad( void )
         // Failure
 
         wxMessageBox(_T(" ACTIVATE_NEW_IMAGE TX fails"));
-
     } 
     else {
 
     }
 
-    wxMilliSleep(1);
-    wxMilliSleep(1);
-    wxMilliSleep(1);
-    wxMilliSleep(1);
-    wxMilliSleep(1);
-
     // Done
     progress = nTotalPackets;
     pDlg->Update(progress, wxStatusStr);
 
-
     pDlg->Destroy();
-
-    wxMilliSleep(1);
-    wxMilliSleep(1);
-    wxMilliSleep(1);
-    wxMilliSleep(1);
-    wxMilliSleep(1);
 
     return rv;
 }
@@ -1056,7 +984,7 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr)
 
         // Flash memory
         m_memtype = MEM_TYPE_PROGRAM;
-        return TRUE;
+        return true;
 
     } 
     else if ((m_pAddr >= MEMREG_CONFIG_START_COMMON) &&
@@ -1064,7 +992,7 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr)
 
         // Config memory
         m_memtype = MEM_TYPE_CONFIG;
-        return TRUE;
+        return true;
 
     } 
     else if ((m_pAddr >= MEMREG_EEPROM_START_COMMON) &&
@@ -1072,7 +1000,7 @@ bool CBootDevice_VSCP::writeDeviceControlRegs(uint32_t addr)
 
         // EEPROM
         m_memtype = MEM_TYPE_EEPROM;
-        return TRUE;
+        return true;
     } 
     else {
         return false;
@@ -1184,10 +1112,10 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             priority = VSCP_PRIORITY_LOW_COMMON;
 
             // block data transfer
-            msg.data[ 0 ] = 0;                                  //MSB 
-            msg.data[ 1 ] = 0;
-            msg.data[ 2 ] = (BTL_PAGE & 0xFF00) >> 8;
-            msg.data[ 3 ] = (BTL_PAGE & 0x00FF);                //LSB
+            msg.data[ 0 ] = ((uint8_t)(m_blockNumber >> 24)) & 0xFF;
+            msg.data[ 1 ] = ((uint8_t)(m_blockNumber >> 16)) & 0xFF;
+            msg.data[ 2 ] = ((uint8_t)(m_blockNumber >>  8)) & 0xFF;
+            msg.data[ 3 ] = ((uint8_t)(m_blockNumber >>  0)) & 0xFF;
 
             msg.sizeData = 4;
         }
@@ -1245,10 +1173,10 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             memset(event.GUID, 0, 16);                                  // We use interface GUID
             event.sizeData = 16 + 4;                                    // Interface GUID
             memcpy(event.data, m_guid.m_id, 16);                        // Address node
-            event.data[ 16 ] = 0;                                       // MSB 
-            event.data[ 17 ] = 0;
-            event.data[ 18 ] = (BTL_PAGE & 0xFF00) >> 8;
-            event.data[ 19 ] = (BTL_PAGE & 0x00FF);                     // LSB
+            event.data[ 0 ] = ((uint8_t)(m_blockNumber >> 24)) & 0xFF;
+            event.data[ 1 ] = ((uint8_t)(m_blockNumber >> 16)) & 0xFF;
+            event.data[ 2 ] = ((uint8_t)(m_blockNumber >>  8)) & 0xFF;
+            event.data[ 3 ] = ((uint8_t)(m_blockNumber >>  0)) & 0xFF;
 
         }
 
@@ -1285,7 +1213,7 @@ bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel1(void)
     else {
 
         if (crc_16_host != crc_16_remote) {
-            m_pAddr -= falsh_memory_block_size;
+            m_pAddr -= m_blockSize;
             return false;
         }
 
@@ -1344,7 +1272,7 @@ bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel2(void)
     else {
 
         if ( crc_16_host != crc_16_remote ) {
-            m_pAddr -= falsh_memory_block_size;
+            m_pAddr -= m_blockSize;
             return false;
         }
 
@@ -1401,7 +1329,7 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
 
     canalMsg rcvmsg; // msg, 
 
-    if ( NULL == m_pdll ) return FALSE;
+    if ( NULL == m_pdll ) return false;
 
     // Get system time
     //time( &tstart );
@@ -1438,7 +1366,7 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
                     if ((uint32_t) (rcvmsg.id & 0x01ffffff) == (uint32_t) (((uint32_t) vscpclass << 16) | ((uint32_t) vscptype << 8) | m_nodeid)) {
 
                         // Calculate CRC in host
-                        crc_16_host = crcFast(&m_pbufPrg[ m_pAddr - falsh_memory_block_size ], falsh_memory_block_size);
+                        crc_16_host = crcFast(&m_pbufPrg[ m_pAddr - m_blockSize ], m_blockSize);
                         // GET CRC in remote node
                         crc_16_remote = (uint16_t) ((uint16_t) (rcvmsg.data[0] << 8) | (uint16_t) (rcvmsg.data[1]));
 
@@ -1484,14 +1412,13 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
 // checkResponseLevel2
 // Type = 20 (0x14) ACK program data block    -- for 8 byte packet received correctly by bootloader
 //
-
 bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index) 
 {
     vscpEventEx event;
     //time_t tstart, tnow;
     bool rv = false;
 
-    if (NULL == m_ptcpip) return FALSE;
+    if (NULL == m_ptcpip) return false;
 
 
     bool bRun = true;
@@ -1518,7 +1445,7 @@ bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index)
                     if (event.vscp_type == VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK) {
 
                         // Calculate CRC in host
-                        crc_16_host = crcFast(&m_pbufPrg[ m_pAddr - falsh_memory_block_size ], falsh_memory_block_size);
+                        crc_16_host = crcFast(&m_pbufPrg[ m_pAddr - m_blockSize ], m_blockSize);
                         // GET CRC in remote node
                         crc_16_remote = (uint16_t) ((uint16_t) (event.data[16] << 8) | (uint16_t) (event.data[17]));
 
@@ -1549,7 +1476,3 @@ bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index)
 
     return rv;
 }
-
-
-
-/* EOF */
