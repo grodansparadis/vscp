@@ -475,55 +475,55 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
 
         // Read page register Page select MSB
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_PAGE_SELECT_MSB,
-                                                                    &pageSelectMsb ) ) {
+                                                                0,
+                                                                VSCP_REG_PAGE_SELECT_MSB,
+                                                                &pageSelectMsb ) ) {
             return false;
         }
 
         // Read page register page select lsb
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_PAGE_SELECT_LSB,
-                                                                    &pageSelectLsb ) ) {
+                                                                0,
+                                                                VSCP_REG_PAGE_SELECT_LSB,
+                                                                &pageSelectLsb ) ) {
             return false;
         }
         
         // Read page register GUID0
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_GUID0,
-                                                                    &guid0 ) ) {
+                                                                0,
+                                                                VSCP_REG_GUID0,
+                                                                &guid0 ) ) {
             return false;
         }
 
         // Read page register GUID3
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_GUID3,
-                                                                     &guid3 ) ) {
+                                                                0,
+                                                                VSCP_REG_GUID3,
+                                                                &guid3 ) ) {
             return false;
         }
 
         // Read page register GUID5
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_GUID5,
-                                                                    &guid5 ) ) {
+                                                                0,
+                                                                VSCP_REG_GUID5,
+                                                                &guid5 ) ) {
             return false;
         }
 
         // Read page register GUID7
         if ( CANAL_ERROR_SUCCESS != m_pdll->readLevel1Register( m_nodeid,
-                                                                    0,
-                                                                    VSCP_REG_GUID7,
-                                                                    &guid7 ) ) {
-                                                                    return false;
+                                                                0,
+                                                                VSCP_REG_GUID7,
+                                                                &guid7 ) ) {
+            return false;
         }
 
         // Set device in boot mode
         msg.data[ 0 ] = m_nodeid;	            // Nickname to read register from
-        msg.data[ 1 ] = VSCP_BOOTLOADER_PIC1;	// VSCP PIC1 bootload algorithm	
+        msg.data[ 1 ] = VSCP_BOOTLOADER_PIC1;	// VSCP PIC1 bootloader algorithm	
         msg.data[ 2 ] = guid0;
         msg.data[ 3 ] = guid3;
         msg.data[ 4 ] = guid5;
@@ -657,11 +657,12 @@ bool CBootDevice_PIC1::setDeviceInBootMode( void )
         event.head = 0;
         event.vscp_class = 512;                         // CLASS2.PROTOCOL1
         event.vscp_type = VSCP_ENTER_BOOTLODER_MODE;    // We want to enter bootloader mode
-        memset( event.GUID, 0, sizeof( event.data ) );  // We use interface GUID
+        memset( event.GUID, 0, 16 );                    // We use interface GUID
         event.sizeData = 16 + 8;                        // Interface GUID
+        memset( event.data, 0, sizeof( event.data ) );
         memcpy( event.data, m_ifguid.m_id, 16 );        // Address node i/f
         event.data[ 16 ] = m_guid.getLSB();	            // Nickname for device 
-        event.data[ 17 ] = VSCP_BOOTLOADER_PIC1;	    // VSCP PIC1 bootload algorithm	
+        event.data[ 17 ] = VSCP_BOOTLOADER_PIC1;	    // VSCP PIC1 bootloader algorithm	
         event.data[ 18 ] = guid0;
         event.data[ 19 ] = guid3;
         event.data[ 20 ] = guid5;
@@ -1041,8 +1042,11 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
         if ( USE_DLL_INTERFACE == m_type ) {
             msg.data[ i ] = b;    
         }
-        if ( USE_TCPIP_INTERFACE == m_type ) {
+        else if ( USE_TCPIP_INTERFACE == m_type ) {
             event.data[ 16 + i] = b;
+        }
+        else {
+            return false;
         }
 
         // Update address
@@ -1053,10 +1057,13 @@ bool CBootDevice_PIC1::writeFrimwareSector( void )
     if ( USE_DLL_INTERFACE == m_type ) {
         m_pdll->doCmdSend( &msg );
     }
-    if ( USE_TCPIP_INTERFACE == m_type ) {
+    else if ( USE_TCPIP_INTERFACE == m_type ) {
         m_ptcpip->doCmdSendEx( &event );    
     }
-
+    else {
+        return false;
+    }
+    
     // Message queued - ( wait for response from client(s) ).
     if ( m_bHandshake ) {
 
