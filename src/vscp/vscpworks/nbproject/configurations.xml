@@ -114,7 +114,6 @@
               <pElem>.</pElem>
             </incDir>
             <preprocessorList>
-              <Elem>NS_ENABLE_SSL</Elem>
               <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
@@ -122,15 +121,8 @@
             </preprocessorList>
           </cTool>
           <ccTool>
-            <incDir>
-              <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
-              <pElem>/usr/local/include/wx-3.0</pElem>
-              <pElem>../common</pElem>
-              <pElem>../../common</pElem>
-            </incDir>
             <preprocessorList>
               <Elem>USE_FOSSA</Elem>
-              <Elem>WXUSINGDLL</Elem>
               <Elem>_FILE_OFFSET_BITS=64</Elem>
               <Elem>__WXGTK__</Elem>
               <Elem>wxUSE_GUI=1</Elem>
@@ -160,6 +152,11 @@
         </cTool>
       </item>
       <item path="../../common/net_skeleton.c" ex="false" tool="0" flavor2="2">
+        <cTool>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../common/canalsuperwrapper.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -199,16 +196,10 @@
       </item>
       <item path="bootdevice_pic1.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="bootdevice_vscp.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="devicebootloaderwizard.cpp" ex="false" tool="1" flavor2="4">
@@ -217,9 +208,6 @@
       </item>
       <item path="dlgabout.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="dlgabstractionedit.cpp" ex="false" tool="1" flavor2="4">
@@ -274,13 +262,32 @@
         <ccTool flags="0">
         </ccTool>
       </item>
-      <folder path="src">
+      <folder path="0">
         <ccTool>
           <incDir>
-            <pElem>.</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
+            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NS_ENABLE_SSL</Elem>
+            <Elem>_LARGE_FILES</Elem>
+            <Elem>__WXDEBUG__</Elem>
+          </preprocessorList>
+        </ccTool>
+      </folder>
+      <folder path="src">
+        <ccTool>
+          <incDir>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
+            <pElem>../common</pElem>
+            <pElem>../../common</pElem>
+            <pElem>.</pElem>
+          </incDir>
+          <preprocessorList>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </folder>
@@ -294,9 +301,6 @@
       </item>
       <item path="frmdeviceconfig.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
-          <preprocessorList>
-            <Elem>NS_ENABLE_SSL</Elem>
-          </preprocessorList>
         </ccTool>
       </item>
       <item path="frmmain.cpp" ex="false" tool="1" flavor2="4">

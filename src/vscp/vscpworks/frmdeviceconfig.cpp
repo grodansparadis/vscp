@@ -937,15 +937,15 @@ void frmDeviceConfig::OnCellLeftClick(wxGridEvent& event)
 
     if (ID_GRID_REGISTERS == event.GetId()) {
         // Select the row
-        m_gridRegisters->SelectRow(m_lastLeftClickRow);
+        m_gridRegisters->SelectRow( m_lastLeftClickRow );
     } 
     else if (ID_GRID_ABSTRACTIONS == event.GetId()) {
         // Select the row
-        m_gridAbstractions->SelectRow(m_lastLeftClickRow);
+        m_gridAbstractions->SelectRow( m_lastLeftClickRow );
     } 
     else if (ID_GRID_DM == event.GetId()) {
         // Select the row
-        m_gridDM->SelectRow(m_lastLeftClickRow);
+        m_gridDM->SelectRow( m_lastLeftClickRow );
     }
 
     event.Skip();
@@ -3732,6 +3732,13 @@ void frmDeviceConfig::readValueSelectedRow( wxCommandEvent& WXUNUSED( event ) )
     }
 
     if ( m_gridRegisters->GetNumberRows() ) {
+		
+		// Must do this hack to handle rows selected by clicking a
+		// cell instead of the border.
+		if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
+			// Select the row
+			m_gridRegisters->SelectRow( m_lastLeftClickRow );
+		}
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
@@ -3843,6 +3850,13 @@ void frmDeviceConfig::writeValueSelectedRow(wxCommandEvent& WXUNUSED(event))
 
 
     if ( m_gridRegisters->GetNumberRows() ) {
+		
+		// Must do this hack to handle rows selected by clicking a
+		// cell instead of the border.
+		if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
+			// Select the row
+			m_gridRegisters->SelectRow( m_lastLeftClickRow );
+		}
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
@@ -3960,6 +3974,13 @@ void frmDeviceConfig::undoValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     }
 
     if ( m_gridRegisters->GetNumberRows() ) {
+		
+		// Must do this hack to handle rows selected by clicking a
+		// cell instead of the border.
+		if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
+			// Select the row
+			m_gridRegisters->SelectRow( m_lastLeftClickRow );
+		}
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
@@ -4068,6 +4089,13 @@ void frmDeviceConfig::defaultValueSelectedRow(wxCommandEvent& WXUNUSED(event))
     }
 
     if ( m_gridRegisters->GetNumberRows() ) {
+		
+		// Must do this hack to handle rows selected by clicking a
+		// cell instead of the border.
+		if ( 0 == m_gridRegisters->GetSelectedRows().GetCount() ) {
+			// Select the row
+			m_gridRegisters->SelectRow( m_lastLeftClickRow );
+		}
 
         wxArrayInt selrows = m_gridRegisters->GetSelectedRows();
 
