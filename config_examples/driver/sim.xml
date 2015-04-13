@@ -16,9 +16,9 @@
   </variable>
 
   <variable type="boolean">
-    <name>SIM1_BLEVEL0</name>
-    <note>This is a Level I node.</note>
-    <value>true</value>
+    <name>SIM1_BLEVEL20</name>
+    <note>This is not a Level II node.</note>
+    <value>false</value>
   </variable>
 
   <variable type="integer">
@@ -36,7 +36,7 @@
   <variable type="guid">
     <name>SIM1_GUID0</name>
     <note>GUID for the node.</note>
-    <value>11:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>
+    <value>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</value>
   </variable>
 
   <variable type="string">
@@ -48,7 +48,7 @@
   <variable type="integer">
     <name>SIM1_INTERVAL0</name>
     <note>Interval between measurement events.</note>
-    <value>0</value>
+    <value>2</value>
   </variable>
 
   <variable type="long">

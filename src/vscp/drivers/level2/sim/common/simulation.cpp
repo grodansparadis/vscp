@@ -231,7 +231,7 @@ CSim::open(const char *pUsername,
 
             bool bvalue;
             strName = m_prefix +
-                wxString::FromAscii( "_bLevel" ) + strIteration;
+                wxString::FromAscii( "_bLevel2" ) + strIteration;
             if ( VSCP_ERROR_SUCCESS == m_srvLocal.getVariableBool( strName, &bvalue ) ) {
                 m_pthreadWork[ i ]->m_bLevel2 = bvalue;
             }

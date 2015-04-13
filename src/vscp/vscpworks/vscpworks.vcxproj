@@ -62,7 +62,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>USE_FOSSA;NS_ENABLE_GETADDRINFO;NS_ENABLE_SSL;NS_ENABLE_THREADS;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_FOSSA;NS_ENABLE_THREADS;NS_ENABLE_SSL;_CRT_SECURE_NO_WARNINGS;NOPCH;WIN32;__WXMSW__;_WINDOWS;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalOptions> %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>.\;$(OPENSSL)\include;$(WXWIN)/lib/vc_lib/mswu;$(WXWIN)/include;$(WXWIN)/contrib/include</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
