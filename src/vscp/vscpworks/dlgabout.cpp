@@ -59,7 +59,7 @@
 #include "version.h"
 #include "dlgabout.h"
 
-#define HTML _("<html><head><meta content=\"text/html; charset=ISO-8859-1\"  http-equiv=\"content-type\"><title></title></head><body><h1 style=\"text-align: center;\">VSCP Works</h1><div style=\"text-align: center;\"><span style=\"font-weight: bold;\">Copyright (c) 2000-2015</span><br> Ake Hedman, Grodans Paradis AB &lt;<a href=\"mailto:akhe@grodansparadis.com\">akhe@grodansparadis.com</a>&gt<br><a href=\"http://www.grodansparadis.com\">http://www.grodansparadis.com</a><br><br>Part of the VSCP &amp; friends package.<br><span style=\"font-weight: bold;\">VSCP site:</span> <a href=\"http://www.vscp.org\">http://www.vscp.org</a><br><br><h3><span style=\"font-weight: bold;\">Version</span>:%s</h3></div></body></html>") 
+#define HTML _("<html><head><meta content=\"text/html; charset=ISO-8859-1\"  http-equiv=\"content-type\"><title></title></head><body><h1 style=\"text-align: center;\">VSCP Works</h1><div style=\"text-align: center;\"><span style=\"font-weight: bold;\">Copyright (c) 2000-2015</span><br> Grodans Paradis AB &lt;<a href=\"mailto:info@grodansparadis.com\">info@grodansparadis.com</a>&gt<br><a href=\"http://www.grodansparadis.com\">http://www.grodansparadis.com</a><br><br>Part of the VSCP &amp; friends package.<br><span style=\"font-weight: bold;\">VSCP site:</span> <a href=\"http://www.vscp.org\">http://www.vscp.org</a><br><br><h3><span style=\"font-weight: bold;\">Version</span>:%s</h3></div></body></html>") 
 
 static const wxChar *about_html[] = { HTML  };
 

@@ -97,8 +97,8 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <LinkDLL>true</LinkDLL>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Release\lircdrv.dll</OutputFile>
-      <ImportLibrary>.\Release\lircdrv.lib</ImportLibrary>
+      <OutputFile>.\Release\vscpl1_lircdrv.dll</OutputFile>
+      <ImportLibrary>.\Release\vscpl1_lircdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;$(EXPAT)\bin;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\lircdrv.def</ModuleDefinitionFile>
@@ -152,8 +152,8 @@
       <LinkDLL>true</LinkDLL>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <OutputFile>.\Debug\lircdrv.dll</OutputFile>
-      <ImportLibrary>.\Debug\lircdrv.lib</ImportLibrary>
+      <OutputFile>.\Debug\vscpl1_lircdrv.dll</OutputFile>
+      <ImportLibrary>.\Debug\vscpl1_lircdrv.lib</ImportLibrary>
       <AdditionalLibraryDirectories>$(wxwin)\lib\vc_lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>libexpat.lib;comctl32.lib;wsock32.lib;netapi32.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>.\lircdrv.def</ModuleDefinitionFile>
