@@ -254,6 +254,14 @@
             <path>/usr/local/lib/vscpl2drv_raweth.so</path>
         </driver>
 
+       <!-- Level II simulation  -->
+        <driver enable="true"> 		   	 			
+            <name>sim1</name> 		   	 		
+            <config>1</config>
+			<guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
+            <path>/usr/local/lib/vscpl2_simdrv.so</path>
+        </driver>
+
 	<!-- Level II 1-wire driver  -->
         <driver enable="false"> 		   	 			
             <name>VSCP Level II 1-wire Driver 1</name> 		   	 		
