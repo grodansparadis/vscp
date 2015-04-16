@@ -255,7 +255,7 @@
             <name>sim1</name> 		   	 		
             <config>1</config>
 			<guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
-            <path>C:\Program Files (x86)\VSCP\x86\level2\vscpl2_simdrv.dll</path>
+            <path>C:\Program Files (x86)\VSCP\drivers\level2\vscpl2_simdrv.dll</path>
         </driver>
  
 
