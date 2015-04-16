@@ -250,7 +250,7 @@
             <path>/usr/local/lib/vscpl2drv_raweth.so</path>
         </driver>
 		
-		<!-- Level II simulation  -->
+	<!-- Level II simulation  -->
         <driver enable="true"> 		   	 			
             <name>sim1</name> 		   	 		
             <config>1</config>

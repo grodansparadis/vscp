@@ -204,7 +204,7 @@ extern "C" {
         uint16_t vscp_type; // VSCP type
         uint8_t GUID[ 16 ]; // Node globally unique id MSB(0) -> LSB(15)
         uint16_t sizeData;  // Number of valid data bytes
-    } vscpEvent;
+    } /*__attribute__((packed, aligned(1)))*/ vscpEvent;
 
 
 typedef vscpEvent *PVSCPEVENT;
@@ -235,7 +235,7 @@ typedef struct {
 
     uint8_t  data[VSCP_MAX_DATA];   // Pointer to data. Max 487 (512- 25) bytes
 
-} vscpEventEx;
+} /*__attribute__((packed, aligned(1)))*/ vscpEventEx;
 
 
 typedef vscpEventEx *PVSCPEVENTEX;
@@ -294,7 +294,7 @@ typedef struct  {
 	uint8_t filter_GUID[ 16 ];      // Node address MSB -> LSB, LSB is node nickname id
 	uint8_t mask_GUID[ 16 ];        //		when interfacing the VSCP daemon.
 	
-} vscpEventFilter;
+} /*__attribute__((packed, aligned(1)))*/ vscpEventFilter;
 
 
 typedef vscpEventFilter *PVSCPEVENTFILTER;
@@ -315,7 +315,7 @@ typedef struct structVSCPStatistics {
     unsigned long x;                            // Currently undefined value 
     unsigned long y;                            // Currently undefined value 
     unsigned long z;                            // Currently undefined value 
-} VSCPStatistics;
+} /*__attribute__((packed, aligned(1)))*/ VSCPStatistics;
 
 typedef  VSCPStatistics * PVSCPSTATISTICS;
 
@@ -333,7 +333,7 @@ typedef struct structVSCPStatus {
     unsigned long lasterrorcode;            // Last error code
     unsigned long lasterrorsubcode;         // Last error subcode
     char lasterrorstr[VSCP_STATUS_ERROR_STRING_SIZE]; // Last error string
-} VSCPStatus;
+} /*__attribute__((packed, aligned(1)))*/ VSCPStatus;
 
 
 typedef  VSCPStatus * PVSCPSTATUS;
@@ -361,7 +361,7 @@ typedef struct structVSCPChannelInfo {
 	unsigned short channel;         // daemon channel number
 	char GUID[ 16 ];                // Channel GUID id
 	
-} VSCPChannelInfo;
+} /*__attribute__((packed, aligned(1)))*/ VSCPChannelInfo;
 
 typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 

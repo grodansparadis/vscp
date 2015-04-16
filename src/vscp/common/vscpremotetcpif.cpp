@@ -603,7 +603,10 @@ int VscpRemoteTcpIf::doCmdSend( const vscpEvent *pEvent )
     unsigned char guidsum = 0;
     
     // Must be a valid data pointer if data 
-    if ( ( pEvent->sizeData > 0 ) && ( NULL == pEvent->pdata ) ) return VSCP_ERROR_GENERIC;
+    if ( ( pEvent->sizeData > 0 ) && ( NULL == pEvent->pdata ) ) return VSCP_ERROR_PARAMETER;
+	
+	// Validate datasize
+	if ( pEvent->sizeData > VSCP_MAX_DATA ) return VSCP_ERROR_PARAMETER;
 
     //send head,class,type,obid,timestamp,GUID,data1,data2,data3....
     strBuf.Printf( _( "SEND %u,%u,%u,%u,%u," ),
@@ -679,6 +682,9 @@ int VscpRemoteTcpIf::doCmdSendEx( const vscpEventEx *pEvent )
     if ( m_bModeReceiveLoop ) return VSCP_ERROR_PARAMETER;
 
     if ( NULL == pEvent ) return VSCP_ERROR_PARAMETER;
+	
+	// Validate datasize
+	if ( pEvent->sizeData > VSCP_MAX_DATA ) return VSCP_ERROR_PARAMETER;
     
     //send head,class,type,obid,timestamp,GUID,data1,data2,data3....
     strBuf.Printf( _( "SEND %u,%u,%u,%u,%u,"),
