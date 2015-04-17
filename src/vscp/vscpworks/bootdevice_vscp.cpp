@@ -1163,10 +1163,10 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             memset(event.GUID, 0, 16);                                  // We use interface GUID
             event.sizeData = 16 + 4;                                    // Interface GUID
             memcpy(event.data, m_guid.m_id, 16);                        // Address node
-            event.data[ 0 ] = ((uint8_t)(m_blockNumber >> 24)) & 0xFF;
-            event.data[ 1 ] = ((uint8_t)(m_blockNumber >> 16)) & 0xFF;
-            event.data[ 2 ] = ((uint8_t)(m_blockNumber >>  8)) & 0xFF;
-            event.data[ 3 ] = ((uint8_t)(m_blockNumber >>  0)) & 0xFF;
+            event.data[ 16 ] = ((uint8_t)(m_blockNumber >> 24)) & 0xFF;
+            event.data[ 17 ] = ((uint8_t)(m_blockNumber >> 16)) & 0xFF;
+            event.data[ 18 ] = ((uint8_t)(m_blockNumber >>  8)) & 0xFF;
+            event.data[ 19 ] = ((uint8_t)(m_blockNumber >>  0)) & 0xFF;
 
         }
 
