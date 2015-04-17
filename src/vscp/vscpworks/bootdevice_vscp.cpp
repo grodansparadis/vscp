@@ -1108,8 +1108,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             
             msg.sizeData = 2;
         }
-
-        if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
+        else if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
             vscpclass = VSCP_CLASS1_PROTOCOL;                   // Class
             vscptype = VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA;
             priority = VSCP_PRIORITY_LOW_COMMON;
@@ -1157,8 +1156,7 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             event.data[ 16 ]  = 0x00;
             event.data[ 17 ]  = 0x00;
         }
-
-        if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
+        else if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
             event.head = 0;
             event.vscp_class = 512;                                     // CLASS2.PROTOCOL1
             event.vscp_type = VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA;    // Activate new Image
