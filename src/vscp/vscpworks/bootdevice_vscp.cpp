@@ -1333,8 +1333,6 @@ bool CBootDevice_VSCP::checkResponseLevel1(uint8_t index)
             //wxMessageBox( _T("123456") );
             m_pdll->doCmdReceive( &rcvmsg );
 
-
-
             if ( ( int )( rcvmsg.id & 0xff ) == m_nodeid ) {
 
                 // Case -- index = 0  --- not implemented always return true 
@@ -1436,8 +1434,8 @@ bool CBootDevice_VSCP::checkResponseLevel2(uint8_t index)
                         // Calculate CRC in host
                         crc_16_host = crcFast(&m_pbufPrg[ m_pAddr - m_blockSize ], m_blockSize);
                         // GET CRC in remote node
-                        crc_16_remote = ( ( ( uint16_t ) event.data[16] ) << 8 ) |
-                                        ( ( ( uint16_t ) event.data[17] ) << 0 );
+                        crc_16_remote = ( ( ( uint16_t ) event.data[ 0 ] ) << 8 ) |
+                                        ( ( ( uint16_t ) event.data[ 1 ] ) << 0 );
 
                         // Response received from all - return success
                         rv = true;
