@@ -60,7 +60,7 @@
   <variable type="guid">
     <name>btprox1_guid</name>
     <note>GUID for the driver.</note>
-    <value>11:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00</value>
+    <value>FF:FF:FF:FF:FF:FF:FF:F7:01:00:00:00:00:00:00:00</value>
   </variable>
 
 

@@ -277,7 +277,7 @@ void dlgVscpInterfaceSettings::CreateControls()
   itemBoxSizer29->Add(itemStaticText30, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   m_RemoteServerURL = new wxTextCtrl;
-  m_RemoteServerURL->Create( m_panelServer, ID_RemoteServerURL, _("localhost:9598"), wxDefaultPosition, wxSize(400, -1), 0 );
+  m_RemoteServerURL->Create( m_panelServer, ID_RemoteServerURL, _("127.0.0.1:9598"), wxDefaultPosition, wxSize(400, -1), 0 );
   itemBoxSizer29->Add(m_RemoteServerURL, 0, wxALIGN_CENTER_VERTICAL|wxALL, 1);
 
   wxBoxSizer* itemBoxSizer32 = new wxBoxSizer(wxHORIZONTAL);

@@ -1,6 +1,6 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 
-<!-- Version 1.0.0	   2014-11-07 		                                     -->
+<!-- 2015-04-12 		                                                     -->
 <!-- Example configuration file 		                                     -->
 <!-- Ake Hedman, akhe@grodansparadis.com                                     -->
 <!-- http://www.grodansparadis.com	                                         -->
@@ -12,10 +12,9 @@
     <general>
     
         <!-- Set the detail of logging you want -->
-
         <loglevel>debug</loglevel>
         
-        <!-- The user to run as on Unix         -->
+        <!-- The user to run as on Unix                                     -->
         <runasuser></runasuser>
         
         <!-- General logging will be done to syslog on Unix but on          -->
@@ -198,7 +197,7 @@
         </driver>
         
         <!-- PEAK driver -->
-        <driver enable="true" >
+        <driver enable="false" >
             <name>peak</name>
             <config>CANUSB;125</config>
             <path>C:\Users\grodansparadis\development\vscp_software\src\vscp\drivers\level1\peak\win32\Debug\vscpl1_peakdrv.dll</path>
@@ -249,6 +248,14 @@
             <name>rawethernet1</name> 		   	 		
             <config>eth0</config>
             <path>/usr/local/lib/vscpl2drv_raweth.so</path>
+        </driver>
+		
+	<!-- Level II simulation  -->
+        <driver enable="true"> 		   	 			
+            <name>sim1</name> 		   	 		
+            <config>1</config>
+			<guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
+            <path>C:\Program Files (x86)\VSCP\drivers\level2\vscpl2_simdrv.dll</path>
         </driver>
  
 

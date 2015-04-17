@@ -439,7 +439,7 @@ bool CBootDevice_VSCP::setDeviceInBootMode( void )
 
     uint16_t vscpclass;
     uint8_t vscptype;
-    uint8_t nodeid;
+    uint8_t nodeid = 0;
     uint8_t priority = 0;
 
     wxBusyCursor busy;

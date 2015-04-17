@@ -191,3 +191,6 @@ vscp-software_1.0.1-1_amd64.deb
 src/vscp/drivers/level1/can4vscp/linux/test
 /config_examples/simuation/temp1.txt
 /src/vscp/helperlib/windows/*.aps
+src/vscp/drivers/level2/sim/linux/nbproject/
+src/vscp/drivers/level2/sim/linux/test
+/src/vscp/daemon/win32/service/vscpsrv.sdf

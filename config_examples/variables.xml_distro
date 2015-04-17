@@ -3,128 +3,98 @@
 <persistent>
     <!-- persistant storage is here -->
 
-    <variable type="string" > 
-        <!-- string -->
-        <name>testvariable_string</name>
-        <value>This is a string</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
+    <!-- 
+	One simulated node that report temperature values and react on button presses
+	The NumberOfNodes can be specified in the driver configuration string instead 
+	and does not need to be in configuration file.
+-->
+  <variable type="integer">
+    <name>SIM1_NUMBEROFNODES</name>
+    <note>        
+	    Number of simulated nodes this driver should act as. Each of them should
+        have an entry below with the index of the driver ordinal as the last character
+        in there name. All variables names start with the driver unique prefix "sim_" 
+        in this case.
+    </note>
+    <value>1</value>
+  </variable>
 
-    <variable type="bool" > <!-- type="boolean" also works -->
-        <!-- boolean -->
-        <name>testvariable_bool</name>
-        <value>true</value> <!-- numericals can also be used == 0 is false. -->
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
+  <variable type="boolean">
+    <name>SIM1_BLEVEL20</name>
+    <note>This is not a Level II node.</note>
+    <value>false</value>
+  </variable>
 
-    <variable type="int" > <!-- type="integer" also works -->
-        <!-- integer -->
-        <name>testvariable_int</name>
-        <value>1956</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
+  <variable type="integer">
+    <name>SIM1_ZONE0</name>
+    <note>Zone for module.</note>
+    <value>1</value>
+  </variable>
 
-    <variable type="long" >
-        <!-- long -->
-        <name>testvariable_long</name>
-        <value>0xffffffff</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
+  <variable type="integer">
+    <name>SIM1_SUBZONE0</name>
+    <note>Zone for module.</note>
+    <value>2</value>
+  </variable>
 
-    <variable type="float" >  <!-- type="double" also works -->
-        <!-- Floating point value -->
-        <name>testvariable_float</name>
-        <value>3.124</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
-	
-    <variable type="measurement" >
-        <!-- normalized integer -->
-        <name>testvariable_measurement</name>
-        <value>0x00,0x01,0x00,0x90,90,1,2,3</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
+  <variable type="guid">
+    <name>SIM1_GUID0</name>
+    <note>GUID for the node.</note>
+    <value>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</value>
+  </variable>
 
-    <variable type="event" >
-        <!-- VSCP Event -->
-        <name>testvariable_event</name>
-	<value>0,10,400,0,ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:00:01,0x12,1,2,3,4,5,0x12,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
+  <variable type="string">
+    <name>SIM1_PATH0</name>
+    <note>Path to simulation data. Leave blank to use internal values.</note>
+    <value>c:/tmp/simtempdata.txt</value>
+  </variable>
 
-    <variable type="guid" >
-        <!-- VSCP GUID -->
-        <name>testvariable_guid</name>
-        <value>ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:ff:00:01</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
-	
-	<variable type="data" >
-        <!-- VSCP data -->
-        <name>testvariable_data</name>
-        <value>1,2,3,4,5,6,7</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
-	
-	<variable type="class" >
-        <!-- VSCP class -->
-        <name>testvariable_class</name>
-        <value>100</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
-	
-    <variable type="type" >
-        <!-- VSCP type -->
-        <name>testvariable_type</name>
-        <value>1</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
-	
-	<variable type="timestamp" >
-        <!-- VSCP timestamp -->
-        <name>testvariable_timestamp</name>
-    	<value>100</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
+  <variable type="integer">
+    <name>SIM1_INTERVAL0</name>
+    <note>Interval between measurement events.</note>
+    <value>2</value>
+  </variable>
 
-    <variable type="datetime" >
-        <!-- Date + Time in ISO format -->
-        <name>testvariable_datetime</name>
-        <value>2009-02-14 18:05:00</value>
-	<note>This is a note about this variable that can contain info</note>
-    </variable>
-	
-   
-   <!-- numericals also work -->
+  <variable type="long">
+    <name>SIM1_MEASUREMENTCLASS0</name>
+    <note>CLASS1_MEASUREMENT</note>
+    <value>10</value>
+  </variable>
 
-   <variable type="1">
-      	<name>test1</name>
-      	<value>This is some sample text</value>
-	<note>This is a note about this variable that can contain info</note>
-   </variable>
-   
-   <variable type="1">
-      	<name>test2</name>
-      	<value>This is also some sample text</value>
-	<note>This is a note about this variable that can contain info</note>
-   </variable>
+  <variable type="long">
+    <name>SIM1_MEASUREMENTTYPE0</name>
+    <note>Measurement type is temperature.</note>
+    <value>6</value>
+  </variable>
 
-   <variable type="2">
-      	<name>boolenavar</name>
-      	<value>true</value>
-	<note>This is a note about this variable that can contain info</note>
-   </variable>
+  <variable type="integer">
+    <name>SIM1_UNIT0</name>
+    <note>Degrees Celsius (0=Kelvin, 1=Fahrenheit).</note>
+    <value>1</value>
+  </variable>
 
-   <variable type="3">
-      	<name>intvar1</name>
-      	<value>65535</value>
-	<note>This is a note about this variable that can contain info</note>
-   </variable>
+  <variable type="integer">
+    <name>SIM1_CODING0</name>
+    <note>Coding as normalized integer. (0=normalized integer, 1=float, 2=string)</note>
+    <value>0</value>
+  </variable>
 
-   <variable type="3">
-      	<name>intvar2</name>
-      	<value>-23</value>
-	<note>This is a note about this variable that can contain info</note>
-   </variable>
+  <variable type="integer">
+    <name>SIM1_INDEX0</name>
+    <note>Sensor index (0-7).</note>
+    <value>2</value>
+  </variable>
+
+  <variable type="string">
+    <name>SIM1_DECISIONMATRIX0</name>
+    <note>Two DM entries that reply to CLASS1.CONTROL, TurnOn/TurnOff with 
+      CLASS1.INFORMATION On/Off
+    </note>
+    <value> 0,0x80,0xff,30,0xff,5,1,40,
+			0,0x80,0xff,30,0xff,6,2,40,
+			0,0x80,0xff,30,0xff,5,1,50,
+			0,0x80,0xff,30,0xff,6,2,50	
+	</value>
+  </variable>
     
 </persistent>

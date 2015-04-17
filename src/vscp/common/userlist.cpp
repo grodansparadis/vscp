@@ -80,7 +80,7 @@ bool CUserItem::isAllowedToConnect(const wxString& remote)
     wxIPV4address ipaddr;
     if (!ipaddr.Hostname(remote)) return false;
 
-    // If empty all host allowed, This is "*.*.*.*"
+    // If empty all host allowed, This is "*.*.*.*" or "*"
     if ( m_listAllowedRemotes.IsEmpty() ) return true;
 
     for (i = 0; i < m_listAllowedRemotes.GetCount(); i++) {
@@ -224,9 +224,16 @@ bool CUserList::addUser(const wxString& user,
         wxStringTokenizer tkz(allowedRemotes, wxT(","));
         do {
             wxString remote = tkz.GetNextToken();
-            if (!remote.IsEmpty()) {
-                pItem->m_listAllowedRemotes.Add(remote);
-
+            if ( !remote.IsEmpty() ) {
+                remote.Trim();
+                remote.Trim( false );
+                if ( ( _( "*" ) == remote ) || ( _( "*.*.*.*" ) == remote ) ) {
+                    // All is allowed to connect
+                    pItem->m_listAllowedRemotes.Clear();
+                }
+                else {
+                    pItem->m_listAllowedRemotes.Add( remote );
+                }
             }
         } while (tkz.HasMoreTokens());
     }

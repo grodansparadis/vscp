@@ -12,7 +12,7 @@
         <group>
             <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/vscpworks.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/frmvscpsession.cpp</file>
-            <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/gridtable.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/vscpworks/frmdeviceconfig.cpp</file>
         </group>
     </open-files>
 </project-private>
