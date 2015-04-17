@@ -1099,13 +1099,16 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
         memset(msg.data, 0x00, 8);
 
         if (index == VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE) {
+
+            uint16_t crc16 = crcFast(&m_pbufPrg[ 0 ], m_numBlocks * m_blockSize);
+
             vscpclass = VSCP_CLASS1_PROTOCOL;                   // Class
             vscptype = VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE;
             priority = VSCP_PRIORITY_LOW_COMMON;
-            
-            msg.data[ 0 ] = 0x00;
-            msg.data[ 1 ] = 0x00;
-            
+
+            msg.data[ 0 ] = (uint8_t)(crc16 >> 8) & 0xff;
+            msg.data[ 1 ] = (uint8_t)(crc16 >> 0) & 0xff;
+
             msg.sizeData = 2;
         }
         else if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
@@ -1144,17 +1147,21 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
     else if ( USE_TCPIP_INTERFACE == m_type ) {
 
         vscpEventEx event;
-        
-        memset(&event, 0, sizeof(event));
+
+        // Send message
 
         if (index == VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE) {
+
+            uint16_t crc16 = crcFast(&m_pbufPrg[ 0 ], m_numBlocks * m_blockSize);
+
             event.head = 0;
             event.vscp_class = 512;                                     // CLASS2.PROTOCOL1
             event.vscp_type = VSCP_TYPE_PROTOCOL_ACTIVATE_NEW_IMAGE;    // Activate new Image
+            memset(event.GUID, 0, 16);                                  // We use interface GUID
             event.sizeData = 16 + 2;                                    // Interface GUID
             memcpy(event.data, m_guid.m_id, 16);                        // Address node
-            event.data[ 16 ]  = 0x00;
-            event.data[ 17 ]  = 0x00;
+            event.data[ 16 ] = (uint8_t)(crc16 >> 8) & 0xff;
+            event.data[ 17 ] = (uint8_t)(crc16 >> 0) & 0xff;
         }
         else if (index == VSCP_TYPE_PROTOCOL_PROGRAM_BLOCK_DATA) {
             event.head = 0;
@@ -1202,7 +1209,7 @@ bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel1(void)
     } 
     else {
 
-        if (crc_16_host != crc_16_remote) {
+        if ( crc_16_host != crc_16_remote ) {
             m_pAddr -= m_blockSize;
             return false;
         }
@@ -1255,9 +1262,9 @@ bool CBootDevice_VSCP::sendVSCPCommandSeqenceLevel2(void)
 
     // Check response
     if (!checkResponseLevel2(VSCP_TYPE_PROTOCOL_BLOCK_DATA_ACK)) {
-        // Failure
-        // TODO Resend the block
+
         wxMessageBox(_T(" Response PROTOCOL_BLOCK_DATA_ACK fails"));
+
     }
     else {
 
