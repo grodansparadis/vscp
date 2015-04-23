@@ -164,6 +164,9 @@ public:
 
 	bool m_bIndexed;					// True of indexed storage
 
+    uint32_t m_bgcolor;                 // Cell background color. Default = white.
+    uint32_t m_fgcolor;                 // Cell forground color. Default = black.
+
     MDF_VALUE_LIST  m_list_value;       // list with selectable values
 
 

@@ -1314,6 +1314,10 @@ bool CMDF::parseMDF( wxString& path )
                             pAbstraction->m_nMax =  vscp_readStringValue( child3->GetAttribute( _( "max" ), _("0") ) );                          
                             pAbstraction->m_nMin =  vscp_readStringValue( child3->GetAttribute( _( "min" ), _("0") ) );						
                             wxString stridx = child3->GetAttribute( _( "indexed" ), _("false") );
+                            pAbstraction->m_fgcolor = wxUINT32_SWAP_ALWAYS( vscp_readStringValue( child3->GetAttribute( wxT( "fgcolor" ), wxT( "0x00000000" ) ) ) );
+                            pAbstraction->m_bgcolor = wxUINT32_SWAP_ALWAYS( vscp_readStringValue( child3->GetAttribute( wxT( "bgcolor" ), wxT( "0xffffffff" ) ) ) );
+                            pAbstraction->m_fgcolor >>= 8;
+                            pAbstraction->m_bgcolor >>= 8;
                             
 							stridx.Lower();
 							if ( wxNOT_FOUND != stridx.Find(_("true")) ) {

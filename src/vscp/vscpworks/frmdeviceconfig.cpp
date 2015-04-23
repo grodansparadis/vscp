@@ -3323,50 +3323,51 @@ read_pageregs1_again:
             MDF_REGISTER_LIST::iterator iter;
             for ( iter = m_mdf.m_list_register.begin(); iter != m_mdf.m_list_register.end(); ++iter ) {
 
-                CMDF_Register *reg = *iter;
+                CMDF_Register *pReg = *iter;
                 int cnt = 0;
 
                 // Add a new row
                 m_gridRegisters->AppendRows( 1 );
 
                 // Save position in grid for others to refere to
-                reg->m_rowInGrid = m_gridRegisters->GetNumberRows() - 1;
+                pReg->m_rowInGrid = m_gridRegisters->GetNumberRows() - 1;
 
                 // Register
-                strBuf.Printf( _( "%04X:%02X" ), reg->m_nPage, reg->m_nOffset );
+                strBuf.Printf( _( "%04X:%02X" ), pReg->m_nPage, pReg->m_nOffset );
 
-                wxColour fgcolor( reg->m_fgcolor );
-                wxColour bgcolor( reg->m_bgcolor );
+                wxColour fgcolor( pReg->m_fgcolor );
+                wxColour bgcolor( pReg->m_bgcolor );
+
+                // Set foreground and background colors.
+                for ( int i = 0; i < 4; i++ ) {
+                    m_gridRegisters->SetCellTextColour( m_gridRegisters->GetNumberRows() - 1, i, fgcolor );
+                    m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows() - 1, i, bgcolor );
+                }
 
                 m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1, 0, strBuf );
                 m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 0 );
                 m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows() - 1, 0, fontBold );
                 m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows() - 1, 0 );
-                m_gridRegisters->SetCellTextColour( m_gridRegisters->GetNumberRows() - 1, 0, fgcolor );
-                m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows() - 1, 0, bgcolor );
+                
 
                 // Value
-                reg->m_value = m_userRegisters.getValue( reg->m_nPage, reg->m_nOffset );
+                pReg->m_value = m_userRegisters.getValue( pReg->m_nPage, pReg->m_nOffset );
                 m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
                                                2,
-                                               getFormattedValue( reg->m_value ) );
+                                               getFormattedValue( pReg->m_value ) );
                 m_gridRegisters->SetCellAlignment( wxALIGN_CENTRE, m_gridRegisters->GetNumberRows() - 1, 2 );
                 m_gridRegisters->SetCellFont( m_gridRegisters->GetNumberRows() - 1, 2, fontBold );
-                m_gridRegisters->SetCellTextColour( m_gridRegisters->GetNumberRows() - 1, 2, fgcolor );
-                m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows() - 1, 2, bgcolor );
 
                 //str.Printf(reg->m_strName + _("\n") + reg->m_strDescription);
-                str = reg->m_strName + _( "\n" ) + reg->m_strDescription;
+                str = pReg->m_strName + _( "\n" ) + pReg->m_strDescription;
                 m_gridRegisters->SetCellValue( m_gridRegisters->GetNumberRows() - 1,
                                                3,
                                                str );
                 m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows() - 1, 3 );
-                m_gridRegisters->SetCellTextColour( m_gridRegisters->GetNumberRows() - 1, 3, fgcolor );
-                m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows() - 1, 3, bgcolor );
 
                 wxString strAccess;
-                if ( reg->m_nAccess & MDF_ACCESS_READ ) strAccess = _( "r" );
-                if ( reg->m_nAccess & MDF_ACCESS_WRITE ) {
+                if ( pReg->m_nAccess & MDF_ACCESS_READ ) strAccess = _( "r" );
+                if ( pReg->m_nAccess & MDF_ACCESS_WRITE ) {
                     strAccess += _( "w" );
                 }
                 else {
@@ -3381,8 +3382,6 @@ read_pageregs1_again:
                     m_gridRegisters->SetReadOnly( m_gridRegisters->GetNumberRows() - 1, 2 );
                 }
                 m_gridRegisters->SetCellAlignment( m_gridRegisters->GetNumberRows() - 1, 1, wxALIGN_CENTRE, wxALIGN_CENTRE );
-                m_gridRegisters->SetCellTextColour( m_gridRegisters->GetNumberRows() - 1, 1, fgcolor );
-                m_gridRegisters->SetCellBackgroundColour( m_gridRegisters->GetNumberRows() - 1, 1, bgcolor );
 
                 // Make all parts of the row visible
                 m_gridRegisters->AutoSizeRow( m_gridRegisters->GetNumberRows() - 1 );
@@ -5004,7 +5003,16 @@ void frmDeviceConfig::updateAbstractionGrid(void)
     for ( iter = m_mdf.m_list_abstraction.begin();
             iter != m_mdf.m_list_abstraction.end(); ++iter ) {
 
-        CMDF_Abstraction *abstraction = *iter; 
+        CMDF_Abstraction *pAbstraction = *iter; 
+
+        wxColour fgcolor( pAbstraction->m_fgcolor );
+        wxColour bgcolor( pAbstraction->m_bgcolor );
+
+        // Set foreground and background colors.
+        for ( int i = 0; i < 5; i++ ) {
+            m_gridRegisters->SetCellTextColour( m_gridAbstractions->GetNumberRows() - 1, i, fgcolor );
+            m_gridRegisters->SetCellBackgroundColour( m_gridAbstractions->GetNumberRows() - 1, i, bgcolor );
+        }
 
         // Add a row
         m_gridAbstractions->AppendRows(1);
@@ -5012,7 +5020,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         // Name
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1, 
                                             0,
-                                            _(" ") + abstraction->m_strName );
+                                            _( " " ) + pAbstraction->m_strName );
         m_gridAbstractions->SetCellAlignment( wxALIGN_LEFT,
                                                 m_gridAbstractions->GetNumberRows()-1,
                                                 0 );
@@ -5022,7 +5030,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         // Type
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
                                             1,
-                                            abstraction->m_strName );
+                                            pAbstraction->m_strName );
         m_gridAbstractions->SetCellAlignment( wxALIGN_CENTER,
                                                 m_gridAbstractions->GetNumberRows()-1,
                                                 1 );
@@ -5031,11 +5039,11 @@ void frmDeviceConfig::updateAbstractionGrid(void)
 
         // Access
         strBuf = _("");
-        if (abstraction->m_nAccess & MDF_ACCESS_READ) {
+        if ( pAbstraction->m_nAccess & MDF_ACCESS_READ ) {
             strBuf = _("r");
         }
 
-        if (abstraction->m_nAccess & MDF_ACCESS_WRITE) {
+        if ( pAbstraction->m_nAccess & MDF_ACCESS_WRITE ) {
             strBuf += _("w");
         }
 
@@ -5051,7 +5059,7 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         // Description
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
                                             4,
-                                            _(" ") + abstraction->m_strDescription);
+                                            _( " " ) + pAbstraction->m_strDescription );
 
         m_gridAbstractions->SetCellAlignment( wxALIGN_LEFT,
                                                 m_gridAbstractions->GetNumberRows()-1,
@@ -5063,8 +5071,8 @@ void frmDeviceConfig::updateAbstractionGrid(void)
         wxString strType;
         int pos = 0;        // Current character
 
-        strType = abstraction->getAbstractionValueType();
-        m_userRegisters.getAbstractionValueAsString( abstraction, strValue );        
+        strType = pAbstraction->getAbstractionValueType();
+        m_userRegisters.getAbstractionValueAsString( pAbstraction, strValue );
         
         // Value
         m_gridAbstractions->SetCellValue( m_gridAbstractions->GetNumberRows()-1,
