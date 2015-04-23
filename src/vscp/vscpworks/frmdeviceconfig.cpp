@@ -565,6 +565,8 @@ void frmDeviceConfig::CreateControls() {
 
     m_gridDM->DeleteRows(0);
 
+    m_gridRegisters->SetFocus();
+
 }
 
 
@@ -3144,6 +3146,7 @@ void frmDeviceConfig::fillStandardRegisters()
 void frmDeviceConfig::OnButtonUpdateClick( wxCommandEvent& event ) 
 {
     doUpdate();
+    m_gridRegisters->SetFocus();
     event.Skip(false);
 }
 
