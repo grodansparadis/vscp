@@ -294,6 +294,9 @@ CMDF_Register &CMDF_Register::operator=( const CMDF_Register& other )
     m_rowInGrid = other.m_rowInGrid;
     m_value = other.m_value;
 
+    m_fgcolor = other.m_fgcolor;
+    m_bgcolor = other.m_bgcolor;
+
     // Clearup bit list
     MDF_BIT_LIST::iterator iterBit;
     for ( iterBit = m_list_bit.begin();
@@ -1576,9 +1579,10 @@ bool CMDF::parseMDF( wxString& path )
                             pRegister->m_nMin = vscp_readStringValue( child3->GetAttribute( wxT( "min" ), wxT( "0" ) ) );
                             pRegister->m_nMax = vscp_readStringValue( child3->GetAttribute( wxT( "max" ), wxT("255") ) );                        
                             pRegister->m_strDefault = child3->GetAttribute( wxT( "default" ), wxT("UNDEF") );
-                            pRegister->m_fgcolor = vscp_readStringValue( child3->GetAttribute( wxT( "fgcolor" ), wxT( "0x000000" ) ) );
-                            pRegister->m_bgcolor = vscp_readStringValue( child3->GetAttribute( wxT( "bgcolor" ), wxT( "0xffffff" ) ) );
-                            
+                            pRegister->m_fgcolor = wxUINT32_SWAP_ALWAYS( vscp_readStringValue( child3->GetAttribute( wxT( "fgcolor" ), wxT( "0x00000000" ) ) ) );
+                            pRegister->m_bgcolor = wxUINT32_SWAP_ALWAYS( vscp_readStringValue( child3->GetAttribute( wxT( "bgcolor" ), wxT( "0xffffffff" ) ) ) );
+                            pRegister->m_fgcolor >>= 8;
+                            pRegister->m_bgcolor >>= 8;
                             strType = child3->GetAttribute( wxT( "type" ), wxT( "std" ) );
                             strType.Trim();
                             strType.Trim(false);
