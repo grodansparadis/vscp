@@ -334,7 +334,7 @@ bool CUserRegisters::getAbstractionValueAsString( CMDF_Abstraction *pAbstraction
 		{
             uint8_t *p = pReg + pAbstraction->m_nOffset;
             uint32_t val = ( p[0] << 24 ) + ( p[1] << 16 ) + ( p[2] << 8 ) + p[3];
-			strValue.Printf( _("0x%08ulx"), val );
+			strValue.Printf( _("0x%08lx"), val );
 		}
 		break;
 
