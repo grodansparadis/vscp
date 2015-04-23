@@ -41,6 +41,10 @@
 #define MDF_ACCESS_READ		1
 #define MDF_ACCESS_WRITE	2
 
+#define REGISTER_TYPE_STANDARD  0
+#define REGISTER_TYPE_DMATRIX1  1
+#define REGISTER_TYPE_BLOCK     2
+
 enum vscp_level {
   level1=1,
   level2
@@ -235,16 +239,22 @@ public:
     */
     void clearStorage( void );
 
+    /*!
+        Assignment    
+    */
+    CMDF_Register & operator= ( const CMDF_Register &other );
+
     wxString m_strName;
     wxString m_strDescription;
     wxString m_strHelpType;
     wxString m_strHelp;                 // Item help text or url
 
-    long m_rowInGrid;                   // Helper for display (row reg is displayed on)
-  
     uint16_t m_nPage;
     uint16_t m_nOffset;
     uint16_t m_nWidth;					// Defaults to 1
+
+    uint8_t m_type;                     // std=0/dmatix1=1/block=2
+    uint8_t m_size;                     // Size for special types (default = 1)
 
     uint32_t m_nMin;
     uint32_t m_nMax;
@@ -257,9 +267,11 @@ public:
     MDF_VALUE_LIST  m_list_value;		// dll list with selectable values
 
 	// For VSCP Works
+    long m_rowInGrid;                   // Helper for display (row reg is displayed on)
 	uint8_t m_value;					// Initial value read. This is the value
 										// that will be restored.
-
+    uint32_t m_bgcolor;                 // Cell background color. Default = white.
+    uint32_t m_fgcolor;                 // Cell forground color. Default = black.
 };
 
 

@@ -137,13 +137,15 @@
             <name>admin</name>
             <password>d50c3180375c27927c22e42a379c3f67</password>
             <privilege>admin</privilege>
-            <allowfrom>127.0.0.1,192.168.1.*</allowfrom>
+			<!-- A stricter allowfrom can be 127.0.0.1,192.168.1.* -->
+            <allowfrom>*</allowfrom>
         </user>	
         <user>
             <name>user</name>
             <password>ee11cbb19052e40b07aac0ca060c23ee</password>
             <privilege>admin</privilege>
-            <allowfrom>127.0.0.1,192.168.1.*</allowfrom>
+			<!-- A stricter allowfrom can be 127.0.0.1,192.168.1.* -->
+            <allowfrom>*</allowfrom>
         </user>	
     </remoteuser>
 

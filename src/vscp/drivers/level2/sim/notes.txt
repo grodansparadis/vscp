@@ -1,7 +1,8 @@
 VSCP Simulation node
 ====================
 
-
+Registers
+=========
 0:00 - Zone
 0:01 - Subzone
 0:02 - Index (used for classes that have index)
@@ -31,7 +32,7 @@ VSCP Simulation node
 2:00 - Decision matrix		
 
 Actions
--------
+=======
 00 - NOOP
 01 - Reply on TurnOn event   
 		A On-event is sent as a reply. 

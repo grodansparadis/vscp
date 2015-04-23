@@ -265,6 +265,60 @@ void CMDF_Register::clearStorage( void )
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//  Assignment
+//  
+
+CMDF_Register &CMDF_Register::operator=( const CMDF_Register& other )
+{
+    m_strName = other.m_strName;
+    m_strDescription = other.m_strDescription;
+    m_strHelpType = other.m_strHelpType;
+    m_strHelp = other.m_strHelp;
+
+    m_nPage = other.m_nPage;
+    m_nOffset = other.m_nOffset;
+    m_nWidth = other.m_nWidth;
+
+    m_type = other.m_type;
+    m_size = other.m_size;
+
+    m_nMin = other.m_nMin;
+    m_nMax = other.m_nMax;
+
+    m_strDefault = other.m_strDefault;
+
+    m_nAccess = other.m_nAccess;
+
+    m_rowInGrid = other.m_rowInGrid;
+    m_value = other.m_value;
+
+    // Clearup bit list
+    MDF_BIT_LIST::iterator iterBit;
+    for ( iterBit = m_list_bit.begin();
+          iterBit != m_list_bit.end();
+          ++iterBit ) {
+        CMDF_Bit *pRecordBit = *iterBit;
+        if ( NULL != pRecordBit ) {
+            delete pRecordBit;
+        }
+    }
+
+    // Clearup value list
+    MDF_VALUE_LIST::iterator iterValue;
+    for ( iterValue = m_list_value.begin();
+          iterValue != m_list_value.end();
+          ++iterValue ) {
+        CMDF_ValueListValue *pRecordValue = *iterValue;
+        if ( NULL != pRecordValue ) {
+            delete pRecordValue;
+        }
+    }
+
+    return *this;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //  Constructor/Destructor
 //  
@@ -1510,17 +1564,36 @@ bool CMDF::parseMDF( wxString& path )
 
                         if ( child3->GetName() == wxT("reg") ) {
 
+                            wxString strType;
                             CMDF_Register *pRegister = new CMDF_Register;
                             wxASSERT( NULL != pRegister );
-                            m_list_register.Append( pRegister );  
+                             
                             pRegister->m_rowInGrid = -1; // Set when reg is written to grid
                             pRegister->m_nPage = vscp_readStringValue( child3->GetAttribute( wxT( "page" ), wxT("0") ) );                           
                             pRegister->m_nOffset = vscp_readStringValue( child3->GetAttribute( wxT( "offset" ), wxT("0") ) );                         
                             pRegister->m_nWidth = vscp_readStringValue( child3->GetAttribute( wxT( "width" ), wxT("8") ) );                           
-                            pRegister->m_nWidth = vscp_readStringValue( child3->GetAttribute( wxT( "width" ), wxT("8") ) );                         
+                            pRegister->m_size = vscp_readStringValue( child3->GetAttribute( wxT( "size" ), wxT("1") ) );   
+                            pRegister->m_nMin = vscp_readStringValue( child3->GetAttribute( wxT( "min" ), wxT( "0" ) ) );
                             pRegister->m_nMax = vscp_readStringValue( child3->GetAttribute( wxT( "max" ), wxT("255") ) );                        
                             pRegister->m_strDefault = child3->GetAttribute( wxT( "default" ), wxT("UNDEF") );
-
+                            pRegister->m_fgcolor = vscp_readStringValue( child3->GetAttribute( wxT( "fgcolor" ), wxT( "0x000000" ) ) );
+                            pRegister->m_bgcolor = vscp_readStringValue( child3->GetAttribute( wxT( "bgcolor" ), wxT( "0xffffff" ) ) );
+                            
+                            strType = child3->GetAttribute( wxT( "type" ), wxT( "std" ) );
+                            strType.Trim();
+                            strType.Trim(false);
+                            pRegister->m_type = REGISTER_TYPE_STANDARD;
+                            if ( _("dmatrix1") == strType ) {
+                                if ( pRegister->m_size > 1 ) {
+                                    pRegister->m_type = REGISTER_TYPE_DMATRIX1;
+                                }
+                            }
+                            else if ( _("block") == strType ) {
+                                if ( pRegister->m_size > 1 ) {
+                                    pRegister->m_type = REGISTER_TYPE_BLOCK;
+                                }
+                            }
+                            
                             wxXmlNode *child4 = child3->GetChildren();
                             while (child4) {
 
@@ -1576,7 +1649,9 @@ bool CMDF::parseMDF( wxString& path )
                                       
                                     }
                                 }                
-                                else if ( child4->GetName() == wxT("bitfield") ) {
+                                // Not allowed for non standard regs
+                                else if ( ( child4->GetName() == wxT( "bitfield" ) ) && 
+                                          ( REGISTER_TYPE_STANDARD== pRegister->m_type ) ) {
 
                                     wxXmlNode *child5 = child4->GetChildren();
                                     while (child5) {
@@ -1658,7 +1733,9 @@ bool CMDF::parseMDF( wxString& path )
                                     } // while 5
 
                                 }
-                                else if ( child4->GetName() == wxT("valuelist") ) {
+                                // Not allowed for non standard regs
+                                else if ( ( child4->GetName() == wxT( "valuelist" ) ) &&
+                                                ( REGISTER_TYPE_STANDARD == pRegister->m_type ) ) {
 
                                     wxXmlNode *child5 = child4->GetChildren();
                                     while (child5) {
@@ -1728,7 +1805,84 @@ bool CMDF::parseMDF( wxString& path )
 
                             } // while 4
 
-                        }
+                            // If register type is not 'std' then we need to add more registers
+                            // at this point accoring to the 'size' attribute
+                            if ( REGISTER_TYPE_DMATRIX1 == pRegister->m_type ) {
+
+                                for ( int idx = 0; idx < pRegister->m_size; idx++ ) {
+                                    wxString str;
+                                    CMDF_Register *pRegisterExt = new CMDF_Register;
+                                    wxASSERT( NULL != pRegisterExt );
+                                    *pRegisterExt = *pRegister;
+                                    pRegisterExt->m_size = 1;
+                                    pRegisterExt->m_nOffset += idx;
+                                    
+                                    switch ( idx % 8 ) {
+                                        case 0: // originating address
+                                            pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Oaddr" ), 1+idx/8 );
+                                            pRegisterExt->m_strDescription = _("Originating address.\nSet to nickname for node that should trigger action here. Oaddr is the originating address.\nMeans we are only interested in messages from the node given here.\n0×00 is segment controller and 0xff is a node without a nickname.\nIf bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted.");
+                                            break;
+                                        case 1: // flags
+                                            pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Flags" ), 1+idx/8 );
+                                            pRegisterExt->m_strDescription = _( "Flags. Set selection behaviour.\nThe enable bit can be used to disable a decion matrix row while it is edited.\nThe zone and use subzone bits can be activated to have a check on the zone / subzone information\nof an event.That is the zone / subzone of the machine must match the one of the event to trigger\nthe DM row." );
+                                            break;
+                                        case 2: // class mask
+                                            pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Class mask (low eight bits)" ), 1+idx/8 );
+                                            pRegisterExt->m_strDescription = _( "The lowest eight bits of the class mask that defines the events that should trigger the action of\nthis decision matrix row. Bit 8 of the class mask is stored in bit 1 of the flag byte." );
+                                            break;
+                                        case 3: // class filter
+                                            pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Class filter (low eight bits)" ), 1+idx/8 );
+                                            pRegisterExt->m_strDescription = _( "The lowest eight bits of the class filter that defines the events that should trigger the action of\nthis decision matrix row. Bit 8 of the class filter is stored in bit 1 of the flag byte." );
+                                            break;
+                                        case 4: // type mask
+                                            pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Type mask" ), 1+idx/8 );
+                                            pRegisterExt->m_strDescription = _( "Type mask that defines the events that should trigger the action of this decision matrix row." );
+                                            break;
+                                        case 5: // type filter
+                                            pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Type filter" ), 1+idx/8 );
+                                            pRegisterExt->m_strDescription = _( "Type filter that defines the events that should trigger the action of this decision matrix row." );
+                                            break;
+                                        case 6: // action
+                                            pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Action" ), 1+idx/8 );
+                                            pRegisterExt->m_strDescription = _( "This is the action or operation that should be performed if the filtering is satisfied.\nOnly action code 0×00 is predefined and means No-Operation.\nAll other codes are application specific and typical application defined codes could do\nmeasurement, send predefined event etc." );
+                                            break;
+                                        case 7: // action parameter
+                                            pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Action parameter" ), 1+idx/8 );
+                                            pRegisterExt->m_strDescription = _( "A numeric action parameter can be set and its meaning is application specific." );
+                                            break;
+                                    }
+
+                                    // Append the register
+                                    m_list_register.Append( pRegisterExt );
+
+                                }
+
+                                // Detete the placeholder
+                                delete pRegister;
+
+                            }
+                            else if ( REGISTER_TYPE_BLOCK == pRegister->m_type ) {
+
+                                for ( int idx = 0; idx < pRegister->m_size; idx++ ) {
+                                    CMDF_Register *pRegisterExt = new CMDF_Register;
+                                    wxASSERT( NULL != pRegisterExt );
+                                    *pRegisterExt = *pRegister;
+                                    pRegisterExt->m_size = 1;
+                                    pRegisterExt->m_nOffset += idx;
+                                    pRegisterExt->m_strName = wxString::Format( _( "%s%d" ), pRegisterExt->m_strName.mbc_str(), idx );
+                                    // Append the register
+                                    m_list_register.Append( pRegisterExt );
+                                }
+
+                                // Detete the placeholder
+                                delete pRegister;
+
+                            }
+                            else {
+                                m_list_register.Append( pRegister );
+                            }
+
+                        } // Reg
 
                         child3 = child3->GetNext();
 

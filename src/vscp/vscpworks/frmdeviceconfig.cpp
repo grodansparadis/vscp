@@ -3223,10 +3223,10 @@ read_stdregs1_again:
 
             if ( CANAL_ERROR_SUCCESS !=
                  m_csw.getDllInterface()->readRegistersfromLevel1Device( nodeid,
-                 0x80,
-                 0,      // page
-                 128,    // count
-                 m_stdRegisters.getRegs() ) ) {
+                                                                            0x80,
+                                                                            0,      // page
+                                                                            128,    // count
+                                                                            m_stdRegisters.getRegs() ) ) {
                 if ( wxYES != ::wxMessageBox( _( "Failed to read standard registers from device. Try again?" ),
                                                 _( "VSCP Works" ),
                                                 wxYES_NO | wxCANCEL ) )   {
@@ -5100,9 +5100,10 @@ void frmDeviceConfig::updateDmGrid(void)
         if ( !m_gridDM->AppendRows(1) ) continue;
 
         // Get the row in the grid
+        CMDF_Register *pRegDM = m_mdf.getMDFRegister( m_mdf.m_dmInfo.m_nStartOffset, m_mdf.m_dmInfo.m_nStartPage );
+        if ( NULL == pRegDM ) continue;
         uint16_t row =
-            m_mdf.getMDFRegister( m_mdf.m_dmInfo.m_nStartOffset, m_mdf.m_dmInfo.m_nStartPage )->m_rowInGrid +
-                                    ( m_mdf.m_dmInfo.m_nRowSize * i );
+            pRegDM->m_rowInGrid + ( m_mdf.m_dmInfo.m_nRowSize * i );
 
         // O-addr
         m_gridDM->SetCellValue( m_gridDM->GetNumberRows()-1, 
