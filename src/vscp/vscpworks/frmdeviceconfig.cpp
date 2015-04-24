@@ -3162,6 +3162,14 @@ void frmDeviceConfig::doUpdate( void )
 
     wxBusyCursor wait;
 
+    // Get nickname
+    if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
+        nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
+    }
+    else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
+        destGUID.getFromString( m_comboNodeID->GetValue() );
+    }
+
     // Check if we should do a full update
     if ( m_chkFullUpdate->GetValue() ) {
 
@@ -3176,15 +3184,6 @@ void frmDeviceConfig::doUpdate( void )
         clearAllContent();
         m_bFirstRead = true;
 
-    }
-
-
-    // Get nickname
-    if ( USE_DLL_INTERFACE == m_csw.getDeviceType() ) {
-        nodeid = vscp_readStringValue( m_comboNodeID->GetValue() );
-    }
-    else if ( USE_TCPIP_INTERFACE == m_csw.getDeviceType() ) {
-        destGUID.getFromString( m_comboNodeID->GetValue() );
     }
 
     if ( m_bFirstRead ) {

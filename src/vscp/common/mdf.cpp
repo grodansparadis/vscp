@@ -1815,7 +1815,7 @@ bool CMDF::parseMDF( wxString& path )
                                     switch ( idx % 8 ) {
                                         case 0: // originating address
                                             pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Oaddr" ), 1+idx/8 );
-                                            pRegisterExt->m_strDescription = _("Originating address.\nSet to nickname for node that should trigger action here. Oaddr is the originating address.\nMeans we are only interested in messages from the node given here.\n0×00 is segment controller and 0xff is a node without a nickname.\nIf bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted.");
+                                            pRegisterExt->m_strDescription = _("Originating address.\nSet to nickname for node that should trigger action here. Oaddr is the originating address.\nMeans we are only interested in messages from the node given here.\n0x00 is segment controller and 0xff is a node without a nickname.\nIf bit 6 of flags is set oaddr will not be checked and events from all nodes will be accepted.");
                                             break;
                                         case 1: // flags
                                             pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Flags" ), 1+idx/8 );
@@ -1839,7 +1839,7 @@ bool CMDF::parseMDF( wxString& path )
                                             break;
                                         case 6: // action
                                             pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Action" ), 1+idx/8 );
-                                            pRegisterExt->m_strDescription = _( "This is the action or operation that should be performed if the filtering is satisfied.\nOnly action code 0×00 is predefined and means No-Operation.\nAll other codes are application specific and typical application defined codes could do\nmeasurement, send predefined event etc." );
+                                            pRegisterExt->m_strDescription = _( "This is the action or operation that should be performed if the filtering is satisfied.\nOnly action code 0x00 is predefined and means No-Operation.\nAll other codes are application specific and typical application defined codes could do\nmeasurement, send predefined event etc." );
                                             break;
                                         case 7: // action parameter
                                             pRegisterExt->m_strName = wxString::Format( _( "Decision matrix row %d: Action parameter" ), 1+idx/8 );
