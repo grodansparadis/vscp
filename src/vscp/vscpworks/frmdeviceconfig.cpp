@@ -4771,13 +4771,13 @@ void frmDeviceConfig::OnLeftDClick( wxGridEvent& event )
 
         // Class Mask
         reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 2)) + ( (flags & 0x02) << 9 );
-        str = wxString::Format( _("%d"), reg );
+        str = getFormattedValue( reg );
         dlg.m_classMask->ChangeValue( str );
 
         // Class Filter
         reg = vscp_readStringValue(m_gridDM->GetCellValue( event.GetRow(), 3) ) +
                                                             ((flags & 0x01) << 9);
-        str = wxString::Format(_("%d"), reg);
+        str = getFormattedValue( reg );
         dlg.m_classFilter->ChangeValue( str );
 
         // Type Mask
