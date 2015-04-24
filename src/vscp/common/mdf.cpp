@@ -443,21 +443,8 @@ void CMDF_DecisionMatrix::clearStorage()
     m_nRowCount = 0;
     m_nRowSize = 8; 
 
-    //m_list_action.Clear(); 
-    /*
-    // Cleanup action list
-    MDF_ACTION_LIST::iterator iterAction;
-    for ( iterAction = m_list_action.begin(); 
-    iterAction != m_list_action.end(); 
-    ++iterAction) {
-    CMDF_Action *pRecordAction = *iterAction;
-    if ( NULL != pRecordAction ) {
-    delete pRecordAction;
-    }
-    }
-    */
     m_list_action.DeleteContents( true );
-
+    m_list_action.Clear();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
