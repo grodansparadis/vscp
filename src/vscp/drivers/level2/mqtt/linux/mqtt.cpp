@@ -54,9 +54,9 @@
 #include <wx/datetime.h>
 
 #include <vscphelper.h>
-#include <common/vscpremotetcpif.h>
-#include <common/vscp_type.h>
-#include <common/vscp_class.h>
+#include <vscpremotetcpif.h>
+#include <vscp_type.h>
+#include <vscp_class.h>
 #include "mqtt.h"
 
 //////////////////////////////////////////////////////////////////////
