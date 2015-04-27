@@ -1864,7 +1864,7 @@ bool CMDF::parseMDF( wxString& path )
                                     *pRegisterExt = *pRegister;
                                     pRegisterExt->m_size = 1;
                                     pRegisterExt->m_nOffset += idx;
-                                    pRegisterExt->m_strName = wxString::Format( _( "%s%d" ), pRegisterExt->m_strName.mbc_str(), idx );
+                                    pRegisterExt->m_strName = wxString::Format( _( "%s%d" ), pRegisterExt->m_strName.c_str(), idx );
                                     // Append the register
                                     m_list_register.Append( pRegisterExt );
                                 }
