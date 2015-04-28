@@ -527,6 +527,12 @@ public:
     // Enable/disable full webserver
     bool m_bWebServer;
 
+    /*!
+        If true web server security is disabled and checks
+        will nt be performed on user nor remote address.
+    */
+    bool m_bDisableSecurityWebServer;
+
 	struct mg_server *m_pwebserver;
 
 	/// Extra mime types on the form "extension1=type1,extension2=type2,..."

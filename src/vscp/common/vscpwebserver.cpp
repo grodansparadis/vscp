@@ -135,17 +135,17 @@
 ///////////////////////////////////////////////////
 
 // Linked list of all active sessions. (webserv.h)
-static struct websrv_Session *websrv_sessions;
+static struct websrv_Session *gp_websrv_sessions;
 
 // Session structure for REST API
-struct websrv_rest_session *websrv_rest_sessions;
+struct websrv_rest_session *gp_websrv_rest_sessions;
 
 ///////////////////////////////////////////////////
 //					WEBSOCKETS
 ///////////////////////////////////////////////////
 
 // Linked list of websocket sessions
-static struct websock_session *websock_sessions;
+static struct websock_session *gp_websock_sessions;
 
 
 ///////////////////////////////////////////////////
@@ -1991,8 +1991,8 @@ VSCPWebServerThread::websock_new_session( struct mg_connection *conn, const char
     // Add to linked list
     ret->m_referenceCount++;
     ret->lastActiveTime = time(NULL);
-    ret->m_next = websock_sessions;
-	websock_sessions = ret;
+    ret->m_next = gp_websock_sessions;
+    gp_websock_sessions = ret;
 
     return ret;
 }
@@ -2022,7 +2022,7 @@ VSCPWebServerThread::websock_get_session( struct mg_connection *conn )
 	if ( NULL == pVer) return NULL;
         
     // find existing session 
-    ret = websock_sessions;
+    ret = gp_websock_sessions;
     while (NULL != ret) {
 		if ( 0 == strcmp( pKey, ret->m_key ) ) {
 			break;
@@ -2061,7 +2061,7 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *conn  )
 
     now = time( NULL );
     prev = NULL;
-    pos = websock_sessions;
+    pos = gp_websock_sessions;
     
     while (NULL != pos) {
         
@@ -2071,7 +2071,7 @@ VSCPWebServerThread::websock_expire_sessions( struct mg_connection *conn  )
         
             // expire sessions after 1h 
             if ( NULL == prev ) {
-                websock_sessions = pos->m_next;
+                gp_websock_sessions = pos->m_next;
             }
             else {
                 prev->m_next = next;
@@ -2198,7 +2198,7 @@ VSCPWebServerThread::websrv_get_session( struct mg_connection *conn )
     if (cookie != NULL) {
         
         // find existing session 
-        ret = websrv_sessions;
+        ret = gp_websrv_sessions;
         while (NULL != ret) {
             if (0 == strcmp(cookie, ret->m_sid))
                 break;
@@ -2270,8 +2270,8 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *conn, cons
     // Add to linked list
     ret->m_referenceCount++;
     ret->lastActiveTime = time(NULL);
-    ret->m_next = websrv_sessions;
-	websrv_sessions = ret;
+    ret->m_next = gp_websrv_sessions;
+    gp_websrv_sessions = ret;
 
     return ret;
 }
@@ -2325,7 +2325,7 @@ VSCPWebServerThread::websrv_expire_sessions( struct mg_connection *conn )
 
     now = time( NULL );
     prev = NULL;
-    pos = websrv_sessions;
+    pos = gp_websrv_sessions;
     
     while (NULL != pos) {
         
@@ -2335,7 +2335,7 @@ VSCPWebServerThread::websrv_expire_sessions( struct mg_connection *conn )
         
             // expire sessions after 1h 
             if ( NULL == prev ) {
-                websrv_sessions = pos->m_next;
+                gp_websrv_sessions = pos->m_next;
             }
             else {
                 prev->m_next = next;
@@ -2426,7 +2426,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			}
 
             // Check if a session is available. If so everything is OK.
-            if ( NULL != ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_TRUE;
+            if ( NULL != ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_TRUE;
 
 			if ( NULL == ( hdr = mg_get_header( conn, "Authorization") ) ||
 								( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
@@ -2440,36 +2440,39 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			if (!mg_parse_header(hdr, "nc", nc, sizeof(nc))) return MG_FALSE;
 			if (!mg_parse_header(hdr, "nonce", nonce, sizeof(nonce))) return MG_FALSE;
 
-			// Check if user is vali			
-			pUser = pObject->m_userList.getUser( wxString::FromAscii( user ) );
-			if ( NULL == pUser ) return MG_FALSE;
+            if ( !pObject->m_bDisableSecurityWebServer ) {
 
-			// Check if remote ip is valid
-			pObject->m_mutexUserList.Lock();
-			bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
-			pObject->m_mutexUserList.Unlock();
-			if (!bValidHost) {
-                // Host wrong
-                strErr = 
-                        wxString::Format( _("[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                                 wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
-                                                 pUser->m_user.wx_str() );				
-			
-                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-                return MG_FALSE;
-            }
+                // Check if user is valid			
+                pUser = pObject->m_userList.getUser( wxString::FromAscii( user ) );
+                if ( NULL == pUser ) return MG_FALSE;
 
-			if ( MG_TRUE != 
-				pObject->getWebServer()->websrv_check_password( conn->request_method, 
-																	(const char *)pUser->m_md5Password.mbc_str(), 
-																	uri, nonce, nc, cnonce, qop, resp ) ) {
+                // Check if remote ip is valid
+                pObject->m_mutexUserList.Lock();
+                bValidHost = pUser->isAllowedToConnect( wxString::FromAscii( conn->remote_ip ) );
+                pObject->m_mutexUserList.Unlock();
+                if ( !bValidHost ) {
+                    // Host wrong
+                    strErr =
+                        wxString::Format( _( "[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n" ),
+                        wxString::FromAscii( ( const char * )conn->remote_ip ).wx_str(),
+                        pUser->m_user.wx_str() );
+                    pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+                    return MG_FALSE;
+                }
+
+                if ( MG_TRUE !=
+                     pObject->getWebServer()->websrv_check_password( conn->request_method,
+                     ( const char * )pUser->m_md5Password.mbc_str(),
+                     uri, nonce, nc, cnonce, qop, resp ) ) {
                     // Username/password wrong
-                    strErr = 
-                        wxString::Format( _("[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n"), 
-                                                 wxString::FromAscii((const char *)conn->remote_ip ).wx_str(), 
-                                                 pUser->m_user.wx_str() );
-	                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );                                                                        
-				    return MG_FALSE;
+                    strErr =
+                        wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
+                        wxString::FromAscii( ( const char * )conn->remote_ip ).wx_str(),
+                        pUser->m_user.wx_str() );
+                    pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
+                    return MG_FALSE;
+                }
+
             }
 
 			pObject->getWebServer()->websrv_add_session_cookie( conn, user );
@@ -2932,8 +2935,8 @@ VSCPWebServerThread::websrv_new_rest_session( struct mg_connection *conn,
 	
     // Add to linked list
     ret->lastActiveTime = time(NULL);
-    ret->m_next = websrv_rest_sessions;
-	websrv_rest_sessions = ret;
+    ret->m_next = gp_websrv_rest_sessions;
+    gp_websrv_rest_sessions = ret;
 
 	return ret;
 }
@@ -2953,7 +2956,7 @@ VSCPWebServerThread::websrv_get_rest_session( struct mg_connection *conn,
 	if ( NULL == conn) return NULL;
         
 	// find existing session 
-	ret = websrv_rest_sessions;
+    ret = gp_websrv_rest_sessions;
     while (NULL != ret) {
 		if  (0 == strcmp( SessionId.mbc_str(), ret->sid) )  break;
         ret = ret->m_next;
@@ -2983,7 +2986,7 @@ VSCPWebServerThread::websrv_expire_rest_sessions( struct mg_connection *conn )
 
     now = time( NULL );
     prev = NULL;
-    pos = websrv_rest_sessions;
+    pos = gp_websrv_rest_sessions;
     
     while (NULL != pos) {
         
@@ -2993,7 +2996,7 @@ VSCPWebServerThread::websrv_expire_rest_sessions( struct mg_connection *conn )
         
             // expire sessions after 1h 
             if ( NULL == prev ) {
-                websrv_rest_sessions = pos->m_next;
+                gp_websrv_rest_sessions = pos->m_next;
             }
             else {
                 prev->m_next = next;

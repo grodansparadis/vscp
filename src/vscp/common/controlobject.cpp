@@ -187,8 +187,6 @@ CControlObject::CControlObject()
     int i;
     m_bQuit = false;	        // true if we should quit
     gpctrlObj = this;	        // needed by websocket static callbacks
-    //wxStandardPaths stdPath;
-
 
     m_maxItemsInClientReceiveQueue = MAX_ITEMS_CLIENT_RECEIVE_QUEUE;
 
@@ -200,6 +198,9 @@ CControlObject::CControlObject()
     for (i = 0; i < VSCP_MAX_CLIENTS; i++) {
         m_clientMap[ i ] = 0;
     }
+
+    // Web server secutity should be used.
+    m_bDisableSecurityWebServer = false;
 
 	// Local domain
 	m_authDomain = _("mydomain.com");
@@ -1818,6 +1819,12 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                    
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bWebServer = false;
+                    }
+                    
+                    attribute = subchild->GetAttribute( wxT( "disableauthentication" ), wxT( "false" ) );
+
+                    if ( attribute.IsSameAs( _( "true" ), true ) ) {
+                        m_bDisableSecurityWebServer = true;
                     }
                   
                     attribute = subchild->GetAttribute(wxT("port"), wxT("8080"));
