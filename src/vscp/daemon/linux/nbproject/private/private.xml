@@ -41,6 +41,8 @@
         <group>
             <file>file:/home/akhe/vscp_software/src/vscp/common/controlobject.cpp</file>
             <file>file:/home/akhe/vscp_software/src/vscp/common/vscpwebserver.cpp</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/vscpwebserver.h</file>
+            <file>file:/home/akhe/vscp_software/src/vscp/common/dm.cpp</file>
         </group>
     </open-files>
 </project-private>

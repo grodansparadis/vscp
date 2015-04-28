@@ -45,37 +45,37 @@
         
         <generallogfile enable="true">/var/log/vscp/vscp_log_general</generallogfile>
         
-        <!-- Security logging will be done to this path must be set to            -->
-        <!-- get security logging saved into a file.                              -->
+        <!-- Security logging will be done to this path must be set to   -->
+        <!-- get security logging saved into a file.                     -->
         
         <securitylogfile enable="true">/var/log/vscp/vscp_log_security</securitylogfile>
         
-        <!-- Access logging will be done to this path must be set to              -->
-        <!-- get access logging for tcp/ip udp webserver websocket and rest       -->
-        <!-- saved into a file.                                                   -->
+        <!-- Access logging will be done to this path must be set to     -->
+        <!-- get access logging for tcp/ip udp webserver websocket and   -->
+        <!-- rest saved into a file.                                     -->
         
         <accesslogfile enable="true">/var/log/vscp/vscp_log_access</accesslogfile>
 
-        <!-- It is possible to enable/disable the TCP/IP interface                -->
-        <!-- You can open TCP/IP interfaces on several ports or on                -->
-        <!-- on a specific port or on every interface of the computer             -->
-        <!-- Default 9598 will listen on all interfaces while                     -->
-		<!-- "127.0.0.1:9598" only will listen on the specified interface.-->
-		<!-- To specify several interfaces just enter them with a space   -->
-        <!-- between them.                                                        -->
+        <!-- It is possible to enable/disable the TCP/IP interface       -->
+        <!-- You can open TCP/IP interfaces on several ports or on       -->
+        <!-- on a specific port or on every interface of the computer    -->
+        <!-- Default 9598 will listen on all interfaces while            -->
+        <!-- "127.0.0.1:9598" only will listen on the specified interface.-->
+        <!-- To specify several interfaces just enter them with a space  -->
+        <!-- between them.                                               -->
 
         <tcpip enable="true" interface="9598" />
 		
-		<!-- It is possible to enable/disable the UDP interface           -->
-        <!-- You can open UDP interfaces on several ports or on                   -->
-        <!-- on a specific port or on every interface of the computer             -->
-        <!-- Default "UDP://:9598" will listen on all interfaces while            -->
-		<!-- "UDP://127.0.0.1:9598" only will listen on the specified     -->
-		<!-- interface. To specify several interfaces just enter them     -->
-        <!-- with a space between them. If interface is not preceded with         -->
-		<!-- "UDP://" it will be added.                                   -->
+        <!-- It is possible to enable/disable the UDP interface          -->
+        <!-- You can open UDP interfaces on several ports or on          -->
+        <!-- on a specific port or on every interface of the computer    -->
+        <!-- Default "UDP://:9598" will listen on all interfaces while   -->
+        <!-- "UDP://127.0.0.1:9598" only will listen on the specified    -->
+        <!-- interface. To specify several interfaces just enter them    -->
+        <!-- with a space between them. If interface is not preceded with -->
+        <!-- "UDP://" it will be added.                                  -->
 		
-		<udp enable="true" interface="udp://9598"/>
+        <udp enable="true" interface="udp://9598"/>
 
         <!-- Set to true to enable decision matrix                         -->
         <!-- Set to false to disable.                                      -->
@@ -117,7 +117,6 @@
             
             <!-- Enable disable the websocket interface.                    -->
             <!-- Id auth is set to false not authentication will be done    -->
-
         
             <websockets enable="true" auth="true" />
         
@@ -137,14 +136,14 @@
             <name>admin</name>
             <password>d50c3180375c27927c22e42a379c3f67</password>
             <privilege>admin</privilege>
-			<!-- A stricter allowfrom can be 127.0.0.1,192.168.1.* -->
+            <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.* -->
             <allowfrom>*</allowfrom>
         </user>	
         <user>
             <name>user</name>
             <password>ee11cbb19052e40b07aac0ca060c23ee</password>
             <privilege>admin</privilege>
-			<!-- A stricter allowfrom can be 127.0.0.1,192.168.1.* -->
+            <!-- A stricter allowfrom can be 127.0.0.1,192.168.1.* -->
             <allowfrom>*</allowfrom>
         </user>	
     </remoteuser>
@@ -251,7 +250,7 @@
 
         <!-- Level II raw ethernet  -->
         <driver enable="false"> 		   	 			
-            <name>VSCP Level II RawEthernet Driver 1</name> 		   	 		
+            <name>VSCP Level II RawEthernet Driver 1</name> 
             <config>eth0</config>
             <path>/usr/local/lib/vscpl2drv_raweth.so</path>
         </driver>
@@ -260,13 +259,13 @@
         <driver enable="true"> 		   	 			
             <name>sim1</name> 		   	 		
             <config>1</config>
-			<guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
-            <path>/usr/local/lib/vscpl2_simdrv.so</path>
+            <guid>FF:FF:FF:FF:FF:FF:FF:F7:03:00:00:00:00:00:00:00</guid>
+            <path>/usr/local/lib/vscpl2drv_sim.so</path>
         </driver>
 
 	<!-- Level II 1-wire driver  -->
         <driver enable="false"> 		   	 			
-            <name>VSCP Level II 1-wire Driver 1</name> 		   	 		
+            <name>VSCP Level II 1-wire Driver 1</name>
             <config>eth0</config>
             <path>/usr/local/lib/vscpl2drv_wire1.so</path>
         </driver>
