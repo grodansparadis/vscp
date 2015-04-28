@@ -1590,8 +1590,7 @@ bool vscp_copyVSCPEvent(vscpEvent *pEventTo, const vscpEvent *pEventFrom)
 void vscp_deleteVSCPevent(vscpEvent *pEvent)
 {
     if ( NULL != pEvent->pdata ) {
-        delete[] pEvent->pdata;
-        
+        delete [] pEvent->pdata;
     }
 	delete pEvent;
 }

@@ -994,6 +994,7 @@ dumb_fill_data:
                 if ( VSCP_CLASS1_MEASUREMENT == m_measurementClass ) {
 
                     vscpEvent *pEvent = new vscpEvent();
+                    pEvent->pdata = NULL;
                     if ( NULL != pEvent ) {
                         
                         if ( SIM_CODING_NORMALIZED == m_registers[ SIM_USER_REG_CODING ] ) {
@@ -1153,6 +1154,11 @@ dumb_fill_data:
             m_pObj->m_mutexSendQueue.Unlock();
 
             if (NULL == pEvent) continue;
+
+            // Just to make sure
+            if ( 0 == pEvent->sizeData ) {
+                pEvent->pdata = NULL;
+            }
 			
 			// Yes there are data to handle
             if ( m_bLevel2 ) {
