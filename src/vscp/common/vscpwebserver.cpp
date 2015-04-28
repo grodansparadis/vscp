@@ -567,7 +567,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -601,7 +601,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         }
 
         // Get mask
-        if (tkz.HasMoreTokens()) {
+        if ( tkz.HasMoreTokens() ) {
 
             strTok = tkz.GetNextToken();
 			
@@ -662,7 +662,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -708,7 +708,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -795,7 +795,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -847,7 +847,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         wxString resultstr = _("+;CREATEVAR;");
         resultstr += name;
 
-        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.c_str() );
+        mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
         
     } 
     // ------------------------------------------------------------------------
@@ -883,7 +883,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -907,8 +907,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         resultstr += wxString::Format(_("%d"), type);
         resultstr += _(";");
         resultstr += strvalue;
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.c_str() );
-
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
     } 
     // ------------------------------------------------------------------------
     //                               RESETVAR
@@ -936,7 +935,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -959,7 +958,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
 		wxString strResult = _("+;RESETVAR;");
         strResult += strTok;
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)strResult.c_str() );
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)strResult.mbc_str() );
 
     }
     // ------------------------------------------------------------------------
@@ -993,7 +992,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1014,7 +1013,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         wxString strResult = _("+;REMOVEVAR;");
         strResult += strTok;
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)strResult.c_str() );
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)strResult.mbc_str() );
 
     }
     // ------------------------------------------------------------------------
@@ -1047,7 +1046,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1066,7 +1065,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
         resultstr += strTok;
         resultstr += _(";");
         resultstr += wxString::Format(_("%d"), pvar->m_strValue.Length() );
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.c_str() );
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     }
     // ------------------------------------------------------------------------
@@ -1100,7 +1099,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1119,7 +1118,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 
         wxString resultstr = _("+;LASTCHANGEVAR;");
         resultstr +=  pvar->getLastChange().FormatISODate() + _(" ") +  pvar->getLastChange().FormatISOTime();
-		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.c_str() );
+		mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
 
     }
     // ------------------------------------------------------------------------
@@ -1153,7 +1152,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1187,7 +1186,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
             pvar->writeValueToString( strWork );
             resultstr += strWork;
 
-		    mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.c_str() );
+		    mg_websocket_printf( conn, WEBSOCKET_OPCODE_TEXT, (const char *)resultstr.mbc_str() );
         }
 
         m_pCtrlObject->m_variableMutex.Unlock();
@@ -1222,7 +1221,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1269,7 +1268,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_STR_ERROR_NOT_ALLOWED_TO_DO_THAT );
 			wxString strErr = 
                         wxString::Format( _("[Websocket] User [%s] not allowed to do that.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str() );			
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str() );			
 		
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
             return MG_TRUE;	// We still leave channel open	
@@ -1352,7 +1351,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_NOT_FOUND,
 									WEBSOCK_STR_ERROR_TABLE_NOT_FOUND );
 			wxString strErr = 
-                wxString::Format( _("[Websocket] Table not found. [name=%s]\n"), (const char *)tblName.c_str() );					
+                wxString::Format( _("[Websocket] Table not found. [name=%s]\n"), tblName.wx_str() );					
 	        pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
             return MG_TRUE;
         }
@@ -1393,7 +1392,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_MEMORY_ALLOCATION,
 									WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
 			        wxString strErr = 
-                            wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), (const char *)tblName.c_str() );					
+                            wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wx_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1409,7 +1408,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_ERROR_READING,
 									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
 			        wxString strErr = 
-                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), (const char *)tblName.c_str() );					
+                        wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1427,11 +1426,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                     wxString wxstr = wxString::Format(_("+;GT;START;%d;%d;%s;%s"),
                                                 nfetchedRecords,
                                                 ptblItem->getNumberOfRecords(),
-                                                (const char *)strDateTimeStart.c_str(),
-                                                (const char *)strDateTimeEnd.c_str() );
+                                                strDateTimeStart.wx_str(),
+                                                strDateTimeEnd.wx_str() );
                     mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									(const char *)wxstr.c_str() );
+									(const char *)wxstr.mbc_str() );
 
                     // Then send measurement records
                     for ( long i=0; i<nfetchedRecords; i++ ) {
@@ -1440,11 +1439,11 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
                         wxString strDateTime = dt.FormatISODate() + _(" ") + dt.FormatISOTime();
                         wxString wxstr = wxString::Format(_("+;GT;%d;%s;%f"),
                                                 i, 
-                                                (const char *)strDateTime.c_str(), 
+                                                strDateTime.wx_str(), 
                                                 pRecords[i].measurement );
                         mg_websocket_printf( conn, 
 									WEBSOCKET_OPCODE_TEXT, 
-									(const char *)wxstr.c_str() );
+									wxstr.mbc_str() );
                     }
 
                     // Last send end post with number if records
@@ -1466,7 +1465,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_NO_DATA,
 									WEBSOCK_STR_ERROR_TABLE_NO_DATA );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), (const char *)tblName.c_str() );					
+                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.wx_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1477,7 +1476,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_ERROR_READING,
 									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), (const char *)tblName.c_str() );					
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1505,7 +1504,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_ERROR_READING,
 									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), (const char *)tblName.c_str() );					
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1520,7 +1519,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_MEMORY_ALLOCATION,
 									WEBSOCK_STR_ERROR_MEMORY_ALLOCATION );
 			            wxString strErr = 
-                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), (const char *)tblName.c_str() );					
+                             wxString::Format( _("[Websocket] Having problems to allocate memory. [name=%s]\n"), tblName.wx_str() );					
 	                    pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                         return MG_TRUE;
                     }
@@ -1559,7 +1558,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_NO_DATA,
 									WEBSOCK_STR_ERROR_TABLE_NO_DATA );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), (const char *)tblName.c_str() );					
+                         wxString::Format( _("[Websocket] No data in table. [name=%s]\n"), tblName.wx_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1570,7 +1569,7 @@ VSCPWebServerThread::websock_command( struct mg_connection *conn,
 									WEBSOCK_ERROR_TABLE_ERROR_READING,
 									WEBSOCK_STR_ERROR_TABLE_ERROR_READING );
 			        wxString strErr = 
-                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), (const char *)tblName.c_str() );					
+                         wxString::Format( _("[Websocket] Problem when reading table. [name=%s]\n"), tblName.wx_str() );					
 	                pCtrlObject->logMsg ( strErr, DAEMON_LOGMSG_ERROR, DAEMON_LOGTYPE_GENERAL );
                     return MG_TRUE;
                 }
@@ -1798,7 +1797,7 @@ VSCPWebServerThread::websrv_websocket_message( struct mg_connection *conn )
                 if ( !pSession->m_pClientItem->m_pUserItem->isUserAllowedToSendEvent( vscp_event.vscp_class, vscp_event.vscp_type ) ) {
                     wxString strErr = 
                         wxString::Format( _("websocket] User [%s] not allowed to send event class=%d type=%d.\n"), 
-                                                (const char *)pSession->m_pClientItem->m_pUserItem->m_user.c_str(), 
+                                                pSession->m_pClientItem->m_pUserItem->m_user.wx_str(), 
                                                 vscp_event.vscp_class, vscp_event.vscp_type );			
 		
 	                pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
@@ -1872,17 +1871,17 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] Host [%s] NOT allowed to connect.\n"),
-											(const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str() );
+											wxString::FromAscii( (const char *)conn->remote_ip ).wx_str() );
 
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
 
-		strncpy( response, strKey.mb_str(), MIN( sizeof(response), strKey.Length() ) );
+		strncpy( response, strKey.mbc_str(), MIN( sizeof(response), strKey.Length() ) );
 
 		mg_md5( expected_response,
-					(const char *)strUser.mb_str(), ":",
-					(const char *)pUser->m_md5Password.mb_str(), ":",
+					(const char *)strUser.mbc_str(), ":",
+					(const char *)pUser->m_md5Password.mbc_str(), ":",
 					pSession->m_sid,
 					NULL );
 
@@ -1903,8 +1902,8 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
                         wxString::Format( _("[Websocket Client] Host [%s] User [%s] allowed to connect.\n"), 
-                                                 (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str(), 
-                                                 (const char *)strUser.mbc_str() );			
+                                                 wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
+                                                 strUser.wx_str() );			
 		
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
@@ -1913,7 +1912,7 @@ VSCPWebServerThread::websock_authentication( struct mg_connection *conn,
             // Log valid login
             wxString strErr = 
             wxString::Format( _("[Websocket Client] user [%s] NOT allowed to connect.\n"), 
-                                             (const char *)strUser.c_str() );			
+                                             strUser.wx_str() );			
 			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
         }
@@ -2453,8 +2452,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Host wrong
                 strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                                 (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str(), 
-                                                 (const char *)pUser->m_user.c_str() );				
+                                                 wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
+                                                 pUser->m_user.wx_str() );				
 			
                 pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
                 return MG_FALSE;
@@ -2462,13 +2461,13 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 
 			if ( MG_TRUE != 
 				pObject->getWebServer()->websrv_check_password( conn->request_method, 
-																	(const char *)pUser->m_md5Password.mb_str(), 
+																	(const char *)pUser->m_md5Password.mbc_str(), 
 																	uri, nonce, nc, cnonce, qop, resp ) ) {
                     // Username/password wrong
                     strErr = 
                         wxString::Format( _("[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n"), 
-                                                 (const char *)wxString::FromAscii((const char *)conn->remote_ip ).c_str(), 
-                                                 (const char *)pUser->m_user.c_str() );
+                                                 wxString::FromAscii((const char *)conn->remote_ip ).wx_str(), 
+                                                 pUser->m_user.wx_str() );
 	                pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );                                                                        
 				    return MG_FALSE;
             }
@@ -2479,8 +2478,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
             // Valid credentials
             strErr = 
                     wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
-                                        (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str(), 
-                                        (const char *)pUser->m_user.c_str() );			
+											wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
+											pUser->m_user.wx_str() );			
 			
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY ); 
             
@@ -2496,10 +2495,10 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Log access
                 strErr = 
                 wxString::Format( _("Webserver: Host=[%s] - req=[%s] query=[%s] method=[%s] \n"), 
-                                (const char *)wxString::FromAscii((const char *)conn->remote_ip ).c_str(),
-                                (const char *)wxString::FromAscii((const char *)conn->uri).c_str(), 
-                                (const char *)wxString::FromAscii((const char *)conn->query_string).c_str(), 
-                                (const char *)wxString::FromAscii((const char *)conn->request_method).c_str() );						
+									wxString::FromAscii((const char *)conn->remote_ip ).wx_str(),
+									wxString::FromAscii((const char *)conn->uri).wx_str(), 
+									wxString::FromAscii((const char *)conn->query_string).wx_str(), 
+									wxString::FromAscii((const char *)conn->request_method).wx_str() );						
 	            pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
 				if ( 0 == strcmp(conn->uri, "/vscp") ) {
@@ -2789,8 +2788,8 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
 
     bool bFirstRow = false;
     wxString buildPage;
-    wxString strHeader = wxString::Format(_("VSCP - %s"), (const char *)textHeader.c_str() );
-    buildPage = wxString::Format(_(WEB_COMMON_HEAD), (const char *)strHeader.c_str() );
+    wxString strHeader = wxString::Format(_("VSCP - %s"), textHeader.wx_str() );
+    buildPage = wxString::Format(_(WEB_COMMON_HEAD), strHeader.wx_str() );
     buildPage += _(WEB_STYLE_START);
     buildPage += _(WEB_COMMON_CSS);     // CSS style Code
     buildPage += _(WEB_STYLE_END);
@@ -2800,7 +2799,7 @@ int VSCPWebServerThread::websrv_listFile( struct mg_connection *conn, wxFileName
     // Navigation menu 
     buildPage += _(WEB_COMMON_MENU);
 
-    buildPage += wxString::Format( _("<b>%s</b><br><br>"), (const char *)textHeader.c_str() );
+    buildPage += wxString::Format( _("<b>%s</b><br><br>"), textHeader.wx_str() );
     buildPage += _("<b>Path</b>=<i>");
     buildPage += logfile.GetFullPath();
     buildPage += _("</i><br>");
@@ -2956,7 +2955,7 @@ VSCPWebServerThread::websrv_get_rest_session( struct mg_connection *conn,
 	// find existing session 
 	ret = websrv_rest_sessions;
     while (NULL != ret) {
-		if  (0 == strcmp( SessionId.mb_str(), ret->sid) )  break;
+		if  (0 == strcmp( SessionId.mbc_str(), ret->sid) )  break;
         ret = ret->m_next;
 	}
         
@@ -3151,8 +3150,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	    if ( NULL == pUser ) {
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] Invalid user [%s]\n"), 
-                                (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str(), 
-                                (const char *)keypairs[_("USER")].c_str() );
+                                wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
+                                keypairs[_("USER")].wx_str() );
 	        pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3165,8 +3164,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	    if (!bValidHost) {
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str(), 
-                                (const char *)keypairs[_("USER")].c_str() );
+                                wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
+                                keypairs[_("USER")].wx_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3176,8 +3175,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	    if ( keypairs[_("PASSWORD")] != pUser->m_md5Password ) {
             wxString strErr = 
             wxString::Format( _("[REST Client] User [%s] NOT allowed to connect. Client [%s]\n"), 
-                                (const char *)keypairs[_("USER")].c_str(), 
-                                (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str() );
+                                keypairs[_("USER")].wx_str(), 
+                                wxString::FromAscii( (const char *)conn->remote_ip ).wx_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3193,8 +3192,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 	    if (!bValidHost) {
             wxString strErr = 
             wxString::Format( _("[REST Client] Host [%s] NOT allowed to connect. User [%s]\n"), 
-                                (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str(), 
-                                (const char *)keypairs[_("USER")].c_str() );
+                                wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
+                                keypairs[_("USER")].wx_str() );
 	        pObject->logMsg ( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
             return MG_FALSE;
         }
@@ -3206,8 +3205,8 @@ VSCPWebServerThread::websrv_restapi( struct mg_connection *conn )
 
     wxString strErr = 
         wxString::Format( _("[REST Client] User [%s] Host [%s] allowed to connect. \n"), 
-                            (const char *)keypairs[_("USER")].c_str() , 
-                            (const char *)wxString::FromAscii( (const char *)conn->remote_ip ).c_str() );
+                            keypairs[_("USER")].wx_str() , 
+                            wxString::FromAscii( (const char *)conn->remote_ip ).wx_str() );
 	    pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_SECURITY );
 
 	// Get format
@@ -3859,23 +3858,23 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 								strcpy((char *) wrkbuf, (const char*) "<event>");
 
 								strcpy((char *) wrkbuf, (const char*) "<head>");
-								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->head ).mb_str() );
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->head ).mbc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</head>");
 
 								strcpy((char *) wrkbuf, (const char*) "<class>");
-								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->vscp_class ).mb_str() );
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->vscp_class ).mbc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</class>");
 
 								strcpy((char *) wrkbuf, (const char*) "<type>");
-								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->vscp_type ).mb_str() );
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->vscp_type ).mbc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</type>");
 
 								strcpy((char *) wrkbuf, (const char*) "<obid>");
-								strcpy((char *) wrkbuf, wxString::Format( _("%lu"), pEvent->obid ).mb_str() );
+								strcpy((char *) wrkbuf, wxString::Format( _("%lu"), pEvent->obid ).mbc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</obid>");
 
 								strcpy((char *) wrkbuf, (const char*) "<timestamp>");
-								strcpy((char *) wrkbuf, wxString::Format( _("%lu"), pEvent->timestamp ).mb_str() );
+								strcpy((char *) wrkbuf, wxString::Format( _("%lu"), pEvent->timestamp ).mbc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</timestamp>");
 
 								strcpy((char *) wrkbuf, (const char*) "<guid>");
@@ -3884,7 +3883,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 								strcpy((char *) wrkbuf, (const char*) "</guid>");
 
 								strcpy((char *) wrkbuf, (const char*) "<sizedata>");
-								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->sizeData ).mb_str() );
+								strcpy((char *) wrkbuf, wxString::Format( _("%d"), pEvent->sizeData ).mbc_str() );
 								strcpy((char *) wrkbuf, (const char*) "</sizedata>");
 
 								strcpy((char *) wrkbuf, (const char*) "<data>");
@@ -3925,11 +3924,11 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 					} // for
 
 					strcpy((char *) wrkbuf, (const char*) "<filtered>");
-					strcpy((char *) wrkbuf, wxString::Format( _("%d"), filtered ).mb_str() );
+					strcpy((char *) wrkbuf, wxString::Format( _("%d"), filtered ).mbc_str() );
 					strcpy((char *) wrkbuf, (const char*) "</filtered>");
 
 					strcpy((char *) wrkbuf, (const char*) "<errors>");
-					strcpy((char *) wrkbuf, wxString::Format( _("%d"), errors ).mb_str() );
+					strcpy((char *) wrkbuf, wxString::Format( _("%d"), errors ).mbc_str() );
 					strcpy((char *) wrkbuf, (const char*) "</errors>");
 
 					// End tag
@@ -4029,7 +4028,7 @@ VSCPWebServerThread::webserv_rest_doReceiveEvent( struct mg_connection *conn,
 								vscp_writeGuidToString( pEvent, str);
 								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, "guid", 4 );
 								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
-								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, str.mb_str(), str.Length() );
+								p += json_emit_quoted_str(p, &buf[sizeof(buf)] - p, str.mbc_str(), str.Length() );
 								p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 								
 								// SizeData
@@ -4235,11 +4234,11 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 				memset( buf, 0, sizeof( buf ));
 				sprintf( wrkbuf, 
 								"variable=%s type=%d persistent=%s value=%s note=%s\r\n", 
-								(const char *)pvar->getName().c_str(), 
+								(const char *)pvar->getName().mbc_str(), 
 								pvar->getType(),
 								pvar->isPersistent() ? "true" : "false", 
-								(const char *)strVariableValue.c_str(),
-								(const char *)pvar->getNote().c_str() );				
+								(const char *)strVariableValue.mbc_str(),
+								(const char *)pvar->getNote().mbc_str() );				
 			
 				webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 				mg_write( conn, buf, strlen( buf ) );
@@ -4255,11 +4254,11 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			memset( buf, 0, sizeof( buf ));
 			sprintf( wrkbuf, 
 				"success-code,error-code,message,description,Variable,Type, Value,Persistent,Note\r\n1,1,Success,Success.,%s,%d,%s,%s,%s\r\n",
-				(const char *)strVariableName.c_str(), 
+				(const char *)strVariableName.mbc_str(), 
 				pvar->getType(),
-				(const char *)strVariableValue.c_str(),
+				(const char *)strVariableValue.mbc_str(),
 				pvar->isPersistent() ? "true" : "false", 
-				(const char *)pvar->getNote().c_str() );
+				(const char *)pvar->getNote().mbc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf ) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -4287,9 +4286,9 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 			memset( buf, 0, sizeof( buf ) );
 			sprintf((char *) wrkbuf, 
 							"<name>%s</name><value>%s</value><note>%s</note>",
-							(const char *)pvar->getName().c_str(),
-							(const char *)strVariableValue.c_str(),
-							(const char *)pvar->getNote().c_str() );
+							(const char *)pvar->getName().mbc_str(),
+							(const char *)strVariableValue.mbc_str(),
+							(const char *)pvar->getNote().mbc_str() );
 			webserv_util_make_chunk( buf, wrkbuf, strlen( wrkbuf) );
 			mg_write( conn, buf, strlen( buf ) );
 
@@ -4326,7 +4325,7 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 					
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-name", 13 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getName().mb_str(), pvar->getName().Length() );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, pvar->getName().mbc_str(), pvar->getName().Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-type", 13 );
@@ -4343,12 +4342,12 @@ VSCPWebServerThread::webserv_rest_doReadVariable( struct mg_connection *conn,
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-persistence", 20 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );
 				wxstr = pvar->isPersistent() ? _("true") : _("false");
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mb_str(), wxstr.Length() );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, wxstr.mbc_str(), wxstr.Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
 				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, "variable-value", 14 );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ":", 1 );					
-				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, strVariableValue.mb_str(), strVariableValue.Length() );
+				p += json_emit_quoted_str( p, &buf[sizeof(buf)] - p, strVariableValue.mbc_str(), strVariableValue.Length() );
 				p += json_emit_unquoted_str( p, &buf[sizeof(buf)] - p, ",", 1 );
 
 				// Mark end
@@ -5300,7 +5299,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
                 (unsigned long)pObject->m_dm.getElementCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
-				(const char *)wxstrlight.c_str() );
+				(const char *)wxstrlight.mbc_str() );
                
         buildPage += _("<br>");
     } 
@@ -5331,7 +5330,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
                     wxString::Format(_("/vscp/dmedit?id=%ld&from=%ld&count=%ld"),
                                         (long)(nFrom+i), (long)nFrom, (long)nCount );
             wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                                (const char *)url_dmedit.c_str() );
+                                                url_dmedit.wx_str() );
             buildPage += str;
         }
 
@@ -5517,7 +5516,7 @@ VSCPWebServerThread::websrv_dmlist( struct mg_connection *conn )
                 (unsigned long)pObject->m_dm.getElementCount(),
                 (unsigned long)nCount,
                 (unsigned long)nFrom,
-				(const char *)wxstrlight.c_str() );      
+				wxstrlight.wx_str() );      
     }
      
     buildPage += _(WEB_COMMON_END);     // Common end code
@@ -5645,35 +5644,35 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
 
         if ( !bNew ) str = (0 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"0\" %s>0 - Highest</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( !bNew ) str = (1 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"1\" %s>1 - Very High</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( !bNew ) str = (2 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"2\" %s>2 - High</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( !bNew ) str = (3 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"3\" %s>3 - Normal</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( !bNew ) str = (4 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"4\" %s>4 - Low</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( !bNew ) str = (5 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"5\" %s>5 - Lower</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( !bNew ) str = (6 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"6\" %s>6 - Very Low</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( !bNew ) str = (7 == pElement->m_vscpfilter.filter_priority) ? _("selected") : _(" ");
         buildPage += wxString::Format(_("<option value=\"7\" %s>7 - Lowest</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         buildPage += _("</select>");
         // Priority mask
@@ -5737,7 +5736,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         }
         else {
-            buildPage += wxString::Format(_("%s"), (const char *)str.c_str()  );
+            buildPage += wxString::Format(_("%s"), str.wx_str()  );
         }
         buildPage += _("</textarea></td>");
         
@@ -5747,7 +5746,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             buildPage += _("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00");
         }
         else {
-            buildPage += wxString::Format(_("%s"), (const char *)str.c_str()  );
+            buildPage += wxString::Format(_("%s"), str.wx_str()  );
         }
         buildPage += _("</textarea></td>");
         
@@ -5954,7 +5953,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x10 == pElement->m_action ) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x10\" %s>Execute external program</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( bNew ) {
             str = _("");
@@ -5963,7 +5962,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x12 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x12\" %s>Execute internal procedure</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( bNew ) {
             str = _("");
@@ -5972,7 +5971,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x30 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x30\" %s>Execute library procedure</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( bNew ) {
             str = _("");
@@ -5981,7 +5980,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x40 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x40\" %s>Send event</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( bNew ) {
             str = _("");
@@ -5990,7 +5989,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x41 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x41\" %s>Send event Conditional</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( bNew ) {
             str = _("");
@@ -5999,7 +5998,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x42 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x42\" %s>Send event(s) from file</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( bNew ) {
             str = _("");
@@ -6008,7 +6007,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x43 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x43\" %s>Send event(s) to remote VSCP server</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( bNew ) {
             str = _("");
@@ -6017,7 +6016,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x50 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x50\" %s>Store in variable</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6026,7 +6025,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x51 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x51\" %s>Store in array</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6035,7 +6034,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x52 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x52\" %s>Add to variable</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6044,7 +6043,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x53 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x53\" %s>Subtract from variable</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6053,7 +6052,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x54 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x54\" %s>Multiply variable</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6062,7 +6061,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x55 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x55\" %s>Divide variable</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6071,7 +6070,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x60 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x60\" %s>Start timer</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6080,7 +6079,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x61 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x61\" %s>Pause timer</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6089,7 +6088,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x62 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x62\" %s>Stop timer</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6098,7 +6097,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x63 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x63\" %s>Resume timer</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6107,7 +6106,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x70 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x70\" %s>Write file</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
         
         if ( bNew ) {
             str = _("");
@@ -6116,7 +6115,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x75 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x75\" %s>Get/Put/Post URL</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         if ( bNew ) {
             str = _("");
@@ -6125,7 +6124,7 @@ VSCPWebServerThread::websrv_dmedit( struct mg_connection *conn )
             str = (0x80 == pElement->m_action) ? _("selected") : _(" ");
         }
         buildPage += wxString::Format(_("<option value=\"0x80\" %s>Write to table</option>"),
-                (const char *)str.c_str() );
+                str.wx_str() );
 
         buildPage += _("</select>");
 
@@ -6671,7 +6670,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
     {
         wxString wxstrurl = _("/vscp/variables");
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
-                (const char *)wxstrurl.c_str(),
+                (const char *)wxstrurl.mbc_str(),
                 (unsigned long)(nFrom+1),
                 ( (unsigned long)(nFrom + nCount) < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ? 
                     nFrom + nCount : pObject->m_VSCP_Variables.m_listVariable.GetCount(),
@@ -6707,7 +6706,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
                     wxString::Format(_("/vscp/varedit?id=%ld&from=%ld&count=%ld"),
                                         (long)(nFrom+i), (long)nFrom, (long)nCount );
             wxString str = wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
-                                                (const char *)url_dmedit.c_str() );
+                                                url_dmedit.wx_str() );
             buildPage += str;
         }
 
@@ -6831,7 +6830,7 @@ VSCPWebServerThread::websrv_variables_list( struct mg_connection *conn )
     {
         wxString wxstrurl = _("/vscp/variables");
         buildPage += wxString::Format( _(WEB_COMMON_LIST_NAVIGATION),
-                (const char *)wxstrurl.c_str(),
+                wxstrurl.wx_str(),
                 (unsigned long)(nFrom+1),
                 ( (unsigned long)(nFrom + nCount) < pObject->m_VSCP_Variables.m_listVariable.GetCount()) ? 
                     nFrom + nCount : pObject->m_VSCP_Variables.m_listVariable.GetCount(),
@@ -7107,7 +7106,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             else {
                 wxString strGUID;
                 vscp_writeGuidArrayToString( pVariable->m_event.GUID, strGUID );
-                buildPage += wxString::Format(_("%s"), (const char *)strGUID.c_str() );
+                buildPage += wxString::Format(_("%s"), strGUID.wx_str() );
             }
             
             buildPage += _("</textarea>");
@@ -7205,7 +7204,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
             else {
                 wxString strData;
                 vscp_writeVscpDataToString( &pVariable->m_event, strData );
-                buildPage += wxString::Format(_("%s"), (const char *)strData.c_str() );
+                buildPage += wxString::Format(_("%s"), strData.wx_str() );
             }
             
             buildPage += _("</textarea>");
@@ -7358,7 +7357,7 @@ VSCPWebServerThread::websrv_variables_edit( struct mg_connection *conn )
     
     wxString wxstrurl = _("/vscp/varpost");
     buildPage += wxString::Format( _(WEB_VAREDIT_SUBMIT),
-                                    (const char *)wxstrurl.c_str() );
+                                    wxstrurl.wx_str() );
     
     buildPage += _("</form>");
     buildPage += _(WEB_COMMON_END);     // Common end code
@@ -7740,9 +7739,9 @@ VSCPWebServerThread::websrv_variables_new( struct mg_connection *conn )
     buildPage += _("<br></div>");
     buildPage += _(WEB_VARNEW_SUBMIT);
     //wxString wxstrurl = wxString::Format(_("%s/vscp/varedit?new=true"), 
-    //                                            (const char *)strHost.c_str() );
+    //                                            strHost.wx_str() );
     //buildPage += wxString::Format( _(WEB_VARNEW_SUBMIT),
-    //                                (const char *)wxstrurl.c_str() );
+    //                                wxstrurl.wx_str() );
     
     buildPage += _("</form>");
     
@@ -8576,7 +8575,7 @@ VSCPWebServerThread::websrv_table( struct mg_connection *conn )
 
         buildPage += wxString::Format(_(WEB_COMMON_TR_CLICKABLE_ROW),
                                             ( wxString( _("/vscp/tablelist?tblname=") + 
-											wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ) ).c_str()  );
+											wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable ) ) ).wx_str()  );
         buildPage += _("<td><b>");
         buildPage += wxString::FromUTF8( ptblItem->m_vscpFileHead.nameTable );
         buildPage += _("</b><br>");
@@ -8744,7 +8743,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
     // navigation menu 
     buildPage += _(WEB_COMMON_MENU);
 
-    buildPage += wxString::Format( WEB_TABLEVALUELIST_BODY_START, (const char *)tblName.c_str() );
+    buildPage += wxString::Format( WEB_TABLEVALUELIST_BODY_START, tblName.wx_str() );
 
     {
         buildPage += wxString::Format( _(WEB_TABLEVALUE_LIST_NAVIGATION),
@@ -8755,7 +8754,7 @@ VSCPWebServerThread::websrv_tablelist( struct mg_connection *conn )
                 ptblItem->getNumberOfRecords(),
                 nCount,
                 nFrom,
-		(const char *)tblName.mbc_str() );
+				tblName.wx_str() );
                
         buildPage += _("<br>");
     }
