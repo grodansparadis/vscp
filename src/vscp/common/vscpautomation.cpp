@@ -170,6 +170,8 @@ int CVSCPAutomation::getTimeZoneDiffHours( void )
     time ( &rawtime );
     timeinfo = localtime( &rawtime );
     h2 = timeinfo->tm_hour;
+    if ( 0 == h2 ) h2 = 24;
+
     timeinfo_gmt = gmtime( &rawtime );
     h1 = timeinfo_gmt->tm_hour;
 

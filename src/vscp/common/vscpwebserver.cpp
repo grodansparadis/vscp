@@ -2255,7 +2255,7 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *conn, cons
 
 	Cmd5 md5( (unsigned char *)buf );
 	strcpy( ret->m_sid, md5.getDigest() );
-	
+    
 	sprintf( buf, "session=%s; max-age=3600; http-only", ret->m_sid );
 	mg_send_header( conn, "Set-Cookie", buf );
 	
@@ -2264,12 +2264,18 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *conn, cons
 
 	strcpy( buf, "original_url=/; max-age=0" );
 	mg_send_header( conn, "Set-Cookie", buf );
-
+    /*
+    mg_printf( conn, "HTTP/1.1 200 OK\r\n"
+               "Set-Cookie: session=%s; max-age=3600; http-only;\r\n"
+               "Set-Cookie: user=%s;\r\n"
+               "Set-Cookie: original_url=/; max-age=0;\r\n"
+               "Set-Cookie: allow=yes;\r\n\r\n", ret->m_sid, pUser );
+    */
 	ret->m_pUserItem = pObject->m_userList.getUser( wxString::FromAscii( pUser ) );
 	
     // Add to linked list
     ret->m_referenceCount++;
-    ret->lastActiveTime = time(NULL);
+    ret->lastActiveTime = time( NULL );
     ret->m_next = gp_websrv_sessions;
     gp_websrv_sessions = ret;
 
@@ -2404,6 +2410,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 	char user[256], nonce[256],
 			uri[32768], cnonce[256], resp[256], qop[256], nc[256];
 	CUserItem *pUser;
+    char *cookie = NULL;
 	bool bValidHost;
 
 	// Check pointer
@@ -2416,12 +2423,13 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 
 		case MG_AUTH: 
 			
+            // http://en.wikipedia.org/wiki/Digest_access_authentication
 			if (conn->is_websocket) {	
 				return MG_TRUE;	// Always accept websocket connections
 			}
 			
 			// Validate REST interface user.
-			if ( 0 == strncmp(conn->uri, "/vscp/rest",10 ) ) {
+			if ( 0 == strncmp(conn->uri, "/vscp/rest", 10 ) ) {
 				return MG_TRUE;	 // Always accept websocket connections
 			}
 
@@ -2432,6 +2440,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 								( vscp_strncasecmp( hdr, "Digest ", 7 ) != 0 ) ) {
 				return MG_FALSE;
 			}
+
 			if (!mg_parse_header(hdr, "username", user, sizeof(user))) return MG_FALSE;
 			if (!mg_parse_header(hdr, "cnonce", cnonce, sizeof(cnonce))) return MG_FALSE;
 			if (!mg_parse_header(hdr, "response", resp, sizeof(resp))) return MG_FALSE;
@@ -2460,6 +2469,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                     return MG_FALSE;
                 }
 
+                // Check digest
                 if ( MG_TRUE !=
                      pObject->getWebServer()->websrv_check_password( conn->request_method,
                      ( const char * )pUser->m_md5Password.mbc_str(),
@@ -2470,13 +2480,22 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                         wxString::FromAscii( ( const char * )conn->remote_ip ).wx_str(),
                         pUser->m_user.wx_str() );
                     pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-                    return MG_FALSE;
+                    return MG_TRUE;
                 }
 
             }
 
-			pObject->getWebServer()->websrv_add_session_cookie( conn, user );
+            /*
+            mg_parse_header( hdr, "cookie", cookie, sizeof( cookie ) );
+            if ( cookie == NULL || sscanf( cookie, "uri=%99s", uri ) != 1 ) {
+                ( void )strcpy( uri, "/" );
+            }
+            // Set allow=yes cookie, which is expected by authorize() 
+            mg_printf( conn, "HTTP/1.1 301 Moved Permanently\r\n"
+                       "Location: %s\r\n"
+                       "Set-Cookie: allow=yes;\r\n\r\n", uri );*/
 
+			pObject->getWebServer()->websrv_add_session_cookie( conn, user );
 
             // Valid credentials
             strErr = 
@@ -2504,15 +2523,15 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 									wxString::FromAscii((const char *)conn->request_method).wx_str() );						
 	            pObject->logMsg ( strErr, DAEMON_LOGMSG_INFO, DAEMON_LOGTYPE_ACCESS );
 
-				if ( 0 == strcmp(conn->uri, "/vscp") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                if ( ( 0 == strcmp( conn->uri, "/vscp" ) ) || ( 0 == strcmp( conn->uri, "/vscp/" ) ) ) {
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_mainpage( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/test") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
@@ -2520,140 +2539,139 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 					return MG_TRUE;
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/interfaces") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_interfaces( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dm") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_dmlist( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmedit") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_dmedit( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmpost") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_dmpost( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/dmdelete") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_dmdelete( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/variables") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_variables_list( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varedit") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_variables_edit( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varpost") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_variables_post( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/vardelete") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_variables_delete( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/varnew") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_variables_new( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/discovery") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_discovery( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/session") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_session( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/configure") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_configure( conn );
 				}
 				else if ( 0 == strcmp(conn->uri, "/vscp/bootload") ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					mg_send_header(conn, "Content-Type", "text/html");
 					mg_send_header(conn, "Cache-Control", "max-age=0, post-check=0, "
 											"pre-check=0, no-store, no-cache, must-revalidate");
 					return pObject->getWebServer()->websrv_bootload( conn );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/general",17) ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
-                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					wxString header = _("Log File 'General'");
 					return pObject->getWebServer()->websrv_listFile( conn, 
                                                             pObject->m_logGeneralFileName, 
                                                             header );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/security",18) ) {   
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					wxString header = _("Log File 'Security'");
 					return pObject->getWebServer()->websrv_listFile( conn, 
                                                             pObject->m_logSecurityFileName, 
                                                             header );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/access",16) ) {
-                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					wxString header = _("Log File 'Security'");
 					return pObject->getWebServer()->websrv_listFile( conn, 
                                                             pObject->m_logAccessFileName, 
                                                             header );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/log/dm",12) ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					wxString header = _("Log File 'Decision Matrix'");
 					return pObject->getWebServer()->websrv_listFile( conn, 
                                                             pObject->m_dm.m_logFileName, 
                                                             header );
 				}
                 else if ( 0 == strncmp(conn->uri, "/vscp/table",12) ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					return pObject->getWebServer()->websrv_table( conn );
 				}
 
 
                 else if ( 0 == strncmp(conn->uri, "/vscp/tablelist",12) ) {
-					if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_GetCreateSession( conn ) ) ) return MG_FALSE;
+                    if ( NULL == ( pWebSrvSession = pObject->getWebServer()->websrv_get_session( conn ) ) ) return MG_FALSE;
 					return pObject->getWebServer()->websrv_tablelist( conn );
 				}
                 
@@ -8100,7 +8118,7 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
         buildPage += _("disabled");
     }
     buildPage += _("<br>");
-    buildPage += _("&nbsp;&nbsp;<b>Automation:</b> ");
+    buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Automation:</b> ");
     if ( pObject->m_automation.isAutomationEnabled() ) {
         buildPage += _("enabled.<br>");
     }
@@ -8250,54 +8268,61 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
     if ( pObject->m_bWebServer ) {
         buildPage += _("enabled on interface '");
         buildPage += pObject->m_portWebServer;
+        buildPage += _( "<br>&nbsp;&nbsp;&nbsp;&nbsp;<b>Autentication:</b> " );
+        if ( pObject->m_bDisableSecurityWebServer ) {
+            buildPage += _( "turned off." );
+        }
+        else {
+            buildPage += _( "turned on." );
+        }
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>Rootfolder:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Rootfolder:</b> ");
         buildPage += pObject->m_pathWebRoot;
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>Authdomain:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Authdomain:</b> ");
         buildPage += pObject->m_authDomain;
         if ( 0 == pObject->m_authDomain.Length() ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>ExtraMimeTypes:</b> ");
         buildPage += pObject->m_extraMimeTypes;
         if ( 0 == pObject->m_extraMimeTypes.Length() ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiInterpreter:</b> ");
         buildPage += pObject->m_cgiInterpreter;
         if ( 0 == pObject->m_cgiInterpreter.Length() ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>CgiPattern:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>CgiPattern:</b> ");
         buildPage += pObject->m_cgiPattern;
         if ( 0 == pObject->m_cgiPattern.Length() ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>HiddenFilePatterns:</b> ");
         buildPage += pObject->m_hideFilePatterns;
         if ( 0 == pObject->m_hideFilePatterns.Length() ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>IndeFiles:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>IndeFiles:</b> ");
         buildPage += pObject->m_indexFiles;
         if ( 0 == pObject->m_indexFiles.Length() ) {
             buildPage += _("Set to default.");
         }
         buildPage += _("<br>");
         if ( pObject->bEnableDirectoryListing ) {
-            buildPage += _("&nbsp;&nbsp;<b>Directory listings</b> is enabled.");    
+            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Directory listings</b> is enabled.");    
         }
         else {
-            buildPage += _("&nbsp;&nbsp;<b>Directory listings</b> is disabled.");
+            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Directory listings</b> is disabled.");
         }
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>UrlReqrites:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>UrlReqrites:</b> ");
         buildPage += pObject->m_urlRewrites;
         if ( 0 == pObject->m_urlRewrites.Length() ) {
             buildPage += _("Set to default.");
@@ -8335,17 +8360,17 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
     if ( pObject->m_bDM ) {
         buildPage += _("enabled.");
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>Path to DM file:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to DM file:</b> ");
         buildPage += pObject->m_dm.m_configPath;
         buildPage += _("<br>");
         if ( pObject->m_dm.m_bLogEnable ) {
-            buildPage += _("&nbsp;&nbsp;<b>DM logging</b> is enabled.");
+            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is enabled.");
             buildPage += _("<br>");
-            buildPage += _("&nbsp;&nbsp;<b>Path to log file:</b> ");
+            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to log file:</b> ");
             buildPage += pObject->m_dm.m_logFileName.GetFullPath();
         }
         else {
-            buildPage += _("&nbsp;&nbsp;<b>DM logging</b> is disabled.");
+            buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>DM logging</b> is disabled.");
         }
     }
     else {
@@ -8361,10 +8386,10 @@ VSCPWebServerThread::websrv_configure( struct mg_connection *conn )
     if ( pObject->m_bVariables ) {
         buildPage += _("enabled.");
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>Path to variables:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Path to variables:</b> ");
         buildPage += pObject->m_VSCP_Variables.m_configPath;
         buildPage += _("<br>");
-        buildPage += _("&nbsp;&nbsp;<b>Autosave:</b> ");
+        buildPage += _("&nbsp;&nbsp;&nbsp;&nbsp;<b>Autosave:</b> ");
         buildPage += wxString::Format(_("%d minutes."), pObject->m_VSCP_Variables.m_autosaveInterval );
     }
     else {

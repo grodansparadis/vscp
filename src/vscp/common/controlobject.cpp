@@ -1803,10 +1803,10 @@ bool CControlObject::readConfiguration(wxString& strcfgfile)
                     if (attribute.IsSameAs(_("false"), false)) {
                         m_bVSCPDaemon = false;
                     }
+
                 } 
 				else if (subchild->GetName() == wxT("guid")) {
                     wxString str = subchild->GetNodeContent();
-                    //getGuidFromStringToArray(m_GUID, str);
                     m_guid.getFromString(str);
                 } 
 				else if (subchild->GetName() == wxT("clientbuffersize")) {
