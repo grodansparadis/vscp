@@ -558,6 +558,9 @@ bool actionTime::getMultiItem( const wxString& items, ACTIONTIME *pList )
     // Check pointer
     if ( NULL == pList ) return false;
 
+    // Clear list
+    pList->Clear();
+
     wxStringTokenizer tkz( items, _("/" ) );
 
     if ( tkz.CountTokens() > 1 ) {

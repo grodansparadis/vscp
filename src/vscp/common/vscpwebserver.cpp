@@ -2421,7 +2421,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 
 	switch (ev) {
 
-		case MG_AUTH: 
+		case MG_AUTH:
 			
             // http://en.wikipedia.org/wiki/Digest_access_authentication
 			if (conn->is_websocket) {	
