@@ -1519,9 +1519,9 @@ int VscpRemoteTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
 // doCmdVersion
 //
 
-unsigned int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
-                                               uint8_t *pMinorVer,
-                                               uint8_t *pSubMinorVer )
+int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
+                                   uint8_t *pMinorVer,
+                                   uint8_t *pSubMinorVer )
 {
     long val;
     wxString strLine;

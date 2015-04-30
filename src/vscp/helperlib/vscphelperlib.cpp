@@ -532,9 +532,7 @@ extern "C" int vscphlp_getVersion( long handle,
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    pvscpif->doCmdVersion( pMajorVer, pMinorVer, pSubMinorVer);
-
-    return VSCP_ERROR_SUCCESS;
+    return pvscpif->doCmdVersion( pMajorVer, pMinorVer, pSubMinorVer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
