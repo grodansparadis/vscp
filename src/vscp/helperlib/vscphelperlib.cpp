@@ -183,7 +183,7 @@ int vscphlp_checkReply( long handle, int bClear )
 #ifdef WIN32
 int WINAPI EXPORT vscphlp_clearLocalInputQueue( long handle )
 #else
-int vscphlp_clearInputQueue( long handle )
+int vscphlp_clearLocalInputQueue( long handle )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
