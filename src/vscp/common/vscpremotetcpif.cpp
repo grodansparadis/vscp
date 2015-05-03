@@ -1519,9 +1519,9 @@ int VscpRemoteTcpIf::doCmdFilter( const wxString& filter, const wxString& mask )
 // doCmdVersion
 //
 
-unsigned int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
-                                               uint8_t *pMinorVer,
-                                               uint8_t *pSubMinorVer )
+int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
+                                   uint8_t *pMinorVer,
+                                   uint8_t *pSubMinorVer )
 {
     long val;
     wxString strLine;
@@ -1536,7 +1536,7 @@ unsigned int VscpRemoteTcpIf::doCmdVersion( uint8_t *pMajorVer,
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.mb_str(), 
                 strCmd.length() );
-    if ( !checkReturnValue(true) ) return 0;
+    if ( !checkReturnValue(true) ) return VSCP_ERROR_GENERIC;
 
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;   
     m_mutexArray.Lock();

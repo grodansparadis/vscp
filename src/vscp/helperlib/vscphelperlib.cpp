@@ -144,9 +144,9 @@ extern "C" int vscphlp_isConnected(const long handle)
 // vscphlp_doCommand
 //
 #ifdef WIN32
-int WINAPI EXPORT vscphlp_doCommand( long handle, const char * cmd )
+extern "C" int WINAPI EXPORT vscphlp_doCommand( long handle, const char * cmd )
 #else
-int vscphlp_doCommand( long handle, const char * cmd )
+extern "C" int vscphlp_doCommand( long handle, const char * cmd )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -163,9 +163,9 @@ int vscphlp_doCommand( long handle, const char * cmd )
 // vscphlp_checkReply
 //
 #ifdef WIN32
-int WINAPI EXPORT vscphlp_checkReply( long handle, int bClear )
+extern "C" int WINAPI EXPORT vscphlp_checkReply( long handle, int bClear )
 #else
-int vscphlp_checkReply( long handle, int bClear )
+extern "C" int vscphlp_checkReply( long handle, int bClear )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -181,9 +181,9 @@ int vscphlp_checkReply( long handle, int bClear )
 // vscphlp_clearLocalInputQueue
 //
 #ifdef WIN32
-int WINAPI EXPORT vscphlp_clearLocalInputQueue( long handle )
+extern "C" int WINAPI EXPORT vscphlp_clearLocalInputQueue( long handle )
 #else
-int vscphlp_clearInputQueue( long handle )
+extern "C" int vscphlp_clearLocalInputQueue( long handle )
 #endif
 {
     VscpRemoteTcpIf *pvscpif = theApp.getDriverObject( handle );
@@ -532,9 +532,7 @@ extern "C" int vscphlp_getVersion( long handle,
     // Check that we are connected
     if ( !pvscpif->isConnected() ) return VSCP_ERROR_CONNECTION;
 
-    pvscpif->doCmdVersion( pMajorVer, pMinorVer, pSubMinorVer);
-
-    return VSCP_ERROR_SUCCESS;
+    return pvscpif->doCmdVersion( pMajorVer, pMinorVer, pSubMinorVer);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

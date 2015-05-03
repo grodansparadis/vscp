@@ -375,11 +375,11 @@ public:
 
     /*!
         Get i/f version through the interface. 
-        \return version number.
+        \return CANAL_ERROR_SUCCESS on success and error code if failure.
     */
-    unsigned int doCmdVersion( uint8_t *pMajorVer,
-                                               uint8_t *pMinorVer,
-                                               uint8_t *pSubMinorVer );
+    int doCmdVersion( uint8_t *pMajorVer,
+                      uint8_t *pMinorVer,
+                      uint8_t *pSubMinorVer );
 
     /*!
         Get interface version
