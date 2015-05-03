@@ -870,6 +870,14 @@ protected:
     /// Number of read/write retries
     uint8_t m_registerOpMaxRetries;
 
+private:
+
+    /*!
+        Get input queue count
+        \return Number of messages in the queue
+    */
+    size_t getInputQueueCount( void )
+    
 };
 
 
