@@ -1162,17 +1162,17 @@ int VscpRemoteTcpIf::doCmdDataAvailable( void )
     wxString strLine;
     int nMsg = 0;	
   
-    if ( !m_bConnected ) return VSCP_ERROR_CONNECTION;
+    if ( !m_bConnected ) return VSCP_ERROR_ERROR;
     
     // If receive loop active terminate
-    if ( m_bModeReceiveLoop ) return 0;
+    if ( m_bModeReceiveLoop ) return VSCP_ERROR_ERROR;
 
     wxString strCmd(_("CDTA\r\n"));
     ns_send( m_pClientTcpIpWorkerThread->m_mgrTcpIpConnection.active_connections,
                 strCmd.mb_str(), 
                 strCmd.length() );
 
-    if ( !checkReturnValue(true) ) return VSCP_ERROR_GENERIC;  
+    if ( !checkReturnValue(true) ) return VSCP_ERROR_ERROR;  
     if ( m_inputStrArray.Count() < 2 ) return VSCP_ERROR_ERROR;
     m_mutexArray.Lock();
     strLine = m_inputStrArray[ m_inputStrArray.Count()-2 ];
@@ -2714,7 +2714,7 @@ int VscpRemoteTcpIf::readLevel2Register( uint32_t reg,
 
 	while ( true ) {
 
-		if ( doCmdDataAvailable() ) {	// Message available
+		if ( 0 < doCmdDataAvailable() ) {	// Message available
 
             if ( VSCP_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {	// Valid event
 
@@ -2931,7 +2931,7 @@ int VscpRemoteTcpIf::readLevel2Registers( uint32_t reg,
 
 	while ( allRcvValue != (receive_flags & 0xffffffff ) ) {	// mask for systems where long is > 32 bits
 
-		if ( doCmdDataAvailable() ) {	// Message available
+		if ( 0 < doCmdDataAvailable() ) {	// Message available
 
 			if ( CANAL_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {	// Valid event
 
@@ -3149,7 +3149,7 @@ int VscpRemoteTcpIf::writeLevel2Register( uint32_t reg,
 
 	while ( true ) {
 
-		if ( doCmdDataAvailable() ) {                               // Message available
+		if ( 0 < doCmdDataAvailable() ) {                           // Message available
 
 			if ( CANAL_ERROR_SUCCESS == doCmdReceiveEx( &e ) ) {    // Valid event
 				
