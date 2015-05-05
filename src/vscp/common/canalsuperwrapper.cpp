@@ -282,7 +282,7 @@ int CCanalSuperWrapper::doCmdClear( void )
 {
 	if ( USE_DLL_INTERFACE == m_itemDevice.id) {
 		canalMsg *pMsg = NULL;
-		while ( doCmdDataAvailable() ) {
+		while ( 0 < doCmdDataAvailable() ) {
 			m_canalDll.doCmdReceive( pMsg );
 			delete pMsg;
 			pMsg = NULL;
@@ -687,7 +687,7 @@ bool CCanalSuperWrapper::_readLevel1Register( uint8_t nodeid,
 
 		if ( NULL != pdlg ) pdlg->Pulse();
 
-		if ( doCmdDataAvailable() ) {									// Message available
+		if ( 0 < doCmdDataAvailable() ) {								// Message available
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) {	// Valid event
 				if ( (unsigned short)( canalEvent.id & 0xffff ) ==
 					( 0x0a00 + nodeid ) ) {                             // Read reply?
@@ -765,7 +765,7 @@ bool CCanalSuperWrapper::_writeLevel1Register( uint8_t nodeid,
 
 		if ( NULL != pdlg ) pdlg->Pulse();
 
-		if ( doCmdDataAvailable() ) {									// Message available
+		if ( 0 < doCmdDataAvailable() ) {								// Message available
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalEvent ) ) { // Valid event
 				if ( (unsigned short)( canalEvent.id & 0xffff ) ==
 					( 0x0a00 + nodeid ) ) {         // Read reply?
@@ -968,7 +968,7 @@ bool CCanalSuperWrapper::readLevel2Register( cguid& ifGUID,
         
 		if ( NULL != pdlg ) pdlg->Pulse();
 
-		if ( doCmdDataAvailable() ) {	// Message available
+		if ( 0 < doCmdDataAvailable() ) {	// Message available
 
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &e ) ) {	// Valid event
 
@@ -1160,7 +1160,7 @@ bool CCanalSuperWrapper::_writeLevel2Register( cguid& ifGUID,
 
 		if ( NULL != pdlg ) pdlg->Pulse();
 
-		if ( doCmdDataAvailable() ) {                                 // Message available
+		if ( 0 < doCmdDataAvailable() ) {                             // Message available
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {    // Valid event
 				
 				if ( /*ifGUID.isNULL() &&*/ ( VSCP_CLASS1_PROTOCOL == event.vscp_class ) && 
@@ -1561,7 +1561,7 @@ bool CCanalSuperWrapper::getLevel1DmInfo( const uint8_t nodeid,
 
 	while ( true ) {
 
-		if ( doCmdDataAvailable() ) {							// Message available
+		if ( 0 < doCmdDataAvailable() ) {						// Message available
 			if ( doCmdReceive( &canalEvent ) ) {				// Valid message
 				if ( (unsigned short)( canalEvent.id & 0xffff ) ==
 					( 0x2100 + nodeid ) ) {                 // DM info reply?
@@ -1620,7 +1620,7 @@ bool CCanalSuperWrapper::getLevel2DmInfo( cguid& ifGUID,
 
 	while ( true ) {
 
-		if ( doCmdDataAvailable() ) {									// Message available
+		if ( 0 < doCmdDataAvailable() ) {								// Message available
 			if ( CANAL_ERROR_SUCCESS == doCmdReceive( &event ) ) {		// Valid event
 				if ( ( 0 == event.vscp_class ) && 
 					( 0x21 == event.vscp_type ) ) {						// DM reply?

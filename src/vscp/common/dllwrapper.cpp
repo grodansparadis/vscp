@@ -353,7 +353,7 @@ int CDllWrapper::doCmdBlockingReceive( canalMsg *pMsg, unsigned long timeout )
 int CDllWrapper::doCmdDataAvailable( void )
 {
 	// If not initialized there is nothing we can do
-	if ( !m_bInit ) return CANAL_ERROR_INIT_FAIL;
+	if ( !m_bInit ) return 0;
   
 	return m_proc_CanalDataAvailable( m_devid );
 }
@@ -533,7 +533,7 @@ int CDllWrapper::readLevel1Register( unsigned char nodeid,
     
 	while ( true ) {
 
-        if ( doCmdDataAvailable() ) {									        // Message available
+        if ( 0 < doCmdDataAvailable() ) {									    // Message available
             if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) {	// Valid event
                 if ( 5 != canalReceiveEvent.sizeData ) continue;
                 if ( ( unsigned short )( canalReceiveEvent.id & 0xffff ) ==
@@ -619,7 +619,7 @@ int CDllWrapper::readRegistersfromLevel1Device( unsigned char nodeid,
 
     while ( allRcvValue != (receive_flags & 0xffffffff ) ) {   // Mask for systems where long is > 32 bits
 
-        if ( doCmdDataAvailable() ) {									            // Message available
+        if ( 0 < doCmdDataAvailable() ) {									        // Message available
 			
             if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) {      // Valid event
                 
@@ -705,7 +705,7 @@ int CDllWrapper::writeLevel1Register( unsigned char nodeid,
 
 	while ( true ) {
 
-		if ( doCmdDataAvailable() ) {									// Message available
+		if ( 0 < doCmdDataAvailable() ) {									   // Message available
             if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) { // Valid event
                 if ( 5 != canalReceiveEvent.sizeData ) continue;
                 if ( ( unsigned short )( canalReceiveEvent.id & 0xffff ) ==
@@ -785,7 +785,7 @@ bool CDllWrapper::getMDFUrlFromLevel1Device( unsigned char nodeid, wxString &str
     unsigned char receive_flags = 0;
     while ( 255 != receive_flags ) {
 
-        if ( doCmdDataAvailable() ) {	// Message available
+        if ( 0 < doCmdDataAvailable() ) {	// Message available
 			
             if ( CANAL_ERROR_SUCCESS == doCmdReceive( &canalReceiveEvent ) ) { // Valid event
                 
