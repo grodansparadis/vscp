@@ -876,7 +876,7 @@ private:
         Get input queue count
         \return Number of messages in the queue
     */
-    size_t getInputQueueCount( void )
+    size_t getInputQueueCount( void );
     
 };
 
