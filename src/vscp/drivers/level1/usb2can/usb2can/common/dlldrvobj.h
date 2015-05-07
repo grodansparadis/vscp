@@ -39,7 +39,7 @@
 
 // Max number of open connections
 //#define CANAL_USB2CAN_DRIVER_MAX_OPEN	256
-#define CANAL_USB2CAN_DRIVER_MAX_OPEN	1
+#define CANAL_USB2CAN_DRIVER_MAX_OPEN	4
 //WARNING! CANAL_USB2CAN_DRIVER_MAX_OPEN will be a problem with using old version with smaller size and a new version with bigger size on the same pc at the same time
 
 /////////////////////////////////////////////////////////////////////////////
