@@ -147,8 +147,8 @@ typedef unsigned short                      uint64_t;
 
 
 // VSCP daemon defines
-#define VSCP_MAX_CLIENTS                    4096    // abs. max is 0xffff
-#define VSCP_MAX_DEVICES                    4096    // abs. max is 0xffff
+#define VSCP_MAX_CLIENTS                    4096    // abs. max. is 0xffff
+#define VSCP_MAX_DEVICES                    4096    // abs. max. is 0xffff
 
 //
 // daemon
@@ -192,7 +192,7 @@ extern "C" {
         // Following two are for daemon internal use
         uint32_t obid;      // Used by driver for channel info etc.
         uint32_t timestamp; // Relative time stamp for package in microseconds
-        // ----- CRC should be calculated from here to end + datablock ----
+        // ----- CRC should be calculated from here to end + data block ----
         uint16_t head;      // Bit 16   GUID is IP v.6 address.
                             // bit 765  priority, Priority 0-7 where 0 is highest.
                             // bit 4 = hard coded, true for a hard coded device.
@@ -222,9 +222,9 @@ typedef struct {
 	uint32_t timestamp;             // Relative time stamp for package in microseconds.
 // CRC should be calculated from
 // here to end + datablock
-	uint8_t head;                   // bit 7,6,5 prioriy => Priority 0-7 where 0 is highest.
-                                    // bit 4 = hardcoded, true for a hardcoded device.
-                                    // bit 3 = Dont calculate CRC, Set to zero to use CRC.
+	uint8_t head;                   // bit 7,6,5 priority => Priority 0-7 where 0 is highest.
+                                    // bit 4 = hard coded, true for a hard coded device.
+                                    // bit 3 = Don't calculate CRC, Set to zero to use CRC.
                                     // bit 2 = Set means this is CAN message.
                                     // bit 1 = If bit 2 is set; Extended CAN message if set
                                     // bit 0 = If bit 2 is set: Remote frame if set
@@ -233,7 +233,7 @@ typedef struct {
 	uint8_t  GUID[ 16 ];            // Node globally unique id MSB(0) -> LSB(15)
 	uint16_t sizeData;              // Number of valid data bytes		
 
-    uint8_t  data[VSCP_MAX_DATA];   // Pointer to data. Max 487 (512- 25) bytes
+    uint8_t  data[VSCP_MAX_DATA];   // Pointer to data. Max. 487 (512- 25) bytes
 
 } /*__attribute__((packed, aligned(1)))*/ vscpEventEx;
 
@@ -331,7 +331,7 @@ typedef  VSCPStatistics * PVSCPSTATISTICS;
 typedef struct structVSCPStatus {
     unsigned long channel_status;           // Current state for channel
     unsigned long lasterrorcode;            // Last error code
-    unsigned long lasterrorsubcode;         // Last error subcode
+    unsigned long lasterrorsubcode;         // Last error sub code
     char lasterrorstr[VSCP_STATUS_ERROR_STRING_SIZE]; // Last error string
 } /*__attribute__((packed, aligned(1)))*/ VSCPStatus;
 
@@ -357,7 +357,7 @@ typedef  VSCPStatus * PVSCPSTATUS;
 */
 
 typedef struct structVSCPChannelInfo {
-	unsigned char channelType;      // Level I, Level II etc from canal.h 
+	unsigned char channelType;      // Level I, Level II etc. from canal.h 
 	unsigned short channel;         // daemon channel number
 	char GUID[ 16 ];                // Channel GUID id
 	
@@ -366,7 +366,7 @@ typedef struct structVSCPChannelInfo {
 typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 
 // Bootloaders
-#define VSCP_BOOTLOADER_VSCP            0x00	// VSCP bootloader algorithm
+#define VSCP_BOOTLOADER_VSCP            0x00	// VSCP boot loader algorithm
 #define VSCP_BOOTLOADER_PIC1            0x01	// PIC algorithm 0
 #define VSCP_BOOTLOADER_AVR1            0x10	// AVR algorithm 0
 #define VSCP_BOOTLOADER_LPC1            0x20	// NXP/Philips LPC algorithm 0
@@ -393,9 +393,9 @@ typedef  VSCPChannelInfo	*PVSCPCHANNELINFO;
 #define VSCP_DATACODING_RESERVED2       0xE0
 
 // These bits are coded in the four least significant bits of the first data byte
-// in a paket and tells how the following data should be interpreted. For a flow sensor
-// the default format can be liters/minute. Other formats such as m3/second can be defined 
-// by the node if it which. However it must always be able to report in the defaultformat.
+// in a packet and tells how the following data should be interpreted. For a flow sensor
+// the default format can be litres/minute. Other formats such as m3/second can be defined 
+// by the node if it which. However it must always be able to report in the default format.
 #define VSCP_DATACODING_INTERPRETION_DEFAULT  0
 
 /// Get data coding type
@@ -508,20 +508,20 @@ struct myNode {
 #define VSCP_ERROR_REGISTER                20      // Register value error
 #define VSCP_ERROR_TRM_FULL                21      // Transmit buffer full
 #define VSCP_ERROR_LIBRARY                 28      // Unable to load library
-#define VSCP_ERROR_PROCADDRESS             29      // Unable get library proc address
+#define VSCP_ERROR_PROCADDRESS             29      // Unable get library proc. address
 #define VSCP_ERROR_ONLY_ONE_INSTANCE       30      // Only one instance allowed
 #define VSCP_ERROR_SUB_DRIVER              31      // Problem with sub driver call
-#define VSCP_ERROR_TIMEOUT                 32      // Timeout
+#define VSCP_ERROR_TIMEOUT                 32      // Time-out
 #define VSCP_ERROR_NOT_OPEN                33      // The device is not open.
 #define VSCP_ERROR_PARAMETER               34      // A parameter is invalid.
 #define VSCP_ERROR_MEMORY                  35      // Memory exhausted.
 #define VSCP_ERROR_INTERNAL                36      // Some kind of internal program error
 #define VSCP_ERROR_COMMUNICATION           37      // Some kind of communication error
-#define VSCP_ERROR_USER                    38      // Login error username
+#define VSCP_ERROR_USER                    38      // Login error user name
 #define VSCP_ERROR_PASSWORD                39      // Login error password
 #define VSCP_ERROR_CONNECTION              40      // Could not connect   
 #define VSCP_ERROR_INVALID_HANDLE          41      // The handle is not valid
-#define VSCP_ERROR_OPERATION_FAILED        42      // Opration failed for some reason
+#define VSCP_ERROR_OPERATION_FAILED        42      // Operation failed for some reason
 
 
 #ifdef __cplusplus

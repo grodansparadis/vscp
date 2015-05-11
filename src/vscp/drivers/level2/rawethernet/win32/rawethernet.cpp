@@ -527,14 +527,14 @@ void *CRawEthernetTxTread::Entry()
 	// First log on to the host and get configuration 
 	// variables
 
-    if ( VSCP_ERROR_SUCCESS == m_srv.doCmdOpen( m_pobj->m_host,
+    if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_pobj->m_host,
 			                                        m_pobj->m_username,
 			                                        m_pobj->m_password ) ) {
 		return NULL;
 	}
 
 	// Find the channel id
-	m_srv.doCmdGetChannelID(&m_pobj->m_ChannelIDtx);
+	m_srv.doCmdGetChannelID( &m_pobj->m_ChannelIDtx );
 
 	// It is possible that there is configuration data the server holds 
 	// that we need to read in. 
@@ -569,12 +569,12 @@ void *CRawEthernetTxTread::Entry()
     m_srv.doCmdSetGUID( strGUID.mbc_str() );
 
 	// Open the adapter 
-	if ((fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
-			65536, // portion of the packet to capture. It doesn't matter in this case 
-			1, // promiscuous mode (nonzero means promiscuous)
-			1000, // read timeout
-			errbuf // error buffer
-			)) == NULL) {
+	if ( ( fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
+			                        65536, // portion of the packet to capture. It doesn't matter in this case 
+			                        1, // promiscuous mode (nonzero means promiscuous)
+			                        1000, // read timeout
+			                        errbuf // error buffer
+			                  ) ) == NULL) {
 		//fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
 		return NULL;
 	}
@@ -583,16 +583,16 @@ void *CRawEthernetTxTread::Entry()
 	struct pcap_pkthdr *header;
 	const u_char *pkt_data;
 
-	while (!TestDestroy() &&
+	while ( !TestDestroy() &&
 			!m_pobj->m_bQuit &&
-			(rv = pcap_next_ex(fp, &header, &pkt_data)) >= 0) {
+			( rv = pcap_next_ex(fp, &header, &pkt_data) ) >= 0) {
 
 		// Check for timeout            
 		if (0 == rv) continue;
 
 		// Check if this is VSCP
-		if ((0x25 == pkt_data[ 12 ]) &&
-				(0x7e == pkt_data[ 13 ])) {
+		if ( ( 0x25 == pkt_data[ 12 ] ) &&
+				(0x7e == pkt_data[ 13 ] ) ) {
 
 			// We have a packet - send it as a VSCP event    
 			vscpEventEx event;
@@ -617,23 +617,23 @@ void *CRawEthernetTxTread::Entry()
 			event.GUID[ 15 ] = pkt_data[ 20 ];
 
 			event.timestamp = (pkt_data[ 21 ] << 24) +
-					(pkt_data[ 22 ] << 16) +
-					(pkt_data[ 23 ] << 8) +
-					pkt_data[ 24 ];
+					            (pkt_data[ 22 ] << 16) +
+					            (pkt_data[ 23 ] << 8) +
+					            pkt_data[ 24 ];
 
 			event.obid = (pkt_data[ 25 ] << 24) +
-					(pkt_data[ 26 ] << 16) +
-					(pkt_data[ 27 ] << 8) +
-					pkt_data[ 28 ];
+					            (pkt_data[ 26 ] << 16) +
+					            (pkt_data[ 27 ] << 8) +
+					            pkt_data[ 28 ];
 
 			event.vscp_class = (pkt_data[ 29 ] << 8) +
-					pkt_data[ 30 ];
+					            pkt_data[ 30 ];
 
 			event.vscp_type = (pkt_data[ 31 ] << 8) +
-					pkt_data[ 32 ];
+					            pkt_data[ 32 ];
 
 			event.sizeData = (pkt_data[ 33 ] << 8) +
-					pkt_data[ 34 ];
+					            pkt_data[ 34 ];
 
 			// If the packet is smaller then the set datasize just 
 			// disregard it
@@ -699,9 +699,9 @@ void *CRawEthernetRxTread::Entry()
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen(m_pobj->m_host,
-			m_pobj->m_username,
-			m_pobj->m_password) <= 0) {
+	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_pobj->m_host,
+			                                        m_pobj->m_username,
+			                                        m_pobj->m_password) <= 0) {
 		return NULL;
 	}
 
@@ -715,12 +715,12 @@ void *CRawEthernetRxTread::Entry()
 	m_srv.doCmdSetGUID( strGUID.mbc_str() );
 
 	// Open the adapter 
-	if ((fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
-			65536, // portion of the packet to capture. It doesn't matter in this case 
-			1, // promiscuous mode (nonzero means promiscuous)
-			1000, // read timeout
-			errbuf // error buffer
-			)) == NULL) {
+	if ( ( fp = pcap_open_live( m_pobj->m_interface.ToAscii(), // name of the device
+			                        65536, // portion of the packet to capture. It doesn't matter in this case 
+			                        1, // promiscuous mode (nonzero means promiscuous)
+			                        1000, // read timeout
+			                        errbuf // error buffer
+			                    ) ) == NULL ) {
 		//fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
 		return NULL;
 	}
@@ -734,7 +734,7 @@ void *CRawEthernetRxTread::Entry()
 	while (!TestDestroy() && !m_pobj->m_bQuit) {
 
 		if (CANAL_ERROR_SUCCESS ==
-			(rv = m_srv.doCmdBlockingReceive(&event, 10))) {
+			( rv = m_srv.doCmdBlockingReceive(&event, 10) ) ) {
 
 			// As we are on a different VSCP interface we need to filter the events we sent out 
 			// ourselves.
@@ -802,14 +802,14 @@ void *CRawEthernetRxTread::Entry()
 			memcpy(packet + 35, event.pdata, event.sizeData);
 
 			// Send the packet
-			if (0 != pcap_sendpacket(fp, packet, 35 + event.sizeData)) {
+			if ( 0 != pcap_sendpacket(fp, packet, 35 + event.sizeData) ) {
 				//fprintf(stderr,"\nError sending the packet: %s\n", pcap_geterr(fp));
 				// An error sending the frame - we do nothing
 				// TODO: Send error frame back to daemon????
 			}
 
 			// We are done with the event - remove data if any
-			if (NULL != event.pdata) {
+			if ( NULL != event.pdata ) {
 				delete [] event.pdata;
 				event.pdata = NULL;
 			}

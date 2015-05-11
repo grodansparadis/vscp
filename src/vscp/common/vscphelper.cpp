@@ -2672,7 +2672,8 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 	{
 		switch (pEvent->vscp_type) {
 
-		case VSCP_TYPE_PROTOCOL_SEGCTRL_HEARTBEAT:
+        case VSCP_TYPE_UNDEFINED:
+            str = _("This event is reserved and should not be seen here.");
 			break;
 
 		case VSCP_TYPE_PROTOCOL_NEW_NODE_ONLINE:
