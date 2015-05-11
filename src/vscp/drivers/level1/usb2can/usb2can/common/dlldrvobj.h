@@ -31,7 +31,7 @@
 
 #define DLL_MAIN_VERSION					1
 #define DLL_MINOR_VERSION					0
-#define DLL_SUB_VERSION				        8	
+#define DLL_SUB_VERSION				        9	
 
 // This is the vendor string - Change to your own value
 #define CANAL_DLL_VENDOR "edevices, Lithuania, http://www.8devices.com"
@@ -39,7 +39,7 @@
 
 // Max number of open connections
 //#define CANAL_USB2CAN_DRIVER_MAX_OPEN	256
-#define CANAL_USB2CAN_DRIVER_MAX_OPEN	4
+#define CANAL_USB2CAN_DRIVER_MAX_OPEN	32
 //WARNING! CANAL_USB2CAN_DRIVER_MAX_OPEN will be a problem with using old version with smaller size and a new version with bigger size on the same pc at the same time
 
 /////////////////////////////////////////////////////////////////////////////

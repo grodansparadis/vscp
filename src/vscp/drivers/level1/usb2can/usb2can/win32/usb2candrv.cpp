@@ -93,8 +93,8 @@ extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
 
 			if ( ( h = theApp->addDriverObject(pdrvObj)) <= 0 )
 			{
-				 h = 0;
-                 delete  pdrvObj; 
+				h = 0;
+				delete  pdrvObj; 
 			}
 			else
 			{
@@ -103,8 +103,7 @@ extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
 				   theApp->removeDriverObject( h );
 				   h = 0;
 				}
-			}		
-	}
+			}
 
 	return h;
 }
