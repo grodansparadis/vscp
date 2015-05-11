@@ -194,12 +194,6 @@
     <ClCompile Include="common\dlldrvobj.cpp" />
     <ClCompile Include="common\enum.cpp" />
     <ClCompile Include="common\usb2canobj.cpp" />
-    <ClCompile Include="stdafx.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="vscp_common\dllist.c" />
     <ClCompile Include="win32\usb2candrv.cpp" />
   </ItemGroup>
@@ -211,7 +205,6 @@
     <ClInclude Include="common\dlldrvobj.h" />
     <ClInclude Include="common\enum.h" />
     <ClInclude Include="common\usb2canobj.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="vscp_common\canal.h" />
     <ClInclude Include="vscp_common\canal_macro.h" />
@@ -219,9 +212,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="win32\versioninfo.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
