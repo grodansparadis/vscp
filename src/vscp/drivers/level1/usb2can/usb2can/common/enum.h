@@ -45,7 +45,8 @@
 
 #endif
 
-#define MAX_USB_DEVICES		4
+// this should match CANAL_USB2CAN_DRIVER_MAX_OPEN in dlldrvobj.h!!
+#define MAX_USB_DEVICES		32
 
 ///////////////////////////////////////////////////////////////////////////////////
 //                           IOCTL
