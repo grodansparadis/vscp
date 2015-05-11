@@ -50,7 +50,7 @@ BOOL APIENTRY DllMain( HANDLE hInstDll,
 			}
 			catch(...)
 			{
-				return FALSE;//memory exception creating handles
+				return FALSE;   //memory exception creating handles
 			}
 			break;
 
@@ -88,22 +88,19 @@ extern "C" long CanalOpen( const char *pDevice, unsigned long flags )
 
 	pdrvObj = new CUsb2canObj();
 
-	if ( NULL != pdrvObj )
-	{
+    if ( NULL != pdrvObj ) {
 
-			if ( ( h = theApp->addDriverObject(pdrvObj)) <= 0 )
-			{
-				h = 0;
-				delete  pdrvObj; 
-			}
-			else
-			{
-				if ( pdrvObj->open( pDevice, flags ) == FALSE )
-				{
-				   theApp->removeDriverObject( h );
-				   h = 0;
-				}
-			}
+        if ( ( h = theApp->addDriverObject( pdrvObj ) ) <= 0 ) {
+            h = 0;
+            delete  pdrvObj;
+        }
+        else {
+            if ( pdrvObj->open( pDevice, flags ) == FALSE ) {
+                theApp->removeDriverObject( h );
+                h = 0;
+            }
+        }
+    }
 
 	return h;
 }
@@ -120,8 +117,9 @@ extern "C" int CanalClose( long handle )
 {
 	CUsb2canObj *pdrvObj =  theApp->getDriverObject( handle );
 
-	if ( NULL == pdrvObj )
-	  return 0;
+    if ( NULL == pdrvObj ) {
+        return 0;
+    }
 
 	pdrvObj->close();
 	theApp->removeDriverObject( handle );
@@ -234,8 +232,9 @@ extern "C" int CanalGetStatus( long handle, PCANALSTATUS pCanalStatus  )
 {
 	CUsb2canObj *pdrvObj =  theApp->getDriverObject( handle );
 
-	if ( NULL == pdrvObj )
-		return 0;
+    if ( NULL == pdrvObj ) {
+        return 0;
+    }
 
 	return ( pdrvObj->getStatus( pCanalStatus ) );
 }
@@ -250,10 +249,11 @@ extern "C" int WINAPI EXPORT CanalGetStatistics( long handle, PCANALSTATISTICS p
 extern "C" int CanalGetStatistics( long handle, PCANALSTATISTICS pCanalStatistics  )
 #endif
 {
-	CUsb2canObj *pdrvObj =  theApp->getDriverObject( handle );
+    CUsb2canObj *pdrvObj = theApp->getDriverObject( handle );
 
-	if ( NULL == pdrvObj )
-		return 0;
+    if ( NULL == pdrvObj ) {
+        return 0;
+    }
 
 	return ( pdrvObj->getStatistics( pCanalStatistics ) );
 }
@@ -333,7 +333,6 @@ extern "C" unsigned long WINAPI EXPORT CanalGetDllVersion( void )
 extern "C" unsigned long CanalGetDllVersion( void )
 #endif
 {
-
 	unsigned long version;
 	unsigned char *p = (unsigned char *)&version;
 
@@ -341,8 +340,8 @@ extern "C" unsigned long CanalGetDllVersion( void )
 	*(p+1) = DLL_MINOR_VERSION;
 	*(p+2) = DLL_SUB_VERSION;
 	*(p+3) = 0;
-	return version;
 
+	return version;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -360,17 +359,9 @@ extern "C" const char * CanalGetVendorString( void )
 
 	CUsb2canObj *pdrvObj =  theApp->getDriverObject( 1681 );
 
-	if ( NULL == pdrvObj )
-		return NULL;
-
-	 // return ( pdrvObj->getVendorString());
-
-		//	   strcat( str, ";");
-        //   strcat( str, "www.edevices.lt\0");
-
-//#define CANAL_MAIN_VERSION					1
-//#define CANAL_MINOR_VERSION					0
-//#define CANAL_SUB_VERSION	
+    if ( NULL == pdrvObj ) {
+        return NULL;
+    }
 
 	strcpy_s( r_str, 256, pdrvObj->getVendorString());
     strcat_s( r_str, 256, ";");
