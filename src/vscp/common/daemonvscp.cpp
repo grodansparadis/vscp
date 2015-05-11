@@ -499,8 +499,8 @@ bool discoveryVSCPThread::readLevel1Register( uint8_t nodeid,
     pEvent->pdata = new uint8_t[2];
     if ( NULL == pEvent->pdata ) return false;
 
-	pEvent->pdata[ 16 ] = nodeid;      // Node to read from
-    pEvent->pdata[ 17 ] = reg;         // Register to read
+	pEvent->pdata[ 0 ] = nodeid;      // Node to read from
+    pEvent->pdata[ 1 ] = reg;         // Register to read
     
     // Send event
     sendEvent( pEvent, clientID );
