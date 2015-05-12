@@ -142,7 +142,7 @@ CRawEthernet::open(const char *pUsername,
 	// 
 	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Look for rawethernet interface in configuration string
+	// Look for raw ethernet interface in configuration string
 	if (tkz.HasMoreTokens()) {
 		// Interface
 		m_interface = tkz.GetNextToken();
@@ -244,7 +244,8 @@ CRawEthernet::open(const char *pUsername,
 		m_preadWorkThread->m_pObj = this;
 		m_preadWorkThread->Create();
 		m_preadWorkThread->Run();
-	} else {
+	} 
+	else {
 		rv = false;
 	}
 
@@ -314,9 +315,9 @@ CWrkReadThread::Entry()
 	// First log on to the host and get configuration 
 	// variables
 
-	if (m_srv.doCmdOpen(m_pObj->m_host,
-			m_pObj->m_username,
-			m_pObj->m_password) <= 0) {
+	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen(m_pObj->m_host,
+												m_pObj->m_username,
+												m_pObj->m_password ) ) {
 		return NULL;
 	}
 
@@ -499,25 +500,6 @@ CWrkWriteThread::Entry()
 	char errbuf[ PCAP_ERRBUF_SIZE ];
 	uint8_t packet[ 512 ];
 
-	// First log on to the host and get configuration 
-	// variables
-/*
-	if (m_srv.doCmdOpen(m_pObj->m_host,
-			m_pObj->m_port,
-			m_pObj->m_username,
-			m_pObj->m_password) <= 0) {
-		return NULL;
-	}
-
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
-
-	// We want to use our own Ethernet based  GUID for this interface
-	wxString strGUID;
-	m_pObj->m_localGUIDrx.toString(strGUID);
-	m_srv.doCmdSetGUID((const char *) strGUID.ToAscii());
-*/
     
 	// Open the adapter 
 	if ((fp = pcap_open_live(m_pObj->m_interface.ToAscii(), // name of the device
@@ -530,9 +512,6 @@ CWrkWriteThread::Entry()
 		return NULL;
 	}
 
-
-	// Enter receive loop to start to log events
-	//m_srv.doCmdEnterReceiveLoop();
 
 	int rv;
 	vscpEvent event;
@@ -550,28 +529,6 @@ CWrkWriteThread::Entry()
             m_pObj->m_mutexSendQueue.Unlock();
 
             if (NULL == pEvent) continue;
-
-            // Class must be a Level I class or a Level II
-            // mirror class
-            /*
-            if (pEvent->vscp_class < 512) {
-                frame.can_id = getCANidFromVSCPevent(pEvent);
-                frame.can_id |= CAN_EFF_FLAG; // Always extended
-                if (0 != pEvent->sizeData) {
-                    frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-                    memcpy(frame.data, pEvent->pdata, frame.len);
-                }
-            } 
-            else if (pEvent->vscp_class < 1024) {
-                pEvent->vscp_class -= 512;
-                frame.can_id = getCANidFromVSCPevent(pEvent);
-                frame.can_id |= CAN_EFF_FLAG; // Always extended
-                if (0 != pEvent->sizeData) {
-                    frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
-                    memcpy(frame.data, pEvent->pdata + 16, frame.len);
-                }
-            }
-            */ 
             
             // Set mac destination to broadcast ff:ff:ff:ff:ff:ff 
 			packet[ 0 ] = 0xff;

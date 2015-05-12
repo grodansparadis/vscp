@@ -313,17 +313,15 @@
       <item path="../../common/daemonvscp.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>../../common</pElem>
             <pElem>../../../common</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
@@ -589,34 +587,30 @@
       <item path="../../common/vscpvariable.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>../../common</pElem>
             <pElem>../../../common</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
       <item path="../../common/vscpwebserver.cpp" ex="false" tool="1" flavor2="4">
         <ccTool>
           <incDir>
-            <pElem>/usr/local/lib/wx/include/gtk2-unicode-debug-2.8</pElem>
-            <pElem>/usr/local/include/wx-2.8</pElem>
+            <pElem>/usr/local/lib/wx/include/gtk2-unicode-3.0</pElem>
+            <pElem>/usr/local/include/wx-3.0</pElem>
             <pElem>../../common</pElem>
             <pElem>../../../common</pElem>
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
             <Elem>NOEMBED_NET_SKELETON</Elem>
-            <Elem>NS_ENABLE_SSL</Elem>
-            <Elem>_LARGE_FILES</Elem>
-            <Elem>__WXDEBUG__</Elem>
+            <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
         </ccTool>
       </item>
