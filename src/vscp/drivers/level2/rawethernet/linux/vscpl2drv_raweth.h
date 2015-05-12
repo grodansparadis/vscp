@@ -76,6 +76,7 @@ class wxFile;
 
 
 class CRawEthernet {
+    
 public:
 
     /// Constructor
@@ -150,24 +151,24 @@ public:
      /// VSCP server interface
     VscpRemoteTcpIf m_srv;
 		
-	// Queue
-	std::list<vscpEvent *> m_sendList;
-	std::list<vscpEvent *> m_receiveList;
+    // Queue
+    std::list<vscpEvent *> m_sendList;
+    std::list<vscpEvent *> m_receiveList;
 	
-	/*!
+    /*!
         Event object to indicate that there is an event in the output queue
      */
     wxSemaphore m_semSendQueue;			
-	wxSemaphore m_semReceiveQueue;		
+    wxSemaphore m_semReceiveQueue;		
 	
-	// Mutex to protect the output queue
-	wxMutex m_mutexSendQueue;		
-	wxMutex m_mutexReceiveQueue;
+    // Mutex to protect the output queue
+    wxMutex m_mutexSendQueue;		
+    wxMutex m_mutexReceiveQueue;
 
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//				                Worker Treads
+//				  Worker Treads
 ///////////////////////////////////////////////////////////////////////////////
 
 

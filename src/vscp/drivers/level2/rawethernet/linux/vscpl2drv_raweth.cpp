@@ -727,10 +727,10 @@ CWrkWriteThread::Entry()
 
 
 	int rv;
-	vscpEvent event;
+
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
         
-        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout(300)) continue;
+        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 300 ) ) continue;
         
         // Check if there is event(s) to send
         if ( m_pObj->m_sendList.size() ) {
@@ -762,7 +762,7 @@ CWrkWriteThread::Entry()
 			packet[ 14 ] = 0x00;
 
 			// Head
-			packet[ 15 ] = (event.head & VSCP_HEADER_PRIORITY_MASK);
+			packet[ 15 ] = ( pEvent->head & VSCP_HEADER_PRIORITY_MASK);
 			packet[ 16 ] = 0x00;
 			packet[ 17 ] = 0x00;
 			packet[ 18 ] = 0x00; // LSB
@@ -772,38 +772,41 @@ CWrkWriteThread::Entry()
 			packet[ 20 ] = 0x00;
 
 			// Timestamp
-			uint32_t timestamp = event.timestamp;
+			uint32_t timestamp = pEvent->timestamp;
 			packet[ 21 ] = (timestamp & 0xff000000) >> 24;
 			packet[ 22 ] = (timestamp & 0x00ff0000) >> 16;
 			packet[ 23 ] = (timestamp & 0x0000ff00) >> 8;
 			packet[ 24 ] = (timestamp & 0x000000ff);
 
 			// obid
-			uint32_t obid = event.obid;
+			uint32_t obid = pEvent->obid;
 			packet[ 25 ] = (obid & 0xff000000) >> 24;
 			packet[ 26 ] = (obid & 0x00ff0000) >> 16;
 			packet[ 27 ] = (obid & 0x0000ff00) >> 8;
 			packet[ 28 ] = (obid & 0x000000ff);
 
 			// VSCP Class
-			uint16_t vscp_class = event.vscp_class;
+			uint16_t vscp_class = pEvent->vscp_class;
 			packet[ 29 ] = (vscp_class & 0xff00) >> 8;
 			packet[ 30 ] = (vscp_class & 0xff);
 
 			// VSCP Type
-			uint16_t vscp_type = event.vscp_type;
+			uint16_t vscp_type = pEvent->vscp_type;
 			packet[ 31 ] = (vscp_type & 0xff00) >> 8;
 			packet[ 32 ] = (vscp_type & 0xff);
 
 			// Size
-			packet[ 33 ] = event.sizeData >> 8;
-			packet[ 34 ] = event.sizeData & 0xff;
+			packet[ 33 ] = pEvent->sizeData >> 8;
+			packet[ 34 ] = pEvent->sizeData & 0xff;
 
 			// VSCP Data
-			memcpy(packet + 35, event.pdata, event.sizeData);
+			memcpy(packet + 35, pEvent->pdata, pEvent->sizeData );
+			
+			syslog( LOG_INFO,
+						"RawEthDrv2: Class: %d Type: %d DataSize: %d", pEvent->vscp_class, pEvent->vscp_type, pEvent->sizeData );
 
 			// Send the packet
-			if ( 0 != pcap_sendpacket( fp, packet, 35 + event.sizeData ) ) {
+			if ( 0 != pcap_sendpacket( fp, packet, 35 + pEvent->sizeData ) ) {
 				syslog( LOG_ERR,
 						"RawEthDrv: Error when sending the packet: %s\n", pcap_geterr( fp ) );
 			}

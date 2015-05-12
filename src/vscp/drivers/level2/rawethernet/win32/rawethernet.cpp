@@ -484,7 +484,6 @@ bool
 CRawEthernet::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
-	//m_sendQueue.Append((vscpEvent *)pEvent);
     m_sendList.push_back((vscpEvent *)pEvent);
 	m_semSendQueue.Post();
 	m_mutexSendQueue.Unlock();

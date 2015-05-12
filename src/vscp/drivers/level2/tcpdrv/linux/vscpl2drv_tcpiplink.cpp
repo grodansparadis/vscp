@@ -253,14 +253,7 @@ VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
 	CTcpipLink *pdrvObj = theApp.getDriverObject(handle);
 	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
     
-    //vscpEvent *pEventNew = new vscpEvent;
-    //if ( NULL != pEventNew ) {
-    //    copyVSCPEvent( pEventNew, pEvent );
     pdrvObj->addEvent2SendQueue( pEvent );
-	//}
-    //else {
-    //    return CANAL_ERROR_MEMORY;
-    //}
     
 	return CANAL_ERROR_SUCCESS;
 }
