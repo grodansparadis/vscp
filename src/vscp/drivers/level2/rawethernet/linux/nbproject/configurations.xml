@@ -31,9 +31,9 @@
       <itemPath>../../../../common/vscptcpif.h</itemPath>
     </logicalFolder>
     <df root="." name="0">
-      <in>rawethernet.cpp</in>
+      <in>dlldrvobj.cpp</in>
+      <in>dlldrvobj.h</in>
       <in>test.c</in>
-      <in>vscp2drv_raweth.cpp</in>
       <in>vscpl2drv_raweth.cpp</in>
     </df>
     <logicalFolder name="ExternalFiles"
@@ -169,6 +169,10 @@
           </preprocessorList>
         </ccTool>
       </item>
+      <item path="dlldrvobj.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="dlldrvobj.h" ex="false" tool="3" flavor2="0">
+      </item>
       <folder path="0">
         <ccTool>
           <incDir>
@@ -191,11 +195,7 @@
           </incDir>
         </cTool>
       </folder>
-      <item path="rawethernet.cpp" ex="false" tool="1" flavor2="4">
-      </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
-      </item>
-      <item path="vscp2drv_raweth.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="vscpl2drv_raweth.cpp" ex="false" tool="1" flavor2="0">
       </item>

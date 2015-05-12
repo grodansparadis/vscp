@@ -71,20 +71,20 @@ class CRawEthernet
 
 public:
 
-	/// Constructor
-	CRawEthernet();
+    /// Constructor
+    CRawEthernet();
 	
-	/// Destructor
-	virtual ~CRawEthernet();
+    /// Destructor
+    virtual ~CRawEthernet();
 
-    	/*! 
-		Open the Bluetooth detecter
+    /*! 
+        Open
 
-		@param Configuration string
-		@param flags 	Not used
-		@return True on success.
-	*/
-	bool open( const char *pUsername,
+        @param Configuration string
+        @param flags 	Not used
+        @return True on success.
+    */
+    bool open( const char *pUsername,
                 const char *pPassword,
                 const char *pHost,
                 short port,
@@ -92,22 +92,22 @@ public:
                 const char *pConfig, 
                 unsigned long flags = 0 );
 
-	/*!
-		Flush and close the log file
-	*/
-	void close( void );
+    /*!
+        Flush and close the log file
+    */
+    void close( void );
 
-	/*!
-		Add event to send queue 
+    /*!
+        Add event to send queue 
         @param pEvent Event to add to queue
         @return True on success
-	*/
-	bool addEvent2SendQueue(const vscpEvent *pEvent);
+    */
+    bool addEvent2SendQueue(const vscpEvent *pEvent);
 
 public:
 
-	/// Run flag
-	bool m_bQuit;
+    /// Run flag
+    bool m_bQuit;
 
     /// Driver flags
     unsigned long m_flags;
@@ -150,21 +150,21 @@ public:
 
     /// Pointer to worker threads
     CRawEthernetTxTread *m_pthreadWorkTx;
-	CRawEthernetRxTread *m_pthreadWorkRx;
+    CRawEthernetRxTread *m_pthreadWorkRx;
 
-	// Queue
-	std::list<vscpEvent *> m_sendList;
-	std::list<vscpEvent *> m_receiveList;
+    // Queue
+    std::list<vscpEvent *> m_sendList;
+    std::list<vscpEvent *> m_receiveList;
 	
-	/*!
+    /*!
         Event object to indicate that there is an event in the output queue
-     */
+    */
     wxSemaphore m_semSendQueue;			
-	wxSemaphore m_semReceiveQueue;		
+    wxSemaphore m_semReceiveQueue;		
 	
-	// Mutex to protect the output queue
-	wxMutex m_mutexSendQueue;		
-	wxMutex m_mutexReceiveQueue;
+    // Mutex to protect the output queue
+    wxMutex m_mutexSendQueue;		
+    wxMutex m_mutexReceiveQueue;
 
 };
 

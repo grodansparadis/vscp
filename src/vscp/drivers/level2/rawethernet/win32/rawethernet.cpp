@@ -34,7 +34,6 @@
 
 #include "../common/dlldrvobj.h"
 
-
 #ifdef WIN32
 #include <stdio.h>
 #include <stdlib.h>
@@ -389,6 +388,7 @@ CRawEthernet::~CRawEthernet()
 }
 
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // open
 //
@@ -436,7 +436,7 @@ bool CRawEthernet::open(const char *pUsername,
 		}
 	}
 
-	// start the workerthreads
+	// start the worker threads
 	m_pthreadWorkTx = new CRawEthernetTxTread();
 	if (NULL != m_pthreadWorkTx) {
 		m_pthreadWorkTx->m_pobj = this;

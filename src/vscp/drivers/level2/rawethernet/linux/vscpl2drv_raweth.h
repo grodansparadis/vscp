@@ -89,21 +89,22 @@ public:
         @return True on success.
      */
     bool open(const char *pUsername,
-            const char *pPassword,
-            const char *pHost,
-            short port,
-            const char *pPrefix,
-            const char *pConfig);
+                const char *pPassword,
+                const char *pHost,
+                short port,
+                const char *pPrefix,
+                const char *pConfig,
+                unsigned long flags );
 
     /*!
         Flush and close the log file
      */
     void close(void);
 
-	/*!
-		Add event to send queue 
-	 */
-	bool addEvent2SendQueue(const vscpEvent *pEvent);
+    /*!
+        Add event to send queue 
+     */
+    bool addEvent2SendQueue(const vscpEvent *pEvent);
 	
 public:
 
