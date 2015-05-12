@@ -344,8 +344,8 @@ CRawEthernet::CRawEthernet()
 {
 	m_bQuit = false;
 
-	m_pthreadWorkTx = NULL;
-	m_pthreadWorkRx = NULL;
+    m_pWrkReadTread = NULL;
+    m_pWrkWriteTread = NULL;
 
 	memset(m_localMac, 0, sizeof(m_localMac));
 
@@ -393,13 +393,13 @@ CRawEthernet::~CRawEthernet()
 // open
 //
 
-bool CRawEthernet::open(const char *pUsername,
-		const char *pPassword,
-		const char *pHost,
-		short port,
-		const char *pPrefix,
-		const char *pConfig,
-		unsigned long flags)
+bool CRawEthernet::open( const char *pUsername,
+		                    const char *pPassword,
+		                    const char *pHost,
+		                    short port,
+		                    const char *pPrefix,
+		                    const char *pConfig,
+		                    unsigned long flags )
 {
 	bool rv = true;
 	m_flags = flags;
@@ -413,17 +413,17 @@ bool CRawEthernet::open(const char *pUsername,
 
 	// Parse the configuration string. It should
 	// have the following form
-	// username;password;host;prefix;port;filename
+	// interface;mac,filter;mask
 	wxStringTokenizer tkz(pConfig, ";\n");
 
 	// Interface
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		m_interface = tkz.GetNextToken();
 	}
 
 	// Local Mac
 	wxString localMac;
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		localMac = tkz.GetNextToken();
 		localMac.MakeUpper();
 		wxStringTokenizer tkzmac(localMac, ":\n");
@@ -436,24 +436,77 @@ bool CRawEthernet::open(const char *pUsername,
 		}
 	}
 
+
+
+    // First log on to the host and get configuration 
+    // variables
+
+    if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_host,
+        m_username,
+        m_password ) ) {
+        return NULL;
+    }
+
+    // Find the channel id
+    //m_srv.doCmdGetChannelID( &m_ChannelID );
+
+    // It is possible that there is configuration data the server holds 
+    // that we need to read in. 
+    // We look for 
+    //      prefix_interface Communication interface to work on
+    //      prefix_localmac MAC address to use for outgoing packets
+    //      prefix_filter to find a filter. A string is expected.
+    //      prefix_mask to find a mask. A string is expected.
+
+    // Interface
+    wxString varInterface;
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_interface" ), &varInterface ) ) {
+        m_interface = varInterface;
+    }
+
+    wxString varLocalMac;
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_localmac" ), &varLocalMac ) ) {
+        varLocalMac.MakeUpper();
+        wxStringTokenizer tkz( varLocalMac, ":\n" );
+        for ( int i = 0; i < 6; i++ ) {
+            if ( tkz.HasMoreTokens() ) break;
+            wxString str = _( "0X" ) + tkz.GetNextToken();
+            m_localMac[ i ] = vscp_readStringValue( str );
+            m_localGUIDtx.setAt( ( 9 + i ), m_localMac[ i ] );
+            m_localGUIDrx.setAt( ( 9 + i ), m_localMac[ i ] );
+        }
+    }
+
+    // We want to use our own Ethernet based GUID for this interface
+    wxString strGUID;
+    m_localGUIDtx.toString( strGUID );
+    m_srv.doCmdSetGUID( strGUID.mbc_str() );
+
+    // Close the channel
+    m_srv.doCmdClose();
+
+
 	// start the workerthreads
-	m_pthreadWorkTx = new CRawEthernetTxTread();
-	if (NULL != m_pthreadWorkTx) {
-		m_pthreadWorkTx->m_pobj = this;
-		m_pthreadWorkTx->Create();
-		m_pthreadWorkTx->Run();
-	} else {
+    m_pWrkReadTread = new CWrkReadTread();
+    if ( NULL != m_pWrkReadTread ) {
+        m_pWrkReadTread->m_pobj = this;
+        m_pWrkReadTread->Create();
+        m_pWrkReadTread->Run();
+	} 
+    else {
 		rv = false;
 	}
 
+
 	wxSleep(1);
 
-	m_pthreadWorkRx = new CRawEthernetRxTread();
-	if (NULL != m_pthreadWorkRx) {
-		m_pthreadWorkRx->m_pobj = this;
-		m_pthreadWorkRx->Create();
-		m_pthreadWorkRx->Run();
-	} else {
+    m_pWrkWriteTread = new CWrkWriteTread();
+    if ( NULL != m_pWrkWriteTread ) {
+        m_pWrkWriteTread->m_pobj = this;
+        m_pWrkWriteTread->Create();
+        m_pWrkWriteTread->Run();
+	} 
+    else {
 		rv = false;
 	}
 
@@ -484,7 +537,6 @@ bool
 CRawEthernet::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
-	//m_sendQueue.Append((vscpEvent *)pEvent);
     m_sendList.push_back((vscpEvent *)pEvent);
 	m_semSendQueue.Post();
 	m_mutexSendQueue.Unlock();
@@ -501,17 +553,17 @@ CRawEthernet::addEvent2SendQueue(const vscpEvent *pEvent)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//                            CRawEthernetTxTread
+//                            CWrkReadTread
 ///////////////////////////////////////////////////////////////////////////////
 
-CRawEthernetTxTread::CRawEthernetTxTread()
+CWrkReadTread::CWrkReadTread()
 {
-
+    ;
 }
 
-CRawEthernetTxTread::~CRawEthernetTxTread()
+CWrkReadTread::~CWrkReadTread()
 {
-
+    ;
 }
 
 
@@ -519,54 +571,12 @@ CRawEthernetTxTread::~CRawEthernetTxTread()
 // Entry
 //
 
-void *CRawEthernetTxTread::Entry()
+void *CWrkReadTread::Entry()
 {
 	pcap_t *fp;
 	char errbuf[ PCAP_ERRBUF_SIZE ];
 
-	// First log on to the host and get configuration 
-	// variables
-
-    if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_pobj->m_host,
-			                                        m_pobj->m_username,
-			                                        m_pobj->m_password ) ) {
-		return NULL;
-	}
-
-	// Find the channel id
-	m_srv.doCmdGetChannelID( &m_pobj->m_ChannelIDtx );
-
-	// It is possible that there is configuration data the server holds 
-	// that we need to read in. 
-	// We look for 
-	//      prefix_interface Communication interface to work on
-	//      prefix_localmac MAC address to use for outgoing packets
-	//      prefix_filter to find a filter. A string is expected.
-	//      prefix_mask to find a mask. A string is expected.
-
-	// Interface
-	wxString varInterface;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_pobj->m_prefix + _T( "_interface" ), &varInterface ) ) {
-		m_pobj->m_interface = varInterface;
-	}
-
-	wxString varLocalMac;
-    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_pobj->m_prefix + _T( "_localmac" ), &varLocalMac ) ) {
-		varLocalMac.MakeUpper();
-		wxStringTokenizer tkz(varLocalMac, ":\n");
-		for (int i = 0; i < 6; i++) {
-			if (tkz.HasMoreTokens()) break;
-			wxString str = _("0X") + tkz.GetNextToken();
-			m_pobj->m_localMac[ i ] = vscp_readStringValue(str);
-			m_pobj->m_localGUIDtx.setAt((9 + i), m_pobj->m_localMac[ i ]);
-			m_pobj->m_localGUIDrx.setAt((9 + i), m_pobj->m_localMac[ i ]);
-		}
-	}
-
-	// We want to use our own Ethernet based GUID for this interface
-	wxString strGUID;
-	m_pobj->m_localGUIDtx.toString(strGUID);
-    m_srv.doCmdSetGUID( strGUID.mbc_str() );
+	
 
 	// Open the adapter 
 	if ( ( fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
@@ -643,7 +653,7 @@ void *CRawEthernetTxTread::Entry()
 				event.data[ i ] = pkt_data[ 35 + i ];
 			}
 
-			m_srv.doCmdSendEx(&event); // Send the event
+			//m_srv.doCmdSendEx(&event); // Send the event
 
 		}
 
@@ -653,9 +663,6 @@ void *CRawEthernetTxTread::Entry()
 	// Close listner
 	pcap_close(fp);
 
-	// Close the channel
-	m_srv.doCmdClose();
-
 	return NULL;
 }
 
@@ -663,7 +670,7 @@ void *CRawEthernetTxTread::Entry()
 // OnExit
 //
 
-void CRawEthernetTxTread::OnExit()
+void CWrkReadTread::OnExit()
 {
 
 }
@@ -672,15 +679,15 @@ void CRawEthernetTxTread::OnExit()
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//                            CRawEthernetRxTread
+//                            CWrkWriteTread
 ///////////////////////////////////////////////////////////////////////////////
 
-CRawEthernetRxTread::CRawEthernetRxTread()
+CWrkWriteTread::CWrkWriteTread()
 {
 
 }
 
-CRawEthernetRxTread::~CRawEthernetRxTread()
+CWrkWriteTread::~CWrkWriteTread()
 {
 
 }
@@ -690,29 +697,11 @@ CRawEthernetRxTread::~CRawEthernetRxTread()
 // Entry
 //
 
-void *CRawEthernetRxTread::Entry()
+void *CWrkWriteTread::Entry()
 {
 	pcap_t *fp;
 	char errbuf[ PCAP_ERRBUF_SIZE ];
 	uint8_t packet[ 512 ];
-
-	// First log on to the host and get configuration 
-	// variables
-
-	if ( VSCP_ERROR_SUCCESS != m_srv.doCmdOpen( m_pobj->m_host,
-			                                        m_pobj->m_username,
-			                                        m_pobj->m_password) <= 0) {
-		return NULL;
-	}
-
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
-
-	// We want to use our own Ethernet based  GUID for this interface
-	wxString strGUID;
-	m_pobj->m_localGUIDrx.toString(strGUID);
-	m_srv.doCmdSetGUID( strGUID.mbc_str() );
 
 	// Open the adapter 
 	if ( ( fp = pcap_open_live( m_pobj->m_interface.ToAscii(), // name of the device
@@ -727,14 +716,13 @@ void *CRawEthernetRxTread::Entry()
 
 
 	// Enter receive loop to start to log events
-	m_srv.doCmdEnterReceiveLoop();
+	//m_srv.doCmdEnterReceiveLoop();
 
 	int rv;
 	vscpEvent event;
 	while (!TestDestroy() && !m_pobj->m_bQuit) {
 
-		if (CANAL_ERROR_SUCCESS ==
-			( rv = m_srv.doCmdBlockingReceive(&event, 10) ) ) {
+		if ( 1 ) {
 
 			// As we are on a different VSCP interface we need to filter the events we sent out 
 			// ourselves.
@@ -821,9 +809,6 @@ void *CRawEthernetRxTread::Entry()
 	// Close the ethernet interface
 	pcap_close(fp);
 
-	// Close the channel
-	m_srv.doCmdClose();
-
 	return NULL;
 }
 
@@ -831,7 +816,7 @@ void *CRawEthernetRxTread::Entry()
 // OnExit
 //
 
-void CRawEthernetRxTread::OnExit()
+void CWrkWriteTread::OnExit()
 {
 
 }

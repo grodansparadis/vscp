@@ -60,8 +60,8 @@
 using namespace std;
 
 // Forward declarations
-class CRawEthernetTxTread;
-class CRawEthernetRxTread;
+class CWrkReadTread;
+class CWrkWriteTread;
 class VscpTcpIf;
 
 
@@ -134,6 +134,9 @@ public:
     */
     wxString m_interface;
 
+    /// VSCP server interface
+    VscpRemoteTcpIf m_srv;
+
     /*!
         Local MAC address to use
     */
@@ -149,8 +152,8 @@ public:
     cguid m_localGUIDrx;
 
     /// Pointer to worker threads
-    CRawEthernetTxTread *m_pthreadWorkTx;
-	CRawEthernetRxTread *m_pthreadWorkRx;
+    CWrkReadTread *m_pWrkReadTread;
+    CWrkWriteTread *m_pWrkWriteTread;
 
 	// Queue
 	std::list<vscpEvent *> m_sendList;
@@ -176,20 +179,20 @@ public:
 
 
 /*!
-    This is the thread that transmit data on the VSCP daemon 
-    interface that is received 
-    from the Ethernet
+    This is the thread that receive
+    from the Ethernet interface
 */
-class CRawEthernetTxTread : public wxThread 
+class CWrkReadTread : public wxThread
 {
 
 public:
 
 	/// Constructor
-	CRawEthernetTxTread();
+    /// VSCP server interface
+    CWrkReadTread();
 
 	/// Destructor
-	~CRawEthernetTxTread();
+    ~CWrkReadTread();
 
 	/*!
 		Thread code entry point
@@ -201,9 +204,6 @@ public:
 		stopped with Delete() (but not when it is Kill()ed!)
 	*/
  	virtual void OnExit();
-
-    /// VSCP server interface
-    VscpRemoteTcpIf m_srv;
 
     /// Pointer back to owner
     CRawEthernet *m_pobj;
@@ -211,19 +211,19 @@ public:
 };
 
 /*!
-    This is the thread that receive data from the VSCP daemon interface and transmit 
-    on Ethernet
+    This is the thread that transmit
+    to the Ethernet interface
 */
-class CRawEthernetRxTread : public wxThread 
+class CWrkWriteTread : public wxThread
 {
 
 public:
 
 	/// Constructor
-	CRawEthernetRxTread();
+    CWrkWriteTread();
 
 	/// Destructor
-	~CRawEthernetRxTread();
+    ~CWrkWriteTread();
 
 	/*!
 		Thread code entry point
@@ -235,9 +235,6 @@ public:
 		stopped with Delete() (but not when it is Kill()ed!)
 	*/
  	virtual void OnExit();
-
-    /// VSCP server interface
-    VscpRemoteTcpIf m_srv;
 
     /// Pointer back to owner
     CRawEthernet *m_pobj;
