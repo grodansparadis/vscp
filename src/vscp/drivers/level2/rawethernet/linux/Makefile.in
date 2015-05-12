@@ -35,7 +35,8 @@ DLLPREFIX = lib
 WX_RELEASE = 2.8
 LIBDIRNAME = $(top_wxbuilddir)lib
 
-RAWETH_OBJECTS = ../../../../../common/fossa.o\
+RAWETH_OBJECTS = dlldrvobj.o\
+	../../../../../common/fossa.o\
 	../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
 	../../../../common/guid.o\
@@ -49,12 +50,6 @@ PROJOBJS =  ../../../../common/vscpremotetcpif.o\
 	../../../../../common/crc8.o\
 	../../../../../common/fossa.o
 
-PROJOBJS =  ../../../../common/vscpremotetcpif.o\
-	../../../../common/vscphelper.o\
-	../../../../common/guid.o\
-	../../../../../common/crc.o\
-	../../../../../common/crc8.o\
-	../../../../../common/fossa.o
 
 ALWAYS_BUILD = ../../../../common/vscpremotetcpif.o\
 	../../../../common/vscphelper.o\
@@ -95,9 +90,6 @@ test:  test.o $(PROJOBJS)
 %.so: %.o $(RAWETH_OBJECTS)
 	$(CXX) -o $@ vscpl2drv_raweth.o $(RAWETH_OBJECTS) $(DLFLAGS) -L$(LIBDIRNAME) $(WXLIBS) $(EXTRALIBS) 
 
-$(ALWAYS_BUILD):  .FORCE
-
-.FORCE: 
 
 # Include dependency info, if present:
 -include .deps/*.d

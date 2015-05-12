@@ -20,6 +20,8 @@
 // the Free Software Foundation, 59 Temple Place - Suite 330,
 // Boston, MA 02111-1307, USA.
 //
+// http://www.opensourceforu.com/2011/02/capturing-packets-c-program-libpcap/
+//
 
 #include <stdio.h>
 #include "unistd.h"
@@ -58,7 +60,232 @@
 #include <vscpremotetcpif.h>
 #include <vscp_type.h>
 #include <vscp_class.h>
+#include "dlldrvobj.h"
 #include "vscpl2drv_raweth.h"
+
+
+extern CDllDrvObj theApp;
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                         V S C P   D R I V E R -  A P I
+///////////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////////
+// VSCPOpen
+//
+
+extern "C" long VSCPOpen( const char *pUsername,
+							const char *pPassword,
+							const char *pHost,
+							short port,
+							const char *pPrefix,
+							const char *pParameter,
+							unsigned long flags)
+{
+	long h = 0;
+
+	CRawEthernet *pdrvObj = new CRawEthernet();
+	if (NULL != pdrvObj) {
+
+		if (pdrvObj->open( pUsername,
+							pPassword,
+							pHost,
+							port,
+							pPrefix,
+							pParameter,
+							flags ) ) {
+
+			if ( !( h = theApp.addDriverObject( pdrvObj ) ) ) {
+				delete pdrvObj;
+			}
+
+		} 
+		else {
+			delete pdrvObj;
+		}
+
+	}
+
+	return h;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPClose
+// 
+
+#ifdef WIN32
+extern "C" int WINAPI EXPORT VSCPClose(long handle)
+#else
+
+extern "C" int VSCPClose(long handle)
+#endif
+{
+	int rv = 0;
+
+	CRawEthernet *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return 0;
+	pdrvObj->close();
+	theApp.removeDriverObject(handle);
+	rv = 1;
+	return CANAL_ERROR_SUCCESS;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingSend
+// 
+
+extern "C" int
+VSCPBlockingSend(long handle, const vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+
+	CRawEthernet *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    
+    pdrvObj->addEvent2SendQueue( pEvent );
+    
+	return CANAL_ERROR_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPBlockingReceive
+// 
+
+extern "C" int
+VSCPBlockingReceive(long handle, vscpEvent *pEvent, unsigned long timeout)
+{
+	int rv = 0;
+ 
+    // Check pointer
+    if ( NULL == pEvent) return CANAL_ERROR_PARAMETER;
+    
+	CRawEthernet *pdrvObj = theApp.getDriverObject(handle);
+	if (NULL == pdrvObj) return CANAL_ERROR_MEMORY;
+    
+    if ( wxSEMA_TIMEOUT == pdrvObj->m_semReceiveQueue.WaitTimeout( timeout ) ) {
+        return CANAL_ERROR_TIMEOUT;
+    }
+    
+	pdrvObj->m_mutexReceiveQueue.Lock();
+    vscpEvent *pLocalEvent = pdrvObj->m_receiveList.front();
+    pdrvObj->m_receiveList.pop_front();
+	pdrvObj->m_mutexReceiveQueue.Unlock();
+    if (NULL == pLocalEvent) return CANAL_ERROR_MEMORY;
+    
+    vscp_copyVSCPEvent( pEvent, pLocalEvent );
+    vscp_deleteVSCPevent( pLocalEvent );
+	
+	return CANAL_ERROR_SUCCESS;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetLevel
+// 
+
+#ifdef WIN32
+extern "C" unsigned long WINAPI EXPORT VSCPGetLevel(void)
+#else
+
+extern "C" unsigned long VSCPGetLevel(void)
+#endif
+{
+	return CANAL_LEVEL_USES_TCPIP;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// VSCPGetDllVersion
+//
+
+#ifdef WIN32
+extern "C" unsigned long WINAPI EXPORT VSCPGetDllVersion(void)
+#else
+
+extern "C" unsigned long VSCPGetDllVersion(void)
+#endif
+{
+	return VSCP_DLL_VERSION;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// VSCPGetVendorString
+//
+
+#ifdef WIN32
+extern "C" const char * WINAPI EXPORT VSCPGetVendorString(void)
+#else
+
+extern "C" const char * VSCPGetVendorString(void)
+#endif
+{
+	return VSCP_DLL_VENDOR;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// VSCPGetDriverInfo
+//
+
+#ifdef WIN32
+extern "C" const char * WINAPI EXPORT VSCPGetDriverInfo(void)
+#else
+
+extern "C" const char * VSCPGetDriverInfo(void)
+#endif
+{
+	return VSCP_RAWETH_DRIVERINFO;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPGetWebPageTemplate
+// 
+
+extern "C" long
+VSCPGetWebPageTemplate( long handle, const char *url, char *page )
+{
+    page = NULL;
+
+    // Not implemented
+    return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPGetVSCPWebPageInfo
+// 
+
+extern "C" int
+VSCPGetWebPageInfo( long handle, const struct vscpextwebpageinfo *info )
+{
+    // Not implemented
+    return -1;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//  VSCPWebPageupdate
+// 
+
+extern "C" int
+VSCPWebPageupdate( long handle, const char *url )
+{
+    // Not implemented
+    return -1;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                            T H E  C O D E
+///////////////////////////////////////////////////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////
@@ -113,6 +340,19 @@ CRawEthernet::~CRawEthernet()
 	::wxUninitialize();
 }
 
+//////////////////////////////////////////////////////////////////////
+// addEvent2SendQueue
+//
+
+bool 
+CRawEthernet::addEvent2SendQueue(const vscpEvent *pEvent)
+{
+    m_mutexSendQueue.Lock();
+    m_sendList.push_back((vscpEvent *)pEvent);
+	m_semSendQueue.Post();
+	m_mutexSendQueue.Unlock();
+    return true;
+}
 
 //////////////////////////////////////////////////////////////////////
 // open
@@ -125,7 +365,8 @@ CRawEthernet::open(const char *pUsername,
                     const char *pHost,
                     short port,
                     const char *pPrefix,
-                    const char *pConfig)
+                    const char *pConfig,
+					unsigned long flags )
 {
 	bool rv = true;
 	wxString wxstr = wxString::FromAscii(pConfig);
@@ -142,7 +383,7 @@ CRawEthernet::open(const char *pUsername,
 	// 
 	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
-	// Look for rawethernet interface in configuration string
+	// Look for raw Ethernet interface in configuration string
 	if (tkz.HasMoreTokens()) {
 		// Interface
 		m_interface = tkz.GetNextToken();
@@ -210,20 +451,31 @@ CRawEthernet::open(const char *pUsername,
 	wxString str;
 	wxString strName = m_prefix +
 			wxString::FromAscii("_interface");
-	m_srv.getVariableString(strName, &m_interface);
+	if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
+		m_interface = str;
+	}
 
 	// Local Mac
-	if (tkz.HasMoreTokens()) {
-		localMac = tkz.GetNextToken();
-		localMac.MakeUpper();
-		wxStringTokenizer tkzmac(localMac, _(":\n"));
-		for (int i = 0; i < 6; i++) {
-			if (!tkzmac.HasMoreTokens()) break;
-			wxString str = _("0X") + tkzmac.GetNextToken();
-			m_localMac[ i ] = vscp_readStringValue(str);
-			m_localGUIDtx.setAt((9 + i), m_localMac[ i ]);
-			m_localGUIDrx.setAt((9 + i), m_localMac[ i ]);
+	strName = m_prefix +
+			wxString::FromAscii("_localmac");
+	
+	if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
+		
+		localMac = str;
+	
+		if (tkz.HasMoreTokens()) {
+			localMac = tkz.GetNextToken();
+			localMac.MakeUpper();
+			wxStringTokenizer tkzmac(localMac, _(":\n"));
+			for (int i = 0; i < 6; i++) {
+				if (!tkzmac.HasMoreTokens()) break;
+				wxString str = _("0X") + tkzmac.GetNextToken();
+				m_localMac[ i ] = vscp_readStringValue(str);
+				m_localGUIDtx.setAt((9 + i), m_localMac[ i ]);
+				m_localGUIDrx.setAt((9 + i), m_localMac[ i ]);
+			}
 		}
+		
 	}
 
 	strName = m_prefix +
@@ -244,7 +496,8 @@ CRawEthernet::open(const char *pUsername,
 		m_preadWorkThread->m_pObj = this;
 		m_preadWorkThread->Create();
 		m_preadWorkThread->Run();
-	} else {
+	} 
+	else {
 		rv = false;
 	}
 
@@ -309,62 +562,17 @@ CWrkReadThread::Entry()
 {
 	pcap_t *fp;
 	char errbuf[ PCAP_ERRBUF_SIZE ];
-	//uint8_t packet[ 512 ];
-
-	// First log on to the host and get configuration 
-	// variables
-
-	if (m_srv.doCmdOpen(m_pObj->m_host,
-			m_pObj->m_username,
-			m_pObj->m_password) <= 0) {
-		return NULL;
-	}
-
-	// Find the channel id
-	m_srv.doCmdGetChannelID(&m_pObj->m_ChannelIDtx);
-
-	// It is possible that there is configuration data the server holds 
-	// that we need to read in. 
-	// We look for 
-	//      prefix_interface Communication interface to work on
-	//      prefix_localmac MAC address to use for outgoing packets
-	//      prefix_filter to find a filter. A string is expected.
-	//      prefix_mask to find a mask. A string is expected.
-
-	/*	
-		// Interface
-		wxString varInterface;
-		if (m_srv.getVariableString(m_pObj->m_prefix + _T("_interface"), &varInterface)) {
-			m_pObj->m_interface = varInterface;
-		}
-
-		wxString varLocalMac;
-		if (m_srv.getVariableString(m_pObj->m_prefix + _T("_localmac"), &varLocalMac)) {
-			varLocalMac.MakeUpper();
-			wxStringTokenizer tkz(varLocalMac, ":\n");
-			for (int i = 0; i < 6; i++) {
-				if (tkz.HasMoreTokens()) break;
-				wxString str = _("0X") + tkz.GetNextToken();
-				m_pObj->m_localMac[ i ] = readStringValue(str);
-				m_pObj->m_localGUIDtx.setAt((9 + i), m_pObj->m_localMac[ i ]);
-				m_pObj->m_localGUIDrx.setAt((9 + i), m_pObj->m_localMac[ i ]);
-			}
-		}
-
-	 */
-	// We want to use our own Ethernet based GUID for this interface
-	//wxString strGUID;
-	//m_pObj->m_localGUIDtx.toString(strGUID);
-	//m_srv.doCmdSetGUID((const char *) strGUID.ToAscii());
-
+	
 	// Open the adapter 
-	if ((fp = pcap_open_live(m_pObj->m_interface.ToAscii(), // name of the device
-			65536, // portion of the packet to capture. It doesn't matter in this case 
-			1, // promiscuous mode (nonzero means promiscuous)
-			1000, // read timeout
-			errbuf // error buffer
-			)) == NULL) {
-		//fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
+	if ( ( fp = pcap_open_live( (const char *)m_pObj->m_interface.mb_str(), // name of the device
+									65536,	// portion of the packet to capture. It doesn't matter in this case 
+									1,		// promiscuous mode (nonzero means promiscuous)
+									1000,	// read timeout
+									errbuf	// error buffer
+								) ) == NULL) {
+		syslog(LOG_ERR,
+				"RawEthDrv: Unable to open the adapter or %s is not supported by pcap. Err=%s",
+				(const char *)m_pObj->m_interface.mb_str(), errbuf );
 		return NULL;
 	}
 
@@ -373,15 +581,23 @@ CWrkReadThread::Entry()
 	const u_char *pkt_data;
 
 	while (!TestDestroy() &&
-			!m_pObj->m_bQuit &&
-			(rv = pcap_next_ex(fp, &header, &pkt_data)) >= 0) {
+			!m_pObj->m_bQuit  ) {
 
+		rv = pcap_next_ex( fp, &header, &pkt_data );
+			
 		// Check for timeout            
 		if (0 == rv) continue;
+		
+		// Check for error
+		if ( rv < 0 ) {
+			
+			syslog(LOG_ERR,
+				"RawEthDrv: Error while getting packet. Err=%s", pcap_geterr(fp) );
+		}
 
 		// Check if this is VSCP
-		if ((0x25 == pkt_data[ 12 ]) &&
-				(0x7e == pkt_data[ 13 ])) {
+		if ( ( 0x25 == pkt_data[ 12 ] ) &&
+			( 0x7e == pkt_data[ 13 ] ) ) {
 
 			// We have a packet - send it as a VSCP event    
 			vscpEventEx eventex;
@@ -455,9 +671,6 @@ CWrkReadThread::Entry()
 	// Close listner
 	pcap_close(fp);
 
-	// Close the channel
-	//m_srv.doCmdClose();
-
 	return NULL;
 }
 
@@ -498,47 +711,26 @@ CWrkWriteThread::Entry()
 	pcap_t *fp;
 	char errbuf[ PCAP_ERRBUF_SIZE ];
 	uint8_t packet[ 512 ];
-
-	// First log on to the host and get configuration 
-	// variables
-/*
-	if (m_srv.doCmdOpen(m_pObj->m_host,
-			m_pObj->m_port,
-			m_pObj->m_username,
-			m_pObj->m_password) <= 0) {
-		return NULL;
-	}
-
-	// Find the channel id
-	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
-
-	// We want to use our own Ethernet based  GUID for this interface
-	wxString strGUID;
-	m_pObj->m_localGUIDrx.toString(strGUID);
-	m_srv.doCmdSetGUID((const char *) strGUID.ToAscii());
-*/
     
 	// Open the adapter 
-	if ((fp = pcap_open_live(m_pObj->m_interface.ToAscii(), // name of the device
-			65536, // portion of the packet to capture. It doesn't matter in this case 
-			1, // promiscuous mode (nonzero means promiscuous)
-			1000, // read timeout
-			errbuf // error buffer
-			)) == NULL) {
-		//fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
+	if ((fp = pcap_open_live( (const char *)m_pObj->m_interface.mbc_str(),	// name of the device
+								65536,		// portion of the packet to capture. It doesn't matter in this case 
+								1,			// promiscuous mode (nonzero means promiscuous)
+								1000,		// read timeout
+								errbuf		// error buffer
+							) ) == NULL ) {
+		syslog(LOG_ERR,
+				"RawEthDrv: Unable to open the adapter or %s is not supported by WinPcap. Err=%s",
+				(const char *)m_pObj->m_interface.mb_str(), errbuf );
 		return NULL;
 	}
 
 
-	// Enter receive loop to start to log events
-	//m_srv.doCmdEnterReceiveLoop();
-
 	int rv;
-	vscpEvent event;
+
 	while (!TestDestroy() && !m_pObj->m_bQuit) {
         
-        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout(300)) continue;
+        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 300 ) ) continue;
         
         // Check if there is event(s) to send
         if ( m_pObj->m_sendList.size() ) {
@@ -550,28 +742,6 @@ CWrkWriteThread::Entry()
             m_pObj->m_mutexSendQueue.Unlock();
 
             if (NULL == pEvent) continue;
-
-            // Class must be a Level I class or a Level II
-            // mirror class
-            /*
-            if (pEvent->vscp_class < 512) {
-                frame.can_id = getCANidFromVSCPevent(pEvent);
-                frame.can_id |= CAN_EFF_FLAG; // Always extended
-                if (0 != pEvent->sizeData) {
-                    frame.len = (pEvent->sizeData > 8 ? 8 : pEvent->sizeData);
-                    memcpy(frame.data, pEvent->pdata, frame.len);
-                }
-            } 
-            else if (pEvent->vscp_class < 1024) {
-                pEvent->vscp_class -= 512;
-                frame.can_id = getCANidFromVSCPevent(pEvent);
-                frame.can_id |= CAN_EFF_FLAG; // Always extended
-                if (0 != pEvent->sizeData) {
-                    frame.len = ((pEvent->sizeData - 16) > 8 ? 8 : pEvent->sizeData - 16);
-                    memcpy(frame.data, pEvent->pdata + 16, frame.len);
-                }
-            }
-            */ 
             
             // Set mac destination to broadcast ff:ff:ff:ff:ff:ff 
 			packet[ 0 ] = 0xff;
@@ -592,7 +762,7 @@ CWrkWriteThread::Entry()
 			packet[ 14 ] = 0x00;
 
 			// Head
-			packet[ 15 ] = (event.head & VSCP_HEADER_PRIORITY_MASK);
+			packet[ 15 ] = ( pEvent->head & VSCP_HEADER_PRIORITY_MASK);
 			packet[ 16 ] = 0x00;
 			packet[ 17 ] = 0x00;
 			packet[ 18 ] = 0x00; // LSB
@@ -602,41 +772,43 @@ CWrkWriteThread::Entry()
 			packet[ 20 ] = 0x00;
 
 			// Timestamp
-			uint32_t timestamp = event.timestamp;
+			uint32_t timestamp = pEvent->timestamp;
 			packet[ 21 ] = (timestamp & 0xff000000) >> 24;
 			packet[ 22 ] = (timestamp & 0x00ff0000) >> 16;
 			packet[ 23 ] = (timestamp & 0x0000ff00) >> 8;
 			packet[ 24 ] = (timestamp & 0x000000ff);
 
 			// obid
-			uint32_t obid = event.obid;
+			uint32_t obid = pEvent->obid;
 			packet[ 25 ] = (obid & 0xff000000) >> 24;
 			packet[ 26 ] = (obid & 0x00ff0000) >> 16;
 			packet[ 27 ] = (obid & 0x0000ff00) >> 8;
 			packet[ 28 ] = (obid & 0x000000ff);
 
 			// VSCP Class
-			uint16_t vscp_class = event.vscp_class;
+			uint16_t vscp_class = pEvent->vscp_class;
 			packet[ 29 ] = (vscp_class & 0xff00) >> 8;
 			packet[ 30 ] = (vscp_class & 0xff);
 
 			// VSCP Type
-			uint16_t vscp_type = event.vscp_type;
+			uint16_t vscp_type = pEvent->vscp_type;
 			packet[ 31 ] = (vscp_type & 0xff00) >> 8;
 			packet[ 32 ] = (vscp_type & 0xff);
 
 			// Size
-			packet[ 33 ] = event.sizeData >> 8;
-			packet[ 34 ] = event.sizeData & 0xff;
+			packet[ 33 ] = pEvent->sizeData >> 8;
+			packet[ 34 ] = pEvent->sizeData & 0xff;
 
 			// VSCP Data
-			memcpy(packet + 35, event.pdata, event.sizeData);
+			memcpy(packet + 35, pEvent->pdata, pEvent->sizeData );
+			
+			syslog( LOG_INFO,
+						"RawEthDrv2: Class: %d Type: %d DataSize: %d", pEvent->vscp_class, pEvent->vscp_type, pEvent->sizeData );
 
 			// Send the packet
-			if (0 != pcap_sendpacket(fp, packet, 35 + event.sizeData)) {
-				//fprintf(stderr,"\nError sending the packet: %s\n", pcap_geterr(fp));
-				// An error sending the frame - we do nothing
-				// TODO: Send error frame back to daemon????
+			if ( 0 != pcap_sendpacket( fp, packet, 35 + pEvent->sizeData ) ) {
+				syslog( LOG_ERR,
+						"RawEthDrv: Error when sending the packet: %s\n", pcap_geterr( fp ) );
 			}
 
             // Remove the event
@@ -648,7 +820,7 @@ CWrkWriteThread::Entry()
 
 	} // work loop   
 
-	// Close the ethernet interface
+	// Close the Ethernet interface
 	pcap_close(fp);
 
 	// Close the channel

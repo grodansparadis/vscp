@@ -24,16 +24,16 @@
 #if !defined(AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)
 #define AFX_DLLDRVOBJ_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_
 
-#include "rawethernet.h"
+#include "vscpl2drv_raweth.h"
 
 // This is the version info for this DLL - Change to your own value
-#define DLL_VERSION		                0x000001
+#define VSCP_DLL_VERSION		                0x000002
 
 // This is the vendor string - Change to your own value
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
 							
 // Driver information.
-#define VSCP_LOGGER_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
+#define VSCP_RAWETH_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
 "<!-- Version 0.0.1    2011-01-20   -->" \
 "<config level=\"1|2\"blocking\"true|false\" description=\"bla bla bla bla\">" \
 "   <item pos=\"0\" type=\"string\" description\"Serial number for Tellstick\"/>" \
@@ -41,11 +41,10 @@
 "</config>"
 
 // Max number of open connections
-#define VSCP_LOGGER_DRIVER_MAX_OPEN	    256
+#define VSCP_RAWETH_DRIVER_MAX_OPEN	    256
 
 /////////////////////////////////////////////////////////////////////////////
 // CDllDrvObj
-// See loggerdll.cpp for the implementation of this class
 //
 
 class CDllDrvObj
@@ -87,7 +86,7 @@ public:
 		The log file object
 		This is the array with driver objects 
 	*/
-	CRawEthernet *m_drvObjArray[ VSCP_LOGGER_DRIVER_MAX_OPEN ];
+	CRawEthernet *m_drvObjArray[ VSCP_RAWETH_DRIVER_MAX_OPEN ];
 
 	/// Mutex for open/close
 #ifdef WIN32	

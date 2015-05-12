@@ -231,7 +231,8 @@ CTcpipLink::open(const char *pUsername,
 		m_pthreadSend->m_pObj = this;
 		m_pthreadSend->Create();
 		m_pthreadSend->Run();
-	} else {
+	} 
+	else {
 		rv = false;
 	}
     
@@ -241,7 +242,8 @@ CTcpipLink::open(const char *pUsername,
 		m_pthreadReceive->m_pObj = this;
 		m_pthreadReceive->Create();
 		m_pthreadReceive->Run();
-	} else {
+	} 
+	else {
 		rv = false;
 	}
 
@@ -264,7 +266,6 @@ CTcpipLink::close(void)
 
 	m_bQuit = true; // terminate the thread
 	wxSleep(1); // Give the thread some time to terminate
-
 }
 
 
@@ -276,7 +277,6 @@ bool
 CTcpipLink::addEvent2SendQueue(const vscpEvent *pEvent)
 {
     m_mutexSendQueue.Lock();
-	//m_sendQueue.Append((vscpEvent *)pEvent);
     m_sendList.push_back((vscpEvent *)pEvent);
 	m_semSendQueue.Post();
 	m_mutexSendQueue.Unlock();
