@@ -301,32 +301,6 @@ CRawEthernet::CRawEthernet()
 	memset(m_localMac, 0, 16);
     m_subaddr = 0;
 
-	// Initialize tx channel GUID
-	m_localGUIDtx.clear();
-	m_localGUIDtx.setAt(0, 0xff);
-	m_localGUIDtx.setAt(1, 0xff);
-	m_localGUIDtx.setAt(2, 0xff);
-	m_localGUIDtx.setAt(3, 0xff);
-	m_localGUIDtx.setAt(4, 0xff);
-	m_localGUIDtx.setAt(5, 0xff);
-	m_localGUIDtx.setAt(6, 0xff);
-	m_localGUIDtx.setAt(7, 0xfe);
-	m_localGUIDtx.setAt(14, 0x00);
-	m_localGUIDtx.setAt(15, 0x00);
-
-	// Initialize rx channel GUID
-	m_localGUIDrx.clear();
-	m_localGUIDrx.setAt(0, 0xff);
-	m_localGUIDrx.setAt(1, 0xff);
-	m_localGUIDrx.setAt(2, 0xff);
-	m_localGUIDrx.setAt(3, 0xff);
-	m_localGUIDrx.setAt(4, 0xff);
-	m_localGUIDrx.setAt(5, 0xff);
-	m_localGUIDrx.setAt(6, 0xff);
-	m_localGUIDrx.setAt(7, 0xfe);
-	m_localGUIDrx.setAt(14, 0x00);
-	m_localGUIDrx.setAt(15, 0x01);
-
 	vscp_clearVSCPFilter(&m_vscpfilter); // Accept all events
 	::wxInitialize();
 }
@@ -400,8 +374,6 @@ CRawEthernet::open(const char *pUsername,
 			if (!tkzmac.HasMoreTokens()) break;
 			wxString str = _("0X") + tkzmac.GetNextToken();
 			m_localMac[ i ] = vscp_readStringValue(str);
-			m_localGUIDtx.setAt((9 + i), m_localMac[ i ]);
-			m_localGUIDrx.setAt((9 + i), m_localMac[ i ]);
 		}
 	}
 
@@ -475,8 +447,6 @@ CRawEthernet::open(const char *pUsername,
 				if (!tkzmac.HasMoreTokens()) break;
 				wxString str = _("0X") + tkzmac.GetNextToken();
 				m_localMac[ i ] = vscp_readStringValue(str);
-				m_localGUIDtx.setAt((9 + i), m_localMac[ i ]);
-				m_localGUIDrx.setAt((9 + i), m_localMac[ i ]);
 			}
 		}
 		
