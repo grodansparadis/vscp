@@ -2232,7 +2232,7 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *conn, cons
 	CControlObject *pObject = (CControlObject *)conn->server_param;
 	if (NULL == pObject) return NULL;
 
-	// create fresh session 
+	// Create fresh session 
     ret = (struct websrv_Session *)calloc(1, sizeof(struct websrv_Session));
     if  (NULL == ret ) {
 #ifndef WIN32
@@ -2256,21 +2256,21 @@ VSCPWebServerThread::websrv_add_session_cookie( struct mg_connection *conn, cons
 	Cmd5 md5( (unsigned char *)buf );
 	strcpy( ret->m_sid, md5.getDigest() );
     
-	sprintf( buf, "session=%s; max-age=3600; http-only", ret->m_sid );
+    sprintf( buf, "session=%s; max-age=3600; http-only;", ret->m_sid );
 	mg_send_header( conn, "Set-Cookie", buf );
 	
-	sprintf( buf, "user=%s", pUser );
+    sprintf( buf, "user=%s;", pUser );
 	mg_send_header( conn, "Set-Cookie", buf );
 
-	strcpy( buf, "original_url=/; max-age=0" );
+    strcpy( buf, "original_url=/; max-age=0;" );
 	mg_send_header( conn, "Set-Cookie", buf );
-    /*
-    mg_printf( conn, "HTTP/1.1 200 OK\r\n"
+    
+    /*mg_printf( conn, "HTTP/1.1 200 OK\r\n"
                "Set-Cookie: session=%s; max-age=3600; http-only;\r\n"
                "Set-Cookie: user=%s;\r\n"
                "Set-Cookie: original_url=/; max-age=0;\r\n"
-               "Set-Cookie: allow=yes;\r\n\r\n", ret->m_sid, pUser );
-    */
+               "Set-Cookie: allow=yes;\r\n\r\n", ret->m_sid, pUser );*/
+    
 	ret->m_pUserItem = pObject->m_userList.getUser( wxString::FromAscii( pUser ) );
 	
     // Add to linked list
@@ -2408,7 +2408,8 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 	struct websock_session *pWebSockSession;
 	struct websrv_Session * pWebSrvSession;
 	char user[256], nonce[256],
-			uri[32768], cnonce[256], resp[256], qop[256], nc[256];
+			uri[32768], cnonce[256], 
+            resp[256], qop[256], nc[256];
 	CUserItem *pUser;
     char *cookie = NULL;
 	bool bValidHost;
@@ -2472,15 +2473,20 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
                 // Check digest
                 if ( MG_TRUE !=
                      pObject->getWebServer()->websrv_check_password( conn->request_method,
-                     ( const char * )pUser->m_md5Password.mbc_str(),
-                     uri, nonce, nc, cnonce, qop, resp ) ) {
+                                                                        ( const char * )pUser->m_md5Password.mbc_str(),
+                                                                        uri, 
+                                                                        nonce, 
+                                                                        nc, 
+                                                                        cnonce, 
+                                                                        qop, 
+                                                                        resp ) ) {
                     // Username/password wrong
                     strErr =
                         wxString::Format( _( "[Webserver Client] Host [%s] User [%s] NOT allowed to connect.\n" ),
                         wxString::FromAscii( ( const char * )conn->remote_ip ).wx_str(),
                         pUser->m_user.wx_str() );
                     pObject->logMsg( strErr, DAEMON_LOGMSG_WARNING, DAEMON_LOGTYPE_SECURITY );
-                    return MG_TRUE;
+                    return MG_FALSE;
                 }
 
             }
@@ -2498,8 +2504,7 @@ VSCPWebServerThread::websrv_event_handler( struct mg_connection *conn, enum mg_e
 			pObject->getWebServer()->websrv_add_session_cookie( conn, user );
 
             // Valid credentials
-            strErr = 
-                    wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
+            strErr = wxString::Format( _("[Webserver Client] Host [%s] User [%s] allowed to connect.\n"), 
 											wxString::FromAscii( (const char *)conn->remote_ip ).wx_str(), 
 											pUser->m_user.wx_str() );			
 			

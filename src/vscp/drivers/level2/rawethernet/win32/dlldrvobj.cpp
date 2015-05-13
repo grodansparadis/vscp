@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB,
+// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB,
 // <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -21,22 +21,12 @@
 // Boston, MA 02111-1307, USA.
 //
 //
-// Linux
-// =====
-// device1 = logger,/tmp/vscp_log,txt,/usr/local/lib/vscplogger.so,64,64,1
-//
-// WIN32
-// =====
-// device1 = logger,c:\vscp_log,txt,d:\winnr\system32\vscplogger.dll,64,64,1
 
 #include "stdio.h"
 #include "stdlib.h"
 #include "dlldrvobj.h"
 #include "rawethernet.h"
 
-#ifdef WIN32
-
-#else
 
 void _init() __attribute__((constructor));
 void _fini() __attribute__((destructor));
@@ -44,7 +34,7 @@ void _fini() __attribute__((destructor));
 void _init() {printf("initializing\n");}
 void _fini() {printf("finishing\n");}
 
-#endif
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CDllDrvObj
@@ -55,11 +45,7 @@ void _fini() {printf("finishing\n");}
 CDllDrvObj::CDllDrvObj()
 {
 	m_instanceCounter = 0;
-#ifdef WIN32
-	m_objMutex = CreateMutex( NULL, true, _("__VSCP_RAW_ETH_MUTEX__") );
-#else
 	pthread_mutex_init( &m_objMutex, NULL );
-#endif
 
 	// Init the driver array
 	for ( int i = 0; i<VSCP_RAWETH_DRIVER_MAX_OPEN; i++ ) {
@@ -74,9 +60,9 @@ CDllDrvObj::~CDllDrvObj()
 {
 	LOCK_MUTEX( m_objMutex );
 	
-    for ( int i = 0; i<VSCP_RAWETH_DRIVER_MAX_OPEN; i++ ) {
+	for ( int i = 0; i<VSCP_RAWETH_DRIVER_MAX_OPEN; i++ ) {
 		
-		if ( NULL == m_drvObjArray[ i ] ) {
+		if ( NULL != m_drvObjArray[ i ] ) {
 			
 			CRawEthernet *pdrvObj =  getDriverObject( i );
 			if ( NULL != pdrvObj ) { 
@@ -89,17 +75,14 @@ CDllDrvObj::~CDllDrvObj()
 
 	UNLOCK_MUTEX( m_objMutex );
 
-#ifdef WIN32
-	CloseHandle( m_objMutex );
-#else	
 	pthread_mutex_destroy( &m_objMutex );
-#endif
+
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// The one and only CDllDrvObjgerdllApp object
+// The one and only CDllDrvObj object
 
-//CDllDrvObj theApp;
+CDllDrvObj theApp;
 
 
 
@@ -112,7 +95,7 @@ long CDllDrvObj::addDriverObject( CRawEthernet *pdrvObj )
 	long h = 0;
 
 	LOCK_MUTEX( m_objMutex );
-    for ( int i = 0; i<VSCP_RAWETH_DRIVER_MAX_OPEN; i++ ) {
+	for ( int i=0; i<VSCP_RAWETH_DRIVER_MAX_OPEN; i++ ) {
 	
 		if ( NULL == m_drvObjArray[ i ] ) {
 		
@@ -140,7 +123,7 @@ CRawEthernet * CDllDrvObj::getDriverObject( long h )
 
 	// Check if valid handle
 	if ( idx < 0 ) return NULL;
-    if ( idx >= VSCP_RAWETH_DRIVER_MAX_OPEN ) return NULL;
+	if ( idx >= VSCP_RAWETH_DRIVER_MAX_OPEN ) return NULL;
 	return m_drvObjArray[ idx ];
 }
 
@@ -155,7 +138,7 @@ void CDllDrvObj::removeDriverObject( long h )
 
 	// Check if valid handle
 	if ( idx < 0 ) return;
-    if ( idx >= VSCP_RAWETH_DRIVER_MAX_OPEN ) return;
+	if ( idx >= VSCP_RAWETH_DRIVER_MAX_OPEN ) return;
 
 	LOCK_MUTEX( m_objMutex );
 	if ( NULL != m_drvObjArray[ idx ] ) delete m_drvObjArray[ idx ];

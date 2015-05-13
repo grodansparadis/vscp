@@ -149,7 +149,7 @@ typedef  canalStatistics * PCANALSTATISTICS;
 typedef struct structCanalStatus {
     unsigned long channel_status;           // Current state for channel
     unsigned long lasterrorcode;            // Last error code
-    unsigned long lasterrorsubcode;         // Last error subcode
+    unsigned long lasterrorsubcode;         // Last error sub code
     char lasterrorstr[80];                  // Last error string
 } canalStatus;
 
@@ -184,7 +184,7 @@ long CanalOpen( const char *pDevice, unsigned long flags );
 
 
 /*! 
-	Close a CANAL chanel.
+	Close a CANAL channel.
 
 	@param handle - Handle to open physical CANAL channel.
 	@return zero on success or error-code on failure.
@@ -198,7 +198,7 @@ int CanalClose( long handle );
 /*!
 	Get CANAL DLL supported level
 
-	@return level for CANAL dll implemention.
+	@return level for CANAL dll implementation.
 */
 #ifdef WIN32
 unsigned long WINAPI EXPORT CanalGetLevel( long handle );
@@ -231,7 +231,7 @@ int CanalSend( long handle, PCANALMSG pCanalMsg );
 	
 	@param handle - Handle to open physical CANAL channel.
 	@param pCanMsg - Message to send.
-	@param timeout - timout in ms. 0 is forever.
+	@param timeout - time-out in ms. 0 is forever.
 	@return zero on success or error-code on failure.
 */
 #ifdef WIN32
@@ -261,7 +261,7 @@ int CanalReceive( long handle, PCANALMSG pCanalMsg );
 
 
 /*!
-	Blocking receieve a message on a CANAL channel.
+	Blocking receive a message on a CANAL channel.
 
 	The instruction should block if not instructed not to
 	do so when the interface was opened.
@@ -271,7 +271,7 @@ int CanalReceive( long handle, PCANALMSG pCanalMsg );
 
 	@param handle - Handle to open physical CANAL channel.
 	@param pCanMsg - Message to send.
-	@param timeout - timout in ms. 0 is forever.
+	@param timeout - time-out in ms. 0 is forever.
 	@return zero on success or error-code on failure.
 */
 #ifdef WIN32
@@ -372,7 +372,7 @@ unsigned long CanalGetVersion( void );
 /*!
 	Get CANAL DLL version
 
-	@return version for CANAL dll implemention.
+	@return version for CANAL dll implementation.
 */
 #ifdef WIN32
 unsigned long WINAPI EXPORT CanalGetDllVersion( void );
@@ -383,7 +383,7 @@ unsigned long CanalGetDllVersion( void );
 /*!
 	Get CANAL vendor string
 
-	@return version for CANAL dll implemention.
+	@return version for CANAL dll implementation.
 */
 #ifdef WIN32
 const char * WINAPI EXPORT CanalGetVendorString( void );
@@ -429,7 +429,7 @@ const char * CanalGetDriverInfo( void );
 
 /// Status message codes ( in received message )
 #define CANAL_STATUSMSG_OK                  0x00    // Normal condition. 
-#define CANAL_STATUSMSG_OVERRUN             0x01    // Overrun occured when sending data to CAN bus. 
+#define CANAL_STATUSMSG_OVERRUN             0x01    // Overrun occurred when sending data to CAN bus. 
 #define CANAL_STATUSMSG_BUSLIGHT            0x02    // Error counter has reached 96. 
 #define CANAL_STATUSMSG_BUSHEAVY            0x03    // Error counter has reached 128. 
 #define CANAL_STATUSMSG_BUSOFF              0x04    // Device is in BUSOFF. CANAL_STATUS_OK is 
@@ -457,7 +457,7 @@ const char * CanalGetDriverInfo( void );
 
 /// Error Codes
 #define CANAL_ERROR_SUCCESS                 0       // All is OK
-#define CANAL_ERROR_BAUDRATE                1       // Baudrate error
+#define CANAL_ERROR_BAUDRATE                1       // Baud rate error
 #define CANAL_ERROR_BUS_OFF                 2       // Bus off error
 #define CANAL_ERROR_BUS_PASSIVE             3       // Bus Passive error
 #define CANAL_ERROR_BUS_WARNING             4       // Bus warning error
@@ -478,17 +478,17 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_ERROR_RCV_EMPTY               19      // Receive buffer empty
 #define CANAL_ERROR_REGISTER                20      // Register value error
 #define CANAL_ERROR_TRM_FULL                21
-#define CANAL_ERROR_ERRFRM_STUFF            22      // Errorframe: stuff error detected
-#define CANAL_ERROR_ERRFRM_FORM             23      // Errorframe: form error detected
-#define CANAL_ERROR_ERRFRM_ACK              24      // Errorframe: acknowledge error
-#define CANAL_ERROR_ERRFRM_BIT1             25      // Errorframe: bit 1 error
-#define CANAL_ERROR_ERRFRM_BIT0             26      // Errorframe: bit 0 error
-#define CANAL_ERROR_ERRFRM_CRC              27      // Errorframe: CRC error
+#define CANAL_ERROR_ERRFRM_STUFF            22      // Error frame: stuff error detected
+#define CANAL_ERROR_ERRFRM_FORM             23      // Error frame: form error detected
+#define CANAL_ERROR_ERRFRM_ACK              24      // Error frame: acknowledge error
+#define CANAL_ERROR_ERRFRM_BIT1             25      // Error frame: bit 1 error
+#define CANAL_ERROR_ERRFRM_BIT0             26      // Error frame: bit 0 error
+#define CANAL_ERROR_ERRFRM_CRC              27      // Error frame: CRC error
 #define CANAL_ERROR_LIBRARY                 28      // Unable to load library
-#define CANAL_ERROR_PROCADDRESS             29      // Unable get library proc address
+#define CANAL_ERROR_PROCADDRESS             29      // Unable get library proc. address
 #define CANAL_ERROR_ONLY_ONE_INSTANCE       30      // Only one instance allowed
 #define CANAL_ERROR_SUB_DRIVER              31      // Problem with sub driver call
-#define CANAL_ERROR_TIMEOUT                 32      // Blocking call timeout
+#define CANAL_ERROR_TIMEOUT                 32      // Blocking call time-out
 #define CANAL_ERROR_NOT_OPEN                33      // The device is not open.
 #define CANAL_ERROR_PARAMETER               34      // A parameter is invalid.
 #define CANAL_ERROR_MEMORY                  35      // Memory exhausted.
@@ -496,14 +496,14 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_ERROR_COMMUNICATION           37      // Some kind of communication error
 #define CANAL_ERROR_USER                    38      // Login error
  
-// CANAL commands sent over the pipe interface (depricated)
+// CANAL commands sent over the pipe interface (deprecated)
 #define CANAL_COMMAND_NOOP                  0       // No command
 #define CANAL_COMMAND_OPEN                  1       // Open channel 
 #define CANAL_COMMAND_CLOSE                 2       // Close channel
 #define CANAL_COMMAND_SEND                  3       // Send message
 #define CANAL_COMMAND_RECEIVE               4       // Receive message
 #define CANAL_COMMAND_CHECKDATA             5       // Check if data is available
-#define CANAL_COMMAND_BAUDRATE              6       // Set Baudrate
+#define CANAL_COMMAND_BAUDRATE              6       // Set Baud rate
 #define CANAL_COMMAND_STATUS                7       // Get status
 #define CANAL_COMMAND_STATISTICS            8       // Get statistics
 #define CANAL_COMMAND_FILTER                9       // Set filter
@@ -511,9 +511,9 @@ const char * CanalGetDriverInfo( void );
 #define CANAL_COMMAND_VERSION               11      // CANAL version
 #define CANAL_COMMAND_DLL_VERSION           12      // CANAL DLL version
 #define CANAL_COMMAND_VENDOR_STRING         13      // CANAL vendor string
-#define CANAL_COMMAND_LEVEL                 14      // CANAL Level bitarray
+#define CANAL_COMMAND_LEVEL                 14      // CANAL Level bit array
 
-// CANAL responses sent over the pipe interface (depricated)
+// CANAL responses sent over the pipe interface (deprecated)
 #define CANAL_RESPONSE_NONE                 0       // 
 #define CANAL_RESPONSE_SUCCESS              1       // OK message
 #define CANAL_RESPONSE_ERROR                2       // ERROR message
@@ -548,7 +548,7 @@ const char * CanalGetDriverInfo( void );
 // FAST error codes
 #define CANAL_BINARY_ERROR_NONE             0       // OK
 #define CANAL_BINARY_ERROR_GENERAL          1       // General error
-#define CANAL_BINARY_ERROR_TO_SMALL         2       // Packet smaller then min packet
+#define CANAL_BINARY_ERROR_TO_SMALL         2       // Packet smaller then min. packet
 #define CANAL_BINARY_ERROR_FORMAT           3       // Packet have bad format
 #define CANAL_BINARY_ERROR_UNKNOW_FRAME     4       // Unknown frame type
 #define CANAL_BINARY_ERROR_MEMORY           5       // No room for event

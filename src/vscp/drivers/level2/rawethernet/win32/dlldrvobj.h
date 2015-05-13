@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, Grodans Paradis AB,
+// Copyright (C) 2000-2015 Ake Hedman, Grodans Paradis AB,
 // <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -45,7 +45,6 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CDllDrvObj
-// See loggerdll.cpp for the implementation of this class
 //
 
 class CDllDrvObj
@@ -87,7 +86,7 @@ public:
 		The log file object
 		This is the array with driver objects 
 	*/
-    CRawEthernet *m_drvObjArray[ VSCP_RAWETH_DRIVER_MAX_OPEN ];
+	CRawEthernet *m_drvObjArray[ VSCP_RAWETH_DRIVER_MAX_OPEN ];
 
 	/// Mutex for open/close
 #ifdef WIN32	

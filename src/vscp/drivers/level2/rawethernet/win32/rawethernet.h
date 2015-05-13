@@ -60,11 +60,12 @@
 using namespace std;
 
 // Forward declarations
-class CRawEthernetTxTread;
-class CRawEthernetRxTread;
+class CWrkReadTread;
+class CWrkWriteTread;
 class VscpTcpIf;
 
-
+// This is the VSCP rwa ethernet frame version used by this driver
+#define RAW_ETHERNET_FRAME_VERSION  0
 
 class CRawEthernet  
 {
@@ -134,13 +135,19 @@ public:
     */
     wxString m_interface;
 
+    /// VSCP server interface
+    VscpRemoteTcpIf m_srv;
+
     /*!
         Local MAC address to use
     */
     uint8_t m_localMac[ 6 ];
 
-    /// Daemon channel id for rawEthernet tx channel
-    uint32_t m_ChannelIDtx;
+    /// Subaddr of interface
+    uint16_t m_subaddr;
+
+    /// Filter
+    vscpEventFilter m_vscpfilter;
 
     /// Local GUID for transmit channel
     cguid m_localGUIDtx;
@@ -149,8 +156,8 @@ public:
     cguid m_localGUIDrx;
 
     /// Pointer to worker threads
-    CRawEthernetTxTread *m_pthreadWorkTx;
-	CRawEthernetRxTread *m_pthreadWorkRx;
+    CWrkReadTread *m_pWrkReadTread;
+    CWrkWriteTread *m_pWrkWriteTread;
 
 	// Queue
 	std::list<vscpEvent *> m_sendList;
@@ -176,20 +183,20 @@ public:
 
 
 /*!
-    This is the thread that transmit data on the VSCP daemon 
-    interface that is received 
-    from the Ethernet
+    This is the thread that receive
+    from the Ethernet interface
 */
-class CRawEthernetTxTread : public wxThread 
+class CWrkReadTread : public wxThread
 {
 
 public:
 
 	/// Constructor
-	CRawEthernetTxTread();
+    /// VSCP server interface
+    CWrkReadTread();
 
 	/// Destructor
-	~CRawEthernetTxTread();
+    ~CWrkReadTread();
 
 	/*!
 		Thread code entry point
@@ -202,28 +209,25 @@ public:
 	*/
  	virtual void OnExit();
 
-    /// VSCP server interface
-    VscpRemoteTcpIf m_srv;
-
     /// Pointer back to owner
-    CRawEthernet *m_pobj;
+    CRawEthernet *m_pObj;
 
 };
 
 /*!
-    This is the thread that receive data from the VSCP daemon interface and transmit 
-    on Ethernet
+    This is the thread that transmit
+    to the Ethernet interface
 */
-class CRawEthernetRxTread : public wxThread 
+class CWrkWriteTread : public wxThread
 {
 
 public:
 
 	/// Constructor
-	CRawEthernetRxTread();
+    CWrkWriteTread();
 
 	/// Destructor
-	~CRawEthernetRxTread();
+    ~CWrkWriteTread();
 
 	/*!
 		Thread code entry point
@@ -236,11 +240,8 @@ public:
 	*/
  	virtual void OnExit();
 
-    /// VSCP server interface
-    VscpRemoteTcpIf m_srv;
-
     /// Pointer back to owner
-    CRawEthernet *m_pobj;
+    CRawEthernet *m_pObj;
 
 };
 

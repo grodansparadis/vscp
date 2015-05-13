@@ -1,7 +1,6 @@
 ; usb2can.def : Declares the module parameters for the DLL.
 
-LIBRARY      "usb2can"
-DESCRIPTION  'usb2can Windows Dynamic Link Library'
+LIBRARY      "vscpl1_usb2candrv"
 
 EXPORTS
     ; Explicit exports can go here

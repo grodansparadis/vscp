@@ -373,7 +373,8 @@ void *deviceThread::Entry()
 			m_pwriteThread->m_bQuit = true;
 			m_preceiveThread->Wait();
 			m_pwriteThread->Wait();
-		} else {
+		} 
+		else {
 
 			// * * * * Non blocking version * * * *
 

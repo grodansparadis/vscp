@@ -74,8 +74,11 @@ class CWrkWriteThread;
 class VscpRemoteTcpIf;
 class wxFile;
 
+// This is the VSCP rwa ethernet frame version used by this driver
+#define RAW_ETHERNET_FRAME_VERSION  0
 
 class CRawEthernet {
+    
 public:
 
     /// Constructor
@@ -89,21 +92,22 @@ public:
         @return True on success.
      */
     bool open(const char *pUsername,
-            const char *pPassword,
-            const char *pHost,
-            short port,
-            const char *pPrefix,
-            const char *pConfig);
+                const char *pPassword,
+                const char *pHost,
+                short port,
+                const char *pPrefix,
+                const char *pConfig,
+                unsigned long flags );
 
     /*!
         Flush and close the log file
      */
     void close(void);
 
-	/*!
-		Add event to send queue 
-	 */
-	bool addEvent2SendQueue(const vscpEvent *pEvent);
+    /*!
+        Add event to send queue 
+     */
+    bool addEvent2SendQueue(const vscpEvent *pEvent);
 	
 public:
 
@@ -131,16 +135,16 @@ public:
     /// Source MAC address
     wxString m_strlocalMac;
     uint8_t m_localMac[16];
+
+    /// Subaddr of interface
+    uint16_t m_subaddr;
     
     /// Filter
     vscpEventFilter m_vscpfilter;
     
-    /// Daemon channel id for rawEthernet tx channel
-    uint32_t m_ChannelIDtx;
-    
     // GUID's
-    cguid m_localGUIDtx;
-    cguid m_localGUIDrx;
+    //cguid m_localGUIDtx;
+    //cguid m_localGUIDrx;
 
     /// Pointer to worker threads
     CWrkReadThread *m_preadWorkThread;
@@ -149,24 +153,24 @@ public:
      /// VSCP server interface
     VscpRemoteTcpIf m_srv;
 		
-	// Queue
-	std::list<vscpEvent *> m_sendList;
-	std::list<vscpEvent *> m_receiveList;
+    // Queue
+    std::list<vscpEvent *> m_sendList;
+    std::list<vscpEvent *> m_receiveList;
 	
-	/*!
+    /*!
         Event object to indicate that there is an event in the output queue
      */
     wxSemaphore m_semSendQueue;			
-	wxSemaphore m_semReceiveQueue;		
+    wxSemaphore m_semReceiveQueue;		
 	
-	// Mutex to protect the output queue
-	wxMutex m_mutexSendQueue;		
-	wxMutex m_mutexReceiveQueue;
+    // Mutex to protect the output queue
+    wxMutex m_mutexSendQueue;		
+    wxMutex m_mutexReceiveQueue;
 
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-//				                Worker Treads
+//				  Worker Treads
 ///////////////////////////////////////////////////////////////////////////////
 
 

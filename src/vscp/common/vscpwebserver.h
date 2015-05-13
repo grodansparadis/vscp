@@ -166,9 +166,14 @@ public:
 		@return MG_FALSE on failure to validate user or MG_TRUE on success
 	*/
 	int 
-	websrv_check_password( const char *method, const char *ha1, const char *uri,
-								const char *nonce, const char *nc, const char *cnonce,
-								const char *qop, const char *response );
+	websrv_check_password( const char *method, 
+                                const char *ha1, 
+                                const char *uri,
+								const char *nonce, 
+                                const char *nc, 
+                                const char *cnonce,
+								const char *qop, 
+                                const char *response );
 
 	/*!
 		Return the session handle for this connection, or 
