@@ -142,8 +142,8 @@ public:
     */
     uint8_t m_localMac[ 6 ];
 
-    /// Daemon channel id for rawEthernet tx channel
-    uint32_t m_ChannelIDtx;
+    /// Filter
+    vscpEventFilter m_vscpfilter;
 
     /// Local GUID for transmit channel
     cguid m_localGUIDtx;
@@ -206,7 +206,7 @@ public:
  	virtual void OnExit();
 
     /// Pointer back to owner
-    CRawEthernet *m_pobj;
+    CRawEthernet *m_pObj;
 
 };
 
@@ -237,7 +237,7 @@ public:
  	virtual void OnExit();
 
     /// Pointer back to owner
-    CRawEthernet *m_pobj;
+    CRawEthernet *m_pObj;
 
 };
 

@@ -640,13 +640,22 @@ CWrkReadThread::Entry()
 			eventex.sizeData = (pkt_data[ 33 ] << 8) +
 					pkt_data[ 34 ];
 
+            // Validate data size
+            if ( eventex.vscp_class < 512 ) {
+                if ( eventex.sizeData > 8 ) eventex.sizeData = 8;
+            }
+            else if ( eventex.vscp_class < 512 ) {
+                if ( eventex.sizeData >( 16 + 8 ) ) eventex.sizeData = 24;
+            }
+            else {
+                if ( eventex.sizeData > VSCP_MAX_DATA ) eventex.sizeData = VSCP_MAX_DATA;
+            }
+
 			// If the packet is smaller then the set datasize just 
 			// disregard it
 			if ((eventex.sizeData + 35) > (uint16_t) header->len) continue;
 
-			for (int i = 0; i < eventex.sizeData; i++) {
-				eventex.data[ i ] = pkt_data[ 35 + i ];
-            }
+            memcpy( eventex.data, pkt_data + 35, eventex.sizeData );
 
             vscpEvent *pEvent = new vscpEvent;
             if (NULL != pEvent) {

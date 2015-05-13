@@ -137,9 +137,6 @@ public:
     /// Filter
     vscpEventFilter m_vscpfilter;
     
-    /// Daemon channel id for rawEthernet tx channel
-    uint32_t m_ChannelIDtx;
-    
     // GUID's
     cguid m_localGUIDtx;
     cguid m_localGUIDrx;
