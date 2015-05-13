@@ -802,8 +802,8 @@ CWrkWriteThread::Entry()
 			// VSCP Data
 			memcpy(packet + 35, pEvent->pdata, pEvent->sizeData );
 			
-			syslog( LOG_INFO,
-						"RawEthDrv2: Class: %d Type: %d DataSize: %d", pEvent->vscp_class, pEvent->vscp_type, pEvent->sizeData );
+			//syslog( LOG_INFO,
+			//			"RawEthDrv2: Class: %d Type: %d DataSize: %d", pEvent->vscp_class, pEvent->vscp_type, pEvent->sizeData );
 
 			// Send the packet
 			if ( 0 != pcap_sendpacket( fp, packet, 35 + pEvent->sizeData ) ) {
