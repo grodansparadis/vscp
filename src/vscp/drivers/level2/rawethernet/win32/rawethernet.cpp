@@ -375,6 +375,8 @@ CRawEthernet::CRawEthernet()
 	m_localGUIDrx.setAt(14, 0x00);
 	m_localGUIDrx.setAt(15, 0x01);
 
+    vscp_clearVSCPFilter( &m_vscpfilter ); // Accept all events
+
 	::wxInitialize();
 }
 
@@ -495,7 +497,6 @@ bool CRawEthernet::open( const char *pUsername,
     // Close the channel
     m_srv.doCmdClose();
 
-
 	// start the workerthreads
     m_pWrkReadTread = new CWrkReadTread();
     if ( NULL != m_pWrkReadTread ) {
@@ -506,7 +507,6 @@ bool CRawEthernet::open( const char *pUsername,
     else {
 		rv = false;
 	}
-
 
 	wxSleep(1);
 
@@ -555,6 +555,7 @@ CRawEthernet::addEvent2SendQueue(const vscpEvent *pEvent)
 
 
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //                           W O R K E R   T H R E A D S
 ///////////////////////////////////////////////////////////////////////////////
@@ -586,14 +587,12 @@ void *CWrkReadTread::Entry()
 	pcap_t *fp;
 	char errbuf[ PCAP_ERRBUF_SIZE ];
 
-	
-
 	// Open the adapter 
     if ( ( fp = pcap_open_live( (const char *)m_pObj->m_interface.mbc_str(), // name of the device
-			                        65536, // portion of the packet to capture. It doesn't matter in this case 
-			                        1, // promiscuous mode (nonzero means promiscuous)
-			                        1000, // read timeout
-			                        errbuf // error buffer
+			                        65536,  // portion of the packet to capture. It doesn't matter in this case 
+			                        1,      // promiscuous mode (nonzero means promiscuous)
+			                        1000,   // read timeout
+			                        errbuf  // error buffer
 			                  ) ) == NULL) {
 		//fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", argv[1]);
 		return NULL;
@@ -609,6 +608,9 @@ void *CWrkReadTread::Entry()
 
 		// Check for timeout            
 		if (0 == rv) continue;
+
+        // If from our own interface we skip
+        if ( 0 == memcmp( pkt_data + 6, m_pObj->m_localMac, 6 ) ) continue;
 
 		// Check if this is VSCP
 		if ( ( 0x25 == pkt_data[ 12 ] ) &&

@@ -595,6 +595,9 @@ CWrkReadThread::Entry()
 				"RawEthDrv: Error while getting packet. Err=%s", pcap_geterr(fp) );
 		}
 
+        // If from our own interface we skip
+        if ( 0 == memcmp( pkt_data + 6, m_pObj->m_localMac, 6 ) ) continue;
+
 		// Check if this is VSCP
 		if ( ( 0x25 == pkt_data[ 12 ] ) &&
 			( 0x7e == pkt_data[ 13 ] ) ) {
