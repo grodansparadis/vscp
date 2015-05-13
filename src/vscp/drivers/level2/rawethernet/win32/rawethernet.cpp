@@ -257,7 +257,7 @@ extern "C" unsigned long WINAPI EXPORT VSCPGetDllVersion(void)
 extern "C" unsigned long VSCPGetDllVersion(void)
 #endif
 {
-	return DLL_VERSION;
+	return VSCP_DLL_VERSION;
 }
 
 
@@ -287,7 +287,7 @@ extern "C" const char * WINAPI EXPORT VSCPGetDriverInfo(void)
 extern "C" const char * VSCPGetDriverInfo(void)
 #endif
 {
-	return VSCP_LOGGER_DRIVERINFO;
+	return VSCP_RAWETH_DRIVERINFO;
 }
 
 
@@ -477,6 +477,16 @@ bool CRawEthernet::open( const char *pUsername,
         }
     }
 
+    wxString strFilter;
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_filter" ), &strFilter ) ) {
+        vscp_readFilterFromString( &m_vscpfilter, strFilter );
+    }
+
+    wxString strMask;
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_mask" ), &strMask ) ) {
+        vscp_readMaskFromString( &m_vscpfilter, strMask );
+    }
+
     // We want to use our own Ethernet based GUID for this interface
     wxString strGUID;
     m_localGUIDtx.toString( strGUID );
@@ -489,7 +499,7 @@ bool CRawEthernet::open( const char *pUsername,
 	// start the workerthreads
     m_pWrkReadTread = new CWrkReadTread();
     if ( NULL != m_pWrkReadTread ) {
-        m_pWrkReadTread->m_pobj = this;
+        m_pWrkReadTread->m_pObj = this;
         m_pWrkReadTread->Create();
         m_pWrkReadTread->Run();
 	} 
@@ -502,7 +512,7 @@ bool CRawEthernet::open( const char *pUsername,
 
     m_pWrkWriteTread = new CWrkWriteTread();
     if ( NULL != m_pWrkWriteTread ) {
-        m_pWrkWriteTread->m_pobj = this;
+        m_pWrkWriteTread->m_pObj = this;
         m_pWrkWriteTread->Create();
         m_pWrkWriteTread->Run();
 	} 
@@ -579,7 +589,7 @@ void *CWrkReadTread::Entry()
 	
 
 	// Open the adapter 
-	if ( ( fp = pcap_open_live(m_pobj->m_interface.ToAscii(), // name of the device
+    if ( ( fp = pcap_open_live( (const char *)m_pObj->m_interface.mbc_str(), // name of the device
 			                        65536, // portion of the packet to capture. It doesn't matter in this case 
 			                        1, // promiscuous mode (nonzero means promiscuous)
 			                        1000, // read timeout
@@ -594,7 +604,7 @@ void *CWrkReadTread::Entry()
 	const u_char *pkt_data;
 
 	while ( !TestDestroy() &&
-			!m_pobj->m_bQuit &&
+            !m_pObj->m_bQuit &&
 			( rv = pcap_next_ex(fp, &header, &pkt_data) ) >= 0) {
 
 		// Check for timeout            
@@ -605,55 +615,79 @@ void *CWrkReadTread::Entry()
 				(0x7e == pkt_data[ 13 ] ) ) {
 
 			// We have a packet - send it as a VSCP event    
-			vscpEventEx event;
+			vscpEventEx eventex;
 
-			event.head = pkt_data[ 15 ] & 0xe0; // Priority
+            eventex.head = pkt_data[ 15 ] & 0xe0; // Priority
 
-			event.GUID[ 0 ] = 0xff; // Ethernet predefined  GUID
-			event.GUID[ 1 ] = 0xff;
-			event.GUID[ 2 ] = 0xff;
-			event.GUID[ 3 ] = 0xff;
-			event.GUID[ 4 ] = 0xff;
-			event.GUID[ 5 ] = 0xff;
-			event.GUID[ 6 ] = 0xff;
-			event.GUID[ 7 ] = 0xfe;
-			event.GUID[ 8 ] = pkt_data[ 6 ]; // Source MAC address
-			event.GUID[ 9 ] = pkt_data[ 7 ];
-			event.GUID[ 10 ] = pkt_data[ 8 ];
-			event.GUID[ 11 ] = pkt_data[ 9 ];
-			event.GUID[ 12 ] = pkt_data[ 10 ];
-			event.GUID[ 13 ] = pkt_data[ 11 ];
-			event.GUID[ 14 ] = pkt_data[ 19 ]; // Device sub address
-			event.GUID[ 15 ] = pkt_data[ 20 ];
+            eventex.GUID[ 0 ] = 0xff; // Ethernet predefined  GUID
+            eventex.GUID[ 1 ] = 0xff;
+            eventex.GUID[ 2 ] = 0xff;
+            eventex.GUID[ 3 ] = 0xff;
+            eventex.GUID[ 4 ] = 0xff;
+            eventex.GUID[ 5 ] = 0xff;
+            eventex.GUID[ 6 ] = 0xff;
+            eventex.GUID[ 7 ] = 0xfe;
+            eventex.GUID[ 8 ] = pkt_data[ 6 ]; // Source MAC address
+            eventex.GUID[ 9 ] = pkt_data[ 7 ];
+            eventex.GUID[ 10 ] = pkt_data[ 8 ];
+            eventex.GUID[ 11 ] = pkt_data[ 9 ];
+            eventex.GUID[ 12 ] = pkt_data[ 10 ];
+            eventex.GUID[ 13 ] = pkt_data[ 11 ];
+            eventex.GUID[ 14 ] = pkt_data[ 19 ]; // Device sub address
+            eventex.GUID[ 15 ] = pkt_data[ 20 ];
 
-			event.timestamp = (pkt_data[ 21 ] << 24) +
+            eventex.timestamp = ( pkt_data[ 21 ] << 24 ) +
 					            (pkt_data[ 22 ] << 16) +
 					            (pkt_data[ 23 ] << 8) +
 					            pkt_data[ 24 ];
 
-			event.obid = (pkt_data[ 25 ] << 24) +
+            eventex.obid = ( pkt_data[ 25 ] << 24 ) +
 					            (pkt_data[ 26 ] << 16) +
 					            (pkt_data[ 27 ] << 8) +
 					            pkt_data[ 28 ];
 
-			event.vscp_class = (pkt_data[ 29 ] << 8) +
-					            pkt_data[ 30 ];
+            eventex.vscp_class = ( pkt_data[ 29 ] << 8 ) +
+					                pkt_data[ 30 ];
 
-			event.vscp_type = (pkt_data[ 31 ] << 8) +
-					            pkt_data[ 32 ];
+            eventex.vscp_type = ( pkt_data[ 31 ] << 8 ) +
+					                pkt_data[ 32 ];
 
-			event.sizeData = (pkt_data[ 33 ] << 8) +
-					            pkt_data[ 34 ];
+			eventex.sizeData = (pkt_data[ 33 ] << 8) +
+					                pkt_data[ 34 ];
+
+            // Validate data size
+            if ( eventex.vscp_class < 512 ) {
+                if ( eventex.sizeData > 8 ) eventex.sizeData = 8;
+            }
+            else if ( eventex.vscp_class < 512 ) {
+                if ( eventex.sizeData > ( 16 + 8 ) ) eventex.sizeData = 24;
+            }
+            else {
+                if ( eventex.sizeData > VSCP_MAX_DATA ) eventex.sizeData = VSCP_MAX_DATA;
+            }
 
 			// If the packet is smaller then the set datasize just 
 			// disregard it
-			if ((event.sizeData + 35) > (uint16_t) header->len) continue;
+            if ( ( eventex.sizeData + 35 ) > ( uint16_t )header->len ) continue;
 
-			for (int i = 0; i < event.sizeData; i++) {
-				event.data[ i ] = pkt_data[ 35 + i ];
-			}
+            memcpy( eventex.data, pkt_data + 35, eventex.sizeData );
 
-			//m_srv.doCmdSendEx(&event); // Send the event
+            vscpEvent *pEvent = new vscpEvent;
+            if ( NULL != pEvent ) {
+
+                vscp_convertVSCPfromEx( pEvent, &eventex );
+
+                if ( vscp_doLevel2FilterEx( &eventex, &m_pObj->m_vscpfilter ) ) {
+                    m_pObj->m_mutexReceiveQueue.Lock();
+                    m_pObj->m_receiveList.push_back( pEvent );
+                    m_pObj->m_semReceiveQueue.Post();
+                    m_pObj->m_mutexReceiveQueue.Unlock();
+                }
+                else {
+                    vscp_deleteVSCPevent( pEvent );
+                }
+
+            }
 
 		}
 
@@ -704,7 +738,7 @@ void *CWrkWriteTread::Entry()
 	uint8_t packet[ 512 ];
 
 	// Open the adapter 
-	if ( ( fp = pcap_open_live( m_pobj->m_interface.ToAscii(), // name of the device
+    if ( ( fp = pcap_open_live( (const char *)m_pObj->m_interface.mbc_str(), // name of the device
 			                        65536, // portion of the packet to capture. It doesn't matter in this case 
 			                        1, // promiscuous mode (nonzero means promiscuous)
 			                        1000, // read timeout
@@ -714,21 +748,20 @@ void *CWrkWriteTread::Entry()
 		return NULL;
 	}
 
+    while ( !TestDestroy() && !m_pObj->m_bQuit ) {
 
-	// Enter receive loop to start to log events
-	//m_srv.doCmdEnterReceiveLoop();
+        if ( wxSEMA_TIMEOUT == m_pObj->m_semSendQueue.WaitTimeout( 300 ) ) continue;
 
-	int rv;
-	vscpEvent event;
-	while (!TestDestroy() && !m_pobj->m_bQuit) {
+        // Check if there is event(s) to send
+        if ( m_pObj->m_sendList.size() ) {
 
-		if ( 1 ) {
+            // Yes there are data to send
+            m_pObj->m_mutexSendQueue.Lock();
+            vscpEvent *pEvent = m_pObj->m_sendList.front();
+            m_pObj->m_sendList.pop_front();
+            m_pObj->m_mutexSendQueue.Unlock();
 
-			// As we are on a different VSCP interface we need to filter the events we sent out 
-			// ourselves.
-			if (m_pobj->m_ChannelIDtx == event.obid) {
-				continue;
-			}
+            if ( NULL == pEvent ) continue;
 
 			// Set mac destination to broadcast ff:ff:ff:ff:ff:ff 
 			packet[ 0 ] = 0xff;
@@ -739,7 +772,7 @@ void *CWrkWriteTread::Entry()
 			packet[ 5 ] = 0xff;
 
 			// set mac source to configured value - 6..11
-			memcpy(packet + 6, m_pobj->m_localMac, 6);
+            memcpy( packet + 6, m_pObj->m_localMac, 6 );
 
 			// Set the type - always 0x2574 (9598)
 			packet[ 12 ] = 0x25;
@@ -749,7 +782,7 @@ void *CWrkWriteTread::Entry()
 			packet[ 14 ] = 0x00;
 
 			// Head
-			packet[ 15 ] = (event.head & VSCP_HEADER_PRIORITY_MASK);
+			packet[ 15 ] = (pEvent->head & VSCP_HEADER_PRIORITY_MASK);
 			packet[ 16 ] = 0x00;
 			packet[ 17 ] = 0x00;
 			packet[ 18 ] = 0x00; // LSB
@@ -759,47 +792,47 @@ void *CWrkWriteTread::Entry()
 			packet[ 20 ] = 0x00;
 
 			// Timestamp
-			uint32_t timestamp = event.timestamp;
+            uint32_t timestamp = pEvent->timestamp;
 			packet[ 21 ] = (timestamp & 0xff000000) >> 24;
 			packet[ 22 ] = (timestamp & 0x00ff0000) >> 16;
 			packet[ 23 ] = (timestamp & 0x0000ff00) >> 8;
 			packet[ 24 ] = (timestamp & 0x000000ff);
 
 			// obid
-			uint32_t obid = event.obid;
+            uint32_t obid = pEvent->obid;
 			packet[ 25 ] = (obid & 0xff000000) >> 24;
 			packet[ 26 ] = (obid & 0x00ff0000) >> 16;
 			packet[ 27 ] = (obid & 0x0000ff00) >> 8;
 			packet[ 28 ] = (obid & 0x000000ff);
 
 			// VSCP Class
-			uint16_t vscp_class = event.vscp_class;
+            uint16_t vscp_class = pEvent->vscp_class;
 			packet[ 29 ] = (vscp_class & 0xff00) >> 8;
 			packet[ 30 ] = (vscp_class & 0xff);
 
 			// VSCP Type
-			uint16_t vscp_type = event.vscp_type;
+            uint16_t vscp_type = pEvent->vscp_type;
 			packet[ 31 ] = (vscp_type & 0xff00) >> 8;
 			packet[ 32 ] = (vscp_type & 0xff);
 
 			// Size
-			packet[ 33 ] = event.sizeData >> 8;
-			packet[ 34 ] = event.sizeData & 0xff;
+            packet[ 33 ] = pEvent->sizeData >> 8;
+            packet[ 34 ] = pEvent->sizeData & 0xff;
 
 			// VSCP Data
-			memcpy(packet + 35, event.pdata, event.sizeData);
+            memcpy( packet + 35, pEvent->pdata, pEvent->sizeData );
 
 			// Send the packet
-			if ( 0 != pcap_sendpacket(fp, packet, 35 + event.sizeData) ) {
+            if ( 0 != pcap_sendpacket( fp, packet, 35 + pEvent->sizeData ) ) {
 				//fprintf(stderr,"\nError sending the packet: %s\n", pcap_geterr(fp));
 				// An error sending the frame - we do nothing
 				// TODO: Send error frame back to daemon????
 			}
 
 			// We are done with the event - remove data if any
-			if ( NULL != event.pdata ) {
-				delete [] event.pdata;
-				event.pdata = NULL;
+            if ( NULL != pEvent->pdata ) {
+                delete[] pEvent->pdata;
+                pEvent->pdata = NULL;
 			}
 
 		} // Event received
