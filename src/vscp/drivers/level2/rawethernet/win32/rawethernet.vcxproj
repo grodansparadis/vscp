@@ -315,8 +315,8 @@
     <ClCompile Include="..\..\..\..\common\guid.cpp" />
     <ClCompile Include="..\..\..\..\common\vscphelper.cpp" />
     <ClCompile Include="..\..\..\..\common\vscpremotetcpif.cpp" />
+    <ClCompile Include="dlldrvobj.cpp" />
     <ClCompile Include="rawethernet.cpp" />
-    <ClCompile Include="..\common\dlldrvobj.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="rawethernet.def" />
@@ -333,7 +333,7 @@
     <ClInclude Include="callback.h" />
     <ClInclude Include="..\..\..\common\canal.h" />
     <ClInclude Include="..\..\..\common\canal_macro.h" />
-    <ClInclude Include="..\common\dlldrvobj.h" />
+    <ClInclude Include="dlldrvobj.h" />
     <ClInclude Include="rawethernet.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
