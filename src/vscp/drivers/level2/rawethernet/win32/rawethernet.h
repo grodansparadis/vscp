@@ -64,7 +64,8 @@ class CWrkReadTread;
 class CWrkWriteTread;
 class VscpTcpIf;
 
-
+// This is the VSCP rwa ethernet frame version used by this driver
+#define RAW_ETHERNET_FRAME_VERSION  0
 
 class CRawEthernet  
 {
@@ -141,6 +142,9 @@ public:
         Local MAC address to use
     */
     uint8_t m_localMac[ 6 ];
+
+    /// Subaddr of interface
+    uint16_t m_subaddr;
 
     /// Filter
     vscpEventFilter m_vscpfilter;

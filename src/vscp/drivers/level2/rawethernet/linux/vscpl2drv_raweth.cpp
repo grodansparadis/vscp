@@ -299,6 +299,7 @@ CRawEthernet::CRawEthernet()
 	m_pwriteWorkThread = NULL;
 	m_interface = _("eth0");
 	memset(m_localMac, 0, 16);
+    m_subaddr = 0;
 
 	// Initialize tx channel GUID
 	m_localGUIDtx.clear();
@@ -447,6 +448,9 @@ CRawEthernet::open(const char *pUsername,
 	//				the socketcan interface. If not give all events 
 	//				are received. 
 	//
+    //	 _subaddr - Normally the subaddr of the computer the rawtherent
+    //              driver is on is 0x0000 this can be changed with this vaeiable
+    //
 
 	wxString str;
 	wxString strName = m_prefix +
@@ -489,6 +493,14 @@ CRawEthernet::open(const char *pUsername,
 	if (VSCP_ERROR_SUCCESS == m_srv.getVariableString(strName, &str)) {
 		vscp_readMaskFromString(&m_vscpfilter, str);
 	}
+
+
+    // subaddr
+    strName = m_prefix +
+        wxString::FromAscii( "_subaddr" );
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( strName, &str ) ) {
+        vscp_readMaskFromString( &m_vscpfilter, str );
+    }
 
 	// start the read workerthread
 	m_preadWorkThread = new CWrkReadThread();
@@ -771,7 +783,7 @@ CWrkWriteThread::Entry()
 			packet[ 13 ] = 0x7e;
 
 			// rawEthernet frame version
-			packet[ 14 ] = 0x00;
+            packet[ 14 ] = RAW_ETHERNET_FRAME_VERSION;
 
 			// Head
 			packet[ 15 ] = ( pEvent->head & VSCP_HEADER_PRIORITY_MASK);
@@ -779,9 +791,9 @@ CWrkWriteThread::Entry()
 			packet[ 17 ] = 0x00;
 			packet[ 18 ] = 0x00; // LSB
 
-			// VSCP sub source address For this interface it's 0x0000
-			packet[ 19 ] = 0x00;
-			packet[ 20 ] = 0x00;
+            // VSCP sub source address 
+            packet[ 19 ] = ( m_pObj->m_subaddr >> 8 ) & 0xff;
+            packet[ 20 ] = m_pObj->m_subaddr & 0xff;
 
 			// Timestamp
 			uint32_t timestamp = pEvent->timestamp;

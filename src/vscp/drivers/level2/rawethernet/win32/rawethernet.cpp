@@ -349,6 +349,8 @@ CRawEthernet::CRawEthernet()
 
 	memset(m_localMac, 0, sizeof(m_localMac));
 
+    m_subaddr = 0;
+
 	// Initialize tx channel GUID
 	m_localGUIDtx.clear();
 	m_localGUIDtx.setAt(0, 0xff);
@@ -449,16 +451,35 @@ bool CRawEthernet::open( const char *pUsername,
         return NULL;
     }
 
-    // Find the channel id
-    //m_srv.doCmdGetChannelID( &m_ChannelID );
-
-    // It is possible that there is configuration data the server holds 
-    // that we need to read in. 
+    // The server should hold configuration data for each sensor
+    // we want to monitor.
+    // 
     // We look for 
-    //      prefix_interface Communication interface to work on
-    //      prefix_localmac MAC address to use for outgoing packets
-    //      prefix_filter to find a filter. A string is expected.
-    //      prefix_mask to find a mask. A string is expected.
+    //
+    //	 _interface - The ethernet interface to use. Typically this 
+    //					is “eth0, eth0, eth1...
+    //
+    //   _localmac - The MAC address for our outgoing frames.
+    //					Typically on the form 00:26:55:CA:1F:DA
+    //
+    //   _filter - Standard VSCP filter in string form. 
+    //				   1,0x0000,0x0006,
+    //				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+    //				as priority,class,type,GUID
+    //				Used to filter what events that is received from 
+    //				the socketcan interface. If not give all events 
+    //				are received.
+    //	 _mask - Standard VSCP mask in string form.
+    //				   1,0x0000,0x0006,
+    //				   ff:ff:ff:ff:ff:ff:ff:01:00:00:00:00:00:00:00:00
+    //				as priority,class,type,GUID
+    //				Used to filter what events that is received from 
+    //				the socketcan interface. If not give all events 
+    //				are received. 
+    //
+    //	 _subaddr - Normally the subaddr of the computer the rawtherent
+    //              driver is on is 0x0000 this can be changed with this vaeiable
+    //
 
     // Interface
     wxString varInterface;
@@ -487,6 +508,11 @@ bool CRawEthernet::open( const char *pUsername,
     wxString strMask;
     if ( VSCP_ERROR_SUCCESS == m_srv.getVariableString( m_prefix + _T( "_mask" ), &strMask ) ) {
         vscp_readMaskFromString( &m_vscpfilter, strMask );
+    }
+
+    long subaddr;
+    if ( VSCP_ERROR_SUCCESS == m_srv.getVariableLong( m_prefix + _T( "_subaddr" ), &subaddr ) ) {
+        m_subaddr = subaddr;
     }
 
     // We want to use our own Ethernet based GUID for this interface
@@ -781,7 +807,7 @@ void *CWrkWriteTread::Entry()
 			packet[ 13 ] = 0x7e;
 
 			// rawEthernet frame version
-			packet[ 14 ] = 0x00;
+			packet[ 14 ] = RAW_ETHERNET_FRAME_VERSION;
 
 			// Head
 			packet[ 15 ] = (pEvent->head & VSCP_HEADER_PRIORITY_MASK);
@@ -789,9 +815,9 @@ void *CWrkWriteTread::Entry()
 			packet[ 17 ] = 0x00;
 			packet[ 18 ] = 0x00; // LSB
 
-			// VSCP sub source address For this interface it's 0x0000
-			packet[ 19 ] = 0x00;
-			packet[ 20 ] = 0x00;
+			// VSCP sub source address 
+            packet[ 19 ] = ( m_pObj->m_subaddr >> 8 ) & 0xff;
+            packet[ 20 ] = m_pObj->m_subaddr & 0xff;
 
 			// Timestamp
             uint32_t timestamp = pEvent->timestamp;

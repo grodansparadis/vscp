@@ -74,6 +74,8 @@ class CWrkWriteThread;
 class VscpRemoteTcpIf;
 class wxFile;
 
+// This is the VSCP rwa ethernet frame version used by this driver
+#define RAW_ETHERNET_FRAME_VERSION  0
 
 class CRawEthernet {
     
@@ -133,13 +135,16 @@ public:
     /// Source MAC address
     wxString m_strlocalMac;
     uint8_t m_localMac[16];
+
+    /// Subaddr of interface
+    uint16_t m_subaddr;
     
     /// Filter
     vscpEventFilter m_vscpfilter;
     
     // GUID's
-    cguid m_localGUIDtx;
-    cguid m_localGUIDrx;
+    //cguid m_localGUIDtx;
+    //cguid m_localGUIDrx;
 
     /// Pointer to worker threads
     CWrkReadThread *m_preadWorkThread;
