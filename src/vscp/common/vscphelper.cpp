@@ -3579,14 +3579,14 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 			break;
 
 		case VSCP_TYPE_INFORMATION_BUTTON:
-			if ((pEvent->sizeData-offset) >= 3) {
+			if ((pEvent->sizeData - offset) >= 5) {
 
 				// Key type code
-				if (0 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+				if (0 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
 					str = _("Button released.");
-				} else if (1 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+				} else if (1 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
 					str = _("Button pressed.");
-				} else if (2 == (pEvent->pdata[ 0+offset ] & 0x03)) {
+				} else if (2 == (pEvent->pdata[ 0 + offset ] & 0x03)) {
 					str = _("Keycode.");
 				}
 				else {
@@ -3594,17 +3594,22 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
 				}
 
 				str += wxString::Format(_("Repeat count = %d\n"), 
-						(pEvent->pdata[ 0+offset ] >> 3 & 0x01f));
+						(pEvent->pdata[ 0 + offset ] >> 3 & 0x01f));
 
 				str += wxString::Format(_("Zone=%d Subzone=%d\n"),
-						pEvent->pdata[ 1+offset ],
-						pEvent->pdata[ 2+offset ]);
+						pEvent->pdata[ 1 + offset ],
+						pEvent->pdata[ 2 + offset ]);
 
 				str += wxString::Format(_("Button Code=%d\n"),
-						((pEvent->pdata[ 3+offset ] << 8) + pEvent->pdata[ 4+offset ]));
+						((pEvent->pdata[ 3 + offset ] << 8) + pEvent->pdata[ 4 + offset ]));
 
-				str += wxString::Format(_("Code Page=%d\n"),
-						((pEvent->pdata[ 5+offset ] << 8) + pEvent->pdata[ 6+offset ]));
+                if ((pEvent->sizeData - offset) > 5) {
+                    str += wxString::Format(_("Code Page=%d\n"),
+                            ((pEvent->pdata[ 5 + offset ] << 8) + pEvent->pdata[ 6 + offset ]));
+                }
+                else {
+                    str += _("No code page.");
+                }
 			}
 			break;
 
