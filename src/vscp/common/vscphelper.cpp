@@ -3608,7 +3608,7 @@ wxString& vscp_getRealTextData(vscpEvent *pEvent)
                             ((pEvent->pdata[ 5 + offset ] << 8) + pEvent->pdata[ 6 + offset ]));
                 }
                 else {
-                    str = _("No code page.");
+                    str += _("No code page.");
                 }
 			}
 			break;
