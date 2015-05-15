@@ -1332,7 +1332,7 @@ bool CMDF::parseMDF( wxString& path )
                                 pAbstraction->m_nType = type_int8_t;
                             }
                             else if ( strType.IsSameAs(_("byte")) ) {
-                                pAbstraction->m_nType = type_int8_t;
+                                pAbstraction->m_nType = type_uint8_t;
                             }
                             else if ( strType.IsSameAs(_("uint8_t")) ) {
                                 pAbstraction->m_nType = type_uint8_t;
