@@ -64,47 +64,6 @@
 
 
 
-//////////////////////////////////////////////////////////////////////
-// on_message
-//
-/*
-void mqtt_subscribe::on_message(const struct mosquitto_message *message)
-{
-	vscpEventEx eventEx;
-
-	if ( !strcmp( message->topic, m_pObj->m_topic.ToAscii() ) ) {
-        
-		wxString str = wxString::FromAscii((const char *) message->payload);
-		if (vscp_setVscpEventExFromString(&eventEx, str)) {
-            
-            vscpEvent *pEvent = new vscpEvent;
-            if (NULL != pEvent) {
-                
-                pEvent->sizeData = 0;
-                pEvent->pdata = NULL;
-                
-                if ( vscp_doLevel2FilterEx( &eventEx, &m_pObj->m_vscpfilter ) ) {
-                    
-                    if ( vscp_convertVSCPfromEx( pEvent, &eventEx ) ) {
-                        m_pObj->m_mutexReceiveQueue.Lock();
-                        m_pObj->m_receiveList.push_back(pEvent);
-                        m_pObj->m_semReceiveQueue.Post();
-                        m_pObj->m_mutexReceiveQueue.Unlock();
-                    }
-                    else {
-                        
-                    }
-                }
-                else {
-                    vscp_deleteVSCPevent(pEvent);
-                }
-            }
-		}
-	}
-}
-*/
-
-
 static void ev_handler( struct ns_connection *nc, int ev, void *p )
 {
     struct ns_mqtt_message *msg = ( struct ns_mqtt_message * )p;
@@ -428,22 +387,22 @@ Cmqttobj::open( const char *pUsername,
         wxStringTokenizer tkzSimple( m_simplify, _(",\n"));
         
         // simple class
-        if (tkzSimple.HasMoreTokens()) {
+        if ( tkzSimple.HasMoreTokens() ) {
             m_simple_class = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
         // simple type
-        if (tkzSimple.HasMoreTokens()) {
+        if ( tkzSimple.HasMoreTokens() ) {
             m_simple_type = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
         // simple coding
-        if (tkzSimple.HasMoreTokens()) {
+        if ( tkzSimple.HasMoreTokens() ) {
             m_simple_coding = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
         // simple zone
-        if (tkzSimple.HasMoreTokens()) {
+        if ( tkzSimple.HasMoreTokens() ) {
             m_simple_zone = vscp_readStringValue(tkzSimple.GetNextToken());
         }
         
@@ -474,7 +433,7 @@ Cmqttobj::open( const char *pUsername,
 		m_pthreadWork->m_pObj = this;
 		m_pthreadWork->Create();
 		m_pthreadWork->Run();
-	} 
+	}
 	else {
 		rv = false;
 	}
