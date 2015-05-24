@@ -1,12 +1,13 @@
-Check the more up to date version her also http://www.vscp.org/wiki/doku.php/howto/setup_linux
+Check the more up to date version here also http://www.vscp.org/wiki/doku.php/howto/setup_linux
 
 To build VSCP and friends type 
 
-There are detailed build instructions in the VSCP wiki for a copuple of different platforms. Look gete http://www.vscp.org/wiki/doku.php/howto
+There are detailed build instructions in the VSCP wiki for a couple of different platforms. Look 
+at http://www.vscp.org/wiki/doku.php/howto/start
 
 ".configure" 
 
-(You can add "--enable-debug" to build a debug version.)
+(You can add "--enable-debug" to build a debug version. or --enable-ssl to enable a ssl build)
 
 followed by 
 
@@ -24,7 +25,7 @@ of the library (if you want to build the graphical components == vscpworks) or t
 If you want the MQTT driver to build you need to install and build the mosquitto-1.1.3.tar.gz or later 
 from here http://mosquitto.org/download/
 
-You also need libssl-dev, and optional libpcap-dev for raw ethernet support.
+You also need libssl-dev, and optional libpcap-dev for raw Ethernet support.
 
 Configuration files should be located in /etc/vscp and there are samples of configuration files here in the config_examples folder in the distribution root. You need vscpd.conf. make install will install files in /srv/vscp fir the webserver and for read/write cibfiguration files.
 

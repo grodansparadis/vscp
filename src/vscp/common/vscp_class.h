@@ -62,13 +62,20 @@
 #define VSCP_CLASS1_PHONE                               100
 #define VSCP_CLASS1_LIN                                 101
 #define VSCP_CLASS1_DISPLAY                             102
-#define VSCP_CLASS1_RC5                                 110
+#define VSCP_CLASS1_REMOTE                              110
+
+// 200-205 has been deprecated
 #define VSCP_CLASS1_ONEWIRE                             200
 #define VSCP_CLASS1_X10                                 201
 #define VSCP_CLASS1_LON                                 202
 #define VSCP_CLASS1_EIB                                 203
 #define VSCP_CLASS1_SNAP                                204
 #define VSCP_CLASS1_MUMIN                               205
+
+#define VSCP_CLASS1_GPS                                 206
+#define VSCP_CLASS1_WIRELESS                            212
+#define VSCP_CLASS1_DIAGNOSTIC                          506
+#define VSCP_CLASS1_ERROR                               508
 #define VSCP_CLASS1_LOG                                 509
 #define VSCP_CLASS1_LAB                                 510
 #define VSCP_CLASS1_LOCAL                               511
@@ -90,13 +97,9 @@
 #define VSCP_CLASS2_SETVALUEZONE						( 512 + 85 )
 #define VSCP_CLASS2_LEVEL1_PHONE                        ( 512 + 100 )
 #define VSCP_CLASS2_LEVEL1_LIN                          ( 512 + 101 )
-#define VSCP_CLASS2_LEVEL1_RC5                          ( 512 + 110 )
-#define VSCP_CLASS2_LEVEL1_ONEWIRE                      ( 512 + 200 )
-#define VSCP_CLASS2_LEVEL1_X10                          ( 512 + 201 )
-#define VSCP_CLASS2_LEVEL1_LON                          ( 512 + 202 )
-#define VSCP_CLASS2_LEVEL1_EIB                          ( 512 + 203 )
-#define VSCP_CLASS2_LEVEL1_SNAP                         ( 512 + 204 )
-#define VSCP_CLASS2_LEVEL1_MUMIN                        ( 512 + 205 )
+#define VSCP_CLASS2_LEVEL1_REMOTE                       ( 512 + 110 )
+#define VSCP_CLASS2_LEVEL1_GPS                          ( 512 + 206 )
+#define VSCP_CLASS2_LEVEL1_WIRELESS                     ( 512 + 212 )
 #define VSCP_CLASS2_LEVEL1_LOG                          ( 512 + 509 )
 #define VSCP_CLASS2_LEVEL1_LAB                          ( 512 + 510 )
 #define VSCP_CLASS2_LEVEL1_LOCAL                        ( 512 + 511 )

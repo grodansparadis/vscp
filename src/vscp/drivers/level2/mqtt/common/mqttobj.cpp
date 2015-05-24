@@ -210,44 +210,44 @@ Cmqttobj::open( const char *pUsername,
 	wxStringTokenizer tkz(wxString::FromAscii(pConfig), _(";\n"));
 
 	// Check if we should publish or subscribe
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		// Check for subscribe/publish
 		str = tkz.GetNextToken();
 		str.Trim();
 		str.Trim(false);
 		str.MakeUpper();
-		if (wxNOT_FOUND != str.Find(_("PUBLISH"))) {
+		if ( wxNOT_FOUND != str.Find( _("PUBLISH") ) ) {
 			m_bSubscribe = false;
 		}
 	}
 
 	// Get topic from configuration string
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		m_topic = tkz.GetNextToken();
 	}
 
 	// Get MQTT host from configuration string
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		m_hostMQTT = tkz.GetNextToken();
 	}
 
 	// Get MQTT host port from configuration string
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		m_portMQTT = vscp_readStringValue(tkz.GetNextToken());
 	}
 
 	// Get MQTT user from configuration string
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		m_usernameMQTT = tkz.GetNextToken();
 	}
 
 	// Get MQTT password from configuration string
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		m_passwordMQTT = tkz.GetNextToken();
 	}
 
 	// Get MQTT keep alive from configuration string
-	if (tkz.HasMoreTokens()) {
+	if ( tkz.HasMoreTokens() ) {
 		m_keepalive = vscp_readStringValue(tkz.GetNextToken());
 	}
 
@@ -267,7 +267,7 @@ Cmqttobj::open( const char *pUsername,
 
 	// Find the channel id
 	uint32_t ChannelID;
-	m_srv.doCmdGetChannelID(&ChannelID);
+	m_srv.doCmdGetChannelID( &ChannelID );
 
 	// The server should hold configuration data for each sensor
 	// we want to monitor.
@@ -535,7 +535,7 @@ CWrkThread::Entry()
                 m_pObj->m_mutexSendQueue.Unlock();
                 if (NULL == pEvent) continue;
                 if (m_pObj->m_bSimplify) {
-                    
+                    ;
                 }
                 else {
                     vscp_writeVscpEventToString( pEvent, str );
@@ -562,8 +562,10 @@ CWrkThread::Entry()
     
     }
 
-
-    ns_mqtt_disconnect( nc );
+    // Disconnect if we are connected.
+    if ( m_pObj->m_bConnected ) {
+        ns_mqtt_disconnect( nc );
+    }
 
     return NULL;
 
