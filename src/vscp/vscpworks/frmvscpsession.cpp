@@ -828,10 +828,10 @@ void frmVSCPSession::CreateControls()
     m_pPanel->SetSizer(itemBoxSizer65);
 
     wxBoxSizer* itemBoxSizer66 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer65->Add(itemBoxSizer66, 0, wxGROW|wxALL, 2);
+    itemBoxSizer65->Add(itemBoxSizer66, 1, wxGROW|wxALL, 2);
 
     wxBoxSizer* itemBoxSizer67 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer66->Add(itemBoxSizer67, 0, wxGROW|wxALL, 5);
+    itemBoxSizer66->Add(itemBoxSizer67, 1, wxGROW|wxALL, 5);
 
     m_ctrlGridReceive = new wxGrid;
     m_ctrlGridReceive->Create( m_pPanel, ID_VSCP_GRID_RECEIVE, wxDefaultPosition, wxSize(550, 300), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
@@ -846,7 +846,7 @@ void frmVSCPSession::CreateControls()
 
     m_ctrlRcvHtmlInfo = new wxHtmlWindow;
     m_ctrlRcvHtmlInfo->Create( m_pPanel, ID_HTMLWINDOW_RCVINFO, wxDefaultPosition, wxSize(300, 300), wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
-    itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 1, wxALIGN_CENTER_VERTICAL|wxALL, 0);
+    itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 1, wxGROW|wxALL, 0);
 
     wxBoxSizer* itemBoxSizer70 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer65->Add(itemBoxSizer70, 0, wxGROW|wxALL, 2);
