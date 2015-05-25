@@ -1124,6 +1124,9 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
 
             msg.sizeData = 4;
         }
+        else {
+            return false;
+        }
 
         // Send message
         msg.id = ((uint32_t) priority << 26) |
@@ -1175,6 +1178,9 @@ bool CBootDevice_VSCP::sendVSCPBootCommand( uint8_t index )
             event.data[ 18 ] = ((uint8_t)(m_blockNumber >>  8)) & 0xFF;
             event.data[ 19 ] = ((uint8_t)(m_blockNumber >>  0)) & 0xFF;
 
+        }
+        else {
+            return false;
         }
 
         if (CANAL_ERROR_SUCCESS == m_ptcpip->doCmdSendEx(&event)) {
