@@ -807,7 +807,7 @@
 #define VSCP_TYPE_DIAGNOSTIC_LIN_FAIL                       50
 #define VSCP_TYPE_DIAGNOSTIC_UART_FAIL                      51
 #define VSCP_TYPE_DIAGNOSTIC_UNHANDLED_INT                  52
-#define VSCP_TYPE_DIAGNOSTIC_USB_FAIL                       53
+#define VSCP_TYPE_DIAGNOSTIC_MEMORY_FAIL                    53
 #define VSCP_TYPE_DIAGNOSTIC_VARIABLE_RANGE                 54
 #define VSCP_TYPE_DIAGNOSTIC_WDT                            55
 #define VSCP_TYPE_DIAGNOSTIC_EEPROM_FAIL                    56
@@ -818,7 +818,7 @@
 #define VSCP_TYPE_DIAGNOSTIC_BOOTLOADER_FAIL                61
 #define VSCP_TYPE_DIAGNOSTIC_PROGRAMFLOW_FAIL               62
 #define VSCP_TYPE_DIAGNOSTIC_RTC_FAIL                       63
-#define VSCP_TYPE_DIAGNOSTIC_SELFTEST_FAIL                  64
+#define VSCP_TYPE_DIAGNOSTIC_SYSTEM_TEST_FAIL               64
 #define VSCP_TYPE_DIAGNOSTIC_SENSOR_FAIL                    65
 #define VSCP_TYPE_DIAGNOSTIC_SAFESTATE                      66
 #define VSCP_TYPE_DIAGNOSTIC_SIGNAL_IMPLAUSIBLE             67

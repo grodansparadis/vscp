@@ -762,7 +762,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 50) ] = _("LIN_FAIL");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 51) ] = _("UART_FAIL");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 52) ] = _("UNHANDLED_INT");
-    m_hashType[ MAKE_CLASSTYPE_LONG(506, 53) ] = _("USB_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 53) ] = _("MEMORY_FAIL");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 54) ] = _("VARIABLE_RANGE");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 55) ] = _("WDT");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 56) ] = _("EEPROM_FAIL");
@@ -773,7 +773,7 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 61) ] = _("BOOTLOADER_FAIL");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 62) ] = _("PROGRAMFLOW_FAIL");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 63) ] = _("RTC_FAIL");
-    m_hashType[ MAKE_CLASSTYPE_LONG(506, 64) ] = _("SELFTEST_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 64) ] = _("SYSTEM_TEST_FAIL");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 65) ] = _("SENSOR_FAIL");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 66) ] = _("SAFESTATE");
     m_hashType[ MAKE_CLASSTYPE_LONG(506, 67) ] = _("SIGNAL_IMPLAUSIBLE");
