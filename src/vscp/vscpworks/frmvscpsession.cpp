@@ -925,11 +925,6 @@ void frmVSCPSession::CreateControls()
     m_btnClear->Show(false);
     itemBoxSizer81->Add(m_btnClear, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
 
-    wxStatusBar* itemStatusBar86 = new wxStatusBar;
-    itemStatusBar86->Create( m_pPanel, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
-    itemStatusBar86->SetFieldsCount(2);
-    itemBoxSizer65->Add(itemStatusBar86, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
-
     m_ctrlGridReceive->EnableEditing(false);
 
     // Create the grid table
