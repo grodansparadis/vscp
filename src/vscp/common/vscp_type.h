@@ -125,6 +125,7 @@
 #define VSCP_TYPE_SECURITY_CONDENSATION_DETECTED            17
 #define VSCP_TYPE_SECURITY_SOUND_DETECTED                   18
 #define VSCP_TYPE_SECURITY_HARMFUL_SOUND_LEVEL              19
+#define VSCP_TYPE_SECURITY_TAMPER                           20
 
 // Class 10 (0x0a) -- MEASUREMENT
 #define VSCP_TYPE_MEASUREMENT_GENERAL                       0
@@ -255,6 +256,16 @@
 #define VSCP_TYPE_INFORMATION_ASTRONOMICAL_SUNRISE_TWILIGHT_START   56
 #define VSCP_TYPE_INFORMATION_ASTRONOMICAL_SUNSET_TWILIGHT_START    57
 #define VSCP_TYPE_INFORMATION_CALCULATED_NOON                       58
+#define VSCP_TYPE_INFORMATION_SHUTTER_UP                    59
+#define VSCP_TYPE_INFORMATION_SHUTTER_DOWN                  60
+#define VSCP_TYPE_INFORMATION_SHUTTER_LEFT                  61
+#define VSCP_TYPE_INFORMATION_SHUTTER_RIGHT                 62
+#define VSCP_TYPE_INFORMATION_SHUTTER_END_TOP               63
+#define VSCP_TYPE_INFORMATION_SHUTTER_END_BOTTOM            64
+#define VSCP_TYPE_INFORMATION_SHUTTER_END_MIDDLE            65
+#define VSCP_TYPE_INFORMATION_SHUTTER_END_PRESET            66
+#define VSCP_TYPE_INFORMATION_SHUTTER_END_LEFT              67
+#define VSCP_TYPE_INFORMATION_SHUTTER_END_RIGHT             68
 
 // class 30 (0x1E) -- CONTROL
 #define VSCP_TYPE_CONTROL_GENERAL                           0
@@ -288,6 +299,12 @@
 #define VSCP_TYPE_CONTROL_TIMED_PULSE_OFF                   31
 #define VSCP_TYPE_CONTROL_SET_COUNTRY_LANGUAGE	            32
 #define VSCP_TYPE_CONTROL_BIG_CHANGE_LEVEL                  33
+#define VSCP_TYPE_CONTROL_SHUTTER_UP                        34
+#define VSCP_TYPE_CONTROL_SHUTTER_DOWN                      35
+#define VSCP_TYPE_CONTROL_SHUTTER_LEFT                      36
+#define VSCP_TYPE_CONTROL_SHUTTER_RIGHT                     37
+#define VSCP_TYPE_CONTROL_SHUTTER_MIDDLE                    38
+#define VSCP_TYPE_CONTROL_SHUTTER_PRESET                    39
 
 // class 40 (0x28) -- MULTIMEDIA
 #define VSCP_TYPE_MULTIMEDIA_GENERAL                        0
@@ -735,6 +752,124 @@
 // class 212 (0xD4) -- WIRELESS
 #define VSCP_TYPE_WIRELESS_GENERAL                          0
 #define VSCP_TYPE_WIRELESS_GSM_CELL                         1
+
+// class 506 (0x1FA) -- DIAGNOSTIC
+#define VSCP_TYPE_DIAGNOSTIC_GENERAL                        0
+#define VSCP_TYPE_DIAGNOSTIC_OVERVOLTAGE                    1
+#define VSCP_TYPE_DIAGNOSTIC_UNDERVOLTAGE                   2
+#define VSCP_TYPE_DIAGNOSTIC_VBUS_LOW                       3
+#define VSCP_TYPE_DIAGNOSTIC_BATTERY_LOW                    4
+#define VSCP_TYPE_DIAGNOSTIC_BATTERY_FULL                   5
+#define VSCP_TYPE_DIAGNOSTIC_BATTERY_ERROR                  6
+#define VSCP_TYPE_DIAGNOSTIC_BATTERY_OK                     7
+#define VSCP_TYPE_DIAGNOSTIC_OVERCURRENT                    8
+#define VSCP_TYPE_DIAGNOSTIC_CIRCUIT_ERROR                  9
+#define VSCP_TYPE_DIAGNOSTIC_SHORT_CIRCUIT                  10
+#define VSCP_TYPE_DIAGNOSTIC_OPEN_CIRCUIT                   11
+#define VSCP_TYPE_DIAGNOSTIC_MOIST                          12
+#define VSCP_TYPE_DIAGNOSTIC_WIRE_FAIL                      13
+#define VSCP_TYPE_DIAGNOSTIC_WIRELESS_FAIL                  14
+#define VSCP_TYPE_DIAGNOSTIC_IR_FAIL                        15
+#define VSCP_TYPE_DIAGNOSTIC_1WIRE_FAIL                     16
+#define VSCP_TYPE_DIAGNOSTIC_RS222_FAIL                     17
+#define VSCP_TYPE_DIAGNOSTIC_RS232_FAIL                     18
+#define VSCP_TYPE_DIAGNOSTIC_RS423_FAIL                     19
+#define VSCP_TYPE_DIAGNOSTIC_RS485_FAIL                     20
+#define VSCP_TYPE_DIAGNOSTIC_CAN_FAIL                       21
+#define VSCP_TYPE_DIAGNOSTIC_LAN_FAIL                       22
+#define VSCP_TYPE_DIAGNOSTIC_USB_FAIL                       23
+#define VSCP_TYPE_DIAGNOSTIC_WIFI_FAIL                      24
+#define VSCP_TYPE_DIAGNOSTIC_NFC_RFID_FAIL                  25
+#define VSCP_TYPE_DIAGNOSTIC_LOW_SIGNAL                     26
+#define VSCP_TYPE_DIAGNOSTIC_HIGH_SIGNAL                    27
+#define VSCP_TYPE_DIAGNOSTIC_ADC_FAIL                       28
+#define VSCP_TYPE_DIAGNOSTIC_ALU_FAIL                       29
+#define VSCP_TYPE_DIAGNOSTIC_ASSERT                         30
+#define VSCP_TYPE_DIAGNOSTIC_DAC_FAIL                       31
+#define VSCP_TYPE_DIAGNOSTIC_DMA_FAIL                       32
+#define VSCP_TYPE_DIAGNOSTIC_ETH_FAIL                       33
+#define VSCP_TYPE_DIAGNOSTIC_EXCEPTION                      34
+#define VSCP_TYPE_DIAGNOSTIC_FPU_FAIL                       35
+#define VSCP_TYPE_DIAGNOSTIC_GPIO_FAIL                      36
+#define VSCP_TYPE_DIAGNOSTIC_I2C_FAIL                       37
+#define VSCP_TYPE_DIAGNOSTIC_I2S_FAIL                       38
+#define VSCP_TYPE_DIAGNOSTIC_INVALID_CONFIG                 39
+#define VSCP_TYPE_DIAGNOSTIC_MMU_FAIL                       40
+#define VSCP_TYPE_DIAGNOSTIC_NMI                            41
+#define VSCP_TYPE_DIAGNOSTIC_OVERHEAT                       42
+#define VSCP_TYPE_DIAGNOSTIC_PLL_FAIL                       43
+#define VSCP_TYPE_DIAGNOSTIC_POR_FAIL                       44
+#define VSCP_TYPE_DIAGNOSTIC_PWM_FAIL                       45
+#define VSCP_TYPE_DIAGNOSTIC_RAM_FAIL                       46
+#define VSCP_TYPE_DIAGNOSTIC_ROM_FAIL                       47
+#define VSCP_TYPE_DIAGNOSTIC_SPI_FAIL                       48
+#define VSCP_TYPE_DIAGNOSTIC_STACK_FAIL                     49
+#define VSCP_TYPE_DIAGNOSTIC_LIN_FAIL                       50
+#define VSCP_TYPE_DIAGNOSTIC_UART_FAIL                      51
+#define VSCP_TYPE_DIAGNOSTIC_UNHANDLED_INT                  52
+#define VSCP_TYPE_DIAGNOSTIC_USB_FAIL                       53
+#define VSCP_TYPE_DIAGNOSTIC_VARIABLE_RANGE                 54
+#define VSCP_TYPE_DIAGNOSTIC_WDT                            55
+#define VSCP_TYPE_DIAGNOSTIC_EEPROM_FAIL                    56
+#define VSCP_TYPE_DIAGNOSTIC_ENCRYPTION_FAIL                57
+#define VSCP_TYPE_DIAGNOSTIC_BAD_USER_INPUT                 58
+#define VSCP_TYPE_DIAGNOSTIC_DECRYPTION_FAIL                59
+#define VSCP_TYPE_DIAGNOSTIC_NOISE                          60
+#define VSCP_TYPE_DIAGNOSTIC_BOOTLOADER_FAIL                61
+#define VSCP_TYPE_DIAGNOSTIC_PROGRAMFLOW_FAIL               62
+#define VSCP_TYPE_DIAGNOSTIC_RTC_FAIL                       63
+#define VSCP_TYPE_DIAGNOSTIC_SELFTEST_FAIL                  64
+#define VSCP_TYPE_DIAGNOSTIC_SENSOR_FAIL                    65
+#define VSCP_TYPE_DIAGNOSTIC_SAFESTATE                      66
+#define VSCP_TYPE_DIAGNOSTIC_SIGNAL_IMPLAUSIBLE             67
+#define VSCP_TYPE_DIAGNOSTIC_STORAGE_FAIL                   68
+#define VSCP_TYPE_DIAGNOSTIC_SELFTEST_FAIL                  69
+#define VSCP_TYPE_DIAGNOSTIC_ESD_EMC_EMI                    70
+#define VSCP_TYPE_DIAGNOSTIC_TIMEOUT                        71
+#define VSCP_TYPE_DIAGNOSTIC_LCD_FAIL                       72
+#define VSCP_TYPE_DIAGNOSTIC_TOUCHPANEL_FAIL                73
+#define VSCP_TYPE_DIAGNOSTIC_NOLOAD                         74
+#define VSCP_TYPE_DIAGNOSTIC_COOLING_FAIL                   75
+#define VSCP_TYPE_DIAGNOSTIC_HEATING_FAIL                   76
+#define VSCP_TYPE_DIAGNOSTIC_TX_FAIL                        77
+#define VSCP_TYPE_DIAGNOSTIC_RX_FAIL                        78
+// 507 reserved for diagnostics
+
+// class 508 (0x1FC) -- ERROR
+#define VSCP_TYPE_ERROR_SUCCESS                             0
+#define VSCP_TYPE_ERROR_ERROR                               1
+// 2-6 reserved
+#define VSCP_TYPE_ERROR_CHANNEL                             7
+#define VSCP_TYPE_ERROR_FIFO_EMPTY                          8
+#define VSCP_TYPE_ERROR_FIFO_FULL                           9
+#define VSCP_TYPE_ERROR_FIFO_SIZE                           10
+#define VSCP_TYPE_ERROR_FIFO_WAIT                           11      
+#define VSCP_TYPE_ERROR_GENERIC                             12
+#define VSCP_TYPE_ERROR_HARDWARE                            13
+#define VSCP_TYPE_ERROR_INIT_FAIL                           14
+#define VSCP_TYPE_ERROR_INIT_MISSING                        15		
+#define VSCP_TYPE_ERROR_INIT_READY                          16
+#define VSCP_TYPE_ERROR_NOT_SUPPORTED                       17
+#define VSCP_TYPE_ERROR_OVERRUN                             18
+#define VSCP_TYPE_ERROR_RCV_EMPTY                           19
+#define VSCP_TYPE_ERROR_REGISTER                            20
+#define VSCP_TYPE_ERROR_TRM_FULL                            21
+// 22-27 reserved
+#define VSCP_TYPE_ERROR_LIBRARY                             28
+#define VSCP_TYPE_ERROR_PROCADDRESS                         29
+#define VSCP_TYPE_ERROR_ONLY_ONE_INSTANCE                   30
+#define VSCP_TYPE_ERROR_SUB_DRIVER                          31
+#define VSCP_TYPE_ERROR_TIMEOUT                             32
+#define VSCP_TYPE_ERROR_NOT_OPEN                            33
+#define VSCP_TYPE_ERROR_PARAMETER                           34
+#define VSCP_TYPE_ERROR_MEMORY                              35
+#define VSCP_TYPE_ERROR_INTERNAL                            36
+#define VSCP_TYPE_ERROR_COMMUNICATION                       37
+#define VSCP_TYPE_ERROR_USER                                38
+#define VSCP_TYPE_ERROR_PASSWORD                            39
+#define VSCP_TYPE_ERROR_CONNECTION                          40   
+#define VSCP_TYPE_ERROR_INVALID_HANDLE                      41
+#define VSCP_TYPE_ERROR_OPERATION_FAILED                    42
 
 // class 509 (0x1FD) -- LOG
 #define VSCP_TYPE_LOG_GENERAL                               0

@@ -91,7 +91,11 @@ VSCPInformation::VSCPInformation( void )
 	m_hashClass[ 100 ] = _("CLASS1_PHONE");
 	m_hashClass[ 101 ] = _("CLASS1_LIN");
 	m_hashClass[ 102 ] = _("CLASS1_DISPLAY");
-	m_hashClass[ 110 ] = _("CLASS1_RC5");
+	m_hashClass[ 110 ] = _("CLASS1_REMOTE");
+    m_hashClass[ 206 ] = _("CLASS1_GPS");
+    m_hashClass[ 212 ] = _("CLASS1_WIRELESS");
+    m_hashClass[ 506 ] = _("CLASS1_DIAGNOSTIC");
+    m_hashClass[ 508 ] = _("CLASS1_ERROR");
 	m_hashClass[ 509 ] = _("CLASS1_LOG");
 	m_hashClass[ 510 ] = _("CLASS1_LAB");
 	m_hashClass[ 511 ] = _("CLASS1_LOCAL");
@@ -109,13 +113,11 @@ VSCPInformation::VSCPInformation( void )
 	m_hashClass[ 512 + 85 ] = _("CLASS2_SETVALUEZONE");
 	m_hashClass[ 512 + 100 ] = _("CLASS2_LEVEL1_PHONE");
 	m_hashClass[ 512 + 101 ] = _("CLASS2_LEVEL1_LIN");
-	m_hashClass[ 512 + 110 ] = _("CLASS2_LEVEL1_RC5");
-	m_hashClass[ 512 + 200 ] = _("CLASS2_LEVEL1_ONEWIRE");
-	m_hashClass[ 512 + 201 ] = _("CLASS2_LEVEL1_X10");
-	m_hashClass[ 512 + 202 ] = _("CLASS2_LEVEL1_LON");
-	m_hashClass[ 512 + 203 ] = _("CLASS2_LEVEL1_EIB");
-	m_hashClass[ 512 + 204 ] = _("CLASS2_LEVEL1_SNAP");
-	m_hashClass[ 512 + 205 ] = _("CLASS2_LEVEL1_MUMIN");
+	m_hashClass[ 512 + 110 ] = _("CLASS2_LEVEL1_REMOTE");
+	m_hashClass[ 512 + 206 ] = _("CLASS2_LEVEL1_GPS");
+	m_hashClass[ 512 + 212 ] = _("CLASS2_LEVEL1_WIRELESS");
+    m_hashClass[ 512 + 506 ] = _("CLASS2_LEVEL1_DIAGNOSTIC");
+    m_hashClass[ 512 + 508 ] = _("CLASS2_LEVEL1_ERROR");
 	m_hashClass[ 512 + 509 ] = _("CLASS2_LEVEL1_LOG");
 	m_hashClass[ 512 + 510 ] = _("CLASS2_LEVEL1_LAB");
 	m_hashClass[ 512 + 511 ] = _("CLASS2_LEVEL1_LOCAL");
@@ -202,7 +204,9 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(2, 15) ] = _("WEIGHT DETECTED");
 	m_hashType[ MAKE_CLASSTYPE_LONG(2, 16) ] = _("WATER DETECTED");
 	m_hashType[ MAKE_CLASSTYPE_LONG(2, 17) ] = _("CONDENSATION DETECTED");
-
+    m_hashType[ MAKE_CLASSTYPE_LONG(2, 18) ] = _("SOUND DETECTED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(2, 19) ] = _("HARMFUL_SOUND_LEVEL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(2, 20) ] = _("TAMPER DETECTED");
 
 	// MEASUREMENT
 	m_hashType[ MAKE_CLASSTYPE_LONG(10, 0) ] = _("MEASUREMENT_GENERAL");
@@ -331,7 +335,17 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(20, 56) ] = _("ASTRONOMICAL_SUNRISE_TWILIGHT_START");
     m_hashType[ MAKE_CLASSTYPE_LONG(20, 57) ] = _("ASTRONOMICAL_SUNSET_TWILIGHT_START");
     m_hashType[ MAKE_CLASSTYPE_LONG(20, 58) ] = _("CALCULATED_NOON");
-
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 59) ] = _("SHUTTER_UP");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 60) ] = _("SHUTTER_DOWN");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 61) ] = _("SHUTTER_LEFT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 62) ] = _("SHUTTER_RIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 63) ] = _("SHUTTER_END_TOP");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 64) ] = _("SHUTTER_END_BOTTOM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 65) ] = _("SHUTTER_END_MIDDLE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 66) ] = _("SHUTTER_END_PRESET");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 67) ] = _("SHUTTER_END_LEFT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(20, 68) ] = _("SHUTTER_END_RIGHT");
+    
 	// class 30 (0x1E) -- CONTROL
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 0) ] = _("CONTROL_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 1) ] = _("MUTE");
@@ -364,6 +378,12 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 31) ] = _("TIMED_PULSE_OFF");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 32) ] = _("SET_COUNTRY_LANGUAGE");
 	m_hashType[ MAKE_CLASSTYPE_LONG(30, 33) ] = _("BIG_CHANGE_LEVEL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 34) ] = _("SHUTTER_UP");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 35) ] = _("SHUTTER_DOWN");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 36) ] = _("SHUTTER_LEFT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 37) ] = _("SHUTTER_RIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 38) ] = _("SHUTTER_MIDDLE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(30, 39) ] = _("SHUTTER_PRESET");
 
 	// class 40 (0x28) -- MULTIMEDIA
 	m_hashType[ MAKE_CLASSTYPE_LONG(40, 0) ] = _("MULTIMEDIA_GENERAL");
@@ -594,8 +614,59 @@ VSCPInformation::VSCPInformation( void )
     m_hashType[ MAKE_CLASSTYPE_LONG(90, 50) ] = _("WEATHER_WARNING_LEVEL5");
     m_hashType[ MAKE_CLASSTYPE_LONG(90, 51) ] = _("WEATHER_ARMAGEDON");
 
-
     // class 95 (0x5F) -- WEATHER_FORECAST
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 0) ] = _("WEATHER_GENERAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 1) ] = _("WEATHER_SEASONS_WINTER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 2) ] = _("WEATHER_SEASONS_SPRING");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 3) ] = _("WEATHER_SEASONS_SUMMER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 4) ] = _("WEATHER_SEASONS_AUTUMN");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 5) ] = _("WEATHER_WIND_NONE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 6) ] = _("WEATHER_WIND_LOW");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 7) ] = _("WEATHER_WIND_MEDIUM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 8) ] = _("WEATHER_WIND_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 9) ] = _("WEATHER_WIND_VERY_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 10) ] = _("WEATHER_AIR_FOGGY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 11) ] = _("WEATHER_AIR_FREEZING");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 12) ] = _("WEATHER_AIR_COLD");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 13) ] = _("WEATHER_AIR_VERY_COLD");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 14) ] = _("WEATHER_AIR_NORMAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 15) ] = _("WEATHER_AIR_HOT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 16) ] = _("WEATHER_AIR_VERY_HOT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 17) ] = _("WEATHER_AIR_POLLUTION_LOW");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 18) ] = _("WEATHER_AIR_POLLUTION_MEDIUM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 19) ] = _("WEATHER_AIR_POLLUTION_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 20) ] = _("WEATHER_AIR_HUMID");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 21) ] = _("WEATHER_AIR_DRY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 22) ] = _("WEATHER_SOIL_HUMID");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 23) ] = _("WEATHER_SOIL_DRY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 24) ] = _("WEATHER_RAIN_NONE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 25) ] = _("WEATHER_RAIN_LIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 26) ] = _("WEATHER_RAIN_HEAVY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 27) ] = _("WEATHER_RAIN_VERY_HEAVY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 28) ] = _("WEATHER_SUN_NONE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 29) ] = _("WEATHER_SUN_LIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 30) ] = _("WEATHER_SUN_HEAVY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 31) ] = _("WEATHER_SNOW_NONE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 32) ] = _("WEATHER_SNOW_LIGHT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 33) ] = _("WEATHER_SNOW_HEAVY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 34) ] = _("WEATHER_DEW_POINT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 35) ] = _("WEATHER_STORM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 36) ] = _("WEATHER_FLOOD");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 37) ] = _("WEATHER_EARTHQUAKE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 38) ] = _("WEATHER_NUCLEAR_DISASTER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 39) ] = _("WEATHER_FIRE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 40) ] = _("WEATHER_LIGHTNING");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 41) ] = _("WEATHER_UV_RADIATION_LOW");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 42) ] = _("WEATHER_UV_RADIATION_MEDIUM");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 43) ] = _("WEATHER_UV_RADIATION_NORMAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 44) ] = _("WEATHER_UV_RADIATION_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 45) ] = _("WEATHER_UV_RADIATION_VERY_HIGH");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 46) ] = _("WEATHER_WARNING_LEVEL1");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 47) ] = _("WEATHER_WARNING_LEVEL2");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 48) ] = _("WEATHER_WARNING_LEVEL3");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 49) ] = _("WEATHER_WARNING_LEVEL4");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 50) ] = _("WEATHER_WARNING_LEVEL5");
+    m_hashType[ MAKE_CLASSTYPE_LONG(95, 51) ] = _("WEATHER_ARMAGEDON");
 
 	// class 100 (0x64) -- PHONE
 	m_hashType[ MAKE_CLASSTYPE_LONG(100, 0) ] = _("PHONE_GENERAL");
@@ -637,6 +708,133 @@ VSCPInformation::VSCPInformation( void )
 	m_hashType[ MAKE_CLASSTYPE_LONG(212, 0) ] = _("WIRELESS_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(212, 1) ] = _("GSM_CELL");
 
+    // class 507 (0x1FB) -- DIAGNOSTIC
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 0) ] = _("GENERAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 1) ] = _("OVERVOLTAGE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 2) ] = _("UNDERVOLTAGE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 3) ] = _("VBUS_LOW");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 4) ] = _("BATTERY_LOW");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 5) ] = _("BATTERY_FULL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 6) ] = _("BATTERY_ERROR");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 7) ] = _("BATTERY_OK");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 8) ] = _("OVERCURRENT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 9) ] = _("CIRCUIT_ERROR");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 10) ] = _("SHORT_CIRCUIT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 11) ] = _("OPEN_CIRCUIT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 12) ] = _("MOIST");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 13) ] = _("WIRE_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 14) ] = _("WIRELESS_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 15) ] = _("IR_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 16) ] = _("1WIRE_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 17) ] = _("RS222_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 18) ] = _("RS232_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 19) ] = _("RS423_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 20) ] = _("RS485_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 21) ] = _("CAN_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 22) ] = _("LAN_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 23) ] = _("USB_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 24) ] = _("WIFI_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 25) ] = _("NFC_RFID_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 26) ] = _("LOW_SIGNAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 27) ] = _("HIGH_SIGNAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 28) ] = _("ADC_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 29) ] = _("ALU_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 30) ] = _("ASSERT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 31) ] = _("DAC_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 32) ] = _("DMA_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 33) ] = _("ETH_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 34) ] = _("EXCEPTION");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 35) ] = _("FPU_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 36) ] = _("GPIO_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 37) ] = _("I2C_FAIL ");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 38) ] = _("I2S_FAIL ");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 39) ] = _("INVALID_CONFIG");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 40) ] = _("MMU_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 41) ] = _("NMI");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 42) ] = _("OVERHEAT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 43) ] = _("PLL_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 44) ] = _("POR_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 45) ] = _("PWM_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 46) ] = _("RAM_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 47) ] = _("ROM_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 48) ] = _("SPI_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 49) ] = _("STACK_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 50) ] = _("LIN_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 51) ] = _("UART_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 52) ] = _("UNHANDLED_INT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 53) ] = _("USB_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 54) ] = _("VARIABLE_RANGE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 55) ] = _("WDT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 56) ] = _("EEPROM_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 57) ] = _("ENCRYPTION_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 58) ] = _("BAD_USER_INPUT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 59) ] = _("DECRYPTION_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 60) ] = _("NOISE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 61) ] = _("BOOTLOADER_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 62) ] = _("PROGRAMFLOW_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 63) ] = _("RTC_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 64) ] = _("SELFTEST_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 65) ] = _("SENSOR_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 66) ] = _("SAFESTATE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 67) ] = _("SIGNAL_IMPLAUSIBLE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 68) ] = _("STORAGE_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 69) ] = _("SELFTEST_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 70) ] = _("ESD_EMC_EMI");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 71) ] = _("TIMEOUT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 72) ] = _("LCD_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 73) ] = _("TOUCHPANEL_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 74) ] = _("NOLOAD");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 75) ] = _("COOLING_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 76) ] = _("HEATING_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 77) ] = _("TX_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(506, 78) ] = _("RX_FAIL");
+    
+    // class 508 (0x1FC) -- ERROR
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 0) ] = _("SUCCESS");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 1) ] = _("ERROR");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 2) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 3) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 4) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 5) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 6) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 7) ] = _("CHANNEL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 8) ] = _("FIFO_EMPTY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 9) ] = _("FIFO_FULL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 10) ] = _("FIFO_SIZE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 11) ] = _("FIFO_WAIT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 12) ] = _("GENERIC");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 13) ] = _("HARDWARE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 14) ] = _("INIT_FAIL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 15) ] = _("INIT_MISSING");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 16) ] = _("INIT_READY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 17) ] = _("NOT_SUPPORTED");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 18) ] = _("OVERRUN");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 19) ] = _("RECEIVER_EMPTY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 20) ] = _("REGISTER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 21) ] = _("TRANSMITTER_FULL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 22) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 23) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 24) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 25) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 26) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 27) ] = _("-");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 28) ] = _("LIBRARY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 29) ] = _("PROCADDRESS");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 30) ] = _("ONLY_ONE_INSTANCE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 31) ] = _("SUB_DRIVER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 32) ] = _("TIMEOUT");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 33) ] = _("NOT_OPEN");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 34) ] = _("PARAMETER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 35) ] = _("MEMORY");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 36) ] = _("INTERNAL");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 37) ] = _("COMMUNICATION");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 38) ] = _("USER");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 39) ] = _("PASSWORD");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 40) ] = _("CONNECTION");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 41) ] = _("INVALID_HANDLE");
+    m_hashType[ MAKE_CLASSTYPE_LONG(508, 42) ] = _("OPERATION_FAILED");
+  
+    
 	// class 509 (0x1FD) -- LOG
 	m_hashType[ MAKE_CLASSTYPE_LONG(509, 0) ] = _("LOG_GENERAL");
 	m_hashType[ MAKE_CLASSTYPE_LONG(509, 1) ] = _("MESSAGE");
