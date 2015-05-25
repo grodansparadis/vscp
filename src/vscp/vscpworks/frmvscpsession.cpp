@@ -846,7 +846,7 @@ void frmVSCPSession::CreateControls()
 
     m_ctrlRcvHtmlInfo = new wxHtmlWindow;
     m_ctrlRcvHtmlInfo->Create( m_pPanel, ID_HTMLWINDOW_RCVINFO, wxDefaultPosition, wxSize(300, 300), wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
-    itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
+    itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 1, wxALIGN_CENTER_VERTICAL|wxALL, 0);
 
     wxBoxSizer* itemBoxSizer70 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer65->Add(itemBoxSizer70, 0, wxGROW|wxALL, 2);
