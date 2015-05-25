@@ -828,10 +828,10 @@ void frmVSCPSession::CreateControls()
     m_pPanel->SetSizer(itemBoxSizer65);
 
     wxBoxSizer* itemBoxSizer66 = new wxBoxSizer(wxVERTICAL);
-    itemBoxSizer65->Add(itemBoxSizer66, 0, wxGROW|wxALL, 2);
+    itemBoxSizer65->Add(itemBoxSizer66, 1, wxGROW|wxALL, 2);
 
     wxBoxSizer* itemBoxSizer67 = new wxBoxSizer(wxHORIZONTAL);
-    itemBoxSizer66->Add(itemBoxSizer67, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
+    itemBoxSizer66->Add(itemBoxSizer67, 1, wxGROW|wxALL, 5);
 
     m_ctrlGridReceive = new wxGrid;
     m_ctrlGridReceive->Create( m_pPanel, ID_VSCP_GRID_RECEIVE, wxDefaultPosition, wxSize(550, 300), wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
@@ -842,11 +842,11 @@ void frmVSCPSession::CreateControls()
     m_ctrlGridReceive->SetDefaultRowSize(20);
     m_ctrlGridReceive->SetColLabelSize(18);
     m_ctrlGridReceive->SetRowLabelSize(30);
-    itemBoxSizer67->Add(m_ctrlGridReceive, 0, wxALIGN_CENTER_VERTICAL|wxALL, 2);
+    itemBoxSizer67->Add(m_ctrlGridReceive, 2, wxGROW|wxALL, 2);
 
     m_ctrlRcvHtmlInfo = new wxHtmlWindow;
     m_ctrlRcvHtmlInfo->Create( m_pPanel, ID_HTMLWINDOW_RCVINFO, wxDefaultPosition, wxSize(300, 300), wxHW_SCROLLBAR_AUTO|wxSUNKEN_BORDER|wxHSCROLL|wxVSCROLL );
-    itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 0, wxALIGN_CENTER_VERTICAL|wxALL, 0);
+    itemBoxSizer67->Add(m_ctrlRcvHtmlInfo, 1, wxGROW|wxALL, 0);
 
     wxBoxSizer* itemBoxSizer70 = new wxBoxSizer(wxVERTICAL);
     itemBoxSizer65->Add(itemBoxSizer70, 0, wxGROW|wxALL, 2);
@@ -924,11 +924,6 @@ void frmVSCPSession::CreateControls()
     m_btnClear->Create( m_pPanel, ID_BITMAPBUTTON13, itemFrame1->GetBitmapResource(wxT("open.xpm")), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW );
     m_btnClear->Show(false);
     itemBoxSizer81->Add(m_btnClear, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 0);
-
-    wxStatusBar* itemStatusBar86 = new wxStatusBar;
-    itemStatusBar86->Create( m_pPanel, ID_STATUSBAR, wxST_SIZEGRIP|wxNO_BORDER );
-    itemStatusBar86->SetFieldsCount(2);
-    itemBoxSizer65->Add(itemStatusBar86, 0, wxALIGN_CENTER_HORIZONTAL|wxALL, 5);
 
     m_ctrlGridReceive->EnableEditing(false);
 

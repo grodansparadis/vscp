@@ -11,6 +11,7 @@ class TCallbackMsg : public cCallbackMsg
     public:
         TCallbackMsg()    // constructor
         {
+            cInst = NULL;
             pFunction = 0;
         }
 
@@ -18,7 +19,7 @@ class TCallbackMsg : public cCallbackMsg
         
         virtual void Execute( char *msg_str ) const 
         {
-            if ( pFunction ) {
+            if ( ( NULL != cInst ) && ( NULL != pFunction ) ) {
 				(cInst->*pFunction)( char *msg_str );
 			}
             else {
