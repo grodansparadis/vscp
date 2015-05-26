@@ -1,9 +1,8 @@
-; usb2can.def : Declares the module parameters for the DLL.
+; usb2can.def : Declares the module parameters of the DLL
 
 LIBRARY      "vscpl1_usb2candrv"
 
 EXPORTS
-    ; Explicit exports can go here
 	CanalOpen @1
 	CanalClose @2
 	CanalGetLevel @3
