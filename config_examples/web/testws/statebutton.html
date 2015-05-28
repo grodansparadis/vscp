@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -98,6 +98,8 @@ see the events sent.
                             "../images/Karnvillan_plan1_800.jpg",  
                             0, 0, 800, 670 );
     
+    // btn1 turn itself on or off but also monitor the state of the variable
+    // statebutton1 and change state accordingly
 	var btn1 = new vscpws_stateButton( vscp_setting_user,           // user   from settings.js
                                         vscp_setting_passwordhash,  // password   from settings.js
                                         vscp_setting_url,           // url 
@@ -106,20 +108,42 @@ see the events sent.
                                         80 );                       // Button type
     btn1.setMonitorVariable("stateButton1", 1000);                  // Update and monitor
                                                                     // this variable also
+    // Set zone info
+	btn1.setTransmitBothZone( 0,1,10 );
+	btn1.setReceiveBothZone( -1,1,10 );																	
     
+	// btn1 need a reply on the form 
+	// CLASS1.INFORMATION, Type=On Zone=1, Subzone=11
+    // to turn on and 
+    // CLASS1.INFORMATION, Type=Off Zone=1, Subzone=11
+    // to turn off
     var btn2 = new vscpws_stateButton( vscp_setting_user,           // user   from settings.js
                                         vscp_setting_passwordhash,  // password   from settings.js
                                         vscp_setting_url,           // url
                                         "buttonStudy",              // canvas for button
                                         false,                      // No local state change
                                         90);                        // Button type
-                                          
+	// Set zone info									
+	btn2.setTransmitBothZone( 0,1,11 );
+	btn2.setReceiveBothZone( -1,1,11 );									
+                                      
+    // btn1 need a reply on the form 
+    // CLASS1.INFORMATION, Type=On Zone=1, Subzone=12
+    // to turn on and 
+    // CLASS1.INFORMATION, Type=Off Zone=1, Subzone=12
+    // to turn off
     var btn3 = new vscpws_stateButton( vscp_setting_user,           // user   from settings.js
                                         vscp_setting_passwordhash,  // password   from settings.js
                                         vscp_setting_url,           // url
                                         "buttonLivingroom1" );      // canvas
-	
+	// Set zone info
+	btn3.setTransmitBothZone( 0,1,12 );
+	btn3.setReceiveBothZone( -1,1,12 );
 </script>
-
+    <br><br>
+    <hr>
+    Copyright &copy; 2000-2015 <a href="mailto:info@grodansparadis.com">email</a>,
+    <a href="http://www.grodansparadis.com">Paradise of the Frog / Grodans Paradis AB</a>
+    </div>
 </body>
 </html>
