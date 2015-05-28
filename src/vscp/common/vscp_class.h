@@ -5,12 +5,12 @@
  *
  * @section description Description
  **********************************
- * This module contains the definitions for the 
+ * This module contains the definitions for the
  * available VSCP class id's
  *********************************************************************/
 
 /* ******************************************************************************
- * VSCP (Very Simple Control Protocol) 
+ * VSCP (Very Simple Control Protocol)
  * http://www.vscp.org
  *
  * The MIT License (MIT)
@@ -34,8 +34,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
- *	This file is part of VSCP - Very Simple Control Protocol 	
+ *
+ *	This file is part of VSCP - Very Simple Control Protocol
  *	http://www.vscp.org
  *
  * ******************************************************************************

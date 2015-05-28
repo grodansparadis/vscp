@@ -6,12 +6,12 @@
  *
  * @section description Description
  **********************************
- * This module contains the code that implements that 
+ * This module contains the code that implements that
  *
  *********************************************************************/
 
 /* ******************************************************************************
- * 	VSCP (Very Simple Control Protocol) 
+ * 	VSCP (Very Simple Control Protocol)
  * 	http://www.vscp.org
  *
  * The MIT License (MIT)
@@ -35,8 +35,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
- *	This file is part of VSCP - Very Simple Control Protocol 	
+ *
+ *	This file is part of VSCP - Very Simple Control Protocol
  *	http://www.vscp.org
  *
  * ******************************************************************************
@@ -657,7 +657,7 @@
 #define VSCP_TYPE_WEATHER_WARNING_LEVEL4                    49
 #define VSCP_TYPE_WEATHER_WARNING_LEVEL5                    50
 #define VSCP_TYPE_WEATHER_ARMAGEDON                         51
-    
+
 // class 95 (0x5F) -- WATHER FORECAST
 #define VSCP_TYPE_WEATHER_FORECAST_GENERAL                  0
 #define VSCP_TYPE_WEATHER_FORECAST_SEASONS_WINTER           1
@@ -712,7 +712,7 @@
 #define VSCP_TYPE_WEATHER_FORECAST_WARNING_LEVEL5           50
 #define VSCP_TYPE_WEATHER_FORECAST_ARMAGEDDON               51
 
-	
+
 
 // class 100 (0x64) -- PHONE
 #define VSCP_TYPE_PHONE_GENERAL                             0
@@ -912,9 +912,9 @@
 #define VSCP2_TYPE_DISPLAY_GENERAL                          0
 
 // Level II Measurement String Class=1040 (0x410)
-#define VSCP2_TYPE_MEASUREMENT_STR_GENERAL                  0
-#define VSCP_TYPE_MEASUREMENT_COUNT                         1
-#define VSCP_TYPE_MEASUREMENT_COUNT_LENGTH                  2
+#define VSCP2_TYPE_MEASUREMENT_STR_GENERAL                      0
+#define VSCP_TYPE_MEASUREMENT_COUNT                             1
+#define VSCP_TYPE_MEASUREMENT_COUNT_LENGTH                      2
 #define VSCP_TYPE_MEASUREMENT_COUNT_MASS                        3
 #define VSCP_TYPE_MEASUREMENT_COUNT_TIME                        4
 #define VSCP_TYPE_MEASUREMENT_COUNT_ELECTRIC_CURRENT            5
@@ -975,33 +975,33 @@
 #define VSCP2_TYPE_INFORMATION_HEART_BEAT                       2
 
 // Level II VSCPD daemon functionality Class=65535 (0xFFFF)
-#define VSCP2_TYPE_VSCPD_GENERAL                          0
-#define VSCP2_TYPE_VSCPD_LOOP                             1
-#define VSCP2_TYPE_VSCPD_PAUSE                            3
-#define VSCP2_TYPE_VSCPD_ACTIVATE                         4
-#define VSCP2_TYPE_VSCPD_SECOND                           5
-#define VSCP2_TYPE_VSCPD_MINUTE                           6
-#define VSCP2_TYPE_VSCPD_HOUR                             7
-#define VSCP2_TYPE_VSCPD_NOON                             8
-#define VSCP2_TYPE_VSCPD_MIDNIGHT                         9
-#define VSCP2_TYPE_VSCPD_WEEK                             11
-#define VSCP2_TYPE_VSCPD_MONTH                            12
-#define VSCP2_TYPE_VSCPD_QUARTER                          13
-#define VSCP2_TYPE_VSCPD_YEAR                             14
-#define VSCP2_TYPE_VSCPD_RANDOM_MINUTE                    15
-#define VSCP2_TYPE_VSCPD_RANDOM_HOUR                      16
-#define VSCP2_TYPE_VSCPD_RANDOM_DAY                       17
-#define VSCP2_TYPE_VSCPD_RANDOM_WEEK                      18
-#define VSCP2_TYPE_VSCPD_RANDOM_MONTH                     19
-#define VSCP2_TYPE_VSCPD_RANDOM_YEAR                      20
-#define VSCP2_TYPE_VSCPD_DUSK                             21
-#define VSCP2_TYPE_VSCPD_DAWN                             22
-#define VSCP2_TYPE_VSCPD_STARTING_UP                      23
-#define VSCP2_TYPE_VSCPD_SHUTTING_DOWN                    24
-#define VSCP2_TYPE_VSCPD_TIMER_STARTED                    25
-#define VSCP2_TYPE_VSCPD_TIMER_PAUSED                     26
-#define VSCP2_TYPE_VSCPD_TIMER_RESUMED                    27
-#define VSCP2_TYPE_VSCPD_TIMER_STOPPED                    28
-#define VSCP2_TYPE_VSCPD_TIMER_ELLAPSED                   29
+#define VSCP2_TYPE_VSCPD_GENERAL                                0
+#define VSCP2_TYPE_VSCPD_LOOP                                   1
+#define VSCP2_TYPE_VSCPD_PAUSE                                  3
+#define VSCP2_TYPE_VSCPD_ACTIVATE                               4
+#define VSCP2_TYPE_VSCPD_SECOND                                 5
+#define VSCP2_TYPE_VSCPD_MINUTE                                 6
+#define VSCP2_TYPE_VSCPD_HOUR                                   7
+#define VSCP2_TYPE_VSCPD_NOON                                   8
+#define VSCP2_TYPE_VSCPD_MIDNIGHT                               9
+#define VSCP2_TYPE_VSCPD_WEEK                                   11
+#define VSCP2_TYPE_VSCPD_MONTH                                  12
+#define VSCP2_TYPE_VSCPD_QUARTER                                13
+#define VSCP2_TYPE_VSCPD_YEAR                                   14
+#define VSCP2_TYPE_VSCPD_RANDOM_MINUTE                          15
+#define VSCP2_TYPE_VSCPD_RANDOM_HOUR                            16
+#define VSCP2_TYPE_VSCPD_RANDOM_DAY                             17
+#define VSCP2_TYPE_VSCPD_RANDOM_WEEK                            18
+#define VSCP2_TYPE_VSCPD_RANDOM_MONTH                           19
+#define VSCP2_TYPE_VSCPD_RANDOM_YEAR                            20
+#define VSCP2_TYPE_VSCPD_DUSK                                   21
+#define VSCP2_TYPE_VSCPD_DAWN                                   22
+#define VSCP2_TYPE_VSCPD_STARTING_UP                            23
+#define VSCP2_TYPE_VSCPD_SHUTTING_DOWN                          24
+#define VSCP2_TYPE_VSCPD_TIMER_STARTED                          25
+#define VSCP2_TYPE_VSCPD_TIMER_PAUSED                           26
+#define VSCP2_TYPE_VSCPD_TIMER_RESUMED                          27
+#define VSCP2_TYPE_VSCPD_TIMER_STOPPED                          28
+#define VSCP2_TYPE_VSCPD_TIMER_ELLAPSED                         29
 
 #endif
