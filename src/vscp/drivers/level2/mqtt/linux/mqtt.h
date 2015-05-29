@@ -7,7 +7,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 Ake Hedman, 
+// Copyright (C) 2000-2015 Ake Hedman, 
 // Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -48,7 +48,7 @@
 
 #endif
 
-#include <mosquittopp.h>
+#include <mosquitto.h>
 
 #include <wx/file.h>
 #include <wx/wfstream.h>
@@ -73,10 +73,10 @@ using namespace std;
 // Forward declarations
 class CWrkThread;
 class VscpRemoteTcpIf;
-class Cmqtt;
+class Cvscpmqtt;
 
 // Subscribe base class
-
+/*
 class mqtt_subscribe : public mosqpp::mosquittopp {
 public:
     mqtt_subscribe(const char *id,
@@ -91,7 +91,7 @@ public:
     void on_subscribe(int mid, int qos_count, const int *granted_qos);
    
     /// Sensor object
-    Cmqtt *m_pObj;	
+    Cvscpmqtt *m_pObj;	
 	
 };
 
@@ -111,17 +111,18 @@ public:
     void on_subscribe(int mid, int qos_count, const int *granted_qos);
 	
 	/// Sensor object
-    Cmqtt *m_pObj;
+    Cvscpmqtt *m_pObj;
 };
+*/
 
-class Cmqtt {
+class Cvscpmqtt {
 public:
 
     /// Constructor
-    Cmqtt();
+    Cvscpmqtt();
 
     /// Destructor
-    virtual ~Cmqtt();
+    virtual ~Cvscpmqtt();
 
     /*! 
         Open
@@ -273,7 +274,7 @@ public:
     VscpRemoteTcpIf m_srv;
 
     /// Sensor object
-    Cmqtt *m_pObj;
+    Cvscpmqtt *m_pObj;
 
 };
 

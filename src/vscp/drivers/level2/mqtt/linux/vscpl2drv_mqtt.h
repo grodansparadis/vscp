@@ -8,7 +8,7 @@
 // 
 // This file is part of the VSCP (http://www.vscp.org) 
 //
-// Copyright (C) 2000-2014 
+// Copyright (C) 2000-2015 
 // Ake Hedman, Grodans Paradis AB, <akhe@grodansparadis.com>
 // 
 // This file is distributed in the hope that it will be useful,
@@ -52,14 +52,14 @@ typedef int BOOL;
 #endif
 
 // This is the version info for this DLL - Change to your own value
-#define VSCP_DLL_VERSION        0x000001
+#define VSCP_DLL_VERSION        0x000002
 
 // This is the vendor string - Change to your own value
 #define VSCP_DLL_VENDOR "Grodans Paradis AB, Sweden, http://www.grodansparadis.com"
 
 // Driver information.
 #define VSCP_MQTT_DRIVERINFO "<?xml version = \"1.0\" encoding = \"UTF-8\" ?>" \
-"<!-- Version 0.0.1    2013-05-11   -->" \
+"<!-- Version 1.0.0    2015-05-14   -->" \
 "<config level=\"1|2\"blocking\"true|false\" description=\"bla bla bla bla\">" \
 "   <item pos=\"0\" type=\"string\" description\"Serial number for Tellstick\"/>" \
 "   <item pos=\"1\" type=\"path\" description\"Path to configuration file\"/>" \
@@ -73,56 +73,56 @@ typedef int BOOL;
 // See vscpl1.cpp for the implementation of this class
 //
 
-class CVSCPDrvApp
-{
-
+class CVSCPDrvApp {
+    
 public:
 
-	/// Constructor
-	CVSCPDrvApp();
-	
-	/// Destructor
-	~CVSCPDrvApp();
+    /// Constructor
+    CVSCPDrvApp();
 
-	/*!
-		Add a driver object
+    /// Destructor
+    ~CVSCPDrvApp();
 
-		@parm plog Object to add
-		@return handle or 0 for error
-	*/	
-	long addDriverObject( Cmqtt *psockcan );
+    /*!
+        Add a driver object
 
-	/*!
-		Get a driver object from its handle
+        @parm plog Object to add
+        @return handle or 0 for error
+     */
+    long addDriverObject(Cvscpmqtt *psockcan);
 
-		@param handle for object
-		@return pointer to object or NULL if invalid
-				handle.
-	*/
-	Cmqtt *getDriverObject( long h );
+    /*!
+        Get a driver object from its handle
 
-	/*!
-		Remove a driver object
+        @param handle for object
+        @return pointer to object or NULL if invalid
+                handle.
+     */
+    Cvscpmqtt *getDriverObject(long h);
 
-		@parm handle for object.
-	*/
-	void removeDriverObject( long h );
+    /*!
+        Remove a driver object
 
-	/*!
-		The log file object
-		This is the array with driver objects (max 256 objects
-	*/
-	Cmqtt *m_psockcanArray[ VSCP_MQTT_DRIVER_MAX_OPEN ];
-	
-	
-	/// Mutex for open/close
-	pthread_mutex_t m_objMutex;
+        @parm handle for object.
+     */
+    void removeDriverObject(long h);
 
-	/// Counter for users of the interface
-	unsigned long m_instanceCounter;
+    /*!
+        The log file object
+        This is the array with driver objects (max 256 objects
+     */
+    Cvscpmqtt *m_pmqttArray[ VSCP_MQTT_DRIVER_MAX_OPEN ];
+
+
+    /// Mutex for open/close
+    pthread_mutex_t m_objMutex;
+
+    /// Counter for users of the interface
+    unsigned long m_instanceCounter;
 
 public:
-	BOOL InitInstance();
+    
+    BOOL InitInstance();
 
 };
 
@@ -130,9 +130,8 @@ public:
 // CreateObject
 //
 
-extern "C"
-{
-	CVSCPDrvApp *CreateObject( void );
+extern "C" {
+    CVSCPDrvApp *CreateObject(void);
 }
 
 #endif // !defined(AFX_VSCPL1_H__A388C093_AD35_4672_8BF7_DBC702C6B0C8__INCLUDED_)

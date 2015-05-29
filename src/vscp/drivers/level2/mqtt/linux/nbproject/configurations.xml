@@ -13,6 +13,7 @@
       <itemPath>../../../../../common/crc8.c</itemPath>
       <itemPath>../../../../../common/crc8.h</itemPath>
       <itemPath>../../../../../common/dllist.h</itemPath>
+      <itemPath>../../../../../common/fossa.c</itemPath>
       <itemPath>../../../../../common/fossa.h</itemPath>
       <itemPath>../../../../common/guid.cpp</itemPath>
       <itemPath>../../../../common/guid.h</itemPath>
@@ -56,6 +57,7 @@
       </toolsSet>
       <flagsDictionary>
         <element flagsID="0" commonFlags="-O2 -fPIC -fPIC"/>
+        <element flagsID="1" commonFlags="-fPIC -fPIC"/>
       </flagsDictionary>
       <codeAssistance>
       </codeAssistance>
@@ -89,13 +91,30 @@
         </makeTool>
       </makefileType>
       <item path="../../../../../common/crc.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../../../common/crc8.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
+      </item>
+      <item path="../../../../../common/fossa.c" ex="false" tool="0" flavor2="0">
+        <cTool flags="1">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
       </item>
       <item path="../../../../../common/net_skeleton.c"
             ex="false"
             tool="0"
-            flavor2="0">
+            flavor2="2">
       </item>
       <item path="../../../../common/guid.cpp" ex="false" tool="1" flavor2="4">
         <ccTool flags="0">
@@ -108,6 +127,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
@@ -124,6 +144,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
@@ -143,6 +164,7 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
             <Elem>USE_FOSSA</Elem>
             <Elem>WXUSINGDLL</Elem>
           </preprocessorList>
@@ -165,6 +187,11 @@
         </ccTool>
       </item>
       <folder path="0">
+        <cTool>
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </cTool>
         <ccTool>
           <incDir>
             <pElem>../../../../common</pElem>
@@ -187,12 +214,24 @@
         </cTool>
       </folder>
       <item path="mqtt.cpp" ex="false" tool="1" flavor2="4">
+        <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="2">
+        <cTool flags="1">
+        </cTool>
       </item>
       <item path="vscp2drv_mqtt.cpp" ex="false" tool="1" flavor2="4">
       </item>
       <item path="vscpl2drv_mqtt.cpp" ex="false" tool="1" flavor2="0">
+        <ccTool flags="0">
+          <preprocessorList>
+            <Elem>NS_ENABLE_SSL</Elem>
+          </preprocessorList>
+        </ccTool>
       </item>
     </conf>
   </confs>
